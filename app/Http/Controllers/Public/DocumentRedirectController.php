@@ -27,6 +27,14 @@ class DocumentRedirectController extends Controller
             throw new NotFoundHttpException('Document not found or unavailable');
         }
 
-        return redirect()->away($document->anonymous_url);
+        $targetUrl = $document->anonymous_url;
+        $queryString = request()->getQueryString();
+
+        if ($queryString) {
+            $separator = str_contains($targetUrl, '?') ? '&' : '?';
+            $targetUrl .= $separator.$queryString;
+        }
+
+        return redirect()->away($targetUrl);
     }
 }

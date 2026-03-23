@@ -366,7 +366,7 @@ class SharepointGraphService
 
             // Check URL type - must be file (:b: or :w:), not folder (:f:)
             $url = $permission->getLink()->getWebUrl();
-            if (str_contains($url, ':f:')) {
+            if ($this->isFolderUrl($url)) {
                 $this->logWarning('Rejecting folder URL permission on file', [
                     'drive_item_id' => $permission->getId(),
                     'url_type' => 'folder',
@@ -642,15 +642,10 @@ class SharepointGraphService
             $driveItemCollections = $driveItemCollections->reject(fn ($item) => isset($item['folder']));
         }
 
-        // Get permissions without anonymous url
+        // Get drive items that don't have a valid anonymous permission yet
         $driveItemsWithoutAnonymousUrl = $driveItemCollections->filter(function ($driveItem) {
-            return collect($driveItem['permissions'])->contains(function ($permission) {
-                $hasAnonymous = isset($permission['link']['scope']) ? $permission['link']['scope'] === SharepointScopeEnum::ANONYMOUS()->label : false;
-
-                $hasPassword = isset($permission['hasPassword']) ? $permission['hasPassword'] : false;
-
-                return ! $hasAnonymous || $hasPassword;
-            });
+            return ! collect($driveItem['permissions'])
+                ->contains(fn ($permission) => $this->isValidAnonymousPermission($permission));
         });
 
         // Add anonymous url to drive items without it
@@ -688,14 +683,13 @@ class SharepointGraphService
         }
 
         $driveItemCollections->each(function ($driveItem, string $key) use ($permissionCollection, $driveItemCollections) {
-            // get permission where collection key matches with driveitem collection key
+            // Only merge permission if this item was in the createLink batch
             $permission = $permissionCollection->get($key);
 
-            // add permission to drive item
-            $driveItem['permissions'][] = $permission;
-
-            // update drive item collection
-            $driveItemCollections->put($key, $driveItem);
+            if ($permission !== null) {
+                $driveItem['permissions'][] = $permission;
+                $driveItemCollections->put($key, $driveItem);
+            }
         });
 
         // Update documents
@@ -728,18 +722,26 @@ class SharepointGraphService
             $document->summary = $driveItem['listItem']['fields'][SharepointFieldEnum::SUMMARY()->label] ?? null;
             /* $document->thumbnail_url = $driveItem['thumbnails'][0]['large']['url']; */
 
-            $anonymousPermission = collect($driveItem['permissions'])->filter(function ($permission) {
+            $anonymousPermission = collect($driveItem['permissions'])
+                ->filter(fn ($permission) => $this->isValidAnonymousPermission($permission))
+                ->first();
 
-                $isAnonymous = isset($permission['link']['scope']) ? $permission['link']['scope'] === SharepointScopeEnum::ANONYMOUS()->label : false;
-                $hasPassword = isset($permission['hasPassword']) ? $permission['hasPassword'] : false;
+            $url = $anonymousPermission['link']['webUrl'] ?? null;
 
-                return $isAnonymous && ! $hasPassword;
-            })->first();
+            if ($this->isFolderUrl($url)) {
+                $this->logWarning('Batch processing: rejecting folder URL for document', [
+                    'sharepoint_id' => $document->sharepoint_id,
+                    'title' => $document->title,
+                ]);
+                $document->anonymous_url = null;
+            } else {
+                $document->anonymous_url = $url;
+            }
 
-            $document->anonymous_url = $anonymousPermission['link']['webUrl'] ?? null;
             $document->sharepoint_permission_id = $anonymousPermission['id'] ?? null;
 
             $document->checked_at = Carbon::now();
+            $document->sync_status = 'imported';
 
             $institutionFieldName = SharepointFieldEnum::PADALINYS()->label;
 
@@ -924,5 +926,44 @@ class SharepointGraphService
         }
 
         return $driveItem;
+    }
+
+    /**
+     * Check if a raw permission array represents a valid anonymous file permission.
+     *
+     * Mirrors the validation in getDriveItemPublicLink() for typed Permission objects.
+     * Criteria: anonymous scope, no password, not inherited, not a folder URL.
+     */
+    private function isValidAnonymousPermission(array $permission): bool
+    {
+        $isAnonymous = ($permission['link']['scope'] ?? null) === SharepointScopeEnum::ANONYMOUS()->label;
+        if (! $isAnonymous) {
+            return false;
+        }
+
+        if ($permission['hasPassword'] ?? false) {
+            return false;
+        }
+
+        if (isset($permission['inheritedFrom']) && $permission['inheritedFrom'] !== null) {
+            return false;
+        }
+
+        $url = $permission['link']['webUrl'] ?? null;
+        if ($this->isFolderUrl($url)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if a SharePoint URL points to a folder rather than a file.
+     *
+     * SharePoint URLs use :f: for folders, :b: for binary files, :w: for Word docs, etc.
+     */
+    private function isFolderUrl(?string $url): bool
+    {
+        return $url !== null && str_contains($url, ':f:');
     }
 }
