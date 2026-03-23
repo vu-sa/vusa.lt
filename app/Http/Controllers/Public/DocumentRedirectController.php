@@ -32,7 +32,7 @@ class DocumentRedirectController extends Controller
 
         if ($queryString) {
             $separator = str_contains($targetUrl, '?') ? '&' : '?';
-            $targetUrl .= $separator . $queryString;
+            $targetUrl .= $separator.$queryString;
         }
 
         return redirect()->away($targetUrl);
