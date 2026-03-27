@@ -340,21 +340,21 @@ class PublicPageController extends PublicController
         );
 
         $forms = [
-            'chgf' => 'https://forms.office.com/e/m5efiVLTnb',
-            'evaf' => 'https://forms.office.com/e/iAhN6ScQ3H',
-            'ff' => 'https://forms.office.com/e/kNFgdk7ZDF',
-            'filf' => 'https://forms.office.com/e/LyYYN3btqN',
-            'fsf' => 'https://forms.office.com/e/xKMfZrgAVh',
-            'gmc' => 'https://forms.office.com/e/04PN2ajihu',
-            'if' => 'https://forms.office.com/e/0pn0SZ02b0',
-            'kf' => 'https://forms.office.com/e/UdnpVRLdPk',
-            'knf' => 'https://forms.office.com/e/PAKadETKhQ',
-            'mf' => 'https://forms.office.com/e/CjxQ590Nsh',
-            'mif' => 'https://forms.office.com/e/dh0UbRhjEn',
-            'sa' => 'https://forms.office.com/e/pz1S1KkFfF',
-            'tf' => 'https://forms.office.com/e/znCEWZrju1',
-            'tspmi' => 'https://forms.office.com/e/BNHUFeS27g',
-            'vm' => 'https://forms.office.com/e/Uf428VaLyv',
+            'chgf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUNjNTNU9ESE4wV0s4RTA2QUtIMllVN0RSNC4u',
+            'evaf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUNDI2Q0xKWktSSVFVR1RUOENEUk9QUlRFVy4u',
+            'ff' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUOEZBSDk4NFZWRUJDMjJBOVU1TEtHWFJDNy4u',
+            'filf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVURVY3TlNWQ0VHTjcwU1BVMEI1NjA5N04xTS4u',
+            'fsf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUMlRLOFozV1RNWEZXMDdJODUzSDhQTllKWS4u',
+            'gmc' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUQk1TVTlTM0k0MlpPTkZUSjczWU9HMDNTUi4u',
+            'if' => 'https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1utank1gTtJOjW_KfzCkXc1UN0NLNjM2SzRXQkwzT0NUTVQ1NjFKMjFIOS4u',
+            'kf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVURU05RU1FUU5LODVCRjRaMzI3VkRRNFY3Sy4u',
+            'knf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUN1A4RFhKWDVXVjUwNDdZUkZEUjgzNzkzRi4u',
+            'mf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUMllPRDFVSkZWOUQ4SVJRSjhJTkRSVUJYVy4u',
+            'mif' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUOE03NUhXMFpON1RBT0hCODZLUFpFOUdDWS4u',
+            'sa' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUMTlRQ1lIWUVMR0xNN0lSUzYzUzkwNDUzWi4u',
+            'tf' => 'mailto:integracija@tf.vusa.lt',
+            'tspmi' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUNUc2UUtSREk4OExZT0VEMlkwRExKUUw5Ry4u',
+            'vm' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUNEdYVzJTSURWRkdXMVZFMlhFUVkyREk0UC4u',
         ];
 
         $english_tenant_names = [
