@@ -219,12 +219,13 @@ import { loadLanguageAsync, trans as $t } from 'laravel-vue-i18n'
 import { computed, markRaw, ref } from 'vue'
 import { useDark } from '@vueuse/core'
 
-import NavMain from './NavMain.vue'
-import NavSecondary from './NavSecondary.vue'
-import NavQuickActions from './NavQuickActions.vue'
-import FollowedInstitutionsHotbar from './Sidebar/FollowedInstitutionsHotbar.vue'
-import SidebarStartFM from './SidebarStartFM.vue'
-import AppLogo from './AppLogo.vue'
+import NavMain from './NavMain.vue';
+import NavSecondary from './NavSecondary.vue';
+import NavQuickActions from './NavQuickActions.vue';
+import FollowedInstitutionsHotbar from './Sidebar/FollowedInstitutionsHotbar.vue';
+import SidebarStartFM from './SidebarStartFM.vue';
+import AppLogo from './AppLogo.vue';
+import { useDocsUpdateIndicator } from '@/Composables/useDocsUpdateIndicator';
 
 import NewMeetingDialog from '@/Components/Dialogs/NewMeetingDialog.vue'
 import {
@@ -274,7 +275,8 @@ const props = withDefaults(defineProps<SidebarProps>(), {
   variant: 'inset',
 })
 
-const isDark = useDark()
+const isDark = useDark();
+const { hasNewUpdates, markAsSeen: markDocsUpdatesSeen } = useDocsUpdateIndicator();
 
 // Toggle dark mode function
 const toggleDarkMode = () => {
@@ -369,6 +371,8 @@ const navSecondaryItems = computed(() => {
       url: '/docs',
       icon: markRaw(BookOpen),
       dataTour: 'nav-dokumentacija',
+      showBadge: hasNewUpdates.value,
+      badgeText: $t('Nauja'),
     },
     {
       title: $t('Palik atsiliepimą'),
@@ -383,12 +387,17 @@ const navSecondaryItems = computed(() => {
 const handleSecondaryNavClick = (url: string) => {
   if (url === '#feedback') {
     showFeedbackDialog.value = true
-  } else if (url.startsWith('http')) {
-    window.open(url, '_blank')
-  } else {
-    router.visit(url)
   }
-}
+  else if (url.startsWith('http')) {
+    window.open(url, '_blank');
+  }
+  else {
+    if (url === '/docs') {
+      markDocsUpdatesSeen();
+    }
+    router.visit(url);
+  }
+};
 
 // Meeting modal state
 const showMeetingModal = ref(false)
