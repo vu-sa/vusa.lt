@@ -7,6 +7,7 @@ use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\PermissionRegistrar;
 
 uses(RefreshDatabase::class);
@@ -229,7 +230,7 @@ describe('authorized access', function () {
             'dutiable_id' => $user1->id,
         ]);
 
-        $user1Pivot = \Illuminate\Support\Facades\DB::table('dutiables')
+        $user1Pivot = DB::table('dutiables')
             ->where('duty_id', $this->dutyManagerDuty->id)
             ->where('dutiable_id', $user1->id)
             ->where('dutiable_type', User::class)

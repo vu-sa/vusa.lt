@@ -225,7 +225,7 @@ class DutyController extends AdminController
         // Batch add users to duty (single INSERT query)
         if ($new->isNotEmpty()) {
             $attachData = $new->mapWithKeys(fn ($user) => [
-                $user->id => ['start_date' => now()->subDay()]
+                $user->id => ['start_date' => now()->subDay()],
             ])->all();
             $duty->users()->attach($attachData);
         }

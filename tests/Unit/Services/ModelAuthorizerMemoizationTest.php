@@ -2,6 +2,7 @@
 
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
@@ -29,8 +30,8 @@ beforeEach(function () {
     ];
 
     foreach ($permissions as $permission) {
-        if (! \App\Models\Permission::where('name', $permission)->exists()) {
-            \App\Models\Permission::create(['name' => $permission, 'guard_name' => 'web']);
+        if (! Permission::where('name', $permission)->exists()) {
+            Permission::create(['name' => $permission, 'guard_name' => 'web']);
         }
     }
 
