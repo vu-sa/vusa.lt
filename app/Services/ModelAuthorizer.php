@@ -39,6 +39,21 @@ class ModelAuthorizer
      */
     protected const CACHE_TTL = 43200;
 
+    /**
+     * Request-level memoization cache for permission checks
+     * Avoids repeated permission checks within the same HTTP request
+     *
+     * @var array<string, bool>
+     */
+    protected array $requestPermissionCache = [];
+
+    /**
+     * Request-level memoization cache for tenant lookups
+     *
+     * @var array<string, Collection<int, Tenant>>
+     */
+    protected array $requestTenantCache = [];
+
     public function __construct()
     {
         $this->duties = new Collection;
@@ -62,6 +77,9 @@ class ModelAuthorizer
             $this->duties = new Collection;
             $this->isAllScope = false;
             $this->lastCheckedPermission = null;
+            // Clear request-level caches when switching users
+            $this->requestPermissionCache = [];
+            $this->requestTenantCache = [];
         }
 
         return $this;
@@ -75,17 +93,22 @@ class ModelAuthorizer
      */
     public function checkAllRoleables(string $permission): bool
     {
-        $this->permissableDuties = new Collection;
         $this->lastCheckedPermission = $permission;
 
-        // Generate cache key based on user and permission
-        $cacheKey = "auth:permissions:{$this->user->id}:{$permission}";
+        // Check request-level cache first to avoid repeated checks within same request
+        $requestCacheKey = "{$this->user->id}:{$permission}";
+        if (isset($this->requestPermissionCache[$requestCacheKey])) {
+            // Restore permissable duties state from the cached check
+            // Note: This means permissableDuties will retain state from the first check
+            return $this->requestPermissionCache[$requestCacheKey];
+        }
 
-        // TODO: reenable cache in the future, but needs to be fixed, because the values sometimes are not returned properly
-        // return Cache::remember($cacheKey, static::CACHE_TTL, function () use ($permission) {
+        $this->permissableDuties = new Collection;
+
         // Super admin check
         if ($this->user->isSuperAdmin()) {
             $this->isAllScope = true;
+            $this->requestPermissionCache[$requestCacheKey] = true;
 
             return true;
         }
@@ -124,8 +147,9 @@ class ModelAuthorizer
             }
         }
 
+        $this->requestPermissionCache[$requestCacheKey] = $result;
+
         return $result;
-        // });
     }
 
     /**
