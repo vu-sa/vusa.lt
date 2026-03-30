@@ -168,6 +168,123 @@ describe('authorized access', function () {
 
         expect($response->status())->toBe(403);
     });
+
+    test('can batch add multiple users to a duty', function () {
+        $user1 = makeUser($this->tenant);
+        $user2 = makeUser($this->tenant);
+
+        $response = asUser($this->dutyManager)->put(route('duties.update', $this->dutyManagerDuty), [
+            'name' => $this->dutyManagerDuty->getTranslations('name'),
+            'description' => $this->dutyManagerDuty->getTranslations('description'),
+            'email' => $this->dutyManagerDuty->email,
+            'institution_id' => $this->dutyManagerDuty->institution_id,
+            'contacts_grouping' => $this->dutyManagerDuty->contacts_grouping ?? 'none',
+            'places_to_occupy' => $this->dutyManagerDuty->places_to_occupy ?? 1,
+            'current_users' => [$user1->id, $user2->id],
+        ]);
+
+        $response->assertRedirect();
+
+        $this->assertDatabaseHas('dutiables', [
+            'duty_id' => $this->dutyManagerDuty->id,
+            'dutiable_id' => $user1->id,
+        ]);
+        $this->assertDatabaseHas('dutiables', [
+            'duty_id' => $this->dutyManagerDuty->id,
+            'dutiable_id' => $user2->id,
+        ]);
+    });
+
+    test('can batch remove users from a duty', function () {
+        $user1 = makeUser($this->tenant);
+        $user2 = makeUser($this->tenant);
+
+        // First add both users
+        asUser($this->dutyManager)->put(route('duties.update', $this->dutyManagerDuty), [
+            'name' => $this->dutyManagerDuty->getTranslations('name'),
+            'description' => $this->dutyManagerDuty->getTranslations('description'),
+            'email' => $this->dutyManagerDuty->email,
+            'institution_id' => $this->dutyManagerDuty->institution_id,
+            'contacts_grouping' => $this->dutyManagerDuty->contacts_grouping ?? 'none',
+            'places_to_occupy' => $this->dutyManagerDuty->places_to_occupy ?? 1,
+            'current_users' => [$user1->id, $user2->id],
+        ]);
+
+        // Then remove user1, keep user2
+        $response = asUser($this->dutyManager)->put(route('duties.update', $this->dutyManagerDuty), [
+            'name' => $this->dutyManagerDuty->getTranslations('name'),
+            'description' => $this->dutyManagerDuty->getTranslations('description'),
+            'email' => $this->dutyManagerDuty->email,
+            'institution_id' => $this->dutyManagerDuty->institution_id,
+            'contacts_grouping' => $this->dutyManagerDuty->contacts_grouping ?? 'none',
+            'places_to_occupy' => $this->dutyManagerDuty->places_to_occupy ?? 1,
+            'current_users' => [$user2->id],
+        ]);
+
+        $response->assertRedirect();
+
+        // user1 should have an end_date set (soft removed)
+        $this->assertDatabaseHas('dutiables', [
+            'duty_id' => $this->dutyManagerDuty->id,
+            'dutiable_id' => $user1->id,
+        ]);
+
+        $user1Pivot = \Illuminate\Support\Facades\DB::table('dutiables')
+            ->where('duty_id', $this->dutyManagerDuty->id)
+            ->where('dutiable_id', $user1->id)
+            ->where('dutiable_type', User::class)
+            ->first();
+
+        expect($user1Pivot->end_date)->not->toBeNull();
+
+        // user2 should still be active (no end_date)
+        $this->dutyManagerDuty->refresh();
+        $currentUserIds = $this->dutyManagerDuty->current_users->pluck('id');
+        expect($currentUserIds)->toContain($user2->id);
+    });
+
+    test('can add and remove users simultaneously', function () {
+        $user1 = makeUser($this->tenant);
+        $user2 = makeUser($this->tenant);
+        $user3 = makeUser($this->tenant);
+
+        // First add user1 and user2
+        asUser($this->dutyManager)->put(route('duties.update', $this->dutyManagerDuty), [
+            'name' => $this->dutyManagerDuty->getTranslations('name'),
+            'description' => $this->dutyManagerDuty->getTranslations('description'),
+            'email' => $this->dutyManagerDuty->email,
+            'institution_id' => $this->dutyManagerDuty->institution_id,
+            'contacts_grouping' => $this->dutyManagerDuty->contacts_grouping ?? 'none',
+            'places_to_occupy' => $this->dutyManagerDuty->places_to_occupy ?? 1,
+            'current_users' => [$user1->id, $user2->id],
+        ]);
+
+        // Remove user1, keep user2, add user3
+        $response = asUser($this->dutyManager)->put(route('duties.update', $this->dutyManagerDuty), [
+            'name' => $this->dutyManagerDuty->getTranslations('name'),
+            'description' => $this->dutyManagerDuty->getTranslations('description'),
+            'email' => $this->dutyManagerDuty->email,
+            'institution_id' => $this->dutyManagerDuty->institution_id,
+            'contacts_grouping' => $this->dutyManagerDuty->contacts_grouping ?? 'none',
+            'places_to_occupy' => $this->dutyManagerDuty->places_to_occupy ?? 1,
+            'current_users' => [$user2->id, $user3->id],
+        ]);
+
+        $response->assertRedirect();
+
+        $this->dutyManagerDuty->refresh();
+        $currentUserIds = $this->dutyManagerDuty->current_users->pluck('id');
+
+        expect($currentUserIds)->toContain($user2->id);
+        expect($currentUserIds)->toContain($user3->id);
+        expect($currentUserIds)->not->toContain($user1->id);
+    });
+
+    test('edit page loads study_program from pivot auto-loading', function () {
+        $response = asUser($this->dutyManager)->get(route('duties.edit', $this->dutyManagerDuty));
+
+        $response->assertStatus(200);
+    });
 });
 
 describe('validation', function () {

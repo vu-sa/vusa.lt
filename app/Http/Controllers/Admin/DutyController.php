@@ -146,14 +146,8 @@ class DutyController extends AdminController
     {
         $this->handleAuthorization('update', $duty);
 
+        // study_program is auto-loaded via Dutiable::$with
         $duty->load('institution', 'types', 'roles', 'current_users');
-
-        // Manually load study_program for each user's pivot
-        foreach ($duty->current_users as $user) {
-            if ($user->pivot && $user->pivot->study_program_id) {
-                $user->pivot->load('study_program');
-            }
-        }
 
         return $this->inertiaResponse('Admin/People/EditDuty', [
             'duty' => $duty->toFullArray(),
@@ -218,14 +212,22 @@ class DutyController extends AdminController
         $new = $duty_users->diff($existing_users);
         $removed = $existing_users->diff($duty_users);
 
-        // remove users from duty
-        foreach ($removed as $user) {
-            $duty->users()->updateExistingPivot($user, ['end_date' => now()->subDay()]);
+        // Batch remove users from duty (single UPDATE query)
+        if ($removed->isNotEmpty()) {
+            DB::table('dutiables')
+                ->where('duty_id', $duty->id)
+                ->whereIn('dutiable_id', $removed->pluck('id'))
+                ->where('dutiable_type', User::class)
+                ->whereNull('end_date')
+                ->update(['end_date' => now()->subDay()]);
         }
 
-        // add users to duty
-        foreach ($new as $user) {
-            $duty->users()->attach($user, ['start_date' => now()->subDay()]);
+        // Batch add users to duty (single INSERT query)
+        if ($new->isNotEmpty()) {
+            $attachData = $new->mapWithKeys(fn ($user) => [
+                $user->id => ['start_date' => now()->subDay()]
+            ])->all();
+            $duty->users()->attach($attachData);
         }
     }
 
