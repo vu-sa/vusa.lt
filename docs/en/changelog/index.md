@@ -7,26 +7,35 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
----
+## v1.4 — Documentation Overhaul (2026-03-31) {#v1-4}
 
-## v1.1 — Documentation Overhaul (2026-03-10) {#v1-1}
+The updated vusa.lt documentation now includes an **updates page** where platform changes will be announced. When there are updates, you'll see an indicator next to the "Dokumentacija" link in the admin panel, and on the updates page you'll find all the details about recent changes.
 
-### ✨ New Features
+## v1.3 — Document Improvements (2026-03-23) {#v1-3}
 
-- 📰 **Blog** — you can now find the latest news and guides about the platform
-- 📋 **Updates page** — this page, where all platform changes will be logged
-- 🔔 **Update indicator** — in the admin panel, next to the "Dokumentacija" link, you'll see an indicator when there are new updates
+- 📄 **Improved [document](https://www.vusa.lt/dokumentai) actions** — the document list now has open, download, and copy link buttons
+- 🔒 **More robust document uploads** for administrators.
 
-### 🔧 Improvements
+> 🔗 [GitHub PR #542](https://github.com/vu-sa/vusa.lt/pull/542)
 
-- 🧭 **Role-based navigation** — the sidebar and top navigation now more clearly separate information for student representatives, administrators, and general content
-- 🏷️ **Versioning system** — updates are now tagged with versions for easier tracking
+## v1.2 — Text Box Content Block (2026-03-12) {#v1-2}
 
----
+- **Text box block** — a new content block that lets visitors submit responses directly on the page. Responses can be viewed and exported to Excel. Currently used in the [vusa.lt sustainability section](https://vusa.lt/tvarumas/), but can be adapted elsewhere.
+
+> 🔗 [GitHub PR #532](https://github.com/vu-sa/vusa.lt/pull/532)
+
+## v1.1 — Problem Tracking (2026-03-10) {#v1-1}
+
+- **Problem management** — a new section to register, track, and manage problems related to your unit
+- **Institution linking** — problems can be linked to specific institutions
+
+> 🔗 [GitHub PR #531](https://github.com/vu-sa/vusa.lt/pull/531)
 
 ## v1.0 — Platform Modernization (2026-02-07) {#v1-0}
 
 > 📰 Full write-up: [mano.vusa.lt v1.0: Platform Modernization](/blog/2026-02-07-v1-modernization)
+
+> 🔗 [GitHub PR #504](https://github.com/vu-sa/vusa.lt/pull/504)
 
 ### 🚀 Major Changes
 

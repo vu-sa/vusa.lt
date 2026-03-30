@@ -7,45 +7,32 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
----
+## v1.4 — Dokumentacijos atnaujinimas (2026-03-31) {#v1-4}
 
-## v1.1 — Dokumentacijos atnaujinimas (2026-03-10) {#v1-1}
+Atnaujintoje vusa.lt dokumentacijoje sukurtas **atnaujinimų polapis**, kuriame bus pristatomi platformos pakeitimai. Esant atnaujinimams, admin panelėje prie „Dokumentacija" nuorodos matysite indikatorių, o atnaujinimų puslapyje galėsite rasti visą informaciją apie naujausius pakeitimus.
 
-### ✨ Naujos funkcijos
+## v1.3 — Dokumentų patobulinimai (2026-03-23) {#v1-3}
 
-- 📰 **Tinklaraštis** — dabar galite rasti naujausias naujienas ir gidus apie platformą
-- 📋 **Atnaujinimų puslapis** — šis puslapis, kuriame bus registruojami visi platformos pakeitimai
-- 🔔 **Atnaujinimo indikatorius** — admin panelėje prie „Dokumentacija" nuorodos matysite indikatorių, kai bus naujų atnaujinimų
+- 📄 **Patobulinti [dokumentų](https://www.vusa.lt/dokumentai) veiksmai** — dokumentų sąraše dabar yra atidarymo, atsisiuntimo ir nuorodos kopijavimo mygtukai
+- 🔒 **Patikimesnis dokumentų įkėlimas** administratoriams.
 
-### 🔧 Patobulinimai
+> 🔗 [GitHub PR #542](https://github.com/vu-sa/vusa.lt/pull/542)
 
-- 🧭 **Navigacija pagal vaidmenis** — šoninė juosta ir viršutinė navigacija dabar aiškiau atskiria informaciją studentų atstovams, administratoriams ir bendros paskirties turinį
-- 🏷️ **Versijų sistema** — atnaujinimai dabar žymimi versijomis, kad būtų lengviau sekti pokyčius
+## v1.2 — Teksto laukelis turinyje (2026-03-12) {#v1-2}
 
----
+- **Teksto laukelio blokas** — naujas turinio blokas, leidžiantis lankytojams pateikti atsakymus tiesiai puslapyje. Atsakymus galima peržiūrėti ir eksportuoti į Excel. Šiuo metu naudojamas [vusa.lt tvarumo skiltyje](https://vusa.lt/tvarumas/), bet gali būti pritaikytas ir kitur.
+
+> 🔗 [GitHub PR #532](https://github.com/vu-sa/vusa.lt/pull/532)
+
+## v1.1 — Problemų sekimas (2026-03-10) {#v1-1}
+
+- **Problemų valdymas** — nauja skiltis, kurioje galima registruoti, sekti ir valdyti problemas, susijusias su padaliniu
+- **Susiejimas su institucijomis** — problemas galima susieti su konkrečiomis institucijomis
+
+> 🔗 [GitHub PR #531](https://github.com/vu-sa/vusa.lt/pull/531)
 
 ## v1.0 — Platformos modernizacija (2026-02-07) {#v1-0}
 
 > 📰 Pilnas aprašymas: [mano.vusa.lt v1.0: Platformos modernizacija](/blog/2026-02-07-v1-modernization)
 
-### 🚀 Pagrindiniai pakeitimai
-
-- 🧭 **Atstovavimo valdymas** — atnaujintas skydelis su Gantt laiko juosta, atstovų aktyvumu ir check-in sistema
-- 🌐 **Vieši posėdžiai** — posėdžiai rodomi viešai skaidrumo tikslais, su paieška ir darbotvarkės punktais
-- 🎓 **Gidų sistema** — interaktyvūs gidai kiekvienam puslapiui su pagalbos ikonėle ir eigos išsaugojimu
-- 👥 **Naudotojų atnaujinimo vedlys** — paprastas vedlys pareigybių naudotojams atnaujinti
-- 📰 **Naujienų ir turinio atnaujinimai** — 4 naujienų ir 3 puslapių išdėstymai, akcentai, socialiniai įterpiniai
-- 📅 **Kalendoriaus laiko juosta** — nauja, aiškesnė įvykių laiko juosta
-- 📇 **Kontaktų puslapis** — Typesense paieška su filtrais
-
-### 🔧 Patobulinimai
-
-- ✨ Atnaujinta šoninė juosta su animacijomis
-- 🔄 Perėjimo animacijos visoje platformoje
-- 📱 PWA ir pranešimų sistema
-- 🔍 Darbotvarkės punktų paieška administratoriams
-- 🔤 Naujas šriftas — Atkinson Hyperlegible Next
-- 🏨 Atnaujinti rezervacijų rodiniai
-- 🔐 Pataisyta Microsoft autentifikacija
-- ✏️ Atnaujinta turinio redaktoriaus sąsaja
-- 🔗 Platesnė institucijų ryšių sistema
+> 🔗 [GitHub PR #504](https://github.com/vu-sa/vusa.lt/pull/504)
