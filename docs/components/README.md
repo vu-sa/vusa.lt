@@ -104,3 +104,37 @@ const show = ref(true)
 - Import paths use `@/` alias pointing to `resources/js/`
 - Tailwind CSS utilities are available inside demos
 - All shadcn/ui CSS variables are defined for component styling
+
+## When to Use Screenshots vs Live Demos
+
+| Use `<ComponentScreenshot>` | Use `<ComponentDemo>` |
+|---|---|
+| Static UI (buttons, badges, cards) | Interactive flows (forms, modals) |
+| Layout examples | Components with state changes |
+| Design reference | Animations or transitions |
+
+### ComponentScreenshot Usage
+
+Place screenshots in `docs/public/images/components/` and use the global wrapper:
+
+```md
+<ComponentScreenshot
+  src="/docs/images/components/my-component.png"
+  title="My Component"
+  description="Shows the default appearance"
+  alt="Screenshot of My Component"
+  caption="Light mode variant"
+/>
+```
+
+#### Props
+
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `src` | `string` | ✅ | Image path (relative to `/docs/public/`) |
+| `title` | `string` | - | Header title |
+| `description` | `string` | - | Description below title |
+| `alt` | `string` | - | Alt text (default: "Component screenshot") |
+| `caption` | `string` | - | Caption below the image |
+
+Using screenshots is a common and recommended approach — it avoids maintenance overhead of keeping live component demos in sync with the app.
