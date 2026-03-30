@@ -8,149 +8,75 @@ tags:
 excerpt: The biggest mano.vusa.lt update — new representation management system, public meetings, guided tours, content updates and much more.
 ---
 
-<div class="blog-post-header">
-  <div class="blog-post-tags">
-    <span class="blog-post-tag">update</span>
-    <span class="blog-post-tag">v1.0</span>
-  </div>
-  <h1 class="blog-post-title">mano.vusa.lt v1.0: Platform Modernization</h1>
-  <div class="blog-post-meta">
-    <span class="blog-post-author">
-      <span class="author-initials">JK</span>
-      Justinas Kavoliūnas
-    </span>
-    <span class="blog-post-date">February 7, 2026</span>
-  </div>
-</div>
+<script setup>
+import BlogPostHeader from '../../blog/components/BlogPostHeader.vue'
+</script>
 
-We're excited to present the biggest mano.vusa.lt platform update. This version includes a new representation management system, public meetings, guided tours, and many other improvements.
+<BlogPostHeader
+  title="mano.vusa.lt v1.0: Platform Modernization"
+  date="February 7, 2026"
+  author="Justinas Kavoliūnas"
+  :tags="['update', 'v1.0']"
+/>
 
-## 🧭 Representation Management
+To improve the student representation process and other VU SR processes, the mano.vusa.lt system was created. Since its inception, the platform has been continuously evolving, and this update is the largest since the very beginning. It includes a new representation management system, public meetings, interactive guided tours, refreshed content presentation and many other improvements.
 
-Fully revamped representation dashboard (`/dashboard/atstovavimas`):
+## Representation Management
 
-- **Gantt timeline** — interactive institution meeting timeline with holiday periods, periodicity and configurable settings (saved in browser)
-- **Representative activity** — administrators can see student representative activity
-- **Check-in system** — ability to indicate no upcoming meeting for a period (up to 3 months ahead), with notes
-- **Meeting creation** — updated meeting creation modal with agenda item import from previous meetings
-- **Agenda item management** — reorder agenda items and indicate whether the item was raised by students
+Fully revamped representation management area:
 
-## 🌐 Public Meetings
+- **Institution timeline** — see all institution meetings, holiday periods and meeting frequency in a single view. The display can be customized to your needs.
+- **Representative activity** — administrators can monitor student representative engagement and activity.
+- **Meeting absence notices** — ability to indicate in advance that no meeting is expected for a period (up to 3 months), with explanations.
+- **Easier meeting creation** — when creating a new meeting, agenda items can be carried over from previous meetings.
+- **Agenda management** — agenda items can be reordered and marked as raised by students.
 
-For transparency, some meetings are now shown publicly:
+## Public Meetings
 
-- Institution pages show meetings grouped by academic year
-- Dedicated public meeting page with agenda, votes and decisions
-- Search all public meetings with Typesense
-- Admin settings for which institutions and meetings are publicly visible
+For the sake of transparency for students, some student representative meetings are now publicly visible:
 
-### 🎓 Guided Tours
+- Institution pages show meetings grouped by academic year.
+- Each public meeting has its own page with the agenda, votes and decisions.
+- All public meetings are searchable.
 
-New interactive tour system helps users learn the platform:
+## Interactive Guided Tours
 
-- Automatic tours on first page visit
-- Help icon in the top bar shows available tours
-- Tour progress is saved — no need to repeat completed tours
-- Option to reset tours in settings
+A new tour system helps users get familiar with the platform:
 
-### 👥 User Update Wizard
+- A guided tour is shown automatically on your first visit to a page.
+- A help icon in the top bar shows available tours.
+- Tour progress is saved — no need to repeat steps you've already seen.
+- Tours can be reset in settings.
 
-New wizard to easily update duty users — select institution, then duty, and add new or remove existing users.
+## User Update Wizard
 
-### 📰 News and Content Updates
+A new wizard makes it easy to update users in the platform.
 
-- **News layouts** — 4 different layout options for news
-- **Page layouts** — 3 options for content pages
-- **Highlights** — up to 3 highlighted elements in news
-- **Social embeds** — Facebook and Instagram content embedding
-- **Related news** — 3 related articles shown after each news item
+## News and Content Updates
 
-### 📅 Calendar Timeline
+- **News layouts** — choose from 4 different news presentation styles.
+- **Page layouts** — 3 options for content pages.
+- **Highlights** — up to 3 important elements can be featured in news.
+- **Social media content** — embed Facebook and Instagram posts.
+- **Related news** — 3 related articles shown after each news item.
 
-Replaced the old calendar component with a new event timeline — clearer and simpler to use.
+## Event Timeline
 
-### 📇 Contact Page
+The old calendar has been replaced with a new event timeline.
 
-Updated contact page uses Typesense search — fast, with filters and discoverable through unified search.
+## Contact Page
 
-### 🔧 Other Improvements
+Updated contact page with faster search, filters and the ability to find contacts through the unified search.
 
-- ✨ **Updated sidebar** — animations, clearer quick actions, better active page indicator
-- 🔄 **View transitions** — smooth page transitions across the platform
-- 📱 **PWA and notifications** — platform works as a mobile app, updated notifications and task creation for representatives
-- 🔍 **Agenda item search** — administrators can search agenda items
-- 🔤 **New font** — Atkinson Hyperlegible Next for better readability
-- 📋 **Registration form** — student representation registration form
-- 🏨 **Updated reservation views** — improved reservation tables
-- 🔐 **Microsoft authentication** — proper error message on failed login
-- ✏️ **Content editor** — updated content editor interface
-- 🔗 **Institution relationships** — extended relationship system with directional and bidirectional relationships
+## Other Improvements
 
----
-
-*This update includes 1384 changed files and 195 commits. Thank you to everyone who contributed!* 🚀
-
-<style>
-.blog-post-header {
-  margin-bottom: 32px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--vp-c-divider);
-}
-
-.blog-post-header .blog-post-title {
-  font-size: 32px !important;
-  font-weight: 800 !important;
-  line-height: 1.2 !important;
-  margin: 8px 0 16px !important;
-  padding: 0 !important;
-  border: none !important;
-}
-
-.blog-post-tags {
-  display: flex;
-  gap: 6px;
-}
-
-.blog-post-tag {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--vp-c-brand-1);
-  background: var(--vp-c-brand-soft);
-  padding: 2px 10px;
-  border-radius: 9999px;
-}
-
-.blog-post-meta {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  color: var(--vp-c-text-2);
-  font-size: 14px;
-}
-
-.blog-post-author {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 500;
-}
-
-.author-initials {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, oklch(0.5 0.12 25), oklch(0.75 0.12 65));
-  color: white;
-  font-size: 11px;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.blog-post-date {
-  color: var(--vp-c-text-3);
-}
-</style>
+- **Updated sidebar** — smoother animations, clearer quick actions, better active page indicator.
+- **Page transitions** — smooth transitions between pages across the platform.
+- **Mobile app and notifications** — the platform works as a mobile app, with an updated notification system and task creation for representatives.
+- **Agenda item search** — administrators can search through agenda items.
+- **New font** — a more readable font across the entire platform.
+- **Registration form** — student representation registration form.
+- **Updated reservation views** — improved reservation displays and tables.
+- **Better sign-in experience** — clearer error messages when Microsoft login fails.
+- **Content editor** — refreshed content editing interface.
+- **Institution relationships** — a broader relationship system between institutions, supporting directional and bidirectional connections.
