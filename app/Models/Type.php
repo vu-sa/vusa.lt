@@ -36,6 +36,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read Collection<int, Type> $descendants
  * @property-read Collection<int, Duty> $duties
  * @property-read Collection<int, FileableFile> $fileableFiles
+ * @property-read Collection<int, SharepointFile> $files
  * @property-read bool $has_protocol
  * @property-read bool $has_report
  * @property-read RoleType|Relationshipable|null $pivot

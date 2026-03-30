@@ -71,8 +71,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read mixed $related_institutions
  * @property-read Collection<int, Relationship> $incomingRelationships
  * @property-read Collection<int, Meeting> $meetings
- * @property-read Collection<int, Problem> $problems
  * @property-read Collection<int, Relationship> $outgoingRelationships
+ * @property-read Collection<int, Problem> $problems
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Task> $tasksFromMeetings
  * @property-read Tenant|null $tenant

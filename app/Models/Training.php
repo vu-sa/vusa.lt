@@ -32,8 +32,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $updated_at
  * @property-read Collection<int, Activity> $activities
  * @property-read Form|null $form
- * @property-read Institution $institution
- * @property-read User $organizer
+ * @property-read Institution|null $institution
+ * @property-read User|null $organizer
  * @property-read Collection<int, Programme> $programmes
  * @property-read Collection<int, TrainingTask> $tasks
  * @property-read Collection<int, Trainable> $trainables

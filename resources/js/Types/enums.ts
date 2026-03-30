@@ -47,6 +47,7 @@ export enum ContentPartEnum {
   "NEWS" = "news",
   "CALENDAR" = "calendar",
   "CONTENT_GRID" = "content-grid",
+  "TEXT_BOX" = "text-box",
 }
 export enum DegreeEnum {
   "BA" = "BA",

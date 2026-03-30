@@ -23,9 +23,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read Collection<int, Activity> $activities
- * @property-read Institution $institution
+ * @property-read Institution|null $institution
  * @property-read Tenant|null $tenant
- * @property-read User $user
+ * @property-read User|null $user
  *
  * @method static \Database\Factories\InstitutionCheckInFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InstitutionCheckIn newModelQuery()

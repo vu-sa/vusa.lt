@@ -21,8 +21,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon $muted_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read Institution $institution
- * @property-read User $user
+ * @property-read Institution|null $institution
+ * @property-read User|null $user
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InstitutionNotificationMute newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InstitutionNotificationMute newQuery()

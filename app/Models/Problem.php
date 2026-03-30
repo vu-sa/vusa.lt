@@ -17,10 +17,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * @property string $id
- * @property string|null $title
- * @property string|null $description
- * @property string|null $solution
- * @property string|null $steps_taken
+ * @property array|string $title
+ * @property array|string $description
+ * @property array|string|null $solution
+ * @property array|string|null $steps_taken
  * @property int $tenant_id
  * @property string $created_by
  * @property string|null $responsible_user_id
@@ -30,20 +30,22 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
- * @property-read Tenant $tenant
- * @property-read User $createdBy
- * @property-read User|null $responsibleUser
- * @property-read Collection<int, ProblemCategory> $categories
- * @property-read Collection<int, Institution> $institutions
- * @property-read Collection<int, Comment> $comments
- * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Activity> $activities
+ * @property-read Collection<int, ProblemCategory> $categories
+ * @property-read User|null $createdBy
+ * @property-read Collection<int, Institution> $institutions
+ * @property-read User|null $responsibleUser
+ * @property-read Tenant $tenant
+ * @property-read mixed $translations
  *
- * @method static \Database\Factories\ProblemFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Problem newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Problem newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Problem onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Problem query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Problem whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Problem whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Problem whereLocale(string $column, string $locale)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Problem whereLocales(string $column, array $locales)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Problem withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Problem withoutTrashed()
  *

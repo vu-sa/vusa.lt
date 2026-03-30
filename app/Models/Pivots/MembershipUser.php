@@ -17,7 +17,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read Membership $membership
- * @property-read User $user
+ * @property-read User|null $user
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MembershipUser newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MembershipUser newQuery()
