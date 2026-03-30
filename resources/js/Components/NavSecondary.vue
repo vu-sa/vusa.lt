@@ -8,12 +8,6 @@
             <div class="flex items-center">
               <component :is="item.icon" />
               <span>{{ item.title }}</span>
-              <span
-                v-if="item.showBadge"
-                class="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground"
-              >
-                {{ item.badgeText || '!' }}
-              </span>
             </div>
           </SidebarMenuButton>
         </SidebarMenuItem>
@@ -42,8 +36,6 @@ const props = defineProps<{
     url: string;
     icon: LucideIcon;
     dataTour?: string;
-    showBadge?: boolean;
-    badgeText?: string;
   }[];
 }>();
 
