@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Traits\HasTranslations;
+use App\Services\IcalendarService;
 use Datetime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -110,11 +111,15 @@ class Calendar extends Model implements HasMedia
         static::saved(function ($calendar) {
             // Flush calendar cache for all locales since calendar events can be international
             Cache::tags(['calendar', 'locale_lt', 'locale_en'])->flush();
+            // Also clear the specific iCal cache keys used by IcalendarService
+            IcalendarService::clearCache();
         });
 
         static::deleted(function ($calendar) {
             // Flush calendar cache for all locales since calendar events can be international
             Cache::tags(['calendar', 'locale_lt', 'locale_en'])->flush();
+            // Also clear the specific iCal cache keys used by IcalendarService
+            IcalendarService::clearCache();
         });
     }
 

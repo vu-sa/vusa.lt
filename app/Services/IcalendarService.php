@@ -6,11 +6,17 @@ use App\Models\Calendar as CalendarModel;
 use DateTime;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Spatie\IcalendarGenerator\Components\Calendar;
 use Spatie\IcalendarGenerator\Components\Event;
 
 class IcalendarService
 {
+    /**
+     * Cache TTL in seconds (1 hour)
+     */
+    private const CACHE_TTL = 3600;
+
     /**
      * @param  Collection<CalendarModel>  $calendars  Calendar events to parse
      * @param  bool  $en  Use English translations
@@ -63,22 +69,32 @@ class IcalendarService
 
     public function get(): string
     {
-        // get lang from request
-        $lang = request()->lang;
+        $lang = request()->lang ?? 'lt';
+        $cacheKey = "ical:calendar:{$lang}";
 
-        if ($lang === 'en') {
-            $calendars = CalendarModel::query()->where('is_international', true)->where('is_draft', false)->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'description', 'facebook_url')->take(250)->get();
-        } else {
-            $calendars = CalendarModel::query()->orderBy('date', 'desc')->where('is_draft', false)->select('id', 'date', 'end_date', 'title', 'description', 'facebook_url')->take(250)->get();
-        }
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($lang) {
+            if ($lang === 'en') {
+                $calendars = CalendarModel::query()->where('is_international', true)->where('is_draft', false)->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'description', 'facebook_url')->take(250)->get();
+            } else {
+                $calendars = CalendarModel::query()->orderBy('date', 'desc')->where('is_draft', false)->select('id', 'date', 'end_date', 'title', 'description', 'facebook_url')->take(250)->get();
+            }
 
-        // get last calendar models
-        $calendarArray = $this->parseCalendarEventsForICS($calendars, $lang === 'en');
+            $calendarArray = $this->parseCalendarEventsForICS($calendars, $lang === 'en');
 
-        $calendar = Calendar::create($lang === 'en' ? 'Student activity calendar (VU SA)' : 'Studentiškas kalendorius (VU SA)')->description($lang === 'en' ? 'Calendar of student activities at Vilnius University. Curated by VU Students\' Representation 🔬' : 'Studentiškų veiklų kalendorius Vilniaus universitete. Kuruojamas VU Studentų atstovybės 🔬')->refreshInterval(5)
-            ->event($calendarArray)
-            ->get();
+            $calendar = Calendar::create($lang === 'en' ? 'Student activity calendar (VU SA)' : 'Studentiškas kalendorius (VU SA)')->description($lang === 'en' ? 'Calendar of student activities at Vilnius University. Curated by VU Students\' Representation 🔬' : 'Studentiškų veiklų kalendorius Vilniaus universitete. Kuruojamas VU Studentų atstovybės 🔬')->refreshInterval(5)
+                ->event($calendarArray)
+                ->get();
 
-        return $calendar;
+            return $calendar;
+        });
+    }
+
+    /**
+     * Clear iCal cache for all languages
+     */
+    public static function clearCache(): void
+    {
+        Cache::forget('ical:calendar:lt');
+        Cache::forget('ical:calendar:en');
     }
 }
