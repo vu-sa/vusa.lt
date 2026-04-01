@@ -112,7 +112,7 @@ class ContactController extends PublicController
 
         // load duties whereHas types
         $duties = $institution->load(['duties' => function ($query) use ($types) {
-            $query->whereHas('types', fn (Builder $query) => $query->whereIn('id', $types->pluck('id')))->with('current_users.current_duties');
+            $query->whereHas('types', fn (Builder $query) => $query->whereIn('id', $types->pluck('id')))->with('current_users.current_duties.types');
         }])->duties->sortBy(function ($duty) {
             return $duty->order;
         });

@@ -7,6 +7,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
+use Spatie\Permission\PermissionRegistrar;
 
 class ModelAuthorizer
 {
@@ -35,9 +36,17 @@ class ModelAuthorizer
     protected ?string $lastCheckedPermission = null;
 
     /**
-     * Cache TTL in seconds (12 hours)
+     * Cache TTL in seconds (1 hour)
      */
-    protected const CACHE_TTL = 43200;
+    protected const CACHE_TTL = 3600;
+
+    /**
+     * Request-level memoization cache for permission checks.
+     * Stores result, permissableDuties, and isAllScope state per check.
+     *
+     * @var array<string, array{result: bool, duties: Collection, isAllScope: bool}>
+     */
+    protected array $requestPermissionCache = [];
 
     public function __construct()
     {
@@ -62,6 +71,8 @@ class ModelAuthorizer
             $this->duties = new Collection;
             $this->isAllScope = false;
             $this->lastCheckedPermission = null;
+            // Clear request-level cache when switching users
+            $this->requestPermissionCache = [];
         }
 
         return $this;
@@ -70,22 +81,31 @@ class ModelAuthorizer
     /**
      * Check all roles and duties for the given permission.
      *
+     * @phpstan-impure
+     *
      * @param  string  $permission  Permission to check in format "resource.action.scope"
      * @return bool Whether the user has the permission
      */
     public function checkAllRoleables(string $permission): bool
     {
-        $this->permissableDuties = new Collection;
         $this->lastCheckedPermission = $permission;
 
-        // Generate cache key based on user and permission
-        $cacheKey = "auth:permissions:{$this->user->id}:{$permission}";
+        // Check request-level cache first to avoid repeated checks within same request
+        $requestCacheKey = "{$this->user->id}:{$permission}";
+        if (isset($this->requestPermissionCache[$requestCacheKey])) {
+            $cached = $this->requestPermissionCache[$requestCacheKey];
+            $this->permissableDuties = $cached['duties'];
+            $this->isAllScope = $cached['isAllScope'];
 
-        // TODO: reenable cache in the future, but needs to be fixed, because the values sometimes are not returned properly
-        // return Cache::remember($cacheKey, static::CACHE_TTL, function () use ($permission) {
+            return $cached['result'];
+        }
+
+        $this->permissableDuties = new Collection;
+
         // Super admin check
         if ($this->user->isSuperAdmin()) {
             $this->isAllScope = true;
+            $this->cachePermissionResult($requestCacheKey, true);
 
             return true;
         }
@@ -103,6 +123,8 @@ class ModelAuthorizer
                     $this->isAllScope = true;
                 }
             }
+
+            $this->cachePermissionResult($requestCacheKey, true);
 
             return true;
         }
@@ -124,8 +146,21 @@ class ModelAuthorizer
             }
         }
 
+        $this->cachePermissionResult($requestCacheKey, $result);
+
         return $result;
-        // });
+    }
+
+    /**
+     * Cache a permission check result along with the current state.
+     */
+    private function cachePermissionResult(string $cacheKey, bool $result): void
+    {
+        $this->requestPermissionCache[$cacheKey] = [
+            'result' => $result,
+            'duties' => clone $this->permissableDuties,
+            'isAllScope' => $this->isAllScope,
+        ];
     }
 
     /**
@@ -247,7 +282,20 @@ class ModelAuthorizer
     {
         $userId = $user instanceof User ? $user->id : $user;
 
+        // Clear in-memory caches if this is the currently loaded user
+        if (isset($this->user) && (string) $this->user->id === (string) $userId) {
+            $this->requestPermissionCache = [];
+            $this->duties = new Collection;
+            $this->permissableDuties = new Collection;
+            $this->isAllScope = false;
+            // Unset user so forUser() re-accepts the (potentially refreshed) model
+            unset($this->user);
+        }
+
         Cache::forget("auth:duties:{$userId}");
+
+        // Clear Spatie's permission registrar cache
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         // Clear tenant caches with all possible permission suffixes
         foreach (Cache::get("auth:permission_keys:{$userId}", []) as $key) {

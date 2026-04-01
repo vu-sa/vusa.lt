@@ -27,7 +27,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activities
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $approvable
- * @property-read User $user
+ * @property-read User|null $user
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Approval approved()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Approval cancelled()

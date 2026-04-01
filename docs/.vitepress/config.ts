@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitepress'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import fs from 'node:fs'
 import tailwindcss from '@tailwindcss/vite'
 import Icons from 'unplugin-icons/vite'
 import IconsResolver from 'unplugin-icons/resolver'
@@ -112,8 +113,30 @@ export default defineConfig({
     }
   },
   
-  // Build optimization
+  // Build optimization - generate changelog metadata for admin UI update indicator
   buildEnd: (siteConfig) => {
-    // You can add custom build steps here if needed
+    const changelogFile = path.resolve(__dirname, '../changelog/index.md')
+    const outDir = path.resolve(__dirname, '../..', 'public/docs')
+    
+    try {
+      // Parse changelog headings: ## vX.Y — Title (YYYY-MM-DD)
+      const content = fs.readFileSync(changelogFile, 'utf-8')
+      const entryPattern = /^## (v[\d.]+) — .+\((\d{4}-\d{2}-\d{2})\)/gm
+      const matches = [...content.matchAll(entryPattern)]
+      
+      const meta = {
+        latestVersion: matches.length > 0 ? matches[0][1] : 'v1.0',
+        lastUpdated: matches.length > 0 ? matches[0][2] : new Date().toISOString().substring(0, 10),
+        totalEntries: matches.length,
+      }
+      
+      fs.mkdirSync(outDir, { recursive: true })
+      fs.writeFileSync(
+        path.resolve(outDir, 'changelog-meta.json'),
+        JSON.stringify(meta)
+      )
+    } catch {
+      // Silently skip if changelog file doesn't exist yet
+    }
   }
 })

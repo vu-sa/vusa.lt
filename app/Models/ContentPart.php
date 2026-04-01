@@ -6,6 +6,7 @@ use App\Enums\ContentPartEnum;
 use App\Tiptap\TiptapEditor;
 use Illuminate\Database\Eloquent\Casts\ArrayObject;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -24,6 +25,7 @@ use Illuminate\Support\Facades\Cache;
  * @property Carbon $updated_at
  * @property-read Content $content
  * @property-read string|null $html
+ * @property-read Collection<int, TextBoxSubmission> $textBoxSubmissions
  *
  * @method static \Database\Factories\ContentPartFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ContentPart newModelQuery()

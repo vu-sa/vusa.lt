@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\NavigationService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -49,10 +50,14 @@ class Navigation extends Model
     {
         static::saved(function ($navigation) {
             Cache::tags(['navigation', "locale_{$navigation->lang}"])->flush();
+            // Also clear the specific navigation cache keys used by NavigationService
+            NavigationService::clearCache();
         });
 
         static::deleted(function ($navigation) {
             Cache::tags(['navigation', "locale_{$navigation->lang}"])->flush();
+            // Also clear the specific navigation cache keys used by NavigationService
+            NavigationService::clearCache();
         });
     }
 

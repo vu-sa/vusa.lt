@@ -4,19 +4,22 @@ layout: home
 
 hero:
   name: "vusa.lt gidas"
+  tagline: Visa reikalinga informacija apie mano.vusa.lt platformą
   actions:
     - theme: brand
       text: Funkcijos
       link: /main-functions
-    # - theme: alt
-    #   text: API Examples
-    #   link: /api-examples
+    - theme: alt
+      text: Atnaujinimai
+      link: /changelog/
 
 features:
-  - title: Studentų atstovavimas
+  - title: 🎓 Studentų atstovams
     link: /roles/student-representatives/faq
-  # - title: Komunikacija
-  #   link: /roles/student-representatives/faq
-  - title: Administravimas
+  - title: ⚙️ Administratoriams
     link: /roles/administrators/faq
+  - title: 📰 Naujienos
+    link: /blog/
+  - title: 🔄 Platformos atnaujinimai
+    link: /changelog/
 ---

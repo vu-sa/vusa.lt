@@ -11,6 +11,7 @@ import { trans, transChoice } from '@/mocks/i18n'
 // Import custom layout and components
 import VuSaLayout from './VuSaLayout.vue'
 import ComponentDemo from '../../components/ComponentDemo.vue'
+import ComponentScreenshot from '../../components/ComponentScreenshot.vue'
 
 export default {
   extends: DefaultTheme,
@@ -18,6 +19,7 @@ export default {
   enhanceApp({ app, router, siteData }) {
     // Register demo wrapper component globally
     app.component('ComponentDemo', ComponentDemo)
+    app.component('ComponentScreenshot', ComponentScreenshot)
     
     // Register global properties to match the main application
     // These are required for component demos to work

@@ -44,6 +44,12 @@ class RoleStudentRepresentativeSeeder extends Seeder
             'problems.update.padalinys',
         ]);
 
-        $role->attachable_types()->syncWithoutDetaching([Type::query()->where('slug', 'studentu-atstovai')->firstOrFail()->id]);
+        $type = Type::query()->where('slug', 'studentu-atstovai')->firstOrFail();
+
+        // Coordinators can attach this type to duties
+        $role->attachable_types()->syncWithoutDetaching([$type->id]);
+
+        // Duties with this type automatically receive this role
+        $role->types()->syncWithoutDetaching([$type->id]);
     }
 }

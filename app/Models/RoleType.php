@@ -13,7 +13,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Role $role
- * @property-read Type $type
+ * @property-read Type|null $type
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|RoleType newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|RoleType newQuery()

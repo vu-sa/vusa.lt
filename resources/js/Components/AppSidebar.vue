@@ -136,6 +136,16 @@
           </DropdownMenu>
         </SidebarMenuItem>
       </SidebarMenu>
+      <!-- Version info -->
+      <div class="flex items-center justify-center gap-1.5 px-3 py-1 text-[11px] text-muted-foreground/60 group-data-[collapsible=icon]:hidden">
+        <a :href="`${docsBase}/changelog/`" class="hover:text-muted-foreground transition-colors" @click.prevent="handleSecondaryNavClick(`${docsBase}/changelog/`)">
+          {{ latestVersion }}{{ lastUpdateDate ? ` · ${lastUpdateDate}` : '' }}
+        </a>
+        <span>·</span>
+        <a href="https://github.com/vu-sa/vusa.lt" target="_blank" rel="noopener noreferrer" class="hover:text-muted-foreground transition-colors">
+          <Github class="h-3 w-3" />
+        </a>
+      </div>
     </SidebarFooter>
     <!-- <SidebarRail /> -->
   </Sidebar>
@@ -208,8 +218,8 @@ import {
   LogOut,
   UserIcon,
   Send,
-  Clock,
   ExternalLink,
+  Github,
   Bell,
   Search,
   type LucideIcon
@@ -219,12 +229,13 @@ import { loadLanguageAsync, trans as $t } from 'laravel-vue-i18n'
 import { computed, markRaw, ref } from 'vue'
 import { useDark } from '@vueuse/core'
 
-import NavMain from './NavMain.vue'
-import NavSecondary from './NavSecondary.vue'
-import NavQuickActions from './NavQuickActions.vue'
-import FollowedInstitutionsHotbar from './Sidebar/FollowedInstitutionsHotbar.vue'
-import SidebarStartFM from './SidebarStartFM.vue'
-import AppLogo from './AppLogo.vue'
+import NavMain from './NavMain.vue';
+import NavSecondary from './NavSecondary.vue';
+import NavQuickActions from './NavQuickActions.vue';
+import FollowedInstitutionsHotbar from './Sidebar/FollowedInstitutionsHotbar.vue';
+import SidebarStartFM from './SidebarStartFM.vue';
+import AppLogo from './AppLogo.vue';
+import { useDocsUpdateIndicator } from '@/Composables/useDocsUpdateIndicator';
 
 import NewMeetingDialog from '@/Components/Dialogs/NewMeetingDialog.vue'
 import {
@@ -274,7 +285,10 @@ const props = withDefaults(defineProps<SidebarProps>(), {
   variant: 'inset',
 })
 
-const isDark = useDark()
+const isDark = useDark();
+const { lastUpdateDate, latestVersion, markAsSeen: markDocsUpdatesSeen } = useDocsUpdateIndicator();
+
+const docsBase = computed(() => usePage().props.app.locale === 'en' ? '/docs/en' : '/docs');
 
 // Toggle dark mode function
 const toggleDarkMode = () => {
@@ -366,7 +380,7 @@ const navSecondaryItems = computed(() => {
   return [
     {
       title: $t('Dokumentacija'),
-      url: '/docs',
+      url: docsBase.value,
       icon: markRaw(BookOpen),
       dataTour: 'nav-dokumentacija',
     },
@@ -383,12 +397,17 @@ const navSecondaryItems = computed(() => {
 const handleSecondaryNavClick = (url: string) => {
   if (url === '#feedback') {
     showFeedbackDialog.value = true
-  } else if (url.startsWith('http')) {
-    window.open(url, '_blank')
-  } else {
-    router.visit(url)
   }
-}
+  else if (url.startsWith('http')) {
+    window.open(url, '_blank');
+  }
+  else {
+    if (url.startsWith('/docs')) {
+      markDocsUpdatesSeen();
+    }
+    router.visit(url);
+  }
+};
 
 // Meeting modal state
 const showMeetingModal = ref(false)

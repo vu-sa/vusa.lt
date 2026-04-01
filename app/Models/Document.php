@@ -33,7 +33,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string $sharepoint_list_id
  * @property Carbon $created_at
  * @property Carbon|null $checked_at
- * @property string $sync_status Status of SharePoint sync: pending, imported, syncing, success, failed
+ * @property string $sync_status Status of SharePoint sync: pending, syncing, success, failed
  * @property string|null $sync_error_message Error message from failed sync attempts
  * @property int $sync_attempts Number of sync attempts made
  * @property Carbon|null $last_sync_attempt_at Timestamp of last sync attempt

@@ -3,6 +3,7 @@
 namespace App\Listeners;
 
 use App\Events\DutiableChanged;
+use App\Facades\Permission;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Cache;
@@ -32,6 +33,9 @@ class HandleDutiableChange implements ShouldQueue
             return;
         }
 
-        Cache::forget('index-permissions-'.$event->dutiable->user->id);
+        $userId = $event->dutiable->user->id;
+
+        Cache::forget('index-permissions-'.$userId);
+        Permission::resetCache($userId);
     }
 }

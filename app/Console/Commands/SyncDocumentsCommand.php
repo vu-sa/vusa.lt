@@ -84,7 +84,8 @@ class SyncDocumentsCommand extends Command
 
         if ($this->option('dry-run')) {
             $count = $query->count();
-            $this->info("Would sync {$count} documents");
+            $limitInfo = $this->option('limit') ? " (limit: {$this->option('limit')})" : '';
+            $this->info("Would sync {$count} documents{$limitInfo}");
 
             $documents = $query->get(['id', 'title', 'checked_at', 'sync_status']);
             $this->table(
