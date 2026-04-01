@@ -199,9 +199,13 @@ describe('authorized access', function () {
     test('can batch remove users from a duty', function () {
         $user1 = makeUser($this->tenant);
         $user2 = makeUser($this->tenant);
+        // Use a separate actor not assigned to this duty to avoid their own dutiable
+        // being removed when current_users is updated, which would break authorization.
+        $actor = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $roleIds = $this->dutyManagerDuty->roles()->pluck('id')->toArray();
 
         // First add both users
-        asUser($this->dutyManager)->put(route('duties.update', $this->dutyManagerDuty), [
+        asUser($actor)->put(route('duties.update', $this->dutyManagerDuty), [
             'name' => $this->dutyManagerDuty->getTranslations('name'),
             'description' => $this->dutyManagerDuty->getTranslations('description'),
             'email' => $this->dutyManagerDuty->email,
@@ -209,10 +213,11 @@ describe('authorized access', function () {
             'contacts_grouping' => $this->dutyManagerDuty->contacts_grouping ?? 'none',
             'places_to_occupy' => $this->dutyManagerDuty->places_to_occupy ?? 1,
             'current_users' => [$user1->id, $user2->id],
+            'roles' => $roleIds,
         ]);
 
         // Then remove user1, keep user2
-        $response = asUser($this->dutyManager)->put(route('duties.update', $this->dutyManagerDuty), [
+        $response = asUser($actor)->put(route('duties.update', $this->dutyManagerDuty), [
             'name' => $this->dutyManagerDuty->getTranslations('name'),
             'description' => $this->dutyManagerDuty->getTranslations('description'),
             'email' => $this->dutyManagerDuty->email,
@@ -220,6 +225,7 @@ describe('authorized access', function () {
             'contacts_grouping' => $this->dutyManagerDuty->contacts_grouping ?? 'none',
             'places_to_occupy' => $this->dutyManagerDuty->places_to_occupy ?? 1,
             'current_users' => [$user2->id],
+            'roles' => $roleIds,
         ]);
 
         $response->assertRedirect();
@@ -248,9 +254,13 @@ describe('authorized access', function () {
         $user1 = makeUser($this->tenant);
         $user2 = makeUser($this->tenant);
         $user3 = makeUser($this->tenant);
+        // Use a separate actor not assigned to this duty to avoid their own dutiable
+        // being removed when current_users is updated, which would break authorization.
+        $actor = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $roleIds = $this->dutyManagerDuty->roles()->pluck('id')->toArray();
 
         // First add user1 and user2
-        asUser($this->dutyManager)->put(route('duties.update', $this->dutyManagerDuty), [
+        asUser($actor)->put(route('duties.update', $this->dutyManagerDuty), [
             'name' => $this->dutyManagerDuty->getTranslations('name'),
             'description' => $this->dutyManagerDuty->getTranslations('description'),
             'email' => $this->dutyManagerDuty->email,
@@ -258,10 +268,11 @@ describe('authorized access', function () {
             'contacts_grouping' => $this->dutyManagerDuty->contacts_grouping ?? 'none',
             'places_to_occupy' => $this->dutyManagerDuty->places_to_occupy ?? 1,
             'current_users' => [$user1->id, $user2->id],
+            'roles' => $roleIds,
         ]);
 
         // Remove user1, keep user2, add user3
-        $response = asUser($this->dutyManager)->put(route('duties.update', $this->dutyManagerDuty), [
+        $response = asUser($actor)->put(route('duties.update', $this->dutyManagerDuty), [
             'name' => $this->dutyManagerDuty->getTranslations('name'),
             'description' => $this->dutyManagerDuty->getTranslations('description'),
             'email' => $this->dutyManagerDuty->email,
@@ -269,6 +280,7 @@ describe('authorized access', function () {
             'contacts_grouping' => $this->dutyManagerDuty->contacts_grouping ?? 'none',
             'places_to_occupy' => $this->dutyManagerDuty->places_to_occupy ?? 1,
             'current_users' => [$user2->id, $user3->id],
+            'roles' => $roleIds,
         ]);
 
         $response->assertRedirect();
