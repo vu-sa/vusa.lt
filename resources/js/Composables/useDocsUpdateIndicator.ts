@@ -25,7 +25,7 @@ export function useDocsUpdateIndicator() {
       latestVersion.value = meta.latestVersion
 
       const lastSeen = localStorage.getItem(STORAGE_KEY)
-      if (!lastSeen || lastSeen < (meta.latestVersion || meta.lastUpdated)) {
+      if (!lastSeen || lastSeen < meta.lastUpdated) {
         hasNewUpdates.value = true
       }
     } catch {
@@ -34,9 +34,8 @@ export function useDocsUpdateIndicator() {
   })
 
   function markAsSeen() {
-    const key = latestVersion.value || lastUpdateDate.value
-    if (key) {
-      localStorage.setItem(STORAGE_KEY, key)
+    if (lastUpdateDate.value) {
+      localStorage.setItem(STORAGE_KEY, lastUpdateDate.value)
       hasNewUpdates.value = false
     }
   }

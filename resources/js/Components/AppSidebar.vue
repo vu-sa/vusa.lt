@@ -286,7 +286,7 @@ const props = withDefaults(defineProps<SidebarProps>(), {
 })
 
 const isDark = useDark();
-const { hasNewUpdates, lastUpdateDate, latestVersion, markAsSeen: markDocsUpdatesSeen } = useDocsUpdateIndicator();
+const { lastUpdateDate, latestVersion, markAsSeen: markDocsUpdatesSeen } = useDocsUpdateIndicator();
 
 const docsBase = computed(() => usePage().props.app.locale === 'en' ? '/docs/en' : '/docs');
 

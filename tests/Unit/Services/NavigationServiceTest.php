@@ -168,7 +168,9 @@ describe('NavigationService output structure', function () {
         app()->setLocale('lt');
 
         $result = NavigationService::getNavigationForPublic();
-        $rootElement = $result[0];
+
+        // Find our test root element (not the seeded ones)
+        $rootElement = collect($result)->firstWhere('id', $this->rootNav->id);
 
         // Should have 2 columns
         expect($rootElement['cols'])->toBe(2);

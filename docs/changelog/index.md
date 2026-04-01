@@ -9,7 +9,7 @@ lastUpdated: true
 
 ## v1.4 — Dokumentacijos atnaujinimas (2026-03-31) {#v1-4}
 
-Atnaujintoje vusa.lt dokumentacijoje sukurtas **atnaujinimų polapis**, kuriame bus pristatomi platformos pakeitimai. Esant atnaujinimams, admin panelėje prie „Dokumentacija" nuorodos matysite indikatorių, o atnaujinimų puslapyje galėsite rasti visą informaciją apie naujausius pakeitimus.
+Atnaujintoje vusa.lt dokumentacijoje sukurtas **atnaujinimų puslapis**, kuriame bus pristatomi platformos pakeitimai. Esant atnaujinimams, admin panelėje prie „Dokumentacija" nuorodos matysite indikatorių, o atnaujinimų puslapyje galėsite rasti visą informaciją apie naujausius pakeitimus.
 
 ## v1.3 — Dokumentų patobulinimai (2026-03-23) {#v1-3}
 

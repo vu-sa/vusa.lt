@@ -69,7 +69,7 @@ class IcalendarService
 
     public function get(): string
     {
-        $lang = request()->lang ?? 'lt';
+        $lang = in_array(request()->lang, ['lt', 'en'], true) ? request()->lang : 'lt';
         $cacheKey = "ical:calendar:{$lang}";
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($lang) {

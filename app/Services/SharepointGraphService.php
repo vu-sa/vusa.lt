@@ -945,7 +945,7 @@ class SharepointGraphService
             return false;
         }
 
-        if (isset($permission['inheritedFrom']) && $permission['inheritedFrom'] !== null) {
+        if (isset($permission['inheritedFrom'])) {
             return false;
         }
 

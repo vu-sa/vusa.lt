@@ -32,7 +32,7 @@ class TextBoxSubmissionApiController extends ApiController
         $paginator->through(fn (TextBoxSubmission $submission) => [
             'id' => $submission->id,
             'text' => $submission->text,
-            'submitted_by' => $submission->user?->name ?? 'Anonymous',
+            'submitted_by' => $submission->user->name ?? 'Anonymous',
             'created_at' => $submission->created_at->toIso8601String(),
         ]);
 

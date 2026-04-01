@@ -18,7 +18,6 @@
 
 <script setup lang="ts">
 import type { LucideIcon } from 'lucide-vue-next';
-import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import {

@@ -207,16 +207,16 @@ class DutyController extends AdminController
         return back()->with('success', trans_choice('messages.updated', 0, ['model' => trans_choice('entities.duty.model', 1)]));
     }
 
-    private function handleUsersUpdate(Collection $existing_users, Collection $duty_users, Duty $duty)
+    private function handleUsersUpdate(Collection $existingUserIds, Collection $requestUserIds, Duty $duty)
     {
-        $new = $duty_users->diff($existing_users);
-        $removed = $existing_users->diff($duty_users);
+        $new = $requestUserIds->diff($existingUserIds);
+        $removed = $existingUserIds->diff($requestUserIds);
 
         // Batch remove users from duty (single UPDATE query)
         if ($removed->isNotEmpty()) {
             DB::table('dutiables')
                 ->where('duty_id', $duty->id)
-                ->whereIn('dutiable_id', $removed->pluck('id'))
+                ->whereIn('dutiable_id', $removed->all())
                 ->where('dutiable_type', User::class)
                 ->whereNull('end_date')
                 ->update(['end_date' => now()->subDay()]);
@@ -224,8 +224,8 @@ class DutyController extends AdminController
 
         // Batch add users to duty (single INSERT query)
         if ($new->isNotEmpty()) {
-            $attachData = $new->mapWithKeys(fn ($user) => [
-                $user->id => ['start_date' => now()->subDay()],
+            $attachData = $new->mapWithKeys(fn ($userId) => [
+                $userId => ['start_date' => now()->subDay()],
             ])->all();
             $duty->users()->attach($attachData);
         }
