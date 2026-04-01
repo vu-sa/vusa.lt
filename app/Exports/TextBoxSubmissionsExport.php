@@ -31,7 +31,7 @@ class TextBoxSubmissionsExport implements FromArray, WithHeadings
             ->get()
             ->map(fn (TextBoxSubmission $submission) => [/** @phpstan-ignore argument.type */
                 $submission->text,
-                $submission->user->name ?? 'Anonymous',
+                $submission->user?->name ?? 'Anonymous', /** @phpstan-ignore nullsafe.neverNull */
                 $submission->created_at->toDateTimeString(),
             ])
             ->toArray();
