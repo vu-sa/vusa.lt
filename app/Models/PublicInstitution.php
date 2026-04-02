@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Pivots\Relationshipable;
+use App\Models\Pivots\Trainable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -41,11 +42,14 @@ use Spatie\Activitylog\Models\Activity;
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activities
  * @property-read Collection<int, FileableFile> $availableFiles
+ * @property-read Relationshipable|InstitutionFollow|Trainable|null $pivot
+ * @property-read Collection<int, Training> $availableTrainings
+ * @property-read Collection<int, InstitutionCheckIn> $checkIns
  * @property-read Model|\Eloquent $commentable
  * @property-read Collection<int, Comment> $comments
+ * @property-read Collection<int, Document> $documents
  * @property-read Collection<int, Duty> $duties
  * @property-read Collection<int, FileableFile> $fileableFiles
- * @property-read Relationshipable|InstitutionFollow|null $pivot
  * @property-read Collection<int, User> $followers
  * @property-read bool $has_protocol
  * @property-read bool $has_public_meetings

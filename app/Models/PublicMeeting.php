@@ -35,6 +35,7 @@ use Spatie\Activitylog\Models\Activity;
  * @property-read Collection<int, AgendaItem> $agendaItems
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Model|\Eloquent $commentable
+ * @property-read Collection<int, Comment> $comments
  * @property-read Collection<int, FileableFile> $fileableFiles
  * @property-read string $completion_status
  * @property-read bool $has_protocol
@@ -44,7 +45,9 @@ use Spatie\Activitylog\Models\Activity;
  * @property-read string|null $type_slug
  * @property-read Collection<int, Institution> $institutions
  * @property-read Collection<int, Task> $tasks
+ * @property-read Collection<int, Tenant> $tenants
  * @property-read Collection<int, Type> $types
+ * @property-read Collection<int, User> $users
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting newQuery()

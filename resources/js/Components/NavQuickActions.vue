@@ -11,7 +11,6 @@
             :tooltip="action.title"
             class="transition-colors"
             @click="action.action"
-            @click="action.action"
           >
             <div
               :class="[

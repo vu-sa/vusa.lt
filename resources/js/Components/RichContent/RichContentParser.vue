@@ -45,9 +45,9 @@ const RichContentTiptapHTML = defineAsyncComponent(() => import('./RichContentTi
 // Optimize component registry - simplified async component loading
 const contentComponents = shallowRef({
   'tiptap': markRaw(TiptapDisplay), // Most common component - load synchronously
-  'shadcn-card': markRaw(defineAsyncComponent(() => import('@/Components/RichContentCard.vue'))),
+  'shadcn-card': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RichContentCard.vue'))),
   'shadcn-accordion': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCAccordion.vue'))),
-  'image-grid': markRaw(defineAsyncComponent(() => import('./RichContent/Types/ImageGridDisplay.vue'))),
+  'image-grid': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/Types/ImageGridDisplay.vue'))),
   'hero': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCHeroSection/HeroElement.vue'))),
   'spotify-embed': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCSpotifyEmbed.vue'))),
   'social-embed': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCSocialEmbed.vue'))),
@@ -55,8 +55,8 @@ const contentComponents = shallowRef({
   'news': markRaw(defineAsyncComponent(() => import('@/Components/Public/NewsElement.vue'))),
   'calendar': markRaw(defineAsyncComponent(() => import('@/Components/Public/FullWidth/EventCalendarElement.vue'))),
   'flow-graph': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCFlowGraph.vue'))),
-  'content-grid': markRaw(defineAsyncComponent(() => import('./RichContent/Types/ContentGridDisplay.vue'))),
-  'text-box': markRaw(defineAsyncComponent(() => import('./RichContent/Types/TextBoxDisplay.vue'))),
+  'content-grid': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/Types/ContentGridDisplay.vue'))),
+  'text-box': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/Types/TextBoxDisplay.vue'))),
 });
 
 const props = defineProps<{

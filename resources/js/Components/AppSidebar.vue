@@ -404,7 +404,7 @@ const handleSecondaryNavClick = (url: string) => {
     if (url.startsWith('/docs')) {
       markDocsUpdatesSeen();
     }
-    router.visit(url);
+    window.open(url, '_blank');
   }
 };
 
