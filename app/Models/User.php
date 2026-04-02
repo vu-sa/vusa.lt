@@ -23,9 +23,6 @@ use Illuminate\Support\Carbon;
 use Laravel\Scout\Searchable;
 use NotificationChannels\WebPush\HasPushSubscriptions;
 use NotificationChannels\WebPush\PushSubscription;
-use Octopy\Impersonate\Authorization;
-use Octopy\Impersonate\Concerns\HasImpersonation;
-use Octopy\Impersonate\Http\Resources\ImpersonateResource;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -95,7 +92,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  */
 class User extends Authenticatable
 {
-    use HasFactory, HasImpersonation, HasNotificationPreferences, HasPushSubscriptions, HasRelationships, HasRoles, HasTranslations, HasUlids, LogsActivity, Notifiable, Searchable, SoftDeletes;
+    use HasFactory, HasNotificationPreferences, HasPushSubscriptions, HasRelationships, HasRoles, HasTranslations, HasUlids, LogsActivity, Notifiable, Searchable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -150,31 +147,6 @@ class User extends Authenticatable
             'email' => $this->email,
             'phone' => $this->phone ?? '',
         ];
-    }
-
-    public function getImpersonateDisplayText(): string
-    {
-        return $this->name;
-    }
-
-    public function getImpersonateSearchField(): array
-    {
-        return [
-            'name', 'email',
-        ];
-    }
-
-    public function setImpersonateAuthorization(Authorization $authorization): void
-    {
-        $authorization->impersonator(fn (User $user) => $user->isSuperAdmin());
-
-        $authorization->impersonated(function ($impersonateResource) {
-            if ($impersonateResource::class === ImpersonateResource::class) {
-                $impersonateResource = $impersonateResource->resource;
-            }
-
-            return ! $impersonateResource->isSuperAdmin();
-        });
     }
 
     /**

@@ -4,6 +4,7 @@
 
     <!-- Staging environment warning banner -->
     <StagingBanner />
+    <ImpersonateBanner />
 
     <SidebarProvider>
       <AppSidebar />
@@ -235,6 +236,7 @@ import { useToasts } from '@/Composables/useToasts';
 import 'vue-sonner/style.css';
 
 import AppSidebar from '@/Components/AppSidebar.vue';
+import ImpersonateBanner from '@/Components/ImpersonateBanner.vue';
 import StagingBanner from '@/Components/StagingBanner.vue';
 import InstallBanner from '@/Components/PWA/InstallBanner.vue';
 import UpdateBanner from '@/Components/PWA/UpdateBanner.vue';
