@@ -76,7 +76,7 @@ class QuickLinkController extends AdminController
         $this->handleAuthorization('create', QuickLink::class);
 
         return $this->inertiaResponse('Admin/Content/CreateQuickLink', [
-            'typeOptions' => Inertia::lazy(fn () => $this->getQuickLinkTypeOptions(request()->input('type'))),
+            'typeOptions' => Inertia::optional(fn () => $this->getQuickLinkTypeOptions(request()->input('type'))),
             'tenantOptions' => GetTenantsForUpserts::execute('quickLinks.create.padalinys', $this->authorizer),
         ]);
     }
@@ -143,7 +143,7 @@ class QuickLinkController extends AdminController
         return $this->inertiaResponse('Admin/Content/EditQuickLink', [
             'quickLink' => $quickLink,
             'tenantOptions' => GetTenantsForUpserts::execute('quickLinks.update.padalinys', $this->authorizer),
-            'typeOptions' => Inertia::lazy(fn () => $this->getQuickLinkTypeOptions(request()->input('type'))),
+            'typeOptions' => Inertia::optional(fn () => $this->getQuickLinkTypeOptions(request()->input('type'))),
         ]);
     }
 

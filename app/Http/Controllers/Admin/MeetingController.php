@@ -296,7 +296,7 @@ class MeetingController extends AdminController
             'representatives' => $representatives,
             'previousMeeting' => $previousMeeting,
             'nextMeeting' => $nextMeeting,
-            'taskableInstitutions' => Inertia::lazy(fn () => $meeting->institutions->load('users')),
+            'taskableInstitutions' => Inertia::optional(fn () => $meeting->institutions->load('users')),
         ]);
     }
 

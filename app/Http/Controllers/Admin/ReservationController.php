@@ -168,7 +168,7 @@ class ReservationController extends AdminController
                     ];
                 }),
             ],
-            'allResources' => Inertia::lazy(fn () => Resource::query()->with('tenant')->select(['id', 'name', 'is_reservable', 'capacity', 'tenant_id'])->get()->map(function ($resource) use ($dateTimeRange, $exceptResources, $exceptReservations) {
+            'allResources' => Inertia::optional(fn () => Resource::query()->with('tenant')->select(['id', 'name', 'is_reservable', 'capacity', 'tenant_id'])->get()->map(function ($resource) use ($dateTimeRange, $exceptResources, $exceptReservations) {
 
                 $capacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($dateTimeRange['start'], $dateTimeRange['end'], $exceptReservations, $exceptResources);
 
@@ -182,7 +182,7 @@ class ReservationController extends AdminController
                     'lowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($capacityAtDateTimeRange),
                 ];
             })),
-            'allUsers' => Inertia::lazy(fn () => User::select('id', 'name', 'profile_photo_path')->orderBy('name')->get()),
+            'allUsers' => Inertia::optional(fn () => User::select('id', 'name', 'profile_photo_path')->orderBy('name')->get()),
         ]);
     }
 
