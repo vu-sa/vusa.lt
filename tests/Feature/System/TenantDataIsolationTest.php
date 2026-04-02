@@ -6,9 +6,10 @@ use App\Models\News;
 use App\Models\Resource;
 use App\Models\Tenant;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->tenantA = Tenant::factory()->create(['type' => 'padalinys', 'alias' => 'tenant-a']);

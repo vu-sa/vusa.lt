@@ -2,6 +2,7 @@
 
 namespace App\Tasks\DTOs;
 
+use App\Models\User;
 use App\Tasks\Enums\ActionType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -16,7 +17,7 @@ readonly class CreateTaskData
     /**
      * @param  string  $name  The task name/title
      * @param  Model  $taskable  The model this task is attached to
-     * @param  Collection<int, \App\Models\User>  $users  Users assigned to the task
+     * @param  Collection<int, User>  $users  Users assigned to the task
      * @param  string|null  $dueDate  Due date for the task
      * @param  ActionType|null  $actionType  Type of action (Manual, Approval, Pickup, Return)
      * @param  array<string, mixed>|null  $metadata  Additional metadata (e.g., progress tracking)

@@ -4,8 +4,11 @@ namespace App\Models;
 
 use App\Models\Pivots\ProgrammeElement;
 use App\Models\Traits\HasTranslations;
+use Database\Factories\ProgrammeDayFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -13,14 +16,14 @@ use Illuminate\Database\Eloquent\Model;
  * @property array|string $title
  * @property array|string|null $description
  * @property int $order
- * @property \Illuminate\Support\Carbon $start_time
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, ProgrammeElement> $elements
+ * @property Carbon $start_time
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read Collection<int, ProgrammeElement> $elements
  * @property-read ProgrammeElement|null $pivot
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProgrammePart> $parts
- * @property-read \App\Models\Programme $programme
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProgrammeSection> $sections
+ * @property-read Collection<int, ProgrammePart> $parts
+ * @property-read Programme $programme
+ * @property-read Collection<int, ProgrammeSection> $sections
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\ProgrammeDayFactory factory($count = null, $state = [])
@@ -36,7 +39,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ProgrammeDay extends Model
 {
-    /** @use HasFactory<\Database\Factories\ProgrammeDayFactory> */
+    /** @use HasFactory<ProgrammeDayFactory> */
     use HasFactory, HasTranslations;
 
     protected $fillable = ['title', 'date', 'start_time'];

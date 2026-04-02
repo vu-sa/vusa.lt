@@ -15,12 +15,10 @@ class RoleStudentRepresentativeSeeder extends Seeder
      */
     public function run()
     {
-        $role = new Role;
-
-        $role->name = 'Student Representative';
-        $role->guard_name = 'web';
-
-        $role->save();
+        $role = Role::firstOrCreate([
+            'name' => 'Student Representative',
+            'guard_name' => 'web',
+        ]);
 
         $role->syncPermissions([
             'institutions.read.padalinys',
@@ -41,8 +39,17 @@ class RoleStudentRepresentativeSeeder extends Seeder
             'tasks.create.padalinys',
             'tasks.read.own',
             'tasks.update.own',
+            'problems.create.padalinys',
+            'problems.read.padalinys',
+            'problems.update.padalinys',
         ]);
 
-        $role->types()->attach(Type::query()->where('slug', 'studentu-atstovai')->firstOrFail());
+        $type = Type::query()->where('slug', 'studentu-atstovai')->firstOrFail();
+
+        // Coordinators can attach this type to duties
+        $role->attachable_types()->syncWithoutDetaching([$type->id]);
+
+        // Duties with this type automatically receive this role
+        $role->types()->syncWithoutDetaching([$type->id]);
     }
 }

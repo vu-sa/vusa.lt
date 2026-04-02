@@ -1,8 +1,10 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 describe('User Settings', function () {
     test('user can set own settings')->todo();
@@ -25,7 +27,7 @@ describe('User Password Management', function () {
 
         // Verify password was actually changed
         $user->refresh();
-        expect(\Illuminate\Support\Facades\Hash::check('new-secure-password', $user->password))->toBeTrue();
+        expect(Hash::check('new-secure-password', $user->password))->toBeTrue();
     });
 
     test('user cannot update password with incorrect current password', function () {

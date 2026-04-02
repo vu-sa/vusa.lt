@@ -8,6 +8,7 @@ use App\Http\Traits\HasTanstackTables;
 use App\Models\Permission;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
+use Inertia\Response;
 
 class PermissionController extends AdminController
 {
@@ -18,7 +19,7 @@ class PermissionController extends AdminController
     /**
      * Display a listing of the resource.
      */
-    public function index(IndexPermissionRequest $request): \Inertia\Response
+    public function index(IndexPermissionRequest $request): Response
     {
         $this->handleAuthorization('viewAny', Permission::class);
 

@@ -45,17 +45,18 @@ const RichContentTiptapHTML = defineAsyncComponent(() => import('./RichContentTi
 // Optimize component registry - simplified async component loading
 const contentComponents = shallowRef({
   'tiptap': markRaw(TiptapDisplay), // Most common component - load synchronously
-  'shadcn-card': markRaw(defineAsyncComponent(() => import('./RichContentCard.vue'))),
-  'shadcn-accordion': markRaw(defineAsyncComponent(() => import('./RCAccordion.vue'))),
-  'image-grid': markRaw(defineAsyncComponent(() => import('./Types/ImageGridDisplay.vue'))),
-  'hero': markRaw(defineAsyncComponent(() => import('./RCHeroSection/HeroElement.vue'))),
-  'spotify-embed': markRaw(defineAsyncComponent(() => import('./RCSpotifyEmbed.vue'))),
-  'social-embed': markRaw(defineAsyncComponent(() => import('./RCSocialEmbed.vue'))),
-  'number-stat-section': markRaw(defineAsyncComponent(() => import('./RCNumberStatSection/RCNumberSection.vue'))),
-  'news': markRaw(defineAsyncComponent(() => import('@/Components/Public/NewsElement.vue'))),
-  'calendar': markRaw(defineAsyncComponent(() => import('@/Components/Public/FullWidth/EventCalendarElement.vue'))),
-  'flow-graph': markRaw(defineAsyncComponent(() => import('./RCFlowGraph.vue'))),
-  'content-grid': markRaw(defineAsyncComponent(() => import('./Types/ContentGridDisplay.vue'))),
+  'shadcn-card': markRaw(defineAsyncComponent(() => import('@/Components/RichContentCard.vue'))),
+  'shadcn-accordion': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCAccordion.vue'))),
+  'image-grid': markRaw(defineAsyncComponent(() => import('./RichContent/Types/ImageGridDisplay.vue'))),
+  'hero': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCHeroSection/HeroElement.vue'))),
+  'spotify-embed': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCSpotifyEmbed.vue'))),
+  'social-embed': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCSocialEmbed.vue'))),
+  'number-stat-section': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCNumberStatSection/RCNumberSection.vue'))),
+  'news': markRaw(defineAsyncComponent(() => import("@/Components/Public/NewsElement.vue"))),
+  'calendar': markRaw(defineAsyncComponent(() => import("@/Components/Public/FullWidth/EventCalendarElement.vue"))),
+  'flow-graph': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCFlowGraph.vue'))),
+  'content-grid': markRaw(defineAsyncComponent(() => import('./RichContent/Types/ContentGridDisplay.vue'))),
+  'text-box': markRaw(defineAsyncComponent(() => import('./RichContent/Types/TextBoxDisplay.vue'))),
 });
 
 const props = defineProps<{
@@ -92,6 +93,7 @@ function getSpacingClass(type: string, index: number): string {
     'calendar': 'mb-12', // 3rem bottom
     'flow-graph': 'mb-10', // 2.5rem bottom
     'content-grid': 'mb-10', // 2.5rem bottom
+    'text-box': 'mb-10', // 2.5rem bottom
   };
 
   // Default spacing if type not defined
@@ -207,6 +209,16 @@ function getSkeletonForType(type: string): { height: string; template: string } 
           </div>
         </div>
       `,
+    },
+    'text-box': {
+      height: 'min-h-[200px]',
+      template: `
+        <div class="w-full rounded-lg border border-zinc-200 dark:border-zinc-700 p-6">
+          <Skeleton class="h-6 w-48 mb-4" />
+          <Skeleton class="h-28 w-full mb-3" />
+          <Skeleton class="h-10 w-28 rounded-md" />
+        </div>
+      `
     },
     'default': {
       height: 'min-h-[100px]',

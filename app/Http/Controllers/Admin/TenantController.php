@@ -11,9 +11,11 @@ use App\Http\Traits\HasTanstackTables;
 use App\Models\Content;
 use App\Models\Institution;
 use App\Models\Tenant;
+use App\Services\ContentService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
 use Illuminate\Support\Facades\Cache;
+use Inertia\Response;
 
 class TenantController extends AdminController
 {
@@ -24,7 +26,7 @@ class TenantController extends AdminController
     /**
      * Display a listing of the resource.
      */
-    public function index(IndexTenantRequest $request): \Inertia\Response
+    public function index(IndexTenantRequest $request): Response
     {
         $this->handleAuthorization('viewAny', Tenant::class);
 
@@ -151,7 +153,7 @@ class TenantController extends AdminController
         $content = Content::query()->find($validated['id']);
 
         // Use ContentService to efficiently update content parts
-        app(\App\Services\ContentService::class)->updateContentParts($content, $validated['parts']);
+        app(ContentService::class)->updateContentParts($content, $validated['parts']);
 
         // Clear homepage cache for this tenant (both locales)
         Cache::tags(['homepage', "tenant_{$tenant->id}"])->flush();

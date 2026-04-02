@@ -1,6 +1,8 @@
 <?php
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+uses(RefreshDatabase::class);
 
 test('handles malicious lang parameter in real request', function () {
     $maliciousInput = "'nvOpzp; AND 1=1 OR (<'\">iKO)),";

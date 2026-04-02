@@ -73,3 +73,10 @@ resources/js/Types/components.d.ts
 # === Storybook ===
 *storybook.log
 storybook-static
+/.idea/copilot.data.migration.ask2agent.xml
+/.idea/laravel-idea.xml
+/.idea/modules.xml
+/.idea/php.xml
+/.idea/vcs.xml
+/.idea/vusa.lt.iml
+/.idea/workspace.xml

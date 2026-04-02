@@ -3,7 +3,7 @@
 /**
  * Tests for ApprovalTaskSubscriber.
  *
- * @see \App\Tasks\Subscribers\ApprovalTaskSubscriber
+ * @see ApprovalTaskSubscriber
  */
 
 use App\Enums\ApprovalDecision;
@@ -19,6 +19,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\States\ReservationResource\Created;
 use App\Tasks\Enums\ActionType;
+use App\Tasks\Subscribers\ApprovalTaskSubscriber;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 

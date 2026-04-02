@@ -3,6 +3,7 @@
 use App\Jobs\SyncDocumentFromSharePointJob;
 use App\Jobs\SyncStaleDocumentsJob;
 use App\Models\Document;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 
@@ -178,7 +179,7 @@ describe('Document Sync Jobs', function () {
 
 describe('Document Sync Controller', function () {
     test('refresh endpoint dispatches sync job for authorized users', function () {
-        $user = \App\Models\User::factory()->create();
+        $user = User::factory()->create();
         $user->assignRole(config('permission.super_admin_role_name'));
 
         $document = Document::factory()->create();
@@ -194,7 +195,7 @@ describe('Document Sync Controller', function () {
     });
 
     test('refresh endpoint requires authorization', function () {
-        $user = \App\Models\User::factory()->create(); // User without admin role
+        $user = User::factory()->create(); // User without admin role
         $document = Document::factory()->create();
 
         $response = $this->actingAs($user)
@@ -282,7 +283,7 @@ describe('Document Sync Status', function () {
     });
 
     test('sync status is included in admin table display', function () {
-        $user = \App\Models\User::factory()->create();
+        $user = User::factory()->create();
         $user->assignRole(config('permission.super_admin_role_name'));
 
         Document::factory()->create([

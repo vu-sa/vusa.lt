@@ -18,7 +18,7 @@ class GetAttachableTypesForDuty
         // get all attachable types for the current user
         $types = [];
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         if ($user->isSuperAdmin()) {

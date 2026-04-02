@@ -3,11 +3,12 @@
 namespace Database\Factories;
 
 use App\Enums\DegreeEnum;
+use App\Models\StudyProgram;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\StudyProgram>
+ * @extends Factory<StudyProgram>
  */
 class StudyProgramFactory extends Factory
 {

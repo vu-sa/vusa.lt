@@ -7,6 +7,7 @@ use App\Models\Page;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
+use Tiptap\Editor;
 
 uses(RefreshDatabase::class);
 
@@ -93,7 +94,7 @@ describe('Canonical URL generation', function () {
         ContentPart::factory()->create([
             'content_id' => $content->id,
             'type' => 'tiptap',
-            'json_content' => (new \Tiptap\Editor)->setContent('<p>Test content</p>')->getDocument(),
+            'json_content' => (new Editor)->setContent('<p>Test content</p>')->getDocument(),
         ]);
 
         $page = Page::factory()->create([

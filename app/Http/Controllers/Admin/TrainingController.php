@@ -8,6 +8,7 @@ use App\Http\Requests\StoreTrainingRequest;
 use App\Http\Requests\UpdateTrainingRequest;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Duty;
+use App\Models\FormField;
 use App\Models\Institution;
 use App\Models\Membership;
 use App\Models\Programme;
@@ -19,6 +20,7 @@ use App\Models\Type;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
+use Inertia\Response;
 
 class TrainingController extends AdminController
 {
@@ -29,7 +31,7 @@ class TrainingController extends AdminController
     /**
      * Display a listing of the resource.
      */
-    public function index(IndexTrainingRequest $request): \Inertia\Response
+    public function index(IndexTrainingRequest $request): Response
     {
         $this->handleAuthorization('viewAny', Training::class);
 
@@ -56,7 +58,7 @@ class TrainingController extends AdminController
             'trainings' => [
                 'data' => $trainings->getCollection()
                     ->map(function ($training) {
-                        /** @var \App\Models\Training $training */
+                        /** @var Training $training */
                         return $training->toFullArray();
                     }),
                 'meta' => [
@@ -159,7 +161,7 @@ class TrainingController extends AdminController
                 }),
             ],
             'userIsRegistered' => $training->form?->registrations->contains('user_id', auth()->id()),
-            'userCanRegister' => ($user = auth()->user()) instanceof \App\Models\User && $user->allAvailableTrainings()->contains('id', $training->id),
+            'userCanRegister' => ($user = auth()->user()) instanceof User && $user->allAvailableTrainings()->contains('id', $training->id),
             'registeredUserCount' => $training->form?->registrations->count(),
         ]);
     }
@@ -181,7 +183,7 @@ class TrainingController extends AdminController
                     ...($training->form ? $training->form->toFullArray() : []),
                     'form_fields' => $training->form?->formFields()->orderBy('order')->get()
                         ->map(function ($field) {
-                            /** @var \App\Models\FormField $field */
+                            /** @var FormField $field */
                             return $field->toFullArray();
                         }),
                 ],

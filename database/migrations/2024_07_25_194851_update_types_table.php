@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Type;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -21,7 +22,7 @@ return new class extends Migration
             $table->json('description')->nullable()->after('title');
         });
 
-        $types = \App\Models\Type::all();
+        $types = Type::all();
 
         foreach ($types as $type) {
             $type->setTranslation('title', 'lt', $type->title_old);

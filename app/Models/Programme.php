@@ -3,17 +3,20 @@
 namespace App\Models;
 
 use App\Models\Traits\HasTranslations;
+use Database\Factories\ProgrammeFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property array|string $title
  * @property array|string|null $description
  * @property string $start_date
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProgrammeDay> $days
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read Collection<int, ProgrammeDay> $days
  * @property-read Model|\Eloquent $programmable
  * @property-read mixed $translations
  *
@@ -30,7 +33,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Programme extends Model
 {
-    /** @use HasFactory<\Database\Factories\ProgrammeFactory> */
+    /** @use HasFactory<ProgrammeFactory> */
     use HasFactory, HasTranslations;
 
     protected $fillable = ['title', 'description'];

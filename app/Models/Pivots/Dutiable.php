@@ -2,13 +2,20 @@
 
 namespace App\Models\Pivots;
 
+use App\Events\DutiableChanged;
 use App\Models\Duty;
 use App\Models\StudyProgram;
+use App\Models\Tenant;
 use App\Models\Traits\HasTranslations;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Carbon;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
@@ -16,19 +23,19 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string $duty_id
  * @property string $dutiable_id
  * @property string $dutiable_type
- * @property \Illuminate\Support\Carbon $start_date
- * @property \Illuminate\Support\Carbon|null $end_date
+ * @property Carbon $start_date
+ * @property Carbon|null $end_date
  * @property string|null $study_program_id
  * @property string|null $additional_email
  * @property string|null $additional_photo
  * @property array|string|null $description
  * @property bool $use_original_duty_name
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \Illuminate\Database\Eloquent\Model $dutiable
- * @property-read Duty $duty
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read Model $dutiable
+ * @property-read Duty|null $duty
  * @property-read StudyProgram|null $study_program
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tenant> $tenants
+ * @property-read Collection<int, Tenant> $tenants
  * @property-read mixed $translations
  * @property-read User|null $user
  *
@@ -56,8 +63,8 @@ class Dutiable extends MorphPivot
     protected $with = ['study_program'];
 
     protected $dispatchesEvents = [
-        'saved' => \App\Events\DutiableChanged::class,
-        'deleted' => \App\Events\DutiableChanged::class,
+        'saved' => DutiableChanged::class,
+        'deleted' => DutiableChanged::class,
     ];
 
     protected function casts(): array
@@ -72,25 +79,25 @@ class Dutiable extends MorphPivot
     public $translatable = ['description'];
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\MorphTo<\Illuminate\Database\Eloquent\Model, $this>
+     * @return MorphTo<Model, $this>
      */
-    public function dutiable(): \Illuminate\Database\Eloquent\Relations\MorphTo
+    public function dutiable(): MorphTo
     {
         return $this->morphTo();
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<Duty, $this>
+     * @return BelongsTo<Duty, $this>
      */
-    public function duty(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function duty(): BelongsTo
     {
         return $this->belongsTo(Duty::class);
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<StudyProgram, $this>
+     * @return BelongsTo<StudyProgram, $this>
      */
-    public function study_program(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function study_program(): BelongsTo
     {
         return $this->belongsTo(StudyProgram::class);
     }

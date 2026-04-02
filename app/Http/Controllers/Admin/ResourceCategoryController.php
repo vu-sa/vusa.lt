@@ -42,7 +42,7 @@ class ResourceCategoryController extends AdminController
         return $this->inertiaResponse('Admin/Reservations/IndexResourceCategory', [
             'resourceCategories' => [
                 'data' => $resourceCategories->getCollection()->map(function ($category) {
-                    /** @var \App\Models\ResourceCategory $category */
+                    /** @var ResourceCategory $category */
                     return $category->toFullArray();
                 })->values(),
                 'meta' => [

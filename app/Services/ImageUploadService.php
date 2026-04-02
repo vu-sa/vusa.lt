@@ -5,6 +5,8 @@ namespace App\Services;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Interfaces\EncodedImageInterface;
+use Intervention\Image\Interfaces\ImageInterface;
 use Intervention\Image\Laravel\Facades\Image;
 
 class ImageUploadService
@@ -27,7 +29,7 @@ class ImageUploadService
      * Process an image file: scale down and convert to WebP
      *
      * @param  UploadedFile|string  $source  File upload or data URL/path
-     * @return array{image: \Intervention\Image\Interfaces\ImageInterface|\Intervention\Image\Interfaces\EncodedImageInterface, originalSize: int}
+     * @return array{image: ImageInterface|EncodedImageInterface, originalSize: int}
      */
     public function processImage(UploadedFile|string $source, array $options = []): array
     {

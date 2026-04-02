@@ -4,36 +4,47 @@ namespace App\Models\Pivots;
 
 use App\Contracts\Approvable;
 use App\Enums\ApprovalDecision;
+use App\Events\ReservationResourceCreated;
+use App\Models\Approval;
 use App\Models\ApprovalFlow;
+use App\Models\Comment;
 use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\Traits\HasApprovals;
 use App\Models\Traits\HasComments;
+use App\Models\User;
 use App\Services\ModelAuthorizer;
+use App\States\ReservationResource\Cancelled;
+use App\States\ReservationResource\Lent;
+use App\States\ReservationResource\Rejected;
 use App\States\ReservationResource\ReservationResourceState;
+use App\States\ReservationResource\Reserved;
+use App\States\ReservationResource\Returned;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 /**
  * @property int $id
  * @property string $reservation_id
  * @property string $resource_id
- * @property \Illuminate\Support\Carbon|null $start_time
- * @property \Illuminate\Support\Carbon|null $end_time
+ * @property Carbon|null $start_time
+ * @property Carbon|null $end_time
  * @property int $quantity
  * @property ReservationResourceState $state
  * @property string|null $returned_at
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  * @property string|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Approval> $approvals
- * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $commentable
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Comment> $comments
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Approval> $approvals
+ * @property-read Model|\Eloquent $commentable
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Comment> $comments
  * @property-read bool $approvable
  * @property-read mixed $state_properties
- * @property-read Reservation $reservation
- * @property-read resource $resource
+ * @property-read Reservation|null $reservation
+ * @property-read resource|null $resource
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReservationResource newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReservationResource newQuery()
@@ -68,7 +79,7 @@ class ReservationResource extends Pivot implements Approvable
     protected $appends = ['state_properties'];
 
     protected $dispatchesEvents = [
-        'created' => \App\Events\ReservationResourceCreated::class,
+        'created' => ReservationResourceCreated::class,
     ];
 
     protected function casts(): array
@@ -186,8 +197,8 @@ class ReservationResource extends Pivot implements Approvable
         // Map decisions to their target states
         $targetStateClass = match ($decision) {
             ApprovalDecision::Approved => $this->getApproveTargetState(),
-            ApprovalDecision::Rejected => \App\States\ReservationResource\Rejected::class,
-            ApprovalDecision::Cancelled => \App\States\ReservationResource\Cancelled::class,
+            ApprovalDecision::Rejected => Rejected::class,
+            ApprovalDecision::Cancelled => Cancelled::class,
         };
 
         if ($targetStateClass === null) {
@@ -204,9 +215,9 @@ class ReservationResource extends Pivot implements Approvable
     protected function getApproveTargetState(): ?string
     {
         return match ($this->state->getValue()) {
-            'created' => \App\States\ReservationResource\Reserved::class,
-            'reserved' => \App\States\ReservationResource\Lent::class,
-            'lent' => \App\States\ReservationResource\Returned::class,
+            'created' => Reserved::class,
+            'reserved' => Lent::class,
+            'lent' => Returned::class,
             default => null,
         };
     }
@@ -242,9 +253,9 @@ class ReservationResource extends Pivot implements Approvable
      * Check if a user can approve this model at the given step with the given decision.
      * Resource managers can approve/reject, owners can only cancel.
      *
-     * @param  \App\Enums\ApprovalDecision|null  $decision  The decision being made (used for owner cancel check)
+     * @param  ApprovalDecision|null  $decision  The decision being made (used for owner cancel check)
      */
-    public function canBeApprovedBy(\App\Models\User $user, ?int $step = null, $decision = null): bool
+    public function canBeApprovedBy(User $user, ?int $step = null, $decision = null): bool
     {
         // Check if user has resource management permission for this tenant (can approve/reject)
         $authorizer = app(ModelAuthorizer::class);
@@ -258,7 +269,7 @@ class ReservationResource extends Pivot implements Approvable
         // Reservation owners can only cancel their own reservations
         if ($this->reservation->users()->where('users.id', $user->id)->exists()) {
             // Only allow if decision is cancel (or if decision not specified for compatibility)
-            return $decision === null || $decision === \App\Enums\ApprovalDecision::Cancelled;
+            return $decision === null || $decision === ApprovalDecision::Cancelled;
         }
 
         return false;

@@ -5,16 +5,22 @@ namespace App\Models\Pivots;
 use App\Enums\AgendaItemType;
 use App\Models\Institution;
 use App\Models\Meeting;
+use App\Models\Tenant;
 use App\Models\Vote;
 use Database\Factories\AgendaItemFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Support\Carbon;
+use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
@@ -22,8 +28,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string $id
  * @property string $meeting_id
  * @property string|null $matter_id
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  * @property string $title
  * @property int $order
  * @property bool $brought_by_students
@@ -31,13 +37,13 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $student_position
  * @property string|null $description
  * @property string|null $start_time
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Vote> $additionalVotes
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Institution> $institutions
+ * @property-read Collection<int, Activity> $activities
+ * @property-read Collection<int, Vote> $additionalVotes
+ * @property-read Collection<int, Institution> $institutions
  * @property-read Vote|null $mainVote
- * @property-read Meeting $meeting
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tenant> $tenants
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Vote> $votes
+ * @property-read Meeting|null $meeting
+ * @property-read Collection<int, Tenant> $tenants
+ * @property-read Collection<int, Vote> $votes
  *
  * @method static \Database\Factories\AgendaItemFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem newModelQuery()
@@ -76,7 +82,7 @@ class AgendaItem extends Pivot
         return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
-    public function meeting(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function meeting(): BelongsTo
     {
         return $this->belongsTo(Meeting::class);
     }
@@ -319,6 +325,6 @@ class AgendaItem extends Pivot
      */
     public function searchableUsing()
     {
-        return app(\Laravel\Scout\EngineManager::class)->engine('typesense');
+        return app(EngineManager::class)->engine('typesense');
     }
 }

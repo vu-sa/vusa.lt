@@ -7,6 +7,7 @@ use App\Models\News;
 use App\Models\Page;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tiptap\Editor;
 
 uses(RefreshDatabase::class);
 
@@ -33,7 +34,7 @@ test('ContentHelper finds tiptap content when it exists', function () {
     $part = ContentPart::factory()->create([
         'content_id' => $content->id,
         'type' => 'tiptap',
-        'json_content' => (new \Tiptap\Editor)->setContent('<p>Test content for SEO</p>')->getDocument(),
+        'json_content' => (new Editor)->setContent('<p>Test content for SEO</p>')->getDocument(),
     ]);
 
     $page = new Page;
@@ -52,7 +53,7 @@ test('ContentHelper prioritizes news short field over tiptap content', function 
     ContentPart::factory()->create([
         'content_id' => $content->id,
         'type' => 'tiptap',
-        'json_content' => (new \Tiptap\Editor)->setContent('<p>Tiptap content</p>')->getDocument(),
+        'json_content' => (new Editor)->setContent('<p>Tiptap content</p>')->getDocument(),
     ]);
 
     $news = News::factory()->create([
@@ -71,7 +72,7 @@ test('ContentHelper falls back to tiptap when news short is empty', function () 
     ContentPart::factory()->create([
         'content_id' => $content->id,
         'type' => 'tiptap',
-        'json_content' => (new \Tiptap\Editor)->setContent('<p>Fallback tiptap content</p>')->getDocument(),
+        'json_content' => (new Editor)->setContent('<p>Fallback tiptap content</p>')->getDocument(),
     ]);
 
     $news = News::factory()->create([

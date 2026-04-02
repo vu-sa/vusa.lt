@@ -6,6 +6,7 @@ use App\Enums\ModelEnum;
 use App\Http\Controllers\AdminController;
 use App\Models\Comment;
 use App\Services\ModelAuthorizer as Authorizer;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Spatie\Enum\Laravel\Rules\EnumRule;
@@ -63,7 +64,7 @@ class CommentController extends AdminController
     /**
      * Update the specified resource in storage.
      *
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
     public function update(Request $request, Comment $comment)
     {
@@ -78,7 +79,7 @@ class CommentController extends AdminController
     /**
      * Remove the specified resource from storage.
      *
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
     public function destroy(Comment $comment)
     {

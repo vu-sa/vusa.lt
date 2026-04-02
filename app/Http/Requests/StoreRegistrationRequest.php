@@ -4,6 +4,8 @@ namespace App\Http\Requests;
 
 use App\Models\Form;
 use App\Models\FormField;
+use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
@@ -20,7 +22,7 @@ class StoreRegistrationRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -43,7 +45,7 @@ class StoreRegistrationRequest extends FormRequest
                 return;
             }
 
-            /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\FormField> $formFields */
+            /** @var Collection<int, FormField> $formFields */
             $formFields = $form->formFields()->get();
             $data = $this->input('data', []);
 

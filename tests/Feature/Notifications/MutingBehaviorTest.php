@@ -7,6 +7,7 @@ use App\Events\TaskCreated;
 use App\Models\Comment;
 use App\Models\Pivots\ReservationResource;
 use App\Models\Task;
+use App\Notifications\BaseNotification;
 use App\Notifications\CommentPostedNotification;
 use App\Notifications\ReservationStatusChangedNotification;
 use App\Notifications\TaskAssignedNotification;
@@ -278,7 +279,7 @@ describe('muting edge cases', function () {
         $user->muteThread('App\\Models\\Task', '999');
 
         // Create notification without object() returning data
-        $notification = new class extends \App\Notifications\BaseNotification
+        $notification = new class extends BaseNotification
         {
             public function category(): NotificationCategory
             {

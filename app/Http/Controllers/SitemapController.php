@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Spatie\Sitemap\Sitemap;
 use Spatie\Sitemap\Tags\Url;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class SitemapController extends Controller
 {
@@ -45,7 +46,7 @@ class SitemapController extends Controller
 
             return response($xmlContent, 200)
                 ->header('Content-Type', 'application/xml; charset=UTF-8');
-        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+        } catch (HttpException $e) {
             // Re-throw HTTP exceptions (like 404) without modification
             throw $e;
         } catch (\Exception $e) {

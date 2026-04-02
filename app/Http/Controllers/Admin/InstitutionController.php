@@ -10,11 +10,18 @@ use App\Http\Requests\UpdateInstitutionRequest; // Create this request class
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\Meeting;
+use App\Models\Task;
 use App\Models\Type;
+use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\RelationshipService;
 use App\Services\TanstackTableService;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class InstitutionController extends AdminController
 {
@@ -25,7 +32,7 @@ class InstitutionController extends AdminController
     /**
      * Display a listing of the resource.
      */
-    public function index(IndexInstitutionRequest $request): \Inertia\Response
+    public function index(IndexInstitutionRequest $request): Response
     {
         $this->handleAuthorization('viewAny', Institution::class);
 
@@ -145,7 +152,7 @@ class InstitutionController extends AdminController
         // Append public visibility flags now that types are loaded (avoids N+1)
         $institution->append('has_public_meetings');
         $institution->append('meeting_periodicity_days');
-        $institution->meetings->each(function (\App\Models\Meeting $meeting) {
+        $institution->meetings->each(function (Meeting $meeting) {
             $meeting->append(['is_public', 'has_report', 'has_protocol']);
 
             // Compute vote stats from loaded agendaItems.votes
@@ -169,8 +176,8 @@ class InstitutionController extends AdminController
             ->merge($institution->meetings->pluck('tasks')->flatten())
             ->sortByDesc('created_at')
             ->values()
-            ->map(function (\App\Models\Task $task) {
-                /** @var \Illuminate\Database\Eloquent\Model|null $taskable */
+            ->map(function (Task $task) {
+                /** @var Model|null $taskable */
                 $taskable = $task->taskable;
 
                 return [
@@ -194,7 +201,7 @@ class InstitutionController extends AdminController
                     ] : null,
                     'taskable_type' => class_basename($task->taskable_type ?? ''),
                     'taskable_id' => $task->taskable_id,
-                    'users' => $task->users->map(fn (\App\Models\User $u) => [
+                    'users' => $task->users->map(fn (User $u) => [
                         'id' => $u->id,
                         'name' => $u->name,
                         'profile_photo_path' => $u->profile_photo_path,
@@ -203,7 +210,7 @@ class InstitutionController extends AdminController
             });
 
         // Get related institutions as flat list with metadata (cached)
-        $relatedInstitutionsFlat = \App\Services\RelationshipService::getRelatedInstitutionsCached($institution);
+        $relatedInstitutionsFlat = RelationshipService::getRelatedInstitutionsCached($institution);
 
         // Get subscription status for the current user
         $user = request()->user();
@@ -319,7 +326,7 @@ class InstitutionController extends AdminController
      * reorderDuties
      * Duties are ordered in the frontend array by the user. The order is saved in the database
      *
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
     public function reorderDuties(Request $request)
     {

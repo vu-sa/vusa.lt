@@ -6,12 +6,15 @@ use App\Models\Pivots\ReservationResource;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasTasks;
 use App\States\ReservationResource\Returned;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
@@ -19,21 +22,21 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string $id
  * @property string $name
  * @property string|null $description
- * @property \Illuminate\Support\Carbon $start_time
- * @property \Illuminate\Support\Carbon $end_time
+ * @property Carbon $start_time
+ * @property Carbon $end_time
  * @property string|null $completed_at
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Activity> $activities
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $commentable
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Comment> $comments
+ * @property-read Collection<int, Comment> $comments
  * @property-read mixed $is_completed
  * @property-read ReservationResource|null $pivot
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Resource> $resources
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task> $tasks
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tenant> $tenants
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @property-read Collection<int, \App\Models\Resource> $resources
+ * @property-read Collection<int, Task> $tasks
+ * @property-read Collection<int, Tenant> $tenants
+ * @property-read Collection<int, User> $users
  *
  * @method static \Database\Factories\ReservationFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Reservation newModelQuery()

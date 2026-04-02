@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
+use App\Models\News;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
@@ -219,7 +220,7 @@ describe('model functionality', function () {
     });
 
     test('tag can be associated with news', function () {
-        $news = \App\Models\News::factory()->create();
+        $news = News::factory()->create();
         $tag = Tag::factory()->create();
 
         $news->tags()->attach($tag);
@@ -281,8 +282,8 @@ describe('tag merging', function () {
         ]);
 
         // Create news and attach source tags
-        $news1 = \App\Models\News::factory()->create();
-        $news2 = \App\Models\News::factory()->create();
+        $news1 = News::factory()->create();
+        $news2 = News::factory()->create();
 
         $sourceTag1->news()->attach($news1->id);
         $sourceTag2->news()->attach($news2->id);

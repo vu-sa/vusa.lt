@@ -1,5 +1,11 @@
 <?php
 
+use App\Support\TranslatableModelIdeHelperHook;
+use Illuminate\Http\Client\Factory;
+use Illuminate\Http\Client\PendingRequest;
+use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
+use Staudenmeir\EloquentHasManyDeep\HasOneDeep;
+
 return [
 
     /*
@@ -170,7 +176,7 @@ return [
     */
 
     'model_hooks' => [
-        App\Support\TranslatableModelIdeHelperHook::class,
+        TranslatableModelIdeHelperHook::class,
     ],
 
     /*
@@ -287,7 +293,7 @@ return [
     |
     */
     'macro_default_return_types' => [
-        Illuminate\Http\Client\Factory::class => Illuminate\Http\Client\PendingRequest::class,
+        Factory::class => PendingRequest::class,
     ],
 
     /*
@@ -302,11 +308,11 @@ return [
     */
     'additional_relation_types' => [
         // EloquentHasManyDeep package relationships
-        'hasManyDeepFromRelations' => \Staudenmeir\EloquentHasManyDeep\HasManyDeep::class,
-        'hasManyDeep' => \Staudenmeir\EloquentHasManyDeep\HasManyDeep::class,
-        'hasOneDeep' => \Staudenmeir\EloquentHasManyDeep\HasOneDeep::class,
-        'hasManyThroughSelf' => \Staudenmeir\EloquentHasManyDeep\HasManyDeep::class,
-        'hasOneThroughSelf' => \Staudenmeir\EloquentHasManyDeep\HasOneDeep::class,
+        'hasManyDeepFromRelations' => HasManyDeep::class,
+        'hasManyDeep' => HasManyDeep::class,
+        'hasOneDeep' => HasOneDeep::class,
+        'hasManyThroughSelf' => HasManyDeep::class,
+        'hasOneThroughSelf' => HasOneDeep::class,
     ],
 
     /*

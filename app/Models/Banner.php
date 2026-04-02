@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Scout\Searchable;
 
@@ -16,9 +17,9 @@ use Laravel\Scout\Searchable;
  * @property int $order
  * @property int $is_active
  * @property int $tenant_id
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \App\Models\Tenant $tenant
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read Tenant $tenant
  *
  * @method static \Database\Factories\BannerFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Banner newModelQuery()

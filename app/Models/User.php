@@ -11,16 +11,23 @@ use App\Models\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Carbon;
 use Laravel\Scout\Searchable;
 use NotificationChannels\WebPush\HasPushSubscriptions;
+use NotificationChannels\WebPush\PushSubscription;
 use Octopy\Impersonate\Authorization;
 use Octopy\Impersonate\Concerns\HasImpersonation;
 use Octopy\Impersonate\Http\Resources\ImpersonateResource;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
@@ -37,35 +44,35 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property int $is_active
  * @property string|null $email_verified_at
  * @property string|null $remember_token
- * @property \Illuminate\Support\Carbon|null $last_action
+ * @property Carbon|null $last_action
  * @property array<array-key, mixed>|null $tutorial_progress
  * @property array $notification_preferences
  * @property string|null $microsoft_token
- * @property \Illuminate\Support\Carbon $updated_at
- * @property \Illuminate\Support\Carbon $created_at
+ * @property Carbon $updated_at
+ * @property Carbon $created_at
  * @property string|null $profile_photo_path
- * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property Carbon|null $deleted_at
  * @property bool $name_was_changed
- * @property-read Collection<int, \Spatie\Activitylog\Models\Activity> $activities
- * @property-read \App\Models\InstitutionNotificationMute|MembershipUser|\App\Models\InstitutionFollow|Dutiable|Trainable|null $pivot
- * @property-read Collection<int, \App\Models\Training> $availableTrainingsThroughUser
- * @property-read Collection<int, \App\Models\Duty> $current_duties
+ * @property-read Collection<int, Activity> $activities
+ * @property-read InstitutionNotificationMute|MembershipUser|InstitutionFollow|Dutiable|Trainable|null $pivot
+ * @property-read Collection<int, Training> $availableTrainingsThroughUser
+ * @property-read Collection<int, Duty> $current_duties
  * @property-read Collection<int, Dutiable> $dutiables
- * @property-read Collection<int, \App\Models\Duty> $duties
- * @property-read Collection<int, \App\Models\Institution> $followedInstitutions
+ * @property-read Collection<int, Duty> $duties
+ * @property-read Collection<int, Institution> $followedInstitutions
  * @property-read mixed $has_password
- * @property-read Collection<int, \App\Models\Institution> $institutions
- * @property-read Collection<int, \App\Models\Membership> $memberships
- * @property-read Collection<int, \App\Models\Institution> $mutedInstitutions
- * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
- * @property-read Collection<int, \App\Models\Permission> $permissions
- * @property-read Collection<int, \App\Models\Duty> $previous_duties
- * @property-read Collection<int, \NotificationChannels\WebPush\PushSubscription> $pushSubscriptions
- * @property-read Collection<int, \App\Models\Reservation> $reservations
- * @property-read Collection<int, \App\Models\Role> $roles
- * @property-read Collection<int, \App\Models\Task> $tasks
- * @property-read Collection<int, \App\Models\Tenant> $tenants
- * @property-read Collection<int, \App\Models\Training> $trainings
+ * @property-read Collection<int, Institution> $institutions
+ * @property-read Collection<int, Membership> $memberships
+ * @property-read Collection<int, Institution> $mutedInstitutions
+ * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $notifications
+ * @property-read Collection<int, Permission> $permissions
+ * @property-read Collection<int, Duty> $previous_duties
+ * @property-read Collection<int, PushSubscription> $pushSubscriptions
+ * @property-read Collection<int, Reservation> $reservations
+ * @property-read Collection<int, Role> $roles
+ * @property-read Collection<int, Task> $tasks
+ * @property-read Collection<int, Tenant> $tenants
+ * @property-read Collection<int, Training> $trainings
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
@@ -186,7 +193,7 @@ class User extends Authenticatable
     public function routeNotificationForMail(Notification $notification): array|string
     {
         if ($this->current_duties()->count() > 0) {
-            /** @var \App\Models\Duty $duty */
+            /** @var Duty $duty */
             foreach ($this->current_duties()->get() as $duty) {
                 if (str_ends_with($duty->email, 'vusa.lt')) {
                     return $duty->email;
@@ -197,14 +204,14 @@ class User extends Authenticatable
         return $this->email;
     }
 
-    public function duties(): \Illuminate\Database\Eloquent\Relations\MorphToMany
+    public function duties(): MorphToMany
     {
         return $this->morphToMany(Duty::class, 'dutiable')
             ->using(Dutiable::class)
             ->withPivot(['id', 'start_date', 'end_date', 'additional_photo', 'additional_email', 'use_original_duty_name', 'description']);
     }
 
-    public function previous_duties(): \Illuminate\Database\Eloquent\Relations\MorphToMany
+    public function previous_duties(): MorphToMany
     {
         return $this->duties()
             ->where(function ($query) {
@@ -216,7 +223,7 @@ class User extends Authenticatable
 
     // this needs more debugging. don't use with withWhereHas
     // TODO: implement current_duties where appropriate
-    public function current_duties(): \Illuminate\Database\Eloquent\Relations\MorphToMany
+    public function current_duties(): MorphToMany
     {
         return $this->duties()
             ->where(function ($query) {
@@ -249,7 +256,7 @@ class User extends Authenticatable
     /**
      * Institutions the user is explicitly following.
      */
-    public function followedInstitutions(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function followedInstitutions(): BelongsToMany
     {
         return $this->belongsToMany(Institution::class, 'institution_follows')
             ->using(InstitutionFollow::class)
@@ -259,7 +266,7 @@ class User extends Authenticatable
     /**
      * Institutions the user has muted notifications for.
      */
-    public function mutedInstitutions(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function mutedInstitutions(): BelongsToMany
     {
         return $this->belongsToMany(Institution::class, 'institution_notification_mutes')
             ->using(InstitutionNotificationMute::class)
@@ -348,7 +355,7 @@ class User extends Authenticatable
     }
 
     /**
-     * @return \Illuminate\Support\Collection<int, \App\Models\Training>
+     * @return \Illuminate\Support\Collection<int, Training>
      */
     public function allAvailableTrainings()
     {

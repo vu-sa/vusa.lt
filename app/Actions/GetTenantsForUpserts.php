@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -12,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
  */
 class GetTenantsForUpserts
 {
-    public static function execute(string $permission, Authorizer $authorizer): \Illuminate\Support\Collection
+    public static function execute(string $permission, Authorizer $authorizer): Collection
     {
         $authorizer->forUser(Auth::user())->checkAllRoleables($permission);
 

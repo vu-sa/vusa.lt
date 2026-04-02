@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Contracts\SharepointFileableContract;
 use App\Http\Controllers\AdminController;
 use App\Models\FileableFile;
 use App\Models\Institution;
@@ -10,7 +11,10 @@ use App\Models\Type;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Services\SharepointGraphService;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Microsoft\Graph\Generated\Models\ODataErrors\ODataError;
 
 /**
  * Allowed fileable model types for SharePoint file operations.
@@ -172,11 +176,11 @@ class SharepointFileController extends AdminController
             return response()->json(['error' => 'Fileable not found'], 404);
         }
 
-        if (! $fileable instanceof \App\Contracts\SharepointFileableContract) {
+        if (! $fileable instanceof SharepointFileableContract) {
             return response()->json(['error' => 'Invalid fileable type'], 400);
         }
 
-        /** @var \App\Contracts\SharepointFileableContract $fileable */
+        /** @var SharepointFileableContract $fileable */
         $this->authorize('view', $fileable);
 
         $files = $fileable->availableFiles()
@@ -212,7 +216,7 @@ class SharepointFileController extends AdminController
         }
 
         // Get all types including parents
-        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Type> $types */
+        /** @var Collection<int, Type> $types */
         $types = $fileable->types()
             ->get()
             ->map(function (Type $type) {
@@ -372,7 +376,7 @@ class SharepointFileController extends AdminController
             // Try to extract OData error details
             $errorMessage = 'Failed to create public permission';
 
-            if ($e instanceof \Microsoft\Graph\Generated\Models\ODataErrors\ODataError) {
+            if ($e instanceof ODataError) {
                 $odataMessage = $e->getError()?->getMessage();
                 if ($odataMessage) {
                     $errorMessage = $odataMessage;

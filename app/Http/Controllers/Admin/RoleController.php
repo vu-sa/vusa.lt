@@ -15,6 +15,7 @@ use App\Services\TanstackTableService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Inertia\Response;
 
 class RoleController extends AdminController
 {
@@ -25,7 +26,7 @@ class RoleController extends AdminController
     /**
      * Display a listing of the resource.
      */
-    public function index(IndexRoleRequest $request): \Inertia\Response
+    public function index(IndexRoleRequest $request): Response
     {
         $this->handleAuthorization('viewAny', Role::class);
 

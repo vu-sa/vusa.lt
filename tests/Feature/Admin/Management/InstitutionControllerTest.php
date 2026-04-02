@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Institution;
+use App\Models\Meeting;
 use App\Models\Tenant;
 use App\Models\Type;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -85,7 +86,7 @@ describe('authorized access', function () {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
         // Create a meeting with a task
-        $meeting = \App\Models\Meeting::factory()->create([
+        $meeting = Meeting::factory()->create([
             'title' => 'Test Meeting Title',
             'start_time' => now()->addDays(1),
         ]);

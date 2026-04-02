@@ -152,14 +152,6 @@
         </div>
       </CardContent>
     </Card>
-    <p class="mt-4 flex items-center justify-center gap-2">
-      <a class="inline-flex items-center" target="_blank" href="https://github.com/vu-sa/vusa.lt/">
-        <Button variant="link">
-          <IMdiGithub />
-          {{ $t("Projekto puslapis") }}
-        </Button>
-      </a>
-    </p>
   </PageContent>
 </template>
 
@@ -184,7 +176,6 @@ import NotificationPreferences from '@/Features/Admin/Notifications/Notification
 import PushDeviceManagement from '@/Features/Admin/Notifications/PushDeviceManagement.vue';
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import IMdiContentSave from '~icons/mdi/content-save';
-import IMdiGithub from '~icons/mdi/github';
 import IMdiLock from '~icons/mdi/lock';
 import IMdiRefresh from '~icons/mdi/refresh';
 import IMdiSettings from '~icons/mdi/settings';

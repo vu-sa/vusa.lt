@@ -6,7 +6,7 @@ use App\Models\Permission;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Permission>
+ * @extends Factory<Permission>
  */
 class PermissionFactory extends Factory
 {

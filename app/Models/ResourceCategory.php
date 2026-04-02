@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Models\Traits\HasTranslations;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Carbon;
 use Laravel\Scout\Searchable;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
@@ -12,11 +14,11 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property array|string $name
  * @property array|string|null $description
  * @property string|null $icon
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Resource> $resources
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tenant> $tenant
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tenant> $tenants
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read Collection<int, \App\Models\Resource> $resources
+ * @property-read Collection<int, Tenant> $tenant
+ * @property-read Collection<int, Tenant> $tenants
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\ResourceCategoryFactory factory($count = null, $state = [])

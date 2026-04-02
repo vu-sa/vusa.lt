@@ -6,6 +6,7 @@ use App\Enums\ModelEnum;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Auth\Access\Response;
 use Illuminate\Support\Str;
 
 class UserPolicy extends ModelPolicy
@@ -22,7 +23,7 @@ class UserPolicy extends ModelPolicy
     /**
      * Determine whether the user can merge models.
      *
-     * @return \Illuminate\Auth\Access\Response|bool
+     * @return Response|bool
      */
     public function merge(User $user)
     {

@@ -3,14 +3,18 @@
 namespace App\Models;
 
 use App\Models\Traits\HasTranslations;
+use App\Services\IcalendarService;
 use Datetime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use Spatie\CalendarLinks\Link;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
@@ -33,10 +37,10 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property int|null $registration_form_id
- * @property-read \App\Models\Category|null $category
+ * @property-read Category|null $category
  * @property-read string|null $main_image_url
- * @property-read \Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection<int, Media> $media
- * @property-read \App\Models\Tenant $tenant
+ * @property-read MediaCollection<int, Media> $media
+ * @property-read Tenant $tenant
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\CalendarFactory factory($count = null, $state = [])
@@ -107,20 +111,24 @@ class Calendar extends Model implements HasMedia
         static::saved(function ($calendar) {
             // Flush calendar cache for all locales since calendar events can be international
             Cache::tags(['calendar', 'locale_lt', 'locale_en'])->flush();
+            // Also clear the specific iCal cache keys used by IcalendarService
+            IcalendarService::clearCache();
         });
 
         static::deleted(function ($calendar) {
             // Flush calendar cache for all locales since calendar events can be international
             Cache::tags(['calendar', 'locale_lt', 'locale_en'])->flush();
+            // Also clear the specific iCal cache keys used by IcalendarService
+            IcalendarService::clearCache();
         });
     }
 
-    public function tenant(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
-    public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
@@ -146,12 +154,11 @@ class Calendar extends Model implements HasMedia
      */
     public function registerMediaConversions(?Media $media = null): void
     {
-        /** @phpstan-ignore method.notFound (Spatie Media Library dynamic method) */
         $this->addMediaConversion('webp')
             ->format('webp')
             ->quality(80)
             ->width(1600)
-            ->performOnCollections('main_image', 'images')
+            ->performOnCollections('main_image', 'images') /** @phpstan-ignore method.notFound */
             ->nonQueued(); // Run synchronously for immediate availability
     }
 
@@ -187,7 +194,7 @@ class Calendar extends Model implements HasMedia
      */
     public function searchableUsing()
     {
-        return app(\Laravel\Scout\EngineManager::class)->engine('typesense');
+        return app(EngineManager::class)->engine('typesense');
     }
 
     // TODO: add all pages to dev seed
@@ -201,9 +208,9 @@ class Calendar extends Model implements HasMedia
 
         return Link::create(
             $this->title,
-            DateTime::createFromFormat('Y-m-d H:i:s', $this->date),
+            Datetime::createFromFormat('Y-m-d H:i:s', $this->date),
             $this->end_date
-                ? DateTime::createFromFormat('Y-m-d H:i:s', $this->end_date)
+                ? Datetime::createFromFormat('Y-m-d H:i:s', $this->end_date)
                 : Carbon::parse($this->date)->addHour()->toDateTime()
         )
             ->description(strip_tags($this->description))

@@ -2,10 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\ProgrammeBlock;
+use App\Models\ProgrammeSection;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ProgrammeBlock>
+ * @extends Factory<ProgrammeBlock>
  */
 class ProgrammeBlockFactory extends Factory
 {
@@ -19,7 +21,7 @@ class ProgrammeBlockFactory extends Factory
         return [
             'title' => $this->faker->sentence,
             'description' => $this->faker->paragraph,
-            'programme_section_id' => \App\Models\ProgrammeSection::factory(),
+            'programme_section_id' => ProgrammeSection::factory(),
         ];
     }
 }

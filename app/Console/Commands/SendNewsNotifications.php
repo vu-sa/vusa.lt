@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Notifications\NewsPublishedNotification;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 /**
  * Send news notifications for recently published articles.
@@ -60,7 +61,7 @@ class SendNewsNotifications extends Command
     /**
      * Get news articles published in the last 15 minutes.
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\News>
+     * @return \Illuminate\Database\Eloquent\Collection<int, News>
      */
     protected function getRecentlyPublishedNews(): \Illuminate\Database\Eloquent\Collection
     {
@@ -77,7 +78,7 @@ class SendNewsNotifications extends Command
     /**
      * Get users who have opted in to news notifications.
      */
-    protected function getUsersOptedInForNews(): \Illuminate\Support\Collection
+    protected function getUsersOptedInForNews(): Collection
     {
         return User::all()->filter(function (User $user) {
             // Check if user has enabled at least one channel for news

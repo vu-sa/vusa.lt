@@ -30,6 +30,32 @@ describe('Document short URL redirect', function () {
         $response->assertNotFound();
     });
 
+    it('forwards query parameters to anonymous_url', function () {
+        $document = Document::factory()->create([
+            'anonymous_url' => 'https://sharepoint.example.com/document/123',
+        ]);
+
+        $code = ShortUrlHelper::encode($document->id);
+
+        $response = $this->get("/d/{$code}?download=1");
+
+        $response->assertStatus(302);
+        expect($response->headers->get('Location'))->toBe('https://sharepoint.example.com/document/123?download=1');
+    });
+
+    it('appends query parameters correctly when anonymous_url already has query string', function () {
+        $document = Document::factory()->create([
+            'anonymous_url' => 'https://sharepoint.example.com/document/123?cid=abc',
+        ]);
+
+        $code = ShortUrlHelper::encode($document->id);
+
+        $response = $this->get("/d/{$code}?download=1");
+
+        $response->assertStatus(302);
+        expect($response->headers->get('Location'))->toBe('https://sharepoint.example.com/document/123?cid=abc&download=1');
+    });
+
     it('returns 404 when document has no anonymous_url', function () {
         $document = Document::factory()->create([
             'anonymous_url' => null,

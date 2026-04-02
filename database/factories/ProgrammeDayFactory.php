@@ -2,10 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\Programme;
+use App\Models\ProgrammeDay;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ProgrammeDay>
+ * @extends Factory<ProgrammeDay>
  */
 class ProgrammeDayFactory extends Factory
 {
@@ -19,7 +21,7 @@ class ProgrammeDayFactory extends Factory
         return [
             'title' => $this->faker->sentence,
             'start_time' => $this->faker->dateTime(),
-            'programme_id' => \App\Models\Programme::factory(),
+            'programme_id' => Programme::factory(),
         ];
     }
 }

@@ -69,6 +69,7 @@
                   >
                     <component :is="type.icon" class="mr-2 h-4 w-4" />
                     {{ type.label }}
+                    <Badge v-if="type.isNew" variant="success" size="tiny" class="ml-auto">{{ $t('rich-content.new_badge') }}</Badge>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem @click="showInsertMenuAt = index; showSelection = true">
@@ -136,6 +137,14 @@
                   :preview-mode="isBlockInPreviewMode(content)"
                   @update:content="(val) => contents![index] = val" />
               </div>
+
+              <!-- Text box: view answers footer -->
+              <div
+                v-if="content?.type === 'text-box' && content?.id"
+                class="border-t border-zinc-100 dark:border-zinc-800 px-3 py-2"
+              >
+                <TextBoxSubmissionsDialog :content-part-id="content.id" />
+              </div>
             </div>
           </div>
         </TransitionGroup>
@@ -150,6 +159,7 @@
             @click="handleElementCreate(type.value)">
             <component :is="type.icon" class="h-3.5 w-3.5" />
             <span>{{ type.label }}</span>
+            <Badge v-if="type.isNew" variant="success" size="tiny">{{ $t('rich-content.new_badge') }}</Badge>
           </button>
 
           <!-- More content types button -->
@@ -174,8 +184,9 @@
           </div>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
             <button v-for="type in contentTypes" :key="type.value"
-              class="flex flex-col items-center gap-2 rounded-lg border border-zinc-200 p-4 text-center transition-colors hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:hover:border-zinc-600 dark:hover:bg-zinc-800/50"
+              class="relative flex flex-col items-center gap-2 rounded-lg border border-zinc-200 p-4 text-center transition-colors hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:hover:border-zinc-600 dark:hover:bg-zinc-800/50"
               @click="handleInsertContentType(type.value)">
+              <Badge v-if="type.isNew" variant="success" size="tiny" class="absolute right-2 top-2">{{ $t('rich-content.new_badge') }}</Badge>
               <component :is="type.icon" class="h-6 w-6 text-zinc-600 dark:text-zinc-400" />
               <div class="text-sm font-medium text-zinc-900 dark:text-zinc-100">
                 {{ type.label }}
@@ -203,6 +214,7 @@ import { getAllContentTypes, createContentItem, getContentType, type ContentPart
 
 import { Button } from '@/Components/ui/button';
 import { ButtonGroup } from '@/Components/ui/button-group';
+import { Badge } from '@/Components/ui/badge';
 import { Skeleton } from '@/Components/ui/skeleton';
 import IFluentAdd24Regular from '~icons/fluent/add24-regular';
 import IFluentArrowUp24Regular from '~icons/fluent/arrow-up24-regular';
@@ -215,6 +227,7 @@ import IFluentMoreHorizontal24Regular from '~icons/fluent/more-horizontal24-regu
 import IFluentEye24Regular from '~icons/fluent/eye24-regular';
 import IFluentEdit24Regular from '~icons/fluent/edit24-regular';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
+import TextBoxSubmissionsDialog from './Types/TextBoxSubmissionsDialog.vue';
 
 const props = defineProps<{
   maxContentBlocks?: number;
@@ -281,6 +294,7 @@ const quickAddTypes = computed(() => [
   getContentType('shadcn-card'),
   getContentType('image-grid'),
   getContentType('social-embed'),
+  getContentType('text-box'),
 ]);
 
 // Check if max content blocks limit would be exceeded
@@ -338,8 +352,7 @@ function handleInsertContentType(contentType: string) {
     // Insert at specific position
     insertContentAt(contentType, showInsertMenuAt.value);
     closeInsertMenus();
-  }
-  else {
+  } else {
     // Insert at end (regular add)
     handleElementCreate(contentType);
   }
@@ -396,36 +409,10 @@ function toggleBlockPreviewMode(content: ContentPart) {
   const key = getBlockKey(content);
   if (blocksInPreviewMode.value.has(key)) {
     blocksInPreviewMode.value.delete(key);
-  }
-  else {
+  } else {
     blocksInPreviewMode.value.add(key);
   }
 }
-
-// Initialize useSortable when el is available
-watch(el, (newEl) => {
-  // Stop previous sortable instance
-  if (stopSortable) {
-    stopSortable();
-    stopSortable = null;
-  }
-
-  if (newEl) {
-    const { stop } = useSortable(newEl, contents, {
-      handle: '.handle',
-      animation: 150,
-      ghostClass: 'opacity-50',
-      onUpdate: (e: any) => {
-        if (!contents.value || e.oldIndex === undefined || e.newIndex === undefined) return;
-        commit();
-        moveArrayElement(contents.value, e.oldIndex, e.newIndex);
-        showHistory.value = true;
-        nextTick(() => commit());
-      },
-    });
-    stopSortable = stop;
-  }
-}, { immediate: true });
 
 // Cleanup on unmount
 onUnmounted(() => {

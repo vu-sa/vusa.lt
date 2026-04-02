@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
+use Laravel\Scout\Engines\TypesenseEngine;
 use Typesense\Client;
 
 class SystemStatusController extends AdminController
@@ -421,7 +422,7 @@ class SystemStatusController extends AdminController
                 $model = new $modelClass;
 
                 // Only check Typesense models
-                if (! ($model->searchableUsing() instanceof \Laravel\Scout\Engines\TypesenseEngine)) {
+                if (! ($model->searchableUsing() instanceof TypesenseEngine)) {
                     continue;
                 }
 

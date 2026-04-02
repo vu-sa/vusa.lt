@@ -4,21 +4,28 @@ namespace App\Models;
 
 use App\Enums\ContentPartEnum;
 use App\Tiptap\TiptapEditor;
+use Illuminate\Database\Eloquent\Casts\ArrayObject;
+use Illuminate\Database\Eloquent\Casts\AsArrayObject;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 
 /**
  * @property int $id
  * @property int $content_id
  * @property string $type
- * @property \Illuminate\Database\Eloquent\Casts\ArrayObject<array-key, mixed> $json_content
- * @property \Illuminate\Database\Eloquent\Casts\ArrayObject<array-key, mixed>|null $options
+ * @property ArrayObject<array-key, mixed> $json_content
+ * @property ArrayObject<array-key, mixed>|null $options
  * @property int $order
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \App\Models\Content $content
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read Content $content
  * @property-read string|null $html
+ * @property-read Collection<int, TextBoxSubmission> $textBoxSubmissions
  *
  * @method static \Database\Factories\ContentPartFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ContentPart newModelQuery()
@@ -43,8 +50,8 @@ class ContentPart extends Model
     protected function casts(): array
     {
         return [
-            'json_content' => \Illuminate\Database\Eloquent\Casts\AsArrayObject::class,
-            'options' => \Illuminate\Database\Eloquent\Casts\AsArrayObject::class,
+            'json_content' => AsArrayObject::class,
+            'options' => AsArrayObject::class,
         ];
     }
 
@@ -58,9 +65,14 @@ class ContentPart extends Model
     // Append pre-rendered HTML to JSON serialization
     protected $appends = ['html'];
 
-    public function content(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function content(): BelongsTo
     {
         return $this->belongsTo(Content::class);
+    }
+
+    public function textBoxSubmissions(): HasMany
+    {
+        return $this->hasMany(TextBoxSubmission::class);
     }
 
     /**

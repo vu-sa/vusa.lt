@@ -2,16 +2,19 @@
 
 namespace App\Models;
 
+use Database\Factories\RegistrationFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property string|null $user_id
  * @property string $form_id
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FieldResponse> $fieldResponses
- * @property-read \App\Models\Form $form
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read Collection<int, FieldResponse> $fieldResponses
+ * @property-read Form|null $form
  *
  * @method static \Database\Factories\RegistrationFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Registration newModelQuery()
@@ -22,7 +25,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  */
 class Registration extends Model
 {
-    /** @use HasFactory<\Database\Factories\RegistrationFactory> */
+    /** @use HasFactory<RegistrationFactory> */
     use HasFactory;
 
     public function form()

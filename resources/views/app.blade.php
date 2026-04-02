@@ -94,6 +94,31 @@
         })();
     </script>
 
+    {{-- MSAL v5 popup redirect bridge - must run before app boots --}}
+    {{-- When MSAL loginPopup() redirects back, this broadcasts the auth code --}}
+    {{-- via BroadcastChannel and closes the popup before the SPA loads --}}
+    <script>
+        (function() {
+            var hash = window.location.hash;
+            if (hash && hash.indexOf('state=') > -1) {
+                try {
+                    var params = new URLSearchParams(hash.substring(1));
+                    var state = params.get('state');
+                    if (state) {
+                        var decoded = JSON.parse(atob(state));
+                        if (decoded.id && decoded.meta && decoded.meta.interactionType === 'popup') {
+                            var channel = new BroadcastChannel(decoded.id);
+                            channel.postMessage({ v: 1, payload: hash });
+                            channel.close();
+                            window.close();
+                            return;
+                        }
+                    }
+                } catch(e) {}
+            }
+        })();
+    </script>
+
     {{-- CSRF --}}
     {{-- <meta name="csrf-token" content="{{ csrf_token() }}"> --}}
 

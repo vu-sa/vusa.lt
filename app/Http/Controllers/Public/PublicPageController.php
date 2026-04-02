@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Public;
 
+use App\Collections\NewsCollection;
 use App\Helpers\ContentHelper;
 use App\Http\Controllers\PublicController;
 use App\Models\Calendar;
@@ -16,6 +17,8 @@ use App\Models\Type;
 use App\Services\ResourceServices\InstitutionService;
 use App\Settings\FormSettings;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
@@ -76,7 +79,7 @@ class PublicPageController extends PublicController
         $newsCacheKey = "homepage_news_{$this->tenant->id}_{$locale}";
         $news = Cache::tags(['news', "tenant_{$this->tenant->id}", "locale_{$locale}"])
             ->remember($newsCacheKey, 1800, function () use ($locale) {
-                return \App\Collections\NewsCollection::getPublishedForTenant(
+                return NewsCollection::getPublishedForTenant(
                     $this->tenant->id,
                     $locale
                 )->toPublicArray();
@@ -337,21 +340,21 @@ class PublicPageController extends PublicController
         );
 
         $forms = [
-            'chgf' => 'https://forms.office.com/e/m5efiVLTnb',
-            'evaf' => 'https://forms.office.com/e/iAhN6ScQ3H',
-            'ff' => 'https://forms.office.com/e/kNFgdk7ZDF',
-            'filf' => 'https://forms.office.com/e/LyYYN3btqN',
-            'fsf' => 'https://forms.office.com/e/xKMfZrgAVh',
-            'gmc' => 'https://forms.office.com/e/04PN2ajihu',
-            'if' => 'https://forms.office.com/e/0pn0SZ02b0',
-            'kf' => 'https://forms.office.com/e/UdnpVRLdPk',
-            'knf' => 'https://forms.office.com/e/PAKadETKhQ',
-            'mf' => 'https://forms.office.com/e/CjxQ590Nsh',
-            'mif' => 'https://forms.office.com/e/dh0UbRhjEn',
-            'sa' => 'https://forms.office.com/e/pz1S1KkFfF',
-            'tf' => 'https://forms.office.com/e/znCEWZrju1',
-            'tspmi' => 'https://forms.office.com/e/BNHUFeS27g',
-            'vm' => 'https://forms.office.com/e/Uf428VaLyv',
+            'chgf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUNjNTNU9ESE4wV0s4RTA2QUtIMllVN0RSNC4u',
+            'evaf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUNDI2Q0xKWktSSVFVR1RUOENEUk9QUlRFVy4u',
+            'ff' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUOEZBSDk4NFZWRUJDMjJBOVU1TEtHWFJDNy4u',
+            'filf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVURVY3TlNWQ0VHTjcwU1BVMEI1NjA5N04xTS4u',
+            'fsf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUMlRLOFozV1RNWEZXMDdJODUzSDhQTllKWS4u',
+            'gmc' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUQk1TVTlTM0k0MlpPTkZUSjczWU9HMDNTUi4u',
+            'if' => 'https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1utank1gTtJOjW_KfzCkXc1UN0NLNjM2SzRXQkwzT0NUTVQ1NjFKMjFIOS4u',
+            'kf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVURU05RU1FUU5LODVCRjRaMzI3VkRRNFY3Sy4u',
+            'knf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUN1A4RFhKWDVXVjUwNDdZUkZEUjgzNzkzRi4u',
+            'mf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUMllPRDFVSkZWOUQ4SVJRSjhJTkRSVUJYVy4u',
+            'mif' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUOE03NUhXMFpON1RBT0hCODZLUFpFOUdDWS4u',
+            'sa' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUMTlRQ1lIWUVMR0xNN0lSUzYzUzkwNDUzWi4u',
+            'tf' => 'mailto:integracija@tf.vusa.lt',
+            'tspmi' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUNUc2UUtSREk4OExZT0VEMlkwRExKUUw5Ry4u',
+            'vm' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUNEdYVzJTSURWRkdXMVZFMlhFUVkyREk0UC4u',
         ];
 
         $english_tenant_names = [
@@ -499,7 +502,7 @@ class PublicPageController extends PublicController
 
         if ($tab === 'past') {
             // For past events, get ALL categories and tenants regardless of current filter
-            $categories = \App\Models\Category::query()
+            $categories = Category::query()
                 ->whereHas('calendars', function ($query) {
                     // Only get categories that have calendar events
                     $query->where('is_draft', false);
@@ -514,7 +517,7 @@ class PublicPageController extends PublicController
                 ->get()
                 ->toArray();
 
-            $tenants = \App\Models\Tenant::query()
+            $tenants = Tenant::query()
                 ->whereHas('calendar', function ($query) {
                     // Only get tenants that have calendar events
                     $query->where('is_draft', false);
@@ -530,7 +533,7 @@ class PublicPageController extends PublicController
                 ->toArray();
         } else {
             // For upcoming events, only get categories and tenants that have upcoming events
-            $categories = \App\Models\Category::query()
+            $categories = Category::query()
                 ->whereHas('calendars', function ($query) use ($now) {
                     $query->where('is_draft', false)
                         ->where('date', '>=', $now->format('Y-m-d'));
@@ -545,7 +548,7 @@ class PublicPageController extends PublicController
                 ->get()
                 ->toArray();
 
-            $tenants = \App\Models\Tenant::query()
+            $tenants = Tenant::query()
                 ->whereHas('calendar', function ($query) use ($now) {
                     $query->where('is_draft', false)
                         ->where('date', '>=', $now->format('Y-m-d'));
@@ -679,7 +682,7 @@ class PublicPageController extends PublicController
                     if ($field->use_model_options) {
                         // Special handling for Institution model on student rep form
                         if ($isStudentRepForm && $field->options_model === Institution::class) {
-                            $options = $this->getInstitutionsWithoutActiveReps($formSettings, $preselectedInstitutionId)->map(function (\Illuminate\Database\Eloquent\Model $model) use ($field) {
+                            $options = $this->getInstitutionsWithoutActiveReps($formSettings, $preselectedInstitutionId)->map(function (Model $model) use ($field) {
                                 if (! $model instanceof Institution) {
                                     return [
                                         'value' => null,
@@ -693,7 +696,7 @@ class PublicPageController extends PublicController
                                 ];
                             })->filter(fn (array $option) => $option['value'] !== null);
                         } else {
-                            $options = $field->options_model::all()->map(function (\Illuminate\Database\Eloquent\Model $model) use ($field) {
+                            $options = $field->options_model::all()->map(function (Model $model) use ($field) {
                                 return [
                                     'value' => $model->getKey(),
                                     'label' => $model->getAttribute($field->options_model_field),
@@ -717,7 +720,7 @@ class PublicPageController extends PublicController
      * Get institutions that have duties with no active members (for student rep registration).
      * Always includes the preselected institution if provided.
      */
-    protected function getInstitutionsWithoutActiveReps(FormSettings $formSettings, ?string $preselectedInstitutionId = null): \Illuminate\Database\Eloquent\Collection
+    protected function getInstitutionsWithoutActiveReps(FormSettings $formSettings, ?string $preselectedInstitutionId = null): Collection
     {
         $allowedTypeIds = $formSettings->getStudentRepInstitutionTypeIds();
 

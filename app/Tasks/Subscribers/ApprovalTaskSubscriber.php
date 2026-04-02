@@ -2,10 +2,12 @@
 
 namespace App\Tasks\Subscribers;
 
+use App\Contracts\Approvable;
 use App\Events\ApprovalDecisionMade;
 use App\Events\ApprovalRequested;
 use App\Tasks\DTOs\CreateTaskData;
 use App\Tasks\Handlers\ApprovalTaskHandler;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Str;
 
@@ -47,7 +49,7 @@ class ApprovalTaskSubscriber
         $step = $event->step;
 
         // Get approvers for this step
-        /** @var \App\Contracts\Approvable&\Illuminate\Database\Eloquent\Model $approvable */
+        /** @var Approvable&Model $approvable */
         $approvers = $approvable->getApproversForStep($step);
 
         if ($approvers->isEmpty()) {
@@ -118,7 +120,7 @@ class ApprovalTaskSubscriber
      * Get the model that should own the task.
      * For pivot models like ReservationResource, return the parent.
      *
-     * @param  \Illuminate\Database\Eloquent\Model&\App\Contracts\Approvable  $approvable
+     * @param  Model&Approvable  $approvable
      */
     protected function getTaskableModel($approvable)
     {

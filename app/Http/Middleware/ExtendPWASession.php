@@ -21,7 +21,7 @@ class ExtendPWASession
      * If the request comes from an installed PWA (detected via cookie),
      * extend the session lifetime and disable expire_on_close.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {

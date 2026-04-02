@@ -18,7 +18,7 @@ use App\Models\User;
 use Tests\TestCase;
 
 uses(
-    Tests\TestCase::class,
+    TestCase::class,
 )->in('Feature', 'Unit');
 
 /*
@@ -99,7 +99,7 @@ function makeTenantUser(?string $role = null, ?Tenant $tenant = null): User
     $tenant = $tenant ?? Tenant::query()->inRandomOrder()->first();
 
     if (! $tenant) {
-        throw new \RuntimeException('No tenants found in database. Ensure test database is properly seeded.');
+        throw new RuntimeException('No tenants found in database. Ensure test database is properly seeded.');
     }
 
     $user = makeUser($tenant);

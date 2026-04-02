@@ -11,6 +11,7 @@ use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Notifications\StudentRepRegistrationNotification;
+use App\Settings\AtstovavimasSettings;
 use App\Settings\FormSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
@@ -251,10 +252,10 @@ function createInstitutionManager(Tenant $tenant, Institution $institution): Use
     );
 
     // Configure this role as the institution manager role in settings
-    $settings = app(\App\Settings\AtstovavimasSettings::class);
+    $settings = app(AtstovavimasSettings::class);
     $settings->institution_manager_role_id = $role->id;
     $settings->save();
-    app()->forgetInstance(\App\Settings\AtstovavimasSettings::class);
+    app()->forgetInstance(AtstovavimasSettings::class);
 
     // Create user with duty in the institution
     $user = User::factory()->create();

@@ -9,7 +9,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Pivots\Dutiable>
+ * @extends Factory<Dutiable>
  */
 class DutiableFactory extends Factory
 {

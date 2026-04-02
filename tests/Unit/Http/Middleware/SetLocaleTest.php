@@ -208,7 +208,7 @@ test('redirects invalid locale segments', function () {
 });
 
 test('sanitize locale removes special characters', function () {
-    $reflection = new \ReflectionClass($this->middleware);
+    $reflection = new ReflectionClass($this->middleware);
     $method = $reflection->getMethod('sanitizeLocale');
     $method->setAccessible(true);
 
@@ -232,7 +232,7 @@ test('sanitize locale removes special characters', function () {
 });
 
 test('sanitize locale handles non string input', function () {
-    $reflection = new \ReflectionClass($this->middleware);
+    $reflection = new ReflectionClass($this->middleware);
     $method = $reflection->getMethod('sanitizeLocale');
     $method->setAccessible(true);
 
@@ -245,7 +245,7 @@ test('sanitize locale handles non string input', function () {
 });
 
 test('is valid locale only accepts configured locales', function () {
-    $reflection = new \ReflectionClass($this->middleware);
+    $reflection = new ReflectionClass($this->middleware);
     $method = $reflection->getMethod('isValidLocale');
     $method->setAccessible(true);
 

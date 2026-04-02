@@ -61,7 +61,7 @@ class DutyController extends AdminController
         return $this->inertiaResponse('Admin/People/IndexDuty', [
             'duties' => [
                 'data' => $duties->getCollection()->map(function ($duty) {
-                    /** @var \App\Models\Duty $duty */
+                    /** @var Duty $duty */
                     return $duty->toFullArray();
                 })->values(),
                 'meta' => [
@@ -146,14 +146,8 @@ class DutyController extends AdminController
     {
         $this->handleAuthorization('update', $duty);
 
+        // study_program is auto-loaded via Dutiable::$with
         $duty->load('institution', 'types', 'roles', 'current_users');
-
-        // Manually load study_program for each user's pivot
-        foreach ($duty->current_users as $user) {
-            if ($user->pivot && $user->pivot->study_program_id) {
-                $user->pivot->load('study_program');
-            }
-        }
 
         return $this->inertiaResponse('Admin/People/EditDuty', [
             'duty' => $duty->toFullArray(),
@@ -213,19 +207,27 @@ class DutyController extends AdminController
         return back()->with('success', trans_choice('messages.updated', 0, ['model' => trans_choice('entities.duty.model', 1)]));
     }
 
-    private function handleUsersUpdate(Collection $existing_users, Collection $duty_users, Duty $duty)
+    private function handleUsersUpdate(Collection $existingUserIds, Collection $requestUserIds, Duty $duty)
     {
-        $new = $duty_users->diff($existing_users);
-        $removed = $existing_users->diff($duty_users);
+        $new = $requestUserIds->diff($existingUserIds);
+        $removed = $existingUserIds->diff($requestUserIds);
 
-        // remove users from duty
-        foreach ($removed as $user) {
-            $duty->users()->updateExistingPivot($user, ['end_date' => now()->subDay()]);
+        // Batch remove users from duty (single UPDATE query)
+        if ($removed->isNotEmpty()) {
+            DB::table('dutiables')
+                ->where('duty_id', $duty->id)
+                ->whereIn('dutiable_id', $removed->all())
+                ->where('dutiable_type', User::class)
+                ->whereNull('end_date')
+                ->update(['end_date' => now()->subDay()]);
         }
 
-        // add users to duty
-        foreach ($new as $user) {
-            $duty->users()->attach($user, ['start_date' => now()->subDay()]);
+        // Batch add users to duty (single INSERT query)
+        if ($new->isNotEmpty()) {
+            $attachData = $new->mapWithKeys(fn ($userId) => [
+                $userId => ['start_date' => now()->subDay()],
+            ])->all();
+            $duty->users()->attach($attachData);
         }
     }
 

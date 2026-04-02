@@ -4,10 +4,11 @@ namespace Database\Factories;
 
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\Type;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Type>
+ * @extends Factory<Type>
  */
 class TypeFactory extends Factory
 {

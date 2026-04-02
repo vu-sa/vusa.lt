@@ -6,7 +6,7 @@ use App\Models\SharepointFile;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\SharepointFile>
+ * @extends Factory<SharepointFile>
  */
 class SharepointFileFactory extends Factory
 {

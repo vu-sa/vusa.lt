@@ -15,9 +15,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
+use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
  * @property string $id
@@ -33,11 +37,11 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  * @property \Illuminate\Support\Carbon $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read ReservationResource|null $pivot
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Reservation> $active_reservations
- * @property-read \App\Models\ResourceCategory|null $category
- * @property-read \Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection<int, \Spatie\MediaLibrary\MediaCollections\Models\Media> $media
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Reservation> $reservations
- * @property-read \App\Models\Tenant $tenant
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Reservation> $active_reservations
+ * @property-read ResourceCategory|null $category
+ * @property-read MediaCollection<int, Media> $media
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Reservation> $reservations
+ * @property-read Tenant $tenant
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\ResourceFactory factory($count = null, $state = [])
@@ -90,7 +94,7 @@ class Resource extends Model implements HasMedia
      */
     public function searchableUsing()
     {
-        return app(\Laravel\Scout\EngineManager::class)->engine('typesense');
+        return app(EngineManager::class)->engine('typesense');
     }
 
     public function registerMediaCollections(): void
@@ -159,7 +163,7 @@ class Resource extends Model implements HasMedia
         return $this->reservations()->wherePivotIn('state', ['created', 'reserved', 'lent']);
     }
 
-    public function managers(): \Illuminate\Support\Collection
+    public function managers(): Collection
     {
         return GetResourceManagers::execute($this);
     }
@@ -177,7 +181,7 @@ class Resource extends Model implements HasMedia
     /**
      * Calculate available capacity at a specific time
      *
-     * @param  \Carbon\Carbon|string  $datetime  The time to check capacity at
+     * @param  Carbon|string  $datetime  The time to check capacity at
      * @param  string  $symbol_start  Comparison operator for start time ('<', '<=')
      * @param  string  $symbol_end  Comparison operator for end time ('>', '>=')
      * @param  array<int, string>  $exceptReservations  Reservation IDs to exclude from calculation
@@ -185,14 +189,14 @@ class Resource extends Model implements HasMedia
      * @return int Available capacity at the specified time
      */
     public function leftCapacityAtTime(
-        \Carbon\Carbon|string $datetime,
+        Carbon|string $datetime,
         string $symbol_start = '<',
         string $symbol_end = '>=',
         array $exceptReservations = [],
         array $exceptResources = []
     ): int {
         $calculator = new ResourceCapacityCalculator($this);
-        $time = $datetime instanceof \Carbon\Carbon ? $datetime : \Carbon\Carbon::parse($datetime);
+        $time = $datetime instanceof Carbon ? $datetime : Carbon::parse($datetime);
 
         return $calculator->calculateLeftCapacityAtTime(
             $time,
@@ -206,18 +210,18 @@ class Resource extends Model implements HasMedia
     /**
      * Calculate capacity before and after a specific time
      *
-     * @param  \Carbon\Carbon|string  $datetime  The time to check capacity at
+     * @param  Carbon|string  $datetime  The time to check capacity at
      * @param  array<int, string>  $exceptReservations  Reservation IDs to exclude from calculation
      * @param  array<int, string>  $exceptResources  Resource IDs to exclude from calculation
      * @return array{before: int, after: int} Capacity before and after the specified time
      */
     public function leftCapacityAtTimeArray(
-        \Carbon\Carbon|string $datetime,
+        Carbon|string $datetime,
         array $exceptReservations = [],
         array $exceptResources = []
     ): array {
         $calculator = new ResourceCapacityCalculator($this);
-        $time = $datetime instanceof \Carbon\Carbon ? $datetime : \Carbon\Carbon::parse($datetime);
+        $time = $datetime instanceof Carbon ? $datetime : Carbon::parse($datetime);
 
         return $calculator->calculateCapacityAtTimeArray($time, $exceptReservations, $exceptResources);
     }
@@ -232,16 +236,16 @@ class Resource extends Model implements HasMedia
      * $resource = Resource::find("01h2y03by254dm8f3p9nkpfxn9");
      * $capacity = $resource->getCapacityAtDateTimeRange("2023-05-01 00:00:00", "2023-07-10 23:59:59");
      *
-     * @param  \Carbon\Carbon|string|int  $from  Start time (Carbon, string, or timestamp in ms)
-     * @param  \Carbon\Carbon|string|int  $to  End time (Carbon, string, or timestamp in ms)
+     * @param  Carbon|string|int  $from  Start time (Carbon, string, or timestamp in ms)
+     * @param  Carbon|string|int  $to  End time (Carbon, string, or timestamp in ms)
      * @param  array<int, string>  $exceptReservations  Reservation IDs to exclude from calculation
      * @param  array<int, string>  $exceptResources  Resource IDs to exclude from calculation
      * @return array<string, array{before: int, after: int, reservation?: array<string, mixed>, start?: bool, end?: bool}>
      *                                                                                                                     Capacity timeline keyed by timestamp (ms), sorted chronologically
      */
     public function getCapacityAtDateTimeRange(
-        \Carbon\Carbon|string|int $from,
-        \Carbon\Carbon|string|int $to,
+        Carbon|string|int $from,
+        Carbon|string|int $to,
         array $exceptReservations = [],
         array $exceptResources = []
     ): array {

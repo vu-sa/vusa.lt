@@ -3,13 +3,18 @@
 use App\Http\Controllers\Api\Admin\FileApiController;
 use App\Http\Controllers\Api\Admin\InstitutionSubscriptionApiController;
 use App\Http\Controllers\Api\Admin\MeetingApiController;
+use App\Http\Controllers\Api\Admin\SearchApiController;
 use App\Http\Controllers\Api\Admin\SharepointApiController;
 use App\Http\Controllers\Api\Admin\TaskApiController;
+use App\Http\Controllers\Api\Admin\TextBoxSubmissionApiController;
 use App\Http\Controllers\Api\Admin\TutorialApiController;
+use App\Http\Controllers\Api\Admin\UserSearchApiController;
 use App\Http\Controllers\Api\CalendarController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\NewsController;
+use App\Http\Controllers\Api\TextBoxSubmissionController;
 use App\Http\Controllers\Api\TypeController;
+use App\Services\Typesense\TypesenseManager;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -50,8 +55,13 @@ Route::prefix('v1')->name('v1.')->group(function () {
 
     // Typesense configuration for frontend search
     Route::get('typesense/config', function () {
-        return response()->json(\App\Services\Typesense\TypesenseManager::getFrontendConfig());
+        return response()->json(TypesenseManager::getFrontendConfig());
     })->name('typesense.config');
+
+    // Text box submissions (public) - 'web' middleware needed to read session for optional user association
+    Route::post('text-box-submissions', [TextBoxSubmissionController::class, 'store'])
+        ->middleware(['web', 'throttle:textBoxSubmissions'])
+        ->name('text-box-submissions.store');
 
     // Tenant-specific public content
     Route::prefix('tenants/{tenant:alias}')->name('tenants.')->group(function () {
@@ -102,8 +112,8 @@ Route::prefix('v1')->name('v1.')->group(function () {
         Route::post('tutorials/reset-all', [TutorialApiController::class, 'resetAll'])->name('tutorials.resetAll');
 
         // Typesense admin search configuration with scoped API keys
-        Route::get('search/config', [\App\Http\Controllers\Api\Admin\SearchApiController::class, 'config'])->name('search.config');
-        Route::post('search/refresh-key', [\App\Http\Controllers\Api\Admin\SearchApiController::class, 'refreshKey'])->name('search.refreshKey');
+        Route::get('search/config', [SearchApiController::class, 'config'])->name('search.config');
+        Route::post('search/refresh-key', [SearchApiController::class, 'refreshKey'])->name('search.refreshKey');
 
         // Institution subscription (follow/mute) management
         Route::prefix('institutions')->name('institutions.')->group(function () {
@@ -117,5 +127,14 @@ Route::prefix('v1')->name('v1.')->group(function () {
 
         // Notification subscription preferences
         Route::post('notification-subscriptions/reset', [InstitutionSubscriptionApiController::class, 'reset'])->name('subscriptions.reset');
+
+        // User search for forms (e.g. responsible user in problems)
+        Route::get('users/search', [UserSearchApiController::class, 'search'])->name('users.search');
+
+        // Text box submissions
+        Route::get('text-box-submissions', [TextBoxSubmissionApiController::class, 'index'])->name('text-box-submissions.index');
+        Route::get('text-box-submissions/export', [TextBoxSubmissionApiController::class, 'export'])->name('text-box-submissions.export');
+        Route::delete('text-box-submissions/{submission}', [TextBoxSubmissionApiController::class, 'destroy'])->name('text-box-submissions.destroy');
+        Route::delete('text-box-submissions', [TextBoxSubmissionApiController::class, 'destroyAll'])->name('text-box-submissions.destroyAll');
     });
 });

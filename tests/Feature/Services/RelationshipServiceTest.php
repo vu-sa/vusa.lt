@@ -7,6 +7,7 @@ use App\Models\Pivots\AgendaItem;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Relationship;
 use App\Models\Tenant;
+use App\Models\Type;
 use App\Models\User;
 use App\Models\Vote;
 use App\Services\RelationshipService;
@@ -226,11 +227,11 @@ describe('getRelatedInstitutionsForMultiple', function () {
         ]);
 
         // Create types for type-based relationship
-        $userType = \App\Models\Type::factory()->create([
+        $userType = Type::factory()->create([
             'title' => ['lt' => 'Vartotojo tipas', 'en' => 'User Type'],
             'model_type' => Institution::class,
         ]);
-        $relatedType = \App\Models\Type::factory()->create([
+        $relatedType = Type::factory()->create([
             'title' => ['lt' => 'Susijęs tipas', 'en' => 'Related Type'],
             'model_type' => Institution::class,
         ]);
@@ -243,7 +244,7 @@ describe('getRelatedInstitutionsForMultiple', function () {
         // This means userInstitution has INCOMING relationship from relatedInstitution
         $typeRelationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => \App\Models\Type::class,
+            'relationshipable_type' => Type::class,
             'relationshipable_id' => $relatedType->id,
             'related_model_id' => $userType->id,
             'scope' => Relationshipable::SCOPE_CROSS_TENANT,
@@ -376,11 +377,11 @@ describe('relationship scope', function () {
         // missing the 'type' column needed for scope matching.
 
         // Create types for the relationship
-        $sourceType = \App\Models\Type::factory()->create([
+        $sourceType = Type::factory()->create([
             'title' => ['lt' => 'KAP Taryba Test', 'en' => 'KAP Council Test'],
             'model_type' => Institution::class,
         ]);
-        $targetType = \App\Models\Type::factory()->create([
+        $targetType = Type::factory()->create([
             'title' => ['lt' => 'Senatas Test', 'en' => 'Senate Test'],
             'model_type' => Institution::class,
         ]);
@@ -390,7 +391,7 @@ describe('relationship scope', function () {
         // And institutions with sourceType have incoming relationship from institutions with targetType
         $typeRelationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => \App\Models\Type::class,
+            'relationshipable_type' => Type::class,
             'relationshipable_id' => $targetType->id,
             'related_model_id' => $sourceType->id,
             'scope' => Relationshipable::SCOPE_CROSS_TENANT,
@@ -443,11 +444,11 @@ describe('type-based cross-tenant authorization', function () {
             'name' => ['lt' => 'Padalinio institucija', 'en' => 'Branch Institution'],
         ]);
 
-        $sourceType = \App\Models\Type::factory()->create([
+        $sourceType = Type::factory()->create([
             'title' => ['lt' => 'Šaltinio tipas', 'en' => 'Source Type'],
             'model_type' => Institution::class,
         ]);
-        $targetType = \App\Models\Type::factory()->create([
+        $targetType = Type::factory()->create([
             'title' => ['lt' => 'Tikslo tipas', 'en' => 'Target Type'],
             'model_type' => Institution::class,
         ]);
@@ -457,7 +458,7 @@ describe('type-based cross-tenant authorization', function () {
 
         $typeRelationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => \App\Models\Type::class,
+            'relationshipable_type' => Type::class,
             'relationshipable_id' => $sourceType->id,
             'related_model_id' => $targetType->id,
             'scope' => Relationshipable::SCOPE_CROSS_TENANT,
@@ -488,11 +489,11 @@ describe('type-based cross-tenant authorization', function () {
             'name' => ['lt' => 'Padalinio institucija', 'en' => 'Branch Institution'],
         ]);
 
-        $sourceType = \App\Models\Type::factory()->create([
+        $sourceType = Type::factory()->create([
             'title' => ['lt' => 'Šaltinio tipas', 'en' => 'Source Type'],
             'model_type' => Institution::class,
         ]);
-        $targetType = \App\Models\Type::factory()->create([
+        $targetType = Type::factory()->create([
             'title' => ['lt' => 'Tikslo tipas', 'en' => 'Target Type'],
             'model_type' => Institution::class,
         ]);
@@ -502,7 +503,7 @@ describe('type-based cross-tenant authorization', function () {
 
         $typeRelationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => \App\Models\Type::class,
+            'relationshipable_type' => Type::class,
             'relationshipable_id' => $sourceType->id,
             'related_model_id' => $targetType->id,
             'scope' => Relationshipable::SCOPE_CROSS_TENANT,
@@ -661,7 +662,7 @@ describe('directional authorization', function () {
 describe('sibling relationships', function () {
     test('sibling relationships have authorized = true', function () {
         // Create a type with sibling relationships enabled
-        $type = \App\Models\Type::factory()->create([
+        $type = Type::factory()->create([
             'model_type' => Institution::class,
             'title' => ['lt' => 'Test Type', 'en' => 'Test Type'],
             'extra_attributes' => ['enable_sibling_relationships' => true],
@@ -694,7 +695,7 @@ describe('sibling relationships', function () {
         ]);
 
         // Create a type with sibling relationships enabled
-        $type = \App\Models\Type::factory()->create([
+        $type = Type::factory()->create([
             'model_type' => Institution::class,
             'title' => ['lt' => 'Test Type', 'en' => 'Test Type'],
             'extra_attributes' => ['enable_sibling_relationships' => true],
@@ -714,7 +715,7 @@ describe('sibling relationships', function () {
 
     test('sibling relationships are included in authorization check', function () {
         // Create a type with sibling relationships enabled
-        $type = \App\Models\Type::factory()->create([
+        $type = Type::factory()->create([
             'model_type' => Institution::class,
             'title' => ['lt' => 'Test Type', 'en' => 'Test Type'],
             'extra_attributes' => ['enable_sibling_relationships' => true],
@@ -758,7 +759,7 @@ describe('cross-tenant sibling relationships', function () {
         ]);
 
         // Create a type with cross-tenant sibling relationships enabled
-        $type = \App\Models\Type::factory()->create([
+        $type = Type::factory()->create([
             'model_type' => Institution::class,
             'title' => ['lt' => 'AEK Type', 'en' => 'AEK Type'],
             'extra_attributes' => ['enable_cross_tenant_sibling_relationships' => true],
@@ -803,7 +804,7 @@ describe('cross-tenant sibling relationships', function () {
         ]);
 
         // Create a type with cross-tenant sibling relationships enabled
-        $type = \App\Models\Type::factory()->create([
+        $type = Type::factory()->create([
             'model_type' => Institution::class,
             'title' => ['lt' => 'AEK Type', 'en' => 'AEK Type'],
             'extra_attributes' => ['enable_cross_tenant_sibling_relationships' => true],
@@ -849,7 +850,7 @@ describe('cross-tenant sibling relationships', function () {
         ]);
 
         // Create a type with cross-tenant sibling relationships enabled
-        $type = \App\Models\Type::factory()->create([
+        $type = Type::factory()->create([
             'model_type' => Institution::class,
             'title' => ['lt' => 'AEK Type', 'en' => 'AEK Type'],
             'extra_attributes' => ['enable_cross_tenant_sibling_relationships' => true],
@@ -900,7 +901,7 @@ describe('cross-tenant sibling relationships', function () {
         ]);
 
         // Create a type with REGULAR sibling relationships enabled (not cross-tenant)
-        $type = \App\Models\Type::factory()->create([
+        $type = Type::factory()->create([
             'model_type' => Institution::class,
             'title' => ['lt' => 'AEK Type', 'en' => 'AEK Type'],
             'extra_attributes' => ['enable_sibling_relationships' => true],
@@ -949,7 +950,7 @@ describe('cross-tenant sibling relationships', function () {
         ]);
 
         // Create a type with cross-tenant sibling relationships enabled
-        $type = \App\Models\Type::factory()->create([
+        $type = Type::factory()->create([
             'model_type' => Institution::class,
             'title' => ['lt' => 'AEK Type', 'en' => 'AEK Type'],
             'extra_attributes' => ['enable_cross_tenant_sibling_relationships' => true],

@@ -6,17 +6,19 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\SharepointFile;
 use App\Models\Type;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
+use Illuminate\Support\Carbon;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
  * @property string $sharepoint_file_id
  * @property string $fileable_type
  * @property string $fileable_id
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $fileable
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read Model|\Eloquent $fileable
  * @property-read Institution|null $institution
  * @property-read Meeting|null $meeting
  * @property-read SharepointFile $sharepointFile

@@ -7,61 +7,63 @@ import type { ModelEnum } from '../../Types/enums';
 // =============================================================================
 // REGULAR ICONS - Import each icon only ONCE
 // =============================================================================
-import DocumentBulletList24Regular from '~icons/fluent/document-bullet-list24-regular';
-import ImageArrowBack24Regular from '~icons/fluent/image-arrow-back24-regular';
-import CalendarLtr24Regular from '~icons/fluent/calendar-ltr24-regular';
-import TextBulletListSquare24Regular from '~icons/fluent/text-bullet-list-square24-regular';
-import Comment24Regular from '~icons/fluent/comment24-regular';
-import DocumentMultiple24Regular from '~icons/fluent/document-multiple24-regular';
-import PersonClock24Regular from '~icons/fluent/person-clock24-regular';
-import PuzzlePiece24Regular from '~icons/fluent/puzzle-piece24-regular';
-import PeopleTeam24Regular from '~icons/fluent/people-team24-regular';
-import DeviceMeetingRoomRemote24Regular from '~icons/fluent/device-meeting-room-remote24-regular';
-import Navigation24Regular from '~icons/fluent/navigation24-regular';
-import News24Regular from '~icons/fluent/news24-regular';
-import ShieldKeyhole24Regular from '~icons/fluent/shield-keyhole24-regular';
-import Grid24Regular from '~icons/fluent/grid24-regular';
-import Flow20Regular from '~icons/fluent/flow20-regular';
-import FlowchartCircle24Regular from '~icons/fluent/flowchart-circle24-regular';
-import Bookmark24Regular from '~icons/fluent/bookmark24-regular';
-import Cube24Regular from '~icons/fluent/cube24-regular';
-import PersonBoard24Regular from '~icons/fluent/person-board24-regular';
-import BookOpenGlobe24Regular from '~icons/fluent/book-open-globe24-regular';
-import Tag24Regular from '~icons/fluent/tag24-regular';
-import TaskListSquareLtr24Regular from '~icons/fluent/task-list-square-ltr24-regular';
-import PeopleSearch24Regular from '~icons/fluent/people-search24-regular';
-import Notebook24Regular from '~icons/fluent/notebook24-regular';
-import DocumentSettings20Regular from '~icons/fluent/document-settings20-regular';
-import Person24Regular from '~icons/fluent/person24-regular';
+import DocumentBulletList24Regular from "~icons/fluent/document-bullet-list24-regular";
+import ImageArrowBack24Regular from "~icons/fluent/image-arrow-back24-regular";
+import CalendarLtr24Regular from "~icons/fluent/calendar-ltr24-regular";
+import TextBulletListSquare24Regular from "~icons/fluent/text-bullet-list-square24-regular";
+import Comment24Regular from "~icons/fluent/comment24-regular";
+import DocumentMultiple24Regular from "~icons/fluent/document-multiple24-regular";
+import PersonClock24Regular from "~icons/fluent/person-clock24-regular";
+import PuzzlePiece24Regular from "~icons/fluent/puzzle-piece24-regular";
+import PeopleTeam24Regular from "~icons/fluent/people-team24-regular";
+import DeviceMeetingRoomRemote24Regular from "~icons/fluent/device-meeting-room-remote24-regular";
+import Navigation24Regular from "~icons/fluent/navigation24-regular";
+import News24Regular from "~icons/fluent/news24-regular";
+import ShieldKeyhole24Regular from "~icons/fluent/shield-keyhole24-regular";
+import Grid24Regular from "~icons/fluent/grid24-regular";
+import Flow20Regular from "~icons/fluent/flow20-regular";
+import FlowchartCircle24Regular from "~icons/fluent/flowchart-circle24-regular";
+import Bookmark24Regular from "~icons/fluent/bookmark24-regular";
+import Cube24Regular from "~icons/fluent/cube24-regular";
+import PersonBoard24Regular from "~icons/fluent/person-board24-regular";
+import BookOpenGlobe24Regular from "~icons/fluent/book-open-globe24-regular";
+import Tag24Regular from "~icons/fluent/tag24-regular";
+import TaskListSquareLtr24Regular from "~icons/fluent/task-list-square-ltr24-regular";
+import PeopleSearch24Regular from "~icons/fluent/people-search24-regular";
+import Notebook24Regular from "~icons/fluent/notebook24-regular";
+import DocumentSettings20Regular from "~icons/fluent/document-settings20-regular";
+import Person24Regular from "~icons/fluent/person24-regular";
+import Alert24Regular from "~icons/fluent/alert24-regular";
 
 // =============================================================================
 // FILLED ICONS - Import each icon only ONCE
 // =============================================================================
-import DocumentBulletList24Filled from '~icons/fluent/document-bullet-list24-filled';
-import ImageArrowBack24Filled from '~icons/fluent/image-arrow-back24-filled';
-import CalendarLtr24Filled from '~icons/fluent/calendar-ltr24-filled';
-import TextBulletListSquare24Filled from '~icons/fluent/text-bullet-list-square24-filled';
-import Comment24Filled from '~icons/fluent/comment24-filled';
-import DocumentMultiple24Filled from '~icons/fluent/document-multiple24-filled';
-import PersonClock24Filled from '~icons/fluent/person-clock24-filled';
-import PuzzlePiece24Filled from '~icons/fluent/puzzle-piece24-filled';
-import PeopleTeam24Filled from '~icons/fluent/people-team24-filled';
-import DeviceMeetingRoomRemote24Filled from '~icons/fluent/device-meeting-room-remote24-filled';
-import Navigation24Filled from '~icons/fluent/navigation24-filled';
-import News24Filled from '~icons/fluent/news24-filled';
-import ShieldKeyhole24Filled from '~icons/fluent/shield-keyhole24-filled';
-import Grid24Filled from '~icons/fluent/grid24-filled';
-import Flow20Filled from '~icons/fluent/flow20-filled';
-import FlowchartCircle24Filled from '~icons/fluent/flowchart-circle24-filled';
-import Bookmark24Filled from '~icons/fluent/bookmark24-filled';
-import Cube24Filled from '~icons/fluent/cube24-filled';
-import PersonBoard24Filled from '~icons/fluent/person-board24-filled';
-import BookOpenGlobe24Filled from '~icons/fluent/book-open-globe24-filled';
-import Tag24Filled from '~icons/fluent/tag24-filled';
-import TaskListSquareLtr24Filled from '~icons/fluent/task-list-square-ltr24-filled';
-import Notebook24Filled from '~icons/fluent/notebook24-filled';
-import DocumentSettings20Filled from '~icons/fluent/document-settings20-filled';
-import Person24Filled from '~icons/fluent/person24-filled';
+import DocumentBulletList24Filled from "~icons/fluent/document-bullet-list24-filled";
+import ImageArrowBack24Filled from "~icons/fluent/image-arrow-back24-filled";
+import CalendarLtr24Filled from "~icons/fluent/calendar-ltr24-filled";
+import TextBulletListSquare24Filled from "~icons/fluent/text-bullet-list-square24-filled";
+import Comment24Filled from "~icons/fluent/comment24-filled";
+import DocumentMultiple24Filled from "~icons/fluent/document-multiple24-filled";
+import PersonClock24Filled from "~icons/fluent/person-clock24-filled";
+import PuzzlePiece24Filled from "~icons/fluent/puzzle-piece24-filled";
+import PeopleTeam24Filled from "~icons/fluent/people-team24-filled";
+import DeviceMeetingRoomRemote24Filled from "~icons/fluent/device-meeting-room-remote24-filled";
+import Navigation24Filled from "~icons/fluent/navigation24-filled";
+import News24Filled from "~icons/fluent/news24-filled";
+import ShieldKeyhole24Filled from "~icons/fluent/shield-keyhole24-filled";
+import Grid24Filled from "~icons/fluent/grid24-filled";
+import Flow20Filled from "~icons/fluent/flow20-filled";
+import FlowchartCircle24Filled from "~icons/fluent/flowchart-circle24-filled";
+import Bookmark24Filled from "~icons/fluent/bookmark24-filled";
+import Cube24Filled from "~icons/fluent/cube24-filled";
+import PersonBoard24Filled from "~icons/fluent/person-board24-filled";
+import BookOpenGlobe24Filled from "~icons/fluent/book-open-globe24-filled";
+import Tag24Filled from "~icons/fluent/tag24-filled";
+import TaskListSquareLtr24Filled from "~icons/fluent/task-list-square-ltr24-filled";
+import Notebook24Filled from "~icons/fluent/notebook24-filled";
+import DocumentSettings20Filled from "~icons/fluent/document-settings20-filled";
+import Person24Filled from "~icons/fluent/person24-filled";
+import Alert24Filled from "~icons/fluent/alert24-filled";
 
 // =============================================================================
 // TREE-SHAKABLE EXPORTS - Clean, concise naming
@@ -83,6 +85,7 @@ export const NavigationIcon = Navigation24Regular;
 export const NewsIcon = News24Regular;
 export const PageIcon = DocumentMultiple24Regular;
 export const PermissionIcon = ShieldKeyhole24Regular;
+export const ProblemIcon = Alert24Regular;
 export const QuickLinkIcon = Grid24Regular;
 export const RelationshipIcon = Flow20Regular;
 export const RelationshipableIcon = FlowchartCircle24Regular;
@@ -117,6 +120,7 @@ export const NavigationIconFilled = Navigation24Filled;
 export const NewsIconFilled = News24Filled;
 export const PageIconFilled = DocumentMultiple24Filled;
 export const PermissionIconFilled = ShieldKeyhole24Filled;
+export const ProblemIconFilled = Alert24Filled;
 export const QuickLinkIconFilled = Grid24Filled;
 export const RelationshipIconFilled = Flow20Filled;
 export const RelationshipableIconFilled = FlowchartCircle24Filled;
@@ -156,6 +160,7 @@ const modelIconMappingRegular: Record<keyof typeof ModelEnum, Component> = {
   NEWS: NewsIcon,
   PAGE: PageIcon,
   PERMISSION: PermissionIcon,
+  PROBLEM: ProblemIcon,
   QUICK_LINK: QuickLinkIcon,
   RELATIONSHIP: RelationshipIcon,
   RELATIONSHIPABLE: RelationshipableIcon,
@@ -192,6 +197,7 @@ const modelIconMappingFilled: Record<keyof typeof ModelEnum, Component> = {
   NEWS: NewsIconFilled,
   PAGE: PageIconFilled,
   PERMISSION: PermissionIconFilled,
+  PROBLEM: ProblemIconFilled,
   QUICK_LINK: QuickLinkIconFilled,
   RELATIONSHIP: RelationshipIconFilled,
   RELATIONSHIPABLE: RelationshipableIconFilled,

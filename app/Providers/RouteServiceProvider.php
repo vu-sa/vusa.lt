@@ -83,5 +83,11 @@ class RouteServiceProvider extends ServiceProvider
 
             return Limit::perMinute(5)->by($email.$request->ip());
         });
+
+        RateLimiter::for('textBoxSubmissions', function (Request $request) {
+            return $request->user()
+                ? Limit::perMinute(10)->by($request->user()->id)
+                : Limit::perMinute(5)->by($request->ip());
+        });
     }
 }

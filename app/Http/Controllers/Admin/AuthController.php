@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Duty;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
+use GuzzleHttp\Exception\ClientException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\InvalidStateException;
 
 class AuthController extends Controller
 {
@@ -59,7 +61,7 @@ class AuthController extends Controller
 
         try {
             $microsoftUser = Socialite::driver('microsoft')->user();
-        } catch (\Laravel\Socialite\Two\InvalidStateException $e) {
+        } catch (InvalidStateException $e) {
             // Log the error for debugging
             \Log::warning('Microsoft OAuth InvalidStateException, retrying with stateless', [
                 'user_ip' => $request->ip(),
@@ -71,7 +73,7 @@ class AuthController extends Controller
             // Retry with stateless method
             /** @phpstan-ignore-next-line */
             $microsoftUser = Socialite::driver('microsoft')->stateless()->user();
-        } catch (\GuzzleHttp\Exception\ClientException $e) {
+        } catch (ClientException $e) {
             // Handle Guzzle HTTP errors (e.g., 400 Bad Request from token exchange)
             \Log::error('Microsoft OAuth ClientException', [
                 'message' => $e->getMessage(),
@@ -155,7 +157,7 @@ class AuthController extends Controller
                 return redirect()->route('home', ['subdomain' => 'www', 'lang' => app()->getLocale()])->with('error', $errorMsg);
             }
 
-            /** @var \App\Models\User $user */
+            /** @var User $user */
             $user->microsoft_token = $microsoftUser->token ?? null;
 
             $user->save();

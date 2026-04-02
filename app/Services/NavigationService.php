@@ -3,71 +3,90 @@
 namespace App\Services;
 
 use App\Models\Navigation;
+use Illuminate\Support\Facades\Cache;
 
 class NavigationService
 {
+    /**
+     * Cache TTL in seconds (1 hour)
+     */
+    private const CACHE_TTL = 3600;
+
     public static function getNavigationForPublic()
     {
-        $navigation = Navigation::where('lang', app()->getLocale())->orderBy('order')->get();
+        $locale = app()->getLocale();
 
-        // Start with root navigation elements
-        $rootNavigation = $navigation->where('parent_id', 0)->values()->toArray();
+        return Cache::remember("navigation:public:{$locale}", self::CACHE_TTL, function () use ($locale) {
+            $navigation = Navigation::where('lang', $locale)->orderBy('order')->get();
 
-        // Build children on root navigation elements
-        for ($i = 0; $i < count($rootNavigation); $i++) {
+            // Start with root navigation elements
+            $rootNavigation = $navigation->where('parent_id', 0)->values()->toArray();
 
-            // The structure that the UI uses is that the root navigation elements have a 'links' property which is an array of max. 3 arrays.
-            // Each array of the links array represents a column in the navigation.
-            // The information about which column the link should be in is stored in the 'extra_attributes->column' property of the link.
-            $rootNavigation[$i]['links'] = [];
+            // Build children on root navigation elements
+            for ($i = 0; $i < count($rootNavigation); $i++) {
 
-            // Get immediate children of root navigation element
-            $children = $navigation->where('parent_id', $rootNavigation[$i]['id'])->values()->toArray();
+                // The structure that the UI uses is that the root navigation elements have a 'links' property which is an array of max. 3 arrays.
+                // Each array of the links array represents a column in the navigation.
+                // The information about which column the link should be in is stored in the 'extra_attributes->column' property of the link.
+                $rootNavigation[$i]['links'] = [];
 
-            // Expand extra_attributes to own keys to make it easier to work with
-            // Other data in the extra_attributes array will be used in the UI
-            foreach ($children as $key => $child) {
-                $extraAttributes = $child['extra_attributes'];
-                unset($child['extra_attributes']);
+                // Get immediate children of root navigation element
+                $children = $navigation->where('parent_id', $rootNavigation[$i]['id'])->values()->toArray();
 
-                // If extra_attributes is null, continue
-                if ($extraAttributes === null) {
-                    continue;
-                }
+                // Expand extra_attributes to own keys to make it easier to work with
+                // Other data in the extra_attributes array will be used in the UI
+                foreach ($children as $key => $child) {
+                    $extraAttributes = $child['extra_attributes'];
+                    unset($child['extra_attributes']);
 
-                // Update the child with the extra attributes
-                foreach ($extraAttributes as $extraKey => $extraValue) {
-                    $child[$extraKey] = $extraValue;
-                }
-
-                // Update the child by overwriting the old child
-                $children[$key] = $child;
-            }
-
-            // Set the links of the root navigation by columns
-            for ($j = 1; $j <= 3; $j++) {
-
-                // Push array to root links, where extra_attributes['column'] == $j
-                $rootNavigation[$i]['links'][] = array_filter($children, function ($child) use ($j) {
-
-                    // Also check if the column is not set, then it should be in the first column
-                    if (! isset($child['column'])) {
-                        return $j == 1;
+                    // If extra_attributes is null, continue
+                    if ($extraAttributes === null) {
+                        continue;
                     }
 
-                    return $child['column'] == $j;
-                });
+                    // Update the child with the extra attributes
+                    foreach ($extraAttributes as $extraKey => $extraValue) {
+                        $child[$extraKey] = $extraValue;
+                    }
 
-                $rootNavigation[$i]['links'][$j - 1] = array_values($rootNavigation[$i]['links'][$j - 1]);
+                    // Update the child by overwriting the old child
+                    $children[$key] = $child;
+                }
+
+                // Set the links of the root navigation by columns
+                for ($j = 1; $j <= 3; $j++) {
+
+                    // Push array to root links, where extra_attributes['column'] == $j
+                    $rootNavigation[$i]['links'][] = array_filter($children, function ($child) use ($j) {
+
+                        // Also check if the column is not set, then it should be in the first column
+                        if (! isset($child['column'])) {
+                            return $j == 1;
+                        }
+
+                        return $child['column'] == $j;
+                    });
+
+                    $rootNavigation[$i]['links'][$j - 1] = array_values($rootNavigation[$i]['links'][$j - 1]);
+                }
+
+                // Remove empty arrays
+                $rootNavigation[$i]['links'] = array_filter($rootNavigation[$i]['links']);
+
+                // Add column count immediately for the front end
+                $rootNavigation[$i]['cols'] = count($rootNavigation[$i]['links']);
             }
 
-            // Remove empty arrays
-            $rootNavigation[$i]['links'] = array_filter($rootNavigation[$i]['links']);
+            return $rootNavigation;
+        });
+    }
 
-            // Add column count immediately for the front end
-            $rootNavigation[$i]['cols'] = count($rootNavigation[$i]['links']);
-        }
-
-        return $rootNavigation;
+    /**
+     * Clear navigation cache for all locales
+     */
+    public static function clearCache(): void
+    {
+        Cache::forget('navigation:public:lt');
+        Cache::forget('navigation:public:en');
     }
 }

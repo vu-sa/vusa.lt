@@ -14,6 +14,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Sleep;
 use Microsoft\Graph\BatchRequestBuilder;
 use Microsoft\Graph\Core\Requests\BatchRequestContent;
 use Microsoft\Graph\Core\Requests\BatchRequestItem;
@@ -21,6 +22,7 @@ use Microsoft\Graph\Generated\Drives\Item\Items\Item\Children\ChildrenRequestBui
 use Microsoft\Graph\Generated\Drives\Item\Items\Item\CreateLink\CreateLinkPostRequestBody;
 use Microsoft\Graph\Generated\Drives\Item\Items\Item\DriveItemItemRequestBuilderGetRequestConfiguration;
 use Microsoft\Graph\Generated\Models;
+use Microsoft\Graph\Generated\Models\DriveItem;
 use Microsoft\Graph\Generated\Models\FieldValueSet;
 use Microsoft\Graph\Generated\Models\ODataErrors\ODataError;
 use Microsoft\Graph\Generated\Models\PermissionCollectionResponse;
@@ -59,7 +61,7 @@ class SharepointGraphService
      * This service uses technical constants from SharepointConfigEnum for API URLs,
      * retry logic, timeouts, and other static configuration values.
      *
-     * @see \App\Enums\SharepointConfigEnum For static technical configuration
+     * @see SharepointConfigEnum For static technical configuration
      *
      * Set for which sharepoint site and drive to interact with
      * If no siteId or driveId is provided, it will use the default values from config
@@ -131,7 +133,7 @@ class SharepointGraphService
      * Get a DriveItem object by path (not parsed into collection).
      * Returns the actual Microsoft Graph DriveItem model.
      */
-    public function getDriveItemObjectByPath(string $path): ?Models\DriveItem
+    public function getDriveItemObjectByPath(string $path): ?DriveItem
     {
         try {
             $sharepointPathFinal = $this->graphApiBaseUrl.'drives/'.$this->driveId.'/root:'."/{$path}?\$expand=listItem";
@@ -178,7 +180,7 @@ class SharepointGraphService
     /**
      * Get a drive item by its ID with list item metadata.
      */
-    public function getDriveItemById(string $driveItemId): ?Models\DriveItem
+    public function getDriveItemById(string $driveItemId): ?DriveItem
     {
         try {
             $requestConfiguration = new DriveItemItemRequestBuilderGetRequestConfiguration;
@@ -201,7 +203,7 @@ class SharepointGraphService
         }
     }
 
-    public function getDriveItemByListItem(string $siteId, string $listId, string $listItemId): Models\DriveItem
+    public function getDriveItemByListItem(string $siteId, string $listId, string $listItemId): DriveItem
     {
         $requestConfiguration = new DriveItemRequestBuilderGetRequestConfiguration;
         $queryParameters = DriveItemRequestBuilderGetRequestConfiguration::createQueryParameters();
@@ -215,7 +217,7 @@ class SharepointGraphService
         return $driveItem;
     }
 
-    public function updateDriveItemByPath(string $path, array $fields): ?Models\DriveItem
+    public function updateDriveItemByPath(string $path, array $fields): ?DriveItem
     {
         try {
             $path = rawurlencode($path);
@@ -249,13 +251,13 @@ class SharepointGraphService
         }
     }
 
-    public function getListItem(string $siteId, string $listId, string $listItemId): Models\FieldValueSet
+    public function getListItem(string $siteId, string $listId, string $listItemId): FieldValueSet
     {
         try {
             $listItem = $this->graph->sites()->bySiteId($siteId)->lists()->byListId($listId)->items()->byListItemId($listItemId)->fields()->get()->wait();
 
             return $listItem;
-        } catch (\Microsoft\Graph\Generated\Models\ODataErrors\ODataError $e) {
+        } catch (ODataError $e) {
             // List item doesn't exist (404) or access denied (403)
             $this->logWarning('SharePoint list item not found or inaccessible', [
                 'site_id' => $siteId,
@@ -268,7 +270,7 @@ class SharepointGraphService
         }
     }
 
-    public function updateListItem(string $listId, string $listItemId, array $fields): Models\FieldValueSet
+    public function updateListItem(string $listId, string $listItemId, array $fields): FieldValueSet
     {
         try {
             $requestConfiguration = new FieldsRequestBuilderPatchRequestConfiguration;
@@ -329,7 +331,7 @@ class SharepointGraphService
 
             // flatten driveItemCollection
             return $driveItemCollection;
-        })->reject(fn ($value) => $value === false)->flatten()->map(function (Models\DriveItem $driveItem) {
+        })->reject(fn ($value) => $value === false)->flatten()->map(function (DriveItem $driveItem) {
             // turn to simple array
             return $driveItem->getBackingStore()->enumerate();
         });
@@ -364,7 +366,7 @@ class SharepointGraphService
 
             // Check URL type - must be file (:b: or :w:), not folder (:f:)
             $url = $permission->getLink()->getWebUrl();
-            if (str_contains($url, ':f:')) {
+            if ($this->isFolderUrl($url)) {
                 $this->logWarning('Rejecting folder URL permission on file', [
                     'drive_item_id' => $permission->getId(),
                     'url_type' => 'folder',
@@ -455,7 +457,7 @@ class SharepointGraphService
         ]);
     }
 
-    public function uploadDriveItem(string $filePath, UploadedFile $file): Models\DriveItem
+    public function uploadDriveItem(string $filePath, UploadedFile $file): DriveItem
     {
         $factory = new Psr17Factory;
 
@@ -479,7 +481,7 @@ class SharepointGraphService
      *
      * @param  string  $folderPath  The full path for the folder (e.g., "General/Padaliniai/NewFolder")
      */
-    public function createFolder(string $folderPath): Models\DriveItem
+    public function createFolder(string $folderPath): DriveItem
     {
         $pathParts = explode('/', trim($folderPath, '/'));
         $folderName = array_pop($pathParts);
@@ -491,7 +493,7 @@ class SharepointGraphService
             $parentUrl .= ':/'.$parentPath.':';
         }
 
-        $requestBody = new Models\DriveItem;
+        $requestBody = new DriveItem;
         $requestBody->setName($folderName);
         $requestBody->setFolder(new Models\Folder);
         $requestBody->setAdditionalData([
@@ -520,7 +522,7 @@ class SharepointGraphService
      * @param  string  $filePath  The full path including filename (e.g., "Folder/Subfolder/shortcut.url")
      * @param  string  $content  The .url file content
      */
-    public function uploadUrlShortcut(string $filePath, string $content): Models\DriveItem
+    public function uploadUrlShortcut(string $filePath, string $content): DriveItem
     {
         $factory = new Psr17Factory;
 
@@ -630,15 +632,20 @@ class SharepointGraphService
             // keyBy list item id
         })->keyBy(fn ($value) => $value['listItem']['uniqueId']);
 
-        // Get permissions without anonymous url
+        // Filter out folders - only process files
+        $folderItems = $driveItemCollections->filter(fn ($item) => isset($item['folder']));
+        if ($folderItems->isNotEmpty()) {
+            Log::warning('Batch processing encountered folders instead of files', [
+                'folder_count' => $folderItems->count(),
+                'folder_ids' => $folderItems->keys()->toArray(),
+            ]);
+            $driveItemCollections = $driveItemCollections->reject(fn ($item) => isset($item['folder']));
+        }
+
+        // Get drive items that don't have a valid anonymous permission yet
         $driveItemsWithoutAnonymousUrl = $driveItemCollections->filter(function ($driveItem) {
-            return collect($driveItem['permissions'])->contains(function ($permission) {
-                $hasAnonymous = isset($permission['link']['scope']) ? $permission['link']['scope'] === SharepointScopeEnum::ANONYMOUS()->label : false;
-
-                $hasPassword = isset($permission['hasPassword']) ? $permission['hasPassword'] : false;
-
-                return ! $hasAnonymous || $hasPassword;
-            });
+            return ! collect($driveItem['permissions'])
+                ->contains(fn ($permission) => $this->isValidAnonymousPermission($permission));
         });
 
         // Add anonymous url to drive items without it
@@ -665,7 +672,7 @@ class SharepointGraphService
             $batchResponse = $batchRequestBuilder->postAsync($batch)->wait();
 
             $permissionCollection = collect($batch->getRequests())->map(function (BatchRequestItem $request) use ($batchResponse) {
-                $additionalData = $batchResponse->getResponseBody($request->getId(), Models\PermissionCollectionResponse::class)->getAdditionalData();
+                $additionalData = $batchResponse->getResponseBody($request->getId(), PermissionCollectionResponse::class)->getAdditionalData();
 
                 $additionalData['list_item_unique_id'] = $request->getId();
 
@@ -676,20 +683,31 @@ class SharepointGraphService
         }
 
         $driveItemCollections->each(function ($driveItem, string $key) use ($permissionCollection, $driveItemCollections) {
-            // get permission where collection key matches with driveitem collection key
+            // Only merge permission if this item was in the createLink batch
             $permission = $permissionCollection->get($key);
 
-            // add permission to drive item
-            $driveItem['permissions'][] = $permission;
-
-            // update drive item collection
-            $driveItemCollections->put($key, $driveItem);
+            if ($permission !== null) {
+                $driveItem['permissions'][] = $permission;
+                $driveItemCollections->put($key, $driveItem);
+            }
         });
 
         // Update documents
         $documentColection->each(function (Document $document) use ($driveItemCollections): void {
-            // TODO: handle batch update (need to set to current model)
             $driveItem = $driveItemCollections->get($document->sharepoint_id);
+
+            // Handle filtered folders - mark as failed
+            if ($driveItem === null) {
+                Log::warning('Document references a folder, skipping', [
+                    'sharepoint_id' => $document->sharepoint_id,
+                    'title' => $document->title,
+                ]);
+                $document->sync_status = 'failed';
+                $document->sync_error_message = 'Document references a folder (folders not supported)';
+                $document->save();
+
+                return;
+            }
 
             $document->name = $driveItem['name'];
             $document->title = isset($driveItem['listItem']['fields'][SharepointFieldEnum::TITLE()->label]) ? $driveItem['listItem']['fields'][SharepointFieldEnum::TITLE()->label] : $driveItem['name'];
@@ -704,15 +722,26 @@ class SharepointGraphService
             $document->summary = $driveItem['listItem']['fields'][SharepointFieldEnum::SUMMARY()->label] ?? null;
             /* $document->thumbnail_url = $driveItem['thumbnails'][0]['large']['url']; */
 
-            $document->anonymous_url = collect($driveItem['permissions'])->filter(function ($permission) {
+            $anonymousPermission = collect($driveItem['permissions'])
+                ->filter(fn ($permission) => $this->isValidAnonymousPermission($permission))
+                ->first();
 
-                $isAnonymous = isset($permission['link']['scope']) ? $permission['link']['scope'] === SharepointScopeEnum::ANONYMOUS()->label : false;
-                $hasPassword = isset($permission['hasPassword']) ? $permission['hasPassword'] : false;
+            $url = $anonymousPermission['link']['webUrl'] ?? null;
 
-                return $isAnonymous && ! $hasPassword;
-            })->first()['link']['webUrl'];
+            if ($this->isFolderUrl($url)) {
+                $this->logWarning('Batch processing: rejecting folder URL for document', [
+                    'sharepoint_id' => $document->sharepoint_id,
+                    'title' => $document->title,
+                ]);
+                $document->anonymous_url = null;
+            } else {
+                $document->anonymous_url = $url;
+            }
+
+            $document->sharepoint_permission_id = $anonymousPermission['id'] ?? null;
 
             $document->checked_at = Carbon::now();
+            $document->sync_status = 'imported';
 
             $institutionFieldName = SharepointFieldEnum::PADALINYS()->label;
 
@@ -809,7 +838,7 @@ class SharepointGraphService
                 }
 
                 // Check for ODataError which has more details
-                if ($e instanceof \Microsoft\Graph\Generated\Models\ODataErrors\ODataError) {
+                if ($e instanceof ODataError) {
                     $errorDetails['odata_error'] = $e->getError()?->getMessage() ?? 'No OData error message';
                     $errorDetails['odata_code'] = $e->getError()?->getCode() ?? 'No code';
                 }
@@ -836,7 +865,7 @@ class SharepointGraphService
 
                 // Exponential backoff
                 $delay = (int) SharepointConfigEnum::RETRY_DELAY_MS()->label * pow(2, $attempt - 1);
-                \Illuminate\Support\Sleep::for($delay)->milliseconds();
+                Sleep::for($delay)->milliseconds();
 
                 $attempt++;
             }
@@ -862,7 +891,7 @@ class SharepointGraphService
      *
      * @throws \InvalidArgumentException if item is a folder or not a file
      */
-    private function validateItemIsFile(string $driveItemId): \Microsoft\Graph\Generated\Models\DriveItem
+    private function validateItemIsFile(string $driveItemId): DriveItem
     {
         $driveItem = $this->graph->drives()
             ->byDriveId($this->driveId)
@@ -897,5 +926,44 @@ class SharepointGraphService
         }
 
         return $driveItem;
+    }
+
+    /**
+     * Check if a raw permission array represents a valid anonymous file permission.
+     *
+     * Mirrors the validation in getDriveItemPublicLink() for typed Permission objects.
+     * Criteria: anonymous scope, no password, not inherited, not a folder URL.
+     */
+    private function isValidAnonymousPermission(array $permission): bool
+    {
+        $isAnonymous = ($permission['link']['scope'] ?? null) === SharepointScopeEnum::ANONYMOUS()->label;
+        if (! $isAnonymous) {
+            return false;
+        }
+
+        if ($permission['hasPassword'] ?? false) {
+            return false;
+        }
+
+        if (isset($permission['inheritedFrom'])) {
+            return false;
+        }
+
+        $url = $permission['link']['webUrl'] ?? null;
+        if ($this->isFolderUrl($url)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if a SharePoint URL points to a folder rather than a file.
+     *
+     * SharePoint URLs use :f: for folders, :b: for binary files, :w: for Word docs, etc.
+     */
+    private function isFolderUrl(?string $url): bool
+    {
+        return $url !== null && str_contains($url, ':f:');
     }
 }

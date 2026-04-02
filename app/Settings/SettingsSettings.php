@@ -3,6 +3,7 @@
 namespace App\Settings;
 
 use App\Models\Role;
+use App\Models\User;
 use Spatie\LaravelSettings\Settings;
 
 class SettingsSettings extends Settings
@@ -34,7 +35,7 @@ class SettingsSettings extends Settings
      * Check if a user can manage settings.
      * Returns true if user is super admin or has the settings manager role.
      */
-    public function canUserManageSettings(\App\Models\User $user): bool
+    public function canUserManageSettings(User $user): bool
     {
         // Super admins can always manage settings
         if ($user->isSuperAdmin()) {

@@ -3,8 +3,10 @@
 use App\Events\CommentPosted;
 use App\Models\Comment;
 use App\Models\Pivots\ReservationResource;
+use App\Models\Reservation;
 use App\Notifications\CommentPostedNotification;
 use App\Notifications\ReservationStatusChangedNotification;
+use App\Notifications\TaskAssignedNotification;
 use App\States\ReservationResource\Reserved;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
@@ -144,11 +146,11 @@ describe('reservation state change triggers both status and task notifications',
 
         // User should receive exactly 2 notifications
         Notification::assertSentTo($user, ReservationStatusChangedNotification::class);
-        Notification::assertSentTo($user, \App\Notifications\TaskAssignedNotification::class);
+        Notification::assertSentTo($user, TaskAssignedNotification::class);
 
         // Verify each notification is sent exactly once
         Notification::assertSentToTimes($user, ReservationStatusChangedNotification::class, 1);
-        Notification::assertSentToTimes($user, \App\Notifications\TaskAssignedNotification::class, 1);
+        Notification::assertSentToTimes($user, TaskAssignedNotification::class, 1);
     });
 
     test('reservation state change creates task for picking up resource', function () {
@@ -162,11 +164,11 @@ describe('reservation state change triggers both status and task notifications',
         $reservationResource->state->transitionTo(Reserved::class);
 
         // Verify the task was created with correct name
-        Notification::assertSentTo($user, \App\Notifications\TaskAssignedNotification::class);
+        Notification::assertSentTo($user, TaskAssignedNotification::class);
 
         // Verify task exists in database
         $this->assertDatabaseHas('tasks', [
-            'taskable_type' => \App\Models\Reservation::class,
+            'taskable_type' => Reservation::class,
             'taskable_id' => $reservationResource->reservation_id,
         ]);
     });
@@ -186,7 +188,7 @@ describe('reservation state change triggers both status and task notifications',
         // Both users should receive both notifications
         foreach ([$user1, $user2] as $user) {
             Notification::assertSentToTimes($user, ReservationStatusChangedNotification::class, 1);
-            Notification::assertSentToTimes($user, \App\Notifications\TaskAssignedNotification::class, 1);
+            Notification::assertSentToTimes($user, TaskAssignedNotification::class, 1);
         }
     });
 
@@ -203,6 +205,6 @@ describe('reservation state change triggers both status and task notifications',
         // Admin who made the change should NOT receive notifications
         // (they are the changedBy user, and notifications filter out the actor)
         Notification::assertNotSentTo($admin, ReservationStatusChangedNotification::class);
-        Notification::assertNotSentTo($admin, \App\Notifications\TaskAssignedNotification::class);
+        Notification::assertNotSentTo($admin, TaskAssignedNotification::class);
     });
 });

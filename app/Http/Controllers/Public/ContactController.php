@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class ContactController extends PublicController
 {
@@ -111,7 +112,7 @@ class ContactController extends PublicController
 
         // load duties whereHas types
         $duties = $institution->load(['duties' => function ($query) use ($types) {
-            $query->whereHas('types', fn (Builder $query) => $query->whereIn('id', $types->pluck('id')))->with('current_users.current_duties');
+            $query->whereHas('types', fn (Builder $query) => $query->whereIn('id', $types->pluck('id')))->with('current_users.current_duties.types');
         }])->duties->sortBy(function ($duty) {
             return $duty->order;
         });
@@ -161,7 +162,7 @@ class ContactController extends PublicController
         $this->shareOtherLangURL('contacts.studentRepresentatives', $this->subdomain);
 
         $type = Type::query()->where('slug', '=', 'studentu-atstovu-organas')->first();
-        /** @var \Illuminate\Database\Eloquent\Collection<int, Type> $descendants */
+        /** @var Collection<int, Type> $descendants */
         $descendants = $type->getDescendantsAndSelf();
 
         $descendants->load(['institutions' => function ($query) {
@@ -393,7 +394,7 @@ class ContactController extends PublicController
      *
      * @param  string  $subdomain
      * @param  string  $lang
-     * @return \Inertia\Response
+     * @return Response
      */
     public function institutionCategory($subdomain, $lang, Type $type)
     {
@@ -690,7 +691,7 @@ class ContactController extends PublicController
             return [];
         }
 
-        $grouped = $meetings->groupBy(function (\App\Models\Meeting $meeting) {
+        $grouped = $meetings->groupBy(function (Meeting $meeting) {
             return $this->getAcademicYear($meeting->start_time);
         });
 

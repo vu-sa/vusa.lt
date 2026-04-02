@@ -7,12 +7,14 @@ use App\Http\Requests\IndexRelationshipRequest;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Relationship;
+use App\Models\Type;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
 use App\Services\TanstackTableService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Inertia\Response;
 
 // Controller is used for the relationship object, which describes
 // content related relationships.
@@ -26,7 +28,7 @@ class RelationshipController extends AdminController
     /**
      * Display a listing of the resource.
      */
-    public function index(IndexRelationshipRequest $request): \Inertia\Response
+    public function index(IndexRelationshipRequest $request): Response
     {
         $this->handleAuthorization('viewAny', Relationship::class);
 
@@ -188,7 +190,7 @@ class RelationshipController extends AdminController
         ];
 
         // Only add scope for Type-based relationships
-        if ($request->model_type === \App\Models\Type::class) {
+        if ($request->model_type === Type::class) {
             $pivotData['scope'] = $request->scope ?? 'within-tenant';
         }
 
@@ -212,7 +214,7 @@ class RelationshipController extends AdminController
         ];
 
         // Only update scope for Type-based relationships
-        if ($relationshipable->relationshipable_type === \App\Models\Type::class && $request->has('scope')) {
+        if ($relationshipable->relationshipable_type === Type::class && $request->has('scope')) {
             $updateData['scope'] = $request->scope;
         }
 

@@ -1,13 +1,23 @@
 <?php
 
 use App\Models\Calendar;
+use App\Models\Duty;
+use App\Models\Institution;
+use App\Models\Meeting;
 use App\Models\News;
 use App\Models\Page;
+use App\Models\Permission;
+use App\Models\Pivots\AgendaItem;
+use App\Models\Pivots\Relationshipable;
 use App\Models\QuickLink;
+use App\Models\Relationship;
 use App\Models\Resource;
+use App\Models\Role;
 use App\Models\Task;
 use App\Models\Tenant;
+use App\Models\Type;
 use App\Models\User;
+use App\Services\RelationshipService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -418,10 +428,10 @@ describe('atstovavimas dashboard', function () {
 
     test('atstovavimas provides accessible institutions and available tenants', function () {
         // Give the admin the institutions.read.padalinys permission so they can see tenant data
-        $permission = \App\Models\Permission::firstOrCreate(['name' => 'institutions.read.padalinys', 'guard_name' => 'web']);
+        $permission = Permission::firstOrCreate(['name' => 'institutions.read.padalinys', 'guard_name' => 'web']);
         $duty = $this->admin->current_duties->first();
         if ($duty) {
-            $role = \App\Models\Role::firstOrCreate(['name' => 'Institution Reader Test', 'guard_name' => 'web']);
+            $role = Role::firstOrCreate(['name' => 'Institution Reader Test', 'guard_name' => 'web']);
             $role->givePermissionTo($permission);
             $duty->assignRole($role);
         }
@@ -487,8 +497,8 @@ describe('atstovavimas dashboard authorization', function () {
         $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
 
         // Create a user with institutions.read.* permission (global access)
-        $globalPermission = \App\Models\Permission::firstOrCreate(['name' => 'institutions.read.*', 'guard_name' => 'web']);
-        $globalRole = \App\Models\Role::firstOrCreate([
+        $globalPermission = Permission::firstOrCreate(['name' => 'institutions.read.*', 'guard_name' => 'web']);
+        $globalRole = Role::firstOrCreate([
             'name' => 'Global Institution Reader',
             'guard_name' => 'web',
         ]);
@@ -512,10 +522,10 @@ describe('atstovavimas dashboard authorization', function () {
 
     test('user with padalinys read permission sees their tenants', function () {
         // Give the admin the institutions.read.padalinys permission
-        $permission = \App\Models\Permission::firstOrCreate(['name' => 'institutions.read.padalinys', 'guard_name' => 'web']);
+        $permission = Permission::firstOrCreate(['name' => 'institutions.read.padalinys', 'guard_name' => 'web']);
         $duty = $this->admin->current_duties->first();
         if ($duty) {
-            $role = \App\Models\Role::firstOrCreate(['name' => 'Institution Reader Test', 'guard_name' => 'web']);
+            $role = Role::firstOrCreate(['name' => 'Institution Reader Test', 'guard_name' => 'web']);
             $role->givePermissionTo($permission);
             $duty->assignRole($role);
         }
@@ -541,7 +551,7 @@ describe('atstovavimas dashboard authorization', function () {
 
         // Create an institution in a different tenant
         $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
-        $otherInstitution = \App\Models\Institution::factory()->for($otherTenant)->create();
+        $otherInstitution = Institution::factory()->for($otherTenant)->create();
 
         // Verify super admin has access to all tenants via availableTenants
         asUser($superAdmin)
@@ -567,22 +577,22 @@ describe('atstovavimas dashboard periodicity', function () {
         $nonPkpTenant = Tenant::factory()->create(['type' => 'padalinys']);
 
         // Create a user with an assigned institution that has custom periodicity
-        $institution = \App\Models\Institution::factory()->for($nonPkpTenant)->create([
+        $institution = Institution::factory()->for($nonPkpTenant)->create([
             'meeting_periodicity_days' => 21,
             'alias' => 'periodicity-test-'.uniqid(),
         ]);
 
         // Create a duty and assign it to the user
-        $studentRepType = \App\Models\Type::query()->where('slug', 'studentu-atstovai')->first()
-            ?? \App\Models\Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => \App\Models\Duty::class]);
+        $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
+            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => Duty::class]);
 
-        $duty = \App\Models\Duty::factory()
+        $duty = Duty::factory()
             ->for($institution)
             ->hasAttached($studentRepType, [], 'types')
             ->create();
 
         // Create a fresh user for this test to avoid interference
-        $testUser = \App\Models\User::factory()->create();
+        $testUser = User::factory()->create();
         $testUser->duties()->attach($duty, [
             'start_date' => now()->subMonth(),
             'end_date' => null,
@@ -614,29 +624,29 @@ describe('atstovavimas dashboard periodicity', function () {
 
     test('user institutions use type periodicity when no override', function () {
         // Create a type with custom periodicity
-        $institutionType = \App\Models\Type::factory()->create([
-            'model_type' => \App\Models\Institution::class,
+        $institutionType = Type::factory()->create([
+            'model_type' => Institution::class,
             'extra_attributes' => ['meeting_periodicity_days' => 14],
         ]);
 
         // Create an institution with no override
-        $institution = \App\Models\Institution::factory()->for($this->tenant)->create([
+        $institution = Institution::factory()->for($this->tenant)->create([
             'meeting_periodicity_days' => null,
             'alias' => 'periodicity-type-test-'.uniqid(),
         ]);
         $institution->types()->attach($institutionType);
 
         // Create a duty and assign it to the user
-        $studentRepType = \App\Models\Type::query()->where('slug', 'studentu-atstovai')->first()
-            ?? \App\Models\Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => \App\Models\Duty::class]);
+        $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
+            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => Duty::class]);
 
-        $duty = \App\Models\Duty::factory()
+        $duty = Duty::factory()
             ->for($institution)
             ->hasAttached($studentRepType, [], 'types')
             ->create();
 
         // Create a fresh user for this test to avoid interference
-        $testUser = \App\Models\User::factory()->create();
+        $testUser = User::factory()->create();
         $testUser->duties()->attach($duty, [
             'start_date' => now()->subMonth(),
             'end_date' => null,
@@ -916,8 +926,8 @@ describe('tenant isolation', function () {
 
         // Give Communication Coordinators the institutions.read.padalinys permission
         // This replaces the old role-based visibility settings
-        $permission = \App\Models\Permission::firstOrCreate(['name' => 'institutions.read.padalinys', 'guard_name' => 'web']);
-        $coordinatorRole = \App\Models\Role::where('name', 'Communication Coordinator')->first();
+        $permission = Permission::firstOrCreate(['name' => 'institutions.read.padalinys', 'guard_name' => 'web']);
+        $coordinatorRole = Role::where('name', 'Communication Coordinator')->first();
         if ($coordinatorRole && ! $coordinatorRole->hasPermissionTo($permission)) {
             $coordinatorRole->givePermissionTo($permission);
         }
@@ -957,7 +967,7 @@ describe('tenant isolation', function () {
 describe('atstovavimas related institutions', function () {
     beforeEach(function () {
         // Create a relationship type
-        $this->relationship = new \App\Models\Relationship([
+        $this->relationship = new Relationship([
             'name' => 'Test Relationship',
             'slug' => 'test-relationship-'.uniqid(),
             'description' => 'Test relationship for dashboard',
@@ -968,7 +978,7 @@ describe('atstovavimas related institutions', function () {
         $this->userInstitution = $this->user->current_duties->first()->institution;
 
         // Create a related institution in the same tenant
-        $this->relatedInstitution = \App\Models\Institution::factory()->for($this->tenant)->create([
+        $this->relatedInstitution = Institution::factory()->for($this->tenant)->create([
             'name' => ['lt' => 'Susijusi institucija', 'en' => 'Related Institution'],
         ]);
     });
@@ -985,9 +995,9 @@ describe('atstovavimas related institutions', function () {
 
     test('relatedInstitutions lazy load returns institutions with outgoing relationship', function () {
         // Create outgoing relationship (user's institution -> related)
-        $relationshipable = new \App\Models\Pivots\Relationshipable([
+        $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => \App\Models\Institution::class,
+            'relationshipable_type' => Institution::class,
             'relationshipable_id' => $this->userInstitution->id,
             'related_model_id' => $this->relatedInstitution->id,
             'bidirectional' => false,
@@ -995,7 +1005,7 @@ describe('atstovavimas related institutions', function () {
         $relationshipable->save();
 
         // Clear cache
-        \App\Services\RelationshipService::clearRelatedInstitutionsCache($this->userInstitution->id);
+        RelationshipService::clearRelatedInstitutionsCache($this->userInstitution->id);
 
         // Use reloadOnly to test the lazy-loaded relatedInstitutions prop
         asUser($this->user)
@@ -1029,9 +1039,9 @@ describe('atstovavimas related institutions', function () {
 
     test('relatedInstitutions returns incoming relationships with authorized = false when not bidirectional', function () {
         // Create incoming relationship (related -> user's institution, NOT bidirectional)
-        $relationshipable = new \App\Models\Pivots\Relationshipable([
+        $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => \App\Models\Institution::class,
+            'relationshipable_type' => Institution::class,
             'relationshipable_id' => $this->relatedInstitution->id,
             'related_model_id' => $this->userInstitution->id,
             'bidirectional' => false,
@@ -1039,7 +1049,7 @@ describe('atstovavimas related institutions', function () {
         $relationshipable->save();
 
         // Clear cache
-        \App\Services\RelationshipService::clearRelatedInstitutionsCache($this->userInstitution->id);
+        RelationshipService::clearRelatedInstitutionsCache($this->userInstitution->id);
 
         // Use reloadOnly to test the lazy-loaded relatedInstitutions prop
         asUser($this->user)
@@ -1073,9 +1083,9 @@ describe('atstovavimas related institutions', function () {
 
     test('relatedInstitutions returns incoming relationships with authorized = true when bidirectional', function () {
         // Create incoming relationship (related -> user's institution, IS bidirectional)
-        $relationshipable = new \App\Models\Pivots\Relationshipable([
+        $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => \App\Models\Institution::class,
+            'relationshipable_type' => Institution::class,
             'relationshipable_id' => $this->relatedInstitution->id,
             'related_model_id' => $this->userInstitution->id,
             'bidirectional' => true,
@@ -1083,7 +1093,7 @@ describe('atstovavimas related institutions', function () {
         $relationshipable->save();
 
         // Clear cache
-        \App\Services\RelationshipService::clearRelatedInstitutionsCache($this->userInstitution->id);
+        RelationshipService::clearRelatedInstitutionsCache($this->userInstitution->id);
 
         // Use reloadOnly to test the lazy-loaded relatedInstitutions prop
         asUser($this->user)
@@ -1117,9 +1127,9 @@ describe('atstovavimas related institutions', function () {
 
     test('authorized related institutions include meetings with agenda items', function () {
         // Create outgoing relationship (authorized)
-        $relationshipable = new \App\Models\Pivots\Relationshipable([
+        $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => \App\Models\Institution::class,
+            'relationshipable_type' => Institution::class,
             'relationshipable_id' => $this->userInstitution->id,
             'related_model_id' => $this->relatedInstitution->id,
             'bidirectional' => false,
@@ -1127,15 +1137,15 @@ describe('atstovavimas related institutions', function () {
         $relationshipable->save();
 
         // Create meeting with agenda item
-        $meeting = \App\Models\Meeting::factory()->create(['start_time' => now()]);
+        $meeting = Meeting::factory()->create(['start_time' => now()]);
         $meeting->institutions()->attach($this->relatedInstitution->id);
-        $agendaItem = \App\Models\Pivots\AgendaItem::factory()->create([
+        $agendaItem = AgendaItem::factory()->create([
             'meeting_id' => $meeting->id,
             'title' => 'Test Agenda Item',
         ]);
 
         // Clear cache
-        \App\Services\RelationshipService::clearRelatedInstitutionsCache($this->userInstitution->id);
+        RelationshipService::clearRelatedInstitutionsCache($this->userInstitution->id);
 
         // Use reloadOnly to test the lazy-loaded relatedInstitutions prop
         asUser($this->user)
@@ -1170,9 +1180,9 @@ describe('atstovavimas related institutions', function () {
 
     test('unauthorized related institutions include meetings but no agenda items', function () {
         // Create incoming relationship (NOT authorized because NOT bidirectional)
-        $relationshipable = new \App\Models\Pivots\Relationshipable([
+        $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => \App\Models\Institution::class,
+            'relationshipable_type' => Institution::class,
             'relationshipable_id' => $this->relatedInstitution->id,
             'related_model_id' => $this->userInstitution->id,
             'bidirectional' => false,
@@ -1180,17 +1190,17 @@ describe('atstovavimas related institutions', function () {
         $relationshipable->save();
 
         // Create meeting and attach to related institution
-        $meeting = \App\Models\Meeting::factory()->create(['start_time' => now()]);
+        $meeting = Meeting::factory()->create(['start_time' => now()]);
         $meeting->institutions()->attach($this->relatedInstitution->id);
 
         // Create agenda item for this meeting (should NOT be loaded for unauthorized)
-        $agendaItem = \App\Models\Pivots\AgendaItem::factory()->create([
+        $agendaItem = AgendaItem::factory()->create([
             'meeting_id' => $meeting->id,
             'title' => 'Test Agenda Item',
         ]);
 
         // Clear cache
-        \App\Services\RelationshipService::clearRelatedInstitutionsCache($this->userInstitution->id);
+        RelationshipService::clearRelatedInstitutionsCache($this->userInstitution->id);
 
         // Use reloadOnly to test the lazy-loaded relatedInstitutions prop
         asUser($this->user)

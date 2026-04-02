@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\Models\FileableFile;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Policy for FileableFile model.
@@ -31,7 +32,7 @@ class FileableFilePolicy
      */
     public function view(User $user, FileableFile $fileableFile): bool
     {
-        /** @var \Illuminate\Database\Eloquent\Model|null $fileable */
+        /** @var Model|null $fileable */
         $fileable = $fileableFile->fileable()->first();
 
         if (! $fileable) {
@@ -57,7 +58,7 @@ class FileableFilePolicy
      */
     public function update(User $user, FileableFile $fileableFile): bool
     {
-        /** @var \Illuminate\Database\Eloquent\Model|null $fileable */
+        /** @var Model|null $fileable */
         $fileable = $fileableFile->fileable()->first();
 
         if (! $fileable) {
@@ -73,7 +74,7 @@ class FileableFilePolicy
      */
     public function delete(User $user, FileableFile $fileableFile): bool
     {
-        /** @var \Illuminate\Database\Eloquent\Model|null $fileable */
+        /** @var Model|null $fileable */
         $fileable = $fileableFile->fileable()->first();
 
         if (! $fileable) {

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Public;
 use App\Helpers\ContentHelper;
 use App\Http\Controllers\PublicController;
 use App\Models\News;
+use App\Models\Tag;
 use Inertia\Inertia;
 
 class NewsController extends PublicController
@@ -124,7 +125,7 @@ class NewsController extends PublicController
         if (request('tag')) {
             $tagParam = request('tag');
             // Try to find by alias first, fallback to ID if it's numeric
-            $currentTag = \App\Models\Tag::where('alias', $tagParam)
+            $currentTag = Tag::where('alias', $tagParam)
                 ->orWhere(function ($query) use ($tagParam) {
                     if (is_numeric($tagParam)) {
                         $query->where('id', $tagParam);

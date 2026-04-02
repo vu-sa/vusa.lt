@@ -4,10 +4,14 @@ namespace App\Models;
 
 use App\Helpers\ShortUrlHelper;
 use App\Services\SharepointGraphService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Log;
+use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
@@ -23,6 +27,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $language
  * @property string|null $summary
  * @property string|null $anonymous_url
+ * @property string|null $sharepoint_permission_id
  * @property bool $is_active
  * @property string $sharepoint_site_id
  * @property string $sharepoint_list_id
@@ -36,8 +41,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon|null $effective_date
  * @property Carbon|null $expiration_date
  * @property-read bool|null $is_in_effect
- * @property-read \App\Models\Institution|null $institution
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tenant> $tenant
+ * @property-read Institution|null $institution
+ * @property-read Collection<int, Tenant> $tenant
  *
  * @method static \Database\Factories\DocumentFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Document newModelQuery()
@@ -52,7 +57,7 @@ class Document extends Model
 
     protected $guarded = [];
 
-    protected $hidden = ['sharepoint_id', 'eTag', 'public_url_created_at', 'sharepoint_site_id', 'sharepoint_list_id', 'created_at', 'updated_at'];
+    protected $hidden = ['sharepoint_id', 'eTag', 'public_url_created_at', 'sharepoint_site_id', 'sharepoint_list_id', 'sharepoint_permission_id', 'created_at', 'updated_at'];
 
     protected function casts(): array
     {
@@ -206,7 +211,7 @@ class Document extends Model
     public function shouldBeSearchable()
     {
         // For admin context, index all documents regardless of publication status
-        if (\Illuminate\Support\Facades\Context::get('search_context') === 'admin') {
+        if (Context::get('search_context') === 'admin') {
             return true;
         }
 
@@ -220,10 +225,10 @@ class Document extends Model
      */
     public function searchableUsing()
     {
-        return app(\Laravel\Scout\EngineManager::class)->engine('typesense');
+        return app(EngineManager::class)->engine('typesense');
     }
 
-    public function institution(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function institution(): BelongsTo
     {
         return $this->belongsTo(Institution::class);
     }
@@ -287,7 +292,7 @@ class Document extends Model
     }
 
     // Also used in SharepointGraphService::batchProcessDocuments
-    public function refreshFromSharepoint()
+    public function refreshFromSharepoint(bool $force = false)
     {
         // Update sync tracking
         $this->sync_status = 'syncing';
@@ -313,10 +318,11 @@ class Document extends Model
                 'etag_matches' => $eTagMatches,
                 'url_masked' => $this->maskUrl($this->anonymous_url),
                 'has_folder_url' => $hasInvalidUrl,
-                'will_skip_permission_check' => $eTagMatches && ! $hasInvalidUrl,
+                'force' => $force,
+                'will_skip_permission_check' => ! $force && $eTagMatches && ! $hasInvalidUrl,
             ]);
 
-            if ($eTagMatches && ! $hasInvalidUrl) {
+            if (! $force && $eTagMatches && ! $hasInvalidUrl) {
                 Log::info('SharePoint document was already up to date', ['document_id' => $this->id]);
                 $this->checked_at = Carbon::now();
                 $this->sync_status = 'success';
@@ -392,6 +398,7 @@ class Document extends Model
                 ]);
 
                 $this->anonymous_url = $newUrl;
+                $this->sharepoint_permission_id = $anonymous_permission->getId();
 
                 /* $this->anonymous_url_expiration_date = Carbon::parse($anonymous_permission->getExpirationDateTime()); */
             } else {
@@ -411,6 +418,7 @@ class Document extends Model
                 }
 
                 $this->anonymous_url = $newUrl;
+                $this->sharepoint_permission_id = $anonymous_permission->getId();
                 /* $this->anonymous_url_expiration_date = Carbon::parse($anonymous_permission->getExpirationDateTime()); */
             }
 

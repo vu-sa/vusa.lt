@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
@@ -20,10 +22,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $note
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
- * @property-read \App\Models\Institution $institution
- * @property-read \App\Models\Tenant|null $tenant
- * @property-read \App\Models\User $user
+ * @property-read Collection<int, Activity> $activities
+ * @property-read Institution|null $institution
+ * @property-read Tenant|null $tenant
+ * @property-read User|null $user
  *
  * @method static \Database\Factories\InstitutionCheckInFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InstitutionCheckIn newModelQuery()

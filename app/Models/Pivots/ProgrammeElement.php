@@ -4,7 +4,10 @@ namespace App\Models\Pivots;
 
 use App\Models\ProgrammeBlock;
 use App\Models\ProgrammeDay;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -12,11 +15,11 @@ use Illuminate\Database\Eloquent\Relations\MorphPivot;
  * @property string $elementable_type
  * @property int $elementable_id
  * @property int $order
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, ProgrammeBlock> $blocks
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read Collection<int, ProgrammeBlock> $blocks
  * @property-read ProgrammeDay|null $day
- * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $elementable
+ * @property-read Model|\Eloquent $elementable
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProgrammeElement newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProgrammeElement newQuery()

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Support\Carbon;
 
 /**
  * Represents a user muting notifications for an institution.
@@ -17,11 +18,11 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  * @property string $id
  * @property string $user_id
  * @property string $institution_id
- * @property \Illuminate\Support\Carbon $muted_at
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Institution $institution
- * @property-read \App\Models\User $user
+ * @property Carbon $muted_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Institution|null $institution
+ * @property-read User|null $user
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InstitutionNotificationMute newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InstitutionNotificationMute newQuery()

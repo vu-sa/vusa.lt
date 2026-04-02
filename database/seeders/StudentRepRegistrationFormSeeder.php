@@ -2,6 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Form;
+use App\Models\FormField;
+use App\Models\Institution;
 use App\Models\Tenant;
 use Illuminate\Database\Seeder;
 
@@ -12,7 +15,7 @@ class StudentRepRegistrationFormSeeder extends Seeder
      */
     public function run(): void
     {
-        $form = new \App\Models\Form;
+        $form = new Form;
         $form->setTranslation('name', 'lt', 'Prašymas tapti studentų(-čių) atstovu(-e)');
         $form->setTranslation('name', 'en', 'Application to become a student representative');
         $form->setTranslation('description', 'lt', '<p>Kiekvienas(-a) VU studentas(-ė) gali tapti studentų(-čių) atstovu(-e)! Užsiregistruok ir su tavimi susisieks tavo padalinio atstovų(-ių) koordinatorius(-ė)!</p>');
@@ -22,7 +25,7 @@ class StudentRepRegistrationFormSeeder extends Seeder
         $form->tenant()->associate(Tenant::query()->where('type', 'pagrindinis')->first());
         $form->save();
 
-        $nameField = new \App\Models\FormField;
+        $nameField = new FormField;
         $nameField->setTranslation('label', 'lt', 'Vardas ir pavardė');
         $nameField->setTranslation('label', 'en', 'Name and surname');
         $nameField->type = 'string';
@@ -33,7 +36,7 @@ class StudentRepRegistrationFormSeeder extends Seeder
         $nameField->form()->associate($form);
         $nameField->save();
 
-        $emailField = new \App\Models\FormField;
+        $emailField = new FormField;
         $emailField->setTranslation('label', 'lt', 'El. paštas');
         $emailField->setTranslation('label', 'en', 'Email');
         $emailField->type = 'string';
@@ -44,7 +47,7 @@ class StudentRepRegistrationFormSeeder extends Seeder
         $emailField->form()->associate($form);
         $emailField->save();
 
-        $phoneField = new \App\Models\FormField;
+        $phoneField = new FormField;
         $phoneField->setTranslation('label', 'lt', 'Telefono numeris');
         $phoneField->setTranslation('label', 'en', 'Phone number');
         $phoneField->type = 'string';
@@ -54,20 +57,20 @@ class StudentRepRegistrationFormSeeder extends Seeder
         $phoneField->form()->associate($form);
         $phoneField->save();
 
-        $institutionField = new \App\Models\FormField;
+        $institutionField = new FormField;
         $institutionField->setTranslation('label', 'lt', 'Institucija');
         $institutionField->setTranslation('label', 'en', 'Institution');
         $institutionField->type = 'enum';
         $institutionField->is_required = true;
         $institutionField->order = 3;
         $institutionField->use_model_options = true;
-        $institutionField->options_model = \App\Models\Institution::class;
+        $institutionField->options_model = Institution::class;
         $institutionField->options_model_field = 'name';
 
         $institutionField->form()->associate($form);
         $institutionField->save();
 
-        $registrationField = new \App\Models\FormField;
+        $registrationField = new FormField;
         $registrationField->setTranslation('label', 'lt', 'Studijų kursas');
         $registrationField->setTranslation('label', 'en', 'Study course');
         $registrationField->type = 'enum';
@@ -85,7 +88,7 @@ class StudentRepRegistrationFormSeeder extends Seeder
         $registrationField->form()->associate($form);
         $registrationField->save();
 
-        $gdprField = new \App\Models\FormField;
+        $gdprField = new FormField;
 
         $gdprField->setTranslation('label', 'lt', 'Susipažinau su Asmens duomenų tvarkymo Vilniaus universiteto Studentų atstovybėje tvarkos aprašu ir sutinku');
         $gdprField->setTranslation('label', 'en', 'I have read the description of the processing of personal data at the Vilnius University Student Representation and agree');
@@ -97,7 +100,7 @@ class StudentRepRegistrationFormSeeder extends Seeder
         $gdprField->form()->associate($form);
         $gdprField->save();
 
-        $privacyField = new \App\Models\FormField;
+        $privacyField = new FormField;
 
         $privacyField->setTranslation('label', 'lt', 'Sutinku, kad mano pateikti asmens duomenys būtų tvarkomi vidaus administravimo tikslu pagal Asmens duomenų tvarkymo Vilniaus universiteto Studentų atstovybėje tvarkos aprašą');
         $privacyField->setTranslation('label', 'en', 'I agree that my personal data provided will be processed for internal administration purposes according to the description of the processing of personal data at the Vilnius University Student Representation');

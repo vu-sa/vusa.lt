@@ -4,15 +4,20 @@ namespace App\Models;
 
 use App\Contracts\SharepointFileableContract;
 use App\Events\FileableNameUpdated;
+use App\Models\Pivots\Relationshipable;
 use App\Models\Traits\HasContentRelationships;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
@@ -23,24 +28,23 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $model_type
  * @property string|null $slug
  * @property array<array-key, mixed>|null $extra_attributes
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read Collection<int, \Spatie\Activitylog\Models\Activity> $activities
- * @property-read Collection<int, \App\Models\FileableFile> $availableFiles
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Activity> $activities
+ * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Collection<int, Type> $descendants
- * @property-read Collection<int, \App\Models\Duty> $duties
- * @property-read Collection<int, \App\Models\FileableFile> $fileableFiles
- * @property-read Collection<int, \App\Models\SharepointFile> $files
+ * @property-read Collection<int, Duty> $duties
+ * @property-read Collection<int, FileableFile> $fileableFiles
  * @property-read bool $has_protocol
  * @property-read bool $has_report
- * @property-read \App\Models\RoleType|\App\Models\Pivots\Relationshipable|null $pivot
- * @property-read Collection<int, \App\Models\Relationship> $incomingRelationships
- * @property-read Collection<int, \App\Models\Institution> $institutions
- * @property-read Collection<int, \App\Models\Relationship> $outgoingRelationships
+ * @property-read RoleType|Relationshipable|null $pivot
+ * @property-read Collection<int, Relationship> $incomingRelationships
+ * @property-read Collection<int, Institution> $institutions
+ * @property-read Collection<int, Relationship> $outgoingRelationships
  * @property-read Type|null $parent
  * @property-read Type|null $recursiveParent
- * @property-read Collection<int, \App\Models\Role> $roles
+ * @property-read Collection<int, Role> $roles
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\TypeFactory factory($count = null, $state = [])
@@ -92,9 +96,9 @@ class Type extends Model implements SharepointFileableContract
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\MorphToMany<\App\Models\Institution, $this>
+     * @return MorphToMany<Institution, $this>
      */
-    public function institutions(): \Illuminate\Database\Eloquent\Relations\MorphToMany
+    public function institutions(): MorphToMany
     {
         return $this->morphedByMany(Institution::class, 'typeable');
     }
@@ -124,7 +128,7 @@ class Type extends Model implements SharepointFileableContract
         return $this->belongsTo(Type::class, 'parent_id');
     }
 
-    public function recursiveParent(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function recursiveParent(): BelongsTo
     {
         return $this->parent()->with('recursiveParent');
     }

@@ -4,21 +4,30 @@ namespace App\Models;
 
 use App\Contracts\SharepointFileableContract;
 use App\Events\FileableNameUpdated;
+use App\Models\Pivots\AgendaItem;
 use App\Models\Pivots\Dutiable;
 use App\Models\Pivots\Trainable;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTranslations;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\Access\Authorizable;
+use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
+use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
@@ -30,34 +39,33 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $email Commonly the @vusa.lt email address, which is used as the OAuth login. Personal mail is stored in users.email.
  * @property string $contacts_grouping
  * @property int|null $places_to_occupy Full number of positions to occupy for this duty
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Pivots\AgendaItem> $agendaItems
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FileableFile> $availableFiles
- * @property-read \App\Models\Typeable|Dutiable|Trainable|null $pivot
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Training> $availableTrainings
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $current_users
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Dutiable> $dutiables
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FileableFile> $fileableFiles
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SharepointFile> $files
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Activity> $activities
+ * @property-read Collection<int, AgendaItem> $agendaItems
+ * @property-read Collection<int, FileableFile> $availableFiles
+ * @property-read Typeable|Dutiable|Trainable|null $pivot
+ * @property-read Collection<int, Training> $availableTrainings
+ * @property-read Collection<int, User> $current_users
+ * @property-read Collection<int, Dutiable> $dutiables
+ * @property-read Collection<int, FileableFile> $fileableFiles
  * @property-read bool $has_protocol
  * @property-read bool $has_report
- * @property-read \App\Models\Institution|null $institution
- * @property-read \App\Models\Institution|null $institutions
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Meeting> $meetings
- * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Permission> $permissions
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $previous_users
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Reservation> $reservations
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Resource> $resources
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Role> $roles
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task> $tasks
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tenant> $tenants
+ * @property-read Institution|null $institution
+ * @property-read Institution|null $institutions
+ * @property-read Collection<int, Meeting> $meetings
+ * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $notifications
+ * @property-read Collection<int, Permission> $permissions
+ * @property-read Collection<int, User> $previous_users
+ * @property-read Collection<int, Reservation> $reservations
+ * @property-read Collection<int, \App\Models\Resource> $resources
+ * @property-read Collection<int, Role> $roles
+ * @property-read Collection<int, Task> $tasks
+ * @property-read Collection<int, Tenant> $tenants
  * @property-read mixed $translations
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Type> $types
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @property-read Collection<int, Type> $types
+ * @property-read Collection<int, User> $users
  * @property-read int|null $tenants_count
  * @property-read int|null $meetings_count
  * @property-read int|null $agenda_items_count
@@ -113,12 +121,12 @@ class Duty extends Model implements AuthorizableContract, SharepointFileableCont
         return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
-    public function dutiables(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function dutiables(): HasMany
     {
         return $this->hasMany(Dutiable::class);
     }
 
-    public function users(): \Illuminate\Database\Eloquent\Relations\MorphToMany
+    public function users(): MorphToMany
     {
         return $this->morphedByMany(User::class, 'dutiable')
             ->using(Dutiable::class)
@@ -126,7 +134,7 @@ class Duty extends Model implements AuthorizableContract, SharepointFileableCont
     }
 
     // TODO: use current_duties as an example for current_users
-    public function current_users(): \Illuminate\Database\Eloquent\Relations\MorphToMany
+    public function current_users(): MorphToMany
     {
         return $this->users()
             ->where(function ($query) {
@@ -136,7 +144,7 @@ class Duty extends Model implements AuthorizableContract, SharepointFileableCont
             ->withTimestamps();
     }
 
-    public function previous_users(): \Illuminate\Database\Eloquent\Relations\MorphToMany
+    public function previous_users(): MorphToMany
     {
         return $this->users()
             ->where(function ($query) {
@@ -146,7 +154,7 @@ class Duty extends Model implements AuthorizableContract, SharepointFileableCont
             ->withTimestamps();
     }
 
-    public function types(): \Illuminate\Database\Eloquent\Relations\MorphToMany
+    public function types(): MorphToMany
     {
         return $this->morphToMany(Type::class, 'typeable')->using(Typeable::class)->withPivot(['typeable_type']);
     }
@@ -163,33 +171,33 @@ class Duty extends Model implements AuthorizableContract, SharepointFileableCont
     }
 
     // it has only one tenant all times, but it's better to have this method with this name
-    public function tenants(): \Staudenmeir\EloquentHasManyDeep\HasManyDeep
+    public function tenants(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->institution(), (new Institution)->tenant());
     }
 
-    public function meetings(): \Staudenmeir\EloquentHasManyDeep\HasManyDeep
+    public function meetings(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->institution(), (new Institution)->meetings());
     }
 
-    public function agendaItems(): \Staudenmeir\EloquentHasManyDeep\HasManyDeep
+    public function agendaItems(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->institution(), (new Institution)->meetings(), (new Meeting)->agendaItems());
     }
 
     // TODO: tasks should not be completable through duties, only by users
-    public function tasks(): \Staudenmeir\EloquentHasManyDeep\HasManyDeep
+    public function tasks(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->users(), (new User)->tasks());
     }
 
-    public function reservations(): \Staudenmeir\EloquentHasManyDeep\HasManyDeep
+    public function reservations(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->users(), (new User)->reservations());
     }
 
-    public function resources(): \Staudenmeir\EloquentHasManyDeep\HasManyDeep
+    public function resources(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->tenants(), (new Tenant)->resources());
     }

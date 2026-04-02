@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use App\Models\Traits\HasTranslations;
+use Database\Factories\FormFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Laravel\Scout\Searchable;
 
 /**
@@ -18,15 +21,15 @@ use Laravel\Scout\Searchable;
  * @property int $tenant_id
  * @property array|string|null $path URL path for visible forms
  * @property string|null $publish_time
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FormField> $formFields
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Registration> $registrations
- * @property-read \App\Models\Tenant $tenant
- * @property-read \App\Models\Training|null $training
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property Carbon|null $deleted_at
+ * @property-read Collection<int, FormField> $formFields
+ * @property-read Collection<int, Registration> $registrations
+ * @property-read Tenant $tenant
+ * @property-read Training|null $training
  * @property-read mixed $translations
- * @property-read \App\Models\User|null $user
+ * @property-read User|null $user
  *
  * @method static \Database\Factories\FormFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Form newModelQuery()
@@ -44,7 +47,7 @@ use Laravel\Scout\Searchable;
  */
 class Form extends Model
 {
-    /** @use HasFactory<\Database\Factories\FormFactory> */
+    /** @use HasFactory<FormFactory> */
     use HasFactory, HasTranslations, HasUlids, Searchable, SoftDeletes;
 
     protected $fillable = [

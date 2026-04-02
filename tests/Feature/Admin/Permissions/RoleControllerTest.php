@@ -1,7 +1,9 @@
 <?php
 
+use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Tenant;
+use App\Models\Type;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -244,7 +246,7 @@ describe('role permission management', function () {
         // Create permissions that match what the controller expects
         $permissions = collect();
         foreach (['create', 'read', 'update', 'delete'] as $ability) {
-            $permissions->push(\App\Models\Permission::create([
+            $permissions->push(Permission::create([
                 'name' => "test.{$ability}.own",
                 'guard_name' => 'web',
             ]));
@@ -291,7 +293,7 @@ describe('role permission management', function () {
         $role = Role::factory()->create();
 
         // Create a Type record for Institution
-        $institutionType = \App\Models\Type::create([
+        $institutionType = Type::create([
             'title' => ['en' => 'Institution', 'lt' => 'Institucija'],
             'model_type' => 'App\\Models\\Institution',
             'slug' => 'institution',

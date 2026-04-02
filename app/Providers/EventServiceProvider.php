@@ -2,7 +2,24 @@
 
 namespace App\Providers;
 
+use App\Events\CommentPosted;
+use App\Events\DutiableChanged;
+use App\Events\FileableNameUpdated;
+use App\Events\MemberRegistrationCreated;
+use App\Events\ReservationResourceCreated;
+use App\Events\StudentRepRegistrationCreated;
+use App\Events\TaskCreated;
+use App\Listeners\HandleDutiableChange;
+use App\Listeners\HandleTaskCreated;
+use App\Listeners\NotifyUsersOfComment;
+use App\Listeners\QueueNotificationForDigest;
+use App\Listeners\ReservationResource\HandleReservationResourceCreated;
+use App\Listeners\ReservationResource\HandleReservationResourceStateChanged;
+use App\Listeners\SendMemberRegistrationNotification;
+use App\Listeners\SendStudentRepRegistrationNotification;
+use App\Listeners\UpdateSharepointFolder;
 use App\Models\Calendar;
+use App\Models\Document;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Pivots\Relationshipable;
@@ -13,6 +30,7 @@ use App\Models\Typeable;
 use App\Models\User;
 use App\Notifications\Subscribers\ApprovalNotificationSubscriber;
 use App\Observers\CalendarObserver;
+use App\Observers\DocumentObserver;
 use App\Observers\InstitutionObserver;
 use App\Observers\RelationshipableObserver;
 use App\Observers\RoleTypeObserver;
@@ -24,6 +42,10 @@ use App\Tasks\Subscribers\InstitutionCheckInTaskSubscriber;
 use App\Tasks\Subscribers\MeetingTaskSubscriber;
 use App\Tasks\Subscribers\ReservationTaskSubscriber;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+use Illuminate\Notifications\Events\NotificationSending;
+use SocialiteProviders\Manager\SocialiteWasCalled;
+use SocialiteProviders\Microsoft\MicrosoftExtendSocialite;
+use Spatie\ModelStates\Events\StateChanged;
 use Spatie\Permission\Models\Permission;
 
 class EventServiceProvider extends ServiceProvider
@@ -34,38 +56,38 @@ class EventServiceProvider extends ServiceProvider
      * @var array<string, array<int, string>>
      */
     protected $listen = [
-        \SocialiteProviders\Manager\SocialiteWasCalled::class => [
-            \SocialiteProviders\Microsoft\MicrosoftExtendSocialite::class.'@handle',
+        SocialiteWasCalled::class => [
+            MicrosoftExtendSocialite::class.'@handle',
         ],
-        \App\Events\CommentPosted::class => [
-            \App\Listeners\NotifyUsersOfComment::class,
+        CommentPosted::class => [
+            NotifyUsersOfComment::class,
         ],
-        \App\Events\FileableNameUpdated::class => [
-            \App\Listeners\UpdateSharepointFolder::class,
+        FileableNameUpdated::class => [
+            UpdateSharepointFolder::class,
         ],
-        \Spatie\ModelStates\Events\StateChanged::class => [
+        StateChanged::class => [
             // Note: Task-related handling moved to ReservationTaskSubscriber
-            \App\Listeners\ReservationResource\HandleReservationResourceStateChanged::class,
+            HandleReservationResourceStateChanged::class,
         ],
-        \App\Events\DutiableChanged::class => [
-            \App\Listeners\HandleDutiableChange::class,
+        DutiableChanged::class => [
+            HandleDutiableChange::class,
         ],
-        \App\Events\ReservationResourceCreated::class => [
-            \App\Listeners\ReservationResource\HandleReservationResourceCreated::class,
+        ReservationResourceCreated::class => [
+            HandleReservationResourceCreated::class,
         ],
-        \App\Events\MemberRegistrationCreated::class => [
-            \App\Listeners\SendMemberRegistrationNotification::class,
+        MemberRegistrationCreated::class => [
+            SendMemberRegistrationNotification::class,
         ],
-        \App\Events\StudentRepRegistrationCreated::class => [
-            \App\Listeners\SendStudentRepRegistrationNotification::class,
+        StudentRepRegistrationCreated::class => [
+            SendStudentRepRegistrationNotification::class,
         ],
-        \App\Events\TaskCreated::class => [
-            \App\Listeners\HandleTaskCreated::class,
+        TaskCreated::class => [
+            HandleTaskCreated::class,
         ],
         // Note: Approval task handling moved to ApprovalTaskSubscriber
         // Notification digest queuing
-        \Illuminate\Notifications\Events\NotificationSending::class => [
-            \App\Listeners\QueueNotificationForDigest::class,
+        NotificationSending::class => [
+            QueueNotificationForDigest::class,
         ],
     ];
 
@@ -91,6 +113,7 @@ class EventServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        Document::observe(DocumentObserver::class);
         Calendar::observe(CalendarObserver::class);
         RoleType::observe(RoleTypeObserver::class);
         Type::observe(TypeObserver::class);
