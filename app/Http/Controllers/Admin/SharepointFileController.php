@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Contracts\SharepointFileableContract;
 use App\Http\Controllers\AdminController;
+use App\Models\Duty;
 use App\Models\FileableFile;
 use App\Models\Institution;
+use App\Models\Meeting;
 use App\Models\SharepointFile;
 use App\Models\Type;
 use App\Services\ModelAuthorizer as Authorizer;
@@ -21,10 +23,10 @@ use Microsoft\Graph\Generated\Models\ODataErrors\ODataError;
  * Only these models can be referenced via the type parameter.
  */
 const ALLOWED_FILEABLE_TYPES = [
-    'Duty' => \App\Models\Duty::class,
-    'Type' => \App\Models\Type::class,
-    'Meeting' => \App\Models\Meeting::class,
-    'Institution' => \App\Models\Institution::class,
+    'Duty' => Duty::class,
+    'Type' => Type::class,
+    'Meeting' => Meeting::class,
+    'Institution' => Institution::class,
 ];
 
 class SharepointFileController extends AdminController
@@ -169,7 +171,7 @@ class SharepointFileController extends AdminController
 
         $fileable_class = ALLOWED_FILEABLE_TYPES[$type];
 
-        /** @var \Illuminate\Database\Eloquent\Model|null $fileable */
+        /** @var Model|null $fileable */
         $fileable = $fileable_class::find($id);
 
         if (! $fileable) {

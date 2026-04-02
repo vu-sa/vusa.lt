@@ -52,8 +52,8 @@ const contentComponents = shallowRef({
   'spotify-embed': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCSpotifyEmbed.vue'))),
   'social-embed': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCSocialEmbed.vue'))),
   'number-stat-section': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCNumberStatSection/RCNumberSection.vue'))),
-  'news': markRaw(defineAsyncComponent(() => import("@/Components/Public/NewsElement.vue"))),
-  'calendar': markRaw(defineAsyncComponent(() => import("@/Components/Public/FullWidth/EventCalendarElement.vue"))),
+  'news': markRaw(defineAsyncComponent(() => import('@/Components/Public/NewsElement.vue'))),
+  'calendar': markRaw(defineAsyncComponent(() => import('@/Components/Public/FullWidth/EventCalendarElement.vue'))),
   'flow-graph': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCFlowGraph.vue'))),
   'content-grid': markRaw(defineAsyncComponent(() => import('./RichContent/Types/ContentGridDisplay.vue'))),
   'text-box': markRaw(defineAsyncComponent(() => import('./RichContent/Types/TextBoxDisplay.vue'))),
@@ -218,7 +218,7 @@ function getSkeletonForType(type: string): { height: string; template: string } 
           <Skeleton class="h-28 w-full mb-3" />
           <Skeleton class="h-10 w-28 rounded-md" />
         </div>
-      `
+      `,
     },
     'default': {
       height: 'min-h-[100px]',

@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Contracts\SharepointFileableContract;
 use App\Http\Controllers\Api\ApiController;
+use App\Models\Duty;
 use App\Models\FileableFile;
 use App\Models\Institution;
+use App\Models\Meeting;
+use App\Models\SharepointFile;
 use App\Models\Type;
 use App\Services\SharepointGraphService;
 use Illuminate\Database\Eloquent\Collection;
@@ -17,10 +20,10 @@ use Illuminate\Http\Request;
  * Allowed fileable model types for SharePoint file API operations.
  */
 const ALLOWED_FILEABLE_TYPES = [
-    'Duty' => \App\Models\Duty::class,
-    'Type' => \App\Models\Type::class,
-    'Meeting' => \App\Models\Meeting::class,
-    'Institution' => \App\Models\Institution::class,
+    'Duty' => Duty::class,
+    'Type' => Type::class,
+    'Meeting' => Meeting::class,
+    'Institution' => Institution::class,
 ];
 
 class SharepointApiController extends ApiController
@@ -39,7 +42,7 @@ class SharepointApiController extends ApiController
 
         $fileable_class = ALLOWED_FILEABLE_TYPES[$type];
 
-        /** @var \Illuminate\Database\Eloquent\Model|null $fileable */
+        /** @var Model|null $fileable */
         $fileable = $fileable_class::find($id);
 
         if (! $fileable) {
@@ -139,7 +142,7 @@ class SharepointApiController extends ApiController
         $path = rtrim($path, '/');
 
         // Require authorization for SharePoint browsing
-        $this->authorizeApi('viewAny', \App\Models\SharepointFile::class);
+        $this->authorizeApi('viewAny', SharepointFile::class);
 
         $driveItems = $sharepointService->getDriveItemByPath($path, true);
 

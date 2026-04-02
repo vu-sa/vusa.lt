@@ -69,7 +69,9 @@
                   >
                     <component :is="type.icon" class="mr-2 h-4 w-4" />
                     {{ type.label }}
-                    <Badge v-if="type.isNew" variant="success" size="tiny" class="ml-auto">{{ $t('rich-content.new_badge') }}</Badge>
+                    <Badge v-if="type.isNew" variant="success" size="tiny" class="ml-auto">
+                      {{ $t('rich-content.new_badge') }}
+                    </Badge>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem @click="showInsertMenuAt = index; showSelection = true">
@@ -159,7 +161,9 @@
             @click="handleElementCreate(type.value)">
             <component :is="type.icon" class="h-3.5 w-3.5" />
             <span>{{ type.label }}</span>
-            <Badge v-if="type.isNew" variant="success" size="tiny">{{ $t('rich-content.new_badge') }}</Badge>
+            <Badge v-if="type.isNew" variant="success" size="tiny">
+              {{ $t('rich-content.new_badge') }}
+            </Badge>
           </button>
 
           <!-- More content types button -->
@@ -186,7 +190,9 @@
             <button v-for="type in contentTypes" :key="type.value"
               class="relative flex flex-col items-center gap-2 rounded-lg border border-zinc-200 p-4 text-center transition-colors hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:hover:border-zinc-600 dark:hover:bg-zinc-800/50"
               @click="handleInsertContentType(type.value)">
-              <Badge v-if="type.isNew" variant="success" size="tiny" class="absolute right-2 top-2">{{ $t('rich-content.new_badge') }}</Badge>
+              <Badge v-if="type.isNew" variant="success" size="tiny" class="absolute right-2 top-2">
+                {{ $t('rich-content.new_badge') }}
+              </Badge>
               <component :is="type.icon" class="h-6 w-6 text-zinc-600 dark:text-zinc-400" />
               <div class="text-sm font-medium text-zinc-900 dark:text-zinc-100">
                 {{ type.label }}
@@ -208,9 +214,11 @@ import { computed, nextTick, ref, onUnmounted, onMounted, watch } from 'vue';
 import { useManualRefHistory } from '@vueuse/core';
 
 import FadeTransition from '../Transitions/FadeTransition.vue';
+
 import ContentEditorFactory from './ContentEditorFactory.vue';
 import RichContentParser from './RichContentParser.vue';
 import { getAllContentTypes, createContentItem, getContentType, type ContentPart } from './Types';
+import TextBoxSubmissionsDialog from './Types/TextBoxSubmissionsDialog.vue';
 
 import { Button } from '@/Components/ui/button';
 import { ButtonGroup } from '@/Components/ui/button-group';
@@ -227,7 +235,6 @@ import IFluentMoreHorizontal24Regular from '~icons/fluent/more-horizontal24-regu
 import IFluentEye24Regular from '~icons/fluent/eye24-regular';
 import IFluentEdit24Regular from '~icons/fluent/edit24-regular';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
-import TextBoxSubmissionsDialog from './Types/TextBoxSubmissionsDialog.vue';
 
 const props = defineProps<{
   maxContentBlocks?: number;
@@ -352,7 +359,8 @@ function handleInsertContentType(contentType: string) {
     // Insert at specific position
     insertContentAt(contentType, showInsertMenuAt.value);
     closeInsertMenus();
-  } else {
+  }
+  else {
     // Insert at end (regular add)
     handleElementCreate(contentType);
   }
@@ -409,7 +417,8 @@ function toggleBlockPreviewMode(content: ContentPart) {
   const key = getBlockKey(content);
   if (blocksInPreviewMode.value.has(key)) {
     blocksInPreviewMode.value.delete(key);
-  } else {
+  }
+  else {
     blocksInPreviewMode.value.add(key);
   }
 }

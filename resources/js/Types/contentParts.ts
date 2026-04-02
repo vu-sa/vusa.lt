@@ -128,7 +128,7 @@ export interface News {
   options: null;
 }
 
-export type TextBox = {
+export interface TextBox {
   json_content: Record<string, never>;
   options: {
     title?: { lt: string; en: string };
@@ -136,7 +136,7 @@ export type TextBox = {
     isClosed?: boolean;
     closedMessage?: { lt: string; en: string };
   };
-};
+}
 
 /**
  * Public-facing news item structure returned by API and Inertia props.

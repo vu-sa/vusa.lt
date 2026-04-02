@@ -48,9 +48,15 @@
               <SelectValue :placeholder="capitalize($tChoice('entities.problem.status', 1))" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="open">{{ $t("Atvira") }}</SelectItem>
-              <SelectItem value="in_progress">{{ $t("Vykdoma") }}</SelectItem>
-              <SelectItem value="resolved">{{ $t("Išspręsta") }}</SelectItem>
+              <SelectItem value="open">
+                {{ $t("Atvira") }}
+              </SelectItem>
+              <SelectItem value="in_progress">
+                {{ $t("Vykdoma") }}
+              </SelectItem>
+              <SelectItem value="resolved">
+                {{ $t("Išspręsta") }}
+              </SelectItem>
             </SelectContent>
           </Select>
         </FormFieldWrapper>
@@ -179,45 +185,46 @@
 </template>
 
 <script setup lang="ts">
-import { computed, capitalize, ref, watch } from "vue";
-import type { InertiaForm } from "@inertiajs/vue3";
-import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import { useDebounceFn } from "@vueuse/core";
-
-import { useApi } from "@/Composables/useApi";
-import AdminForm from "./AdminForm.vue";
-import FormElement from "./FormElement.vue";
-import FormFieldWrapper from "./FormFieldWrapper.vue";
-import MultiLocaleInput from "@/Components/FormItems/MultiLocaleInput.vue";
-import MultiLocaleTiptapFormItem from "@/Components/FormItems/MultiLocaleTiptapFormItem.vue";
-import { Input } from "@/Components/ui/input";
-import { MultiSelect } from "@/Components/ui/multi-select";
-import { ChevronsUpDown, X } from "lucide-vue-next";
+import { computed, capitalize, ref, watch } from 'vue';
+import type { InertiaForm } from '@inertiajs/vue3';
+import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+import { useDebounceFn } from '@vueuse/core';
+import { ChevronsUpDown, X } from 'lucide-vue-next';
 import {
   ComboboxAnchor,
   ComboboxEmpty,
   ComboboxInput,
   ComboboxRoot as Combobox,
-} from "reka-ui";
+} from 'reka-ui';
+
+import AdminForm from './AdminForm.vue';
+import FormElement from './FormElement.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+
+import { useApi } from '@/Composables/useApi';
+import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
+import MultiLocaleTiptapFormItem from '@/Components/FormItems/MultiLocaleTiptapFormItem.vue';
+import { Input } from '@/Components/ui/input';
+import { MultiSelect } from '@/Components/ui/multi-select';
 import {
   ComboboxItem,
   ComboboxList,
   ComboboxViewport,
-} from "@/Components/ui/combobox";
+} from '@/Components/ui/combobox';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/Components/ui/select";
+} from '@/Components/ui/select';
 
 interface UserOption {
   id: string;
   name: string;
 }
 
-type ProblemForm = {
+interface ProblemForm {
   id?: string;
   title: { lt: string; en: string };
   description: { lt: string; en: string };
@@ -230,7 +237,7 @@ type ProblemForm = {
   status: string;
   categories: number[];
   institutions: string[];
-};
+}
 
 const props = defineProps<{
   form: InertiaForm<ProblemForm>;
@@ -241,26 +248,26 @@ const props = defineProps<{
 }>();
 
 defineEmits<{
-  "submit:form": [form: InertiaForm<ProblemForm>];
-  delete: [];
+  'submit:form': [form: InertiaForm<ProblemForm>];
+  'delete': [];
 }>();
 
 // Shadcn Select requires string values for v-model
 const tenantIdString = computed({
-  get: () => (props.form.tenant_id != null ? String(props.form.tenant_id) : ""),
+  get: () => (props.form.tenant_id != null ? String(props.form.tenant_id) : ''),
   set: (val: string) => {
     props.form.tenant_id = val ? Number(val) : null;
   },
 });
 
 // --- User search ---
-const userSearchTerm = ref("");
+const userSearchTerm = ref('');
 const selectedUser = ref<UserOption | null>(props.initialResponsibleUser ?? null);
-const userSearchUrl = ref("");
+const userSearchUrl = ref('');
 
 const { data: searchedUsers, isFetching: isSearchingUsers, execute: executeUserSearch } = useApi<UserOption[]>(
   userSearchUrl,
-  { immediate: false, showErrorToast: false }
+  { immediate: false, showErrorToast: false },
 );
 
 const userOptions = computed<UserOption[]>(() => searchedUsers.value ?? []);
@@ -270,7 +277,7 @@ const debouncedSearch = useDebounceFn(() => {
     const params = new URLSearchParams({
       search: userSearchTerm.value,
     });
-    userSearchUrl.value = route("api.v1.admin.users.search") + "?" + params.toString();
+    userSearchUrl.value = `${route('api.v1.admin.users.search')}?${params.toString()}`;
     executeUserSearch();
   }
 }, 300);
@@ -291,34 +298,34 @@ function handleUserSelect(val: unknown) {
 
 function clearSelectedUser() {
   selectedUser.value = null;
-  userSearchTerm.value = "";
+  userSearchTerm.value = '';
   props.form.responsible_user_id = null;
 }
 
 const categoryOptions = computed(() =>
-  props.categories.map((category) => ({
+  props.categories.map(category => ({
     label: category.name as string,
     value: category.id,
-  }))
+  })),
 );
 
 // Bridge: MultiSelect operates on full objects, form.categories stores number[] IDs
 const selectedCategories = computed({
   get: () =>
     (props.form.categories as number[])
-      .map((id) => categoryOptions.value.find((opt) => opt.value === id))
+      .map(id => categoryOptions.value.find(opt => opt.value === id))
       .filter((opt): opt is { label: string; value: number } => Boolean(opt)),
   set: (items: { label: string; value: number }[]) => {
-    props.form.categories = items.map((item) => item.value);
+    props.form.categories = items.map(item => item.value);
   },
 });
 
 const institutionOptions = computed(() => {
   const filtered = props.form.tenant_id
-    ? props.institutions.filter((i) => i.tenant_id === props.form.tenant_id)
+    ? props.institutions.filter(i => i.tenant_id === props.form.tenant_id)
     : props.institutions;
 
-  return filtered.map((institution) => ({
+  return filtered.map(institution => ({
     label: institution.name as string,
     value: institution.id,
   }));
@@ -328,10 +335,10 @@ const institutionOptions = computed(() => {
 const selectedInstitutions = computed({
   get: () =>
     (props.form.institutions as string[])
-      .map((id) => institutionOptions.value.find((opt) => opt.value === id))
+      .map(id => institutionOptions.value.find(opt => opt.value === id))
       .filter((opt): opt is { label: string; value: string } => Boolean(opt)),
   set: (items: { label: string; value: string }[]) => {
-    props.form.institutions = items.map((item) => item.value);
+    props.form.institutions = items.map(item => item.value);
   },
 });
 </script>

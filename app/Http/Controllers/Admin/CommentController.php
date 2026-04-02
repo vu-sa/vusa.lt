@@ -5,6 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\ModelEnum;
 use App\Http\Controllers\AdminController;
 use App\Models\Comment;
+use App\Models\Institution;
+use App\Models\Meeting;
+use App\Models\Pivots\ReservationResource;
+use App\Models\Reservation;
+use App\Models\SharepointFile;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,11 +27,11 @@ class CommentController extends AdminController
      * @var array<string, class-string>
      */
     private const ALLOWED_COMMENTABLE_TYPES = [
-        'reservation' => \App\Models\Reservation::class,
-        'reservation-resource' => \App\Models\Pivots\ReservationResource::class,
-        'institution' => \App\Models\Institution::class,
-        'meeting' => \App\Models\Meeting::class,
-        'sharepoint-file' => \App\Models\SharepointFile::class,
+        'reservation' => Reservation::class,
+        'reservation-resource' => ReservationResource::class,
+        'institution' => Institution::class,
+        'meeting' => Meeting::class,
+        'sharepoint-file' => SharepointFile::class,
     ];
 
     /**

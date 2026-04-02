@@ -123,11 +123,11 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     defaultContent: () => ([]),
     defaultOptions: () => ({ title: '', color: 'zinc' }),
   },
-  "text-box": {
-    value: "text-box",
-    label: "Teksto laukas",
+  'text-box': {
+    value: 'text-box',
+    label: 'Teksto laukas',
     icon: TextBoxIcon,
-    description: "Teksto įvedimo laukas su pateikimo mygtuku",
+    description: 'Teksto įvedimo laukas su pateikimo mygtuku',
     isNew: true,
     defaultContent: () => ({}),
     defaultOptions: () => ({
@@ -137,9 +137,9 @@ export const contentTypeRegistry: Record<string, ContentType> = {
       closedMessage: { lt: '', en: '' },
     }),
   },
-  "content-grid": {
-    value: "content-grid",
-    label: "Tinklelis",
+  'content-grid': {
+    value: 'content-grid',
+    label: 'Tinklelis',
     icon: GridIcon,
     description: 'Lankstus turinys stulpeliais ir eilutėmis',
     defaultContent: () => ([

@@ -1,32 +1,35 @@
 <template>
   <Dialog v-model:open="dialogOpen">
     <DialogTrigger as-child>
-      <Button :loading="loading" :size="size">
+      <Button :loading :size>
         <slot />
       </Button>
     </DialogTrigger>
     <DialogContent class="sm:max-w-[95vw] w-[1400px] h-[85vh] p-0 gap-0 overflow-hidden" :show-close-button="true">
-      <DialogTitle class="sr-only">{{ options.title }}</DialogTitle>
+      <DialogTitle class="sr-only">
+        {{ options.title }}
+      </DialogTitle>
       <iframe ref="iframeRef" :name="iframeName" class="w-full h-full border-0" />
     </DialogContent>
   </Dialog>
 </template>
 
 <script setup lang="ts">
-import { PublicClientApplication } from "@azure/msal-browser";
-import { combine } from "@pnp/core";
-import { usePage } from "@inertiajs/vue3";
-import { ref, watch, nextTick } from "vue";
+import { PublicClientApplication } from '@azure/msal-browser';
+import { combine } from '@pnp/core';
+import { usePage } from '@inertiajs/vue3';
+import { ref, watch, nextTick } from 'vue';
 
-import type { FilePickerOptions, Item } from "./picker.ts";
-import { Button } from "@/Components/ui/button";
-import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/Components/ui/dialog";
+import type { FilePickerOptions, Item } from './picker.ts';
+
+import { Button } from '@/Components/ui/button';
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from '@/Components/ui/dialog';
 
 defineProps<{
   loading?: boolean;
   round?: boolean;
   size?: string;
-}>()
+}>();
 
 const emit = defineEmits<{
   pick: [items: Item[]];
@@ -45,11 +48,11 @@ const options: FilePickerOptions = {
     sharePoint: {
       byPath: {
         // TODO: Move to configuration - hardcoded SharePoint URLs and paths
-        "web": "https://vustudentuatstovybe.sharepoint.com/sites/vieningai",
-        "list": "Bendrai naudojami dokumentai", // TODO: Make configurable
-        "folder": "Dokumentų sistema" // TODO: Make configurable
-      }
-    }
+        web: 'https://vustudentuatstovybe.sharepoint.com/sites/vieningai',
+        list: 'Bendrai naudojami dokumentai', // TODO: Make configurable
+        folder: 'Dokumentų sistema', // TODO: Make configurable
+      },
+    },
   },
   authentication: {},
   messaging: {
@@ -108,7 +111,8 @@ async function getToken(command): Promise<string> {
   try {
     const resp = await app.acquireTokenSilent(authParams!);
     accessToken = resp.accessToken;
-  } catch (e) {
+  }
+  catch (e) {
     try {
       const resp = await app.loginPopup(authParams!);
       app.setActiveAccount(resp.account);
@@ -140,27 +144,27 @@ async function loadPickerInIframe() {
 
     const accessToken = await getToken({
       resource: baseUrl,
-      command: "authenticate",
-      type: "SharePoint",
+      command: 'authenticate',
+      type: 'SharePoint',
     });
 
     const queryString = new URLSearchParams({
       filePicker: JSON.stringify(options),
-      locale: 'en-us'
+      locale: 'en-us',
     });
 
-    const url = baseUrl + `/_layouts/15/FilePicker.aspx?${queryString}`;
+    const url = `${baseUrl}/_layouts/15/FilePicker.aspx?${queryString}`;
 
     // Create a form targeting the iframe and submit it with the access token
-    const form = document.createElement("form");
-    form.setAttribute("action", url);
-    form.setAttribute("method", "POST");
-    form.setAttribute("target", iframeName);
+    const form = document.createElement('form');
+    form.setAttribute('action', url);
+    form.setAttribute('method', 'POST');
+    form.setAttribute('target', iframeName);
 
-    const tokenInput = document.createElement("input");
-    tokenInput.setAttribute("type", "hidden");
-    tokenInput.setAttribute("name", "access_token");
-    tokenInput.setAttribute("value", accessToken);
+    const tokenInput = document.createElement('input');
+    tokenInput.setAttribute('type', 'hidden');
+    tokenInput.setAttribute('name', 'access_token');
+    tokenInput.setAttribute('value', accessToken);
     form.appendChild(tokenInput);
 
     // Temporarily append form to document body, submit, then remove
@@ -170,7 +174,8 @@ async function loadPickerInIframe() {
 
     // Set up PostMessage listener for iframe communication
     setupMessageListener(iframe);
-  } catch (error) {
+  }
+  catch (error) {
     console.error('SharePoint FilePicker error:', error);
     dialogOpen.value = false;
   }
@@ -184,119 +189,121 @@ function setupMessageListener(iframe: HTMLIFrameElement) {
     if (event.source && event.source === iframe.contentWindow) {
       const message = event.data;
 
-      if (message.type === "initialize" && message.channelId === options.messaging.channelId) {
+      if (message.type === 'initialize' && message.channelId === options.messaging.channelId) {
         port = event.ports[0];
-        port.addEventListener("message", channelMessageListener);
+        port.addEventListener('message', channelMessageListener);
         port.start();
 
         port.postMessage({
-          type: "activate",
+          type: 'activate',
         });
       }
     }
   };
 
-  window.addEventListener("message", messageListener);
+  window.addEventListener('message', messageListener);
 }
 
 async function channelMessageListener(message: MessageEvent): Promise<void> {
   const payload = message.data;
 
   switch (payload.type) {
-    case "notification": {
+    case 'notification': {
       const notification = payload.data;
-      if (notification.notification === "page-loaded") {
+      if (notification.notification === 'page-loaded') {
         // Picker page is loaded and ready for user interaction
       }
       break;
     }
 
-    case "command": {
+    case 'command': {
       // All commands must be acknowledged
       port?.postMessage({
-        type: "acknowledge",
+        type: 'acknowledge',
         id: message.data.id,
       });
 
       const command = payload.data;
 
       switch (command.command) {
-        case "authenticate":
+        case 'authenticate':
           try {
             const token = await getToken(command);
 
             if (!token) {
-              throw new Error("Unable to obtain a token.");
+              throw new Error('Unable to obtain a token.');
             }
 
             port?.postMessage({
-              type: "result",
+              type: 'result',
               id: message.data.id,
               data: {
-                result: "token",
-                token: token,
-              }
+                result: 'token',
+                token,
+              },
             });
-          } catch (error) {
+          }
+          catch (error) {
             console.error('SharePoint authentication error:', error);
             port?.postMessage({
-              type: "result",
+              type: 'result',
               id: message.data.id,
               data: {
-                result: "error",
+                result: 'error',
                 error: {
-                  code: "unableToObtainToken",
-                  message: error.message || 'Authentication failed. Please try again.'
-                }
-              }
+                  code: 'unableToObtainToken',
+                  message: error.message || 'Authentication failed. Please try again.',
+                },
+              },
             });
           }
           break;
 
-        case "close":
+        case 'close':
           dialogOpen.value = false;
           break;
 
-        case "pick":
+        case 'pick':
           try {
-            emit("pick", message.data.data.items);
+            emit('pick', message.data.data.items);
 
             port?.postMessage({
-              type: "result",
+              type: 'result',
               id: message.data.id,
               data: {
-                result: "success"
-              }
+                result: 'success',
+              },
             });
 
             cleanup();
             dialogOpen.value = false;
-          } catch (error) {
+          }
+          catch (error) {
             port?.postMessage({
-              type: "result",
+              type: 'result',
               id: message.data.id,
               data: {
-                result: "error",
+                result: 'error',
                 error: {
-                  code: "unusableItem",
-                  message: error.message
-                }
-              }
+                  code: 'unusableItem',
+                  message: error.message,
+                },
+              },
             });
           }
           break;
 
         default:
           port?.postMessage({
-            type: "result",
+            type: 'result',
             id: message.data.id,
             data: {
-              result: "error",
+              result: 'error',
               error: {
-                code: "unsupportedCommand",
-                message: command.command
-              }
-            }
+                code: 'unsupportedCommand',
+                message: command.command,
+              },
+            },
           });
           break;
       }
@@ -307,7 +314,7 @@ async function channelMessageListener(message: MessageEvent): Promise<void> {
 
 function cleanupMessageListener() {
   if (messageListener) {
-    window.removeEventListener("message", messageListener);
+    window.removeEventListener('message', messageListener);
     messageListener = null;
   }
 }
@@ -315,9 +322,9 @@ function cleanupMessageListener() {
 function cleanup() {
   if (port) {
     port.postMessage({
-      type: "result",
-      id: "close",
-      data: { result: "success" }
+      type: 'result',
+      id: 'close',
+      data: { result: 'success' },
     });
     port.close();
     port = null;
@@ -330,7 +337,8 @@ watch(dialogOpen, async (isOpen) => {
   if (isOpen) {
     await nextTick();
     loadPickerInIframe();
-  } else {
+  }
+  else {
     cleanup();
   }
 });

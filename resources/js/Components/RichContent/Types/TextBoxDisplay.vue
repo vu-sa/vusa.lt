@@ -15,17 +15,17 @@
     </div>
 
     <!-- Form -->
-    <form v-else @submit.prevent="submit" class="flex flex-col gap-3">
+    <form v-else class="flex flex-col gap-3" @submit.prevent="submit">
       <!-- Honeypot: hidden from real users, bots fill it in -->
       <div aria-hidden="true" style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;">
         <label for="website">Website</label>
-        <input id="website" v-model="honeypot" type="text" name="website" tabindex="-1" autocomplete="off" />
+        <input id="website" v-model="honeypot" type="text" name="website" tabindex="-1" autocomplete="off">
       </div>
 
       <div class="relative">
         <Textarea
           v-model="text"
-          :placeholder="placeholder"
+          :placeholder
           :disabled="isSubmitting"
           :maxlength="MAX_LENGTH"
           class="min-h-28 resize-y"
@@ -46,7 +46,9 @@
           </span>
           <span v-else>{{ $t('rich-content.text_box_submit') }}</span>
         </Button>
-        <p v-if="errorMessage" class="text-sm text-red-600 dark:text-red-400">{{ errorMessage }}</p>
+        <p v-if="errorMessage" class="text-sm text-red-600 dark:text-red-400">
+          {{ errorMessage }}
+        </p>
       </div>
     </form>
   </div>
@@ -55,6 +57,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue';
 import { usePage } from '@inertiajs/vue3';
+
 import type { TextBox } from '@/Types/contentParts';
 import { Button } from '@/Components/ui/button';
 import { Textarea } from '@/Components/ui/textarea';
@@ -120,7 +123,7 @@ async function submit(): Promise<void> {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Accept: 'application/json',
+        'Accept': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
         'X-CSRF-TOKEN': csrfToken,
       },
@@ -137,12 +140,15 @@ async function submit(): Promise<void> {
     if (data.success) {
       submitted.value = true;
       localStorage.setItem(storageKey.value, '1');
-    } else {
+    }
+    else {
       errorMessage.value = data.message || 'An error occurred. Please try again.';
     }
-  } catch {
+  }
+  catch {
     errorMessage.value = 'An error occurred. Please try again.';
-  } finally {
+  }
+  finally {
     isSubmitting.value = false;
   }
 }

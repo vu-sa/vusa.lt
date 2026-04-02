@@ -36,17 +36,17 @@
       </DataTableFilter>
     </template>
 
-        <div class="hidden items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-1.5 text-xs text-muted-foreground lg:flex">
-          <span>{{ $t("Environment") }}:</span>
-          <Badge :variant="appEnvironment === 'production' ? 'default' : 'secondary'">
-            {{ appEnvironmentLabel }}
-          </Badge>
-          <span class="mx-1 text-muted-foreground/50">|</span>
-          <span>{{ $t("Work mode") }}:</span>
-          <Badge :variant="appEnvironment === 'production' ? 'default' : 'secondary'">
-            {{ appWorkModeLabel }}
-          </Badge>
-        </div>
+    <div class="hidden items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-1.5 text-xs text-muted-foreground lg:flex">
+      <span>{{ $t("Environment") }}:</span>
+      <Badge :variant="appEnvironment === 'production' ? 'default' : 'secondary'">
+        {{ appEnvironmentLabel }}
+      </Badge>
+      <span class="mx-1 text-muted-foreground/50">|</span>
+      <span>{{ $t("Work mode") }}:</span>
+      <Badge :variant="appEnvironment === 'production' ? 'default' : 'secondary'">
+        {{ appWorkModeLabel }}
+      </Badge>
+    </div>
   </IndexTablePage>
 </template>
 
@@ -57,17 +57,17 @@ import { router, usePage } from '@inertiajs/vue3';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ExternalLinkIcon, RefreshCwIcon } from 'lucide-vue-next';
 
-import type { Item } from "@/Features/Admin/SharepointFilePicker/picker";
-import FilePicker from "@/Features/Admin/SharepointFilePicker/FilePicker.vue";
-import Icons from "@/Types/Icons/regular";
-import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
-import SmartLink from "@/Components/Public/SmartLink.vue";
-import { Badge } from "@/Components/ui/badge";
-import { Button } from "@/Components/ui/button";
-import DataTableFilter from "@/Components/ui/data-table/DataTableFilter.vue";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
-import { formatRelativeTime, formatStaticTime } from "@/Utils/IntlTime";
-import { LocaleEnum } from "@/Types/enums";
+import type { Item } from '@/Features/Admin/SharepointFilePicker/picker';
+import FilePicker from '@/Features/Admin/SharepointFilePicker/FilePicker.vue';
+import Icons from '@/Types/Icons/regular';
+import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
+import SmartLink from '@/Components/Public/SmartLink.vue';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
+import { formatRelativeTime, formatStaticTime } from '@/Utils/IntlTime';
+import { LocaleEnum } from '@/Types/enums';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import type {
   IndexTablePageProps,
@@ -115,13 +115,13 @@ const page = usePage();
 
 const appEnvironment = computed(() => String(page.props.app?.env ?? 'unknown').toLowerCase());
 const appEnvironmentLabel = computed(() => {
-  if (appEnvironment.value === 'production') return $t("Production");
-  if (appEnvironment.value === 'local') return $t("Local");
+  if (appEnvironment.value === 'production') return $t('Production');
+  if (appEnvironment.value === 'local') return $t('Local');
 
   return appEnvironment.value;
 });
 const appWorkModeLabel = computed(() => {
-  return appEnvironment.value === 'production' ? $t("Production mode") : $t("Development mode");
+  return appEnvironment.value === 'production' ? $t('Production mode') : $t('Development mode');
 });
 
 // Initialize filter states
@@ -341,14 +341,14 @@ const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
           label: 'Pending',
           icon: '⏳',
         },
-        'imported': {
+        imported: {
           color: 'text-indigo-600',
           bgColor: 'bg-indigo-50',
           dotColor: 'bg-indigo-500',
           label: 'Imported',
-          icon: '📥'
+          icon: '📥',
         },
-        'syncing': {
+        syncing: {
           color: 'text-blue-600',
           bgColor: 'bg-blue-50',
           dotColor: 'bg-blue-500 animate-pulse',

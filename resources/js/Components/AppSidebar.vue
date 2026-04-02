@@ -235,8 +235,8 @@ import NavQuickActions from './NavQuickActions.vue';
 import FollowedInstitutionsHotbar from './Sidebar/FollowedInstitutionsHotbar.vue';
 import SidebarStartFM from './SidebarStartFM.vue';
 import AppLogo from './AppLogo.vue';
-import { useDocsUpdateIndicator } from '@/Composables/useDocsUpdateIndicator';
 
+import { useDocsUpdateIndicator } from '@/Composables/useDocsUpdateIndicator';
 import NewMeetingDialog from '@/Components/Dialogs/NewMeetingDialog.vue';
 import {
   Sidebar,
@@ -395,7 +395,7 @@ const navSecondaryItems = computed(() => {
 // Handle secondary nav clicks
 const handleSecondaryNavClick = (url: string) => {
   if (url === '#feedback') {
-    showFeedbackDialog.value = true
+    showFeedbackDialog.value = true;
   }
   else if (url.startsWith('http')) {
     window.open(url, '_blank');

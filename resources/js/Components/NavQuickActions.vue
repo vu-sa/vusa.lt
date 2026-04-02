@@ -1,94 +1,3 @@
-<script setup lang="ts">
-import { computed } from 'vue'
-import { usePage, router } from '@inertiajs/vue3'
-import { trans as $t } from "laravel-vue-i18n"
-import type { LucideIcon } from 'lucide-vue-next'
-import {
-  CalendarPlus,
-  FileText,
-  Building2,
-  Sparkles,
-  UserCog,
-  MessageSquareWarning,
-} from 'lucide-vue-next'
-
-import {
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from '@/Components/ui/sidebar'
-
-const emit = defineEmits<{
-  (e: 'newMeeting'): void
-  (e: 'newNews'): void
-  (e: 'newReservation'): void
-}>()
-
-interface QuickAction {
-  title: string
-  icon: LucideIcon
-  action: () => void
-  gradient: string
-}
-
-const quickActions = computed<QuickAction[]>(() => {
-  const actions: QuickAction[] = []
-  const page = usePage()
-
-  if (page.props.auth?.can?.create?.problem) {
-    actions.push({
-      title: $t('Nauja problema'),
-      icon: MessageSquareWarning,
-      action: () => router.visit(route('problems.create')),
-      gradient: 'from-red-500/15 to-rose-500/15 hover:from-red-500/25 hover:to-rose-500/25 dark:from-red-400/10 dark:to-rose-400/10 dark:hover:from-red-400/20 dark:hover:to-rose-400/20',
-    })
-  }
-
-  if (page.props.auth?.can?.create?.meeting) {
-    actions.push({
-      title: $t('Naujas susitikimas'),
-      icon: CalendarPlus,
-      action: () => emit('newMeeting'),
-      gradient: 'from-amber-500/15 to-orange-500/15 hover:from-amber-500/25 hover:to-orange-500/25 dark:from-amber-400/10 dark:to-orange-400/10 dark:hover:from-amber-400/20 dark:hover:to-orange-400/20',
-    })
-  }
-
-  if (page.props.auth?.can?.create?.news) {
-    actions.push({
-      title: $t('Nauja naujiena'),
-      icon: FileText,
-      action: () => emit('newNews'),
-      gradient: 'from-blue-500/15 to-cyan-500/15 hover:from-blue-500/25 hover:to-cyan-500/25 dark:from-blue-400/10 dark:to-cyan-400/10 dark:hover:from-blue-400/20 dark:hover:to-cyan-400/20',
-    })
-  }
-
-  if (page.props.auth?.can?.create?.reservation) {
-    actions.push({
-      title: $t('Nauja rezervacija'),
-      icon: Building2,
-      action: () => emit('newReservation'),
-      gradient: 'from-emerald-500/15 to-teal-500/15 hover:from-emerald-500/25 hover:to-teal-500/25 dark:from-emerald-400/10 dark:to-teal-400/10 dark:hover:from-emerald-400/20 dark:hover:to-teal-400/20',
-    })
-  }
-
-  if (page.props.auth?.can?.create?.duty) {
-    actions.push({
-      title: $t('Pareigybių atnaujinimas'),
-      icon: UserCog,
-      action: () => router.visit(route('duties.updateUsersWizard')),
-      gradient: 'from-violet-500/15 to-purple-500/15 hover:from-violet-500/25 hover:to-purple-500/25 dark:from-violet-400/10 dark:to-purple-400/10 dark:hover:from-violet-400/20 dark:hover:to-purple-400/20',
-    })
-  }
-
-  return actions
-})
-
-const sectionTitle = $t('Greiti veiksmai')
-</script>
-
 <template>
   <SidebarGroup v-if="quickActions.length > 0" class="group-data-[collapsible=icon]:hidden" data-tour="quick-actions">
     <SidebarGroupLabel class="flex items-center gap-2">
@@ -99,9 +8,9 @@ const sectionTitle = $t('Greiti veiksmai')
       <SidebarMenu>
         <SidebarMenuItem v-for="action in quickActions" :key="action.title">
           <SidebarMenuButton
-            @click="action.action"
             :tooltip="action.title"
             class="transition-colors"
+            @click="action.action"
             @click="action.action"
           >
             <div
@@ -119,3 +28,94 @@ const sectionTitle = $t('Greiti veiksmai')
     </SidebarGroupContent>
   </SidebarGroup>
 </template>
+
+<script setup lang="ts">
+import { computed } from 'vue';
+import { usePage, router } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+import type { LucideIcon } from 'lucide-vue-next';
+import {
+  CalendarPlus,
+  FileText,
+  Building2,
+  Sparkles,
+  UserCog,
+  MessageSquareWarning,
+} from 'lucide-vue-next';
+
+import {
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from '@/Components/ui/sidebar';
+
+const emit = defineEmits<{
+  (e: 'newMeeting'): void;
+  (e: 'newNews'): void;
+  (e: 'newReservation'): void;
+}>();
+
+interface QuickAction {
+  title: string;
+  icon: LucideIcon;
+  action: () => void;
+  gradient: string;
+}
+
+const quickActions = computed<QuickAction[]>(() => {
+  const actions: QuickAction[] = [];
+  const page = usePage();
+
+  if (page.props.auth?.can?.create?.problem) {
+    actions.push({
+      title: $t('Nauja problema'),
+      icon: MessageSquareWarning,
+      action: () => router.visit(route('problems.create')),
+      gradient: 'from-red-500/15 to-rose-500/15 hover:from-red-500/25 hover:to-rose-500/25 dark:from-red-400/10 dark:to-rose-400/10 dark:hover:from-red-400/20 dark:hover:to-rose-400/20',
+    });
+  }
+
+  if (page.props.auth?.can?.create?.meeting) {
+    actions.push({
+      title: $t('Naujas susitikimas'),
+      icon: CalendarPlus,
+      action: () => emit('newMeeting'),
+      gradient: 'from-amber-500/15 to-orange-500/15 hover:from-amber-500/25 hover:to-orange-500/25 dark:from-amber-400/10 dark:to-orange-400/10 dark:hover:from-amber-400/20 dark:hover:to-orange-400/20',
+    });
+  }
+
+  if (page.props.auth?.can?.create?.news) {
+    actions.push({
+      title: $t('Nauja naujiena'),
+      icon: FileText,
+      action: () => emit('newNews'),
+      gradient: 'from-blue-500/15 to-cyan-500/15 hover:from-blue-500/25 hover:to-cyan-500/25 dark:from-blue-400/10 dark:to-cyan-400/10 dark:hover:from-blue-400/20 dark:hover:to-cyan-400/20',
+    });
+  }
+
+  if (page.props.auth?.can?.create?.reservation) {
+    actions.push({
+      title: $t('Nauja rezervacija'),
+      icon: Building2,
+      action: () => emit('newReservation'),
+      gradient: 'from-emerald-500/15 to-teal-500/15 hover:from-emerald-500/25 hover:to-teal-500/25 dark:from-emerald-400/10 dark:to-teal-400/10 dark:hover:from-emerald-400/20 dark:hover:to-teal-400/20',
+    });
+  }
+
+  if (page.props.auth?.can?.create?.duty) {
+    actions.push({
+      title: $t('Pareigybių atnaujinimas'),
+      icon: UserCog,
+      action: () => router.visit(route('duties.updateUsersWizard')),
+      gradient: 'from-violet-500/15 to-purple-500/15 hover:from-violet-500/25 hover:to-purple-500/25 dark:from-violet-400/10 dark:to-purple-400/10 dark:hover:from-violet-400/20 dark:hover:to-purple-400/20',
+    });
+  }
+
+  return actions;
+});
+
+const sectionTitle = $t('Greiti veiksmai');
+</script>

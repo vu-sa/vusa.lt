@@ -10,10 +10,10 @@
   >
     <UpsertModelLayout>
       <ProblemForm
-        :form="form"
-        :tenants="tenants"
-        :categories="categories"
-        :institutions="institutions"
+        :form
+        :tenants
+        :categories
+        :institutions
         @submit:form="
           (form) => form.post(route('problems.store'), { preserveScroll: true })
         "
@@ -23,13 +23,13 @@
 </template>
 
 <script setup lang="ts">
-import { useForm } from "@inertiajs/vue3";
-import { transChoice as $tChoice } from "laravel-vue-i18n";
+import { useForm } from '@inertiajs/vue3';
+import { transChoice as $tChoice } from 'laravel-vue-i18n';
 
-import Icons from "@/Types/Icons/regular";
-import ProblemForm from "@/Components/AdminForms/ProblemForm.vue";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
+import Icons from '@/Types/Icons/regular';
+import ProblemForm from '@/Components/AdminForms/ProblemForm.vue';
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 
 defineProps<{
   tenants: Array<App.Entities.Tenant>;
@@ -38,15 +38,15 @@ defineProps<{
 }>();
 
 const form = useForm({
-  title: { lt: "", en: "" },
-  description: { lt: "", en: "" },
-  solution: { lt: "", en: "" },
-  steps_taken: { lt: "", en: "" },
+  title: { lt: '', en: '' },
+  description: { lt: '', en: '' },
+  solution: { lt: '', en: '' },
+  steps_taken: { lt: '', en: '' },
   tenant_id: null as number | null,
   responsible_user_id: null as string | null,
-  occurred_at: new Date().toISOString().split("T")[0] as string,
+  occurred_at: new Date().toISOString().split('T')[0] as string,
   resolved_at: null as string | null,
-  status: "open" as string,
+  status: 'open' as string,
   categories: [] as number[],
   institutions: [] as string[],
 });

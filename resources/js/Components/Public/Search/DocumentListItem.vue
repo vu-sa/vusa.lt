@@ -161,12 +161,6 @@
 import { computed } from 'vue';
 
 // ShadcnVue components
-import { Badge } from '@/Components/ui/badge'
-import { Button } from '@/Components/ui/button'
-import { ButtonGroup } from '@/Components/ui/button-group'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip'
-
-// Icons
 import {
   Building2,
   Calendar,
@@ -182,6 +176,10 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
+import { ButtonGroup } from '@/Components/ui/button-group';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
+
+// Icons
 
 // Icons
 
@@ -215,27 +213,27 @@ const documentUrl = computed(() => props.document.share_url || props.document.an
 
 // Download URL appends ?download=1 to the share/anonymous URL
 const downloadUrl = computed(() => {
-  const base = props.document.share_url || props.document.anonymous_url
-  if (!base) return undefined
-  const separator = base.includes('?') ? '&' : '?'
-  return `${base}${separator}download=1`
-})
+  const base = props.document.share_url || props.document.anonymous_url;
+  if (!base) return undefined;
+  const separator = base.includes('?') ? '&' : '?';
+  return `${base}${separator}download=1`;
+});
 
 // Open document in new tab
 const openDocument = () => {
   if (documentUrl.value) {
-    trackDocumentClick()
-    window.open(documentUrl.value, '_blank', 'noopener,noreferrer')
+    trackDocumentClick();
+    window.open(documentUrl.value, '_blank', 'noopener,noreferrer');
   }
-}
+};
 
 // Download document
 const downloadDocument = () => {
   if (downloadUrl.value) {
-    trackDocumentClick()
-    window.open(downloadUrl.value, '_blank', 'noopener,noreferrer')
+    trackDocumentClick();
+    window.open(downloadUrl.value, '_blank', 'noopener,noreferrer');
   }
-}
+};
 
 // Copy share URL to clipboard
 const copyShareUrl = async () => {
