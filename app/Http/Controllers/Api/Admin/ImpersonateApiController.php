@@ -66,7 +66,7 @@ class ImpersonateApiController extends ApiController
         Auth::login($target);
 
         return $this->jsonSuccess([
-            'impersonating' => $target->only('id', 'name', 'email'),
+            'impersonating' => $target->only(['id', 'name', 'email']),
         ], 'Now impersonating '.$target->name);
     }
 

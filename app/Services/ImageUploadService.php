@@ -5,6 +5,7 @@ namespace App\Services;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Format;
 use Intervention\Image\Interfaces\EncodedImageInterface;
 use Intervention\Image\Interfaces\ImageInterface;
 use Intervention\Image\Laravel\Facades\Image;
@@ -41,16 +42,16 @@ class ImageUploadService
             : strlen($source);
 
         // Read and process image
-        $image = Image::read($source);
+        $image = Image::decode($source);
         $image = $image->scaleDown(width: $opts['maxWidth']);
 
         // Convert to desired format
         if ($opts['format'] === 'webp') {
-            $image = $image->toWebp($opts['quality']);
+            $image = $image->encodeUsingFormat(Format::WEBP, quality: $opts['quality']);
         } elseif ($opts['format'] === 'jpeg' || $opts['format'] === 'jpg') {
-            $image = $image->toJpeg($opts['quality']);
+            $image = $image->encodeUsingFormat(Format::JPEG, quality: $opts['quality']);
         } elseif ($opts['format'] === 'png') {
-            $image = $image->toPng();
+            $image = $image->encodeUsingFormat(Format::PNG);
         }
 
         return [
