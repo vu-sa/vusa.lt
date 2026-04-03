@@ -177,11 +177,7 @@
 
       <!-- Empty state -->
       <div
-<<<<<<< HEAD
-        v-if="eventGroups.length === 0"
-=======
         v-if="displayedGroups.length === 0"
->>>>>>> main
         class="flex flex-col items-center justify-center py-16 text-center"
       >
         <div class="w-14 h-14 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-4">

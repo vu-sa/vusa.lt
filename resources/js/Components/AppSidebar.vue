@@ -138,7 +138,7 @@
       </SidebarMenu>
       <!-- Version info -->
       <div class="flex items-center justify-center gap-1.5 px-3 py-1 text-[11px] text-muted-foreground/60 group-data-[collapsible=icon]:hidden">
-        <a :href="`${docsBase}/changelog/`" class="hover:text-muted-foreground transition-colors" @click.prevent="handleSecondaryNavClick(`${docsBase}/changelog/`)">
+        <a :href="`${docsBase}/changelog/`" target="_blank" rel="noopener noreferrer" class="hover:text-muted-foreground transition-colors" @click="markDocsUpdatesSeen">
           {{ latestVersion }}{{ lastUpdateDate ? ` · ${lastUpdateDate}` : '' }}
         </a>
         <span>·</span>
