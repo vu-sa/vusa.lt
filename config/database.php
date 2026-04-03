@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Str;
+use PDO\MySQL;
 
 return [
 
@@ -59,7 +60,7 @@ return [
             'strict' => true,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                defined('PDO\MySQL::ATTR_SSL_CA') ? PDO\MySQL::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                defined('PDO\MySQL::ATTR_SSL_CA') ? MySQL::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
 
