@@ -84,7 +84,7 @@ class DashboardController extends AdminController
 
         $upcomingMeetings = Meeting::query()
             ->whereHas('institutions', fn ($q) => $q->whereIn('institutions.id', $userInstitutionIds))
-            ->where('start_time', '>', now())
+            ->where('start_time', '>=', now()->startOfDay())
             ->where('start_time', '<', now()->addMonths(2))
             ->orderBy('start_time')
             ->with(['institutions:id,name'])

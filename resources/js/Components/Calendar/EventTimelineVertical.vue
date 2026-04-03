@@ -13,9 +13,18 @@
       </div>
     </div>
 
-    <!-- Load past button -->
+    <!-- Show/load past button -->
     <button
-      v-if="canLoadPast"
+      v-if="!showPast && hasPastEvents"
+      type="button"
+      class="w-full flex items-center justify-center gap-2 py-2.5 mb-6 text-sm font-medium text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-vusa-red transition-colors"
+      @click="showPast = true"
+    >
+      <ArrowUp class="w-4 h-4" />
+      {{ $t('Rodyti ankstesnius') }}
+    </button>
+    <button
+      v-else-if="showPast && canLoadPast"
       type="button"
       class="w-full flex items-center justify-center gap-2 py-2.5 mb-6 text-sm font-medium text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-vusa-red transition-colors"
       :disabled="loadingPast"
@@ -33,7 +42,7 @@
 
       <!-- Event entries with integrated today marker -->
       <div class="space-y-2">
-        <template v-for="(group, groupIndex) in eventGroups" :key="group.dateKey">
+        <template v-for="(group, groupIndex) in displayedGroups" :key="group.dateKey">
           <!-- Today marker - show BEFORE the first non-past group -->
           <div
             v-if="shouldShowTodayMarkerBefore(groupIndex)"
@@ -55,7 +64,7 @@
 
           <!-- Date separator for new dates -->
           <div
-            v-if="groupIndex === 0 || !isSameDateGroup(group, eventGroups[groupIndex - 1])"
+            v-if="groupIndex === 0 || !isSameDateGroup(group, displayedGroups[groupIndex - 1])"
             class="flex items-center gap-3 pt-6 pb-3"
           >
             <!-- Date indicator on timeline -->
@@ -168,7 +177,11 @@
 
       <!-- Empty state -->
       <div
+<<<<<<< HEAD
         v-if="eventGroups.length === 0"
+=======
+        v-if="displayedGroups.length === 0"
+>>>>>>> main
         class="flex flex-col items-center justify-center py-16 text-center"
       >
         <div class="w-14 h-14 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-4">
@@ -249,6 +262,7 @@ const LOAD_MORE_DAYS = 14;
 // State
 const daysPast = ref(INITIAL_DAYS_PAST);
 const daysFuture = ref(INITIAL_DAYS_FUTURE);
+const showPast = ref(false);
 
 // Computed values
 const dateLocale = computed(() => props.locale === 'lt' ? lt : enUS);
@@ -328,12 +342,20 @@ const eventGroups = computed(() => {
   return groups;
 });
 
+// Displayed groups (filter out past when showPast is false)
+const hasPastEvents = computed(() => eventGroups.value.some(g => g.isPast));
+
+const displayedGroups = computed(() => {
+  if (showPast.value) return eventGroups.value;
+  return eventGroups.value.filter(g => !g.isPast);
+});
+
 // Track if today marker has been shown
 const todayMarkerShownRef = ref(false);
 
 // Determine if today marker should be shown before a specific group index
 const shouldShowTodayMarkerBefore = (groupIndex: number): boolean => {
-  const groups = eventGroups.value;
+  const groups = displayedGroups.value;
   if (groups.length === 0) return false;
 
   const currentGroup = groups[groupIndex];
@@ -359,7 +381,7 @@ const shouldShowTodayMarkerBefore = (groupIndex: number): boolean => {
 
 // Check if today marker should be shown at the end (all events are past)
 const shouldShowTodayMarkerAtEnd = computed(() => {
-  const groups = eventGroups.value;
+  const groups = displayedGroups.value;
   if (groups.length === 0) return false;
 
   // Show at end only if ALL events are in the past

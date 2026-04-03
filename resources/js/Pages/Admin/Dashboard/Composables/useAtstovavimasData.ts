@@ -102,10 +102,13 @@ export function useAtstovavimosData(
     }) as AtstovavimosGap[];
   });
 
-  // Upcoming meetings sorted by date
+  // Upcoming meetings (including all of today's meetings) sorted by date
   const upcomingMeetings = computed<AtstovavimosMeeting[]>(() => {
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
     return meetings.value
-      .filter((meeting: any) => meeting && new Date(meeting.start_time) > new Date())
+      .filter((meeting: any) => meeting && new Date(meeting.start_time) >= startOfToday)
       .sort((a: any, b: any) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
   });
 
