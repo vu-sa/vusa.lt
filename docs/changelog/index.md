@@ -7,6 +7,11 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.5 — Kalendoriaus ir susitikimų patobulinimai (2026-04-03) {#v1-5}
+
+- 📅 **Viešas renginių kalendorius** — mobilioje versijoje, praėję renginiai dabar paslėpti pagal numatymą ir rodomi tik paspaudus „Rodyti ankstesnius"
+- 🤝 **Šiandienos susitikimai** — pagrindiniame ir atstovavimo skydelyje, prie "Tavo artėjantys susitikimai" dabar rodomi ir šiandienos susitikimai, net jei jų konkretus pradžios laikas jau praėjęs.
+
 ## v1.4 — Dokumentacijos atnaujinimas (2026-03-31) {#v1-4}
 
 Atnaujintoje vusa.lt dokumentacijoje sukurtas **atnaujinimų puslapis**, kuriame bus pristatomi platformos pakeitimai. Esant atnaujinimams, admin panelėje prie „Dokumentacija" nuorodos matysite indikatorių, o atnaujinimų puslapyje galėsite rasti visą informaciją apie naujausius pakeitimus.

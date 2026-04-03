@@ -55,8 +55,13 @@
                   </div>
                 </div>
 
-                <!-- Show position badge for first meeting -->
-                <div v-if="index === 0" class="flex-shrink-0">
+                <!-- Show badge for today's or next meeting -->
+                <div v-if="isMeetingToday(meeting)" class="flex-shrink-0">
+                  <span class="inline-flex items-center rounded-full bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400/80">
+                    {{ $t('Šiandien') }}
+                  </span>
+                </div>
+                <div v-else-if="index === 0 || (index > 0 && upcomingMeetings.slice(0, index).every(m => isMeetingToday(m)))" class="flex-shrink-0">
                   <span class="inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400/80">
                     {{ $t('Kitas') }}
                   </span>
@@ -197,6 +202,14 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+const isMeetingToday = (meeting: AtstovavimosMeeting): boolean => {
+  const meetingDate = new Date(meeting.start_time);
+  const now = new Date();
+  return meetingDate.getFullYear() === now.getFullYear()
+    && meetingDate.getMonth() === now.getMonth()
+    && meetingDate.getDate() === now.getDate();
+};
 
 // Computed classes based on meeting count using shared accent colors
 const hasMeetings = computed(() => props.upcomingMeetings.length > 0)

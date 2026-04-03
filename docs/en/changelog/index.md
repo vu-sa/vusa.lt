@@ -7,6 +7,11 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.5 — Calendar & Meetings Improvements (2026-04-03) {#v1-5}
+
+- 📅 **Event calendar** — past events are now hidden by default and shown only after clicking "Show previous"
+- 🤝 **Today's meetings** — the main and representation dashboards now show today's meetings even if their start time has already passed
+
 ## v1.4 — Documentation Overhaul (2026-03-31) {#v1-4}
 
 The updated vusa.lt documentation now includes an **updates page** where platform changes will be announced. When there are updates, you'll see an indicator next to the "Dokumentacija" link in the admin panel, and on the updates page you'll find all the details about recent changes.
