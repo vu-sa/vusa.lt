@@ -1,10 +1,10 @@
 <template>
-  <div ref="graph"></div>
+  <div ref="graph" />
 </template>
 
 <script setup lang="ts">
 // import * as d3 from "d3";
-import { computed } from "vue";
+import { computed } from 'vue';
 import {
   create,
   drag,
@@ -14,8 +14,8 @@ import {
   forceX,
   forceY,
   select,
-} from "d3";
-import { onBeforeUnmount, onMounted, ref } from "vue";
+} from 'd3';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 const props = defineProps<{
   institutions: Record<string, any>[];
@@ -78,85 +78,85 @@ const graphDrag = (simulation) => {
 
   return d3
     .drag()
-    .on("start", dragstarted)
-    .on("drag", dragged)
-    .on("end", dragended);
+    .on('start', dragstarted)
+    .on('drag', dragged)
+    .on('end', dragended);
 };
 
 const simulation = d3
   .forceSimulation(nodes.value)
   .force(
-    "link",
-    d3.forceLink(edges.value).id((d) => d.id)
+    'link',
+    d3.forceLink(edges.value).id(d => d.id),
   )
-  .force("charge", d3.forceManyBody().strength(-400))
-  .force("x", d3.forceX())
-  .force("y", d3.forceY());
+  .force('charge', d3.forceManyBody().strength(-400))
+  .force('x', d3.forceX())
+  .force('y', d3.forceY());
 
 const svg = d3
-  .create("svg")
-  .attr("viewBox", [-width / 2, -height / 2, width, height]);
+  .create('svg')
+  .attr('viewBox', [-width / 2, -height / 2, width, height]);
 
 const link = svg
-  .append("g")
-  .attr("stroke", "#999")
-  .attr("stroke-opacity", 0.6)
-  .attr("stroke-width", 3)
-  .selectAll("line")
+  .append('g')
+  .attr('stroke', '#999')
+  .attr('stroke-opacity', 0.6)
+  .attr('stroke-width', 3)
+  .selectAll('line')
   .data(edges.value)
-  .join("line")
-  .attr("stroke-width", (d) => Math.sqrt(d.value));
+  .join('line')
+  .attr('stroke-width', d => Math.sqrt(d.value));
 
 const node = svg
-  .append("g")
-  .attr("stroke", "#fff")
-  .attr("id", "nodes")
-  .attr("stroke-width", 1.5)
-  .selectAll("g")
+  .append('g')
+  .attr('stroke', '#fff')
+  .attr('id', 'nodes')
+  .attr('stroke-width', 1.5)
+  .selectAll('g')
   .data(nodes.value)
-  .join("g")
+  .join('g')
   // create circles
   .call(graphDrag(simulation));
 
 const circles = node
-  .append("circle")
-  .attr("id", (d) => d.id)
-  .attr("r", (d) => {
+  .append('circle')
+  .attr('id', d => d.id)
+  .attr('r', (d) => {
     return 6 + d.userCount * 0.5;
   })
-  .attr("class", "fill-vusa-red dark:fill-vusa-yellow");
+  .attr('class', 'fill-vusa-red dark:fill-vusa-yellow');
 
-node.append("title").text((d) => d.id);
+node.append('title').text(d => d.id);
 
 // add labels near the nodes
 node
-  .append("text")
-  .attr("x", 8)
-  .attr("y", "0.25em")
-  .attr("stroke-width", "0")
+  .append('text')
+  .attr('x', 8)
+  .attr('y', '0.25em')
+  .attr('stroke-width', '0')
   .attr(
-    "class",
-    "text-base font-bold fill-gray-800 dark:fill-gray-200 stroke-gray-200 dark:stroke-gray-800"
+    'class',
+    'text-base font-bold fill-gray-800 dark:fill-gray-200 stroke-gray-200 dark:stroke-gray-800',
   )
-  .text((d) => d.label);
+  .text(d => d.label);
 
-simulation.on("tick", () => {
+simulation.on('tick', () => {
   link
-    .attr("x1", (d) => d.source.x)
-    .attr("y1", (d) => d.source.y)
-    .attr("x2", (d) => d.target.x)
-    .attr("y2", (d) => d.target.y);
+    .attr('x1', d => d.source.x)
+    .attr('y1', d => d.source.y)
+    .attr('x2', d => d.target.x)
+    .attr('y2', d => d.target.y);
 
-  node.attr("transform", (d) => `translate(${d.x},${d.y})`);
+  node.attr('transform', d => `translate(${d.x},${d.y})`);
 });
 
 // on circle doubleclick, open the node
-circles.on("dblclick", function (d) {
+circles.on('dblclick', function (d) {
   // get the id of the node from target id
-  const id = d3.select(this).attr("id");
+  const id = d3.select(this).attr('id');
 
   // open
-  window.open(route("institutions.edit", id), "_blank");
+  window.open(route('institutions.edit', id), '_blank');
 });
 
 const graph = ref(null);

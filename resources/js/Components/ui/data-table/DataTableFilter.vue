@@ -1,11 +1,11 @@
 <template>
   <DropdownMenu>
-    <DropdownMenuTrigger asChild>
+    <DropdownMenuTrigger as-child>
       <Button variant="outline" size="sm" :class="{'border-primary': isActive}" data-filter-button>
         <slot />
         <!-- Add filter count badge -->
-        <div 
-          v-if="isActive" 
+        <div
+          v-if="isActive"
           class="ml-1.5 flex items-center justify-center h-5 min-w-5 rounded-full bg-primary text-primary-foreground text-xs font-medium"
         >
           {{ filterCount }}
@@ -15,7 +15,8 @@
     </DropdownMenuTrigger>
     <DropdownMenuContent align="start" class="w-[200px] p-2 max-h-[350px]">
       <!-- Multi-select mode -->
-      <div v-if="multiple" class="space-y-2 max-h-[300px] overflow-auto pb-12"> <!-- Add padding-bottom to prevent overlap -->
+      <div v-if="multiple" class="space-y-2 max-h-[300px] overflow-auto pb-12">
+        <!-- Add padding-bottom to prevent overlap -->
         <CheckboxGroupRoot
           v-model="selectedValues"
           class="flex flex-col gap-2.5"
@@ -34,16 +35,16 @@
           <Button
             variant="ghost"
             size="sm"
-            @click="clearSelection"
             :disabled="!hasSelection"
+            @click="clearSelection"
           >
             {{ $t('Clear') }}
           </Button>
           <Button
             variant="default"
             size="sm"
-            @click="applyFilters"
             :disabled="!hasChanges"
+            @click="applyFilters"
           >
             {{ $t('Apply') }}
           </Button>
@@ -55,8 +56,8 @@
         <DropdownMenuItem
           v-for="option in options"
           :key="option.value"
-          @click="handleSingleSelect(option.value)"
           :class="{ 'bg-accent text-accent-foreground': value === option.value }"
+          @click="handleSingleSelect(option.value)"
         >
           {{ option.label }}
         </DropdownMenuItem>
@@ -64,8 +65,8 @@
         <DropdownMenuSeparator v-if="options.length > 0" class="my-1" />
 
         <DropdownMenuItem
-          @click="clearSelection"
           :disabled="!hasSelection"
+          @click="clearSelection"
         >
           {{ $t('Clear Selection') }}
         </DropdownMenuItem>
@@ -88,7 +89,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator
+  DropdownMenuSeparator,
 } from '@/Components/ui/dropdown-menu';
 
 export interface FilterOption {
@@ -158,7 +159,8 @@ const handleSingleSelect = (optionValue: any) => {
   // If already selected, toggle off (clear selection)
   if (props.value === optionValue) {
     clearSelection();
-  } else {
+  }
+  else {
     emit('update:value', optionValue);
     emit('apply', optionValue, props.filterKey);
   }
@@ -175,7 +177,8 @@ const clearSelection = () => {
   if (props.multiple) {
     selectedValues.value = [];
     emit('update:value', []);
-  } else {
+  }
+  else {
     emit('update:value', null);
   }
   emit('clear', props.filterKey);

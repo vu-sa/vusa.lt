@@ -325,7 +325,7 @@ class DashboardController extends AdminController
             })->once(),
             // Lazy load tenant institutions - only fetched when tenant tab is opened
             // Expects 'tenantIds' parameter in the reload request
-            'tenantInstitutions' => Inertia::lazy(function () use ($excludedTypeIds, $appendInstitutionAttributes, $userDutyInstitutionIds) {
+            'tenantInstitutions' => Inertia::optional(function () use ($excludedTypeIds, $appendInstitutionAttributes, $userDutyInstitutionIds) {
                 $tenantIds = request()->input('tenantIds', []);
                 $institutions = DutyService::getInstitutionsForTenants($tenantIds, $this->authorizer);
 
@@ -343,7 +343,7 @@ class DashboardController extends AdminController
             }),
             // Lazy load representative activity stats - loaded together with tenantInstitutions
             // Returns login activity stats and categorized user lists for the activity dashboard cards
-            'representativeActivity' => Inertia::lazy(function () {
+            'representativeActivity' => Inertia::optional(function () {
                 $tenantIds = request()->input('tenantIds', []);
 
                 return DutyService::getRepresentativeActivityForTenants($tenantIds);

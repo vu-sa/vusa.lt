@@ -1,17 +1,3 @@
-<script setup lang="ts">
-import type { PrimitiveProps } from "reka-ui"
-import type { HTMLAttributes } from "vue"
-import { Primitive } from "reka-ui"
-import { cn } from '@/Utils/Shadcn/utils'
-
-const props = withDefaults(defineProps<PrimitiveProps & {
-  showOnHover?: boolean
-  class?: HTMLAttributes["class"]
-}>(), {
-  as: "button",
-})
-</script>
-
 <template>
   <Primitive
     data-sidebar="menu-action"
@@ -26,9 +12,24 @@ const props = withDefaults(defineProps<PrimitiveProps & {
         && 'group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0',
       props.class,
     )"
-    :as="as"
-    :as-child="asChild"
+    :as
+    :as-child
   >
     <slot />
   </Primitive>
 </template>
+
+<script setup lang="ts">
+import type { PrimitiveProps } from 'reka-ui';
+import type { HTMLAttributes } from 'vue';
+import { Primitive } from 'reka-ui';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+const props = withDefaults(defineProps<PrimitiveProps & {
+  showOnHover?: boolean;
+  class?: HTMLAttributes['class'];
+}>(), {
+  as: 'button',
+});
+</script>

@@ -3,7 +3,7 @@
     <title>{{ $t('search.institution_page_title') }}</title>
     <meta name="description" :content="$t('search.institution_page_description')">
   </Head>
-  
+
   <InstitutionSearchInterface
     :initial-query
     :initial-filters
@@ -11,7 +11,7 @@
   >
     <!-- Student representatives link slot -->
     <template #after-subtitle>
-      <SmartLink 
+      <SmartLink
         :href="route('contacts.studentRepresentatives', { subdomain: 'www', lang: $page.props.app.locale })"
         class="mt-3 inline-flex items-center gap-1.5 rounded-full bg-zinc-100 px-4 py-1.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-vusa-red/10 hover:text-vusa-red dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-vusa-red/20 dark:hover:text-vusa-red"
       >
@@ -24,24 +24,24 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
 import { usePage, Head } from '@inertiajs/vue3';
+
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import InstitutionSearchInterface from '@/Components/Public/Search/InstitutionSearchInterface.vue';
 import SmartLink from '@/Components/Public/SmartLink.vue';
-
 import IFluentPeople16Regular from '~icons/fluent/people-16-regular';
 
 interface Props {
-  institutionTypes?: Record<string, string>
+  institutionTypes?: Record<string, string>;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  institutionTypes: () => ({})
-})
+  institutionTypes: () => ({}),
+});
 
 const $page = usePage();
 
 // Expose type labels for the search interface
-const institutionTypes = computed(() => props.institutionTypes)
+const institutionTypes = computed(() => props.institutionTypes);
 
 // Set breadcrumbs for contacts page
 usePageBreadcrumbs(() => {
@@ -49,8 +49,8 @@ usePageBreadcrumbs(() => {
     BreadcrumbHelpers.createBreadcrumbItem(
       'Kontaktai',
       undefined,
-      IFluentPeople16Regular
-    )
+      IFluentPeople16Regular,
+    ),
   ]);
 });
 
@@ -85,7 +85,8 @@ const initialFilters = computed(() => {
       const value = params.get(`${paramName}[${i}]`);
       if (value) {
         items.push(value);
-      } else {
+      }
+      else {
         break;
       }
     }

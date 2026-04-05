@@ -62,10 +62,18 @@
     </FormElement>
     <Tabs default-value="dalyviai">
       <TabsList class="grid w-full grid-cols-4">
-        <TabsTrigger value="dalyviai">Kas gali dalyvauti?</TabsTrigger>
-        <TabsTrigger value="registracija">Registracijos forma</TabsTrigger>
-        <TabsTrigger value="programa">Programa</TabsTrigger>
-        <TabsTrigger value="uzduotys">Užduotys</TabsTrigger>
+        <TabsTrigger value="dalyviai">
+          Kas gali dalyvauti?
+        </TabsTrigger>
+        <TabsTrigger value="registracija">
+          Registracijos forma
+        </TabsTrigger>
+        <TabsTrigger value="programa">
+          Programa
+        </TabsTrigger>
+        <TabsTrigger value="uzduotys">
+          Užduotys
+        </TabsTrigger>
       </TabsList>
       <TabsContent value="dalyviai">
         <FormElement no-divider class="mt-4 min-h-64">
@@ -146,28 +154,30 @@
 </template>
 
 <script setup lang="ts">
-import { router, useForm, usePage } from "@inertiajs/vue3";
-import { trans as $t } from "laravel-vue-i18n";
-import { computed, ref } from "vue";
+import { router, useForm, usePage } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+import { computed, ref } from 'vue';
 
-import { DateTimePicker } from "@/Components/ui/date-picker";
-import { DynamicListInput } from "@/Components/ui/dynamic-list-input";
-import { Input } from "@/Components/ui/input";
-import { Label } from "@/Components/ui/label";
-import { NumberField } from "@/Components/ui/number-field";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
-import { Button } from "@/Components/ui/button";
-import { ImageUpload } from "@/Components/ui/upload";
-import FormElement from "./FormElement.vue";
-import FormFieldWrapper from "./FormFieldWrapper.vue";
-import AdminForm from "./AdminForm.vue";
-import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
-import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
-import TiptapEditor from "@/Components/TipTap/TiptapEditor.vue";
-import FormForm from "./FormForm.vue";
-import UserPopover from "../Avatars/UserPopover.vue";
-import ProgrammePlanner from "@/Features/Admin/ProgrammePlanner/ProgrammePlanner.vue";
+import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
+import SimpleLocaleButton from '../Buttons/SimpleLocaleButton.vue';
+import UserPopover from '../Avatars/UserPopover.vue';
+
+import FormElement from './FormElement.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import AdminForm from './AdminForm.vue';
+import FormForm from './FormForm.vue';
+
+import { DateTimePicker } from '@/Components/ui/date-picker';
+import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { NumberField } from '@/Components/ui/number-field';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import { Button } from '@/Components/ui/button';
+import { ImageUpload } from '@/Components/ui/upload';
+import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
+import ProgrammePlanner from '@/Features/Admin/ProgrammePlanner/ProgrammePlanner.vue';
 
 interface TrainableType<T> {
   type: T;
@@ -185,18 +195,18 @@ export interface TrainableTypes {
 
 const { training, trainableTypes } = defineProps<{
   training: App.Entities.Training;
-  trainableTypes: TrainableTypes
+  trainableTypes: TrainableTypes;
 }>();
 
 const emit = defineEmits<{
-  (event: "submit:form", form: unknown): void;
-  (event: "delete"): void;
+  (event: 'submit:form', form: unknown): void;
+  (event: 'delete'): void;
 }>();
 
 const form = useForm(`TrainingUpdate${training.id}`, training);
 
 const trainableTypeOptions = computed(() => {
-  return Object.keys(trainableTypes).map((key) => ({
+  return Object.keys(trainableTypes).map(key => ({
     label: trainableTypes[key].name,
     value: key,
   }));
@@ -211,7 +221,7 @@ const onTasksCreate = () => ({
   name: { lt: '', en: '' },
 });
 
-const locale = ref("lt");
+const locale = ref('lt');
 
 // Shadcn Select requires string values
 const institutionIdString = computed({
@@ -219,13 +229,15 @@ const institutionIdString = computed({
   set: (val: string) => { form.institution_id = val ? Number(val) : null; },
 });
 
-const formTemplate = training.form?.id ? training.form : {
-  name: { lt: '', en: '' },
-  description: { lt: '', en: '' },
-  path: { lt: '', en: '' },
-  form_fields: [],
-  tenant_id: training.tenant.id,
-};
+const formTemplate = training.form?.id
+  ? training.form
+  : {
+      name: { lt: '', en: '' },
+      description: { lt: '', en: '' },
+      path: { lt: '', en: '' },
+      form_fields: [],
+      tenant_id: training.tenant.id,
+    };
 
 // NOTE: Duplicated in InstitutionSelectorForm.vue
 const institutions = computed(() => {
@@ -241,9 +253,9 @@ const institutions = computed(() => {
       };
     })
     // filter unique
-    .filter((institution) => institution !== undefined).filter(
+    .filter(institution => institution !== undefined).filter(
       (value, index, self) =>
-        self.findIndex((t) => t?.value === value?.value) === index
+        self.findIndex(t => t?.value === value?.value) === index,
     );
 });
 
@@ -256,7 +268,8 @@ const handleFormFormSubmit = (form: unknown) => {
     }, {
       preserveScroll: true,
     });
-  } else {
+  }
+  else {
     router.patch(route('forms.update', training.form_id), form);
   }
 };

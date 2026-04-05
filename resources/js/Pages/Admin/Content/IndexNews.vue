@@ -10,21 +10,21 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t } from "laravel-vue-i18n";
-import { type ColumnDef } from '@tanstack/vue-table';
-import { ref, computed } from "vue";
+import { trans as $t } from 'laravel-vue-i18n';
+import type { ColumnDef } from '@tanstack/vue-table';
+import { ref, computed } from 'vue';
 
-import { formatStaticTime } from "@/Utils/IntlTime";
-import Icons from "@/Types/Icons/regular";
-import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
-import { createStandardActionsColumn } from "@/Composables/useTableActions";
+import { formatStaticTime } from '@/Utils/IntlTime';
+import Icons from '@/Types/Icons/regular';
+import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
+import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import {
   createIdColumn,
   createTenantColumn,
 } from '@/Utils/DataTableColumns';
-import {
-  type IndexTablePageProps
-} from "@/Types/TableConfigTypes";
+import type {
+  IndexTablePageProps,
+} from '@/Types/TableConfigTypes';
 
 const props = defineProps<{
   news: {
@@ -54,12 +54,12 @@ const getRowId = (row: App.Entities.News) => {
 const columns = computed<ColumnDef<App.Entities.News, any>[]>(() => [
   createIdColumn<App.Entities.News>({ width: 70 }),
   {
-    accessorKey: "title",
-    header: () => "Pavadinimas",
+    accessorKey: 'title',
+    header: () => 'Pavadinimas',
     cell: ({ row }) => {
       return (
         <div class="max-w-[200px] text-wrap">
-          {row.getValue("title")}
+          {row.getValue('title')}
         </div>
       );
     },
@@ -67,22 +67,22 @@ const columns = computed<ColumnDef<App.Entities.News, any>[]>(() => [
     enableSorting: true,
   },
   {
-    accessorKey: "lang",
-    header: () => "Kalba",
+    accessorKey: 'lang',
+    header: () => 'Kalba',
     cell: ({ row }) => {
-      return row.original.lang === "lt" ? "🇱🇹" : "🇬🇧";
+      return row.original.lang === 'lt' ? '🇱🇹' : '🇬🇧';
     },
     size: 80,
   },
   {
-    id: "other_language_news",
-    header: () => "Kitos kalbos naujiena",
+    id: 'other_language_news',
+    header: () => 'Kitos kalbos naujiena',
     cell: ({ row }) => {
       const otherNews = row.original.other_language_news;
       if (!otherNews) return null;
       return (
         <a
-          href={route("news.edit", { id: otherNews.id })}
+          href={route('news.edit', { id: otherNews.id })}
           target="_blank"
           class="hover:underline"
         >
@@ -96,27 +96,27 @@ const columns = computed<ColumnDef<App.Entities.News, any>[]>(() => [
   },
   createTenantColumn<App.Entities.News>(),
   {
-    accessorKey: "publish_time",
-    header: () => "Paskelbimo data",
+    accessorKey: 'publish_time',
+    header: () => 'Paskelbimo data',
     cell: ({ row }) => {
       const publishTime = row.original.publish_time;
       if (!publishTime) return null;
       return formatStaticTime(new Date(publishTime), {
-        year: "numeric",
-        month: "numeric",
-        day: "numeric",
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
       });
     },
     size: 150,
     enableSorting: true,
     sortDescFirst: true,
   },
-  createStandardActionsColumn<App.Entities.News>("news", {
+  createStandardActionsColumn<App.Entities.News>('news', {
     canView: false,
     canEdit: true,
     canDelete: true,
     canDuplicate: true,
-  })
+  }),
 ]);
 
 const tableConfig = computed<IndexTablePageProps<App.Entities.News>>(() => {
@@ -136,7 +136,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.News>>(() => {
     enableColumnVisibility: false,
     enableRowSelection: false,
 
-    headerTitle: "Naujienos",
+    headerTitle: 'Naujienos',
     icon: Icons.NEWS,
     createRoute: route('news.create'),
     canCreate: true,

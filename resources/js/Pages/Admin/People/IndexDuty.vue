@@ -10,18 +10,18 @@
 </template>
 
 <script setup lang="tsx">
-import { transChoice as $tChoice } from "laravel-vue-i18n";
-import { type ColumnDef } from "@tanstack/vue-table";
-import { ref, computed } from "vue";
+import { transChoice as $tChoice } from 'laravel-vue-i18n';
+import type { ColumnDef } from '@tanstack/vue-table';
+import { ref, computed } from 'vue';
 
-import { Badge } from "@/Components/ui/badge";
-import { Button } from "@/Components/ui/button";
-import { capitalize } from "@/Utils/String";
-import { resolveTranslatable } from "@/Utils/DataTableColumns";
-import Icons from "@/Types/Icons/regular";
-import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
-import { createStandardActionsColumn } from "@/Composables/useTableActions";
-import { type IndexTablePageProps } from "@/Types/TableConfigTypes";
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { capitalize } from '@/Utils/String';
+import { resolveTranslatable } from '@/Utils/DataTableColumns';
+import Icons from '@/Types/Icons/regular';
+import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
+import { createStandardActionsColumn } from '@/Composables/useTableActions';
+import type { IndexTablePageProps } from '@/Types/TableConfigTypes';
 
 const props = defineProps<{
   duties: {
@@ -39,8 +39,8 @@ const props = defineProps<{
   sorting?: { id: string; desc: boolean }[];
 }>();
 
-const modelName = "duties";
-const entityName = "duty";
+const modelName = 'duties';
+const entityName = 'duty';
 
 const indexTablePageRef = ref<any>(null);
 
@@ -50,17 +50,17 @@ const getRowId = (row: App.Entities.Duty) => {
 
 const columns = computed<ColumnDef<App.Entities.Duty, any>[]>(() => [
   {
-    accessorKey: "name",
-    header: () => "Pavadinimas",
-    cell: ({ row }) => resolveTranslatable(row.getValue("name")),
+    accessorKey: 'name',
+    header: () => 'Pavadinimas',
+    cell: ({ row }) => resolveTranslatable(row.getValue('name')),
     size: 200,
     enableSorting: true,
   },
   {
-    accessorKey: "email",
-    header: () => "El. paštas",
+    accessorKey: 'email',
+    header: () => 'El. paštas',
     cell: ({ row }) => {
-      const email = row.original.email;
+      const { email } = row.original;
       if (!email) return null;
       return (
         <a href={`mailto:${email}`} class="transition hover:text-vusa-red">
@@ -73,15 +73,15 @@ const columns = computed<ColumnDef<App.Entities.Duty, any>[]>(() => [
     size: 200,
   },
   {
-    accessorKey: "institution",
-    header: () => "Institucija",
+    accessorKey: 'institution',
+    header: () => 'Institucija',
     cell: ({ row }) => {
-      const institution = row.original.institution;
+      const { institution } = row.original;
       if (!institution) return null;
       const displayName = resolveTranslatable(institution.short_name ?? institution.name);
       return (
         <a
-          href={route("institutions.edit", { id: institution.id })}
+          href={route('institutions.edit', { id: institution.id })}
           target="_blank"
           class="transition hover:text-vusa-red"
         >
@@ -97,14 +97,14 @@ const columns = computed<ColumnDef<App.Entities.Duty, any>[]>(() => [
     size: 200,
   },
   {
-    accessorKey: "types",
-    header: () => "Tipai",
+    accessorKey: 'types',
+    header: () => 'Tipai',
     cell: ({ row }) => {
-      const types = row.original.types;
+      const { types } = row.original;
       if (!types?.length) return null;
       return (
         <div class="flex flex-wrap gap-1">
-          {types.map((type) => (
+          {types.map(type => (
             <Badge key={type.id} variant="secondary" class="text-xs">
               {resolveTranslatable(type.title)}
             </Badge>
@@ -114,7 +114,7 @@ const columns = computed<ColumnDef<App.Entities.Duty, any>[]>(() => [
     },
     size: 200,
   },
-  createStandardActionsColumn<App.Entities.Duty>("duties", {
+  createStandardActionsColumn<App.Entities.Duty>('duties', {
     canView: true,
     canEdit: true,
   }),
@@ -137,9 +137,9 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Duty>>(() => ({
   enableRowSelection: false,
   allowToggleDeleted: true,
 
-  headerTitle: capitalize($tChoice("entities.duty.model", 2)),
+  headerTitle: capitalize($tChoice('entities.duty.model', 2)),
   icon: Icons.DUTY,
-  createRoute: route("duties.create"),
+  createRoute: route('duties.create'),
   canCreate: true,
 }));
 

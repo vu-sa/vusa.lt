@@ -20,10 +20,10 @@
         class="h-5 w-5 rounded-md border-2 transition-all duration-200 hover:scale-110 data-[state=checked]:bg-primary"
         @update:model-value="$emit('complete')"
       />
-      
+
       <!-- Progress ring for auto-completing tasks with progress -->
-      <div 
-        v-else-if="progress" 
+      <div
+        v-else-if="progress"
         class="relative h-6 w-6"
         :title="`${progress.current}/${progress.total}`"
       >
@@ -49,7 +49,7 @@
           {{ progress.percentage }}
         </span>
       </div>
-      
+
       <!-- Icon for auto-completing tasks without progress -->
       <div
         v-else
@@ -71,13 +71,13 @@
       <div class="flex items-start justify-between gap-2">
         <div class="min-w-0 flex-1">
           <!-- Task name -->
-          <p 
+          <p
             class="truncate text-sm font-medium text-zinc-900 group-hover:text-primary dark:text-zinc-100 dark:group-hover:text-primary"
             :title="name"
           >
             {{ name }}
           </p>
-          
+
           <!-- Action type label for auto-completing tasks -->
           <div v-if="!canBeManuallyCompleted" class="mt-0.5 flex items-center gap-1.5">
             <span :class="['text-xs', actionTypeStyles.labelColor]">
@@ -95,10 +95,10 @@
             :variant="isOverdue ? 'destructive' : 'secondary'"
             :class="[
               'text-xs font-medium',
-              isOverdue 
-                ? '' 
-                : isDueSoon 
-                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' 
+              isOverdue
+                ? ''
+                : isDueSoon
+                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
                   : ''
             ]"
           >
@@ -140,21 +140,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { trans as $t } from 'laravel-vue-i18n'
-import { usePage, Link } from '@inertiajs/vue3'
-import { formatDistanceToNow, parseISO, isToday, isTomorrow, differenceInDays } from 'date-fns'
-import { lt, enUS } from 'date-fns/locale'
-
-import { Checkbox } from '@/Components/ui/checkbox'
-import { Badge } from '@/Components/ui/badge'
-import { Button } from '@/Components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
-} from '@/Components/ui/dropdown-menu'
+import { computed } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+import { usePage, Link } from '@inertiajs/vue3';
+import { formatDistanceToNow, parseISO, isToday, isTomorrow, differenceInDays } from 'date-fns';
+import { lt, enUS } from 'date-fns/locale';
 import {
   ClipboardCheck as ClipboardCheckIcon,
   ShieldCheck as ShieldCheckIcon,
@@ -163,80 +153,89 @@ import {
   MoreHorizontal as MoreHorizontalIcon,
   Check as CheckIcon,
   Trash as TrashIcon,
-} from 'lucide-vue-next'
+} from 'lucide-vue-next';
 
-import { TaskActionType, type TaskProgress, getActionTypeConfig } from '@/Types/TaskTypes'
+import { Checkbox } from '@/Components/ui/checkbox';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/Components/ui/dropdown-menu';
+import { TaskActionType, type TaskProgress, getActionTypeConfig } from '@/Types/TaskTypes';
 
 const props = defineProps<{
-  id: string
-  name: string
-  dueDate?: string | null
-  isOverdue?: boolean
-  actionType?: TaskActionType | string | null
-  progress?: TaskProgress | null
-  canBeManuallyCompleted?: boolean
-  isUpdating?: boolean
-  taskableType?: string | null
-  taskableId?: string | null
-}>()
+  id: string;
+  name: string;
+  dueDate?: string | null;
+  isOverdue?: boolean;
+  actionType?: TaskActionType | string | null;
+  progress?: TaskProgress | null;
+  canBeManuallyCompleted?: boolean;
+  isUpdating?: boolean;
+  taskableType?: string | null;
+  taskableId?: string | null;
+}>();
 
 defineEmits<{
-  complete: []
-  delete: []
-}>()
+  complete: [];
+  delete: [];
+}>();
 
 // Locale for date formatting
-const dateLocale = computed(() => usePage().props.app.locale === 'lt' ? lt : enUS)
+const dateLocale = computed(() => usePage().props.app.locale === 'lt' ? lt : enUS);
 
 // Parse action type
 const parsedActionType = computed(() => {
-  if (!props.actionType) return null
+  if (!props.actionType) return null;
   if (typeof props.actionType === 'string') {
-    return props.actionType as TaskActionType
+    return props.actionType as TaskActionType;
   }
-  return props.actionType
-})
+  return props.actionType;
+});
 
 // Get action type configuration
-const actionTypeConfig = computed(() => getActionTypeConfig(parsedActionType.value))
+const actionTypeConfig = computed(() => getActionTypeConfig(parsedActionType.value));
 
 // Check if task can be manually completed
 const canBeManuallyCompleted = computed(() => {
-  return props.canBeManuallyCompleted ?? actionTypeConfig.value.canBeManuallyCompleted
-})
+  return props.canBeManuallyCompleted ?? actionTypeConfig.value.canBeManuallyCompleted;
+});
 
 // Action type icon component
 const actionTypeIcon = computed(() => {
   switch (parsedActionType.value) {
     case TaskActionType.Approval:
-      return ShieldCheckIcon
+      return ShieldCheckIcon;
     case TaskActionType.Pickup:
-      return PackageIcon
+      return PackageIcon;
     case TaskActionType.Return:
-      return PackageCheckIcon
+      return PackageCheckIcon;
     default:
-      return ClipboardCheckIcon
+      return ClipboardCheckIcon;
   }
-})
+});
 
 // Action type label
 const actionTypeLabel = computed(() => {
   switch (parsedActionType.value) {
     case TaskActionType.Approval:
-      return $t('Auto-completes on approval')
+      return $t('Auto-completes on approval');
     case TaskActionType.Pickup:
-      return $t('Auto-completes on pickup')
+      return $t('Auto-completes on pickup');
     case TaskActionType.Return:
-      return $t('Auto-completes on return')
+      return $t('Auto-completes on return');
     default:
-      return ''
+      return '';
   }
-})
+});
 
 // Styling based on action type
 const actionTypeStyles = computed(() => {
-  const type = parsedActionType.value
-  
+  const type = parsedActionType.value;
+
   const styles = {
     [TaskActionType.Approval]: {
       bgHover: 'hover:bg-blue-50/50 dark:hover:bg-blue-950/20',
@@ -265,8 +264,8 @@ const actionTypeStyles = computed(() => {
       progressFill: 'text-emerald-500 dark:text-emerald-400',
       progressText: 'text-emerald-600 dark:text-emerald-400',
     },
-  }
-  
+  };
+
   // Default/Manual task styles
   const defaultStyles = {
     bgHover: '',
@@ -276,50 +275,53 @@ const actionTypeStyles = computed(() => {
     progressTrack: 'text-zinc-200 dark:text-zinc-700',
     progressFill: 'text-zinc-500 dark:text-zinc-400',
     progressText: 'text-zinc-600 dark:text-zinc-400',
-  }
-  
-  return type && styles[type] ? styles[type] : defaultStyles
-})
+  };
+
+  return type && styles[type] ? styles[type] : defaultStyles;
+});
 
 // Check if due soon (within 3 days)
 const isDueSoon = computed(() => {
-  if (!props.dueDate || props.isOverdue) return false
+  if (!props.dueDate || props.isOverdue) return false;
   try {
-    const date = parseISO(props.dueDate)
-    const days = differenceInDays(date, new Date())
-    return days >= 0 && days <= 3
-  } catch {
-    return false
+    const date = parseISO(props.dueDate);
+    const days = differenceInDays(date, new Date());
+    return days >= 0 && days <= 3;
   }
-})
+  catch {
+    return false;
+  }
+});
 
 // Generate taskable link URL
 const taskableLink = computed(() => {
-  if (!props.taskableType || !props.taskableId) return null
-  
-  const typeName = props.taskableType.includes('\\') 
-    ? props.taskableType.split('\\').pop() 
-    : props.taskableType
-  
-  const modelRoute = (typeName + 's').toLowerCase()
-  
+  if (!props.taskableType || !props.taskableId) return null;
+
+  const typeName = props.taskableType.includes('\\')
+    ? props.taskableType.split('\\').pop()
+    : props.taskableType;
+
+  const modelRoute = (`${typeName}s`).toLowerCase();
+
   try {
-    return route(`${modelRoute}.show`, props.taskableId)
-  } catch {
-    return null
+    return route(`${modelRoute}.show`, props.taskableId);
   }
-})
+  catch {
+    return null;
+  }
+});
 
 // Format due date
 const formattedDueDate = computed(() => {
-  if (!props.dueDate) return ''
+  if (!props.dueDate) return '';
   try {
-    const date = parseISO(props.dueDate)
-    if (isToday(date)) return $t('Today')
-    if (isTomorrow(date)) return $t('Tomorrow')
-    return formatDistanceToNow(date, { addSuffix: false, locale: dateLocale.value })
-  } catch {
-    return ''
+    const date = parseISO(props.dueDate);
+    if (isToday(date)) return $t('Today');
+    if (isTomorrow(date)) return $t('Tomorrow');
+    return formatDistanceToNow(date, { addSuffix: false, locale: dateLocale.value });
   }
-})
+  catch {
+    return '';
+  }
+});
 </script>

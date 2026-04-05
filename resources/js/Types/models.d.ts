@@ -313,7 +313,6 @@ declare global {
       available_trainings?: Training[]
       roles?: Role[]
       permissions?: Permission[]
-      files?: SharepointFile[]
       fileable_files?: FileableFile[]
       available_files?: FileableFile[]
       activities?: Activity[]
@@ -327,7 +326,6 @@ declare global {
       available_trainings_count: number
       roles_count: number
       permissions_count: number
-      files_count: number
       fileable_files_count: number
       available_files_count: number
       activities_count: number
@@ -343,7 +341,6 @@ declare global {
       available_trainings_exists: boolean
       roles_exists: boolean
       permissions_exists: boolean
-      files_exists: boolean
       fileable_files_exists: boolean
       available_files_exists: boolean
       activities_exists: boolean
@@ -505,7 +502,6 @@ declare global {
       comments?: Comment[]
       outgoing_relationships?: Relationship[]
       incoming_relationships?: Relationship[]
-      files?: SharepointFile[]
       fileable_files?: FileableFile[]
       available_files?: FileableFile[]
       tasks?: Task[]
@@ -522,7 +518,6 @@ declare global {
       comments_count: number
       outgoing_relationships_count: number
       incoming_relationships_count: number
-      files_count: number
       fileable_files_count: number
       available_files_count: number
       tasks_count: number
@@ -540,7 +535,6 @@ declare global {
       comments_exists: boolean
       outgoing_relationships_exists: boolean
       incoming_relationships_exists: boolean
-      files_exists: boolean
       fileable_files_exists: boolean
       available_files_exists: boolean
       tasks_exists: boolean
@@ -628,7 +622,6 @@ declare global {
       institutions?: Institution[]
       comments?: Comment[]
       commentable?: Meeting
-      files?: SharepointFile[]
       fileable_files?: FileableFile[]
       available_files?: FileableFile[]
       tasks?: Task[]
@@ -637,7 +630,6 @@ declare global {
       agenda_items_count: number
       institutions_count: number
       comments_count: number
-      files_count: number
       fileable_files_count: number
       available_files_count: number
       tasks_count: number
@@ -646,7 +638,6 @@ declare global {
       agenda_items_exists: boolean
       institutions_exists: boolean
       comments_exists: boolean
-      files_exists: boolean
       fileable_files_exists: boolean
       available_files_exists: boolean
       tasks_exists: boolean
@@ -1057,7 +1048,6 @@ declare global {
       comments?: Comment[]
       outgoing_relationships?: Relationship[]
       incoming_relationships?: Relationship[]
-      files?: SharepointFile[]
       fileable_files?: FileableFile[]
       available_files?: FileableFile[]
       tasks?: Task[]
@@ -1074,7 +1064,6 @@ declare global {
       comments_count: number
       outgoing_relationships_count: number
       incoming_relationships_count: number
-      files_count: number
       fileable_files_count: number
       available_files_count: number
       tasks_count: number
@@ -1092,7 +1081,6 @@ declare global {
       comments_exists: boolean
       outgoing_relationships_exists: boolean
       incoming_relationships_exists: boolean
-      files_exists: boolean
       fileable_files_exists: boolean
       available_files_exists: boolean
       tasks_exists: boolean
@@ -1123,7 +1111,6 @@ declare global {
       agenda_items?: AgendaItem[]
       comments?: Comment[]
       commentable?: Meeting
-      files?: SharepointFile[]
       fileable_files?: FileableFile[]
       available_files?: FileableFile[]
       tasks?: Task[]
@@ -1133,7 +1120,6 @@ declare global {
       types_count: number
       agenda_items_count: number
       comments_count: number
-      files_count: number
       fileable_files_count: number
       available_files_count: number
       tasks_count: number
@@ -1143,7 +1129,6 @@ declare global {
       types_exists: boolean
       agenda_items_exists: boolean
       comments_exists: boolean
-      files_exists: boolean
       fileable_files_exists: boolean
       available_files_exists: boolean
       tasks_exists: boolean
@@ -1682,7 +1667,6 @@ declare global {
       recursive_parent?: Type
       outgoing_relationships?: Relationship[]
       incoming_relationships?: Relationship[]
-      files?: SharepointFile[]
       fileable_files?: FileableFile[]
       available_files?: FileableFile[]
       activities?: Activity[]
@@ -1693,7 +1677,6 @@ declare global {
       descendants_count: number
       outgoing_relationships_count: number
       incoming_relationships_count: number
-      files_count: number
       fileable_files_count: number
       available_files_count: number
       activities_count: number
@@ -1706,13 +1689,16 @@ declare global {
       recursive_parent_exists: boolean
       outgoing_relationships_exists: boolean
       incoming_relationships_exists: boolean
-      files_exists: boolean
       fileable_files_exists: boolean
       available_files_exists: boolean
       activities_exists: boolean
     }
 
     export interface Typeable {
+      // columns
+      type_id: number
+      typeable_type: string
+      typeable_id: string
       // relations
       type?: Type
       typeable?: Typeable

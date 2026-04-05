@@ -36,48 +36,48 @@
       </DataTableFilter>
     </template>
 
-        <div class="hidden items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-1.5 text-xs text-muted-foreground lg:flex">
-          <span>{{ $t("Environment") }}:</span>
-          <Badge :variant="appEnvironment === 'production' ? 'default' : 'secondary'">
-            {{ appEnvironmentLabel }}
-          </Badge>
-          <span class="mx-1 text-muted-foreground/50">|</span>
-          <span>{{ $t("Work mode") }}:</span>
-          <Badge :variant="appEnvironment === 'production' ? 'default' : 'secondary'">
-            {{ appWorkModeLabel }}
-          </Badge>
-        </div>
+    <div class="hidden items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-1.5 text-xs text-muted-foreground lg:flex">
+      <span>{{ $t("Environment") }}:</span>
+      <Badge :variant="appEnvironment === 'production' ? 'default' : 'secondary'">
+        {{ appEnvironmentLabel }}
+      </Badge>
+      <span class="mx-1 text-muted-foreground/50">|</span>
+      <span>{{ $t("Work mode") }}:</span>
+      <Badge :variant="appEnvironment === 'production' ? 'default' : 'secondary'">
+        {{ appWorkModeLabel }}
+      </Badge>
+    </div>
   </IndexTablePage>
 </template>
 
 <script setup lang="tsx">
-import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import { ref, computed, watch, capitalize } from "vue";
-import { router, usePage } from "@inertiajs/vue3";
+import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+import { ref, computed, watch, capitalize } from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
 import type { ColumnDef } from '@tanstack/vue-table';
-import { ExternalLinkIcon, RefreshCwIcon } from "lucide-vue-next";
+import { ExternalLinkIcon, RefreshCwIcon } from 'lucide-vue-next';
 
-import type { Item } from "@/Features/Admin/SharepointFilePicker/picker";
-import FilePicker from "@/Features/Admin/SharepointFilePicker/FilePicker.vue";
-import Icons from "@/Types/Icons/regular";
-import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
-import SmartLink from "@/Components/Public/SmartLink.vue";
-import { Badge } from "@/Components/ui/badge";
-import { Button } from "@/Components/ui/button";
-import DataTableFilter from "@/Components/ui/data-table/DataTableFilter.vue";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
-import { formatRelativeTime, formatStaticTime } from "@/Utils/IntlTime";
-import { LocaleEnum } from "@/Types/enums";
+import type { Item } from '@/Features/Admin/SharepointFilePicker/picker';
+import FilePicker from '@/Features/Admin/SharepointFilePicker/FilePicker.vue';
+import Icons from '@/Types/Icons/regular';
+import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
+import SmartLink from '@/Components/Public/SmartLink.vue';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
+import { formatRelativeTime, formatStaticTime } from '@/Utils/IntlTime';
+import { LocaleEnum } from '@/Types/enums';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import type {
-  IndexTablePageProps
-} from "@/Types/TableConfigTypes";
+  IndexTablePageProps,
+} from '@/Types/TableConfigTypes';
 import {
   createTimestampColumn,
   createTextColumn,
-  createTitleColumn
+  createTitleColumn,
 } from '@/Utils/DataTableColumns';
-import { createStandardActionsColumn } from "@/Composables/useTableActions";
+import { createStandardActionsColumn } from '@/Composables/useTableActions';
 
 const props = defineProps<{
   data: App.Entities.Document[];
@@ -104,8 +104,8 @@ const entityName = 'document';
 // Breadcrumbs setup
 usePageBreadcrumbs(() => [
   BreadcrumbHelpers.homeItem(),
-  BreadcrumbHelpers.createBreadcrumbItem($t("Administravimas"), route("administration"), Icons.TYPE),
-  BreadcrumbHelpers.createBreadcrumbItem($t("Dokumentai"), undefined, Icons.DOCUMENT)
+  BreadcrumbHelpers.createBreadcrumbItem($t('Administravimas'), route('administration'), Icons.TYPE),
+  BreadcrumbHelpers.createBreadcrumbItem($t('Dokumentai'), undefined, Icons.DOCUMENT),
 ]);
 
 const loading = ref(false);
@@ -115,13 +115,13 @@ const page = usePage();
 
 const appEnvironment = computed(() => String(page.props.app?.env ?? 'unknown').toLowerCase());
 const appEnvironmentLabel = computed(() => {
-  if (appEnvironment.value === 'production') return $t("Production");
-  if (appEnvironment.value === 'local') return $t("Local");
+  if (appEnvironment.value === 'production') return $t('Production');
+  if (appEnvironment.value === 'local') return $t('Local');
 
   return appEnvironment.value;
 });
 const appWorkModeLabel = computed(() => {
-  return appEnvironment.value === 'production' ? $t("Production mode") : $t("Development mode");
+  return appEnvironment.value === 'production' ? $t('Production mode') : $t('Development mode');
 });
 
 // Initialize filter states
@@ -157,10 +157,10 @@ const institutionOptions = computed(() => {
 // Column definitions using Tanstack Table format and standardized column helpers
 const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
   {
-    accessorKey: "title",
-    header: () => $t("forms.fields.title"),
+    accessorKey: 'title',
+    header: () => $t('forms.fields.title'),
     cell: ({ row }) => {
-      const title = row.getValue("title");
+      const title = row.getValue('title');
       const hasUrl = row.original.anonymous_url;
 
       return (
@@ -168,22 +168,24 @@ const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
           <Tooltip>
             <TooltipTrigger asChild>
               <div class="min-w-0 flex-1">
-                {hasUrl ? (
-                  <a
-                    href={row.original.anonymous_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="font-medium hover:underline text-blue-600 hover:text-blue-800 line-clamp-2 text-sm leading-tight"
-                    title={title}
-                  >
-                    {title}
-                    <ExternalLinkIcon class="inline h-3 w-3 ml-1 opacity-60" />
-                  </a>
-                ) : (
-                  <span class="font-medium text-gray-600 line-clamp-2 text-sm leading-tight" title={title}>
-                    {title}
-                  </span>
-                )}
+                {hasUrl
+                  ? (
+                      <a
+                        href={row.original.anonymous_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="font-medium hover:underline text-blue-600 hover:text-blue-800 line-clamp-2 text-sm leading-tight"
+                        title={title}
+                      >
+                        {title}
+                        <ExternalLinkIcon class="inline h-3 w-3 ml-1 opacity-60" />
+                      </a>
+                    )
+                  : (
+                      <span class="font-medium text-gray-600 line-clamp-2 text-sm leading-tight" title={title}>
+                        {title}
+                      </span>
+                    )}
               </div>
             </TooltipTrigger>
             <TooltipContent side="top" align="start" class="max-w-md">
@@ -202,10 +204,10 @@ const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
     enableSorting: true,
   },
   {
-    accessorKey: "language",
-    header: () => $t("lang"),
+    accessorKey: 'language',
+    header: () => $t('lang'),
     cell: ({ row }) => {
-      const language = row.getValue("language");
+      const language = row.getValue('language');
       if (!language) return '—';
       return (
         <TooltipProvider>
@@ -226,10 +228,10 @@ const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
     enableSorting: true,
   },
   {
-    accessorKey: "document_date",
-    header: () => $t("date"),
+    accessorKey: 'document_date',
+    header: () => $t('date'),
     cell: ({ row }) => {
-      const date = row.getValue("document_date");
+      const date = row.getValue('document_date');
       if (!date) return '—';
 
       return (
@@ -238,19 +240,21 @@ const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
             <TooltipTrigger asChild>
               <span class="text-sm cursor-help font-mono">
                 {formatStaticTime(date, {
-                  year: "numeric",
-                  month: "2-digit",
-                  day: "2-digit"
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit',
                 }, LocaleEnum.LT)}
               </span>
             </TooltipTrigger>
             <TooltipContent>
-              <p>{formatStaticTime(date, {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-                weekday: "long"
-              }, LocaleEnum.LT)}</p>
+              <p>
+                {formatStaticTime(date, {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  weekday: 'long',
+                }, LocaleEnum.LT)}
+              </p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -260,10 +264,10 @@ const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
     enableSorting: true,
   },
   {
-    accessorKey: "content_type",
-    header: () => $t("content_type"),
+    accessorKey: 'content_type',
+    header: () => $t('content_type'),
     cell: ({ row }) => {
-      const contentType = row.getValue("content_type");
+      const contentType = row.getValue('content_type');
       if (!contentType) return '—';
 
       // Shorten common content types for display
@@ -295,8 +299,8 @@ const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
   //   width: 100
   // }),
   {
-    accessorKey: "institution_name_lt",
-    header: () => $t("institution"),
+    accessorKey: 'institution_name_lt',
+    header: () => $t('institution'),
     cell: ({ row }) => {
       // Using paginateRaw() workaround returns database models with nested institution
       const { institution } = row.original;
@@ -324,47 +328,47 @@ const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
     enableSorting: true,
   },
   {
-    accessorKey: "sync_status",
-    header: () => $t("Sync Status"),
+    accessorKey: 'sync_status',
+    header: () => $t('Sync Status'),
     cell: ({ row }) => {
       const status = row.original.sync_status || 'pending';
       const attempts = row.original.sync_attempts || 0;
       const statusConfig = {
-        'pending': {
+        pending: {
           color: 'text-gray-600',
           bgColor: 'bg-gray-100',
           dotColor: 'bg-gray-400',
           label: 'Pending',
-          icon: '⏳'
+          icon: '⏳',
         },
-        'imported': {
+        imported: {
           color: 'text-indigo-600',
           bgColor: 'bg-indigo-50',
           dotColor: 'bg-indigo-500',
           label: 'Imported',
-          icon: '📥'
+          icon: '📥',
         },
-        'syncing': {
+        syncing: {
           color: 'text-blue-600',
           bgColor: 'bg-blue-50',
           dotColor: 'bg-blue-500 animate-pulse',
           label: 'Syncing...',
-          icon: '🔄'
+          icon: '🔄',
         },
-        'success': {
+        success: {
           color: 'text-green-600',
           bgColor: 'bg-green-50',
           dotColor: 'bg-green-500',
           label: 'Success',
-          icon: '✅'
+          icon: '✅',
         },
-        'failed': {
+        failed: {
           color: 'text-red-600',
           bgColor: 'bg-red-50',
           dotColor: 'bg-red-500',
           label: 'Failed',
-          icon: '❌'
-        }
+          icon: '❌',
+        },
       };
 
       const config = statusConfig[status] || statusConfig['pending'];
@@ -384,10 +388,10 @@ const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
     size: 140,
   },
   {
-    accessorKey: "checked_at",
-    header: () => $t("Last Check"),
+    accessorKey: 'checked_at',
+    header: () => $t('Last Check'),
     cell: ({ row }) => {
-      const checkedAt = row.getValue("checked_at");
+      const checkedAt = row.getValue('checked_at');
 
       return (
         <div class="flex items-center gap-2">
@@ -395,23 +399,22 @@ const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
             <Tooltip>
               <TooltipTrigger asChild>
                 <span class="text-sm cursor-help">
-                  {checkedAt ?
-                    formatRelativeTime(checkedAt, { numeric: "auto" }, LocaleEnum.LT) :
-                    $t('Never')}
+                  {checkedAt
+                    ? formatRelativeTime(checkedAt, { numeric: 'auto' }, LocaleEnum.LT)
+                    : $t('Never')}
                 </span>
               </TooltipTrigger>
               <TooltipContent>
                 <p>
-                  {checkedAt ?
-                    formatStaticTime(checkedAt, {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit"
-                    }, LocaleEnum.LT) :
-                    $t('Document has never been synced')
-                  }
+                  {checkedAt
+                    ? formatStaticTime(checkedAt, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      }, LocaleEnum.LT)
+                    : $t('Document has never been synced')}
                 </p>
               </TooltipContent>
             </Tooltip>
@@ -421,7 +424,7 @@ const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
             size="icon"
             variant="ghost"
             onClick={() => handleDocumentRefresh(row.original)}
-            title={$t("refresh")}
+            title={$t('refresh')}
             class="h-6 w-6"
           >
             <RefreshCwIcon class="h-3 w-3" />
@@ -432,12 +435,12 @@ const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
     size: 130,
     enableSorting: true,
   },
-  createStandardActionsColumn<App.Entities.Document>("documents", {
+  createStandardActionsColumn<App.Entities.Document>('documents', {
     // canView: true,
     // canEdit: true,
     canDelete: true,
     // canRestore: true
-  })
+  }),
 ]);
 
 // Simplified table configuration using the new interfaces
@@ -454,13 +457,13 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Document>>(() => {
 
     // Advanced features
     initialFilters: props.filters,
-    initialSorting: props.sorting && props.sorting.length > 0 ? props.sorting : [{ id: "created_at", desc: true }],
+    initialSorting: props.sorting && props.sorting.length > 0 ? props.sorting : [{ id: 'created_at', desc: true }],
     enableFiltering: true,
     enableColumnVisibility: true,
 
     // Page layout
-    headerTitle: $t("Documents"),
-    headerDescription: $t("Documents are automatically synchronized from SharePoint. Manual refresh is rarely needed - the system updates content intelligently in the background."),
+    headerTitle: $t('Documents'),
+    headerDescription: $t('Documents are automatically synchronized from SharePoint. Manual refresh is rarely needed - the system updates content intelligently in the background.'),
     icon: Icons.DOCUMENT,
     canCreate: false,
     // breadcrumbs handled via usePageBreadcrumbs
@@ -509,9 +512,11 @@ const handleFilterChange = (filterKey, value) => {
   // Update local filter references if needed
   if (filterKey === 'content_type') {
     selectedContentType.value = value;
-  } else if (filterKey === 'language') {
+  }
+  else if (filterKey === 'language') {
     selectedLanguage.value = value;
-  } else if (filterKey === 'institution.id') {
+  }
+  else if (filterKey === 'institution.id') {
     selectedInstitutionId.value = value;
   }
 };
@@ -519,14 +524,14 @@ const handleFilterChange = (filterKey, value) => {
 const handleDocumentPick = (items: Item[]) => {
   loading.value = true;
 
-  const documents = items.map((item) => ({
+  const documents = items.map(item => ({
     name: item.name,
     site_id: item.sharepointIds?.siteId,
     list_id: item.sharepointIds?.listId,
     list_item_unique_id: item.sharepointIds?.listItemUniqueId,
   }));
 
-  router.post(route("documents.store"), { documents }, {
+  router.post(route('documents.store'), { documents }, {
     onSuccess: () => {
       loading.value = false;
       // Reload the current page to show new documents
@@ -543,7 +548,7 @@ const handleDocumentPick = (items: Item[]) => {
 const handleDocumentRefresh = (document: App.Entities.Document) => {
   loading.value = true;
 
-  router.post(route("documents.refresh", document.id), {}, {
+  router.post(route('documents.refresh', document.id), {}, {
     onSuccess: () => {
       loading.value = false;
       // Reload the current page after refreshing document
@@ -560,7 +565,7 @@ const handleDocumentRefresh = (document: App.Entities.Document) => {
 const handleBulkSync = () => {
   bulkSyncLoading.value = true;
 
-  router.post(route("documents.bulk-sync"), {}, {
+  router.post(route('documents.bulk-sync'), {}, {
     onSuccess: () => {
       bulkSyncLoading.value = false;
       // Reload the current page after bulk sync

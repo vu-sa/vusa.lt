@@ -1,36 +1,3 @@
-<script setup lang="ts">
-import type { HTMLAttributes } from "vue"
-import { inject, computed } from "vue"
-import { cn } from '@/Utils/Shadcn/utils'
-import { uploadVariants, type UploadVariants } from "."
-
-interface Props {
-  class?: HTMLAttributes["class"]
-  variant?: UploadVariants["variant"]
-  size?: UploadVariants["size"]
-}
-
-const props = defineProps<Props>()
-
-const upload = inject<{
-  isDragging: { value: boolean }
-  canUpload: { value: boolean }
-  hasFiles: { value: boolean }
-  disabled: boolean
-  handleDragEnter: (e: DragEvent) => void
-  handleDragLeave: (e: DragEvent) => void
-  handleDragOver: (e: DragEvent) => void
-  handleDrop: (e: DragEvent) => void
-  openFileDialog: () => void
-}>('upload')!
-
-const computedVariant = computed<UploadVariants["variant"]>(() => {
-  if (props.variant) return props.variant
-  if (upload.isDragging.value) return 'active'
-  return 'default'
-})
-</script>
-
 <template>
   <div
     :class="cn(
@@ -53,3 +20,38 @@ const computedVariant = computed<UploadVariants["variant"]>(() => {
     <slot :is-dragging="upload.isDragging.value" :can-upload="upload.canUpload.value" />
   </div>
 </template>
+
+<script setup lang="ts">
+import type { HTMLAttributes } from 'vue';
+import { inject, computed } from 'vue';
+
+import { uploadVariants, type UploadVariants } from '.';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+interface Props {
+  class?: HTMLAttributes['class'];
+  variant?: UploadVariants['variant'];
+  size?: UploadVariants['size'];
+}
+
+const props = defineProps<Props>();
+
+const upload = inject<{
+  isDragging: { value: boolean };
+  canUpload: { value: boolean };
+  hasFiles: { value: boolean };
+  disabled: boolean;
+  handleDragEnter: (e: DragEvent) => void;
+  handleDragLeave: (e: DragEvent) => void;
+  handleDragOver: (e: DragEvent) => void;
+  handleDrop: (e: DragEvent) => void;
+  openFileDialog: () => void;
+}>('upload')!;
+
+const computedVariant = computed<UploadVariants['variant']>(() => {
+  if (props.variant) return props.variant;
+  if (upload.isDragging.value) return 'active';
+  return 'default';
+});
+</script>

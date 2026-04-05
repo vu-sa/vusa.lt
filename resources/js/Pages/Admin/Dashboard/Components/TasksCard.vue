@@ -11,24 +11,24 @@
           </div>
           {{ $t('Užduotys') }}
         </CardTitle>
-        
+
         <!-- Stats badges -->
         <div class="flex items-center gap-2">
-          <Badge 
-            variant="secondary" 
+          <Badge
+            variant="secondary"
             class="text-sm font-bold tabular-nums"
           >
             {{ taskStats.total }}
           </Badge>
-          <Badge 
-            v-if="taskStats.overdue > 0" 
+          <Badge
+            v-if="taskStats.overdue > 0"
             variant="destructive"
             class="text-xs font-medium tabular-nums"
           >
             {{ taskStats.overdue }} {{ $t('overdue') }}
           </Badge>
-          <Badge 
-            v-else-if="taskStats.dueSoon > 0" 
+          <Badge
+            v-else-if="taskStats.dueSoon > 0"
             class="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-xs font-medium tabular-nums"
           >
             {{ taskStats.dueSoon }} {{ $t('soon') }}
@@ -42,8 +42,8 @@
       <div v-if="displayedTasks.length > 0" class="space-y-1">
         <TaskItem
           v-for="task in displayedTasks"
-          :key="task.id"
           :id="task.id"
+          :key="task.id"
           :name="task.name"
           :due-date="task.due_date"
           :is-overdue="task.is_overdue"
@@ -73,8 +73,8 @@
 
       <!-- Footer with link -->
       <div class="mt-3 border-t border-zinc-200 pt-3 dark:border-zinc-700">
-        <Link 
-          :href="route('userTasks')" 
+        <Link
+          :href="route('userTasks')"
           class="group flex items-center justify-between rounded-md px-2 py-1.5 text-sm text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
         >
           <span>{{ $t('Visos užduotys') }}</span>
@@ -86,22 +86,22 @@
 </template>
 
 <script setup lang="ts">
-import { Link, router } from "@inertiajs/vue3";
-import { trans as $t } from "laravel-vue-i18n";
-import { computed, ref } from "vue";
-import { toast } from "vue-sonner";
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
-import { Badge } from "@/Components/ui/badge";
-import { 
-  ClipboardCheck as ClipboardCheckIcon, 
+import { Link, router } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+import { computed, ref } from 'vue';
+import { toast } from 'vue-sonner';
+import {
+  ClipboardCheck as ClipboardCheckIcon,
   ChevronRight as ChevronRightIcon,
   CheckCircle as CheckCircleIcon,
-} from "lucide-vue-next";
+} from 'lucide-vue-next';
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Badge } from '@/Components/ui/badge';
 import { dashboardCardClasses, cardAccentColors } from '@/Composables/useDashboardCardStyles';
 import { useTaskUrgency } from '@/Composables/useTaskUrgency';
-import TaskItem from "@/Components/Tasks/TaskItem.vue";
-import type { TaskProgress, TaskActionType } from "@/Types/TaskTypes";
+import TaskItem from '@/Components/Tasks/TaskItem.vue';
+import type { TaskProgress, TaskActionType } from '@/Types/TaskTypes';
 
 interface TaskStats {
   total: number;
@@ -131,51 +131,51 @@ const isUpdating = ref<string | null>(null);
 
 // Computed classes based on task stats
 const statusIndicatorClasses = computed(() => {
-  const base = 'absolute top-0 right-0 w-12 h-12 -mr-6 -mt-6 rotate-45'
+  const base = 'absolute top-0 right-0 w-12 h-12 -mr-6 -mt-6 rotate-45';
   if (props.taskStats.overdue > 0) {
-    return `${base} bg-red-300/40 dark:bg-red-800/25`
+    return `${base} bg-red-300/40 dark:bg-red-800/25`;
   }
   if (props.taskStats.dueSoon > 0) {
-    return `${base} ${cardAccentColors.amber.statusIndicatorActive}`
+    return `${base} ${cardAccentColors.amber.statusIndicatorActive}`;
   }
   if (props.taskStats.total > 0) {
-    return `${base} ${cardAccentColors.amber.statusIndicator}`
+    return `${base} ${cardAccentColors.amber.statusIndicator}`;
   }
-  return `${base} bg-emerald-300/40 dark:bg-emerald-800/25`
-})
+  return `${base} bg-emerald-300/40 dark:bg-emerald-800/25`;
+});
 
 const headerIconBgClass = computed(() => {
   if (props.taskStats.overdue > 0) {
-    return 'bg-red-100 dark:bg-red-900/30'
+    return 'bg-red-100 dark:bg-red-900/30';
   }
   if (props.taskStats.total > 0) {
-    return 'bg-amber-100 dark:bg-amber-900/30'
+    return 'bg-amber-100 dark:bg-amber-900/30';
   }
-  return 'bg-emerald-100 dark:bg-emerald-900/30'
-})
+  return 'bg-emerald-100 dark:bg-emerald-900/30';
+});
 
 const headerIconClass = computed(() => {
   if (props.taskStats.overdue > 0) {
-    return 'text-red-600 dark:text-red-400'
+    return 'text-red-600 dark:text-red-400';
   }
   if (props.taskStats.total > 0) {
-    return 'text-amber-600 dark:text-amber-400'
+    return 'text-amber-600 dark:text-amber-400';
   }
-  return 'text-emerald-600 dark:text-emerald-400'
-})
+  return 'text-emerald-600 dark:text-emerald-400';
+});
 
 // Display up to 5 most urgent tasks (overdue first, then by due date)
 const { urgentTasks: displayedTasks } = useTaskUrgency(
   () => props.upcomingTasks,
-  { limit: 5, incompleteOnly: true }
+  { limit: 5, incompleteOnly: true },
 );
 
 // Complete a task
 const completeTask = (task: UpcomingTask) => {
   // Don't allow completing auto-completing tasks
   if (task.can_be_manually_completed === false) {
-    toast.info($t("This task completes automatically"), {
-      description: $t("You cannot manually complete this task"),
+    toast.info($t('This task completes automatically'), {
+      description: $t('You cannot manually complete this task'),
     });
     return;
   }
@@ -184,24 +184,24 @@ const completeTask = (task: UpcomingTask) => {
   isUpdating.value = task.id;
 
   router.post(
-    route("tasks.updateCompletionStatus", task.id),
+    route('tasks.updateCompletionStatus', task.id),
     { completed: true },
     {
       preserveScroll: true,
       preserveState: false,
       onSuccess: () => {
         isUpdating.value = null;
-        toast.success($t("Task marked as completed"), {
+        toast.success($t('Task marked as completed'), {
           description: task.name,
         });
       },
       onError: () => {
         isUpdating.value = null;
-        toast.error($t("Failed to update task status"), {
-          description: $t("Please try again"),
+        toast.error($t('Failed to update task status'), {
+          description: $t('Please try again'),
         });
       },
-    }
+    },
   );
 };
 
@@ -210,19 +210,19 @@ const deleteTask = (task: UpcomingTask) => {
   if (isUpdating.value) return;
   isUpdating.value = task.id;
 
-  router.delete(route("tasks.destroy", task.id), {
+  router.delete(route('tasks.destroy', task.id), {
     preserveScroll: true,
     preserveState: false,
     onSuccess: () => {
       isUpdating.value = null;
-      toast.success($t("Task deleted successfully"), {
+      toast.success($t('Task deleted successfully'), {
         description: task.name,
       });
     },
     onError: () => {
       isUpdating.value = null;
-      toast.error($t("Failed to delete task"), {
-        description: $t("Please try again"),
+      toast.error($t('Failed to delete task'), {
+        description: $t('Please try again'),
       });
     },
   });

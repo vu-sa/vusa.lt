@@ -8,7 +8,7 @@
         class="max-h-96 px-4"
       >
         <div ref="commentContainer">
-          <div v-for="comment in comments" :key="comment.id" :comment="comment">
+          <div v-for="comment in comments" :key="comment.id" :comment>
             <div
               class="mb-4 grid grid-cols-[40px_1fr] gap-x-4 gap-y-2 first:pt-4 last:pb-4"
             >
@@ -30,35 +30,37 @@
                   }}</span>
                 </span>
               </div>
-              <div></div>
-              <div class="mt-2 text-sm" v-html="comment.comment"></div>
+              <div />
+              <div class="mt-2 text-sm" v-html="comment.comment" />
             </div>
-            <hr class="my-4 last:invisible dark:border-zinc-600" />
+            <hr class="my-4 last:invisible dark:border-zinc-600">
           </div>
         </div>
       </ScrollArea>
-      <p v-else class="m-auto w-fit text-zinc-400">Komentarų nėra</p>
+      <p v-else class="m-auto w-fit text-zinc-400">
+        Komentarų nėra
+      </p>
     </div>
     <CommentTipTap
       v-model:text="text"
       :disabled="!model"
-      :loading="loading"
+      :loading
       @submit:comment="submitComment"
-    ></CommentTipTap>
+    />
   </div>
 </template>
 
 <script setup lang="tsx">
-import { computed, nextTick, onUpdated, ref } from "vue";
-import { formatRelativeTime } from "@/Utils/IntlTime";
-import { router, usePage } from "@inertiajs/vue3";
-import CommentTipTap from "./CommentTipTap.vue";
-import UserPopover from "@/Components/Avatars/UserPopover.vue";
-import { ScrollArea } from "@/Components/ui/scroll-area";
+import { computed, nextTick, onUpdated, ref } from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
 
-defineEmits<{
-  (e: "passText", text: string): void;
-}>();
+import CommentTipTap from './CommentTipTap.vue';
+
+import { formatRelativeTime } from '@/Utils/IntlTime';
+import UserPopover from '@/Components/Avatars/UserPopover.vue';
+import { ScrollArea } from '@/Components/ui/scroll-area';
+
+defineEmits<(e: 'passText', text: string) => void>();
 
 const props = defineProps<{
   model: Record<string, any> | null;
@@ -79,7 +81,7 @@ const comments = computed(() => {
 const submitComment = () => {
   loading.value = true;
   router.post(
-    route("users.comments.store", usePage().props.auth?.user.id),
+    route('users.comments.store', usePage().props.auth?.user.id),
     {
       commentable_type: props.commentable_type,
       commentable_id: props.model?.id,
@@ -93,7 +95,7 @@ const submitComment = () => {
       onError: () => {
         loading.value = false;
       },
-    }
+    },
   );
 };
 
@@ -105,7 +107,7 @@ onUpdated(() => {
     if (viewport) {
       viewport.scrollTo({
         top: viewport.scrollHeight,
-        behavior: "smooth",
+        behavior: 'smooth',
       });
     }
   });

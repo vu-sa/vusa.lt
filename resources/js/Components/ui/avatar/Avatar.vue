@@ -1,19 +1,3 @@
-<script setup lang="ts">
-import type { HTMLAttributes } from 'vue'
-import { cn } from '@/Utils/Shadcn/utils'
-import { AvatarRoot } from 'reka-ui'
-import { avatarVariants, type AvatarSize } from '.'
-
-const props = withDefaults(defineProps<{
-  class?: HTMLAttributes['class']
-  size?: AvatarSize
-  interactive?: boolean
-}>(), {
-  size: 'default',
-  interactive: false,
-})
-</script>
-
 <template>
   <AvatarRoot
     data-slot="avatar"
@@ -22,3 +6,21 @@ const props = withDefaults(defineProps<{
     <slot />
   </AvatarRoot>
 </template>
+
+<script setup lang="ts">
+import type { HTMLAttributes } from 'vue';
+import { AvatarRoot } from 'reka-ui';
+
+import { avatarVariants, type AvatarSize } from '.';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+const props = withDefaults(defineProps<{
+  class?: HTMLAttributes['class'];
+  size?: AvatarSize;
+  interactive?: boolean;
+}>(), {
+  size: 'default',
+  interactive: false,
+});
+</script>

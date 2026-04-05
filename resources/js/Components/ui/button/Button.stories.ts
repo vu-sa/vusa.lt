@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { fn } from 'storybook/test';
+
 import Button from './Button.vue';
 
 const meta: Meta<typeof Button> = {
@@ -7,16 +8,16 @@ const meta: Meta<typeof Button> = {
   component: Button,
   tags: ['autodocs'],
   argTypes: {
-    variant: { 
-      control: 'select', 
+    variant: {
+      control: 'select',
       options: ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link'],
       description: 'The visual style variant of the button',
       table: {
         defaultValue: { summary: 'default' },
       },
     },
-    size: { 
-      control: 'select', 
+    size: {
+      control: 'select',
       options: ['default', 'sm', 'lg', 'icon'],
       description: 'The size of the button',
       table: {
@@ -65,7 +66,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: (args) => ({
+  render: args => ({
     components: { Button },
     setup() {
       return { args };
@@ -78,7 +79,7 @@ export const Secondary: Story = {
   args: {
     variant: 'secondary',
   },
-  render: (args) => ({
+  render: args => ({
     components: { Button },
     setup() {
       return { args };
@@ -91,7 +92,7 @@ export const Destructive: Story = {
   args: {
     variant: 'destructive',
   },
-  render: (args) => ({
+  render: args => ({
     components: { Button },
     setup() {
       return { args };
@@ -104,7 +105,7 @@ export const Outline: Story = {
   args: {
     variant: 'outline',
   },
-  render: (args) => ({
+  render: args => ({
     components: { Button },
     setup() {
       return { args };
@@ -117,7 +118,7 @@ export const Ghost: Story = {
   args: {
     variant: 'ghost',
   },
-  render: (args) => ({
+  render: args => ({
     components: { Button },
     setup() {
       return { args };
@@ -130,7 +131,7 @@ export const Link: Story = {
   args: {
     variant: 'link',
   },
-  render: (args) => ({
+  render: args => ({
     components: { Button },
     setup() {
       return { args };
@@ -143,7 +144,7 @@ export const Small: Story = {
   args: {
     size: 'sm',
   },
-  render: (args) => ({
+  render: args => ({
     components: { Button },
     setup() {
       return { args };
@@ -156,7 +157,7 @@ export const Large: Story = {
   args: {
     size: 'lg',
   },
-  render: (args) => ({
+  render: args => ({
     components: { Button },
     setup() {
       return { args };
@@ -170,7 +171,7 @@ export const Icon: Story = {
     size: 'icon',
     variant: 'outline',
   },
-  render: (args) => ({
+  render: args => ({
     components: { Button },
     setup() {
       return { args };
@@ -183,7 +184,7 @@ export const Disabled: Story = {
   args: {
     disabled: true,
   },
-  render: (args) => ({
+  render: args => ({
     components: { Button },
     setup() {
       return { args };
@@ -249,7 +250,7 @@ export const WithAnimation: Story = {
   args: {
     animation: 'subtle',
   },
-  render: (args) => ({
+  render: args => ({
     components: { Button },
     setup() {
       return { args };

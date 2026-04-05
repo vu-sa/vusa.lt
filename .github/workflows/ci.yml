@@ -68,6 +68,12 @@ jobs:
           name: build-assets
           path: ./
 
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.5
+          extensions: dom, curl, libxml, mbstring, zip, fileinfo
+
       - name: Fix permissions
         run: chmod -R +x vendor/bin
 
@@ -104,6 +110,12 @@ jobs:
         with:
           name: build-assets
           path: ./
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.5
+          extensions: dom, curl, libxml, mbstring, zip, fileinfo
 
       - name: Fix permissions
         run: |
@@ -149,7 +161,7 @@ jobs:
     - name: Setup PHP with Xdebug
       uses: shivammathur/setup-php@v2
       with:
-        php-version: 8.3
+        php-version: 8.5
         extensions: dom, curl, libxml, mbstring, zip, fileinfo
         coverage: xdebug
 
@@ -221,6 +233,12 @@ jobs:
     - name: Install Playwright Browsers
       run: npx playwright install chromium --with-deps
 
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 8.5
+        extensions: dom, curl, libxml, mbstring, zip, fileinfo
+
     - name: Set up environment
       run: |
         cp .env.example .env
@@ -275,7 +293,7 @@ jobs:
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: 8.3
+        php-version: 8.5
         extensions: dom, curl, libxml, mbstring, zip, fileinfo
 
     - name: Set up environment

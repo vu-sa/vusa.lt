@@ -1,13 +1,13 @@
 <template>
   <BaseSearchResults
     :results="processedResults"
-    :is-loading="isLoading"
-    :has-query="hasQuery"
-    :search-query="searchQuery"
-    :total-hits="totalHits"
-    :has-more-results="hasMoreResults"
-    :is-loading-more="isLoadingMore"
-    :has-active-filters="hasActiveFilters"
+    :is-loading
+    :has-query
+    :search-query
+    :total-hits
+    :has-more-results
+    :is-loading-more
+    :has-active-filters
     :skeleton-count="getSkeletonCount()"
     :loading-container-class="viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-6' : 'space-y-4'"
     :results-container-class="viewMode === 'grid' ? '' : 'space-y-2'"
@@ -25,7 +25,7 @@
     <template #skeleton="{ count }">
       <InstitutionResultsSkeleton v-for="i in count" :key="i" :view-mode />
     </template>
-    
+
     <template #item="{ item }">
       <NewInstitutionCard v-if="viewMode === 'grid'" :institution="item" show-metadata />
       <InstitutionCompactListItem v-else :institution="item" />
@@ -34,25 +34,26 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { usePage } from '@inertiajs/vue3'
-import { Building2 } from 'lucide-vue-next'
+import { computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+import { Building2 } from 'lucide-vue-next';
 
-import BaseSearchResults from './Shared/BaseSearchResults.vue'
-import NewInstitutionCard from '@/Components/Cards/NewInstitutionCard.vue'
-import InstitutionCompactListItem from './InstitutionCompactListItem.vue'
-import InstitutionResultsSkeleton from './InstitutionResultsSkeleton.vue'
+import BaseSearchResults from './Shared/BaseSearchResults.vue';
+import InstitutionCompactListItem from './InstitutionCompactListItem.vue';
+import InstitutionResultsSkeleton from './InstitutionResultsSkeleton.vue';
+
+import NewInstitutionCard from '@/Components/Cards/NewInstitutionCard.vue';
 
 interface Props {
-  results: any[]
-  viewMode: 'grid' | 'list'
-  isLoading?: boolean
-  hasQuery?: boolean
-  searchQuery?: string
-  totalHits?: number
-  hasMoreResults?: boolean
-  isLoadingMore?: boolean
-  hasActiveFilters?: boolean
+  results: any[];
+  viewMode: 'grid' | 'list';
+  isLoading?: boolean;
+  hasQuery?: boolean;
+  searchQuery?: string;
+  totalHits?: number;
+  hasMoreResults?: boolean;
+  isLoadingMore?: boolean;
+  hasActiveFilters?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -62,19 +63,19 @@ const props = withDefaults(defineProps<Props>(), {
   totalHits: 0,
   hasMoreResults: false,
   isLoadingMore: false,
-  hasActiveFilters: false
-})
+  hasActiveFilters: false,
+});
 
 const emit = defineEmits<{
-  'loadMore': []
-  'clearFilters': []
-}>()
+  loadMore: [];
+  clearFilters: [];
+}>();
 
 // Get current locale
 const locale = computed(() => {
-  const page = usePage()
-  return (page.props.app as any)?.locale || 'lt'
-})
+  const page = usePage();
+  return (page.props.app as any)?.locale || 'lt';
+});
 
 // Process results to have locale-aware fields
 const processedResults = computed(() => {
@@ -91,25 +92,27 @@ const processedResults = computed(() => {
     logo_url: result.logo_url,
     facebook_url: result.facebook_url,
     instagram_url: result.instagram_url,
-    tenant: result.tenant_id ? {
-      id: result.tenant_id,
-      shortname: result.tenant_shortname,
-      alias: result.tenant_alias,
-      type: result.tenant_type
-    } : null,
+    tenant: result.tenant_id
+      ? {
+          id: result.tenant_id,
+          shortname: result.tenant_shortname,
+          alias: result.tenant_alias,
+          type: result.tenant_type,
+        }
+      : null,
     types: (result.type_ids || []).map((id: number, index: number) => ({
       id,
       slug: result.type_slugs?.[index] || '',
-      title: locale.value === 'en' 
+      title: locale.value === 'en'
         ? (result.type_titles_en?.[index] || result.type_titles_lt?.[index] || '')
-        : (result.type_titles_lt?.[index] || '')
+        : (result.type_titles_lt?.[index] || ''),
     })),
     duties_count: result.duties_count || 0,
-    has_contacts: result.has_contacts || false
-  }))
-})
+    has_contacts: result.has_contacts || false,
+  }));
+});
 
 const getSkeletonCount = () => {
-  return props.viewMode === 'grid' ? 6 : 4
-}
+  return props.viewMode === 'grid' ? 6 : 4;
+};
 </script>

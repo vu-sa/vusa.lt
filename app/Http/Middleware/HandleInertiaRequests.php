@@ -69,6 +69,7 @@ class HandleInertiaRequests extends Middleware
                     'unreadNotifications' => $user->unreadNotifications()->get(),
                     'tutorial_progress' => $user->tutorial_progress ?? [],
                 ],
+                'impersonating' => fn () => $this->getImpersonationState($request),
             ],
             'csrf_token' => fn () => csrf_token(),
             // 'flash' is used in the admin navigation to show only the allowed pages
@@ -123,6 +124,22 @@ class HandleInertiaRequests extends Middleware
         $tenants->load('primary_institution:id,short_name,image_url');
 
         return $tenants;
+    }
+
+    /**
+     * @return array{impersonator_name: string}|null
+     */
+    private function getImpersonationState(Request $request): ?array
+    {
+        $impersonatorId = $request->session()->get('impersonator_id');
+
+        if (! $impersonatorId) {
+            return null;
+        }
+
+        $impersonator = User::select('name')->find($impersonatorId);
+
+        return $impersonator ? ['impersonator_name' => $impersonator->name] : null;
     }
 
     /**

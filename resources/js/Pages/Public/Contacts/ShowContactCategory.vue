@@ -50,15 +50,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import { usePage } from "@inertiajs/vue3";
-import { UsersIcon } from "lucide-vue-next";
+import { computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+import { UsersIcon } from 'lucide-vue-next';
 
-import ContactPageHeader from "@/Components/Public/ContactPageHeader.vue";
-import InstitutionFigure from "@/Components/Public/InstitutionFigure.vue";
-import SmartLink from "@/Components/Public/SmartLink.vue";
-import Button from "@/Components/ui/button/Button.vue";
-import StaggeredTransitionGroup from "@/Components/Transitions/StaggeredTransitionGroup.vue";
+import ContactPageHeader from '@/Components/Public/ContactPageHeader.vue';
+import InstitutionFigure from '@/Components/Public/InstitutionFigure.vue';
+import SmartLink from '@/Components/Public/SmartLink.vue';
+import Button from '@/Components/ui/button/Button.vue';
+import StaggeredTransitionGroup from '@/Components/Transitions/StaggeredTransitionGroup.vue';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { UserIcon, TypeIcon } from '@/Components/icons';
 
@@ -72,7 +72,7 @@ const props = defineProps<{
 // Set breadcrumbs for contact category page
 usePageBreadcrumbs(() => {
   const items = [];
-  
+
   // Main contacts link
   items.push(
     BreadcrumbHelpers.createRouteBreadcrumb(
@@ -80,33 +80,33 @@ usePageBreadcrumbs(() => {
       'contacts',
       {
         subdomain: 'www',
-        lang: $page.props.app.locale
+        lang: $page.props.app.locale,
       },
-      UserIcon
-    )
+      UserIcon,
+    ),
   );
-  
+
   // Current category type
   items.push(
     BreadcrumbHelpers.createBreadcrumbItem(
       String(props.type.title ?? props.type.slug),
       undefined,
-      TypeIcon
-    )
+      TypeIcon,
+    ),
   );
-  
+
   return BreadcrumbHelpers.publicContent(items);
 });
 
 // Filter institutions that have meaningful content to display
 const institutionsWithContent = computed(() => {
-  return props.institutions.filter(institution => {
+  return props.institutions.filter((institution) => {
     // Show institution if it has:
     // 1. Contact information (email, phone, website, social media)
     // 2. Navigation sections (tenant sections)
     // 3. Description (even though controller sets it to empty, structure remains)
-    const hasContactInfo = !!(institution.email || institution.phone || institution.website ||
-      institution.facebook_url || institution.instagram_url);
+    const hasContactInfo = !!(institution.email || institution.phone || institution.website
+      || institution.facebook_url || institution.instagram_url);
     const hasNavigationSections = !!(institution.alias === institution.tenant?.alias);
     const hasBasicInfo = !!(institution.name); // All institutions should have names
 
@@ -116,30 +116,30 @@ const institutionsWithContent = computed(() => {
 
 const padaliniaiSections = computed(() => {
   const currentLocale = $page.props.app.locale;
-  
+
   const allSections = [
     {
-      title: "Koordinatoriai",
-      alias: "koordinatoriai",
+      title: 'Koordinatoriai',
+      alias: 'koordinatoriai',
     },
     {
-      title: "Kuratoriai", 
-      alias: "kuratoriai",
-      showOnlyForLanguage: "lt" // Only show on Lithuanian pages
+      title: 'Kuratoriai',
+      alias: 'kuratoriai',
+      showOnlyForLanguage: 'lt', // Only show on Lithuanian pages
     },
     {
-      title: "Mentors",
-      alias: "mentors", // Use separate alias for mentors
-      showOnlyForLanguage: "en" // Only show on English pages
+      title: 'Mentors',
+      alias: 'mentors', // Use separate alias for mentors
+      showOnlyForLanguage: 'en', // Only show on English pages
     },
     {
-      title: "Studentų atstovai",
-      alias: "studentu-atstovai",
+      title: 'Studentų atstovai',
+      alias: 'studentu-atstovai',
     },
   ];
-  
+
   // Filter sections based on language
-  return allSections.filter(section => {
+  return allSections.filter((section) => {
     // If no language restriction, show for all languages
     if (!section.showOnlyForLanguage) {
       return true;

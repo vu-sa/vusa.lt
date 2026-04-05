@@ -27,20 +27,24 @@
     </div>
   </div>
   <section v-else-if="newsItems && newsItems.length > 0" class="py-4 px-4 md:px-8 lg:px-12" aria-labelledby="news-section-heading">
-    <h2 id="news-section-heading" class="sr-only">{{ $t("accessibility.news_and_announcements") }}</h2>
+    <h2 id="news-section-heading" class="sr-only">
+      {{ $t("accessibility.news_and_announcements") }}
+    </h2>
     <div class="max-w-7xl mx-auto grid gap-6 lg:gap-8 grid-cols-1 lg:grid-cols-[2fr_1fr]">
       <!-- Main Carousel -->
       <section class="relative" aria-labelledby="featured-news-heading">
-        <h3 id="featured-news-heading" class="sr-only">{{ $t("accessibility.featured_news") }}</h3>
+        <h3 id="featured-news-heading" class="sr-only">
+          {{ $t("accessibility.featured_news") }}
+        </h3>
         <Carousel v-if="newsItems.length" class="w-full" :opts="{ loop: true, skipSnaps: false }" :plugins="carouselPlugins"
-          @init-api="onCarouselInit" role="region" aria-label="Featured news carousel">
+          role="region" aria-label="Featured news carousel" @init-api="onCarouselInit">
           <CarouselContent>
             <CarouselItem v-for="(item, itemIndex) in newsItems" :key="item.id">
               <div class="flex flex-col">
                 <SmartLink :href="getNewsRoute(item)" prefetch>
                   <div class="overflow-hidden rounded-xl aspect-video group/img">
                     <img :src="getImageSrc(item.image)" :alt="item.title"
-                      class="w-full h-full object-cover rounded-xl transition-all duration-300 group-hover/img:brightness-105 group-hover/img:contrast-[1.02]" 
+                      class="w-full h-full object-cover rounded-xl transition-all duration-300 group-hover/img:brightness-105 group-hover/img:contrast-[1.02]"
                       width="800"
                       height="450"
                       :loading="itemIndex === 0 ? 'eager' : 'lazy'"
@@ -50,7 +54,7 @@
                 </SmartLink>
                 <p v-if="item.publish_time" class="text-zinc-500 dark:text-zinc-400 mt-3 text-sm sm:text-base">
                   {{ formatStaticTime(new Date(item.publish_time), { year: "numeric", month: "long", day: "numeric" },
-                    $page.props.app.locale) }}
+                                      $page.props.app.locale) }}
                 </p>
                 <SmartLink :href="getNewsRoute(item)" prefetch>
                   <h2
@@ -93,7 +97,7 @@
                   </p>
                   <p v-if="item.publish_time" class="text-zinc-500 dark:text-zinc-400 text-xs mt-1">
                     {{ formatStaticTime(new Date(item.publish_time), { month: "short", day: "numeric" },
-                      $page.props.app.locale) }}
+                                        $page.props.app.locale) }}
                   </p>
                 </div>
               </button>
@@ -107,7 +111,7 @@
             class="flex items-center gap-3 py-2 px-2 rounded-lg transition-colors cursor-pointer relative hover:bg-zinc-100 dark:hover:bg-zinc-800/50"
             :class="{ 'bg-zinc-100 dark:bg-zinc-800/50': currentSlide === index }"
             :aria-current="currentSlide === index ? 'true' : 'false'" @click.prevent="selectSlide(index)">
-            <div v-if="currentSlide === index" class="absolute left-0 top-2 bottom-2 w-0.5 bg-vusa-red rounded-full" style="width: 3px;"></div>
+            <div v-if="currentSlide === index" class="absolute left-0 top-2 bottom-2 w-0.5 bg-vusa-red rounded-full" style="width: 3px;" />
             <div class="ml-2 overflow-hidden rounded-md aspect-[4/3] flex-shrink-0" style="width: 80px;">
               <img :src="getImageSrc(item.image)" :alt="item.title" loading="lazy" class="w-full h-full object-cover" width="80"
                 height="60">
@@ -119,7 +123,7 @@
               </span>
               <span v-if="item.publish_time" class="text-zinc-500 dark:text-zinc-400 text-xs mt-1.5">
                 {{ formatStaticTime(new Date(item.publish_time), { year: "numeric", month: "long", day: "numeric" },
-                  $page.props.app.locale) }}
+                                    $page.props.app.locale) }}
               </span>
             </div>
           </SmartLink>
@@ -144,24 +148,25 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from "laravel-vue-i18n";
-import { ref, computed, onUnmounted } from "vue";
-import { usePage } from "@inertiajs/vue3";
-import Autoplay from "embla-carousel-autoplay";
-import Fade from "embla-carousel-fade";
+import { trans as $t } from 'laravel-vue-i18n';
+import { ref, computed, onUnmounted } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+import Autoplay from 'embla-carousel-autoplay';
+import Fade from 'embla-carousel-fade';
 
-import SmartLink from "./SmartLink.vue";
+import SmartLink from './SmartLink.vue';
+
 import type { News, NewsItem } from '@/Types/contentParts';
-import { formatStaticTime } from "@/Utils/IntlTime";
-import { useNewsFetch } from "@/Services/ContentService";
+import { formatStaticTime } from '@/Utils/IntlTime';
+import { useNewsFetch } from '@/Services/ContentService';
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  type CarouselApi
-} from "@/Components/ui/carousel";
-import { ScrollArea } from "@/Components/ui/scroll-area";
-import { Skeleton } from "@/Components/ui/skeleton";
+  type CarouselApi,
+} from '@/Components/ui/carousel';
+import { ScrollArea } from '@/Components/ui/scroll-area';
+import { Skeleton } from '@/Components/ui/skeleton';
 
 // Fallback image for news without images
 const FALLBACK_IMAGE = '/images/icons/naujienu_foto.png';
@@ -181,8 +186,8 @@ const page = usePage();
 const hasPrefetchedNews = computed(() => props.prefetchedNews && props.prefetchedNews.length > 0);
 
 // Only use API fetch if no prefetched news is available (prevents waterfall on home page)
-const { news: apiFetchedNews, loading: apiLoading, error: apiError } = hasPrefetchedNews.value 
-  ? { news: ref([]), loading: ref(false), error: ref(null) } 
+const { news: apiFetchedNews, loading: apiLoading, error: apiError } = hasPrefetchedNews.value
+  ? { news: ref([]), loading: ref(false), error: ref(null) }
   : useNewsFetch();
 
 // Combine sources: prefer prefetched data, fall back to API data
@@ -209,13 +214,13 @@ const autoplayOptions = {
   delay: 5000,
   stopOnInteraction: false,
   stopOnMouseEnter: true,
-  rootNode: (emblaRoot: HTMLElement) => emblaRoot
+  rootNode: (emblaRoot: HTMLElement) => emblaRoot,
 };
 
 // Combined plugins for performance optimization
 const carouselPlugins = [
   Autoplay(autoplayOptions),
-  Fade()
+  Fade(),
 ];
 
 // Helper function to create news route
@@ -237,7 +242,7 @@ const selectSlide = (index: number) => {
 // Carousel initialization with proper event handling
 const onCarouselInit = (api: CarouselApi) => {
   if (!api) return;
-  
+
   carouselApi.value = api;
 
   // Get autoplay plugin API
@@ -250,7 +255,7 @@ const onCarouselInit = (api: CarouselApi) => {
   currentSlide.value = api.selectedScrollSnap();
 
   // Listen for slide changes
-  api.on("select", () => {
+  api.on('select', () => {
     currentSlide.value = api.selectedScrollSnap();
   });
 };

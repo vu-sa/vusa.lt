@@ -7,10 +7,10 @@
 </template>
 
 <script setup lang="ts">
-import { typeTemplate as type } from "@/Types/formTemplates";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import TypeForm from "@/Components/AdminForms/TypeForm.vue";
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
+import { typeTemplate as type } from '@/Types/formTemplates';
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import TypeForm from '@/Components/AdminForms/TypeForm.vue';
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 
 defineProps<{
   contentTypes: Record<string, any>[];

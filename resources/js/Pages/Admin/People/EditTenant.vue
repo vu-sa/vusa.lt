@@ -15,12 +15,12 @@
 </template>
 
 <script setup lang="ts">
-import { Button } from "@/Components/ui/button";
-import Icons from "@/Types/Icons/regular";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import TenantForm from "@/Components/AdminForms/TenantForm.vue";
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
-import SmartLink from "@/Components/Public/SmartLink.vue";
+import { Button } from '@/Components/ui/button';
+import Icons from '@/Types/Icons/regular';
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import TenantForm from '@/Components/AdminForms/TenantForm.vue';
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import SmartLink from '@/Components/Public/SmartLink.vue';
 
 defineProps<{
   assignableInstitutions: Array<App.Entities.Institution>;

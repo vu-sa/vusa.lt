@@ -158,15 +158,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from 'vue';
 
 // ShadcnVue components
-import { Badge } from '@/Components/ui/badge'
-import { Button } from '@/Components/ui/button'
-import { ButtonGroup } from '@/Components/ui/button-group'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip'
-
-// Icons
 import {
   Building2,
   Calendar,
@@ -176,21 +170,30 @@ import {
   Clock,
   FileText,
   Link as LinkIcon,
-} from 'lucide-vue-next'
-import { Icon } from '@iconify/vue'
+} from 'lucide-vue-next';
+import { Icon } from '@iconify/vue';
+import { trans as $t } from 'laravel-vue-i18n';
+
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { ButtonGroup } from '@/Components/ui/button-group';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
+
+// Icons
+
+// Icons
 
 // Composables
-import { useDocumentDisplay, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay'
-import { useToasts } from '@/Composables/useToasts'
-import { trans as $t } from 'laravel-vue-i18n'
+import { useDocumentDisplay, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
+import { useToasts } from '@/Composables/useToasts';
 
 // Props
 interface Props {
-  document: DocumentDisplayItem
+  document: DocumentDisplayItem;
 }
 
-const props = defineProps<Props>()
-const toasts = useToasts()
+const props = defineProps<Props>();
+const toasts = useToasts();
 
 // Use shared document display logic - use simple date format for list view
 const {
@@ -199,52 +202,53 @@ const {
   getDocumentIconClasses,
   getLanguageCode,
   getTenantDisplayName,
-  trackDocumentClick
-} = useDocumentDisplay(props.document)
+  trackDocumentClick,
+} = useDocumentDisplay(props.document);
 
 // For list view, use simple date format
-const formatDocumentDate = formatDocumentDateSimple
+const formatDocumentDate = formatDocumentDateSimple;
 
 // Use share_url for linking, fallback to anonymous_url
-const documentUrl = computed(() => props.document.share_url || props.document.anonymous_url)
+const documentUrl = computed(() => props.document.share_url || props.document.anonymous_url);
 
 // Download URL appends ?download=1 to the share/anonymous URL
 const downloadUrl = computed(() => {
-  const base = props.document.share_url || props.document.anonymous_url
-  if (!base) return undefined
-  const separator = base.includes('?') ? '&' : '?'
-  return `${base}${separator}download=1`
-})
+  const base = props.document.share_url || props.document.anonymous_url;
+  if (!base) return undefined;
+  const separator = base.includes('?') ? '&' : '?';
+  return `${base}${separator}download=1`;
+});
 
 // Open document in new tab
 const openDocument = () => {
   if (documentUrl.value) {
-    trackDocumentClick()
-    window.open(documentUrl.value, '_blank', 'noopener,noreferrer')
+    trackDocumentClick();
+    window.open(documentUrl.value, '_blank', 'noopener,noreferrer');
   }
-}
+};
 
 // Download document
 const downloadDocument = () => {
   if (downloadUrl.value) {
-    trackDocumentClick()
-    window.open(downloadUrl.value, '_blank', 'noopener,noreferrer')
+    trackDocumentClick();
+    window.open(downloadUrl.value, '_blank', 'noopener,noreferrer');
   }
-}
+};
 
 // Copy share URL to clipboard
 const copyShareUrl = async () => {
   if (!props.document.share_url) {
-    return
+    return;
   }
 
   try {
-    await navigator.clipboard.writeText(props.document.share_url)
-    toasts.success($t('copy_link_success'))
-  } catch {
-    toasts.error($t('copy_link_error'))
+    await navigator.clipboard.writeText(props.document.share_url);
+    toasts.success($t('copy_link_success'));
   }
-}
+  catch {
+    toasts.error($t('copy_link_error'));
+  }
+};
 </script>
 
 <style scoped>

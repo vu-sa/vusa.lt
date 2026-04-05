@@ -13,7 +13,7 @@
           :show-duty-members="filters.showDutyMembersUser.value"
           :show-tenant-headers="ganttSettings.showTenantHeaders.value"
           :show-related-institutions="filters.showRelatedInstitutionsUser.value"
-          :has-related-institutions="hasRelatedInstitutions"
+          :has-related-institutions
           @update:selected-tenants="(val: string[]) => filters.userTenantFilter.value = val"
           @update:show-only-with-activity="(val: boolean) => filters.showOnlyWithActivityUser.value = val"
           @update:show-only-with-public-meetings="(val: boolean) => filters.showOnlyWithPublicMeetingsUser.value = val"
@@ -27,8 +27,8 @@
 
     <!-- Deferred Gantt chart rendering for better initial load performance -->
     <TimelineGanttSkeleton v-if="!isReady" />
-    <TimelineGanttChart v-else :institutions="formattedInstitutions" :meetings="allMeetings" :gaps 
-      :tenant-filter="filters.userTenantFilter.value" 
+    <TimelineGanttChart v-else :institutions="formattedInstitutions" :meetings="allMeetings" :gaps
+      :tenant-filter="filters.userTenantFilter.value"
       :show-only-with-activity="filters.showOnlyWithActivityUser.value"
       :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsUser.value"
       :institution-names="allInstitutionNames" :tenant-names :institution-tenant="allInstitutionTenant" :institution-has-public-meetings="allInstitutionHasPublicMeetings"
@@ -49,16 +49,15 @@ import type {
   GanttMeeting,
   AtstovavimosGap,
   GanttDutyMember,
-  InactivePeriod
+  InactivePeriod,
 } from '../types';
-
-import TimelineGanttChart from './TimelineGanttChart.vue';
-import TimelineGanttSkeleton from './TimelineGanttSkeleton.vue';
-import GanttFilterDropdown from './GanttFilterDropdown.vue';
 import { useGanttSettings } from '../Composables/useGanttSettings';
 import { useTimelineFilters } from '../Composables/useTimelineFilters';
 import { useUserTimelineData } from '../Composables/useUserTimelineData';
 
+import TimelineGanttChart from './TimelineGanttChart.vue';
+import TimelineGanttSkeleton from './TimelineGanttSkeleton.vue';
+import GanttFilterDropdown from './GanttFilterDropdown.vue';
 
 interface Props {
   institutions: AtstovavimosInstitution[];
@@ -93,18 +92,18 @@ onMounted(() => {
   requestAnimationFrame(() => {
     isReady.value = true;
   });
-  
+
   // If filter was persisted as ON, trigger lazy load on mount
-  if (filters.showRelatedInstitutionsUser.value && 
-      !filters.relatedInstitutionsLoaded.value && 
-      (props.relatedInstitutions?.length ?? 0) === 0) {
+  if (filters.showRelatedInstitutionsUser.value
+    && !filters.relatedInstitutionsLoaded.value
+    && (props.relatedInstitutions?.length ?? 0) === 0) {
     filters.loadRelatedInstitutions();
   }
 });
 
 const emit = defineEmits<{
-  'create-meeting': [payload: { institution_id: string | number, suggestedAt: Date }];
-  'create-check-in': [payload: { institution_id: string | number, startDate: Date, endDate: Date }];
+  'create-meeting': [payload: { institution_id: string | number; suggestedAt: Date }];
+  'create-check-in': [payload: { institution_id: string | number; startDate: Date; endDate: Date }];
   'update:dayWidth': [value: number];
   'fullscreen': [];
 }>();

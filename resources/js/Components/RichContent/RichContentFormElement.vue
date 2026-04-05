@@ -61,8 +61,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-import RichContentEditor from "./RichContentEditor.vue";
-import RichContentParser from "./RichContentParser.vue";
+import RichContentEditor from './RichContentEditor.vue';
+import RichContentParser from './RichContentParser.vue';
 
 import { Button } from '@/Components/ui/button';
 import { Skeleton } from '@/Components/ui/skeleton';

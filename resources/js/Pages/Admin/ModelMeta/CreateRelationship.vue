@@ -7,17 +7,17 @@
 </template>
 
 <script setup lang="ts">
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import RelationshipForm from "@/Components/AdminForms/RelationshipForm.vue";
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import RelationshipForm from '@/Components/AdminForms/RelationshipForm.vue';
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 
 defineProps<{
   contentTypes: Record<string, any>[];
 }>();
 
 const relationship = {
-  name: "",
-  slug: "",
-  description: "",
+  name: '',
+  slug: '',
+  description: '',
 };
 </script>

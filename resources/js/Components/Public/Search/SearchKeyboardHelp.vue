@@ -1,7 +1,9 @@
 <template>
   <div class="px-6 py-3 border-b border-zinc-200 dark:border-zinc-700 bg-red-50 dark:bg-red-950/30">
     <div class="space-y-3">
-      <h4 class="text-sm font-medium text-blue-900 dark:text-blue-100">{{ $t('search.keyboard_shortcuts') }}</h4>
+      <h4 class="text-sm font-medium text-blue-900 dark:text-blue-100">
+        {{ $t('search.keyboard_shortcuts') }}
+      </h4>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
         <div class="space-y-2">
           <div class="flex items-center justify-between">
@@ -41,11 +43,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { trans as $t } from 'laravel-vue-i18n'
+import { computed } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
 
 const isMac = computed(() => {
-  if (typeof navigator === 'undefined') return false
-  return navigator.platform?.includes('Mac') || navigator.userAgent?.includes('Mac') || false
-})
+  if (typeof navigator === 'undefined') return false;
+  return navigator.platform?.includes('Mac') || navigator.userAgent?.includes('Mac') || false;
+});
 </script>

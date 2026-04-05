@@ -10,17 +10,17 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t } from "laravel-vue-i18n";
-import { type ColumnDef } from '@tanstack/vue-table';
-import { ref, computed } from "vue";
+import { trans as $t } from 'laravel-vue-i18n';
+import type { ColumnDef } from '@tanstack/vue-table';
+import { ref, computed } from 'vue';
 
-import { formatRelativeTime } from "@/Utils/IntlTime";
-import Icons from "@/Types/Icons/regular";
-import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
-import { createStandardActionsColumn } from "@/Composables/useTableActions";
-import {
-  type IndexTablePageProps
-} from "@/Types/TableConfigTypes";
+import { formatRelativeTime } from '@/Utils/IntlTime';
+import Icons from '@/Types/Icons/regular';
+import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
+import { createStandardActionsColumn } from '@/Composables/useTableActions';
+import type {
+  IndexTablePageProps,
+} from '@/Types/TableConfigTypes';
 
 const props = defineProps<{
   users: {
@@ -49,17 +49,17 @@ const getRowId = (row: App.Entities.User) => {
 
 const columns = computed<ColumnDef<App.Entities.User, any>[]>(() => [
   {
-    accessorKey: "name",
-    header: () => "Vardas",
-    cell: ({ row }) => row.getValue("name"),
+    accessorKey: 'name',
+    header: () => 'Vardas',
+    cell: ({ row }) => row.getValue('name'),
     size: 200,
     enableSorting: true,
   },
   {
-    accessorKey: "email",
-    header: () => "El. paštas",
+    accessorKey: 'email',
+    header: () => 'El. paštas',
     cell: ({ row }) => {
-      const email = row.original.email;
+      const { email } = row.original;
       if (!email) return null;
       return (
         <a href={`mailto:${email}`} class="transition hover:text-vusa-red">
@@ -72,10 +72,10 @@ const columns = computed<ColumnDef<App.Entities.User, any>[]>(() => [
     size: 200,
   },
   {
-    accessorKey: "phone",
-    header: () => "Telefonas",
+    accessorKey: 'phone',
+    header: () => 'Telefonas',
     cell: ({ row }) => {
-      const phone = row.original.phone;
+      const { phone } = row.original;
       if (!phone) return null;
       return (
         <a href={`tel:${phone}`} class="transition hover:text-vusa-red">
@@ -86,31 +86,31 @@ const columns = computed<ColumnDef<App.Entities.User, any>[]>(() => [
     size: 150,
   },
   {
-    accessorKey: "last_action",
-    header: () => "Paskutinis prisijungimas",
+    accessorKey: 'last_action',
+    header: () => 'Paskutinis prisijungimas',
     cell: ({ row }) => {
       const lastAction = row.original.last_action;
       return (
-        <span class={lastAction ? "" : "text-vusa-red"}>
+        <span class={lastAction ? '' : 'text-vusa-red'}>
           {lastAction
             ? formatRelativeTime(new Date(lastAction))
-            : "Niekada"}
+            : 'Niekada'}
         </span>
       );
     },
     size: 200,
   },
   {
-    accessorKey: "duties_count",
-    header: () => "Pareigų skaičius",
-    cell: ({ row }) => row.getValue("duties_count"),
+    accessorKey: 'duties_count',
+    header: () => 'Pareigų skaičius',
+    cell: ({ row }) => row.getValue('duties_count'),
     size: 120,
   },
-  createStandardActionsColumn<App.Entities.User>("users", {
+  createStandardActionsColumn<App.Entities.User>('users', {
     canView: false,
     canEdit: true,
     canDelete: true,
-  })
+  }),
 ]);
 
 const tableConfig = computed<IndexTablePageProps<App.Entities.User>>(() => {

@@ -10,20 +10,20 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t } from "laravel-vue-i18n";
-import { type ColumnDef } from '@tanstack/vue-table';
-import { ref, computed } from "vue";
+import { trans as $t } from 'laravel-vue-i18n';
+import type { ColumnDef } from '@tanstack/vue-table';
+import { ref, computed } from 'vue';
 
-import Icons from "@/Types/Icons/regular";
-import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
-import { createStandardActionsColumn } from "@/Composables/useTableActions";
+import Icons from '@/Types/Icons/regular';
+import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
+import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import {
   createTitleColumn,
   createTextColumn,
 } from '@/Utils/DataTableColumns';
-import {
-  type IndexTablePageProps
-} from "@/Types/TableConfigTypes";
+import type {
+  IndexTablePageProps,
+} from '@/Types/TableConfigTypes';
 
 const props = defineProps<{
   categories: {
@@ -54,19 +54,19 @@ const getRowId = (row: App.Entities.Category) => {
 
 const columns = computed<ColumnDef<App.Entities.Category, any>[]>(() => [
   createTitleColumn<App.Entities.Category>({
-    accessorKey: "name",
-    routeName: "categories.edit",
+    accessorKey: 'name',
+    routeName: 'categories.edit',
     width: 300,
   }),
-  createTextColumn<App.Entities.Category>("alias", {
-    title: "Slug",
+  createTextColumn<App.Entities.Category>('alias', {
+    title: 'Slug',
     width: 200,
   }),
-  createStandardActionsColumn<App.Entities.Category>("categories", {
+  createStandardActionsColumn<App.Entities.Category>('categories', {
     canView: false,
     canEdit: true,
     canDelete: false,
-  })
+  }),
 ]);
 
 const tableConfig = computed<IndexTablePageProps<App.Entities.Category>>(() => {
@@ -86,7 +86,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Category>>(() => {
     enableColumnVisibility: false,
     enableRowSelection: false,
 
-    headerTitle: "Kategorijos",
+    headerTitle: 'Kategorijos',
     icon: Icons.CATEGORY,
     createRoute: canCreate.value ? route('categories.create') : undefined,
     canCreate: canCreate.value,

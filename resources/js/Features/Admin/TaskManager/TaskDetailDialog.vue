@@ -1,5 +1,5 @@
 <template>
-  <Dialog :open="open" @update:open="handleOpenChange">
+  <Dialog :open @update:open="handleOpenChange">
     <DialogContent class="sm:max-w-lg">
       <DialogHeader>
         <DialogTitle class="flex items-center gap-2">
@@ -43,7 +43,7 @@
           <h4 class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
             {{ $t('tasks.available_actions') }}
           </h4>
-          
+
           <div class="grid gap-2 sm:grid-cols-2">
             <!-- Schedule meeting button -->
             <Button
@@ -73,8 +73,8 @@
             {{ $t('tasks.assigned_to') }}
           </h4>
           <div class="flex flex-wrap gap-2">
-            <div 
-              v-for="user in task.users" 
+            <div
+              v-for="user in task.users"
               :key="user.id"
               class="flex items-center gap-2 rounded-full bg-zinc-100 px-3 py-1 text-sm dark:bg-zinc-800"
             >
@@ -98,6 +98,15 @@
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
+  AlertCircle as AlertCircleIcon,
+  CalendarPlus as CalendarPlusIcon,
+  CalendarOff as CalendarOffIcon,
+  Info as InfoIcon,
+  RotateCw as RotateCwIcon,
+  ClipboardList as ClipboardListIcon,
+} from 'lucide-vue-next';
+
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -107,14 +116,6 @@ import {
 } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
-import {
-  AlertCircle as AlertCircleIcon,
-  CalendarPlus as CalendarPlusIcon,
-  CalendarOff as CalendarOffIcon,
-  Info as InfoIcon,
-  RotateCw as RotateCwIcon,
-  ClipboardList as ClipboardListIcon,
-} from 'lucide-vue-next';
 import type { TaskProgress, TaskActionType } from '@/Types/TaskTypes';
 
 interface TaskWithDetails {

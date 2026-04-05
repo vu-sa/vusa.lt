@@ -1,10 +1,10 @@
 <template>
-  <SearchErrorBoundary 
-    :error="searchError" 
-    :is-online="isOnline"
-    :is-retrying="isSearching" 
-    :retry-count="retryCount"
-    :max-retries="maxRetries" 
+  <SearchErrorBoundary
+    :error="searchError"
+    :is-online
+    :is-retrying="isSearching"
+    :retry-count
+    :max-retries
     @retry="emit('retry')"
     @clear-error="emit('clearError')"
   >
@@ -13,7 +13,7 @@
       <div class="my-3 sm:my-4 lg:my-6 px-2 sm:px-3 lg:px-4">
         <div class="text-center max-w-2xl mx-auto">
           <div class="flex items-center justify-center gap-3 mb-3 sm:mb-4">
-            <SearchPageSwitcher :page="page" />
+            <SearchPageSwitcher :page />
           </div>
           <h1 class="text-2xl sm:text-4xl font-bold text-foreground mb-2 sm:mb-3">
             {{ $t(titleKey) }}
@@ -32,9 +32,9 @@
       </div>
 
       <!-- Offline indicator -->
-      <div 
-        v-if="!isOnline" 
-        class="mb-3 sm:mb-4 mx-2 sm:mx-3 lg:mx-4 p-3 bg-orange-50 
+      <div
+        v-if="!isOnline"
+        class="mb-3 sm:mb-4 mx-2 sm:mx-3 lg:mx-4 p-3 bg-orange-50
           dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 rounded-lg"
       >
         <div class="flex items-center gap-2 text-orange-800 dark:text-orange-200">
@@ -61,7 +61,7 @@
                   <template v-if="searchQuery === '*' && !hasActiveFilters">
                     <span class="hidden sm:inline">{{ $t('search.showing_results') }} </span>
                     <strong class="text-foreground">{{ totalHits.toLocaleString() }}</strong>
-                    <span class="hidden sm:inline"> {{ totalHits === 1 ? 
+                    <span class="hidden sm:inline"> {{ totalHits === 1 ?
                       $t(resultSingularKey) : $t(resultPluralKey) }}</span>
                     <span class="sm:hidden">{{ totalHits === 1 ? resultShortLabel : resultShortLabel }}</span>
                     <span v-if="showNewestFirst" class="hidden sm:inline">{{ $t('search.newest_first') }}</span>
@@ -69,7 +69,7 @@
                   <template v-else>
                     <span class="hidden sm:inline">{{ $t('search.found_results') }} </span>
                     <strong class="text-foreground">{{ totalHits.toLocaleString() }}</strong>
-                    <span class="hidden sm:inline"> {{ totalHits === 1 ? 
+                    <span class="hidden sm:inline"> {{ totalHits === 1 ?
                       $t(resultSingularKey) : $t(resultPluralKey) }}</span>
                     <span class="sm:hidden">{{ totalHits === 1 ? resultShortLabel : resultShortLabel }}</span>
                     <template v-if="searchQuery && searchQuery !== '*'">
@@ -106,40 +106,41 @@
 </template>
 
 <script setup lang="ts">
-import { WifiOff } from 'lucide-vue-next'
-import SearchErrorBoundary from '../SearchErrorBoundary.vue'
-import SearchPageSwitcher from '../SearchPageSwitcher.vue'
+import { WifiOff } from 'lucide-vue-next';
+
+import SearchErrorBoundary from '../SearchErrorBoundary.vue';
+import SearchPageSwitcher from '../SearchPageSwitcher.vue';
 
 interface Props {
   // Page identifier for SearchPageSwitcher
-  page: 'documents' | 'contacts' | 'meetings'
-  
+  page: 'documents' | 'contacts' | 'meetings';
+
   // Translation keys
-  titleKey: string
-  descriptionKey: string
-  resultSingularKey: string
-  resultPluralKey: string
-  noResultsKey: string
-  browsePromptKey: string
-  browsePromptMobileKey?: string
-  
+  titleKey: string;
+  descriptionKey: string;
+  resultSingularKey: string;
+  resultPluralKey: string;
+  noResultsKey: string;
+  browsePromptKey: string;
+  browsePromptMobileKey?: string;
+
   // Short label for mobile (e.g., 'dok.', 'pos.')
-  resultShortLabel?: string
-  
+  resultShortLabel?: string;
+
   // Show "newest first" text
-  showNewestFirst?: boolean
-  
+  showNewestFirst?: boolean;
+
   // Search state
-  searchQuery?: string
-  totalHits?: number
-  isSearching?: boolean
-  hasActiveFilters?: boolean
-  
+  searchQuery?: string;
+  totalHits?: number;
+  isSearching?: boolean;
+  hasActiveFilters?: boolean;
+
   // Error boundary state
-  searchError?: any
-  isOnline?: boolean
-  retryCount?: number
-  maxRetries?: number
+  searchError?: any;
+  isOnline?: boolean;
+  retryCount?: number;
+  maxRetries?: number;
 }
 
 withDefaults(defineProps<Props>(), {
@@ -152,11 +153,11 @@ withDefaults(defineProps<Props>(), {
   hasActiveFilters: false,
   isOnline: true,
   retryCount: 0,
-  maxRetries: 3
-})
+  maxRetries: 3,
+});
 
 const emit = defineEmits<{
-  retry: []
-  clearError: []
-}>()
+  retry: [];
+  clearError: [];
+}>();
 </script>

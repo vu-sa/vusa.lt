@@ -19,7 +19,6 @@
         <div v-for="(item, index) in items" :key="itemKeys[index]"
           class="group relative rounded-lg border border-dashed border-zinc-200 bg-zinc-50/50 p-4 transition-all hover:border-solid hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800/30 dark:hover:border-zinc-600"
           :class="{ 'border-primary bg-primary/5': draggedIndex === index }">
-          
           <!-- Header with drag handle and controls -->
           <div class="mb-3 flex items-center gap-2">
             <!-- Drag handle -->
@@ -32,16 +31,16 @@
               @drop="handleDrop(index)">
               <IFluentReOrderDotsVertical24Regular class="h-4 w-4" />
             </div>
-            
+
             <!-- Item number -->
             <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">
               #{{ index + 1 }}
             </span>
 
             <!-- Delete button -->
-            <Button 
-              type="button" 
-              variant="ghost" 
+            <Button
+              type="button"
+              variant="ghost"
               size="icon"
               class="ml-auto h-7 w-7 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
               :class="items.length === 1 && !allowEmpty ? 'text-zinc-400 cursor-not-allowed' : 'text-zinc-500 hover:text-red-600 dark:hover:text-red-400'"
@@ -52,16 +51,16 @@
           </div>
 
           <!-- Custom item content via slot -->
-          <slot name="item" :item="item" :index="index" :update="(newItem: T) => updateItem(index, newItem)" />
+          <slot name="item" :item :index :update="(newItem: T) => updateItem(index, newItem)" />
         </div>
       </TransitionGroup>
 
       <!-- Add button -->
-      <Button 
-        v-if="!max || items.length < max" 
-        type="button" 
-        variant="outline" 
-        size="sm" 
+      <Button
+        v-if="!max || items.length < max"
+        type="button"
+        variant="outline"
+        size="sm"
         class="w-full border-dashed"
         @click="addItem">
         <IFluentAdd24Regular class="mr-2 h-4 w-4" />
@@ -73,6 +72,7 @@
 
 <script setup lang="ts" generic="T">
 import { ref, watch, type Component } from 'vue';
+
 import { Button } from '@/Components/ui/button';
 import IFluentAdd24Regular from '~icons/fluent/add24-regular';
 import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
@@ -110,7 +110,7 @@ let keyCounter = 0;
 watch(() => items.value?.length, (newLen, oldLen) => {
   if (newLen === undefined) return;
   oldLen = oldLen ?? 0;
-  
+
   if (newLen > oldLen) {
     // Items added - add new keys
     for (let i = oldLen; i < newLen; i++) {
@@ -133,7 +133,7 @@ const dragOverIndex = ref<number | null>(null);
 // CRUD operations
 function addItem() {
   if (props.max && items.value.length >= props.max) return;
-  
+
   const newItem = props.createItem();
   items.value = [...items.value, newItem];
   itemKeys.value.push(keyCounter++);

@@ -90,151 +90,150 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { usePage } from '@inertiajs/vue3'
+import { ref, computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 
 // ShadcnVue components
-import { Button } from '@/Components/ui/button'
-import { Badge } from '@/Components/ui/badge'
-import { Checkbox } from '@/Components/ui/checkbox'
-import { ScrollArea } from '@/Components/ui/scroll-area'
-
-// Icons
 import {
   Building,
   GraduationCap,
   X,
   CheckSquare,
-  RotateCcw
-} from 'lucide-vue-next'
+  RotateCcw,
+} from 'lucide-vue-next';
+
+import { Button } from '@/Components/ui/button';
+import { Badge } from '@/Components/ui/badge';
+import { Checkbox } from '@/Components/ui/checkbox';
+import { ScrollArea } from '@/Components/ui/scroll-area';
+
+// Icons
 
 // Props and emits
 interface Tenant {
-  shortname: string
-  name: string // This will be fullname for padaliniai
-  fullname?: string // Optional in case it's provided separately
-  type: string
-  count?: number
+  shortname: string;
+  name: string; // This will be fullname for padaliniai
+  fullname?: string; // Optional in case it's provided separately
+  type: string;
+  count?: number;
 }
 
 interface TenantHierarchy {
-  main: Tenant[]
-  padaliniai: Tenant[]
-  pkp: Tenant[]
+  main: Tenant[];
+  padaliniai: Tenant[];
+  pkp: Tenant[];
 }
 
 interface Props {
-  tenantHierarchy: TenantHierarchy
-  selectedTenants: string[]
+  tenantHierarchy: TenantHierarchy;
+  selectedTenants: string[];
 }
 
-interface Emits {
-  (e: 'toggleTenant', tenant: string): void
-}
+type Emits = (e: 'toggleTenant', tenant: string) => void;
 
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
+const props = defineProps<Props>();
+const emit = defineEmits<Emits>();
 
 // Helper function to extract faculty name in locative case from tenant
 const getFacultyNameLocative = (tenant: Tenant): string => {
   // First, try to use fullname if available
-  const fullname = tenant.fullname || tenant.name
+  const fullname = tenant.fullname || tenant.name;
 
   // If we have a proper fullname with the VU SA prefix, extract from it
   if (fullname.includes('Vilniaus universiteto Studentų atstovybė')) {
-    const vusaPrefix = 'Vilniaus universiteto Studentų atstovybė '
-    const parts = fullname.split(vusaPrefix)
+    const vusaPrefix = 'Vilniaus universiteto Studentų atstovybė ';
+    const parts = fullname.split(vusaPrefix);
 
     if (parts.length > 1 && parts[1]) {
-      const result = parts[1].trim()
-      return result
+      const result = parts[1].trim();
+      return result;
     }
   }
 
   // Otherwise, look up the tenant in the tenants data
-  const page = usePage()
-  const tenants = page.props.tenants as any[]
+  const page = usePage();
+  const tenants = page.props.tenants as any[];
 
   if (tenants && Array.isArray(tenants)) {
-    const matchingTenant = tenants.find(t => t.shortname === tenant.shortname)
+    const matchingTenant = tenants.find(t => t.shortname === tenant.shortname);
 
     if (matchingTenant && matchingTenant.fullname) {
       // Extract the faculty name from the fullname
-      const vusaPrefix = 'Vilniaus universiteto Studentų atstovybė '
-      const parts = matchingTenant.fullname.split(vusaPrefix)
+      const vusaPrefix = 'Vilniaus universiteto Studentų atstovybė ';
+      const parts = matchingTenant.fullname.split(vusaPrefix);
 
       if (parts.length > 1 && parts[1]) {
-        const result = parts[1].trim()
-        return result
+        const result = parts[1].trim();
+        return result;
       }
     }
   }
 
-  return ''
-}
+  return '';
+};
 
 // Helper functions
 const formatCount = (count: number | undefined): string => {
-  if (!count) return '0'
+  if (!count) return '0';
   if (count >= 1000) {
-    return `${(count / 1000).toFixed(1)}k`
+    return `${(count / 1000).toFixed(1)}k`;
   }
-  return count.toString()
-}
+  return count.toString();
+};
 
 const toggleTenant = (tenantShortname: string) => {
-  emit('toggleTenant', tenantShortname)
-}
+  emit('toggleTenant', tenantShortname);
+};
 
 // Computed properties
 const allTenants = computed(() => [
   ...props.tenantHierarchy.main,
-  ...props.tenantHierarchy.padaliniai
+  ...props.tenantHierarchy.padaliniai,
   // Exclude PKP tenants as per user request
-])
+]);
 
 const allSelected = computed(() => {
-  const allTenantNames = allTenants.value.map(t => t.shortname)
-  return allTenantNames.every(name => props.selectedTenants.includes(name))
-})
+  const allTenantNames = allTenants.value.map(t => t.shortname);
+  return allTenantNames.every(name => props.selectedTenants.includes(name));
+});
 
 const sortedPadaliniai = computed(() => {
   return [...props.tenantHierarchy.padaliniai].sort((a, b) => {
     // Sort by count first (descending), then by name
     if (a.count !== b.count) {
-      return (b.count || 0) - (a.count || 0)
+      return (b.count || 0) - (a.count || 0);
     }
-    return a.shortname.localeCompare(b.shortname)
-  })
-})
+    return a.shortname.localeCompare(b.shortname);
+  });
+});
 
 // Actions
 const selectAll = () => {
-  allTenants.value.forEach(tenant => {
+  allTenants.value.forEach((tenant) => {
     if (!props.selectedTenants.includes(tenant.shortname)) {
-      toggleTenant(tenant.shortname)
+      toggleTenant(tenant.shortname);
     }
-  })
-}
+  });
+};
 
 const clearAll = () => {
   // Toggle off all selected tenants
-  props.selectedTenants.forEach(tenant => {
-    toggleTenant(tenant)
-  })
-}
+  props.selectedTenants.forEach((tenant) => {
+    toggleTenant(tenant);
+  });
+};
 
 // Styling functions
 const getTenantLabelClasses = (tenantShortname: string): string => {
-  const baseClasses = 'flex items-center gap-2.5 p-2 rounded-lg border cursor-pointer transition-all duration-200 hover:shadow-sm'
-  const isSelected = props.selectedTenants.includes(tenantShortname)
+  const baseClasses = 'flex items-center gap-2.5 p-2 rounded-lg border cursor-pointer transition-all duration-200 hover:shadow-sm';
+  const isSelected = props.selectedTenants.includes(tenantShortname);
 
   if (isSelected) {
-    return `${baseClasses} bg-accent border-accent-foreground/30 shadow-sm`
+    return `${baseClasses} bg-accent border-accent-foreground/30 shadow-sm`;
   }
 
-  return `${baseClasses} bg-background border-border hover:bg-accent/50`
-}
+  return `${baseClasses} bg-background border-border hover:bg-accent/50`;
+};
 </script>
 
 <style scoped>

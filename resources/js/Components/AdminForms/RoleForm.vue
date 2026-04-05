@@ -9,22 +9,23 @@
 </template>
 
 <script setup lang="ts">
-import { useForm } from "@inertiajs/vue3";
+import { useForm } from '@inertiajs/vue3';
 
-import { Input } from "@/Components/ui/input";
-import FormElement from "./FormElement.vue";
-import FormFieldWrapper from "./FormFieldWrapper.vue";
-import AdminForm from "./AdminForm.vue";
+import FormElement from './FormElement.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import AdminForm from './AdminForm.vue';
+
+import { Input } from '@/Components/ui/input';
 
 const { role, rememberKey } = defineProps<{
   role: App.Entities.Role;
-  rememberKey?: "CreateRole";
+  rememberKey?: 'CreateRole';
 }>();
 
 const form = rememberKey ? useForm(rememberKey, role) : useForm(role);
 
 defineEmits<{
-  (event: "submit:form", form: unknown): void;
-  (event: "delete"): void;
+  (event: 'submit:form', form: unknown): void;
+  (event: 'delete'): void;
 }>();
 </script>

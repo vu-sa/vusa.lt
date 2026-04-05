@@ -19,15 +19,15 @@
 </template>
 
 <script setup lang="ts">
-import { z } from "zod";
-import { useForm } from 'vee-validate'
-import { toTypedSchema } from "@vee-validate/zod";
-import { ref, watch, computed, onMounted } from "vue";
-import { router, usePage } from "@inertiajs/vue3";
+import { z } from 'zod';
+import { useForm } from 'vee-validate';
+import { toTypedSchema } from '@vee-validate/zod';
+import { ref, watch, computed, onMounted } from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
 
-import { Button } from "@/Components/ui/button";
-import AutoForm from "@/Components/ui/auto-form/AutoForm.vue";
-import AutoFormField from "@/Components/ui/auto-form/AutoFormField.vue";
+import { Button } from '@/Components/ui/button';
+import AutoForm from '@/Components/ui/auto-form/AutoForm.vue';
+import AutoFormField from '@/Components/ui/auto-form/AutoFormField.vue';
 
 interface PrefilledValue {
   value: string | number | boolean;
@@ -39,11 +39,9 @@ const props = defineProps<{
   prefilledValues?: Record<string, PrefilledValue>;
 }>();
 
-const emit = defineEmits<{
-  (e: "submit", data: Record<string, any>): void;
-}>();
+const emit = defineEmits<(e: 'submit', data: Record<string, any>) => void>();
 
-const schema = {}
+const schema = {};
 const fieldsWithDescription = ref([]);
 
 const removeInertiaBeforeEventListener = ref<VoidFunction | null>(null);
@@ -61,7 +59,7 @@ const checkIfFieldIsLocalized = (field: Record<string, any>) => {
 };
 
 const getEnumLabel = (field: Record<string, any>, value: string | number | boolean) => {
-  if (field.type === "enum" && field.options) {
+  if (field.type === 'enum' && field.options) {
     const option = field.options.find((opt: { value: string | number | boolean }) => {
       return String(opt.value) === String(value);
     });
@@ -69,7 +67,7 @@ const getEnumLabel = (field: Record<string, any>, value: string | number | boole
     if (option) {
       if (checkIfFieldIsLocalized(field)) {
         const page = usePage();
-        const locale = (page.props as any).app?.locale ?? "lt";
+        const locale = (page.props as any).app?.locale ?? 'lt';
 
         return option.label[locale] ?? option.label;
       }
@@ -107,9 +105,10 @@ props.form.form_fields.forEach((field: Record<string, any>) => {
     case 'enum':
       // check if options are really localized, contains lt or en
       if (checkIfFieldIsLocalized(field)) {
-        options = field.options.map((option: Record<string, any>) => String(option.label[usePage().props.app.locale]))
-      } else {
-        options = field.options?.map((option: Record<string, any>) => String(option.label))
+        options = field.options.map((option: Record<string, any>) => String(option.label[usePage().props.app.locale]));
+      }
+      else {
+        options = field.options?.map((option: Record<string, any>) => String(option.label));
       }
 
       fieldSchema = z.enum(options);
@@ -123,7 +122,7 @@ props.form.form_fields.forEach((field: Record<string, any>) => {
       if (field.is_required) {
         fieldSchema = fieldSchema.refine(value => value, {
           message: 'You must accept to proceed.',
-        })
+        });
       }
   }
 
@@ -147,21 +146,20 @@ props.form.form_fields.forEach((field: Record<string, any>) => {
     });
   }
 
-  schema['form-field-' + field.id] = fieldSchema;
+  schema[`form-field-${field.id}`] = fieldSchema;
 });
 
 const formSchema = z.object(schema);
 
 const formFieldConfig = props.form.form_fields.reduce((acc, field: Record<string, any>) => {
+  const description = Array.isArray(field.description) ? '' : field.description;
 
-  const description = Array.isArray(field.description) ? "" : field.description
-
-  acc['form-field-' + field.id] = {
+  acc[`form-field-${field.id}`] = {
     label: field.label,
   };
 
   if (field.subtype === 'textarea') {
-    acc['form-field-' + field.id].component = 'textarea';
+    acc[`form-field-${field.id}`].component = 'textarea';
   }
 
   return acc;
@@ -175,30 +173,32 @@ const autoform = useForm({
 onMounted(() => {
   if (props.prefilledValues) {
     const initialValues: Record<string, any> = {};
-    
+
     for (const [fieldId, config] of Object.entries(props.prefilledValues)) {
       const field = props.form.form_fields.find((f: Record<string, any>) => String(f.id) === String(fieldId));
       if (field) {
-        const formFieldKey = 'form-field-' + fieldId;
-        
+        const formFieldKey = `form-field-${fieldId}`;
+
         // For enum fields, convert value to label
         if (field.type === 'enum' && field.options) {
-          const option = field.options.find((opt: { value: string | number }) => 
-            String(opt.value) === String(config.value)
+          const option = field.options.find((opt: { value: string | number }) =>
+            String(opt.value) === String(config.value),
           );
           if (option) {
             if (checkIfFieldIsLocalized(field)) {
               initialValues[formFieldKey] = option.label[usePage().props.app.locale];
-            } else {
+            }
+            else {
               initialValues[formFieldKey] = option.label;
             }
           }
-        } else {
+        }
+        else {
           initialValues[formFieldKey] = config.value;
         }
       }
     }
-    
+
     if (Object.keys(initialValues).length > 0) {
       // Use resetForm to set values without triggering validation
       autoform.resetForm({
@@ -219,7 +219,7 @@ watch(() => autoform.meta.value.dirty, (isDirty) => {
       if (event.detail?.visit?.prefetch) {
         return;
       }
-      
+
       // Skip if we're submitting
       if (isSubmitting.value) {
         return;
@@ -255,7 +255,8 @@ const onSubmit = (data: Record<string, any>) => {
         if (selectedOption) {
           fieldData = selectedOption.value;
         }
-      } else {
+      }
+      else {
         const selectedOption = formField.options.find((option: Record<string, any>) => option.label === fieldData);
 
         if (selectedOption) {

@@ -5,39 +5,39 @@
       <div class="border rounded-lg p-4 bg-background h-full">
         <div class="flex items-start gap-4">
           <!-- Icon skeleton -->
-          <div class="w-10 h-10 rounded-lg bg-muted animate-pulse flex-shrink-0"></div>
-          
+          <div class="w-10 h-10 rounded-lg bg-muted animate-pulse flex-shrink-0" />
+
           <!-- Main content -->
           <div class="flex-1 space-y-3">
             <!-- Title and badges row -->
             <div class="flex items-start justify-between gap-4">
               <div class="flex-1 space-y-3">
                 <!-- Title -->
-                <div class="h-4 bg-muted rounded animate-pulse w-4/5"></div>
-                
+                <div class="h-4 bg-muted rounded animate-pulse w-4/5" />
+
                 <!-- Badges -->
                 <div class="flex items-center gap-2 flex-wrap">
-                  <div class="h-5 bg-muted rounded-full animate-pulse w-20"></div>
-                  <div class="h-5 bg-muted rounded-full animate-pulse w-16"></div>
-                  <div class="h-5 bg-muted rounded-full animate-pulse w-12"></div>
-                  <div class="h-5 bg-muted rounded-full animate-pulse w-14"></div>
+                  <div class="h-5 bg-muted rounded-full animate-pulse w-20" />
+                  <div class="h-5 bg-muted rounded-full animate-pulse w-16" />
+                  <div class="h-5 bg-muted rounded-full animate-pulse w-12" />
+                  <div class="h-5 bg-muted rounded-full animate-pulse w-14" />
                 </div>
               </div>
-              
+
               <!-- Date and actions -->
               <div class="flex items-center gap-3 flex-shrink-0">
                 <div class="text-right space-y-1">
-                  <div class="h-3 bg-muted rounded animate-pulse w-20"></div>
-                  <div class="h-3 bg-muted rounded animate-pulse w-16"></div>
+                  <div class="h-3 bg-muted rounded animate-pulse w-20" />
+                  <div class="h-3 bg-muted rounded animate-pulse w-16" />
                 </div>
-                <div class="w-4 h-4 bg-muted rounded animate-pulse"></div>
+                <div class="w-4 h-4 bg-muted rounded animate-pulse" />
               </div>
             </div>
-            
+
             <!-- Summary -->
             <div class="space-y-2">
-              <div class="h-3 bg-muted rounded animate-pulse w-full"></div>
-              <div class="h-3 bg-muted rounded animate-pulse w-4/5"></div>
+              <div class="h-3 bg-muted rounded animate-pulse w-full" />
+              <div class="h-3 bg-muted rounded animate-pulse w-4/5" />
             </div>
           </div>
         </div>
@@ -49,23 +49,23 @@
       <div class="border border-border/50 rounded-md bg-background h-full">
         <div class="flex items-center gap-3 px-4 py-2">
           <!-- Icon skeleton -->
-          <div class="w-4 h-4 rounded bg-muted animate-pulse flex-shrink-0"></div>
-          
+          <div class="w-4 h-4 rounded bg-muted animate-pulse flex-shrink-0" />
+
           <!-- Title -->
           <div class="flex-1">
-            <div class="h-3 bg-muted rounded animate-pulse w-3/5"></div>
+            <div class="h-3 bg-muted rounded animate-pulse w-3/5" />
           </div>
-          
+
           <!-- Compact metadata -->
           <div class="flex items-center gap-2 flex-shrink-0">
             <!-- Content type badge -->
-            <div class="h-4 bg-muted rounded-full animate-pulse w-16"></div>
+            <div class="h-4 bg-muted rounded-full animate-pulse w-16" />
             <!-- Organization -->
-            <div class="h-3 bg-muted rounded animate-pulse w-12"></div>
+            <div class="h-3 bg-muted rounded animate-pulse w-12" />
             <!-- Date -->
-            <div class="h-3 bg-muted rounded animate-pulse w-10"></div>
+            <div class="h-3 bg-muted rounded animate-pulse w-10" />
             <!-- External link icon -->
-            <div class="w-3.5 h-3.5 bg-muted rounded animate-pulse"></div>
+            <div class="w-3.5 h-3.5 bg-muted rounded animate-pulse" />
           </div>
         </div>
       </div>
@@ -75,12 +75,12 @@
 
 <script setup lang="ts">
 interface Props {
-  viewMode: 'list' | 'compact'
+  viewMode: 'list' | 'compact';
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  viewMode: 'list'
-})
+  viewMode: 'list',
+});
 </script>
 
 <style scoped>

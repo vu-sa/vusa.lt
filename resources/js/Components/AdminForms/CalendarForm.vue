@@ -16,8 +16,10 @@
       </template>
       <template #description>
         <p><strong>{{ $t('Kategorija') }}</strong> {{ $t('keičia spalvą renginių kalendoriuje.') }}</p>
-        <p><strong>{{ $t('Organizatorius') }}</strong>, {{ $t('jeigu neįrašytas, bus') }} <strong>{{ defaultOrganizer
-            }}</strong></p>
+        <p>
+          <strong>{{ $t('Organizatorius') }}</strong>, {{ $t('jeigu neįrašytas, bus') }} <strong>{{ defaultOrganizer
+          }}</strong>
+        </p>
       </template>
 
       <div class="space-y-4">
@@ -221,33 +223,31 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
-import { router, useForm, usePage } from "@inertiajs/vue3";
-import { translitLithuanian } from "@/Utils/String";
+import { computed, ref, watch } from 'vue';
+import { router, useForm, usePage } from '@inertiajs/vue3';
 
-import InfoPopover from "../Buttons/InfoPopover.vue";
-import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
-import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
+import InfoPopover from '../Buttons/InfoPopover.vue';
+import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
+import SimpleLocaleButton from '../Buttons/SimpleLocaleButton.vue';
 
-import FormElement from "./FormElement.vue";
-import FormFieldWrapper from "./FormFieldWrapper.vue";
-import FormStatusHeader from "./FormStatusHeader.vue";
-import AdminForm from "./AdminForm.vue";
+import FormElement from './FormElement.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import FormStatusHeader from './FormStatusHeader.vue';
+import AdminForm from './AdminForm.vue';
 
-import { getCalendarEvent2Route } from "@/Utils/Route";
-import { Button } from "@/Components/ui/button";
-import { Input } from "@/Components/ui/input";
-import { Label } from "@/Components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { ImageUpload } from "@/Components/ui/upload";
-import DateTimePicker from "@/Components/ui/date-picker/DateTimePicker.vue";
-import TiptapEditor from "@/Components/TipTap/TiptapEditor.vue";
-
-
+import { translitLithuanian } from '@/Utils/String';
+import { getCalendarEvent2Route } from '@/Utils/Route';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { ImageUpload } from '@/Components/ui/upload';
+import DateTimePicker from '@/Components/ui/date-picker/DateTimePicker.vue';
+import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 
 defineEmits<{
-  (event: "submit:form", form: unknown): void;
-  (event: "delete"): void;
+  (event: 'submit:form', form: unknown): void;
+  (event: 'delete'): void;
 }>();
 
 const props = defineProps<{
@@ -260,7 +260,7 @@ const props = defineProps<{
 }>();
 
 const isCreate = computed(() => !!props.rememberKey);
-const locale = ref("lt");
+const locale = ref('lt');
 
 // Store existing main_image URL for display in MediaUpload
 const existingMainImageUrl = ref<string | null>(props.calendar.main_image_url ?? null);
@@ -288,7 +288,7 @@ const hasMainImage = computed(() => !!form.main_image || !!existingMainImageUrl.
 
 // Section completion states
 const mainInfoComplete = computed(() =>
-  (form.title?.lt?.length || 0) >= 3 && form.tenant_id
+  (form.title?.lt?.length || 0) >= 3 && form.tenant_id,
 );
 
 // Status header links
@@ -299,7 +299,7 @@ const statusLinks = computed(() => {
   const locale = usePage().props.app?.locale ?? 'lt';
   const url = getCalendarEvent2Route(
     { date: props.calendar.date, title: translitLithuanian(form.title.lt) },
-    locale
+    locale,
   );
 
   return [{ url, label: 'Public' }];
@@ -316,7 +316,7 @@ const categoryIdString = computed({
   get: () => form.category_id ? String(form.category_id) : '__none__',
   set: (val: string) => {
     form.category_id = val && val !== '__none__' ? parseInt(val) : null;
-  }
+  },
 });
 
 // Handle tenant_id as string for Select component
@@ -324,7 +324,7 @@ const tenantIdString = computed({
   get: () => form.tenant_id ? String(form.tenant_id) : '',
   set: (val: string) => {
     form.tenant_id = val ? parseInt(val) : null;
-  }
+  },
 });
 
 // Date pickers compatibility - convert string to Date
@@ -341,7 +341,7 @@ const startDate = computed({
       .slice(0, 19)
       .replace('T', ' ');
     form.date = localISOString;
-  }
+  },
 });
 
 const endDate = computed({
@@ -357,7 +357,7 @@ const endDate = computed({
       .slice(0, 19)
       .replace('T', ' ');
     form.end_date = localISOString;
-  }
+  },
 });
 
 // Gallery images handling
@@ -373,7 +373,7 @@ const existingGalleryImages = ref<ExistingImage[]>(
     id: img.id,
     url: img.url || img.original_url,
     name: img.name || 'image.jpg',
-  }))
+  })),
 );
 
 // New gallery images to be uploaded
@@ -398,7 +398,7 @@ function removeExistingImage(img: { id: string | number; url: string }) {
         onSuccess: () => {
           existingGalleryImages.value = existingGalleryImages.value.filter(i => i.id !== img.id);
         },
-      }
+      },
     );
   }
 }

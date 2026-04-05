@@ -112,34 +112,35 @@
 </template>
 
 <script setup lang="ts">
-import { router, useForm } from "@inertiajs/vue3";
-import { trans as $t } from "laravel-vue-i18n";
-import { computed, ref, watch } from "vue";
-import IFluentCube24Regular from "~icons/fluent/cube24-regular";
+import { router, useForm } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+import { computed, ref, watch } from 'vue';
 
-import { Badge } from "@/Components/ui/badge";
-import { Button } from "@/Components/ui/button";
-import { Checkbox } from "@/Components/ui/checkbox";
-import { DateTimePicker } from "@/Components/ui/date-picker";
-import { DynamicListInput } from "@/Components/ui/dynamic-list-input";
-import { Input } from "@/Components/ui/input";
-import { Label } from "@/Components/ui/label";
-import { NumberField } from "@/Components/ui/number-field";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { Textarea } from "@/Components/ui/textarea";
-import { RESERVATION_PLACEHOLDERS } from "@/Constants/I18n/Placeholders";
-import { capitalize } from "@/Utils/String";
-import FormElement from "./FormElement.vue";
-import FormFieldWrapper from "./FormFieldWrapper.vue";
-import Icons from "@/Types/Icons/regular";
-import type { ReservationCreationTemplate } from "@/Pages/Admin/Reservations/CreateReservation.vue";
-import type { ReservationEditType } from "@/Pages/Admin/Reservations/EditReservation.vue";
-import AdminForm from "./AdminForm.vue";
-import MdSuspenseWrapper from "@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue";
+import FormElement from './FormElement.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import AdminForm from './AdminForm.vue';
+
+import IFluentCube24Regular from '~icons/fluent/cube24-regular';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { Checkbox } from '@/Components/ui/checkbox';
+import { DateTimePicker } from '@/Components/ui/date-picker';
+import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { NumberField } from '@/Components/ui/number-field';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Textarea } from '@/Components/ui/textarea';
+import { RESERVATION_PLACEHOLDERS } from '@/Constants/I18n/Placeholders';
+import { capitalize } from '@/Utils/String';
+import Icons from '@/Types/Icons/regular';
+import type { ReservationCreationTemplate } from '@/Pages/Admin/Reservations/CreateReservation.vue';
+import type { ReservationEditType } from '@/Pages/Admin/Reservations/EditReservation.vue';
+import MdSuspenseWrapper from '@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue';
 
 defineEmits<{
-  (event: "update:value", value: number | null): void;
-  (event: "submit:form", form: unknown): void;
+  (event: 'update:value', value: number | null): void;
+  (event: 'submit:form', form: unknown): void;
 }>();
 
 // TODO: cleanup the modelRoute
@@ -147,7 +148,7 @@ const props = defineProps<{
   reservation: ReservationCreationTemplate | ReservationEditType;
   allResources: App.Entities.Resource[];
   modelRoute: string;
-  rememberKey?: "CreateReservation";
+  rememberKey?: 'CreateReservation';
 }>();
 
 const conditionAcquaintance = ref(false);
@@ -187,32 +188,32 @@ const onDateChange = () => {
       dateTimeRange: { start: startDate.value.getTime(), end: endDate.value.getTime() },
     },
     preserveScroll: true,
-    only: ["resources"],
+    only: ['resources'],
   });
 };
 
 const getleftCapacity = (id: string) => {
-  return props.allResources.find((resource) => resource.id === id)
+  return props.allResources.find(resource => resource.id === id)
     ?.lowestCapacityAtDateTimeRange;
 };
 
 const allResourceOptions = computed(() => {
-  let selectedResources = form.resources.map((resource) => resource.id);
+  const selectedResources = form.resources.map(resource => resource.id);
 
-  return props.allResources.map((resource) => ({
+  return props.allResources.map(resource => ({
     ...resource,
     disabled:
-      resource.lowestCapacityAtDateTimeRange === 0 ||
-      selectedResources.includes(resource.id) ||
-      !resource.is_reservable,
+      resource.lowestCapacityAtDateTimeRange === 0
+      || selectedResources.includes(resource.id)
+      || !resource.is_reservable,
   }));
 });
 
 const submit = () => {
   form.submit(
-    props.reservation?.id ? "patch" : "post",
+    props.reservation?.id ? 'patch' : 'post',
     routeToSubmit.value, {
-    preserveScroll: true,
-  });
+      preserveScroll: true,
+    });
 };
 </script>

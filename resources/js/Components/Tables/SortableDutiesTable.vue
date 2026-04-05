@@ -7,23 +7,22 @@
         <IFluentReOrderDotsVertical24Regular class="h-4 w-4 text-muted-foreground" />
       </button>
       <div class="flex-1 min-w-0">
-        <slot :model="model" />
+        <slot :model />
       </div>
     </div>
   </TransitionGroup>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useSortable } from "@vueuse/integrations/useSortable";
-import { watch } from 'vue';
+import { ref, watch } from 'vue';
+import { useSortable } from '@vueuse/integrations/useSortable';
 
 const contents = defineModel<Record<string, any>[]>();
 
 const el = ref(null);
 
 useSortable(el, contents, {
-  handle: ".handle", forceFallback: true, animation: 100,
+  handle: '.handle', forceFallback: true, animation: 100,
 });
 
 watch(() => contents.value, () => {

@@ -39,7 +39,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $commentable
  * @property-read Collection<int, Comment> $comments
  * @property-read Collection<int, FileableFile> $fileableFiles
- * @property-read Collection<int, SharepointFile> $files
  * @property-read string $completion_status
  * @property-read bool $has_protocol
  * @property-read bool $has_report

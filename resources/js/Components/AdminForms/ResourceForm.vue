@@ -71,39 +71,41 @@
 
 <script setup lang="ts">
 import { Icon } from '@iconify/vue';
-import { capitalize, computed, ref } from "vue";
-import { useForm } from "@inertiajs/vue3";
-import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
+import { capitalize, computed, ref } from 'vue';
+import { useForm } from '@inertiajs/vue3';
+import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 
-import { Input } from "@/Components/ui/input";
-import { NumberField } from "@/Components/ui/number-field";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { Switch } from "@/Components/ui/switch";
-import { ImageUpload } from "@/Components/ui/upload";
-import FormElement from "./FormElement.vue";
-import FormFieldWrapper from "./FormFieldWrapper.vue";
-import AdminForm from "./AdminForm.vue";
-import Icons from "@/Types/Icons/regular";
-import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
-import { RESOURCE_PLACEHOLDERS } from "@/Constants/I18n/Placeholders";
-import type { ResourceCreationTemplate } from "@/Pages/Admin/Reservations/CreateResource.vue";
-import type { ResourceEditType } from "@/Pages/Admin/Reservations/EditResource.vue";
+import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
+
+import FormElement from './FormElement.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import AdminForm from './AdminForm.vue';
+
+import { Input } from '@/Components/ui/input';
+import { NumberField } from '@/Components/ui/number-field';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Switch } from '@/Components/ui/switch';
+import { ImageUpload } from '@/Components/ui/upload';
+import Icons from '@/Types/Icons/regular';
+import { RESOURCE_PLACEHOLDERS } from '@/Constants/I18n/Placeholders';
+import type { ResourceCreationTemplate } from '@/Pages/Admin/Reservations/CreateResource.vue';
+import type { ResourceEditType } from '@/Pages/Admin/Reservations/EditResource.vue';
 import MdSuspenseWrapper from '@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue';
 
 const props = defineProps<{
   resource: ResourceCreationTemplate | ResourceEditType;
   categories: App.Entities.ResourceCategory[];
   assignableTenants: App.Entities.Tenant[];
-  rememberKey?: "CreateResource";
+  rememberKey?: 'CreateResource';
 }>();
 
 defineEmits<{
-  (event: "submit:form", form: unknown): void;
-  (event: "delete"): void;
+  (event: 'submit:form', form: unknown): void;
+  (event: 'delete'): void;
 }>();
 
 const categoriesOptions = computed(() => {
-  return props.categories.map((category) => ({
+  return props.categories.map(category => ({
     value: category.id,
     label: category.name,
     icon: category.icon,

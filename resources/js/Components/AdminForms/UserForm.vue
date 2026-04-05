@@ -123,7 +123,7 @@
               :get-key="(item) => String(item.value)"
               :get-label="(item) => item.label"
               :is-item-disabled="(item) => item.checkboxDisabled ?? false"
-              :filter="filter"
+              :filter
               multiple
               class="p-1"
             >
@@ -171,7 +171,9 @@
       </div>
       <Card class="mb-4 h-auto">
         <CardHeader class="pb-2">
-          <CardTitle class="text-base">Užimamos pareigos</CardTitle>
+          <CardTitle class="text-base">
+            Užimamos pareigos
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <SimpleDataTable :data="user.current_duties ?? []" :columns="existingDutyColumns" :enable-pagination="false" :enable-filtering="false" />
@@ -179,7 +181,9 @@
       </Card>
       <Card class="mb-4 h-auto">
         <CardHeader class="pb-2">
-          <CardTitle class="text-base">Buvusios pareigos</CardTitle>
+          <CardTitle class="text-base">
+            Buvusios pareigos
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <SimpleDataTable :data="user.previous_duties ?? []" :columns="previousDutyColumns" :enable-pagination="false" :enable-filtering="false" />
@@ -198,7 +202,9 @@
       <!-- Password Management Section - Only for Super Admins -->
       <template v-if="$page.props.auth?.user?.isSuperAdmin">
         <div class="border-t border-gray-200 pt-4 mt-4">
-          <h4 class="font-semibold text-lg mb-2">{{ $t("Slaptažodžio valdymas") }}</h4>
+          <h4 class="font-semibold text-lg mb-2">
+            {{ $t("Slaptažodžio valdymas") }}
+          </h4>
           <div class="flex items-center gap-4">
             <div>
               <span class="inline-flex items-center gap-2">
@@ -224,7 +230,9 @@
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>{{ $t("Atšaukti") }}</AlertDialogCancel>
-                    <AlertDialogAction @click="generatePassword">{{ $t("Generuoti") }}</AlertDialogAction>
+                    <AlertDialogAction @click="generatePassword">
+                      {{ $t("Generuoti") }}
+                    </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
@@ -244,7 +252,9 @@
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>{{ $t("Atšaukti") }}</AlertDialogCancel>
-                    <AlertDialogAction @click="deletePassword">{{ $t("Ištrinti") }}</AlertDialogAction>
+                    <AlertDialogAction @click="deletePassword">
+                      {{ $t("Ištrinti") }}
+                    </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
@@ -253,7 +263,9 @@
 
           <!-- Display generated password if available -->
           <div v-if="$page.props.flash.data" class="mt-4 p-4 bg-green-50 border border-green-200 rounded-md">
-            <h5 class="font-semibold mb-2">{{ $t("Sugeneruotas slaptažodis:") }}</h5>
+            <h5 class="font-semibold mb-2">
+              {{ $t("Sugeneruotas slaptažodis:") }}
+            </h5>
             <div class="relative mb-2">
               <Input
                 readonly
@@ -281,64 +293,64 @@
 </template>
 
 <script setup lang="tsx">
-import type { ColumnDef } from "@tanstack/vue-table";
-import { computed, ref } from "vue";
-import { router, useForm, usePage } from "@inertiajs/vue3";
-import { trans as $t } from "laravel-vue-i18n";
+import type { ColumnDef } from '@tanstack/vue-table';
+import { computed, ref } from 'vue';
+import { router, useForm, usePage } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 
-import Delete24Regular from "~icons/fluent/delete24-regular";
-import Eye16Regular from "~icons/fluent/eye16-regular";
-import PersonEdit24Regular from "~icons/fluent/person-edit24-regular";
-import IFluentCopy16Regular from "~icons/fluent/copy16-regular";
+import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
 
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/Components/ui/alert-dialog";
-import { Badge } from "@/Components/ui/badge";
-import { Button } from "@/Components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
-import { Input } from "@/Components/ui/input";
-import { Label } from "@/Components/ui/label";
-import { MultiSelect } from "@/Components/ui/multi-select";
-import { Switch } from "@/Components/ui/switch";
-import { TransferList } from "@/Components/ui/transfer-list";
-import { Tree } from "@/Components/ui/tree";
-import { ImageUpload } from "@/Components/ui/upload";
+import AdminForm from './AdminForm.vue';
+import FormElement from './FormElement.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
 
-import { formatStaticTime } from "@/Utils/IntlTime";
-import AdminForm from "./AdminForm.vue";
-import FormElement from "./FormElement.vue";
-import FormFieldWrapper from "./FormFieldWrapper.vue";
-import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
-import SimpleDataTable from "@/Components/Tables/SimpleDataTable.vue";
+import Delete24Regular from '~icons/fluent/delete24-regular';
+import Eye16Regular from '~icons/fluent/eye16-regular';
+import PersonEdit24Regular from '~icons/fluent/person-edit24-regular';
+import IFluentCopy16Regular from '~icons/fluent/copy16-regular';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/Components/ui/alert-dialog';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { MultiSelect } from '@/Components/ui/multi-select';
+import { Switch } from '@/Components/ui/switch';
+import { TransferList } from '@/Components/ui/transfer-list';
+import { Tree } from '@/Components/ui/tree';
+import { ImageUpload } from '@/Components/ui/upload';
+import { formatStaticTime } from '@/Utils/IntlTime';
+import SimpleDataTable from '@/Components/Tables/SimpleDataTable.vue';
 
 const props = defineProps<{
   user: App.Entities.User;
   roles: App.Entities.Role[];
   tenantsWithDuties: App.Entities.Tenant[];
   permissableTenants: App.Entities.Tenant[];
-  rememberKey?: "CreateUser";
+  rememberKey?: 'CreateUser';
 }>();
 
 defineEmits<{
-  (event: "submit:form", form: unknown): void;
-  (event: "delete"): void;
+  (event: 'submit:form', form: unknown): void;
+  (event: 'delete'): void;
 }>();
 
-const dutyShowMode = ref<"tree" | "transfer">("tree");
+const dutyShowMode = ref<'tree' | 'transfer'>('tree');
 const handleChangeDutyShowMode = () => {
-  dutyShowMode.value = dutyShowMode.value === "tree" ? "transfer" : "tree";
+  dutyShowMode.value = dutyShowMode.value === 'tree' ? 'transfer' : 'tree';
 };
 
 const form = props.rememberKey
   ? useForm(props.rememberKey, props.user)
   : useForm(props.user);
 
-form.roles = props.user.roles?.map((role) => role.id);
+form.roles = props.user.roles?.map(role => role.id);
 
 if (Array.isArray(form.pronouns)) {
-  form.pronouns = { lt: "", en: "" };
+  form.pronouns = { lt: '', en: '' };
 }
 
-const rolesOptions = props.roles.map((role) => ({
+const rolesOptions = props.roles.map(role => ({
   label: role.name,
   value: role.id,
 }));
@@ -350,10 +362,10 @@ const selectedRoles = computed({
 });
 
 interface DutyTreeOption {
-  label: string
-  value: string | number
-  checkboxDisabled?: boolean
-  children?: DutyTreeOption[]
+  label: string;
+  value: string | number;
+  checkboxDisabled?: boolean;
+  children?: DutyTreeOption[];
 }
 
 const dutyOptions: DutyTreeOption[] = props.tenantsWithDuties.map(
@@ -362,32 +374,32 @@ const dutyOptions: DutyTreeOption[] = props.tenantsWithDuties.map(
       label: tenant.shortname,
       value: tenant.id,
       checkboxDisabled: true,
-      children: tenant.institutions?.map((institution) => ({
+      children: tenant.institutions?.map(institution => ({
         label: institution.name,
         value: institution.id,
         checkboxDisabled: true,
-        children: institution.duties?.map((duty) => ({
+        children: institution.duties?.map(duty => ({
           label: duty.name,
           value: duty.id,
         })),
       })),
     });
   },
-).filter((tenant) => props.permissableTenants.some((permissable) => permissable.id === tenant.value));
+).filter(tenant => props.permissableTenants.some(permissable => permissable.id === tenant.value));
 
 // check if email contains "vusa.lt"
 const isUserEmailMaybeDutyEmail = computed(() => {
-  return props.user.email.includes("vusa.lt");
+  return props.user.email.includes('vusa.lt');
 });
 
 const existingDutyColumns: ColumnDef<any, any>[] = [
   {
-    accessorKey: "name",
-    header: () => "Pavadinimas",
+    accessorKey: 'name',
+    header: () => 'Pavadinimas',
     cell: ({ row }) => (
       <a
         target="_blank"
-        href={route("duties.edit", { id: row.original.id })}
+        href={route('duties.edit', { id: row.original.id })}
         class="flex-inline gap-2"
       >
         {row.original.name}
@@ -395,23 +407,23 @@ const existingDutyColumns: ColumnDef<any, any>[] = [
     ),
   },
   {
-    id: "start_date",
-    header: () => "Pradžia",
+    id: 'start_date',
+    header: () => 'Pradžia',
     cell: ({ row }) => formatStaticTime(row.original.pivot.start_date),
   },
   {
-    id: "end_date",
-    header: () => "Pabaiga",
-    cell: ({ row }) => row.original.pivot?.end_date ? formatStaticTime(row.original.pivot.end_date) : "Nenurodyta",
+    id: 'end_date',
+    header: () => 'Pabaiga',
+    cell: ({ row }) => row.original.pivot?.end_date ? formatStaticTime(row.original.pivot.end_date) : 'Nenurodyta',
   },
   {
-    id: "actions",
+    id: 'actions',
     cell: ({ row }) => (
       <Button
         variant="secondary"
         size="icon-xs"
         as="a"
-        href={route("dutiables.edit", row.original.pivot.id as string)}
+        href={route('dutiables.edit', row.original.pivot.id as string)}
         target="_blank"
       >
         <PersonEdit24Regular />
@@ -423,17 +435,16 @@ const existingDutyColumns: ColumnDef<any, any>[] = [
 const previousDutyColumns: ColumnDef<any, any>[] = [
   ...existingDutyColumns,
   {
-    id: "delete",
+    id: 'delete',
     cell: ({ row }) => (
       <Button
         size="icon-xs"
         variant="destructive"
         onClick={() =>
-          router.delete(route("dutiables.destroy", row.original.pivot.id), {
+          router.delete(route('dutiables.destroy', row.original.pivot.id), {
             preserveState: true,
             preserveScroll: true,
-          })
-        }
+          })}
       >
         <Delete24Regular />
       </Button>
@@ -443,13 +454,13 @@ const previousDutyColumns: ColumnDef<any, any>[] = [
 
 const flattenDutyOptions = computed(() => {
   return dutyOptions.flatMap(
-    (tenant) =>
+    tenant =>
       tenant.children?.flatMap(
-        (institution) =>
+        institution =>
           institution.children?.map((duty) => {
             return {
               label:
-                dutyShowMode.value === "tree"
+                dutyShowMode.value === 'tree'
                   ? duty.label
                   : `${duty.label} (${institution.label})`,
               value: duty.value,
@@ -457,16 +468,16 @@ const flattenDutyOptions = computed(() => {
             };
           }),
       ),
-  ).filter((duty) => props.permissableTenants.some((permissable) => permissable.id === duty?.tenantId));
+  ).filter(duty => props.permissableTenants.some(permissable => permissable.id === duty?.tenantId));
 });
 
-form.current_duties = props.user.current_duties?.map((duty) => duty.id);
+form.current_duties = props.user.current_duties?.map(duty => duty.id);
 
 const hasCopied = ref(false);
 
 const generatePassword = () => {
   router.post(
-    route("users.generatePassword", props.user.id as number),
+    route('users.generatePassword', props.user.id as number),
     {},
     {
       preserveState: true,
@@ -477,7 +488,7 @@ const generatePassword = () => {
 
 const deletePassword = () => {
   router.delete(
-    route("users.deletePassword", props.user.id as number),
+    route('users.deletePassword', props.user.id as number),
     {
       preserveState: true,
       preserveScroll: true,

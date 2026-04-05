@@ -11,7 +11,7 @@
         <!-- Institution name -->
         <InertiaLink :href="route('institutions.show', institution.id)"
           class="font-semibold text-sm text-zinc-900 dark:text-zinc-100 truncate">
-        {{ institution.name }}
+          {{ institution.name }}
         </InertiaLink>
         <!-- Public meetings indicator -->
         <TooltipProvider v-if="institution.has_public_meetings">
@@ -84,12 +84,22 @@
               <template v-if="institution.active_check_in">
                 {{ $t('Pranešta apie nebuvimą') }}
                 <span v-if="institution.active_check_in.end_date"> {{ $t('iki') }} {{ formatDate(institution.active_check_in.end_date) }}</span>
-                <p v-if="institution.active_check_in.note" class="mt-1 text-xs opacity-80">{{ institution.active_check_in.note }}</p>
+                <p v-if="institution.active_check_in.note" class="mt-1 text-xs opacity-80">
+                  {{ institution.active_check_in.note }}
+                </p>
               </template>
-              <template v-else-if="nextMeetingDate">{{ $t('Suplanuotas susitikimas') }} {{ formatDate(nextMeetingDate) }}</template>
-              <template v-else-if="!lastMeetingDate && !nextMeetingDate">{{ $t('Reikia susitikimo') }}</template>
-              <template v-else-if="isOverdue">{{ $t('Senokas susitikimas') }} ({{ daysSinceLast }} {{ $t('d.') }})</template>
-              <template v-else-if="isApproaching">{{ $t('Artėja susitikimo laikas') }}</template>
+              <template v-else-if="nextMeetingDate">
+                {{ $t('Suplanuotas susitikimas') }} {{ formatDate(nextMeetingDate) }}
+              </template>
+              <template v-else-if="!lastMeetingDate && !nextMeetingDate">
+                {{ $t('Reikia susitikimo') }}
+              </template>
+              <template v-else-if="isOverdue">
+                {{ $t('Senokas susitikimas') }} ({{ daysSinceLast }} {{ $t('d.') }})
+              </template>
+              <template v-else-if="isApproaching">
+                {{ $t('Artėja susitikimo laikas') }}
+              </template>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -199,112 +209,112 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { trans as $t } from 'laravel-vue-i18n'
-import { Link as InertiaLink } from '@inertiajs/vue3'
+import { computed } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+import { Link as InertiaLink } from '@inertiajs/vue3';
+import { Globe, Info, Eye, EyeOff, Bell, BellOff, Loader2, CalendarOff, CalendarCheck, CalendarClock, CalendarX, AlertTriangle, Clock } from 'lucide-vue-next';
 
-import { Button } from '@/Components/ui/button'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip'
-import Icons from '@/Types/Icons/filled'
-import { Globe, Info, Eye, EyeOff, Bell, BellOff, Loader2, CalendarOff, CalendarCheck, CalendarClock, CalendarX, AlertTriangle, Clock } from 'lucide-vue-next'
-import { formatStaticTime } from '@/Utils/IntlTime'
-import type { AtstovavimosInstitution } from '@/Pages/Admin/Dashboard/types'
+import { Button } from '@/Components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
+import Icons from '@/Types/Icons/filled';
+import { formatStaticTime } from '@/Utils/IntlTime';
+import type { AtstovavimosInstitution } from '@/Pages/Admin/Dashboard/types';
 
 const props = defineProps<{
-  institution: AtstovavimosInstitution
-  showActions?: boolean
-  showSubscriptionActions?: boolean
-  canScheduleMeeting?: boolean
-  canAddCheckIn?: boolean
-  followLoading?: boolean
-  muteLoading?: boolean
-}>()
+  institution: AtstovavimosInstitution;
+  showActions?: boolean;
+  showSubscriptionActions?: boolean;
+  canScheduleMeeting?: boolean;
+  canAddCheckIn?: boolean;
+  followLoading?: boolean;
+  muteLoading?: boolean;
+}>();
 
 const emit = defineEmits<{
-  'schedule-meeting': [institutionId: string]
-  'add-check-in': [institutionId: string]
-  'remove-active-check-in': [institutionId: string]
-  'toggle-follow': [institutionId: string]
-  'toggle-mute': [institutionId: string]
-}>()
+  'schedule-meeting': [institutionId: string];
+  'add-check-in': [institutionId: string];
+  'remove-active-check-in': [institutionId: string];
+  'toggle-follow': [institutionId: string];
+  'toggle-mute': [institutionId: string];
+}>();
 
 // Helper functions
 const lastMeetingDate = computed(() => {
-  if (!Array.isArray(props.institution.meetings)) return undefined
-  const now = new Date()
+  if (!Array.isArray(props.institution.meetings)) return undefined;
+  const now = new Date();
   const past = props.institution.meetings
     .map(m => new Date(m.start_time))
     .filter(d => d <= now)
-    .sort((a, b) => b.getTime() - a.getTime())
-  return past[0]
-})
+    .sort((a, b) => b.getTime() - a.getTime());
+  return past[0];
+});
 
 const nextMeetingDate = computed(() => {
-  if (!Array.isArray(props.institution.meetings)) return undefined
-  const now = new Date()
+  if (!Array.isArray(props.institution.meetings)) return undefined;
+  const now = new Date();
   const upcoming = props.institution.meetings
     .map(m => new Date(m.start_time))
     .filter(d => d > now)
-    .sort((a, b) => a.getTime() - b.getTime())
-  return upcoming[0]
-})
+    .sort((a, b) => a.getTime() - b.getTime());
+  return upcoming[0];
+});
 
 const daysSinceLast = computed(() => {
   if (typeof props.institution.days_since_last_meeting === 'number') {
-    return props.institution.days_since_last_meeting
+    return props.institution.days_since_last_meeting;
   }
-  if (!lastMeetingDate.value) return undefined
-  const diffMs = Date.now() - lastMeetingDate.value.getTime()
-  return Math.floor(diffMs / (1000 * 60 * 60 * 24))
-})
+  if (!lastMeetingDate.value) return undefined;
+  const diffMs = Date.now() - lastMeetingDate.value.getTime();
+  return Math.floor(diffMs / (1000 * 60 * 60 * 24));
+});
 
 // Get periodicity from institution (accessor handles inheritance from types, defaults to 30)
 const periodicity = computed(() => {
-  return (props.institution as any).meeting_periodicity_days ?? 30
-})
+  return (props.institution as any).meeting_periodicity_days ?? 30;
+});
 
 // Calculate thresholds based on periodicity
-const APPROACHING_THRESHOLD = 0.8 // 80% of periodicity
+const APPROACHING_THRESHOLD = 0.8; // 80% of periodicity
 const isApproaching = computed(() => {
-  if (daysSinceLast.value === undefined) return false
-  return daysSinceLast.value >= (periodicity.value * APPROACHING_THRESHOLD) && daysSinceLast.value <= periodicity.value
-})
+  if (daysSinceLast.value === undefined) return false;
+  return daysSinceLast.value >= (periodicity.value * APPROACHING_THRESHOLD) && daysSinceLast.value <= periodicity.value;
+});
 
 const isOverdue = computed(() => {
-  if (daysSinceLast.value === undefined) return false
-  return daysSinceLast.value > periodicity.value
-})
+  if (daysSinceLast.value === undefined) return false;
+  return daysSinceLast.value > periodicity.value;
+});
 
 const statusDotClass = computed(() => {
-  const hasUpcoming = (props.institution.upcoming_meetings_count || 0) > 0
+  const hasUpcoming = (props.institution.upcoming_meetings_count || 0) > 0;
   if (hasUpcoming || props.institution.active_check_in) {
-    return 'bg-emerald-400'
+    return 'bg-emerald-400';
   }
   if (isOverdue.value) {
-    return 'bg-orange-400'
+    return 'bg-orange-400';
   }
   if (isApproaching.value) {
-    return 'bg-amber-400'
+    return 'bg-amber-400';
   }
   if (!lastMeetingDate.value) {
-    return 'bg-zinc-400'
+    return 'bg-zinc-400';
   }
-  return 'bg-zinc-400'
-})
+  return 'bg-zinc-400';
+});
 
 // Subscription status helpers
-const subscription = computed(() => props.institution.subscription)
-const isDutyBased = computed(() => subscription.value?.is_duty_based ?? false)
-const isFollowed = computed(() => subscription.value?.is_followed ?? false)
-const isMuted = computed(() => subscription.value?.is_muted ?? false)
+const subscription = computed(() => props.institution.subscription);
+const isDutyBased = computed(() => subscription.value?.is_duty_based ?? false);
+const isFollowed = computed(() => subscription.value?.is_followed ?? false);
+const isMuted = computed(() => subscription.value?.is_muted ?? false);
 
 // Only show subscription actions for non-duty-based institutions (or when explicitly enabled)
 const canShowSubscriptionActions = computed(() => {
-  return props.showSubscriptionActions && !isDutyBased.value
-})
+  return props.showSubscriptionActions && !isDutyBased.value;
+});
 
 function formatDate(date: Date | string): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date
-  return formatStaticTime(dateObj, { month: 'short', day: 'numeric' })
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return formatStaticTime(dateObj, { month: 'short', day: 'numeric' });
 }
 </script>

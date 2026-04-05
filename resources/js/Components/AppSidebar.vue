@@ -138,7 +138,7 @@
       </SidebarMenu>
       <!-- Version info -->
       <div class="flex items-center justify-center gap-1.5 px-3 py-1 text-[11px] text-muted-foreground/60 group-data-[collapsible=icon]:hidden">
-        <a :href="`${docsBase}/changelog/`" class="hover:text-muted-foreground transition-colors" @click.prevent="handleSecondaryNavClick(`${docsBase}/changelog/`)">
+        <a :href="`${docsBase}/changelog/`" target="_blank" rel="noopener noreferrer" class="hover:text-muted-foreground transition-colors" @click="markDocsUpdatesSeen">
           {{ latestVersion }}{{ lastUpdateDate ? ` · ${lastUpdateDate}` : '' }}
         </a>
         <span>·</span>
@@ -222,12 +222,12 @@ import {
   Github,
   Bell,
   Search,
-  type LucideIcon
-} from 'lucide-vue-next'
-import { Link, router, usePage, useForm } from '@inertiajs/vue3'
-import { loadLanguageAsync, trans as $t } from 'laravel-vue-i18n'
-import { computed, markRaw, ref } from 'vue'
-import { useDark } from '@vueuse/core'
+  type LucideIcon,
+} from 'lucide-vue-next';
+import { Link, router, usePage, useForm } from '@inertiajs/vue3';
+import { loadLanguageAsync, trans as $t } from 'laravel-vue-i18n';
+import { computed, markRaw, ref } from 'vue';
+import { useDark } from '@vueuse/core';
 
 import NavMain from './NavMain.vue';
 import NavSecondary from './NavSecondary.vue';
@@ -235,9 +235,9 @@ import NavQuickActions from './NavQuickActions.vue';
 import FollowedInstitutionsHotbar from './Sidebar/FollowedInstitutionsHotbar.vue';
 import SidebarStartFM from './SidebarStartFM.vue';
 import AppLogo from './AppLogo.vue';
-import { useDocsUpdateIndicator } from '@/Composables/useDocsUpdateIndicator';
 
-import NewMeetingDialog from '@/Components/Dialogs/NewMeetingDialog.vue'
+import { useDocsUpdateIndicator } from '@/Composables/useDocsUpdateIndicator';
+import NewMeetingDialog from '@/Components/Dialogs/NewMeetingDialog.vue';
 import {
   Sidebar,
   SidebarContent,
@@ -250,7 +250,7 @@ import {
   SidebarSeparator,
   SidebarRail,
   type SidebarProps,
-} from '@/Components/ui/sidebar'
+} from '@/Components/ui/sidebar';
 import {
   Dialog,
   DialogContent,
@@ -258,17 +258,17 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/Components/ui/dialog'
-import { Button } from '@/Components/ui/button'
-import { Input } from '@/Components/ui/input'
-import { Label } from '@/Components/ui/label'
-import { Checkbox } from '@/Components/ui/checkbox'
-import { Textarea } from '@/Components/ui/textarea'
+} from '@/Components/ui/dialog';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { Checkbox } from '@/Components/ui/checkbox';
+import { Textarea } from '@/Components/ui/textarea';
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from '@/Components/ui/avatar'
+} from '@/Components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -277,13 +277,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/Components/ui/dropdown-menu'
-import { capitalize } from '@/Utils/String'
-
+} from '@/Components/ui/dropdown-menu';
+import { capitalize } from '@/Utils/String';
 
 const props = withDefaults(defineProps<SidebarProps>(), {
   variant: 'inset',
-})
+});
 
 const isDark = useDark();
 const { lastUpdateDate, latestVersion, markAsSeen: markDocsUpdatesSeen } = useDocsUpdateIndicator();
@@ -292,14 +291,14 @@ const docsBase = computed(() => usePage().props.app.locale === 'en' ? '/docs/en'
 
 // Toggle dark mode function
 const toggleDarkMode = () => {
-  isDark.value = !isDark.value
-}
+  isDark.value = !isDark.value;
+};
 
 // Change locale function
 const changeLocale = () => {
-  const toLocale = usePage().props.app.locale === "en" ? "lt" : "en"
-  router.reload({ data: { lang: toLocale }, onSuccess: () => loadLanguageAsync(toLocale) })
-}
+  const toLocale = usePage().props.app.locale === 'en' ? 'lt' : 'en';
+  router.reload({ data: { lang: toLocale }, onSuccess: () => loadLanguageAsync(toLocale) });
+};
 
 // Current user data
 const currentUser = computed(() => {
@@ -307,25 +306,25 @@ const currentUser = computed(() => {
     name: '',
     email: '',
     profile_photo_path: '',
-  }
-})
+  };
+});
 
 // Primary navigation items
 const navMainItems = computed(() => {
-  const items = []
+  const items = [];
 
   // Representation (ViSAK - Virtualus Studentų Atstovų Koordinatorius)
   if (usePage().props.auth?.can.create.meeting) {
     items.push({
-      title: "ViSAK",
+      title: 'ViSAK',
       url: route('dashboard.atstovavimas'),
       icon: markRaw(GraduationCap),
-      isActive: route().current('dashboard.atstovavimas') ||
-        route().current('meetings.show') ||
-        route().current('institutions.show') ||
-        route().current('duties.show'),
+      isActive: route().current('dashboard.atstovavimas')
+        || route().current('meetings.show')
+        || route().current('institutions.show')
+        || route().current('duties.show'),
       dataTour: 'nav-visak',
-    })
+    });
 
     // Search (Paieška) - meetings and agenda items search pages
     // items.push({
@@ -344,11 +343,11 @@ const navMainItems = computed(() => {
   // Website (Svetainė)
   if (usePage().props.auth?.can.create.page) {
     items.push({
-      title: $t("Svetainė"),
+      title: $t('Svetainė'),
       url: route('dashboard.svetaine'),
       icon: markRaw(Globe),
       isActive: false,
-    })
+    });
   }
 
   // Reservations
@@ -356,10 +355,10 @@ const navMainItems = computed(() => {
     title: $t('Rezervacijos'),
     url: route('dashboard.reservations'),
     icon: markRaw(Bookmark),
-    isActive: route().current('dashboard.reservations*') ||
-      route().current('reservations.create') ||
-      route().current('reservations.show'),
-  })
+    isActive: route().current('dashboard.reservations*')
+      || route().current('reservations.create')
+      || route().current('reservations.show'),
+  });
 
   // Settings/Admin (Administravimas) - only show if user can access administration
   if (usePage().props.auth?.can.accessAdministration) {
@@ -369,11 +368,11 @@ const navMainItems = computed(() => {
       icon: markRaw(Settings),
       isActive: route().current('administration*'),
       dataTour: 'nav-administravimas',
-    })
+    });
   }
 
-  return items
-})
+  return items;
+});
 
 // Secondary navigation items (bottom) - help section only
 const navSecondaryItems = computed(() => {
@@ -390,13 +389,13 @@ const navSecondaryItems = computed(() => {
       icon: markRaw(MessageSquare),
       dataTour: 'nav-feedback',
     },
-  ]
-})
+  ];
+});
 
 // Handle secondary nav clicks
 const handleSecondaryNavClick = (url: string) => {
   if (url === '#feedback') {
-    showFeedbackDialog.value = true
+    showFeedbackDialog.value = true;
   }
   else if (url.startsWith('http')) {
     window.open(url, '_blank');
@@ -405,75 +404,75 @@ const handleSecondaryNavClick = (url: string) => {
     if (url.startsWith('/docs')) {
       markDocsUpdatesSeen();
     }
-    router.visit(url);
+    window.open(url, '_blank');
   }
 };
 
 // Meeting modal state
-const showMeetingModal = ref(false)
+const showMeetingModal = ref(false);
 
 // Handle quick actions
 const handleNewMeeting = () => {
-  showMeetingModal.value = true
-}
+  showMeetingModal.value = true;
+};
 
 const handleNewNews = () => {
-  router.visit(route('news.create'))
-}
+  router.visit(route('news.create'));
+};
 
 const handleNewReservation = () => {
-  router.visit(route('reservations.create'))
-}
+  router.visit(route('reservations.create'));
+};
 
 // Notification count
 const notificationCount = computed(() => {
-  return usePage().props.auth?.user?.unread_notifications_count || 0
-})
+  return usePage().props.auth?.user?.unread_notifications_count || 0;
+});
 
 // Public website URL
 const publicWebsiteUrl = computed(() => {
-  const page = usePage()
+  const page = usePage();
   return route('home', {
     lang: page.props.app.locale,
-    subdomain: page.props.tenant?.subdomain ?? 'www'
-  })
-})
+    subdomain: page.props.tenant?.subdomain ?? 'www',
+  });
+});
 
 // Feedback dialog state and form
-const showFeedbackDialog = ref(false)
-const feedbackLoading = ref(false)
+const showFeedbackDialog = ref(false);
+const feedbackLoading = ref(false);
 
 const feedbackForm = useForm({
   feedback: null as string | null,
   anonymous: false,
   href: typeof window !== 'undefined' ? window.location.href : '',
   selectedText: null as string | null,
-})
+});
 
 // Handle feedback submission
 const handleSendFeedback = () => {
-  feedbackLoading.value = true
+  feedbackLoading.value = true;
   feedbackForm.post(route('feedback.send'), {
     onSuccess: () => {
-      showFeedbackDialog.value = false
-      feedbackLoading.value = false
-      feedbackForm.reset()
+      showFeedbackDialog.value = false;
+      feedbackLoading.value = false;
+      feedbackForm.reset();
     },
     onError: () => {
-      feedbackLoading.value = false
-    }
-  })
-}
+      feedbackLoading.value = false;
+    },
+  });
+};
 
 // Handle logout
 const handleLogout = () => {
   router.post(route('logout'), {}, {
     onSuccess: () => {
-      window.location.href = route('login')
+      window.location.href = route('login');
     },
     onError: () => {
-      console.error('Logout failed.')
-    }
+      console.error('Logout failed.');
+    },
   });
-}
+};
 </script>

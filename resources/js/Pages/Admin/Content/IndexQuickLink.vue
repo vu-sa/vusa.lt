@@ -10,19 +10,19 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t } from "laravel-vue-i18n";
-import { type ColumnDef } from '@tanstack/vue-table';
-import { ref, computed } from "vue";
+import { trans as $t } from 'laravel-vue-i18n';
+import type { ColumnDef } from '@tanstack/vue-table';
+import { ref, computed } from 'vue';
 
-import Icons from "@/Types/Icons/regular";
-import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
-import { createStandardActionsColumn } from "@/Composables/useTableActions";
+import Icons from '@/Types/Icons/regular';
+import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
+import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import {
   createTenantColumn,
 } from '@/Utils/DataTableColumns';
-import {
-  type IndexTablePageProps
-} from "@/Types/TableConfigTypes";
+import type {
+  IndexTablePageProps,
+} from '@/Types/TableConfigTypes';
 
 const props = defineProps<{
   quickLinks: {
@@ -51,12 +51,12 @@ const getRowId = (row: App.Entities.QuickLink) => {
 
 const columns = computed<ColumnDef<App.Entities.QuickLink, any>[]>(() => [
   {
-    accessorKey: "text",
-    header: () => "Pavadinimas",
+    accessorKey: 'text',
+    header: () => 'Pavadinimas',
     cell: ({ row }) => {
       return (
-        <div class="max-w-[300px] truncate" title={row.getValue("text") as string}>
-          {row.getValue("text")}
+        <div class="max-w-[300px] truncate" title={row.getValue('text') as string}>
+          {row.getValue('text')}
         </div>
       );
     },
@@ -65,31 +65,33 @@ const columns = computed<ColumnDef<App.Entities.QuickLink, any>[]>(() => [
   },
   createTenantColumn<App.Entities.QuickLink>(),
   {
-    accessorKey: "lang",
-    header: () => "Kalba",
+    accessorKey: 'lang',
+    header: () => 'Kalba',
     cell: ({ row }) => {
-      return row.original.lang === "lt" ? "🇱🇹" : "🇬🇧";
+      return row.original.lang === 'lt' ? '🇱🇹' : '🇬🇧';
     },
     size: 80,
   },
   {
-    accessorKey: "link",
-    header: () => "Nuoroda",
+    accessorKey: 'link',
+    header: () => 'Nuoroda',
     cell: ({ row }) => {
-      const link = row.original.link;
-      return link ? (
-        <div class="max-w-[200px] truncate" title={link}>
-          {link}
-        </div>
-      ) : null;
+      const { link } = row.original;
+      return link
+        ? (
+            <div class="max-w-[200px] truncate" title={link}>
+              {link}
+            </div>
+          )
+        : null;
     },
     size: 200,
   },
-  createStandardActionsColumn<App.Entities.QuickLink>("quickLinks", {
+  createStandardActionsColumn<App.Entities.QuickLink>('quickLinks', {
     canView: false,
     canEdit: true,
     canDelete: true,
-  })
+  }),
 ]);
 
 const tableConfig = computed<IndexTablePageProps<App.Entities.QuickLink>>(() => {
@@ -109,7 +111,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.QuickLink>>(() => 
     enableColumnVisibility: false,
     enableRowSelection: false,
 
-    headerTitle: "Greitosios nuorodos",
+    headerTitle: 'Greitosios nuorodos',
     icon: Icons.QUICK_LINK,
     createRoute: route('quickLinks.create'),
     canCreate: true,

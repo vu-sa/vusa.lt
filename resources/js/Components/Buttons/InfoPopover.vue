@@ -14,8 +14,9 @@
 </template>
 
 <script setup lang="tsx">
-import { Button } from "@/Components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
+import { Button } from '@/Components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
+
 defineProps<{
   color?: string;
 }>();

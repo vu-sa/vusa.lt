@@ -13,9 +13,9 @@
 </template>
 
 <script setup lang="ts">
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 
-defineEmits(["close"]);
+defineEmits(['close']);
 
 defineProps<{
   show: boolean;

@@ -1,4 +1,4 @@
-import { ModelEnum } from "@/Types/enums";
+import { ModelEnum } from '@/Types/enums';
 
 const uppercase = (string: string) => {
   return string[0].toUpperCase() + string.substring(1);
@@ -13,12 +13,12 @@ export const modelTypes = {
     uppercase(ModelEnum.TYPE),
   ],
   sharepointFile: [
-    "Ataskaitos",
-    "Metodinė medžiaga",
-    "Protokolai",
-    "Pristatymai",
-    "Šablonai",
-    "Veiklą reglamentuojantys dokumentai",
+    'Ataskaitos',
+    'Metodinė medžiaga',
+    'Protokolai',
+    'Pristatymai',
+    'Šablonai',
+    'Veiklą reglamentuojantys dokumentai',
   ],
   type: [
     uppercase(ModelEnum.DUTY),
@@ -31,14 +31,14 @@ export const modelStatus = {
 };
 
 export const documentTemplate = {
-  name: "",
+  name: '',
   file: {
-    mimeType: "",
+    mimeType: '',
   },
   createdDateTime: {
-    date: "",
+    date: '',
   },
   size: 0,
-  type: "",
-  description: "",
+  type: '',
+  description: '',
 };

@@ -13,7 +13,7 @@
           <template #prefix>
             <SearchIcon class="h-4 w-4 text-muted-foreground" />
           </template>
-          <template #suffix v-if="searchQuery">
+          <template v-if="searchQuery" #suffix>
             <Button variant="ghost" size="icon" @click="searchQuery = ''">
               <XIcon class="h-4 w-4" />
             </Button>
@@ -22,7 +22,7 @@
       </div>
       <div class="flex items-center gap-2">
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+          <DropdownMenuTrigger as-child>
             <Button variant="outline" size="sm">
               <ListFilterIcon class="mr-2 h-4 w-4" />
               {{ $t("Filtrai") }}
@@ -54,9 +54,11 @@
       <section v-if="showFavoritesSection" class="mb-8">
         <h2 class="mb-4 text-xl font-semibold">
           {{ $t("Mėgstamiausi") }}
-          <Badge variant="outline" class="ml-2">{{
-            favoriteMenuItems.length
-          }}</Badge>
+          <Badge variant="outline" class="ml-2">
+            {{
+              favoriteMenuItems.length
+            }}
+          </Badge>
         </h2>
         <div
           class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
@@ -142,9 +144,11 @@
       <section v-if="category.show" class="my-8">
         <h2 class="mb-4 text-xl font-semibold flex items-center">
           {{ category.category }}
-          <Badge variant="outline" class="ml-2">{{
-            category.visibleItems.length
-          }}</Badge>
+          <Badge variant="outline" class="ml-2">
+            {{
+              category.visibleItems.length
+            }}
+          </Badge>
         </h2>
         <div
           class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
@@ -192,16 +196,12 @@
 </template>
 
 <script setup lang="ts">
-import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
-import Icons from "@/Types/Icons/regular";
-import { capitalize } from "@/Utils/String";
-import { Link, usePage } from "@inertiajs/vue3";
-import { useStorage } from "@vueuse/core";
-import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import { computed, ref, type Component } from "vue";
+import { Link, usePage } from '@inertiajs/vue3';
+import { useStorage } from '@vueuse/core';
+import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+import { computed, ref, type Component } from 'vue';
 
 // Icons
-import IconFlowchart from "~icons/fluent/flowchart20-regular";
 import {
   SearchIcon,
   StarIcon,
@@ -209,13 +209,18 @@ import {
   ListFilterIcon,
   ChevronDownIcon,
   AlertCircleIcon,
-} from "lucide-vue-next";
+} from 'lucide-vue-next';
+
+import IconFlowchart from '~icons/fluent/flowchart20-regular';
+import { capitalize } from '@/Utils/String';
+import Icons from '@/Types/Icons/regular';
+import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 
 // UI components
-import { Button } from "@/Components/ui/button";
-import { Input } from "@/Components/ui/input";
-import { Badge } from "@/Components/ui/badge";
-import { Alert, AlertTitle, AlertDescription } from "@/Components/ui/alert";
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Badge } from '@/Components/ui/badge';
+import { Alert, AlertTitle, AlertDescription } from '@/Components/ui/alert';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -223,35 +228,35 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuCheckboxItem,
-} from "@/Components/ui/dropdown-menu";
+} from '@/Components/ui/dropdown-menu';
 import {
   usePageBreadcrumbs,
   BreadcrumbHelpers,
-} from "@/Composables/useBreadcrumbsUnified";
+} from '@/Composables/useBreadcrumbsUnified';
 
 const { auth } = usePage().props;
 
 // Set up breadcrumbs
-usePageBreadcrumbs([{ label: $t("Administravimas"), icon: Icons.TYPE }]);
+usePageBreadcrumbs([{ label: $t('Administravimas'), icon: Icons.TYPE }]);
 
-type MenuItemType = {
+interface MenuItemType {
   title: string;
   icon: Component;
   href: string;
   show: boolean | undefined;
-};
+}
 
-type MenuItemsType = {
+interface MenuItemsType {
   category: string;
   items: MenuItemType[];
   visibleItems: MenuItemType[];
   show: boolean | undefined;
-};
+}
 
 // Search and filter states
-const searchQuery = ref("");
+const searchQuery = ref('');
 const showOnlyFavorites = ref(false);
-const favoriteItems = useStorage<string[]>("favoriteItems", []);
+const favoriteItems = useStorage<string[]>('favoriteItems', []);
 const selectedCategories = ref<Record<string, boolean>>({});
 
 // Helper functions for favorites
@@ -265,7 +270,8 @@ const toggleFavorite = (item: MenuItemType) => {
   const index = favoriteItems.value.indexOf(identifier);
   if (index === -1) {
     favoriteItems.value.push(identifier);
-  } else {
+  }
+  else {
     favoriteItems.value.splice(index, 1);
   }
 };
@@ -280,66 +286,66 @@ const matchesSearch = (item: MenuItemType): boolean => {
 // Menu items definition - Reorganized to avoid duplications
 const menuItems = computed(() => [
   {
-    category: $t("Žmonės"),
+    category: $t('Žmonės'),
     items: [
       {
-        title: $t("Vartotojai"),
+        title: $t('Vartotojai'),
         icon: Icons.USER,
-        href: route("users.index"),
+        href: route('users.index'),
         show: auth?.can.create.user,
       },
       {
-        title: $t("Pareigybės"),
+        title: $t('Pareigybės'),
         icon: Icons.DUTY,
-        href: route("duties.index"),
+        href: route('duties.index'),
         show: auth?.can.create.duty,
       },
       {
-        title: $t("Narystės"),
+        title: $t('Narystės'),
         icon: Icons.INSTITUTION,
-        href: route("memberships.index"),
+        href: route('memberships.index'),
         show: auth?.can.create.membership,
       },
       {
-        title: $t("Mokymai"),
+        title: $t('Mokymai'),
         icon: Icons.TRAINING,
-        href: route("trainings.index"),
+        href: route('trainings.index'),
         show: auth?.can.create.training,
       },
       {
-        title: $t("Studijų programos"),
+        title: $t('Studijų programos'),
         icon: Icons.STUDY_PROGRAM,
-        href: route("studyPrograms.index"),
+        href: route('studyPrograms.index'),
         show: auth?.can.create.studyProgram,
       },
     ],
     show:
-      auth?.can.create.user ||
-      auth?.can.create.duty ||
-      auth?.can.create.membership ||
-      auth?.can.create.training ||
-      auth?.can.create.studyProgram,
+      auth?.can.create.user
+      || auth?.can.create.duty
+      || auth?.can.create.membership
+      || auth?.can.create.training
+      || auth?.can.create.studyProgram,
     visibleItems: [] as MenuItemType[],
   },
   {
-    category: $t("Organizacijos"),
+    category: $t('Organizacijos'),
     items: [
       {
-        title: $t("Institucijos"),
+        title: $t('Institucijos'),
         icon: Icons.INSTITUTION,
-        href: route("institutions.index"),
+        href: route('institutions.index'),
         show: auth?.can.create.institution,
       },
       {
-        title: $t("Padaliniai"),
+        title: $t('Padaliniai'),
         icon: Icons.TENANT,
-        href: route("tenants.index"),
+        href: route('tenants.index'),
         show: auth?.can.create.tenant,
       },
       {
-        title: $t("Institucijų grafa"),
+        title: $t('Institucijų grafa'),
         icon: IconFlowchart,
-        href: route("institutionGraph"),
+        href: route('institutionGraph'),
         show: auth?.can.create.institution,
       },
     ],
@@ -347,110 +353,110 @@ const menuItems = computed(() => [
     visibleItems: [] as MenuItemType[],
   },
   {
-    category: $t("Svetainė"),
+    category: $t('Svetainė'),
     items: [
       {
-        title: $t("Puslapiai"),
+        title: $t('Puslapiai'),
         icon: Icons.PAGE,
-        href: route("pages.index"),
+        href: route('pages.index'),
         show: auth?.can.create.page,
       },
       {
-        title: $t("Naujienos"),
+        title: $t('Naujienos'),
         icon: Icons.NEWS,
-        href: route("news.index"),
+        href: route('news.index'),
         show: auth?.can.create.news,
       },
       {
-        title: $t("Greitosios nuorodos"),
+        title: $t('Greitosios nuorodos'),
         icon: Icons.QUICK_LINK,
-        href: route("quickLinks.index"),
+        href: route('quickLinks.index'),
         show: auth?.can.create.quickLink,
       },
       {
-        title: $t("Baneriai"),
+        title: $t('Baneriai'),
         icon: Icons.BANNER,
-        href: route("banners.index"),
+        href: route('banners.index'),
         show: auth?.can.create.banner,
       },
       {
-        title: $t("Navigacija"),
+        title: $t('Navigacija'),
         icon: Icons.NAVIGATION,
-        href: route("navigation.index"),
+        href: route('navigation.index'),
         show: auth?.can.create.navigation,
       },
       {
-        title: $t("Kalendorius"),
+        title: $t('Kalendorius'),
         icon: Icons.CALENDAR,
-        href: route("calendar.index"),
+        href: route('calendar.index'),
         show: auth?.can.create.calendar,
       },
       {
-        title: $t("Kategorijos"),
+        title: $t('Kategorijos'),
         icon: Icons.CATEGORY,
-        href: route("categories.index"),
+        href: route('categories.index'),
         show: auth?.can.create.category,
       },
       {
-        title: $t("Žymos"),
+        title: $t('Žymos'),
         icon: Icons.TAG,
-        href: route("tags.index"),
+        href: route('tags.index'),
         show: auth?.can.create.tag,
       },
     ],
     show:
-      auth?.can.create.page ||
-      auth?.can.create.news ||
-      auth?.can.create.quickLink ||
-      auth?.can.create.banner ||
-      auth?.can.create.navigation ||
-      auth?.can.create.calendar ||
-      auth?.can.create.category ||
-      auth?.can.create.tag,
+      auth?.can.create.page
+      || auth?.can.create.news
+      || auth?.can.create.quickLink
+      || auth?.can.create.banner
+      || auth?.can.create.navigation
+      || auth?.can.create.calendar
+      || auth?.can.create.category
+      || auth?.can.create.tag,
     visibleItems: [] as MenuItemType[],
   },
   {
-    category: $t("Failai ir dokumentai"),
+    category: $t('Failai ir dokumentai'),
     items: [
       {
-        title: $t("Svetainės failai"),
+        title: $t('Svetainės failai'),
         icon: Icons.SHAREPOINT_FILE,
-        href: route("files.index"),
+        href: route('files.index'),
         show: auth?.can.create.news || auth?.can.create.page,
       },
       {
-        title: $t("Dokumentai"),
+        title: $t('Dokumentai'),
         icon: Icons.DOCUMENT,
-        href: route("documents.index"),
+        href: route('documents.index'),
         show: auth?.can.create.document,
       },
       {
-        title: $t("Sharepoint failai"),
+        title: $t('Sharepoint failai'),
         icon: Icons.SHAREPOINT_FILE,
-        href: route("sharepointFiles.index"),
+        href: route('sharepointFiles.index'),
         show: auth?.can.create.sharepointFile,
       },
     ],
     show:
-      auth?.can.create.news ||
-      auth?.can.create.page ||
-      auth?.can.create.document ||
-      auth?.can.create.sharepointFile,
+      auth?.can.create.news
+      || auth?.can.create.page
+      || auth?.can.create.document
+      || auth?.can.create.sharepointFile,
     visibleItems: [] as MenuItemType[],
   },
   {
-    category: $t("Atstovavimas"),
+    category: $t('Atstovavimas'),
     items: [
       {
-        title: $t("Susitikimai"),
+        title: $t('Susitikimai'),
         icon: Icons.MEETING,
-        href: route("meetings.index"),
+        href: route('meetings.index'),
         show: auth?.can.create.meeting,
       },
       {
-        title: capitalize($tChoice("entities.problem.model", 2)),
+        title: capitalize($tChoice('entities.problem.model', 2)),
         icon: Icons.PROBLEM,
-        href: route("problems.index"),
+        href: route('problems.index'),
         show: auth?.can.create.problem,
       },
     ],
@@ -458,24 +464,24 @@ const menuItems = computed(() => [
     visibleItems: [] as MenuItemType[],
   },
   {
-    category: $t("Rezervacijos"),
+    category: $t('Rezervacijos'),
     items: [
       {
-        title: capitalize($tChoice("entities.reservation.model", 2)),
+        title: capitalize($tChoice('entities.reservation.model', 2)),
         icon: Icons.RESERVATION,
-        href: route("reservations.index"),
+        href: route('reservations.index'),
         show: auth?.can.create.reservation,
       },
       {
-        title: capitalize($tChoice("entities.resource.model", 2)),
+        title: capitalize($tChoice('entities.resource.model', 2)),
         icon: Icons.RESOURCE,
-        href: route("resources.index"),
+        href: route('resources.index'),
         show: auth?.can.create.resource,
       },
       {
-        title: capitalize($tChoice("entities.resource_category.model", 2)),
+        title: capitalize($tChoice('entities.resource_category.model', 2)),
         icon: Icons.CATEGORY,
-        href: route("resourceCategories.index"),
+        href: route('resourceCategories.index'),
         show: auth?.can.create.resource,
       },
     ],
@@ -483,11 +489,11 @@ const menuItems = computed(() => [
     visibleItems: [] as MenuItemType[],
   },
   {
-    category: $t("Formos"),
+    category: $t('Formos'),
     items: [
       {
-        title: $t("Formos"),
-        href: route("forms.index"),
+        title: $t('Formos'),
+        href: route('forms.index'),
         icon: Icons.FORM,
         show: auth?.can.create.form,
       },
@@ -496,51 +502,51 @@ const menuItems = computed(() => [
     visibleItems: [] as MenuItemType[],
   },
   {
-    category: $t("Sistema"),
+    category: $t('Sistema'),
     items: [
       {
-        title: $t("Rolės"),
+        title: $t('Rolės'),
         icon: Icons.ROLE,
-        href: route("roles.index"),
+        href: route('roles.index'),
         show: auth?.can.create.role,
       },
       {
-        title: $t("Leidimai"),
+        title: $t('Leidimai'),
         icon: Icons.PERMISSION,
-        href: route("permissions.index"),
+        href: route('permissions.index'),
         show: auth?.can.create.permission,
       },
       {
-        title: $t("Tipai"),
+        title: $t('Tipai'),
         icon: Icons.TYPE,
-        href: route("types.index"),
+        href: route('types.index'),
         show: auth?.can.create.type,
       },
       {
-        title: $t("Ryšiai"),
+        title: $t('Ryšiai'),
         icon: Icons.RELATIONSHIP,
-        href: route("relationships.index"),
+        href: route('relationships.index'),
         show: auth?.can.create.relationship,
       },
       {
-        title: $t("Sistemos būsena"),
+        title: $t('Sistemos būsena'),
         icon: Icons.NOTIFICATION,
-        href: route("systemStatus"),
+        href: route('systemStatus'),
         show: auth?.can.create.role || auth?.can.create.permission,
       },
       {
         title: $t('settings.title'),
         icon: Icons.SETTING,
         href: route('settings.index'),
-        show: auth?.can.manageSettings
+        show: auth?.can.manageSettings,
       },
     ],
     show:
-      auth?.can.create.role ||
-      auth?.can.create.permission ||
-      auth?.can.create.type ||
-      auth?.can.create.relationship ||
-      auth?.can.manageSettings,
+      auth?.can.create.role
+      || auth?.can.create.permission
+      || auth?.can.create.type
+      || auth?.can.create.relationship
+      || auth?.can.manageSettings,
     visibleItems: [] as MenuItemType[],
   },
 ]);
@@ -548,8 +554,8 @@ const menuItems = computed(() => [
 // Get unique categories for filter dropdown
 const uniqueCategories = computed(() => {
   return menuItems.value
-    .filter((category) => category.show === true)
-    .map((category) => category.category);
+    .filter(category => category.show === true)
+    .map(category => category.category);
 });
 
 // Initialize category filters if not already set
@@ -568,12 +574,12 @@ const filteredMenuItems = computed(() => {
 
       // Filter items based on search and visibility
       let filteredItems = category.items.filter(
-        (item) => item.show === true && matchesSearch(item)
+        item => item.show === true && matchesSearch(item),
       );
 
       // Apply favorites filter if needed
       if (showOnlyFavorites.value) {
-        filteredItems = filteredItems.filter((item) => isFavorite(item));
+        filteredItems = filteredItems.filter(item => isFavorite(item));
       }
 
       // Store filtered items for display
@@ -584,9 +590,9 @@ const filteredMenuItems = computed(() => {
     .filter((category) => {
       // Keep category if it's enabled in filters and has visible items
       return (
-        category.show === true &&
-        category.visibleItems.length > 0 &&
-        selectedCategories.value[category.category]
+        category.show === true
+        && category.visibleItems.length > 0
+        && selectedCategories.value[category.category]
       );
     });
 });
@@ -594,11 +600,11 @@ const filteredMenuItems = computed(() => {
 // Get all favorite menu items across categories
 const favoriteMenuItems = computed(() => {
   // Collect all items across all categories
-  const allItems = menuItems.value.flatMap((category) => category.items);
+  const allItems = menuItems.value.flatMap(category => category.items);
 
   // Filter for favorites that are visible and match search
   return allItems.filter(
-    (item) => item.show === true && isFavorite(item) && matchesSearch(item)
+    item => item.show === true && isFavorite(item) && matchesSearch(item),
   );
 });
 
@@ -610,7 +616,7 @@ const showFavoritesSection = computed(() => {
 // Check if any items are visible after filtering
 const hasVisibleItems = computed(() => {
   return filteredMenuItems.value.some(
-    (category) => category.visibleItems.length > 0
+    category => category.visibleItems.length > 0,
   );
 });
 
@@ -621,12 +627,12 @@ const quickActions = computed(() => {
   // Add create problem action (marked as new)
   if (auth?.can.create.problem) {
     actions.push({
-      title: $t("Problema"),
+      title: $t('Problema'),
       icon: Icons.PROBLEM,
-      href: route("problems.index"),
+      href: route('problems.index'),
       isNew: true,
       description: $t(
-        "Užregistruokite problemą, su kuria susidūrėte savo veikloje, aprašykite kaip ją sprendėte bei padėkite kitiems išspręsti tą pačią problemą."
+        'Užregistruokite problemą, su kuria susidūrėte savo veikloje, aprašykite kaip ją sprendėte bei padėkite kitiems išspręsti tą pačią problemą.',
       ),
     });
   }

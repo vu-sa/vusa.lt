@@ -14,11 +14,11 @@
 </template>
 
 <script setup lang="ts">
-import { Skeleton } from '@/Components/ui/skeleton';
-import { computed, inject } from "vue";
+import { computed, inject } from 'vue';
+import type { DriveItem } from '@microsoft/microsoft-graph-types';
 
-import FileButton from "@/Features/Admin/SharepointFileManager/Viewer/FileButton.vue";
-import type { DriveItem } from "@microsoft/microsoft-graph-types";
+import { Skeleton } from '@/Components/ui/skeleton';
+import FileButton from '@/Features/Admin/SharepointFileManager/Viewer/FileButton.vue';
 
 const props = defineProps<{
   file: MyDriveItem;
@@ -29,34 +29,34 @@ const props = defineProps<{
 
 const iconString = computed(() => {
   if (props.file.folder) {
-    return "folder";
+    return 'folder';
   }
 
   if (props.file.file === undefined) {
-    return "file";
+    return 'file';
   }
 
   if (
-    props.file.file?.mimeType ===
-    "application/vnd.openxmlformats-officefile.wordprocessingml.file"
+    props.file.file?.mimeType
+    === 'application/vnd.openxmlformats-officefile.wordprocessingml.file'
   ) {
-    return "file-word";
+    return 'file-word';
   }
 
-  if (props.file.file?.mimeType === "application/pdf") {
-    return "file-pdf";
+  if (props.file.file?.mimeType === 'application/pdf') {
+    return 'file-pdf';
   }
 
-  return "file"
+  return 'file';
 });
 
 const handleFileSelect = inject<(file: DriveItem) => void>(
-  "handleFileSelect",
+  'handleFileSelect',
   () => { },
 );
 
 const handleFileDblClick = inject<(file: DriveItem) => void>(
-  "handleFileDblClick",
+  'handleFileDblClick',
   () => { },
 );
 </script>

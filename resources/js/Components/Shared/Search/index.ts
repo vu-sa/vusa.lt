@@ -5,13 +5,13 @@
  */
 
 // Filter Components
-export { default as CheckboxFilter } from './CheckboxFilter.vue'
-export { default as YearFilter } from './YearFilter.vue'
-export { default as FilterAccordion } from './FilterAccordion.vue'
-export { default as FilterSidebar } from './FilterSidebar.vue'
+export { default as CheckboxFilter } from './CheckboxFilter.vue';
+export { default as YearFilter } from './YearFilter.vue';
+export { default as FilterAccordion } from './FilterAccordion.vue';
+export { default as FilterSidebar } from './FilterSidebar.vue';
 
 // Results Components
-export { default as SearchResults } from './SearchResults.vue'
+export { default as SearchResults } from './SearchResults.vue';
 
 // Types
 export type {
@@ -22,4 +22,4 @@ export type {
   SearchError,
   FilterAccordionConfig,
   ViewModeOption,
-} from './types'
+} from './types';

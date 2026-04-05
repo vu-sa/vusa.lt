@@ -9,7 +9,7 @@
           <template #description>
             {{ $t('settings.form_settings.registration_form_description') }}
           </template>
-          
+
           <div class="space-y-4">
             <div class="space-y-2">
               <Label class="inline-flex items-center gap-1">
@@ -55,7 +55,7 @@
           <template #description>
             {{ $t('settings.form_settings.student_rep_description') }}
           </template>
-          
+
           <div class="space-y-4">
             <div class="space-y-2">
               <Label class="inline-flex items-center gap-1">
@@ -102,23 +102,23 @@
 </template>
 
 <script setup lang="ts">
-import { useForm } from "@inertiajs/vue3";
-import { ref, watch } from "vue";
+import { useForm } from '@inertiajs/vue3';
+import { ref, watch } from 'vue';
 
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
-import AdminForm from "@/Components/AdminForms/AdminForm.vue";
-import FormElement from "@/Components/AdminForms/FormElement.vue";
-import Icons from "@/Types/Icons/regular";
-import { Label } from "@/Components/ui/label";
-import { MultiSelect } from "@/Components/ui/multi-select";
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import AdminForm from '@/Components/AdminForms/AdminForm.vue';
+import FormElement from '@/Components/AdminForms/FormElement.vue';
+import Icons from '@/Types/Icons/regular';
+import { Label } from '@/Components/ui/label';
+import { MultiSelect } from '@/Components/ui/multi-select';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/Components/ui/select";
+} from '@/Components/ui/select';
 
 interface InstitutionType {
   id: number;
@@ -138,7 +138,7 @@ const props = defineProps<{
 
 // Initialize selected types from props
 const selectedTypes = ref<InstitutionType[]>(
-  props.institution_types.filter(type => props.student_rep_institution_type_ids.includes(type.id))
+  props.institution_types.filter(type => props.student_rep_institution_type_ids.includes(type.id)),
 );
 
 const form = useForm({
@@ -154,6 +154,6 @@ watch(selectedTypes, (newTypes) => {
 }, { deep: false });
 
 const handleFormSubmit = () => {
-  form.post(route("settings.forms.update"));
+  form.post(route('settings.forms.update'));
 };
 </script>

@@ -21,7 +21,9 @@
       <!-- Empty state -->
       <div v-if="!relationship.relationshipables?.length" class="flex flex-col items-center justify-center py-12 text-center">
         <LinkIcon class="h-12 w-12 text-muted-foreground/50 mb-4" />
-        <h3 class="text-lg font-medium text-foreground">{{ $t('relationships.no_connections') }}</h3>
+        <h3 class="text-lg font-medium text-foreground">
+          {{ $t('relationships.no_connections') }}
+        </h3>
         <p class="mt-1 text-sm text-muted-foreground max-w-sm">
           {{ $t('relationships.no_connections_description') }}
         </p>
@@ -45,8 +47,12 @@
                 <ArrowRightIcon class="h-4 w-4 text-green-600 dark:text-green-400" />
               </div>
               <div class="min-w-0">
-                <p class="text-sm font-medium truncate">{{ item.relationshipable?.name ?? item.relationshipable?.title }}</p>
-                <p class="text-xs text-muted-foreground">{{ $t('relationships.source') }}</p>
+                <p class="text-sm font-medium truncate">
+                  {{ item.relationshipable?.name ?? item.relationshipable?.title }}
+                </p>
+                <p class="text-xs text-muted-foreground">
+                  {{ $t('relationships.source') }}
+                </p>
               </div>
             </div>
 
@@ -59,8 +65,12 @@
                 <TargetIcon class="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
               <div class="min-w-0">
-                <p class="text-sm font-medium truncate">{{ item.related_model?.name ?? item.related_model?.title }}</p>
-                <p class="text-xs text-muted-foreground">{{ $t('relationships.target') }}</p>
+                <p class="text-sm font-medium truncate">
+                  {{ item.related_model?.name ?? item.related_model?.title }}
+                </p>
+                <p class="text-xs text-muted-foreground">
+                  {{ $t('relationships.target') }}
+                </p>
               </div>
             </div>
           </div>
@@ -220,13 +230,21 @@
           <div v-if="isEditing" class="space-y-4">
             <div class="flex items-center gap-4 p-4 rounded-lg bg-muted/50">
               <div class="flex-1">
-                <p class="text-xs text-muted-foreground">{{ $t('relationships.source') }}</p>
-                <p class="font-medium">{{ editingItem?.relationshipable?.name ?? editingItem?.relationshipable?.title }}</p>
+                <p class="text-xs text-muted-foreground">
+                  {{ $t('relationships.source') }}
+                </p>
+                <p class="font-medium">
+                  {{ editingItem?.relationshipable?.name ?? editingItem?.relationshipable?.title }}
+                </p>
               </div>
               <ArrowRightIcon class="h-5 w-5 text-muted-foreground" />
               <div class="flex-1">
-                <p class="text-xs text-muted-foreground">{{ $t('relationships.target') }}</p>
-                <p class="font-medium">{{ editingItem?.related_model?.name ?? editingItem?.related_model?.title }}</p>
+                <p class="text-xs text-muted-foreground">
+                  {{ $t('relationships.target') }}
+                </p>
+                <p class="font-medium">
+                  {{ editingItem?.related_model?.name ?? editingItem?.related_model?.title }}
+                </p>
               </div>
             </div>
           </div>
@@ -244,7 +262,9 @@
                 </SelectItem>
               </SelectContent>
             </Select>
-            <p class="text-xs text-muted-foreground">{{ scopeExplanation }}</p>
+            <p class="text-xs text-muted-foreground">
+              {{ scopeExplanation }}
+            </p>
           </div>
 
           <!-- Bidirectional toggle -->
@@ -258,7 +278,9 @@
                 {{ relationForm.bidirectional ? $t('relationships.bidirectional_enabled') : $t('relationships.bidirectional_disabled') }}
               </span>
             </div>
-            <p class="text-xs text-muted-foreground">{{ $t('relationships.bidirectional_explanation') }}</p>
+            <p class="text-xs text-muted-foreground">
+              {{ $t('relationships.bidirectional_explanation') }}
+            </p>
           </div>
 
           <!-- Access explanation panel -->
@@ -268,7 +290,7 @@
               {{ $t('relationships.access_explanation_title') }}
             </h4>
             <div class="text-sm text-blue-700 dark:text-blue-400 space-y-1">
-              <p v-html="accessExplanation"></p>
+              <p v-html="accessExplanation" />
             </div>
           </div>
         </div>
@@ -287,9 +309,9 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from "laravel-vue-i18n";
-import { computed, ref } from "vue";
-import { router, useForm } from "@inertiajs/vue3";
+import { trans as $t } from 'laravel-vue-i18n';
+import { computed, ref } from 'vue';
+import { router, useForm } from '@inertiajs/vue3';
 import {
   ArrowLeftRightIcon,
   ArrowRightIcon,
@@ -303,24 +325,23 @@ import {
   PlusIcon,
   TargetIcon,
   TrashIcon,
-} from "lucide-vue-next";
+} from 'lucide-vue-next';
 
-import { cn } from "@/Utils/Shadcn/utils";
-import { Badge } from "@/Components/ui/badge";
-import { Button } from "@/Components/ui/button";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/Components/ui/command";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
-import { Label } from "@/Components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { Switch } from "@/Components/ui/switch";
-import { modelTypes } from "@/Types/formOptions";
-
-import FormElement from "@/Components/AdminForms/FormElement.vue";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import RelationshipForm from "@/Components/AdminForms/RelationshipForm.vue";
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
+import { cn } from '@/Utils/Shadcn/utils';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/Components/ui/command';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
+import { Label } from '@/Components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Switch } from '@/Components/ui/switch';
+import { modelTypes } from '@/Types/formOptions';
+import FormElement from '@/Components/AdminForms/FormElement.vue';
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import RelationshipForm from '@/Components/AdminForms/RelationshipForm.vue';
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 
 const props = defineProps<{
   relationship: App.Entities.Relationship;
@@ -382,43 +403,47 @@ const selectedTargetLabel = computed(() => getLabelForId(relationForm.related_mo
 const accessExplanation = computed(() => {
   let sourceName: string;
   let targetName: string;
-  
+
   if (isEditing.value && editingItem.value) {
     sourceName = `<strong>${editingItem.value.relationshipable?.name ?? editingItem.value.relationshipable?.title}</strong>`;
     targetName = `<strong>${editingItem.value.related_model?.name ?? editingItem.value.related_model?.title}</strong>`;
-  } else {
+  }
+  else {
     sourceName = `<strong>${getLabelForId(relationForm.model_id)}</strong>`;
     targetName = `<strong>${getLabelForId(relationForm.related_model_id)}</strong>`;
   }
-  
+
   let baseExplanation = '';
-  const isTypeBased = isEditing.value 
+  const isTypeBased = isEditing.value
     ? editingItem.value?.relationshipable_type?.includes('Type')
     : isTypeBasedRelationship.value;
-  
+
   if (isTypeBased) {
     if (relationForm.scope === SCOPE_CROSS_TENANT) {
       baseExplanation = $t('relationships.access_type_cross', { source: sourceName, target: targetName });
-    } else {
+    }
+    else {
       baseExplanation = $t('relationships.access_type_within', { source: sourceName, target: targetName });
     }
-  } else {
+  }
+  else {
     baseExplanation = $t('relationships.access_direct', { source: sourceName, target: targetName });
   }
-  
+
   // Add bidirectional explanation
   if (relationForm.bidirectional) {
-    baseExplanation += '<br/><span class="text-green-600 dark:text-green-400">' + $t('relationships.access_bidirectional_note') + '</span>';
-  } else {
-    baseExplanation += '<br/><span class="text-amber-600 dark:text-amber-400">' + $t('relationships.access_unidirectional_note') + '</span>';
+    baseExplanation += `<br/><span class="text-green-600 dark:text-green-400">${$t('relationships.access_bidirectional_note')}</span>`;
   }
-  
+  else {
+    baseExplanation += `<br/><span class="text-amber-600 dark:text-amber-400">${$t('relationships.access_unidirectional_note')}</span>`;
+  }
+
   return baseExplanation;
 });
 
 const options = computed(() => {
   if (!props.relatedModels) return [];
-  return props.relatedModels.map((model) => ({
+  return props.relatedModels.map(model => ({
     label: model.name ?? model.title,
     value: model.id,
   }));
@@ -427,30 +452,30 @@ const options = computed(() => {
 const canSubmit = computed(() => {
   if (isEditing.value) return true;
   if (!relationForm.model_type || !relationForm.model_id || !relationForm.related_model_id) return false;
-  
+
   // For type-based relationships, source and target must be different
   // Same-type sibling relationships should be configured in the Type form instead
   if (isTypeBasedRelationship.value && relationForm.model_id === relationForm.related_model_id) {
     return false;
   }
-  
+
   return true;
 });
 
 // Validation message for same-type selection
 const sameTypeError = computed(() => {
-  if (isTypeBasedRelationship.value && 
-      relationForm.model_id && 
-      relationForm.related_model_id && 
-      relationForm.model_id === relationForm.related_model_id) {
+  if (isTypeBasedRelationship.value
+    && relationForm.model_id
+    && relationForm.related_model_id
+    && relationForm.model_id === relationForm.related_model_id) {
     return $t('relationships.same_type_error');
   }
   return null;
 });
 
-const modelTypeOptions = modelTypes.relationshipable.map((relationshipable) => ({
+const modelTypeOptions = modelTypes.relationshipable.map(relationshipable => ({
   label: relationshipable,
-  value: "App\\Models\\" + relationshipable,
+  value: `App\\Models\\${relationshipable}`,
 }));
 
 function openCreateModal() {
@@ -484,7 +509,7 @@ function handleUpdateModelType(value: unknown) {
   relationForm.related_model_id = null;
   router.reload({
     data: { modelType: value },
-    only: ["relatedModels"],
+    only: ['relatedModels'],
   });
 }
 
@@ -492,7 +517,7 @@ function submitRelationForm() {
   if (isEditing.value && editingItem.value) {
     // Update existing relationshipable
     router.patch(
-      route("relationships.updateModelRelationship", editingItem.value.id),
+      route('relationships.updateModelRelationship', editingItem.value.id),
       {
         scope: relationForm.scope,
         bidirectional: relationForm.bidirectional,
@@ -503,25 +528,26 @@ function submitRelationForm() {
           editingItem.value = null;
         },
         preserveScroll: true,
-      }
+      },
     );
-  } else {
+  }
+  else {
     // Create new relationshipable
     relationForm.post(
-      route("relationships.storeModelRelationship", { relationship: props.relationship.id }),
+      route('relationships.storeModelRelationship', { relationship: props.relationship.id }),
       {
         onSuccess: () => {
           showModal.value = false;
           relationForm.reset();
         },
-      }
+      },
     );
   }
 }
 
 function handleDeleteRelationship(id: number) {
   if (confirm($t('relationships.confirm_delete'))) {
-    router.delete(route("relationships.deleteModelRelationship", id));
+    router.delete(route('relationships.deleteModelRelationship', id));
   }
 }
 </script>

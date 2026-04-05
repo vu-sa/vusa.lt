@@ -29,29 +29,29 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t } from "laravel-vue-i18n";
-import { type ColumnDef } from '@tanstack/vue-table';
-import { ref, computed } from "vue";
-import { router, usePage } from "@inertiajs/vue3";
+import { trans as $t } from 'laravel-vue-i18n';
+import type { ColumnDef } from '@tanstack/vue-table';
+import { ref, computed } from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
 
-import Icons from "@/Types/Icons/regular";
-import { Button } from "@/Components/ui/button";
+import Icons from '@/Types/Icons/regular';
+import { Button } from '@/Components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/Components/ui/dropdown-menu";
-import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
-import { createStandardActionsColumn } from "@/Composables/useTableActions";
+} from '@/Components/ui/dropdown-menu';
+import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
+import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import {
   createIdColumn,
   createTenantColumn,
   createTimestampColumn,
 } from '@/Utils/DataTableColumns';
-import {
-  type IndexTablePageProps
-} from "@/Types/TableConfigTypes";
+import type {
+  IndexTablePageProps,
+} from '@/Types/TableConfigTypes';
 
 const props = defineProps<{
   pages: {
@@ -83,18 +83,18 @@ const tenantOptions = computed(() => {
 });
 
 function handleTenantSelect(tenantId: number) {
-  router.visit(route("tenants.editMainPage", { tenant: tenantId }));
+  router.visit(route('tenants.editMainPage', { tenant: tenantId }));
 }
 
 const columns = computed<ColumnDef<App.Entities.Page, any>[]>(() => [
   createIdColumn<App.Entities.Page>({ width: 50 }),
   {
-    accessorKey: "title",
-    header: () => "Pavadinimas",
+    accessorKey: 'title',
+    header: () => 'Pavadinimas',
     cell: ({ row }) => {
       return (
         <div class="max-w-[200px] text-wrap">
-          {row.getValue("title")}
+          {row.getValue('title')}
         </div>
       );
     },
@@ -102,22 +102,22 @@ const columns = computed<ColumnDef<App.Entities.Page, any>[]>(() => [
     enableSorting: true,
   },
   {
-    accessorKey: "lang",
-    header: () => "Kalba",
+    accessorKey: 'lang',
+    header: () => 'Kalba',
     cell: ({ row }) => {
-      return row.original.lang === "lt" ? "🇱🇹" : "🇬🇧";
+      return row.original.lang === 'lt' ? '🇱🇹' : '🇬🇧';
     },
     size: 80,
   },
   {
-    id: "other_lang_id",
-    header: () => "Kitos kalbos puslapis",
+    id: 'other_lang_id',
+    header: () => 'Kitos kalbos puslapis',
     cell: ({ row }) => {
       const otherLangId = row.original.other_lang_id;
       if (!otherLangId) return null;
       return (
         <a
-          href={route("pages.edit", { id: otherLangId })}
+          href={route('pages.edit', { id: otherLangId })}
           target="_blank"
           class="hover:underline"
         >
@@ -128,24 +128,24 @@ const columns = computed<ColumnDef<App.Entities.Page, any>[]>(() => [
     size: 150,
   },
   {
-    accessorKey: "is_active",
-    header: () => "Aktyvus",
+    accessorKey: 'is_active',
+    header: () => 'Aktyvus',
     cell: ({ row }) => {
-      return row.original.is_active ? "✅" : "❌";
+      return row.original.is_active ? '✅' : '❌';
     },
     size: 80,
   },
   createTenantColumn<App.Entities.Page>(),
-  createTimestampColumn<App.Entities.Page>("created_at", {
-    title: "Sukurta",
-    format: "yyyy-MM-dd",
+  createTimestampColumn<App.Entities.Page>('created_at', {
+    title: 'Sukurta',
+    format: 'yyyy-MM-dd',
     sortDescFirst: true,
   }),
-  createStandardActionsColumn<App.Entities.Page>("pages", {
+  createStandardActionsColumn<App.Entities.Page>('pages', {
     canView: false,
     canEdit: true,
     canDelete: true,
-  })
+  }),
 ]);
 
 const tableConfig = computed<IndexTablePageProps<App.Entities.Page>>(() => {
@@ -165,7 +165,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Page>>(() => {
     enableColumnVisibility: false,
     enableRowSelection: false,
 
-    headerTitle: "Puslapiai",
+    headerTitle: 'Puslapiai',
     icon: Icons.PAGE,
     createRoute: route('pages.create'),
     canCreate: true,

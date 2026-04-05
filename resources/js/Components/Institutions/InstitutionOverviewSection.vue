@@ -29,9 +29,15 @@
             <component :is="stat.icon" class="h-4 w-4 text-accent-foreground" />
           </div>
           <div class="min-w-0">
-            <p class="text-xs text-muted-foreground">{{ stat.label }}</p>
-            <p class="text-lg font-bold leading-tight text-foreground">{{ stat.value }}</p>
-            <p class="text-[11px] text-primary">{{ stat.subtitle }}</p>
+            <p class="text-xs text-muted-foreground">
+              {{ stat.label }}
+            </p>
+            <p class="text-lg font-bold leading-tight text-foreground">
+              {{ stat.value }}
+            </p>
+            <p class="text-[11px] text-primary">
+              {{ stat.subtitle }}
+            </p>
           </div>
         </div>
       </button>
@@ -84,7 +90,9 @@
             <!-- Empty State -->
             <div v-else class="py-8 text-center">
               <Users class="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
-              <p class="text-sm text-muted-foreground">{{ $t('Nėra narių') }}</p>
+              <p class="text-sm text-muted-foreground">
+                {{ $t('Nėra narių') }}
+              </p>
             </div>
 
             <!-- Capacity Warning -->
@@ -123,7 +131,9 @@
           <CardContent>
             <div class="py-8 text-center">
               <CalendarIcon class="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
-              <p class="text-sm text-muted-foreground">{{ $t('Nėra susitikimų') }}</p>
+              <p class="text-sm text-muted-foreground">
+                {{ $t('Nėra susitikimų') }}
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -158,8 +168,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { trans as $t } from 'laravel-vue-i18n'
+import { computed, ref } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
 import {
   Users,
   UserPlus,
@@ -167,38 +177,38 @@ import {
   BarChart3,
   Repeat,
   Activity,
-  AlertTriangle
-} from 'lucide-vue-next'
+  AlertTriangle,
+} from 'lucide-vue-next';
 
-import PriorityAlert from '@/Components/Alerts/PriorityAlert.vue'
-import UserPopover from '@/Components/Avatars/UserPopover.vue'
-import InstitutionMeetingsPreview from './InstitutionMeetingsPreview.vue'
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card'
-import { Button } from '@/Components/ui/button'
+import InstitutionMeetingsPreview from './InstitutionMeetingsPreview.vue';
 
-import { useInstitutionUrgency } from '@/Composables/useInstitutionUrgency'
-import { formatRelativeTime } from '@/Utils/IntlTime'
+import PriorityAlert from '@/Components/Alerts/PriorityAlert.vue';
+import UserPopover from '@/Components/Avatars/UserPopover.vue';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Button } from '@/Components/ui/button';
+import { useInstitutionUrgency } from '@/Composables/useInstitutionUrgency';
+import { formatRelativeTime } from '@/Utils/IntlTime';
 
 interface Activity {
-  id: string | number
-  description?: string | null
-  created_at: string
+  id: string | number;
+  description?: string | null;
+  created_at: string;
 }
 
 const props = defineProps<{
-  institution: App.Entities.Institution
-  activities?: Activity[]
-  canEditMembers?: boolean
-}>()
+  institution: App.Entities.Institution;
+  activities?: Activity[];
+  canEditMembers?: boolean;
+}>();
 
 const emit = defineEmits<{
-  'navigate-tab': [tab: string]
-  'schedule-meeting': []
-  'add-member': []
-  'view-profile': [member: App.Entities.User]
-  'edit-member': [member: App.Entities.User]
-  'view-meeting': [meeting: App.Entities.Meeting]
-}>()
+  'navigate-tab': [tab: string];
+  'schedule-meeting': [];
+  'add-member': [];
+  'view-profile': [member: App.Entities.User];
+  'edit-member': [member: App.Entities.User];
+  'view-meeting': [meeting: App.Entities.Meeting];
+}>();
 
 // Use urgency composable
 const {
@@ -209,70 +219,70 @@ const {
   memberFillRate,
   totalPositions,
   filledPositions,
-  lastMeeting
-} = useInstitutionUrgency(() => props.institution)
+  lastMeeting,
+} = useInstitutionUrgency(() => props.institution);
 
 // Alert state
-const showOverdueAlert = ref(true)
+const showOverdueAlert = ref(true);
 
 // Members
-const members = computed(() => props.institution.current_users || [])
+const members = computed(() => props.institution.current_users || []);
 
 const showCapacityWarning = computed(() => {
-  return totalPositions.value > 0 && members.value.length > totalPositions.value
-})
+  return totalPositions.value > 0 && members.value.length > totalPositions.value;
+});
 
 // Computed displays
-const meetingsCount = computed(() => props.institution.meetings?.length || 0)
+const meetingsCount = computed(() => props.institution.meetings?.length || 0);
 
 const recentMeetings = computed(() => {
-  const meetings = props.institution.meetings || []
+  const meetings = props.institution.meetings || [];
   return [...meetings]
     .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime())
-    .slice(0, 3)
-})
+    .slice(0, 3);
+});
 
 const lastMeetingDisplay = computed(() => {
-  if (!lastMeeting.value) return $t('Nėra')
-  const date = new Date(lastMeeting.value.start_time)
-  return date.toLocaleDateString('lt-LT', { month: 'short', day: 'numeric' })
-})
+  if (!lastMeeting.value) return $t('Nėra');
+  const date = new Date(lastMeeting.value.start_time);
+  return date.toLocaleDateString('lt-LT', { month: 'short', day: 'numeric' });
+});
 
 const lastMeetingSubtitle = computed(() => {
-  if (daysSinceLastMeeting.value === null) return $t('Nėra duomenų')
-  if (daysSinceLastMeeting.value === 0) return $t('Šiandien')
-  if (daysSinceLastMeeting.value === 1) return $t('Vakar')
-  return `${$t('Prieš')} ${daysSinceLastMeeting.value} ${$t('d.')}`
-})
+  if (daysSinceLastMeeting.value === null) return $t('Nėra duomenų');
+  if (daysSinceLastMeeting.value === 0) return $t('Šiandien');
+  if (daysSinceLastMeeting.value === 1) return $t('Vakar');
+  return `${$t('Prieš')} ${daysSinceLastMeeting.value} ${$t('d.')}`;
+});
 
 const memberSubtitle = computed(() => {
-  const rate = memberFillRate.value
-  if (rate >= 100) return $t('Pilnai užpildyta')
-  if (rate >= 80) return $t('Beveik pilna')
-  if (rate >= 50) return $t('Dalinai užpildyta')
-  return $t('Reikia daugiau narių')
-})
+  const rate = memberFillRate.value;
+  if (rate >= 100) return $t('Pilnai užpildyta');
+  if (rate >= 80) return $t('Beveik pilna');
+  if (rate >= 50) return $t('Dalinai užpildyta');
+  return $t('Reikia daugiau narių');
+});
 
 const periodicityDisplay = computed(() => {
-  const days = props.institution.meeting_periodicity_days ?? 30
-  return `${days} ${$t('d.')}`
-})
+  const days = props.institution.meeting_periodicity_days ?? 30;
+  return `${days} ${$t('d.')}`;
+});
 
 const periodicitySubtitle = computed(() => {
-  if (daysSinceLastMeeting.value === null) return ''
+  if (daysSinceLastMeeting.value === null) return '';
   if (isOverdue.value) {
-    return `${daysSinceLastMeeting.value} ${$t('d. nuo paskutinio')}`
+    return `${daysSinceLastMeeting.value} ${$t('d. nuo paskutinio')}`;
   }
-  return `${daysSinceLastMeeting.value} ${$t('d. nuo paskutinio')}`
-})
+  return `${daysSinceLastMeeting.value} ${$t('d. nuo paskutinio')}`;
+});
 
 const overdueAlertDescription = computed(() => {
-  const periodicity = props.institution.meeting_periodicity_days ?? 30
-  const overdueDays = (daysSinceLastMeeting.value ?? 0) - periodicity
+  const periodicity = props.institution.meeting_periodicity_days ?? 30;
+  const overdueDays = (daysSinceLastMeeting.value ?? 0) - periodicity;
   return $t('Praėjo :days d. nuo numatyto susitikimo periodiškumo. Rekomenduojame suplanuoti susitikimą.', {
-    days: overdueDays
-  })
-})
+    days: overdueDays,
+  });
+});
 
 // Stats data for the compact grid
 const stats = computed(() => [
@@ -304,5 +314,5 @@ const stats = computed(() => [
     subtitle: periodicitySubtitle.value,
     onClick: () => emit('navigate-tab', 'meetings'),
   },
-])
+]);
 </script>

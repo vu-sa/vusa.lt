@@ -38,15 +38,15 @@
       <div class="space-y-4 overflow-y-auto px-8 pb-6 flex-1">
         <!-- Step 1: File selection -->
         <div v-if="currentStep === 1">
-          <FileSelector 
+          <FileSelector
             :upload-accept="selectionType === 'video' ? '.mp4,.webm,.ogg' : '.jpg,.jpeg,.png,.gif,.webp,.svg'"
-            :upload-extensions="selectionType === 'video' 
-              ? ['mp4','webm','ogg'] 
+            :upload-extensions="selectionType === 'video'
+              ? ['mp4','webm','ogg']
               : ['jpg','jpeg','png','gif','webp','svg']"
-            @submit="handleFileSelected" 
+            @submit="handleFileSelected"
           />
         </div>
-        
+
         <!-- Step 2: Details form with preview -->
         <div v-else-if="currentStep === 2" class="space-y-4">
           <!-- Selected image preview - compact layout -->
@@ -54,11 +54,15 @@
             <div class="flex items-center gap-3">
               <img :src="selectedImageUrl" alt="Preview" class="w-12 h-12 object-cover rounded border flex-shrink-0">
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-foreground truncate">{{ getImageName(selectedImageUrl) }}</p>
-                <p class="text-xs text-muted-foreground">{{ $t('accessibility.selected_image') }}</p>
+                <p class="text-sm font-medium text-foreground truncate">
+                  {{ getImageName(selectedImageUrl) }}
+                </p>
+                <p class="text-xs text-muted-foreground">
+                  {{ $t('accessibility.selected_image') }}
+                </p>
               </div>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 @click="goBackToSelection"
               >
@@ -75,7 +79,7 @@
             @submit="onSubmitDetails"
           >
             <div class="space-y-4">
-              <FormField name="alt" v-slot="{ componentField }">
+              <FormField v-slot="{ componentField }" name="alt">
                 <FormItem>
                   <FormLabel>
                     {{ $t('accessibility.alt_text') }}
@@ -91,7 +95,7 @@
                     </p>
                   </div>
                   <FormControl>
-                    <Input 
+                    <Input
                       v-bind="componentField"
                       :placeholder="$t('accessibility.alt_text_placeholder')"
                     />
@@ -103,13 +107,13 @@
                 </FormItem>
               </FormField>
 
-              <FormField name="title" v-slot="{ componentField }">
+              <FormField v-slot="{ componentField }" name="title">
                 <FormItem>
                   <FormLabel>
                     {{ $t('accessibility.title_text') }}
                   </FormLabel>
                   <FormControl>
-                    <Input 
+                    <Input
                       v-bind="componentField"
                       :placeholder="$t('accessibility.title_text_placeholder')"
                     />
@@ -123,16 +127,16 @@
             </div>
           </Form>
         </div>
-  </div>
+      </div>
       <DialogFooter class="px-8 pb-6">
         <Button variant="outline" @click="resetForm">
           {{ $t('common.cancel') }}
         </Button>
         <template v-if="currentStep === 1">
-          <Button 
+          <Button
             variant="default"
-            @click="goToDetails"
             :disabled="!selectedImageUrl"
+            @click="goToDetails"
           >
             {{ $t('common.next') || 'Toliau' }}
           </Button>
@@ -141,7 +145,7 @@
           <Button variant="secondary" @click="goBackToSelection">
             {{ $t('common.back') || 'Atgal' }}
           </Button>
-          <Button 
+          <Button
             type="submit"
             form="image-details-form"
             :disabled="!selectedImageUrl"
@@ -153,14 +157,17 @@
     </DialogContent>
   </Dialog>
 </template>
+
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { trans as $t } from "laravel-vue-i18n";
+import { trans as $t } from 'laravel-vue-i18n';
+import { toTypedSchema } from '@vee-validate/zod';
+import { z } from 'zod';
 
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
-import { 
+import {
   Stepper,
   StepperItem,
   StepperTrigger,
@@ -170,20 +177,16 @@ import {
   StepperDescription,
 } from '@/Components/ui/stepper';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/Components/ui/form';
-import { toTypedSchema } from '@vee-validate/zod';
-import { z } from 'zod';
 import FileSelector from '@/Features/Admin/FileManager/FileSelector.vue';
 
 const props = defineProps<{
   // only specific values for selectionType are allowed
   selectionType?: 'image' | 'video';
-}>()
+}>();
 
 const showModal = defineModel<boolean>('showModal', { default: false });
 
-const emit = defineEmits<{
-  (e: 'submit', imageData: { src: string; alt: string; title: string }): void
-}>()
+const emit = defineEmits<(e: 'submit', imageData: { src: string; alt: string; title: string }) => void>();
 
 const selectedImageUrl = ref<string>('');
 const currentStep = ref<number>(1);

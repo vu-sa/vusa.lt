@@ -39,24 +39,25 @@
 </template>
 
 <script setup lang="ts">
-import SmartLink from '@/Components/Public/SmartLink.vue';
-import { getFacultyName } from '@/Utils/String';
 import { computed } from 'vue';
 
+import SmartLink from '@/Components/Public/SmartLink.vue';
+import { getFacultyName } from '@/Utils/String';
+
 const props = defineProps<{
-  forms: Record<App.Entities.Tenant["alias"], string>;
+  forms: Record<App.Entities.Tenant['alias'], string>;
   tenants: App.Entities.Tenant[];
-  englishTenantNames: Record<App.Entities.Tenant["alias"], string>;
-}>()
+  englishTenantNames: Record<App.Entities.Tenant['alias'], string>;
+}>();
 
 const mergedTenants = computed(() => {
-  return props.tenants.map(tenant => {
+  return props.tenants.map((tenant) => {
     return {
       ...tenant,
       form: props.forms[tenant.alias],
-      englishName: props.englishTenantNames[tenant.alias]
-    }
-  })
-})
+      englishName: props.englishTenantNames[tenant.alias],
+    };
+  });
+});
 
 </script>

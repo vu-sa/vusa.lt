@@ -21,7 +21,7 @@ export function resolveTranslatable(value: unknown): string {
 /**
  * Create a standardized ID column
  */
-export function createIdColumn<T>(options: { 
+export function createIdColumn<T>(options: {
   width?: number;
   enableSorting?: boolean;
   cell?: ColumnDef<T, any>['cell'];
@@ -38,8 +38,8 @@ export function createIdColumn<T>(options: {
 /**
  * Create a standardized title/name column with link to edit page
  */
-export function createTitleColumn<T extends { id: string | number }>(options: { 
-  accessorKey?: string; 
+export function createTitleColumn<T extends { id: string | number }>(options: {
+  accessorKey?: string;
   routeName?: string;
   width?: number;
   enableSorting?: boolean;
@@ -47,7 +47,7 @@ export function createTitleColumn<T extends { id: string | number }>(options: {
 } = {}): ColumnDef<T, any> {
   const accessorKey = options.accessorKey || 'name';
   const routeName = options.routeName || 'edit';
-  
+
   return {
     accessorKey,
     header: () => $t(accessorKey === 'name' ? 'forms.fields.name' : 'forms.fields.title'),
@@ -71,9 +71,9 @@ export function createTitleColumn<T extends { id: string | number }>(options: {
 /**
  * Create a standardized timestamp column
  */
-export function createTimestampColumn<T>(accessorKey: string, options: { 
+export function createTimestampColumn<T>(accessorKey: string, options: {
   title?: string;
-  format?: string; 
+  format?: string;
   width?: number;
   enableSorting?: boolean;
   sortDescFirst?: boolean;
@@ -85,12 +85,13 @@ export function createTimestampColumn<T>(accessorKey: string, options: {
     cell: options.cell || (({ row }) => {
       const value = row.getValue(accessorKey);
       if (!value) return null;
-      
+
       try {
         const date = new Date(value as string);
         if (!isValid(date)) return value;
         return format(date, options.format || 'yyyy-MM-dd HH:mm');
-      } catch (e) {
+      }
+      catch (e) {
         return value;
       }
     }),
@@ -103,7 +104,7 @@ export function createTimestampColumn<T>(accessorKey: string, options: {
 /**
  * Create a tenant column
  */
-export function createTenantColumn<T>(options: { 
+export function createTenantColumn<T>(options: {
   width?: number;
   enableSorting?: boolean;
   cell?: ColumnDef<T, any>['cell'];
@@ -125,7 +126,7 @@ export function createTenantColumn<T>(options: {
 /**
  * Create a language column
  */
-export function createLanguageColumn<T>(options: { 
+export function createLanguageColumn<T>(options: {
   width?: number;
   enableSorting?: boolean;
   cell?: ColumnDef<T, any>['cell'];
@@ -142,7 +143,7 @@ export function createLanguageColumn<T>(options: {
 /**
  * Create a boolean column with optional custom labels
  */
-export function createBooleanColumn<T>(accessorKey: string, options: { 
+export function createBooleanColumn<T>(accessorKey: string, options: {
   title?: string;
   trueLabel?: string;
   falseLabel?: string;
@@ -155,10 +156,10 @@ export function createBooleanColumn<T>(accessorKey: string, options: {
     header: () => options.title || $t(accessorKey),
     cell: options.cell || (({ row }) => {
       const value = row.getValue(accessorKey);
-      const label = value 
-        ? (options.trueLabel || $t('Yes')) 
+      const label = value
+        ? (options.trueLabel || $t('Yes'))
         : (options.falseLabel || $t('No'));
-        
+
       return (
         <Badge variant={value ? 'default' : 'secondary'} class="text-xs">
           {label}
@@ -173,7 +174,7 @@ export function createBooleanColumn<T>(accessorKey: string, options: {
 /**
  * Create a tags/types column for displaying multiple related entities
  */
-export function createTagsColumn<T>(accessorKey: string, options: { 
+export function createTagsColumn<T>(accessorKey: string, options: {
   title?: string;
   labelKey?: string;
   width?: number;
@@ -186,12 +187,12 @@ export function createTagsColumn<T>(accessorKey: string, options: {
     cell: options.cell || (({ row }) => {
       const items = row.getValue(accessorKey) as any[] || [];
       const labelKey = options.labelKey || 'title';
-      
+
       if (!items || items.length === 0) return null;
-      
+
       return (
         <div class="flex flex-wrap gap-1">
-          {items.map((item) => (
+          {items.map(item => (
             <Badge variant="secondary" key={item.id} class="text-xs">
               {resolveTranslatable(item[labelKey])}
             </Badge>
@@ -207,7 +208,7 @@ export function createTagsColumn<T>(accessorKey: string, options: {
 /**
  * Create a standardized text column
  */
-export function createTextColumn<T>(accessorKey: string, options: { 
+export function createTextColumn<T>(accessorKey: string, options: {
   title?: string;
   width?: number;
   enableSorting?: boolean;

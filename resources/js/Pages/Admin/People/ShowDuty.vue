@@ -200,13 +200,17 @@
       <TabsContent value="files" class="space-y-6">
         <!-- Direct Duty Files (with upload capability) -->
         <div v-if="duty.sharepointPath">
-          <h3 class="text-lg font-medium mb-4">{{ $t('Pareigybės failai') }}</h3>
+          <h3 class="text-lg font-medium mb-4">
+            {{ $t('Pareigybės failai') }}
+          </h3>
           <FileManager :starting-path="duty.sharepointPath" :fileable="{ id: duty.id, type: 'Duty' }" />
         </div>
 
         <!-- Type-inherited Files (read-only, from associated Types) -->
         <div v-if="hasTypeFiles">
-          <h3 class="text-lg font-medium mb-4">{{ $t('Susiję failai pagal tipą') }}</h3>
+          <h3 class="text-lg font-medium mb-4">
+            {{ $t('Susiję failai pagal tipą') }}
+          </h3>
           <p class="text-sm text-zinc-500 dark:text-zinc-400 mb-4">
             {{ $t('Šie failai yra susiję su pareigybės tipais ir yra bendrinami tarp visų tos kategorijos pareigybių.') }}
           </p>
@@ -246,37 +250,37 @@
 </template>
 
 <script setup lang="tsx">
-import { computed, ref } from "vue";
-import { router, Head as InertiaHead, usePage, Link } from "@inertiajs/vue3";
-import { useStorage } from "@vueuse/core";
-import { trans as $t } from "laravel-vue-i18n";
+import { computed, ref } from 'vue';
+import { router, Head as InertiaHead, usePage, Link } from '@inertiajs/vue3';
+import { useStorage } from '@vueuse/core';
+import { trans as $t } from 'laravel-vue-i18n';
 import { Users, History, BadgeCheck, UserPlus, Settings, Zap, Building, Mail, ChevronRight } from 'lucide-vue-next';
 
 // Layout and Components
-import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
-import ShowPageHero from "@/Components/Hero/ShowPageHero.vue";
-import MemberHistory from "@/Components/Members/MemberHistory.vue";
-import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
-import FileManager from "@/Features/Admin/SharepointFileManager/SharepointFileManager.vue";
-import SimpleFileViewer from "@/Features/Admin/SharepointFileManager/Viewer/SimpleFileViewer.vue";
+import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
+import ShowPageHero from '@/Components/Hero/ShowPageHero.vue';
+import MemberHistory from '@/Components/Members/MemberHistory.vue';
+import MoreOptionsButton from '@/Components/Buttons/MoreOptionsButton.vue';
+import FileManager from '@/Features/Admin/SharepointFileManager/SharepointFileManager.vue';
+import SimpleFileViewer from '@/Features/Admin/SharepointFileManager/Viewer/SimpleFileViewer.vue';
 
 // UI Components
-import { Badge } from "@/Components/ui/badge";
-import { Button } from "@/Components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 
 // Utils
-import Icons from "@/Types/Icons/filled";
-import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
+import Icons from '@/Types/Icons/filled';
+import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 
 const props = defineProps<{
   duty: App.Entities.Duty & { sharepointPath?: string };
 }>();
 
 // State
-const currentTab = useStorage("show-duty-tab", "overview");
+const currentTab = useStorage('show-duty-tab', 'overview');
 const showAssignMemberModal = ref(false);
 
 // Hero computed values
@@ -310,16 +314,17 @@ const filteredUsers = computed(() => {
       }
 
       if (
-        new Date(user.pivot.start_date) <= new Date() &&
-        new Date(user.pivot.end_date) >= new Date()
+        new Date(user.pivot.start_date) <= new Date()
+          && new Date(user.pivot.end_date) >= new Date()
       ) {
         acc.currentUsers.push(user);
-      } else {
+      }
+      else {
         acc.oldUsers.push(user);
       }
       return acc;
     },
-    { currentUsers: [] as App.Entities.User[], oldUsers: [] as App.Entities.User[] }
+    { currentUsers: [] as App.Entities.User[], oldUsers: [] as App.Entities.User[] },
   );
 });
 
@@ -380,11 +385,11 @@ const canManageDuty = computed(() => {
 
 // Event handlers
 const handleEdit = () => {
-  router.get(route("duties.edit", props.duty.id));
+  router.get(route('duties.edit', props.duty.id));
 };
 
 const handleDelete = () => {
-  router.delete(route("duties.destroy", props.duty.id));
+  router.delete(route('duties.destroy', props.duty.id));
 };
 
 const handleEditDutyPeriod = (member: App.Entities.User) => {
@@ -397,11 +402,11 @@ const handleEditDutyPeriod = (member: App.Entities.User) => {
 usePageBreadcrumbs(() =>
   BreadcrumbHelpers.adminShow(
     props.duty.institution?.name,
-    "institutions.show",
+    'institutions.show',
     { institution: props.duty?.institution?.id },
     props.duty.name,
     Icons.INSTITUTION,
-    Icons.DUTY
-  )
+    Icons.DUTY,
+  ),
 );
 </script>

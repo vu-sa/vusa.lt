@@ -10,17 +10,17 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import { type ColumnDef } from "@tanstack/vue-table";
-import { ref, computed } from "vue";
+import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+import type { ColumnDef } from '@tanstack/vue-table';
+import { ref, computed } from 'vue';
+import { Icon } from '@iconify/vue';
 
-import { Icon } from "@iconify/vue";
-import { capitalize } from "@/Utils/String";
-import { resolveTranslatable } from "@/Utils/DataTableColumns";
-import Icons from "@/Types/Icons/regular";
-import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
-import { createStandardActionsColumn } from "@/Composables/useTableActions";
-import { type IndexTablePageProps } from "@/Types/TableConfigTypes";
+import { capitalize } from '@/Utils/String';
+import { resolveTranslatable } from '@/Utils/DataTableColumns';
+import Icons from '@/Types/Icons/regular';
+import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
+import { createStandardActionsColumn } from '@/Composables/useTableActions';
+import type { IndexTablePageProps } from '@/Types/TableConfigTypes';
 
 const props = defineProps<{
   resourceCategories: {
@@ -38,8 +38,8 @@ const props = defineProps<{
   sorting?: { id: string; desc: boolean }[];
 }>();
 
-const modelName = "resourceCategories";
-const entityName = "resource_category";
+const modelName = 'resourceCategories';
+const entityName = 'resource_category';
 
 const indexTablePageRef = ref<any>(null);
 
@@ -49,10 +49,10 @@ const getRowId = (row: App.Entities.ResourceCategory) => {
 
 const columns = computed<ColumnDef<App.Entities.ResourceCategory, any>[]>(() => [
   {
-    accessorKey: "name",
-    header: () => $t("forms.fields.title"),
+    accessorKey: 'name',
+    header: () => $t('forms.fields.title'),
     cell: ({ row }) => {
-      const name = resolveTranslatable(row.getValue("name"));
+      const name = resolveTranslatable(row.getValue('name'));
       return (
         <div class="max-w-[300px] truncate" title={name}>
           {name}
@@ -62,22 +62,24 @@ const columns = computed<ColumnDef<App.Entities.ResourceCategory, any>[]>(() => 
     size: 300,
   },
   {
-    accessorKey: "icon",
-    header: () => "Ikona",
+    accessorKey: 'icon',
+    header: () => 'Ikona',
     cell: ({ row }) => {
-      const icon = row.original.icon;
-      return icon ? (
-        <div class="flex items-center gap-2">
-          <Icon icon={`fluent:${icon}`} />
-          <span>{icon}</span>
-        </div>
-      ) : (
-        <span class="text-muted-foreground">-</span>
-      );
+      const { icon } = row.original;
+      return icon
+        ? (
+            <div class="flex items-center gap-2">
+              <Icon icon={`fluent:${icon}`} />
+              <span>{icon}</span>
+            </div>
+          )
+        : (
+            <span class="text-muted-foreground">-</span>
+          );
     },
     size: 200,
   },
-  createStandardActionsColumn<App.Entities.ResourceCategory>("resourceCategories", {
+  createStandardActionsColumn<App.Entities.ResourceCategory>('resourceCategories', {
     canEdit: true,
     canDelete: true,
   }),
@@ -99,9 +101,9 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.ResourceCategory>>
   enableColumnVisibility: false,
   enableRowSelection: false,
 
-  headerTitle: capitalize($tChoice("entities.resource_category.model", 2)),
+  headerTitle: capitalize($tChoice('entities.resource_category.model', 2)),
   icon: Icons.RESOURCE_CATEGORY,
-  createRoute: route("resourceCategories.create"),
+  createRoute: route('resourceCategories.create'),
   canCreate: true,
 }));
 

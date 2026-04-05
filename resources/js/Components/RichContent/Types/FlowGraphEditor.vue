@@ -3,12 +3,12 @@
     <Field>
       <FieldLabel>{{ $t('rich-content.flow_graph_preset') }}</FieldLabel>
       <RadioGroup v-model="modelValue.preset" class="grid gap-3">
-        <label 
-          v-for="preset in presets" 
+        <label
+          v-for="preset in presets"
           :key="preset.value"
           class="flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors"
-          :class="modelValue.preset === preset.value 
-            ? 'border-primary bg-primary/5 dark:bg-primary/10' 
+          :class="modelValue.preset === preset.value
+            ? 'border-primary bg-primary/5 dark:bg-primary/10'
             : 'border-zinc-200 hover:border-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600'">
           <RadioGroupItem :value="preset.value" />
           <div class="flex-1">
@@ -26,10 +26,11 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+
 import type { FlowGraph } from '@/Types/contentParts';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { RadioGroup, RadioGroupItem } from '@/Components/ui/radio-group';
-import { trans as $t } from 'laravel-vue-i18n';
 import IFluentOrganization24Regular from '~icons/fluent/organization24-regular';
 
 const modelValue = defineModel<FlowGraph['json_content']>();
@@ -43,4 +44,3 @@ const presets = computed(() => [
   },
 ]);
 </script>
-

@@ -32,7 +32,9 @@
             <SelectValue placeholder="VU SA X" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="__none__">-- Nėra --</SelectItem>
+            <SelectItem value="__none__">
+              -- Nėra --
+            </SelectItem>
             <SelectItem v-for="opt in options" :key="opt.value" :value="String(opt.value)">
               {{ opt.label }}
             </SelectItem>
@@ -104,32 +106,33 @@
 </template>
 
 <script setup lang="ts">
-import { router, useForm } from "@inertiajs/vue3";
-import { computed, ref } from "vue";
+import { router, useForm } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
-import Link24Regular from "~icons/fluent/link24-regular";
+import FluentIconSelect from '../FormItems/FluentIconSelect.vue';
 
-import AdminForm from "./AdminForm.vue";
-import FormElement from "./FormElement.vue";
-import FormFieldWrapper from "./FormFieldWrapper.vue";
-import Icons from "@/Types/Icons/regular";
-import FluentIconSelect from "../FormItems/FluentIconSelect.vue";
-import { Button } from "@/Components/ui/button";
-import { Input } from "@/Components/ui/input";
-import { Label } from "@/Components/ui/label";
-import { Switch } from "@/Components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
+import AdminForm from './AdminForm.vue';
+import FormElement from './FormElement.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+
+import Link24Regular from '~icons/fluent/link24-regular';
+import Icons from '@/Types/Icons/regular';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { Switch } from '@/Components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 
 const props = defineProps<{
   quickLink: App.Entities.QuickLink;
   tenantOptions: Record<string, any>[];
   typeOptions: Record<string, any>[];
-  rememberKey?: "CreateQuickLink";
+  rememberKey?: 'CreateQuickLink';
 }>();
 
 defineEmits<{
-  (event: "submit:form", form: unknown): void;
-  (event: "delete"): void;
+  (event: 'submit:form', form: unknown): void;
+  (event: 'delete'): void;
 }>();
 
 const form = props.rememberKey
@@ -138,51 +141,51 @@ const form = props.rememberKey
 
 const pageSelection = ref<string | null>(null);
 
-const options = props.tenantOptions.map((padalinys) => ({
+const options = props.tenantOptions.map(padalinys => ({
   value: padalinys.id,
   label: padalinys.shortname,
 }));
 
 const languageOptions = [
   {
-    value: "lt",
-    label: "Lietuvių",
+    value: 'lt',
+    label: 'Lietuvių',
   },
   {
-    value: "en",
-    label: "English",
+    value: 'en',
+    label: 'English',
   },
 ];
 
 const quickLinksType = [
   {
-    value: "url",
-    label: "Nuoroda",
+    value: 'url',
+    label: 'Nuoroda',
     icon: Link24Regular,
   },
   {
-    value: "page",
-    label: "Turinio puslapis",
+    value: 'page',
+    label: 'Turinio puslapis',
     icon: Icons.PAGE,
   },
   {
-    value: "news",
-    label: "Naujiena",
+    value: 'news',
+    label: 'Naujiena',
     icon: Icons.NEWS,
   },
   {
-    value: "calendarEvent",
-    label: "Įvykis",
+    value: 'calendarEvent',
+    label: 'Įvykis',
     icon: Icons.CALENDAR,
   },
   {
-    value: "institution",
-    label: "Institucija",
+    value: 'institution',
+    label: 'Institucija',
     icon: Icons.INSTITUTION,
   },
   {
-    value: "category",
-    label: "Kategorija",
+    value: 'category',
+    label: 'Kategorija',
     icon: Icons.CATEGORY,
   },
 ];
@@ -204,7 +207,7 @@ const typeOptions = computed(() => {
 const handleTypeChange = (value: string) => {
   router.reload({
     data: { type: value },
-    only: ["typeOptions"],
+    only: ['typeOptions'],
     onSuccess: () => {
       form.link = null;
       pageSelection.value = null;
@@ -215,7 +218,7 @@ const handleTypeChange = (value: string) => {
 const handlePageSelection = (value: string) => {
   pageSelection.value = value;
 
-  if (form.type === "url") {
+  if (form.type === 'url') {
     return;
   }
 
@@ -224,54 +227,53 @@ const handlePageSelection = (value: string) => {
 
   const optionData = selectedOption.option;
 
-  let subdomain =
-    optionData.tenant?.alias === "vusa"
-      ? "www"
+  const subdomain
+    = optionData.tenant?.alias === 'vusa'
+      ? 'www'
       : optionData.tenant?.alias;
 
-  if (form.type === "page") {
-    form.link = route("page", {
+  if (form.type === 'page') {
+    form.link = route('page', {
       lang: optionData.lang,
-      subdomain: subdomain,
+      subdomain,
       permalink: optionData.permalink,
     });
     return;
   }
 
-  if (form.type === "news") {
-    form.link = route("news", {
+  if (form.type === 'news') {
+    form.link = route('news', {
       lang: optionData.lang,
       news: optionData.permalink,
-      newsString: "naujiena",
-      subdomain: subdomain,
+      newsString: 'naujiena',
+      subdomain,
     });
     return;
   }
 
-  if (form.type === "calendarEvent") {
-    form.link = route("calendar.event", {
+  if (form.type === 'calendarEvent') {
+    form.link = route('calendar.event', {
       lang: form.lang as string,
       calendar: optionData.id,
     });
     return;
   }
 
-  if (form.type === "institution") {
-    form.link = route("contacts.institution", {
+  if (form.type === 'institution') {
+    form.link = route('contacts.institution', {
       lang: form.lang as string,
       institution: optionData.id,
-      subdomain: subdomain,
+      subdomain,
     });
     return;
   }
 
-  if (form.type === "category") {
-    form.link = route("category", {
+  if (form.type === 'category') {
+    form.link = route('category', {
       lang: form.lang as string,
       category: optionData.id,
-      subdomain: subdomain,
+      subdomain,
     });
-    return;
   }
 };
 </script>

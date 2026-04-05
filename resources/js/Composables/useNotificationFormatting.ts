@@ -1,16 +1,17 @@
 /**
  * Notification Formatting Composable
- * 
+ *
  * Provides unified formatting utilities for notification display
  * across toasts, dropdown indicator, and full page views.
  * Handles both new standardized structure and legacy notification formats.
  */
 
 import { trans as $t } from 'laravel-vue-i18n';
+import type { Component } from 'vue';
+
 import { formatRelativeTime } from '@/Utils/IntlTime';
 import { getModelIcon } from '@/Components/icons';
 import type { ModelEnum } from '@/Types/enums';
-import type { Component } from 'vue';
 
 // Default icons for notification categories
 import IFluentComment24Regular from '~icons/fluent/comment24-regular';
@@ -152,8 +153,8 @@ export function getModelEnumKey(data: NotificationData): keyof typeof ModelEnum 
  * Get notification icon component
  */
 export function getNotificationIcon(notification: Notification): Component {
-  const data = notification.data;
-  
+  const { data } = notification;
+
   // Try to get model-specific icon first
   const modelKey = getModelEnumKey(data);
   if (modelKey) {
@@ -161,7 +162,7 @@ export function getNotificationIcon(notification: Notification): Component {
   }
 
   // Fall back to category-based icons
-  const category = data.category;
+  const { category } = data;
   switch (category) {
     case 'comment':
       return IFluentComment24Regular;
@@ -221,15 +222,15 @@ function getIconByType(type: string): Component {
  * Get notification color key
  */
 export function getNotificationColorKey(notification: Notification): NotificationColorKey {
-  const data = notification.data;
-  
+  const { data } = notification;
+
   // New standardized structure uses color
   if (data.color && data.color in notificationColors) {
     return data.color as NotificationColorKey;
   }
 
   // Map category to color
-  const category = data.category;
+  const { category } = data;
   if (category) {
     const categoryColorMap: Record<string, NotificationColorKey> = {
       comment: 'blue',
@@ -284,12 +285,12 @@ function getColorByType(type: string): NotificationColorKey {
 }
 
 // Type for notification color object
-export type NotificationColorStyles = {
+export interface NotificationColorStyles {
   bg: string;
   text: string;
   combined: string;
   border: string;
-};
+}
 
 /**
  * Get notification color classes
@@ -303,13 +304,13 @@ export function getNotificationColorClasses(notification: Notification): Notific
  * Get notification title
  */
 export function getNotificationTitle(notification: Notification): string {
-  const data = notification.data;
-  
+  const { data } = notification;
+
   // New standardized structure
   if (data.title) {
     return data.title;
   }
-  
+
   // Legacy fallbacks based on type
   const type = getNotificationType(notification);
   switch (type) {
@@ -349,22 +350,22 @@ export function getNotificationTitle(notification: Notification): string {
  * Get notification message/body
  */
 export function getNotificationMessage(notification: Notification): string {
-  const data = notification.data;
-  
+  const { data } = notification;
+
   // New standardized structure
   if (data.body) {
     return data.body;
   }
-  
+
   // Legacy fallback
   if (data.text) {
     return data.text;
   }
-  
+
   if (data.object?.name) {
     return `${data.subject?.name || ''} ${$t('on')} ${data.object.name}`;
   }
-  
+
   return data.message || $t('You have a new notification');
 }
 
@@ -406,11 +407,14 @@ export function groupNotificationsByTime(notifications: Notification[]): Map<str
 
     if (date >= today) {
       period = $t('Today');
-    } else if (date >= yesterday) {
+    }
+    else if (date >= yesterday) {
       period = $t('Yesterday');
-    } else if (date >= lastWeek) {
+    }
+    else if (date >= lastWeek) {
       period = $t('This Week');
-    } else {
+    }
+    else {
       period = $t('Earlier');
     }
 

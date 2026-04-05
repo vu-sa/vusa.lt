@@ -16,7 +16,7 @@
       · {{ vote.title }}
     </span>
   </Badge>
-  
+
   <!-- Standard Vote Badge -->
   <Badge
     v-else
@@ -90,7 +90,7 @@ const badgeBackground = computed(() => {
 const consensusBadgeClass = computed(() => {
   // Base teal styling for consensus indicator
   const baseClass = 'border-teal-400 dark:border-teal-600';
-  
+
   // Background based on student_benefit
   switch (props.vote.student_benefit) {
     case 'positive':
@@ -117,4 +117,3 @@ const separatorColor = computed(() => {
   }
 });
 </script>
-

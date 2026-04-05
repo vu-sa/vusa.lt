@@ -183,7 +183,6 @@ Route::resource('tenants', TenantController::class);
 
 Route::get('forms/{form}/export', [FormController::class, 'export'])->name('forms.export');
 Route::resource('forms', FormController::class);
-Route::resource('registrations', RegistrationController::class)->only('show');
 
 Route::patch('problems/{problem}/restore', [ProblemController::class, 'restore'])->name('problems.restore')->withTrashed();
 Route::patch('problems/{problem}/status', [ProblemController::class, 'updateStatus'])->name('problems.updateStatus');

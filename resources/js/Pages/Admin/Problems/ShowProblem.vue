@@ -357,7 +357,7 @@ const hasMetadata = computed(() =>
   !!props.problem.responsible_user
   || !!createdByUser.value
   || (props.problem.categories && props.problem.categories.length > 0)
-  || (props.problem.institutions && props.problem.institutions.length > 0)
+  || (props.problem.institutions && props.problem.institutions.length > 0),
 );
 
 // Duration indicator
@@ -411,7 +411,7 @@ const allStatusDefinitions = [
 ];
 
 const availableStatuses = computed(() => {
-  return allStatusDefinitions.filter((s) => s.value !== props.problem.status);
+  return allStatusDefinitions.filter(s => s.value !== props.problem.status);
 });
 
 // Status progress steps
@@ -446,7 +446,7 @@ usePageBreadcrumbs(() =>
     localizedTitle.value,
     Icons.PROBLEM,
     Icons.PROBLEM,
-  )
+  ),
 );
 
 const handleDelete = () => {

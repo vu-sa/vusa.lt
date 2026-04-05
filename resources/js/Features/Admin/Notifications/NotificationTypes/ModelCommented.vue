@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import { formatRelativeTime } from "@/Utils/IntlTime";
+import { formatRelativeTime } from '@/Utils/IntlTime';
 
 defineProps<{
   notification: any;

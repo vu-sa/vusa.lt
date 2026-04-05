@@ -9,9 +9,9 @@ export function useMeetingStatus() {
    */
   const getCompletionVariant = (status: string) => {
     return {
-      'complete': 'success',
-      'incomplete': 'warning',
-      'no_items': 'secondary',
+      complete: 'success',
+      incomplete: 'warning',
+      no_items: 'secondary',
     }[status] || 'secondary';
   };
 
@@ -23,15 +23,15 @@ export function useMeetingStatus() {
   const getCompletionLabel = (status: string, verbose = false) => {
     if (verbose) {
       return {
-        'complete': $t('Užpildyta'),
-        'incomplete': $t('Neužpildyta iki galo'),
-        'no_items': $t('Nėra darbotvarkės'),
+        complete: $t('Užpildyta'),
+        incomplete: $t('Neužpildyta iki galo'),
+        no_items: $t('Nėra darbotvarkės'),
       }[status] || status;
     }
     return {
-      'complete': $t('Užpildyta'),
-      'incomplete': $t('Neužpildyta'),
-      'no_items': $t('Nėra darbotvarkės'),
+      complete: $t('Užpildyta'),
+      incomplete: $t('Neužpildyta'),
+      no_items: $t('Nėra darbotvarkės'),
     }[status] || status;
   };
 
@@ -40,9 +40,9 @@ export function useMeetingStatus() {
    */
   const getStatusDotColor = (status: string) => {
     return {
-      'complete': 'bg-green-500 dark:bg-green-400',
-      'incomplete': 'bg-amber-500 dark:bg-amber-400',
-      'no_items': 'bg-zinc-400 dark:bg-zinc-500',
+      complete: 'bg-green-500 dark:bg-green-400',
+      incomplete: 'bg-amber-500 dark:bg-amber-400',
+      no_items: 'bg-zinc-400 dark:bg-zinc-500',
     }[status] || 'bg-zinc-400';
   };
 

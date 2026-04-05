@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
+
 import SuggestionAlert from './SuggestionAlert.vue';
 
 // Translations are now handled globally in .storybook/preview.ts
@@ -16,10 +17,10 @@ const meta: Meta<typeof SuggestionAlert> = {
   parameters: {
     docs: {
       description: {
-        component: 'A suggestion alert component used to display helpful tips and guidance to users throughout the application.'
-      }
-    }
-  }
+        component: 'A suggestion alert component used to display helpful tips and guidance to users throughout the application.',
+      },
+    },
+  },
 };
 
 export default meta;
@@ -27,7 +28,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: (args) => ({
+  render: args => ({
     components: { SuggestionAlert },
     setup() {
       // Translations are handled globally via .storybook/preview.ts
@@ -38,25 +39,25 @@ export const Default: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'The default state of the suggestion alert with rich content inside.'
-      }
+        story: 'The default state of the suggestion alert with rich content inside.',
+      },
     },
     a11y: {
       config: {
         rules: [
           { id: 'color-contrast', enabled: true },
-          { id: 'aria-roles', enabled: true }
-        ]
-      }
-    }
-  }
+          { id: 'aria-roles', enabled: true },
+        ],
+      },
+    },
+  },
 };
 
 export const Hidden: Story = {
   args: {
-    modelValue: false
+    modelValue: false,
   },
-  render: (args) => ({
+  render: args => ({
     components: { SuggestionAlert },
     setup() {
       return { args };
@@ -66,14 +67,14 @@ export const Hidden: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'When modelValue is set to false, the alert is not displayed.'
-      }
-    }
-  }
+        story: 'When modelValue is set to false, the alert is not displayed.',
+      },
+    },
+  },
 };
 
 export const WithLongContent: Story = {
-  render: (args) => ({
+  render: args => ({
     components: { SuggestionAlert },
     setup() {
       return { args };
@@ -91,8 +92,8 @@ export const WithLongContent: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Demonstrates how the alert handles longer content with multiple paragraphs and lists.'
-      }
-    }
-  }
+        story: 'Demonstrates how the alert handles longer content with multiple paragraphs and lists.',
+      },
+    },
+  },
 };

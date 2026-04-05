@@ -8,16 +8,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed } from 'vue';
 
-import InfoPopover from "../Buttons/InfoPopover.vue";
+import InfoPopover from '../Buttons/InfoPopover.vue';
 
-import { Badge } from "@/Components/ui/badge";
-import { capitalize } from "@/Utils/String";
+import { Badge } from '@/Components/ui/badge';
+import { capitalize } from '@/Utils/String';
 
 const props = defineProps<{
-  state: App.Entities.ReservationResource["state"];
-  state_properties?: App.Entities.ReservationResource["state_properties"];
+  state: App.Entities.ReservationResource['state'];
+  state_properties?: App.Entities.ReservationResource['state_properties'];
 }>();
 
 // Map state to Shadcn badge variant

@@ -29,26 +29,26 @@
             lang: locale === 'lt' ? 'lt' : 'en',
           })"
             class="group relative flex items-center gap-3 py-2 px-2 -mx-2 rounded-md transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-700/50">
-            
+
             <!-- Timeline dot -->
-            <div 
+            <div
               class="absolute -left-4 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-zinc-900 shadow-sm transition-all duration-200"
-              :class="index === 0 
-                ? 'bg-vusa-red scale-110' 
+              :class="index === 0
+                ? 'bg-vusa-red scale-110'
                 : 'bg-zinc-300 dark:bg-zinc-600 group-hover:bg-vusa-red group-hover:scale-110'"
             />
 
             <!-- Event thumbnail -->
             <div class="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-zinc-100 dark:bg-zinc-700">
-              <img 
+              <img
                 v-if="getEventImage(event)"
                 :src="getEventImage(event)!"
                 :alt="getEventTitle(event)"
                 class="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
                 loading="lazy"
               >
-              <div 
-                v-else 
+              <div
+                v-else
                 class="w-full h-full flex items-center justify-center bg-gradient-to-br from-vusa-red/10 to-vusa-red/30"
               >
                 <CalendarDaysIcon class="w-4 h-4 text-vusa-red/60" />
@@ -58,8 +58,8 @@
             <!-- Date badge -->
             <div
               class="flex flex-col items-center justify-center rounded-md px-2 py-1 text-center min-w-[44px]"
-              :class="index === 0 
-                ? 'bg-vusa-red text-white' 
+              :class="index === 0
+                ? 'bg-vusa-red text-white'
                 : 'bg-vusa-red/10 dark:bg-vusa-red/20 text-vusa-red'"
             >
               <span class="text-[9px] font-medium uppercase leading-none">
@@ -86,7 +86,7 @@
             <ChevronRightIcon class="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-vusa-red transition-colors" />
 
             <!-- "Next" badge for first event -->
-            <div 
+            <div
               v-if="index === 0"
               class="absolute -top-1 right-0 px-1.5 py-0.5 bg-vusa-red text-white text-[8px] font-bold rounded-full shadow-sm"
             >
@@ -101,22 +101,24 @@
         <div class="w-12 h-12 mx-auto rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-3">
           <CalendarDaysIcon class="w-6 h-6 text-zinc-400" />
         </div>
-        <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $t('Nėra artėjančių renginių') }}</p>
+        <p class="text-sm text-zinc-500 dark:text-zinc-400">
+          {{ $t('Nėra artėjančių renginių') }}
+        </p>
       </div>
     </CardContent>
   </Card>
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from "laravel-vue-i18n";
-import { usePage } from "@inertiajs/vue3";
-import { computed } from "vue";
-import { format, parseISO } from "date-fns";
-import { lt, enUS } from "date-fns/locale";
-import { CalendarDays as CalendarDaysIcon, ChevronRight as ChevronRightIcon } from "lucide-vue-next";
+import { trans as $t } from 'laravel-vue-i18n';
+import { usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { format, parseISO } from 'date-fns';
+import { lt, enUS } from 'date-fns/locale';
+import { CalendarDays as CalendarDaysIcon, ChevronRight as ChevronRightIcon } from 'lucide-vue-next';
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
-import { dashboardCardClasses } from "@/Composables/useDashboardCardStyles";
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { dashboardCardClasses } from '@/Composables/useDashboardCardStyles';
 
 const props = defineProps<{
   eventsList: App.Entities.Calendar[];
@@ -137,7 +139,7 @@ const getEventTitle = (event: App.Entities.Calendar): string => {
   if (Array.isArray(event.title)) {
     // Find the translation for current locale
     const translations = event.title as Array<{ locale?: string; value?: string }>;
-    const translation = translations.find((t) => t?.locale === locale.value);
+    const translation = translations.find(t => t?.locale === locale.value);
     return translation?.value || translations[0]?.value || '';
   }
   return String(event.title || '');
@@ -148,7 +150,7 @@ const getEventLocation = (event: App.Entities.Calendar): string | null => {
   if (!event.location) return null;
   if (Array.isArray(event.location)) {
     const translations = event.location as Array<{ locale?: string; value?: string }>;
-    const translation = translations.find((t) => t?.locale === locale.value);
+    const translation = translations.find(t => t?.locale === locale.value);
     return translation?.value || translations[0]?.value || null;
   }
   return String(event.location);
@@ -159,7 +161,8 @@ const formatEventMonth = (dateStr: string) => {
   try {
     const date = parseISO(dateStr);
     return format(date, 'MMM', { locale: dateLocale.value });
-  } catch {
+  }
+  catch {
     return '';
   }
 };
@@ -169,7 +172,8 @@ const formatEventDay = (dateStr: string) => {
   try {
     const date = parseISO(dateStr);
     return format(date, 'd');
-  } catch {
+  }
+  catch {
     return '';
   }
 };

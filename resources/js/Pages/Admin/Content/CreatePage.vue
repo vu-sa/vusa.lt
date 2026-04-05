@@ -17,28 +17,28 @@
 </template>
 
 <script setup lang="ts">
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import PageForm from "@/Components/AdminForms/PageForm.vue";
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import PageForm from '@/Components/AdminForms/PageForm.vue';
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 
 defineProps<{
   categories: App.Entities.Category[];
-}>()
+}>();
 
 const page = {
-  title: "",
+  title: '',
   category_id: null,
-  permalink: "",
-  lang: "lt",
+  permalink: '',
+  lang: 'lt',
   other_lang_page: null,
   is_active: true,
   content: {
     parts: [
       {
-        type: "tiptap",
+        type: 'tiptap',
         json_content: {},
       },
-    ]
-  }
+    ],
+  },
 };
 </script>

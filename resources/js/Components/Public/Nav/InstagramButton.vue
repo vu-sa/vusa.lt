@@ -8,5 +8,5 @@
 </template>
 
 <script setup lang="ts">
-import { Button } from "@/Components/ui/button";
+import { Button } from '@/Components/ui/button';
 </script>

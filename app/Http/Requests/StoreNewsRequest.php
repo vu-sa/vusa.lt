@@ -59,7 +59,7 @@ class StoreNewsRequest extends FormRequest
             'content.parts' => 'required|array',
             'content.parts.*.id' => 'nullable|integer',
             'content.parts.*.type' => ['required', 'string', Rule::in(ContentPartEnum::toArray())],
-            'content.parts.*.json_content' => 'required',
+            'content.parts.*.json_content' => 'present',
             'content.parts.*.options' => 'nullable',
             'content.parts.*.order' => 'nullable|integer',
         ];

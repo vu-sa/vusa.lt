@@ -17,7 +17,7 @@
           </template>
         </DialogDescription>
       </DialogHeader>
-      
+
       <div class="space-y-5">
         <!-- Step 1: Copy the link -->
         <div class="rounded-xl border border-zinc-200 bg-zinc-50/50 p-4 dark:border-zinc-700 dark:bg-zinc-800/50">
@@ -27,7 +27,7 @@
               {{ $page.props.app.locale === 'lt' ? 'Nukopijuok nuorodą' : 'Copy the link' }}
             </span>
           </div>
-          
+
           <div class="space-y-3">
             <div>
               <p v-if="$page.props.app.locale === 'en'" class="mb-1.5 text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
@@ -37,10 +37,10 @@
                 <div class="flex-1 overflow-hidden rounded-lg border border-zinc-200 bg-white px-3 py-2 font-mono text-xs text-zinc-600 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300">
                   <span class="block truncate">{{ route("calendar.ics") }}</span>
                 </div>
-                <CopyToClipboardButton 
-                  show-icon 
+                <CopyToClipboardButton
+                  show-icon
                   :text-to-copy="route('calendar.ics')"
-                  error-text="Nepavyko nukopijuoti nuorodos..." 
+                  error-text="Nepavyko nukopijuoti nuorodos..."
                   success-text="Nuoroda nukopijuota!"
                   class="shrink-0"
                 >
@@ -48,7 +48,7 @@
                 </CopyToClipboardButton>
               </div>
             </div>
-            
+
             <template v-if="$page.props.app.locale === 'en'">
               <div>
                 <p class="mb-1.5 text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
@@ -58,10 +58,10 @@
                   <div class="flex-1 overflow-hidden rounded-lg border border-zinc-200 bg-white px-3 py-2 font-mono text-xs text-zinc-600 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300">
                     <span class="block truncate">{{ route("calendar.ics", { lang: "en" }) }}</span>
                   </div>
-                  <CopyToClipboardButton 
+                  <CopyToClipboardButton
                     show-icon
                     :text-to-copy="route('calendar.ics', { lang: 'en' })"
-                    error-text="Couldn't copy the link..." 
+                    error-text="Couldn't copy the link..."
                     success-text="Link copied!"
                     class="shrink-0"
                   >
@@ -72,7 +72,7 @@
             </template>
           </div>
         </div>
-        
+
         <!-- Step 2: Add to calendar -->
         <div class="rounded-xl border border-zinc-200 bg-zinc-50/50 p-4 dark:border-zinc-700 dark:bg-zinc-800/50">
           <div class="mb-3 flex items-center gap-2">
@@ -81,7 +81,7 @@
               {{ $page.props.app.locale === 'lt' ? 'Pridėk prie savo kalendoriaus' : 'Add to your calendar' }}
             </span>
           </div>
-          
+
           <Tabs default-value="google">
             <TabsList class="mb-4 grid w-full grid-cols-2">
               <TabsTrigger value="google" class="gap-1.5">
@@ -93,7 +93,7 @@
                 Outlook
               </TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="google" class="mt-0">
               <ol v-if="$page.props.app.locale === 'lt'" class="space-y-2.5 text-sm">
                 <li class="flex gap-3">
@@ -142,7 +142,7 @@
                 </li>
               </ol>
             </TabsContent>
-            
+
             <TabsContent value="outlook" class="mt-0">
               <ol v-if="$page.props.app.locale === 'lt'" class="space-y-2.5 text-sm">
                 <li class="flex gap-3">
@@ -200,17 +200,17 @@
           </Tabs>
         </div>
       </div>
-      
+
       <!-- Footer notice - fixed the weird text rendering -->
       <div class="mt-2 flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2.5 text-sm text-amber-800 dark:bg-amber-900/20 dark:text-amber-200">
         <Info class="mt-0.5 size-4 shrink-0" />
         <p>
           <template v-if="$page.props.app.locale === 'lt'">
-            „Google" ir „Outlook" kartais atnaujina renginių informaciją tik <strong>kartą per dieną</strong>. 
+            „Google" ir „Outlook" kartais atnaujina renginių informaciją tik <strong>kartą per dieną</strong>.
             Dėl naujausios informacijos apsilankyk vusa.lt
           </template>
           <template v-else>
-            Google and Outlook sometimes refresh these calendars only <strong>once per day</strong>. 
+            Google and Outlook sometimes refresh these calendars only <strong>once per day</strong>.
             For the latest events, always visit vusa.lt
           </template>
         </p>
@@ -220,14 +220,16 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t } from "laravel-vue-i18n";
-import { CalendarSync, Info } from "lucide-vue-next";
-import { Icon } from "@iconify/vue";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
-import CopyToClipboardButton from "../Buttons/CopyToClipboardButton.vue";
+import { trans as $t } from 'laravel-vue-i18n';
+import { CalendarSync, Info } from 'lucide-vue-next';
+import { Icon } from '@iconify/vue';
 
-defineEmits(["close"]);
+import CopyToClipboardButton from '../Buttons/CopyToClipboardButton.vue';
+
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+
+defineEmits(['close']);
 
 defineProps<{
   showModal: boolean;

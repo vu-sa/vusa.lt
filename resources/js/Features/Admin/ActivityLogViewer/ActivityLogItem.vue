@@ -31,9 +31,13 @@
         <span class="font-medium text-zinc-700 dark:text-zinc-300">{{ field.label }}</span>
         <div class="mt-0.5 text-zinc-500 dark:text-zinc-400">
           <template v-if="field.isStatus">
-            <Badge :variant="getStatusVariant(field.oldValue)" class="mr-1">{{ formatStatus(field.oldValue) }}</Badge>
+            <Badge :variant="getStatusVariant(field.oldValue)" class="mr-1">
+              {{ formatStatus(field.oldValue) }}
+            </Badge>
             <ArrowRight class="inline h-3.5 w-3.5 mx-1 text-zinc-400" />
-            <Badge :variant="getStatusVariant(field.newValue)" class="ml-1">{{ formatStatus(field.newValue) }}</Badge>
+            <Badge :variant="getStatusVariant(field.newValue)" class="ml-1">
+              {{ formatStatus(field.newValue) }}
+            </Badge>
           </template>
           <template v-else-if="field.isDate">
             {{ formatDateValue(field.oldValue) || '—' }}
@@ -59,13 +63,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import { trans as $t } from "laravel-vue-i18n";
-import { Plus, Pencil, ArrowRight } from "lucide-vue-next";
+import { computed } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+import { Plus, Pencil, ArrowRight } from 'lucide-vue-next';
 
-import { formatRelativeTime } from "@/Utils/IntlTime";
-import UserPopover from "@/Components/Avatars/UserPopover.vue";
-import { Badge } from "@/Components/ui/badge";
+import { formatRelativeTime } from '@/Utils/IntlTime';
+import UserPopover from '@/Components/Avatars/UserPopover.vue';
+import { Badge } from '@/Components/ui/badge';
 
 const props = defineProps<{
   activity: Record<string, any>;
@@ -107,8 +111,8 @@ const changedFields = computed<ChangedField[]>(() => {
   if (!props.activity.properties?.attributes) return [];
 
   return Object.keys(props.activity.properties.attributes)
-    .filter((key) => !HIDDEN_KEYS.includes(key))
-    .map((key) => ({
+    .filter(key => !HIDDEN_KEYS.includes(key))
+    .map(key => ({
       key,
       label: getFieldLabel(key),
       oldValue: props.activity.properties.old?.[key] ?? '',
@@ -141,7 +145,8 @@ const formatDateValue = (value: string | null): string => {
   if (!value) return '';
   try {
     return new Date(value).toLocaleDateString('lt-LT');
-  } catch {
+  }
+  catch {
     return value;
   }
 };
@@ -151,6 +156,6 @@ const stripHtml = (html: string): string => html.replace(/<[^>]*>/g, '').trim();
 const truncateText = (value: string | null): string => {
   if (!value) return '';
   const text = stripHtml(String(value));
-  return text.length > 80 ? text.substring(0, 80) + '…' : text;
+  return text.length > 80 ? `${text.substring(0, 80)}…` : text;
 };
 </script>

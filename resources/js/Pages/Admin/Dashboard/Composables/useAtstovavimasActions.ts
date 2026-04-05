@@ -2,7 +2,7 @@ import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 
 export function useAtstovavimosActions(
-  accessibleInstitutions: App.Entities.Institution[]
+  accessibleInstitutions: App.Entities.Institution[],
 ) {
   // Modal state
   const showMeetingModal = ref(false);
@@ -21,8 +21,8 @@ export function useAtstovavimosActions(
 
   // Check-in creation from Gantt drag selection
   const onGapCreateCheckIn = (payload: { institution_id: string | number; startDate: Date; endDate: Date }) => {
-    showCreateCheckIn.value = { 
-      open: true, 
+    showCreateCheckIn.value = {
+      open: true,
       institutionId: String(payload.institution_id),
       startDate: payload.startDate,
       endDate: payload.endDate,
@@ -38,10 +38,10 @@ export function useAtstovavimosActions(
 
   // Gantt and meeting creation
   // payload.institutionName is optional - provided when institution is external (not in user's accessible list)
-  const onGapCreateMeeting = (payload: { institution_id: string | number, suggestedAt: Date, institutionName?: string }) => {
+  const onGapCreateMeeting = (payload: { institution_id: string | number; suggestedAt: Date; institutionName?: string }) => {
     const tInstitutions = accessibleInstitutions;
     let inst = tInstitutions.find((i: any) => i && i.id === payload.institution_id);
-    
+
     // If institution not found in accessible list, create a minimal external institution object
     if (!inst && payload.institutionName) {
       inst = {
@@ -50,7 +50,7 @@ export function useAtstovavimosActions(
         isExternal: true, // Flag to indicate this is an external institution
       } as any;
     }
-    
+
     selectedInstitution.value = inst;
     selectedSuggestedAt.value = payload.suggestedAt;
     showMeetingModal.value = true;

@@ -3,9 +3,9 @@
   <TooltipProvider v-if="canInstall || needRefresh">
     <Tooltip>
       <TooltipTrigger as-child>
-        <Button 
-          variant="outline" 
-          size="icon" 
+        <Button
+          variant="outline"
+          size="icon"
           class="relative rounded-full"
           @click="handleClick"
         >
@@ -31,7 +31,7 @@
       </TooltipContent>
     </Tooltip>
   </TooltipProvider>
-  
+
   <!-- Update Dialog (shown when user clicks update button in non-PWA mode) -->
   <Dialog v-model:open="showUpdateDialog">
     <DialogContent class="sm:max-w-md">
@@ -59,6 +59,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { RefreshCwIcon, DownloadIcon } from 'lucide-vue-next';
+
 import { usePWA } from '@/Composables/usePWA';
 import { Button } from '@/Components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
@@ -79,10 +80,12 @@ function handleClick() {
     // In PWA mode, update directly; in browser mode, show dialog
     if (isPWA.value) {
       updateApp();
-    } else {
+    }
+    else {
       showUpdateDialog.value = true;
     }
-  } else if (canInstall.value) {
+  }
+  else if (canInstall.value) {
     promptInstall();
   }
 }

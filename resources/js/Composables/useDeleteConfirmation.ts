@@ -43,7 +43,8 @@ export function useDeleteConfirmation(options: DeleteConfirmationOptions = {}) {
     if (mergedOptions.confirm) {
       currentDeleteAction.value = deleteAction;
       isOpen.value = true;
-    } else {
+    }
+    else {
       deleteAction();
     }
   };
@@ -88,7 +89,7 @@ export function useDeleteConfirmation(options: DeleteConfirmationOptions = {}) {
           if (options.onError) {
             options.onError(errors);
           }
-        }
+        },
       });
     };
 
@@ -99,11 +100,11 @@ export function useDeleteConfirmation(options: DeleteConfirmationOptions = {}) {
     // State
     isOpen,
     isDeleting,
-    
+
     // Options
     title: mergedOptions.title,
     message: mergedOptions.message,
-    
+
     // Actions
     confirmDelete,
     executeDelete,

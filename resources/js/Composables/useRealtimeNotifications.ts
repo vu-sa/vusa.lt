@@ -1,17 +1,17 @@
 /**
  * Real-time Notifications Composable
- * 
+ *
  * Provides real-time notification updates via Laravel Reverb WebSockets.
  * Listens to the user's private broadcast channel for new notifications
  * and updates the UI without page refresh.
- * 
+ *
  * DEDUPLICATION STRATEGY:
  * - Broadcast channel: For in-app real-time updates (toast, badge animation)
  * - WebPush channel: For offline/background notifications (OS-level push)
- * 
+ *
  * When both are active, the frontend tracks received notification IDs
  * to prevent showing the same notification twice.
- * 
+ *
  * @see https://laravel.com/docs/broadcasting
  * @see https://laravel.com/docs/notifications#broadcast-notifications
  */
@@ -20,6 +20,7 @@ import { ref, computed, onUnmounted, watch, markRaw, h } from 'vue';
 import { usePage, router } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
 import type Echo from 'laravel-echo';
+
 import type { Notification } from '@/Composables/useNotificationFormatting';
 
 // Types for broadcast notification events
@@ -61,7 +62,7 @@ function extractNotificationData(event: NotificationEvent): Record<string, any> 
   if (event.data && typeof event.data === 'object' && Object.keys(event.data).length > 0) {
     return event.data;
   }
-  
+
   // Otherwise, extract data from flat structure (exclude id and type)
   const { id, type, data, ...flatData } = event;
   return flatData;
@@ -100,7 +101,7 @@ export function useRealtimeNotifications() {
       // Subscribe to the user's private notification channel
       // Laravel broadcasts notifications to: App.Models.User.{id}
       const channelName = `App.Models.User.${userId.value}`;
-      
+
       userChannel = echo.private(channelName)
         .notification((notification: NotificationEvent) => {
           handleNotification(notification);
@@ -114,11 +115,12 @@ export function useRealtimeNotifications() {
       // Note: Echo doesn't have a direct "connected" callback for channels,
       // but if we get here without error, subscription was initiated
       isConnected.value = true;
-      
-    } catch (error) {
+    }
+    catch (error) {
       console.error('[Reverb] Failed to initialize:', error);
       connectionError.value = 'Failed to connect to real-time server';
-    } finally {
+    }
+    finally {
       isConnecting.value = false;
     }
   }
@@ -160,12 +162,12 @@ export function useRealtimeNotifications() {
    */
   function triggerNewNotificationAnimation() {
     hasNewNotification.value = true;
-    
+
     // Clear any existing timeout
     if (animationTimeout) {
       clearTimeout(animationTimeout);
     }
-    
+
     // Reset animation state after animation completes
     animationTimeout = setTimeout(() => {
       hasNewNotification.value = false;
@@ -178,7 +180,7 @@ export function useRealtimeNotifications() {
   async function showNotificationToast(notification: NotificationEvent) {
     // Extract data using helper that handles both flat and nested structures
     const extractedData = extractNotificationData(notification);
-    
+
     const notificationData: Notification = {
       id: notification.id,
       type: notification.type,
@@ -190,13 +192,14 @@ export function useRealtimeNotifications() {
     try {
       // Dynamically import the toast component to avoid circular dependencies
       const { default: NotificationToast } = await import('@/Components/Notifications/NotificationToast.vue');
-      
+
       // Use markRaw to prevent Vue from making the component reactive
       toast(markRaw(h(NotificationToast, { notification: notificationData })), {
         duration: 6000,
         position: 'bottom-right',
       });
-    } catch (error) {
+    }
+    catch (error) {
       // Fallback to simple toast if custom component fails
       console.error('[Reverb] Failed to show custom toast:', error);
       const fallbackData = extractNotificationData(notification);
@@ -217,7 +220,7 @@ export function useRealtimeNotifications() {
       userChannel.unsubscribe?.();
       userChannel = null;
     }
-    
+
     isConnected.value = false;
     connectionError.value = null;
   }
@@ -227,10 +230,12 @@ export function useRealtimeNotifications() {
     if (newId && !oldId) {
       // User just logged in
       connect();
-    } else if (!newId && oldId) {
+    }
+    else if (!newId && oldId) {
       // User just logged out
       disconnect();
-    } else if (newId !== oldId && newId) {
+    }
+    else if (newId !== oldId && newId) {
       // User changed (e.g., impersonation)
       disconnect();
       connect();
@@ -249,7 +254,7 @@ export function useRealtimeNotifications() {
     isConnecting: computed(() => isConnecting.value),
     connectionError: computed(() => connectionError.value),
     hasNewNotification: computed(() => hasNewNotification.value),
-    
+
     // Methods
     connect,
     disconnect,
@@ -280,13 +285,13 @@ export async function disconnectRealtimeNotifications(): Promise<void> {
     userChannel.unsubscribe?.();
     userChannel = null;
   }
-  
+
   if (echo) {
     const { disconnectEcho } = await import('@/echo');
     disconnectEcho();
     echo = null;
   }
-  
+
   isConnected.value = false;
   isConnecting.value = false;
   connectionError.value = null;

@@ -60,11 +60,11 @@
             </template>
             <div v-else class="text-center py-6 text-zinc-500 dark:text-zinc-400">
               <div class="text-3xl mb-2">
-😔
-</div>
+                😔
+              </div>
               <p class="text-sm">
-{{ $t('Nėra aktyvių atstovų') }}
-</p>
+                {{ $t('Nėra aktyvių atstovų') }}
+              </p>
             </div>
           </TabsContent>
 
@@ -87,11 +87,11 @@
             </template>
             <div v-else class="text-center py-6 text-emerald-600 dark:text-emerald-400">
               <div class="text-3xl mb-2">
-🎉
-</div>
+                🎉
+              </div>
               <p class="text-sm font-medium">
-{{ $t('Visi atstovai aktyvūs!') }}
-</p>
+                {{ $t('Visi atstovai aktyvūs!') }}
+              </p>
             </div>
           </TabsContent>
         </Tabs>

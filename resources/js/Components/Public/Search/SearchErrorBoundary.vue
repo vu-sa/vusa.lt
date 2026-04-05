@@ -2,7 +2,7 @@
   <div class="search-error-boundary">
     <!-- Normal content when no error -->
     <slot v-if="!hasError" />
-    
+
     <!-- Error states -->
     <div v-else class="error-state p-6 text-center">
       <!-- Network Error -->
@@ -17,10 +17,10 @@
           {{ error.message }}
         </p>
         <div class="flex gap-2 justify-center">
-          <Button 
-            v-if="error.retryable" 
-            @click="$emit('retry')"
+          <Button
+            v-if="error.retryable"
             :disabled="isRetrying"
+            @click="$emit('retry')"
           >
             <RefreshCw :class="['w-4 h-4 mr-2', { 'animate-spin': isRetrying }]" />
             Bandyti dar kartą
@@ -44,10 +44,10 @@
           {{ error.message }}
         </p>
         <div class="flex gap-2 justify-center">
-          <Button 
-            v-if="error.retryable && retryCount < maxRetries" 
-            @click="$emit('retry')"
+          <Button
+            v-if="error.retryable && retryCount < maxRetries"
             :disabled="isRetrying"
+            @click="$emit('retry')"
           >
             <RefreshCw :class="['w-4 h-4 mr-2', { 'animate-spin': isRetrying }]" />
             Bandyti dar kartą ({{ retryCount + 1 }}/{{ maxRetries }})
@@ -71,7 +71,7 @@
           {{ error.message }}
         </p>
         <div class="flex gap-2 justify-center">
-          <Button @click="$emit('retry')" :disabled="isRetrying">
+          <Button :disabled="isRetrying" @click="$emit('retry')">
             <RefreshCw :class="['w-4 h-4 mr-2', { 'animate-spin': isRetrying }]" />
             Bandyti dar kartą
           </Button>
@@ -94,10 +94,10 @@
           {{ error.message }}
         </p>
         <div class="flex gap-2 justify-center">
-          <Button 
-            v-if="error.retryable" 
-            @click="$emit('retry')"
+          <Button
+            v-if="error.retryable"
             :disabled="isRetrying"
+            @click="$emit('retry')"
           >
             <RefreshCw :class="['w-4 h-4 mr-2', { 'animate-spin': isRetrying }]" />
             Bandyti dar kartą
@@ -121,7 +121,7 @@
           Įvyko nenumatyta klaida. Pabandykite atnaujinti puslapį.
         </p>
         <div class="flex gap-2 justify-center">
-          <Button @click="$emit('retry')" :disabled="isRetrying">
+          <Button :disabled="isRetrying" @click="$emit('retry')">
             <RefreshCw :class="['w-4 h-4 mr-2', { 'animate-spin': isRetrying }]" />
             Bandyti dar kartą
           </Button>
@@ -153,46 +153,47 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { Button } from '@/Components/ui/button'
-import { 
-  WifiOff, 
-  ServerCrash, 
-  Clock, 
-  AlertTriangle, 
-  AlertCircle, 
-  RefreshCw, 
-  X 
-} from 'lucide-vue-next'
-import type { SearchError } from '@/Shared/Search/types'
+import { computed } from 'vue';
+import {
+  WifiOff,
+  ServerCrash,
+  Clock,
+  AlertTriangle,
+  AlertCircle,
+  RefreshCw,
+  X,
+} from 'lucide-vue-next';
+
+import { Button } from '@/Components/ui/button';
+import type { SearchError } from '@/Shared/Search/types';
 
 interface Props {
-  error: SearchError | null
-  isOnline?: boolean
-  isRetrying?: boolean
-  retryCount?: number
-  maxRetries?: number
+  error: SearchError | null;
+  isOnline?: boolean;
+  isRetrying?: boolean;
+  retryCount?: number;
+  maxRetries?: number;
 }
 
 interface Emits {
-  (e: 'retry'): void
-  (e: 'clearError'): void
+  (e: 'retry'): void;
+  (e: 'clearError'): void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isOnline: true,
   isRetrying: false,
   retryCount: 0,
-  maxRetries: 3
-})
+  maxRetries: 3,
+});
 
-const emit = defineEmits<Emits>()
+const emit = defineEmits<Emits>();
 
-const hasError = computed(() => !!props.error)
+const hasError = computed(() => !!props.error);
 
 const isDevelopment = computed(() => {
-  return import.meta.env.DEV || process.env.NODE_ENV === 'development'
-})
+  return import.meta.env.DEV || process.env.NODE_ENV === 'development';
+});
 </script>
 
 <style scoped>

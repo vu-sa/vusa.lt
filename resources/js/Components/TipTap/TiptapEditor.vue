@@ -3,13 +3,13 @@
     <!-- Bubble Menu (for compact and full presets) -->
     <BubbleMenu v-if="editor && preset !== 'minimal'"
       class="flex items-center gap-1 rounded-lg border bg-white p-1 shadow-md dark:bg-zinc-900 dark:border-zinc-700"
-      :editor="editor" :tippy-options="{ duration: 50 }">
+      :editor :tippy-options="{ duration: 50 }">
       <TiptapFormattingButtons v-model:editor="editor" />
-      
+
       <!-- Link controls in bubble menu -->
       <template v-if="preset === 'full'">
         <Separator orientation="vertical" class="h-5 mx-1" />
-        <TiptapLinkButton :editor="editor" @submit="handleLinkSubmit" @document:submit="handleDocumentLinkSubmit">
+        <TiptapLinkButton :editor @submit="handleLinkSubmit" @document:submit="handleDocumentLinkSubmit">
           <Button variant="ghost" size="sm" class="h-8 w-8 p-0">
             <IFluentLink24Regular class="h-4 w-4" />
           </Button>
@@ -29,7 +29,7 @@
 
       <!-- Link buttons -->
       <ButtonGroup>
-        <TiptapLinkButton :editor="editor" @submit="handleLinkSubmit" @document:submit="handleDocumentLinkSubmit">
+        <TiptapLinkButton :editor @submit="handleLinkSubmit" @document:submit="handleDocumentLinkSubmit">
           <Button size="sm" variant="outline">
             <IFluentLink24Regular />
           </Button>
@@ -227,7 +227,7 @@
 
     <!-- Editor Content -->
     <div class="tiptap-content rounded-md border dark:border-zinc-700 dark:bg-zinc-800 overflow-hidden">
-      <EditorContent :editor="editor" />
+      <EditorContent :editor />
     </div>
 
     <!-- Image Accessibility Dialog -->
@@ -252,7 +252,6 @@ import './accessible-image-commands.d.ts';
 import { type EditorPreset, getExtensionsForPreset } from './extensions/presets';
 import { useTiptapFileUpload } from './composables/useTiptapFileUpload';
 import { useTiptapImageControls } from './composables/useTiptapImageControls';
-import { latinizeId } from '@/Utils/String';
 
 // UI Components
 import TiptapFormattingButtons from './TiptapFormattingButtons.vue';
@@ -260,6 +259,7 @@ import TiptapImageButton from './TiptapImageButton.vue';
 import TiptapLinkButton from './TiptapLinkButton.vue';
 import TiptapVideoButton from './TiptapVideoButton.vue';
 import TiptapYoutubeButton from './TiptapYoutubeButton.vue';
+import ImageAccessibilityDialog from './ImageAccessibilityDialog.vue';
 
 import { Button } from '@/Components/ui/button';
 import { ButtonGroup } from '@/Components/ui/button-group';
@@ -270,7 +270,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
-import ImageAccessibilityDialog from './ImageAccessibilityDialog.vue';
+import { latinizeId } from '@/Utils/String';
 
 // Icons
 import IFluentLink24Regular from '~icons/fluent/link24-regular';
@@ -379,7 +379,8 @@ const editor = useEditor({
     nextTick(() => {
       if (props.html) {
         emit('update:modelValue', editor.value?.getHTML() ?? null);
-      } else {
+      }
+      else {
         emit('update:modelValue', editor.value?.getJSON() ?? null);
       }
     });
@@ -398,7 +399,7 @@ function updateHeadingIds() {
       let id = latinizeId(node.textContent);
 
       let counter = 1;
-      while (innerHeadings.some((heading) => heading.id === id)) {
+      while (innerHeadings.some(heading => heading.id === id)) {
         id = `${latinizeId(node.textContent)}-${counter}`;
         counter++;
       }
@@ -430,9 +431,11 @@ function handleLinkSubmit(url: string, text?: string) {
 
   if (hasSelection) {
     editor.value.chain().focus().extendMarkRange('link').setLink({ href: url, class: '' }).run();
-  } else if (text) {
+  }
+  else if (text) {
     editor.value.chain().focus().insertContent(`<a href="${url}" class="">${text}</a>`).run();
-  } else {
+  }
+  else {
     editor.value.chain().focus().insertContent(`<a href="${url}" class="">${url}</a>`).run();
   }
 }
@@ -445,9 +448,11 @@ function handleDocumentLinkSubmit(url: string, text?: string) {
 
   if (hasSelection) {
     editor.value.chain().focus().extendMarkRange('link').setLink({ href: url, class: 'archive-document-link plain' }).run();
-  } else if (text) {
+  }
+  else if (text) {
     editor.value.chain().focus().insertContent(`<a href="${url}" class="archive-document-link plain">${text}</a>`).run();
-  } else {
+  }
+  else {
     editor.value.chain().focus().insertContent(`<a href="${url}" class="archive-document-link plain">${url}</a>`).run();
   }
 }
@@ -458,7 +463,8 @@ function attachImage(imageData: { src: string; alt?: string; title?: string } | 
 
   if (typeof imageData === 'string') {
     editor.value.chain().focus().setImage({ src: imageData }).run();
-  } else {
+  }
+  else {
     editor.value.chain().focus().setImage({
       src: imageData.src,
       alt: imageData.alt || '',

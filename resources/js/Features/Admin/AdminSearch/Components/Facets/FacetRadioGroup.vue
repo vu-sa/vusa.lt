@@ -10,7 +10,7 @@
           item.value === selectedValue ? 'bg-accent' : '',
         ]"
       >
-        <RadioGroupItem :value="item.value" :id="`radio-${item.value}`" />
+        <RadioGroupItem :id="`radio-${item.value}`" :value="item.value" />
         <Label
           :for="`radio-${item.value}`"
           :class="[
@@ -48,29 +48,27 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from 'laravel-vue-i18n'
-import { X } from 'lucide-vue-next'
+import { trans as $t } from 'laravel-vue-i18n';
+import { X } from 'lucide-vue-next';
 
-import { Label } from '@/Components/ui/label'
-import { Badge } from '@/Components/ui/badge'
-import { Button } from '@/Components/ui/button'
-import { RadioGroup, RadioGroupItem } from '@/Components/ui/radio-group'
+import type { AdminFacetValue } from '../../Types/AdminSearchTypes';
 
-import type { AdminFacetValue } from '../../Types/AdminSearchTypes'
+import { Label } from '@/Components/ui/label';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { RadioGroup, RadioGroupItem } from '@/Components/ui/radio-group';
 
 interface Props {
-  values: AdminFacetValue[]
-  selectedValue: string | undefined
-  labelFormatter?: (value: string) => string
+  values: AdminFacetValue[];
+  selectedValue: string | undefined;
+  labelFormatter?: (value: string) => string;
 }
 
-interface Emits {
-  (e: 'select', value: string): void
-}
+type Emits = (e: 'select', value: string) => void;
 
 withDefaults(defineProps<Props>(), {
   labelFormatter: (value: string) => value,
-})
+});
 
-defineEmits<Emits>()
+defineEmits<Emits>();
 </script>

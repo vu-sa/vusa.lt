@@ -133,7 +133,7 @@ class RelationshipController extends AdminController
 
         return $this->inertiaResponse('Admin/ModelMeta/EditRelationship', [
             'relationship' => $relationship,
-            'relatedModels' => Inertia::lazy(fn () => $related_models),
+            'relatedModels' => Inertia::optional(fn () => $related_models),
         ]);
     }
 

@@ -7,7 +7,7 @@
       :class="[getSpacingClass(element.type, index), isFullBleedType(element.type) ? 'full-bleed' : '', getSkeletonForType(element.type).height]">
       <Suspense>
         <template #default>
-          <component :is="getComponentForType(element.type)" :element="element" :html="html"
+          <component :is="getComponentForType(element.type)" :element :html
             :is-first-element="index === 0"
             :prefetched-news="element.type === 'news' ? news : undefined"
             :prefetched-calendar="element.type === 'calendar' ? calendarEvents : undefined" />
@@ -19,7 +19,7 @@
     </div>
 
     <!-- Synchronous component rendering (tiptap only) -->
-    <component :is="getComponentForType(element.type)" v-else :element="element" :html="html"
+    <component :is="getComponentForType(element.type)" v-else :element :html
       :is-first-element="index === 0"
       :class="[getSpacingClass(element.type, index), isFullBleedType(element.type) ? 'full-bleed' : '']">
       <!-- Default slot for components that need content -->
@@ -33,28 +33,30 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, markRaw, shallowRef } from 'vue';
+
+import TiptapDisplay from './Types/TiptapDisplay.vue';
+
 import type { NewsItem } from '@/Types/contentParts';
 
 // Import commonly used components synchronously for better performance
-import TiptapDisplay from './RichContent/Types/TiptapDisplay.vue';
 
-const RichContentTiptapHTML = defineAsyncComponent(() => import('@/Components/RichContentTiptapHTML.vue'));
+const RichContentTiptapHTML = defineAsyncComponent(() => import('./RichContentTiptapHTML.vue'));
 
 // Optimize component registry - simplified async component loading
 const contentComponents = shallowRef({
   'tiptap': markRaw(TiptapDisplay), // Most common component - load synchronously
-  'shadcn-card': markRaw(defineAsyncComponent(() => import('@/Components/RichContentCard.vue'))),
+  'shadcn-card': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RichContentCard.vue'))),
   'shadcn-accordion': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCAccordion.vue'))),
-  'image-grid': markRaw(defineAsyncComponent(() => import('./RichContent/Types/ImageGridDisplay.vue'))),
+  'image-grid': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/Types/ImageGridDisplay.vue'))),
   'hero': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCHeroSection/HeroElement.vue'))),
   'spotify-embed': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCSpotifyEmbed.vue'))),
   'social-embed': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCSocialEmbed.vue'))),
   'number-stat-section': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCNumberStatSection/RCNumberSection.vue'))),
-  'news': markRaw(defineAsyncComponent(() => import("@/Components/Public/NewsElement.vue"))),
-  'calendar': markRaw(defineAsyncComponent(() => import("@/Components/Public/FullWidth/EventCalendarElement.vue"))),
+  'news': markRaw(defineAsyncComponent(() => import('@/Components/Public/NewsElement.vue'))),
+  'calendar': markRaw(defineAsyncComponent(() => import('@/Components/Public/FullWidth/EventCalendarElement.vue'))),
   'flow-graph': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/RCFlowGraph.vue'))),
-  'content-grid': markRaw(defineAsyncComponent(() => import('./RichContent/Types/ContentGridDisplay.vue'))),
-  'text-box': markRaw(defineAsyncComponent(() => import('./RichContent/Types/TextBoxDisplay.vue'))),
+  'content-grid': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/Types/ContentGridDisplay.vue'))),
+  'text-box': markRaw(defineAsyncComponent(() => import('@/Components/RichContent/Types/TextBoxDisplay.vue'))),
 });
 
 const props = defineProps<{
@@ -133,7 +135,7 @@ function getSkeletonForType(type: string): { height: string; template: string } 
             <Skeleton class="h-12 w-40 rounded-full mt-4" />
           </div>
         </div>
-      `
+      `,
     },
     'news': {
       height: 'min-h-[400px]',
@@ -158,7 +160,7 @@ function getSkeletonForType(type: string): { height: string; template: string } 
             </div>
           </div>
         </div>
-      `
+      `,
     },
     'calendar': {
       height: 'min-h-[500px]',
@@ -173,7 +175,7 @@ function getSkeletonForType(type: string): { height: string; template: string } 
             </div>
           </div>
         </div>
-      `
+      `,
     },
     'number-stat-section': {
       height: 'min-h-[200px]',
@@ -186,7 +188,7 @@ function getSkeletonForType(type: string): { height: string; template: string } 
             </div>
           </div>
         </div>
-      `
+      `,
     },
     'image-grid': {
       height: 'min-h-[300px]',
@@ -196,7 +198,7 @@ function getSkeletonForType(type: string): { height: string; template: string } 
             <Skeleton v-for="i in 6" :key="i" class="aspect-square rounded-md" />
           </div>
         </div>
-      `
+      `,
     },
     'shadcn-accordion': {
       height: 'min-h-[200px]',
@@ -206,7 +208,7 @@ function getSkeletonForType(type: string): { height: string; template: string } 
             <Skeleton class="h-5 w-3/4" />
           </div>
         </div>
-      `
+      `,
     },
     'text-box': {
       height: 'min-h-[200px]',
@@ -216,7 +218,7 @@ function getSkeletonForType(type: string): { height: string; template: string } 
           <Skeleton class="h-28 w-full mb-3" />
           <Skeleton class="h-10 w-28 rounded-md" />
         </div>
-      `
+      `,
     },
     'default': {
       height: 'min-h-[100px]',
@@ -226,8 +228,8 @@ function getSkeletonForType(type: string): { height: string; template: string } 
           <Skeleton class="h-4 w-full" />
           <Skeleton class="h-4 w-5/6" />
         </div>
-      `
-    }
+      `,
+    },
   };
 
   return skeletonConfigs[type] ?? skeletonConfigs['default']!;
@@ -241,7 +243,7 @@ const createSkeletonComponent = (type: string) => {
   const config = getSkeletonForType(type);
   return {
     components: { Skeleton },
-    template: config.template
+    template: config.template,
   };
 };
 

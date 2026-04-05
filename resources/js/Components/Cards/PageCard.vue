@@ -12,8 +12,9 @@
 </template>
 
 <script setup lang="ts">
-import { Card, CardHeader, CardTitle } from '@/Components/ui/card';
 import CardContent from '../ui/card/CardContent.vue';
+
+import { Card, CardHeader, CardTitle } from '@/Components/ui/card';
 
 defineProps<{
   page: App.Entities.Page;

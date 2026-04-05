@@ -562,19 +562,12 @@ class FilesController extends AdminController
             $fullLocalPath = storage_path('app/'.$path);
             $originalSize = filesize($fullLocalPath) ?: 0;
 
-            $image = Image::read($fullLocalPath);
+            $image = Image::decodePath($fullLocalPath);
             $image->scaleDown(width: 1600);
             $quality = $originalSize > 2 * 1024 * 1024 ? 72 : 78; // 2MB threshold
 
-            // Always keep original extension (no conversion to webp)
-            if (in_array($extension, ['jpg', 'jpeg'])) {
-                $image->toJpeg($quality);
-            } elseif ($extension === 'png') {
-                // For PNG we can optionally reduce palette; Intervention's toPng keeps format
-                $image->toPng();
-            }
-
-            $image->save($fullLocalPath);
+            // save() auto-detects format from file extension
+            $image->save($fullLocalPath, quality: $quality);
             clearstatcache();
             $newSize = filesize($fullLocalPath) ?: $originalSize;
             $saved = $originalSize > 0 ? round((1 - $newSize / $originalSize) * 100) : 0;

@@ -3,6 +3,7 @@
  * Centralizes the logic for combining user's direct institutions with related institutions.
  */
 import { computed, type Ref, type ComputedRef } from 'vue';
+
 import type {
   AtstovavimosInstitution,
   GanttMeeting,

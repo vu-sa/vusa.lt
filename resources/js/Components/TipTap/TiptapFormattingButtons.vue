@@ -1,11 +1,11 @@
 <template>
   <ButtonGroup>
-    <TipTapMarkButton :editor="editor" type="bold">
+    <TipTapMarkButton :editor type="bold">
       <template #icon>
         <IFluentTextBold20Regular />
       </template>
     </TipTapMarkButton>
-    <TipTapMarkButton :editor="editor" type="italic">
+    <TipTapMarkButton :editor type="italic">
       <template #icon>
         <IFluentTextItalic20Regular />
       </template>
@@ -22,5 +22,5 @@ import TipTapMarkButton from '@/Features/Admin/CommentViewer/TipTap/TipTapMarkBu
 import { Button } from '@/Components/ui/button';
 import { ButtonGroup } from '@/Components/ui/button-group';
 
-defineModel<any>("editor")
+defineModel<any>('editor');
 </script>

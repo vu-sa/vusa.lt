@@ -19,9 +19,9 @@
         <div>
           <span class="text-xl font-bold">{{ item.name }}
             <Link v-if="showAdminEdit" :href="route('navigation.edit', { navigation: item.id })">
-            <Button size="icon-xs" variant="secondary" class="rounded-full">
-              <Icon icon="fluent:edit-16-regular" width="12" height="12" />
-            </Button>
+              <Button size="icon-xs" variant="secondary" class="rounded-full">
+                <Icon icon="fluent:edit-16-regular" width="12" height="12" />
+              </Button>
             </Link>
           </span>
           <MainNavigationMenuContent :item is-used-without-root are-links-disabled :show-edit-icons="showAdminEdit">
@@ -60,7 +60,6 @@
               <OrderEditDeleteButtons :index :length="links.length"
                 :edit-route="route('navigation.edit', { navigation: link.id })" @delete="handleDelete(link)"
                 @move-up="moveUp(item, link)" @move-down="moveDown(item, link)" />
-
             </template>
           </MainNavigationMenuContent>
         </div>
@@ -84,7 +83,9 @@
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Atšaukti</AlertDialogCancel>
-                  <AlertDialogAction @click="handleDelete(item)">Patvirtinti</AlertDialogAction>
+                  <AlertDialogAction @click="handleDelete(item)">
+                    Patvirtinti
+                  </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
@@ -108,15 +109,15 @@
 </template>
 
 <script setup lang="tsx">
-import { Icon } from "@iconify/vue";
-import { Link, router } from "@inertiajs/vue3";
-import { ref } from "vue";
-import { useSortable } from "@vueuse/integrations/useSortable";
+import { Icon } from '@iconify/vue';
+import { Link, router } from '@inertiajs/vue3';
+import { ref } from 'vue';
+import { useSortable } from '@vueuse/integrations/useSortable';
 
-import { Button } from "@/Components/ui/button";
-import { ButtonGroup } from "@/Components/ui/button-group";
-import { Label } from "@/Components/ui/label";
-import { Switch } from "@/Components/ui/switch";
+import { Button } from '@/Components/ui/button';
+import { ButtonGroup } from '@/Components/ui/button-group';
+import { Label } from '@/Components/ui/label';
+import { Switch } from '@/Components/ui/switch';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -127,10 +128,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/Components/ui/alert-dialog";
-import MainNavigationMenuContent from "@/Components/Public/Nav/MainNavigationMenuContent.vue";
-import OrderEditDeleteButtons from "@/Components/Buttons/OrderEditDeleteButtons.vue";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+} from '@/Components/ui/alert-dialog';
+import MainNavigationMenuContent from '@/Components/Public/Nav/MainNavigationMenuContent.vue';
+import OrderEditDeleteButtons from '@/Components/Buttons/OrderEditDeleteButtons.vue';
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 
 const props = defineProps<{
   navigation: App.Entities.Navigation;
@@ -143,23 +144,23 @@ const showAdminEdit = ref(true);
 const showColumnChangeArrows = ref(false);
 
 useSortable(el, contents, {
-  handle: ".handle", animation: 100,
+  handle: '.handle', animation: 100,
 });
 
 const saveOrder = () => {
-  router.post(route("navigation.updateOrder"), {
+  router.post(route('navigation.updateOrder'), {
     navigation: contents.value,
   });
 };
 
 const moveUp = (parent, link) => {
   // Find contents array by parent id
-  const contentsIndex = contents.value.findIndex((item) => item.id === parent.id);
+  const contentsIndex = contents.value.findIndex(item => item.id === parent.id);
 
   let linkArrayIndex = -1;
   // Find links index by iterating through links array
   for (let i = 0; i < contents.value[contentsIndex].links.length; i++) {
-    if (contents.value[contentsIndex].links[i].find((item) => item.id === link.id)) {
+    if (contents.value[contentsIndex].links[i].find(item => item.id === link.id)) {
       linkArrayIndex = i;
       break;
     }
@@ -171,7 +172,7 @@ const moveUp = (parent, link) => {
   }
 
   // Find index of the link in the links array
-  const linkIndex = contents.value[contentsIndex].links[linkArrayIndex].findIndex((item) => item.id === link.id);
+  const linkIndex = contents.value[contentsIndex].links[linkArrayIndex].findIndex(item => item.id === link.id);
 
   // If link index is found, swap the links but not the linkArrays
   if (linkIndex !== -1) {
@@ -183,12 +184,12 @@ const moveUp = (parent, link) => {
 
 const moveDown = (parent, link) => {
   // Find contents array by parent id
-  const contentsIndex = contents.value.findIndex((item) => item.id === parent.id);
+  const contentsIndex = contents.value.findIndex(item => item.id === parent.id);
 
   let linkArrayIndex = -1;
   // Find links index by iterating through links array
   for (let i = 0; i < contents.value[contentsIndex].links.length; i++) {
-    if (contents.value[contentsIndex].links[i].find((item) => item.id === link.id)) {
+    if (contents.value[contentsIndex].links[i].find(item => item.id === link.id)) {
       linkArrayIndex = i;
       break;
     }
@@ -200,7 +201,7 @@ const moveDown = (parent, link) => {
   }
 
   // Find index of the link in the links array
-  const linkIndex = contents.value[contentsIndex].links[linkArrayIndex].findIndex((item) => item.id === link.id);
+  const linkIndex = contents.value[contentsIndex].links[linkArrayIndex].findIndex(item => item.id === link.id);
 
   // If link index is found, swap the links but not the linkArrays
   if (linkIndex !== -1) {
@@ -211,13 +212,13 @@ const moveDown = (parent, link) => {
 };
 
 const changeColumn = (link, direction) => {
-  router.post(route("navigation.updateColumn"), {
+  router.post(route('navigation.updateColumn'), {
     id: link.id,
-    direction: direction,
+    direction,
   }, { preserveScroll: true });
 };
 
 const handleDelete = (link) => {
-  router.delete(route("navigation.destroy", link.id));
+  router.delete(route('navigation.destroy', link.id));
 };
 </script>

@@ -23,7 +23,7 @@ class NavigationController extends AdminController
 
         return $this->inertiaResponse('Admin/Navigation/IndexNavigation', [
             'navigation' => NavigationService::getNavigationForPublic(),
-            'typeOptions' => Inertia::lazy(fn () => QuickLinkController::getQuickLinkTypeOptions($request->input('type'))),
+            'typeOptions' => Inertia::optional(fn () => QuickLinkController::getQuickLinkTypeOptions($request->input('type'))),
         ]);
     }
 
@@ -42,7 +42,7 @@ class NavigationController extends AdminController
             [
                 'parent_id' => $parent_id,
                 'parentElements' => Navigation::where('parent_id', 0)->get(),
-                'typeOptions' => Inertia::lazy(fn () => QuickLinkController::getQuickLinkTypeOptions(request()->input('type'))),
+                'typeOptions' => Inertia::optional(fn () => QuickLinkController::getQuickLinkTypeOptions(request()->input('type'))),
             ]
         );
     }
@@ -54,7 +54,7 @@ class NavigationController extends AdminController
     {
         $this->handleAuthorization('create', Navigation::class);
 
-        $navigation = new Navigation($request->all());
+        $navigation = new Navigation($request->only(['name', 'url', 'parent_id', 'padalinys_id', 'is_active', 'extra_attributes']));
 
         $navigation->order = Navigation::where('parent_id', $navigation->parent_id)->max('order') + 1;
 
@@ -78,7 +78,7 @@ class NavigationController extends AdminController
         return $this->inertiaResponse('Admin/Navigation/EditNavigation', [
             'navigationElement' => $navigation,
             'parentElements' => Navigation::where('parent_id', 0)->get(),
-            'typeOptions' => Inertia::lazy(fn () => QuickLinkController::getQuickLinkTypeOptions(request()->input('type'))),
+            'typeOptions' => Inertia::optional(fn () => QuickLinkController::getQuickLinkTypeOptions(request()->input('type'))),
         ]);
     }
 
@@ -89,7 +89,7 @@ class NavigationController extends AdminController
     {
         $this->handleAuthorization('update', $navigation);
 
-        $navigation->fill($request->all());
+        $navigation->fill($request->only(['name', 'url', 'parent_id', 'padalinys_id', 'is_active', 'extra_attributes']));
 
         $navigation->save();
 

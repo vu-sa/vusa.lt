@@ -17,8 +17,8 @@
     <template #headerActions>
       <Button variant="outline" as-child class="gap-1.5">
         <Link :href="route('studyPrograms.merge')">
-        <MergeIcon class="h-4 w-4" />
-        {{ $t('Sujungti programas') }}
+          <MergeIcon class="h-4 w-4" />
+          {{ $t('Sujungti programas') }}
         </Link>
       </Button>
     </template>
@@ -26,31 +26,30 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import { type ColumnDef } from '@tanstack/vue-table';
-import { ref, computed, watch, capitalize } from "vue";
-import { router, usePage } from "@inertiajs/vue3";
+import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+import type { ColumnDef } from '@tanstack/vue-table';
+import { ref, computed, watch, capitalize } from 'vue';
+import { router, usePage, Link } from '@inertiajs/vue3';
 import {
   MergeIcon,
-  PlusIcon
+  PlusIcon,
 } from 'lucide-vue-next';
-import { toast } from "vue-sonner";
+import { toast } from 'vue-sonner';
 
-import Icons from "@/Types/Icons/regular";
-import DataTableFilter from "@/Components/ui/data-table/DataTableFilter.vue";
-import { Button } from "@/Components/ui/button";
-import { Badge } from "@/Components/ui/badge";
-import { Link } from "@inertiajs/vue3";
-import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
-import { createStandardActionsColumn } from "@/Composables/useTableActions";
+import Icons from '@/Types/Icons/regular';
+import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
+import { Button } from '@/Components/ui/button';
+import { Badge } from '@/Components/ui/badge';
+import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
+import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import {
   createTitleColumn,
-  createTenantColumn
+  createTenantColumn,
 } from '@/Utils/DataTableColumns';
-import {
-  type IndexTablePageProps
-} from "@/Types/TableConfigTypes";
+import type {
+  IndexTablePageProps,
+} from '@/Types/TableConfigTypes';
 
 const props = defineProps<{
   studyPrograms: {
@@ -91,7 +90,7 @@ const degreeOptions = computed(() => props.degreeOptions || []);
 
 const tenantOptions = computed(() => {
   const tenants = usePage().props.tenants || [];
-  return tenants.map((tenant) => ({
+  return tenants.map(tenant => ({
     label: $t(tenant.shortname),
     value: tenant.id,
   }));
@@ -105,18 +104,20 @@ const getRowId = (row: App.Entities.StudyProgram) => {
 // Table columns
 const columns = computed<ColumnDef<App.Entities.StudyProgram, any>[]>(() => [
   createTitleColumn<App.Entities.StudyProgram>({
-    accessorKey: "name",
-    routeName: "studyPrograms.edit",
+    accessorKey: 'name',
+    routeName: 'studyPrograms.edit',
     width: 300,
     cell: ({ row }) => {
-      const name = row.getValue("name");
+      const name = row.getValue('name');
       return (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
               <div class="max-w-[290px] truncate">
-                <a href={route("studyPrograms.edit", { id: row.original.id })}
-                  class="font-medium hover:underline">
+                <a
+                  href={route('studyPrograms.edit', { id: row.original.id })}
+                  class="font-medium hover:underline"
+                >
                   {name}
                 </a>
               </div>
@@ -127,13 +128,13 @@ const columns = computed<ColumnDef<App.Entities.StudyProgram, any>[]>(() => [
           </Tooltip>
         </TooltipProvider>
       );
-    }
+    },
   }),
   {
-    accessorKey: "degree",
-    header: () => $t("Laipsnis"),
+    accessorKey: 'degree',
+    header: () => $t('Laipsnis'),
     cell: ({ row }) => {
-      const degree = row.original.degree;
+      const { degree } = row.original;
       return (
         <Badge variant="outline">
           {degree}
@@ -145,29 +146,31 @@ const columns = computed<ColumnDef<App.Entities.StudyProgram, any>[]>(() => [
   createTenantColumn({
     enableSorting: false,
     cell: ({ row }) => {
-      const tenant = row.original.tenant;
-      return tenant ? (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span class="flex items-center gap-1">
-                <span class="max-w-[150px] truncate">{$t(tenant.shortname)}</span>
-              </span>
-            </TooltipTrigger>
-            <TooltipContent side="top" align="start">
-              <p>{$t(tenant.shortname)}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      ) : "";
+      const { tenant } = row.original;
+      return tenant
+        ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span class="flex items-center gap-1">
+                    <span class="max-w-[150px] truncate">{$t(tenant.shortname)}</span>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="top" align="start">
+                  <p>{$t(tenant.shortname)}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )
+        : '';
     },
   }),
-  createStandardActionsColumn<App.Entities.StudyProgram>("studyPrograms", {
+  createStandardActionsColumn<App.Entities.StudyProgram>('studyPrograms', {
     canView: false,
     canEdit: true,
     canDelete: true,
-    canRestore: false
-  })
+    canRestore: false,
+  }),
 ]);
 
 // Simplified table configuration using the new interfaces
@@ -192,11 +195,11 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.StudyProgram>>(() 
     enableRowSelectionColumn: false,
 
     // Page layout
-    headerTitle: "Studijų programos",
+    headerTitle: 'Studijų programos',
     headerDescription: $t('Manage study programs and their degrees'),
     icon: Icons.STUDY_PROGRAM,
     createRoute: canCreate.value ? route('studyPrograms.create') : undefined,
-    canCreate: canCreate.value
+    canCreate: canCreate.value,
   };
 });
 
@@ -221,7 +224,6 @@ const handleRowSelectionChange = (selection: any) => {
   selectedRows.value = indexTablePageRef.value?.getSelectedRows() || [];
 };
 
-
 // Event handler for data loaded
 const onDataLoaded = (data: any) => {
   // Additional handling after data is loaded if needed
@@ -242,7 +244,8 @@ const handleFilterChange = (filterKey: any, value: any) => {
   // Update local filter references if needed
   if (filterKey === 'degree') {
     selectedDegrees.value = value;
-  } else if (filterKey === 'tenant.id') {
+  }
+  else if (filterKey === 'tenant.id') {
     selectedTenantIds.value = value;
   }
 };

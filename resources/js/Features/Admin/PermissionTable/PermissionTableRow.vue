@@ -44,7 +44,7 @@
     </td>
     <td>
       <div v-if="showAllControl">
-        <Switch :model-value="switchAll" :disabled="disabled" @update:model-value="val => { switchAll = val; handleUpdate(); }" />
+        <Switch :model-value="switchAll" :disabled @update:model-value="val => { switchAll = val; handleUpdate(); }" />
       </div>
       <div v-else class="text-gray-500">
         <span class="text-sm">Netaikoma</span>
@@ -54,15 +54,13 @@
 </template>
 
 <script setup lang="ts">
-import { type Component, ref, computed, watchEffect, watch } from "vue";
-import type { CRUDEnum } from "@/Types/enums";
+import { type Component, ref, computed, watchEffect, watch } from 'vue';
 
+import type { CRUDEnum } from '@/Types/enums';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Switch } from '@/Components/ui/switch';
 
-const emit = defineEmits<{
-  (e: "update", scope: string | undefined): void;
-}>();
+const emit = defineEmits<(e: 'update', scope: string | undefined) => void>();
 
 const props = defineProps<{
   ability: CRUDEnum;
@@ -78,25 +76,23 @@ const availableScopes = computed(() => {
   const scopes = new Set<string>();
 
   // Extract scopes from available permissions for this ability
-  props.availablePermissions.forEach(permission => {
+  props.availablePermissions.forEach((permission) => {
     const parts = permission.split('.');
     if (parts.length === 3 && parts[1] === props.ability && parts[2]) {
       scopes.add(parts[2]);
     }
   });
 
-
-
   return {
     hasOwn: scopes.has('own'),
     hasPadalinys: scopes.has('padalinys'),
-    hasAll: scopes.has('*')
+    hasAll: scopes.has('*'),
   };
 });
 
 // Show padalinys controls only if model supports own or padalinys scopes
 const showPadalinysControls = computed(() =>
-  availableScopes.value.hasOwn || availableScopes.value.hasPadalinys
+  availableScopes.value.hasOwn || availableScopes.value.hasPadalinys,
 );
 
 // Show "all" control only if model supports all scope
@@ -109,19 +105,19 @@ const switchAll = ref(false);
 
 // Initialize values based on default and available scopes
 const initializeValues = () => {
-  checkboxPadalinys.value = availableScopes.value.hasOwn && ["own", "padalinys"].includes(props.defaultValue ?? "");
+  checkboxPadalinys.value = availableScopes.value.hasOwn && ['own', 'padalinys'].includes(props.defaultValue ?? '');
 
   // For models with both own and padalinys scopes
   if (availableScopes.value.hasOwn && availableScopes.value.hasPadalinys) {
-    switchPadalinys.value = props.defaultValue === "padalinys";
+    switchPadalinys.value = props.defaultValue === 'padalinys';
   }
 
   // For models with only padalinys scope
   if (!availableScopes.value.hasOwn && availableScopes.value.hasPadalinys) {
-    switchPadalinys.value = props.defaultValue === "padalinys";
+    switchPadalinys.value = props.defaultValue === 'padalinys';
   }
 
-  switchAll.value = props.defaultValue === "*" && availableScopes.value.hasAll;
+  switchAll.value = props.defaultValue === '*' && availableScopes.value.hasAll;
 };
 
 const handleUpdate = () => {
@@ -146,34 +142,34 @@ const handleUpdate = () => {
     }
   }
 
-  emit("update", decidePermission());
+  emit('update', decidePermission());
 };
 
 const decidePermission = () => {
   // If "all" switch is on and model supports it
   if (switchAll.value && availableScopes.value.hasAll) {
-    return "*";
+    return '*';
   }
 
   // If model has both own and padalinys scopes (traditional behavior)
   if (availableScopes.value.hasOwn && availableScopes.value.hasPadalinys) {
     if (switchPadalinys.value) {
-      return "padalinys";
+      return 'padalinys';
     }
     if (checkboxPadalinys.value) {
-      return "own";
+      return 'own';
     }
   }
 
   // If model only has padalinys scope (like institutions)
   if (!availableScopes.value.hasOwn && availableScopes.value.hasPadalinys && !switchAll.value) {
-    return switchPadalinys.value ? "padalinys" : undefined;
+    return switchPadalinys.value ? 'padalinys' : undefined;
   }
 
   // If model has own scope but not padalinys
   if (availableScopes.value.hasOwn && !availableScopes.value.hasPadalinys) {
     if (checkboxPadalinys.value) {
-      return "own";
+      return 'own';
     }
   }
 

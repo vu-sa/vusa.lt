@@ -12,7 +12,7 @@
         </span>
         <Input
           :model-value="permalink"
-          :disabled="disabled"
+          :disabled
           class="rounded-l-none border-0 bg-transparent focus-visible:ring-0"
           :placeholder="$t('nuorodos-fragmentas')"
           @update:model-value="$emit('update:permalink', $event)"
@@ -54,6 +54,7 @@
 import { ref, computed } from 'vue';
 import { useClipboard } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
+
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';
@@ -67,9 +68,7 @@ const props = defineProps<{
   explanation?: string;
 }>();
 
-defineEmits<{
-  (e: 'update:permalink', value: string): void;
-}>();
+defineEmits<(e: 'update:permalink', value: string) => void>();
 
 const copied = ref(false);
 const { copy } = useClipboard();

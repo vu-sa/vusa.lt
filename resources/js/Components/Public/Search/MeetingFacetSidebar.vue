@@ -1,6 +1,6 @@
 <template>
   <FilterSidebar
-    :active-filter-count="activeFilterCount"
+    :active-filter-count
     mobile-title="search.filter_meetings"
     @clear-filters="emit('clearFilters')"
   >
@@ -95,7 +95,7 @@
           :label="$t('search.tenants')"
           :icon="Building2"
           :badge-count="filters.tenants.length"
-          :is-loading="isLoading"
+          :is-loading
           icon-container-class="bg-primary/10 text-primary group-hover:bg-primary/15"
         >
           <TenantFilter
@@ -112,7 +112,7 @@
           :label="$t('search.institution_type')"
           :icon="Layers"
           :badge-count="filters.institutionTypes.length"
-          :is-loading="isLoading"
+          :is-loading
           icon-container-class="bg-teal-500/10 text-teal-600 group-hover:bg-teal-500/15"
         >
           <CheckboxFilter
@@ -129,7 +129,7 @@
           :label="$t('search.years')"
           :icon="CalendarDays"
           :badge-count="filters.years.length"
-          :is-loading="isLoading"
+          :is-loading
           icon-container-class="bg-emerald-500/10 text-emerald-600 group-hover:bg-emerald-500/15"
         >
           <YearFilter
@@ -176,14 +176,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { trans as $t } from 'laravel-vue-i18n'
+import { computed } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
 
 // Shared Search Components
-import { FilterSidebar, FilterAccordion, CheckboxFilter, YearFilter } from '@/Components/Shared/Search'
 
 // ShadcnVue components
-import { Accordion } from '@/Components/ui/accordion'
 
 // Icons
 import {
@@ -192,125 +190,131 @@ import {
   Calendar,
   CalendarDays,
   TrendingUp,
-} from 'lucide-vue-next'
+} from 'lucide-vue-next';
 
 // Local components
-import TenantFilter from './TenantFilter.vue'
-import DateRangeFilter from './DateRangeFilter.vue'
+import TenantFilter from './TenantFilter.vue';
+import DateRangeFilter from './DateRangeFilter.vue';
+
+import { Accordion } from '@/Components/ui/accordion';
+import { FilterSidebar, FilterAccordion, CheckboxFilter, YearFilter } from '@/Components/Shared/Search';
 
 // Types
-import type { MeetingFacet, MeetingSearchFilters } from '@/Types/MeetingSearchTypes'
+import type { MeetingFacet, MeetingSearchFilters } from '@/Types/MeetingSearchTypes';
 
 // Props interface
 interface Props {
-  facets: MeetingFacet[]
-  filters: MeetingSearchFilters
-  isLoading?: boolean
-  activeFilterCount?: number
+  facets: MeetingFacet[];
+  filters: MeetingSearchFilters;
+  isLoading?: boolean;
+  activeFilterCount?: number;
 }
 
 interface Emits {
-  (e: 'update:tenant', tenant: string): void
-  (e: 'update:institutionType', type: string): void
-  (e: 'update:year', year: number): void
-  (e: 'update:successRate', range: string): void
-  (e: 'update:dateRange', range: MeetingSearchFilters['dateRange']): void
-  (e: 'clearFilters'): void
+  (e: 'update:tenant', tenant: string): void;
+  (e: 'update:institutionType', type: string): void;
+  (e: 'update:year', year: number): void;
+  (e: 'update:successRate', range: string): void;
+  (e: 'update:dateRange', range: MeetingSearchFilters['dateRange']): void;
+  (e: 'clearFilters'): void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   facets: () => [],
   isLoading: false,
-  activeFilterCount: 0
-})
+  activeFilterCount: 0,
+});
 
-const emit = defineEmits<Emits>()
+const emit = defineEmits<Emits>();
 
 // Success rate options
 const successRateOptions = [
   { value: 'high', label: $t('search.success_rate_high') },
   { value: 'medium', label: $t('search.success_rate_medium') },
-  { value: 'low', label: $t('search.success_rate_low') }
-]
+  { value: 'low', label: $t('search.success_rate_low') },
+];
 
 // Access filters from props
-const filters = computed(() => props.filters)
+const filters = computed(() => props.filters);
 
 // Check if date filter is active
 const hasDateFilter = computed(() => {
-  return (filters.value.dateRange.preset && filters.value.dateRange.preset !== 'recent') ||
-    filters.value.dateRange.from ||
-    filters.value.dateRange.to
-})
+  return (filters.value.dateRange.preset && filters.value.dateRange.preset !== 'recent')
+    || filters.value.dateRange.from
+    || filters.value.dateRange.to;
+});
 
 // Process tenant facet into hierarchy for TenantFilter
 const processTenantFacet = (facet: MeetingFacet | undefined) => {
   if (!facet?.values) {
-    return { main: [], padaliniai: [], pkp: [] }
+    return { main: [], padaliniai: [], pkp: [] };
   }
 
-  const main: any[] = []
-  const padaliniai: any[] = []
-  const pkp: any[] = []
+  const main: any[] = [];
+  const padaliniai: any[] = [];
+  const pkp: any[] = [];
 
-  facet.values.forEach(tenant => {
-    const value = tenant.value
+  facet.values.forEach((tenant) => {
+    const { value } = tenant;
 
     const transformedTenant = {
       shortname: value,
       name: value,
       type: 'tenant',
-      count: tenant.count
-    }
+      count: tenant.count,
+    };
 
     if (value === 'VU SA') {
-      main.push(transformedTenant)
-    } else if (value.includes('PKP')) {
-      pkp.push(transformedTenant)
-    } else if (value.startsWith('VU SA ')) {
-      padaliniai.push(transformedTenant)
-    } else {
-      main.push(transformedTenant)
+      main.push(transformedTenant);
     }
-  })
+    else if (value.includes('PKP')) {
+      pkp.push(transformedTenant);
+    }
+    else if (value.startsWith('VU SA ')) {
+      padaliniai.push(transformedTenant);
+    }
+    else {
+      main.push(transformedTenant);
+    }
+  });
 
   return {
     main: main.sort((a, b) => b.count - a.count),
     padaliniai: padaliniai.sort((a, b) => b.count - a.count),
-    pkp: pkp.sort((a, b) => b.count - a.count)
-  }
-}
+    pkp: pkp.sort((a, b) => b.count - a.count),
+  };
+};
 
 // Computed facets
 const tenantFacet = computed(() => {
-  return props.facets.find(f => f.field === 'tenant_shortname')
-})
+  return props.facets.find(f => f.field === 'tenant_shortname');
+});
 
 const institutionTypeFacet = computed(() => {
-  return props.facets.find(f => f.field === 'institution_type_title')
-})
+  return props.facets.find(f => f.field === 'institution_type_title');
+});
 
 // Transform institution type facet to FilterOption format
 const institutionTypeOptions = computed(() => {
   return (institutionTypeFacet.value?.values || []).map(v => ({
     value: v.value,
     label: v.label || v.value,
-    count: v.count
-  }))
-})
+    count: v.count,
+  }));
+});
 
 const yearFacet = computed(() => {
-  const facet = props.facets.find(f => f.field === 'year')
+  const facet = props.facets.find(f => f.field === 'year');
   if (facet?.values) {
     return {
       ...facet,
-      values: [...facet.values].sort((a, b) => Number(b.value) - Number(a.value))
-    }
+      values: [...facet.values].sort((a, b) => Number(b.value) - Number(a.value)),
+    };
   }
-  return facet
-})
+  return facet;
+});
 
 const processedTenantHierarchy = computed(() => {
-  return processTenantFacet(tenantFacet.value)
-})
+  return processTenantFacet(tenantFacet.value);
+});
 </script>

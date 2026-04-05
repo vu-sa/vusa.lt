@@ -75,40 +75,41 @@
 </template>
 
 <script setup lang="ts">
-import { computed, type Component } from 'vue'
-import { trans as $t } from 'laravel-vue-i18n'
+import { computed, type Component } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
 import {
   X,
   AlertTriangle,
   AlertCircle,
   Info,
-  CheckCircle2
-} from 'lucide-vue-next'
-import { Button } from '@/Components/ui/button'
+  CheckCircle2,
+} from 'lucide-vue-next';
 
-type AlertVariant = 'warning' | 'danger' | 'info' | 'success'
+import { Button } from '@/Components/ui/button';
+
+type AlertVariant = 'warning' | 'danger' | 'info' | 'success';
 
 interface Props {
-  variant?: AlertVariant
-  title?: string
-  description?: string
-  icon?: Component
-  dismissible?: boolean
-  actionLabel?: string
-  actionVariant?: 'default' | 'outline' | 'secondary' | 'ghost'
+  variant?: AlertVariant;
+  title?: string;
+  description?: string;
+  icon?: Component;
+  dismissible?: boolean;
+  actionLabel?: string;
+  actionVariant?: 'default' | 'outline' | 'secondary' | 'ghost';
 }
 
 const props = withDefaults(defineProps<Props>(), {
   variant: 'warning',
   dismissible: true,
   actionVariant: 'outline',
-})
+});
 
 const emit = defineEmits<{
-  action: []
-}>()
+  action: [];
+}>();
 
-const modelValue = defineModel<boolean>({ default: true })
+const modelValue = defineModel<boolean>({ default: true });
 
 // Default icons per variant
 const defaultIcons: Record<AlertVariant, Component> = {
@@ -116,9 +117,9 @@ const defaultIcons: Record<AlertVariant, Component> = {
   danger: AlertCircle,
   info: Info,
   success: CheckCircle2,
-}
+};
 
-const iconComponent = computed(() => props.icon || defaultIcons[props.variant])
+const iconComponent = computed(() => props.icon || defaultIcons[props.variant]);
 
 // Variant-based styling
 const variantClasses = computed(() => {
@@ -139,9 +140,9 @@ const variantClasses = computed(() => {
       'bg-emerald-50 border-emerald-200',
       'dark:bg-emerald-950/30 dark:border-emerald-800/50',
     ].join(' '),
-  }
-  return classes[props.variant]
-})
+  };
+  return classes[props.variant];
+});
 
 const iconBgClasses = computed(() => {
   const classes: Record<AlertVariant, string> = {
@@ -149,9 +150,9 @@ const iconBgClasses = computed(() => {
     danger: 'bg-red-100 dark:bg-red-900/40',
     info: 'bg-blue-100 dark:bg-blue-900/40',
     success: 'bg-emerald-100 dark:bg-emerald-900/40',
-  }
-  return classes[props.variant]
-})
+  };
+  return classes[props.variant];
+});
 
 const iconClasses = computed(() => {
   const classes: Record<AlertVariant, string> = {
@@ -159,9 +160,9 @@ const iconClasses = computed(() => {
     danger: 'text-red-600 dark:text-red-400',
     info: 'text-blue-600 dark:text-blue-400',
     success: 'text-emerald-600 dark:text-emerald-400',
-  }
-  return classes[props.variant]
-})
+  };
+  return classes[props.variant];
+});
 
 const titleClasses = computed(() => {
   const classes: Record<AlertVariant, string> = {
@@ -169,9 +170,9 @@ const titleClasses = computed(() => {
     danger: 'text-red-800 dark:text-red-300',
     info: 'text-blue-800 dark:text-blue-300',
     success: 'text-emerald-800 dark:text-emerald-300',
-  }
-  return classes[props.variant]
-})
+  };
+  return classes[props.variant];
+});
 
 const descriptionClasses = computed(() => {
   const classes: Record<AlertVariant, string> = {
@@ -179,9 +180,9 @@ const descriptionClasses = computed(() => {
     danger: 'text-red-700 dark:text-red-400/90',
     info: 'text-blue-700 dark:text-blue-400/90',
     success: 'text-emerald-700 dark:text-emerald-400/90',
-  }
-  return classes[props.variant]
-})
+  };
+  return classes[props.variant];
+});
 
 const dismissClasses = computed(() => {
   const classes: Record<AlertVariant, string> = {
@@ -189,7 +190,7 @@ const dismissClasses = computed(() => {
     danger: 'text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 focus:ring-red-500',
     info: 'text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 focus:ring-blue-500',
     success: 'text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300 focus:ring-emerald-500',
-  }
-  return classes[props.variant]
-})
+  };
+  return classes[props.variant];
+});
 </script>

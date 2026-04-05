@@ -1,5 +1,5 @@
 <template>
-  <Combobox v-model="selectedItems" multiple :filter-function="filterFunction">
+  <Combobox v-model="selectedItems" multiple :filter-function>
     <ComboboxAnchor
       class="relative flex min-h-10 w-full flex-wrap items-center gap-1.5 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
       :class="{ 'opacity-50 cursor-not-allowed': disabled }"
@@ -11,7 +11,7 @@
         variant="secondary"
         class="flex shrink-0 items-center gap-1 pr-1"
       >
-        <slot name="selected-item" :item="item">
+        <slot name="selected-item" :item>
           <span class="max-w-[150px] truncate">{{ getItemLabel(item) }}</span>
         </slot>
         <button
@@ -24,34 +24,34 @@
           <span class="sr-only">{{ $t('Remove') }} {{ getItemLabel(item) }}</span>
         </button>
       </Badge>
-      
+
       <!-- Search input -->
       <ComboboxInput
         v-if="!disabled"
         class="min-w-[80px] flex-1 bg-transparent text-sm placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
         :placeholder="selectedItems.length === 0 ? placeholder : ''"
-        :disabled="disabled"
+        :disabled
       />
-      
+
       <!-- Trigger button - inline with tags/input, pushed to end -->
       <ComboboxTrigger v-if="!disabled" class="ml-auto shrink-0 text-muted-foreground hover:text-foreground focus:outline-none">
         <ChevronDownIcon class="h-4 w-4" />
       </ComboboxTrigger>
     </ComboboxAnchor>
-    
+
     <!-- Dropdown list using ComboboxList which wraps Portal + Content -->
     <ComboboxList class="min-w-[var(--reka-popper-anchor-width)] w-full">
       <ComboboxViewport class="max-h-60 overflow-y-auto p-1 w-full">
         <ComboboxEmpty class="flex flex-col items-center justify-center py-6 text-center text-sm text-muted-foreground">
           <p>{{ emptyText }}</p>
         </ComboboxEmpty>
-        
+
         <!-- Virtualized rendering for large lists -->
         <template v-if="shouldVirtualize">
           <ComboboxVirtualizer
             v-slot="{ option }"
-            :options="options"
-            :estimate-size="estimateSize"
+            :options
+            :estimate-size
             :text-content="(opt: T) => getItemLabel(opt)"
           >
             <ComboboxItem
@@ -67,7 +67,7 @@
             </ComboboxItem>
           </ComboboxVirtualizer>
         </template>
-        
+
         <!-- Standard rendering for small lists -->
         <template v-else>
           <ComboboxItem
@@ -76,7 +76,7 @@
             :value="item"
             class="w-full pr-8"
           >
-            <slot name="option" :item="item">
+            <slot name="option" :item>
               {{ getItemLabel(item) }}
             </slot>
             <ComboboxItemIndicator class="absolute right-2">
@@ -94,7 +94,8 @@ import { ref, watch, computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { XIcon, ChevronDownIcon, CheckIcon } from 'lucide-vue-next';
 import { ComboboxInput, ComboboxVirtualizer } from 'reka-ui';
-import { 
+
+import {
   Combobox,
   ComboboxAnchor,
   ComboboxItem,
@@ -135,9 +136,7 @@ const props = withDefaults(defineProps<{
   estimateSize: 40,
 });
 
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: T[]): void;
-}>();
+const emit = defineEmits<(e: 'update:modelValue', value: T[]) => void>();
 
 // Internal state for selected items
 const selectedItems = ref<T[]>([...props.modelValue]) as { value: T[] };
@@ -159,15 +158,15 @@ const getItemValue = (item: T): string | number => {
 const filterFunction = (options: T[], searchTerm: string): T[] => {
   if (!searchTerm) return options;
   const term = searchTerm.toLowerCase();
-  return options.filter(item => 
-    getItemLabel(item).toLowerCase().includes(term)
+  return options.filter(item =>
+    getItemLabel(item).toLowerCase().includes(term),
   );
 };
 
 // Remove an item from selection
 const removeItem = (itemToRemove: T) => {
   selectedItems.value = selectedItems.value.filter(
-    item => getItemValue(item) !== getItemValue(itemToRemove)
+    item => getItemValue(item) !== getItemValue(itemToRemove),
   );
 };
 
@@ -186,7 +185,7 @@ watch(() => props.modelValue, (newValue) => {
   // Only update if the values actually differ to avoid infinite loops
   const currentValues = selectedItems.value.map(getItemValue);
   const newValues = newValue.map(getItemValue);
-  
+
   if (JSON.stringify(currentValues) !== JSON.stringify(newValues)) {
     selectedItems.value = [...newValue];
   }

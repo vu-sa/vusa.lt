@@ -9,10 +9,18 @@
           <SelectValue :placeholder="$t('Rūšiuoti')" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="state">{{ $t('forms.fields.state') }}</SelectItem>
-          <SelectItem value="name">{{ $t('forms.fields.title') }}</SelectItem>
-          <SelectItem value="start_time">{{ $t('entities.reservation.start_time') }}</SelectItem>
-          <SelectItem value="end_time">{{ $t('entities.reservation.end_time') }}</SelectItem>
+          <SelectItem value="state">
+            {{ $t('forms.fields.state') }}
+          </SelectItem>
+          <SelectItem value="name">
+            {{ $t('forms.fields.title') }}
+          </SelectItem>
+          <SelectItem value="start_time">
+            {{ $t('entities.reservation.start_time') }}
+          </SelectItem>
+          <SelectItem value="end_time">
+            {{ $t('entities.reservation.end_time') }}
+          </SelectItem>
         </SelectContent>
       </Select>
     </div>
@@ -26,8 +34,8 @@
       leave-from-class="opacity-100 translate-y-0"
       leave-to-class="opacity-0 -translate-y-2"
     >
-      <div 
-        v-if="selectedIds.length > 0 && hasApprovableSelected" 
+      <div
+        v-if="selectedIds.length > 0 && hasApprovableSelected"
         class="sticky top-0 z-20 flex items-center justify-between gap-2 rounded-xl border border-zinc-200 bg-white/95 p-3 shadow-lg backdrop-blur-sm dark:border-zinc-700 dark:bg-zinc-900/95"
       >
         <div class="flex items-center gap-2">
@@ -74,11 +82,11 @@
         ]"
       >
         <!-- State indicator strip -->
-        <div 
+        <div
           :class="[
             'absolute inset-y-0 left-0 w-1 rounded-l-xl transition-colors',
             getStateStripColor(resource.pivot?.state)
-          ]" 
+          ]"
         />
 
         <!-- Card content -->
@@ -97,8 +105,8 @@
             <!-- Name and tenant -->
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-2">
-                <Link 
-                  :href="route('resources.edit', resource.id)" 
+                <Link
+                  :href="route('resources.edit', resource.id)"
                   class="truncate font-medium text-foreground hover:text-primary hover:underline"
                 >
                   {{ resource.name }}
@@ -119,7 +127,7 @@
                           :src="img.original_url"
                           :alt="img.name"
                           class="size-12 rounded-md object-cover"
-                        />
+                        >
                         <span v-if="resource.media.length > 3" class="flex size-12 items-center justify-center rounded-md bg-muted text-xs text-muted-foreground">
                           +{{ resource.media.length - 3 }}
                         </span>
@@ -131,17 +139,17 @@
                   </HoverCardContent>
                 </HoverCard>
               </div>
-              
+
               <!-- Tenant + managers -->
               <div class="mt-0.5 flex items-center gap-2 text-sm text-muted-foreground">
                 <span :class="resource.pivot?.state === 'created' ? 'font-semibold text-amber-600 dark:text-amber-400' : ''">
                   {{ $t(resource.tenant?.shortname ?? '') }}
                 </span>
-                <UsersAvatarGroup 
-                  v-if="(resource as any).managers?.length" 
-                  :users="(resource as any).managers" 
-                  :max="2" 
-                  :size="18" 
+                <UsersAvatarGroup
+                  v-if="(resource as any).managers?.length"
+                  :users="(resource as any).managers"
+                  :max="2"
+                  :size="18"
                 />
               </div>
             </div>
@@ -160,13 +168,17 @@
                 <div class="space-y-3">
                   <!-- Progress indicator -->
                   <div class="space-y-1.5">
-                    <p class="text-xs font-medium text-muted-foreground">{{ $t('Eiga') }}</p>
+                    <p class="text-xs font-medium text-muted-foreground">
+                      {{ $t('Eiga') }}
+                    </p>
                     <StateProgressIndicator :current-state="resource.pivot?.state" />
                   </div>
-                  
+
                   <!-- State description -->
                   <div v-if="(resource.pivot?.state_properties as any)?.description" class="border-t pt-3">
-                    <p class="text-xs text-muted-foreground">{{ (resource.pivot?.state_properties as any)?.description }}</p>
+                    <p class="text-xs text-muted-foreground">
+                      {{ (resource.pivot?.state_properties as any)?.description }}
+                    </p>
                   </div>
                 </div>
               </HoverCardContent>
@@ -205,25 +217,25 @@
           <div class="flex flex-wrap items-center gap-2 border-t pt-3">
             <!-- Primary action based on state -->
             <template v-if="resource.pivot?.approvable">
-              <Button 
-                v-if="resource.pivot?.state === 'created'" 
-                size="sm" 
+              <Button
+                v-if="resource.pivot?.state === 'created'"
+                size="sm"
                 @click="$emit('approve', resource)"
               >
                 <IFluentCheckmark24Filled class="size-4" />
                 {{ $t('Tvirtinti') }}
               </Button>
-              <Button 
-                v-else-if="resource.pivot?.state === 'reserved'" 
-                size="sm" 
+              <Button
+                v-else-if="resource.pivot?.state === 'reserved'"
+                size="sm"
                 @click="$emit('approve', resource)"
               >
                 <IFluentHandLeft24Regular class="size-4" />
                 {{ $t('Išduoti') }}
               </Button>
-              <Button 
-                v-else-if="resource.pivot?.state === 'lent'" 
-                size="sm" 
+              <Button
+                v-else-if="resource.pivot?.state === 'lent'"
+                size="sm"
                 @click="$emit('approve', resource)"
               >
                 <IFluentArrowUndo24Regular class="size-4" />
@@ -232,9 +244,9 @@
             </template>
 
             <!-- Comment button for non-approvable -->
-            <Button 
-              v-if="!resource.pivot?.approvable && ['created', 'reserved', 'lent'].includes(resource.pivot?.state ?? '')" 
-              size="sm" 
+            <Button
+              v-if="!resource.pivot?.approvable && ['created', 'reserved', 'lent'].includes(resource.pivot?.state ?? '')"
+              size="sm"
               variant="secondary"
               @click="$emit('comment', resource)"
             >
@@ -243,9 +255,9 @@
             </Button>
 
             <!-- Delete for cancelled/rejected -->
-            <Button 
+            <Button
               v-if="['cancelled', 'rejected'].includes(resource.pivot?.state ?? '')"
-              size="sm" 
+              size="sm"
               variant="destructive"
               @click="$emit('delete', resource)"
             >
@@ -265,8 +277,8 @@
                   <IFluentEdit24Regular class="mr-2 size-4" />
                   {{ $t('Redaguoti') }}
                 </DropdownMenuItem>
-                <DropdownMenuItem 
-                  v-if="!resource.pivot?.approvable" 
+                <DropdownMenuItem
+                  v-if="!resource.pivot?.approvable"
                   class="text-destructive"
                   @click="$emit('cancel', resource)"
                 >
@@ -281,14 +293,16 @@
     </TransitionGroup>
 
     <!-- Empty state -->
-    <div 
-      v-if="resources.length === 0" 
+    <div
+      v-if="resources.length === 0"
       class="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-zinc-200 py-12 dark:border-zinc-700"
     >
       <div class="flex size-16 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
         <IFluentBox24Regular class="size-8 text-muted-foreground" />
       </div>
-      <h3 class="mt-4 text-base font-semibold">{{ $t('Nėra rezervuotų išteklių') }}</h3>
+      <h3 class="mt-4 text-base font-semibold">
+        {{ $t('Nėra rezervuotų išteklių') }}
+      </h3>
       <p class="mt-1 max-w-xs text-center text-sm text-muted-foreground">
         {{ $t('Pridėkite išteklius prie šios rezervacijos, kad galėtumėte juos valdyti.') }}
       </p>
@@ -301,41 +315,40 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from "laravel-vue-i18n";
-import { computed, ref } from "vue";
-import { Link, usePage } from "@inertiajs/vue3";
+import { trans as $t } from 'laravel-vue-i18n';
+import { computed, ref } from 'vue';
+import { Link, usePage } from '@inertiajs/vue3';
 
-import ReservationResourceStateTag from "@/Components/Tag/ReservationResourceStateTag.vue";
-import StateProgressIndicator from "@/Components/SmallElements/StateProgressIndicator.vue";
-import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
-
-import { Badge } from "@/Components/ui/badge";
-import { Button } from "@/Components/ui/button";
-import { Checkbox } from "@/Components/ui/checkbox";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/Components/ui/hover-card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { RESERVATION_DATE_TIME_FORMAT } from "@/Constants/DateTimeFormats";
-import { formatStaticTime } from "@/Utils/IntlTime";
+import ReservationResourceStateTag from '@/Components/Tag/ReservationResourceStateTag.vue';
+import StateProgressIndicator from '@/Components/SmallElements/StateProgressIndicator.vue';
+import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { Checkbox } from '@/Components/ui/checkbox';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/hover-card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { RESERVATION_DATE_TIME_FORMAT } from '@/Constants/DateTimeFormats';
+import { formatStaticTime } from '@/Utils/IntlTime';
 
 // Icons
-import IFluentAdd24Filled from "~icons/fluent/add-24-filled";
-import IFluentArrowRight24Regular from "~icons/fluent/arrow-right-24-regular";
-import IFluentArrowSort24Regular from "~icons/fluent/arrow-sort-24-regular";
-import IFluentArrowUndo24Regular from "~icons/fluent/arrow-undo-24-regular";
-import IFluentBox24Regular from "~icons/fluent/box-24-regular";
-import IFluentCalendarLtr24Regular from "~icons/fluent/calendar-ltr-24-regular";
-import IFluentCheckmark24Filled from "~icons/fluent/checkmark-24-filled";
-import IFluentComment24Regular from "~icons/fluent/comment-24-regular";
-import IFluentDelete24Regular from "~icons/fluent/delete-24-regular";
-import IFluentDismiss24Filled from "~icons/fluent/dismiss-24-filled";
-import IFluentDismissCircle24Regular from "~icons/fluent/dismiss-circle-24-regular";
-import IFluentEdit24Regular from "~icons/fluent/edit-24-regular";
-import IFluentHandLeft24Regular from "~icons/fluent/hand-left-24-regular";
-import IFluentInfo24Regular from "~icons/fluent/info-24-regular";
-import IFluentMoreVertical24Regular from "~icons/fluent/more-vertical-24-regular";
-import IFluentStack24Regular from "~icons/fluent/stack-24-regular";
-import IFluentWarning24Filled from "~icons/fluent/warning-24-filled";
+import IFluentAdd24Filled from '~icons/fluent/add-24-filled';
+import IFluentArrowRight24Regular from '~icons/fluent/arrow-right-24-regular';
+import IFluentArrowSort24Regular from '~icons/fluent/arrow-sort-24-regular';
+import IFluentArrowUndo24Regular from '~icons/fluent/arrow-undo-24-regular';
+import IFluentBox24Regular from '~icons/fluent/box-24-regular';
+import IFluentCalendarLtr24Regular from '~icons/fluent/calendar-ltr-24-regular';
+import IFluentCheckmark24Filled from '~icons/fluent/checkmark-24-filled';
+import IFluentComment24Regular from '~icons/fluent/comment-24-regular';
+import IFluentDelete24Regular from '~icons/fluent/delete-24-regular';
+import IFluentDismiss24Filled from '~icons/fluent/dismiss-24-filled';
+import IFluentDismissCircle24Regular from '~icons/fluent/dismiss-circle-24-regular';
+import IFluentEdit24Regular from '~icons/fluent/edit-24-regular';
+import IFluentHandLeft24Regular from '~icons/fluent/hand-left-24-regular';
+import IFluentInfo24Regular from '~icons/fluent/info-24-regular';
+import IFluentMoreVertical24Regular from '~icons/fluent/more-vertical-24-regular';
+import IFluentStack24Regular from '~icons/fluent/stack-24-regular';
+import IFluentWarning24Filled from '~icons/fluent/warning-24-filled';
 
 const props = defineProps<{
   resources: App.Entities.Resource[];
@@ -362,17 +375,17 @@ const locale = computed(() => usePage().props.app.locale);
 const sortBy = ref<string>('state');
 
 const stateOrder: Record<string, number> = {
-  'created': 0,
-  'reserved': 1,
-  'lent': 2,
-  'returned': 3,
-  'rejected': 4,
-  'cancelled': 5,
+  created: 0,
+  reserved: 1,
+  lent: 2,
+  returned: 3,
+  rejected: 4,
+  cancelled: 5,
 };
 
 const sortedResources = computed(() => {
   const resources = [...props.resources];
-  
+
   return resources.sort((a, b) => {
     switch (sortBy.value) {
       case 'state':
@@ -449,7 +462,7 @@ const getStateStripColor = (state?: string) => {
 
 const getDateWarningClass = (resource: App.Entities.Resource, type: 'start' | 'end') => {
   const state = resource.pivot?.state;
-  
+
   // Show start date warning for reserved state (awaiting pickup)
   if (type === 'start' && state === 'reserved') {
     const startDate = new Date(resource.pivot?.start_time ?? '');
@@ -457,7 +470,7 @@ const getDateWarningClass = (resource: App.Entities.Resource, type: 'start' | 'e
       return 'font-semibold text-amber-600 dark:text-amber-400';
     }
   }
-  
+
   // Show end date warning for lent state (overdue)
   if (type === 'end' && state === 'lent') {
     const endDate = new Date(resource.pivot?.end_time ?? '');
@@ -465,7 +478,7 @@ const getDateWarningClass = (resource: App.Entities.Resource, type: 'start' | 'e
       return 'font-semibold text-red-600 dark:text-red-400';
     }
   }
-  
+
   return '';
 };
 </script>

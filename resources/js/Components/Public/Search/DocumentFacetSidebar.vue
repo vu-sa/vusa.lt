@@ -1,6 +1,6 @@
 <template>
   <FilterSidebar
-    :active-filter-count="activeFilterCount"
+    :active-filter-count
     mobile-title="search.filter_documents"
     @clear-filters="emit('clearFilters')"
   >
@@ -76,7 +76,7 @@
           :label="$t('search.tenants')"
           :icon="Building2"
           :badge-count="filters.tenants.length"
-          :is-loading="isLoading"
+          :is-loading
           icon-container-class="bg-primary/10 text-primary group-hover:bg-primary/15"
         >
           <TenantFilter
@@ -93,7 +93,7 @@
           :description="$t('search.document_type_description')"
           :icon="FileText"
           :badge-count="filters.contentTypes.length"
-          :is-loading="isLoading"
+          :is-loading
           :skeleton-count="4"
           icon-container-class="bg-blue-500/10 text-blue-600 group-hover:bg-blue-500/15"
         >
@@ -112,7 +112,7 @@
           :description="$t('search.language_description')"
           :icon="Globe"
           :badge-count="filters.languages.length"
-          :is-loading="isLoading"
+          :is-loading
           :skeleton-count="2"
           icon-container-class="bg-emerald-500/10 text-emerald-600 group-hover:bg-emerald-500/15"
         >
@@ -143,14 +143,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { trans as $t } from 'laravel-vue-i18n'
+import { computed } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
 
 // Shared Search Components
-import { FilterSidebar, FilterAccordion } from '@/Components/Shared/Search'
 
 // ShadcnVue components
-import { Accordion } from '@/Components/ui/accordion'
 
 // Icons
 import {
@@ -158,141 +156,149 @@ import {
   FileText,
   Globe,
   Calendar,
-} from 'lucide-vue-next'
+} from 'lucide-vue-next';
 
 // Local components
-import TenantFilter from './TenantFilter.vue'
-import ContentTypeFilter from './ContentTypeFilter.vue'
-import DateRangeFilter from './DateRangeFilter.vue'
-import LanguageFilterList from './LanguageFilterList.vue'
+import TenantFilter from './TenantFilter.vue';
+import ContentTypeFilter from './ContentTypeFilter.vue';
+import DateRangeFilter from './DateRangeFilter.vue';
+import LanguageFilterList from './LanguageFilterList.vue';
+
+import { Accordion } from '@/Components/ui/accordion';
+import { FilterSidebar, FilterAccordion } from '@/Components/Shared/Search';
 
 // Types
-import type { DocumentFacet, DocumentSearchFilters } from '@/Types/DocumentSearchTypes'
+import type { DocumentFacet, DocumentSearchFilters } from '@/Types/DocumentSearchTypes';
 
 // Props interface
 interface Props {
-  facets: DocumentFacet[]
-  filters: DocumentSearchFilters
-  isLoading?: boolean
-  activeFilterCount?: number
-  importantContentTypes?: string[]
+  facets: DocumentFacet[];
+  filters: DocumentSearchFilters;
+  isLoading?: boolean;
+  activeFilterCount?: number;
+  importantContentTypes?: string[];
 }
 
 interface Emits {
-  (e: 'update:tenant', tenant: string): void
-  (e: 'update:contentType', contentType: string): void
-  (e: 'update:language', language: string): void
-  (e: 'update:dateRange', range: DocumentSearchFilters['dateRange']): void
-  (e: 'clearFilters'): void
-  (e: 'applyPreset', preset: any): void
+  (e: 'update:tenant', tenant: string): void;
+  (e: 'update:contentType', contentType: string): void;
+  (e: 'update:language', language: string): void;
+  (e: 'update:dateRange', range: DocumentSearchFilters['dateRange']): void;
+  (e: 'clearFilters'): void;
+  (e: 'applyPreset', preset: any): void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   facets: () => [],
   isLoading: false,
   activeFilterCount: 0,
-  importantContentTypes: () => []
-})
+  importantContentTypes: () => [],
+});
 
-const emit = defineEmits<Emits>()
+const emit = defineEmits<Emits>();
 
 // Check if date filter is active
 const hasDateFilter = computed(() => {
-  return (props.filters.dateRange.preset && props.filters.dateRange.preset !== 'recent') ||
-    props.filters.dateRange.from ||
-    props.filters.dateRange.to
-})
+  return (props.filters.dateRange.preset && props.filters.dateRange.preset !== 'recent')
+    || props.filters.dateRange.from
+    || props.filters.dateRange.to;
+});
 
 // Tenant processing
 const processTenantFacet = (facet: DocumentFacet | undefined) => {
   if (!facet?.values) {
-    return { main: [], padaliniai: [], pkp: [] }
+    return { main: [], padaliniai: [], pkp: [] };
   }
 
-  const main: any[] = []
-  const padaliniai: any[] = []
-  const pkp: any[] = []
+  const main: any[] = [];
+  const padaliniai: any[] = [];
+  const pkp: any[] = [];
 
-  facet.values.forEach(tenant => {
-    const value = tenant.value
+  facet.values.forEach((tenant) => {
+    const { value } = tenant;
 
     const transformedTenant = {
       shortname: value,
       name: value,
       type: 'tenant',
-      count: tenant.count
-    }
+      count: tenant.count,
+    };
 
     if (value === 'VU SA') {
-      main.push(transformedTenant)
-    } else if (value.includes('PKP')) {
-      pkp.push(transformedTenant)
-    } else if (value.startsWith('VU SA ')) {
-      padaliniai.push(transformedTenant)
-    } else {
-      main.push(transformedTenant)
+      main.push(transformedTenant);
     }
-  })
+    else if (value.includes('PKP')) {
+      pkp.push(transformedTenant);
+    }
+    else if (value.startsWith('VU SA ')) {
+      padaliniai.push(transformedTenant);
+    }
+    else {
+      main.push(transformedTenant);
+    }
+  });
 
   return {
     main: main.sort((a, b) => b.count - a.count),
     padaliniai: padaliniai.sort((a, b) => b.count - a.count),
-    pkp: pkp.sort((a, b) => b.count - a.count)
-  }
-}
+    pkp: pkp.sort((a, b) => b.count - a.count),
+  };
+};
 
 // Content type grouping
 const groupContentTypes = (facet: DocumentFacet | undefined) => {
   if (!facet?.values) {
-    return { vusa: [], vusaP: [], other: [] }
+    return { vusa: [], vusaP: [], other: [] };
   }
 
-  const vusa: any[] = []
-  const vusaP: any[] = []
-  const other: any[] = []
+  const vusa: any[] = [];
+  const vusaP: any[] = [];
+  const other: any[] = [];
 
-  facet.values.forEach(type => {
-    const value = type.value
+  facet.values.forEach((type) => {
+    const { value } = type;
 
     if (value.includes('VU SA P ')) {
-      const remainingText = value.replace(/^VU SA P /, '')
-      const capitalizedLabel = remainingText.charAt(0).toUpperCase() + remainingText.slice(1)
-      vusaP.push({ ...type, label: capitalizedLabel })
-    } else if (value.includes('VU SA')) {
-      const remainingText = value.replace(/^VU SA /, '')
-      const capitalizedLabel = remainingText.charAt(0).toUpperCase() + remainingText.slice(1)
-      vusa.push({ ...type, label: capitalizedLabel })
-    } else {
-      const capitalizedLabel = value.charAt(0).toUpperCase() + value.slice(1)
-      other.push({ ...type, label: capitalizedLabel })
+      const remainingText = value.replace(/^VU SA P /, '');
+      const capitalizedLabel = remainingText.charAt(0).toUpperCase() + remainingText.slice(1);
+      vusaP.push({ ...type, label: capitalizedLabel });
     }
-  })
+    else if (value.includes('VU SA')) {
+      const remainingText = value.replace(/^VU SA /, '');
+      const capitalizedLabel = remainingText.charAt(0).toUpperCase() + remainingText.slice(1);
+      vusa.push({ ...type, label: capitalizedLabel });
+    }
+    else {
+      const capitalizedLabel = value.charAt(0).toUpperCase() + value.slice(1);
+      other.push({ ...type, label: capitalizedLabel });
+    }
+  });
 
   return {
     vusa: vusa.sort((a, b) => b.count - a.count),
     vusaP: vusaP.sort((a, b) => b.count - a.count),
-    other: other.sort((a, b) => b.count - a.count)
-  }
-}
+    other: other.sort((a, b) => b.count - a.count),
+  };
+};
 
 // Computed facets
 const tenantFacet = computed(() => {
-  return props.facets.find(f => f.field === 'tenant_shortname')
-})
+  return props.facets.find(f => f.field === 'tenant_shortname');
+});
 
 const contentTypeFacet = computed(() => {
-  return props.facets.find(f => f.field === 'content_type')
-})
+  return props.facets.find(f => f.field === 'content_type');
+});
 
 const languageFacet = computed(() => {
-  return props.facets.find(f => f.field === 'language')
-})
+  return props.facets.find(f => f.field === 'language');
+});
 
 const processedTenantHierarchy = computed(() => {
-  return processTenantFacet(tenantFacet.value)
-})
+  return processTenantFacet(tenantFacet.value);
+});
 
 const groupedContentTypes = computed(() => {
-  return groupContentTypes(contentTypeFacet.value)
-})
+  return groupContentTypes(contentTypeFacet.value);
+});
 </script>

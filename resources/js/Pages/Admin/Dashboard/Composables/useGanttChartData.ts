@@ -1,12 +1,13 @@
 import { computed, type Ref } from 'vue';
-import type { 
-  AtstovavimosInstitution, 
-  AtstovavimosGap, 
-  GanttMeeting, 
+
+import type {
+  AtstovavimosInstitution,
+  AtstovavimosGap,
+  GanttMeeting,
   GanttInstitution,
   AtstovavimosTenant,
   GanttDutyMember,
-  InactivePeriod 
+  InactivePeriod,
 } from '../types';
 import {
   extractDutyMembers,
@@ -20,7 +21,7 @@ import {
 
 export function useGanttChartData(
   tenantInstitutionsRef: Ref<App.Entities.Institution[]>, // Lazy loaded tenant institutions
-  availableTenants: AtstovavimosTenant[]
+  availableTenants: AtstovavimosTenant[],
 ) {
   // Use the lazy-loaded tenant institutions directly
   const tenantInstitutions = tenantInstitutionsRef;
@@ -32,9 +33,9 @@ export function useGanttChartData(
         // Extract agenda items for tooltip (limit to first 4)
         const agendaItems = (meeting.agenda_items ?? []).slice(0, 4).map((item: any) => {
           // Get main vote from: main_vote property, is_main flag in votes, or first vote
-          const mainVote = item.main_vote 
-            ?? item.votes?.find((v: any) => v.is_main) 
-            ?? item.votes?.[0] 
+          const mainVote = item.main_vote
+            ?? item.votes?.find((v: any) => v.is_main)
+            ?? item.votes?.[0]
             ?? null;
           return {
             id: String(item.id),
@@ -79,8 +80,8 @@ export function useGanttChartData(
           institution_id: inst.id,
           from: new Date(ci.start_date),
           until: new Date(ci.end_date),
-          mode: 'no_meetings',  // All check-ins represent "no meetings"
-          note: ci.note || undefined
+          mode: 'no_meetings', // All check-ins represent "no meetings"
+          note: ci.note || undefined,
         } as AtstovavimosGap;
       }).filter(Boolean);
     }) as AtstovavimosGap[];
@@ -88,7 +89,7 @@ export function useGanttChartData(
 
   // All tenant meetings for processing
   const allTenantMeetings = computed(() => {
-    return tenantInstitutions.value.map(institution => {
+    return tenantInstitutions.value.map((institution) => {
       return (institution as any).meetings?.map((meeting: any) => {
         return {
           institution: String(institution.name ?? ''),
@@ -138,7 +139,7 @@ export function useGanttChartData(
     return tenantInstitutions.value.map(i => ({
       id: i.id,
       name: String(i.name ?? ''),
-      tenant_id: String(i.tenant_id ?? '')
+      tenant_id: String(i.tenant_id ?? ''),
     }));
   });
 
@@ -159,7 +160,7 @@ export function useGanttChartData(
 
     attrs?.push({
       dates: [new Date()],
-      highlight: { color: "red", fillMode: "outline" },
+      highlight: { color: 'red', fillMode: 'outline' },
       order: 1,
     });
 
@@ -167,7 +168,7 @@ export function useGanttChartData(
   });
 
   // Check types of each duty, and duties.current_users amount
-  type DutyTypeCount = { title: string; count: number; slug?: string | null | undefined };
+  interface DutyTypeCount { title: string; count: number; slug?: string | null | undefined }
   const dutyTypesWithUserCounts = computed<DutyTypeCount[] | undefined>(() => {
     return tenantInstitutions.value?.reduce((acc: DutyTypeCount[], institution: any) => {
       institution.duties?.forEach((duty: any) => {
@@ -176,11 +177,12 @@ export function useGanttChartData(
             return;
           }
 
-          const existingType = acc.find((t) => t.title === type.title);
+          const existingType = acc.find(t => t.title === type.title);
 
           if (existingType) {
             existingType.count += duty.current_users?.length ?? 0;
-          } else {
+          }
+          else {
             acc.push({
               title: type.title,
               count: duty.current_users?.length ?? 0,
@@ -192,7 +194,7 @@ export function useGanttChartData(
 
       return acc;
     }, [] as DutyTypeCount[])?.sort((a, b) => b.count - a.count)
-      .filter((type) => type.count > 0 && type.slug !== 'kuratoriai')
+      .filter(type => type.count > 0 && type.slug !== 'kuratoriai')
       .slice(0, 2);
   });
 
@@ -205,7 +207,7 @@ export function useGanttChartData(
   const tenantInactivePeriods = computed<InactivePeriod[]>(() => {
     return calculateInactivePeriods(
       tenantInstitutions.value as unknown as AtstovavimosInstitution[],
-      tenantDutyMembers.value
+      tenantDutyMembers.value,
     );
   });
 
@@ -227,17 +229,17 @@ export function useGanttChartData(
     tenantGaps,
     allTenantMeetings,
     formattedTenantInstitutions,
-    
+
     // Duty members data
     tenantDutyMembers,
     tenantInactivePeriods,
-    
+
     // Calendar
     tenantCalendarAttributes,
-    
+
     // Statistics
     dutyTypesWithUserCounts,
-    
+
     // Helper functions
     getInstitutionNames,
     getTenantNames,
@@ -246,6 +248,6 @@ export function useGanttChartData(
     getInstitutionPeriodicity,
     formatInstitutionsForGantt,
     getDutyMembersFromInstitutions,
-    getInactivePeriodsFromInstitutions
+    getInactivePeriodsFromInstitutions,
   };
 }

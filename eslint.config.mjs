@@ -163,8 +163,12 @@ export default tseslint.config(
       'vue/no-unused-properties': 'off', // Too aggressive with template usage
       'vue/padding-line-between-blocks': 'warn',
 
-      // Disable Vue formatting rules (handled by Stylistic)
-      'vue/html-indent': 'off',
+      // Vue template formatting
+      // NOTE: vue/html-indent is needed because @stylistic/indent only handles <script>,
+      // not <template> blocks. Without this, content broken to new lines lands at column 0.
+      'vue/html-indent': ['warn', 2, {
+        alignAttributesVertically: false,
+      }],
       'vue/html-closing-bracket-newline': 'off',
       'vue/first-attribute-linebreak': 'off',
 

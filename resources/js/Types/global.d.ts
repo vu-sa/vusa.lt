@@ -1,12 +1,12 @@
-import { PageProps as InertiaPageProps } from '@inertiajs/core';
-import { route as ziggyRoute } from 'ziggy-js';
-import { PageProps as AppPageProps } from './';
+import type { PageProps as InertiaPageProps } from '@inertiajs/core';
+import type { route as ziggyRoute } from 'ziggy-js';
 import type { PostHog } from 'posthog-js';
+import type { DriveItem } from '@microsoft/microsoft-graph-types';
 
-import type { DriveItem } from "@microsoft/microsoft-graph-types";
+import type { PageProps as AppPageProps } from './';
 
 declare global {
-  /* eslint-disable no-var */
+
   var route: typeof ziggyRoute;
 
   /**
@@ -45,16 +45,16 @@ declare global {
 
   type MyDriveItem = Pick<
     DriveItem,
-    | "id"
-    | "name"
-    | "file"
-    | "folder"
-    | "size"
-    | "createdDateTime"
-    | "lastModifiedDateTime"
-    | "webUrl"
-    | "listItem"
-    | "thumbnails"
+    | 'id'
+    | 'name'
+    | 'file'
+    | 'folder'
+    | 'size'
+    | 'createdDateTime'
+    | 'lastModifiedDateTime'
+    | 'webUrl'
+    | 'listItem'
+    | 'thumbnails'
   >;
 
   const $posthog: PostHog;

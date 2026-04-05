@@ -1,20 +1,20 @@
 <template>
   <div class="relative inline-flex leading-none" :class="containerClass">
-    <Avatar 
+    <Avatar
       :size="avatarSize"
-      :interactive="interactive"
+      :interactive
       :class="[
         'transition-all duration-200',
         border ? 'ring-1 ring-border' : ''
       ]"
     >
-      <AvatarImage 
-        v-if="user?.profile_photo_path" 
-        :src="user.profile_photo_path" 
+      <AvatarImage
+        v-if="user?.profile_photo_path"
+        :src="user.profile_photo_path"
         alt="Profile photo"
         class="object-cover"
       />
-      <AvatarFallback 
+      <AvatarFallback
         v-if="user"
         :class="[
           'text-foreground font-medium transition-colors',
@@ -24,16 +24,16 @@
         {{ userInitials(user.name) }}
       </AvatarFallback>
     </Avatar>
-    
+
     <!-- Status indicator -->
-    <!-- <div 
-      v-if="status" 
+    <!-- <div
+      v-if="status"
       class="absolute bottom-0 right-0 transform translate-x-1/4 translate-y-1/4 rounded-full ring-2 ring-background"
       :class="[
         statusSizeClass,
-        status === 'online' ? 'bg-success' : 
-        status === 'away' ? 'bg-warning' : 
-        status === 'busy' ? 'bg-destructive' : 
+        status === 'online' ? 'bg-success' :
+        status === 'away' ? 'bg-warning' :
+        status === 'busy' ? 'bg-destructive' :
         status === 'offline' ? 'bg-muted' : ''
       ]"
       aria-hidden="true"
@@ -43,6 +43,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import { Avatar, AvatarImage, AvatarFallback, mapPixelToSize, avatarTextSizes, type AvatarSize } from '@/Components/ui/avatar';
 
 type StatusType = 'online' | 'offline' | 'away' | 'busy' | null;
@@ -82,9 +83,9 @@ const statusSizeClass = computed(() => {
 });
 
 const userInitials = (name: string | null) => {
-  if (!name) return "";
+  if (!name) return '';
 
-  const words = name.split(" ");
+  const words = name.split(' ');
   if (words.length === 1) return words[0].substring(0, 2).toUpperCase();
   return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
 };

@@ -38,27 +38,28 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { router } from '@inertiajs/vue3'
-import { trans as $t, getActiveLanguage } from 'laravel-vue-i18n'
-import { ChevronRight, Building2 } from 'lucide-vue-next'
-import { CommandItem } from '@/Components/ui/command'
-import { useCommandPalette, type RecentItem } from '@/Composables/useCommandPalette'
-import type { InstitutionSearchResult } from '@/Composables/useAdminSearch'
+import { computed } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { trans as $t, getActiveLanguage } from 'laravel-vue-i18n';
+import { ChevronRight, Building2 } from 'lucide-vue-next';
+
+import { CommandItem } from '@/Components/ui/command';
+import { useCommandPalette, type RecentItem } from '@/Composables/useCommandPalette';
+import type { InstitutionSearchResult } from '@/Composables/useAdminSearch';
 
 const props = defineProps<{
-  institution: InstitutionSearchResult
-}>()
+  institution: InstitutionSearchResult;
+}>();
 
-const { close, addRecentItem } = useCommandPalette()
+const { close, addRecentItem } = useCommandPalette();
 
-const itemValue = computed(() => `institution-${props.institution.id}`)
+const itemValue = computed(() => `institution-${props.institution.id}`);
 
 const displayName = computed(() => {
-  const lang = getActiveLanguage()
-  if (lang === 'en' && props.institution.name_en) return props.institution.name_en
-  return props.institution.name_lt || props.institution.short_name_lt || $t('Be pavadinimo')
-})
+  const lang = getActiveLanguage();
+  if (lang === 'en' && props.institution.name_en) return props.institution.name_en;
+  return props.institution.name_lt || props.institution.short_name_lt || $t('Be pavadinimo');
+});
 
 const handleSelect = () => {
   // Add to recent items
@@ -66,11 +67,11 @@ const handleSelect = () => {
     id: props.institution.id,
     type: 'institution',
     title: displayName.value,
-    href: route('institutions.show', props.institution.id)
-  } as Omit<RecentItem, 'timestamp'>)
+    href: route('institutions.show', props.institution.id),
+  } as Omit<RecentItem, 'timestamp'>);
 
   // Navigate to show page (institutions have a show page, not edit directly)
-  close()
-  router.visit(route('institutions.show', props.institution.id))
-}
+  close();
+  router.visit(route('institutions.show', props.institution.id));
+};
 </script>

@@ -5,11 +5,10 @@
  * Handles state management, URL sync, facet merging, and search operations.
  */
 
-import { ref, computed, watch, onMounted, onUnmounted, shallowRef, nextTick } from 'vue'
-import { useUrlSearchParams } from '@vueuse/core'
-import { debounce } from 'lodash-es'
+import { ref, computed, watch, onMounted, onUnmounted, shallowRef, nextTick } from 'vue';
+import { useUrlSearchParams } from '@vueuse/core';
+import { debounce } from 'lodash-es';
 
-import { useAdminSearch } from '@/Composables/useAdminSearch'
 import type {
   AdminCollection,
   AdminFacet,
@@ -18,7 +17,7 @@ import type {
   AdminSearchError,
   CollectionFacetConfig,
   SortOption,
-} from '../Types/AdminSearchTypes'
+} from '../Types/AdminSearchTypes';
 import {
   buildFilterString,
   parseFacets,
@@ -29,24 +28,26 @@ import {
   clearFilters as clearAllFilters,
   toggleFilterValue,
   toggleNumericFilterValue,
-} from '../Services/AdminSearchService'
-import { mergeFacets, sortFacetsByConfig } from '../Services/AdminFacetMerger'
-import { getCollectionFacetConfig, getCollectionSortOptions } from '../Config/collectionFacetConfig'
+} from '../Services/AdminSearchService';
+import { mergeFacets, sortFacetsByConfig } from '../Services/AdminFacetMerger';
+import { getCollectionFacetConfig, getCollectionSortOptions } from '../Config/collectionFacetConfig';
+
+import { useAdminSearch } from '@/Composables/useAdminSearch';
 
 export interface UseAdminCollectionSearchOptions {
-  collection: AdminCollection
+  collection: AdminCollection;
   /** Initial query from URL or default */
-  initialQuery?: string
+  initialQuery?: string;
   /** Whether to load initial facets on mount */
-  loadFacetsOnMount?: boolean
+  loadFacetsOnMount?: boolean;
   /** Whether to perform initial search on mount */
-  searchOnMount?: boolean
+  searchOnMount?: boolean;
   /** Whether to sync state to URL */
-  syncToUrl?: boolean
+  syncToUrl?: boolean;
   /** Debounce delay for search in ms */
-  debounceMs?: number
+  debounceMs?: number;
   /** Results per page */
-  perPage?: number
+  perPage?: number;
 }
 
 export function useAdminCollectionSearch(options: UseAdminCollectionSearchOptions) {
@@ -58,71 +59,71 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     syncToUrl = true,
     debounceMs = 300,
     perPage = 24,
-  } = options
+  } = options;
 
   // Get the facet config for this collection
-  const facetConfig = getCollectionFacetConfig(collection)
+  const facetConfig = getCollectionFacetConfig(collection);
   if (!facetConfig) {
-    throw new Error(`No facet configuration found for collection: ${collection}`)
+    throw new Error(`No facet configuration found for collection: ${collection}`);
   }
 
   // Get the base admin search composable
-  const adminSearch = useAdminSearch()
+  const adminSearch = useAdminSearch();
 
   // URL params for state persistence
-  const urlParams = syncToUrl ? useUrlSearchParams('history') : ref({})
+  const urlParams = syncToUrl ? useUrlSearchParams('history') : ref({});
 
   // State
-  const status = ref<AdminSearchStatus>('idle')
-  const query = ref(initialQuery)
-  const filters = ref<AdminSearchFilters>({ query: initialQuery })
-  const sortBy = ref(facetConfig.defaultSortBy)
-  const currentPage = ref(1)
+  const status = ref<AdminSearchStatus>('idle');
+  const query = ref(initialQuery);
+  const filters = ref<AdminSearchFilters>({ query: initialQuery });
+  const sortBy = ref(facetConfig.defaultSortBy);
+  const currentPage = ref(1);
 
   // Results state (using shallowRef for performance with large arrays)
-  const results = shallowRef<unknown[]>([])
-  const totalHits = ref(0)
-  const totalPages = ref(0)
+  const results = shallowRef<unknown[]>([]);
+  const totalHits = ref(0);
+  const totalPages = ref(0);
 
   // Facets state
-  const facets = shallowRef<AdminFacet[]>([])
-  const initialFacets = shallowRef<AdminFacet[]>([])
-  const initialFacetsLoaded = ref(false)
-  const initialFacetsLoading = ref(false)
+  const facets = shallowRef<AdminFacet[]>([]);
+  const initialFacets = shallowRef<AdminFacet[]>([]);
+  const initialFacetsLoaded = ref(false);
+  const initialFacetsLoading = ref(false);
 
   // Error state
-  const error = ref<AdminSearchError | null>(null)
+  const error = ref<AdminSearchError | null>(null);
 
   // Abort controller for cleanup
-  let searchAbortController: AbortController | null = null
+  const searchAbortController: AbortController | null = null;
 
   // Sort options for this collection
-  const sortOptions = computed<SortOption[]>(() => getCollectionSortOptions(collection))
+  const sortOptions = computed<SortOption[]>(() => getCollectionSortOptions(collection));
 
   // Computed properties
-  const isSearching = computed(() => status.value === 'searching')
-  const isLoadingFacets = computed(() => status.value === 'loading-facets')
-  const isLoadingMore = computed(() => status.value === 'loading-more')
-  const hasResults = computed(() => results.value.length > 0)
-  const hasMoreResults = computed(() => currentPage.value < totalPages.value)
-  const activeFilterCount = computed(() => countActiveFilters(filters.value, facetConfig))
-  const hasActiveFilters = computed(() => checkActiveFilters(filters.value, facetConfig))
+  const isSearching = computed(() => status.value === 'searching');
+  const isLoadingFacets = computed(() => status.value === 'loading-facets');
+  const isLoadingMore = computed(() => status.value === 'loading-more');
+  const hasResults = computed(() => results.value.length > 0);
+  const hasMoreResults = computed(() => currentPage.value < totalPages.value);
+  const activeFilterCount = computed(() => countActiveFilters(filters.value, facetConfig));
+  const hasActiveFilters = computed(() => checkActiveFilters(filters.value, facetConfig));
 
   // Merged facets (initial + current with selection state)
   const mergedFacets = computed(() => {
-    const merged = mergeFacets(initialFacets.value, facets.value, filters.value, facetConfig)
-    return sortFacetsByConfig(merged, facetConfig)
-  })
+    const merged = mergeFacets(initialFacets.value, facets.value, filters.value, facetConfig);
+    return sortFacetsByConfig(merged, facetConfig);
+  });
 
   // Search ready state
-  const isReady = computed(() => adminSearch.isReady.value && initialFacetsLoaded.value)
+  const isReady = computed(() => adminSearch.isReady.value && initialFacetsLoaded.value);
 
   /**
    * Clear error state
    */
   const clearError = () => {
-    error.value = null
-  }
+    error.value = null;
+  };
 
   /**
    * Validate collection access and API key
@@ -135,48 +136,50 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
         message: 'No access to this collection',
         userMessage: 'Neturite prieigos prie šios paieškos.',
         retryable: false,
-      }
-      return false
+      };
+      return false;
     }
-    return true
-  }
+    return true;
+  };
 
   /**
    * Load initial facets (all available filter options)
    */
   const loadInitialFacets = async () => {
-    if (initialFacetsLoaded.value || initialFacetsLoading.value) return
+    if (initialFacetsLoaded.value || initialFacetsLoading.value) return;
 
-    if (!validateCollectionAccess()) return
+    if (!validateCollectionAccess()) return;
 
-    status.value = 'loading-facets'
-    initialFacetsLoading.value = true
+    status.value = 'loading-facets';
+    initialFacetsLoading.value = true;
 
     try {
       const rawFacets = await adminSearch.loadInitialFacets(collection, facetConfig.facetBy, {
         queryBy: facetConfig.queryBy,
-      })
+      });
 
-      initialFacets.value = parseFacets(rawFacets, facetConfig, filters.value)
-      initialFacetsLoaded.value = true
+      initialFacets.value = parseFacets(rawFacets, facetConfig, filters.value);
+      initialFacetsLoaded.value = true;
 
       // If no current facets, use initial as default
       if (facets.value.length === 0) {
-        facets.value = [...initialFacets.value]
+        facets.value = [...initialFacets.value];
       }
-    } catch (err) {
-      console.error('Failed to load initial facets:', err)
+    }
+    catch (err) {
+      console.error('Failed to load initial facets:', err);
       error.value = {
         type: 'server',
         message: err instanceof Error ? err.message : 'Unknown error',
         userMessage: 'Nepavyko įkelti filtrų. Bandykite dar kartą.',
         retryable: true,
-      }
-    } finally {
-      status.value = 'idle'
-      initialFacetsLoading.value = false
+      };
     }
-  }
+    finally {
+      status.value = 'idle';
+      initialFacetsLoading.value = false;
+    }
+  };
 
   /**
    * Perform search with current filters
@@ -184,19 +187,20 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
   const performSearch = async (isLoadMore = false) => {
     // Clear previous error
     if (!isLoadMore) {
-      clearError()
+      clearError();
     }
 
     // Build filter string from current filters
-    const filterString = buildFilterString(filters.value, facetConfig)
+    const filterString = buildFilterString(filters.value, facetConfig);
 
     // Set loading state
     if (isLoadMore) {
-      status.value = 'loading-more'
-      currentPage.value += 1
-    } else {
-      status.value = 'searching'
-      currentPage.value = 1
+      status.value = 'loading-more';
+      currentPage.value += 1;
+    }
+    else {
+      status.value = 'searching';
+      currentPage.value = 1;
     }
 
     try {
@@ -207,31 +211,33 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
         queryBy: facetConfig.queryBy,
         perPage,
         page: currentPage.value,
-      })
+      });
 
       // Update results
       if (isLoadMore) {
-        results.value = [...results.value, ...searchResult.hits]
-      } else {
-        results.value = searchResult.hits
+        results.value = [...results.value, ...searchResult.hits];
+      }
+      else {
+        results.value = searchResult.hits;
       }
 
-      totalHits.value = searchResult.totalHits
-      totalPages.value = searchResult.totalPages
+      totalHits.value = searchResult.totalHits;
+      totalPages.value = searchResult.totalPages;
 
       // Update facets from search results
-      facets.value = parseFacets(searchResult.facets, facetConfig, filters.value)
+      facets.value = parseFacets(searchResult.facets, facetConfig, filters.value);
 
       // Sync to URL if enabled
       if (syncToUrl && !isLoadMore) {
-        syncStateToUrl()
+        syncStateToUrl();
       }
-    } catch (err) {
-      console.error('Search failed:', err)
+    }
+    catch (err) {
+      console.error('Search failed:', err);
 
       // Don't show error for aborted requests
       if (err instanceof Error && err.name === 'AbortError') {
-        return
+        return;
       }
 
       error.value = {
@@ -239,195 +245,198 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
         message: err instanceof Error ? err.message : 'Unknown error',
         userMessage: 'Paieška nepavyko. Bandykite dar kartą.',
         retryable: true,
-      }
+      };
 
       // Reset results on error
       if (!isLoadMore) {
-        results.value = []
-        totalHits.value = 0
-        totalPages.value = 0
+        results.value = [];
+        totalHits.value = 0;
+        totalPages.value = 0;
       }
-    } finally {
-      status.value = 'idle'
     }
-  }
+    finally {
+      status.value = 'idle';
+    }
+  };
 
   // Debounced search for user typing
   const debouncedSearch = debounce(() => {
     if (status.value === 'idle' || status.value === 'error') {
-      performSearch(false)
+      performSearch(false);
     }
-  }, debounceMs)
+  }, debounceMs);
 
   /**
    * Set search query and trigger search
    */
   const search = (newQuery: string, immediate = false) => {
-    query.value = newQuery
-    filters.value.query = newQuery
+    query.value = newQuery;
+    filters.value.query = newQuery;
 
     if (immediate) {
-      performSearch(false)
-    } else {
-      debouncedSearch()
+      performSearch(false);
     }
-  }
+    else {
+      debouncedSearch();
+    }
+  };
 
   /**
    * Set a filter value
    */
   const setFilter = (field: string, value: unknown) => {
-    filters.value[field] = value as string | string[] | number | number[]
-    debouncedSearch()
-  }
+    filters.value[field] = value as string | string[] | number | number[];
+    debouncedSearch();
+  };
 
   /**
    * Toggle a filter value (for multi-select filters)
    */
   const toggleFilter = (field: string, value: string | number) => {
-    const currentValue = filters.value[field]
+    const currentValue = filters.value[field];
 
     // Determine if this is a numeric field (like year)
-    const isNumeric = field.includes('year') && typeof value === 'number'
+    const isNumeric = field.includes('year') && typeof value === 'number';
 
     if (isNumeric) {
       filters.value[field] = toggleNumericFilterValue(
         currentValue as number[] | undefined,
-        value as number
-      )
-    } else {
+        value as number,
+      );
+    }
+    else {
       filters.value[field] = toggleFilterValue(
         currentValue as string[] | undefined,
-        String(value)
-      )
+        String(value),
+      );
     }
 
-    debouncedSearch()
-  }
+    debouncedSearch();
+  };
 
   /**
    * Clear all filters (keep query)
    */
   const clearFilters = () => {
-    filters.value = clearAllFilters(filters.value, facetConfig)
-    debouncedSearch()
-  }
+    filters.value = clearAllFilters(filters.value, facetConfig);
+    debouncedSearch();
+  };
 
   /**
    * Clear everything including query
    */
   const clearAll = () => {
-    query.value = ''
-    filters.value = { query: '' }
-    debouncedSearch()
-  }
+    query.value = '';
+    filters.value = { query: '' };
+    debouncedSearch();
+  };
 
   /**
    * Load more results
    */
   const loadMore = async () => {
     if (status.value !== 'loading-more' && hasMoreResults.value) {
-      await performSearch(true)
+      await performSearch(true);
     }
-  }
+  };
 
   /**
    * Change sort order
    */
   const setSortBy = (newSortBy: string) => {
-    sortBy.value = newSortBy
-    performSearch(false)
-  }
+    sortBy.value = newSortBy;
+    performSearch(false);
+  };
 
   /**
    * Refresh search (retry)
    */
   const refresh = async () => {
-    clearError()
-    await performSearch(false)
-  }
+    clearError();
+    await performSearch(false);
+  };
 
   /**
    * Sync current state to URL
    */
   const syncStateToUrl = () => {
-    if (!syncToUrl) return
+    if (!syncToUrl) return;
 
-    const params = filtersToUrlParams(filters.value, facetConfig)
+    const params = filtersToUrlParams(filters.value, facetConfig);
 
     // Add sort if not default
     if (sortBy.value !== facetConfig.defaultSortBy) {
-      params.set('sort', sortBy.value)
+      params.set('sort', sortBy.value);
     }
 
     // Update URL without page reload
-    const newUrl = new URL(window.location.href)
-    newUrl.search = params.toString()
-    window.history.replaceState({}, '', newUrl.toString())
-  }
+    const newUrl = new URL(window.location.href);
+    newUrl.search = params.toString();
+    window.history.replaceState({}, '', newUrl.toString());
+  };
 
   /**
    * Load state from URL
    */
   const loadFromUrl = () => {
-    if (!syncToUrl) return
+    if (!syncToUrl) return;
 
-    const params = new URLSearchParams(window.location.search)
+    const params = new URLSearchParams(window.location.search);
 
     // Parse filters from URL
-    const urlFilters = urlParamsToFilters(params, facetConfig)
-    filters.value = urlFilters
-    query.value = urlFilters.query || ''
+    const urlFilters = urlParamsToFilters(params, facetConfig);
+    filters.value = urlFilters;
+    query.value = urlFilters.query || '';
 
     // Parse sort from URL
-    const urlSort = params.get('sort')
+    const urlSort = params.get('sort');
     if (urlSort) {
-      sortBy.value = urlSort
+      sortBy.value = urlSort;
     }
-  }
+  };
 
   // Watch for config changes to re-search
   watch(
     () => adminSearch.config.value,
     (newConfig) => {
       if (newConfig && !initialFacetsLoaded.value) {
-        if (!validateCollectionAccess()) return
-        loadInitialFacets()
+        if (!validateCollectionAccess()) return;
+        loadInitialFacets();
       }
-    }
-  )
+    },
+  );
 
   // Initialize on mount
   onMounted(async () => {
     // Initialize admin search
-    await adminSearch.initialize()
+    await adminSearch.initialize();
 
-    if (!validateCollectionAccess()) return
+    if (!validateCollectionAccess()) return;
 
     // Load state from URL if enabled
     if (syncToUrl) {
-      loadFromUrl()
+      loadFromUrl();
     }
 
     // Load initial facets
     if (loadFacetsOnMount) {
-      await loadInitialFacets()
+      await loadInitialFacets();
     }
 
     // Perform initial search
     if (searchOnMount) {
-      await nextTick()
-      await performSearch(false)
+      await nextTick();
+      await performSearch(false);
     }
-  })
+  });
 
   // Cleanup on unmount
   onUnmounted(() => {
     if (searchAbortController) {
-      searchAbortController.abort()
+      searchAbortController.abort();
     }
-    debouncedSearch.cancel()
-  })
+    debouncedSearch.cancel();
+  });
 
   return {
     // Config
@@ -478,7 +487,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
 
     // Admin search access (for config status, etc.)
     adminSearch,
-  }
+  };
 }
 
-export type AdminCollectionSearchController = ReturnType<typeof useAdminCollectionSearch>
+export type AdminCollectionSearchController = ReturnType<typeof useAdminCollectionSearch>;

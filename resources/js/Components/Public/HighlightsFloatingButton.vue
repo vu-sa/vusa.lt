@@ -1,13 +1,15 @@
 <template>
   <!-- Desktop: Inline sticky sidebar card (visible on lg+) -->
-  <aside 
-    v-if="highlights && highlights.length > 0" 
+  <aside
+    v-if="highlights && highlights.length > 0"
     class="fixed right-6 top-1/3 z-40 hidden w-72 lg:block"
   >
     <div class="rounded-xl border bg-card p-4 shadow-lg">
       <div class="mb-3 flex items-center gap-2 border-b pb-2">
         <LightbulbIcon class="h-5 w-5 text-primary" />
-        <h4 class="font-semibold">Svarbiausia</h4>
+        <h4 class="font-semibold">
+          Svarbiausia
+        </h4>
       </div>
       <ul class="space-y-3">
         <li

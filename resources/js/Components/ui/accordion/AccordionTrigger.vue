@@ -1,22 +1,3 @@
-<script setup lang="ts">
-import { cn } from '@/Utils/Shadcn/utils'
-import { ChevronDown } from 'lucide-vue-next'
-import {
-  AccordionHeader,
-  AccordionTrigger,
-  type AccordionTriggerProps,
-} from 'reka-ui'
-import { computed, type HTMLAttributes } from 'vue'
-
-const props = defineProps<AccordionTriggerProps & { class?: HTMLAttributes['class'] }>()
-
-const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
-
-  return delegated
-})
-</script>
-
 <template>
   <AccordionHeader class="flex mt-0">
     <AccordionTrigger
@@ -38,3 +19,23 @@ const delegatedProps = computed(() => {
     </AccordionTrigger>
   </AccordionHeader>
 </template>
+
+<script setup lang="ts">
+import { ChevronDown } from 'lucide-vue-next';
+import {
+  AccordionHeader,
+  AccordionTrigger,
+  type AccordionTriggerProps,
+} from 'reka-ui';
+import { computed, type HTMLAttributes } from 'vue';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+const props = defineProps<AccordionTriggerProps & { class?: HTMLAttributes['class'] }>();
+
+const delegatedProps = computed(() => {
+  const { class: _, ...delegated } = props;
+
+  return delegated;
+});
+</script>

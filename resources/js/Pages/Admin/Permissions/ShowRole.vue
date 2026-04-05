@@ -36,11 +36,11 @@
 </template>
 
 <script setup lang="tsx">
-import { router } from "@inertiajs/vue3";
+import { router } from '@inertiajs/vue3';
 
-import { Button } from "@/Components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/Components/ui/card";
-import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
+import { Button } from '@/Components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
+import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 
 interface Role {
   id: string;

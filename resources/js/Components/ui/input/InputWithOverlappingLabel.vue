@@ -1,39 +1,3 @@
-<script setup lang="ts">
-import { computed, useId } from "vue";
-import { cn } from "@/Utils/Shadcn/utils";
-import Input from "./Input.vue";
-
-interface Props {
-  modelValue?: string | number | null;
-  label: string;
-  placeholder?: string;
-  type?: string;
-  disabled?: boolean;
-  hint?: string;
-  class?: string;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  modelValue: "",
-  placeholder: "",
-  type: "text",
-  disabled: false,
-  hint: undefined,
-  class: undefined,
-});
-
-const emit = defineEmits<{
-  "update:modelValue": [value: string];
-}>();
-
-const id = useId();
-
-const value = computed({
-  get: () => props.modelValue ?? "",
-  set: (val) => emit("update:modelValue", String(val)),
-});
-</script>
-
 <template>
   <div class="space-y-1">
     <div class="group relative">
@@ -54,11 +18,11 @@ const value = computed({
           <slot name="icon" />
         </div>
         <Input
-          :id="id"
+          :id
           v-model="value"
-          :type="type"
-          :placeholder="placeholder"
-          :disabled="disabled"
+          :type
+          :placeholder
+          :disabled
           :class="cn(
             'h-10',
             $slots.icon && 'pl-9',
@@ -72,3 +36,41 @@ const value = computed({
     </p>
   </div>
 </template>
+
+<script setup lang="ts">
+import { computed, useId } from 'vue';
+
+import Input from './Input.vue';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+interface Props {
+  modelValue?: string | number | null;
+  label: string;
+  placeholder?: string;
+  type?: string;
+  disabled?: boolean;
+  hint?: string;
+  class?: string;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  modelValue: '',
+  placeholder: '',
+  type: 'text',
+  disabled: false,
+  hint: undefined,
+  class: undefined,
+});
+
+const emit = defineEmits<{
+  'update:modelValue': [value: string];
+}>();
+
+const id = useId();
+
+const value = computed({
+  get: () => props.modelValue ?? '',
+  set: val => emit('update:modelValue', String(val)),
+});
+</script>

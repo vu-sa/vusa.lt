@@ -12,7 +12,7 @@
       </p>
       <p>
         Nerandi sau tinkamos veiklos, bet turi idėją, kuri gali įkvėpti, suburti ar atnešti teigiamų pokyčių? Skatiname
-         <!-- eslint-disable-next-line vue/singleline-html-element-content-newline -->
+        <!-- eslint-disable-next-line vue/singleline-html-element-content-newline -->
         imtis lyderystės ir, su <SmartLink class="font-bold" href="/kontaktai/sic">Studentų iniciatyvų centro</SmartLink> pagalba, <SmartLink class="font-bold" href="/nauju-stud-org-ikurimas">sukurti savo iniciatyvą</SmartLink>!
       </p>
     </template>
@@ -48,9 +48,9 @@
 </template>
 
 <script setup lang="ts">
-import NewInstitutionCard from "@/Components/Cards/NewInstitutionCard.vue";
-import SmartLink from "@/Components/Public/SmartLink.vue";
-import StaggeredTransitionGroup from "@/Components/Transitions/StaggeredTransitionGroup.vue";
+import NewInstitutionCard from '@/Components/Cards/NewInstitutionCard.vue';
+import SmartLink from '@/Components/Public/SmartLink.vue';
+import StaggeredTransitionGroup from '@/Components/Transitions/StaggeredTransitionGroup.vue';
 
 defineProps<{
   institutions: Array<App.Entities.Institution>;

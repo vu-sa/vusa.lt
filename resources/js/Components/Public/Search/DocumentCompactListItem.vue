@@ -4,7 +4,7 @@
     <a :href="document.anonymous_url" target="_blank" rel="noopener noreferrer"
       class="block sm:flex sm:items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-ring rounded-md"
       @click="trackDocumentClick">
-      
+
       <!-- Mobile Layout: Stacked -->
       <div class="sm:hidden space-y-2">
         <!-- Title Row -->
@@ -23,7 +23,7 @@
           <!-- External Link Icon -->
           <ExternalLink class="w-3 h-3 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
         </div>
-        
+
         <!-- Metadata Row - no margin, full width -->
         <div class="flex items-center gap-2 text-xs text-muted-foreground">
           <!-- Content Type Badge -->
@@ -32,12 +32,12 @@
               {{ getShortContentType() }}
             </span>
           </Badge>
-          
+
           <!-- Organization -->
           <span class="max-w-20 truncate flex-shrink-0 font-medium" :title="getTenantDisplayName()">
             {{ getTenantDisplayName() }}
           </span>
-          
+
           <!-- Date -->
           <span class="whitespace-nowrap flex-shrink-0 font-medium">
             {{ formatCompactDate() }}
@@ -90,21 +90,22 @@
 
 <script setup lang="ts">
 // ShadcnVue components
-import { Badge } from '@/Components/ui/badge'
 
 // Icons
-import { ExternalLink } from 'lucide-vue-next'
-import { Icon } from '@iconify/vue'
+import { ExternalLink } from 'lucide-vue-next';
+import { Icon } from '@iconify/vue';
+
+import { Badge } from '@/Components/ui/badge';
 
 // Composables
-import { useDocumentDisplay, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay'
+import { useDocumentDisplay, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
 
 // Props
 interface Props {
-  document: DocumentDisplayItem
+  document: DocumentDisplayItem;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 // Use shared document display logic
 const {
@@ -113,41 +114,44 @@ const {
   getShortContentType,
   getContentTypeBadgeClasses,
   getTenantDisplayName,
-  trackDocumentClick
-} = useDocumentDisplay(props.document)
+  trackDocumentClick,
+} = useDocumentDisplay(props.document);
 
 // Compact date formatting using the proper date parsing from useDocumentDisplay
 const formatCompactDate = () => {
-  if (!props.document.document_date) return ''
+  if (!props.document.document_date) return '';
 
   try {
     // Use the same date parsing logic as useDocumentDisplay
-    let date: Date
-    if (typeof props.document.document_date === 'number' ||
-      (typeof props.document.document_date === 'string' && /^\d+$/.test(props.document.document_date))) {
-      const timestamp = Number(props.document.document_date)
-      date = new Date(timestamp < 10000000000 ? timestamp * 1000 : timestamp)
-    } else {
-      date = new Date(props.document.document_date)
+    let date: Date;
+    if (typeof props.document.document_date === 'number'
+      || (typeof props.document.document_date === 'string' && /^\d+$/.test(props.document.document_date))) {
+      const timestamp = Number(props.document.document_date);
+      date = new Date(timestamp < 10000000000 ? timestamp * 1000 : timestamp);
+    }
+    else {
+      date = new Date(props.document.document_date);
     }
 
-    const now = new Date()
-    const isCurrentYear = date.getFullYear() === now.getFullYear()
+    const now = new Date();
+    const isCurrentYear = date.getFullYear() === now.getFullYear();
 
     if (isCurrentYear) {
       // Current year: show month abbreviated (e.g., "Vas 12" for February 12)
       return date.toLocaleDateString('lt-LT', {
         month: 'short',
-        day: 'numeric'
-      })
-    } else {
-      // Other years: show year only (e.g., "2023")
-      return date.getFullYear().toString()
+        day: 'numeric',
+      });
     }
-  } catch {
-    return props.document.document_date
+    else {
+      // Other years: show year only (e.g., "2023")
+      return date.getFullYear().toString();
+    }
   }
-}
+  catch {
+    return props.document.document_date;
+  }
+};
 </script>
 
 <style scoped>

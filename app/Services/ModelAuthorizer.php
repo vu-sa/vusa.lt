@@ -288,8 +288,8 @@ class ModelAuthorizer
             $this->duties = new Collection;
             $this->permissableDuties = new Collection;
             $this->isAllScope = false;
-            // Unset user so forUser() re-accepts the (potentially refreshed) model
-            unset($this->user);
+            // Reset user so forUser() re-accepts the (potentially refreshed) model
+            unset($this->user); // @phpstan-ignore unset.possiblyHookedProperty
         }
 
         Cache::forget("auth:duties:{$userId}");

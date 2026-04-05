@@ -1,8 +1,18 @@
+<template>
+  <div
+    data-slot="card-header"
+    :class="cn(cardHeaderVariants({ size: props.size }), props.class)"
+  >
+    <slot />
+  </div>
+</template>
+
 <script setup lang="ts">
-import type { HTMLAttributes } from 'vue'
-import type { VariantProps } from 'class-variance-authority'
-import { cn } from '@/Utils/Shadcn/utils'
-import { cva } from 'class-variance-authority'
+import type { HTMLAttributes } from 'vue';
+import type { VariantProps } from 'class-variance-authority';
+import { cva } from 'class-variance-authority';
+
+import { cn } from '@/Utils/Shadcn/utils';
 
 const cardHeaderVariants = cva(
   'flex flex-col space-y-1.5',
@@ -18,21 +28,12 @@ const cardHeaderVariants = cva(
       size: 'default',
     },
   },
-)
+);
 
-export type CardHeaderVariants = VariantProps<typeof cardHeaderVariants>
+export type CardHeaderVariants = VariantProps<typeof cardHeaderVariants>;
 
 const props = defineProps<{
-  size?: 'default' | 'compact' | 'sm'
-  class?: HTMLAttributes['class']
-}>()
+  size?: 'default' | 'compact' | 'sm';
+  class?: HTMLAttributes['class'];
+}>();
 </script>
-
-<template>
-  <div
-    data-slot="card-header"
-    :class="cn(cardHeaderVariants({ size: props.size }), props.class)"
-  >
-    <slot />
-  </div>
-</template>

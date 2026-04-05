@@ -1,11 +1,10 @@
 <template>
   <!-- Development warning for missing breadcrumb state -->
-  <div v-if="isDevelopment && isInFallbackMode" 
-       data-testid="fallback-warning"
-       class="min-w-0 flex-1 px-3 py-1 bg-yellow-100 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-600 rounded text-xs text-yellow-800 dark:text-yellow-200">
+  <div v-if="isDevelopment && isInFallbackMode" data-testid="fallback-warning"
+    class="min-w-0 flex-1 px-3 py-1 bg-yellow-100 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-600 rounded text-xs text-yellow-800 dark:text-yellow-200">
     ⚠️ Breadcrumbs in fallback mode - check console for details
   </div>
-  
+
   <!-- Only show breadcrumbs when there are 3+ items (meaningful navigation depth) -->
   <template v-else-if="shouldShowBreadcrumbs">
     <!-- Mobile: Icon button with dropdown showing full trail -->
@@ -17,14 +16,12 @@
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" class="w-56">
-        <DropdownMenuLabel class="text-xs text-muted-foreground">{{ $t('Navigacija') }}</DropdownMenuLabel>
+        <DropdownMenuLabel class="text-xs text-muted-foreground">
+          {{ $t('Navigacija') }}
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem 
-          v-for="(item, index) in breadcrumbs" 
-          :key="index"
-          :disabled="index === breadcrumbs.length - 1"
-          as-child
-        >
+        <DropdownMenuItem v-for="(item, index) in breadcrumbs" :key="index" :disabled="index === breadcrumbs.length - 1"
+          as-child>
           <Link v-if="item.href && index < breadcrumbs.length - 1" :href="item.href" class="flex items-center gap-2">
             <component :is="item.icon" v-if="item.icon" class="h-4 w-4 text-muted-foreground" />
             <Home v-else-if="index === 0" class="h-4 w-4 text-muted-foreground" />
@@ -59,17 +56,14 @@
           <BreadcrumbItem>
             <HoverCard :open-delay="100" :close-delay="200">
               <HoverCardTrigger as-child>
-                <button type="button" class="flex items-center gap-1 hover:text-foreground transition-colors cursor-pointer">
+                <button type="button"
+                  class="flex items-center gap-1 hover:text-foreground transition-colors cursor-pointer">
                   <BreadcrumbEllipsis class="h-4 w-4" />
                 </button>
               </HoverCardTrigger>
               <HoverCardContent align="start" class="w-48 p-1">
-                <Link 
-                  v-for="(item, index) in middleItems" 
-                  :key="index"
-                  :href="item.href || '#'"
-                  class="flex items-center gap-2 px-2 py-1.5 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground transition-colors"
-                >
+                <Link v-for="(item, index) in middleItems" :key="index" :href="item.href || '#'"
+                  class="flex items-center gap-2 px-2 py-1.5 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground transition-colors">
                   <component :is="item.icon" v-if="item.icon" class="h-4 w-4 text-muted-foreground" />
                   <span>{{ $t(item.label) }}</span>
                 </Link>
@@ -96,9 +90,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
-import { trans as $t } from "laravel-vue-i18n";
+import { trans as $t } from 'laravel-vue-i18n';
 import { useBreakpoints, breakpointsTailwind } from '@vueuse/core';
 import { Home, FolderTree } from 'lucide-vue-next';
+
 import {
   Breadcrumb,
   BreadcrumbEllipsis,

@@ -1,9 +1,9 @@
 <template>
-  <div 
-    role="button" 
-    tabindex="0" 
-    @click="handleModalOpen" 
-    @keydown.enter="handleModalOpen" 
+  <div
+    role="button"
+    tabindex="0"
+    @click="handleModalOpen"
+    @keydown.enter="handleModalOpen"
     @keydown.space="handleModalOpen"
   >
     <slot />
@@ -12,9 +12,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed } from 'vue';
 
-import ImageSelector from "./ImageSelector.vue";
+import ImageSelector from './ImageSelector.vue';
 
 const props = defineProps<{
   showModal?: boolean;
@@ -23,7 +23,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'submit', url: string): void;
   (e: 'update:showModal', value: boolean): void;
-}>()
+}>();
 
 const internalModal = ref(false);
 
@@ -33,16 +33,18 @@ const modalState = computed({
   set: (value) => {
     if (props.showModal !== undefined) {
       emit('update:showModal', value);
-    } else {
+    }
+    else {
       internalModal.value = value;
     }
-  }
+  },
 });
 
 async function handleModalOpen() {
   if (props.showModal !== undefined) {
     emit('update:showModal', true);
-  } else {
+  }
+  else {
     internalModal.value = true;
   }
 }

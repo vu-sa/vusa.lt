@@ -210,14 +210,14 @@ const institutionUrl = computed(() => {
     return route('contacts.alias', {
       institution: props.institution.alias,
       subdomain,
-      lang: locale.value
+      lang: locale.value,
     });
   }
 
   return route('contacts.institution', {
     institution: props.institution.id,
     subdomain,
-    lang: locale.value
+    lang: locale.value,
   });
 });
 </script>

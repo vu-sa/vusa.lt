@@ -40,6 +40,7 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
+
 import type { TextBox } from '@/Types/contentParts';
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Checkbox } from '@/Components/ui/checkbox';

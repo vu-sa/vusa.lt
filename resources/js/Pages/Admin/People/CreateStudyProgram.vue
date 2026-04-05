@@ -7,12 +7,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref } from 'vue';
 
-import Icons from "@/Types/Icons/regular";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import StudyProgramForm from "@/Components/AdminForms/StudyProgramForm.vue";
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
+import Icons from '@/Types/Icons/regular';
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import StudyProgramForm from '@/Components/AdminForms/StudyProgramForm.vue';
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 
 defineProps<{
   tenants: Array<App.Entities.Tenant>;
@@ -20,12 +20,12 @@ defineProps<{
 }>();
 
 const studyProgram = ref({
-  id: "",
-  name: [""],
-  degree: "",
+  id: '',
+  name: [''],
+  degree: '',
   tenant_id: null,
-  created_at: "",
-  updated_at: "",
+  created_at: '',
+  updated_at: '',
   translations: {},
 } as unknown as App.Entities.StudyProgram);
 </script>

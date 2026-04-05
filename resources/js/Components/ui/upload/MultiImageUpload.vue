@@ -1,102 +1,3 @@
-<script setup lang="ts">
-import { ref, watch, onMounted } from "vue"
-import { router } from "@inertiajs/vue3"
-import { cn } from '@/Utils/Shadcn/utils'
-import { Upload, UploadDropzone, type UploadFile } from "@/Components/ui/upload"
-import { Button } from "@/Components/ui/button"
-import { useToasts } from '@/Composables/useToasts'
-
-interface ExistingImage {
-  id: string | number
-  url?: string
-  original_url?: string
-  name?: string
-  status?: string
-}
-
-interface Props {
-  /** Folder path for image storage */
-  folder: string
-  /** Route name for deleting existing media */
-  deleteRoute?: string
-  /** Model ID for delete route */
-  modelId?: number | string
-  /** Custom class for the container */
-  class?: string
-}
-
-const props = defineProps<Props>()
-const images = defineModel<ExistingImage[]>("images", { default: () => [] })
-
-const toasts = useToasts()
-const uploadRef = ref<InstanceType<typeof Upload> | null>(null)
-const localFiles = ref<UploadFile[]>([])
-
-// Convert existing images to UploadFile format on mount
-onMounted(() => {
-  if (images.value && images.value.length > 0) {
-    localFiles.value = images.value.map((img, index) => ({
-      id: String(img.id || `existing-${index}`),
-      name: img.name || `image-${index}.jpg`,
-      size: 0,
-      type: 'image/jpeg',
-      url: img.original_url || img.url || '',
-      status: 'success' as const,
-      progress: 100,
-    }))
-  }
-})
-
-// Sync local files back to images model
-watch(localFiles, (newFiles) => {
-  images.value = newFiles.map(f => ({
-    id: f.id,
-    url: f.url,
-    original_url: f.url,
-    name: f.name,
-    status: f.status === 'success' ? 'finished' : f.status,
-  }))
-}, { deep: true })
-
-function handleUploadSuccess(file: UploadFile, response: any) {
-  // Update the file's URL with the server response
-  const index = localFiles.value.findIndex(f => f.id === file.id)
-  if (index !== -1) {
-    localFiles.value[index].url = response.url
-    localFiles.value[index].status = 'success'
-  }
-}
-
-function handleUploadError(file: UploadFile, error: string) {
-  toasts.error(error || 'Įvyko klaida įkeliant nuotrauką')
-}
-
-function handleFilesUpdate(files: UploadFile[]) {
-  localFiles.value = files
-}
-
-function handleRemove(file: UploadFile) {
-  // If it's an existing file (not pending), call delete route
-  if (file.status === 'success' && props.deleteRoute && props.modelId && !file.id.startsWith('upload-')) {
-    router.post(
-      route(props.deleteRoute, {
-        calendar: props.modelId,
-        media: file.id,
-      }),
-      {},
-      {
-        preserveScroll: true,
-        onSuccess: () => {
-          localFiles.value = localFiles.value.filter(f => f.id !== file.id)
-        },
-      }
-    )
-  } else {
-    localFiles.value = localFiles.value.filter(f => f.id !== file.id)
-  }
-}
-</script>
-
 <template>
   <Upload
     ref="uploadRef"
@@ -181,3 +82,104 @@ function handleRemove(file: UploadFile) {
     </template>
   </Upload>
 </template>
+
+<script setup lang="ts">
+import { ref, watch, onMounted } from 'vue';
+import { router } from '@inertiajs/vue3';
+
+import { cn } from '@/Utils/Shadcn/utils';
+import { Upload, UploadDropzone, type UploadFile } from '@/Components/ui/upload';
+import { Button } from '@/Components/ui/button';
+import { useToasts } from '@/Composables/useToasts';
+
+interface ExistingImage {
+  id: string | number;
+  url?: string;
+  original_url?: string;
+  name?: string;
+  status?: string;
+}
+
+interface Props {
+  /** Folder path for image storage */
+  folder: string;
+  /** Route name for deleting existing media */
+  deleteRoute?: string;
+  /** Model ID for delete route */
+  modelId?: number | string;
+  /** Custom class for the container */
+  class?: string;
+}
+
+const props = defineProps<Props>();
+const images = defineModel<ExistingImage[]>('images', { default: () => [] });
+
+const toasts = useToasts();
+const uploadRef = ref<InstanceType<typeof Upload> | null>(null);
+const localFiles = ref<UploadFile[]>([]);
+
+// Convert existing images to UploadFile format on mount
+onMounted(() => {
+  if (images.value && images.value.length > 0) {
+    localFiles.value = images.value.map((img, index) => ({
+      id: String(img.id || `existing-${index}`),
+      name: img.name || `image-${index}.jpg`,
+      size: 0,
+      type: 'image/jpeg',
+      url: img.original_url || img.url || '',
+      status: 'success' as const,
+      progress: 100,
+    }));
+  }
+});
+
+// Sync local files back to images model
+watch(localFiles, (newFiles) => {
+  images.value = newFiles.map(f => ({
+    id: f.id,
+    url: f.url,
+    original_url: f.url,
+    name: f.name,
+    status: f.status === 'success' ? 'finished' : f.status,
+  }));
+}, { deep: true });
+
+function handleUploadSuccess(file: UploadFile, response: any) {
+  // Update the file's URL with the server response
+  const index = localFiles.value.findIndex(f => f.id === file.id);
+  if (index !== -1) {
+    localFiles.value[index].url = response.url;
+    localFiles.value[index].status = 'success';
+  }
+}
+
+function handleUploadError(file: UploadFile, error: string) {
+  toasts.error(error || 'Įvyko klaida įkeliant nuotrauką');
+}
+
+function handleFilesUpdate(files: UploadFile[]) {
+  localFiles.value = files;
+}
+
+function handleRemove(file: UploadFile) {
+  // If it's an existing file (not pending), call delete route
+  if (file.status === 'success' && props.deleteRoute && props.modelId && !file.id.startsWith('upload-')) {
+    router.post(
+      route(props.deleteRoute, {
+        calendar: props.modelId,
+        media: file.id,
+      }),
+      {},
+      {
+        preserveScroll: true,
+        onSuccess: () => {
+          localFiles.value = localFiles.value.filter(f => f.id !== file.id);
+        },
+      },
+    );
+  }
+  else {
+    localFiles.value = localFiles.value.filter(f => f.id !== file.id);
+  }
+}
+</script>

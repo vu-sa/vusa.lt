@@ -51,18 +51,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
-import { trans as $t } from "laravel-vue-i18n";
-import { router } from "@inertiajs/vue3";
+import { ref, watch } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+import { router } from '@inertiajs/vue3';
 
-import { Button } from "@/Components/ui/button";
-import { Input } from "@/Components/ui/input";
-import { Label } from "@/Components/ui/label";
-import { NumberField } from "@/Components/ui/number-field";
-import { Spinner } from "@/Components/ui/spinner";
-import { Textarea } from "@/Components/ui/textarea";
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { NumberField } from '@/Components/ui/number-field';
+import { Spinner } from '@/Components/ui/spinner';
+import { Textarea } from '@/Components/ui/textarea';
 
-type ApprovalDecision = "approved" | "rejected" | "cancelled";
+type ApprovalDecision = 'approved' | 'rejected' | 'cancelled';
 
 const props = withDefaults(
   defineProps<{
@@ -84,15 +84,15 @@ const props = withDefaults(
     showQuantity: false,
     maxQuantity: 1,
     step: 1,
-  }
+  },
 );
 
 const emit = defineEmits<{
-  (e: "success"): void;
-  (e: "error", error: string): void;
+  (e: 'success'): void;
+  (e: 'error', error: string): void;
 }>();
 
-const notes = ref("");
+const notes = ref('');
 const selectedQuantity = ref(props.maxQuantity);
 const processing = ref(false);
 const currentDecision = ref<ApprovalDecision | null>(null);
@@ -120,23 +120,23 @@ const handleDecision = (decision: ApprovalDecision) => {
   }
 
   router.post(
-    route("approvals.store"),
+    route('approvals.store'),
     payload,
     {
       preserveScroll: true,
       onSuccess: () => {
-        notes.value = "";
+        notes.value = '';
         selectedQuantity.value = props.maxQuantity;
-        emit("success");
+        emit('success');
       },
       onError: (errors) => {
-        emit("error", Object.values(errors).flat().join(", "));
+        emit('error', Object.values(errors).flat().join(', '));
       },
       onFinish: () => {
         processing.value = false;
         currentDecision.value = null;
       },
-    }
+    },
   );
 };
 </script>

@@ -1,7 +1,9 @@
-import type { Meta, StoryObj } from "@storybook/vue3-vite";
-import { userEvent, within, fn } from "storybook/test";
-import MeetingForm from "./MeetingForm.vue";
-import { usePage, router } from "@/mocks/inertia.storybook";
+import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import { userEvent, within, fn } from 'storybook/test';
+
+import MeetingForm from './MeetingForm.vue';
+
+import { usePage, router } from '@/mocks/inertia.storybook';
 
 // Override usePage mock to include necessary auth data for this component
 usePage.mockImplementation(() => ({
@@ -9,7 +11,7 @@ usePage.mockImplementation(() => ({
     app: {
       locale: 'lt',
       subdomain: 'www',
-      name: 'VU SA'
+      name: 'VU SA',
     },
     auth: {
       user: {
@@ -17,20 +19,20 @@ usePage.mockImplementation(() => ({
         name: 'Test User',
         current_duties: [
           { institution: { id: 'inst1', name: 'Faculty of Science' } },
-          { institution: { id: 'inst2', name: 'Student Council' } }
-        ]
+          { institution: { id: 'inst2', name: 'Student Council' } },
+        ],
       },
       can: {
         create: {
-          meeting: true
-        }
-      }
+          meeting: true,
+        },
+      },
     },
     flash: {
       success: null,
-      error: null
-    }
-  }
+      error: null,
+    },
+  },
 }));
 
 // Mock route function for browser environment
@@ -51,17 +53,17 @@ const meta: Meta<typeof MeetingForm> = {
     loading: false,
     meeting: {
       start_time: '2025-04-20T10:00:00',
-      type_id: 1
+      type_id: 1,
     },
     meetingTypes: [
       { id: 1, title: 'Regular Meeting', model_type: 'App\\Models\\Meeting' },
       { id: 2, title: 'Special Meeting', model_type: 'App\\Models\\Meeting' },
-      { id: 3, title: 'Emergency Meeting', model_type: 'App\\Models\\Meeting' }
+      { id: 3, title: 'Emergency Meeting', model_type: 'App\\Models\\Meeting' },
     ],
     onSubmit: fn(),
   },
   decorators: [
-    (story) => ({
+    story => ({
       components: { story },
       template: `
         <div class="p-4 bg-white max-w-md">
@@ -77,9 +79,9 @@ const meta: Meta<typeof MeetingForm> = {
       `,
       provide: {
         meetingFormState: {
-          meetingData: {}
-        }
-      }
+          meetingData: {},
+        },
+      },
     }),
   ],
   parameters: {
@@ -87,13 +89,13 @@ const meta: Meta<typeof MeetingForm> = {
     // Mock fetch response for meeting types
     mockData: [
       {
-        url: '/api/types', 
+        url: '/api/types',
         method: 'GET',
         status: 200,
         response: [
           { id: 1, title: 'Regular Meeting', model_type: 'App\\Models\\Meeting' },
           { id: 2, title: 'Special Meeting', model_type: 'App\\Models\\Meeting' },
-          { id: 3, title: 'Emergency Meeting', model_type: 'App\\Models\\Meeting' }
+          { id: 3, title: 'Emergency Meeting', model_type: 'App\\Models\\Meeting' },
         ],
       },
     ],
@@ -105,7 +107,7 @@ type Story = StoryObj<typeof meta>;
 
 // Default state of the form
 export const Default: Story = {
-  render: (args) => ({
+  render: args => ({
     components: { MeetingForm },
     setup() {
       return { args };
@@ -113,15 +115,15 @@ export const Default: Story = {
     template: '<MeetingForm v-bind="args" @submit="args.onSubmit" />',
     provide: {
       meetingFormState: {
-        meetingData: {}
-      }
-    }
+        meetingData: {},
+      },
+    },
   }),
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
     // Wait for the component to be fully loaded after Suspense resolves
     await new Promise(resolve => setTimeout(resolve, 500));
-  }
+  },
 };
 
 // Form with loading state
@@ -129,7 +131,7 @@ export const Loading: Story = {
   args: {
     loading: true,
   },
-  render: (args) => ({
+  render: args => ({
     components: { MeetingForm },
     setup() {
       return { args };
@@ -137,9 +139,9 @@ export const Loading: Story = {
     template: '<MeetingForm v-bind="args" @submit="args.onSubmit" />',
     provide: {
       meetingFormState: {
-        meetingData: {}
-      }
-    }
+        meetingData: {},
+      },
+    },
   }),
 };
 
@@ -148,10 +150,10 @@ export const Prefilled: Story = {
   args: {
     meeting: {
       start_time: '2025-05-15T14:30:00',
-      type_id: 2
+      type_id: 2,
     },
   },
-  render: (args) => ({
+  render: args => ({
     components: { MeetingForm },
     setup() {
       return { args };
@@ -159,15 +161,15 @@ export const Prefilled: Story = {
     template: '<MeetingForm v-bind="args" @submit="args.onSubmit" />',
     provide: {
       meetingFormState: {
-        meetingData: {}
-      }
-    }
+        meetingData: {},
+      },
+    },
   }),
 };
 
 // Form with validation errors - Note: Complex async interactions may need manual testing
 export const WithInteraction: Story = {
-  render: (args) => ({
+  render: args => ({
     components: { MeetingForm },
     setup() {
       return { args };
@@ -175,24 +177,24 @@ export const WithInteraction: Story = {
     template: '<MeetingForm v-bind="args" @submit="args.onSubmit" />',
     provide: {
       meetingFormState: {
-        meetingData: {}
-      }
-    }
+        meetingData: {},
+      },
+    },
   }),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    
+
     // Wait for component to render completely
     await new Promise(resolve => setTimeout(resolve, 100));
 
     // Find and interact with the type selector
     const typeSelectTrigger = canvas.getByRole('combobox');
     await userEvent.click(typeSelectTrigger);
-    
+
     // Wait for dropdown to open - the actual selection requires proper pointerEvents
     // which may not work in test environments. Just verify dropdown opens.
     await new Promise(resolve => setTimeout(resolve, 100));
-    
+
     // Close the dropdown by pressing Escape
     await userEvent.keyboard('{Escape}');
   },

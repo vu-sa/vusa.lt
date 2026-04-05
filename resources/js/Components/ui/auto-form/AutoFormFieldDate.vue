@@ -1,27 +1,7 @@
-<script setup lang="ts">
-import type { FieldProps } from './interface'
-import { cn } from '@/Utils/Shadcn/utils'
-import { Button } from '@/Components/ui/button'
-import { Calendar } from '@/Components/ui/calendar'
-import { FormControl, FormDescription, FormField, FormItem, FormMessage } from '@/Components/ui/form'
-import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover'
-
-import { DateFormatter, getLocalTimeZone } from '@internationalized/date'
-import { CalendarIcon } from 'lucide-vue-next'
-import AutoFormLabel from './AutoFormLabel.vue'
-import { beautifyObjectName, maybeBooleanishToBoolean } from './utils'
-
-defineProps<FieldProps>()
-
-const df = new DateFormatter('en-US', {
-  dateStyle: 'long',
-})
-</script>
-
 <template>
   <FormField v-slot="slotProps" :name="fieldName">
     <FormItem>
-      <AutoFormLabel v-if="!config?.hideLabel" :required="required">
+      <AutoFormLabel v-if="!config?.hideLabel" :required>
         {{ config?.label || beautifyObjectName(label ?? fieldName) }}
       </AutoFormLabel>
       <FormControl>
@@ -55,3 +35,24 @@ const df = new DateFormatter('en-US', {
     </FormItem>
   </FormField>
 </template>
+
+<script setup lang="ts">
+import { DateFormatter, getLocalTimeZone } from '@internationalized/date';
+import { CalendarIcon } from 'lucide-vue-next';
+
+import type { FieldProps } from './interface';
+import AutoFormLabel from './AutoFormLabel.vue';
+import { beautifyObjectName, maybeBooleanishToBoolean } from './utils';
+
+import { cn } from '@/Utils/Shadcn/utils';
+import { Button } from '@/Components/ui/button';
+import { Calendar } from '@/Components/ui/calendar';
+import { FormControl, FormDescription, FormField, FormItem, FormMessage } from '@/Components/ui/form';
+import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
+
+defineProps<FieldProps>();
+
+const df = new DateFormatter('en-US', {
+  dateStyle: 'long',
+});
+</script>

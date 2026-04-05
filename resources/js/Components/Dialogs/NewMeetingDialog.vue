@@ -15,10 +15,10 @@
       </DialogHeader>
 
       <MeetingCreationWizard
-        :meeting-creation="meetingCreation"
-        :loading="loading"
-        :is-quick-mode="isQuickMode"
-        :total-steps="totalSteps"
+        :meeting-creation
+        :loading
+        :is-quick-mode
+        :total-steps
         @step-change="handleStepChange"
         @institution-select="handleInstitutionSelect"
         @meeting-form-submit="handleMeetingFormSubmit"
@@ -41,10 +41,10 @@
     </div>
 
     <MeetingCreationWizard
-      :meeting-creation="meetingCreation"
-      :loading="loading"
-      :is-quick-mode="isQuickMode"
-      :total-steps="totalSteps"
+      :meeting-creation
+      :loading
+      :is-quick-mode
+      :total-steps
       @step-change="handleStepChange"
       @institution-select="handleInstitutionSelect"
       @meeting-form-submit="handleMeetingFormSubmit"
@@ -55,13 +55,13 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from "laravel-vue-i18n";
-import { computed, watch } from "vue";
-import { usePage } from "@inertiajs/vue3";
+import { trans as $t } from 'laravel-vue-i18n';
+import { computed, watch } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 
-import { useMeetingCreation } from "@/Composables/useMeetingCreation";
-import MeetingCreationWizard from "@/Components/Meetings/MeetingCreationWizard.vue";
-import Icons from "@/Types/Icons/filled";
+import { useMeetingCreation } from '@/Composables/useMeetingCreation';
+import MeetingCreationWizard from '@/Components/Meetings/MeetingCreationWizard.vue';
+import Icons from '@/Types/Icons/filled';
 // Import Shadcn components
 import {
   Dialog,
@@ -69,7 +69,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/Components/ui/dialog";
+} from '@/Components/ui/dialog';
 
 const emit = defineEmits<(e: 'close') => void>();
 
@@ -80,7 +80,7 @@ const props = withDefaults(defineProps<{
   /** When true, renders as a dialog/modal. When false, renders inline with card styling. */
   asDialog?: boolean;
 }>(), {
-  asDialog: true
+  asDialog: true,
 });
 
 // Initialize meeting creation composable
@@ -93,32 +93,32 @@ const meetingCreation = useMeetingCreation({
   },
   onError: (errors) => {
     console.error('Meeting creation failed:', errors);
-  }
+  },
 });
 
 // If a suggested date is passed, seed the meeting start_time once modal is shown
 const seedFromProps = () => {
-  if (!props.showModal) return
+  if (!props.showModal) return;
 
   if (props.institution) {
-    meetingCreation.updateInstitution(props.institution)
+    meetingCreation.updateInstitution(props.institution);
     // Auto-navigate to step 2 when institution is provided
-    meetingCreation.goToStep(2)
+    meetingCreation.goToStep(2);
   }
 
   if (props.suggestedAt) {
-    const dt = typeof props.suggestedAt === 'string' ? new Date(props.suggestedAt) : props.suggestedAt
+    const dt = typeof props.suggestedAt === 'string' ? new Date(props.suggestedAt) : props.suggestedAt;
     if (!Number.isNaN(dt?.getTime?.())) {
-      meetingCreation.updateMeetingData({ start_time: dt.toISOString?.() ?? String(dt) })
+      meetingCreation.updateMeetingData({ start_time: dt.toISOString?.() ?? String(dt) });
       // Avoid showing early validation errors before user interacts
-      meetingCreation.clearAllErrors()
+      meetingCreation.clearAllErrors();
     }
   }
-}
+};
 
 watch([() => props.showModal, () => props.institution, () => props.suggestedAt], () => {
-  seedFromProps()
-}, { immediate: true })
+  seedFromProps();
+}, { immediate: true });
 
 // Computed properties
 // Force detailed flow only
@@ -168,7 +168,7 @@ const handleMeetingFormSubmit = (meetingData: any) => {
 const handleAgendaItemsFormSubmit = (agendaData: any) => {
   const titles = agendaData.agendaItemTitles || [];
   const broughtByStudentsFlags = agendaData.broughtByStudentsFlags || [];
-  
+
   const agendaItems = titles.map((title: string, index: number) => ({
     title,
     description: '',

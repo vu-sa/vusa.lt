@@ -5,10 +5,10 @@
       <SidebarMenu>
         <SidebarMenuItem v-for="item in items" :key="item.title" :data-tour="item.dataTour">
           <SidebarMenuButton as-child @click="handleItemClick(item.url)">
-            <div class="flex items-center">
+            <a :href="item.url" :target="item.url.startsWith('#') ? undefined : '_blank'" rel="noopener noreferrer" class="flex items-center">
               <component :is="item.icon" />
               <span>{{ item.title }}</span>
-            </div>
+            </a>
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>

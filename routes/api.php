@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\FileApiController;
+use App\Http\Controllers\Api\Admin\ImpersonateApiController;
 use App\Http\Controllers\Api\Admin\InstitutionSubscriptionApiController;
 use App\Http\Controllers\Api\Admin\MeetingApiController;
 use App\Http\Controllers\Api\Admin\SearchApiController;
@@ -130,6 +131,13 @@ Route::prefix('v1')->name('v1.')->group(function () {
 
         // User search for forms (e.g. responsible user in problems)
         Route::get('users/search', [UserSearchApiController::class, 'search'])->name('users.search');
+
+        // Impersonation (local/staging only, super admins)
+        Route::prefix('impersonate')->name('impersonate.')->group(function () {
+            Route::get('search', [ImpersonateApiController::class, 'search'])->name('search');
+            Route::post('start', [ImpersonateApiController::class, 'start'])->name('start');
+            Route::post('stop', [ImpersonateApiController::class, 'stop'])->name('stop');
+        });
 
         // Text box submissions
         Route::get('text-box-submissions', [TextBoxSubmissionApiController::class, 'index'])->name('text-box-submissions.index');

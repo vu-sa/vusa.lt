@@ -1,9 +1,9 @@
 <template>
   <!-- Mobile variant (simple styling) -->
-  <AccordionItem v-if="variant === 'mobile'" :value="value">
+  <AccordionItem v-if="variant === 'mobile'" :value>
     <AccordionTrigger class="text-sm font-medium">
       <div class="flex items-center gap-2">
-        <component v-if="hasValidIcon" :is="icon" class="w-4 h-4 text-muted-foreground" />
+        <component :is="icon" v-if="hasValidIcon" class="w-4 h-4 text-muted-foreground" />
         <span>{{ label }}</span>
         <Badge v-if="badgeCount > 0" variant="secondary" class="ml-auto mr-2">
           {{ badgeCount }}
@@ -18,7 +18,7 @@
   <!-- Desktop variant (enhanced styling with card-like appearance) -->
   <AccordionItem
     v-else
-    :value="value"
+    :value
     class="border border-border/60 rounded-xl bg-card/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200"
   >
     <AccordionTrigger class="px-5 py-4 hover:no-underline group">
@@ -51,29 +51,30 @@
 </template>
 
 <script setup lang="ts">
-import { computed, type Component } from 'vue'
-import { Badge } from '@/Components/ui/badge'
-import { AccordionContent, AccordionItem, AccordionTrigger } from '@/Components/ui/accordion'
+import { computed, type Component } from 'vue';
+
+import { Badge } from '@/Components/ui/badge';
+import { AccordionContent, AccordionItem, AccordionTrigger } from '@/Components/ui/accordion';
 
 interface Props {
   /** Unique value for accordion state */
-  value: string
+  value: string;
   /** Filter section label */
-  label: string
+  label: string;
   /** Optional description text (desktop only) */
-  description?: string
+  description?: string;
   /** Icon component to display (optional) */
-  icon?: Component
+  icon?: Component;
   /** Number to show in badge (0 = hidden) */
-  badgeCount?: number
+  badgeCount?: number;
   /** Whether content is loading */
-  isLoading?: boolean
+  isLoading?: boolean;
   /** Number of skeleton items to show when loading */
-  skeletonCount?: number
+  skeletonCount?: number;
   /** Variant: 'mobile' for simple, 'desktop' for enhanced */
-  variant?: 'mobile' | 'desktop'
+  variant?: 'mobile' | 'desktop';
   /** CSS classes for icon container (desktop only) */
-  iconContainerClass?: string
+  iconContainerClass?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -82,10 +83,10 @@ const props = withDefaults(defineProps<Props>(), {
   skeletonCount: 3,
   variant: 'desktop',
   iconContainerClass: 'bg-primary/10 text-primary group-hover:bg-primary/15',
-})
+});
 
 // Check if icon is a valid component (not undefined, null, or empty string)
 const hasValidIcon = computed(() => {
-  return props.icon != null && typeof props.icon !== 'string'
-})
+  return props.icon != null && typeof props.icon !== 'string';
+});
 </script>

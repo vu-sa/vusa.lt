@@ -1,17 +1,18 @@
 /**
  * useTimelineFilters - Shared timeline filter state with Provide/Inject
- * 
+ *
  * This composable provides centralized filter state management for Gantt charts
  * across UserTimelineSection, TenantTimelineSection, and FullscreenGanttModal.
- * 
+ *
  * Uses the same pattern as useGanttSettings for consistency.
- * 
+ *
  * Usage:
  * - In parent (ShowAtstovavimas.vue): call provideTimelineFilters()
  * - In children: call useTimelineFilters() to access shared state
  */
 import { ref, computed, provide, inject, watch, type Ref, type InjectionKey } from 'vue';
 import { router } from '@inertiajs/vue3';
+
 import type { AtstovavimosInstitution, AtstovavimosTenant } from '../types';
 
 const STORAGE_KEY = 'atstovavimas-timeline-filters';
@@ -24,7 +25,7 @@ export interface TimelineFilters {
   showDutyMembersUser: Ref<boolean>;
   showRelatedInstitutionsUser: Ref<boolean>;
   relatedInstitutionsLoaded: Ref<boolean>;
-  
+
   // Tenant section filters
   selectedTenantForGantt: Ref<string[]>;
   showOnlyWithActivityTenant: Ref<boolean>;
@@ -33,14 +34,14 @@ export interface TimelineFilters {
   showActivityStatusTenant: Ref<boolean>;
   tenantInstitutionsLoaded: Ref<boolean>;
   tenantInstitutionsLoading: Ref<boolean>;
-  
+
   // Shared state
   scrollPosition: Ref<number>;
-  
+
   // Computed
   availableTenantsUser: Ref<AtstovavimosTenant[]>;
   currentTenant: Ref<AtstovavimosTenant | undefined>;
-  
+
   // Actions
   setSelectedTenants: (tenantIds: string[]) => void;
   resetTenantFilters: () => void;
@@ -69,7 +70,8 @@ function loadStoredFilters(): Partial<StoredFilters> {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     return stored ? JSON.parse(stored) : {};
-  } catch {
+  }
+  catch {
     return {};
   }
 }
@@ -78,7 +80,8 @@ function saveStoredFilters(filters: StoredFilters) {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
-  } catch {
+  }
+  catch {
     // Ignore storage errors
   }
 }
@@ -89,7 +92,7 @@ function saveStoredFilters(filters: StoredFilters) {
  */
 export function provideTimelineFilters(
   institutions: AtstovavimosInstitution[],
-  availableTenants: AtstovavimosTenant[]
+  availableTenants: AtstovavimosTenant[],
 ): TimelineFilters {
   const stored = loadStoredFilters();
 
@@ -138,7 +141,7 @@ export function provideTimelineFilters(
   const currentTenant = computed(() =>
     selectedTenantForGantt.value.length > 0
       ? availableTenants.find(t => String(t.id) === selectedTenantForGantt.value[0])
-      : undefined
+      : undefined,
   );
 
   // Persist filters on change
@@ -167,7 +170,7 @@ export function provideTimelineFilters(
     showOnlyWithPublicMeetingsUser,
     showDutyMembersUser,
     showRelatedInstitutionsUser,
-    scrollPosition
+    scrollPosition,
   ], () => {
     persistFilters();
   }, { deep: true });
@@ -184,7 +187,8 @@ export function provideTimelineFilters(
     scrollPosition.value = 0;
     if (availableTenants.length > 0) {
       selectedTenantForGantt.value = [String(availableTenants[0]?.id)];
-    } else {
+    }
+    else {
       selectedTenantForGantt.value = [];
     }
   }
@@ -200,12 +204,12 @@ export function provideTimelineFilters(
   // Load related institutions via Inertia lazy reload
   function loadRelatedInstitutions() {
     if (relatedInstitutionsLoaded.value) return;
-    
+
     router.reload({
       only: ['relatedInstitutions'],
       onSuccess: () => {
         relatedInstitutionsLoaded.value = true;
-      }
+      },
     });
   }
 
@@ -214,24 +218,24 @@ export function provideTimelineFilters(
   // Also loads representativeActivity data for the same tenants
   function loadTenantInstitutions(tenantIds?: string[]) {
     const idsToLoad = tenantIds ?? selectedTenantForGantt.value;
-    
+
     // Skip if no tenants selected
     if (idsToLoad.length === 0) return;
-    
+
     // Skip if already loading
     if (tenantInstitutionsLoading.value) return;
-    
+
     // Check if we need to reload (different tenants selected)
     const idsToLoadSorted = [...idsToLoad].sort();
     const loadedIdsSorted = [...loadedTenantIds.value].sort();
-    const sameIds = idsToLoadSorted.length === loadedIdsSorted.length && 
-      idsToLoadSorted.every((id, i) => id === loadedIdsSorted[i]);
-    
+    const sameIds = idsToLoadSorted.length === loadedIdsSorted.length
+      && idsToLoadSorted.every((id, i) => id === loadedIdsSorted[i]);
+
     // Skip if already loaded the same tenants
     if (tenantInstitutionsLoaded.value && sameIds) return;
-    
+
     tenantInstitutionsLoading.value = true;
-    
+
     router.reload({
       only: ['tenantInstitutions', 'representativeActivity'],
       data: { tenantIds: idsToLoad },
@@ -242,7 +246,7 @@ export function provideTimelineFilters(
       },
       onError: () => {
         tenantInstitutionsLoading.value = false;
-      }
+      },
     });
   }
 
