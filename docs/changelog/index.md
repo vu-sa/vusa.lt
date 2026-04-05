@@ -7,32 +7,36 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.6 — Turinio naršymo patobulinimai (2026-04-05) {#v1-6}
+
+- 🔧 **_Table of Contents_ pataisytas puslapiuose** — paspaudus ant antraščių rodyklėje, puslapyje bus parodoma atitinkama antraštė.
+
 ## v1.5 — Kalendoriaus ir susitikimų patobulinimai (2026-04-03) {#v1-5}
 
-- 📅 **Viešas renginių kalendorius** — mobilioje versijoje, praėję renginiai dabar paslėpti pagal numatymą ir rodomi tik paspaudus „Rodyti ankstesnius"
-- 🤝 **Šiandienos susitikimai** — pagrindiniame ir atstovavimo skydelyje, prie "Tavo artėjantys susitikimai" dabar rodomi ir šiandienos susitikimai, net jei jų konkretus pradžios laikas jau praėjęs.
+- 🔧 **Praėję renginiai paslėpti viešame kalendoriuje** — mobilioje versijoje rodomi tik paspaudus „Rodyti ankstesnius"
+- 🔧 **Šiandienos susitikimai rodomi skydeliuose** — pagrindiniame ir atstovavimo skydelyje dabar rodomi šiandienos susitikimai, net jie jų konkretus pradžios laikas jau praėjęs
 
 ## v1.4 — Dokumentacijos atnaujinimas (2026-03-31) {#v1-4}
 
-Atnaujintoje vusa.lt dokumentacijoje sukurtas **atnaujinimų puslapis**, kuriame bus pristatomi platformos pakeitimai. Esant atnaujinimams, admin panelėje prie „Dokumentacija" nuorodos matysite indikatorių, o atnaujinimų puslapyje galėsite rasti visą informaciją apie naujausius pakeitimus.
+- ⭐ **Atnaujinimų puslapis** — dokumentacijoje sukurtas atnaujinimų puslapis, kuriame pristatomi platformos pakeitimai. Esant atnaujinimams, admin panelėje prie „Dokumentacija" nuorodos matysite indikatorių
 
 ## v1.3 — Dokumentų patobulinimai (2026-03-23) {#v1-3}
 
-- 📄 **Patobulinti [dokumentų](https://www.vusa.lt/dokumentai) veiksmai** — dokumentų sąraše dabar yra atidarymo, atsisiuntimo ir nuorodos kopijavimo mygtukai
-- 🔒 **Patikimesnis dokumentų įkėlimas** administratoriams.
+- ⭐ **[Dokumentų](https://www.vusa.lt/dokumentai) veiksmai** — dokumentų sąraše dabar yra atidarymo, atsisiuntimo ir nuorodos kopijavimo mygtukai
+- ✨ **Patikimesnis dokumentų įkėlimas** administratoriams
 
 > 🔗 [GitHub PR #542](https://github.com/vu-sa/vusa.lt/pull/542)
 
 ## v1.2 — Teksto laukelis turinyje (2026-03-12) {#v1-2}
 
-- **Teksto laukelio blokas** — naujas turinio blokas, leidžiantis lankytojams pateikti atsakymus tiesiai puslapyje. Atsakymus galima peržiūrėti ir eksportuoti į Excel. Šiuo metu naudojamas [vusa.lt tvarumo skiltyje](https://vusa.lt/tvarumas/), bet gali būti pritaikytas ir kitur.
+- ⭐ **Teksto laukelio blokas** — naujas turinio blokas, leidžiantis lankytojams pateikti atsakymus tiesiai puslapyje. Atsakymus galima peržiūrėti ir eksportuoti į Excel. Šiuo metu naudojamas [vusa.lt tvarumo skiltyje](https://vusa.lt/tvarumas/)
 
 > 🔗 [GitHub PR #532](https://github.com/vu-sa/vusa.lt/pull/532)
 
 ## v1.1 — Problemų sekimas (2026-03-10) {#v1-1}
 
-- **Problemų valdymas** — nauja skiltis, kurioje galima registruoti, sekti ir valdyti problemas, susijusias su padaliniu
-- **Susiejimas su institucijomis** — problemas galima susieti su konkrečiomis institucijomis
+- ⭐ **Problemų valdymas** — nauja skiltis, kurioje galima registruoti, sekti ir valdyti problemas, susijusias su padaliniu
+- ⭐ **Susiejimas su institucijomis** — problemas galima susieti su konkrečiomis institucijomis
 
 > 🔗 [GitHub PR #531](https://github.com/vu-sa/vusa.lt/pull/531)
 
