@@ -7,10 +7,11 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
-## v1.6 — Turinio naršymo patobulinimai (2026-04-05) {#v1-6}
+## v1.6 — Įvairūs patobulinimai (2026-04-06) {#v1-6}
 
-- 🔧 **_Table of Contents_ pataisytas puslapiuose** — paspaudus ant antraščių rodyklėje, puslapyje bus parodoma atitinkama antraštė.
+- 🔧 **Pataisytos _Table of Contents_ nuorodų paspaudimas** — paspaudus ant antraščių rodyklėje, puslapyje bus parodoma atitinkama antraštė.
 - 🔧 **Pašalintas problemų pavadinimo ilgio apribojimas**.
+- 🔧 Sutvarkyta serverio klaida, pasitaikanti einant į **angliškus renginių puslapius be dedikuotų pavadinimų** per specifinę nuorodą.
 
 ## v1.5 — Kalendoriaus ir susitikimų patobulinimai (2026-04-03) {#v1-5}
 
