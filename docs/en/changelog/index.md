@@ -10,6 +10,7 @@ Here you'll find all changes and improvements to the mano.vusa.lt platform.
 ## v1.6 — Content Navigation Improvements (2026-04-05) {#v1-6}
 
 - 🔧 **Table of contents now works on pages** — headings have ID attributes, so clicking on a table of contents link will scroll to the corresponding heading
+- 🔧 **No restriction for problem title length** — you can now have longer titles for problems without truncation
 
 ## v1.5 — Calendar & Meetings Improvements (2026-04-03) {#v1-5}
 

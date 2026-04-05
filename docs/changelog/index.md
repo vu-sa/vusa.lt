@@ -10,6 +10,7 @@ lastUpdated: true
 ## v1.6 — Turinio naršymo patobulinimai (2026-04-05) {#v1-6}
 
 - 🔧 **_Table of Contents_ pataisytas puslapiuose** — paspaudus ant antraščių rodyklėje, puslapyje bus parodoma atitinkama antraštė.
+- 🔧 **Pašalintas problemų pavadinimo ilgio apribojimas**.
 
 ## v1.5 — Kalendoriaus ir susitikimų patobulinimai (2026-04-03) {#v1-5}
 
