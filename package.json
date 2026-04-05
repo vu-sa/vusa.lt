@@ -113,7 +113,7 @@
     "eslint-plugin-vue": "^10.0.0",
     "eslint-plugin-vuejs-accessibility": "^2.4.1",
     "globals": "^17.0.0",
-    "jsdom": "^27.1.0",
+    "jsdom": "^29.0.0",
     "laravel-echo": "^2.3.0",
     "laravel-vite-plugin": "^2.0.0",
     "playwright": "^1.56.1",

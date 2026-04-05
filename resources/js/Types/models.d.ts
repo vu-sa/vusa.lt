@@ -1695,6 +1695,10 @@ declare global {
     }
 
     export interface Typeable {
+      // columns
+      type_id: number
+      typeable_type: string
+      typeable_id: string
       // relations
       type?: Type
       typeable?: Typeable

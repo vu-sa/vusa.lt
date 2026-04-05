@@ -34,7 +34,7 @@
         "spatie/laravel-google-fonts": "^1.2",
         "spatie/laravel-medialibrary": "^11.0.0",
         "spatie/laravel-model-states": "^2.4",
-        "spatie/laravel-permission": "^6.4",
+        "spatie/laravel-permission": "^7.2.4",
         "spatie/laravel-settings": "^3.4",
         "spatie/laravel-sitemap": "^8.0",
         "spatie/laravel-translatable": "^6.11.4",
@@ -60,7 +60,7 @@
         "pestphp/pest": "^4.0",
         "pestphp/pest-plugin-laravel": "^4.0",
         "phpmd/phpmd": "^2.15",
-        "ryoluo/sail-ssl": "^1.4",
+        "ryoluo/sail-ssl": "^1.5.0",
         "spatie/laravel-ignition": "^2.0",
         "spatie/laravel-typescript-transformer": "^2.1"
     },

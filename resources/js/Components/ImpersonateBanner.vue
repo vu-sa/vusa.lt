@@ -43,7 +43,9 @@
         <PopoverContent class="w-72 p-0" align="end" side="top">
           <div class="p-3 border-b">
             <div class="flex items-center justify-between mb-2">
-              <h4 class="text-sm font-medium">{{ $t('Impersonate User') }}</h4>
+              <h4 class="text-sm font-medium">
+                {{ $t('Impersonate User') }}
+              </h4>
               <button
                 class="p-1 hover:bg-muted rounded-md transition-colors"
                 @click="dismissed = true; popoverOpen = false"
@@ -138,7 +140,7 @@ const debouncedSearch = useDebounceFn(async () => {
   searching.value = true;
 
   try {
-    const url = route('api.v1.admin.impersonate.search') + '?search=' + encodeURIComponent(searchQuery.value);
+    const url = `${route('api.v1.admin.impersonate.search')}?search=${encodeURIComponent(searchQuery.value)}`;
     const { data } = await useFetch(url, {
       headers: {
         'Accept': 'application/json',
@@ -149,7 +151,8 @@ const debouncedSearch = useDebounceFn(async () => {
     }).json<{ success: boolean; data: SearchUser[] }>();
 
     searchResults.value = data.value?.data ?? [];
-  } finally {
+  }
+  finally {
     searching.value = false;
   }
 }, 300);
@@ -173,7 +176,8 @@ async function startImpersonating(userId: string) {
 
     popoverOpen.value = false;
     router.reload();
-  } finally {
+  }
+  finally {
     starting.value = false;
   }
 }
@@ -195,7 +199,8 @@ async function stopImpersonating() {
     }).json();
 
     router.reload();
-  } finally {
+  }
+  finally {
     stopping.value = false;
   }
 }

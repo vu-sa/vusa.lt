@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
 
 /**
+ * @property int $type_id
+ * @property string $typeable_type
+ * @property string $typeable_id
  * @property-read Type|null $type
  * @property-read Model|\Eloquent $typeable
  *
