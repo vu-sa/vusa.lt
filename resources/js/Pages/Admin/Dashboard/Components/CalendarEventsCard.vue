@@ -32,7 +32,7 @@
 
             <!-- Timeline dot -->
             <div
-              class="absolute -left-4 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-zinc-900 shadow-sm transition-all duration-200"
+              class="absolute -left-3 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-zinc-900 shadow-sm transition-all duration-200"
               :class="index === 0
                 ? 'bg-vusa-red scale-110'
                 : 'bg-zinc-300 dark:bg-zinc-600 group-hover:bg-vusa-red group-hover:scale-110'"
