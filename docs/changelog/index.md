@@ -13,6 +13,8 @@ lastUpdated: true
 - 🔧 **Pataisytas lietuviškas pranešimų tekstas** — kai kurių pranešimų pavadinime buvo rodomas neišverstas daugiskaitos formatas vietoj tinkamo lietuviško teksto.
 - ✨ **Perskaitytų pranešimų sinchronizacija su el. pašto santrauka** — pažymėjus pranešimą kaip perskaitytą platformoje, jis nebepateks į būsimą el. pašto santrauką.
 
+> 🔗 [GitHub PR #554](https://github.com/vu-sa/vusa.lt/pull/554)
+
 ## v1.6 — Įvairūs patobulinimai (2026-04-06) {#v1-6}
 
 - 🔧 **Pataisytas puslapių veikimas su tuščiu turiniu** — puslapiuose su tuščiu turinio bloku daugiau nebus rodomas klaidos pranešimas.
@@ -26,14 +28,20 @@ lastUpdated: true
   - Gražiau pateikti ir greičiau veikiantis resursų pasirinkimas.
   - Paspaudus „Pateikti" daugiau nebepasirodo „neišsaugotų pakeitimų" perspėjimas.
 
+> 🔗 [GitHub PR #553](https://github.com/vu-sa/vusa.lt/pull/553)
+
 ## v1.5 — Kalendoriaus ir susitikimų patobulinimai (2026-04-03) {#v1-5}
 
 - 🔧 **Praėję renginiai paslėpti viešame kalendoriuje** — mobilioje versijoje rodomi tik paspaudus „Rodyti ankstesnius"
 - 🔧 **Šiandienos susitikimai rodomi skydeliuose** — pagrindiniame ir atstovavimo skydelyje dabar rodomi šiandienos susitikimai, net jie jų konkretus pradžios laikas jau praėjęs
 
+> 🔗 [GitHub PR #550](https://github.com/vu-sa/vusa.lt/pull/550)
+
 ## v1.4 — Dokumentacijos atnaujinimas (2026-03-31) {#v1-4}
 
 - ⭐ **Atnaujinimų puslapis** — dokumentacijoje sukurtas atnaujinimų puslapis, kuriame pristatomi platformos pakeitimai. Esant atnaujinimams, admin panelėje prie „Dokumentacija" nuorodos matysite indikatorių
+
+> 🔗 [GitHub PR #546](https://github.com/vu-sa/vusa.lt/pull/546)
 
 ## v1.3 — Dokumentų patobulinimai (2026-03-23) {#v1-3}
 
