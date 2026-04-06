@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use RalphJSmit\Laravel\SEO\Support\SEOData;
 use Spatie\SchemaOrg\BreadcrumbList;
+use Spatie\SchemaOrg\ListItem;
 use Spatie\SchemaOrg\Organization;
 
 class PublicController extends Controller
@@ -458,12 +459,10 @@ class PublicController extends Controller
         $position = 1;
 
         foreach ($breadcrumbs as $crumb) {
-            $items[] = [
-                '@type' => 'ListItem',
-                'position' => $position++,
-                'name' => $crumb['name'],
-                'item' => $crumb['url'],
-            ];
+            $items[] = (new ListItem)
+                ->position($position++)
+                ->name($crumb['name'])
+                ->item($crumb['url']);
         }
 
         return (new BreadcrumbList)

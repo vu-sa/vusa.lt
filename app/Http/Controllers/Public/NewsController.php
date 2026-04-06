@@ -64,23 +64,23 @@ class NewsController extends PublicController
         // Generate breadcrumb schema
         $breadcrumbs = [
             [
-                'name' => $locale === 'lt' ? 'Pradžia' : 'Home',
-                'url' => route('home', ['subdomain' => $this->subdomain, 'lang' => $locale]),
+                'name' => $lang === 'lt' ? 'Pradžia' : 'Home',
+                'url' => route('home', ['subdomain' => $this->subdomain, 'lang' => $lang]),
             ],
             [
-                'name' => $locale === 'lt' ? 'Naujienos' : 'News',
+                'name' => $lang === 'lt' ? 'Naujienos' : 'News',
                 'url' => route('newsArchive', [
                     'subdomain' => $this->subdomain,
-                    'lang' => $locale,
-                    'newsString' => $locale === 'lt' ? 'naujienos' : 'news',
+                    'lang' => $lang,
+                    'newsString' => $lang === 'lt' ? 'naujienos' : 'news',
                 ]),
             ],
             [
                 'name' => $news->title,
                 'url' => route('news', [
                     'subdomain' => $this->subdomain,
-                    'lang' => $locale,
-                    'newsString' => $locale === 'lt' ? 'naujiena' : 'news',
+                    'lang' => $lang,
+                    'newsString' => $lang === 'lt' ? 'naujiena' : 'news',
                     'news' => $news->permalink,
                 ]),
             ],
@@ -177,6 +177,7 @@ class NewsController extends PublicController
         $this->sharePaginationSeoMeta($news, $this->tenant);
 
         // Generate breadcrumb schema for archive
+        $locale = app()->getLocale();
         $breadcrumbs = [
             [
                 'name' => $locale === 'lt' ? 'Pradžia' : 'Home',

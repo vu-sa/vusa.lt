@@ -227,20 +227,21 @@ class Calendar extends Model implements HasMedia
     public function toEventSchema(): Event
     {
         $locale = app()->getLocale();
+        $title = $this->getTranslation('title', $locale) ?: $this->title;
 
         $schema = (new Event)
-            ->name($this->getTranslation('title', $locale) ?: $this->title)
-            ->startDate($this->date->toIso8601String())
-            ->eventStatus('https://schema.org/EventScheduled')
+            ->name($title)
+            ->startDate($this->date)
+            ->setProperty('eventStatus', 'https://schema.org/EventScheduled')
             ->organizer(
                 (new Organization)
                     ->name($this->tenant->shortname ?? 'VU SA')
-                    ->url($this->tenant ? route('home', ['subdomain' => $this->tenant->alias]) : config('app.url'))
+                    ->url(route('home', ['subdomain' => $this->tenant->alias]))
             );
 
         // Add end date if exists
         if ($this->end_date) {
-            $schema->endDate($this->end_date->toIso8601String());
+            $schema->endDate($this->end_date);
         }
 
         // Add description
@@ -261,9 +262,9 @@ class Calendar extends Model implements HasMedia
 
         // Add event attendance mode
         if ($location) {
-            $schema->eventAttendanceMode('https://schema.org/OfflineEventAttendanceMode');
+            $schema->setProperty('eventAttendanceMode', 'https://schema.org/OfflineEventAttendanceMode');
         } else {
-            $schema->eventAttendanceMode('https://schema.org/OnlineEventAttendanceMode');
+            $schema->setProperty('eventAttendanceMode', 'https://schema.org/OnlineEventAttendanceMode');
         }
 
         // Add image if exists
