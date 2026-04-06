@@ -71,8 +71,15 @@ class PublicPageController extends PublicController
 
         $content = Cache::tags(['homepage', "tenant_{$this->tenant->id}", "locale_{$locale}"])
             ->remember($cacheKey, 3600, function () {
-                return $this->tenant->content ??
-                    Tenant::query()->where('type', 'pagrindinis')->first()?->content;
+                // Check if tenant has content with actual content parts
+                $tenantContent = $this->tenant->content;
+                
+                // If no content or content has no parts, fall back to main tenant
+                if (! $tenantContent || $tenantContent->parts->isEmpty()) {
+                    return Tenant::query()->where('type', 'pagrindinis')->first()?->content;
+                }
+                
+                return $tenantContent;
             });
 
         // Fetch news for homepage to enable LCP image preloading (eliminates API waterfall)

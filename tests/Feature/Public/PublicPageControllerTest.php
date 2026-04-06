@@ -274,3 +274,73 @@ test('seo description is null when no tiptap content exists', function () {
     $response->assertStatus(200);
     // The important thing is that it doesn't error out when content is null
 });
+
+test('homepage falls back to main tenant content when tenant has empty content parts', function () {
+    // Update main tenant (already created in beforeEach) with content
+    $mainContent = Content::factory()->create();
+    ContentPart::factory()->create([
+        'content_id' => $mainContent->id,
+        'type' => 'tiptap',
+        'json_content' => (new Editor)->setContent('<p>Main tenant content</p>')->getDocument(),
+    ]);
+    
+    $this->tenant->update(['content_id' => $mainContent->id]);
+
+    // Create padalinys tenant with content but no parts
+    $emptyContent = Content::factory()->create();
+    // Don't create any content parts - this simulates empty content
+    
+    $padalinysTenant = Tenant::factory()->create([
+        'type' => 'padalinys',
+        'alias' => 'test-padalinys',
+        'shortname' => 'Test Padalinys',
+        'content_id' => $emptyContent->id,
+    ]);
+
+    $response = $this->get(route('home', ['subdomain' => 'test-padalinys', 'lang' => 'lt']));
+
+    $response->assertStatus(200);
+    $response->assertInertia(
+        fn (Assert $page) => $page
+            ->component('Public/HomePage')
+            ->where('content.id', $mainContent->id) // Should use main tenant's content
+            ->has('content.parts', 1) // Should have the part from main tenant
+    );
+});
+
+test('homepage uses tenant content when it has content parts', function () {
+    // Update main tenant (already created in beforeEach) with content
+    $mainContent = Content::factory()->create();
+    ContentPart::factory()->create([
+        'content_id' => $mainContent->id,
+        'type' => 'tiptap',
+        'json_content' => (new Editor)->setContent('<p>Main tenant content</p>')->getDocument(),
+    ]);
+    
+    $this->tenant->update(['content_id' => $mainContent->id]);
+
+    // Create padalinys tenant with actual content parts
+    $padalinysContent = Content::factory()->create();
+    ContentPart::factory()->create([
+        'content_id' => $padalinysContent->id,
+        'type' => 'tiptap',
+        'json_content' => (new Editor)->setContent('<p>Padalinys specific content</p>')->getDocument(),
+    ]);
+    
+    $padalinysTenant = Tenant::factory()->create([
+        'type' => 'padalinys',
+        'alias' => 'test-padalinys-2',
+        'shortname' => 'Test Padalinys 2',
+        'content_id' => $padalinysContent->id,
+    ]);
+
+    $response = $this->get(route('home', ['subdomain' => 'test-padalinys-2', 'lang' => 'lt']));
+
+    $response->assertStatus(200);
+    $response->assertInertia(
+        fn (Assert $page) => $page
+            ->component('Public/HomePage')
+            ->where('content.id', $padalinysContent->id) // Should use padalinys's own content
+            ->has('content.parts', 1)
+    );
+});
