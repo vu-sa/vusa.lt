@@ -167,7 +167,7 @@ onMounted(async () => {
   // Skip fetching if caller forces accept/extensions
   if (props.forceAccept) return;
   try {
-    const response = await fetch('/mano/files/allowed-types');
+    const response = await fetch(route('api.v1.admin.files.allowedTypes'));
     if (response.ok) {
       allowedTypes.value = await response.json();
     }

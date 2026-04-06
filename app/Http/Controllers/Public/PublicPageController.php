@@ -600,13 +600,66 @@ class PublicPageController extends PublicController
 
     public function calendarEventRedirect($lang, Calendar $calendar)
     {
+        // Get a non-empty title with fallback to other locales
+        $titleData = $this->getNonEmptyCalendarTitle($calendar);
+        $title = $titleData['title'];
+        $usedLocale = $titleData['locale'];
+
+        // Generate slug from the non-empty title
+        $slug = Str::slug($title);
+
+        // Fallback to ID-based slug if still empty (shouldn't happen, but defensive)
+        if (empty($slug)) {
+            $slug = 'event-'.$calendar->id;
+        }
+
         return redirect(route('calendar.event.2', [
             'year' => $calendar->date->format('Y'),
             'month' => $calendar->date->format('m'),
             'day' => $calendar->date->format('d'),
-            'slug' => Str::slug($calendar->title),
-            'lang' => app()->getLocale(),
+            'slug' => $slug,
+            'lang' => $usedLocale,
         ]), 301);
+    }
+
+    /**
+     * Get a non-empty calendar title with fallback to other locales
+     *
+     * @return array{title: string, locale: string}
+     */
+    private function getNonEmptyCalendarTitle(Calendar $calendar): array
+    {
+        $currentLocale = app()->getLocale();
+
+        // Try current locale first
+        $title = $calendar->getTranslation('title', $currentLocale);
+        if (! empty(trim($title))) {
+            return ['title' => $title, 'locale' => $currentLocale];
+        }
+
+        // Fallback priority: lt -> en -> any available
+        $fallbackLocales = ['lt', 'en'];
+
+        foreach ($fallbackLocales as $locale) {
+            if ($locale === $currentLocale) {
+                continue; // Already tried
+            }
+            $title = $calendar->getTranslation('title', $locale);
+            if (! empty(trim($title))) {
+                return ['title' => $title, 'locale' => $locale];
+            }
+        }
+
+        // Try any available translation
+        $translations = $calendar->getTranslations('title');
+        foreach ($translations as $locale => $translation) {
+            if (! empty(trim($translation))) {
+                return ['title' => $translation, 'locale' => $locale];
+            }
+        }
+
+        // Last resort: use calendar ID
+        return ['title' => 'Event '.$calendar->id, 'locale' => $currentLocale];
     }
 
     public function calendarEventMain($lang, Calendar $calendar)
