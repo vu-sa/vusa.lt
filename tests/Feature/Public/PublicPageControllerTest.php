@@ -283,13 +283,13 @@ test('homepage falls back to main tenant content when tenant has empty content p
         'type' => 'tiptap',
         'json_content' => (new Editor)->setContent('<p>Main tenant content</p>')->getDocument(),
     ]);
-    
+
     $this->tenant->update(['content_id' => $mainContent->id]);
 
     // Create padalinys tenant with content but no parts
     $emptyContent = Content::factory()->create();
     // Don't create any content parts - this simulates empty content
-    
+
     $padalinysTenant = Tenant::factory()->create([
         'type' => 'padalinys',
         'alias' => 'test-padalinys',
@@ -316,7 +316,7 @@ test('homepage uses tenant content when it has content parts', function () {
         'type' => 'tiptap',
         'json_content' => (new Editor)->setContent('<p>Main tenant content</p>')->getDocument(),
     ]);
-    
+
     $this->tenant->update(['content_id' => $mainContent->id]);
 
     // Create padalinys tenant with actual content parts
@@ -326,7 +326,7 @@ test('homepage uses tenant content when it has content parts', function () {
         'type' => 'tiptap',
         'json_content' => (new Editor)->setContent('<p>Padalinys specific content</p>')->getDocument(),
     ]);
-    
+
     $padalinysTenant = Tenant::factory()->create([
         'type' => 'padalinys',
         'alias' => 'test-padalinys-2',
