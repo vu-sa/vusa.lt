@@ -578,11 +578,13 @@ describe('digest queue cleanup on read', function () {
 
         expect($this->getDigestQueueCountForUser($user))->toBe(2);
 
-        // Mark only the first notification as read
-        $firstNotification = $user->unreadNotifications()->orderBy('created_at')->first();
-        asUser($user)->post(route('notifications.markAsRead', $firstNotification->id));
+        // Mark the Task A notification as read (find by body content)
+        $taskANotification = $user->unreadNotifications()
+            ->get()
+            ->first(fn ($n) => str_contains($n->data['body'], 'Task A'));
+        asUser($user)->post(route('notifications.markAsRead', $taskANotification->id));
 
-        // Only one digest entry should be removed (the one matching Task A body)
+        // Only the Task A digest entry should be removed
         expect($this->getDigestQueueCountForUser($user))->toBe(1);
 
         $remaining = $this->getDigestQueueItemsForUser($user)->first();
