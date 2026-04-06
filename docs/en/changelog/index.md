@@ -7,6 +7,14 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.7 — Notification Improvements (2026-04-06) {#v1-7}
+
+- 🔧 **Fixed triplicate email digest notifications** — each notification was queued three times for the email digest, causing digest emails to show triple the actual notification count.
+- 🔧 **Fixed Lithuanian notification text** — some notification titles displayed raw pluralization syntax instead of properly translated Lithuanian text.
+- ✨ **Read notification sync with email digest** — marking a notification as read on the platform now removes it from the pending email digest, so read notifications are no longer sent by email.
+
+> 🔗 [GitHub PR #554](https://github.com/vu-sa/vusa.lt/pull/554)
+
 ## v1.6 — Content Navigation Improvements (2026-04-06) {#v1-6}
 
 - 🔧 **Empty content blocks no longer show an error** — pages with an empty tiptap content block no longer display an error message.
@@ -20,14 +28,20 @@ Here you'll find all changes and improvements to the mano.vusa.lt platform.
   - Selected resource name no longer disappears after closing the dropdown.
   - Clicking "Submit" no longer triggers the "unsaved changes" warning.
 
+> 🔗 [GitHub PR #553](https://github.com/vu-sa/vusa.lt/pull/553)
+
 ## v1.5 — Calendar & Meetings Improvements (2026-04-03) {#v1-5}
 
 - 🔧 **Past events hidden in public calendar** — shown only after clicking "Show previous" in mobile view
 - 🔧 **Today's meetings shown on dashboards** — main and representation dashboards now show today's meetings even if their start time has already passed
 
+> 🔗 [GitHub PR #550](https://github.com/vu-sa/vusa.lt/pull/550)
+
 ## v1.4 — Documentation Overhaul (2026-03-31) {#v1-4}
 
 - ⭐ **Updates page** — documentation now includes an updates page where platform changes are announced. When there are updates, you'll see an indicator next to the "Dokumentacija" link in the admin panel
+
+> 🔗 [GitHub PR #546](https://github.com/vu-sa/vusa.lt/pull/546)
 
 ## v1.3 — Document Improvements (2026-03-23) {#v1-3}
 

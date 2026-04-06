@@ -71,8 +71,15 @@ class PublicPageController extends PublicController
 
         $content = Cache::tags(['homepage', "tenant_{$this->tenant->id}", "locale_{$locale}"])
             ->remember($cacheKey, 3600, function () {
-                return $this->tenant->content ??
-                    Tenant::query()->where('type', 'pagrindinis')->first()?->content;
+                // Check if tenant has content with actual content parts
+                $tenantContent = $this->tenant->content;
+
+                // If no content or content has no parts, fall back to main tenant
+                if (! $tenantContent || $tenantContent->parts->isEmpty()) {
+                    return Tenant::query()->where('type', 'pagrindinis')->first()?->content;
+                }
+
+                return $tenantContent;
             });
 
         // Fetch news for homepage to enable LCP image preloading (eliminates API waterfall)
@@ -169,6 +176,37 @@ class PublicPageController extends PublicController
             description: ContentHelper::getDescriptionForSeo($page),
         );
 
+        // Generate breadcrumb schema
+        $locale = app()->getLocale();
+        $breadcrumbs = [
+            [
+                'name' => $locale === 'lt' ? 'Pradžia' : 'Home',
+                'url' => route('home', ['subdomain' => $this->subdomain, 'lang' => $locale]),
+            ],
+        ];
+
+        // Add category if exists
+        if ($page->category) {
+            $breadcrumbs[] = [
+                'name' => $page->category->name,
+                'url' => route('category', [
+                    'subdomain' => $this->subdomain,
+                    'lang' => $locale,
+                    'category' => $page->category->alias,
+                ]),
+            ];
+        }
+
+        // Add current page
+        $breadcrumbs[] = [
+            'name' => $page->title,
+            'url' => route('page', [
+                'subdomain' => $this->subdomain,
+                'lang' => $locale,
+                'permalink' => $page->permalink,
+            ]),
+        ];
+
         return Inertia::render('Public/ContentPage', [
             'navigationItemId' => $navigation_item?->id,
             'page' => [
@@ -185,6 +223,7 @@ class PublicPageController extends PublicController
             ],
         ])->withViewData([
             'SEOData' => $seo,
+            'JSONLD_Schemas' => [$this->getBreadcrumbSchema($breadcrumbs)],
         ]);
     }
 
@@ -684,6 +723,30 @@ class PublicPageController extends PublicController
         // Get related events without caching
         $relatedEvents = $this->getEventsForCalendar();
 
+        // Generate breadcrumb schema
+        $locale = app()->getLocale();
+        $breadcrumbs = [
+            [
+                'name' => $locale === 'lt' ? 'Pradžia' : 'Home',
+                'url' => route('home', ['subdomain' => $this->subdomain, 'lang' => $locale]),
+            ],
+            [
+                'name' => $locale === 'lt' ? 'Renginiai' : 'Events',
+                'url' => route('calendar.list', ['subdomain' => $this->subdomain, 'lang' => $locale]),
+            ],
+            [
+                'name' => $calendar->title,
+                'url' => route('calendar.event.2', [
+                    'subdomain' => $this->subdomain,
+                    'lang' => $locale,
+                    'year' => $calendar->date->format('Y'),
+                    'month' => $calendar->date->format('m'),
+                    'day' => $calendar->date->format('d'),
+                    'slug' => Str::slug($calendar->title),
+                ]),
+            ],
+        ];
+
         return Inertia::render('Public/CalendarEvent', [
             'event' => [
                 ...$calendar->toArray(),
@@ -695,6 +758,10 @@ class PublicPageController extends PublicController
             ->withViewData(
                 [
                     'SEOData' => $seo,
+                    'JSONLD_Schemas' => [
+                        $this->getBreadcrumbSchema($breadcrumbs),
+                        $calendar->toEventSchema(),
+                    ],
                 ]
             );
     }

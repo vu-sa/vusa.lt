@@ -378,6 +378,7 @@ class ContactController extends PublicController
             contentTenant: $primaryInstitution->tenant,
             title: $meeting->title.' - '.$primaryInstitution->name,
             description: Str::limit(strip_tags($meeting->description), 160),
+            robots: 'noindex, nofollow',
         );
 
         return Inertia::render('Public/Meetings/ShowMeeting', [

@@ -37,7 +37,7 @@ class TaskOverdueNotification extends BaseNotification
 
     public function title(object $notifiable): string
     {
-        return __('notifications.task_overdue_title', ['count' => $this->tasks->count()]);
+        return trans_choice('notifications.task_overdue_title', $this->tasks->count(), ['count' => $this->tasks->count()]);
     }
 
     public function body(object $notifiable): string
