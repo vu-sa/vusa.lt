@@ -3,7 +3,9 @@
     data-slot="select-value"
     v-bind="props"
   >
-    <slot />
+    <template v-if="$slots.default" #default="slotProps">
+      <slot v-bind="slotProps" />
+    </template>
   </SelectValue>
 </template>
 

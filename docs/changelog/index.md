@@ -14,6 +14,11 @@ lastUpdated: true
 - 🔧 **Pašalintas problemų pavadinimo ilgio apribojimas**.
 - 🔧 Sutvarkyta serverio klaida, pasitaikanti einant į **angliškus renginių puslapius be dedikuotų pavadinimų** per specifinę nuorodą.
 - 🔧 **Failų įkėlimo klaidos taisymas** — failų įkėlimo komponentas naudojo neteisingą nuorodą leistiniems failų tipams gauti, dėl ko kildavo serverio klaida.
+- 🔧 **Rezervacijų formos pataisymai**
+  - Jeigu pradžios laikas nustatomas vėliau negu pabaigos laikas, gražiau pateikiamas įspėjimas.
+  - Pakeitus datą daugiau nebepasirodo „neišsaugotų pakeitimų" perspėjimas.
+  - Gražiau pateikti ir greičiau veikiantis resursų pasirinkimas.
+  - Paspaudus „Pateikti" daugiau nebepasirodo „neišsaugotų pakeitimų" perspėjimas.
 
 ## v1.5 — Kalendoriaus ir susitikimų patobulinimai (2026-04-03) {#v1-5}
 

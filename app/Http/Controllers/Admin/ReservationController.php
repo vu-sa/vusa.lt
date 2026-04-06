@@ -92,6 +92,12 @@ class ReservationController extends AdminController
             'end' => intval($dateTimeRange['end']),
         ];
 
+        request()->merge(['dateTimeRange' => $dateTimeRange]);
+        request()->validate([
+            'dateTimeRange.start' => ['required', 'integer', 'lt:dateTimeRange.end'],
+            'dateTimeRange.end' => ['required', 'integer'],
+        ]);
+
         return $this->inertiaResponse('Admin/Reservations/CreateReservation', [
             // 'assignableTenants' => GetTenantsForUpserts::execute('resources.create.all', $this->authorizer)
             'resources' => Resource::with('tenant')->select('id', 'name', 'capacity', 'is_reservable', 'tenant_id')->get()->map(function ($resource) use ($dateTimeRange) {

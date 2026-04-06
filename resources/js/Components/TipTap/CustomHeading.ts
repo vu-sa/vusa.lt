@@ -1,5 +1,6 @@
 import Heading from '@tiptap/extension-heading';
 import { mergeAttributes } from '@tiptap/core';
+
 import { latinizeId } from '@/Utils/String';
 
 export const CustomHeading = Heading.extend({

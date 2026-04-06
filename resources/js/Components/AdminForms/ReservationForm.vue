@@ -1,5 +1,5 @@
 <template>
-  <AdminForm :model="form" label-placement="top">
+  <AdminForm :model="form" label-placement="top" :is-create-form="!reservation.id">
     <FormElement>
       <template #title>
         {{ $t("forms.context.main_info") }}
@@ -61,22 +61,31 @@
             <div class="flex w-full gap-2">
               <Select v-model="item.id" @update:model-value="item.quantity = 1">
                 <SelectTrigger class="min-w-64">
-                  <SelectValue :placeholder="RESERVATION_PLACEHOLDERS.resource[$page.props.app.locale]" />
+                  <SelectValue :placeholder="RESERVATION_PLACEHOLDERS.resource[$page.props.app.locale]">
+                    <template #default="{ modelValue }">
+                      <template v-if="modelValue">
+                        {{ allResourceOptions.find(r => r.id === modelValue)?.name }}
+                      </template>
+                    </template>
+                  </SelectValue>
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem v-for="resource in allResourceOptions" :key="resource.id" :value="resource.id"
-                    :disabled="resource.disabled">
-                    <div class="flex items-center gap-2">
-                      <IFluentCube24Regular class="h-4 w-4 text-gray-400" />
-                      <span>{{ resource.name }}</span>
-                      <span class="text-gray-400">
-                        {{ resource.lowestCapacityAtDateTimeRange }} {{ $t("iš") }} {{ resource.capacity }}
-                      </span>
-                      <Badge variant="secondary" class="text-xs">
-                        {{ resource.tenant?.shortname }}
-                      </Badge>
-                    </div>
-                  </SelectItem>
+                <SelectContent class="min-w-[30rem]">
+                  <SelectVirtualizer :options="allResourceOptions" :estimate-size="36">
+                    <template #default="{ option, style }">
+                      <SelectItem :value="option.id" :label="option.name" :disabled="option.disabled" :style>
+                        <div class="flex items-center gap-2">
+                          <IFluentCube24Regular class="h-4 w-4 text-gray-400" />
+                          <span>{{ option.name }}</span>
+                          <span class="text-gray-400">
+                            {{ option.lowestCapacityAtDateTimeRange }} {{ $t("iš") }} {{ option.capacity }}
+                          </span>
+                          <Badge variant="secondary" class="text-xs">
+                            {{ option.tenant?.shortname }}
+                          </Badge>
+                        </div>
+                      </SelectItem>
+                    </template>
+                  </SelectVirtualizer>
                 </SelectContent>
               </Select>
               <NumberField v-model="item.quantity" :min="1" :max="getleftCapacity(item.id)" />
@@ -129,7 +138,7 @@ import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { NumberField } from '@/Components/ui/number-field';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectVirtualizer } from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
 import { RESERVATION_PLACEHOLDERS } from '@/Constants/I18n/Placeholders';
 import { capitalize } from '@/Utils/String';
@@ -183,6 +192,8 @@ const onDateChange = () => {
   if (!startDate.value || !endDate.value) return;
 
   form.resources = [];
+  // Reset dirty state so the "unsaved changes" guard doesn't fire on the reload
+  form.defaults();
   router.reload({
     data: {
       dateTimeRange: { start: startDate.value.getTime(), end: endDate.value.getTime() },
@@ -210,6 +221,8 @@ const allResourceOptions = computed(() => {
 });
 
 const submit = () => {
+  // Clear dirty state before navigating so the "unsaved changes" guard doesn't fire
+  form.defaults();
   form.submit(
     props.reservation?.id ? 'patch' : 'post',
     routeToSubmit.value, {

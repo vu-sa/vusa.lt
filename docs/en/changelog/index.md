@@ -14,6 +14,11 @@ Here you'll find all changes and improvements to the mano.vusa.lt platform.
 - 🔧 **No restriction for problem title length** — you can now have longer titles for problems without truncation
 - 🔧 **Calendar event redirect fix** — events with untranslated titles now automatically redirect to a language where the title exists instead of showing an error
 - 🔧 **File upload fix** — the file upload component used an incorrect URL to fetch allowed file types, causing a server error.
+- 🔧 **Reservation form fixes**
+  - Invalid date range in the URL now returns a validation error instead of a 500.
+  - Changing the date range no longer triggers the "unsaved changes" warning.
+  - Selected resource name no longer disappears after closing the dropdown.
+  - Clicking "Submit" no longer triggers the "unsaved changes" warning.
 
 ## v1.5 — Calendar & Meetings Improvements (2026-04-03) {#v1-5}
 

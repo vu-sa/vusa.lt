@@ -23,7 +23,13 @@
       </SelectItemIndicator>
     </span>
 
-    <SelectItemText>
+    <template v-if="label">
+      <SelectItemText class="sr-only">
+        {{ label }}
+      </SelectItemText>
+      <slot />
+    </template>
+    <SelectItemText v-else>
       <slot />
     </SelectItemText>
   </SelectItem>
@@ -42,7 +48,7 @@ import { computed, type HTMLAttributes } from 'vue';
 
 import { cn } from '@/Utils/Shadcn/utils';
 
-const props = defineProps<SelectItemProps & { class?: HTMLAttributes['class'] }>();
+const props = defineProps<SelectItemProps & { class?: HTMLAttributes['class']; label?: string }>();
 
 const delegatedProps = computed(() => {
   const { class: _, ...delegated } = props;
