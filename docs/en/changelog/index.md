@@ -7,6 +7,12 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.7 — Notification Improvements (2026-04-06) {#v1-7}
+
+- 🔧 **Fixed triplicate email digest notifications** — each notification was queued three times for the email digest, causing digest emails to show triple the actual notification count.
+- 🔧 **Fixed Lithuanian notification text** — some notification titles displayed raw pluralization syntax instead of properly translated Lithuanian text.
+- ✨ **Read notification sync with email digest** — marking a notification as read on the platform now removes it from the pending email digest, so read notifications are no longer sent by email.
+
 ## v1.6 — Content Navigation Improvements (2026-04-06) {#v1-6}
 
 - 🔧 **Empty content blocks no longer show an error** — pages with an empty tiptap content block no longer display an error message.

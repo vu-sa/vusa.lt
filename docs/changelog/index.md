@@ -7,6 +7,12 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.7 — Pranešimų patobulinimai (2026-04-06) {#v1-7}
+
+- 🔧 **Pataisytas trigubas el. pašto pranešimų siuntimas** — kiekvienas pranešimas buvo tris kartus įtraukiamas į el. pašto santraukos eilę, dėl ko santraukos laiškuose buvo rodomas trigubai didesnis pranešimų skaičius.
+- 🔧 **Pataisytas lietuviškas pranešimų tekstas** — kai kurių pranešimų pavadinime buvo rodomas neišverstas daugiskaitos formatas vietoj tinkamo lietuviško teksto.
+- ✨ **Perskaitytų pranešimų sinchronizacija su el. pašto santrauka** — pažymėjus pranešimą kaip perskaitytą platformoje, jis nebepateks į būsimą el. pašto santrauką.
+
 ## v1.6 — Įvairūs patobulinimai (2026-04-06) {#v1-6}
 
 - 🔧 **Pataisytas puslapių veikimas su tuščiu turiniu** — puslapiuose su tuščiu turinio bloku daugiau nebus rodomas klaidos pranešimas.
