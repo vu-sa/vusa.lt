@@ -61,6 +61,31 @@ class NewsController extends PublicController
                 ]),
             ]);
 
+        // Generate breadcrumb schema
+        $breadcrumbs = [
+            [
+                'name' => $locale === 'lt' ? 'Pradžia' : 'Home',
+                'url' => route('home', ['subdomain' => $this->subdomain, 'lang' => $locale]),
+            ],
+            [
+                'name' => $locale === 'lt' ? 'Naujienos' : 'News',
+                'url' => route('newsArchive', [
+                    'subdomain' => $this->subdomain,
+                    'lang' => $locale,
+                    'newsString' => $locale === 'lt' ? 'naujienos' : 'news',
+                ]),
+            ],
+            [
+                'name' => $news->title,
+                'url' => route('news', [
+                    'subdomain' => $this->subdomain,
+                    'lang' => $locale,
+                    'newsString' => $locale === 'lt' ? 'naujiena' : 'news',
+                    'news' => $news->permalink,
+                ]),
+            ],
+        ];
+
         return Inertia::render('Public/NewsPage', [
             'article' => [
                 ...$news->only('id', 'title', 'short', 'lang', 'other_lang_id', 'permalink', 'publish_time', 'category', 'content', 'image_author', 'important', 'main_points', 'read_more', 'layout', 'highlights'),
@@ -87,7 +112,10 @@ class NewsController extends PublicController
             'relatedArticles' => $relatedArticles,
         ])->withViewData([
             'SEOData' => $seo,
-            'JSONLD_Schemas' => [$news->toNewsArticleSchema()],
+            'JSONLD_Schemas' => [
+                $news->toNewsArticleSchema(),
+                $this->getBreadcrumbSchema($breadcrumbs),
+            ],
         ]);
     }
 
@@ -148,12 +176,42 @@ class NewsController extends PublicController
         // Share pagination SEO metadata for rel=next/prev links
         $this->sharePaginationSeoMeta($news, $this->tenant);
 
+        // Generate breadcrumb schema for archive
+        $breadcrumbs = [
+            [
+                'name' => $locale === 'lt' ? 'Pradžia' : 'Home',
+                'url' => route('home', ['subdomain' => $this->subdomain, 'lang' => $locale]),
+            ],
+            [
+                'name' => $locale === 'lt' ? 'Naujienos' : 'News',
+                'url' => route('newsArchive', [
+                    'subdomain' => $this->subdomain,
+                    'lang' => $locale,
+                    'newsString' => $locale === 'lt' ? 'naujienos' : 'news',
+                ]),
+            ],
+        ];
+
+        // Add tag to breadcrumb if filtered
+        if ($currentTag) {
+            $breadcrumbs[] = [
+                'name' => $currentTag->name,
+                'url' => route('newsArchive', [
+                    'subdomain' => $this->subdomain,
+                    'lang' => $locale,
+                    'newsString' => $locale === 'lt' ? 'naujienos' : 'news',
+                    'tag' => $currentTag->alias,
+                ]),
+            ];
+        }
+
         return Inertia::render('Public/NewsArchive', [
             'news' => $news,
             'currentTag' => $currentTag,
         ])->withViewData(
             [
                 'SEOData' => $seo,
+                'JSONLD_Schemas' => [$this->getBreadcrumbSchema($breadcrumbs)],
             ]
         );
     }

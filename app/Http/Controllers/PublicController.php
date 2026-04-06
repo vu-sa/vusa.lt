@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use RalphJSmit\Laravel\SEO\Support\SEOData;
+use Spatie\SchemaOrg\BreadcrumbList;
 use Spatie\SchemaOrg\Organization;
 
 class PublicController extends Controller
@@ -444,5 +445,28 @@ class PublicController extends Controller
                     $organizationSchema,
                 ];
             });
+    }
+
+    /**
+     * Generate BreadcrumbList structured data from breadcrumb array.
+     *
+     * @param  array  $breadcrumbs  Array of ['name' => string, 'url' => string]
+     */
+    protected function getBreadcrumbSchema(array $breadcrumbs): BreadcrumbList
+    {
+        $items = [];
+        $position = 1;
+
+        foreach ($breadcrumbs as $crumb) {
+            $items[] = [
+                '@type' => 'ListItem',
+                'position' => $position++,
+                'name' => $crumb['name'],
+                'item' => $crumb['url'],
+            ];
+        }
+
+        return (new BreadcrumbList)
+            ->itemListElement($items);
     }
 }

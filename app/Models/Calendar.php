@@ -16,6 +16,9 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Spatie\SchemaOrg\Event;
+use Spatie\SchemaOrg\Organization;
+use Spatie\SchemaOrg\Place;
 
 /**
  * @property int $id
@@ -216,5 +219,59 @@ class Calendar extends Model implements HasMedia
             ->description(strip_tags($this->description))
             ->address($this->location ?? '')
             ->google();
+    }
+
+    /**
+     * Generate Event structured data (JSON-LD) for this calendar event.
+     */
+    public function toEventSchema(): Event
+    {
+        $locale = app()->getLocale();
+
+        $schema = (new Event)
+            ->name($this->getTranslation('title', $locale) ?: $this->title)
+            ->startDate($this->date->toIso8601String())
+            ->eventStatus('https://schema.org/EventScheduled')
+            ->organizer(
+                (new Organization)
+                    ->name($this->tenant->shortname ?? 'VU SA')
+                    ->url($this->tenant ? route('home', ['subdomain' => $this->tenant->alias]) : config('app.url'))
+            );
+
+        // Add end date if exists
+        if ($this->end_date) {
+            $schema->endDate($this->end_date->toIso8601String());
+        }
+
+        // Add description
+        $description = $this->getTranslation('description', $locale) ?: $this->description;
+        if ($description) {
+            $schema->description(strip_tags($description));
+        }
+
+        // Add location if exists
+        $location = $this->getTranslation('location', $locale) ?: $this->location;
+        if ($location) {
+            $schema->location(
+                (new Place)
+                    ->name($location)
+                    ->address($location)
+            );
+        }
+
+        // Add event attendance mode
+        if ($location) {
+            $schema->eventAttendanceMode('https://schema.org/OfflineEventAttendanceMode');
+        } else {
+            $schema->eventAttendanceMode('https://schema.org/OnlineEventAttendanceMode');
+        }
+
+        // Add image if exists
+        $imageUrl = $this->getFirstMediaUrl('images') ?: $this->getFirstMediaUrl('main_image');
+        if ($imageUrl) {
+            $schema->image($imageUrl);
+        }
+
+        return $schema;
     }
 }
