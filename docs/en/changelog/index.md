@@ -9,9 +9,11 @@ Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
 ## v1.6 — Content Navigation Improvements (2026-04-06) {#v1-6}
 
+- 🔧 **Empty content blocks no longer show an error** — pages with an empty tiptap content block no longer display an error message.
 - 🔧 **Table of contents now works on pages** — headings have ID attributes, so clicking on a table of contents link will scroll to the corresponding heading
 - 🔧 **No restriction for problem title length** — you can now have longer titles for problems without truncation
 - 🔧 **Calendar event redirect fix** — events with untranslated titles now automatically redirect to a language where the title exists instead of showing an error
+- 🔧 **File upload fix** — the file upload component used an incorrect URL to fetch allowed file types, causing a server error.
 
 ## v1.5 — Calendar & Meetings Improvements (2026-04-03) {#v1-5}
 

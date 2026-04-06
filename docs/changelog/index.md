@@ -9,9 +9,11 @@ lastUpdated: true
 
 ## v1.6 — Įvairūs patobulinimai (2026-04-06) {#v1-6}
 
+- 🔧 **Pataisytas puslapių veikimas su tuščiu turiniu** — puslapiuose su tuščiu turinio bloku daugiau nebus rodomas klaidos pranešimas.
 - 🔧 **Pataisytos _Table of Contents_ nuorodų paspaudimas** — paspaudus ant antraščių rodyklėje, puslapyje bus parodoma atitinkama antraštė.
 - 🔧 **Pašalintas problemų pavadinimo ilgio apribojimas**.
 - 🔧 Sutvarkyta serverio klaida, pasitaikanti einant į **angliškus renginių puslapius be dedikuotų pavadinimų** per specifinę nuorodą.
+- 🔧 **Failų įkėlimo klaidos taisymas** — failų įkėlimo komponentas naudojo neteisingą nuorodą leistiniems failų tipams gauti, dėl ko kildavo serverio klaida.
 
 ## v1.5 — Kalendoriaus ir susitikimų patobulinimai (2026-04-03) {#v1-5}
 
