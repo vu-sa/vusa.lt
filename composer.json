@@ -21,7 +21,7 @@
         "laravel/telescope": "^5.0",
         "laravel/tinker": "^3.0",
         "maatwebsite/excel": "^3.1",
-        "microsoft/microsoft-graph": "^2.10.0",
+        "microsoft/microsoft-graph": "^3.0.0",
         "nyholm/psr7": "^1.8",
         "ralphjsmit/laravel-seo": "^1.6",
         "socialiteproviders/microsoft": "^4.1",
