@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
 
 import AdminForm from '@/Components/AdminForms/AdminForm.vue';
 import { createMockForm } from '@/tests/helpers/createMockForm';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
-import { router, usePage } from '@inertiajs/vue3';
 
 describe('AdminForm.vue', () => {
   let wrapper: ReturnType<typeof mount>;

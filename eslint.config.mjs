@@ -2,7 +2,7 @@ import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import pluginVue from 'eslint-plugin-vue';
 import pluginVueA11y from 'eslint-plugin-vuejs-accessibility';
-import importPlugin from 'eslint-plugin-import';
+import importPlugin from 'eslint-plugin-import-x';
 import stylistic from '@stylistic/eslint-plugin';
 import globals from 'globals';
 
@@ -22,6 +22,12 @@ export default tseslint.config(
     jsx: true,
   }),
   {
+    ignores: [
+      'resources/js/Types/enums.ts',
+      'resources/js/Types/models.d.ts',
+    ],
+  },
+  {
     languageOptions: {
       parserOptions: {
         // Project Service disabled - performance bottleneck confirmed
@@ -34,11 +40,11 @@ export default tseslint.config(
   },
   {
     plugins: {
-      import: importPlugin,
+      'import-x': importPlugin,
     },
   },
   {
-    files: ['**/*.{ts,vue,js,mjs}'],
+    files: ['**/*.{ts,tsx,vue,js,jsx,mjs}'],
     ignores: [
       '**/node_modules/**',
       '**/vendor/**',
@@ -87,12 +93,12 @@ export default tseslint.config(
       'no-useless-return': 'warn',
 
       // Import organization
-      'import/order': ['warn', {
+      'import-x/order': ['warn', {
         'groups': ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
         'newlines-between': 'always',
       }],
-      'import/newline-after-import': 'warn',
-      'import/no-duplicates': 'warn',
+      'import-x/newline-after-import': 'warn',
+      'import-x/no-duplicates': 'warn',
 
       // Prevent full lodash imports (use lodash-es or @vueuse/core utilities)
       'no-restricted-imports': ['error', {

@@ -1,4 +1,3 @@
-/* eslint-disable no-secrets/no-secrets */
 import type { FunctionalComponent } from 'vue';
 import { X } from 'lucide-vue-next';
 

@@ -11,22 +11,22 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import { type ColumnDef } from '@tanstack/vue-table';
-import { ref, computed, watch, capitalize } from "vue";
-import { usePage } from "@inertiajs/vue3";
+import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+import type { ColumnDef } from '@tanstack/vue-table';
+import { ref, computed, watch, capitalize } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 
-import Icons from "@/Types/Icons/regular";
-import DataTableFilter from "@/Components/ui/data-table/DataTableFilter.vue";
-import { Badge } from "@/Components/ui/badge";
-import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
-import { createStandardActionsColumn } from "@/Composables/useTableActions";
+import Icons from '@/Types/Icons/regular';
+import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
+import { Badge } from '@/Components/ui/badge';
+import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
+import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import {
   createTitleColumn,
   createTenantColumn,
   createBooleanColumn,
 } from '@/Utils/DataTableColumns';
-import type { IndexTablePageProps } from "@/Types/TableConfigTypes";
+import type { IndexTablePageProps } from '@/Types/TableConfigTypes';
 
 interface StudySetRow {
   id: string;
@@ -65,7 +65,7 @@ const selectedTenantIds = ref<number[]>(props.filters?.['tenant.id'] || []);
 
 const tenantOptions = computed(() => {
   const tenants = usePage().props.tenants || [];
-  return tenants.map((tenant) => ({
+  return tenants.map(tenant => ({
     label: $t(tenant.shortname),
     value: tenant.id,
   }));
@@ -75,16 +75,16 @@ const getRowId = (row: StudySetRow) => `study-set-${row.id}`;
 
 const columns = computed<ColumnDef<StudySetRow, any>[]>(() => [
   createTitleColumn<StudySetRow>({
-    accessorKey: "name",
-    routeName: "studySets.edit",
+    accessorKey: 'name',
+    routeName: 'studySets.edit',
     width: 300,
   }),
   createTenantColumn({
     enableSorting: false,
   }),
   {
-    accessorKey: "courses_count",
-    header: () => $t("Dalykų sk."),
+    accessorKey: 'courses_count',
+    header: () => $t('Dalykų sk.'),
     cell: ({ row }) => {
       const count = row.original.courses_count;
       return (
@@ -96,15 +96,15 @@ const columns = computed<ColumnDef<StudySetRow, any>[]>(() => [
     size: 120,
   },
   {
-    accessorKey: "order",
-    header: () => $t("Eilės nr."),
+    accessorKey: 'order',
+    header: () => $t('Eilės nr.'),
     size: 100,
   },
-  createBooleanColumn<StudySetRow>("is_visible", {
-    header: $t("Matomas"),
+  createBooleanColumn<StudySetRow>('is_visible', {
+    header: $t('Matomas'),
     size: 100,
   }),
-  createStandardActionsColumn<StudySetRow>("studySets", {
+  createStandardActionsColumn<StudySetRow>('studySets', {
     canView: false,
     canEdit: true,
     canDelete: true,
@@ -128,7 +128,7 @@ const tableConfig = computed<IndexTablePageProps<StudySetRow>>(() => ({
   enableColumnVisibility: true,
   enableRowSelection: false,
 
-  headerTitle: "Individualių studijų komplektai",
+  headerTitle: 'Individualių studijų komplektai',
   icon: Icons.STUDY_SET,
   createRoute: canCreate.value ? route('studySets.create') : undefined,
   canCreate: canCreate.value,

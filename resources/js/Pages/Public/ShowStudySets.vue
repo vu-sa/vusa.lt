@@ -63,9 +63,15 @@
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="__all__">{{ $t('studySets.all_semesters') }}</SelectItem>
-          <SelectItem value="autumn">{{ $t('studySets.autumn') }}</SelectItem>
-          <SelectItem value="spring">{{ $t('studySets.spring') }}</SelectItem>
+          <SelectItem value="__all__">
+            {{ $t('studySets.all_semesters') }}
+          </SelectItem>
+          <SelectItem value="autumn">
+            {{ $t('studySets.autumn') }}
+          </SelectItem>
+          <SelectItem value="spring">
+            {{ $t('studySets.spring') }}
+          </SelectItem>
         </SelectContent>
       </Select>
 
@@ -88,8 +94,12 @@
         <div class="rounded-full bg-muted/60 p-4">
           <FileX class="size-8 text-muted-foreground/60" />
         </div>
-        <p class="mt-4 text-sm font-medium text-foreground">{{ $t('studySets.no_sets') }}</p>
-        <p class="mt-1 text-sm text-muted-foreground">{{ $t('studySets.no_sets_description') }}</p>
+        <p class="mt-4 text-sm font-medium text-foreground">
+          {{ $t('studySets.no_sets') }}
+        </p>
+        <p class="mt-1 text-sm text-muted-foreground">
+          {{ $t('studySets.no_sets_description') }}
+        </p>
       </div>
 
       <!-- Filters returned no results -->
@@ -97,8 +107,12 @@
         <div class="rounded-full bg-muted/60 p-4">
           <Search class="size-8 text-muted-foreground/60" />
         </div>
-        <p class="mt-4 text-sm font-medium text-foreground">{{ $t('studySets.no_results') }}</p>
-        <p class="mt-1 text-sm text-muted-foreground">{{ $t('studySets.no_results_description') }}</p>
+        <p class="mt-4 text-sm font-medium text-foreground">
+          {{ $t('studySets.no_results') }}
+        </p>
+        <p class="mt-1 text-sm text-muted-foreground">
+          {{ $t('studySets.no_results_description') }}
+        </p>
       </div>
 
       <div v-else class="grid gap-4 lg:grid-cols-2">
@@ -194,7 +208,9 @@
                       :key="review.id"
                       class="rounded-lg bg-muted/40 p-4 border border-border/50"
                     >
-                      <p class="text-sm text-muted-foreground leading-relaxed">{{ review.comment }}</p>
+                      <p class="text-sm text-muted-foreground leading-relaxed">
+                        {{ review.comment }}
+                      </p>
                       <p class="mt-3 text-xs font-semibold text-foreground">
                         &mdash; {{ review.lecturer }}
                       </p>
@@ -219,27 +235,30 @@
       <div class="rounded-full bg-muted/60 p-4">
         <FileX class="size-8 text-muted-foreground/60" />
       </div>
-      <p class="mt-4 text-sm font-medium text-foreground">{{ $t('studySets.no_sets') }}</p>
-      <p class="mt-1 text-sm text-muted-foreground">{{ $t('studySets.no_sets_description') }}</p>
+      <p class="mt-4 text-sm font-medium text-foreground">
+        {{ $t('studySets.no_sets') }}
+      </p>
+      <p class="mt-1 text-sm text-muted-foreground">
+        {{ $t('studySets.no_sets_description') }}
+      </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
-import { Head } from "@inertiajs/vue3";
-import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import { usePageBreadcrumbs, BreadcrumbHelpers, createBreadcrumbItem } from "@/Composables/useBreadcrumbsUnified";
+import { computed, ref, watch } from 'vue';
+import { Head } from '@inertiajs/vue3';
+import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+import { BookOpen, FileX, GraduationCap, Search, X } from 'lucide-vue-next';
 
-import { Button } from "@/Components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { Switch } from "@/Components/ui/switch";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/Components/ui/accordion";
-import { Badge } from "@/Components/ui/badge";
-import { BookOpen, FileX, GraduationCap, Search, X } from "lucide-vue-next";
-import { formatVuFacultyShortname } from "@/Utils/Tenant";
-
-import IFluentDocument16Regular from "~icons/fluent/document-16-regular";
+import { usePageBreadcrumbs, BreadcrumbHelpers, createBreadcrumbItem } from '@/Composables/useBreadcrumbsUnified';
+import { Button } from '@/Components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Switch } from '@/Components/ui/switch';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/Components/ui/accordion';
+import { Badge } from '@/Components/ui/badge';
+import { formatVuFacultyShortname } from '@/Utils/Tenant';
+import IFluentDocument16Regular from '~icons/fluent/document-16-regular';
 
 interface ReviewData {
   id: string;
@@ -282,39 +301,39 @@ usePageBreadcrumbs(() => {
     createBreadcrumbItem(
       $t('studySets.page_title'),
       undefined,
-      IFluentDocument16Regular
+      IFluentDocument16Regular,
     ),
   ]);
 });
 
 const tenantOptions = computed(() =>
-  props.tenants.map((t) => ({
+  props.tenants.map(t => ({
     value: String(t.id),
     label: formatVuFacultyShortname(t),
-  }))
+  })),
 );
 
 const getInitialTenantId = (): string => {
   const params = new URLSearchParams(window.location.search);
-  const facultyParam = params.get("faculty");
+  const facultyParam = params.get('faculty');
 
-  if (facultyParam && props.tenants.some((t) => String(t.id) === facultyParam)) {
+  if (facultyParam && props.tenants.some(t => String(t.id) === facultyParam)) {
     return facultyParam;
   }
 
-  return props.tenants.length > 0 ? String(props.tenants[0].id) : "";
+  return props.tenants.length > 0 ? String(props.tenants[0].id) : '';
 };
 
 const selectedTenantId = ref(getInitialTenantId());
-const searchQuery = ref("");
-const selectedSemester = ref("__all__");
+const searchQuery = ref('');
+const selectedSemester = ref('__all__');
 const searchAllFaculties = ref(false);
 
-const hasActiveFilters = computed(() => searchQuery.value !== "" || selectedSemester.value !== "__all__" || searchAllFaculties.value);
+const hasActiveFilters = computed(() => searchQuery.value !== '' || selectedSemester.value !== '__all__' || searchAllFaculties.value);
 
 const resetFilters = () => {
-  searchQuery.value = "";
-  selectedSemester.value = "__all__";
+  searchQuery.value = '';
+  selectedSemester.value = '__all__';
   searchAllFaculties.value = false;
 };
 
@@ -322,12 +341,13 @@ watch(selectedTenantId, (newId) => {
   const url = new URL(window.location.href);
 
   if (newId && props.tenants.length > 0 && newId !== String(props.tenants[0].id)) {
-    url.searchParams.set("faculty", newId);
-  } else {
-    url.searchParams.delete("faculty");
+    url.searchParams.set('faculty', newId);
+  }
+  else {
+    url.searchParams.delete('faculty');
   }
 
-  window.history.replaceState({}, "", url.toString());
+  window.history.replaceState({}, '', url.toString());
 
   resetFilters();
 });
@@ -346,7 +366,7 @@ const tenantStudySets = computed(() => {
 
 const allStudySets = computed((): StudySetData[] => {
   return Object.entries(props.studySetsByTenant).flatMap(([tenantId, sets]) =>
-    sets.map((set) => ({ ...set, _tenantLabel: tenantLabelMap.value[tenantId] }))
+    sets.map(set => ({ ...set, _tenantLabel: tenantLabelMap.value[tenantId] })),
   );
 });
 
@@ -360,8 +380,8 @@ const filteredStudySets = computed(() => {
 
   return searchPool.value.filter((set) => {
     // Semester filter: set must have at least one course matching the semester
-    if (semester !== "__all__") {
-      const hasMatchingSemester = set.courses.some((c) => c.semester === semester);
+    if (semester !== '__all__') {
+      const hasMatchingSemester = set.courses.some(c => c.semester === semester);
       if (!hasMatchingSemester) return false;
     }
 
@@ -369,7 +389,7 @@ const filteredStudySets = computed(() => {
     if (query) {
       const nameMatch = set.name.toLowerCase().includes(query);
       const descMatch = set.description?.toLowerCase().includes(query) ?? false;
-      const courseMatch = set.courses.some((c) => c.name.toLowerCase().includes(query));
+      const courseMatch = set.courses.some(c => c.name.toLowerCase().includes(query));
       if (!nameMatch && !descMatch && !courseMatch) return false;
     }
 
@@ -378,12 +398,12 @@ const filteredStudySets = computed(() => {
 });
 
 const getVisibleCourses = (set: StudySetData): CourseData[] => {
-  if (selectedSemester.value === "__all__") return set.courses;
-  return set.courses.filter((c) => c.semester === selectedSemester.value);
+  if (selectedSemester.value === '__all__') return set.courses;
+  return set.courses.filter(c => c.semester === selectedSemester.value);
 };
 
 const getReviewsForSet = (set: StudySetData): ReviewData[] => {
   const courses = getVisibleCourses(set);
-  return courses.flatMap((c) => c.reviews);
+  return courses.flatMap(c => c.reviews);
 };
 </script>

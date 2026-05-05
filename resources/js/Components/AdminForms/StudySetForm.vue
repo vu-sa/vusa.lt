@@ -2,7 +2,9 @@
   <AdminForm :model="form" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
     <!-- Section 1: Basic info -->
     <FormElement :section-number="1">
-      <template #title>{{ $t("forms.context.main_info") }}</template>
+      <template #title>
+        {{ $t("forms.context.main_info") }}
+      </template>
       <template #description>
         <p>{{ $t("Individualaus studijų komplekto pagrindinė informacija.") }}</p>
       </template>
@@ -46,7 +48,9 @@
 
     <!-- Section 2: Courses -->
     <FormElement :section-number="2">
-      <template #title>{{ $t("Dalykai") }}</template>
+      <template #title>
+        {{ $t("Dalykai") }}
+      </template>
       <template #description>
         <p>{{ $t("Pridėkite dalykus, kurie sudaro šį individualų studijų komplektą.") }}</p>
       </template>
@@ -71,8 +75,12 @@
                   <SelectValue :placeholder="$t('Pasirinkite')" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="autumn">{{ $t("Rudens") }}</SelectItem>
-                  <SelectItem value="spring">{{ $t("Pavasario") }}</SelectItem>
+                  <SelectItem value="autumn">
+                    {{ $t("Rudens") }}
+                  </SelectItem>
+                  <SelectItem value="spring">
+                    {{ $t("Pavasario") }}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </FormFieldWrapper>
@@ -102,7 +110,9 @@
 
     <!-- Section 3: Lecturer Reviews -->
     <FormElement :section-number="3">
-      <template #title>{{ $t("Dėstytojų atsiliepimai") }}</template>
+      <template #title>
+        {{ $t("Dėstytojų atsiliepimai") }}
+      </template>
       <template #description>
         <p>{{ $t("Pridėkite dėstytojų atsiliepimus apie kursus.") }}</p>
       </template>
@@ -157,19 +167,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import { useForm, usePage } from "@inertiajs/vue3";
-import { trans as $t } from "laravel-vue-i18n";
-import { PlusIcon, Trash2Icon } from "lucide-vue-next";
+import { computed } from 'vue';
+import { useForm, usePage } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+import { PlusIcon, Trash2Icon } from 'lucide-vue-next';
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { Input } from "@/Components/ui/input";
-import { Button } from "@/Components/ui/button";
-import { Switch } from "@/Components/ui/switch";
-import FormElement from "./FormElement.vue";
-import FormFieldWrapper from "./FormFieldWrapper.vue";
-import AdminForm from "./AdminForm.vue";
-import MultiLocaleInput from "@/Components/FormItems/MultiLocaleInput.vue";
+import FormElement from './FormElement.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import AdminForm from './AdminForm.vue';
+
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Input } from '@/Components/ui/input';
+import { Button } from '@/Components/ui/button';
+import { Switch } from '@/Components/ui/switch';
+import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 
 interface CourseForm {
   id?: string;
@@ -207,8 +218,8 @@ const props = defineProps<{
 }>();
 
 defineEmits<{
-  (event: "submit:form", form: unknown): void;
-  (event: "delete"): void;
+  (event: 'submit:form', form: unknown): void;
+  (event: 'delete'): void;
 }>();
 
 let keyCounter = 0;
@@ -216,8 +227,8 @@ const generateKey = () => `item-${++keyCounter}`;
 
 const initialData: StudySetFormData = {
   ...props.studySet,
-  courses: (props.studySet.courses || []).map((c) => ({ ...c, _key: c.id || generateKey() })),
-  reviews: (props.studySet.reviews || []).map((r) => ({ ...r, _key: r.id || generateKey() })),
+  courses: (props.studySet.courses || []).map(c => ({ ...c, _key: c.id || generateKey() })),
+  reviews: (props.studySet.reviews || []).map(r => ({ ...r, _key: r.id || generateKey() })),
 };
 
 const form = props.rememberKey
@@ -230,7 +241,7 @@ const tenantIdString = computed({
 });
 
 const savedCourses = computed(() =>
-  form.courses.filter((c) => c.id)
+  form.courses.filter(c => c.id),
 );
 
 const getCourseName = (course: CourseForm) => {

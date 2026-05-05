@@ -1,4 +1,3 @@
-/* eslint-disable no-secrets/no-secrets */
 import type { Component } from 'vue';
 
 import type { FormEnum, OtherIconEnum } from '../otherEnums';

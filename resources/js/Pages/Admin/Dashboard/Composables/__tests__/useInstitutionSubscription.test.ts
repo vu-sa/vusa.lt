@@ -1,9 +1,8 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { nextTick } from 'vue';
-
 import { router, usePage } from '@inertiajs/vue3';
-import { createMockPage } from '@/tests/helpers/createMockPage';
 
+import { createMockPage } from '@/tests/helpers/createMockPage';
 import { useInstitutionSubscription } from '@/Pages/Admin/Dashboard/Composables/useInstitutionSubscription';
 
 // Mock vue-sonner

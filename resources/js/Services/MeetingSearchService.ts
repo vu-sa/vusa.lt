@@ -56,20 +56,14 @@ export class MeetingSearchService {
       searchParams.filter_by = filterConditions.join(' && ');
     }
 
-    try {
-      const response = await this.searchClient.search(
-        this.collection,
-        searchParams,
-        this.abortController.signal,
-      );
+    const response = await this.searchClient.search(
+      this.collection,
+      searchParams,
+      this.abortController.signal,
+    );
 
-      // Process results
-      return this.processSearchResponse(response);
-    }
-    catch (error) {
-      // Re-throw to let composable handle
-      throw error;
-    }
+    // Process results
+    return this.processSearchResponse(response);
   }
 
   /**

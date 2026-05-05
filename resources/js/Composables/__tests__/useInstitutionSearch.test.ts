@@ -3,8 +3,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-
 import { usePage } from '@inertiajs/vue3';
+
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
 // Mock dependencies
