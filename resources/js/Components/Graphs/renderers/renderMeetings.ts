@@ -304,18 +304,21 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
             status = ' ✓';
         }
       }
-      return (d.title || labelFor(d.institution_id) || new Date(d.date).toLocaleString()) + status;
+      const isEmail = d.type_slug === 'email';
+      const fallback = isEmail ? labelFor(d.institution_id) : (d.title || labelFor(d.institution_id));
+      return (fallback || new Date(d.date).toLocaleString()) + status;
     });
   }
 
   const fmt = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+  const fmtDateOnly = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' });
 
   // Use unified tooltip manager if provided
   if (tooltipManager) {
     dots
       .on('mouseenter', (event, d: any) => {
         const rect = container.getBoundingClientRect();
-        const content = buildMeetingTooltipContent(d, labelFor, fmt);
+        const content = buildMeetingTooltipContent(d, labelFor, fmt, fmtDateOnly);
         tooltipManager.show(content, event.clientX - rect.left, event.clientY - rect.top);
       })
       .on('mousemove', (event) => {

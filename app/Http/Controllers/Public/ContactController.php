@@ -357,14 +357,14 @@ class ContactController extends PublicController
             ->whereHas('institutions', fn ($q) => $q->where('institutions.id', $primaryInstitution->id))
             ->where('start_time', '<', $meeting->start_time)
             ->orderBy('start_time', 'desc')
-            ->select(['id', 'start_time'])
+            ->select(['id', 'start_time', 'type'])
             ->first();
 
         $nextMeeting = Meeting::query()
             ->whereHas('institutions', fn ($q) => $q->where('institutions.id', $primaryInstitution->id))
             ->where('start_time', '>', $meeting->start_time)
             ->orderBy('start_time', 'asc')
-            ->select(['id', 'start_time'])
+            ->select(['id', 'start_time', 'type'])
             ->first();
 
         Inertia::share('otherLangURL', route('publicMeetings.show', [

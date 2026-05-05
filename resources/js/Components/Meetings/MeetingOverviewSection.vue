@@ -189,6 +189,7 @@ import { useAgendaItemStyling } from '@/Composables/useAgendaItemStyling';
 interface MeetingNav {
   id: string;
   start_time: string;
+  type?: string | null;
 }
 
 const props = defineProps<{

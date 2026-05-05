@@ -160,14 +160,14 @@ class MeetingController extends AdminController
         DB::beginTransaction();
 
         try {
-            // generate title for meeting - YYYY-mm-dd HH.mm posėdis
-            $title = Carbon::parse($validatedData['start_time'])->locale('lt-LT')->isoFormat('YYYY MMMM DD [d.] HH.mm [val.]').' posėdis';
+            $meetingType = $validatedData['type'] ?? null;
+            $title = $this->buildMeetingTitle($validatedData['start_time'], $meetingType);
 
             $meeting = Meeting::create([
                 'start_time' => $validatedData['start_time'],
                 'title' => $title,
                 'description' => $validatedData['description'] ?? null,
-                'type' => $validatedData['type'] ?? null,
+                'type' => $meetingType,
             ]);
 
             $meeting->institutions()->attach($validatedData['institution_id']);
@@ -275,14 +275,14 @@ class MeetingController extends AdminController
                 ->whereHas('institutions', fn ($q) => $q->where('institutions.id', $primaryInstitution->id))
                 ->where('start_time', '<', $meeting->start_time)
                 ->orderBy('start_time', 'desc')
-                ->select(['id', 'start_time'])
+                ->select(['id', 'start_time', 'type'])
                 ->first();
 
             $nextMeeting = Meeting::query()
                 ->whereHas('institutions', fn ($q) => $q->where('institutions.id', $primaryInstitution->id))
                 ->where('start_time', '>', $meeting->start_time)
                 ->orderBy('start_time', 'asc')
-                ->select(['id', 'start_time'])
+                ->select(['id', 'start_time', 'type'])
                 ->first();
         }
 
@@ -325,7 +325,10 @@ class MeetingController extends AdminController
             'type' => ['nullable', new Enum(MeetingType::class)],
         ]);
 
-        $validated['title'] = Carbon::parse($validated['start_time'])->locale('lt-LT')->isoFormat('YYYY MMMM DD [d.] HH.mm [val.]').' posėdis';
+        $validated['title'] = $this->buildMeetingTitle(
+            $validated['start_time'],
+            $validated['type'] ?? $meeting->type?->value
+        );
 
         $meeting->fill($validated);
         $meeting->save();
@@ -354,5 +357,24 @@ class MeetingController extends AdminController
         $meeting->restore();
 
         return back()->with('success', 'Posėdis atkurtas!');
+    }
+
+    /**
+     * Build the auto-generated meeting title.
+     *
+     * Email-type meetings use a 23:59 deadline marker for `start_time`, so the
+     * time portion is intentionally omitted from the title to avoid showing a
+     * misleading "23.59 val." in the UI.
+     */
+    private function buildMeetingTitle(mixed $startTime, mixed $type): string
+    {
+        $typeValue = $type instanceof MeetingType ? $type->value : $type;
+        $isEmail = $typeValue === MeetingType::Email->value;
+
+        $format = $isEmail
+            ? 'YYYY MMMM DD [d.]'
+            : 'YYYY MMMM DD [d.] HH.mm [val.]';
+
+        return Carbon::parse($startTime)->locale('lt-LT')->isoFormat($format).' posėdis';
     }
 }

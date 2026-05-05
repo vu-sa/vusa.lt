@@ -30,7 +30,7 @@
           {{ $t('Ankstesnis') }}
         </span>
         <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300 truncate">
-          {{ formatNavDate(previousMeeting.start_time) }}
+          {{ formatMeetingDateTime(previousMeeting, navOpts) }}
         </p>
       </div>
     </Link>
@@ -56,7 +56,7 @@
           {{ $t('Kitas') }}
         </span>
         <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300 truncate">
-          {{ formatNavDate(nextMeeting.start_time) }}
+          {{ formatMeetingDateTime(nextMeeting, navOpts) }}
         </p>
       </div>
       <div
@@ -83,11 +83,12 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next';
 
-import { formatStaticTime } from '@/Utils/IntlTime';
+import { formatMeetingDateTime } from '@/Utils/MeetingDisplay';
 
 interface MeetingNav {
   id: string;
   start_time: string;
+  type?: string | null;
 }
 
 defineProps<{
@@ -95,11 +96,11 @@ defineProps<{
   nextMeeting?: MeetingNav | null;
 }>();
 
-const formatNavDate = (date: string) => {
-  return formatStaticTime(new Date(date), {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+const navOpts: Intl.DateTimeFormatOptions = {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
 };
 </script>

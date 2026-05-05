@@ -15,9 +15,9 @@
       </template>
       <template #info>
         <div class="flex flex-wrap items-center gap-2 sm:gap-4 text-sm">
-          <div class="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400">
+          <div v-if="meetingTimeLabel" class="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400">
             <Clock class="h-4 w-4 text-green-500 shrink-0" />
-            <span>{{ formatStaticTime(new Date(meeting.start_time), { hour: "2-digit", minute: "2-digit" }) }}</span>
+            <span>{{ meetingTimeLabel }}</span>
           </div>
           <Badge v-if="meeting.type_label" variant="secondary" class="text-xs">
             {{ meeting.type_label }}
@@ -219,6 +219,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { AlertTriangle, AlertCircle, Plus, Trash2, ChevronLeft, ChevronRight, Clock, Globe, Edit, MoreHorizontal, Video } from 'lucide-vue-next';
 
 import { formatStaticTime } from '@/Utils/IntlTime';
+import { formatMeetingDateTime, formatMeetingTimeOnly } from '@/Utils/MeetingDisplay';
 import { genitivizeEveryWord } from '@/Utils/String';
 import Icons from '@/Types/Icons/filled';
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
@@ -256,12 +257,15 @@ import SpotlightBadge from '@/Components/Onboarding/SpotlightBadge.vue';
 const props = defineProps<{
   meeting: App.Entities.Meeting;
   representatives: App.Entities.User[];
-  previousMeeting?: { id: string; start_time: string } | null;
-  nextMeeting?: { id: string; start_time: string } | null;
+  previousMeeting?: { id: string; start_time: string; type?: string | null } | null;
+  nextMeeting?: { id: string; start_time: string; type?: string | null } | null;
 }>();
 
 // Urgency calculations for hero badge
 const { overallUrgency } = useMeetingUrgency(() => props.meeting);
+
+// Hide HH:MM for email/electronic meetings (start_time is forced to 23:59 as a deadline marker)
+const meetingTimeLabel = computed(() => formatMeetingTimeOnly(props.meeting));
 
 // Component state
 const showMeetingModal = ref(false);
@@ -370,20 +374,24 @@ const meetingAgendaForm = useForm({
 const mainInstitution: App.Entities.Institution | string
   = props.meeting.institutions?.[0] ?? 'Be institucijos';
 
+// Always derive the displayed title from start_time + institution.
+// The stored `meeting.title` is auto-generated server-side and historically
+// embedded a 23.59 timestamp for email meetings — recomputing here keeps the
+// header/breadcrumb correct without a data backfill.
 const meetingTitle = computed(() => {
-  if (props.meeting.title && props.meeting.title !== '') {
-    return props.meeting.title;
-  }
-
   const institutionName = typeof mainInstitution === 'string'
     ? mainInstitution
     : mainInstitution.name;
 
-  return `${formatStaticTime(new Date(props.meeting.start_time), {
+  const datePart = formatMeetingDateTime(props.meeting, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
-  })} ${genitivizeEveryWord(institutionName)} posėdis`;
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  return `${datePart} ${genitivizeEveryWord(institutionName)} posėdis`;
 });
 
 // Hero subtitle - institution name with link
@@ -400,17 +408,6 @@ const meetingBadge = computed(() => ({
   variant: 'secondary' as const,
   icon: Video,
 }));
-
-// Format date for navigation buttons
-const formatMeetingNavDate = (date: string) => {
-  return formatStaticTime(new Date(date), {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
 
 // Generate breadcrumbs automatically with new simplified API
 usePageBreadcrumbs(() => {

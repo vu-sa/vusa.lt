@@ -10,7 +10,7 @@
         <!-- Date & Time -->
         <div class="flex-1 min-w-0">
           <time class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 block">
-            {{ formatMeetingDate(meeting.start_time) }}
+            {{ formatMeetingDateTime(meeting) }}
           </time>
 
           <!-- Institution name (when shown in search context) -->
@@ -114,7 +114,7 @@ import VoteStatusIndicator from './VoteStatusIndicator.vue';
 import SmartLink from './SmartLink.vue';
 
 import { Badge } from '@/Components/ui/badge';
-import { formatStaticTime } from '@/Utils/IntlTime';
+import { formatMeetingDateTime } from '@/Utils/MeetingDisplay';
 import { getMainVote, getMeetingStatusSummary, hasDecisionData } from '@/Composables/useAgendaItemStyling';
 
 const $page = usePage();
@@ -141,13 +141,4 @@ const itemsWithDecisions = computed(() => {
   return allAgendaItems.value.filter(hasDecisionData);
 });
 
-const formatMeetingDate = (date: string) => {
-  return formatStaticTime(new Date(date), {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
 </script>
