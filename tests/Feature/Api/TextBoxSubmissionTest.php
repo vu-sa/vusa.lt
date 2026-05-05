@@ -5,6 +5,7 @@ use App\Models\ContentPart;
 use App\Models\TextBoxSubmission;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 uses(RefreshDatabase::class);
 
@@ -189,6 +190,44 @@ it('returns submissions ordered by newest first', function () {
     $data = $response->json('data');
     expect($data[0]['text'])->toBe('second');
     expect($data[1]['text'])->toBe('first');
+});
+
+// Admin export endpoint
+
+it('exports submissions as an xlsx file', function () {
+    $user = User::factory()->create();
+    $contentPart = makeTextBoxContentPart();
+
+    TextBoxSubmission::factory()->create([
+        'content_part_id' => $contentPart->id,
+        'text' => 'First answer here.',
+        'user_id' => $user->id,
+    ]);
+    TextBoxSubmission::factory()->create([
+        'content_part_id' => $contentPart->id,
+        'text' => 'Anonymous answer.',
+        'user_id' => null,
+    ]);
+
+    $response = $this->actingAs($user)->get(route('api.v1.admin.text-box-submissions.export', [
+        'content_part_id' => $contentPart->id,
+    ]));
+
+    $response->assertOk();
+    $response->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+    $body = $response->streamedContent();
+    $tmp = tempnam(sys_get_temp_dir(), 'export_').'.xlsx';
+    file_put_contents($tmp, $body);
+
+    $loaded = IOFactory::load($tmp);
+    $rows = $loaded->getActiveSheet()->toArray(null, true, true, false);
+    unlink($tmp);
+
+    expect($rows[0])->toBe(['Response', 'Submitted by', 'Submitted at']);
+    expect($rows)->toHaveCount(3);
+    $textColumn = array_column(array_slice($rows, 1), 0);
+    expect($textColumn)->toContain('First answer here.', 'Anonymous answer.');
 });
 
 it('shows Anonymous for submissions without a user', function () {
