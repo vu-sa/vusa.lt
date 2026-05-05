@@ -41,7 +41,7 @@
                       @click.stop>
                       <IMdiFacebook class="size-3" />
                       <span class="text-[10px] font-medium">{{ extractSocialHandle(institution.facebook_url, 'facebook')
-                        }}</span>
+                      }}</span>
                     </a>
                     <a v-if="institution.instagram_url" :href="institution.instagram_url" target="_blank"
                       rel="noopener noreferrer"
@@ -49,7 +49,7 @@
                       @click.stop>
                       <IMdiInstagram class="size-3" />
                       <span class="text-[10px] font-medium">{{ extractSocialHandle(institution.instagram_url,
-                        'instagram') }}</span>
+                                                                                   'instagram') }}</span>
                     </a>
                   </div>
                 </template>
@@ -79,7 +79,7 @@
             </div>
             <small v-for="institutionType in institution.types" v-show="!props.hideTypes" :key="institutionType.id"
               class="mb-4 inline-flex items-center gap-2 text-zinc-500 last:mb-0">
-              <a 
+              <a
                 v-if="institutionType.slug"
                 :href="route('contacts.category', {
                   subdomain: institution.tenant?.alias === 'vusa' ? 'www' : institution.tenant?.alias ?? 'www',
@@ -125,14 +125,14 @@
 </template>
 
 <script setup lang="ts">
-import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
-import { ref } from "vue";
+import { breakpointsTailwind, useBreakpoints } from '@vueuse/core';
+import { ref } from 'vue';
 
-import Button from "../ui/button/Button.vue";
-import Collapsible from "../ui/collapsible/Collapsible.vue";
-import CollapsibleContent from "../ui/collapsible/CollapsibleContent.vue";
-import CollapsibleTrigger from "../ui/collapsible/CollapsibleTrigger.vue";
-import InfoPopover from "../Buttons/InfoPopover.vue";
+import Button from '../ui/button/Button.vue';
+import Collapsible from '../ui/collapsible/Collapsible.vue';
+import CollapsibleContent from '../ui/collapsible/CollapsibleContent.vue';
+import CollapsibleTrigger from '../ui/collapsible/CollapsibleTrigger.vue';
+import InfoPopover from '../Buttons/InfoPopover.vue';
 
 const props = defineProps<{
   institution: App.Entities.Institution;
@@ -141,7 +141,7 @@ const props = defineProps<{
 }>();
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
-const isMobile = breakpoints.smallerOrEqual("sm");
+const isMobile = breakpoints.smallerOrEqual('sm');
 
 const imageError = ref(false);
 const isDescriptionOpen = ref(false);
@@ -167,7 +167,8 @@ const extractSocialHandle = (url: string, platform: string) => {
     }
 
     return platform;
-  } catch {
+  }
+  catch {
     return platform;
   }
 };
@@ -179,7 +180,8 @@ const extractDomain = (url: string) => {
   try {
     const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`);
     return urlObj.hostname.replace('www.', '');
-  } catch {
+  }
+  catch {
     return url;
   }
 };

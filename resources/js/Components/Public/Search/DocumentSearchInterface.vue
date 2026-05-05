@@ -28,7 +28,7 @@
       </div>
 
       <!-- Offline indicator -->
-      <div v-if="!searchController.isOnline.value" class="mb-3 sm:mb-4 mx-2 sm:mx-3 lg:mx-4 p-3 bg-orange-50 
+      <div v-if="!searchController.isOnline.value" class="mb-3 sm:mb-4 mx-2 sm:mx-3 lg:mx-4 p-3 bg-orange-50
         dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 rounded-lg">
         <div class="flex items-center gap-2 text-orange-800 dark:text-orange-200">
           <WifiOff class="w-4 h-4" />
@@ -43,7 +43,7 @@
           <div class="xl:sticky xl:top-6 xl:self-start xl:flex-shrink-0 xl:w-[300px]">
             <DocumentFacetSidebar :facets="searchController.facets.value" :filters="searchController.filters.value"
               :is-loading="searchController.isLoadingFacets.value" :active-filter-count
-              :important-content-types="importantContentTypes"
+              :important-content-types
               @update:tenant="searchController.toggleTenant" @update:content-type="searchController.toggleContentType"
               @update:language="searchController.toggleLanguage" @update:date-range="searchController.setDateRange"
               @clear-filters="searchController.clearFilters" />
@@ -182,9 +182,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
-import { debounce } from 'lodash-es'
-import { trans as $t } from 'laravel-vue-i18n'
+import { computed, onMounted, ref, watch } from 'vue';
+import { debounce } from 'lodash-es';
+import { trans as $t } from 'laravel-vue-i18n';
 import {
   Search,
   List,
@@ -195,169 +195,171 @@ import {
   X,
   Loader2,
   Filter as FilterIcon,
-  WifiOff
-} from 'lucide-vue-next'
+  WifiOff,
+} from 'lucide-vue-next';
 
 // Local components
-import SearchPageSwitcher from './SearchPageSwitcher.vue'
-import SearchErrorBoundary from './SearchErrorBoundary.vue'
-import DocumentSearchInput from './DocumentSearchInput.vue'
-import DocumentFacetSidebar from './DocumentFacetSidebar.vue'
-import DocumentResults from './DocumentResults.vue'
+import SearchPageSwitcher from './SearchPageSwitcher.vue';
+import SearchErrorBoundary from './SearchErrorBoundary.vue';
+import DocumentSearchInput from './DocumentSearchInput.vue';
+import DocumentFacetSidebar from './DocumentFacetSidebar.vue';
+import DocumentResults from './DocumentResults.vue';
 
-import { Separator } from '@/Components/ui/separator'
-import { Badge } from '@/Components/ui/badge'
-import { Button } from '@/Components/ui/button'
-import { useDocumentSearch } from '@/Composables/useDocumentSearch'
-import type { DocumentSearchFilters } from '@/Types/DocumentSearchTypes'
+import { Separator } from '@/Components/ui/separator';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { useDocumentSearch } from '@/Composables/useDocumentSearch';
+import type { DocumentSearchFilters } from '@/Types/DocumentSearchTypes';
 
 // Initialize search controller
-const searchController = useDocumentSearch()
+const searchController = useDocumentSearch();
 
 // Local state
-const typeToSearch = ref(true) // Enable by default
-const inputQuery = ref('')
+const typeToSearch = ref(true); // Enable by default
+const inputQuery = ref('');
 
 // Props interface
 interface Props {
-  importantContentTypes?: string[]
+  importantContentTypes?: string[];
 }
 
 const {
-  importantContentTypes = []
-} = defineProps<Props>()
+  importantContentTypes = [],
+} = defineProps<Props>();
 
 // Computed properties for filter state
-const hasActiveFilters = computed(() => Boolean(searchController.hasActiveFilters.value))
+const hasActiveFilters = computed(() => Boolean(searchController.hasActiveFilters.value));
 const activeFilterCount = computed(() => {
-  const filters = searchController.filters.value
-  let count = 0
-  if (filters.tenants.length > 0) count++
-  if (filters.contentTypes.length > 0) count++
-  if (filters.languages.length > 0) count++
-  if ((filters.dateRange.preset && filters.dateRange.preset !== 'recent') || filters.dateRange.from || filters.dateRange.to) count++
-  return count
-})
+  const filters = searchController.filters.value;
+  let count = 0;
+  if (filters.tenants.length > 0) count++;
+  if (filters.contentTypes.length > 0) count++;
+  if (filters.languages.length > 0) count++;
+  if ((filters.dateRange.preset && filters.dateRange.preset !== 'recent') || filters.dateRange.from || filters.dateRange.to) count++;
+  return count;
+});
 
 const filterSummary = computed(() => {
-  const filters = searchController.filters.value
-  const summary: string[] = []
-  if (filters.tenants.length > 0) summary.push(`${filters.tenants.length} org.`)
-  if (filters.contentTypes.length > 0) summary.push(`${filters.contentTypes.length} type`)
-  if (filters.languages.length > 0) summary.push(`${filters.languages.length} lang`)
+  const filters = searchController.filters.value;
+  const summary: string[] = [];
+  if (filters.tenants.length > 0) summary.push(`${filters.tenants.length} org.`);
+  if (filters.contentTypes.length > 0) summary.push(`${filters.contentTypes.length} type`);
+  if (filters.languages.length > 0) summary.push(`${filters.languages.length} lang`);
   if (filters.dateRange.preset !== 'recent' || filters.dateRange.from || filters.dateRange.to) {
-    summary.push('date')
+    summary.push('date');
   }
-  return summary
-})
+  return summary;
+});
 
 // Debounced auto-search when typing in auto mode
 const debouncedAutoSearch = debounce((q: string) => {
-  searchController.search(q)
-}, 200)
+  searchController.search(q);
+}, 200);
 
 // Event handlers
 const handleQueryUpdate = (query: string) => {
   // Update local input binding always so UI reflects typed text
-  inputQuery.value = query
+  inputQuery.value = query;
   // Only auto-search if typeToSearch is enabled and query is not empty
   if (typeToSearch.value && query.trim() !== '') {
-    debouncedAutoSearch(query)
-  } else {
+    debouncedAutoSearch(query);
+  }
+  else {
     // Cancel any pending debounced calls when leaving auto conditions
-    debouncedAutoSearch.cancel()
+    debouncedAutoSearch.cancel();
     // If query becomes empty and auto-search is enabled, reset to show all documents
     if (query.trim() === '' && typeToSearch.value) {
-      searchController.search('*', true)
+      searchController.search('*', true);
     }
   }
-}
+};
 
 const handleSearch = (query: string) => {
   // Keep input in sync and execute immediately, bypassing debounce
-  inputQuery.value = query
+  inputQuery.value = query;
   // Cancel pending auto-search to avoid double-trigger
-  debouncedAutoSearch.cancel()
+  debouncedAutoSearch.cancel();
   // If query is empty, search for '*' to show all documents (preserves filters)
-  const searchQuery = query.trim() === '' ? '*' : query
-  searchController.search(searchQuery, true)
-}
+  const searchQuery = query.trim() === '' ? '*' : query;
+  searchController.search(searchQuery, true);
+};
 
 const handleSelectRecent = (search: string) => {
   // Selecting a recent search should also search immediately
-  inputQuery.value = search
-  debouncedAutoSearch.cancel()
-  searchController.search(search, true)
-}
+  inputQuery.value = search;
+  debouncedAutoSearch.cancel();
+  searchController.search(search, true);
+};
 
 const handleClear = () => {
   // Reset to the same state as when page first loads - show all documents
   // This should match the initial load behavior
-  inputQuery.value = ''
-  debouncedAutoSearch.cancel()
-  searchController.search('*', true) // immediate = true to avoid debouncing
-}
+  inputQuery.value = '';
+  debouncedAutoSearch.cancel();
+  searchController.search('*', true); // immediate = true to avoid debouncing
+};
 
 const handleTypeToSearchUpdate = (value: boolean) => {
-  typeToSearch.value = value
-}
+  typeToSearch.value = value;
+};
 
 const handleRemoveRecent = (search: string) => {
-  searchController.removeRecentSearch(search)
-}
+  searchController.removeRecentSearch(search);
+};
 
 const handleClearAllHistory = () => {
-  searchController.clearRecentSearches()
-}
+  searchController.clearRecentSearches();
+};
 
 // Language display helpers
 const getLanguageFlag = (languageValue: string): string => {
-  if (languageValue === 'Lietuvių' || languageValue === 'Lithuanian') return 'https://hatscripts.github.io/circle-flags/flags/lt.svg'
-  if (languageValue === 'Anglų' || languageValue === 'English') return 'https://hatscripts.github.io/circle-flags/flags/gb.svg'
-  return '' // For Unknown or other languages - no flag
-}
+  if (languageValue === 'Lietuvių' || languageValue === 'Lithuanian') return 'https://hatscripts.github.io/circle-flags/flags/lt.svg';
+  if (languageValue === 'Anglų' || languageValue === 'English') return 'https://hatscripts.github.io/circle-flags/flags/gb.svg';
+  return ''; // For Unknown or other languages - no flag
+};
 
 // Use computed for translations that need to be reactive
 const languageTranslations = computed(() => ({
   lithuanian: 'LT',
   english: 'EN',
-  unknown: $t('search.language_unknown')
-}))
+  unknown: $t('search.language_unknown'),
+}));
 
 const getLanguageDisplay = (languageValue: string): string => {
-  if (languageValue === 'Lietuvių' || languageValue === 'Lithuanian') return languageTranslations.value.lithuanian
-  if (languageValue === 'Anglų' || languageValue === 'English') return languageTranslations.value.english
-  return languageTranslations.value.unknown // For Unknown or other languages
-}
+  if (languageValue === 'Lietuvių' || languageValue === 'Lithuanian') return languageTranslations.value.lithuanian;
+  if (languageValue === 'Anglų' || languageValue === 'English') return languageTranslations.value.english;
+  return languageTranslations.value.unknown; // For Unknown or other languages
+};
 
 // Initialize from props and load all documents
 onMounted(async () => {
   // Initialize search client first (this also loads URL params)
-  await searchController.initializeSearchClient()
+  await searchController.initializeSearchClient();
 
   // Load initial facets for the merged facet system
-  await searchController.loadInitialFacets()
+  await searchController.loadInitialFacets();
 
   // Get query from filters (loaded from URL by composable)
-  const initialQuery = searchController.filters.value.query
+  const initialQuery = searchController.filters.value.query;
 
   // Set initial query if provided, otherwise search all documents
   if (initialQuery && initialQuery !== '') {
-    searchController.search(initialQuery, true)
-  } else {
-    // Trigger initial "show all documents" search with newest first sorting  
+    searchController.search(initialQuery, true);
+  }
+  else {
+    // Trigger initial "show all documents" search with newest first sorting
     // Use wildcard search to show all documents on page load
-    searchController.search('*', true) // immediate = true for initial load
+    searchController.search('*', true); // immediate = true for initial load
   }
   // Sync input with controller's displayed query
-  inputQuery.value = searchController.searchState.value.query
-})
+  inputQuery.value = searchController.searchState.value.query;
+});
 
 // Keep inputQuery in sync with controller query updates (e.g., after searches)
 watch(
   () => searchController.searchState.value.query,
   (q) => {
-    inputQuery.value = q || ''
-  }
-)
+    inputQuery.value = q || '';
+  },
+);
 </script>

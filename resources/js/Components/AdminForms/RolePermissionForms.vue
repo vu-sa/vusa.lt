@@ -18,19 +18,19 @@
         </AlertDescription>
       </Alert>
       <PermissionTable :model-type="entity.key" :icon="entity.icon" :permissions="filterPermissionsFor(entity.key)"
-        :available-permissions="(allAvailablePermissions && allAvailablePermissions[entity.key]) || []" :role="role" />
+        :available-permissions="(allAvailablePermissions && allAvailablePermissions[entity.key]) || []" :role />
       <Separator />
     </section>
   </div>
 </template>
 
 <script setup lang="tsx">
-import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert'
-
-import MdSuspenseWrapper from "@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue";
-import PermissionTable from "@/Features/Admin/PermissionTable/PermissionTable.vue";
-import entities from "@/entities";
 import { Separator } from '../ui/separator';
+
+import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
+import MdSuspenseWrapper from '@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue';
+import PermissionTable from '@/Features/Admin/PermissionTable/PermissionTable.vue';
+import entities from '@/entities';
 
 const props = defineProps<{
   role: App.Entities.Role;

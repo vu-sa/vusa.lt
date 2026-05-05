@@ -1,34 +1,3 @@
-<script setup lang="ts">
-import { cn } from '@/Utils/Shadcn/utils'
-import { X } from 'lucide-vue-next'
-import {
-  DialogClose,
-  DialogContent,
-  type DialogContentEmits,
-  type DialogContentProps,
-  DialogPortal,
-  useForwardPropsEmits,
-} from 'reka-ui'
-import { computed, type HTMLAttributes } from 'vue'
-import DialogOverlay from './DialogOverlay.vue'
-
-const props = withDefaults(defineProps<DialogContentProps & { 
-  class?: HTMLAttributes['class']
-  showCloseButton?: boolean
-}>(), {
-  showCloseButton: true
-})
-const emits = defineEmits<DialogContentEmits>()
-
-const delegatedProps = computed(() => {
-  const { class: _, showCloseButton: __, ...delegated } = props
-
-  return delegated
-})
-
-const forwarded = useForwardPropsEmits(delegatedProps, emits)
-</script>
-
 <template>
   <DialogPortal>
     <DialogOverlay />
@@ -53,3 +22,36 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
     </DialogContent>
   </DialogPortal>
 </template>
+
+<script setup lang="ts">
+import { X } from 'lucide-vue-next';
+import {
+  DialogClose,
+  DialogContent,
+  type DialogContentEmits,
+  type DialogContentProps,
+  DialogPortal,
+  useForwardPropsEmits,
+} from 'reka-ui';
+import { computed, type HTMLAttributes } from 'vue';
+
+import DialogOverlay from './DialogOverlay.vue';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+const props = withDefaults(defineProps<DialogContentProps & {
+  class?: HTMLAttributes['class'];
+  showCloseButton?: boolean;
+}>(), {
+  showCloseButton: true,
+});
+const emits = defineEmits<DialogContentEmits>();
+
+const delegatedProps = computed(() => {
+  const { class: _, showCloseButton: __, ...delegated } = props;
+
+  return delegated;
+});
+
+const forwarded = useForwardPropsEmits(delegatedProps, emits);
+</script>

@@ -35,36 +35,37 @@
 </template>
 
 <script setup lang="ts">
-import { computed, type Component } from 'vue'
-import { Link, usePage as useInertiaPage } from '@inertiajs/vue3'
-import { trans as $t } from 'laravel-vue-i18n'
+import { computed, type Component } from 'vue';
+import { Link, usePage as useInertiaPage } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 
 // Icons
-import DocumentIcon from '~icons/fluent/document-multiple24-filled'
-import MeetingIcon from '~icons/fluent/device-meeting-room-remote24-filled'
-import { Building2 } from 'lucide-vue-next'
+import { Building2 } from 'lucide-vue-next';
+
+import DocumentIcon from '~icons/fluent/document-multiple24-filled';
+import MeetingIcon from '~icons/fluent/device-meeting-room-remote24-filled';
 
 // Types
-type SearchPage = 'documents' | 'meetings' | 'contacts'
+type SearchPage = 'documents' | 'meetings' | 'contacts';
 
 interface PageConfig {
-  page: SearchPage
-  icon: Component
-  titleKey: string
-  ariaLabelKey: string
-  routeName: string
-  isGlobal: boolean // If true, uses www subdomain
+  page: SearchPage;
+  icon: Component;
+  titleKey: string;
+  ariaLabelKey: string;
+  routeName: string;
+  isGlobal: boolean; // If true, uses www subdomain
 }
 
 // Props
 interface Props {
-  page: SearchPage
+  page: SearchPage;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 
 // Get current page props
-const inertiaPage = useInertiaPage()
+const inertiaPage = useInertiaPage();
 
 // Page configurations
 const pages = computed<PageConfig[]>(() => [
@@ -74,7 +75,7 @@ const pages = computed<PageConfig[]>(() => [
     titleKey: 'search.document_search_title',
     ariaLabelKey: 'search.go_to_documents',
     routeName: 'documents',
-    isGlobal: true
+    isGlobal: true,
   },
   {
     page: 'meetings',
@@ -82,7 +83,7 @@ const pages = computed<PageConfig[]>(() => [
     titleKey: 'search.meeting_search_title',
     ariaLabelKey: 'search.go_to_meetings',
     routeName: 'publicMeetings.index',
-    isGlobal: false
+    isGlobal: false,
   },
   {
     page: 'contacts',
@@ -90,22 +91,23 @@ const pages = computed<PageConfig[]>(() => [
     titleKey: 'search.institution_search_title',
     ariaLabelKey: 'search.go_to_contacts',
     routeName: 'contacts',
-    isGlobal: false
-  }
-])
+    isGlobal: false,
+  },
+]);
 
 // Generate URL for page navigation
 const getPageUrl = (item: PageConfig): string => {
-  const locale = inertiaPage.props.app?.locale || 'lt'
-  
+  const locale = inertiaPage.props.app?.locale || 'lt';
+
   // Use the route helper with appropriate subdomain
   if (item.isGlobal) {
     // Global routes use www subdomain
-    return route(item.routeName, { subdomain: 'www', lang: locale })
-  } else {
-    // Tenant-specific routes preserve current subdomain
-    const subdomain = inertiaPage.props.app?.subdomain || 'www'
-    return route(item.routeName, { subdomain, lang: locale })
+    return route(item.routeName, { subdomain: 'www', lang: locale });
   }
-}
+  else {
+    // Tenant-specific routes preserve current subdomain
+    const subdomain = inertiaPage.props.app?.subdomain || 'www';
+    return route(item.routeName, { subdomain, lang: locale });
+  }
+};
 </script>

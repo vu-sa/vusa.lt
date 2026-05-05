@@ -1,5 +1,5 @@
 <template>
-  <Form ref="meetingFormRef" v-slot="{ values, setFieldValue }" :validation-schema="schema" :initial-values="initialValues"
+  <Form ref="meetingFormRef" v-slot="{ values, setFieldValue }" :validation-schema="schema" :initial-values
     @submit="onSubmit">
     <div class="space-y-6">
       <!-- Meeting Type (Radio Selection) -->
@@ -10,10 +10,10 @@
             {{ $tChoice("forms.fields.type", 0) }}
           </FormLabel>
           <FormControl>
-            <RadioGroup 
-              :model-value="componentField.modelValue === null ? '__null__' : componentField.modelValue" 
-              @update:model-value="(val) => setFieldValue('type', val === '__null__' ? null : val)"
+            <RadioGroup
+              :model-value="componentField.modelValue === null ? '__null__' : componentField.modelValue"
               class="space-y-2 mt-2"
+              @update:model-value="(val) => setFieldValue('type', val === '__null__' ? null : val)"
             >
               <div class="space-y-2 pl-2">
                 <div v-for="typeOption in meetingTypeOptions" :key="typeOption.value ?? 'null'" class="flex items-center space-x-2">
@@ -52,10 +52,10 @@
               v-else
               class="w-full"
               :model-value="componentField.modelValue"
-              @update:model-value="componentField['onUpdate:modelValue']"
-              @blur="(e) => componentField.onBlur(e as Event)"
               :hour-range="[7, 22]"
               :minute-step="5"
+              @update:model-value="componentField['onUpdate:modelValue']"
+              @blur="(e) => componentField.onBlur(e as Event)"
             />
           </FormControl>
           <FormDescription v-if="isWeekendTime(value)" class="text-amber-600 dark:text-amber-400">
@@ -90,17 +90,17 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import { computed, useTemplateRef, watch, nextTick } from "vue";
-import { Form } from "vee-validate";
-import { Loader2 } from "lucide-vue-next";
+import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+import { computed, useTemplateRef, watch, nextTick } from 'vue';
+import { Form } from 'vee-validate';
+import { Loader2 } from 'lucide-vue-next';
 
-import Icons from "@/Types/Icons/filled";
-import { useMeetingForm } from "@/Composables/useMeetingForm";
+import Icons from '@/Types/Icons/filled';
+import { useMeetingForm } from '@/Composables/useMeetingForm';
 
 // Import Shadcn UI components
-import { Button } from "@/Components/ui/button";
-import { Textarea } from "@/Components/ui/textarea";
+import { Button } from '@/Components/ui/button';
+import { Textarea } from '@/Components/ui/textarea';
 import {
   FormControl,
   FormField,
@@ -108,17 +108,15 @@ import {
   FormLabel,
   FormMessage,
   FormDescription,
-} from "@/Components/ui/form";
+} from '@/Components/ui/form';
 import {
   RadioGroup,
   RadioGroupItem,
-} from "@/Components/ui/radio-group";
-import { Label } from "@/Components/ui/label";
-import { DateTimePicker, DatePicker } from "@/Components/ui/date-picker";
+} from '@/Components/ui/radio-group';
+import { Label } from '@/Components/ui/label';
+import { DateTimePicker, DatePicker } from '@/Components/ui/date-picker';
 
-const emit = defineEmits<{
-  (event: "submit", form: any): void;
-}>();
+const emit = defineEmits<(event: 'submit', form: any) => void>();
 
 const props = withDefaults(defineProps<{
   loading?: boolean;
@@ -139,7 +137,7 @@ const {
 } = useMeetingForm();
 
 // Local state
-const meetingFormRef = useTemplateRef<typeof Form>("meetingFormRef");
+const meetingFormRef = useTemplateRef<typeof Form>('meetingFormRef');
 
 // Initial values
 const initialValues = computed(() => getInitialValues(props.meeting || {}));
@@ -148,7 +146,7 @@ const initialValues = computed(() => getInitialValues(props.meeting || {}));
 const submitLabel = computed(() => props.submitLabel || $t('Išsaugoti'));
 
 const onSubmit = (values: Record<string, any>) => {
-  emit("submit", formatMeetingData(values));
+  emit('submit', formatMeetingData(values));
 };
 
 // Watch for changes to meeting prop and synchronize form state

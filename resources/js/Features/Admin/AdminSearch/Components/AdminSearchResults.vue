@@ -1,13 +1,13 @@
 <template>
   <SearchResults
     :is-loading="isSearching"
-    :has-results="hasResults"
-    :has-searched="hasSearched"
-    :has-active-filters="hasActiveFilters"
+    :has-results
+    :has-searched
+    :has-active-filters
     :error="error ? { message: error.message, userMessage: error.userMessage, retryable: error.retryable } : undefined"
-    :empty-message="emptyMessage"
-    :layout="layout"
-    :grid-cols="gridCols"
+    :empty-message
+    :layout
+    :grid-cols
     :skeleton-count="6"
     no-results-title-key="Rezultatų nerasta"
     no-results-description-key="Pabandykite pakeisti paieškos frazę arba filtrus"
@@ -36,23 +36,24 @@
 </template>
 
 <script setup lang="ts">
-import { SearchResults } from '@/Components/Shared/Search'
-import type { AdminSearchError } from '../Types/AdminSearchTypes'
+import type { AdminSearchError } from '../Types/AdminSearchTypes';
+
+import { SearchResults } from '@/Components/Shared/Search';
 
 interface Props {
-  isSearching: boolean
-  hasResults: boolean
-  hasSearched: boolean
-  hasActiveFilters?: boolean
-  error: AdminSearchError | null
-  emptyMessage?: string
-  layout?: 'grid' | 'list'
-  gridCols?: 1 | 2 | 3
+  isSearching: boolean;
+  hasResults: boolean;
+  hasSearched: boolean;
+  hasActiveFilters?: boolean;
+  error: AdminSearchError | null;
+  emptyMessage?: string;
+  layout?: 'grid' | 'list';
+  gridCols?: 1 | 2 | 3;
 }
 
 interface Emits {
-  (e: 'retry'): void
-  (e: 'clearFilters'): void
+  (e: 'retry'): void;
+  (e: 'clearFilters'): void;
 }
 
 withDefaults(defineProps<Props>(), {
@@ -60,7 +61,7 @@ withDefaults(defineProps<Props>(), {
   emptyMessage: '',
   layout: 'grid',
   gridCols: 2,
-})
+});
 
-defineEmits<Emits>()
+defineEmits<Emits>();
 </script>

@@ -37,7 +37,7 @@
             class="font-bold underline"
             target="_blank"
             href="/pirmakursiams"
-            >{{ $t("susipažinimo") }}</a
+          >{{ $t("susipažinimo") }}</a
           >
           {{ $t("su Vilniaus universitetu etapas.") }}
         </p>
@@ -63,7 +63,8 @@
               })
             "
           >
-            {{ $t("kuratoriai (-ės)") }} </Link
+            {{ $t("kuratoriai (-ės)") }}
+          </Link
           >.
         </p>
 
@@ -106,7 +107,7 @@
             src="/images/photos/atributika_banner3.jpg"
             alt="VU merchandise and accessories banner"
             loading="lazy"
-          />
+          >
         </a>
       </template>
       <template v-else>
@@ -124,7 +125,9 @@
               {{ $t("Grįžti") }}
             </Button>
           </SmartLink>
-          <h3 class="mb-0">{{ year }} {{ $t("m. pirmakursių stovyklos") }}</h3>
+          <h3 class="mb-0">
+            {{ year }} {{ $t("m. pirmakursių stovyklos") }}
+          </h3>
         </div>
         <p>
           {{
@@ -152,7 +155,7 @@
             src="/images/photos/atributika_banner2.jpg"
             alt="VU merchandise and accessories banner"
             loading="lazy"
-          />
+          >
         </a>
       </template>
       <h3 class="mt-6">
@@ -201,7 +204,7 @@
                 getFacultyNameInLocative(event.tenant)
               )} freshmen camp`"
               loading="lazy"
-            />
+            >
             <h3 class="p-2 text-center text-lg font-extrabold leading-tight">
               {{ "VU " + $t(getFacultyNameInLocative(event.tenant)) }}
             </h3>
@@ -218,14 +221,14 @@
 </template>
 
 <script setup lang="ts">
-import { Link, usePage } from "@inertiajs/vue3";
-import { computed } from "vue";
-import { trans as $t } from "laravel-vue-i18n";
+import { Link, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
 
-import { Button } from "@/Components/ui/button";
-import { getFacultyName } from "@/Utils/String";
-import HeaderWithShapeDivider1 from "@/Components/Headers/HeaderWithShapeDivider1.vue";
-import SmartLink from "@/Components/Public/SmartLink.vue";
+import { Button } from '@/Components/ui/button';
+import { getFacultyName } from '@/Utils/String';
+import HeaderWithShapeDivider1 from '@/Components/Headers/HeaderWithShapeDivider1.vue';
+import SmartLink from '@/Components/Public/SmartLink.vue';
 
 const props = defineProps<{
   events: App.Entities.News;
@@ -237,39 +240,39 @@ const page = usePage();
 
 const summerCampTitle = computed(() => {
   return props.year === new Date().getFullYear()
-    ? $t("Pirmakursių stovyklos")
-    : `${props.year} ${$t("m. pirmakursių stovyklos")}`;
+    ? $t('Pirmakursių stovyklos')
+    : `${props.year} ${$t('m. pirmakursių stovyklos')}`;
 });
 
 const getFacultyNameInLocative = ({ fullname }: { fullname: string }) => {
   // Extract the faculty name part in locative form (before conversion to nominative)
-  let facultyName = fullname.split(
-    "Vilniaus universiteto Studentų atstovybė"
+  const facultyName = fullname.split(
+    'Vilniaus universiteto Studentų atstovybė',
   )[1];
 
   if (facultyName === undefined) {
-    return "";
+    return '';
   }
 
   return facultyName.trim();
 };
 
 const get5thResponsiveImage = (event: App.Entities.Calendar) => {
-  if (event.media.length === 0) return "";
+  if (event.media.length === 0) return '';
 
-  let mainUrl = event.media[0].original_url;
-  let fileName = event.media[0].file_name;
+  const mainUrl = event.media[0].original_url;
+  const fileName = event.media[0].file_name;
 
   // strsplit main url by filename
-  let mainUrlParts = mainUrl.split(fileName);
+  const mainUrlParts = mainUrl.split(fileName);
 
   // add /responsive_images/ and event.media[0].responsive_images.media_library_original.urls[5] to main url
-  let responsiveUrl =
-    mainUrlParts[0] +
-    "responsive-images/" +
-    event.media[0].responsive_images.media_library_original.urls[
-      event.media[0].responsive_images.media_library_original.urls.length - 3
-    ];
+  const responsiveUrl
+    = `${mainUrlParts[0]
+    }responsive-images/${
+      event.media[0].responsive_images.media_library_original.urls[
+        event.media[0].responsive_images.media_library_original.urls.length - 3
+      ]}`;
 
   return responsiveUrl;
 };

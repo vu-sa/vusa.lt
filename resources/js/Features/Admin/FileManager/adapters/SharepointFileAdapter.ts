@@ -1,10 +1,11 @@
 import { useFetch } from '@vueuse/core';
-import type { 
-  FileSourceAdapter, 
-  FileListingResponse, 
-  UnifiedFile, 
+
+import type {
+  FileSourceAdapter,
+  FileListingResponse,
+  UnifiedFile,
   UnifiedDirectory,
-  FileableRef 
+  FileableRef,
 } from '../types';
 import { transformSharepointFile, transformSharepointDirectory } from '../types';
 
@@ -23,13 +24,13 @@ export class SharepointFileAdapter implements FileSourceAdapter {
 
   async fetchListing(path: string): Promise<FileListingResponse> {
     const { data } = await useFetch(
-      route('api.v1.admin.sharepoint.driveItems', { path })
+      route('api.v1.admin.sharepoint.driveItems', { path }),
     ).get().json();
 
     // Handle standardized API response format
     const responseData = data.value?.success ? data.value.data : data.value;
     const items: MyDriveItem[] = responseData ?? [];
-    
+
     const files: UnifiedFile[] = items
       .filter(item => !item.folder)
       .map(item => transformSharepointFile(item, path));

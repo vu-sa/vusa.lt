@@ -1,35 +1,3 @@
-<script setup lang="ts">
-import { usePage } from '@inertiajs/vue3'
-import { computed, ref } from 'vue'
-import { AlertTriangle, X, FileWarning, CloudOff } from 'lucide-vue-next'
-
-const dismissed = ref(false)
-
-interface StagingProps {
-  isStaging: boolean
-  filesReadOnly: boolean
-  sharepointReadOnly: boolean
-}
-
-const staging = computed(() => usePage().props.staging as StagingProps | undefined)
-
-const isStaging = computed(() => staging.value?.isStaging ?? false)
-const hasSharedResources = computed(() => 
-  staging.value?.filesReadOnly || staging.value?.sharepointReadOnly
-)
-
-const warnings = computed(() => {
-  const list: string[] = []
-  if (staging.value?.filesReadOnly) {
-    list.push('File storage is shared with production (read-only)')
-  }
-  if (staging.value?.sharepointReadOnly) {
-    list.push('SharePoint is shared with production (read-only)')
-  }
-  return list
-})
-</script>
-
 <template>
   <Teleport to="body">
     <div
@@ -57,17 +25,49 @@ const warnings = computed(() => {
             </span>
           </div>
         </div>
-        <button 
-          @click="dismissed = true" 
+        <button
           class="p-1.5 hover:bg-amber-600/50 rounded-md transition-colors"
           aria-label="Dismiss staging banner"
+          @click="dismissed = true"
         >
           <X class="h-4 w-4" />
         </button>
       </div>
     </div>
   </Teleport>
-  
+
   <!-- Spacer to prevent content from being hidden behind the banner -->
   <div v-if="isStaging && !dismissed" class="h-10 print:hidden" />
 </template>
+
+<script setup lang="ts">
+import { usePage } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
+import { AlertTriangle, X, FileWarning, CloudOff } from 'lucide-vue-next';
+
+const dismissed = ref(false);
+
+interface StagingProps {
+  isStaging: boolean;
+  filesReadOnly: boolean;
+  sharepointReadOnly: boolean;
+}
+
+const staging = computed(() => usePage().props.staging as StagingProps | undefined);
+
+const isStaging = computed(() => staging.value?.isStaging ?? false);
+const hasSharedResources = computed(() =>
+  staging.value?.filesReadOnly || staging.value?.sharepointReadOnly,
+);
+
+const warnings = computed(() => {
+  const list: string[] = [];
+  if (staging.value?.filesReadOnly) {
+    list.push('File storage is shared with production (read-only)');
+  }
+  if (staging.value?.sharepointReadOnly) {
+    list.push('SharePoint is shared with production (read-only)');
+  }
+  return list;
+});
+</script>

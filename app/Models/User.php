@@ -23,9 +23,6 @@ use Illuminate\Support\Carbon;
 use Laravel\Scout\Searchable;
 use NotificationChannels\WebPush\HasPushSubscriptions;
 use NotificationChannels\WebPush\PushSubscription;
-use Octopy\Impersonate\Authorization;
-use Octopy\Impersonate\Concerns\HasImpersonation;
-use Octopy\Impersonate\Http\Resources\ImpersonateResource;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -79,23 +76,23 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User permission($permissions, $without = false)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User permission($permissions, bool $without = false)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User role($roles, $guard = null, $without = false)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User role($roles, ?string $guard = null, bool $without = false)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereLocale(string $column, string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereLocales(string $column, array $locales)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutPermission($permissions)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutRole($roles, $guard = null)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutRole($roles, ?string $guard = null)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutTrashed()
  *
  * @mixin \Eloquent
  */
 class User extends Authenticatable
 {
-    use HasFactory, HasImpersonation, HasNotificationPreferences, HasPushSubscriptions, HasRelationships, HasRoles, HasTranslations, HasUlids, LogsActivity, Notifiable, Searchable, SoftDeletes;
+    use HasFactory, HasNotificationPreferences, HasPushSubscriptions, HasRelationships, HasRoles, HasTranslations, HasUlids, LogsActivity, Notifiable, Searchable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -150,31 +147,6 @@ class User extends Authenticatable
             'email' => $this->email,
             'phone' => $this->phone ?? '',
         ];
-    }
-
-    public function getImpersonateDisplayText(): string
-    {
-        return $this->name;
-    }
-
-    public function getImpersonateSearchField(): array
-    {
-        return [
-            'name', 'email',
-        ];
-    }
-
-    public function setImpersonateAuthorization(Authorization $authorization): void
-    {
-        $authorization->impersonator(fn (User $user) => $user->isSuperAdmin());
-
-        $authorization->impersonated(function ($impersonateResource) {
-            if ($impersonateResource::class === ImpersonateResource::class) {
-                $impersonateResource = $impersonateResource->resource;
-            }
-
-            return ! $impersonateResource->isSuperAdmin();
-        });
     }
 
     /**

@@ -50,11 +50,11 @@
 </template>
 
 <script setup>
-import { Handle, Position } from '@vue-flow/core'
+import { Handle, Position } from '@vue-flow/core';
 import { NodeToolbar } from '@vue-flow/node-toolbar';
-import { ref } from 'vue'
+import { ref } from 'vue';
 
-defineProps(['id', 'sourcePosition', 'targetPosition', 'data'])
+defineProps(['id', 'sourcePosition', 'targetPosition', 'data']);
 
 const isVisible = ref(false);
 const isOnToolbar = ref(false);
@@ -62,7 +62,7 @@ const isOnToolbar = ref(false);
 const handleOpen = () => {
   setTimeout(() => {
     isVisible.value = true;
-  }, 100)
+  }, 100);
 };
 
 const handleClose = () => {

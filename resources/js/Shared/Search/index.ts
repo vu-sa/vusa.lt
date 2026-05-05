@@ -26,10 +26,10 @@
  */
 
 // Types
-export * from './types'
+export * from './types';
 
 // Services
-export * from './services'
+export * from './services';
 
 // Composables
-export * from './composables'
+export * from './composables';

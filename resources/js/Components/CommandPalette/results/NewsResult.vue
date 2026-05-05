@@ -37,31 +37,32 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { router } from '@inertiajs/vue3'
-import { trans as $t } from 'laravel-vue-i18n'
-import { ChevronRight, Newspaper } from 'lucide-vue-next'
-import { CommandItem } from '@/Components/ui/command'
-import { useCommandPalette, type RecentItem } from '@/Composables/useCommandPalette'
-import type { NewsSearchResult } from '@/Composables/useAdminSearch'
+import { computed } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+import { ChevronRight, Newspaper } from 'lucide-vue-next';
+
+import { CommandItem } from '@/Components/ui/command';
+import { useCommandPalette, type RecentItem } from '@/Composables/useCommandPalette';
+import type { NewsSearchResult } from '@/Composables/useAdminSearch';
 
 const props = defineProps<{
-  news: NewsSearchResult
-}>()
+  news: NewsSearchResult;
+}>();
 
-const { close, addRecentItem } = useCommandPalette()
+const { close, addRecentItem } = useCommandPalette();
 
-const itemValue = computed(() => `news-${props.news.id}`)
+const itemValue = computed(() => `news-${props.news.id}`);
 
 const formattedDate = computed(() => {
-  if (!props.news.publish_time) return null
-  const date = new Date(props.news.publish_time * 1000)
+  if (!props.news.publish_time) return null;
+  const date = new Date(props.news.publish_time * 1000);
   return date.toLocaleDateString('lt-LT', {
     year: 'numeric',
     month: 'short',
-    day: 'numeric'
-  })
-})
+    day: 'numeric',
+  });
+});
 
 const handleSelect = () => {
   // Add to recent items
@@ -69,11 +70,11 @@ const handleSelect = () => {
     id: props.news.id,
     type: 'news',
     title: props.news.title || $t('Be pavadinimo'),
-    href: route('news.edit', props.news.id)
-  } as Omit<RecentItem, 'timestamp'>)
+    href: route('news.edit', props.news.id),
+  } as Omit<RecentItem, 'timestamp'>);
 
   // Navigate to edit page
-  close()
-  router.visit(route('news.edit', props.news.id))
-}
+  close();
+  router.visit(route('news.edit', props.news.id));
+};
 </script>

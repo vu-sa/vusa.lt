@@ -7,11 +7,11 @@
 </template>
 
 <script setup lang="ts">
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import RoleForm from "@/Components/AdminForms/RoleForm.vue";
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import RoleForm from '@/Components/AdminForms/RoleForm.vue';
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 
 const role = {
-  name: "",
+  name: '',
 };
 </script>

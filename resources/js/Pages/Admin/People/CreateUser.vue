@@ -8,11 +8,11 @@
 </template>
 
 <script setup lang="tsx">
-import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
-import Icons from "@/Types/Icons/regular";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
-import UserForm from "@/Components/AdminForms/UserForm.vue";
+import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
+import Icons from '@/Types/Icons/regular';
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import UserForm from '@/Components/AdminForms/UserForm.vue';
 
 defineProps<{
   roles: App.Entities.Role[];
@@ -22,17 +22,17 @@ defineProps<{
 
 // Generate breadcrumbs automatically with new simplified API
 usePageBreadcrumbs(
-  BreadcrumbHelpers.adminForm('Nariai', 'users.index', 'Naujas narys (-ė)', Icons.USER)
+  BreadcrumbHelpers.adminForm('Nariai', 'users.index', 'Naujas narys (-ė)', Icons.USER),
 );
 
 const user = {
-  name: "",
-  email: "",
+  name: '',
+  email: '',
   phone: null,
   current_duties: [],
   roles: [],
   profile_photo_path: null,
-  pronouns: { lt: "", en: "" },
+  pronouns: { lt: '', en: '' },
   show_pronouns: false,
 };
 </script>

@@ -8,13 +8,13 @@
 </template>
 
 <script setup lang="ts">
-import CategoryForm from "@/Components/AdminForms/CategoryForm.vue";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
+import CategoryForm from '@/Components/AdminForms/CategoryForm.vue';
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 
 const category = {
-  name: "",
-  alias: "",
-  description: "",
+  name: '',
+  alias: '',
+  description: '',
 };
 </script>

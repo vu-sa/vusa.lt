@@ -1,19 +1,3 @@
-<script setup lang="ts">
-import { cn } from '@/Utils/Shadcn/utils'
-import { TabsTrigger, type TabsTriggerProps, useForwardProps } from 'reka-ui'
-import { computed, type HTMLAttributes } from 'vue'
-
-const props = defineProps<TabsTriggerProps & { class?: HTMLAttributes['class'] }>()
-
-const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
-
-  return delegated
-})
-
-const forwardedProps = useForwardProps(delegatedProps)
-</script>
-
 <template>
   <TabsTrigger
     data-slot="tabs-trigger"
@@ -26,3 +10,20 @@ const forwardedProps = useForwardProps(delegatedProps)
     <slot />
   </TabsTrigger>
 </template>
+
+<script setup lang="ts">
+import { TabsTrigger, type TabsTriggerProps, useForwardProps } from 'reka-ui';
+import { computed, type HTMLAttributes } from 'vue';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+const props = defineProps<TabsTriggerProps & { class?: HTMLAttributes['class'] }>();
+
+const delegatedProps = computed(() => {
+  const { class: _, ...delegated } = props;
+
+  return delegated;
+});
+
+const forwardedProps = useForwardProps(delegatedProps);
+</script>

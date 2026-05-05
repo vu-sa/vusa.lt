@@ -122,7 +122,9 @@ import { computed } from 'vue';
 import { Link, usePage, router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowRightIcon } from 'lucide-vue-next';
+
 import MeetingOutcomeIndicators from './MeetingOutcomeIndicators.vue';
+
 import { formatStaticTime } from '@/Utils/IntlTime';
 
 // Typesense search result document structure
@@ -170,9 +172,9 @@ const agendaItemsCount = computed(() => {
 
 // Check if meeting has vote alignment data
 const hasOutcomes = computed(() => {
-  return (props.meeting.vote_matches ?? 0) > 0 ||
-    (props.meeting.vote_mismatches ?? 0) > 0 ||
-    (props.meeting.incomplete_vote_data ?? 0) > 0;
+  return (props.meeting.vote_matches ?? 0) > 0
+    || (props.meeting.vote_mismatches ?? 0) > 0
+    || (props.meeting.incomplete_vote_data ?? 0) > 0;
 });
 
 // Alignment dot class based on vote_alignment_status
@@ -223,7 +225,7 @@ const getMeetingUrl = () => {
   const subdomain = page.props.tenant?.subdomain;
   return route('publicMeetings.show', {
     meeting: props.meeting.id,
-    ...(subdomain ? { subdomain } : {})
+    ...(subdomain ? { subdomain } : {}),
   });
 };
 
@@ -238,9 +240,8 @@ const getInstitutionUrl = () => {
   return route('contacts.institution', {
     institution: props.meeting.institution_id,
     lang: locale.value,
-    ...(subdomain ? { subdomain } : {})
+    ...(subdomain ? { subdomain } : {}),
   });
 };
-
 
 </script>

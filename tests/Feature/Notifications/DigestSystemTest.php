@@ -8,11 +8,14 @@ use App\Models\NotificationDigestQueue;
 use App\Models\Task;
 use App\Notifications\CommentPostedNotification;
 use App\Notifications\TaskAssignedNotification;
+use App\Notifications\TaskOverdueNotification;
 use App\Notifications\TaskReminderNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Notifications\Events\NotificationSending;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 use Tests\Feature\Notifications\NotificationTestHelpers;
 
 uses(RefreshDatabase::class, NotificationTestHelpers::class);
@@ -373,5 +376,249 @@ describe('digest frequency settings', function () {
 
         // NOW it should be queued
         Mail::assertQueued(NotificationDigest::class);
+    });
+});
+
+describe('triplicate prevention', function () {
+    test('QueueNotificationForDigest only queues once per notification, not per channel', function () {
+        $user = $this->createUserWithPreferences();
+        $user->setNotificationPreference(
+            NotificationCategory::Comment,
+            NotificationChannel::EmailDigest,
+            true
+        );
+
+        $notification = new CommentPostedNotification(
+            'Test comment',
+            ['modelClass' => 'Task', 'name' => 'Test', 'url' => '/test', 'id' => '1'],
+            ['modelClass' => 'User', 'name' => 'Commenter']
+        );
+
+        $listener = app(QueueNotificationForDigest::class);
+
+        // Simulate all 3 channels firing NotificationSending
+        foreach (['database', 'broadcast', 'NotificationChannels\\WebPush\\WebPushChannel'] as $channel) {
+            $event = new NotificationSending($user, $notification, $channel);
+            $listener->handle($event);
+        }
+
+        // Should only have 1 digest queue entry, not 3
+        expect($this->getDigestQueueCountForUser($user))->toBe(1);
+    });
+
+    test('non-database channels are skipped by digest listener', function () {
+        $user = $this->createUserWithPreferences();
+        $user->setNotificationPreference(
+            NotificationCategory::Comment,
+            NotificationChannel::EmailDigest,
+            true
+        );
+
+        $notification = new CommentPostedNotification(
+            'Test comment',
+            ['modelClass' => 'Task', 'name' => 'Test', 'url' => '/test', 'id' => '1'],
+            ['modelClass' => 'User', 'name' => 'Commenter']
+        );
+
+        $listener = app(QueueNotificationForDigest::class);
+
+        // Only broadcast channel — should not queue
+        $event = new NotificationSending($user, $notification, 'broadcast');
+        $listener->handle($event);
+
+        expect($this->getDigestQueueCountForUser($user))->toBe(0);
+    });
+});
+
+describe('pluralization', function () {
+    test('TaskOverdueNotification title uses proper pluralization', function () {
+        $tasks = Task::factory()->count(5)->create(['due_date' => now()->subDay()]);
+        $notification = new TaskOverdueNotification($tasks);
+
+        $user = $this->createUserWithPreferences();
+
+        $title = $notification->title($user);
+
+        // Should NOT contain raw pluralization pipe syntax
+        expect($title)->not->toContain('|');
+        expect($title)->not->toContain('{1}');
+        expect($title)->not->toContain('[2,9]');
+
+        // Should contain the actual count
+        expect($title)->toContain('5');
+    });
+
+    test('TaskOverdueNotification title works for single task', function () {
+        $tasks = Task::factory()->count(1)->create(['due_date' => now()->subDay()]);
+        $notification = new TaskOverdueNotification($tasks);
+
+        $user = $this->createUserWithPreferences();
+
+        $title = $notification->title($user);
+
+        expect($title)->not->toContain('|');
+        expect($title)->toContain('1');
+    });
+});
+
+describe('digest queue cleanup on read', function () {
+    test('marking all notifications as read clears digest queue', function () {
+        Notification::fake();
+
+        $user = $this->createUserWithPreferences();
+
+        // Create digest queue items
+        NotificationDigestQueue::create([
+            'user_id' => $user->id,
+            'notification_class' => CommentPostedNotification::class,
+            'category' => 'comment',
+            'data' => ['title' => 'Test', 'body' => 'Body', 'url' => '/test', 'icon' => '💬'],
+        ]);
+        NotificationDigestQueue::create([
+            'user_id' => $user->id,
+            'notification_class' => TaskAssignedNotification::class,
+            'category' => 'task',
+            'data' => ['title' => 'Task', 'body' => 'Body', 'url' => '/tasks', 'icon' => '☑️'],
+        ]);
+
+        expect($this->getDigestQueueCountForUser($user))->toBe(2);
+
+        asUser($user)->post(route('notifications.mark-as-read.all'));
+
+        expect($this->getDigestQueueCountForUser($user))->toBe(0);
+    });
+
+    test('marking single notification as read removes matching digest entry', function () {
+        $user = $this->createUserWithPreferences();
+
+        // Create a database notification directly
+        $user->notifications()->create([
+            'id' => Str::uuid(),
+            'type' => CommentPostedNotification::class,
+            'data' => [
+                'category' => 'comment',
+                'title' => 'Naujas komentaras: Test',
+                'body' => 'Comment body',
+                'url' => '/test/123',
+                'icon' => '💬',
+            ],
+        ]);
+
+        $dbNotification = $user->unreadNotifications()->first();
+
+        // Create matching digest queue item
+        NotificationDigestQueue::create([
+            'user_id' => $user->id,
+            'notification_class' => CommentPostedNotification::class,
+            'category' => 'comment',
+            'data' => ['title' => 'Naujas komentaras: Test', 'body' => 'Comment body', 'url' => '/test/123', 'icon' => '💬'],
+        ]);
+
+        // Create a non-matching digest queue item (should remain)
+        NotificationDigestQueue::create([
+            'user_id' => $user->id,
+            'notification_class' => TaskAssignedNotification::class,
+            'category' => 'task',
+            'data' => ['title' => 'Different notification', 'body' => 'Body', 'url' => '/other', 'icon' => '☑️'],
+        ]);
+
+        expect($this->getDigestQueueCountForUser($user))->toBe(2);
+
+        asUser($user)->post(route('notifications.markAsRead', $dbNotification->id));
+
+        // Only the matching entry should be removed
+        expect($this->getDigestQueueCountForUser($user))->toBe(1);
+
+        $remaining = $this->getDigestQueueItemsForUser($user)->first();
+        expect($remaining->data['title'])->toBe('Different notification');
+    });
+
+    test('marking as read only removes one digest entry when same title and url but different body', function () {
+        $user = $this->createUserWithPreferences();
+
+        // Create two notifications with same title and URL but different bodies
+        // (e.g. two "Nauja užduotis" notifications for different tasks)
+        $user->notifications()->create([
+            'id' => Str::uuid(),
+            'type' => TaskAssignedNotification::class,
+            'data' => [
+                'category' => 'task',
+                'title' => 'Nauja užduotis',
+                'body' => 'Jums priskirta nauja užduotis: Task A',
+                'url' => '/mano/tasks',
+                'icon' => '☑️',
+            ],
+        ]);
+
+        $user->notifications()->create([
+            'id' => Str::uuid(),
+            'type' => TaskAssignedNotification::class,
+            'data' => [
+                'category' => 'task',
+                'title' => 'Nauja užduotis',
+                'body' => 'Jums priskirta nauja užduotis: Task B',
+                'url' => '/mano/tasks',
+                'icon' => '☑️',
+            ],
+        ]);
+
+        // Create two digest entries with same title/url but different bodies
+        NotificationDigestQueue::create([
+            'user_id' => $user->id,
+            'notification_class' => TaskAssignedNotification::class,
+            'category' => 'task',
+            'data' => ['title' => 'Nauja užduotis', 'body' => 'Jums priskirta nauja užduotis: Task A', 'url' => '/mano/tasks', 'icon' => '☑️'],
+        ]);
+        NotificationDigestQueue::create([
+            'user_id' => $user->id,
+            'notification_class' => TaskAssignedNotification::class,
+            'category' => 'task',
+            'data' => ['title' => 'Nauja užduotis', 'body' => 'Jums priskirta nauja užduotis: Task B', 'url' => '/mano/tasks', 'icon' => '☑️'],
+        ]);
+
+        expect($this->getDigestQueueCountForUser($user))->toBe(2);
+
+        // Mark the Task A notification as read (find by body content)
+        $taskANotification = $user->unreadNotifications()
+            ->get()
+            ->first(fn ($n) => str_contains($n->data['body'], 'Task A'));
+        asUser($user)->post(route('notifications.markAsRead', $taskANotification->id));
+
+        // Only the Task A digest entry should be removed
+        expect($this->getDigestQueueCountForUser($user))->toBe(1);
+
+        $remaining = $this->getDigestQueueItemsForUser($user)->first();
+        expect($remaining->data['body'])->toContain('Task B');
+    });
+
+    test('deleting notification removes matching digest entry', function () {
+        $user = $this->createUserWithPreferences();
+
+        $user->notifications()->create([
+            'id' => Str::uuid(),
+            'type' => CommentPostedNotification::class,
+            'data' => [
+                'category' => 'comment',
+                'title' => 'Test notification',
+                'body' => 'Body',
+                'url' => '/test/456',
+                'icon' => '💬',
+            ],
+        ]);
+
+        $dbNotification = $user->notifications()->first();
+
+        NotificationDigestQueue::create([
+            'user_id' => $user->id,
+            'notification_class' => CommentPostedNotification::class,
+            'category' => 'comment',
+            'data' => ['title' => 'Test notification', 'body' => 'Body', 'url' => '/test/456', 'icon' => '💬'],
+        ]);
+
+        expect($this->getDigestQueueCountForUser($user))->toBe(1);
+
+        asUser($user)->delete(route('notifications.destroy', $dbNotification->id));
+
+        expect($this->getDigestQueueCountForUser($user))->toBe(0);
     });
 });

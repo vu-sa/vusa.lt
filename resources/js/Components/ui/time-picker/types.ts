@@ -1,4 +1,4 @@
 export interface TimeValue {
-  hour: number
-  minute: number
+  hour: number;
+  minute: number;
 }

@@ -1,65 +1,66 @@
 /**
  * renderGaps - Render check-in periods on the Gantt chart
- * 
+ *
  * Renders check-in periods as striped rectangles with CalendarOff icons at both ends.
  * The visual design indicates "no planned meetings during this time" clearly.
  */
-import * as d3 from 'd3'
-import type { GanttColors } from '../ganttColors'
+import type * as d3 from 'd3';
+
+import type { GanttColors } from '../ganttColors';
 
 interface ParsedGap {
-  institution_id: string | number
-  fromDate: Date
-  untilDate: Date
-  mode?: 'heads_up' | 'no_meetings'
-  note?: string
+  institution_id: string | number;
+  fromDate: Date;
+  untilDate: Date;
+  mode?: 'heads_up' | 'no_meetings';
+  note?: string;
 }
 
 export interface GapRenderContext {
   /** Main group element */
-  g: d3.Selection<SVGGElement, unknown, null, undefined>
+  g: d3.Selection<SVGGElement, unknown, null, undefined>;
   /** Time scale */
-  x: d3.ScaleTime<number, number>
+  x: d3.ScaleTime<number, number>;
   /** Gaps data */
-  gaps: ParsedGap[]
+  gaps: ParsedGap[];
   /** Color palette */
-  colors: GanttColors
+  colors: GanttColors;
   /** Get row center Y position */
-  rowCenter: (key: string | number) => number
+  rowCenter: (key: string | number) => number;
   /** Get row top Y position */
-  rowTop: (key: string | number) => number
+  rowTop: (key: string | number) => number;
   /** Get row height */
-  rowHeightFor: (key: string | number) => number
+  rowHeightFor: (key: string | number) => number;
   /** Callback when gap is clicked (to create meeting) */
-  onCreateMeeting?: (payload: { institution_id: string | number; suggestedAt: Date }) => void
+  onCreateMeeting?: (payload: { institution_id: string | number; suggestedAt: Date }) => void;
 }
 
 // Lucide CalendarOff icon path (24x24 viewBox)
 // This icon represents "no meetings scheduled" - a calendar with a diagonal line through it
-const CALENDAR_OFF_PATH = 'M4.18 4.18A2 2 0 0 0 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 1.82-1.18M21 15.5V6a2 2 0 0 0-2-2H9.5M16 2v4M3 10h7M21 10h-5.5M8 2v4M2 2l20 20'
+const CALENDAR_OFF_PATH = 'M4.18 4.18A2 2 0 0 0 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 1.82-1.18M21 15.5V6a2 2 0 0 0-2-2H9.5M16 2v4M3 10h7M21 10h-5.5M8 2v4M2 2l20 20';
 
 // Icon size for the CalendarOff markers
-const ICON_SIZE = 12
+const ICON_SIZE = 12;
 
 /**
  * Render check-in/gap periods with striped rectangles and CalendarOff icons
  */
 export function renderGaps(ctx: GapRenderContext): void {
-  const { g, x, gaps, colors, rowCenter, rowTop, rowHeightFor, onCreateMeeting } = ctx
+  const { g, x, gaps, colors, rowCenter, rowTop, rowHeightFor, onCreateMeeting } = ctx;
 
-  const gapGroup = g.append('g').attr('class', 'gap-lines')
+  const gapGroup = g.append('g').attr('class', 'gap-lines');
 
   // Calculate rectangle height (slightly smaller than row height for padding)
   const getRectHeight = (institutionId: string | number) => {
-    const rowH = rowHeightFor(institutionId)
-    return Math.min(rowH - 6, 18) // Max 18px height, with 3px padding top/bottom
-  }
+    const rowH = rowHeightFor(institutionId);
+    return Math.min(rowH - 6, 18); // Max 18px height, with 3px padding top/bottom
+  };
 
   const getRectY = (institutionId: string | number) => {
-    const rowH = rowHeightFor(institutionId)
-    const rectH = getRectHeight(institutionId)
-    return rowTop(institutionId) + (rowH - rectH) / 2
-  }
+    const rowH = rowHeightFor(institutionId);
+    const rectH = getRectHeight(institutionId);
+    return rowTop(institutionId) + (rowH - rectH) / 2;
+  };
 
   // Render striped rectangles for check-in periods
   gapGroup
@@ -81,16 +82,16 @@ export function renderGaps(ctx: GapRenderContext): void {
     .on('click', (event, d: any) => {
       if (onCreateMeeting) {
         // Suggest meeting at midpoint of check-in period, with time set to 12:00 noon
-        const midTime = new Date((d.fromDate.getTime() + d.untilDate.getTime()) / 2)
-        midTime.setHours(12, 0, 0, 0)
-        onCreateMeeting({ institution_id: d.institution_id, suggestedAt: midTime })
+        const midTime = new Date((d.fromDate.getTime() + d.untilDate.getTime()) / 2);
+        midTime.setHours(12, 0, 0, 0);
+        onCreateMeeting({ institution_id: d.institution_id, suggestedAt: midTime });
       }
     })
     .append('title')
-    .text(d => {
-      const dateRange = `${d.fromDate.toLocaleDateString()} → ${d.untilDate.toLocaleDateString()}`
-      return d.note ? `${d.note}\n${dateRange}` : `Check-in: ${dateRange}`
-    })
+    .text((d) => {
+      const dateRange = `${d.fromDate.toLocaleDateString()} → ${d.untilDate.toLocaleDateString()}`;
+      return d.note ? `${d.note}\n${dateRange}` : `Check-in: ${dateRange}`;
+    });
 
   // Create icon groups for start icons (CalendarOff at the beginning)
   const startIconGroups = gapGroup
@@ -99,12 +100,12 @@ export function renderGaps(ctx: GapRenderContext): void {
     .enter()
     .append('g')
     .attr('class', 'check-in-start-icon')
-    .attr('transform', d => {
-      const xPos = x(d.fromDate) - ICON_SIZE / 2
-      const yPos = rowCenter(d.institution_id) - ICON_SIZE / 2
-      return `translate(${xPos}, ${yPos})`
+    .attr('transform', (d) => {
+      const xPos = x(d.fromDate) - ICON_SIZE / 2;
+      const yPos = rowCenter(d.institution_id) - ICON_SIZE / 2;
+      return `translate(${xPos}, ${yPos})`;
     })
-    .style('pointer-events', 'none')
+    .style('pointer-events', 'none');
 
   // Render start icons
   startIconGroups
@@ -116,7 +117,7 @@ export function renderGaps(ctx: GapRenderContext): void {
     .attr('stroke-linecap', 'round')
     .attr('stroke-linejoin', 'round')
     .attr('opacity', colors.checkInIconOpacity)
-    .attr('transform', `scale(${ICON_SIZE / 24})`)
+    .attr('transform', `scale(${ICON_SIZE / 24})`);
 
   // Create icon groups for end icons (CalendarOff at the end)
   const endIconGroups = gapGroup
@@ -125,12 +126,12 @@ export function renderGaps(ctx: GapRenderContext): void {
     .enter()
     .append('g')
     .attr('class', 'check-in-end-icon')
-    .attr('transform', d => {
-      const xPos = x(d.untilDate) - ICON_SIZE / 2
-      const yPos = rowCenter(d.institution_id) - ICON_SIZE / 2
-      return `translate(${xPos}, ${yPos})`
+    .attr('transform', (d) => {
+      const xPos = x(d.untilDate) - ICON_SIZE / 2;
+      const yPos = rowCenter(d.institution_id) - ICON_SIZE / 2;
+      return `translate(${xPos}, ${yPos})`;
     })
-    .style('pointer-events', 'none')
+    .style('pointer-events', 'none');
 
   // Render end icons
   endIconGroups
@@ -142,5 +143,5 @@ export function renderGaps(ctx: GapRenderContext): void {
     .attr('stroke-linecap', 'round')
     .attr('stroke-linejoin', 'round')
     .attr('opacity', colors.checkInIconOpacity)
-    .attr('transform', `scale(${ICON_SIZE / 24})`)
+    .attr('transform', `scale(${ICON_SIZE / 24})`);
 }

@@ -214,7 +214,7 @@ class MeetingController extends AdminController
     {
         $this->handleAuthorization('view', $meeting);
 
-        $meeting->load('institutions.types', 'activities.causer', 'files', 'fileableFiles', 'comments')->load([
+        $meeting->load('institutions.types', 'activities.causer', 'fileableFiles', 'comments')->load([
             'tasks' => function ($query) {
                 $query->with('users:id,name,email,profile_photo_path', 'taskable');
             },
@@ -296,7 +296,7 @@ class MeetingController extends AdminController
             'representatives' => $representatives,
             'previousMeeting' => $previousMeeting,
             'nextMeeting' => $nextMeeting,
-            'taskableInstitutions' => Inertia::lazy(fn () => $meeting->institutions->load('users')),
+            'taskableInstitutions' => Inertia::optional(fn () => $meeting->institutions->load('users')),
         ]);
     }
 

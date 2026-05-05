@@ -10,20 +10,20 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t } from "laravel-vue-i18n";
-import { type ColumnDef } from '@tanstack/vue-table';
-import { ref, computed } from "vue";
+import { trans as $t } from 'laravel-vue-i18n';
+import type { ColumnDef } from '@tanstack/vue-table';
+import { ref, computed } from 'vue';
 
-import Icons from "@/Types/Icons/regular";
-import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
-import { createStandardActionsColumn } from "@/Composables/useTableActions";
+import Icons from '@/Types/Icons/regular';
+import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
+import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import {
   createTextColumn,
   createTimestampColumn,
 } from '@/Utils/DataTableColumns';
-import {
-  type IndexTablePageProps
-} from "@/Types/TableConfigTypes";
+import type {
+  IndexTablePageProps,
+} from '@/Types/TableConfigTypes';
 
 const props = defineProps<{
   roles: {
@@ -51,23 +51,23 @@ const getRowId = (row: App.Entities.Role) => {
 };
 
 const columns = computed<ColumnDef<App.Entities.Role, any>[]>(() => [
-  createTextColumn<App.Entities.Role>("name", {
-    title: $t("forms.fields.name"),
+  createTextColumn<App.Entities.Role>('name', {
+    title: $t('forms.fields.name'),
     width: 300,
   }),
-  createTimestampColumn<App.Entities.Role>("created_at", {
-    title: $t("forms.fields.created_at"),
+  createTimestampColumn<App.Entities.Role>('created_at', {
+    title: $t('forms.fields.created_at'),
     width: 180,
   }),
-  createTimestampColumn<App.Entities.Role>("updated_at", {
-    title: $t("Atnaujintas"),
+  createTimestampColumn<App.Entities.Role>('updated_at', {
+    title: $t('Atnaujintas'),
     width: 180,
   }),
-  createStandardActionsColumn<App.Entities.Role>("roles", {
+  createStandardActionsColumn<App.Entities.Role>('roles', {
     canView: true,
     canEdit: true,
     canDelete: true,
-  })
+  }),
 ]);
 
 const tableConfig = computed<IndexTablePageProps<App.Entities.Role>>(() => {
@@ -87,7 +87,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Role>>(() => {
     enableColumnVisibility: false,
     enableRowSelection: false,
 
-    headerTitle: "Rolės",
+    headerTitle: 'Rolės',
     icon: Icons.ROLE,
     createRoute: route('roles.create'),
     canCreate: true,

@@ -1,6 +1,6 @@
-import { usePage } from '@inertiajs/vue3'
-import { computed, type ComputedRef } from 'vue'
-import { trans as $t } from 'laravel-vue-i18n'
+import { usePage } from '@inertiajs/vue3';
+import { computed, type ComputedRef } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
 
 /**
  * Composable for handling translatable model titles in edit pages
@@ -8,26 +8,28 @@ import { trans as $t } from 'laravel-vue-i18n'
  */
 export function useTranslatedTitle(
   titleKey: string,
-  modelName: ComputedRef<any> | any
+  modelName: ComputedRef<any> | any,
 ): ComputedRef<string> {
-  const page = usePage()
+  const page = usePage();
 
   return computed(() => {
-    const locale = page.props.app.locale as 'lt' | 'en'
-    const nameValue = typeof modelName === 'object' && 'value' in modelName ? modelName.value : modelName
-    
+    const locale = page.props.app.locale as 'lt' | 'en';
+    const nameValue = typeof modelName === 'object' && 'value' in modelName ? modelName.value : modelName;
+
     // Handle translation objects vs localized strings
-    let displayName: string
+    let displayName: string;
     if (typeof nameValue === 'object' && nameValue !== null && locale in nameValue) {
-      displayName = nameValue[locale]
-    } else if (typeof nameValue === 'string') {
-      displayName = nameValue
-    } else {
-      displayName = 'Unknown'
+      displayName = nameValue[locale];
+    }
+    else if (typeof nameValue === 'string') {
+      displayName = nameValue;
+    }
+    else {
+      displayName = 'Unknown';
     }
 
-    return $t(titleKey, { name: displayName })
-  })
+    return $t(titleKey, { name: displayName });
+  });
 }
 
 /**
@@ -35,18 +37,18 @@ export function useTranslatedTitle(
  */
 export function getTranslatedValue(
   translatedField: any,
-  locale?: string
+  locale?: string,
 ): string {
-  const page = usePage()
-  const currentLocale = locale || page.props.app.locale as 'lt' | 'en'
-  
+  const page = usePage();
+  const currentLocale = locale || page.props.app.locale as 'lt' | 'en';
+
   if (typeof translatedField === 'object' && translatedField !== null && currentLocale in translatedField) {
-    return translatedField[currentLocale]
+    return translatedField[currentLocale];
   }
-  
+
   if (typeof translatedField === 'string') {
-    return translatedField
+    return translatedField;
   }
-  
-  return ''
+
+  return '';
 }

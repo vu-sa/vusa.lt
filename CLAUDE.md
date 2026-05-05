@@ -306,6 +306,12 @@ const cardClasses = computed(() => [
 </script>
 ```
 
+### Inertia `useForm` — Clearing Dirty State
+
+`form.defaults()` (no args) sets `isDirty = false` **synchronously**. Use this before `form.submit()` or `router.visit()` to prevent the "unsaved changes" guard from firing on programmatic navigation.
+
+`form.defaults(data)` with an argument only updates the stored defaults — `isDirty` recalculates asynchronously via a watcher, which is too late for the `router.on('before')` event.
+
 ## Error Handling & Authorization
 
 ### 403 Forbidden Response Pattern

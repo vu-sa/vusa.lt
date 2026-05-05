@@ -17,7 +17,7 @@ use Illuminate\Support\Carbon;
  * @property array<array-key, mixed> $data
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read User $user
+ * @property-read User|null $user
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|NotificationDigestQueue newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|NotificationDigestQueue newQuery()

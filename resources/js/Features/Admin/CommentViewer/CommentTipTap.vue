@@ -1,11 +1,11 @@
 <!--
   CommentTipTap - Comment form wrapper around TiptapEditor
-  
+
   This is a specialized component for comment forms that includes:
   - User avatar
   - Minimal text editor
   - Submit button
-  
+
   For general-purpose editing, use TiptapEditor directly with appropriate preset.
 -->
 <template>
@@ -34,15 +34,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import { trans as $t } from "laravel-vue-i18n";
+import { computed } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
 
-import TiptapEditor from "@/Components/TipTap/TiptapEditor.vue";
-import { Button } from "@/Components/ui/button";
-import { Spinner } from "@/Components/ui/spinner";
-import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
-
-import IFluentSend24Filled from "~icons/fluent/send24-filled";
+import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
+import { Button } from '@/Components/ui/button';
+import { Spinner } from '@/Components/ui/spinner';
+import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
+import IFluentSend24Filled from '~icons/fluent/send24-filled';
 
 const props = defineProps<{
   text: string | null;

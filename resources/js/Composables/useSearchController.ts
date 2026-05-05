@@ -1,39 +1,39 @@
-import { ref, computed, watch, type Ref } from 'vue'
-import { useLocalStorage } from '@vueuse/core'
-import { usePage } from '@inertiajs/vue3'
+import { ref, computed, watch, type Ref } from 'vue';
+import { useLocalStorage } from '@vueuse/core';
+import { usePage } from '@inertiajs/vue3';
 
 // Content type definitions
 export interface ContentType {
-  id: string
-  name: string
-  icon: string
-  color: string
-  indexName: string
-  enabled: boolean
-  order: number
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  indexName: string;
+  enabled: boolean;
+  order: number;
 }
 
 export interface SearchPreferences {
-  enabledTypes: string[]
-  resultOrder: 'relevance' | 'date' | 'type'
-  groupResults: boolean
-  recentSearches: string[]
+  enabledTypes: string[];
+  resultOrder: 'relevance' | 'date' | 'type';
+  groupResults: boolean;
+  recentSearches: string[];
 }
 
 export interface SearchState {
-  query: string
-  selectedTypes: ContentType[]
-  resultOrder: 'relevance' | 'date' | 'type'
-  groupResults: boolean
-  isSearching: boolean
-  hasResults: boolean
+  query: string;
+  selectedTypes: ContentType[];
+  resultOrder: 'relevance' | 'date' | 'type';
+  groupResults: boolean;
+  isSearching: boolean;
+  hasResults: boolean;
 }
 
 export const useSearchController = () => {
   // Get collection names from Inertia props (with fallbacks)
-  const page = usePage()
-  const typesenseConfig = (page.props.typesenseConfig as any) || {}
-  const collections = typesenseConfig.collections || {}
+  const page = usePage();
+  const typesenseConfig = (page.props.typesenseConfig as any) || {};
+  const collections = typesenseConfig.collections || {};
 
   // Default content types configuration - use collection names from config
   const defaultContentTypes: ContentType[] = [
@@ -44,16 +44,16 @@ export const useSearchController = () => {
       color: 'blue',
       indexName: collections.news || 'news',
       enabled: true,
-      order: 1
+      order: 1,
     },
     {
       id: 'pages',
-      name: 'Pages', 
+      name: 'Pages',
       icon: '📄',
       color: 'green',
       indexName: collections.pages || 'pages',
       enabled: true,
-      order: 2
+      order: 2,
     },
     {
       id: 'publicInstitutions',
@@ -62,16 +62,16 @@ export const useSearchController = () => {
       color: 'indigo',
       indexName: collections.public_institutions || 'public_institutions',
       enabled: true,
-      order: 3
+      order: 3,
     },
     {
       id: 'documents',
       name: 'Documents',
       icon: '📜',
-      color: 'purple', 
+      color: 'purple',
       indexName: collections.documents || 'documents',
       enabled: true,
-      order: 4
+      order: 4,
     },
     {
       id: 'calendar',
@@ -80,140 +80,140 @@ export const useSearchController = () => {
       color: 'amber',
       indexName: collections.calendar || 'calendar',
       enabled: true,
-      order: 5
-    }
-  ]
+      order: 5,
+    },
+  ];
 
   // Persistent user preferences
   const preferences = useLocalStorage<SearchPreferences>('typesense-search-preferences', {
     enabledTypes: defaultContentTypes.map(t => t.id),
     resultOrder: 'relevance',
     groupResults: true,
-    recentSearches: []
-  })
+    recentSearches: [],
+  });
 
   // Reactive state
-  const searchQuery = ref('')
-  const contentTypes = ref<ContentType[]>([...defaultContentTypes])
-  const isSearching = ref(false)
-  const resultCounts = ref<Record<string, number>>({})
+  const searchQuery = ref('');
+  const contentTypes = ref<ContentType[]>([...defaultContentTypes]);
+  const isSearching = ref(false);
+  const resultCounts = ref<Record<string, number>>({});
 
   // Apply user preferences to content types
   const applyPreferences = () => {
     contentTypes.value = contentTypes.value.map(type => ({
       ...type,
-      enabled: preferences.value.enabledTypes.includes(type.id)
-    }))
-  }
+      enabled: preferences.value.enabledTypes.includes(type.id),
+    }));
+  };
 
   // Initialize preferences
-  applyPreferences()
+  applyPreferences();
 
   // Computed properties
-  const selectedTypes = computed(() => 
-    contentTypes.value.filter(type => type.enabled)
-  )
+  const selectedTypes = computed(() =>
+    contentTypes.value.filter(type => type.enabled),
+  );
 
   const orderedTypes = computed(() => {
-    const types = [...selectedTypes.value]
-    
+    const types = [...selectedTypes.value];
+
     switch (preferences.value.resultOrder) {
       case 'date':
         // For date ordering, we might want to prioritize time-based content
         return types.sort((a, b) => {
-          const dateRelevantTypes = ['news', 'calendar', 'documents']
-          const aRelevant = dateRelevantTypes.includes(a.id) ? 0 : 1
-          const bRelevant = dateRelevantTypes.includes(b.id) ? 0 : 1
-          return aRelevant - bRelevant || a.order - b.order
-        })
-      
+          const dateRelevantTypes = ['news', 'calendar', 'documents'];
+          const aRelevant = dateRelevantTypes.includes(a.id) ? 0 : 1;
+          const bRelevant = dateRelevantTypes.includes(b.id) ? 0 : 1;
+          return aRelevant - bRelevant || a.order - b.order;
+        });
+
       case 'type':
         // Sort by predefined order
-        return types.sort((a, b) => a.order - b.order)
-      
+        return types.sort((a, b) => a.order - b.order);
+
       case 'relevance':
       default:
         // Sort by result count (most results first) or fall back to order
         return types.sort((a, b) => {
-          const aCount = resultCounts.value[a.id] || 0
-          const bCount = resultCounts.value[b.id] || 0
+          const aCount = resultCounts.value[a.id] || 0;
+          const bCount = resultCounts.value[b.id] || 0;
           if (aCount !== bCount) {
-            return bCount - aCount // Descending by count
+            return bCount - aCount; // Descending by count
           }
-          return a.order - b.order // Fall back to original order
-        })
+          return a.order - b.order; // Fall back to original order
+        });
     }
-  })
+  });
 
-  const hasActiveResults = computed(() => 
-    searchQuery.value.length >= 3 && selectedTypes.value.length > 0
-  )
+  const hasActiveResults = computed(() =>
+    searchQuery.value.length >= 3 && selectedTypes.value.length > 0,
+  );
 
   const totalResultCount = computed(() => {
     // Sum up actual total hits, not just displayed results
     return Object.keys(resultCounts.value)
       .filter(key => key.endsWith('_total'))
-      .reduce((sum, key) => sum + (resultCounts.value[key] || 0), 0)
-  })
+      .reduce((sum, key) => sum + (resultCounts.value[key] || 0), 0);
+  });
 
-  const getDisplayedResultCount = computed(() => 
+  const getDisplayedResultCount = computed(() =>
     Object.keys(resultCounts.value)
       .filter(key => !key.endsWith('_total'))
-      .reduce((sum, key) => sum + (resultCounts.value[key] || 0), 0)
-  )
+      .reduce((sum, key) => sum + (resultCounts.value[key] || 0), 0),
+  );
 
   // Actions
   const toggleContentType = (typeId: string) => {
-    const type = contentTypes.value.find(t => t.id === typeId)
+    const type = contentTypes.value.find(t => t.id === typeId);
     if (type) {
-      type.enabled = !type.enabled
-      
+      type.enabled = !type.enabled;
+
       // Update preferences
       preferences.value.enabledTypes = contentTypes.value
         .filter(t => t.enabled)
-        .map(t => t.id)
+        .map(t => t.id);
     }
-  }
+  };
 
   const setResultOrder = (order: 'relevance' | 'date' | 'type') => {
-    preferences.value.resultOrder = order
-  }
+    preferences.value.resultOrder = order;
+  };
 
   const toggleGroupResults = () => {
-    preferences.value.groupResults = !preferences.value.groupResults
-  }
+    preferences.value.groupResults = !preferences.value.groupResults;
+  };
 
   const updateResultCount = (typeId: string, count: number) => {
-    resultCounts.value[typeId] = count
-  }
+    resultCounts.value[typeId] = count;
+  };
 
   const updateTotalResultCount = (typeId: string, totalHits: number) => {
     // For tracking actual total available results (not just displayed)
-    resultCounts.value[`${typeId}_total`] = totalHits
-  }
+    resultCounts.value[`${typeId}_total`] = totalHits;
+  };
 
   const addRecentSearch = (query: string) => {
-    if (!query.trim() || query.length < 3) return
-    
+    if (!query.trim() || query.length < 3) return;
+
     // Remove if already exists
     const filtered = preferences.value.recentSearches.filter(
-      search => search.toLowerCase() !== query.toLowerCase()
-    )
-    
+      search => search.toLowerCase() !== query.toLowerCase(),
+    );
+
     // Add to beginning and limit to 10
-    preferences.value.recentSearches = [query, ...filtered].slice(0, 10)
-  }
+    preferences.value.recentSearches = [query, ...filtered].slice(0, 10);
+  };
 
   const clearRecentSearches = () => {
-    preferences.value.recentSearches = []
-  }
+    preferences.value.recentSearches = [];
+  };
 
   const resetToDefaults = () => {
-    preferences.value.enabledTypes = defaultContentTypes.map(t => t.id)
-    preferences.value.resultOrder = 'relevance'
-    preferences.value.groupResults = true
-    applyPreferences()
-  }
+    preferences.value.enabledTypes = defaultContentTypes.map(t => t.id);
+    preferences.value.resultOrder = 'relevance';
+    preferences.value.groupResults = true;
+    applyPreferences();
+  };
 
   // Watch for query changes to track searches
   watch(searchQuery, (newQuery, oldQuery) => {
@@ -221,14 +221,14 @@ export const useSearchController = () => {
       // Debounced add to recent searches
       setTimeout(() => {
         if (searchQuery.value === newQuery) {
-          addRecentSearch(newQuery)
+          addRecentSearch(newQuery);
         }
-      }, 2000)
+      }, 2000);
     }
-  })
+  });
 
   // Watch preferences changes to apply them
-  watch(() => preferences.value.enabledTypes, applyPreferences, { deep: true })
+  watch(() => preferences.value.enabledTypes, applyPreferences, { deep: true });
 
   // Search state object
   const searchState = computed<SearchState>(() => ({
@@ -237,8 +237,8 @@ export const useSearchController = () => {
     resultOrder: preferences.value.resultOrder,
     groupResults: preferences.value.groupResults,
     isSearching: isSearching.value,
-    hasResults: totalResultCount.value > 0
-  }))
+    hasResults: totalResultCount.value > 0,
+  }));
 
   return {
     // State
@@ -253,7 +253,7 @@ export const useSearchController = () => {
     hasActiveResults,
     totalResultCount,
     getDisplayedResultCount,
-    
+
     // Actions
     toggleContentType,
     setResultOrder,
@@ -263,8 +263,8 @@ export const useSearchController = () => {
     addRecentSearch,
     clearRecentSearches,
     resetToDefaults,
-    setSearching: (searching: boolean) => { isSearching.value = searching }
-  }
-}
+    setSearching: (searching: boolean) => { isSearching.value = searching; },
+  };
+};
 
-export type SearchController = ReturnType<typeof useSearchController>
+export type SearchController = ReturnType<typeof useSearchController>;

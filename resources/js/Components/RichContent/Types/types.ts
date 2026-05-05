@@ -1,13 +1,13 @@
 /**
  * Shared type definitions for Rich Content Editor system
- * 
+ *
  * This module provides TypeScript interfaces to ensure consistency
  * across all content type editors in the RichContent system.
- * 
+ *
  * Content part types are re-exported from @/Types/contentParts.ts
  * for centralized type management.
  */
-import { type Component, type AsyncComponentLoader } from 'vue';
+import type { Component, AsyncComponentLoader } from 'vue';
 
 // Re-export all content part types from the centralized location
 export type {
@@ -31,7 +31,7 @@ export type {
  */
 export interface ContentPart<
   TContent = Record<string, any>,
-  TOptions = Record<string, any>
+  TOptions = Record<string, any>,
 > {
   id?: number;
   type: string;
@@ -43,16 +43,16 @@ export interface ContentPart<
 
 /**
  * Props interface for all content type editors
- * 
+ *
  * All editor components should accept these props via defineModel:
  * - modelValue: The json_content of the content part
  * - options: The options object for the content part
- * 
+ *
  * @example
  * ```vue
  * <script setup lang="ts">
  * import type { ShadcnCard } from './types';
- * 
+ *
  * const content = defineModel<ShadcnCard['json_content']>();
  * const options = defineModel<ShadcnCard['options']>('options');
  * </script>
@@ -60,7 +60,7 @@ export interface ContentPart<
  */
 export interface ContentEditorProps<
   TContent = Record<string, any>,
-  TOptions = Record<string, any>
+  TOptions = Record<string, any>,
 > {
   /** The json_content field - main content data */
   modelValue: TContent;
@@ -74,7 +74,7 @@ export interface ContentEditorProps<
  */
 export interface ContentTypeDefinition<
   TContent = any,
-  TOptions = Record<string, any>
+  TOptions = Record<string, any>,
 > {
   /** Unique identifier matching backend ContentPartEnum */
   value: string;

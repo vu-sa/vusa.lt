@@ -32,7 +32,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activities
  * @property-read Collection<int, ProblemCategory> $categories
- * @property-read User $createdBy
+ * @property-read User|null $createdBy
  * @property-read Collection<int, Institution> $institutions
  * @property-read User|null $responsibleUser
  * @property-read Tenant $tenant

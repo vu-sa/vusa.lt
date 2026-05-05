@@ -9,40 +9,48 @@
             <ClipboardListIcon class="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
           </div>
           <div>
-            <p class="text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-100">{{ taskStats.total }}</p>
-            <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $t('tasks.stats.pending') }}</p>
+            <p class="text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+              {{ taskStats.total }}
+            </p>
+            <p class="text-sm text-zinc-500 dark:text-zinc-400">
+              {{ $t('tasks.stats.pending') }}
+            </p>
           </div>
         </div>
       </div>
-      
+
       <!-- Overdue -->
       <div :class="[
         'relative overflow-hidden rounded-xl border p-4',
-        taskStats.overdue > 0 
-          ? 'border-red-200/60 bg-red-50/30 dark:border-red-900/30 dark:bg-red-950/10' 
+        taskStats.overdue > 0
+          ? 'border-red-200/60 bg-red-50/30 dark:border-red-900/30 dark:bg-red-950/10'
           : 'border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900'
       ]">
         <div class="flex items-center gap-3">
           <div :class="[
             'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
-            taskStats.overdue > 0 
-              ? 'bg-red-100 dark:bg-red-900/30' 
+            taskStats.overdue > 0
+              ? 'bg-red-100 dark:bg-red-900/30'
               : 'bg-zinc-100 dark:bg-zinc-800'
           ]">
             <AlertCircleIcon :class="[
               'h-5 w-5',
-              taskStats.overdue > 0 
-                ? 'text-red-600 dark:text-red-400' 
+              taskStats.overdue > 0
+                ? 'text-red-600 dark:text-red-400'
                 : 'text-zinc-400'
             ]" />
           </div>
           <div>
-            <p class="text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-100">{{ taskStats.overdue }}</p>
-            <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $t('overdue') }}</p>
+            <p class="text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+              {{ taskStats.overdue }}
+            </p>
+            <p class="text-sm text-zinc-500 dark:text-zinc-400">
+              {{ $t('overdue') }}
+            </p>
           </div>
         </div>
       </div>
-      
+
       <!-- Auto-completing -->
       <div class="relative overflow-hidden rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
         <div class="flex items-center gap-3">
@@ -50,12 +58,16 @@
             <RotateCwIcon class="h-5 w-5 text-blue-600 dark:text-blue-400" />
           </div>
           <div>
-            <p class="text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-100">{{ taskStats.autoCompleting }}</p>
-            <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $t('tasks.stats.auto_completing') }}</p>
+            <p class="text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+              {{ taskStats.autoCompleting }}
+            </p>
+            <p class="text-sm text-zinc-500 dark:text-zinc-400">
+              {{ $t('tasks.stats.auto_completing') }}
+            </p>
           </div>
         </div>
       </div>
-      
+
       <!-- Completed -->
       <div class="relative overflow-hidden rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
         <div class="flex items-center gap-3">
@@ -63,8 +75,12 @@
             <CheckCircleIcon class="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div>
-            <p class="text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-100">{{ taskStats.completed }}</p>
-            <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $t('completed') }}</p>
+            <p class="text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
+              {{ taskStats.completed }}
+            </p>
+            <p class="text-sm text-zinc-500 dark:text-zinc-400">
+              {{ $t('completed') }}
+            </p>
           </div>
         </div>
       </div>
@@ -73,9 +89,9 @@
     <!-- Task manager with table -->
     <div class="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
       <div class="p-3 sm:p-6">
-        <TaskManager 
-          :tasks="tasks.data" 
-          :task-stats="taskStats"
+        <TaskManager
+          :tasks="tasks.data"
+          :task-stats
           :current-filter="currentStatus"
           server-side-filter
           @filter-change="handleFilterChange"
@@ -146,28 +162,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineAsyncComponent } from "vue";
-import { router } from "@inertiajs/vue3";
-import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
-import { usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
-import TaskManager from "@/Features/Admin/TaskManager/TaskManager.vue";
-import { trans as $t } from "laravel-vue-i18n";
-import Icons from "@/Types/Icons/regular";
-import { Button } from "@/Components/ui/button";
-import { 
+import { ref, computed, defineAsyncComponent } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+import {
   ClipboardList as ClipboardListIcon,
   AlertCircle as AlertCircleIcon,
   RotateCw as RotateCwIcon,
   CheckCircle as CheckCircleIcon,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
-} from "lucide-vue-next";
-import type { TaskProgress, TaskActionType } from "@/Types/TaskTypes";
+} from 'lucide-vue-next';
+
+import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
+import { usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
+import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
+import Icons from '@/Types/Icons/regular';
+import { Button } from '@/Components/ui/button';
+import type { TaskProgress, TaskActionType } from '@/Types/TaskTypes';
 
 // Lazy load modals
-const NewMeetingDialog = defineAsyncComponent(() => import("@/Components/Dialogs/NewMeetingDialog.vue"));
-const AddCheckInDialog = defineAsyncComponent(() => import("@/Components/Institutions/AddCheckInDialog.vue"));
-const TaskDetailDialog = defineAsyncComponent(() => import("@/Features/Admin/TaskManager/TaskDetailDialog.vue"));
+const NewMeetingDialog = defineAsyncComponent(() => import('@/Components/Dialogs/NewMeetingDialog.vue'));
+const AddCheckInDialog = defineAsyncComponent(() => import('@/Components/Institutions/AddCheckInDialog.vue'));
+const TaskDetailDialog = defineAsyncComponent(() => import('@/Features/Admin/TaskManager/TaskDetailDialog.vue'));
 
 interface TaskWithDetails {
   id: string;
@@ -221,23 +238,23 @@ const currentStatus = computed(() => props.status ?? 'incomplete');
 
 // Pagination - preserve status filter
 const goToPage = (page: number) => {
-  router.get(route('userTasks'), { 
-    page, 
-    status: currentStatus.value 
-  }, { 
-    preserveState: true, 
-    preserveScroll: true 
+  router.get(route('userTasks'), {
+    page,
+    status: currentStatus.value,
+  }, {
+    preserveState: true,
+    preserveScroll: true,
   });
 };
 
 // Handle filter changes from TaskManager - reload with new status
 const handleFilterChange = (status: 'all' | 'completed' | 'incomplete') => {
-  router.get(route('userTasks'), { 
+  router.get(route('userTasks'), {
     status,
-    page: 1  // Reset to first page on filter change
-  }, { 
-    preserveState: true, 
-    preserveScroll: true 
+    page: 1, // Reset to first page on filter change
+  }, {
+    preserveState: true,
+    preserveScroll: true,
   });
 };
 
@@ -316,6 +333,6 @@ const handleReportNoMeetingFromDetail = () => {
 
 // Generate breadcrumbs
 usePageBreadcrumbs([
-  { label: $t('Užduotys'), icon: Icons.TASK }
+  { label: $t('Užduotys'), icon: Icons.TASK },
 ]);
 </script>

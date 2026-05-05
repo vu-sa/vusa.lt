@@ -24,8 +24,6 @@
           @schedule-meeting="$emit('schedule-meeting', $event)" @add-check-in="handleAddCheckIn" @remove-active-check-in="handleRemoveActiveCheckIn"
           @toggle-follow="handleToggleFollow" @toggle-mute="handleToggleMute" />
       </div>
-
-
     </CardContent>
 
     <CardFooter :class="footerClasses" class="p-4 relative z-10">
@@ -54,178 +52,178 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, reactive } from 'vue'
-import { router } from '@inertiajs/vue3'
-import { trans as $t } from 'laravel-vue-i18n'
+import { computed, ref, reactive } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 
-import type { AtstovavimosInstitution } from '../types'
-import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue'
-import InstitutionCompactCard from '@/Components/Institutions/InstitutionCompactCard.vue'
-import { useInstitutionSubscription } from '../Composables/useInstitutionSubscription'
+import type { AtstovavimosInstitution } from '../types';
+import { useInstitutionSubscription } from '../Composables/useInstitutionSubscription';
 
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/Components/ui/card'
-import { Button } from '@/Components/ui/button'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip'
-import Icons from '@/Types/Icons/filled'
-import { 
+import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue';
+import InstitutionCompactCard from '@/Components/Institutions/InstitutionCompactCard.vue';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/Components/ui/card';
+import { Button } from '@/Components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
+import Icons from '@/Types/Icons/filled';
+import {
   useDashboardCardStyles,
-  type UrgencyLevel 
-} from '@/Composables/useDashboardCardStyles'
+  type UrgencyLevel,
+} from '@/Composables/useDashboardCardStyles';
 
 const props = defineProps<{
-  institutions: AtstovavimosInstitution[]
-  isAdmin?: boolean
-  maxDisplayCount?: number
-  currentUserId?: string
-}>()
+  institutions: AtstovavimosInstitution[];
+  isAdmin?: boolean;
+  maxDisplayCount?: number;
+  currentUserId?: string;
+}>();
 
 const emit = defineEmits<{
-  'show-all-modal': []
-  'schedule-meeting': [institutionId: string]
-  'show-institution-details': [institutionId: string]
-  'create-meeting': []
-}>()
+  'show-all-modal': [];
+  'schedule-meeting': [institutionId: string];
+  'show-institution-details': [institutionId: string];
+  'create-meeting': [];
+}>();
 
-const showCreateCheckIn = ref<string | null>(null)
-const actionLoading = reactive<Record<string, boolean>>({})
+const showCreateCheckIn = ref<string | null>(null);
+const actionLoading = reactive<Record<string, boolean>>({});
 
 // Computed values for institution analysis
 // Coverage means: has an upcoming meeting OR an active check-in
 const institutionsWithCheckInsOrMeetings = computed(() => {
   return props.institutions.filter(inst =>
-    inst.active_check_in ||
-    (Array.isArray(inst.meetings) && inst.meetings.some((meeting: any) => new Date(meeting.start_time) > new Date()))
-  )
-})
+    inst.active_check_in
+    || (Array.isArray(inst.meetings) && inst.meetings.some((meeting: any) => new Date(meeting.start_time) > new Date())),
+  );
+});
 
 const institutionsNeedingAttention = computed(() => {
-  return props.institutions.filter(inst => {
-    const hasCoverageCheckIn = !!inst.active_check_in
-    const hasUpcomingMeeting = Array.isArray(inst.meetings) && inst.meetings.some((meeting: any) => new Date(meeting.start_time) > new Date())
-    return !hasCoverageCheckIn && !hasUpcomingMeeting
-  })
-})
+  return props.institutions.filter((inst) => {
+    const hasCoverageCheckIn = !!inst.active_check_in;
+    const hasUpcomingMeeting = Array.isArray(inst.meetings) && inst.meetings.some((meeting: any) => new Date(meeting.start_time) > new Date());
+    return !hasCoverageCheckIn && !hasUpcomingMeeting;
+  });
+});
 
 // Sort institutions by priority - attention needed institutions first
 const sortedInstitutions = computed(() => {
   return [...props.institutions].sort((a, b) => {
-    const aHasCoverage = !!a.active_check_in
-    const bHasCoverage = !!b.active_check_in
-    const aHasUpcoming = !!a.upcoming_meetings_count && a.upcoming_meetings_count > 0
-    const bHasUpcoming = !!b.upcoming_meetings_count && b.upcoming_meetings_count > 0
+    const aHasCoverage = !!a.active_check_in;
+    const bHasCoverage = !!b.active_check_in;
+    const aHasUpcoming = !!a.upcoming_meetings_count && a.upcoming_meetings_count > 0;
+    const bHasUpcoming = !!b.upcoming_meetings_count && b.upcoming_meetings_count > 0;
 
     // Priority 1: Institutions needing attention (no coverage check-in AND no upcoming meetings)
-    const aNeedsAttention = !aHasCoverage && !aHasUpcoming
-    const bNeedsAttention = !bHasCoverage && !bHasUpcoming
+    const aNeedsAttention = !aHasCoverage && !aHasUpcoming;
+    const bNeedsAttention = !bHasCoverage && !bHasUpcoming;
 
     if (aNeedsAttention !== bNeedsAttention) {
-      return aNeedsAttention ? -1 : 1
+      return aNeedsAttention ? -1 : 1;
     }
 
     // Priority 2: No upcoming meetings (but has coverage check-in)
-    const aNoMeetings = !aHasUpcoming
-    const bNoMeetings = !bHasUpcoming
+    const aNoMeetings = !aHasUpcoming;
+    const bNoMeetings = !bHasUpcoming;
 
     if (aNoMeetings !== bNoMeetings) {
-      return aNoMeetings ? -1 : 1
+      return aNoMeetings ? -1 : 1;
     }
 
     // Priority 3: By days since last meeting (older meetings first)
     if (a.days_since_last_meeting && b.days_since_last_meeting) {
-      return b.days_since_last_meeting - a.days_since_last_meeting
+      return b.days_since_last_meeting - a.days_since_last_meeting;
     }
 
     // Priority 4: Check-ins expiring soon
     if (a.active_check_in && b.active_check_in) {
-      const aDays = Math.ceil((new Date(a.active_check_in.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
-      const bDays = Math.ceil((new Date(b.active_check_in.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
-      return aDays - bDays
+      const aDays = Math.ceil((new Date(a.active_check_in.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+      const bDays = Math.ceil((new Date(b.active_check_in.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+      return aDays - bDays;
     }
 
     // Priority 5: Alphabetical
-    return a.name.localeCompare(b.name)
-  })
-})
+    return a.name.localeCompare(b.name);
+  });
+});
 
 const limitedInstitutions = computed(() => {
-  return sortedInstitutions.value.slice(0, props.maxDisplayCount)
-})
+  return sortedInstitutions.value.slice(0, props.maxDisplayCount);
+});
 
 const checkInInstitutionName = computed(() => {
-  const institutionId = showCreateCheckIn.value
-  if (!institutionId) return undefined
+  const institutionId = showCreateCheckIn.value;
+  if (!institutionId) return undefined;
 
-  return props.institutions.find(inst => String(inst.id) === String(institutionId))?.name
-})
+  return props.institutions.find(inst => String(inst.id) === String(institutionId))?.name;
+});
 
 // Determine overall urgency level for theming
 const urgencyLevel = computed((): UrgencyLevel => {
-  const needingAttentionCount = institutionsNeedingAttention.value.length
-  const totalCount = props.institutions.length
+  const needingAttentionCount = institutionsNeedingAttention.value.length;
+  const totalCount = props.institutions.length;
 
-  if (needingAttentionCount === 0) return 'success'
-  if (needingAttentionCount / totalCount > 0.5) return 'danger'
-  return 'warning'
-})
+  if (needingAttentionCount === 0) return 'success';
+  if (needingAttentionCount / totalCount > 0.5) return 'danger';
+  return 'warning';
+});
 
 // Use the composable for consistent styling
-const { 
+const {
   cardClasses,
   footerClasses,
-  statusIndicatorClasses, 
+  statusIndicatorClasses,
   iconClasses,
-} = useDashboardCardStyles(urgencyLevel)
+} = useDashboardCardStyles(urgencyLevel);
 
 // Action handlers with loading states
 const setLoading = (institutionId: string, loading: boolean) => {
-  actionLoading[institutionId] = loading
-}
+  actionLoading[institutionId] = loading;
+};
 
 const handleAddCheckIn = (institutionId: string) => {
-  showCreateCheckIn.value = institutionId
-}
+  showCreateCheckIn.value = institutionId;
+};
 
 const handleRemoveActiveCheckIn = (institutionId: string) => {
-  setLoading(institutionId, true)
+  setLoading(institutionId, true);
   router.delete(route('institutions.check-ins.destroyActive', institutionId), {
     preserveScroll: true,
     onFinish: () => setLoading(institutionId, false),
     onSuccess: () => {
       // Refresh data to update UI after check-in deletion
-      router.reload({ only: ['user', 'userInstitutions', 'tenantInstitutions'], preserveScroll: true })
-    }
-  })
-}
+      router.reload({ only: ['user', 'userInstitutions', 'tenantInstitutions'], preserveScroll: true });
+    },
+  });
+};
 
 // Institution subscription handlers
-const { toggleFollow, toggleMute, followLoading, muteLoading } = useInstitutionSubscription()
+const { toggleFollow, toggleMute, followLoading, muteLoading } = useInstitutionSubscription();
 
-const followLoadingStates = computed(() => followLoading.value)
-const muteLoadingStates = computed(() => muteLoading.value)
+const followLoadingStates = computed(() => followLoading.value);
+const muteLoadingStates = computed(() => muteLoading.value);
 
 const handleToggleFollow = async (institutionId: string) => {
-  const institution = props.institutions.find(i => String(i.id) === String(institutionId))
-  if (!institution) return
-  
+  const institution = props.institutions.find(i => String(i.id) === String(institutionId));
+  if (!institution) return;
+
   const currentState = institution.subscription ?? {
     is_followed: false,
     is_muted: false,
     is_duty_based: false,
-  }
-  
-  await toggleFollow(institutionId, currentState, ['user', 'userInstitutions', 'tenantInstitutions'])
-}
+  };
+
+  await toggleFollow(institutionId, currentState, ['user', 'userInstitutions', 'tenantInstitutions']);
+};
 
 const handleToggleMute = async (institutionId: string) => {
-  const institution = props.institutions.find(i => String(i.id) === String(institutionId))
-  if (!institution) return
-  
+  const institution = props.institutions.find(i => String(i.id) === String(institutionId));
+  if (!institution) return;
+
   const currentState = institution.subscription ?? {
     is_followed: false,
     is_muted: false,
     is_duty_based: false,
-  }
-  
-  await toggleMute(institutionId, currentState, ['user', 'userInstitutions', 'tenantInstitutions'])
-}
+  };
+
+  await toggleMute(institutionId, currentState, ['user', 'userInstitutions', 'tenantInstitutions']);
+};
 </script>

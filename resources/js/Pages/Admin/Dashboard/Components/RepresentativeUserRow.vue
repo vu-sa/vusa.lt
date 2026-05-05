@@ -46,10 +46,10 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import type { RepresentativeUser } from '../types';
+import { getActivityDotClasses, getActivityTextClasses, getActivityLabel } from '../Composables/useActivityStatus';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { formatRelativeTime } from '@/Utils/IntlTime';
-import { getActivityDotClasses, getActivityTextClasses, getActivityLabel } from '../Composables/useActivityStatus';
 
 interface Props {
   user: RepresentativeUser;

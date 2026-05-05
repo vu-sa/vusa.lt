@@ -54,15 +54,15 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from "laravel-vue-i18n";
-import { usePage } from "@inertiajs/vue3";
-import { computed } from "vue";
-import { format, parseISO } from "date-fns";
-import { lt, enUS } from "date-fns/locale";
-import { Newspaper as NewspaperIcon, ChevronRight as ChevronRightIcon } from "lucide-vue-next";
+import { trans as $t } from 'laravel-vue-i18n';
+import { usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { format, parseISO } from 'date-fns';
+import { lt, enUS } from 'date-fns/locale';
+import { Newspaper as NewspaperIcon, ChevronRight as ChevronRightIcon } from 'lucide-vue-next';
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
-import { dashboardCardClasses } from "@/Composables/useDashboardCardStyles";
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { dashboardCardClasses } from '@/Composables/useDashboardCardStyles';
 
 const props = defineProps<{
   newsList: App.Entities.News[];
@@ -78,7 +78,8 @@ const formatDate = (dateStr: string | Date | null) => {
   try {
     const date = typeof dateStr === 'string' ? parseISO(dateStr) : dateStr;
     return format(date, 'MMM d, yyyy', { locale: dateLocale.value });
-  } catch {
+  }
+  catch {
     return '';
   }
 };

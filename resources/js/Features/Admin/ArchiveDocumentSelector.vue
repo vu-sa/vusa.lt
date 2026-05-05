@@ -2,7 +2,7 @@
   <div class="space-y-4" data-document-selector>
     <div class="space-y-2">
       <Label for="document-search">Pasirinkite dokumentą</Label>
-      
+
       <!-- Simple search input -->
       <div class="relative">
         <Input
@@ -17,13 +17,13 @@
       </div>
 
       <!-- Simple dropdown list -->
-      <div 
+      <div
         v-if="showResults && (documents.length > 0 || isLoading || searchQuery.length > 0)"
         class="max-h-60 overflow-y-auto rounded-md border bg-popover text-popover-foreground shadow-md"
       >
         <!-- Loading state -->
         <div v-if="isLoading" class="flex items-center gap-2 p-3 text-sm text-muted-foreground">
-          <div class="h-4 w-4 animate-spin rounded-full border-2 border-muted border-r-transparent"></div>
+          <div class="h-4 w-4 animate-spin rounded-full border-2 border-muted border-r-transparent" />
           Ieškoma...
         </div>
 
@@ -42,12 +42,12 @@
           <button
             v-for="document in documents"
             :key="document.id"
-            @click="selectDocument(document)"
             class="flex w-full items-center px-3 py-2 text-left text-sm hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none"
+            @click="selectDocument(document)"
           >
             <span class="truncate">{{ document.title }}</span>
           </button>
-          
+
           <!-- Show more hint if we hit the limit -->
           <div v-if="documents.length >= 20" class="border-t px-3 py-2 text-xs text-muted-foreground">
             Rodoma 20 rezultatų. Patikslinkite paiešką daugiau rezultatų.
@@ -60,8 +60,12 @@
     <div v-if="selectedDocument" class="rounded-md border bg-muted/50 p-3">
       <div class="flex items-center justify-between">
         <div>
-          <p class="text-sm font-medium">Pasirinktas dokumentas:</p>
-          <p class="text-sm text-muted-foreground">{{ selectedDocument.title }}</p>
+          <p class="text-sm font-medium">
+            Pasirinktas dokumentas:
+          </p>
+          <p class="text-sm text-muted-foreground">
+            {{ selectedDocument.title }}
+          </p>
         </div>
         <Button variant="ghost" size="sm" @click="clearSelection">
           <XIcon class="h-4 w-4" />
@@ -111,27 +115,30 @@ async function performSearch(query: string) {
   }
 
   isLoading.value = true;
-  
+
   try {
     const response = await fetch(`${route('api.documents.index')}?search=${encodeURIComponent(query)}&limit=20`);
     if (response.ok) {
       const data = await response.json();
       documents.value = data;
-    } else {
+    }
+    else {
       console.error('Search failed:', response.statusText);
       documents.value = [];
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Search error:', error);
     documents.value = [];
-  } finally {
+  }
+  finally {
     isLoading.value = false;
   }
 }
 
 function handleSearch() {
   showResults.value = true;
-  
+
   // Clear existing timeout
   if (searchTimeout) {
     clearTimeout(searchTimeout);

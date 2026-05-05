@@ -43,8 +43,8 @@ use Illuminate\Support\Collection;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Comment> $comments
  * @property-read bool $approvable
  * @property-read mixed $state_properties
- * @property-read Reservation $reservation
- * @property-read resource $resource
+ * @property-read Reservation|null $reservation
+ * @property-read resource|null $resource
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReservationResource newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReservationResource newQuery()

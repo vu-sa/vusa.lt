@@ -22,15 +22,15 @@
 </template>
 
 <script setup lang="ts">
-import { shallowRef, useTemplateRef } from "vue";
-import { router } from "@inertiajs/vue3";
-import { useSortable } from "@vueuse/integrations/useSortable";
+import { shallowRef, useTemplateRef } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { useSortable } from '@vueuse/integrations/useSortable';
 
-import { Button } from "@/Components/ui/button";
-import { ButtonGroup } from "@/Components/ui/button-group";
-import Icons from "@/Types/Icons/regular";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
+import { Button } from '@/Components/ui/button';
+import { ButtonGroup } from '@/Components/ui/button-group';
+import Icons from '@/Types/Icons/regular';
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 
 const props = defineProps<{
   quickLinks: App.Entities.QuickLink[];
@@ -40,7 +40,7 @@ const props = defineProps<{
 const el = useTemplateRef<HTMLElement | null>('el');
 
 const quickLinkList = shallowRef(
-  props.quickLinks.map((quickLink) => ({
+  props.quickLinks.map(quickLink => ({
     id: quickLink.id,
     text: quickLink.text,
     link: quickLink.link,
@@ -48,14 +48,14 @@ const quickLinkList = shallowRef(
   })),
 );
 
-useSortable(el, quickLinkList, { handle: ".handle", animation: 100 });
+useSortable(el, quickLinkList, { handle: '.handle', animation: 100 });
 // const order: Record<"id" | "position", number>[] = [];
 
 const handleOrderUpdate = () => {
-  const orderList: Record<"id" | "order", number>[] = [];
+  const orderList: Record<'id' | 'order', number>[] = [];
   quickLinkList.value.forEach((item, index) => {
     orderList.push({ id: item.id, order: index + 1 });
   });
-  router.post(route("quickLinks.update-order"), { orderList });
+  router.post(route('quickLinks.update-order'), { orderList });
 };
 </script>

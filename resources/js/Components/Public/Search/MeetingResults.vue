@@ -1,14 +1,14 @@
 <template>
   <BaseSearchResults
-    :results="results"
-    :is-loading="isLoading"
-    :has-query="hasQuery"
-    :search-query="searchQuery"
-    :total-hits="totalHits"
-    :has-more-results="hasMoreResults"
-    :is-loading-more="isLoadingMore"
-    :has-error="hasError"
-    :has-active-filters="hasActiveFilters"
+    :results
+    :is-loading
+    :has-query
+    :search-query
+    :total-hits
+    :has-more-results
+    :is-loading-more
+    :has-error
+    :has-active-filters
     :skeleton-count="6"
     loading-container-class="space-y-2"
     results-container-class="space-y-2"
@@ -27,7 +27,7 @@
     <template #skeleton="{ count }">
       <MeetingResultsSkeleton v-for="i in count" :key="i" view-mode="compact" />
     </template>
-    
+
     <template #item="{ item }">
       <MeetingCompactListItem :meeting="item" />
     </template>
@@ -35,38 +35,38 @@
 </template>
 
 <script setup lang="ts">
-import BaseSearchResults from './Shared/BaseSearchResults.vue'
-import MeetingCompactListItem from './MeetingCompactListItem.vue'
-import MeetingResultsSkeleton from './MeetingResultsSkeleton.vue'
+import BaseSearchResults from './Shared/BaseSearchResults.vue';
+import MeetingCompactListItem from './MeetingCompactListItem.vue';
+import MeetingResultsSkeleton from './MeetingResultsSkeleton.vue';
 
 interface Meeting {
-  id: string | number
-  title?: string
-  start_time: number
-  completion_status: string
-  institution_id?: string | number
-  institution_name_lt?: string
-  institution_name_en?: string
-  tenant_shortname?: string
-  agenda_items_count?: number
-  total_agenda_items?: number
-  positive_outcomes?: number
-  negative_outcomes?: number
-  neutral_outcomes?: number
-  student_success_rate?: number
-  [key: string]: any
+  id: string | number;
+  title?: string;
+  start_time: number;
+  completion_status: string;
+  institution_id?: string | number;
+  institution_name_lt?: string;
+  institution_name_en?: string;
+  tenant_shortname?: string;
+  agenda_items_count?: number;
+  total_agenda_items?: number;
+  positive_outcomes?: number;
+  negative_outcomes?: number;
+  neutral_outcomes?: number;
+  student_success_rate?: number;
+  [key: string]: any;
 }
 
 interface Props {
-  results: Meeting[]
-  isLoading?: boolean
-  hasQuery?: boolean
-  totalHits?: number
-  hasMoreResults?: boolean
-  isLoadingMore?: boolean
-  hasError?: boolean
-  hasActiveFilters?: boolean
-  searchQuery?: string
+  results: Meeting[];
+  isLoading?: boolean;
+  hasQuery?: boolean;
+  totalHits?: number;
+  hasMoreResults?: boolean;
+  isLoadingMore?: boolean;
+  hasError?: boolean;
+  hasActiveFilters?: boolean;
+  searchQuery?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -78,13 +78,13 @@ const props = withDefaults(defineProps<Props>(), {
   isLoadingMore: false,
   hasError: false,
   hasActiveFilters: false,
-  searchQuery: ''
-})
+  searchQuery: '',
+});
 
 const emit = defineEmits<{
-  loadMore: []
-  clearFilters: []
-  retry: []
-  reportError: []
-}>()
+  loadMore: [];
+  clearFilters: [];
+  retry: [];
+  reportError: [];
+}>();
 </script>

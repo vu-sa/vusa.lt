@@ -28,6 +28,12 @@ class QueueNotificationForDigest
      */
     public function handle(NotificationSending $event): void
     {
+        // Only queue once per notification — NotificationSending fires for each channel,
+        // so we use the 'database' channel as the canonical trigger
+        if ($event->channel !== 'database') {
+            return;
+        }
+
         // Skip digest queuing during bulk operations
         if (self::$skipDigest) {
             return;

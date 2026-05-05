@@ -1,15 +1,15 @@
-import type { VariantProps } from "class-variance-authority"
-import { cva } from "class-variance-authority"
+import type { VariantProps } from 'class-variance-authority';
+import { cva } from 'class-variance-authority';
 
-export { default as Upload } from "./Upload.vue"
-export { default as UploadTrigger } from "./UploadTrigger.vue"
-export { default as UploadPreview } from "./UploadPreview.vue"
-export { default as UploadProgress } from "./UploadProgress.vue"
-export { default as UploadDropzone } from "./UploadDropzone.vue"
-export { default as SingleImageUpload } from "./SingleImageUpload.vue"
-export { default as MultiImageUpload } from "./MultiImageUpload.vue"
-export { default as MediaUpload } from "./MediaUpload.vue"
-export { default as ImageUpload } from "./ImageUpload.vue"
+export { default as Upload } from './Upload.vue';
+export { default as UploadTrigger } from './UploadTrigger.vue';
+export { default as UploadPreview } from './UploadPreview.vue';
+export { default as UploadProgress } from './UploadProgress.vue';
+export { default as UploadDropzone } from './UploadDropzone.vue';
+export { default as SingleImageUpload } from './SingleImageUpload.vue';
+export { default as MultiImageUpload } from './MultiImageUpload.vue';
+export { default as MediaUpload } from './MediaUpload.vue';
+export { default as ImageUpload } from './ImageUpload.vue';
 
 export const uploadVariants = cva(
   'relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors',
@@ -32,19 +32,19 @@ export const uploadVariants = cva(
       variant: 'default',
       size: 'default',
     },
-  }
-)
+  },
+);
 
-export type UploadVariants = VariantProps<typeof uploadVariants>
+export type UploadVariants = VariantProps<typeof uploadVariants>;
 
 export interface UploadFile {
-  id: string
-  name: string
-  size: number
-  type: string
-  url?: string
-  file?: File
-  status: 'pending' | 'uploading' | 'success' | 'error'
-  progress: number
-  error?: string
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  url?: string;
+  file?: File;
+  status: 'pending' | 'uploading' | 'success' | 'error';
+  progress: number;
+  error?: string;
 }

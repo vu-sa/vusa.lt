@@ -1,8 +1,8 @@
 /**
  * TipTap Editor Components - Public API
- * 
+ *
  * This file exports the unified TipTap editor components.
- * 
+ *
  * @example
  * ```ts
  * import { TiptapEditor, generateHTMLfromTiptap } from '@/Components/TipTap';
@@ -40,4 +40,4 @@ export { default as TiptapVideoButton } from './TiptapVideoButton.vue';
 export { default as TiptapYoutubeButton } from './TiptapYoutubeButton.vue';
 
 // Re-export HTML generation from RichContentTiptapHTML
-export { generateHTMLfromTiptap } from '../RichContentTiptapHTML.vue';
+export { generateHTMLfromTiptap } from '../RichContent/RichContentTiptapHTML.vue';

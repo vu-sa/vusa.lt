@@ -5,8 +5,8 @@
 </template>
 
 <script setup lang="tsx">
-import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
-import SharepointFileManager from "@/Features/Admin/SharepointFileManager/SharepointFileManager.vue";
+import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
+import SharepointFileManager from '@/Features/Admin/SharepointFileManager/SharepointFileManager.vue';
 
 defineProps<{
   // sharepointDriveItems: MyDriveItem[];

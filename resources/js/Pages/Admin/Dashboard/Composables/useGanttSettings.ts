@@ -1,11 +1,11 @@
 /**
  * useGanttSettings - Shared Gantt chart settings with Provide/Inject
- * 
+ *
  * This composable provides a centralized way to manage Gantt chart settings
  * that need to be shared across multiple components without prop drilling.
- * 
+ *
  * Settings are persisted to localStorage and synchronized across all consumers.
- * 
+ *
  * Usage:
  * - In parent (ShowAtstovavimas.vue): call provideGanttSettings()
  * - In children (MeetingsGantt.vue, etc.): call useGanttSettings()
@@ -68,7 +68,8 @@ function loadStoredSettings(): Partial<StoredSettings> {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     return stored ? JSON.parse(stored) : {};
-  } catch {
+  }
+  catch {
     return {};
   }
 }
@@ -77,7 +78,8 @@ function saveStoredSettings(settings: StoredSettings) {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-  } catch {
+  }
+  catch {
     // Ignore storage errors
   }
 }
@@ -171,12 +173,12 @@ export function provideGanttSettings(): GanttSettings {
 /**
  * Injects Gantt settings from the parent component.
  * Call this in child components that need access to shared settings.
- * 
+ *
  * @throws Error if used outside of a component tree that called provideGanttSettings()
  */
 export function useGanttSettings(): GanttSettings {
   const settings = inject(GANTT_SETTINGS_KEY);
-  
+
   if (!settings) {
     // Fallback: create local settings if not provided (useful for standalone usage)
     // This branch also persists to localStorage for consistency

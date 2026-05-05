@@ -114,99 +114,99 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue'
-import { trans as $t } from 'laravel-vue-i18n'
+import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
 
-import Button from '@/Components/ui/button/Button.vue'
+import Button from '@/Components/ui/button/Button.vue';
 
 interface Props {
   images: Array<{
-    id: number
-    original_url: string
-    caption?: string
-    attribution?: string
-  }>
-  eventTitle: string
-  maxVisibleImages?: number
+    id: number;
+    original_url: string;
+    caption?: string;
+    attribution?: string;
+  }>;
+  eventTitle: string;
+  maxVisibleImages?: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  maxVisibleImages: 5
-})
+  maxVisibleImages: 5,
+});
 
 // Reactive state
-const lightboxOpen = ref(false)
-const currentImageIndex = ref(0)
-const imageLoading = ref(false)
+const lightboxOpen = ref(false);
+const currentImageIndex = ref(0);
+const imageLoading = ref(false);
 
 // Computed properties
 const currentImage = computed(() => {
-  return props.images[currentImageIndex.value]
-})
+  return props.images[currentImageIndex.value];
+});
 
 const remainingImagesCount = computed(() => {
-  return Math.max(0, props.images.length - props.maxVisibleImages)
-})
+  return Math.max(0, props.images.length - props.maxVisibleImages);
+});
 
 // Lightbox functionality
 const openLightbox = (index: number) => {
-  currentImageIndex.value = index
-  lightboxOpen.value = true
-  document.body.style.overflow = 'hidden'
-}
+  currentImageIndex.value = index;
+  lightboxOpen.value = true;
+  document.body.style.overflow = 'hidden';
+};
 
 const closeLightbox = () => {
-  lightboxOpen.value = false
-  document.body.style.overflow = ''
-}
+  lightboxOpen.value = false;
+  document.body.style.overflow = '';
+};
 
 const nextImage = () => {
   if (currentImageIndex.value < props.images.length - 1) {
-    imageLoading.value = true
-    currentImageIndex.value++
+    imageLoading.value = true;
+    currentImageIndex.value++;
   }
-}
+};
 
 const previousImage = () => {
   if (currentImageIndex.value > 0) {
-    imageLoading.value = true
-    currentImageIndex.value--
+    imageLoading.value = true;
+    currentImageIndex.value--;
   }
-}
+};
 
 const handleImageLoad = () => {
-  imageLoading.value = false
-}
+  imageLoading.value = false;
+};
 
 // Keyboard navigation
 const handleKeydown = (event: KeyboardEvent) => {
-  if (!lightboxOpen.value) return
+  if (!lightboxOpen.value) return;
 
   switch (event.key) {
     case 'ArrowRight':
-      event.preventDefault()
-      nextImage()
-      break
+      event.preventDefault();
+      nextImage();
+      break;
     case 'ArrowLeft':
-      event.preventDefault()
-      previousImage()
-      break
+      event.preventDefault();
+      previousImage();
+      break;
     case 'Escape':
-      event.preventDefault()
-      closeLightbox()
-      break
+      event.preventDefault();
+      closeLightbox();
+      break;
   }
-}
+};
 
 // Lifecycle
 onMounted(() => {
-  document.addEventListener('keydown', handleKeydown)
-})
+  document.addEventListener('keydown', handleKeydown);
+});
 
 onUnmounted(() => {
-  document.removeEventListener('keydown', handleKeydown)
-  document.body.style.overflow = ''
-})
+  document.removeEventListener('keydown', handleKeydown);
+  document.body.style.overflow = '';
+});
 </script>
 
 <style scoped>

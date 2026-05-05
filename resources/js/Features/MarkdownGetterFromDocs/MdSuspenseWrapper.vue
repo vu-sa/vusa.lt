@@ -11,10 +11,11 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import MdGetter from "./MdGetter.vue";
+
+import MdGetter from './MdGetter.vue';
 
 const emit = defineEmits<{
-  'content-loaded': [boolean]; 
+  'content-loaded': [boolean];
 }>();
 
 const isLoading = ref(true);

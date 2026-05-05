@@ -1,13 +1,3 @@
-<script setup lang="ts">
-import type { HTMLAttributes } from "vue"
-import { cn } from '@/Utils/Shadcn/utils'
-import { Separator } from '@/Components/ui/separator'
-
-const props = defineProps<{
-  class?: HTMLAttributes["class"]
-}>()
-</script>
-
 <template>
   <div
     data-slot="field-separator"
@@ -27,3 +17,14 @@ const props = defineProps<{
     </span>
   </div>
 </template>
+
+<script setup lang="ts">
+import type { HTMLAttributes } from 'vue';
+
+import { cn } from '@/Utils/Shadcn/utils';
+import { Separator } from '@/Components/ui/separator';
+
+const props = defineProps<{
+  class?: HTMLAttributes['class'];
+}>();
+</script>

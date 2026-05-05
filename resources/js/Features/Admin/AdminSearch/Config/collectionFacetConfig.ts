@@ -5,7 +5,7 @@
  * These configurations drive the facet sidebar rendering and search API calls.
  */
 
-import type { CollectionFacetConfig, SortOption } from '../Types/AdminSearchTypes'
+import type { CollectionFacetConfig, SortOption } from '../Types/AdminSearchTypes';
 
 /**
  * Meeting collection facet configuration
@@ -58,7 +58,7 @@ export const MEETING_FACET_CONFIG: CollectionFacetConfig = {
       sortBy: 'count',
     },
   ],
-}
+};
 
 /**
  * Agenda items collection facet configuration
@@ -126,7 +126,7 @@ export const AGENDA_ITEM_FACET_CONFIG: CollectionFacetConfig = {
       sortBy: 'count',
     },
   ],
-}
+};
 
 /**
  * News collection facet configuration (for future use)
@@ -154,7 +154,7 @@ export const NEWS_FACET_CONFIG: CollectionFacetConfig = {
       sortBy: 'count',
     },
   ],
-}
+};
 
 /**
  * Institution collection facet configuration (for future use)
@@ -174,7 +174,7 @@ export const INSTITUTION_FACET_CONFIG: CollectionFacetConfig = {
       sortBy: 'count',
     },
   ],
-}
+};
 
 /**
  * Resource collection facet configuration
@@ -210,7 +210,7 @@ export const RESOURCE_FACET_CONFIG: CollectionFacetConfig = {
       sortBy: 'count',
     },
   ],
-}
+};
 
 /**
  * Get facet config for a collection
@@ -218,18 +218,18 @@ export const RESOURCE_FACET_CONFIG: CollectionFacetConfig = {
 export function getCollectionFacetConfig(collection: string): CollectionFacetConfig | null {
   switch (collection) {
     case 'meetings':
-      return MEETING_FACET_CONFIG
+      return MEETING_FACET_CONFIG;
     case 'agenda_items':
-      return AGENDA_ITEM_FACET_CONFIG
+      return AGENDA_ITEM_FACET_CONFIG;
     case 'news':
-      return NEWS_FACET_CONFIG
+      return NEWS_FACET_CONFIG;
     case 'institutions':
-      return INSTITUTION_FACET_CONFIG
+      return INSTITUTION_FACET_CONFIG;
     case 'resources':
-      return RESOURCE_FACET_CONFIG
+      return RESOURCE_FACET_CONFIG;
     default:
-      console.warn(`No facet config for collection: ${collection}`)
-      return null
+      console.warn(`No facet config for collection: ${collection}`);
+      return null;
   }
 }
 
@@ -241,7 +241,7 @@ export const MEETING_SORT_OPTIONS: SortOption[] = [
   { value: 'start_time:asc', label: 'Seniausi pirmi', icon: 'ArrowUp' },
   { value: 'agenda_items_count:desc', label: 'Daugiausiai punktų', icon: 'ListOrdered' },
   { value: 'updated_at:desc', label: 'Paskutiniai atnaujinti', icon: 'RefreshCw' },
-]
+];
 
 /**
  * Sort options for agenda items
@@ -250,7 +250,7 @@ export const AGENDA_ITEM_SORT_OPTIONS: SortOption[] = [
   { value: 'meeting_start_time:desc', label: 'Naujausi pirmi', icon: 'ArrowDown' },
   { value: 'meeting_start_time:asc', label: 'Seniausi pirmi', icon: 'ArrowUp' },
   { value: 'updated_at:desc', label: 'Paskutiniai atnaujinti', icon: 'RefreshCw' },
-]
+];
 
 /**
  * Get sort options for a collection
@@ -258,14 +258,14 @@ export const AGENDA_ITEM_SORT_OPTIONS: SortOption[] = [
 export function getCollectionSortOptions(collection: string): SortOption[] {
   switch (collection) {
     case 'meetings':
-      return MEETING_SORT_OPTIONS
+      return MEETING_SORT_OPTIONS;
     case 'agenda_items':
-      return AGENDA_ITEM_SORT_OPTIONS
+      return AGENDA_ITEM_SORT_OPTIONS;
     default:
       return [
         { value: 'created_at:desc', label: 'Naujausi pirmi', icon: 'ArrowDown' },
         { value: 'created_at:asc', label: 'Seniausi pirmi', icon: 'ArrowUp' },
-      ]
+      ];
   }
 }
 
@@ -279,10 +279,10 @@ export const FACET_VALUE_LABELS: Record<string, Record<string, string>> = {
     partial: 'Dalinai užbaigtas',
   },
   vote_alignment_status: {
-    aligned: 'Atitinka',
-    misaligned: 'Neatitinka',
-    incomplete: 'Nepilna informacija',
-    unknown: 'Nežinoma',
+    'aligned': 'Atitinka',
+    'misaligned': 'Neatitinka',
+    'incomplete': 'Nepilna informacija',
+    'unknown': 'Nežinoma',
     'no-vote': 'Nebalsuota',
   },
   student_vote: {
@@ -308,11 +308,11 @@ export const FACET_VALUE_LABELS: Record<string, Record<string, string>> = {
     true: 'Taip',
     false: 'Ne',
   },
-}
+};
 
 /**
  * Get human-readable label for a facet value
  */
 export function getFacetValueLabel(field: string, value: string): string {
-  return FACET_VALUE_LABELS[field]?.[value] || value
+  return FACET_VALUE_LABELS[field]?.[value] || value;
 }

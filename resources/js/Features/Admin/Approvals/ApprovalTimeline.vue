@@ -37,15 +37,16 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from "laravel-vue-i18n";
+import { trans as $t } from 'laravel-vue-i18n';
 
-import ApprovalBadge from "./ApprovalBadge.vue";
-import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
-import IFluentCheckmark24Filled from "~icons/fluent/checkmark-24-filled";
-import IFluentDismiss24Filled from "~icons/fluent/dismiss-24-filled";
-import IFluentArrowUndo24Filled from "~icons/fluent/arrow-undo-24-filled";
+import ApprovalBadge from './ApprovalBadge.vue';
 
-type ApprovalDecision = "approved" | "rejected" | "cancelled";
+import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
+import IFluentCheckmark24Filled from '~icons/fluent/checkmark-24-filled';
+import IFluentDismiss24Filled from '~icons/fluent/dismiss-24-filled';
+import IFluentArrowUndo24Filled from '~icons/fluent/arrow-undo-24-filled';
+
+type ApprovalDecision = 'approved' | 'rejected' | 'cancelled';
 
 interface Approval {
   id: string;
@@ -66,24 +67,24 @@ defineProps<{
 
 const getDecisionClasses = (decision: ApprovalDecision) => {
   switch (decision) {
-    case "approved":
-      return "bg-success/10 text-success";
-    case "rejected":
-      return "bg-destructive/10 text-destructive";
-    case "cancelled":
-      return "bg-warning/10 text-warning";
+    case 'approved':
+      return 'bg-success/10 text-success';
+    case 'rejected':
+      return 'bg-destructive/10 text-destructive';
+    case 'cancelled':
+      return 'bg-warning/10 text-warning';
     default:
-      return "bg-muted text-muted-foreground";
+      return 'bg-muted text-muted-foreground';
   }
 };
 
 const getDecisionIcon = (decision: ApprovalDecision) => {
   switch (decision) {
-    case "approved":
+    case 'approved':
       return IFluentCheckmark24Filled;
-    case "rejected":
+    case 'rejected':
       return IFluentDismiss24Filled;
-    case "cancelled":
+    case 'cancelled':
       return IFluentArrowUndo24Filled;
     default:
       return IFluentCheckmark24Filled;
@@ -93,11 +94,11 @@ const getDecisionIcon = (decision: ApprovalDecision) => {
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   return date.toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 };
 </script>

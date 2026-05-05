@@ -11,10 +11,10 @@
 <script setup lang="ts">
 /**
  * SpotlightBadge - A pulsing indicator for new features
- * 
+ *
  * Place this component inside a relative-positioned container to show
  * a pulsing dot that draws attention to new UI elements.
- * 
+ *
  * @example
  * ```vue
  * <div class="relative">

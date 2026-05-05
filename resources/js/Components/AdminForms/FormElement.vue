@@ -86,9 +86,9 @@
 </template>
 
 <script setup lang="ts">
-import type { Component } from "vue";
+import type { Component } from 'vue';
 
-import { Separator } from "../ui/separator";
+import { Separator } from '../ui/separator';
 
 withDefaults(defineProps<{
   noDivider?: boolean;

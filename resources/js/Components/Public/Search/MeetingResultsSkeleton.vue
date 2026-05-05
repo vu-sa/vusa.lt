@@ -71,10 +71,10 @@
 
 <script setup lang="ts">
 interface Props {
-  viewMode?: 'list' | 'compact'
+  viewMode?: 'list' | 'compact';
 }
 
 withDefaults(defineProps<Props>(), {
-  viewMode: 'list'
-})
+  viewMode: 'list',
+});
 </script>

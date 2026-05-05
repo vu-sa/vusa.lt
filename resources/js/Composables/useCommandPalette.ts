@@ -12,112 +12,113 @@
  * const { open, toggle } = useCommandPalette()
  */
 
-import { ref, provide, inject, readonly, onMounted, onUnmounted, type InjectionKey, type Ref } from 'vue'
-import { useEventListener, useLocalStorage } from '@vueuse/core'
+import { ref, provide, inject, readonly, onMounted, onUnmounted, type InjectionKey, type Ref } from 'vue';
+import { useEventListener, useLocalStorage } from '@vueuse/core';
 
 // Types
 export interface RecentItem {
-  id: string
-  type: 'meeting' | 'agenda_item' | 'action' | 'news' | 'page' | 'calendar' | 'institution' | 'document'
-  title: string
-  href?: string
-  timestamp: number
+  id: string;
+  type: 'meeting' | 'agenda_item' | 'action' | 'news' | 'page' | 'calendar' | 'institution' | 'document';
+  title: string;
+  href?: string;
+  timestamp: number;
 }
 
 interface CommandPaletteContext {
   /** Whether the command palette is currently open */
-  isOpen: Ref<boolean>
+  isOpen: Ref<boolean>;
   /** Current search query */
-  query: Ref<string>
+  query: Ref<string>;
   /** Recent items (persisted to localStorage) */
-  recentItems: Ref<RecentItem[]>
+  recentItems: Ref<RecentItem[]>;
   /** Open the command palette */
-  open: () => void
+  open: () => void;
   /** Close the command palette */
-  close: () => void
+  close: () => void;
   /** Toggle the command palette */
-  toggle: () => void
+  toggle: () => void;
   /** Add an item to recent history */
-  addRecentItem: (item: Omit<RecentItem, 'timestamp'>) => void
+  addRecentItem: (item: Omit<RecentItem, 'timestamp'>) => void;
   /** Clear recent items */
-  clearRecentItems: () => void
+  clearRecentItems: () => void;
 }
 
-const COMMAND_PALETTE_INJECTION_KEY: InjectionKey<CommandPaletteContext> = Symbol('command-palette')
+const COMMAND_PALETTE_INJECTION_KEY: InjectionKey<CommandPaletteContext> = Symbol('command-palette');
 
-const MAX_RECENT_ITEMS = 5
-const RECENT_ITEMS_KEY = 'vusa-command-palette-recent'
+const MAX_RECENT_ITEMS = 5;
+const RECENT_ITEMS_KEY = 'vusa-command-palette-recent';
 
 /**
  * Creates the command palette provider context (call in AdminLayout)
  */
 export function createCommandPaletteProvider(): CommandPaletteContext {
-  const isOpen = ref(false)
-  const query = ref('')
-  const recentItems = useLocalStorage<RecentItem[]>(RECENT_ITEMS_KEY, [])
+  const isOpen = ref(false);
+  const query = ref('');
+  const recentItems = useLocalStorage<RecentItem[]>(RECENT_ITEMS_KEY, []);
 
   const open = () => {
-    isOpen.value = true
-    query.value = ''
-  }
+    isOpen.value = true;
+    query.value = '';
+  };
 
   const close = () => {
-    isOpen.value = false
-    query.value = ''
-  }
+    isOpen.value = false;
+    query.value = '';
+  };
 
   const toggle = () => {
     if (isOpen.value) {
-      close()
-    } else {
-      open()
+      close();
     }
-  }
+    else {
+      open();
+    }
+  };
 
   const addRecentItem = (item: Omit<RecentItem, 'timestamp'>) => {
     // Remove duplicate if exists
     recentItems.value = recentItems.value.filter(
-      (r) => !(r.id === item.id && r.type === item.type)
-    )
+      r => !(r.id === item.id && r.type === item.type),
+    );
 
     // Add to beginning
     recentItems.value.unshift({
       ...item,
-      timestamp: Date.now()
-    })
+      timestamp: Date.now(),
+    });
 
     // Keep only MAX_RECENT_ITEMS
     if (recentItems.value.length > MAX_RECENT_ITEMS) {
-      recentItems.value = recentItems.value.slice(0, MAX_RECENT_ITEMS)
+      recentItems.value = recentItems.value.slice(0, MAX_RECENT_ITEMS);
     }
-  }
+  };
 
   const clearRecentItems = () => {
-    recentItems.value = []
-  }
+    recentItems.value = [];
+  };
 
   // Register global keyboard shortcut
   const handleKeydown = (event: KeyboardEvent) => {
     // Cmd+K (Mac) or Ctrl+K (Windows/Linux)
     if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
-      event.preventDefault()
-      toggle()
+      event.preventDefault();
+      toggle();
     }
 
     // Escape to close (handled by dialog, but also here as fallback)
     if (event.key === 'Escape' && isOpen.value) {
-      close()
+      close();
     }
-  }
+  };
 
   // Set up event listener on mount, clean up on unmount
   onMounted(() => {
-    window.addEventListener('keydown', handleKeydown)
-  })
+    window.addEventListener('keydown', handleKeydown);
+  });
 
   onUnmounted(() => {
-    window.removeEventListener('keydown', handleKeydown)
-  })
+    window.removeEventListener('keydown', handleKeydown);
+  });
 
   const context: CommandPaletteContext = {
     isOpen,
@@ -127,11 +128,11 @@ export function createCommandPaletteProvider(): CommandPaletteContext {
     close,
     toggle,
     addRecentItem,
-    clearRecentItems
-  }
+    clearRecentItems,
+  };
 
   // Provide the context
-  provide(COMMAND_PALETTE_INJECTION_KEY, context)
+  provide(COMMAND_PALETTE_INJECTION_KEY, context);
 
   return {
     isOpen: readonly(isOpen) as Ref<boolean>,
@@ -141,8 +142,8 @@ export function createCommandPaletteProvider(): CommandPaletteContext {
     close,
     toggle,
     addRecentItem,
-    clearRecentItems
-  }
+    clearRecentItems,
+  };
 }
 
 /**
@@ -150,15 +151,15 @@ export function createCommandPaletteProvider(): CommandPaletteContext {
  * Falls back gracefully if no provider exists
  */
 export function useCommandPalette(): CommandPaletteContext {
-  const context = inject(COMMAND_PALETTE_INJECTION_KEY, null)
+  const context = inject(COMMAND_PALETTE_INJECTION_KEY, null);
 
   if (!context) {
     // Return a no-op implementation for graceful fallback
     if (import.meta.env.DEV) {
-      console.warn('useCommandPalette: No provider found. Make sure AdminLayout uses createCommandPaletteProvider.')
+      console.warn('useCommandPalette: No provider found. Make sure AdminLayout uses createCommandPaletteProvider.');
     }
 
-    const noop = () => {}
+    const noop = () => {};
     return {
       isOpen: ref(false),
       query: ref(''),
@@ -167,9 +168,9 @@ export function useCommandPalette(): CommandPaletteContext {
       close: noop,
       toggle: noop,
       addRecentItem: noop,
-      clearRecentItems: noop
-    }
+      clearRecentItems: noop,
+    };
   }
 
-  return context
+  return context;
 }

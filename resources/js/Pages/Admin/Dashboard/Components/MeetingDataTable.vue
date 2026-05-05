@@ -8,14 +8,14 @@
         </DialogDescription>
       </DialogHeader>
       <div class="space-y-4">
-        <SimpleDataTable 
-          :data="sortedMeetings" 
-          :columns="modernMeetingColumns" 
+        <SimpleDataTable
+          :data="sortedMeetings"
+          :columns="modernMeetingColumns"
           :enable-pagination="true"
-          :page-size="10" 
-          :enable-filtering="true" 
+          :page-size="10"
+          :enable-filtering="true"
           :enable-column-visibility="false"
-          :empty-message="$t('Susitikimų nerasta')" 
+          :empty-message="$t('Susitikimų nerasta')"
         />
       </div>
     </DialogContent>
@@ -28,20 +28,20 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 
-import SimpleDataTable from "@/Components/Tables/SimpleDataTable.vue";
+import type { AtstovavimosMeeting } from '../types';
+
+import SimpleDataTable from '@/Components/Tables/SimpleDataTable.vue';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/Components/ui/dialog";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
+} from '@/Components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { createIdColumn } from '@/Utils/DataTableColumns.tsx';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { cn } from '@/Utils/Shadcn/utils';
-
-import type { AtstovavimosMeeting } from '../types';
 
 interface Props {
   meetings: AtstovavimosMeeting[];
@@ -68,13 +68,13 @@ const modernMeetingColumns = computed<ColumnDef<any, any>[]>(() => [
     size: 160,
     enableSorting: true,
     header: (info) => {
-      const label = $t('Institucija')
-      const truncatedLabel = label.length > 8 ? label.substring(0, 8) + '...' : label
+      const label = $t('Institucija');
+      const truncatedLabel = label.length > 8 ? `${label.substring(0, 8)}...` : label;
       return (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <button 
+              <button
                 class="cursor-help text-left inline-block w-full text-sm font-medium hover:bg-muted/50 px-1 py-1 rounded transition-colors"
                 onClick={() => info.column.toggleSorting()}
               >
@@ -88,11 +88,11 @@ const modernMeetingColumns = computed<ColumnDef<any, any>[]>(() => [
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-      )
+      );
     },
     cell: ({ row }) => {
-      const institutionName = row.original.institutions[0]?.name || ''
-      
+      const institutionName = row.original.institutions[0]?.name || '';
+
       if (String(institutionName).length > 35) {
         return (
           <TooltipProvider>
@@ -112,7 +112,7 @@ const modernMeetingColumns = computed<ColumnDef<any, any>[]>(() => [
           </TooltipProvider>
         );
       }
-      
+
       return (
         <Link
           href={route('institutions.show', row.original.institutions[0].id)}
@@ -134,13 +134,13 @@ const modernMeetingColumns = computed<ColumnDef<any, any>[]>(() => [
       return dateB - dateA; // Sort newest first
     },
     header: (info) => {
-      const label = $t('Susitikimo pradžia')
-      const truncatedLabel = 'Pradžia'
+      const label = $t('Susitikimo pradžia');
+      const truncatedLabel = 'Pradžia';
       return (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <button 
+              <button
                 class="cursor-help text-left inline-block w-full text-sm font-medium hover:bg-muted/50 px-1 py-1 rounded transition-colors"
                 onClick={() => info.column.toggleSorting()}
               >
@@ -154,7 +154,7 @@ const modernMeetingColumns = computed<ColumnDef<any, any>[]>(() => [
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-      )
+      );
     },
     cell: ({ row }) => {
       const startTime = new Date(row.original.start_time);
@@ -163,11 +163,11 @@ const modernMeetingColumns = computed<ColumnDef<any, any>[]>(() => [
         month: 'short',
         day: 'numeric',
         hour: 'numeric',
-        minute: 'numeric'
+        minute: 'numeric',
       });
-      
+
       return (
-        <Link 
+        <Link
           href={route('meetings.show', row.original.id)}
           class="text-primary hover:underline"
         >
@@ -182,7 +182,7 @@ const modernMeetingColumns = computed<ColumnDef<any, any>[]>(() => [
     size: 100,
     enableSorting: true,
     header: () => {
-      const label = $t('Būsena')
+      const label = $t('Būsena');
       return (
         <TooltipProvider>
           <Tooltip>
@@ -196,7 +196,7 @@ const modernMeetingColumns = computed<ColumnDef<any, any>[]>(() => [
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-      )
+      );
     },
     cell: ({ row }) => {
       const startTime = new Date(row.original.start_time);
@@ -205,11 +205,12 @@ const modernMeetingColumns = computed<ColumnDef<any, any>[]>(() => [
       return (
         <div class="flex items-center gap-2">
           <span class={cn(
-            "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium",
+            'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium',
             isUpcoming
-              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
-              : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800/50 dark:text-zinc-400"
-          )}>
+              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400'
+              : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800/50 dark:text-zinc-400',
+          )}
+          >
             {isUpcoming ? $t('Būsimas') : $t('Įvykęs')}
           </span>
         </div>
@@ -222,7 +223,7 @@ const modernMeetingColumns = computed<ColumnDef<any, any>[]>(() => [
     size: 120,
     enableSorting: true,
     header: () => {
-      const label = $t('Užbaigimas')
+      const label = $t('Užbaigimas');
       return (
         <TooltipProvider>
           <Tooltip>
@@ -236,7 +237,7 @@ const modernMeetingColumns = computed<ColumnDef<any, any>[]>(() => [
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-      )
+      );
     },
     cell: ({ row }) => {
       const status = row.original.completion_status;
@@ -249,18 +250,18 @@ const modernMeetingColumns = computed<ColumnDef<any, any>[]>(() => [
         complete: {
           label: $t('Užbaigtas'),
           color: 'bg-black text-white dark:bg-white dark:text-black',
-          icon: '●'
+          icon: '●',
         },
         incomplete: {
           label: $t('Neužbaigtas'),
           color: 'bg-red-600 text-white dark:bg-red-600',
-          icon: '●'
+          icon: '●',
         },
         no_items: {
           label: $t('Be darbotvarkės'),
           color: 'border border-red-600 text-red-600 dark:border-red-500 dark:text-red-500',
-          icon: '○'
-        }
+          icon: '○',
+        },
       };
 
       const config = statusConfig[status];
@@ -270,9 +271,10 @@ const modernMeetingColumns = computed<ColumnDef<any, any>[]>(() => [
           <Tooltip>
             <TooltipTrigger asChild>
               <span class={cn(
-                "inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium cursor-help",
-                config.color
-              )}>
+                'inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium cursor-help',
+                config.color,
+              )}
+              >
                 <span>{config.icon}</span>
                 <span class="hidden sm:inline">{config.label}</span>
               </span>

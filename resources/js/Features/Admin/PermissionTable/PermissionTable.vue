@@ -25,13 +25,13 @@
 </template>
 
 <script setup lang="tsx">
-import { type Component, ref, computed, reactive } from "vue";
-import { router } from "@inertiajs/vue3";
+import { type Component, ref, computed, reactive } from 'vue';
+import { router } from '@inertiajs/vue3';
 
-import { CRUDEnum } from "@/Types/enums";
-import PermissionTableRow from "@/Features/Admin/PermissionTable/PermissionTableRow.vue";
-import { Spinner } from "@/Components/ui/spinner";
-import { Button } from "@/Components/ui/button";
+import { CRUDEnum } from '@/Types/enums';
+import PermissionTableRow from '@/Features/Admin/PermissionTable/PermissionTableRow.vue';
+import { Spinner } from '@/Components/ui/spinner';
+import { Button } from '@/Components/ui/button';
 
 const props = defineProps<{
   permissions: string[];
@@ -50,7 +50,7 @@ const availableScopes = computed(() => {
   const scopes = new Set<string>();
 
   // Extract scopes from available permissions
-  props.availablePermissions.forEach(permission => {
+  props.availablePermissions.forEach((permission) => {
     const parts = permission.split('.');
     if (parts.length === 3 && parts[2]) {
       scopes.add(parts[2]);
@@ -60,33 +60,36 @@ const availableScopes = computed(() => {
   return {
     hasOwn: scopes.has('own'),
     hasPadalinys: scopes.has('padalinys'),
-    hasAll: scopes.has('*')
+    hasAll: scopes.has('*'),
   };
 });
 
 // Determine the appropriate header text for the second column
 const padalinysHeaderText = computed(() => {
   if (availableScopes.value.hasOwn && availableScopes.value.hasPadalinys) {
-    return "Savo / Padalinyje";
-  } else if (availableScopes.value.hasPadalinys) {
-    return "Padalinyje";
-  } else {
-    return "Netaikoma";
+    return 'Savo / Padalinyje';
+  }
+  else if (availableScopes.value.hasPadalinys) {
+    return 'Padalinyje';
+  }
+  else {
+    return 'Netaikoma';
   }
 });
 
 // Determine the appropriate header text for the third column
 const allHeaderText = computed(() => {
   if (availableScopes.value.hasAll) {
-    return availableScopes.value.hasOwn || availableScopes.value.hasPadalinys ? "Visur" : props.modelType;
-  } else {
-    return "Netaikoma";
+    return availableScopes.value.hasOwn || availableScopes.value.hasPadalinys ? 'Visur' : props.modelType;
+  }
+  else {
+    return 'Netaikoma';
   }
 });
 
 const getAbilityScopeFromModelPermissions = (
   permissions: string[] | [],
-  abilityInForm: string
+  abilityInForm: string,
 ) => {
   const filteredPermissions = permissions.filter((permission) => {
     return permission.includes(abilityInForm);
@@ -97,7 +100,7 @@ const getAbilityScopeFromModelPermissions = (
   }
 
   // delimit permission string to get ability and scope
-  const permissionDelimited = filteredPermissions[0]?.split(".");
+  const permissionDelimited = filteredPermissions[0]?.split('.');
 
   if (!permissionDelimited || permissionDelimited.length !== 3) {
     formDisabled.value = true;
@@ -116,10 +119,10 @@ const getAbilityScopeFromModelPermissions = (
 const getPermissionScope = getAbilityScopeFromModelPermissions;
 
 const formTemplate = {
-  create: getPermissionScope(props.permissions, "create"),
-  read: getPermissionScope(props.permissions, "read"),
-  update: getPermissionScope(props.permissions, "update"),
-  delete: getPermissionScope(props.permissions, "delete"),
+  create: getPermissionScope(props.permissions, 'create'),
+  read: getPermissionScope(props.permissions, 'read'),
+  update: getPermissionScope(props.permissions, 'update'),
+  delete: getPermissionScope(props.permissions, 'delete'),
 };
 
 // Use reactive object instead of useForm for simpler state management
@@ -129,7 +132,7 @@ const originalData = { ...formTemplate };
 // Check if form has changes
 const isDirty = computed(() => {
   return Object.keys(permissionData).some(key =>
-    permissionData[key as keyof typeof permissionData] !== originalData[key as keyof typeof originalData]
+    permissionData[key as keyof typeof permissionData] !== originalData[key as keyof typeof originalData],
   );
 });
 
@@ -143,11 +146,11 @@ const updatePermissionsForRole = () => {
 
   // Only send abilities that have valid scopes
   const filteredData = Object.fromEntries(
-    Object.entries(permissionData).filter(([, value]) => value !== undefined)
+    Object.entries(permissionData).filter(([, value]) => value !== undefined),
   );
 
   router.patch(
-    route("roles.syncPermissionGroup", {
+    route('roles.syncPermissionGroup', {
       role: props.role.id,
       model: props.modelType,
     }),
@@ -162,7 +165,7 @@ const updatePermissionsForRole = () => {
       onError: () => {
         loading.value = false;
       },
-    }
+    },
   );
 };
 </script>

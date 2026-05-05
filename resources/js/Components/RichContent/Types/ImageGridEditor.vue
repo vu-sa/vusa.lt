@@ -1,7 +1,7 @@
 <template>
   <DynamicListInput
     v-model="modelValue"
-    :create-item="createItem"
+    :create-item
     :empty-text="$t('rich-content.no_images')"
     :add-first-text="$t('rich-content.add_first_image')"
     :add-text="$t('rich-content.add_image')"
@@ -10,8 +10,8 @@
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field>
           <FieldLabel>{{ $t('rich-content.image_width') }}</FieldLabel>
-          <Select 
-            :model-value="item.colspan" 
+          <Select
+            :model-value="item.colspan"
             @update:model-value="update({ ...item, colspan: $event })">
             <SelectTrigger>
               <SelectValue :placeholder="$t('rich-content.select_width')" />
@@ -23,12 +23,12 @@
             </SelectContent>
           </Select>
         </Field>
-        
+
         <Field>
           <FieldLabel>{{ $t('rich-content.image') }}</FieldLabel>
-          <TiptapImageButton 
-            v-if="!item.image" 
-            size="medium" 
+          <TiptapImageButton
+            v-if="!item.image"
+            size="medium"
             @submit="update({ ...item, image: $event })">
             {{ $t('rich-content.select_image') }}
           </TiptapImageButton>
@@ -45,6 +45,8 @@
 </template>
 
 <script setup lang="ts">
+import { trans as $t } from 'laravel-vue-i18n';
+
 import type { ImageGrid } from '@/Types/contentParts';
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
 import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
@@ -52,7 +54,6 @@ import { Field, FieldLabel } from '@/Components/ui/field';
 import { Button } from '@/Components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
-import { trans as $t } from 'laravel-vue-i18n';
 
 const modelValue = defineModel<ImageGrid['json_content']>();
 
@@ -65,9 +66,8 @@ const imageGridOptions = [
 
 function createItem(): ImageGrid['json_content'][number] {
   return {
-    colspan: "col-span-2",
-    image: "",
+    colspan: 'col-span-2',
+    image: '',
   };
 }
 </script>
-

@@ -2,13 +2,10 @@
 
 namespace App\Models\Traits;
 
-use App\Contracts\SharepointFileableContract;
 use App\Models\FileableFile;
-use App\Models\SharepointFile;
 use App\Services\ResourceServices\SharepointFileService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 /**
  * Provides SharePoint file functionality to models.
@@ -23,17 +20,7 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 trait HasSharepointFiles
 {
     /**
-     * Legacy relationship: files via pivot table (sharepoint_fileables).
-     *
-     * @deprecated Use fileableFiles() instead for new implementations
-     */
-    public function files(): MorphToMany
-    {
-        return $this->morphToMany(SharepointFile::class, 'fileable', 'sharepoint_fileables');
-    }
-
-    /**
-     * New relationship: files with local metadata storage.
+     * Files with local metadata storage.
      * Enables instant queries without SharePoint API calls.
      */
     public function fileableFiles(): MorphMany

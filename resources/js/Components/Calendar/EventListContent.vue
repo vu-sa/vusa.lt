@@ -24,9 +24,9 @@
 
     <!-- Pagination -->
     <div class="mt-6 flex justify-center">
-      <Pagination v-if="events.total > events.per_page" 
-        :total="events.total" 
-        :items-per-page="events.per_page" 
+      <Pagination v-if="events.total > events.per_page"
+        :total="events.total"
+        :items-per-page="events.per_page"
         :page="events.current_page"
         :sibling-count="1"
         show-edges
@@ -36,7 +36,7 @@
           <PaginationFirst />
           <PaginationPrevious />
           <template v-for="(item, index) in paginationItems" :key="index">
-            <PaginationEllipsis v-if="item.type === 'ellipsis'" :index="index" />
+            <PaginationEllipsis v-if="item.type === 'ellipsis'" :index />
             <PaginationItem v-else :value="item.value" :is-active="item.value === events.current_page" as-child>
               <Button :variant="item.value === events.current_page ? 'default' : 'outline'" class="h-9 w-9 p-0">
                 {{ item.value }}
@@ -52,22 +52,23 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from "laravel-vue-i18n";
-import { computed } from "vue";
-import { usePage } from "@inertiajs/vue3";
+import { trans as $t } from 'laravel-vue-i18n';
+import { computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 
-import EventCard from "./EventCard.vue";
-import { Button } from "@/Components/ui/button";
-import { 
-  Pagination, 
-  PaginationContent, 
-  PaginationEllipsis, 
-  PaginationFirst, 
-  PaginationItem, 
-  PaginationLast, 
-  PaginationNext, 
-  PaginationPrevious 
-} from "@/Components/ui/pagination";
+import EventCard from './EventCard.vue';
+
+import { Button } from '@/Components/ui/button';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationFirst,
+  PaginationItem,
+  PaginationLast,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/Components/ui/pagination';
 
 const props = defineProps<{
   events: {
@@ -95,36 +96,36 @@ const paginationItems = computed(() => {
   const currentPage = props.events.current_page;
   const lastPage = props.events.last_page;
   const siblingCount = 1;
-  
+
   // Always show first page
   items.push({ type: 'page', value: 1 });
-  
+
   // Calculate range around current page
   const leftSibling = Math.max(currentPage - siblingCount, 2);
   const rightSibling = Math.min(currentPage + siblingCount, lastPage - 1);
-  
+
   // Add ellipsis if needed on the left
   if (leftSibling > 2) {
     items.push({ type: 'ellipsis' });
   }
-  
+
   // Add pages around current
   for (let i = leftSibling; i <= rightSibling; i++) {
     if (i > 1 && i < lastPage) {
       items.push({ type: 'page', value: i });
     }
   }
-  
+
   // Add ellipsis if needed on the right
   if (rightSibling < lastPage - 1) {
     items.push({ type: 'ellipsis' });
   }
-  
+
   // Always show last page if more than 1 page
   if (lastPage > 1) {
     items.push({ type: 'page', value: lastPage });
   }
-  
+
   return items;
 });
 
@@ -147,9 +148,9 @@ const generateGoogleLink = (event: App.Entities.Calendar) => {
   const title = Array.isArray(event.title) ? event.title.join(' ') : (event.title || '');
   const location = Array.isArray(event.location) ? event.location.join(' ') : (event.location || '');
 
-  return `https://www.google.com/calendar/render?action=TEMPLATE` +
-    `&text=${encodeURIComponent(title)}` +
-    `&dates=${formatGoogleDate(startDate)}/${formatGoogleDate(endDate)}` +
-    `&details=${encodeURIComponent(details)}${location ? `&location=${encodeURIComponent(location)}` : ''}`;
+  return `https://www.google.com/calendar/render?action=TEMPLATE`
+    + `&text=${encodeURIComponent(title)}`
+    + `&dates=${formatGoogleDate(startDate)}/${formatGoogleDate(endDate)}`
+    + `&details=${encodeURIComponent(details)}${location ? `&location=${encodeURIComponent(location)}` : ''}`;
 };
 </script>

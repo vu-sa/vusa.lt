@@ -92,7 +92,7 @@
 </template>
 
 <script setup lang="ts" generic="T extends { id: string | number }">
-import { computed, type Component } from 'vue'
+import { computed, type Component } from 'vue';
 import {
   Search,
   SearchX,
@@ -101,46 +101,46 @@ import {
   Loader2,
   AlertTriangle,
   RefreshCw,
-  Flag
-} from 'lucide-vue-next'
+  Flag,
+} from 'lucide-vue-next';
 
-import { Button } from '@/Components/ui/button'
+import { Button } from '@/Components/ui/button';
 
 interface Props {
-  results: T[]
-  isLoading?: boolean
-  hasQuery?: boolean
-  searchQuery?: string
-  totalHits?: number
-  hasMoreResults?: boolean
-  isLoadingMore?: boolean
-  hasError?: boolean
-  hasActiveFilters?: boolean
+  results: T[];
+  isLoading?: boolean;
+  hasQuery?: boolean;
+  searchQuery?: string;
+  totalHits?: number;
+  hasMoreResults?: boolean;
+  isLoadingMore?: boolean;
+  hasError?: boolean;
+  hasActiveFilters?: boolean;
 
   // Skeleton configuration
-  skeletonCount?: number
+  skeletonCount?: number;
 
   // CSS class customization
-  loadingContainerClass?: string
-  resultsContainerClass?: string
+  loadingContainerClass?: string;
+  resultsContainerClass?: string;
 
   // Transition customization
-  transitionName?: string
-  transitionTag?: string
-  transitionClass?: string
+  transitionName?: string;
+  transitionTag?: string;
+  transitionClass?: string;
 
   // Translation keys for empty/no-results states
-  noResultsTitleKey?: string
-  noResultsDescriptionKey?: string
-  emptyStateTitleKey?: string
-  emptyStateDescriptionKey?: string
-  browseAllKey?: string
+  noResultsTitleKey?: string;
+  noResultsDescriptionKey?: string;
+  emptyStateTitleKey?: string;
+  emptyStateDescriptionKey?: string;
+  browseAllKey?: string;
 
   // Empty state icon
-  emptyStateIcon?: Component
+  emptyStateIcon?: Component;
 
   // Item key getter (defaults to item.id)
-  itemKeyField?: string
+  itemKeyField?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -165,37 +165,37 @@ const props = withDefaults(defineProps<Props>(), {
   emptyStateDescriptionKey: 'search.search_description',
   browseAllKey: 'search.browse_all',
   emptyStateIcon: () => Search,
-  itemKeyField: 'id'
-})
+  itemKeyField: 'id',
+});
 
 const emit = defineEmits<{
-  loadMore: []
-  clearFilters: []
-  retry: []
-  reportError: []
-}>()
+  loadMore: [];
+  clearFilters: [];
+  retry: [];
+  reportError: [];
+}>();
 
 // Computed properties for state management
 const showNoResultsState = computed(() => {
-  const hasRealQuery = props.searchQuery && props.searchQuery.trim() !== '' && props.searchQuery.trim() !== '*'
-  const hasUserFilters = props.hasActiveFilters
+  const hasRealQuery = props.searchQuery && props.searchQuery.trim() !== '' && props.searchQuery.trim() !== '*';
+  const hasUserFilters = props.hasActiveFilters;
 
-  return !props.isLoading &&
-    props.results.length === 0 &&
-    (hasRealQuery || hasUserFilters)
-})
+  return !props.isLoading
+    && props.results.length === 0
+    && (hasRealQuery || hasUserFilters);
+});
 
 const showEmptyState = computed(() => {
-  return !props.isLoading &&
-    props.results.length === 0 &&
-    (!props.searchQuery || props.searchQuery.trim() === '' || props.searchQuery.trim() === '*') &&
-    !props.hasActiveFilters
-})
+  return !props.isLoading
+    && props.results.length === 0
+    && (!props.searchQuery || props.searchQuery.trim() === '' || props.searchQuery.trim() === '*')
+    && !props.hasActiveFilters;
+});
 
 // Get item key for TransitionGroup
 const getItemKey = (item: T): string | number => {
-  return item[props.itemKeyField as keyof T] as string | number
-}
+  return item[props.itemKeyField as keyof T] as string | number;
+};
 </script>
 
 <style scoped>

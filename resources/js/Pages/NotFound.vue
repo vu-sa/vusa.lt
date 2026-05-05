@@ -21,6 +21,6 @@
       p.s. galbūt nuėjus į <strong><a href="https://vusa.lt">vusa.lt</a></strong
       >, galėsi toliau surasti, ko ieškojai...
     </p>
-        <img src="https://cataas.com/cat/cute" alt="A cute cat to brighten your day" loading="lazy">
+    <img src="https://cataas.com/cat/cute" alt="A cute cat to brighten your day" loading="lazy">
   </div>
 </template>

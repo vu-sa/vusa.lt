@@ -1,6 +1,5 @@
 <template>
   <PageContent>
-
     <Head :title="$t('Mano VU SA')" />
 
     <div class="space-y-6">
@@ -50,24 +49,24 @@
 </template>
 
 <script setup lang="ts">
-import { Head, router, usePage } from "@inertiajs/vue3";
-import { trans as $t } from "laravel-vue-i18n";
-import { computed, ref, onMounted, defineAsyncComponent } from "vue";
-import { format } from "date-fns";
-import { lt, enUS } from "date-fns/locale";
+import { Head, router, usePage } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+import { computed, ref, onMounted, defineAsyncComponent } from 'vue';
+import { format } from 'date-fns';
+import { lt, enUS } from 'date-fns/locale';
 
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import TasksCard from "@/Pages/Admin/Dashboard/Components/TasksCard.vue";
-import UpcomingMeetingsCard from "@/Pages/Admin/Dashboard/Components/UpcomingMeetingsCard.vue";
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import TasksCard from '@/Pages/Admin/Dashboard/Components/TasksCard.vue';
+import UpcomingMeetingsCard from '@/Pages/Admin/Dashboard/Components/UpcomingMeetingsCard.vue';
 // Lazy load modal - only needed when user clicks "Create meeting"
-const NewMeetingDialog = defineAsyncComponent(() => import("@/Components/Dialogs/NewMeetingDialog.vue"));
-import CalendarEventsCard from "@/Pages/Admin/Dashboard/Components/CalendarEventsCard.vue";
-import NewsListCard from "@/Pages/Admin/Dashboard/Components/NewsListCard.vue";
-import { addressivize } from "@/Utils/String";
-import { useProductTour } from "@/Composables/useProductTour";
-import { provideTour } from "@/Composables/useTourProvider";
-import { useSidebar } from "@/Components/ui/sidebar/utils";
-import type { TaskProgress, TaskActionType } from "@/Types/TaskTypes";
+const NewMeetingDialog = defineAsyncComponent(() => import('@/Components/Dialogs/NewMeetingDialog.vue'));
+import CalendarEventsCard from '@/Pages/Admin/Dashboard/Components/CalendarEventsCard.vue';
+import NewsListCard from '@/Pages/Admin/Dashboard/Components/NewsListCard.vue';
+import { addressivize } from '@/Utils/String';
+import { useProductTour } from '@/Composables/useProductTour';
+import { provideTour } from '@/Composables/useTourProvider';
+import { useSidebar } from '@/Components/ui/sidebar/utils';
+import type { TaskProgress, TaskActionType } from '@/Types/TaskTypes';
 
 // Types
 interface TaskStats {
@@ -123,7 +122,8 @@ const { setOpen, setOpenMobile, isMobile } = useSidebar();
 const expandSidebar = () => {
   if (isMobile.value) {
     setOpenMobile(true);
-  } else {
+  }
+  else {
     setOpen(true);
   }
 };
@@ -131,7 +131,7 @@ const expandSidebar = () => {
 // Build conditional tour steps
 const tourSteps = computed(() => {
   const steps = [];
-  
+
   // 1. Welcome step (always)
   steps.push({
     popover: {
@@ -139,7 +139,7 @@ const tourSteps = computed(() => {
       description: $t('tutorials.admin_home.welcome.description'),
     },
   });
-  
+
   // 2. Upcoming meetings card (if atstovavimas)
   if (hasAtstovavimas.value) {
     steps.push({
@@ -150,7 +150,7 @@ const tourSteps = computed(() => {
       },
     });
   }
-  
+
   // 3. ViSAK in sidebar (if atstovavimas)
   if (hasAtstovavimas.value) {
     steps.push({
@@ -162,7 +162,7 @@ const tourSteps = computed(() => {
       onHighlightStarted: expandSidebar,
     });
   }
-  
+
   // 4. Administravimas button (if can manage administration)
   if (canAccessAdministration.value) {
     steps.push({
@@ -174,7 +174,7 @@ const tourSteps = computed(() => {
       onHighlightStarted: expandSidebar,
     });
   }
-  
+
   // 5. Quick actions section
   steps.push({
     element: '[data-tour="quick-actions"]',
@@ -184,7 +184,7 @@ const tourSteps = computed(() => {
     },
     onHighlightStarted: expandSidebar,
   });
-  
+
   // 6. Tasks card
   steps.push({
     element: '[data-tour="tasks-card"]',
@@ -193,7 +193,7 @@ const tourSteps = computed(() => {
       description: $t('tutorials.admin_home.tasks_card.description'),
     },
   });
-  
+
   // 7. Tasks indicator in top bar
   steps.push({
     element: '[data-tour="tasks-indicator"]',
@@ -202,7 +202,7 @@ const tourSteps = computed(() => {
       description: $t('tutorials.admin_home.tasks_indicator.description'),
     },
   });
-  
+
   // 8. Notifications indicator in top bar
   steps.push({
     element: '[data-tour="notifications-indicator"]',
@@ -211,7 +211,7 @@ const tourSteps = computed(() => {
       description: $t('tutorials.admin_home.notifications_indicator.description'),
     },
   });
-  
+
   // 9. Help button in top bar
   steps.push({
     element: '[data-tour="help-button"]',
@@ -220,7 +220,7 @@ const tourSteps = computed(() => {
       description: $t('tutorials.admin_home.help_button.description'),
     },
   });
-  
+
   // 10. Dokumentacija in sidebar
   steps.push({
     element: '[data-tour="nav-dokumentacija"]',
@@ -230,7 +230,7 @@ const tourSteps = computed(() => {
     },
     onHighlightStarted: expandSidebar,
   });
-  
+
   // 11. User menu (settings) in sidebar
   steps.push({
     element: '[data-tour="user-menu"]',
@@ -240,7 +240,7 @@ const tourSteps = computed(() => {
     },
     onHighlightStarted: expandSidebar,
   });
-  
+
   // 12. Leave feedback in sidebar (final step)
   steps.push({
     element: '[data-tour="nav-feedback"]',
@@ -250,7 +250,7 @@ const tourSteps = computed(() => {
     },
     onHighlightStarted: expandSidebar,
   });
-  
+
   return steps;
 });
 
@@ -275,7 +275,7 @@ onMounted(() => {
 // Empty insights for the UpcomingMeetingsCard (we don't have this data on the home page)
 const emptyInsights = {
   withoutMeetings: [],
-  withOldMeetings: []
+  withOldMeetings: [],
 };
 
 // Locale for date formatting
@@ -284,8 +284,8 @@ const dateLocale = computed(() => usePage().props.app.locale === 'lt' ? lt : enU
 // User name with addressivization for Lithuanian
 const userNameAddress = computed(() => {
   const name = usePage().props.auth?.user?.name;
-  const split = name?.split(" ");
-  if (!split) return "";
+  const split = name?.split(' ');
+  if (!split) return '';
   const firstName = split[0];
   return usePage().props.app.locale === 'lt' ? addressivize(firstName) : firstName;
 });
@@ -308,11 +308,13 @@ const formattedMeetings = computed(() => {
   return props.upcomingMeetings.map(meeting => ({
     id: meeting.id,
     start_time: meeting.start_time,
-    institutions: meeting.institution_name ? [{
-      id: '0',
-      name: meeting.institution_name,
-      has_public_meetings: false
-    }] : []
+    institutions: meeting.institution_name
+      ? [{
+          id: '0',
+          name: meeting.institution_name,
+          has_public_meetings: false,
+        }]
+      : [],
   }));
 });
 </script>

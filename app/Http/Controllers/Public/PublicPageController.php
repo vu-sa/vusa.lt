@@ -71,8 +71,15 @@ class PublicPageController extends PublicController
 
         $content = Cache::tags(['homepage', "tenant_{$this->tenant->id}", "locale_{$locale}"])
             ->remember($cacheKey, 3600, function () {
-                return $this->tenant->content ??
-                    Tenant::query()->where('type', 'pagrindinis')->first()?->content;
+                // Check if tenant has content with actual content parts
+                $tenantContent = $this->tenant->content;
+
+                // If no content or content has no parts, fall back to main tenant
+                if (! $tenantContent || $tenantContent->parts->isEmpty()) {
+                    return Tenant::query()->where('type', 'pagrindinis')->first()?->content;
+                }
+
+                return $tenantContent;
             });
 
         // Fetch news for homepage to enable LCP image preloading (eliminates API waterfall)
@@ -169,6 +176,37 @@ class PublicPageController extends PublicController
             description: ContentHelper::getDescriptionForSeo($page),
         );
 
+        // Generate breadcrumb schema
+        $locale = app()->getLocale();
+        $breadcrumbs = [
+            [
+                'name' => $locale === 'lt' ? 'Pradžia' : 'Home',
+                'url' => route('home', ['subdomain' => $this->subdomain, 'lang' => $locale]),
+            ],
+        ];
+
+        // Add category if exists
+        if ($page->category) {
+            $breadcrumbs[] = [
+                'name' => $page->category->name,
+                'url' => route('category', [
+                    'subdomain' => $this->subdomain,
+                    'lang' => $locale,
+                    'category' => $page->category->alias,
+                ]),
+            ];
+        }
+
+        // Add current page
+        $breadcrumbs[] = [
+            'name' => $page->title,
+            'url' => route('page', [
+                'subdomain' => $this->subdomain,
+                'lang' => $locale,
+                'permalink' => $page->permalink,
+            ]),
+        ];
+
         return Inertia::render('Public/ContentPage', [
             'navigationItemId' => $navigation_item?->id,
             'page' => [
@@ -185,6 +223,7 @@ class PublicPageController extends PublicController
             ],
         ])->withViewData([
             'SEOData' => $seo,
+            'JSONLD_Schemas' => [$this->getBreadcrumbSchema($breadcrumbs)],
         ]);
     }
 
@@ -340,21 +379,21 @@ class PublicPageController extends PublicController
         );
 
         $forms = [
-            'chgf' => 'https://forms.office.com/e/m5efiVLTnb',
-            'evaf' => 'https://forms.office.com/e/iAhN6ScQ3H',
-            'ff' => 'https://forms.office.com/e/kNFgdk7ZDF',
-            'filf' => 'https://forms.office.com/e/LyYYN3btqN',
-            'fsf' => 'https://forms.office.com/e/xKMfZrgAVh',
-            'gmc' => 'https://forms.office.com/e/04PN2ajihu',
-            'if' => 'https://forms.office.com/e/0pn0SZ02b0',
-            'kf' => 'https://forms.office.com/e/UdnpVRLdPk',
-            'knf' => 'https://forms.office.com/e/PAKadETKhQ',
-            'mf' => 'https://forms.office.com/e/CjxQ590Nsh',
-            'mif' => 'https://forms.office.com/e/dh0UbRhjEn',
-            'sa' => 'https://forms.office.com/e/pz1S1KkFfF',
-            'tf' => 'https://forms.office.com/e/znCEWZrju1',
-            'tspmi' => 'https://forms.office.com/e/BNHUFeS27g',
-            'vm' => 'https://forms.office.com/e/Uf428VaLyv',
+            'chgf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUNjNTNU9ESE4wV0s4RTA2QUtIMllVN0RSNC4u',
+            'evaf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUNDI2Q0xKWktSSVFVR1RUOENEUk9QUlRFVy4u',
+            'ff' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUOEZBSDk4NFZWRUJDMjJBOVU1TEtHWFJDNy4u',
+            'filf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVURVY3TlNWQ0VHTjcwU1BVMEI1NjA5N04xTS4u',
+            'fsf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUMlRLOFozV1RNWEZXMDdJODUzSDhQTllKWS4u',
+            'gmc' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUQk1TVTlTM0k0MlpPTkZUSjczWU9HMDNTUi4u',
+            'if' => 'https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1utank1gTtJOjW_KfzCkXc1UN0NLNjM2SzRXQkwzT0NUTVQ1NjFKMjFIOS4u',
+            'kf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVURU05RU1FUU5LODVCRjRaMzI3VkRRNFY3Sy4u',
+            'knf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUN1A4RFhKWDVXVjUwNDdZUkZEUjgzNzkzRi4u',
+            'mf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUMllPRDFVSkZWOUQ4SVJRSjhJTkRSVUJYVy4u',
+            'mif' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUOE03NUhXMFpON1RBT0hCODZLUFpFOUdDWS4u',
+            'sa' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUMTlRQ1lIWUVMR0xNN0lSUzYzUzkwNDUzWi4u',
+            'tf' => 'mailto:integracija@tf.vusa.lt',
+            'tspmi' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUNUc2UUtSREk4OExZT0VEMlkwRExKUUw5Ry4u',
+            'vm' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUNEdYVzJTSURWRkdXMVZFMlhFUVkyREk0UC4u',
         ];
 
         $english_tenant_names = [
@@ -600,13 +639,66 @@ class PublicPageController extends PublicController
 
     public function calendarEventRedirect($lang, Calendar $calendar)
     {
+        // Get a non-empty title with fallback to other locales
+        $titleData = $this->getNonEmptyCalendarTitle($calendar);
+        $title = $titleData['title'];
+        $usedLocale = $titleData['locale'];
+
+        // Generate slug from the non-empty title
+        $slug = Str::slug($title);
+
+        // Fallback to ID-based slug if still empty (shouldn't happen, but defensive)
+        if (empty($slug)) {
+            $slug = 'event-'.$calendar->id;
+        }
+
         return redirect(route('calendar.event.2', [
             'year' => $calendar->date->format('Y'),
             'month' => $calendar->date->format('m'),
             'day' => $calendar->date->format('d'),
-            'slug' => Str::slug($calendar->title),
-            'lang' => app()->getLocale(),
+            'slug' => $slug,
+            'lang' => $usedLocale,
         ]), 301);
+    }
+
+    /**
+     * Get a non-empty calendar title with fallback to other locales
+     *
+     * @return array{title: string, locale: string}
+     */
+    private function getNonEmptyCalendarTitle(Calendar $calendar): array
+    {
+        $currentLocale = app()->getLocale();
+
+        // Try current locale first
+        $title = $calendar->getTranslation('title', $currentLocale);
+        if (! empty(trim($title))) {
+            return ['title' => $title, 'locale' => $currentLocale];
+        }
+
+        // Fallback priority: lt -> en -> any available
+        $fallbackLocales = ['lt', 'en'];
+
+        foreach ($fallbackLocales as $locale) {
+            if ($locale === $currentLocale) {
+                continue; // Already tried
+            }
+            $title = $calendar->getTranslation('title', $locale);
+            if (! empty(trim($title))) {
+                return ['title' => $title, 'locale' => $locale];
+            }
+        }
+
+        // Try any available translation
+        $translations = $calendar->getTranslations('title');
+        foreach ($translations as $locale => $translation) {
+            if (! empty(trim($translation))) {
+                return ['title' => $translation, 'locale' => $locale];
+            }
+        }
+
+        // Last resort: use calendar ID
+        return ['title' => 'Event '.$calendar->id, 'locale' => $currentLocale];
     }
 
     public function calendarEventMain($lang, Calendar $calendar)
@@ -631,6 +723,30 @@ class PublicPageController extends PublicController
         // Get related events without caching
         $relatedEvents = $this->getEventsForCalendar();
 
+        // Generate breadcrumb schema
+        $locale = app()->getLocale();
+        $breadcrumbs = [
+            [
+                'name' => $locale === 'lt' ? 'Pradžia' : 'Home',
+                'url' => route('home', ['subdomain' => $this->subdomain, 'lang' => $locale]),
+            ],
+            [
+                'name' => $locale === 'lt' ? 'Renginiai' : 'Events',
+                'url' => route('calendar.list', ['subdomain' => $this->subdomain, 'lang' => $locale]),
+            ],
+            [
+                'name' => $calendar->title,
+                'url' => route('calendar.event.2', [
+                    'subdomain' => $this->subdomain,
+                    'lang' => $locale,
+                    'year' => $calendar->date->format('Y'),
+                    'month' => $calendar->date->format('m'),
+                    'day' => $calendar->date->format('d'),
+                    'slug' => Str::slug($calendar->title),
+                ]),
+            ],
+        ];
+
         return Inertia::render('Public/CalendarEvent', [
             'event' => [
                 ...$calendar->toArray(),
@@ -642,6 +758,10 @@ class PublicPageController extends PublicController
             ->withViewData(
                 [
                     'SEOData' => $seo,
+                    'JSONLD_Schemas' => [
+                        $this->getBreadcrumbSchema($breadcrumbs),
+                        $calendar->toEventSchema(),
+                    ],
                 ]
             );
     }

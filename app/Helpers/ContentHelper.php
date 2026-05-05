@@ -22,7 +22,7 @@ class ContentHelper
         // Check if empty array - this comes up when in content creation,
         // user doesn't add any content to tiptap editor. It is initialised
         // as an empty array, and when the ->setContent() method is called, it throws an error
-        if ($firstTiptapElement && $firstTiptapElement->json_content === []) {
+        if ($firstTiptapElement && count($firstTiptapElement->json_content) === 0) {
             $firstTiptapElement = null;
         }
 
@@ -54,7 +54,11 @@ class ContentHelper
                 $jsonContent = $jsonContent->getArrayCopy();
             }
 
-            return Str::limit((new Editor)->setContent($jsonContent)->getText(), $limit);
+            try {
+                return Str::limit((new Editor)->setContent($jsonContent)->getText(), $limit);
+            } catch (\Throwable) {
+                return null;
+            }
         }
 
         return null;

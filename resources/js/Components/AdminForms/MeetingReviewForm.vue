@@ -5,7 +5,9 @@
       <div class="mx-auto w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center">
         <CheckCircle class="h-7 w-7 text-primary" />
       </div>
-      <h2 class="text-xl font-semibold">{{ $t('Paruošta sukurti susitikimą') }}</h2>
+      <h2 class="text-xl font-semibold">
+        {{ $t('Paruošta sukurti susitikimą') }}
+      </h2>
       <p class="text-sm text-muted-foreground max-w-md mx-auto">
         {{ $t('Patikrinkite duomenis ir spauskite "Sukurti", jei viskas gerai') }}
       </p>
@@ -20,7 +22,9 @@
             <div class="flex items-center gap-3">
               <component :is="Icons.INSTITUTION" class="h-5 w-5 text-muted-foreground" />
               <div>
-                <p class="font-medium">{{ selectedInstitution?.name }}</p>
+                <p class="font-medium">
+                  {{ selectedInstitution?.name }}
+                </p>
                 <!-- <p class="text-sm text-muted-foreground">{{ selectedInstitution?.type || $t('Institucija') }}</p> -->
               </div>
             </div>
@@ -36,7 +40,9 @@
             <div class="flex items-center gap-3">
               <Calendar class="h-5 w-5 text-muted-foreground" />
               <div>
-                <p class="font-medium">{{ formatDate(meetingData.start_time) }}</p>
+                <p class="font-medium">
+                  {{ formatDate(meetingData.start_time) }}
+                </p>
                 <!-- Hide time for email meetings (isDateOnly) -->
                 <div v-if="!meetingType?.isDateOnly" class="flex items-center gap-2">
                   <span class="text-sm text-muted-foreground">{{ formatTime(meetingData.start_time) }}</span>
@@ -61,8 +67,12 @@
             <div class="flex items-center gap-3">
               <component :is="Icons.TYPE" class="h-5 w-5 text-muted-foreground" />
               <div>
-                <p class="font-medium">{{ meetingType?.title || $t('Posėdžio tipas nenurodytas') }}</p>
-                <p class="text-sm text-muted-foreground">{{ $t('Posėdžio tipas') }}</p>
+                <p class="font-medium">
+                  {{ meetingType?.title || $t('Posėdžio tipas nenurodytas') }}
+                </p>
+                <p class="text-sm text-muted-foreground">
+                  {{ $t('Posėdžio tipas') }}
+                </p>
               </div>
             </div>
             <Button type="button" variant="ghost" size="sm" @click="$emit('editStep', 2)">
@@ -77,16 +87,24 @@
               <div v-if="meetingData.description" class="flex items-start gap-3">
                 <FileText class="h-5 w-5 mt-0.5 text-muted-foreground" />
                 <div class="flex-1">
-                  <p class="text-sm font-medium">{{ $t('Aprašymas') }}</p>
-                  <p class="text-sm text-muted-foreground">{{ meetingData.description }}</p>
+                  <p class="text-sm font-medium">
+                    {{ $t('Aprašymas') }}
+                  </p>
+                  <p class="text-sm text-muted-foreground">
+                    {{ meetingData.description }}
+                  </p>
                 </div>
               </div>
-              
+
               <div v-if="meetingData.location" class="flex items-start gap-3">
                 <MapPin class="h-5 w-5 mt-0.5 text-muted-foreground" />
                 <div class="flex-1">
-                  <p class="text-sm font-medium">{{ $t('Vieta') }}</p>
-                  <p class="text-sm text-muted-foreground">{{ meetingData.location }}</p>
+                  <p class="text-sm font-medium">
+                    {{ $t('Vieta') }}
+                  </p>
+                  <p class="text-sm text-muted-foreground">
+                    {{ meetingData.location }}
+                  </p>
                 </div>
               </div>
             </div>
@@ -110,7 +128,7 @@
             <Edit class="h-4 w-4" />
           </Button>
         </div>
-        
+
         <div class="space-y-2">
           <div
             v-for="(item, index) in displayedAgendaItems"
@@ -125,7 +143,7 @@
               {{ $t('Studentų') }}
             </Badge>
           </div>
-          
+
           <Button
             v-if="agendaItems.length > maxDisplayedItems"
             type="button"
@@ -134,9 +152,9 @@
             class="w-full mt-3"
             @click="showAllAgendaItems = !showAllAgendaItems"
           >
-            {{ showAllAgendaItems 
-              ? $t('Rodyti mažiau') 
-              : $t('Dar') + ' ' + (agendaItems.length - maxDisplayedItems) + ' ' + $t('klausimų') 
+            {{ showAllAgendaItems
+              ? $t('Rodyti mažiau')
+              : $t('Dar') + ' ' + (agendaItems.length - maxDisplayedItems) + ' ' + $t('klausimų')
             }}
             <ChevronDown class="ml-2 h-3 w-3" :class="{ 'rotate-180': showAllAgendaItems }" />
           </Button>
@@ -150,9 +168,9 @@
         <ArrowLeft class="mr-2 h-4 w-4" />
         {{ $t('Atgal') }}
       </Button>
-      
-  <div class="flex items-center gap-3">
-        <Button @click="handleSubmit" :disabled="loading">
+
+      <div class="flex items-center gap-3">
+        <Button :disabled="loading" @click="handleSubmit">
           <span v-if="loading" class="flex items-center">
             <Loader2 class="mr-2 h-4 w-4 animate-spin" />
             {{ $t('Kuriamas susitikimas...') }}
@@ -168,18 +186,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { trans as $t } from 'laravel-vue-i18n'
-import { usePage } from '@inertiajs/vue3'
-
-import Icons from '@/Types/Icons/filled'
-import { getMeetingTypeOptions } from '@/Types/MeetingType'
-import { Card, CardHeader, CardTitle, CardContent } from '@/Components/ui/card'
-import { Button } from '@/Components/ui/button'
-import { Badge } from '@/Components/ui/badge'
-import { Separator } from '@/Components/ui/separator'
-
-// Import Lucide icons
+import { computed, ref } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+import { usePage } from '@inertiajs/vue3';
 import {
   CheckCircle,
   Edit,
@@ -190,87 +199,96 @@ import {
   ArrowLeft,
   Loader2,
   Rocket,
-} from 'lucide-vue-next'
+} from 'lucide-vue-next';
+
+import Icons from '@/Types/Icons/filled';
+import { getMeetingTypeOptions } from '@/Types/MeetingType';
+import { Card, CardHeader, CardTitle, CardContent } from '@/Components/ui/card';
+import { Button } from '@/Components/ui/button';
+import { Badge } from '@/Components/ui/badge';
+import { Separator } from '@/Components/ui/separator';
+
+// Import Lucide icons
 
 const emit = defineEmits<{
-  editStep: [step: number]
-  back: []
-  submit: []
-}>()
+  editStep: [step: number];
+  back: [];
+  submit: [];
+}>();
 
 const props = defineProps<{
-  loading?: boolean
-  meetingState?: any
-}>()
+  loading?: boolean;
+  meetingState?: any;
+}>();
 
 // Local state
-const showAllAgendaItems = ref(false)
-const maxDisplayedItems = 5
+const showAllAgendaItems = ref(false);
+const maxDisplayedItems = 5;
 
 // Computed properties
 const selectedInstitution = computed(() => {
-  return props.meetingState?.institution || null
-})
+  return props.meetingState?.institution || null;
+});
 
-const meetingData = computed(() => props.meetingState?.meeting || {})
+const meetingData = computed(() => props.meetingState?.meeting || {});
 
 const meetingType = computed(() => {
   const typeSlug = meetingData.value.type;
   if (!typeSlug) return null;
-  
+
   // Get meeting type from MeetingType options
   const locale = ((usePage().props as any)?.app?.locale || 'lt') as 'lt' | 'en';
   const options = getMeetingTypeOptions(locale);
-  const option = options.find((o) => o.value === typeSlug);
-  
+  const option = options.find(o => o.value === typeSlug);
+
   if (option) {
     return { id: typeSlug, title: option.label, isDateOnly: option.isDateOnly };
   }
-  
+
   // Fallback to 'Other'
   return { id: typeSlug, title: $t('Kita'), isDateOnly: false };
-})
+});
 
 const agendaItems = computed(() => {
-  return props.meetingState?.agendaItems || []
-})
+  return props.meetingState?.agendaItems || [];
+});
 
 const displayedAgendaItems = computed(() => {
   if (showAllAgendaItems.value || agendaItems.value.length <= maxDisplayedItems) {
-    return agendaItems.value
+    return agendaItems.value;
   }
-  return agendaItems.value.slice(0, maxDisplayedItems)
-})
+  return agendaItems.value.slice(0, maxDisplayedItems);
+});
 
 // Utility methods
 const formatDate = (dateString: string): string => {
-  if (!dateString) return ''
-  const date = new Date(dateString)
-  return date.toLocaleDateString(undefined, { 
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString(undefined, {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
-  })
-}
+    day: 'numeric',
+  });
+};
 
 const formatTime = (dateString: string): string => {
-  if (!dateString) return ''
-  const date = new Date(dateString)
-  return date.toLocaleTimeString(undefined, { 
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleTimeString(undefined, {
     hour: 'numeric',
-    minute: '2-digit'
-  })
-}
+    minute: '2-digit',
+  });
+};
 
 const isWeekend = (dateString: string): boolean => {
-  if (!dateString) return false
-  const date = new Date(dateString)
-  const day = date.getDay()
-  return day === 0 || day === 6 // Sunday = 0, Saturday = 6
-}
+  if (!dateString) return false;
+  const date = new Date(dateString);
+  const day = date.getDay();
+  return day === 0 || day === 6; // Sunday = 0, Saturday = 6
+};
 
 const handleSubmit = () => {
-  emit('submit')
-}
+  emit('submit');
+};
 </script>

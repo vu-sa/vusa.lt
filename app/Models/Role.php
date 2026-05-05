@@ -25,7 +25,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static \Database\Factories\RoleFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Role newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Role newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Role permission($permissions, $without = false)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Role permission($permissions, bool $without = false)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Role query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Role withoutPermission($permissions)
  *

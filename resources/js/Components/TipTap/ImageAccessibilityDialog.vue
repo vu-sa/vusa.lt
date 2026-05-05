@@ -1,5 +1,5 @@
 <template>
-  <Dialog :open="open" @update:open="$emit('update:open', $event)">
+  <Dialog :open @update:open="$emit('update:open', $event)">
     <DialogContent class="sm:max-w-md">
       <DialogHeader>
         <DialogTitle>Edit Image Accessibility</DialogTitle>
@@ -11,11 +11,11 @@
       <div class="space-y-4">
         <!-- Preview of the image -->
         <div v-if="imageData.src" class="flex justify-center">
-          <img 
-            :src="imageData.src" 
-            :alt="formData.alt || 'Image preview'" 
+          <img
+            :src="imageData.src"
+            :alt="formData.alt || 'Image preview'"
             class="max-w-full max-h-32 rounded-md object-contain"
-          />
+          >
         </div>
 
         <!-- Alt text field -->
@@ -23,7 +23,7 @@
           <Label for="alt-text">
             Alternative Text (Alt Text) *
           </Label>
-          <Input 
+          <Input
             id="alt-text"
             v-model="formData.alt"
             placeholder="Describe what the image shows..."
@@ -40,7 +40,7 @@
           <Label for="title-text">
             Title (Tooltip Text)
           </Label>
-          <Input 
+          <Input
             id="title-text"
             v-model="formData.title"
             placeholder="Additional context or caption..."
@@ -65,7 +65,7 @@
         <Button variant="outline" @click="handleCancel">
           Cancel
         </Button>
-        <Button @click="handleSubmit" :disabled="!canSubmit">
+        <Button :disabled="!canSubmit" @click="handleSubmit">
           Update Image
         </Button>
       </DialogFooter>
@@ -75,16 +75,17 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from '@/Components/ui/dialog';
 
 interface ImageData {
@@ -105,7 +106,7 @@ const emit = defineEmits<{
 
 const formData = ref({
   alt: '',
-  title: ''
+  title: '',
 });
 
 // Reset form when dialog opens
@@ -113,7 +114,7 @@ watch(() => props.open, (isOpen) => {
   if (isOpen) {
     formData.value = {
       alt: props.imageData.alt || '',
-      title: props.imageData.title || ''
+      title: props.imageData.title || '',
     };
   }
 });
@@ -126,7 +127,7 @@ const canSubmit = computed(() => {
 function handleSubmit() {
   emit('submit', {
     alt: formData.value.alt.trim(),
-    title: formData.value.title.trim()
+    title: formData.value.title.trim(),
   });
   emit('update:open', false);
 }

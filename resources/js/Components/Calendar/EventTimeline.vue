@@ -42,11 +42,11 @@
     <div class="relative rounded-xl bg-white dark:bg-zinc-800/90 border border-zinc-200 dark:border-zinc-700 p-4 overflow-hidden">
       <!-- Decorative background pattern -->
       <div class="absolute inset-0 opacity-[0.015] dark:opacity-[0.025]" aria-hidden="true">
-        <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,%3Csvg width=&quot;60&quot; height=&quot;60&quot; viewBox=&quot;0 0 60 60&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;%3E%3Cg fill=&quot;none&quot; fill-rule=&quot;evenodd&quot;%3E%3Cg fill=&quot;%23bd1b21&quot; fill-opacity=&quot;1&quot;%3E%3Cpath d=&quot;M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z&quot;/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
+        <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,%3Csvg width=&quot;60&quot; height=&quot;60&quot; viewBox=&quot;0 0 60 60&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;%3E%3Cg fill=&quot;none&quot; fill-rule=&quot;evenodd&quot;%3E%3Cg fill=&quot;%23bd1b21&quot; fill-opacity=&quot;1&quot;%3E%3Cpath d=&quot;M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z&quot;/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');" />
       </div>
 
       <!-- Today line (vertical) -->
-      <div 
+      <div
         class="absolute top-0 bottom-0 w-0.5 z-10 pointer-events-none"
         :style="{ left: `${todayPosition}%` }"
       >
@@ -65,19 +65,19 @@
 
         <!-- Date tick marks -->
         <div class="absolute left-0 right-0 bottom-0 h-6 flex">
-          <div 
-            v-for="marker in dateMarkers" 
+          <div
+            v-for="marker in dateMarkers"
             :key="marker.date.toISOString()"
             class="absolute flex flex-col items-center"
             :style="{ left: `${marker.position}%`, transform: 'translateX(-50%)' }"
           >
-            <div 
+            <div
               class="w-px mb-0.5"
               :class="[
                 marker.isWeekStart ? 'h-2 bg-zinc-400 dark:bg-zinc-500' : 'h-1.5 bg-zinc-300 dark:bg-zinc-600'
               ]"
             />
-            <span 
+            <span
               v-if="marker.showLabel"
               class="text-[9px] font-medium text-zinc-400 dark:text-zinc-500 whitespace-nowrap"
             >
@@ -88,64 +88,64 @@
 
         <!-- Events positioned on timeline -->
         <div class="absolute inset-x-0 top-2 bottom-8">
-          <div 
-            v-for="group in eventGroups" 
+          <div
+            v-for="group in eventGroups"
             :key="group.dateKey"
             class="absolute flex flex-col items-center"
-            :style="{ 
-              left: `${group.position}%`, 
+            :style="{
+              left: `${group.position}%`,
               transform: 'translateX(-50%)',
             }"
           >
             <!-- Vertical connector to axis -->
             <div class="absolute top-full w-px h-2 bg-zinc-300 dark:bg-zinc-600" />
-            
+
             <!-- Stacked event thumbnails -->
             <div class="flex flex-col items-center gap-1">
               <HoverCard v-for="(event, eventIndex) in group.visibleEvents" :key="event.id" :open-delay="150" :close-delay="100">
                 <HoverCardTrigger as-child>
-                  <button 
+                  <button
                     type="button"
                     class="event-thumbnail relative transition-all duration-200"
                     :class="[
-                      group.isNextUpcoming && eventIndex === 0 
-                        ? 'ring-2 ring-vusa-red ring-offset-2 dark:ring-offset-zinc-800 scale-105 z-20' 
+                      group.isNextUpcoming && eventIndex === 0
+                        ? 'ring-2 ring-vusa-red ring-offset-2 dark:ring-offset-zinc-800 scale-105 z-20'
                         : 'hover:scale-105 hover:z-20',
                       !isUpcoming(event) ? 'opacity-75 grayscale-[15%] hover:opacity-100 hover:grayscale-0' : ''
                     ]"
                     @click="navigateToEvent(event)"
                   >
                     <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-lg overflow-hidden shadow-lg border-2 border-white dark:border-zinc-700 bg-white dark:bg-zinc-700">
-                      <img 
+                      <img
                         v-if="getEventImage(event)"
                         :src="getEventImage(event)!"
                         :alt="getEventTitle(event)"
                         class="w-full h-full object-cover"
                         loading="lazy"
                       >
-                      <div 
-                        v-else 
+                      <div
+                        v-else
                         class="w-full h-full flex items-center justify-center"
                         :class="getCategoryColorClass(event)"
                       >
                         <component :is="getCategoryIcon(event)" class="w-5 h-5 text-white/90" />
                       </div>
                     </div>
-                    
+
                     <!-- Pulsing glow for next upcoming -->
-                    <div 
+                    <div
                       v-if="group.isNextUpcoming && eventIndex === 0"
                       class="absolute -inset-1 rounded-xl bg-vusa-red/30 blur-md -z-10 animate-pulse"
                     />
                   </button>
                 </HoverCardTrigger>
 
-                <HoverCardContent 
+                <HoverCardContent
                   class="w-72 p-0 overflow-hidden z-50"
                   :side="group.position > 75 ? 'left' : group.position < 25 ? 'right' : 'top'"
                   :side-offset="8"
                 >
-                  <EventHoverCard :event="event" :locale="locale" />
+                  <EventHoverCard :event :locale />
                 </HoverCardContent>
               </HoverCard>
 
@@ -166,7 +166,7 @@
     </div>
 
     <!-- Featured upcoming events cards -->
-    <div 
+    <div
       v-if="nextUpcomingEvents.length > 0"
       class="mt-6 grid gap-3"
       :class="nextUpcomingEvents.length === 1 ? 'grid-cols-1 max-w-md mx-auto' : 'grid-cols-1 sm:grid-cols-2'"
@@ -179,7 +179,7 @@
         :class="index === 0 ? 'ring-2 ring-vusa-red/20 dark:ring-vusa-red/30' : ''"
       >
         <!-- Priority indicator -->
-        <div 
+        <div
           v-if="index === 0"
           class="absolute -top-2 -right-2 px-2 py-0.5 bg-vusa-red text-white text-[10px] font-bold rounded-full shadow-md"
         >
@@ -188,14 +188,14 @@
 
         <!-- Event image -->
         <div class="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden shadow-sm">
-          <img 
+          <img
             v-if="getEventImage(event)"
             :src="getEventImage(event)!"
             :alt="getEventTitle(event)"
             class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           >
-          <div 
-            v-else 
+          <div
+            v-else
             class="w-full h-full flex items-center justify-center"
             :class="getCategoryColorClass(event)"
           >
@@ -238,28 +238,29 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from "laravel-vue-i18n";
-import { computed, ref, onMounted, type Component } from "vue";
-import { format, addDays, subDays, startOfDay, isAfter, isBefore, isSameDay, startOfWeek, differenceInDays } from "date-fns";
-import { lt, enUS } from "date-fns/locale";
-import { 
-  Calendar, 
-  GraduationCap, 
-  Users, 
-  Trophy, 
-  Image as ImageIcon, 
-  Dumbbell, 
-  Music, 
-  ChevronLeft, 
-  ChevronRight, 
+import { trans as $t } from 'laravel-vue-i18n';
+import { computed, ref, onMounted, type Component } from 'vue';
+import { format, addDays, subDays, startOfDay, isAfter, isBefore, isSameDay, startOfWeek, differenceInDays } from 'date-fns';
+import { lt, enUS } from 'date-fns/locale';
+import {
+  Calendar,
+  GraduationCap,
+  Users,
+  Trophy,
+  Image as ImageIcon,
+  Dumbbell,
+  Music,
+  ChevronLeft,
+  ChevronRight,
   MapPin,
   RefreshCw,
-  Plus
-} from "lucide-vue-next";
+  Plus,
+} from 'lucide-vue-next';
 
-import { Button } from "@/Components/ui/button";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/Components/ui/hover-card";
-import EventHoverCard from "./EventHoverCard.vue";
+import EventHoverCard from './EventHoverCard.vue';
+
+import { Button } from '@/Components/ui/button';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/hover-card';
 
 const props = defineProps<{
   events: App.Entities.Calendar[];
@@ -344,7 +345,7 @@ const eventGroups = computed(() => {
   }> = new Map();
 
   // Filter events within date range
-  const rangeEvents = props.events.filter(event => {
+  const rangeEvents = props.events.filter((event) => {
     const eventDate = startOfDay(new Date(event.date));
     return !isBefore(eventDate, dateRange.value.start) && !isAfter(eventDate, dateRange.value.end);
   });
@@ -355,7 +356,7 @@ const eventGroups = computed(() => {
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   const nextUpcomingDate = upcomingEvents[0] ? startOfDay(new Date(upcomingEvents[0].date)) : null;
 
-  rangeEvents.forEach(event => {
+  rangeEvents.forEach((event) => {
     const eventDate = startOfDay(new Date(event.date));
     const dateKey = format(eventDate, 'yyyy-MM-dd');
 
@@ -378,7 +379,7 @@ const eventGroups = computed(() => {
   });
 
   // Process visible events and overflow
-  groups.forEach(group => {
+  groups.forEach((group) => {
     // Sort by date, then prioritize events with images
     group.events.sort((a, b) => {
       const aHasImage = getEventImage(a) ? 1 : 0;
@@ -442,13 +443,13 @@ const isUpcoming = (event: App.Entities.Calendar): boolean => {
 const getCategoryColorClass = (event: App.Entities.Calendar): string => {
   const categoryAlias = (event.category as any)?.alias || '';
   const colorMap: Record<string, string> = {
-    'renginiai': 'bg-gradient-to-br from-vusa-red to-rose-600',
-    'paskaitos': 'bg-gradient-to-br from-blue-500 to-indigo-600',
-    'seminarai': 'bg-gradient-to-br from-purple-500 to-violet-600',
-    'konkursai': 'bg-gradient-to-br from-amber-500 to-orange-600',
-    'parodos': 'bg-gradient-to-br from-emerald-500 to-teal-600',
-    'sportas': 'bg-gradient-to-br from-cyan-500 to-blue-600',
-    'muzika': 'bg-gradient-to-br from-pink-500 to-rose-600',
+    renginiai: 'bg-gradient-to-br from-vusa-red to-rose-600',
+    paskaitos: 'bg-gradient-to-br from-blue-500 to-indigo-600',
+    seminarai: 'bg-gradient-to-br from-purple-500 to-violet-600',
+    konkursai: 'bg-gradient-to-br from-amber-500 to-orange-600',
+    parodos: 'bg-gradient-to-br from-emerald-500 to-teal-600',
+    sportas: 'bg-gradient-to-br from-cyan-500 to-blue-600',
+    muzika: 'bg-gradient-to-br from-pink-500 to-rose-600',
   };
   return colorMap[categoryAlias] || 'bg-gradient-to-br from-vusa-red/80 to-vusa-red';
 };
@@ -456,13 +457,13 @@ const getCategoryColorClass = (event: App.Entities.Calendar): string => {
 const getCategoryIcon = (event: App.Entities.Calendar) => {
   const categoryAlias = (event.category as any)?.alias || '';
   const iconMap: Record<string, any> = {
-    'renginiai': Calendar,
-    'paskaitos': GraduationCap,
-    'seminarai': Users,
-    'konkursai': Trophy,
-    'parodos': ImageIcon,
-    'sportas': Dumbbell,
-    'muzika': Music,
+    renginiai: Calendar,
+    paskaitos: GraduationCap,
+    seminarai: Users,
+    konkursai: Trophy,
+    parodos: ImageIcon,
+    sportas: Dumbbell,
+    muzika: Music,
   };
   return iconMap[categoryAlias] || Calendar;
 };

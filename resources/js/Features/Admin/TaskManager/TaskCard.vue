@@ -254,10 +254,10 @@ const isPeriodicityGap = computed(() =>
 );
 
 const isAgendaTask = computed(() =>
-  props.task.action_type === TaskActionType.AgendaCreation || 
-  props.task.action_type === 'agenda_creation' ||
-  props.task.action_type === TaskActionType.AgendaCompletion || 
-  props.task.action_type === 'agenda_completion',
+  props.task.action_type === TaskActionType.AgendaCreation
+  || props.task.action_type === 'agenda_creation'
+  || props.task.action_type === TaskActionType.AgendaCompletion
+  || props.task.action_type === 'agenda_completion',
 );
 
 const isAgendaCreationTask = computed(() =>

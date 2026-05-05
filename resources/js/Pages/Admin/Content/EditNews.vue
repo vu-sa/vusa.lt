@@ -9,8 +9,8 @@
       </template>
       <NewsForm
         :news
-        :other-lang-news="otherLangNews"
-        :available-tags="availableTags"
+        :other-lang-news
+        :available-tags
         :submit-url="route('news.update', news.id)"
         submit-method="patch"
         enable-delete
@@ -22,14 +22,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import { router } from "@inertiajs/vue3";
+import { computed } from 'vue';
+import { router } from '@inertiajs/vue3';
 
-import { BreadcrumbHelpers, usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
-import Icons from "@/Types/Icons/regular";
-import NewsForm from "@/Components/AdminForms/NewsForm.vue";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
+import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
+import Icons from '@/Types/Icons/regular';
+import NewsForm from '@/Components/AdminForms/NewsForm.vue';
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 
 const props = defineProps<{
   news: App.Entities.News;
@@ -38,7 +38,7 @@ const props = defineProps<{
 }>();
 
 // Generate breadcrumbs automatically with new simplified API
-usePageBreadcrumbs(() => 
-  BreadcrumbHelpers.adminForm('Naujienos', 'news.index', props.news.title, Icons.NEWS)
+usePageBreadcrumbs(() =>
+  BreadcrumbHelpers.adminForm('Naujienos', 'news.index', props.news.title, Icons.NEWS),
 );
 </script>

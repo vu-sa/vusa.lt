@@ -1,15 +1,3 @@
-<script lang="ts" setup>
-import type { HTMLAttributes } from 'vue'
-import { cn } from '@/Utils/Shadcn/utils'
-import { useFormField } from './useFormField'
-
-const props = defineProps<{
-  class?: HTMLAttributes['class']
-}>()
-
-const { formDescriptionId } = useFormField()
-</script>
-
 <template>
   <p
     :id="formDescriptionId"
@@ -19,3 +7,17 @@ const { formDescriptionId } = useFormField()
     <slot />
   </p>
 </template>
+
+<script lang="ts" setup>
+import type { HTMLAttributes } from 'vue';
+
+import { useFormField } from './useFormField';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+const props = defineProps<{
+  class?: HTMLAttributes['class'];
+}>();
+
+const { formDescriptionId } = useFormField();
+</script>

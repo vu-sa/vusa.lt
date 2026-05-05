@@ -39,7 +39,7 @@
         <Button variant="outline" as="label" class="cursor-pointer">
           Įkelti failą
           <input ref="fileInput" type="file" class="hidden" accept=".xlsx,.xls,.csv"
-            @change="handleFileChange" />
+            @change="handleFileChange">
         </Button>
         <span v-if="selectedFile" class="text-sm text-muted-foreground">{{ selectedFile.name }}</span>
       </div>
@@ -51,27 +51,29 @@
 </template>
 
 <script setup lang="ts">
-import { useForm, usePage } from "@inertiajs/vue3";
-import { trans as $t } from "laravel-vue-i18n";
-import { computed, ref } from "vue";
+import { useForm, usePage } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+import { computed, ref } from 'vue';
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { Button } from "@/Components/ui/button";
-import FormElement from "./FormElement.vue";
-import FormFieldWrapper from "./FormFieldWrapper.vue";
-import AdminForm from "./AdminForm.vue";
-import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
+import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
+
+import FormElement from './FormElement.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import AdminForm from './AdminForm.vue';
+
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Button } from '@/Components/ui/button';
 
 const { membership, assignableTenants, rememberKey } = defineProps<{
   membership: App.Entities.Membership;
   canImportMemberships?: boolean;
   assignableTenants: Array<App.Entities.Tenant>;
-  rememberKey?: "CreateMembership";
+  rememberKey?: 'CreateMembership';
 }>();
 
 defineEmits<{
-  (event: "submit:form", form: unknown): void;
-  (event: "delete"): void;
+  (event: 'submit:form', form: unknown): void;
+  (event: 'delete'): void;
 }>();
 
 const form = rememberKey

@@ -1,15 +1,16 @@
 /**
  * Shared tutorial progress state module
- * 
+ *
  * This module provides a single source of truth for tutorial/spotlight progress
  * that is shared between useProductTour and useFeatureSpotlight composables.
- * 
+ *
  * Progress is loaded from server via Inertia page props (auth.user.tutorial_progress).
  * No localStorage is used to avoid issues when switching users in the same browser.
  */
 
 import { ref, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
+
 import type { PageProps } from '@/Types/index';
 
 // Global reactive state - single instance shared across all composables
@@ -26,33 +27,35 @@ let initializedUserId: number | null = null;
 export function initProgress(): void {
   try {
     const page = usePage<PageProps>();
-    
+
     // Only mark as initialized if we can actually access page props
     // This prevents marking as initialized when called before Inertia is ready
     if (!page.props) {
       return; // Don't set hasInitialized - props not available yet
     }
-    
+
     const currentUserId = page.props?.auth?.user?.id ?? null;
     const serverProgress = page.props?.auth?.user?.tutorial_progress;
-    
+
     // Skip if already initialized for this same user
     if (hasInitialized && initializedUserId === currentUserId) {
       return;
     }
-    
+
     // User changed (login/logout) or first initialization
     if (serverProgress && typeof serverProgress === 'object') {
       globalProgress.value = { ...serverProgress };
-    } else {
+    }
+    else {
       // User logged out or has no progress - clear it
       globalProgress.value = {};
     }
-    
+
     // Mark initialized with current user
     hasInitialized = true;
     initializedUserId = currentUserId;
-  } catch {
+  }
+  catch {
     // Page props not available - don't mark as initialized
     // This allows retry on next call
   }
@@ -92,14 +95,15 @@ export function resetInitialization(): void {
  */
 export function isInitialized(): boolean {
   if (!hasInitialized) return false;
-  
+
   try {
     const page = usePage<PageProps>();
     const currentUserId = page.props?.auth?.user?.id ?? null;
-    
+
     // If user changed, we need to re-initialize
     return initializedUserId === currentUserId;
-  } catch {
+  }
+  catch {
     return hasInitialized;
   }
 }

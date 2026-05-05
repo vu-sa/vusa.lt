@@ -22,16 +22,16 @@
 </template>
 
 <script setup lang="ts">
-import type { HTMLAttributes } from 'vue'
+import type { HTMLAttributes } from 'vue';
 
-import { cn } from '@/Utils/Shadcn/utils'
+import { cn } from '@/Utils/Shadcn/utils';
 
 const props = withDefaults(defineProps<{
-  title?: string
-  subtitle?: string
-  class?: HTMLAttributes['class']
+  title?: string;
+  subtitle?: string;
+  class?: HTMLAttributes['class'];
 }>(), {
   title: undefined,
   subtitle: undefined,
-})
+});
 </script>

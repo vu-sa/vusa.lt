@@ -12,7 +12,7 @@
             :href="link.url" :class="linkClasses(link)" @click="handleCloseMenu">
             <img class="absolute left-0 top-0 size-full rounded-md object-cover opacity-60 contrast-110"
               :src="link.image" alt="Background image">
-            <div class="absolute left-0 top-0 size-full rounded-md bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+            <div class="absolute left-0 top-0 size-full rounded-md bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
             <div class="relative z-10 p-4 mt-auto">
               <div class="text-lg font-black leading-tight text-white">
                 {{ link.name }}
@@ -22,7 +22,7 @@
               </p>
             </div>
             <div v-if="showEditIcons" class="relative z-20 my-auto inline-flex h-fit rounded-lg bg-white/90 p-2">
-              <slot :index="index" :link="link" :links="links" name="editIconsBg" />
+              <slot :index :link :links name="editIconsBg" />
             </div>
           </NavigationMenuLink>
 
@@ -53,13 +53,15 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Icon } from "@iconify/vue";
+import { Icon } from '@iconify/vue';
+
+import SmartLink from '../SmartLink.vue';
+
 import {
   NavigationMenuContent,
   NavigationMenuLink,
 } from '@/Components/ui/navigation-menu';
 import { Badge } from '@/Components/ui/badge';
-import SmartLink from '../SmartLink.vue';
 
 interface Link {
   name: string;
@@ -89,7 +91,7 @@ const { isUsedWithoutRoot, areLinksDisabled, item } = defineProps<{
 const emit = defineEmits(['closeMenu', 'moveUp', 'moveDown']);
 
 const linkTypes = {
-  link: {
+  'link': {
     textClass: 'hover:underline focus:underline transition-all',
     blockClass: 'py-1 px-2.5 hover:bg-zinc-50 focus:bg-zinc-50 dark:hover:bg-zinc-800/50 dark:focus:bg-zinc-800/50',
   },
@@ -99,7 +101,7 @@ const linkTypes = {
   },
   'category-link': {
     textClass: 'no-underline',
-    blockClass: 'p-2.5 font-bold hover:bg-zinc-100 focus:bg-zinc-100 dark:hover:bg-zinc-800 dark:focus:bg-zinc-800' 
+    blockClass: 'p-2.5 font-bold hover:bg-zinc-100 focus:bg-zinc-100 dark:hover:bg-zinc-800 dark:focus:bg-zinc-800',
   },
   'full-height-background-link': {
     textClass: 'no-underline',

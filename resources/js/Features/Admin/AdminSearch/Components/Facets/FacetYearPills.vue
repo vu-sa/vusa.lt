@@ -38,73 +38,71 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed } from 'vue';
 
-import type { AdminFacetValue } from '../../Types/AdminSearchTypes'
+import type { AdminFacetValue } from '../../Types/AdminSearchTypes';
 
 interface Props {
-  values: AdminFacetValue[]
-  selectedValues: number[]
-  maxVisible?: number
+  values: AdminFacetValue[];
+  selectedValues: number[];
+  maxVisible?: number;
 }
 
-interface Emits {
-  (e: 'toggle', year: number): void
-}
+type Emits = (e: 'toggle', year: number) => void;
 
 const props = withDefaults(defineProps<Props>(), {
   maxVisible: 6,
-})
+});
 
-defineEmits<Emits>()
+defineEmits<Emits>();
 
 // Local state
-const showAll = ref(false)
+const showAll = ref(false);
 
 // Sort values by year descending
 const allSortedValues = computed(() => {
   return [...props.values].sort((a, b) => {
-    const yearA = parseInt(a.value, 10)
-    const yearB = parseInt(b.value, 10)
-    return yearB - yearA
-  })
-})
+    const yearA = parseInt(a.value, 10);
+    const yearB = parseInt(b.value, 10);
+    return yearB - yearA;
+  });
+});
 
 // Check if we have more years than max
 const hasMoreYears = computed(() => {
-  return props.values.length > props.maxVisible
-})
+  return props.values.length > props.maxVisible;
+});
 
 // Hidden count
 const hiddenCount = computed(() => {
-  return props.values.length - props.maxVisible
-})
+  return props.values.length - props.maxVisible;
+});
 
 // Values to display
 const sortedValues = computed(() => {
   if (showAll.value || !hasMoreYears.value) {
-    return allSortedValues.value
+    return allSortedValues.value;
   }
 
   // Ensure selected years are always visible
   const selected = allSortedValues.value.filter(v =>
-    props.selectedValues.includes(parseInt(v.value, 10))
-  )
+    props.selectedValues.includes(parseInt(v.value, 10)),
+  );
   const unselected = allSortedValues.value.filter(v =>
-    !props.selectedValues.includes(parseInt(v.value, 10))
-  )
+    !props.selectedValues.includes(parseInt(v.value, 10)),
+  );
 
   // Show selected + recent years up to max
-  const remaining = props.maxVisible - selected.length
+  const remaining = props.maxVisible - selected.length;
   return [...selected, ...unselected.slice(0, Math.max(0, remaining))].sort((a, b) => {
-    const yearA = parseInt(a.value, 10)
-    const yearB = parseInt(b.value, 10)
-    return yearB - yearA
-  })
-})
+    const yearA = parseInt(a.value, 10);
+    const yearB = parseInt(b.value, 10);
+    return yearB - yearA;
+  });
+});
 
 // Check if a year is selected
 const isSelected = (value: string): boolean => {
-  return props.selectedValues.includes(parseInt(value, 10))
-}
+  return props.selectedValues.includes(parseInt(value, 10));
+};
 </script>

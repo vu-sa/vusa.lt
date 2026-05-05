@@ -1,12 +1,3 @@
-<script lang="ts" setup>
-import type { HtmlHTMLAttributes } from 'vue'
-import { cn } from '@/Utils/Shadcn/utils'
-
-const props = defineProps<{
-  class?: HtmlHTMLAttributes['class']
-}>()
-</script>
-
 <template>
   <div
     data-slot="drawer-header"
@@ -15,3 +6,13 @@ const props = defineProps<{
     <slot />
   </div>
 </template>
+
+<script lang="ts" setup>
+import type { HtmlHTMLAttributes } from 'vue';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+const props = defineProps<{
+  class?: HtmlHTMLAttributes['class'];
+}>();
+</script>

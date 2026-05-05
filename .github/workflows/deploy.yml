@@ -20,11 +20,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-        
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: '8.5'
           extensions: dom, curl, libxml, mbstring, zip, fileinfo
 
       - name: Cache Composer dependencies
@@ -39,16 +39,16 @@ jobs:
 
       - name: Install Composer dependencies
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist --optimize-autoloader
-          
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'npm'
-          
+
       - name: Install npm dependencies
         run: npm ci
-        
+
       - name: Build production frontend assets
         run: |
           VITE_POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }} \
@@ -61,31 +61,31 @@ jobs:
           VITE_REVERB_PORT=${{ vars.REVERB_PORT }} \
           VITE_REVERB_SCHEME=${{ vars.REVERB_SCHEME }} \
           npm run build
-          
+
       - name: Install SSH keys
         run: |
           install -m 600 -D /dev/null ~/.ssh/id_rsa
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
-          
+
       - name: Package build artifacts
         run: |
           tar -czf build.tar.gz public/build
           tar -czf vendor.tar.gz vendor
-          
+
       # Build docs if needed
       - name: Build docs
         run: |
           npm run docs:build
           tar -czf docs.tar.gz -C public/docs .
-          
+
       # Upload build artifacts
       - name: Upload build artifacts
         run: |
           echo "Uploading build artifacts..."
           scp build.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/build.tar.gz
           scp vendor.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/vendor.tar.gz
-          
+
           # Upload docs changes
           echo "Uploading documentation..."
           if [ -f docs.tar.gz ]; then
@@ -97,7 +97,7 @@ jobs:
         run: |
           ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && \
           git pull && \
-          /opt/php83/bin/php artisan deployment:run"
+          /opt/php85/bin/php artisan deployment:run"
 
       # Resume deployment if failed (optional recovery step)
       - name: Resume deployment
@@ -105,14 +105,14 @@ jobs:
         run: |
           echo "⚠️ Deployment failed, attempting to resume..."
           ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && \
-          /opt/php83/bin/php artisan deployment:resume"
-          
+          /opt/php85/bin/php artisan deployment:resume"
+
       # Clean up SSH keys
       - name: Cleanup
         run: |
           rm -rf ~/.ssh
-      
-      
+
+
       # Notify about deployment completion
       - name: Deployment notification
         if: success()

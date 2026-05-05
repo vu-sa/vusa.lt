@@ -41,7 +41,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Vote> $additionalVotes
  * @property-read Collection<int, Institution> $institutions
  * @property-read Vote|null $mainVote
- * @property-read Meeting $meeting
+ * @property-read Meeting|null $meeting
  * @property-read Collection<int, Tenant> $tenants
  * @property-read Collection<int, Vote> $votes
  *

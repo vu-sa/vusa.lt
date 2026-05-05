@@ -50,7 +50,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, User> $current_users
  * @property-read Collection<int, Dutiable> $dutiables
  * @property-read Collection<int, FileableFile> $fileableFiles
- * @property-read Collection<int, SharepointFile> $files
  * @property-read bool $has_protocol
  * @property-read bool $has_report
  * @property-read Institution|null $institution
@@ -78,16 +77,16 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty permission($permissions, $without = false)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty permission($permissions, bool $without = false)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty role($roles, $guard = null, $without = false)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty role($roles, ?string $guard = null, bool $without = false)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty whereLocale(string $column, string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty whereLocales(string $column, array $locales)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty withoutPermission($permissions)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty withoutRole($roles, $guard = null)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty withoutRole($roles, ?string $guard = null)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty withoutTrashed()
  *
  * @mixin \Eloquent

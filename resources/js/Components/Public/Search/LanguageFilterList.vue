@@ -22,7 +22,7 @@
               :alt="`${getLanguageDisplay(lang.value)} flag`"
               width="16"
               class="rounded-full flex-shrink-0"
-            />
+            >
             <span class="font-medium text-sm text-foreground">
               {{ getLanguageDisplay(lang.value) }}
             </span>
@@ -40,53 +40,51 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from 'laravel-vue-i18n'
+import { trans as $t } from 'laravel-vue-i18n';
 
-import { Checkbox } from '@/Components/ui/checkbox'
-import { Badge } from '@/Components/ui/badge'
+import { Checkbox } from '@/Components/ui/checkbox';
+import { Badge } from '@/Components/ui/badge';
 
 interface LanguageValue {
-  value: string
-  count: number
+  value: string;
+  count: number;
 }
 
 interface Props {
-  languages: LanguageValue[]
-  selectedLanguages: string[]
+  languages: LanguageValue[];
+  selectedLanguages: string[];
 }
 
-interface Emits {
-  (e: 'toggle', language: string): void
-}
+type Emits = (e: 'toggle', language: string) => void;
 
-defineProps<Props>()
-const emit = defineEmits<Emits>()
+defineProps<Props>();
+const emit = defineEmits<Emits>();
 
 // Utility functions
 const formatCount = (count: number): string => {
   if (count >= 1000000) {
-    return (count / 1000000).toFixed(1) + 'M'
+    return `${(count / 1000000).toFixed(1)}M`;
   }
   if (count >= 1000) {
-    return (count / 1000).toFixed(1) + 'K'
+    return `${(count / 1000).toFixed(1)}K`;
   }
-  return count.toString()
-}
+  return count.toString();
+};
 
 const getLanguageFlag = (languageValue: string): string => {
   if (languageValue === 'Lietuvių' || languageValue === 'Lithuanian') {
-    return 'https://hatscripts.github.io/circle-flags/flags/lt.svg'
+    return 'https://hatscripts.github.io/circle-flags/flags/lt.svg';
   }
   if (languageValue === 'Anglų' || languageValue === 'English') {
-    return 'https://hatscripts.github.io/circle-flags/flags/gb.svg'
+    return 'https://hatscripts.github.io/circle-flags/flags/gb.svg';
   }
-  return '' // For Unknown or other languages - no flag
-}
+  return ''; // For Unknown or other languages - no flag
+};
 
 const getLanguageDisplay = (languageValue: string): string => {
-  if (languageValue === 'Lietuvių' || languageValue === 'Lithuanian') return 'LT'
-  if (languageValue === 'Anglų' || languageValue === 'English') return 'EN'
-  if (languageValue === 'Unknown') return $t('search.language_unknown')
-  return languageValue // For any other language values, show as-is
-}
+  if (languageValue === 'Lietuvių' || languageValue === 'Lithuanian') return 'LT';
+  if (languageValue === 'Anglų' || languageValue === 'English') return 'EN';
+  if (languageValue === 'Unknown') return $t('search.language_unknown');
+  return languageValue; // For any other language values, show as-is
+};
 </script>

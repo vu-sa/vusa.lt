@@ -2,24 +2,24 @@
   <div class="social-embed-container my-8 flex w-full justify-center">
     <!-- Loading state - only show initially before any render -->
     <div v-if="isLoading && !hasRendered" class="flex items-center justify-center py-8">
-      <div class="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-600"></div>
+      <div class="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-600" />
     </div>
 
     <!-- Facebook embed -->
     <div v-if="platform === 'facebook'" ref="fbContainer" class="facebook-embed w-full max-w-lg">
-      <div id="fb-root"></div>
-      <div 
-        class="fb-post" 
-        :data-href="element.json_content.url" 
+      <div id="fb-root" />
+      <div
+        class="fb-post"
+        :data-href="element.json_content.url"
         data-width="500"
         :data-show-text="showCaption ? 'true' : 'false'"
-      ></div>
+      />
     </div>
 
     <!-- Instagram embed -->
     <div v-else-if="platform === 'instagram'" ref="igContainer" class="instagram-embed w-full max-w-lg">
-      <blockquote 
-        class="instagram-media" 
+      <blockquote
+        class="instagram-media"
         :data-instgrm-permalink="instagramEmbedUrl"
         data-instgrm-version="14"
         style="max-width:540px; min-width:326px; width:100%;"
@@ -32,9 +32,9 @@
 
     <!-- Fallback for invalid embeds -->
     <div v-else-if="element.json_content.url" class="rounded-lg bg-zinc-100 p-4 text-center text-sm text-zinc-500 dark:bg-zinc-800">
-      <a 
-        :href="element.json_content.url" 
-        target="_blank" 
+      <a
+        :href="element.json_content.url"
+        target="_blank"
         rel="noopener noreferrer"
         class="text-zinc-600 underline hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
       >
@@ -46,6 +46,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue';
+
 import type { SocialEmbed } from '@/Types/contentParts';
 
 const props = defineProps<{
@@ -63,9 +64,9 @@ const platform = computed(() => {
     return props.element.json_content.platform;
   }
   // Fallback: detect from URL
-  const url = props.element.json_content.url;
+  const { url } = props.element.json_content;
   if (!url) return null;
-  
+
   if (/facebook\.com|fb\.watch/i.test(url)) return 'facebook';
   if (/instagram\.com|instagr\.am/i.test(url)) return 'instagram';
   return null;
@@ -78,7 +79,7 @@ const instagramEmbedUrl = computed(() => {
   if (!props.element.json_content.url || platform.value !== 'instagram') return '';
   const cleanUrl = props.element.json_content.url.split('?')[0] || '';
   if (!cleanUrl.endsWith('/')) {
-    return cleanUrl + '/';
+    return `${cleanUrl}/`;
   }
   return cleanUrl;
 });
@@ -106,10 +107,10 @@ async function loadFacebookSDK(): Promise<any> {
       return;
     }
 
-    window.fbAsyncInit = function() {
+    window.fbAsyncInit = function () {
       window.FB.init({
         xfbml: true,
-        version: 'v21.0'
+        version: 'v21.0',
       });
       resolve(window.FB);
     };
@@ -162,7 +163,8 @@ async function loadInstagramEmbed(): Promise<any> {
         clearInterval(checkIG);
         if (window.instgrm) {
           resolve(window.instgrm);
-        } else {
+        }
+        else {
           reject(new Error('Instagram embed init timeout'));
         }
       }, 5000);
@@ -191,16 +193,19 @@ async function initEmbed() {
         FB.XFBML.parse(fbContainer.value);
         hasRendered.value = true;
       }
-    } else if (platform.value === 'instagram') {
+    }
+    else if (platform.value === 'instagram') {
       const instgrm = await loadInstagramEmbed();
       if (instgrm?.Embeds) {
         instgrm.Embeds.process();
         hasRendered.value = true;
       }
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error loading social embed:', error);
-  } finally {
+  }
+  finally {
     isLoading.value = false;
   }
 }

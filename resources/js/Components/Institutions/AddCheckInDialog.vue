@@ -18,7 +18,9 @@
         <div class="flex gap-3">
           <InfoIcon class="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
           <div class="text-sm text-amber-800 dark:text-amber-200">
-            <p class="font-medium">{{ $t('Ką tai reiškia?') }}</p>
+            <p class="font-medium">
+              {{ $t('Ką tai reiškia?') }}
+            </p>
             <p class="mt-1 text-amber-700 dark:text-amber-300">
               {{ $t('Jei žinote, kad nurodytu laikotarpiu posėdžių nebus (pvz., atostogos, egzaminų sesija), pranešimas padės išvengti nereikalingų priminimų.') }}
             </p>
@@ -69,44 +71,44 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { router } from '@inertiajs/vue3'
-import { CalendarOff as CalendarOffIcon, Info as InfoIcon, Building as BuildingIcon } from 'lucide-vue-next'
+import { ref, watch } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { CalendarOff as CalendarOffIcon, Info as InfoIcon, Building as BuildingIcon } from 'lucide-vue-next';
 
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog'
-import { Button } from '@/Components/ui/button'
-import { DatePicker } from '@/Components/ui/date-picker'
-import { Label } from '@/Components/ui/label'
-import { Textarea } from '@/Components/ui/textarea'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+import { Button } from '@/Components/ui/button';
+import { DatePicker } from '@/Components/ui/date-picker';
+import { Label } from '@/Components/ui/label';
+import { Textarea } from '@/Components/ui/textarea';
 
 const props = defineProps<{
-  institutionId: string
-  open: boolean
-  institutionName?: string
-  reloadTenantIds?: Array<string | number>
+  institutionId: string;
+  open: boolean;
+  institutionName?: string;
+  reloadTenantIds?: Array<string | number>;
   /** Inertia props to reload on success (e.g., ['userInstitutions', 'tenantInstitutions']) */
-  reloadProps?: string[]
+  reloadProps?: string[];
   /** Optional initial start date (e.g., from drag selection) */
-  initialStartDate?: Date
+  initialStartDate?: Date;
   /** Optional initial end date (e.g., from drag selection) */
-  initialEndDate?: Date
-}>()
-const emit = defineEmits<{ (e: 'close'): void }>()
+  initialEndDate?: Date;
+}>();
+const emit = defineEmits<(e: 'close') => void>();
 
-const startDate = ref<Date>(props.initialStartDate ?? new Date(Date.now()))
-const endDate = ref<Date>(props.initialEndDate ?? new Date(Date.now() + 14 * 24 * 60 * 60 * 1000))
-const note = ref('')
+const startDate = ref<Date>(props.initialStartDate ?? new Date(Date.now()));
+const endDate = ref<Date>(props.initialEndDate ?? new Date(Date.now() + 14 * 24 * 60 * 60 * 1000));
+const note = ref('');
 
 // Update dates when props change (dialog opens with new values)
 watch(() => props.initialStartDate, (newVal) => {
-  if (newVal) startDate.value = newVal
-})
+  if (newVal) startDate.value = newVal;
+});
 watch(() => props.initialEndDate, (newVal) => {
-  if (newVal) endDate.value = newVal
-})
+  if (newVal) endDate.value = newVal;
+});
 
 function formatDate(date: Date): string {
-  return date.toISOString().split('T')[0] as string
+  return date.toISOString().split('T')[0] as string;
 }
 
 function submit() {
@@ -116,18 +118,18 @@ function submit() {
     note: note.value || undefined,
   }, {
     onSuccess: () => {
-      emit('close')
+      emit('close');
       // Build reload options with explicit props to refresh
-      const reloadOptions: { only?: string[]; data?: Record<string, unknown> } = {}
+      const reloadOptions: { only?: string[]; data?: Record<string, unknown> } = {};
       if (props.reloadProps && props.reloadProps.length > 0) {
-        reloadOptions.only = props.reloadProps
+        reloadOptions.only = props.reloadProps;
       }
       if (props.reloadTenantIds && props.reloadTenantIds.length > 0) {
-        reloadOptions.data = { tenantIds: props.reloadTenantIds }
+        reloadOptions.data = { tenantIds: props.reloadTenantIds };
       }
-      router.reload(reloadOptions)
+      router.reload(reloadOptions);
     },
     preserveScroll: true,
-  })
+  });
 }
 </script>

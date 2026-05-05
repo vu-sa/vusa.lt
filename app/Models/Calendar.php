@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Traits\HasTranslations;
+use App\Services\IcalendarService;
 use Datetime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,6 +16,9 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Spatie\SchemaOrg\Event;
+use Spatie\SchemaOrg\Organization;
+use Spatie\SchemaOrg\Place;
 
 /**
  * @property int $id
@@ -110,11 +114,15 @@ class Calendar extends Model implements HasMedia
         static::saved(function ($calendar) {
             // Flush calendar cache for all locales since calendar events can be international
             Cache::tags(['calendar', 'locale_lt', 'locale_en'])->flush();
+            // Also clear the specific iCal cache keys used by IcalendarService
+            IcalendarService::clearCache();
         });
 
         static::deleted(function ($calendar) {
             // Flush calendar cache for all locales since calendar events can be international
             Cache::tags(['calendar', 'locale_lt', 'locale_en'])->flush();
+            // Also clear the specific iCal cache keys used by IcalendarService
+            IcalendarService::clearCache();
         });
     }
 
@@ -149,12 +157,11 @@ class Calendar extends Model implements HasMedia
      */
     public function registerMediaConversions(?Media $media = null): void
     {
-        /** @phpstan-ignore method.notFound (Spatie Media Library dynamic method) */
         $this->addMediaConversion('webp')
             ->format('webp')
             ->quality(80)
             ->width(1600)
-            ->performOnCollections('main_image', 'images')
+            ->performOnCollections('main_image', 'images') /** @phpstan-ignore method.notFound */
             ->nonQueued(); // Run synchronously for immediate availability
     }
 
@@ -212,5 +219,60 @@ class Calendar extends Model implements HasMedia
             ->description(strip_tags($this->description))
             ->address($this->location ?? '')
             ->google();
+    }
+
+    /**
+     * Generate Event structured data (JSON-LD) for this calendar event.
+     */
+    public function toEventSchema(): Event
+    {
+        $locale = app()->getLocale();
+        $title = $this->getTranslation('title', $locale) ?: $this->title;
+
+        $schema = (new Event)
+            ->name($title)
+            ->startDate($this->date)
+            ->setProperty('eventStatus', 'https://schema.org/EventScheduled')
+            ->organizer(
+                (new Organization)
+                    ->name($this->tenant->shortname ?? 'VU SA')
+                    ->url(route('home', ['subdomain' => $this->tenant->alias]))
+            );
+
+        // Add end date if exists
+        if ($this->end_date) {
+            $schema->endDate($this->end_date);
+        }
+
+        // Add description
+        $description = $this->getTranslation('description', $locale) ?: $this->description;
+        if ($description) {
+            $schema->description(strip_tags($description));
+        }
+
+        // Add location if exists
+        $location = $this->getTranslation('location', $locale) ?: $this->location;
+        if ($location) {
+            $schema->location(
+                (new Place)
+                    ->name($location)
+                    ->address($location)
+            );
+        }
+
+        // Add event attendance mode
+        if ($location) {
+            $schema->setProperty('eventAttendanceMode', 'https://schema.org/OfflineEventAttendanceMode');
+        } else {
+            $schema->setProperty('eventAttendanceMode', 'https://schema.org/OnlineEventAttendanceMode');
+        }
+
+        // Add image if exists
+        $imageUrl = $this->getFirstMediaUrl('images') ?: $this->getFirstMediaUrl('main_image');
+        if ($imageUrl) {
+            $schema->image($imageUrl);
+        }
+
+        return $schema;
     }
 }

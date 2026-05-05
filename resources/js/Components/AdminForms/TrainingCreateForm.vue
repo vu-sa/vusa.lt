@@ -48,31 +48,33 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from "laravel-vue-i18n";
-import { useForm, usePage } from "@inertiajs/vue3";
-import { computed, ref } from "vue";
+import { trans as $t } from 'laravel-vue-i18n';
+import { useForm, usePage } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
-import { DateTimePicker } from "@/Components/ui/date-picker";
-import { Label } from "@/Components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import FormElement from "./FormElement.vue";
-import FormFieldWrapper from "./FormFieldWrapper.vue";
-import AdminForm from "./AdminForm.vue";
-import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
-import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
-import TiptapEditor from "@/Components/TipTap/TiptapEditor.vue";
+import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
+import SimpleLocaleButton from '../Buttons/SimpleLocaleButton.vue';
+
+import FormElement from './FormElement.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import AdminForm from './AdminForm.vue';
+
+import { DateTimePicker } from '@/Components/ui/date-picker';
+import { Label } from '@/Components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 
 const { training } = defineProps<{
   training: App.Entities.Membership;
 }>();
 
 defineEmits<{
-  (event: "submit:form", form: unknown): void;
-  (event: "delete"): void;
+  (event: 'submit:form', form: unknown): void;
+  (event: 'delete'): void;
 }>();
 
-const form = useForm("CreateTraining", training);
-const locale = ref("lt");
+const form = useForm('CreateTraining', training);
+const locale = ref('lt');
 
 // Shadcn Select requires string values
 const institutionIdString = computed({
@@ -94,9 +96,9 @@ const institutions = computed(() => {
       };
     })
     // filter unique
-    .filter((institution) => institution !== undefined).filter(
+    .filter(institution => institution !== undefined).filter(
       (value, index, self) =>
-        self.findIndex((t) => t?.value === value?.value) === index
+        self.findIndex(t => t?.value === value?.value) === index,
     );
 });
 </script>

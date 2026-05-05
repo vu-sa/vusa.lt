@@ -13,12 +13,61 @@
 
         <!-- Main Content -->
         <div class="flex-1 min-w-0">
-          <!-- Title -->
-          <div class="mb-2 sm:mb-3">
+          <!-- Title + Actions row -->
+          <div class="flex items-start justify-between gap-3 mb-1.5">
             <h3
               class="text-sm sm:text-base font-semibold text-card-foreground group-hover:text-primary transition-colors line-clamp-2 leading-tight sm:leading-normal">
               {{ document.title }}
             </h3>
+
+            <!-- Actions -->
+            <div class="flex-shrink-0">
+              <TooltipProvider>
+                <ButtonGroup class="opacity-50 group-hover:opacity-100 transition-opacity">
+                  <Tooltip>
+                    <TooltipTrigger as-child>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        class="h-7 w-8 text-muted-foreground hover:text-primary"
+                        @click.prevent.stop="openDocument"
+                      >
+                        <ExternalLink class="w-3.5 h-3.5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">{{ $t('open') }}</TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip v-if="downloadUrl">
+                    <TooltipTrigger as-child>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        class="h-7 w-8 text-muted-foreground hover:text-primary"
+                        @click.prevent.stop="downloadDocument"
+                      >
+                        <Download class="w-3.5 h-3.5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">{{ $t('download') }}</TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip v-if="document.share_url">
+                    <TooltipTrigger as-child>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        class="h-7 w-8 text-muted-foreground hover:text-primary"
+                        @click.prevent.stop="copyShareUrl"
+                      >
+                        <LinkIcon class="w-3.5 h-3.5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">{{ $t('copy_link') }}</TooltipContent>
+                  </Tooltip>
+                </ButtonGroup>
+              </TooltipProvider>
+            </div>
           </div>
 
           <!-- Mobile Layout: Stack everything -->
@@ -52,7 +101,7 @@
               </Badge>
 
               <!-- Status -->
-              <Badge v-if="'is_in_effect' in document && document.is_in_effect !== null" 
+              <Badge v-if="'is_in_effect' in document && document.is_in_effect !== null"
                 :variant="document.is_in_effect ? 'default' : 'secondary'"
                 class="text-xs px-1.5 py-0.5 flex-shrink-0">
                 <component :is="document.is_in_effect ? CheckCircle : Clock" class="w-3 h-3 mr-1" />
@@ -62,64 +111,38 @@
             </div>
           </div>
 
-          <!-- Desktop Layout: Horizontal with date on right -->
-          <div class="hidden sm:block">
-            <!-- Badges and Date Row -->
-            <div class="flex items-start justify-between gap-4 mb-2">
-              <div class="flex-1 min-w-0">
-                <!-- Badges Row -->
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  <!-- Organization -->
-                  <Badge variant="outline" class="text-xs max-w-48">
-                    <Building2 class="w-3 h-3 mr-1 flex-shrink-0" />
-                    <span class="truncate">{{ getTenantDisplayName() }}</span>
-                  </Badge>
+          <!-- Desktop Layout: Badges and date row -->
+          <div class="hidden sm:flex items-center gap-1.5 flex-wrap">
+            <!-- Organization -->
+            <Badge variant="outline" class="text-xs max-w-48">
+              <Building2 class="w-3 h-3 mr-1 flex-shrink-0" />
+              <span class="truncate">{{ getTenantDisplayName() }}</span>
+            </Badge>
 
-                  <!-- Content Type -->
-                  <Badge v-if="document.content_type" variant="outline" class="text-xs max-w-52">
-                    <FileText class="w-3 h-3 mr-1 flex-shrink-0" />
-                    <span class="truncate">{{ document.content_type }}</span>
-                  </Badge>
+            <!-- Content Type -->
+            <Badge v-if="document.content_type" variant="outline" class="text-xs max-w-52">
+              <FileText class="w-3 h-3 mr-1 flex-shrink-0" />
+              <span class="truncate">{{ document.content_type }}</span>
+            </Badge>
 
-                  <!-- Language -->
-                  <Badge v-if="document.language" variant="secondary" class="text-xs flex-shrink-0">
-                    {{ getLanguageCode() }}
-                  </Badge>
+            <!-- Language -->
+            <Badge v-if="document.language" variant="secondary" class="text-xs flex-shrink-0">
+              {{ getLanguageCode() }}
+            </Badge>
 
-                  <!-- Status -->
-                  <Badge v-if="'is_in_effect' in document && document.is_in_effect !== null" 
-                    :variant="document.is_in_effect ? 'default' : 'secondary'"
-                    class="text-xs flex-shrink-0">
-                    <component :is="document.is_in_effect ? CheckCircle : Clock" class="w-3 h-3 mr-1" />
-                    {{ document.is_in_effect ? 'Galioja' : 'Negalioja' }}
-                  </Badge>
-                </div>
-              </div>
+            <!-- Status -->
+            <Badge v-if="'is_in_effect' in document && document.is_in_effect !== null"
+              :variant="document.is_in_effect ? 'default' : 'secondary'"
+              class="text-xs flex-shrink-0">
+              <component :is="document.is_in_effect ? CheckCircle : Clock" class="w-3 h-3 mr-1" />
+              {{ document.is_in_effect ? 'Galioja' : 'Negalioja' }}
+            </Badge>
 
-              <!-- Date and Actions -->
-              <div class="flex items-center gap-3 flex-shrink-0">
-                <!-- Date Badge -->
-                <Badge variant="outline" class="text-xs">
-                  <Calendar class="w-3 h-3 mr-1" />
-                  {{ formatDocumentDate() }}
-                </Badge>
-
-                <!-- Copy Link Button (only if share_url available) -->
-                <Button
-                  v-if="document.share_url"
-                  variant="ghost"
-                  size="icon"
-                  class="h-7 w-7 text-muted-foreground hover:text-primary"
-                  :title="$t('copy_link')"
-                  @click.prevent.stop="copyShareUrl"
-                >
-                  <LinkIcon class="w-4 h-4" />
-                </Button>
-
-                <!-- External Link Icon -->
-                <ExternalLink class="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-              </div>
-            </div>
+            <!-- Date — inline with badges -->
+            <Badge variant="outline" class="text-xs flex-shrink-0">
+              <Calendar class="w-3 h-3 mr-1" />
+              {{ formatDocumentDate() }}
+            </Badge>
           </div>
 
           <!-- Summary -->
@@ -129,47 +152,48 @@
             </p>
           </div>
         </div>
-
-        <!-- Mobile External Link Icon -->
-        <div class="sm:hidden flex-shrink-0 mt-1">
-          <ExternalLink class="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-        </div>
       </div>
     </a>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from 'vue';
 
 // ShadcnVue components
-import { Badge } from '@/Components/ui/badge'
-import { Button } from '@/Components/ui/button'
-
-// Icons
 import {
   Building2,
   Calendar,
+  Download,
   ExternalLink,
   CheckCircle,
   Clock,
   FileText,
   Link as LinkIcon,
-} from 'lucide-vue-next'
-import { Icon } from '@iconify/vue'
+} from 'lucide-vue-next';
+import { Icon } from '@iconify/vue';
+import { trans as $t } from 'laravel-vue-i18n';
+
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { ButtonGroup } from '@/Components/ui/button-group';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
+
+// Icons
+
+// Icons
 
 // Composables
-import { useDocumentDisplay, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay'
-import { useToasts } from '@/Composables/useToasts'
-import { trans as $t } from 'laravel-vue-i18n'
+import { useDocumentDisplay, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
+import { useToasts } from '@/Composables/useToasts';
 
 // Props
 interface Props {
-  document: DocumentDisplayItem
+  document: DocumentDisplayItem;
 }
 
-const props = defineProps<Props>()
-const toasts = useToasts()
+const props = defineProps<Props>();
+const toasts = useToasts();
 
 // Use shared document display logic - use simple date format for list view
 const {
@@ -178,28 +202,53 @@ const {
   getDocumentIconClasses,
   getLanguageCode,
   getTenantDisplayName,
-  trackDocumentClick
-} = useDocumentDisplay(props.document)
+  trackDocumentClick,
+} = useDocumentDisplay(props.document);
 
 // For list view, use simple date format
-const formatDocumentDate = formatDocumentDateSimple
+const formatDocumentDate = formatDocumentDateSimple;
 
 // Use share_url for linking, fallback to anonymous_url
-const documentUrl = computed(() => props.document.share_url || props.document.anonymous_url)
+const documentUrl = computed(() => props.document.share_url || props.document.anonymous_url);
+
+// Download URL appends ?download=1 to the share/anonymous URL
+const downloadUrl = computed(() => {
+  const base = props.document.share_url || props.document.anonymous_url;
+  if (!base) return undefined;
+  const separator = base.includes('?') ? '&' : '?';
+  return `${base}${separator}download=1`;
+});
+
+// Open document in new tab
+const openDocument = () => {
+  if (documentUrl.value) {
+    trackDocumentClick();
+    window.open(documentUrl.value, '_blank', 'noopener,noreferrer');
+  }
+};
+
+// Download document
+const downloadDocument = () => {
+  if (downloadUrl.value) {
+    trackDocumentClick();
+    window.open(downloadUrl.value, '_blank', 'noopener,noreferrer');
+  }
+};
 
 // Copy share URL to clipboard
 const copyShareUrl = async () => {
   if (!props.document.share_url) {
-    return
+    return;
   }
-  
+
   try {
-    await navigator.clipboard.writeText(props.document.share_url)
-    toasts.success($t('copy_link_success'))
-  } catch {
-    toasts.error($t('copy_link_error'))
+    await navigator.clipboard.writeText(props.document.share_url);
+    toasts.success($t('copy_link_success'));
   }
-}
+  catch {
+    toasts.error($t('copy_link_error'));
+  }
+};
 </script>
 
 <style scoped>

@@ -10,7 +10,7 @@
             <span v-if="search"> · filtruojama pagal "{{ search }}"</span>
             <span v-if="selectedFiles.size > 0"> · pasirinkta {{ selectedFiles.size }}</span>
           </div>
-          
+
           <div class="flex items-center gap-4">
             <!-- View mode toggle -->
             <div v-if="!hideViewToggle" class="flex items-center gap-1 border border-border rounded-md p-0.5">
@@ -31,7 +31,7 @@
                 <IFluentAppsList20Filled class="h-4 w-4" />
               </Button>
             </div>
-            
+
             <div class="flex items-center gap-2" aria-labelledby="items-per-page-label">
               <span id="items-per-page-label" class="text-sm text-muted-foreground">Rodyti:</span>
               <select
@@ -39,15 +39,23 @@
                 :value="itemsPerPage"
                 @change="$emit('update:itemsPerPage', Number(($event.target as HTMLSelectElement).value))"
               >
-                <option :value="25">25</option>
-                <option :value="50">50</option>
-                <option :value="100">100</option>
-                <option :value="totalItems">Visus</option>
+                <option :value="25">
+                  25
+                </option>
+                <option :value="50">
+                  50
+                </option>
+                <option :value="100">
+                  100
+                </option>
+                <option :value="totalItems">
+                  Visus
+                </option>
               </select>
             </div>
           </div>
         </div>
-        
+
         <!-- Bottom row: multi-select controls -->
         <div v-if="!selectionMode && !isUploadMode && !hideMultiSelect">
           <!-- Multi-select controls - responsive layout -->
@@ -62,7 +70,7 @@
               <IFluentCircle24Regular v-else class="h-4 w-4 mr-1" />
               {{ isMultiSelectMode ? 'Baigti pasirinkimą' : 'Pasirinkti kelis' }}
             </Button>
-            
+
             <!-- Bulk actions - separate row on mobile -->
             <div v-if="isMultiSelectMode && selectedFiles.size > 0" class="flex flex-wrap items-center gap-1 sm:gap-2">
               <Button variant="outline" size="sm" @click="$emit('selectAll')">
@@ -84,26 +92,26 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Loading skeleton -->
     <div v-if="loading" class="@container p-6">
-      <div 
+      <div
         class="grid gap-4
-               grid-cols-2 @sm:grid-cols-3 @md:grid-cols-4 
+               grid-cols-2 @sm:grid-cols-3 @md:grid-cols-4
                @lg:grid-cols-5 @xl:grid-cols-6 @2xl:grid-cols-7"
       >
         <Skeleton v-for="i in 8" :key="i" class="aspect-square rounded-md" />
       </div>
     </div>
-    
+
     <!-- Files and folders grid/list -->
     <div v-else-if="hasContent" class="@container p-6">
       <!-- Grid View -->
-      <div 
+      <div
         v-if="viewMode === 'grid'"
-  class="grid gap-4
-               grid-cols-2 @sm:grid-cols-3 @md:grid-cols-4 
-               @lg:grid-cols-5 @xl:grid-cols-6 @2xl:grid-cols-7 
+        class="grid gap-4
+               grid-cols-2 @sm:grid-cols-3 @md:grid-cols-4
+               @lg:grid-cols-5 @xl:grid-cols-6 @2xl:grid-cols-7
                @3xl:grid-cols-8 @4xl:grid-cols-10"
       >
         <!-- Folders -->
@@ -113,13 +121,13 @@
           :item="folder"
           :is-selected="false"
           :is-multi-selected="false"
-          :selection-mode="selectionMode"
-          :is-multi-select-mode="isMultiSelectMode"
+          :selection-mode
+          :is-multi-select-mode
           is-folder
           @click="$emit('folderClick', folder)"
           @double-click="$emit('folderDoubleClick', folder)"
         />
-        
+
         <!-- Files -->
         <FileItem
           v-for="file in paginatedFiles"
@@ -127,22 +135,28 @@
           :item="file"
           :is-selected="selectedFile === file.path || selectedFile === file.id"
           :is-multi-selected="selectedFiles.has(file.path)"
-          :selection-mode="selectionMode"
-          :is-multi-select-mode="isMultiSelectMode"
+          :selection-mode
+          :is-multi-select-mode
           @click="$emit('fileClick', file, $event)"
           @double-click="$emit('fileDoubleClick', file)"
         />
       </div>
-      
+
       <!-- List View (Table) -->
       <div v-else class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead class="border-b border-border">
             <tr class="text-left text-muted-foreground">
-              <th class="pb-2 font-medium w-10"></th>
-              <th class="pb-2 font-medium">Pavadinimas</th>
-              <th class="pb-2 font-medium w-24 text-right hidden sm:table-cell">Dydis</th>
-              <th class="pb-2 font-medium w-36 text-right hidden md:table-cell">Modifikuotas</th>
+              <th class="pb-2 font-medium w-10" />
+              <th class="pb-2 font-medium">
+                Pavadinimas
+              </th>
+              <th class="pb-2 font-medium w-24 text-right hidden sm:table-cell">
+                Dydis
+              </th>
+              <th class="pb-2 font-medium w-36 text-right hidden md:table-cell">
+                Modifikuotas
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -157,11 +171,17 @@
               <td class="py-2 px-1">
                 <IFluentFolder24Filled class="h-5 w-5 text-muted-foreground" />
               </td>
-              <td class="py-2 font-medium">{{ folder.name }}</td>
-              <td class="py-2 text-right text-muted-foreground hidden sm:table-cell">—</td>
-              <td class="py-2 text-right text-muted-foreground hidden md:table-cell">—</td>
+              <td class="py-2 font-medium">
+                {{ folder.name }}
+              </td>
+              <td class="py-2 text-right text-muted-foreground hidden sm:table-cell">
+                —
+              </td>
+              <td class="py-2 text-right text-muted-foreground hidden md:table-cell">
+                —
+              </td>
             </tr>
-            
+
             <!-- Files -->
             <tr
               v-for="file in paginatedFiles"
@@ -177,25 +197,31 @@
               <td class="py-2 px-1">
                 <component :is="getFileIcon(file)" class="h-5 w-5 text-muted-foreground" />
               </td>
-              <td class="py-2">{{ file.name }}</td>
-              <td class="py-2 text-right text-muted-foreground hidden sm:table-cell">{{ formatFileSize(file.size) }}</td>
-              <td class="py-2 text-right text-muted-foreground hidden md:table-cell">{{ formatDate(file.modified) }}</td>
+              <td class="py-2">
+                {{ file.name }}
+              </td>
+              <td class="py-2 text-right text-muted-foreground hidden sm:table-cell">
+                {{ formatFileSize(file.size) }}
+              </td>
+              <td class="py-2 text-right text-muted-foreground hidden md:table-cell">
+                {{ formatDate(file.modified) }}
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
-      
+
       <!-- Pagination controls -->
       <div v-if="totalPages > 1" class="mt-6 flex items-center justify-center gap-2">
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           :disabled="currentPage === 1"
           @click="$emit('update:currentPage', Math.max(1, currentPage - 1))"
         >
           Ankstesnis
         </Button>
-        
+
         <div class="flex items-center gap-1">
           <template v-for="page in visiblePages" :key="page">
             <Button
@@ -210,10 +236,10 @@
             <span v-else class="px-2 text-muted-foreground">...</span>
           </template>
         </div>
-        
-        <Button 
-          variant="outline" 
-          size="sm" 
+
+        <Button
+          variant="outline"
+          size="sm"
           :disabled="currentPage === totalPages"
           @click="$emit('update:currentPage', Math.min(totalPages, currentPage + 1))"
         >
@@ -221,7 +247,7 @@
         </Button>
       </div>
     </div>
-    
+
     <!-- Empty state -->
     <div v-else class="flex flex-col items-center justify-center py-16 px-8 text-center">
       <IFluentDocumentError24Regular class="h-12 w-12 text-zinc-300 dark:text-zinc-600 mb-4" />
@@ -229,9 +255,9 @@
         {{ search ? 'Failų nerasta' : 'Šis aplankas tuščias' }}
       </h3>
       <p class="text-zinc-500 dark:text-zinc-400 mb-6 max-w-sm">
-        {{ search 
+        {{ search
           ? `Pagal "${search}" paieškos kriterijų failų nerasta.`
-          : selectionMode 
+          : selectionMode
             ? 'Nėra failų šiame aplanke. Naršykite kitus aplankus arba kreipkitės į administratorių.'
             : 'Pradėkite nuo failų įkėlimo į šį aplanką.'
         }}
@@ -269,9 +295,11 @@
 
 <script setup lang="ts">
 import { computed, type Component } from 'vue';
+
+import FileItem from './FileItem.vue';
+
 import { Button } from '@/Components/ui/button';
 import { Skeleton } from '@/Components/ui/skeleton';
-import FileItem from './FileItem.vue';
 
 // Import icons
 import IFluentCheckmarkCircle24Regular from '~icons/fluent/checkmark-circle-24-regular';
@@ -344,7 +372,7 @@ function getFileExtension(path: string): string {
 
 function getFileIcon(file: any): Component {
   const ext = getFileExtension(file.path || file.name || '').toLowerCase();
-  
+
   if (['pdf'].includes(ext)) {
     return IFluentDocumentPdf24Regular;
   }

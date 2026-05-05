@@ -5,6 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\ModelEnum;
 use App\Http\Controllers\AdminController;
 use App\Models\Comment;
+use App\Models\Institution;
+use App\Models\Meeting;
+use App\Models\Pivots\ReservationResource;
+use App\Models\Reservation;
+use App\Models\SharepointFile;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,6 +19,20 @@ use Spatie\Enum\Laravel\Rules\EnumRule;
 class CommentController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
+
+    /**
+     * Allowed commentable model types.
+     * Only these models can be commented on via user input.
+     *
+     * @var array<string, class-string>
+     */
+    private const ALLOWED_COMMENTABLE_TYPES = [
+        'reservation' => Reservation::class,
+        'reservation-resource' => ReservationResource::class,
+        'institution' => Institution::class,
+        'meeting' => Meeting::class,
+        'sharepoint-file' => SharepointFile::class,
+    ];
 
     /**
      * Store a newly created resource in storage.
@@ -27,18 +46,22 @@ class CommentController extends AdminController
             'route' => 'nullable|string',
         ]);
 
-        // convert to camelCase
-        $formatted = Str::ucfirst(Str::camel($validated['commentable_type']));
+        $typeKey = Str::kebab($validated['commentable_type']);
 
-        if ($formatted === 'ReservationResource') {
-            $modelClass = 'App\\Models\\Pivots\\ReservationResource';
-        } else {
-            $modelClass = 'App\\Models\\'.$formatted;
+        if (! isset(self::ALLOWED_COMMENTABLE_TYPES[$typeKey])) {
+            return back()->with('error', 'Neleistinas komentaro tipas.');
         }
 
-        $model = $modelClass::find($request->commentable_id);
+        $modelClass = self::ALLOWED_COMMENTABLE_TYPES[$typeKey];
+        $model = $modelClass::find($validated['commentable_id']);
 
-        $model->comment($request->comment);
+        if (! $model) {
+            return back()->with('error', 'Modelis nerastas.');
+        }
+
+        $this->authorize('view', $model);
+
+        $model->comment($validated['comment']);
 
         return back()->with('success', 'Komentaras pridėtas.');
     }
@@ -53,7 +76,7 @@ class CommentController extends AdminController
         $this->handleAuthorization('update', $comment);
 
         // update comment
-        $comment->update($request->all());
+        $comment->update($request->only('comment'));
 
         return back()->with('success', 'Komentaras atnaujintas.');
     }

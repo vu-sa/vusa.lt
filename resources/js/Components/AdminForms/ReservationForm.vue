@@ -1,5 +1,5 @@
 <template>
-  <AdminForm :model="form" label-placement="top">
+  <AdminForm :model="form" label-placement="top" :is-create-form="!reservation.id">
     <FormElement>
       <template #title>
         {{ $t("forms.context.main_info") }}
@@ -61,22 +61,31 @@
             <div class="flex w-full gap-2">
               <Select v-model="item.id" @update:model-value="item.quantity = 1">
                 <SelectTrigger class="min-w-64">
-                  <SelectValue :placeholder="RESERVATION_PLACEHOLDERS.resource[$page.props.app.locale]" />
+                  <SelectValue :placeholder="RESERVATION_PLACEHOLDERS.resource[$page.props.app.locale]">
+                    <template #default="{ modelValue }">
+                      <template v-if="modelValue">
+                        {{ allResourceOptions.find(r => r.id === modelValue)?.name }}
+                      </template>
+                    </template>
+                  </SelectValue>
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem v-for="resource in allResourceOptions" :key="resource.id" :value="resource.id"
-                    :disabled="resource.disabled">
-                    <div class="flex items-center gap-2">
-                      <IFluentCube24Regular class="h-4 w-4 text-gray-400" />
-                      <span>{{ resource.name }}</span>
-                      <span class="text-gray-400">
-                        {{ resource.lowestCapacityAtDateTimeRange }} {{ $t("iš") }} {{ resource.capacity }}
-                      </span>
-                      <Badge variant="secondary" class="text-xs">
-                        {{ resource.tenant?.shortname }}
-                      </Badge>
-                    </div>
-                  </SelectItem>
+                <SelectContent class="min-w-[30rem]">
+                  <SelectVirtualizer :options="allResourceOptions" :estimate-size="36">
+                    <template #default="{ option, style }">
+                      <SelectItem :value="option.id" :label="option.name" :disabled="option.disabled" :style>
+                        <div class="flex items-center gap-2">
+                          <IFluentCube24Regular class="h-4 w-4 text-gray-400" />
+                          <span>{{ option.name }}</span>
+                          <span class="text-gray-400">
+                            {{ option.lowestCapacityAtDateTimeRange }} {{ $t("iš") }} {{ option.capacity }}
+                          </span>
+                          <Badge variant="secondary" class="text-xs">
+                            {{ option.tenant?.shortname }}
+                          </Badge>
+                        </div>
+                      </SelectItem>
+                    </template>
+                  </SelectVirtualizer>
                 </SelectContent>
               </Select>
               <NumberField v-model="item.quantity" :min="1" :max="getleftCapacity(item.id)" />
@@ -112,34 +121,35 @@
 </template>
 
 <script setup lang="ts">
-import { router, useForm } from "@inertiajs/vue3";
-import { trans as $t } from "laravel-vue-i18n";
-import { computed, ref, watch } from "vue";
-import IFluentCube24Regular from "~icons/fluent/cube24-regular";
+import { router, useForm } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+import { computed, ref, watch } from 'vue';
 
-import { Badge } from "@/Components/ui/badge";
-import { Button } from "@/Components/ui/button";
-import { Checkbox } from "@/Components/ui/checkbox";
-import { DateTimePicker } from "@/Components/ui/date-picker";
-import { DynamicListInput } from "@/Components/ui/dynamic-list-input";
-import { Input } from "@/Components/ui/input";
-import { Label } from "@/Components/ui/label";
-import { NumberField } from "@/Components/ui/number-field";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { Textarea } from "@/Components/ui/textarea";
-import { RESERVATION_PLACEHOLDERS } from "@/Constants/I18n/Placeholders";
-import { capitalize } from "@/Utils/String";
-import FormElement from "./FormElement.vue";
-import FormFieldWrapper from "./FormFieldWrapper.vue";
-import Icons from "@/Types/Icons/regular";
-import type { ReservationCreationTemplate } from "@/Pages/Admin/Reservations/CreateReservation.vue";
-import type { ReservationEditType } from "@/Pages/Admin/Reservations/EditReservation.vue";
-import AdminForm from "./AdminForm.vue";
-import MdSuspenseWrapper from "@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue";
+import FormElement from './FormElement.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import AdminForm from './AdminForm.vue';
+
+import IFluentCube24Regular from '~icons/fluent/cube24-regular';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { Checkbox } from '@/Components/ui/checkbox';
+import { DateTimePicker } from '@/Components/ui/date-picker';
+import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { NumberField } from '@/Components/ui/number-field';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectVirtualizer } from '@/Components/ui/select';
+import { Textarea } from '@/Components/ui/textarea';
+import { RESERVATION_PLACEHOLDERS } from '@/Constants/I18n/Placeholders';
+import { capitalize } from '@/Utils/String';
+import Icons from '@/Types/Icons/regular';
+import type { ReservationCreationTemplate } from '@/Pages/Admin/Reservations/CreateReservation.vue';
+import type { ReservationEditType } from '@/Pages/Admin/Reservations/EditReservation.vue';
+import MdSuspenseWrapper from '@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue';
 
 defineEmits<{
-  (event: "update:value", value: number | null): void;
-  (event: "submit:form", form: unknown): void;
+  (event: 'update:value', value: number | null): void;
+  (event: 'submit:form', form: unknown): void;
 }>();
 
 // TODO: cleanup the modelRoute
@@ -147,7 +157,7 @@ const props = defineProps<{
   reservation: ReservationCreationTemplate | ReservationEditType;
   allResources: App.Entities.Resource[];
   modelRoute: string;
-  rememberKey?: "CreateReservation";
+  rememberKey?: 'CreateReservation';
 }>();
 
 const conditionAcquaintance = ref(false);
@@ -182,37 +192,41 @@ const onDateChange = () => {
   if (!startDate.value || !endDate.value) return;
 
   form.resources = [];
+  // Reset dirty state so the "unsaved changes" guard doesn't fire on the reload
+  form.defaults();
   router.reload({
     data: {
       dateTimeRange: { start: startDate.value.getTime(), end: endDate.value.getTime() },
     },
     preserveScroll: true,
-    only: ["resources"],
+    only: ['resources'],
   });
 };
 
 const getleftCapacity = (id: string) => {
-  return props.allResources.find((resource) => resource.id === id)
+  return props.allResources.find(resource => resource.id === id)
     ?.lowestCapacityAtDateTimeRange;
 };
 
 const allResourceOptions = computed(() => {
-  let selectedResources = form.resources.map((resource) => resource.id);
+  const selectedResources = form.resources.map(resource => resource.id);
 
-  return props.allResources.map((resource) => ({
+  return props.allResources.map(resource => ({
     ...resource,
     disabled:
-      resource.lowestCapacityAtDateTimeRange === 0 ||
-      selectedResources.includes(resource.id) ||
-      !resource.is_reservable,
+      resource.lowestCapacityAtDateTimeRange === 0
+      || selectedResources.includes(resource.id)
+      || !resource.is_reservable,
   }));
 });
 
 const submit = () => {
+  // Clear dirty state before navigating so the "unsaved changes" guard doesn't fire
+  form.defaults();
   form.submit(
-    props.reservation?.id ? "patch" : "post",
+    props.reservation?.id ? 'patch' : 'post',
     routeToSubmit.value, {
-    preserveScroll: true,
-  });
+      preserveScroll: true,
+    });
 };
 </script>

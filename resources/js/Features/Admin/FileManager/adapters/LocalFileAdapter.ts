@@ -1,12 +1,13 @@
 import { useFetch } from '@vueuse/core';
-import type { 
-  FileSourceAdapter, 
-  FileListingResponse, 
-  UnifiedFile, 
+
+import type {
+  FileSourceAdapter,
+  FileListingResponse,
+  UnifiedFile,
   UnifiedDirectory,
   FileableRef,
-  transformLocalFile, 
-  transformLocalDirectory 
+  transformLocalFile,
+  transformLocalDirectory,
 } from '../types';
 
 /**
@@ -22,10 +23,10 @@ export class LocalFileAdapter implements FileSourceAdapter {
 
   async fetchListing(path: string): Promise<FileListingResponse> {
     const { data } = await useFetch(route('api.v1.admin.files.index', { path })).get().json();
-    
+
     // Handle standardized API response format
     const responseData = data.value?.success ? data.value.data : data.value;
-    
+
     const files: UnifiedFile[] = (responseData?.files ?? []).map((file: {
       path: string;
       name: string;

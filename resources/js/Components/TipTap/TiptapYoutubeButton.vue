@@ -2,7 +2,7 @@
   <div @click="showModal = true">
     <slot />
   </div>
-  
+
   <Dialog :open="showModal" @update:open="showModal = $event">
     <DialogContent class="sm:max-w-lg">
       <DialogHeader>
@@ -15,9 +15,9 @@
       <div class="space-y-4">
         <div class="space-y-2">
           <Label for="youtube-url">YouTube nuoroda</Label>
-          <Input 
+          <Input
             id="youtube-url"
-            v-model="youtubeUrl" 
+            v-model="youtubeUrl"
             placeholder="https://www.youtube.com/watch?v=..."
             type="url"
           />
@@ -31,7 +31,7 @@
         <Button variant="outline" @click="showModal = false">
           Atšaukti
         </Button>
-        <Button @click="addYoutubeVideo" :disabled="!youtubeUrl.trim()">
+        <Button :disabled="!youtubeUrl.trim()" @click="addYoutubeVideo">
           Įkelti
         </Button>
       </DialogFooter>
@@ -40,19 +40,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref } from 'vue';
 
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 
-const emit = defineEmits<{
-  (e: 'submit', youtubeUrl: string): void
-}>()
+const emit = defineEmits<(e: 'submit', youtubeUrl: string) => void>();
 
 const showModal = ref(false);
-const youtubeUrl = ref("");
+const youtubeUrl = ref('');
 
 function addYoutubeVideo() {
   emit('submit', youtubeUrl.value);

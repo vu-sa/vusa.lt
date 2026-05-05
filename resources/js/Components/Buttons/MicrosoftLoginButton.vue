@@ -17,11 +17,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
-import { router } from "@inertiajs/vue3";
-import { Button } from "@/Components/ui/button";
-import { usePWA } from "@/Composables/usePWA";
-import IMdiMicrosoft from "~icons/mdi/microsoft";
+import { ref, onMounted, onUnmounted } from 'vue';
+import { router } from '@inertiajs/vue3';
+
+import { Button } from '@/Components/ui/button';
+import { usePWA } from '@/Composables/usePWA';
+import IMdiMicrosoft from '~icons/mdi/microsoft';
 
 const loading = ref(false);
 const { isPWA } = usePWA();
@@ -30,15 +31,16 @@ const { isPWA } = usePWA();
 const handlePopupMessage = (event: MessageEvent) => {
   // Verify origin for security
   if (event.origin !== window.location.origin) return;
-  
+
   if (event.data?.type === 'oauth-success') {
     loading.value = false;
     // Reload the page to get authenticated state
-    router.visit(event.data.redirectUrl || route('dashboard'), { 
+    router.visit(event.data.redirectUrl || route('dashboard'), {
       preserveState: false,
-      replace: true 
+      replace: true,
     });
-  } else if (event.data?.type === 'oauth-error') {
+  }
+  else if (event.data?.type === 'oauth-error') {
     loading.value = false;
     // Could show error message here
     console.error('[OAuth] Login failed:', event.data.message);
@@ -55,13 +57,14 @@ onUnmounted(() => {
 
 const handleLogin = () => {
   loading.value = true;
-  
+
   if (isPWA.value) {
     // PWA mode: use popup to stay in app shell
     openPopupLogin();
-  } else {
+  }
+  else {
     // Browser mode: standard redirect
-    window.location.href = route("microsoft.redirect");
+    window.location.href = route('microsoft.redirect');
   }
 };
 
@@ -70,20 +73,20 @@ const openPopupLogin = () => {
   const height = 700;
   const left = window.screenX + (window.outerWidth - width) / 2;
   const top = window.screenY + (window.outerHeight - height) / 2;
-  
+
   const popup = window.open(
-    route("microsoft.redirect") + "?popup=1",
-    "microsoft-oauth",
-    `width=${width},height=${height},left=${left},top=${top},popup=1`
+    `${route('microsoft.redirect')}?popup=1`,
+    'microsoft-oauth',
+    `width=${width},height=${height},left=${left},top=${top},popup=1`,
   );
-  
+
   // If popup was blocked, fall back to redirect
   if (!popup || popup.closed) {
     console.log('[OAuth] Popup blocked, falling back to redirect');
-    window.location.href = route("microsoft.redirect");
+    window.location.href = route('microsoft.redirect');
     return;
   }
-  
+
   // Check if popup was closed manually (user cancelled)
   const checkClosed = setInterval(() => {
     if (popup.closed) {

@@ -33,7 +33,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read Model $dutiable
- * @property-read Duty $duty
+ * @property-read Duty|null $duty
  * @property-read StudyProgram|null $study_program
  * @property-read Collection<int, Tenant> $tenants
  * @property-read mixed $translations

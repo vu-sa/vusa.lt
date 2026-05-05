@@ -6,9 +6,9 @@
     <p class="text-muted-foreground">
       {{ message }}
     </p>
-    <Button 
-      variant="ghost" 
-      size="sm" 
+    <Button
+      variant="ghost"
+      size="sm"
       class="mt-4"
       @click="$emit('clear')"
     >
@@ -18,17 +18,16 @@
 </template>
 
 <script setup lang="ts">
-import { Button } from '@/Components/ui/button'
-import { trans as $t } from 'laravel-vue-i18n'
-import { defineAsyncComponent, type Component } from 'vue'
+import { trans as $t } from 'laravel-vue-i18n';
+import { defineAsyncComponent, type Component } from 'vue';
+
+import { Button } from '@/Components/ui/button';
 
 interface EmptyStateProps {
-  message: string
-  icon?: Component
+  message: string;
+  icon?: Component;
 }
 
-defineProps<EmptyStateProps>()
-defineEmits<{
-  (e: 'clear'): void
-}>()
+defineProps<EmptyStateProps>();
+defineEmits<(e: 'clear') => void>();
 </script>

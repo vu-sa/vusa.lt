@@ -11,24 +11,24 @@
 </template>
 
 <script setup lang="tsx">
-import { computed, ref, watch } from "vue";
-import { trans as $t } from "laravel-vue-i18n";
-import { type ColumnDef } from '@tanstack/vue-table';
+import { computed, ref, watch } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+import type { ColumnDef } from '@tanstack/vue-table';
 
-import Icons from "@/Types/Icons/regular";
-import IndexTablePage from "@/Components/Layouts/IndexTablePage.vue";
-import DataTableFilter from "@/Components/ui/data-table/DataTableFilter.vue";
-import { Badge } from "@/Components/ui/badge";
+import Icons from '@/Types/Icons/regular';
+import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
+import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
+import { Badge } from '@/Components/ui/badge';
 import {
   createIdColumn,
   createTimestampColumn,
   createTextColumn,
-  createTitleColumn
+  createTitleColumn,
 } from '@/Utils/DataTableColumns';
-import { createStandardActionsColumn } from "@/Composables/useTableActions";
-import {
-  type IndexTablePageProps
-} from "@/Types/TableConfigTypes";
+import { createStandardActionsColumn } from '@/Composables/useTableActions';
+import type {
+  IndexTablePageProps,
+} from '@/Types/TableConfigTypes';
 
 const props = defineProps<{
   data: App.Entities.Type[];
@@ -53,7 +53,7 @@ const entityName = 'type';
 // Extract unique model types for filtering
 const modelTypes = computed(() => {
   const types = new Set<string>();
-  props.data.forEach(type => {
+  props.data.forEach((type) => {
     if (type.model_type) {
       types.add(type.model_type);
     }
@@ -76,29 +76,29 @@ const modelTypeOptions = computed(() => {
 const columns = computed<ColumnDef<App.Entities.Type, any>[]>(() => [
   createIdColumn(),
   createTitleColumn<App.Entities.Type>({
-    accessorKey: "title",
-    routeName: "types.edit",
-    width: 200
+    accessorKey: 'title',
+    routeName: 'types.edit',
+    width: 200,
   }),
-  createTextColumn("slug", {
-    title: $t("forms.fields.slug"),
+  createTextColumn('slug', {
+    title: $t('forms.fields.slug'),
     cell: ({ row }) => (
-      <Badge variant="outline">{row.getValue("slug")}</Badge>
-    )
+      <Badge variant="outline">{row.getValue('slug')}</Badge>
+    ),
   }),
-  createTextColumn("model_type", {
+  createTextColumn('model_type', {
     cell: ({ row }) => (
-      <Badge variant="secondary">{row.getValue("model_type")}</Badge>
-    )
+      <Badge variant="secondary">{row.getValue('model_type')}</Badge>
+    ),
   }),
-  createTimestampColumn("created_at"),
-  createTimestampColumn("updated_at"),
-  createStandardActionsColumn<App.Entities.Type>("types", {
+  createTimestampColumn('created_at'),
+  createTimestampColumn('updated_at'),
+  createStandardActionsColumn<App.Entities.Type>('types', {
     canView: false,
     canEdit: true,
     canDelete: true,
-    canRestore: true
-  })
+    canRestore: true,
+  }),
 ]);
 
 // Simplified table configuration using the new interfaces
@@ -121,10 +121,10 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Type>>(() => {
     allowToggleDeleted: true,
 
     // Page layout
-    headerTitle: $t("Turinio tipai"),
+    headerTitle: $t('Turinio tipai'),
     icon: Icons.TYPE,
     createRoute: route('types.create'),
-    canCreate: true
+    canCreate: true,
   };
 });
 

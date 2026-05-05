@@ -1,18 +1,3 @@
-<script setup lang="ts">
-import type { ComboboxGroupProps } from "reka-ui"
-import type { HTMLAttributes } from "vue"
-import { reactiveOmit } from "@vueuse/core"
-import { ComboboxGroup, ComboboxLabel } from "reka-ui"
-import { cn } from '@/Utils/Shadcn/utils'
-
-const props = defineProps<ComboboxGroupProps & {
-  class?: HTMLAttributes["class"]
-  heading?: string
-}>()
-
-const delegatedProps = reactiveOmit(props, "class")
-</script>
-
 <template>
   <ComboboxGroup
     data-slot="combobox-group"
@@ -25,3 +10,19 @@ const delegatedProps = reactiveOmit(props, "class")
     <slot />
   </ComboboxGroup>
 </template>
+
+<script setup lang="ts">
+import type { ComboboxGroupProps } from 'reka-ui';
+import type { HTMLAttributes } from 'vue';
+import { reactiveOmit } from '@vueuse/core';
+import { ComboboxGroup, ComboboxLabel } from 'reka-ui';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+const props = defineProps<ComboboxGroupProps & {
+  class?: HTMLAttributes['class'];
+  heading?: string;
+}>();
+
+const delegatedProps = reactiveOmit(props, 'class');
+</script>

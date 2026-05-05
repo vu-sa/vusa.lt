@@ -1,13 +1,3 @@
-<script lang="ts" setup>
-import type { HTMLAttributes } from 'vue'
-import { cn } from '@/Utils/Shadcn/utils'
-import { ChevronRight } from 'lucide-vue-next'
-
-const props = defineProps<{
-  class?: HTMLAttributes['class']
-}>()
-</script>
-
 <template>
   <li
     data-slot="breadcrumb-separator"
@@ -20,3 +10,14 @@ const props = defineProps<{
     </slot>
   </li>
 </template>
+
+<script lang="ts" setup>
+import type { HTMLAttributes } from 'vue';
+import { ChevronRight } from 'lucide-vue-next';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+const props = defineProps<{
+  class?: HTMLAttributes['class'];
+}>();
+</script>

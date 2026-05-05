@@ -40,10 +40,10 @@
 
       <!-- Tenant filter -->
       <div v-if="permissibleTenants.length > 1" class="flex items-center gap-2">
-        <DataTableFilter 
-          v-model:value="selectedTenantIds" 
-          :options="tenantOptions" 
-          multiple 
+        <DataTableFilter
+          v-model:value="selectedTenantIds"
+          :options="tenantOptions"
+          multiple
           @update:value="handleTenantFilterChange"
         >
           {{ $t('Padalinys') }}
@@ -61,47 +61,47 @@
           </div>
           <div>
             <p class="text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
-{{ taskStats.total }}
-</p>
+              {{ taskStats.total }}
+            </p>
             <p class="text-sm text-zinc-500 dark:text-zinc-400">
-{{ $t('tasks.stats.pending') }}
-</p>
+              {{ $t('tasks.stats.pending') }}
+            </p>
           </div>
         </div>
       </div>
-      
+
       <!-- Overdue -->
       <div :class="[
         'relative overflow-hidden rounded-xl border p-4',
-        taskStats.overdue > 0 
-          ? 'border-red-200/60 bg-red-50/30 dark:border-red-900/30 dark:bg-red-950/10' 
+        taskStats.overdue > 0
+          ? 'border-red-200/60 bg-red-50/30 dark:border-red-900/30 dark:bg-red-950/10'
           : 'border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900'
       ]">
         <div class="flex items-center gap-3">
           <div :class="[
             'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
-            taskStats.overdue > 0 
-              ? 'bg-red-100 dark:bg-red-900/30' 
+            taskStats.overdue > 0
+              ? 'bg-red-100 dark:bg-red-900/30'
               : 'bg-zinc-100 dark:bg-zinc-800'
           ]">
             <AlertCircleIcon :class="[
               'h-5 w-5',
-              taskStats.overdue > 0 
-                ? 'text-red-600 dark:text-red-400' 
+              taskStats.overdue > 0
+                ? 'text-red-600 dark:text-red-400'
                 : 'text-zinc-400'
             ]" />
           </div>
           <div>
             <p class="text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
-{{ taskStats.overdue }}
-</p>
+              {{ taskStats.overdue }}
+            </p>
             <p class="text-sm text-zinc-500 dark:text-zinc-400">
-{{ $t('overdue') }}
-</p>
+              {{ $t('overdue') }}
+            </p>
           </div>
         </div>
       </div>
-      
+
       <!-- Auto-completing -->
       <div class="relative overflow-hidden rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
         <div class="flex items-center gap-3">
@@ -110,15 +110,15 @@
           </div>
           <div>
             <p class="text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
-{{ taskStats.autoCompleting }}
-</p>
+              {{ taskStats.autoCompleting }}
+            </p>
             <p class="text-sm text-zinc-500 dark:text-zinc-400">
-{{ $t('tasks.stats.auto_completing') }}
-</p>
+              {{ $t('tasks.stats.auto_completing') }}
+            </p>
           </div>
         </div>
       </div>
-      
+
       <!-- Completed -->
       <div class="relative overflow-hidden rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
         <div class="flex items-center gap-3">
@@ -127,11 +127,11 @@
           </div>
           <div>
             <p class="text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
-{{ taskStats.completed }}
-</p>
+              {{ taskStats.completed }}
+            </p>
             <p class="text-sm text-zinc-500 dark:text-zinc-400">
-{{ $t('completed') }}
-</p>
+              {{ $t('completed') }}
+            </p>
           </div>
         </div>
       </div>
@@ -175,10 +175,10 @@
 </template>
 
 <script setup lang="ts">
-import { router } from "@inertiajs/vue3";
-import { ref, computed } from "vue";
-import { trans as $t } from "laravel-vue-i18n";
-import { 
+import { router } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+import {
   ClipboardList as ClipboardListIcon,
   AlertCircle as AlertCircleIcon,
   RotateCw as RotateCwIcon,
@@ -187,16 +187,16 @@ import {
   Package as PackageIcon,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
-} from "lucide-vue-next";
+} from 'lucide-vue-next';
 
-import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
-import { usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
-import TaskManager from "@/Features/Admin/TaskManager/TaskManager.vue";
-import DataTableFilter from "@/Components/ui/data-table/DataTableFilter.vue";
-import Icons from "@/Types/Icons/regular";
-import { Button } from "@/Components/ui/button";
-import { Badge } from "@/Components/ui/badge";
-import type { TaskProgress, TaskActionType } from "@/Types/TaskTypes";
+import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
+import { usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
+import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
+import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
+import Icons from '@/Types/Icons/regular';
+import { Button } from '@/Components/ui/button';
+import { Badge } from '@/Components/ui/badge';
+import type { TaskProgress, TaskActionType } from '@/Types/TaskTypes';
 
 interface TaskWithDetails {
   id: string;
@@ -267,11 +267,11 @@ const props = defineProps<{
 const selectedTenantIds = ref<number[]>(props.filters.tenant_ids || []);
 
 // Tenant options for dropdown
-const tenantOptions = computed(() => 
+const tenantOptions = computed(() =>
   props.permissibleTenants.map(tenant => ({
     label: tenant.shortname,
     value: tenant.id,
-  }))
+  })),
 );
 
 // Update filter and reload page
@@ -280,10 +280,11 @@ const updateFilter = (key: keyof Filters, value: string | null) => {
     ...props.filters,
     page: 1, // Reset to first page when filter changes
   } as Record<string, string | number | number[] | null | undefined>;
-  
+
   if (value === null) {
     delete newFilters[key];
-  } else {
+  }
+  else {
     newFilters[key] = value;
   }
 
@@ -318,6 +319,6 @@ const goToPage = (page: number) => {
 
 // Generate breadcrumbs
 usePageBreadcrumbs([
-  { label: $t('tasks.summary.title'), icon: Icons.TASK }
+  { label: $t('tasks.summary.title'), icon: Icons.TASK },
 ]);
 </script>

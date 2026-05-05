@@ -19,7 +19,7 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Text content -->
       <div class="flex-1 min-w-0">
         <p class="font-medium text-sm sm:text-base text-zinc-900 dark:text-zinc-100 line-clamp-2 sm:truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
@@ -33,15 +33,15 @@
         </div>
       </div>
     </Link>
-    
+
     <!-- Subscription actions -->
     <div class="flex items-center gap-1.5 sm:gap-2 shrink-0 self-end sm:self-center">
       <TooltipProvider>
         <!-- Follow/Unfollow button -->
         <Tooltip>
           <TooltipTrigger as-child>
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="icon"
               class="h-8 w-8"
               :disabled="isFollowLoading"
@@ -56,12 +56,12 @@
             {{ isFollowed ? $t('Nebesekti') : $t('Sekti') }}
           </TooltipContent>
         </Tooltip>
-        
+
         <!-- Mute/Unmute button (only if followed) -->
         <Tooltip v-if="isFollowed">
           <TooltipTrigger as-child>
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="icon"
               class="h-8 w-8"
               :disabled="isMuteLoading"
@@ -88,8 +88,8 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Eye, EyeOff, Bell, BellOff, Building2, Loader2 } from 'lucide-vue-next';
 
 import type { AtstovavimosInstitution } from '../types';
-
 import { useInstitutionSubscription } from '../Composables/useInstitutionSubscription';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Button } from '@/Components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';

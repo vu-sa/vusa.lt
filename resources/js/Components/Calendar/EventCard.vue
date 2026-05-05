@@ -61,7 +61,7 @@
           variant === 'compact' ? 'text-sm sm:text-base line-clamp-2' : 'text-base sm:text-lg line-clamp-2 sm:line-clamp-1'
         ]">
         <Link :href="route('calendar.event', { calendar: event.id, lang: $page.props.app.locale })">
-        {{ getEventTitle(event) }}
+          {{ getEventTitle(event) }}
         </Link>
       </h3>
 
@@ -108,12 +108,12 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from "laravel-vue-i18n";
-import { Link, usePage } from "@inertiajs/vue3";
-import { computed, ref } from "vue";
+import { trans as $t } from 'laravel-vue-i18n';
+import { Link, usePage } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
-import Button from "@/Components/ui/button/Button.vue";
-import { formatStaticTime } from "@/Utils/IntlTime";
+import Button from '@/Components/ui/button/Button.vue';
+import { formatStaticTime } from '@/Utils/IntlTime';
 
 const props = withDefaults(defineProps<{
   event: App.Entities.Calendar;
@@ -122,7 +122,7 @@ const props = withDefaults(defineProps<{
   googleLink?: string;
 }>(), {
   variant: 'upcoming',
-  showBadges: true
+  showBadges: true,
 });
 
 const page = usePage();

@@ -2,7 +2,7 @@
  * Creates a mock Meeting entity
  */
 export function createMockMeeting(
-  overrides: Partial<App.Entities.Meeting> = {}
+  overrides: Partial<App.Entities.Meeting> = {},
 ): App.Entities.Meeting {
   const now = new Date();
   const startTime = new Date(now.getTime() + 24 * 60 * 60 * 1000); // Tomorrow
@@ -58,7 +58,7 @@ export function createMockMeeting(
  * Creates a meeting with agenda items
  */
 export function createMockMeetingWithAgenda(
-  overrides: Partial<App.Entities.Meeting> = {}
+  overrides: Partial<App.Entities.Meeting> = {},
 ): App.Entities.Meeting {
   return createMockMeeting({
     agenda_items: [

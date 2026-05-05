@@ -9,7 +9,9 @@
           />
         </TooltipTrigger>
         <TooltipContent class="max-w-xs">
-          <p class="font-medium text-xs mb-1">{{ item.order }}. {{ item.title }}</p>
+          <p class="font-medium text-xs mb-1">
+            {{ item.order }}. {{ item.title }}
+          </p>
           <p class="text-xs text-muted-foreground">
             {{ getStatusMeta(item).label }}
           </p>

@@ -25,7 +25,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read Collection<int, Activity> $activities
  * @property-read Model|\Eloquent $commentable
  * @property-read Collection<int, Comment> $comments
- * @property-read User $user
+ * @property-read User|null $user
  *
  * @method static \Database\Factories\CommentFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Comment newModelQuery()

@@ -8,16 +8,16 @@
           <button
             v-for="filter in filters"
             :key="filter.value"
-            @click="activeFilter = filter.value"
             :class="[
               'px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200',
               activeFilter === filter.value
                 ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
             ]"
+            @click="activeFilter = filter.value"
           >
             {{ filter.label }}
-            <span 
+            <span
               v-if="filter.count > 0"
               :class="[
                 'ml-1.5 px-1.5 py-0.5 text-xs rounded-full',
@@ -42,26 +42,26 @@
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" class="w-56">
-            <DropdownMenuItem 
+            <DropdownMenuItem
               v-if="unreadCount > 0"
-              @click="handleMarkAllAsRead"
               class="gap-2"
+              @click="handleMarkAllAsRead"
             >
               <IFluentCheckmarkCircle24Regular class="size-4" />
               {{ $t('Pažymėti visus kaip skaitytus') }}
             </DropdownMenuItem>
-            <DropdownMenuItem 
+            <DropdownMenuItem
               v-if="readCount > 0"
-              @click="handleDeleteRead"
               class="gap-2 text-amber-600 dark:text-amber-400"
+              @click="handleDeleteRead"
             >
               <IFluentDelete24Regular class="size-4" />
               {{ $t('Ištrinti perskaitytus') }}
             </DropdownMenuItem>
             <DropdownMenuSeparator v-if="unreadCount > 0 || readCount > 0" />
-            <DropdownMenuItem 
-              @click="handleDeleteAll"
+            <DropdownMenuItem
               class="gap-2 text-red-600 dark:text-red-400"
+              @click="handleDeleteAll"
             >
               <IFluentDeleteDismiss24Regular class="size-4" />
               {{ $t('Ištrinti visus') }}
@@ -74,8 +74,8 @@
     <!-- Notifications Content -->
     <div class="space-y-6">
       <!-- Empty State -->
-      <div 
-        v-if="shownNotifications.length === 0" 
+      <div
+        v-if="shownNotifications.length === 0"
         class="flex flex-col items-center justify-center py-16 px-4"
       >
         <div class="relative">
@@ -90,15 +90,15 @@
           {{ activeFilter === 'unread' ? $t('Naujų pranešimų nėra') : $t('Pranešimų nėra') }}
         </h3>
         <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-1 text-center max-w-sm">
-          {{ activeFilter === 'unread' 
+          {{ activeFilter === 'unread'
             ? $t('Visus pranešimus perskaitėte! Nauji pranešimai bus rodomi čia.')
-            : $t('Kol kas pranešimų nėra. Jie bus rodomi čia, kai gausite naujų.') 
+            : $t('Kol kas pranešimų nėra. Jie bus rodomi čia, kai gausite naujų.')
           }}
         </p>
-        <Button 
-          v-if="activeFilter === 'unread' && readCount > 0" 
-          variant="outline" 
-          size="sm" 
+        <Button
+          v-if="activeFilter === 'unread' && readCount > 0"
+          variant="outline"
+          size="sm"
           class="mt-4"
           @click="activeFilter = 'all'"
         >
@@ -108,8 +108,8 @@
 
       <!-- Grouped Notifications -->
       <template v-else>
-        <div 
-          v-for="[period, periodNotifications] in groupedNotifications" 
+        <div
+          v-for="[period, periodNotifications] in groupedNotifications"
           :key="period"
           class="space-y-2"
         >
@@ -118,22 +118,22 @@
             <h3 class="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
               {{ period }}
             </h3>
-            <div class="flex-1 h-px bg-zinc-200 dark:bg-zinc-800"></div>
+            <div class="flex-1 h-px bg-zinc-200 dark:bg-zinc-800" />
             <span class="text-xs text-zinc-400 dark:text-zinc-500">
               {{ periodNotifications.length }}
             </span>
           </div>
 
           <!-- Notification Cards -->
-          <TransitionGroup 
+          <TransitionGroup
             name="notification-card"
-            tag="div" 
+            tag="div"
             class="space-y-2"
           >
             <NotificationCard
               v-for="notification in periodNotifications"
               :key="notification.id"
-              :notification="notification"
+              :notification
               @mark-as-read="handleMarkAsRead"
               @delete="handleDelete"
             />
@@ -145,29 +145,27 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { router } from "@inertiajs/vue3";
-import { trans as $t } from "laravel-vue-i18n";
+import { computed, ref } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 
-import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
-import NotificationCard from "@/Features/Admin/Notifications/NotificationCard.vue";
-import { Button } from "@/Components/ui/button";
+import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
+import NotificationCard from '@/Features/Admin/Notifications/NotificationCard.vue';
+import { Button } from '@/Components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/Components/ui/dropdown-menu";
-
-import { usePageBreadcrumbs } from "@/Composables/useBreadcrumbsUnified";
-import { useToasts } from "@/Composables/useToasts";
-import { 
+} from '@/Components/ui/dropdown-menu';
+import { usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
+import { useToasts } from '@/Composables/useToasts';
+import {
   groupNotificationsByTime,
-  type Notification 
-} from "@/Composables/useNotificationFormatting";
-import Icons from "@/Types/Icons/regular";
-
+  type Notification,
+} from '@/Composables/useNotificationFormatting';
+import Icons from '@/Types/Icons/regular';
 import IFluentCheckmarkCircle24Regular from '~icons/fluent/checkmark-circle-24-regular';
 import IFluentCheckmark24Filled from '~icons/fluent/checkmark24-filled';
 import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
@@ -181,7 +179,7 @@ const props = defineProps<{
 
 // Breadcrumbs
 usePageBreadcrumbs([
-  { label: $t('Pranešimai'), icon: Icons.NOTIFICATION }
+  { label: $t('Pranešimai'), icon: Icons.NOTIFICATION },
 ]);
 
 const toasts = useToasts();
@@ -190,12 +188,12 @@ const toasts = useToasts();
 type FilterValue = 'all' | 'unread';
 const activeFilter = ref<FilterValue>('unread');
 
-const unreadCount = computed(() => 
-  props.notifications.filter(n => !n.read_at).length
+const unreadCount = computed(() =>
+  props.notifications.filter(n => !n.read_at).length,
 );
 
-const readCount = computed(() => 
-  props.notifications.filter(n => n.read_at).length
+const readCount = computed(() =>
+  props.notifications.filter(n => n.read_at).length,
 );
 
 const filters = computed(() => [
@@ -216,49 +214,49 @@ const groupedNotifications = computed(() => {
 
 // Actions
 const handleMarkAsRead = (id: string) => {
-  router.post(route("notifications.markAsRead", id), {}, {
+  router.post(route('notifications.markAsRead', id), {}, {
     preserveScroll: true,
     only: ['notifications'],
   });
 };
 
 const handleDelete = (id: string) => {
-  router.delete(route("notifications.destroy", id), {
+  router.delete(route('notifications.destroy', id), {
     preserveScroll: true,
     only: ['notifications'],
     onSuccess: () => {
-      toasts.success($t("Pranešimas ištrintas."));
+      toasts.success($t('Pranešimas ištrintas.'));
     },
   });
 };
 
 const handleMarkAllAsRead = () => {
-  router.post(route("notifications.mark-as-read.all"), {}, {
+  router.post(route('notifications.mark-as-read.all'), {}, {
     preserveScroll: true,
     only: ['notifications'],
     onSuccess: () => {
-      toasts.success($t("Visi pranešimai pažymėti kaip perskaityti."));
+      toasts.success($t('Visi pranešimai pažymėti kaip perskaityti.'));
     },
   });
 };
 
 const handleDeleteRead = () => {
-  router.delete(route("notifications.destroy-all"), {
+  router.delete(route('notifications.destroy-all'), {
     preserveScroll: true,
     only: ['notifications'],
     data: { read_only: true },
     onSuccess: () => {
-      toasts.success($t("Perskaityti pranešimai ištrinti."));
+      toasts.success($t('Perskaityti pranešimai ištrinti.'));
     },
   });
 };
 
 const handleDeleteAll = () => {
-  router.delete(route("notifications.destroy-all"), {
+  router.delete(route('notifications.destroy-all'), {
     preserveScroll: true,
     only: ['notifications'],
     onSuccess: () => {
-      toasts.success($t("Visi pranešimai ištrinti."));
+      toasts.success($t('Visi pranešimai ištrinti.'));
     },
   });
 };

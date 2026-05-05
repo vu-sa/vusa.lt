@@ -25,7 +25,7 @@
     <img :src="$page.props.app.locale === 'lt' ? '/logos/kuratorius.png' : '/logos/mentor.svg'" alt="Kuratorius" class="w-full aspect-video -order-1 md:order-1 object-contain dark:invert">
   </div>
   <h2 class="my-4 underline">
-    {{ $page.props.app.locale === 'lt' ? '2025 m. registracijos formos' : '2025 registration forms' }}
+    {{ $page.props.app.locale === 'lt' ? '2026 m. registracijos formos' : '2026 registration forms' }}
   </h2>
   <section class="grid mt-2 grid-cols-2 lg:grid-cols-4 gap-8">
     <a v-for="tenant in mergedTenants" :key="tenant.id" class="group" target="_blank" :href="tenant.form">
@@ -39,24 +39,25 @@
 </template>
 
 <script setup lang="ts">
-import SmartLink from '@/Components/Public/SmartLink.vue';
-import { getFacultyName } from '@/Utils/String';
 import { computed } from 'vue';
 
+import SmartLink from '@/Components/Public/SmartLink.vue';
+import { getFacultyName } from '@/Utils/String';
+
 const props = defineProps<{
-  forms: Record<App.Entities.Tenant["alias"], string>;
+  forms: Record<App.Entities.Tenant['alias'], string>;
   tenants: App.Entities.Tenant[];
-  englishTenantNames: Record<App.Entities.Tenant["alias"], string>;
-}>()
+  englishTenantNames: Record<App.Entities.Tenant['alias'], string>;
+}>();
 
 const mergedTenants = computed(() => {
-  return props.tenants.map(tenant => {
+  return props.tenants.map((tenant) => {
     return {
       ...tenant,
       form: props.forms[tenant.alias],
-      englishName: props.englishTenantNames[tenant.alias]
-    }
-  })
-})
+      englishName: props.englishTenantNames[tenant.alias],
+    };
+  });
+});
 
 </script>

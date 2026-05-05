@@ -9,13 +9,13 @@
           <template #description>
             {{ $t('settings.document_settings.important_types_description') }}
           </template>
-          
+
           <div class="space-y-2">
             <Label class="inline-flex items-center gap-1">
               <component :is="Icons.DOCUMENT" class="h-4 w-4" />
               {{ $t('settings.document_settings.important_types_label') }}
             </Label>
-            
+
             <MultiSelect
               v-model="selectedTypes"
               :options="contentTypeOptions"
@@ -32,16 +32,16 @@
 </template>
 
 <script setup lang="ts">
-import { useForm } from "@inertiajs/vue3";
-import { ref, watch, computed } from "vue";
+import { useForm } from '@inertiajs/vue3';
+import { ref, watch, computed } from 'vue';
 
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
-import AdminForm from "@/Components/AdminForms/AdminForm.vue";
-import FormElement from "@/Components/AdminForms/FormElement.vue";
-import Icons from "@/Types/Icons/regular";
-import { Label } from "@/Components/ui/label";
-import { MultiSelect } from "@/Components/ui/multi-select";
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import AdminForm from '@/Components/AdminForms/AdminForm.vue';
+import FormElement from '@/Components/AdminForms/FormElement.vue';
+import Icons from '@/Types/Icons/regular';
+import { Label } from '@/Components/ui/label';
+import { MultiSelect } from '@/Components/ui/multi-select';
 
 interface ContentTypeOption {
   value: string;
@@ -57,7 +57,7 @@ const props = defineProps<{
 const contentTypeOptions = computed<ContentTypeOption[]>(() => {
   return props.available_content_types.map(type => ({
     value: type,
-    label: type
+    label: type,
   }));
 });
 
@@ -65,12 +65,12 @@ const contentTypeOptions = computed<ContentTypeOption[]>(() => {
 const selectedTypes = ref<ContentTypeOption[]>(
   props.selected_content_types.map(type => ({
     value: type,
-    label: type
-  }))
+    label: type,
+  })),
 );
 
 const form = useForm({
-  important_content_types: props.selected_content_types
+  important_content_types: props.selected_content_types,
 });
 
 // Sync selected types to form
@@ -79,6 +79,6 @@ watch(selectedTypes, (newTypes) => {
 }, { deep: true });
 
 const handleFormSubmit = () => {
-  form.post(route("settings.documents.update"));
+  form.post(route('settings.documents.update'));
 };
 </script>

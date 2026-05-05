@@ -62,7 +62,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Document> $documents
  * @property-read Collection<int, Duty> $duties
  * @property-read Collection<int, FileableFile> $fileableFiles
- * @property-read Collection<int, SharepointFile> $files
  * @property-read Collection<int, User> $followers
  * @property-read bool $has_protocol
  * @property-read bool $has_public_meetings

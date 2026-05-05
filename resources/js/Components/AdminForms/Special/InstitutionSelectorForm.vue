@@ -40,7 +40,7 @@
             {{ myInstitutions.length }}
           </Badge>
         </div>
-        
+
         <!-- Search input for many institutions (> 8) -->
         <div v-if="myInstitutions.length > 8" class="relative">
           <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -69,12 +69,12 @@
             <span class="truncate max-w-48 sm:max-w-56 md:max-w-72" :title="inst.label">{{ inst.label }}</span>
           </button>
         </div>
-        
+
         <!-- Empty state for filtered results -->
         <p v-if="myInstitutions.length > 8 && myInstitutionsSearch && filteredMyInstitutions.length === 0" class="text-sm text-muted-foreground text-center py-2">
           {{ $t('Nerasta institucijų pagal paiešką') }}
         </p>
-        
+
         <!-- External institution notice if one was pre-selected -->
         <div v-if="externalInstitution" class="mt-2 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
           <div class="flex items-start gap-3">
@@ -221,10 +221,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, onUnmounted } from "vue";
-import { usePage } from "@inertiajs/vue3";
-import { trans as $t } from "laravel-vue-i18n";
-import { useForm, Form } from "vee-validate";
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+import { useForm, Form } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 import * as z from 'zod';
 import {
@@ -234,40 +234,39 @@ import {
   X,
   ChevronDown,
   ArrowRight,
-  AlertCircle
-} from "lucide-vue-next";
+  AlertCircle,
+} from 'lucide-vue-next';
 
-import Icons from "@/Types/Icons/filled";
-import SuggestionAlert from "@/Components/Alerts/SuggestionAlert.vue";
-import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
+import Icons from '@/Types/Icons/filled';
+import SuggestionAlert from '@/Components/Alerts/SuggestionAlert.vue';
+import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
 
 // Import Shadcn components
-import { Button } from "@/Components/ui/button";
-import { Input } from "@/Components/ui/input";
-import { Badge } from "@/Components/ui/badge";
-import { Separator } from "@/Components/ui/separator";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/Components/ui/collapsible";
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Badge } from '@/Components/ui/badge';
+import { Separator } from '@/Components/ui/separator';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
 import {
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/Components/ui/form";
-
+} from '@/Components/ui/form';
 
 // Import Lucide icons
 
-const emit = defineEmits<(e: "submit", data: string) => void>();
+const emit = defineEmits<(e: 'submit', data: string) => void>();
 
 const props = defineProps<{
   selectedInstitution?: App.Entities.Institution;
 }>();
 
 const showAlert = ref(true);
-const searchQuery = ref("");
-const myInstitutionsSearch = ref("");
+const searchQuery = ref('');
+const myInstitutionsSearch = ref('');
 const showDropdown = ref(false);
-const selectedInstitution = ref<string>("");
+const selectedInstitution = ref<string>('');
 const showAllInstitutions = ref(false);
 const visibleInstitutionsLimit = 5;
 
@@ -275,11 +274,11 @@ const visibleInstitutionsLimit = 5;
 const externalInstitution = computed(() => {
   const inst = props.selectedInstitution;
   if (!inst) return null;
-  
+
   // Check if this institution is external (not in user's institutions)
   const isExternal = (inst as any).isExternal === true;
   if (!isExternal) return null;
-  
+
   return inst;
 });
 
@@ -287,13 +286,13 @@ const externalInstitution = computed(() => {
 
 // Set initial values from props (computed to be reactive)
 const initialValues = computed(() => ({
-  institution_id: props.selectedInstitution?.id || ''
+  institution_id: props.selectedInstitution?.id || '',
 }));
 
 // Get all available institutions from Inertia props
-const page = usePage()
+const page = usePage();
 const providedInstitutions = computed(() => {
-  const provided = (page.props as any)?.accessibleInstitutions || []
+  const provided = (page.props as any)?.accessibleInstitutions || [];
   return provided.map((i: any) => ({
     label: i.name,
     value: String(i.id),
@@ -303,16 +302,16 @@ const providedInstitutions = computed(() => {
     meetingCount: i.meetings?.length || 0,
     institution: i,
     origin: 'admin' as const,
-  }))
-})
+  }));
+});
 
 // Only the user's own institutions for badge/cards
 const myInstitutions = computed(() => {
-  const duties = usePage().props.auth?.user?.current_duties || []
+  const duties = usePage().props.auth?.user?.current_duties || [];
   const fromDuties = duties
     .map((duty: any) => {
-      const inst = duty.institution
-      if (!inst) return null
+      const inst = duty.institution;
+      if (!inst) return null;
       return {
         label: inst.name,
         value: inst.id,
@@ -321,24 +320,24 @@ const myInstitutions = computed(() => {
         activeCheckIn: inst.active_check_in,
         meetingCount: inst.meetings?.length || 0,
         institution: inst,
-      }
+      };
     })
-    .filter(Boolean) as any[]
+    .filter(Boolean) as any[];
 
   // Dedupe and sort
-  const deduped = fromDuties.filter((value, index, self) => self.findIndex(t => t.value === value.value) === index)
-  return deduped.sort((a, b) => a.label.localeCompare(b.label))
-})
+  const deduped = fromDuties.filter((value, index, self) => self.findIndex(t => t.value === value.value) === index);
+  return deduped.sort((a, b) => a.label.localeCompare(b.label));
+});
 
 // Filtered my institutions based on search (for > 8 institutions)
 const filteredMyInstitutions = computed(() => {
-  const q = myInstitutionsSearch.value.trim().toLowerCase()
-  if (!q) return myInstitutions.value
+  const q = myInstitutionsSearch.value.trim().toLowerCase();
+  if (!q) return myInstitutions.value;
   return myInstitutions.value.filter((inst: any) =>
-    inst.label.toLowerCase().includes(q) ||
-    inst.context.toLowerCase().includes(q)
-  )
-})
+    inst.label.toLowerCase().includes(q)
+    || inst.context.toLowerCase().includes(q),
+  );
+});
 
 // Recent institutions based on meeting dates
 const recentInstitutions = computed(() => {
@@ -352,7 +351,7 @@ const recentInstitutions = computed(() => {
       last_meeting_date: inst.lastMeeting,
       meetingCount: inst.meetingCount,
       active_check_in: inst.activeCheckIn,
-    }))
+    }));
 });
 
 // Favorite institutions based on meeting frequency
@@ -361,27 +360,27 @@ const favoriteInstitutions = computed(() => {
     .filter((inst: any) => inst.meetingCount > 0)
     .sort((a: any, b: any) => b.meetingCount - a.meetingCount)
     .slice(0, 4)
-    .map((inst: any) => ({ id: inst.value, name: inst.label }))
+    .map((inst: any) => ({ id: inst.value, name: inst.label }));
 });
 
 // Only admin institutions that user doesn't already have direct access to
 const adminOnlyInstitutions = computed(() => {
-  const myIds = myInstitutions.value.map(inst => inst.value)
-  return providedInstitutions.value.filter(inst => !myIds.includes(inst.value))
-})
+  const myIds = myInstitutions.value.map(inst => inst.value);
+  return providedInstitutions.value.filter(inst => !myIds.includes(inst.value));
+});
 
 // Show search UI only if there are additional admin institutions
-const hasAdditionalInstitutions = computed(() => adminOnlyInstitutions.value.length > 0)
+const hasAdditionalInstitutions = computed(() => adminOnlyInstitutions.value.length > 0);
 
 // Filtered institutions for search
 const filteredInstitutions = computed(() => {
-  const q = searchQuery.value.trim()
-  if (!q) return adminOnlyInstitutions.value.slice(0, showAllInstitutions.value ? undefined : visibleInstitutionsLimit)
+  const q = searchQuery.value.trim();
+  if (!q) return adminOnlyInstitutions.value.slice(0, showAllInstitutions.value ? undefined : visibleInstitutionsLimit);
   return adminOnlyInstitutions.value.filter((inst: any) =>
-    inst.label.toLowerCase().includes(q.toLowerCase()) ||
-    inst.context.toLowerCase().includes(q.toLowerCase())
-  )
-})
+    inst.label.toLowerCase().includes(q.toLowerCase())
+    || inst.context.toLowerCase().includes(q.toLowerCase()),
+  );
+});
 
 // Selected institution data
 const selectedInstitutionData = computed(() => {
@@ -396,12 +395,12 @@ const selectedInstitutionData = computed(() => {
       lastMeeting: null,
       activeCheckIn: false,
       meetingCount: 0,
-      isExternal: true
+      isExternal: true,
     };
   }
 
   // Check both user institutions and admin institutions
-  const allInstitutions = [...myInstitutions.value, ...adminOnlyInstitutions.value]
+  const allInstitutions = [...myInstitutions.value, ...adminOnlyInstitutions.value];
   const institution = allInstitutions.find((inst: any) => inst.value === selectedInstitution.value);
   if (!institution) return null;
 
@@ -412,23 +411,23 @@ const selectedInstitutionData = computed(() => {
     lastMeeting: institution.lastMeeting,
     activeCheckIn: institution.activeCheckIn,
     meetingCount: institution.meetingCount,
-    isExternal: false
+    isExternal: false,
   };
 });
 
 // Methods
 const selectInstitution = (institutionId: string) => {
   selectedInstitution.value = institutionId;
-  searchQuery.value = "";
-  myInstitutionsSearch.value = "";
+  searchQuery.value = '';
+  myInstitutionsSearch.value = '';
   showDropdown.value = false;
 };
 
 const selectExternalInstitution = () => {
   if (externalInstitution.value) {
     selectedInstitution.value = String(externalInstitution.value.id);
-    searchQuery.value = "";
-    myInstitutionsSearch.value = "";
+    searchQuery.value = '';
+    myInstitutionsSearch.value = '';
     showDropdown.value = false;
   }
 };
@@ -436,18 +435,18 @@ const selectExternalInstitution = () => {
 const selectInstitutionFromSearch = (institutionId: string, institutionName: string) => {
   selectedInstitution.value = institutionId;
   searchQuery.value = institutionName;
-  myInstitutionsSearch.value = "";
+  myInstitutionsSearch.value = '';
   showDropdown.value = false;
 };
 
 const clearSelection = () => {
-  selectedInstitution.value = "";
-  searchQuery.value = "";
-  myInstitutionsSearch.value = "";
+  selectedInstitution.value = '';
+  searchQuery.value = '';
+  myInstitutionsSearch.value = '';
 };
 
 const getInstitutionInfo = (institutionId: string): string => {
-  const allInstitutions = [...myInstitutions.value, ...adminOnlyInstitutions.value]
+  const allInstitutions = [...myInstitutions.value, ...adminOnlyInstitutions.value];
   const institution = allInstitutions.find((inst: any) => inst.value === institutionId);
   if (!institution) return '';
 
@@ -472,14 +471,18 @@ const formatLastMeeting = (dateString: string): string => {
 
   if (diffDays === 0) {
     return $t('Šiandien');
-  } else if (diffDays === 1) {
+  }
+  else if (diffDays === 1) {
     return $t('Vakar');
-  } else if (diffDays < 7) {
+  }
+  else if (diffDays < 7) {
     return `${diffDays} ${$t('d. praeityje')}`;
-  } else if (diffDays < 30) {
+  }
+  else if (diffDays < 30) {
     const weeks = Math.floor(diffDays / 7);
     return `${weeks} ${$t('sav. praeityje')}`;
-  } else {
+  }
+  else {
     return date.toLocaleDateString();
   }
 };
@@ -488,7 +491,7 @@ const onSubmit = ({ institution_id }: any) => {
   const institutionToSubmit = selectedInstitution.value || institution_id;
 
   if (institutionToSubmit) {
-    emit("submit", institutionToSubmit);
+    emit('submit', institutionToSubmit);
   }
 };
 
@@ -505,7 +508,8 @@ watch(() => props.selectedInstitution, (newInstitution) => {
   if (newInstitution) {
     // Convert to string for consistent comparison
     selectedInstitution.value = String(newInstitution.id);
-  } else {
+  }
+  else {
     selectedInstitution.value = '';
   }
 }, { immediate: true });

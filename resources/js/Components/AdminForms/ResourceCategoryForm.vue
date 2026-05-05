@@ -22,25 +22,26 @@
 </template>
 
 <script setup lang="ts">
-import { useForm } from "@inertiajs/vue3";
+import { useForm } from '@inertiajs/vue3';
 
-import { RESOURCE_CATEGORY_PLACEHOLDERS } from "@/Constants/I18n/Placeholders";
+import FluentIconSelect from '../FormItems/FluentIconSelect.vue';
+import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
 
-import FluentIconSelect from "../FormItems/FluentIconSelect.vue";
-import FormElement from "./FormElement.vue";
-import FormFieldWrapper from "./FormFieldWrapper.vue";
-import MdSuspenseWrapper from "@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue";
-import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
-import AdminForm from "./AdminForm.vue";
+import FormElement from './FormElement.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import AdminForm from './AdminForm.vue';
+
+import MdSuspenseWrapper from '@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue';
+import { RESOURCE_CATEGORY_PLACEHOLDERS } from '@/Constants/I18n/Placeholders';
 
 const props = defineProps<{
   resourceCategory: any;
-  rememberKey?: "CreateResourceCategory";
+  rememberKey?: 'CreateResourceCategory';
 }>();
 
 defineEmits<{
-  (event: "submit:form", form: unknown): void;
-  (event: "delete"): void;
+  (event: 'submit:form', form: unknown): void;
+  (event: 'delete'): void;
 }>();
 
 const form = props.rememberKey

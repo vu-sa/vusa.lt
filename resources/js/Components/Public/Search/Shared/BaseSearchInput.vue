@@ -56,8 +56,8 @@
                 'transition-all duration-200' // Animation
               ]" @click="handleSearch">
                 <Search class="w-3.5 h-3.5 sm:mr-1.5" />
-                <span class="hidden sm:inline">{{ 
-                  localQuery.trim() === '' ? $t('search.show_all_button') : $t('search.search_button') 
+                <span class="hidden sm:inline">{{
+                  localQuery.trim() === '' ? $t('search.show_all_button') : $t('search.search_button')
                 }}</span>
               </Button>
 
@@ -122,37 +122,37 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, watchEffect } from 'vue'
+import { ref, computed, nextTick, watchEffect } from 'vue';
 import {
   X,
   History,
   Search,
-  Zap
-} from 'lucide-vue-next'
+  Zap,
+} from 'lucide-vue-next';
 
-import { Button } from '@/Components/ui/button'
-import { Input } from '@/Components/ui/input'
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
 
 // Props and emits
 interface Props {
-  query?: string
-  isSearching?: boolean
-  recentSearches?: string[]
+  query?: string;
+  isSearching?: boolean;
+  recentSearches?: string[];
   /** Translation key for the placeholder text */
-  placeholderKey?: string
-  typeToSearch?: boolean
+  placeholderKey?: string;
+  typeToSearch?: boolean;
 }
 
 interface Emits {
-  (e: 'update:query', value: string): void
-  (e: 'search', query: string): void
-  (e: 'selectRecent', search: string): void
-  (e: 'clear'): void
-  (e: 'focus'): void
-  (e: 'blur'): void
-  (e: 'update:typeToSearch', value: boolean): void
-  (e: 'removeRecent', search: string): void
-  (e: 'clearAllHistory'): void
+  (e: 'update:query', value: string): void;
+  (e: 'search', query: string): void;
+  (e: 'selectRecent', search: string): void;
+  (e: 'clear'): void;
+  (e: 'focus'): void;
+  (e: 'blur'): void;
+  (e: 'update:typeToSearch', value: boolean): void;
+  (e: 'removeRecent', search: string): void;
+  (e: 'clearAllHistory'): void;
 }
 
 const {
@@ -160,120 +160,120 @@ const {
   isSearching,
   recentSearches = [],
   placeholderKey = 'search.search_placeholder',
-  typeToSearch
-} = defineProps<Props>()
+  typeToSearch,
+} = defineProps<Props>();
 
-const emit = defineEmits<Emits>()
+const emit = defineEmits<Emits>();
 
 // Local state
-const inputRef = ref<HTMLInputElement>()
-const showSuggestions = ref(false)
-const localQuery = ref(query)
-const isInteractingWithDropdown = ref(false)
+const inputRef = ref<HTMLInputElement>();
+const showSuggestions = ref(false);
+const localQuery = ref(query);
+const isInteractingWithDropdown = ref(false);
 
 // Event handlers
 const handleInput = (event: Event) => {
-  const value = (event.target as HTMLInputElement)?.value || ''
+  const value = (event.target as HTMLInputElement)?.value || '';
 
-  localQuery.value = value
-  emit('update:query', value)
+  localQuery.value = value;
+  emit('update:query', value);
 
   // Show suggestions when typing (only when typeToSearch is off)
   if (!typeToSearch && (value.length > 0 || recentSearches.length > 0)) {
-    showSuggestions.value = true
+    showSuggestions.value = true;
   }
-}
+};
 
 const handleSearch = () => {
-  emit('search', localQuery.value)
-  showSuggestions.value = false
-}
+  emit('search', localQuery.value);
+  showSuggestions.value = false;
+};
 
 const handleEnter = () => {
-  handleSearch()
-}
+  handleSearch();
+};
 
 const handleClear = () => {
-  localQuery.value = ''
-  emit('update:query', '')
-  showSuggestions.value = false
-  emit('clear')
-  focusInput()
-}
+  localQuery.value = '';
+  emit('update:query', '');
+  showSuggestions.value = false;
+  emit('clear');
+  focusInput();
+};
 
 const toggleTypeToSearch = () => {
-  emit('update:typeToSearch', !typeToSearch)
-}
+  emit('update:typeToSearch', !typeToSearch);
+};
 
 const handleSelectSuggestion = (search: string) => {
-  localQuery.value = search
-  emit('selectRecent', search)
-  showSuggestions.value = false
-}
+  localQuery.value = search;
+  emit('selectRecent', search);
+  showSuggestions.value = false;
+};
 
 const handleRemoveSearch = (search: string) => {
-  isInteractingWithDropdown.value = true
-  emit('removeRecent', search)
+  isInteractingWithDropdown.value = true;
+  emit('removeRecent', search);
   setTimeout(() => {
-    isInteractingWithDropdown.value = false
-  }, 100)
-}
+    isInteractingWithDropdown.value = false;
+  }, 100);
+};
 
 const handleClearAllHistory = () => {
-  isInteractingWithDropdown.value = true
-  emit('clearAllHistory')
+  isInteractingWithDropdown.value = true;
+  emit('clearAllHistory');
   setTimeout(() => {
-    isInteractingWithDropdown.value = false
-  }, 100)
-}
+    isInteractingWithDropdown.value = false;
+  }, 100);
+};
 
 const focusInput = async () => {
-  await nextTick()
+  await nextTick();
   if (inputRef.value && typeof inputRef.value.focus === 'function') {
-    inputRef.value.focus()
+    inputRef.value.focus();
   }
-}
+};
 
 // Handle focus and blur events
 const handleFocus = () => {
   if (!typeToSearch) {
-    showSuggestions.value = true
+    showSuggestions.value = true;
   }
-  emit('focus')
-}
+  emit('focus');
+};
 
 const handleBlur = (event: FocusEvent) => {
   if (isInteractingWithDropdown.value) {
-    return
+    return;
   }
 
-  const relatedTarget = event.relatedTarget as HTMLElement
-  const currentTarget = event.currentTarget as HTMLElement
+  const relatedTarget = event.relatedTarget as HTMLElement;
+  const currentTarget = event.currentTarget as HTMLElement;
 
   if (relatedTarget && currentTarget.contains(relatedTarget)) {
-    return
+    return;
   }
 
   setTimeout(() => {
     if (!isInteractingWithDropdown.value) {
-      showSuggestions.value = false
-      emit('blur')
+      showSuggestions.value = false;
+      emit('blur');
     }
-  }, 150)
-}
+  }, 150);
+};
 
 // Watch for prop changes
-const syncQuery = computed(() => query ?? '')
+const syncQuery = computed(() => query ?? '');
 watchEffect(() => {
   if (syncQuery.value !== localQuery.value) {
-    localQuery.value = syncQuery.value
+    localQuery.value = syncQuery.value;
   }
-})
+});
 
 // Expose focus method
 defineExpose({
-  focusInput
-})
+  focusInput,
+});
 </script>
 
 <style scoped>

@@ -2,25 +2,25 @@
   <div class="flex justify-center">
     <DataTableActions
       :model="row"
-      :model-name="modelName"
+      :model-name
       :view-route="viewRoute ? route(viewRoute, row.id) : undefined"
       :edit-route="editRoute ? route(editRoute, row.id) : undefined"
       :duplicate-route="duplicateRoute ? route(duplicateRoute, row.id) : undefined"
       :delete-route="deleteRoute ? route(deleteRoute, row.id) : undefined"
       :restore-route="restoreRoute ? route(restoreRoute, row.id) : undefined"
-      :can-view="canView"
-      :can-edit="canEdit"
-      :can-duplicate="canDuplicate"
-      :can-delete="canDelete"
-      :can-restore="canRestore"
-      :confirm-delete="confirmDelete"
-      :delete-confirm-message="deleteConfirmMessage"
-      :delete-confirm-title="deleteConfirmTitle"
+      :can-view
+      :can-edit
+      :can-duplicate
+      :can-delete
+      :can-restore
+      :confirm-delete
+      :delete-confirm-message
+      :delete-confirm-title
       @action="handleAction"
       @custom-action="handleCustomAction"
     >
       <template #custom-actions="{ model, handleAction }">
-        <slot name="custom-actions" :model="model" :handle-action="handleAction"></slot>
+        <slot name="custom-actions" :model :handle-action />
       </template>
     </DataTableActions>
   </div>
@@ -32,21 +32,21 @@ import DataTableActions from './DataTableActions.vue';
 const props = defineProps<{
   row: TModel;
   modelName: string;
-  
+
   // Route names (without parameters)
   viewRoute?: string;
   editRoute?: string;
   duplicateRoute?: string;
   deleteRoute?: string;
   restoreRoute?: string;
-  
+
   // Permissions
   canView?: boolean;
   canEdit?: boolean;
   canDuplicate?: boolean;
   canDelete?: boolean;
   canRestore?: boolean;
-  
+
   // Confirmation settings
   confirmDelete?: boolean;
   deleteConfirmMessage?: string;

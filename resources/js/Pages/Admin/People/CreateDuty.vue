@@ -9,10 +9,11 @@
 
 <script setup lang="tsx">
 import { router } from '@inertiajs/vue3';
-import DutyForm from "@/Components/AdminForms/DutyForm.vue";
-import Icons from "@/Types/Icons/regular";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
+
+import DutyForm from '@/Components/AdminForms/DutyForm.vue';
+import Icons from '@/Types/Icons/regular';
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 
 const props = defineProps<{
   dutyTypes: App.Entities.Type[];
@@ -23,8 +24,8 @@ const props = defineProps<{
 }>();
 
 const duty = {
-  name: { lt: "", en: "" },
-  description: { lt: "", en: "" },
+  name: { lt: '', en: '' },
+  description: { lt: '', en: '' },
   email: null,
   institution_id: props.prefillInstitutionId ?? null,
   places_to_occupy: null,
@@ -38,7 +39,7 @@ const handleSubmit = (form: any) => {
   form.post(route('duties.store'), {
     onSuccess: () => {
       router.visit(route('duties.index'));
-    }
+    },
   });
 };
 </script>

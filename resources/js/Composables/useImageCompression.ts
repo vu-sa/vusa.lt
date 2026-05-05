@@ -34,13 +34,13 @@ const defaultOptions: Required<CompressionOptions> = {
 
 /**
  * Composable for client-side image compression using browser-image-compression.
- * 
+ *
  * @example
  * const { compressImage, compressImages } = useImageCompression();
- * 
+ *
  * // With defaults
  * const result = await compressImage(file);
- * 
+ *
  * // With custom options
  * const result = await compressImage(file, { maxSizeMB: 1, quality: 0.7 });
  */
@@ -52,7 +52,7 @@ export function useImageCompression(globalOptions: CompressionOptions = {}) {
    */
   async function compressImage(
     file: File,
-    options: CompressionOptions = {}
+    options: CompressionOptions = {},
   ): Promise<CompressionResult> {
     const opts = { ...mergedDefaults, ...options };
     const originalSize = file.size;
@@ -60,7 +60,7 @@ export function useImageCompression(globalOptions: CompressionOptions = {}) {
     // Skip compression for small files (under 100KB) unless conversion is needed
     const isSmallFile = originalSize < 100 * 1024;
     const needsConversion = !file.type.includes('webp') && opts.fileType === 'image/webp';
-    
+
     if (isSmallFile && !needsConversion) {
       return {
         file,
@@ -103,7 +103,8 @@ export function useImageCompression(globalOptions: CompressionOptions = {}) {
         compressionRatio: Math.max(0, compressionRatio),
         wasCompressed: true,
       };
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Image compression failed:', error);
       // Return original file if compression fails
       return {
@@ -121,7 +122,7 @@ export function useImageCompression(globalOptions: CompressionOptions = {}) {
    */
   async function compressImages(
     files: File[],
-    options: CompressionOptions = {}
+    options: CompressionOptions = {},
   ): Promise<CompressionResult[]> {
     return Promise.all(files.map(file => compressImage(file, options)));
   }
@@ -131,7 +132,7 @@ export function useImageCompression(globalOptions: CompressionOptions = {}) {
    */
   async function compress(
     file: File,
-    options: CompressionOptions = {}
+    options: CompressionOptions = {},
   ): Promise<File> {
     const result = await compressImage(file, options);
     return result.file;

@@ -5,11 +5,11 @@
       <!-- Decorative elements -->
       <div class="absolute -right-20 -top-20 size-64 rounded-full bg-vusa-red/5 blur-3xl" />
       <div class="absolute -bottom-10 -left-10 size-48 rounded-full bg-vusa-yellow/5 blur-3xl" />
-      
+
       <div class="relative">
         <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <SmartLink 
+            <SmartLink
               :href="route('contacts', { subdomain: 'www', lang: $page.props.app.locale })"
               class="mb-3 inline-flex items-center gap-1.5 text-xs font-medium text-zinc-500 hover:text-vusa-red transition-colors dark:text-zinc-400"
             >
@@ -50,11 +50,11 @@
                 <Button
                   :variant="showAllTenants ? 'default' : 'outline'"
                   size="default"
-                  @click="toggleAllTenants"
                   :class="[
                     'whitespace-nowrap gap-1.5',
                     showAllTenants ? 'bg-vusa-red hover:bg-vusa-red/90' : 'border-dashed hover:border-vusa-red hover:text-vusa-red'
                   ]"
+                  @click="toggleAllTenants"
                 >
                   <GlobeIcon class="size-4" />
                   {{ $t('Visi') }}
@@ -143,8 +143,8 @@
                       style="object-position: 50% 20%"
                       loading="lazy"
                     >
-                    <div 
-                      v-else 
+                    <div
+                      v-else
                       class="size-[72px] rounded-full flex items-center justify-center bg-zinc-200 ring-2 ring-white shadow-sm dark:bg-zinc-700 dark:ring-zinc-600"
                     >
                       <span class="text-base font-medium text-zinc-500 dark:text-zinc-400">{{ getInitials(user.name) }}</span>
@@ -158,8 +158,8 @@
               </div>
 
               <!-- More contacts indicator -->
-              <div 
-                v-if="getContactsWithDuties(institution).length > 6" 
+              <div
+                v-if="getContactsWithDuties(institution).length > 6"
                 class="mt-4 text-center text-sm text-zinc-400"
               >
                 +{{ getContactsWithDuties(institution).length - 6 }} {{ $t('daugiau') }}
@@ -230,8 +230,8 @@
                           style="object-position: 50% 20%"
                           loading="lazy"
                         >
-                        <div 
-                          v-else 
+                        <div
+                          v-else
                           class="size-[72px] rounded-full flex items-center justify-center bg-zinc-200 ring-2 ring-white shadow-sm dark:bg-zinc-700 dark:ring-zinc-600"
                         >
                           <span class="text-base font-medium text-zinc-500 dark:text-zinc-400">{{ getInitials(user.name) }}</span>
@@ -245,8 +245,8 @@
                   </div>
 
                   <!-- More contacts indicator -->
-                  <div 
-                    v-if="getContactsWithDuties(institution).length > 6" 
+                  <div
+                    v-if="getContactsWithDuties(institution).length > 6"
                     class="mt-4 text-center text-sm text-zinc-400"
                   >
                     +{{ getContactsWithDuties(institution).length - 6 }} {{ $t('daugiau') }}
@@ -298,20 +298,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { usePage } from "@inertiajs/vue3";
-import { SearchIcon, GlobeIcon } from "lucide-vue-next";
+import { computed, ref } from 'vue';
+import { usePage, router } from '@inertiajs/vue3';
+import { SearchIcon, GlobeIcon } from 'lucide-vue-next';
 
-import SmartLink from "@/Components/Public/SmartLink.vue";
-import PadalinysSelector from "@/Components/Public/Nav/PadalinysSelector.vue";
-import { pluralizeLithuanian } from "@/Utils/String";
-import { Label } from "@/Components/ui/label";
-import { Input } from "@/Components/ui/input";
-import { Button } from "@/Components/ui/button";
+import SmartLink from '@/Components/Public/SmartLink.vue';
+import PadalinysSelector from '@/Components/Public/Nav/PadalinysSelector.vue';
+import { pluralizeLithuanian } from '@/Utils/String';
+import { Label } from '@/Components/ui/label';
+import { Input } from '@/Components/ui/input';
+import { Button } from '@/Components/ui/button';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { UserIcon, TypeIcon } from '@/Components/icons';
-
-import { router } from "@inertiajs/vue3";
 
 const $page = usePage();
 
@@ -321,12 +319,12 @@ const props = defineProps<{
   showAllTenants?: boolean;
 }>();
 
-const search = ref<string>("");
+const search = ref<string>('');
 
 // Set breadcrumbs for student representatives / category pages
 usePageBreadcrumbs(() => {
   const items = [];
-  
+
   // Main contacts link
   items.push(
     BreadcrumbHelpers.createRouteBreadcrumb(
@@ -334,21 +332,21 @@ usePageBreadcrumbs(() => {
       'contacts',
       {
         subdomain: 'www',
-        lang: $page.props.app.locale
+        lang: $page.props.app.locale,
       },
-      UserIcon
-    )
+      UserIcon,
+    ),
   );
-  
+
   // Current page - category title or default "Studentų atstovai"
   items.push(
     BreadcrumbHelpers.createBreadcrumbItem(
       props.categoryType?.title || 'Studentų atstovai',
       undefined,
-      TypeIcon
-    )
+      TypeIcon,
+    ),
   );
-  
+
   return BreadcrumbHelpers.publicContent(items);
 });
 
@@ -360,7 +358,8 @@ const toggleAllTenants = () => {
   const url = new URL(window.location.href);
   if (props.showAllTenants) {
     url.searchParams.delete('all');
-  } else {
+  }
+  else {
     url.searchParams.set('all', '1');
   }
   router.visit(url.toString(), { preserveState: true, preserveScroll: true });
@@ -390,35 +389,35 @@ const pageDescription = computed(() => {
 
 // Check if current tenant is main (pagrindinis/vusa)
 const isMainTenant = computed(() => {
-  const tenant = $page.props.tenant;
+  const { tenant } = $page.props;
   return tenant?.alias === 'vusa' || tenant?.type === 'pagrindinis';
 });
 
 // Get current tenant name for display
 const currentTenantName = computed(() => {
-  const tenant = $page.props.tenant;
+  const { tenant } = $page.props;
   if (!tenant || tenant.alias === 'vusa') return null;
   return tenant.shortname?.split(' ').pop() ?? null;
 });
 
 // Filter institutions by search query and sort types (multi-institution first)
 const filteredTypesAndInstitutions = computed(() => {
-  const filtered = props.types.map((type) => ({
+  const filtered = props.types.map(type => ({
     ...type,
     institutions: type.institutions.filter((institution) => {
       if (!search.value) return true;
       const query = search.value.toLowerCase();
-      
+
       // Search in institution name
       if (institution.name.toLowerCase().includes(query)) return true;
-      
+
       // Search in contact names
-      const hasMatchingContact = institution.duties?.some((duty) =>
-        duty.current_users?.some((user) =>
-          user.name.toLowerCase().includes(query)
-        )
+      const hasMatchingContact = institution.duties?.some(duty =>
+        duty.current_users?.some(user =>
+          user.name.toLowerCase().includes(query),
+        ),
       );
-      
+
       return hasMatchingContact;
     }),
   }));
@@ -445,7 +444,7 @@ const singleInstitutionTypes = computed(() => {
 // Check if there are any results
 const hasResults = computed(() => {
   return filteredTypesAndInstitutions.value.some(
-    (type) => type.institutions.length > 0
+    type => type.institutions.length > 0,
   );
 });
 
@@ -453,7 +452,7 @@ const hasResults = computed(() => {
 const totalInstitutions = computed(() => {
   return filteredTypesAndInstitutions.value.reduce(
     (sum, type) => sum + type.institutions.length,
-    0
+    0,
   );
 });
 
@@ -462,9 +461,9 @@ const totalContacts = computed(() => {
   return filteredTypesAndInstitutions.value.reduce(
     (sum, type) => sum + type.institutions.reduce(
       (instSum, inst) => instSum + getContactsWithDuties(inst).length,
-      0
+      0,
     ),
-    0
+    0,
   );
 });
 

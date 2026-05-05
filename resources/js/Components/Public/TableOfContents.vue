@@ -46,7 +46,7 @@
                     : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-300'
                 ]" @click="handleClick(child.href)">
                   <span
-                    class="absolute -left-[18px] top-1/2 size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full transition-all duration-200"
+                    class="absolute -left-4.25 top-1/2 size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full transition-all duration-200"
                     :class="[
                       activeId === child.href.slice(1)
                         ? 'scale-100 bg-vusa-red/80'

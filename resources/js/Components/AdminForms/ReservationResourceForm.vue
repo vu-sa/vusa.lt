@@ -4,18 +4,18 @@
     <div v-if="spinning" class="flex flex-col items-center justify-center py-8 gap-3">
       <Spinner class="size-6" />
       <p class="text-sm text-muted-foreground">
-{{ $t('Kraunami visi resursai...') }}
-</p>
+        {{ $t('Kraunami visi resursai...') }}
+      </p>
     </div>
-    
+
     <!-- Form content -->
     <div v-else class="space-y-4">
       <!-- Date Range Picker -->
       <div class="space-y-2">
         <Label for="reservation-period">{{ capitalize($t('entities.reservation.period')) }} <span class="text-destructive">*</span></Label>
-        <DateRangePicker 
+        <DateRangePicker
           id="reservation-period"
-          v-model="dateRange" 
+          v-model="dateRange"
           :number-of-months="2"
           @change="onDateChange"
         />
@@ -43,9 +43,9 @@
             </template>
           </SelectTrigger>
           <SelectContent side="bottom" align="start">
-            <SelectItem 
-              v-for="resource in allResourceOptions" 
-              :key="resource.id" 
+            <SelectItem
+              v-for="resource in allResourceOptions"
+              :key="resource.id"
               :value="String(resource.id)"
               :disabled="resource.disabled"
             >
@@ -93,27 +93,27 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from "laravel-vue-i18n";
-import { type InertiaForm, router, useForm } from "@inertiajs/vue3";
-import { computed, ref, watch, onMounted } from "vue";
-import { CalendarDateTime, getLocalTimeZone, today, type DateValue } from "@internationalized/date";
-import type { DateRange } from "reka-ui";
+import { trans as $t } from 'laravel-vue-i18n';
+import { type InertiaForm, router, useForm } from '@inertiajs/vue3';
+import { computed, ref, watch, onMounted } from 'vue';
+import { CalendarDateTime, getLocalTimeZone, today, type DateValue } from '@internationalized/date';
+import type { DateRange } from 'reka-ui';
 
-import { Button } from "@/Components/ui/button";
-import { Label } from "@/Components/ui/label";
-import { Badge } from "@/Components/ui/badge";
-import { Spinner } from "@/Components/ui/spinner";
-import { NumberField } from "@/Components/ui/number-field";
-import { DateRangePicker } from "@/Components/ui/date-range-picker";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/Components/ui/select";
-import { capitalize } from "@/Utils/String";
-import Icons from "@/Types/Icons/regular";
+import { Button } from '@/Components/ui/button';
+import { Label } from '@/Components/ui/label';
+import { Badge } from '@/Components/ui/badge';
+import { Spinner } from '@/Components/ui/spinner';
+import { NumberField } from '@/Components/ui/number-field';
+import { DateRangePicker } from '@/Components/ui/date-range-picker';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/Components/ui/select';
+import { capitalize } from '@/Utils/String';
+import Icons from '@/Types/Icons/regular';
 
 const props = defineProps<{
   reservationResourceForm: InertiaForm<{
@@ -127,12 +127,12 @@ const props = defineProps<{
   reservationResourceFormRouteName: string;
   currentlyUsedCapacity?: number;
   allResources?: App.Entities.Resource[];
-  rememberKey?: "CreateReservationResource";
+  rememberKey?: 'CreateReservationResource';
 }>();
 
 // We need this to match the original selected resource for edit
 // If this changes, we don't need to consider current amount of resources for capacity
-const emit = defineEmits(["success"]);
+const emit = defineEmits(['success']);
 const spinning = ref(true);
 
 const reservationResourceForm = props.rememberKey
@@ -147,7 +147,7 @@ const timestampToCalendarDateTime = (timestamp: number): CalendarDateTime => {
     date.getMonth() + 1,
     date.getDate(),
     date.getHours(),
-    date.getMinutes()
+    date.getMinutes(),
   );
 };
 
@@ -164,9 +164,9 @@ const dateRange = ref<DateRange>({
 
 // Selected resource ID as string for Select component
 const selectedResourceId = ref<string | undefined>(
-  props.reservationResourceForm.resource_id 
-    ? String(props.reservationResourceForm.resource_id) 
-    : undefined
+  props.reservationResourceForm.resource_id
+    ? String(props.reservationResourceForm.resource_id)
+    : undefined,
 );
 
 // Validation computed properties
@@ -176,17 +176,17 @@ const quantityError = computed(() => {
     return $t('Kiekis turi būti bent 1');
   }
   if (reservationResourceForm.quantity > capacityMax.value) {
-    return `${$t('Kiekis viršija maksimalų leistiną')  }: ${capacityMax.value}`;
+    return `${$t('Kiekis viršija maksimalų leistiną')}: ${capacityMax.value}`;
   }
   return null;
 });
 
 const canSubmit = computed(() => {
   return (
-    reservationResourceForm.resource_id !== null &&
-    reservationResourceForm.quantity >= 1 &&
-    reservationResourceForm.quantity <= capacityMax.value &&
-    !quantityError.value
+    reservationResourceForm.resource_id !== null
+    && reservationResourceForm.quantity >= 1
+    && reservationResourceForm.quantity <= capacityMax.value
+    && !quantityError.value
   );
 });
 
@@ -195,7 +195,8 @@ const onResourceChange = (value: string | undefined) => {
   if (value) {
     reservationResourceForm.resource_id = value;
     reservationResourceForm.quantity = 1;
-  } else {
+  }
+  else {
     reservationResourceForm.resource_id = null;
   }
 };
@@ -223,14 +224,14 @@ const getAllResources = (startTime: number, endTime: number) => {
 
   router.reload({
     data: {
-      dateTimeRange: {
+      'dateTimeRange': {
         start: startTime,
         end: endTime,
       },
       'except-reservations': exceptReservations,
       'except-resources': exceptResources,
     },
-    only: ["allResources"],
+    only: ['allResources'],
     onSuccess: () => {
       spinning.value = false;
     },
@@ -241,24 +242,24 @@ const getAllResources = (startTime: number, endTime: number) => {
 onMounted(() => {
   getAllResources(
     props.reservationResourceForm.start_time,
-    props.reservationResourceForm.end_time
+    props.reservationResourceForm.end_time,
   );
 });
 
 const onDateChange = (value: DateRange) => {
   if (!value.start || !value.end) return;
-  
+
   spinning.value = true;
-  
+
   const startTime = calendarDateTimeToTimestamp(value.start);
   const endTime = calendarDateTimeToTimestamp(value.end);
-  
+
   reservationResourceForm.start_time = startTime;
   reservationResourceForm.end_time = endTime;
-  
+
   getAllResources(startTime, endTime);
-  
-  if (props.reservationResourceFormRouteName === "reservationResources.store") {
+
+  if (props.reservationResourceFormRouteName === 'reservationResources.store') {
     reservationResourceForm.resource_id = null;
     selectedResourceId.value = undefined;
     reservationResourceForm.quantity = 1;
@@ -266,7 +267,7 @@ const onDateChange = (value: DateRange) => {
 };
 
 const allResourceOptions = computed(() => {
-  return props.allResources?.map((resource) => ({
+  return props.allResources?.map(resource => ({
     ...resource,
     disabled:
       resource.lowestCapacityAtDateTimeRange === 0 || !resource.is_reservable,
@@ -275,31 +276,31 @@ const allResourceOptions = computed(() => {
 
 const capacityMax = computed(() => {
   const capacity = props.allResources?.find(
-    (resource) => String(resource.id) === reservationResourceForm.resource_id
+    resource => String(resource.id) === reservationResourceForm.resource_id,
   )?.lowestCapacityAtDateTimeRange ?? 1;
 
   return capacity;
 });
 
 const handleSubmit = () => {
-  if (props.reservationResourceFormRouteName === "reservationResources.update") {
+  if (props.reservationResourceFormRouteName === 'reservationResources.update') {
     reservationResourceForm.put(
-      route("reservationResources.update", reservationResourceForm.id),
+      route('reservationResources.update', reservationResourceForm.id),
       {
         preserveScroll: true,
         onSuccess: () => {
           reservationResourceForm.reset();
-          emit("success");
+          emit('success');
         },
-      }
+      },
     );
     return;
   }
-  reservationResourceForm.post(route("reservationResources.store"), {
+  reservationResourceForm.post(route('reservationResources.store'), {
     preserveScroll: true,
     onSuccess: () => {
       reservationResourceForm.reset();
-      emit("success");
+      emit('success');
     },
   });
 };

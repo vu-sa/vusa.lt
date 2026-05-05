@@ -34,12 +34,12 @@
           </div>
           <div class="my-auto justify-self-end">
             <div class="hidden gap-2 lg:flex items-center">
-              <LocaleButton :locale="$page.props.app.locale" :size="'sm'" />
-              <DarkModeSwitch :size="'icon'" />
+              <LocaleButton :locale="$page.props.app.locale" size="sm" />
+              <DarkModeSwitch size="icon" />
             </div>
             <div class="ml-auto lg:hidden flex items-center gap-2">
               <!-- Hide LocaleButton on very small screens (smaller than sm breakpoint) -->
-              <LocaleButton v-if="!smallerThanSm" :locale="$page.props.app.locale" :size="'default'" />
+              <LocaleButton v-if="!smallerThanSm" :locale="$page.props.app.locale" size="default" />
               <Drawer direction="left">
                 <DrawerTrigger>
                   <Button variant="outline" :size="smallerThanSm ? 'sm' : 'default'" class="gap-2">
@@ -51,7 +51,7 @@
                   <Suspense>
                     <MainMenuMobile class="pb-4" />
                     <template #fallback>
-                      <div class="animate-pulse h-32 bg-gray-200 rounded dark:bg-gray-700"></div>
+                      <div class="animate-pulse h-32 bg-gray-200 rounded dark:bg-gray-700" />
                     </template>
                   </Suspense>
                 </DrawerContent>
@@ -59,7 +59,7 @@
             </div>
           </div>
         </nav>
-        <SecondMenu v-if="hasSecondMenu" 
+        <SecondMenu v-if="hasSecondMenu"
           class="bg-gradient-to-br from-nav-gradient-from-light to-nav-gradient-to-light dark:from-nav-gradient-from-dark dark:to-nav-gradient-to-dark border-nav-border-light dark:border-nav-border-dark border-t duration-300 ease-in-out group-hover:translate-y-0 group-hover:opacity-100 group-hover:shadow-md max-md:hidden"
           :class="{
             '-translate-y-full opacity-0': hasScrolledDown,
@@ -71,32 +71,32 @@
 </template>
 
 <script setup lang="tsx">
-import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
-import { computed, defineAsyncComponent, watch } from "vue";
-import { usePage } from "@inertiajs/vue3";
-import { trans as $t } from "laravel-vue-i18n";
+import { breakpointsTailwind, useBreakpoints } from '@vueuse/core';
+import { computed, defineAsyncComponent, watch } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 
-import { useSecondMenu } from "@/Composables/useSecondMenu";
-import AppLogo from "@/Components/AppLogo.vue";
-import DarkModeSwitch from "@/Components/Buttons/DarkModeButton.vue";
-import LocaleButton from "../Nav/LocaleButton.vue";
-import MainMenu from "../Nav/MainMenu.vue";
-import PadalinysSelector from "../Nav/PadalinysSelector.vue";
-import SecondMenu from "../Nav/SecondMenu.vue";
-import SmartLink from "../SmartLink.vue";
+import LocaleButton from '../Nav/LocaleButton.vue';
+import MainMenu from '../Nav/MainMenu.vue';
+import PadalinysSelector from '../Nav/PadalinysSelector.vue';
+import SecondMenu from '../Nav/SecondMenu.vue';
+import SmartLink from '../SmartLink.vue';
 
-import LineHorizontal320Filled from "~icons/fluent/line-horizontal-3-20-filled";
-import { Drawer, DrawerContent, DrawerTrigger } from "@/Components/ui/drawer";
-import { Button } from "@/Components/ui/button";
+import DarkModeSwitch from '@/Components/Buttons/DarkModeButton.vue';
+import AppLogo from '@/Components/AppLogo.vue';
+import { useSecondMenu } from '@/Composables/useSecondMenu';
+import LineHorizontal320Filled from '~icons/fluent/line-horizontal-3-20-filled';
+import { Drawer, DrawerContent, DrawerTrigger } from '@/Components/ui/drawer';
+import { Button } from '@/Components/ui/button';
 
-const MainMenuMobile = defineAsyncComponent(() => import("../Nav/MainMenuMobile.vue"));
+const MainMenuMobile = defineAsyncComponent(() => import('../Nav/MainMenuMobile.vue'));
 
 defineProps<{
   isThemeDark: boolean;
 }>();
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
-const smallerThanSm = breakpoints.smaller("sm");
+const smallerThanSm = breakpoints.smaller('sm');
 
 // Use shared composable for second menu visibility logic
 const { hasSecondMenu, hasScrolledDown } = useSecondMenu();

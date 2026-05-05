@@ -6,7 +6,7 @@
     </Field>
 
     <div class="flex items-center gap-3">
-      <Checkbox 
+      <Checkbox
         :model-value="options?.allTenants"
         @update:model-value="options!.allTenants = $event"
       />
@@ -24,6 +24,7 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
+
 import type { Calendar } from '@/Types/contentParts';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
@@ -40,4 +41,3 @@ onMounted(() => {
 });
 
 </script>
-

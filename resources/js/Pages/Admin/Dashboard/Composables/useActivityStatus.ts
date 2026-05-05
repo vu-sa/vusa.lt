@@ -1,9 +1,9 @@
 /**
  * useActivityStatus - Shared activity status styling and utilities
- * 
+ *
  * Provides consistent color mappings and labels for user activity status
  * across all components: Gantt chart avatars, RepresentativeUserRow, etc.
- * 
+ *
  * Color scheme:
  * - Active (today or last 7 days) → Green (emerald)
  * - Recent (last 30 days) → Amber
@@ -28,7 +28,7 @@ export type ActivityLevel = 'active' | 'recent' | 'stale' | 'never';
  */
 export function getActivityLevel(category: RepresentativeActivityCategory | undefined): ActivityLevel | null {
   if (!category) return null;
-  
+
   switch (category) {
     case 'today':
     case 'week':
@@ -51,7 +51,7 @@ export function getActivityLevel(category: RepresentativeActivityCategory | unde
 export function getActivityRingColor(category: RepresentativeActivityCategory | undefined, isDark: boolean): string | null {
   const level = getActivityLevel(category);
   if (!level) return null;
-  
+
   switch (level) {
     case 'active':
       return isDark ? '#10b981' : '#059669'; // emerald-500/600
@@ -72,7 +72,7 @@ export function getActivityRingColor(category: RepresentativeActivityCategory | 
  */
 export function getActivityDotClasses(category: RepresentativeActivityCategory | undefined): string {
   const level = getActivityLevel(category);
-  
+
   switch (level) {
     case 'active':
       return 'bg-emerald-500 dark:bg-emerald-400';
@@ -92,7 +92,7 @@ export function getActivityDotClasses(category: RepresentativeActivityCategory |
  */
 export function getActivityTextClasses(category: RepresentativeActivityCategory | undefined): string {
   const level = getActivityLevel(category);
-  
+
   switch (level) {
     case 'active':
       return 'text-emerald-600 dark:text-emerald-400';
@@ -113,7 +113,7 @@ export function getActivityTextClasses(category: RepresentativeActivityCategory 
  */
 export function getActivityBadgeClasses(category: RepresentativeActivityCategory | undefined): string {
   const level = getActivityLevel(category);
-  
+
   switch (level) {
     case 'active':
       return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400';
@@ -133,15 +133,15 @@ export function getActivityBadgeClasses(category: RepresentativeActivityCategory
  */
 export function getActivityShortLabel(category: RepresentativeActivityCategory | undefined): string {
   if (!category) return '';
-  
+
   const labels: Record<RepresentativeActivityCategory, string> = {
-    'today': 'Šiandien',
-    'week': 'Per 7 d.',
-    'month': 'Per 30 d.',
-    'stale': 'Seniai',
-    'never': 'Niekada',
+    today: 'Šiandien',
+    week: 'Per 7 d.',
+    month: 'Per 30 d.',
+    stale: 'Seniai',
+    never: 'Niekada',
   };
-  
+
   return labels[category] ?? '';
 }
 
@@ -150,17 +150,17 @@ export function getActivityShortLabel(category: RepresentativeActivityCategory |
  */
 export function getActivityLabel(category: RepresentativeActivityCategory | undefined): string {
   if (!category) return '';
-  
+
   // These are Lithuanian strings that will be translated via laravel-vue-i18n
   // when used in Vue components. For D3 renderers, we use these directly.
   const labels: Record<RepresentativeActivityCategory, string> = {
-    'today': 'Aktyvus šiandien',
-    'week': 'Aktyvus per 7 dienas',
-    'month': 'Aktyvus per 30 dienų',
-    'stale': 'Neaktyvus > 30 d.',
-    'never': 'Niekada neprisijungęs',
+    today: 'Aktyvus šiandien',
+    week: 'Aktyvus per 7 dienas',
+    month: 'Aktyvus per 30 dienų',
+    stale: 'Neaktyvus > 30 d.',
+    never: 'Niekada neprisijungęs',
   };
-  
+
   return labels[category] ?? '';
 }
 
@@ -169,15 +169,15 @@ export function getActivityLabel(category: RepresentativeActivityCategory | unde
  */
 export function getActivityTooltipLabel(category: RepresentativeActivityCategory | undefined): string {
   if (!category) return '';
-  
+
   const labels: Record<RepresentativeActivityCategory, string> = {
-    'today': 'Prisijungė šiandien',
-    'week': 'Prisijungė per pastarąsias 7 dienas',
-    'month': 'Prisijungė per pastarąsias 30 dienų',
-    'stale': 'Neprisijungė daugiau nei 30 dienų',
-    'never': 'Niekada neprisijungė prie sistemos',
+    today: 'Prisijungė šiandien',
+    week: 'Prisijungė per pastarąsias 7 dienas',
+    month: 'Prisijungė per pastarąsias 30 dienų',
+    stale: 'Neprisijungė daugiau nei 30 dienų',
+    never: 'Niekada neprisijungė prie sistemos',
   };
-  
+
   return labels[category] ?? '';
 }
 
@@ -190,19 +190,19 @@ export function getActivityTooltipLabel(category: RepresentativeActivityCategory
 export function isDutyCurrentlyActive(startDate: Date, endDate: Date | null): boolean {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
   const start = new Date(startDate);
   start.setHours(0, 0, 0, 0);
-  
+
   // Start date must be in the past or today
   if (start > today) return false;
-  
+
   // If no end date, duty is ongoing
   if (!endDate) return true;
-  
+
   const end = new Date(endDate);
   end.setHours(0, 0, 0, 0);
-  
+
   // End date must be today or in the future
   return end >= today;
 }

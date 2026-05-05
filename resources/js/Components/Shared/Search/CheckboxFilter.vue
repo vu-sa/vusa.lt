@@ -27,7 +27,7 @@
         <div class="flex items-center justify-between flex-1 min-w-0">
           <div class="flex items-center gap-2 min-w-0">
             <!-- Optional icon/image slot -->
-            <slot name="option-prefix" :option="option" />
+            <slot name="option-prefix" :option />
             <span
               :class="[
                 'font-medium text-sm truncate',
@@ -63,45 +63,45 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { trans as $t } from 'laravel-vue-i18n'
-import { ChevronDown } from 'lucide-vue-next'
+import { ref, computed } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+import { ChevronDown } from 'lucide-vue-next';
 
-import { Checkbox } from '@/Components/ui/checkbox'
-import { Badge } from '@/Components/ui/badge'
-import { Button } from '@/Components/ui/button'
+import type { FilterOption, FacetValue } from './types';
 
-import type { FilterOption, FacetValue } from './types'
+import { Checkbox } from '@/Components/ui/checkbox';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
 
 interface Props {
   /**
    * Options to display. Can be FilterOption[] with labels or FacetValue[] from search engine.
    */
-  options: FilterOption[] | FacetValue[]
+  options: FilterOption[] | FacetValue[];
   /**
    * Currently selected values
    */
-  selectedValues: (string | number)[]
+  selectedValues: (string | number)[];
   /**
    * Maximum number of options visible before "Show more" (0 = show all)
    */
-  maxVisible?: number
+  maxVisible?: number;
   /**
    * Whether to show counts next to options
    */
-  showCounts?: boolean
+  showCounts?: boolean;
   /**
    * Text to show when no options available
    */
-  emptyText?: string
+  emptyText?: string;
   /**
    * Optional formatter for option labels (when using FacetValue[])
    */
-  labelFormatter?: (value: string) => string
+  labelFormatter?: (value: string) => string;
   /**
    * Additional CSS classes for container
    */
-  containerClass?: string
+  containerClass?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -110,67 +110,67 @@ const props = withDefaults(defineProps<Props>(), {
   emptyText: 'Nėra galimų parinkčių',
   labelFormatter: (value: string) => value,
   containerClass: '',
-})
+});
 
 const emit = defineEmits<{
-  toggle: [value: string | number]
-}>()
+  toggle: [value: string | number];
+}>();
 
 // Local state for show more
-const showAll = ref(false)
+const showAll = ref(false);
 
 // Normalize options to have consistent shape with selection state
 const normalizedOptions = computed(() => {
   return props.options.map((opt) => {
     // Check if it's a FacetValue (has no label property)
-    const isFacetValue = !('label' in opt)
-    const value = opt.value
-    const label = isFacetValue ? props.labelFormatter(String(opt.value)) : opt.label
-    const count = opt.count ?? 0
-    const isSelected = props.selectedValues.includes(value)
+    const isFacetValue = !('label' in opt);
+    const { value } = opt;
+    const label = isFacetValue ? props.labelFormatter(String(opt.value)) : opt.label;
+    const count = opt.count ?? 0;
+    const isSelected = props.selectedValues.includes(value);
 
-    return { value, label, count, isSelected }
-  })
-})
+    return { value, label, count, isSelected };
+  });
+});
 
 // Check if we have more options than maxVisible
 const hasMoreOptions = computed(() => {
-  return props.maxVisible > 0 && props.options.length > props.maxVisible
-})
+  return props.maxVisible > 0 && props.options.length > props.maxVisible;
+});
 
 // Count of hidden options
 const hiddenCount = computed(() => {
-  return props.options.length - props.maxVisible
-})
+  return props.options.length - props.maxVisible;
+});
 
 // Options to display (limited or all)
 const displayedOptions = computed(() => {
   if (props.maxVisible === 0 || showAll.value || !hasMoreOptions.value) {
-    return normalizedOptions.value
+    return normalizedOptions.value;
   }
 
   // Always show selected options + fill remaining with unselected
-  const selected = normalizedOptions.value.filter((v) => v.isSelected)
-  const unselected = normalizedOptions.value.filter((v) => !v.isSelected)
+  const selected = normalizedOptions.value.filter(v => v.isSelected);
+  const unselected = normalizedOptions.value.filter(v => !v.isSelected);
 
   // If selected count is already at or above max, show all selected
   if (selected.length >= props.maxVisible) {
-    return selected
+    return selected;
   }
 
   // Fill remaining slots with unselected options
-  const remaining = props.maxVisible - selected.length
-  return [...selected, ...unselected.slice(0, remaining)]
-})
+  const remaining = props.maxVisible - selected.length;
+  return [...selected, ...unselected.slice(0, remaining)];
+});
 
 // Format count for display
 const formatCount = (count: number): string => {
   if (count >= 1000000) {
-    return (count / 1000000).toFixed(1) + 'M'
+    return `${(count / 1000000).toFixed(1)}M`;
   }
   if (count >= 1000) {
-    return (count / 1000).toFixed(1) + 'K'
+    return `${(count / 1000).toFixed(1)}K`;
   }
-  return count.toString()
-}
+  return count.toString();
+};
 </script>

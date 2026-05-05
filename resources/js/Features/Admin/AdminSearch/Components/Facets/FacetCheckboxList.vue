@@ -47,80 +47,78 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { trans as $t } from 'laravel-vue-i18n'
-import { ChevronDown } from 'lucide-vue-next'
+import { ref, computed } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+import { ChevronDown } from 'lucide-vue-next';
 
-import { Checkbox } from '@/Components/ui/checkbox'
-import { Badge } from '@/Components/ui/badge'
-import { Button } from '@/Components/ui/button'
+import type { AdminFacetValue } from '../../Types/AdminSearchTypes';
 
-import type { AdminFacetValue } from '../../Types/AdminSearchTypes'
+import { Checkbox } from '@/Components/ui/checkbox';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
 
 interface Props {
-  values: AdminFacetValue[]
-  selectedValues: string[]
-  maxVisible?: number
-  labelFormatter?: (value: string) => string
+  values: AdminFacetValue[];
+  selectedValues: string[];
+  maxVisible?: number;
+  labelFormatter?: (value: string) => string;
 }
 
-interface Emits {
-  (e: 'toggle', value: string): void
-}
+type Emits = (e: 'toggle', value: string) => void;
 
 const props = withDefaults(defineProps<Props>(), {
   maxVisible: 8,
   labelFormatter: (value: string) => value,
-})
+});
 
-defineEmits<Emits>()
+defineEmits<Emits>();
 
 // Local state
-const showAll = ref(false)
+const showAll = ref(false);
 
 // Add selection state to values
 const valuesWithSelection = computed(() => {
   return props.values.map(v => ({
     ...v,
     isSelected: props.selectedValues.includes(v.value),
-  }))
-})
+  }));
+});
 
 // Determine if we have more values than max visible
 const hasMoreValues = computed(() => {
-  return props.values.length > props.maxVisible
-})
+  return props.values.length > props.maxVisible;
+});
 
 // Count of hidden values
 const hiddenCount = computed(() => {
-  return props.values.length - props.maxVisible
-})
+  return props.values.length - props.maxVisible;
+});
 
 // Values to display (limited or all)
 const displayedValues = computed(() => {
   if (showAll.value || !hasMoreValues.value) {
-    return valuesWithSelection.value
+    return valuesWithSelection.value;
   }
 
   // Show selected values + top values up to maxVisible
-  const selected = valuesWithSelection.value.filter(v => v.isSelected)
-  const unselected = valuesWithSelection.value.filter(v => !v.isSelected)
+  const selected = valuesWithSelection.value.filter(v => v.isSelected);
+  const unselected = valuesWithSelection.value.filter(v => !v.isSelected);
 
   // If selected count is already at or above max, show all selected
   if (selected.length >= props.maxVisible) {
-    return selected
+    return selected;
   }
 
   // Fill remaining slots with unselected values
-  const remaining = props.maxVisible - selected.length
-  return [...selected, ...unselected.slice(0, remaining)]
-})
+  const remaining = props.maxVisible - selected.length;
+  return [...selected, ...unselected.slice(0, remaining)];
+});
 
 // Format count for display
 const formatCount = (count: number): string => {
   if (count >= 1000) {
-    return (count / 1000).toFixed(1) + 'K'
+    return `${(count / 1000).toFixed(1)}K`;
   }
-  return count.toString()
-}
+  return count.toString();
+};
 </script>

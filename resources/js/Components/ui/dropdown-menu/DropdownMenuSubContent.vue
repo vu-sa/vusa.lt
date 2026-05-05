@@ -1,25 +1,3 @@
-<script setup lang="ts">
-import { cn } from '@/Utils/Shadcn/utils'
-import {
-  DropdownMenuSubContent,
-  type DropdownMenuSubContentEmits,
-  type DropdownMenuSubContentProps,
-  useForwardPropsEmits,
-} from 'reka-ui'
-import { computed, type HTMLAttributes } from 'vue'
-
-const props = defineProps<DropdownMenuSubContentProps & { class?: HTMLAttributes['class'] }>()
-const emits = defineEmits<DropdownMenuSubContentEmits>()
-
-const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
-
-  return delegated
-})
-
-const forwarded = useForwardPropsEmits(delegatedProps, emits)
-</script>
-
 <template>
   <DropdownMenuSubContent
     data-slot="dropdown-menu-sub-content"
@@ -29,3 +7,26 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
     <slot />
   </DropdownMenuSubContent>
 </template>
+
+<script setup lang="ts">
+import {
+  DropdownMenuSubContent,
+  type DropdownMenuSubContentEmits,
+  type DropdownMenuSubContentProps,
+  useForwardPropsEmits,
+} from 'reka-ui';
+import { computed, type HTMLAttributes } from 'vue';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+const props = defineProps<DropdownMenuSubContentProps & { class?: HTMLAttributes['class'] }>();
+const emits = defineEmits<DropdownMenuSubContentEmits>();
+
+const delegatedProps = computed(() => {
+  const { class: _, ...delegated } = props;
+
+  return delegated;
+});
+
+const forwarded = useForwardPropsEmits(delegatedProps, emits);
+</script>

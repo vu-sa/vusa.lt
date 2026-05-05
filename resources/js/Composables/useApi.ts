@@ -33,6 +33,8 @@
 
 import { computed, type Ref, type ComputedRef, unref } from 'vue';
 import { useFetch, type UseFetchReturn, type UseFetchOptions } from '@vueuse/core';
+import { usePage } from '@inertiajs/vue3';
+
 import { useToasts } from '@/Composables/useToasts';
 import type {
   ApiResponse,
@@ -41,7 +43,6 @@ import type {
   isApiSuccess,
   isApiError,
 } from '@/Types/api.d';
-import { usePage } from '@inertiajs/vue3';
 
 /**
  * Options for useApi composable
@@ -115,7 +116,7 @@ export interface UseApiReturn<T> {
  */
 export function useApi<T = unknown>(
   url: string | Ref<string>,
-  options: UseApiOptions<T> = {}
+  options: UseApiOptions<T> = {},
 ): UseApiReturn<T> {
   const {
     showErrorToast = true,
@@ -135,7 +136,7 @@ export function useApi<T = unknown>(
       // Ensure we accept JSON and send credentials for session auth
       options.headers = {
         ...options.headers,
-        Accept: 'application/json',
+        'Accept': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
       };
       options.credentials = 'same-origin';
@@ -146,7 +147,8 @@ export function useApi<T = unknown>(
       if (typeof ctx.data === 'string') {
         try {
           ctx.data = JSON.parse(ctx.data);
-        } catch {
+        }
+        catch {
           // Keep as-is if not JSON
         }
       }
@@ -157,14 +159,16 @@ export function useApi<T = unknown>(
       if (typeof ctx.data === 'string') {
         try {
           ctx.data = JSON.parse(ctx.data);
-        } catch {
+        }
+        catch {
           ctx.data = {
             success: false,
             message: ctx.error?.message || 'Network error',
             code: 'SERVER_ERROR',
           };
         }
-      } else if (!ctx.data) {
+      }
+      else if (!ctx.data) {
         // Handle case where data is null/undefined on error
         ctx.data = {
           success: false,
@@ -259,7 +263,7 @@ export function useApiMutation<T = unknown, B = unknown>(
   url: string | Ref<string>,
   method: 'POST' | 'PUT' | 'PATCH' | 'DELETE' = 'POST',
   body?: B | Ref<B>,
-  options: UseApiOptions<T> = {}
+  options: UseApiOptions<T> = {},
 ): UseApiReturn<T> {
   const {
     showErrorToast = true,
@@ -278,11 +282,11 @@ export function useApiMutation<T = unknown, B = unknown>(
     beforeFetch({ options }) {
       // Get CSRF token from meta tag (set by Laravel in the HTML head)
       const csrfToken = usePage().props.csrf_token || '';
-      
+
       options.method = method;
       options.headers = {
         ...options.headers,
-        Accept: 'application/json',
+        'Accept': 'application/json',
         'Content-Type': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
         'X-CSRF-TOKEN': csrfToken,
@@ -297,7 +301,8 @@ export function useApiMutation<T = unknown, B = unknown>(
       if (typeof ctx.data === 'string') {
         try {
           ctx.data = JSON.parse(ctx.data);
-        } catch {
+        }
+        catch {
           // Keep as-is
         }
       }
@@ -307,14 +312,16 @@ export function useApiMutation<T = unknown, B = unknown>(
       if (typeof ctx.data === 'string') {
         try {
           ctx.data = JSON.parse(ctx.data);
-        } catch {
+        }
+        catch {
           ctx.data = {
             success: false,
             message: ctx.error?.message || 'Network error',
             code: 'SERVER_ERROR',
           };
         }
-      } else if (!ctx.data) {
+      }
+      else if (!ctx.data) {
         // Handle case where data is null/undefined on error
         ctx.data = {
           success: false,

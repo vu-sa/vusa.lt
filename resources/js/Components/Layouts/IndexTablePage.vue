@@ -20,8 +20,8 @@
           <slot name="headerActions" />
           <Button v-if="canCreate && createRoute" as-child variant="default" class="ml-auto gap-1.5">
             <Link :href="createRoute">
-            <PlusCircleIcon class="h-4 w-4" />
-            <span>{{ $t('forms.add') }}</span>
+              <PlusCircleIcon class="h-4 w-4" />
+              <span>{{ $t('forms.add') }}</span>
             </Link>
           </Button>
         </div>
@@ -76,10 +76,10 @@
               </div>
               <slot name="emptyActions">
                 <Link v-if="canCreate && createRoute" :href="createRoute">
-                <Button variant="outline" class="gap-1.5">
-                  <PlusCircleIcon class="h-4 w-4" />
-                  <span>{{ $t('forms.add') }}</span>
-                </Button>
+                  <Button variant="outline" class="gap-1.5">
+                    <PlusCircleIcon class="h-4 w-4" />
+                    <span>{{ $t('forms.add') }}</span>
+                  </Button>
                 </Link>
               </slot>
             </div>
@@ -99,15 +99,16 @@
 <script setup lang="ts" generic="TData">
 import { ref, computed, watch } from 'vue';
 import { PlusCircleIcon } from 'lucide-vue-next';
-import { trans as $t } from "laravel-vue-i18n";
-import { type RowSelectionState } from '@tanstack/vue-table';
+import { trans as $t } from 'laravel-vue-i18n';
+import type { RowSelectionState } from '@tanstack/vue-table';
+import { Link } from '@inertiajs/vue3';
+
+import AdminContentPage from './AdminContentPage.vue';
 
 import ServerDataTable from '@/Components/Tables/ServerDataTable.vue';
 import { Button } from '@/Components/ui/button';
-import AdminContentPage from './AdminContentPage.vue';
-import { Link } from '@inertiajs/vue3';
-import {
-  type IndexTablePageProps
+import type {
+  IndexTablePageProps,
 } from '@/Types/TableConfigTypes';
 
 // Props use the combined interface for better organization
@@ -118,7 +119,7 @@ const emit = defineEmits([
   'sorting-changed',
   'page-changed',
   'filter-changed',
-  'update:rowSelection'
+  'update:rowSelection',
 ]);
 
 // Component refs
@@ -197,7 +198,7 @@ defineExpose({
   updateFilter,
   getSelectedRows,
   clearRowSelection,
-  rowSelection
+  rowSelection,
 });
 
 // Breadcrumbs are now handled automatically by pages using usePageBreadcrumbs()

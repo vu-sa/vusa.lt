@@ -4,7 +4,9 @@
       <img class="h-32 w-full rounded-t-lg object-cover" :src="institution.image_url">
     </template>
     <CardHeader class="flex-row items-center justify-between gap-2 space-y-0">
-      <CardTitle :class="['text-base', { 'font-bold': isPadalinys }]">{{ institution.name }}</CardTitle>
+      <CardTitle :class="['text-base', { 'font-bold': isPadalinys }]">
+        {{ institution.name }}
+      </CardTitle>
       <slot name="header-extra">
         <div v-if="institutionDuties" class="ml-4 inline-flex gap-3">
           <Popover>
@@ -42,21 +44,21 @@
 </template>
 
 <script setup lang="ts">
-import { Link } from "@inertiajs/vue3";
-import { computed } from "vue";
+import { Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
-import { Badge } from "@/Components/ui/badge";
-import { Button } from "@/Components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/Components/ui/card";
-import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
-import InstitutionAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
-import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
+import InstitutionAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
+import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 
 const props = defineProps<{
   institution: App.Entities.Institution;
   isPadalinys?: boolean;
   showLastMeeting?: boolean;
-  size?: "small" | "medium" | "large";
+  size?: 'small' | 'medium' | 'large';
   duties?: App.Entities.Duty[];
 }>();
 

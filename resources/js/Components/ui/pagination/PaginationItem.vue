@@ -10,22 +10,22 @@
 </template>
 
 <script setup lang="ts">
-import type { PaginationListItemProps } from "reka-ui"
-import type { HTMLAttributes } from "vue"
-import { reactiveOmit } from "@vueuse/core"
-import { PaginationListItem } from "reka-ui"
+import type { PaginationListItemProps } from 'reka-ui';
+import type { HTMLAttributes } from 'vue';
+import { reactiveOmit } from '@vueuse/core';
+import { PaginationListItem } from 'reka-ui';
 
-import type { ButtonVariants } from '@/Components/ui/button'
-import { cn } from '@/Utils/Shadcn/utils'
-import { buttonVariants } from '@/Components/ui/button'
+import type { ButtonVariants } from '@/Components/ui/button';
+import { cn } from '@/Utils/Shadcn/utils';
+import { buttonVariants } from '@/Components/ui/button';
 
 const props = withDefaults(defineProps<PaginationListItemProps & {
-  size?: ButtonVariants["size"]
-  class?: HTMLAttributes["class"]
-  isActive?: boolean
+  size?: ButtonVariants['size'];
+  class?: HTMLAttributes['class'];
+  isActive?: boolean;
 }>(), {
-  size: "icon",
-})
+  size: 'icon',
+});
 
-const delegatedProps = reactiveOmit(props, "class", "size", "isActive")
+const delegatedProps = reactiveOmit(props, 'class', 'size', 'isActive');
 </script>

@@ -5,17 +5,17 @@
         <div>
           <DialogTitle class="flex items-center gap-2">
             <component :is="Icons.MEETING" class="h-5 w-5" />
-            {{ 
-              ganttType === 'user' 
-                ? $t('Tavo institucijos — laiko juosta') 
-                : `${currentTenant?.shortname || $t('Padalinys')} — ${$t('laiko juosta')}` 
+            {{
+              ganttType === 'user'
+                ? $t('Tavo institucijos — laiko juosta')
+                : `${currentTenant?.shortname || $t('Padalinys')} — ${$t('laiko juosta')}`
             }}
           </DialogTitle>
           <DialogDescription>
-            {{ 
-              ganttType === 'user' 
-                ? $t('Peržiūrėkite visas savo institucijas ir jų veiklą laiko juostoje') 
-                : $t('Peržiūrėkite padalinio institucijas ir jų veiklą laiko juostoje') 
+            {{
+              ganttType === 'user'
+                ? $t('Peržiūrėkite visas savo institucijas ir jų veiklą laiko juostoje')
+                : $t('Peržiūrėkite padalinio institucijas ir jų veiklą laiko juostoje')
             }}
           </DialogDescription>
         </div>
@@ -48,7 +48,7 @@
             :show-duty-members="filters.showDutyMembersUser.value"
             :show-tenant-headers="ganttSettings.showTenantHeaders.value"
             :show-related-institutions="filters.showRelatedInstitutionsUser.value"
-            :has-related-institutions="hasRelatedInstitutions"
+            :has-related-institutions
             :show-reset="false"
             @update:selected-tenants="(val: string[]) => filters.userTenantFilter.value = val"
             @update:show-only-with-activity="(val: boolean) => filters.showOnlyWithActivityUser.value = val"
@@ -59,7 +59,7 @@
           />
         </div>
       </DialogHeader>
-      
+
       <div class="flex-1 min-h-0 mt-4">
         <div v-if="ganttType === 'user' && userInstitutions.length > 0" class="h-full">
           <TimelineGanttChart
@@ -70,7 +70,7 @@
             :show-only-with-activity="filters.showOnlyWithActivityUser.value"
             :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsUser.value"
             :institution-names="mergedUserInstitutionNames"
-            :tenant-names="tenantNames"
+            :tenant-names
             :institution-tenant="mergedUserInstitutionTenant"
             :institution-has-public-meetings="mergedUserInstitutionHasPublicMeetings"
             :institution-periodicity="mergedUserInstitutionPeriodicity"
@@ -84,7 +84,7 @@
             @create-check-in="$emit('create-check-in', $event)"
           />
         </div>
-        
+
         <div v-else-if="ganttType === 'tenant'" class="h-full">
           <TimelineGanttChart
             :institutions="tenantInstitutions"
@@ -94,7 +94,7 @@
             :show-only-with-activity="filters.showOnlyWithActivityTenant.value"
             :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsTenant.value"
             :institution-names="tenantInstitutionNames"
-            :tenant-names="tenantNames"
+            :tenant-names
             :institution-tenant="tenantInstitutionTenant"
             :institution-has-public-meetings="tenantInstitutionHasPublicMeetings"
             :institution-periodicity="tenantInstitutionPeriodicity"
@@ -109,9 +109,11 @@
             @create-check-in="$emit('create-check-in', $event)"
           />
         </div>
-        
+
         <div v-else-if="ganttType === 'user'" class="text-center py-8">
-          <p class="text-muted-foreground">{{ $t('Neturi tiesiogiai priskirtų institucijų') }}</p>
+          <p class="text-muted-foreground">
+            {{ $t('Neturi tiesiogiai priskirtų institucijų') }}
+          </p>
         </div>
       </div>
     </DialogContent>
@@ -122,35 +124,36 @@
 import { computed, toRef } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { useGanttSettings } from '../Composables/useGanttSettings';
+import { useTimelineFilters } from '../Composables/useTimelineFilters';
+import { useUserTimelineData } from '../Composables/useUserTimelineData';
+import type {
+  GanttMeeting,
+  GanttInstitution,
+  AtstovavimosGap,
+  AtstovavimosTenant,
+  GanttDutyMember,
+  InactivePeriod,
+  AtstovavimosInstitution,
+} from '../types';
+
+import TimelineGanttChart from './TimelineGanttChart.vue';
+import GanttFilterDropdown from './GanttFilterDropdown.vue';
+
+import Icons from '@/Types/Icons/filled';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/Components/ui/dialog";
-import Icons from "@/Types/Icons/filled";
-
-import GanttFilterDropdown from './GanttFilterDropdown.vue';
-import TimelineGanttChart from './TimelineGanttChart.vue';
-import { useGanttSettings } from '../Composables/useGanttSettings';
-import { useTimelineFilters } from '../Composables/useTimelineFilters';
-import { useUserTimelineData } from '../Composables/useUserTimelineData';
-import type { 
-  GanttMeeting, 
-  GanttInstitution, 
-  AtstovavimosGap,
-  AtstovavimosTenant,
-  GanttDutyMember,
-  InactivePeriod,
-  AtstovavimosInstitution 
-} from '../types';
+} from '@/Components/ui/dialog';
 
 interface Props {
   isOpen: boolean;
   ganttType: 'user' | 'tenant';
   availableTenants: AtstovavimosTenant[];
-  
+
   // User data (base data from user's direct institutions)
   userInstitutions: AtstovavimosInstitution[];
   userMeetings: GanttMeeting[];
@@ -165,7 +168,7 @@ interface Props {
   userRelatedInstitutions?: AtstovavimosInstitution[];
   // Flag to show related institutions filter even when data is lazy-loaded
   mayHaveRelatedInstitutions?: boolean;
-  
+
   // Tenant data (already computed in parent)
   tenantInstitutions: GanttInstitution[];
   tenantMeetings: GanttMeeting[];
@@ -176,7 +179,7 @@ interface Props {
   tenantInstitutionPeriodicity?: Record<string | number, number>;
   tenantDutyMembers?: GanttDutyMember[];
   tenantInactivePeriods?: InactivePeriod[];
-  
+
   // Shared
   tenantNames: Record<string, string>;
 }
@@ -185,8 +188,8 @@ const props = defineProps<Props>();
 
 const emit = defineEmits<{
   'update:isOpen': [value: boolean];
-  'create-meeting': [payload: { institution_id: string | number, suggestedAt: Date }];
-  'create-check-in': [payload: { institution_id: string | number, startDate: Date, endDate: Date }];
+  'create-meeting': [payload: { institution_id: string | number; suggestedAt: Date }];
+  'create-check-in': [payload: { institution_id: string | number; startDate: Date; endDate: Date }];
 }>();
 
 // Get shared settings and filter state from providers

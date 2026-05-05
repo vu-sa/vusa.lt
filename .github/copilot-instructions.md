@@ -128,6 +128,33 @@ if ($request->has('field') && !empty($request->field)) {
 
 **Key Points**: Use Tailwind utility classes directly, avoid `@apply` except for essential utilities.
 
+## Changelog Conventions
+
+**Location**: `docs/changelog/index.md` (Lithuanian) and `docs/en/changelog/index.md` (English)
+
+**When to Add Entries**:
+- Include user-oriented changes (features, improvements, fixes that users will notice)
+- Exclude technical/internal changes (dependency updates, code refactoring, internal optimizations)
+- Update both Lithuanian and English versions
+
+**Emoji Usage** (use exactly 3 emojis):
+- ⭐ **New features** — major new functionality or capabilities
+- ✨ **Improvements** — enhancements to existing features, UX improvements, visual updates
+- 🔧 **Fixes** — bug fixes, corrections, resolved issues
+
+**Format**:
+```markdown
+## v1.X — Title (YYYY-MM-DD) {#v1-X}
+
+- 🔧 **Short title** — description of the change and its impact
+- ⭐ **Another change** — what users can now do differently
+```
+
+**Example**:
+```markdown
+- 🔧 **Calendar event redirect fix** — events with untranslated titles now automatically redirect to a language where the title exists instead of showing an error
+```
+
 ## Remember
 
 This is a **student-run project**. Prioritize maintainability and approachability over complex solutions.

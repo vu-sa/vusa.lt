@@ -168,6 +168,7 @@
 
 <script setup lang="ts">
 import { defineModel, computed, onMounted, ref, watch } from 'vue';
+
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
 import type { ContentGrid } from '@/Types/contentParts';
@@ -179,7 +180,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Comp
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 
 const json_content = defineModel<ContentGrid['json_content']>();
-const options = defineModel<ContentGrid[]>('options')
+const options = defineModel<ContentGrid[]>('options');
 
 const MAX_COLUMNS = 4; // Maximum number of columns per row
 
@@ -187,7 +188,7 @@ const gapOptions = [
   { label: 'Mažas (0.5rem)', value: 'gap-2' },
   { label: 'Vidutinis (1rem)', value: 'gap-4' },
   { label: 'Didelis (1.5rem)', value: 'gap-6' },
-  { label: 'Labai didelis (2rem)', value: 'gap-8' }
+  { label: 'Labai didelis (2rem)', value: 'gap-8' },
 ];
 
 const columnWidthOptions = [
@@ -220,7 +221,8 @@ function parseModelValue() {
   if (typeof result.value === 'string') {
     try {
       result.value = JSON.parse(result);
-    } catch (e) {
+    }
+    catch (e) {
       console.error('Failed to parse grid JSON content', e);
       result.value = [];
     }
@@ -230,12 +232,13 @@ function parseModelValue() {
   if (typeof options === 'string') {
     try {
       options.value = JSON.parse(options.value);
-    } catch (e) {
+    }
+    catch (e) {
       console.error('Failed to parse grid options', e);
       options.value = {
         gap: 'gap-4',
         mobileStacking: true,
-        equalHeight: false
+        equalHeight: false,
       };
     }
   }
@@ -247,10 +250,10 @@ function parseModelValue() {
 const isModelValueInitialized = computed(() => {
   const parsed = parseModelValue();
   return !!(
-    parsed &&
-    parsed.json_content &&
-    Array.isArray(parsed.json_content) &&
-    parsed.options
+    parsed
+    && parsed.json_content
+    && Array.isArray(parsed.json_content)
+    && parsed.options
   );
 });
 
@@ -264,30 +267,30 @@ function initializeModelValue() {
           width: 'col-span-6',
           content: {
             type: 'tiptap',
-            value: {}
-          }
+            value: {},
+          },
         },
         {
           width: 'col-span-6',
           content: {
             type: 'tiptap',
-            value: {}
-          }
-        }
-      ]
-    }
+            value: {},
+          },
+        },
+      ],
+    },
   ];
 
   const defaultOptions = {
     gap: 'gap-4',
     mobileStacking: true,
-    equalHeight: false
+    equalHeight: false,
   };
 
   // Set the structure without extra nesting
   json_content.value = {
     json_content: rowsData,
-    options: defaultOptions
+    options: defaultOptions,
   };
 }
 
@@ -297,7 +300,8 @@ onMounted(() => {
 
   if (!isModelValueInitialized.value) {
     initializeModelValue();
-  } else if (parsed && parsed !== json_content.value) {
+  }
+  else if (parsed && parsed !== json_content.value) {
     // Use the parsed data to update the model value
     json_content.value = parsed;
   }
@@ -315,17 +319,17 @@ function addRow() {
         width: 'col-span-6',
         content: {
           type: 'tiptap',
-          value: {}
-        }
+          value: {},
+        },
       },
       {
         width: 'col-span-6',
         content: {
           type: 'tiptap',
-          value: {}
-        }
-      }
-    ]
+          value: {},
+        },
+      },
+    ],
   });
 }
 
@@ -359,8 +363,8 @@ function addColumn(rowIndex) {
     width: 'col-span-6',
     content: {
       type: 'tiptap',
-      value: {}
-    }
+      value: {},
+    },
   });
 
   // Adjust column widths based on count
@@ -368,11 +372,11 @@ function addColumn(rowIndex) {
 }
 
 function removeColumn(rowIndex, colIndex) {
-  if (!json_content.value.json_content ||
-    !json_content.value.json_content[rowIndex] ||
-    !json_content.value.json_content[rowIndex].columns) return;
+  if (!json_content.value.json_content
+    || !json_content.value.json_content[rowIndex]
+    || !json_content.value.json_content[rowIndex].columns) return;
 
-  const columns = json_content.value.json_content[rowIndex].columns;
+  const { columns } = json_content.value.json_content[rowIndex];
   if (columns.length > 1) {
     columns.splice(colIndex, 1);
     // Redistribute column widths after removal
@@ -381,11 +385,11 @@ function removeColumn(rowIndex, colIndex) {
 }
 
 function moveColumn(rowIndex, currentIndex, targetIndex) {
-  if (!json_content.value.json_content ||
-    !json_content.value.json_content[rowIndex] ||
-    !json_content.value.json_content[rowIndex].columns) return;
+  if (!json_content.value.json_content
+    || !json_content.value.json_content[rowIndex]
+    || !json_content.value.json_content[rowIndex].columns) return;
 
-  const columns = json_content.value.json_content[rowIndex].columns;
+  const { columns } = json_content.value.json_content[rowIndex];
   const column = columns[currentIndex];
   columns.splice(currentIndex, 1);
   columns.splice(targetIndex, 0, column);
@@ -401,17 +405,20 @@ function redistributeColumnWidths(row) {
   let spanValue;
   if (colCount === 1) {
     spanValue = 'col-span-12';
-  } else if (colCount === 2) {
+  }
+  else if (colCount === 2) {
     spanValue = 'col-span-6';
-  } else if (colCount === 3) {
+  }
+  else if (colCount === 3) {
     spanValue = 'col-span-4';
-  } else if (colCount === 4) {
+  }
+  else if (colCount === 4) {
     spanValue = 'col-span-3';
   }
 
   // Apply new width to all columns
   if (spanValue) {
-    row.columns.forEach(col => {
+    row.columns.forEach((col) => {
       col.width = spanValue;
     });
   }

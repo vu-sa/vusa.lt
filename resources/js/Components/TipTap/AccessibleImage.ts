@@ -1,18 +1,18 @@
 import { Image } from '@tiptap/extension-image';
 import type { CommandProps } from '@tiptap/core';
 
-interface SetImageWithAltOptions { 
-  src: string; 
-  alt?: string; 
-  title?: string; 
-  width?: string | number | null; 
-  height?: string | number | null; 
-  align?: 'left' | 'center' | 'right'; 
+interface SetImageWithAltOptions {
+  src: string;
+  alt?: string;
+  title?: string;
+  width?: string | number | null;
+  height?: string | number | null;
+  align?: 'left' | 'center' | 'right';
 }
 
-interface UpdateSizeOptions { 
-  width?: string | number | null; 
-  height?: string | number | null; 
+interface UpdateSizeOptions {
+  width?: string | number | null;
+  height?: string | number | null;
 }
 
 /**
@@ -76,11 +76,11 @@ export const AccessibleImage = Image.extend({
     const alignmentClasses: Record<string, string> = {
       left: 'float-left mr-4 mb-2',
       right: 'float-right ml-4 mb-2',
-      center: 'mx-auto block'
+      center: 'mx-auto block',
     };
-    
-    return ['img', { 
-      ...HTMLAttributes, 
+
+    return ['img', {
+      ...HTMLAttributes,
       class: `tiptap-image max-w-full h-auto rounded-md ${alignmentClasses[align] || alignmentClasses.center}`,
     }];
   },

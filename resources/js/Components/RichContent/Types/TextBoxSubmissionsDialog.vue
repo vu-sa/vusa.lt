@@ -102,8 +102,12 @@
           <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
             <IFluentCommentOffIcon class="h-8 w-8 text-zinc-400 dark:text-zinc-500" />
           </div>
-          <p class="text-sm font-medium text-zinc-600 dark:text-zinc-400">{{ $t('rich-content.text_box_no_answers') }}</p>
-          <p class="mt-1 text-xs text-zinc-400 dark:text-zinc-600">{{ $t('rich-content.text_box_no_answers_hint') }}</p>
+          <p class="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+            {{ $t('rich-content.text_box_no_answers') }}
+          </p>
+          <p class="mt-1 text-xs text-zinc-400 dark:text-zinc-600">
+            {{ $t('rich-content.text_box_no_answers_hint') }}
+          </p>
         </div>
 
         <!-- Submissions list -->
@@ -141,7 +145,9 @@
                 </div>
 
                 <!-- Text -->
-                <p class="whitespace-pre-wrap text-sm leading-relaxed text-zinc-800 dark:text-zinc-200">{{ submission.text }}</p>
+                <p class="whitespace-pre-wrap text-sm leading-relaxed text-zinc-800 dark:text-zinc-200">
+                  {{ submission.text }}
+                </p>
               </div>
             </div>
           </div>
@@ -206,6 +212,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
+
 import { useApi, useApiMutation } from '@/Composables/useApi';
 import { useToasts } from '@/Composables/useToasts';
 import type { ApiResponse } from '@/Types/api.d';
@@ -282,15 +289,15 @@ const apiUrl = computed(() =>
     content_part_id: props.contentPartId,
     page: currentPage.value,
     per_page: PER_PAGE,
-  })
+  }),
 );
 
 const exportUrl = computed(() =>
-  route('api.v1.admin.text-box-submissions.export', { content_part_id: props.contentPartId })
+  route('api.v1.admin.text-box-submissions.export', { content_part_id: props.contentPartId }),
 );
 
 const deleteAllUrl = computed(() =>
-  route('api.v1.admin.text-box-submissions.destroyAll', { content_part_id: props.contentPartId })
+  route('api.v1.admin.text-box-submissions.destroyAll', { content_part_id: props.contentPartId }),
 );
 
 const { data: submissions, response, isFetching, execute } = useApi<Submission[]>(apiUrl, {
@@ -302,7 +309,7 @@ const { execute: executeDeleteAll, isFetching: isDeletingAll } = useApiMutation(
   deleteAllUrl,
   'DELETE',
   undefined,
-  { showSuccessToast: true }
+  { showSuccessToast: true },
 );
 
 const pagination = computed(() => {
@@ -359,7 +366,7 @@ async function handleDeleteOne(): Promise<void> {
     const res = await fetch(url, {
       method: 'DELETE',
       headers: {
-        Accept: 'application/json',
+        'Accept': 'application/json',
         'Content-Type': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
         'X-CSRF-TOKEN': csrfToken,
@@ -374,15 +381,19 @@ async function handleDeleteOne(): Promise<void> {
       pendingDeleteId.value = null;
       if (submissions.value?.length === 1 && currentPage.value > 1) {
         currentPage.value -= 1;
-      } else {
+      }
+      else {
         await execute();
       }
-    } else {
+    }
+    else {
       toasts.error(data.message || 'An error occurred');
     }
-  } catch {
+  }
+  catch {
     toasts.error('An error occurred');
-  } finally {
+  }
+  finally {
     isDeletingOne.value = false;
   }
 }

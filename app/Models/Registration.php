@@ -14,7 +14,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read Collection<int, FieldResponse> $fieldResponses
- * @property-read Form $form
+ * @property-read Form|null $form
  *
  * @method static \Database\Factories\RegistrationFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Registration newModelQuery()

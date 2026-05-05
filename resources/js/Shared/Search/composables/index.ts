@@ -8,5 +8,5 @@ export {
   useBaseSearch,
   type BaseSearchService,
   type UseBaseSearchOptions,
-  type BaseSearchReturn
-} from './useBaseSearch'
+  type BaseSearchReturn,
+} from './useBaseSearch';

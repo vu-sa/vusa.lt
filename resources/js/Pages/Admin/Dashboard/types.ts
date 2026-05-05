@@ -178,4 +178,3 @@ export interface RepresentativeActivityData {
   stats: RepresentativeActivityStats;
   users: RepresentativeUser[];
 }
-

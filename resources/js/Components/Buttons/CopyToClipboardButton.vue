@@ -21,9 +21,10 @@ const toasts = useToasts();
 const copyToClipboard = async (text: string) => {
   if (navigator.clipboard) {
     await navigator.clipboard.writeText(text);
-    toasts.success(props.successText ?? "Nuoroda nukopijuota į iškarpinę!");
-  } else {
-    toasts.error(props.errorText ?? "Nepavyko nukopijuoti nuorodos į iškarpinę...");
+    toasts.success(props.successText ?? 'Nuoroda nukopijuota į iškarpinę!');
+  }
+  else {
+    toasts.error(props.errorText ?? 'Nepavyko nukopijuoti nuorodos į iškarpinę...');
   }
 };
 </script>

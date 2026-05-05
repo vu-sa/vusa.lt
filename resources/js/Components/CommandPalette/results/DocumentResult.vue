@@ -38,21 +38,22 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { router } from '@inertiajs/vue3'
-import { trans as $t } from 'laravel-vue-i18n'
-import { ExternalLink, FileArchive } from 'lucide-vue-next'
-import { CommandItem } from '@/Components/ui/command'
-import { useCommandPalette, type RecentItem } from '@/Composables/useCommandPalette'
-import type { DocumentSearchResult } from '@/Composables/useAdminSearch'
+import { computed } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+import { ExternalLink, FileArchive } from 'lucide-vue-next';
+
+import { CommandItem } from '@/Components/ui/command';
+import { useCommandPalette, type RecentItem } from '@/Composables/useCommandPalette';
+import type { DocumentSearchResult } from '@/Composables/useAdminSearch';
 
 const props = defineProps<{
-  document: DocumentSearchResult
-}>()
+  document: DocumentSearchResult;
+}>();
 
-const { close, addRecentItem } = useCommandPalette()
+const { close, addRecentItem } = useCommandPalette();
 
-const itemValue = computed(() => `document-${props.document.id}`)
+const itemValue = computed(() => `document-${props.document.id}`);
 
 const handleSelect = () => {
   // Add to recent items
@@ -60,11 +61,11 @@ const handleSelect = () => {
     id: props.document.id,
     type: 'document',
     title: props.document.title || $t('Be pavadinimo'),
-    href: route('documents.show', props.document.id)
-  } as Omit<RecentItem, 'timestamp'>)
+    href: route('documents.show', props.document.id),
+  } as Omit<RecentItem, 'timestamp'>);
 
   // Navigate to document show page (which will have option to open in SharePoint)
-  close()
-  router.visit(route('documents.show', props.document.id))
-}
+  close();
+  router.visit(route('documents.show', props.document.id));
+};
 </script>

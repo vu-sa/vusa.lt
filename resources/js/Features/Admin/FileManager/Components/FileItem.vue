@@ -10,83 +10,83 @@
       @keydown.enter="selectionMode ? handleClick() : undefined"
       @keydown.space.prevent="selectionMode ? handleClick() : undefined"
     >
-  <!-- File/Folder thumbnail or icon -->
-  <div class="flex-1 w-full flex items-center justify-center overflow-hidden rounded-sm">
+      <!-- File/Folder thumbnail or icon -->
+      <div class="flex-1 w-full flex items-center justify-center overflow-hidden rounded-sm">
         <!-- Folder icon -->
-        <IFluentFolder24Filled 
-          v-if="isFolder" 
-          class="w-3/4 h-3/4 text-muted-foreground group-hover:text-vusa-red transition-colors" 
+        <IFluentFolder24Filled
+          v-if="isFolder"
+          class="w-3/4 h-3/4 text-muted-foreground group-hover:text-vusa-red transition-colors"
         />
         <!-- Image thumbnail -->
-        <img 
+        <img
           v-else-if="isImage"
           :src="`/uploads/${item.path?.replace('public/', '') || ''}`"
           :alt="item.name"
           class="w-full h-full object-cover"
         >
         <!-- File type icons -->
-        <span 
-          v-else 
+        <span
+          v-else
           class="text-muted-foreground group-hover:text-vusa-red transition-colors flex items-center justify-center"
         >
           <!-- PDF files -->
-          <IFluentDocumentPdf24Regular 
-            v-if="getFileExtension(item.path).toLowerCase() === 'pdf'" 
-            class="w-12 h-12" 
+          <IFluentDocumentPdf24Regular
+            v-if="getFileExtension(item.path).toLowerCase() === 'pdf'"
+            class="w-12 h-12"
           />
           <!-- Document files -->
-          <IFluentDocumentText24Regular 
-            v-else-if="isDocumentFile(getFileExtension(item.path).toLowerCase())" 
-            class="w-12 h-12" 
+          <IFluentDocumentText24Regular
+            v-else-if="isDocumentFile(getFileExtension(item.path).toLowerCase())"
+            class="w-12 h-12"
           />
           <!-- Spreadsheet files including CSV -->
-          <IFluentDocumentTable24Regular 
-            v-else-if="isSpreadsheetFile(getFileExtension(item.path).toLowerCase())" 
-            class="w-12 h-12" 
+          <IFluentDocumentTable24Regular
+            v-else-if="isSpreadsheetFile(getFileExtension(item.path).toLowerCase())"
+            class="w-12 h-12"
           />
           <!-- Video files -->
-          <IFluentVideo24Regular 
-            v-else-if="isVideoFile(getFileExtension(item.path).toLowerCase())" 
-            class="w-12 h-12" 
+          <IFluentVideo24Regular
+            v-else-if="isVideoFile(getFileExtension(item.path).toLowerCase())"
+            class="w-12 h-12"
           />
           <!-- Audio files -->
-          <IFluentMusicNote24Regular 
-            v-else-if="isAudioFile(getFileExtension(item.path).toLowerCase())" 
-            class="w-12 h-12" 
+          <IFluentMusicNote24Regular
+            v-else-if="isAudioFile(getFileExtension(item.path).toLowerCase())"
+            class="w-12 h-12"
           />
           <!-- Archive files -->
-          <IFluentFolderZip24Regular 
-            v-else-if="isArchiveFile(getFileExtension(item.path).toLowerCase())" 
-            class="w-12 h-12" 
+          <IFluentFolderZip24Regular
+            v-else-if="isArchiveFile(getFileExtension(item.path).toLowerCase())"
+            class="w-12 h-12"
           />
           <!-- Code files -->
-          <IFluentCode24Regular 
-            v-else-if="isCodeFile(getFileExtension(item.path).toLowerCase())" 
-            class="w-12 h-12" 
+          <IFluentCode24Regular
+            v-else-if="isCodeFile(getFileExtension(item.path).toLowerCase())"
+            class="w-12 h-12"
           />
           <!-- Image files -->
-          <IFluentImage24Regular 
-            v-else-if="isImageFile(getFileExtension(item.path).toLowerCase())" 
-            class="w-12 h-12" 
+          <IFluentImage24Regular
+            v-else-if="isImageFile(getFileExtension(item.path).toLowerCase())"
+            class="w-12 h-12"
           />
           <!-- Default fallback for any other file type -->
-          <IFluentDocument24Regular 
-            v-else 
-            class="w-12 h-12" 
+          <IFluentDocument24Regular
+            v-else
+            class="w-12 h-12"
           />
         </span>
-  </div>
-  <div
-    class="mt-1 text-[10px] sm:text-xs text-center leading-tight px-1 overflow-hidden break-words line-clamp-2 h-8"
-    :class="isFolder ? 'text-foreground font-medium' : 'text-muted-foreground'"
-  >
+      </div>
+      <div
+        class="mt-1 text-[10px] sm:text-xs text-center leading-tight px-1 overflow-hidden break-words line-clamp-2 h-8"
+        :class="isFolder ? 'text-foreground font-medium' : 'text-muted-foreground'"
+      >
         {{ item.name }}
       </div>
     </button>
-    
+
     <!-- Selection indicators -->
     <Transition name="selection-badge">
-      <div v-if="showSelectionBadge" 
+      <div v-if="showSelectionBadge"
         :class="selectionBadgeClasses">
         {{ selectionBadgeText }}
       </div>
@@ -119,8 +119,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  'click': [item: any, event?: MouseEvent];
-  'doubleClick': [item: any];
+  click: [item: any, event?: MouseEvent];
+  doubleClick: [item: any];
 }>();
 
 const isFolder = computed(() => props.isFolder || false);
@@ -130,34 +130,37 @@ const isImage = computed(() => {
   return props.item?.name?.match(/\.(jpg|jpeg|png|webp)$/i);
 });
 
-
 const buttonClasses = computed(() => {
   // Removed aspect-square to allow natural height: icon area (square) + text
   const baseClasses = 'w-full overflow-hidden flex flex-col items-center justify-start rounded-md border border-border bg-background transition-all duration-200 hover:shadow-md focus:ring-2 focus:ring-vusa-red focus:ring-offset-2';
-  
+
   if (props.selectionMode && props.isSelected) {
     return `${baseClasses} ring-2 ring-vusa-red ring-offset-2 bg-vusa-red/5`;
-  } else if (props.isMultiSelectMode && props.isMultiSelected) {
+  }
+  else if (props.isMultiSelectMode && props.isMultiSelected) {
     return `${baseClasses} ring-2 ring-vusa-red ring-offset-2 bg-vusa-red/5`;
-  } else if (props.isSelected) {
+  }
+  else if (props.isSelected) {
     return `${baseClasses} ring-2 ring-muted-foreground ring-offset-2 bg-muted`;
-  } else {
+  }
+  else {
     return `${baseClasses} hover:bg-muted`;
   }
 });
 
 const showSelectionBadge = computed(() => {
-  return (props.selectionMode && props.isSelected) ||
-         (props.isMultiSelectMode && props.isMultiSelected) ||
-         (!props.selectionMode && !props.isMultiSelectMode && props.isSelected);
+  return (props.selectionMode && props.isSelected)
+    || (props.isMultiSelectMode && props.isMultiSelected)
+    || (!props.selectionMode && !props.isMultiSelectMode && props.isSelected);
 });
 
 const selectionBadgeClasses = computed(() => {
   const baseClasses = 'absolute top-1 right-1 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold z-20 shadow-lg';
-  
+
   if ((props.selectionMode && props.isSelected) || (props.isMultiSelectMode && props.isMultiSelected)) {
     return `${baseClasses} bg-vusa-red text-white`;
-  } else {
+  }
+  else {
     return `${baseClasses} bg-muted-foreground text-white`;
   }
 });
@@ -165,7 +168,8 @@ const selectionBadgeClasses = computed(() => {
 const selectionBadgeText = computed(() => {
   if ((props.selectionMode && props.isSelected) || (props.isMultiSelectMode && props.isMultiSelected)) {
     return '✓';
-  } else {
+  }
+  else {
     return 'i';
   }
 });

@@ -4,43 +4,43 @@
       as="button">
       <!-- Cover Image Section with Placeholder -->
       <div class="relative h-32 w-full">
-        <img 
-          v-if="institution.image_url" 
-          class="size-full rounded-t-md object-cover" 
+        <img
+          v-if="institution.image_url"
+          class="size-full rounded-t-md object-cover"
           :src="institution.image_url"
           :alt="institution.name"
         >
-        <div 
-          v-else 
+        <div
+          v-else
           class="size-full rounded-t-md bg-gradient-to-br from-muted/50 to-muted"
         />
         <!-- Logo with Placeholder -->
-        <div 
+        <div
           v-if="institution.logo_url"
           class="absolute -bottom-4 left-8 size-16 rounded-full border bg-white shadow-xs overflow-hidden"
         >
-          <img 
+          <img
             class="size-full object-contain p-1"
             :src="institution.logo_url"
             :alt="`${institution.name} logo`"
           >
         </div>
-        <div 
+        <div
           v-else
           class="absolute -bottom-4 left-8 size-16 rounded-full border bg-white shadow-xs flex items-center justify-center"
         >
           <Building2 class="w-6 h-6 text-muted-foreground" />
         </div>
       </div>
-      
+
       <CardHeader class="mt-2">
         <!-- Metadata Row (tenant + types) - only shown when showMetadata is true -->
         <div v-if="showMetadata && (tenantName || displayTypes.length > 0)" class="flex flex-wrap items-center gap-1.5 mb-1.5">
           <Badge v-if="tenantName" variant="secondary" class="text-xs">
             {{ tenantName }}
           </Badge>
-          <span 
-            v-for="(type, index) in displayTypes" 
+          <span
+            v-for="(type, index) in displayTypes"
             :key="type.id || index"
             class="text-xs text-muted-foreground"
           >
@@ -50,22 +50,22 @@
             +{{ institution.types.length - 2 }}
           </span>
         </div>
-        
+
         <CardTitle class="font-bold">
           {{ institution.name }}
         </CardTitle>
       </CardHeader>
-      
+
       <CardContent>
         <div v-if="institution.description" v-html="institution.description" />
-        
+
         <!-- Duties count (contacts) -->
         <div v-if="showMetadata && dutiesCount > 0" class="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
           <Users class="w-3.5 h-3.5" />
           <span>{{ dutiesCount }} {{ dutiesCount === 1 ? $t('search.contact_singular') : $t('search.contacts_plural') }}</span>
         </div>
       </CardContent>
-      
+
       <CardFooter class="flex gap-2">
         <a v-if="institution.facebook_url" :href="institution.facebook_url" target="_blank" rel="noopener noreferrer">
           <Button variant="ghost" size="icon-sm" class="rounded-full" @click.stop>
@@ -102,6 +102,7 @@ import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Building2, Users } from 'lucide-vue-next';
+
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import Card from '../ui/card/Card.vue';
@@ -146,7 +147,7 @@ const props = withDefaults(defineProps<{
   href?: string | null;
 }>(), {
   showMetadata: false,
-  href: null
+  href: null,
 });
 
 const page = usePage();
@@ -157,28 +158,28 @@ const institutionUrl = computed(() => {
   if (props.href) {
     return props.href;
   }
-  
+
   // Generate URL from institution data
   const locale = (page.props.app as any)?.locale || 'lt';
   // Use www subdomain for: vusa alias, pkp type tenants, or when no tenant
-  const tenant = props.institution.tenant;
+  const { tenant } = props.institution;
   const subdomain = (!tenant || tenant.alias === 'vusa' || tenant.type === 'pkp')
     ? 'www'
     : (tenant.alias || 'www');
-  
+
   // Use alias if available, otherwise use id
   if (props.institution.alias) {
     return route('contacts.alias', {
       institution: props.institution.alias,
       subdomain,
-      lang: locale
+      lang: locale,
     });
   }
-  
+
   return route('contacts.institution', {
     institution: props.institution.id,
     subdomain,
-    lang: locale
+    lang: locale,
   });
 });
 

@@ -9,12 +9,12 @@
 </template>
 
 <script setup lang="ts">
-import { router } from "@inertiajs/vue3";
+import { router } from '@inertiajs/vue3';
 
-import BannerForm from "@/Components/AdminForms/BannerForm.vue";
-import Icons from "@/Types/Icons/regular";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
+import BannerForm from '@/Components/AdminForms/BannerForm.vue';
+import Icons from '@/Types/Icons/regular';
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 
 defineProps<{
   banner: App.Entities.Banner;

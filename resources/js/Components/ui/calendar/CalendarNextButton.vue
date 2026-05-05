@@ -1,21 +1,3 @@
-<script lang="ts" setup>
-import { cn } from '@/Utils/Shadcn/utils'
-import { buttonVariants } from '@/Components/ui/button'
-import { ChevronRight } from 'lucide-vue-next'
-import { CalendarNext, type CalendarNextProps, useForwardProps } from 'reka-ui'
-import { computed, type HTMLAttributes } from 'vue'
-
-const props = defineProps<CalendarNextProps & { class?: HTMLAttributes['class'] }>()
-
-const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
-
-  return delegated
-})
-
-const forwardedProps = useForwardProps(delegatedProps)
-</script>
-
 <template>
   <CalendarNext
     data-slot="calendar-next-button"
@@ -31,3 +13,22 @@ const forwardedProps = useForwardProps(delegatedProps)
     </slot>
   </CalendarNext>
 </template>
+
+<script lang="ts" setup>
+import { ChevronRight } from 'lucide-vue-next';
+import { CalendarNext, type CalendarNextProps, useForwardProps } from 'reka-ui';
+import { computed, type HTMLAttributes } from 'vue';
+
+import { buttonVariants } from '@/Components/ui/button';
+import { cn } from '@/Utils/Shadcn/utils';
+
+const props = defineProps<CalendarNextProps & { class?: HTMLAttributes['class'] }>();
+
+const delegatedProps = computed(() => {
+  const { class: _, ...delegated } = props;
+
+  return delegated;
+});
+
+const forwardedProps = useForwardProps(delegatedProps);
+</script>

@@ -1,26 +1,3 @@
-<script setup lang="ts">
-import { cn } from '@/Utils/Shadcn/utils'
-import { Check } from 'lucide-vue-next'
-import {
-  SelectItem,
-  SelectItemIndicator,
-  type SelectItemProps,
-  SelectItemText,
-  useForwardProps,
-} from 'reka-ui'
-import { computed, type HTMLAttributes } from 'vue'
-
-const props = defineProps<SelectItemProps & { class?: HTMLAttributes['class'] }>()
-
-const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
-
-  return delegated
-})
-
-const forwardedProps = useForwardProps(delegatedProps)
-</script>
-
 <template>
   <SelectItem
     data-slot="select-item"
@@ -46,8 +23,38 @@ const forwardedProps = useForwardProps(delegatedProps)
       </SelectItemIndicator>
     </span>
 
-    <SelectItemText>
+    <template v-if="label">
+      <SelectItemText class="sr-only">
+        {{ label }}
+      </SelectItemText>
+      <slot />
+    </template>
+    <SelectItemText v-else>
       <slot />
     </SelectItemText>
   </SelectItem>
 </template>
+
+<script setup lang="ts">
+import { Check } from 'lucide-vue-next';
+import {
+  SelectItem,
+  SelectItemIndicator,
+  type SelectItemProps,
+  SelectItemText,
+  useForwardProps,
+} from 'reka-ui';
+import { computed, type HTMLAttributes } from 'vue';
+
+import { cn } from '@/Utils/Shadcn/utils';
+
+const props = defineProps<SelectItemProps & { class?: HTMLAttributes['class']; label?: string }>();
+
+const delegatedProps = computed(() => {
+  const { class: _, ...delegated } = props;
+
+  return delegated;
+});
+
+const forwardedProps = useForwardProps(delegatedProps);
+</script>

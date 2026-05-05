@@ -92,6 +92,8 @@
     "News": "Naujienos",
     "Events": "Renginiai",
     "Documents": "Dokumentai",
+    "open": "Atidaryti",
+    "download": "Atsisiųsti",
     "copy_link": "Kopijuoti nuorodą",
     "copy_link_success": "Nuoroda nukopijuota į iškarpinę!",
     "copy_link_error": "Nepavyko nukopijuoti nuorodos",

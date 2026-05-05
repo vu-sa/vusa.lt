@@ -30,7 +30,7 @@
           <div v-if="badge || $slots.badge" class="flex items-center gap-2 flex-wrap">
             <slot name="badge">
               <Badge v-if="badge" :variant="badge.variant || 'secondary'" class="gap-1">
-                <component v-if="badge.icon" :is="badge.icon" class="h-3 w-3" />
+                <component :is="badge.icon" v-if="badge.icon" class="h-3 w-3" />
                 {{ badge.label }}
               </Badge>
             </slot>
@@ -38,7 +38,9 @@
 
           <!-- Title -->
           <h1 class="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground line-clamp-2 sm:truncate">
-            <slot name="title">{{ title }}</slot>
+            <slot name="title">
+              {{ title }}
+            </slot>
           </h1>
 
           <!-- Subtitle -->
@@ -69,35 +71,35 @@
 </template>
 
 <script setup lang="ts">
-import type { Component, HTMLAttributes } from 'vue'
-import { computed } from 'vue'
+import type { Component, HTMLAttributes } from 'vue';
+import { computed } from 'vue';
 
-import { cn } from '@/Utils/Shadcn/utils'
-import { Badge } from '@/Components/ui/badge'
+import { cn } from '@/Utils/Shadcn/utils';
+import { Badge } from '@/Components/ui/badge';
 
 interface BadgeConfig {
-  label: string
-  variant?: 'default' | 'secondary' | 'outline' | 'destructive'
-  icon?: Component
+  label: string;
+  variant?: 'default' | 'secondary' | 'outline' | 'destructive';
+  icon?: Component;
 }
 
 const props = withDefaults(defineProps<{
-  title?: string
-  subtitle?: string
-  icon?: Component
-  badge?: BadgeConfig
-  viewTransitionName?: string
-  class?: HTMLAttributes['class']
+  title?: string;
+  subtitle?: string;
+  icon?: Component;
+  badge?: BadgeConfig;
+  viewTransitionName?: string;
+  class?: HTMLAttributes['class'];
 }>(), {
   title: undefined,
   subtitle: undefined,
   icon: undefined,
   badge: undefined,
   viewTransitionName: undefined,
-})
+});
 
 const viewTransitionStyle = computed(() => {
-  if (!props.viewTransitionName) return undefined
-  return { viewTransitionName: props.viewTransitionName }
-})
+  if (!props.viewTransitionName) return undefined;
+  return { viewTransitionName: props.viewTransitionName };
+});
 </script>

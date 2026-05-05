@@ -32,8 +32,10 @@ describe('TiptapEditor', function () {
         // Ensure no doubled closing tags like </h2></h2> or </h3></h3>
         expect($html)->not->toContain('</h2></h2>');
         expect($html)->not->toContain('</h3></h3>');
-        expect($html)->toContain('<h2>Test H2</h2>');
-        expect($html)->toContain('<h3>Test H3</h3>');
+        expect($html)->toContain('id="test-h2"');
+        expect($html)->toContain('id="test-h3"');
+        expect($html)->toContain('>Test H2</h2>');
+        expect($html)->toContain('>Test H3</h3>');
     });
 
     it('renders list items without doubled closing tags', function () {
@@ -322,7 +324,9 @@ describe('CustomHeading', function () {
                 ['type' => 'heading', 'attrs' => ['level' => 2], 'content' => [['type' => 'text', 'text' => 'H2']]],
             ],
         ];
-        expect($editor->setContent($h2Content)->getHTML())->toContain('<h2>');
+        $html = $editor->setContent($h2Content)->getHTML();
+        expect($html)->toContain('<h2');
+        expect($html)->toContain('id="h2"');
 
         // Level 3 should work
         $h3Content = [
@@ -331,7 +335,106 @@ describe('CustomHeading', function () {
                 ['type' => 'heading', 'attrs' => ['level' => 3], 'content' => [['type' => 'text', 'text' => 'H3']]],
             ],
         ];
-        expect($editor->setContent($h3Content)->getHTML())->toContain('<h3>');
+        $html = $editor->setContent($h3Content)->getHTML();
+        expect($html)->toContain('<h3');
+        expect($html)->toContain('id="h3"');
+    });
+
+    it('generates ID from heading text', function () {
+        $editor = new TiptapEditor;
+        $content = [
+            'type' => 'doc',
+            'content' => [
+                ['type' => 'heading', 'attrs' => ['level' => 2], 'content' => [['type' => 'text', 'text' => 'My Test Heading']]],
+            ],
+        ];
+
+        $html = $editor->setContent($content)->getHTML();
+
+        expect($html)->toContain('id="my-test-heading"');
+        expect($html)->toContain('<h2 id="my-test-heading">My Test Heading</h2>');
+    });
+
+    it('generates ID from Lithuanian text', function () {
+        $editor = new TiptapEditor;
+        $content = [
+            'type' => 'doc',
+            'content' => [
+                ['type' => 'heading', 'attrs' => ['level' => 2], 'content' => [['type' => 'text', 'text' => 'Įvadas į programavimą']]],
+            ],
+        ];
+
+        $html = $editor->setContent($content)->getHTML();
+
+        expect($html)->toContain('id="ivadas-i-programavima"');
+    });
+
+    it('handles special characters in heading text', function () {
+        $editor = new TiptapEditor;
+        $content = [
+            'type' => 'doc',
+            'content' => [
+                ['type' => 'heading', 'attrs' => ['level' => 2], 'content' => [['type' => 'text', 'text' => 'What is this?! (Important)']]],
+            ],
+        ];
+
+        $html = $editor->setContent($content)->getHTML();
+
+        expect($html)->toContain('id="what-is-this-important"');
+    });
+
+    it('handles headings with multiple text nodes', function () {
+        $editor = new TiptapEditor;
+        $content = [
+            'type' => 'doc',
+            'content' => [
+                [
+                    'type' => 'heading',
+                    'attrs' => ['level' => 2],
+                    'content' => [
+                        ['type' => 'text', 'text' => 'Bold '],
+                        ['type' => 'text', 'marks' => [['type' => 'bold']], 'text' => 'and'],
+                        ['type' => 'text', 'text' => ' Italic'],
+                    ],
+                ],
+            ],
+        ];
+
+        $html = $editor->setContent($content)->getHTML();
+
+        expect($html)->toContain('id="bold-and-italic"');
+    });
+
+    it('handles empty heading text', function () {
+        $editor = new TiptapEditor;
+        $content = [
+            'type' => 'doc',
+            'content' => [
+                ['type' => 'heading', 'attrs' => ['level' => 2], 'content' => []],
+            ],
+        ];
+
+        $html = $editor->setContent($content)->getHTML();
+
+        // Empty headings should render with empty string content
+        expect($html)->toContain('<h2');
+        expect($html)->toContain('</h2>');
+    });
+
+    it('generates different IDs for both h2 and h3', function () {
+        $editor = new TiptapEditor;
+        $content = [
+            'type' => 'doc',
+            'content' => [
+                ['type' => 'heading', 'attrs' => ['level' => 2], 'content' => [['type' => 'text', 'text' => 'Section One']]],
+                ['type' => 'heading', 'attrs' => ['level' => 3], 'content' => [['type' => 'text', 'text' => 'Subsection One']]],
+            ],
+        ];
+
+        $html = $editor->setContent($content)->getHTML();
+
+        expect($html)->toContain('id="section-one"');
+        expect($html)->toContain('id="subsection-one"');
     });
 });
 

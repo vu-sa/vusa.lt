@@ -1,5 +1,5 @@
 <template>
-    <Card data-tour="meetings-card" :class="dashboardCardClasses" role="region" :aria-label="$t('Tavo artėjantys susitikimai')">
+  <Card data-tour="meetings-card" :class="dashboardCardClasses" role="region" :aria-label="$t('Tavo artėjantys susitikimai')">
     <!-- Status indicator - small amber accent when meetings exist -->
     <div :class="statusIndicatorClasses" aria-hidden="true" />
 
@@ -49,14 +49,19 @@
                   </div>
                   <div class="text-sm text-zinc-600 dark:text-zinc-400 mt-1 truncate flex items-center gap-1">
                     {{ meeting.institutions?.[0]?.name }}
-                    <Globe v-if="meeting.institutions?.[0]?.has_public_meetings" 
-                      class="h-3 w-3 text-green-600 dark:text-green-400 shrink-0" 
+                    <Globe v-if="meeting.institutions?.[0]?.has_public_meetings"
+                      class="h-3 w-3 text-green-600 dark:text-green-400 shrink-0"
                       :title="$t('Vieši posėdžiai')" />
                   </div>
                 </div>
 
-                <!-- Show position badge for first meeting -->
-                <div v-if="index === 0" class="flex-shrink-0">
+                <!-- Show badge for today's or next meeting -->
+                <div v-if="isMeetingToday(meeting)" class="flex-shrink-0">
+                  <span class="inline-flex items-center rounded-full bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400/80">
+                    {{ $t('Šiandien') }}
+                  </span>
+                </div>
+                <div v-else-if="index === 0 || (index > 0 && upcomingMeetings.slice(0, index).every(m => isMeetingToday(m)))" class="flex-shrink-0">
                   <span class="inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400/80">
                     {{ $t('Kitas') }}
                   </span>
@@ -68,8 +73,8 @@
           <!-- Show "and X more" if there are more than 3 -->
           <div v-if="upcomingMeetings.length > 3" class="text-center pt-2">
             <button
-              @click="$emit('show-all-meetings')"
               class="text-xs text-zinc-600 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-amber-400 hover:underline transition-colors"
+              @click="$emit('show-all-meetings')"
             >
               {{ $t('ir dar') }} {{ upcomingMeetings.length - 3 }}...
             </button>
@@ -107,22 +112,22 @@
           <!-- Icon-only action buttons -->
           <div class="flex gap-1">
             <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger as-child>
-                <Button data-tour="create-meeting-action" variant="ghost" size="sm" class="h-8 w-8" @click="$emit('create-meeting')">
-                  <component :is="Icons.PLUS" class="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>{{ $t('Sukurti naują susitikimą') }}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <Button data-tour="create-meeting-action" variant="ghost" size="sm" class="h-8 w-8" @click="$emit('create-meeting')">
+                    <component :is="Icons.PLUS" class="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{{ $t('Sukurti naują susitikimą') }}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
 
             <TooltipProvider v-if="upcomingMeetings.length > 0">
               <Tooltip>
                 <TooltipTrigger as-child>
                   <Button variant="ghost" size="sm" class="h-8 w-8" as-child>
                     <Link :href="route('meetings.show', upcomingMeetings[0].id)">
-                    <ArrowRight class="h-4 w-4" />
+                      <ArrowRight class="h-4 w-4" />
                     </Link>
                   </Button>
                 </TooltipTrigger>
@@ -142,7 +147,7 @@
             {{ $t('Reikia dėmesio') }}:
           </div>
           <div>
-            {{institutionsInsights.withoutMeetings.slice(0, 2).map(i => i.name).join(', ')}} {{ $t('be susitikimų')
+            {{ institutionsInsights.withoutMeetings.slice(0, 2).map(i => i.name).join(', ') }} {{ $t('be susitikimų')
             }}
           </div>
         </div>
@@ -179,17 +184,16 @@
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowRight, Globe } from "lucide-vue-next";
+import { ArrowRight, Globe } from 'lucide-vue-next';
 
 import type { AtstovavimosMeeting, InstitutionInsights } from '../types';
 
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/Components/ui/card";
-import { Button } from "@/Components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
-import Icons from "@/Types/Icons/filled";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/Components/ui/card';
+import { Button } from '@/Components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
+import Icons from '@/Types/Icons/filled';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { dashboardCardClasses, dashboardCardFooterClasses, cardAccentColors } from '@/Composables/useDashboardCardStyles';
-
 
 interface Props {
   upcomingMeetings: AtstovavimosMeeting[];
@@ -198,21 +202,29 @@ interface Props {
 
 const props = defineProps<Props>();
 
+const isMeetingToday = (meeting: AtstovavimosMeeting): boolean => {
+  const meetingDate = new Date(meeting.start_time);
+  const now = new Date();
+  return meetingDate.getFullYear() === now.getFullYear()
+    && meetingDate.getMonth() === now.getMonth()
+    && meetingDate.getDate() === now.getDate();
+};
+
 // Computed classes based on meeting count using shared accent colors
-const hasMeetings = computed(() => props.upcomingMeetings.length > 0)
+const hasMeetings = computed(() => props.upcomingMeetings.length > 0);
 
 const statusIndicatorClasses = computed(() => {
-  const base = 'absolute top-0 right-0 w-12 h-12 -mr-6 -mt-6 rotate-45'
-  return `${base} ${hasMeetings.value ? cardAccentColors.amber.statusIndicatorActive : 'bg-zinc-200 dark:bg-zinc-700'}`
-})
+  const base = 'absolute top-0 right-0 w-12 h-12 -mr-6 -mt-6 rotate-45';
+  return `${base} ${hasMeetings.value ? cardAccentColors.amber.statusIndicatorActive : 'bg-zinc-200 dark:bg-zinc-700'}`;
+});
 
 const iconClasses = computed(() => {
-  return `h-5 w-5 ${hasMeetings.value ? cardAccentColors.amber.icon : cardAccentColors.amber.iconMuted}`
-})
+  return `h-5 w-5 ${hasMeetings.value ? cardAccentColors.amber.icon : cardAccentColors.amber.iconMuted}`;
+});
 
 const badgeClasses = computed(() => {
-  return hasMeetings.value ? cardAccentColors.amber.badge : 'bg-zinc-200 text-zinc-700 dark:bg-zinc-700/50 dark:text-zinc-300'
-})
+  return hasMeetings.value ? cardAccentColors.amber.badge : 'bg-zinc-200 text-zinc-700 dark:bg-zinc-700/50 dark:text-zinc-300';
+});
 
 // Find the first overdue institution (where days since last meeting exceeds periodicity)
 const overdueInstitution = computed(() => {

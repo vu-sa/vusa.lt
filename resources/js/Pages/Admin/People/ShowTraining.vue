@@ -46,9 +46,9 @@
         <!-- Registration component -->
         <div class="flex gap-2">
           <Link v-if="userCanRegister" :href="route('trainings.showRegistration', training.id)">
-          <Button :disabled="!userCanRegister">
-            Registruotis
-          </Button>
+            <Button :disabled="!userCanRegister">
+              Registruotis
+            </Button>
           </Link>
           <Button v-else-if="userIsRegistered" variant="warning" disabled>
             Atsaukti registracija
@@ -65,8 +65,12 @@
     </Card>
     <Tabs class="my-4" :default-value="defaultTab">
       <TabsList>
-        <TabsTrigger value="summary">Pagrindinis</TabsTrigger>
-        <TabsTrigger value="programme">Programa</TabsTrigger>
+        <TabsTrigger value="summary">
+          Pagrindinis
+        </TabsTrigger>
+        <TabsTrigger value="programme">
+          Programa
+        </TabsTrigger>
       </TabsList>
       <TabsContent value="summary">
         <Card class="border shadow-xs bg-white dark:bg-zinc-800 dark:border-zinc-700">
@@ -104,19 +108,19 @@
 </template>
 
 <script setup lang="ts">
-import UserPopover from "@/Components/Avatars/UserPopover.vue";
-import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
-import { Button } from "@/Components/ui/button";
-import { Badge } from "@/Components/ui/badge";
-import { Card, CardContent, CardFooter, CardHeader } from "@/Components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
-import ProgrammePlanner from "@/Features/Admin/ProgrammePlanner/ProgrammePlanner.vue";
-import { formatStaticTime } from "@/Utils/IntlTime";
-import { Link } from "@inertiajs/vue3";
-import { computed } from "vue";
-import Icons from "@/Types/Icons/filled";
+import { Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
-import Sparkle20Filled from "~icons/fluent/sparkle20-filled";
+import UserPopover from '@/Components/Avatars/UserPopover.vue';
+import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
+import { Button } from '@/Components/ui/button';
+import { Badge } from '@/Components/ui/badge';
+import { Card, CardContent, CardFooter, CardHeader } from '@/Components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import ProgrammePlanner from '@/Features/Admin/ProgrammePlanner/ProgrammePlanner.vue';
+import { formatStaticTime } from '@/Utils/IntlTime';
+import Icons from '@/Types/Icons/filled';
+import Sparkle20Filled from '~icons/fluent/sparkle20-filled';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 
 const props = defineProps<{
@@ -128,20 +132,20 @@ const props = defineProps<{
 
 const defaultTab = computed(() => {
   if (props.userIsRegistered) {
-    return "summary";
+    return 'summary';
   }
 
-  return "summary";
+  return 'summary';
 });
 
 usePageBreadcrumbs(() =>
   BreadcrumbHelpers.adminShow(
-    "Mokymai",
-    "trainings.index",
+    'Mokymai',
+    'trainings.index',
     {},
     props.training.name,
     Icons.TRAINING,
-    Sparkle20Filled
-  )
+    Sparkle20Filled,
+  ),
 );
 </script>

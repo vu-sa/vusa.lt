@@ -1,6 +1,6 @@
 /**
  * TipTap Image Controls Composable
- * 
+ *
  * Handles image alignment, resizing, and accessibility editing.
  */
 import { ref, computed } from 'vue';
@@ -24,11 +24,11 @@ const IMAGE_SIZE_PRESETS: Record<ImageSizePreset, string> = {
 
 /**
  * Composable for image controls in TipTap editor
- * 
+ *
  * @example
  * ```ts
- * const { 
- *   showImageDialog, 
+ * const {
+ *   showImageDialog,
  *   currentImageData,
  *   openAccessibilityDialog,
  *   submitAccessibilityChanges,
@@ -85,7 +85,7 @@ export function useTiptapImageControls(editor: Ref<Editor | undefined>) {
    */
   function openAccessibilityDialog() {
     if (!editor.value) return;
-    
+
     const attrs = editor.value.getAttributes('image');
     currentImageData.value = {
       src: attrs.src || '',
@@ -99,9 +99,9 @@ export function useTiptapImageControls(editor: Ref<Editor | undefined>) {
    * Submit accessibility changes (alt text, title)
    */
   function submitAccessibilityChanges(data: { alt: string; title: string }) {
-    editor.value?.chain().focus().updateAttributes('image', { 
-      alt: data.alt, 
-      title: data.title 
+    editor.value?.chain().focus().updateAttributes('image', {
+      alt: data.alt,
+      title: data.title,
     }).run();
     showImageDialog.value = false;
   }
@@ -117,17 +117,17 @@ export function useTiptapImageControls(editor: Ref<Editor | undefined>) {
     // State
     showImageDialog,
     currentImageData,
-    
+
     // Alignment
     getCurrentAlignment,
     isAlignmentActive,
     setAlignment,
-    
+
     // Sizing
     setSizePreset,
     setSize,
     IMAGE_SIZE_PRESETS,
-    
+
     // Accessibility dialog
     openAccessibilityDialog,
     submitAccessibilityChanges,

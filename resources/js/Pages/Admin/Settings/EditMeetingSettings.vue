@@ -9,13 +9,13 @@
           <template #description>
             {{ $t('settings.meeting_settings.types_description') }}
           </template>
-          
+
           <div class="space-y-2">
             <Label class="inline-flex items-center gap-1">
               <component :is="Icons.TYPE" class="h-4 w-4" />
               {{ $t('settings.meeting_settings.types_label') }}
             </Label>
-            
+
             <MultiSelect
               v-model="selectedTypes"
               :options="availablePublicTypes"
@@ -34,13 +34,13 @@
           <template #description>
             {{ $t('settings.meeting_settings.excluded_types_description') }}
           </template>
-          
+
           <div class="space-y-2">
             <Label class="inline-flex items-center gap-1">
               <component :is="Icons.TYPE" class="h-4 w-4" />
               {{ $t('settings.meeting_settings.excluded_types_label') }}
             </Label>
-            
+
             <MultiSelect
               v-model="excludedTypes"
               :options="availableExcludedTypes"
@@ -57,16 +57,16 @@
 </template>
 
 <script setup lang="ts">
-import { useForm } from "@inertiajs/vue3";
-import { ref, watch, computed } from "vue";
+import { useForm } from '@inertiajs/vue3';
+import { ref, watch, computed } from 'vue';
 
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
-import AdminForm from "@/Components/AdminForms/AdminForm.vue";
-import FormElement from "@/Components/AdminForms/FormElement.vue";
-import Icons from "@/Types/Icons/regular";
-import { Label } from "@/Components/ui/label";
-import { MultiSelect } from "@/Components/ui/multi-select";
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import AdminForm from '@/Components/AdminForms/AdminForm.vue';
+import FormElement from '@/Components/AdminForms/FormElement.vue';
+import Icons from '@/Types/Icons/regular';
+import { Label } from '@/Components/ui/label';
+import { MultiSelect } from '@/Components/ui/multi-select';
 
 interface InstitutionType {
   id: number;
@@ -82,12 +82,12 @@ const props = defineProps<{
 
 // Initialize selected types from props
 const selectedTypes = ref<InstitutionType[]>(
-  props.available_types.filter(type => props.selected_type_ids.includes(type.id))
+  props.available_types.filter(type => props.selected_type_ids.includes(type.id)),
 );
 
 // Initialize excluded types from props
 const excludedTypes = ref<InstitutionType[]>(
-  props.available_types.filter(type => props.excluded_type_ids.includes(type.id))
+  props.available_types.filter(type => props.excluded_type_ids.includes(type.id)),
 );
 
 // Compute available options for public types (exclude already excluded types)
@@ -104,7 +104,7 @@ const availableExcludedTypes = computed(() => {
 
 const form = useForm({
   type_ids: props.selected_type_ids,
-  excluded_type_ids: props.excluded_type_ids
+  excluded_type_ids: props.excluded_type_ids,
 });
 
 // Sync selected types to form
@@ -118,6 +118,6 @@ watch(excludedTypes, (newTypes) => {
 }, { deep: true });
 
 const handleFormSubmit = () => {
-  form.post(route("settings.meetings.update"));
+  form.post(route('settings.meetings.update'));
 };
 </script>

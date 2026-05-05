@@ -1,6 +1,5 @@
 <template>
   <div class="full-bleed group relative min-h-48">
-
     <Head>
       <link rel="preload" href="/images/photos/stovykla.jpg" as="image">
     </Head>
@@ -49,7 +48,7 @@
         lang: 'lt',
         subdomain: 'www',
       })
-        ">
+      ">
         <Button variant="secondary" class="rounded-full font-bold">
           <IFluentPerson20Filled />
           VU SA kontaktai tavo fakultete
@@ -60,8 +59,10 @@
 </template>
 
 <script setup lang="ts">
-import { Head } from "@inertiajs/vue3";
-import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
-import SmartLink from "../SmartLink.vue";
-import { Button } from "@/Components/ui/button";
+import { Head } from '@inertiajs/vue3';
+
+import SmartLink from '../SmartLink.vue';
+
+import ShapeDivider1 from '@/Components/Public/ShapeDivider1.vue';
+import { Button } from '@/Components/ui/button';
 </script>

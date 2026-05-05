@@ -111,13 +111,13 @@
 </template>
 
 <script setup lang="ts">
-import { useForm } from "@inertiajs/vue3";
-import { ref, watch } from "vue";
-import { ComboboxInput, ComboboxVirtualizer } from "reka-ui";
-import { SearchIcon, ChevronDownIcon } from "lucide-vue-next";
-import IconEye from "~icons/fluent/eye16-regular";
+import { useForm } from '@inertiajs/vue3';
+import { ref, watch } from 'vue';
+import { ComboboxInput, ComboboxVirtualizer } from 'reka-ui';
+import { SearchIcon, ChevronDownIcon } from 'lucide-vue-next';
 
-import { Button } from "@/Components/ui/button";
+import IconEye from '~icons/fluent/eye16-regular';
+import { Button } from '@/Components/ui/button';
 import {
   Combobox,
   ComboboxAnchor,
@@ -126,14 +126,14 @@ import {
   ComboboxList,
   ComboboxTrigger,
   ComboboxViewport,
-} from "@/Components/ui/combobox";
-import AdminForm from "@/Components/AdminForms/AdminForm.vue";
-import FormElement from "@/Components/AdminForms/FormElement.vue";
-import FormFieldWrapper from "@/Components/AdminForms/FormFieldWrapper.vue";
-import Icons from "@/Types/Icons/regular";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
-import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
+} from '@/Components/ui/combobox';
+import AdminForm from '@/Components/AdminForms/AdminForm.vue';
+import FormElement from '@/Components/AdminForms/FormElement.vue';
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
+import Icons from '@/Types/Icons/regular';
+import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 
 const { users } = defineProps<{
   users: App.Entities.Role[];
@@ -168,7 +168,7 @@ watch(selectedKeptUser, (user) => {
 });
 
 function handleFormSubmit() {
-  form.post(route("users.mergeUsers"), {
+  form.post(route('users.mergeUsers'), {
     onSuccess: () => {
       form.reset();
       selectedMergedUser.value = null;
