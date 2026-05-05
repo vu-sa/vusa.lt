@@ -95,6 +95,7 @@ export enum ModelEnum {
   "SHAREPOINT_FILE" = "sharepointFile",
   "SHAREPOINT_FILEABLE" = "sharepointFileable",
   "STUDY_PROGRAM" = "studyProgram",
+  "STUDY_SET" = "studySet",
   "TAG" = "tag",
   "TASK" = "task",
   "TENANT" = "tenant",

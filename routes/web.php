@@ -81,6 +81,8 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
         Route::get('dokumentai', [Public\DocumentController::class, 'index'])->name('documents');
 
+        Route::get('ind-komplektai', [Public\StudySetController::class, 'index'])->name('studySets');
+
         // Redirect reports to external subdomains
         Route::redirect('ataskaita-2022', 'https://ataskaita2022.vusa.lt', 301);
         Route::redirect('ataskaita-2023', 'https://ataskaita2023.vusa.lt', 301);
