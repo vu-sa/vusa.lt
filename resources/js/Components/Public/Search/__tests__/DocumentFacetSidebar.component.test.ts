@@ -6,14 +6,9 @@ import DocumentFacetSidebar from '../DocumentFacetSidebar.vue';
 
 import type { DocumentFacet, DocumentSearchFilters } from '@/Types/DocumentSearchTypes';
 
-// Mock Inertia.js
-vi.mock('@inertiajs/vue3', () => ({
-  usePage: vi.fn(() => ({
-    props: {},
-  })),
-}));
+// Global mocks from tests/setup.ts already handle @inertiajs/vue3
 
-// Mock Laravel Vue i18n
+// Custom i18n mock with search-specific translations
 vi.mock('laravel-vue-i18n', () => ({
   trans: vi.fn((key: string) => {
     const translations: Record<string, string> = {

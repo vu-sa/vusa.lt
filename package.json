@@ -14,7 +14,6 @@
     "test:storybook": "vitest --project storybook",
     "coverage": "vitest run --coverage",
     "coverage:ci": "vitest run --coverage --project unit --project component --reporter=default --reporter=junit --outputFile=test-results.junit.xml --coverage.reporter=text-summary --coverage.reporter=lcov --coverage.reporter=clover",
-    "coverage:ui": "vitest run --coverage --ui",
     "docs:dev": "vitepress dev docs --port 8081",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs --port 8086",

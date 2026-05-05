@@ -1,6 +1,11 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { nextTick } from 'vue';
 
+import { router, usePage } from '@inertiajs/vue3';
+import { createMockPage } from '@/tests/helpers/createMockPage';
+
+import { useInstitutionSubscription } from '@/Pages/Admin/Dashboard/Composables/useInstitutionSubscription';
+
 // Mock vue-sonner
 vi.mock('vue-sonner', () => ({
   toast: {
@@ -14,31 +19,10 @@ vi.mock('vue-sonner', () => ({
 const mockFetch = vi.fn();
 vi.stubGlobal('fetch', mockFetch);
 
-// Mock route function globally (Ziggy)
-vi.stubGlobal('route', (name: string, params?: any) => {
-  return `/mocked-route/${name}`;
-});
-
-// Mock Inertia router
-vi.mock('@inertiajs/vue3', () => ({
-  router: {
-    reload: vi.fn(),
-  },
-  usePage: () => ({
-    props: {
-      csrf_token: 'test-csrf-token',
-    },
-  }),
-}));
-
-import { router } from '@inertiajs/vue3';
-
-// Import after mocks
-import { useInstitutionSubscription } from '@/Pages/Admin/Dashboard/Composables/useInstitutionSubscription';
-
 describe('useInstitutionSubscription', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(usePage).mockReturnValue(createMockPage({ csrf_token: 'test-csrf-token' }));
   });
 
   afterEach(() => {
@@ -72,10 +56,7 @@ describe('useInstitutionSubscription', () => {
       is_duty_based: false,
     };
 
-    console.log('Before toggleFollow...');
     const result = await toggleFollow('test-institution-id', currentState);
-    console.log('toggleFollow result:', result);
-    console.log('router.reload called:', (router.reload as any).mock.calls);
 
     await nextTick();
 
@@ -111,9 +92,7 @@ describe('useInstitutionSubscription', () => {
       is_duty_based: false,
     };
 
-    console.log('Before toggleFollow (unfollow)...');
     const result = await toggleFollow('test-institution-id', currentState);
-    console.log('toggleFollow (unfollow) result:', result);
 
     await nextTick();
 
@@ -149,9 +128,7 @@ describe('useInstitutionSubscription', () => {
       is_duty_based: false,
     };
 
-    console.log('Before toggleMute...');
     const result = await toggleMute('test-institution-id', currentState);
-    console.log('toggleMute result:', result);
 
     await nextTick();
 

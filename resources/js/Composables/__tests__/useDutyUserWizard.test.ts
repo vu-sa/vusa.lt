@@ -7,32 +7,7 @@ import {
   getTodayDate,
 } from '../useDutyUserWizard';
 
-// Mock inertia - handled by global setup
-vi.mock('@inertiajs/vue3', () => ({
-  router: {
-    post: vi.fn(),
-    visit: vi.fn(),
-    reload: vi.fn(),
-  },
-  usePage: () => ({
-    props: {
-      auth: { user: { id: 1, name: 'Test User' } },
-    },
-  }),
-}));
-
-// Mock laravel-vue-i18n
-vi.mock('laravel-vue-i18n', () => ({
-  trans: (key: string) => key,
-}));
-
-// Mock route helper
-vi.mock('ziggy-js', () => ({
-  default: (name: string) => `/mock/${name}`,
-}));
-
-// Make route globally available
-vi.stubGlobal('route', (name: string) => `/mock/${name}`);
+// Global mocks from tests/setup.ts already handle @inertiajs/vue3, laravel-vue-i18n, and ziggy-js
 
 describe('useDutyUserWizard', () => {
   describe('initialization', () => {

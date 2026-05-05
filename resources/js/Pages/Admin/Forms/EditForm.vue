@@ -22,8 +22,7 @@ defineProps<{
   fieldModelFields: Record<string, any>[];
 }>();
 
-// Since the form has nested properties, we don't use useForm() helper and use router instead
 function handleFormSubmitted(form: any) {
-  router.patch(route('forms.update', form.id), form);
+  form.patch(route('forms.update', form.id));
 }
 </script>

@@ -154,7 +154,7 @@
 </template>
 
 <script setup lang="ts">
-import { router, useForm, usePage } from '@inertiajs/vue3';
+import { useForm, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, ref } from 'vue';
 
@@ -259,18 +259,14 @@ const institutions = computed(() => {
     );
 });
 
-const handleFormFormSubmit = (form: unknown) => {
+const handleFormFormSubmit = (form: any) => {
   if (training.form_id === null) {
-    router.post(route('forms.store'), {
-      ...form,
-      training_id: training.id,
-      redirect_to: route('trainings.edit', training.id),
-    }, {
-      preserveScroll: true,
-    });
+    form.training_id = training.id;
+    form.redirect_to = route('trainings.edit', training.id);
+    form.post(route('forms.store'), { preserveScroll: true });
   }
   else {
-    router.patch(route('forms.update', training.form_id), form);
+    form.patch(route('forms.update', training.form_id));
   }
 };
 </script>

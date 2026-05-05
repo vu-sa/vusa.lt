@@ -4,29 +4,15 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
+import { usePage } from '@inertiajs/vue3';
+import { createMockPage } from '@/tests/helpers/createMockPage';
+
 // Mock dependencies
 vi.mock('@vueuse/core', () => ({
   useLocalStorage: vi.fn((key: string, defaultValue: any) => {
     return { value: { ...defaultValue } };
   }),
   useOnline: vi.fn(() => ({ value: true })),
-}));
-
-vi.mock('@inertiajs/vue3', () => ({
-  usePage: vi.fn(() => ({
-    props: {
-      app: { locale: 'lt' },
-      typesenseConfig: {
-        apiKey: 'test-key',
-        host: 'localhost',
-        port: 8108,
-        protocol: 'http',
-        collections: {
-          documents: 'documents',
-        },
-      },
-    },
-  })),
 }));
 
 vi.mock('../useSearchClient', () => ({
@@ -59,6 +45,19 @@ vi.mock('../../Services/DocumentSearchService', () => ({
 describe('useDocumentSearch (refactored)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(usePage).mockReturnValue(
+      createMockPage({
+        typesenseConfig: {
+          apiKey: 'test-key',
+          host: 'localhost',
+          port: 8108,
+          protocol: 'http',
+          collections: {
+            documents: 'documents',
+          },
+        },
+      }),
+    );
   });
 
   afterEach(() => {

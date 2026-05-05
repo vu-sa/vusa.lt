@@ -14,6 +14,15 @@ vi.mock('ziggy-js', () => ({
   },
 }));
 
+// Stub global route() for composable unit tests (not covered by config.global.mocks)
+vi.stubGlobal('route', (name: string, params: any) => {
+  const paramEntries = params ? Object.entries(params).filter(([, v]) => v !== undefined) : [];
+  const queryString = paramEntries.length > 0
+    ? `?${paramEntries.map(([k, v]) => `${k}=${encodeURIComponent(String(v))}`).join('&')}`
+    : '';
+  return `/mocked-route/${name}${queryString}`;
+});
+
 // Mock InertiaJS using centralized mock
 vi.mock('@inertiajs/vue3', async () => {
   const inertiaMock = await import('../resources/js/mocks/inertia.mock.ts');

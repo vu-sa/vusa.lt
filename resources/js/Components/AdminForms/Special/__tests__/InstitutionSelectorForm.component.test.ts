@@ -8,7 +8,7 @@ import InstitutionSelectorForm from '../InstitutionSelectorForm.vue';
 // No need for local mocks - they would override the global ones
 
 describe('InstitutionSelectorForm.vue', () => {
-  let wrapper: any;
+  let wrapper: ReturnType<typeof mount>;
 
   const createWrapper = (props = {}, provideData = {}) => {
     return mount(InstitutionSelectorForm, {
