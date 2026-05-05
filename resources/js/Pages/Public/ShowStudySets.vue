@@ -237,6 +237,7 @@ import { Switch } from "@/Components/ui/switch";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/Components/ui/accordion";
 import { Badge } from "@/Components/ui/badge";
 import { BookOpen, FileX, GraduationCap, Search, X } from "lucide-vue-next";
+import { formatVuFacultyShortname } from "@/Utils/Tenant";
 
 import IFluentDocument16Regular from "~icons/fluent/document-16-regular";
 
@@ -289,7 +290,7 @@ usePageBreadcrumbs(() => {
 const tenantOptions = computed(() =>
   props.tenants.map((t) => ({
     value: String(t.id),
-    label: $t(t.shortname),
+    label: formatVuFacultyShortname(t),
   }))
 );
 
@@ -334,7 +335,7 @@ watch(selectedTenantId, (newId) => {
 const tenantLabelMap = computed(() => {
   const map: Record<string, string> = {};
   for (const t of props.tenants) {
-    map[String(t.id)] = $t(t.shortname);
+    map[String(t.id)] = formatVuFacultyShortname(t);
   }
   return map;
 });
