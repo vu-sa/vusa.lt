@@ -9,6 +9,13 @@ describe("formatVuFacultyShortname", () => {
     })).toBe("VU MIF");
   });
 
+  it("does not duplicate the VU prefix when the VU shortname already includes it", () => {
+    expect(formatVuFacultyShortname({
+      shortname: "VU SA CHGF",
+      shortname_vu: "VU CHGF",
+    })).toBe("VU CHGF");
+  });
+
   it("falls back by removing SA from the full tenant shortname", () => {
     expect(formatVuFacultyShortname({
       shortname: "VU SA IF",
