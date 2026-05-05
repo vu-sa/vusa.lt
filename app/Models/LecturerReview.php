@@ -7,23 +7,22 @@ use Database\Factories\LecturerReviewFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 
 /**
- * @property string $id
- * @property string $study_set_course_id
- * @property string|null $lecturer
- * @property string|null $comment
- * @property bool $is_visible
- * @property Carbon $created_at
- * @property Carbon $updated_at
- * @property-read StudySetCourse $course
+ * @property-read StudySetCourse|null $course
+ * @property-read array $translatable_columns_from
  * @property-read mixed $translations
+ * @property-read array|string $lecturer
+ * @property-read array|string $comment
  *
  * @method static \Database\Factories\LecturerReviewFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|LecturerReview newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|LecturerReview newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|LecturerReview query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LecturerReview whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LecturerReview whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LecturerReview whereLocale(string $column, string $locale)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LecturerReview whereLocales(string $column, array $locales)
  *
  * @mixin \Eloquent
  */

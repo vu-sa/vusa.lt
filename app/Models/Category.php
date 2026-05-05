@@ -17,6 +17,7 @@ use Illuminate\Support\Carbon;
  * @property array|string|null $name
  * @property array|string|null $description
  * @property-read Collection<int, Calendar> $calendars
+ * @property-read array $translatable_columns_from
  * @property-read Collection<int, News> $news
  * @property-read Collection<int, Page> $pages
  * @property-read mixed $translations

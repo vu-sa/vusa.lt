@@ -21,6 +21,7 @@ use Laravel\Scout\Searchable;
  * @property Carbon $updated_at
  * @property-read MembershipUser|Trainable|null $pivot
  * @property-read Collection<int, Training> $availableTrainings
+ * @property-read array $translatable_columns_from
  * @property-read Tenant $tenant
  * @property-read mixed $translations
  * @property-read Collection<int, User> $users

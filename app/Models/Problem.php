@@ -33,6 +33,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read Collection<int, Activity> $activities
  * @property-read Collection<int, ProblemCategory> $categories
  * @property-read User|null $createdBy
+ * @property-read array $translatable_columns_from
  * @property-read Collection<int, Institution> $institutions
  * @property-read User|null $responsibleUser
  * @property-read Tenant $tenant

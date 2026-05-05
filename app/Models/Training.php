@@ -32,6 +32,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $updated_at
  * @property-read Collection<int, Activity> $activities
  * @property-read Form|null $form
+ * @property-read array $translatable_columns_from
  * @property-read Institution|null $institution
  * @property-read User|null $organizer
  * @property-read Collection<int, Programme> $programmes

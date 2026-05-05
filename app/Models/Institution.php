@@ -68,6 +68,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read bool $has_report
  * @property-read mixed $maybe_short_name
  * @property-read mixed $related_institutions
+ * @property-read array $translatable_columns_from
  * @property-read Collection<int, Relationship> $incomingRelationships
  * @property-read Collection<int, Meeting> $meetings
  * @property-read Collection<int, Relationship> $outgoingRelationships

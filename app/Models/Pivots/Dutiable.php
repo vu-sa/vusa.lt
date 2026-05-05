@@ -34,6 +34,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $updated_at
  * @property-read Model $dutiable
  * @property-read Duty|null $duty
+ * @property-read array $translatable_columns_from
  * @property-read StudyProgram|null $study_program
  * @property-read Collection<int, Tenant> $tenants
  * @property-read mixed $translations

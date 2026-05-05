@@ -39,6 +39,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property-read ReservationResource|null $pivot
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Reservation> $active_reservations
  * @property-read ResourceCategory|null $category
+ * @property-read array $translatable_columns_from
  * @property-read MediaCollection<int, Media> $media
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Reservation> $reservations
  * @property-read Tenant $tenant

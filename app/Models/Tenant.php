@@ -35,6 +35,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, QuickLink> $quickLinks
  * @property-read Collection<int, Reservation> $reservations
  * @property-read Collection<int, \App\Models\Resource> $resources
+ * @property-read Collection<int, StudySet> $studySets
  * @property-read Collection<int, User> $users
  * @property-read int|null $users_count
  * @property-read int|null $reservations_count

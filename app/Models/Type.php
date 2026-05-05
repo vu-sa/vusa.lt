@@ -38,6 +38,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read Collection<int, FileableFile> $fileableFiles
  * @property-read bool $has_protocol
  * @property-read bool $has_report
+ * @property-read array $translatable_columns_from
  * @property-read RoleType|Relationshipable|null $pivot
  * @property-read Collection<int, Relationship> $incomingRelationships
  * @property-read Collection<int, Institution> $institutions

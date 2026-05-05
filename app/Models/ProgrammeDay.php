@@ -20,6 +20,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read Collection<int, ProgrammeElement> $elements
+ * @property-read array $translatable_columns_from
  * @property-read ProgrammeElement|null $pivot
  * @property-read Collection<int, ProgrammePart> $parts
  * @property-read Programme $programme

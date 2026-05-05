@@ -13,6 +13,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $due_date
  * @property Carbon $created_at
  * @property Carbon $updated_at
+ * @property-read array $translatable_columns_from
  * @property-read Training $training
  * @property-read mixed $translations
  *

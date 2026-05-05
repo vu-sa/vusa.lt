@@ -16,6 +16,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $icon
  * @property Carbon $created_at
  * @property Carbon $updated_at
+ * @property-read array $translatable_columns_from
  * @property-read Collection<int, \App\Models\Resource> $resources
  * @property-read Collection<int, Tenant> $tenant
  * @property-read Collection<int, Tenant> $tenants

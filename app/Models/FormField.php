@@ -27,6 +27,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $updated_at
  * @property-read Collection<int, FieldResponse> $fieldResponses
  * @property-read Form|null $form
+ * @property-read array $translatable_columns_from
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\FormFieldFactory factory($count = null, $state = [])

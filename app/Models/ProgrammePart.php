@@ -19,6 +19,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $start_time
  * @property Carbon $created_at
  * @property Carbon $updated_at
+ * @property-read array $translatable_columns_from
  * @property-read Collection<int, ProgrammeBlock> $programmeBlocks
  * @property-read ProgrammeElement|null $pivot
  * @property-read Collection<int, ProgrammeDay> $programmeDays

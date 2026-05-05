@@ -20,6 +20,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read Collection<int, Dutiable> $dutiables
+ * @property-read array $translatable_columns_from
  * @property-read Tenant $tenant
  * @property-read mixed $translations
  *

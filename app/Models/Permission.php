@@ -16,6 +16,7 @@ use Spatie\Permission\Models\Permission as SpatiePermission;
  * @property Carbon|null $updated_at
  * @property-read Collection<int, Permission> $permissions
  * @property-read Collection<int, Role> $roles
+ * @property-read Collection<int, Permission> $teams
  * @property-read Collection<int, User> $users
  *
  * @method static \Database\Factories\PermissionFactory factory($count = null, $state = [])
@@ -24,8 +25,10 @@ use Spatie\Permission\Models\Permission as SpatiePermission;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Permission permission($permissions, bool $without = false)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Permission query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Permission role($roles, ?string $guard = null, bool $without = false)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Permission team($teams, bool $without = false)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Permission withoutPermission($permissions)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Permission withoutRole($roles, ?string $guard = null)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Permission withoutTeam($teams)
  *
  * @mixin \Eloquent
  */
