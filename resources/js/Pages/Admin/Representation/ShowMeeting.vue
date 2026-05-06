@@ -5,13 +5,41 @@
     <!-- Meeting Hero Section -->
     <ShowPageHero
       :title="meetingTitle"
-      :subtitle="heroSubtitle"
       :badge="meetingBadge"
     >
       <template #icon>
         <span class="text-base sm:text-lg font-medium text-zinc-600 dark:text-zinc-300">
           {{ formatStaticTime(new Date(meeting.start_time), { day: "numeric" }) }}
         </span>
+      </template>
+      <template #subtitle>
+        <!-- Joint meeting institution management (unobtrusive) -->
+        <div v-if="meeting.institutions && meeting.institutions.length > 0" class="flex flex-wrap mt-1 items-center gap-2">
+          <span class="text-xs text-zinc-400 dark:text-zinc-500">{{ $t('Institucijos') }}:</span>
+          <div v-for="institution in meeting.institutions" :key="institution.id" class="flex items-center gap-0.5">
+            <Badge variant="outline" class="text-xs">
+              {{ institution.name }}
+            </Badge>
+            <button
+              v-if="(meeting.institutions?.length ?? 0) > 1"
+              type="button"
+              class="flex items-center justify-center h-4 w-4 rounded text-zinc-400 hover:text-destructive hover:bg-destructive/10 transition-colors"
+              :title="$t('Pašalinti instituciją')"
+              @click="handleDetachInstitution(institution.id)"
+            >
+              <X class="h-2.5 w-2.5" />
+            </button>
+          </div>
+          <button
+            type="button"
+            class="flex items-center gap-1 text-xs text-zinc-400 hover:text-primary transition-colors"
+            :title="$t('Pridėti instituciją')"
+            @click="showAddInstitutionDialog = true"
+          >
+            <Plus class="h-3 w-3" />
+            <span class="hidden sm:inline">{{ $t('Pridėti instituciją') }}</span>
+          </button>
+        </div>
       </template>
       <template #info>
         <div class="flex flex-wrap items-center gap-2 sm:gap-4 text-sm">
@@ -27,7 +55,65 @@
             <span class="hidden sm:inline">{{ $t('Rodomas viešai') }}</span>
             <span class="sm:hidden">{{ $t('Viešas') }}</span>
           </Badge>
-          <!-- Urgency badge based on document status -->
+          <!-- Protocol status -->
+          <span
+            v-if="isPastMeeting"
+            class="inline-flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400"
+            :title="hasProtocol ? $t('Protokolas įkeltas') : $t('Protokolas neįkeltas')"
+          >
+            <svg
+              class="h-4 w-4 shrink-0"
+              :class="hasProtocol ? 'text-green-600 dark:text-green-400' : 'text-amber-500 dark:text-amber-400'"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <template v-if="hasProtocol">
+                <path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4" />
+                <path d="M19 17V5a2 2 0 0 0-2-2H4" />
+                <path d="M15 8h-5" />
+                <path d="M15 12h-5" />
+              </template>
+              <template v-else>
+                <path d="M19 17V5a2 2 0 0 0-2-2H4" />
+                <path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4" />
+              </template>
+            </svg>
+            <span class="hidden sm:inline">{{ $t('Protokolas') }}</span>
+          </span>
+          <!-- Report status -->
+          <span
+            v-if="isPastMeeting"
+            class="inline-flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400"
+            :title="hasReport ? $t('Ataskaita įkelta') : $t('Ataskaita neįkelta')"
+          >
+            <svg
+              class="h-4 w-4 shrink-0"
+              :class="hasReport ? 'text-green-600 dark:text-green-400' : 'text-amber-500 dark:text-amber-400'"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <template v-if="hasReport">
+                <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+                <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+                <path d="M8 18v-2" />
+                <path d="M12 18v-4" />
+                <path d="M16 18v-6" />
+              </template>
+              <template v-else>
+                <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+                <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+              </template>
+            </svg>
+            <span class="hidden sm:inline">{{ $t('Ataskaita') }}</span>
+          </span>
         </div>
         <div v-if="representatives && representatives.length > 0" class="flex items-center gap-2">
           <span class="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:inline">{{ $t('Atstovai') }}:</span>
@@ -86,33 +172,6 @@
 
       <!-- Overview Tab -->
       <TabsContent value="overview" class="space-y-6">
-        <!-- Joint meeting institution management (unobtrusive) -->
-        <div v-if="meeting.institutions && meeting.institutions.length > 0" class="flex flex-wrap items-center gap-2">
-          <span class="text-xs text-zinc-400 dark:text-zinc-500">{{ $t('Institucijos') }}:</span>
-          <div v-for="institution in meeting.institutions" :key="institution.id" class="flex items-center gap-0.5">
-            <Badge variant="outline" class="text-xs">
-              {{ institution.name }}
-            </Badge>
-            <button
-              v-if="(meeting.institutions?.length ?? 0) > 1"
-              type="button"
-              class="flex items-center justify-center h-4 w-4 rounded text-zinc-400 hover:text-destructive hover:bg-destructive/10 transition-colors"
-              :title="$t('Pašalinti instituciją')"
-              @click="handleDetachInstitution(institution.id)"
-            >
-              <X class="h-2.5 w-2.5" />
-            </button>
-          </div>
-          <button
-            type="button"
-            class="flex items-center gap-1 text-xs text-zinc-400 hover:text-primary transition-colors"
-            :title="$t('Pridėti instituciją')"
-            @click="showAddInstitutionDialog = true"
-          >
-            <Plus class="h-3 w-3" />
-            <span class="hidden sm:inline">{{ $t('Pridėti instituciją') }}</span>
-          </button>
-        </div>
 
         <MeetingOverviewSection
           :meeting
@@ -336,7 +395,7 @@ const props = defineProps<{
 }>();
 
 // Urgency calculations for hero badge
-const { overallUrgency } = useMeetingUrgency(() => props.meeting);
+const { overallUrgency, hasProtocol, hasReport, isPastMeeting } = useMeetingUrgency(() => props.meeting);
 
 // Hide HH:MM for email/electronic meetings (start_time is forced to 23:59 as a deadline marker)
 const meetingTimeLabel = computed(() => formatMeetingTimeOnly(props.meeting));
