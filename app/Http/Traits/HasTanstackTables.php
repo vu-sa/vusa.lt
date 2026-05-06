@@ -12,11 +12,14 @@ trait HasTanstackTables
     /**
      * Apply filters and search to a query builder for TanStack tables
      *
-     * @param  Builder  $query  The query builder to apply filters to
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     *
+     * @param  Builder<TModel>  $query  The query builder to apply filters to
      * @param  Request  $request  The request object containing filters and sorting
      * @param  TanstackTableService  $tableService  The service to apply filters with
      * @param  array  $searchableColumns  Columns to search in
      * @param  array  $options  Additional options
+     * @return Builder<TModel>
      */
     protected function applyTanstackFilters(
         Builder $query,

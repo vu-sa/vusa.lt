@@ -172,7 +172,6 @@
 
       <!-- Overview Tab -->
       <TabsContent value="overview" class="space-y-6">
-
         <MeetingOverviewSection
           :meeting
           :previous-meeting
@@ -347,6 +346,7 @@ import { router, useForm, Link, Head as InertiaHead } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { AlertTriangle, AlertCircle, Plus, Trash2, X, ChevronLeft, ChevronRight, Clock, Globe, Edit, MoreHorizontal, Video, Link2 } from 'lucide-vue-next';
+import { DialogDescription } from 'reka-ui';
 
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { formatMeetingDateTime, formatMeetingTimeOnly } from '@/Utils/MeetingDisplay';
@@ -384,7 +384,6 @@ import FileManager from '@/Features/Admin/SharepointFileManager/SharepointFileMa
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 import ActivityLogButton from '@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue';
 import SpotlightBadge from '@/Components/Onboarding/SpotlightBadge.vue';
-import { DialogDescription } from 'reka-ui';
 
 const props = defineProps<{
   meeting: App.Entities.Meeting;

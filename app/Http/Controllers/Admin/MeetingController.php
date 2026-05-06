@@ -410,8 +410,6 @@ class MeetingController extends AdminController
      * Build the list of institutions the current user can attach to this meeting.
      * Includes the user's own duty institutions plus institutions related to them
      * via the relationship graph, minus those already attached to the meeting.
-     *
-     * @return Collection<int, array{id: string, name: string, tenant_shortname: string|null}>
      */
     private function getAvailableInstitutionsForAttach(Meeting $meeting): Collection
     {

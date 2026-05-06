@@ -7,6 +7,26 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.9 — Susitikimų ir administravimo patobulinimai (2026-05-06) {#v1-9}
+
+- ⭐ **Bendri institucijų posėdžiai** — susitikimus dabar galima susieti su keliomis institucijomis, o ne tik su viena
+- ✨ **Patobulintos turinio lentelės** — pagerinta datų rodymo, žymų sąraš7 formatavimas, sutrauktas tekstas ir nuorodos visoje administravimo panelėje
+- ✨ **Greitųjų nuorodų formos optimizavimas** — patobulinta greitųjų nuorodų kūrimo ir valdymo sąsaja
+- ✨ **Aiškesnis el. pašto valdymas naudotojų formose** — naudotojų formose aiškiau paaiškinami el. pašto laukai
+- ✨ **Susitikimų rodymo patobulinimai** — atnaujintas susitikimų detalaus rodinio išdėstymas
+- 🔧 **Pataisytas 23:59 rodymas susitikimuose** — susitikimai be konkrečios pabaigos laiko daugiau neberodo „23:59" el. laiškuose ir rodiniuose
+- 🔧 **Pataisytos ir optimizuotos formos** — pagerintas didelių išskleidžiamųjų sąrašų veikimas keliose administravimo formose
+
+> 🔗 [GitHub PR #566](https://github.com/vu-sa/vusa.lt/pull/566)
+
+## v1.8 — Studijų komplektai (2026-05-05) {#v1-8}
+
+- ⭐ **[Studijų komplektų puslapis](https://www.vusa.lt/ind-komplektai)** — viešas puslapis, kuriame galima naršyti studijų komplektus pagal fakultetą, su dalykų sąrašais ir dėstytojų atsiliepimais
+- ✨ **Paieška ir filtravimas** — galima ieškoti pagal dalyko ar studijų komplekto pavadinimą, filtruoti pagal semestrą ir fakultetą
+- ⭐ **Studijų komplektų valdymas administratoriams** — galima kurti ir valdyti studijų komplektus, dalykus ir atsiliepimus
+
+> 🔗 [GitHub PR #565](https://github.com/vu-sa/vusa.lt/pull/565)
+
 ## v1.7 — Pranešimų patobulinimai (2026-04-06) {#v1-7}
 
 - 🔧 **Pataisytas trigubas el. pašto pranešimų siuntimas** — kiekvienas pranešimas buvo tris kartus įtraukiamas į el. pašto santraukos eilę, dėl ko santraukos laiškuose buvo rodomas trigubai didesnis pranešimų skaičius.

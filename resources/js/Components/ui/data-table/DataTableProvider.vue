@@ -165,6 +165,12 @@
 import { computed, ref, watch, onMounted } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef, SortingState, PaginationState, RowSelectionState } from '@tanstack/vue-table';
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronsLeftIcon,
+  ChevronsRightIcon,
+} from 'lucide-vue-next';
 
 import DataTable from './DataTable.vue';
 
@@ -179,12 +185,6 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/Components/ui/pagination';
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ChevronsLeftIcon,
-  ChevronsRightIcon,
-} from 'lucide-vue-next';
 
 const props = defineProps<{
   // Data props

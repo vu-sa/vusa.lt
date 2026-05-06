@@ -313,14 +313,13 @@ import { computed, ref } from 'vue';
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { useApiMutation } from '@/Composables/useApi';
-
 import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
 
 import AdminForm from './AdminForm.vue';
 import FormElement from './FormElement.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 
+import { useApiMutation } from '@/Composables/useApi';
 import Delete24Regular from '~icons/fluent/delete24-regular';
 import Eye16Regular from '~icons/fluent/eye16-regular';
 import PersonEdit24Regular from '~icons/fluent/person-edit24-regular';
@@ -430,7 +429,7 @@ const { execute: executeDutiableUpdate, isFetching: isUpdatingEmail, isSuccess: 
   updateDutiableUrl,
   'PATCH',
   updateDutiableBody,
-  { showSuccessToast: true, successMessage: 'Kontaktinis el. paštas atnaujintas' }
+  { showSuccessToast: true, successMessage: 'Kontaktinis el. paštas atnaujintas' },
 );
 
 const finishEditingEmail = async (dutiableId: string) => {
@@ -477,7 +476,13 @@ const existingDutyColumns: ColumnDef<any, any>[] = [
     cell: ({ row }) => {
       const start = formatStaticTime(row.original.pivot.start_date);
       const end = row.original.pivot?.end_date ? formatStaticTime(row.original.pivot.end_date) : '—';
-      return <span class="text-xs text-muted-foreground">{start} – {end}</span>;
+      return (
+        <span class="text-xs text-muted-foreground">
+          {start}
+ –
+          {end}
+        </span>
+      );
     },
   },
   {
@@ -514,30 +519,38 @@ const existingDutyColumns: ColumnDef<any, any>[] = [
         <div class="flex flex-col gap-0.5 text-xs">
           {dutyEmail && (
             <span class="text-muted-foreground">
-              Pareigybės: <span class="text-foreground">{dutyEmail}</span>
+              Pareigybės:
+              {' '}
+              <span class="text-foreground">{dutyEmail}</span>
               {dutyEmail.toLowerCase().endsWith('@vusa.lt') && (
                 <Badge variant="outline" class="ml-1 text-[10px] px-1 py-0 h-4 shrink-0">prisijungimas</Badge>
               )}
             </span>
           )}
-          {pivot?.additional_email ? (
-            <span
-              class={['text-muted-foreground', isCurrentDuty ? 'cursor-pointer hover:text-primary' : '']}
-              onClick={() => isCurrentDuty && startEditingEmail(pivot?.id, pivot.additional_email)}
-              title={isCurrentDuty ? 'Spustelėkite redaguoti kontaktinį el. paštą' : ''}
-            >
-              Kontaktinis: <span class="text-foreground">{pivot.additional_email}</span>
-              <Badge variant="outline" class="ml-1 text-[10px] px-1 py-0 h-4 shrink-0">kontaktinis</Badge>
-            </span>
-          ) : isCurrentDuty ? (
-            <span
-              class="cursor-pointer text-muted-foreground hover:text-primary"
-              onClick={() => startEditingEmail(pivot?.id, '')}
-              title="Spustelėkite pridėti kontaktinį el. paštą"
-            >
-              + Pridėti kontaktinį
-            </span>
-          ) : null}
+          {pivot?.additional_email
+            ? (
+                <span
+                  class={['text-muted-foreground', isCurrentDuty ? 'cursor-pointer hover:text-primary' : '']}
+                  onClick={() => isCurrentDuty && startEditingEmail(pivot?.id, pivot.additional_email)}
+                  title={isCurrentDuty ? 'Spustelėkite redaguoti kontaktinį el. paštą' : ''}
+                >
+                  Kontaktinis:
+                  {' '}
+                  <span class="text-foreground">{pivot.additional_email}</span>
+                  <Badge variant="outline" class="ml-1 text-[10px] px-1 py-0 h-4 shrink-0">kontaktinis</Badge>
+                </span>
+              )
+            : isCurrentDuty
+              ? (
+                  <span
+                    class="cursor-pointer text-muted-foreground hover:text-primary"
+                    onClick={() => startEditingEmail(pivot?.id, '')}
+                    title="Spustelėkite pridėti kontaktinį el. paštą"
+                  >
+                    + Pridėti kontaktinį
+                  </span>
+                )
+              : null}
 
         </div>
       );

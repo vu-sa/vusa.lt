@@ -14,8 +14,6 @@ class SpreadsheetReader
      *
      * When $headingRow is true, the first row's values are slug-cased (snake_case) and used
      * as keys for subsequent rows — matching the maatwebsite/excel WithHeadingRow behavior.
-     *
-     * @return Collection<int, array<string|int, mixed>>
      */
     public static function readSheetAsCollection(UploadedFile $file, string $sheetName, bool $headingRow = true): Collection
     {

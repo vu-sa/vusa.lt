@@ -24,11 +24,11 @@
           <FormFieldWrapper id="lang" :label="$t('Kalba')" required>
             <ToggleGroup v-model="form.lang" type="single" class="justify-start">
               <ToggleGroupItem value="lt" class="gap-2">
-                <img src="https://hatscripts.github.io/circle-flags/flags/lt.svg" class="h-4 w-4 rounded-full" />
+                <img src="https://hatscripts.github.io/circle-flags/flags/lt.svg" class="h-4 w-4 rounded-full">
                 Lietuvių
               </ToggleGroupItem>
               <ToggleGroupItem value="en" class="gap-2">
-                <img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" class="h-4 w-4 rounded-full" />
+                <img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" class="h-4 w-4 rounded-full">
                 English
               </ToggleGroupItem>
             </ToggleGroup>

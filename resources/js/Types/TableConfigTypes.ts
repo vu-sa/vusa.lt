@@ -1,5 +1,6 @@
-import type { BreadcrumbItem } from '@/Composables/useBreadcrumbsUnified';
 import type { ColumnDef, SortingState, RowSelectionState } from '@tanstack/vue-table';
+
+import type { BreadcrumbItem } from '@/Composables/useBreadcrumbsUnified';
 
 /**
  * Essential table configuration - required props only

@@ -10,10 +10,9 @@
 </template>
 
 <script setup lang="ts">
-import { h } from 'vue';
+import { h, ref, computed } from 'vue';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
-import { ref, computed } from 'vue';
 
 import { capitalize } from '@/Utils/String';
 import { resolveTranslatable } from '@/Composables/useDataTableColumns';

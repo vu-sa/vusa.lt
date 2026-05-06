@@ -11,8 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import { h } from 'vue';
-import { computed, ref, watch } from 'vue';
+import { h, computed, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 

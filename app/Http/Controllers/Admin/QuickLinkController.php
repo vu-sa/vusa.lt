@@ -13,7 +13,6 @@ use App\Models\Page;
 use App\Models\QuickLink;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\TanstackTableService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -22,7 +21,7 @@ class QuickLinkController extends AdminController
 {
     use HasTanstackTables;
 
-    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
+    public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.

@@ -270,7 +270,7 @@ class TypesenseCollectionConfig
     /**
      * Get collection info for display/debugging
      *
-     * @return array<string, array{type: string, model: class-string, permission?: string, description: string, prefixed_name: string}>
+     * @return array<string, array{type: string, model: class-string, permission?: string|null, description: string, prefixed_name: string}>
      */
     public static function getCollectionInfo(): array
     {

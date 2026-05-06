@@ -2,7 +2,7 @@
   <Combobox
     v-model="selectedItem"
     v-model:open="open"
-    :by="by"
+    :by
     :open-on-focus="true"
     :ignore-filter="shouldVirtualize"
     :disabled

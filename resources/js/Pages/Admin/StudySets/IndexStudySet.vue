@@ -11,10 +11,9 @@
 </template>
 
 <script setup lang="ts">
-import { h } from 'vue';
+import { h, ref, computed, watch, capitalize } from 'vue';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
-import { ref, computed, watch, capitalize } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
 import Icons from '@/Types/Icons/regular';

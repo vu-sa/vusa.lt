@@ -132,7 +132,7 @@ const emit = defineEmits(['dataLoaded', 'update:rowSelection', 'create', 'sortin
 // Extract search from initialFilters so the input is pre-populated on back-navigation
 const extractSearchFromFilters = (filterRecord?: Record<string, unknown>): string => {
   if (!filterRecord) return '';
-  const search = filterRecord.search;
+  const { search } = filterRecord;
   return typeof search === 'string' ? search : '';
 };
 

@@ -10,10 +10,9 @@
 </template>
 
 <script setup lang="ts">
-import { h } from 'vue';
+import { h, ref, computed } from 'vue';
 import { transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
-import { ref, computed } from 'vue';
 
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';

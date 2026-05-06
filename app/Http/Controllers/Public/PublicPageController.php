@@ -802,19 +802,12 @@ class PublicPageController extends PublicController
                     if ($field->use_model_options) {
                         // Special handling for Institution model on student rep form
                         if ($isStudentRepForm && $field->options_model === Institution::class) {
-                            $options = $this->getInstitutionsWithoutActiveReps($formSettings, $preselectedInstitutionId)->map(function (Model $model) use ($field) {
-                                if (! $model instanceof Institution) {
-                                    return [
-                                        'value' => null,
-                                        'label' => null,
-                                    ];
-                                }
-
+                            $options = $this->getInstitutionsWithoutActiveReps($formSettings, $preselectedInstitutionId)->map(function ($model) use ($field) {
                                 return [
                                     'value' => $model->getKey(),
                                     'label' => $model->getAttribute($field->options_model_field),
                                 ];
-                            })->filter(fn (array $option) => $option['value'] !== null);
+                            });
                         } else {
                             $options = $field->options_model::all()->map(function (Model $model) use ($field) {
                                 return [

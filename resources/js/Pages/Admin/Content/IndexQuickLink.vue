@@ -1,6 +1,5 @@
 <template>
   <PageContent :title="$t('Greitosios nuorodos')" :create-url="route('quickLinks.create')">
-
     <!-- Tenant & Language Controls -->
     <div class="mb-6 flex flex-wrap items-end gap-4">
       <FormFieldWrapper v-if="tenantOptions.length > 1" id="tenant" :label="$t('Padalinys')"
@@ -13,11 +12,11 @@
         <ToggleGroup :model-value="currentLang" type="single" class="justify-start"
           @update:model-value="handleLangChange">
           <ToggleGroupItem value="lt" class="gap-2">
-            <img src="https://hatscripts.github.io/circle-flags/flags/lt.svg" class="h-4 w-4 rounded-full" />
+            <img src="https://hatscripts.github.io/circle-flags/flags/lt.svg" class="h-4 w-4 rounded-full">
             Lietuvių
           </ToggleGroupItem>
           <ToggleGroupItem value="en" class="gap-2">
-            <img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" class="h-4 w-4 rounded-full" />
+            <img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" class="h-4 w-4 rounded-full">
             English
           </ToggleGroupItem>
         </ToggleGroup>
@@ -81,7 +80,7 @@
     v-model:is-open="isOpen"
     :title="deleteTitle"
     :message="deleteMessage"
-    :is-deleting="isDeleting"
+    :is-deleting
     @confirm="executeDelete"
     @cancel="cancelDelete"
   />

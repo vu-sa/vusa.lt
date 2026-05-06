@@ -50,7 +50,7 @@ class StudySetController extends AdminController
 
         return $this->inertiaResponse('Admin/StudySets/IndexStudySet', [
             'studySets' => [
-                'data' => $studySets->getCollection()->map->toFullArray(),
+                'data' => $studySets->getCollection()->map(fn ($studySet) => $studySet->toFullArray()),
                 'meta' => [
                     'total' => $studySets->total(),
                     'per_page' => $studySets->perPage(),

@@ -10,10 +10,9 @@
 </template>
 
 <script setup lang="ts">
-import { h } from 'vue';
+import { h, ref, computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
-import { ref, computed } from 'vue';
 
 import { DateCell, TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
 import Icons from '@/Types/Icons/regular';

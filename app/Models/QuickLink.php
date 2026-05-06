@@ -14,8 +14,8 @@ use Laravel\Scout\Searchable;
  * @property string|null $text
  * @property string|null $icon
  * @property int|null $order
- * @property int $is_active
- * @property int $is_important
+ * @property bool $is_active
+ * @property bool $is_important
  * @property int $tenant_id
  * @property string|null $lang
  * @property Carbon $created_at

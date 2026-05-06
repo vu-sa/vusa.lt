@@ -20,10 +20,9 @@
 </template>
 
 <script setup lang="ts">
-import { h } from 'vue';
+import { h, ref, computed, watch, capitalize } from 'vue';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
-import { ref, computed, watch, capitalize } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import {
   BuildingIcon,
@@ -109,9 +108,9 @@ const columns = computed<Array<ColumnDef<App.Entities.Institution, any>>>(() => 
       const { tenant } = row.original;
       return tenant
         ? h('span', { class: 'flex items-center gap-1' }, [
-          tenant.logo_url ? h('img', { src: tenant.logo_url, alt: tenant.shortname, class: 'h-4 w-4 rounded-full' }) : null,
-          h(TruncatedText, { text: $t(tenant.shortname) }),
-        ])
+            tenant.logo_url ? h('img', { src: tenant.logo_url, alt: tenant.shortname, class: 'h-4 w-4 rounded-full' }) : null,
+            h(TruncatedText, { text: $t(tenant.shortname) }),
+          ])
         : '';
     },
   }),
