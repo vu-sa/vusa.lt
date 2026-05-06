@@ -7,7 +7,7 @@ uses(RefreshDatabase::class);
 
 test('document calculates in effect status correctly', function () {
     // Document with no validity dates - should return null
-    $document = Document::factory()->make([
+    $document = new Document([
         'effective_date' => null,
         'expiration_date' => null,
     ]);
@@ -15,7 +15,7 @@ test('document calculates in effect status correctly', function () {
     expect($document->calculateIsInEffect())->toBeNull();
 
     // Document currently in effect
-    $document = Document::factory()->make([
+    $document = new Document([
         'effective_date' => now()->subWeek(),
         'expiration_date' => now()->addWeek(),
     ]);
@@ -23,7 +23,7 @@ test('document calculates in effect status correctly', function () {
     expect($document->calculateIsInEffect())->toBeTrue();
 
     // Document not yet effective
-    $document = Document::factory()->make([
+    $document = new Document([
         'effective_date' => now()->addWeek(),
         'expiration_date' => now()->addMonth(),
     ]);
@@ -31,7 +31,7 @@ test('document calculates in effect status correctly', function () {
     expect($document->calculateIsInEffect())->toBeFalse();
 
     // Document expired
-    $document = Document::factory()->make([
+    $document = new Document([
         'effective_date' => now()->subMonth(),
         'expiration_date' => now()->subWeek(),
     ]);
@@ -41,14 +41,14 @@ test('document calculates in effect status correctly', function () {
 
 test('document should be searchable only when it has anonymous url', function () {
     // Document without anonymous URL should not be searchable (not public)
-    $document = Document::factory()->make(['anonymous_url' => null]);
+    $document = new Document(['anonymous_url' => null]);
     expect($document->shouldBeSearchable())->toBeFalse();
 
-    $document = Document::factory()->make(['anonymous_url' => '']);
+    $document = new Document(['anonymous_url' => '']);
     expect($document->shouldBeSearchable())->toBeFalse();
 
     // Document with anonymous URL should be searchable (public)
-    $document = Document::factory()->make([
+    $document = new Document([
         'anonymous_url' => 'https://sharepoint.com/public/document',
     ]);
     expect($document->shouldBeSearchable())->toBeTrue();

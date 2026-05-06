@@ -3,66 +3,60 @@
 use App\Collections\ReservationCollection;
 use App\Models\Pivots\ReservationResource;
 use App\Models\Reservation;
-use App\Models\Resource;
-use App\Models\Tenant;
 use App\States\ReservationResource\Created;
 use App\States\ReservationResource\Lent;
 use App\States\ReservationResource\Rejected;
 use App\States\ReservationResource\Reserved;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    // Create necessary models for testing
-    $this->tenant = Tenant::query()->inRandomOrder()->first();
-    $this->resource = Resource::factory()->for($this->tenant)->create();
-
     // Create test dates
     $this->mockStartTime = Carbon::parse('2024-01-15 10:00:00');
     $this->mockEndTime = Carbon::parse('2024-01-15 12:00:00');
     $this->overlapStartTime = Carbon::parse('2024-01-15 11:00:00');
     $this->overlapEndTime = Carbon::parse('2024-01-15 13:00:00');
 
-    // Create actual Reservation models without tenant relationships
-    $this->reservation1 = Reservation::factory()->create([
+    // Build Reservation models in memory (no DB persistence needed for collection logic)
+    $this->reservation1 = new Reservation([
+        'id' => '01HZABC1234567890ABCDEF1',
         'name' => 'Test Reservation 1',
         'description' => 'Test description 1',
     ]);
 
-    $this->reservation2 = Reservation::factory()->create([
+    $this->reservation2 = new Reservation([
+        'id' => '01HZABC1234567890ABCDEF2',
         'name' => 'Test Reservation 2',
         'description' => 'Test description 2',
     ]);
 
-    $this->reservation3 = Reservation::factory()->create([
+    $this->reservation3 = new Reservation([
+        'id' => '01HZABC1234567890ABCDEF3',
         'name' => 'Test Reservation 3',
         'description' => 'Test description 3',
     ]);
 
-    // Create pivot relationships
-    $this->pivot1 = ReservationResource::create([
+    // Build pivot instances in memory
+    $this->pivot1 = new ReservationResource([
         'reservation_id' => $this->reservation1->id,
-        'resource_id' => $this->resource->id,
+        'resource_id' => 1,
         'start_time' => $this->mockStartTime,
         'end_time' => $this->mockEndTime,
         'quantity' => 2,
         'state' => Reserved::class,
     ]);
 
-    $this->pivot2 = ReservationResource::create([
+    $this->pivot2 = new ReservationResource([
         'reservation_id' => $this->reservation2->id,
-        'resource_id' => $this->resource->id,
+        'resource_id' => 1,
         'start_time' => $this->overlapStartTime,
         'end_time' => $this->overlapEndTime,
         'quantity' => 3,
         'state' => Created::class,
     ]);
 
-    $this->pivot3 = ReservationResource::create([
+    $this->pivot3 = new ReservationResource([
         'reservation_id' => $this->reservation3->id,
-        'resource_id' => $this->resource->id,
+        'resource_id' => 1,
         'start_time' => Carbon::parse('2024-01-16 14:00:00'),
         'end_time' => Carbon::parse('2024-01-16 16:00:00'),
         'quantity' => 1,
@@ -120,14 +114,14 @@ describe('whereState method', function () {
     });
 
     test('handles enum state values', function () {
-        // Create a reservation with enum-style state value
-        $enumReservation = Reservation::factory()->create([
+        $enumReservation = new Reservation([
+            'id' => '01HZABC1234567890ABCDEF4',
             'name' => 'Enum State Reservation',
         ]);
 
-        $enumPivot = ReservationResource::create([
+        $enumPivot = new ReservationResource([
             'reservation_id' => $enumReservation->id,
-            'resource_id' => $this->resource->id,
+            'resource_id' => 1,
             'start_time' => $this->mockStartTime,
             'end_time' => $this->mockEndTime,
             'quantity' => 1,
@@ -199,16 +193,17 @@ describe('getTotalQuantity method', function () {
     });
 
     test('handles null quantities gracefully', function () {
-        $nullQuantityReservation = Reservation::factory()->create([
+        $nullQuantityReservation = new Reservation([
+            'id' => '01HZABC1234567890ABCDEF5',
             'name' => 'Null Quantity Reservation',
         ]);
 
-        $nullQuantityPivot = ReservationResource::create([
+        $nullQuantityPivot = new ReservationResource([
             'reservation_id' => $nullQuantityReservation->id,
-            'resource_id' => $this->resource->id,
+            'resource_id' => 1,
             'start_time' => $this->mockStartTime,
             'end_time' => $this->mockEndTime,
-            'quantity' => 0, // Use 0 instead of null since DB doesn't allow null
+            'quantity' => 0,
             'state' => Created::class,
         ]);
 
@@ -309,13 +304,14 @@ describe('groupByState method', function () {
     });
 
     test('handles enum state values in grouping', function () {
-        $rejectedReservation = Reservation::factory()->create([
+        $rejectedReservation = new Reservation([
+            'id' => '01HZABC1234567890ABCDEF6',
             'name' => 'Rejected State Reservation',
         ]);
 
-        $rejectedPivot = ReservationResource::create([
+        $rejectedPivot = new ReservationResource([
             'reservation_id' => $rejectedReservation->id,
-            'resource_id' => $this->resource->id,
+            'resource_id' => 1,
             'start_time' => $this->mockStartTime,
             'end_time' => $this->mockEndTime,
             'quantity' => 1,
@@ -343,14 +339,15 @@ describe('toOptimizedArray method', function () {
     });
 
     test('handles missing description field gracefully', function () {
-        $noDescReservation = Reservation::factory()->create([
+        $noDescReservation = new Reservation([
+            'id' => '01HZABC1234567890ABCDEF7',
             'name' => 'No Description Reservation',
             'description' => null,
         ]);
 
-        $noDescPivot = ReservationResource::create([
+        $noDescPivot = new ReservationResource([
             'reservation_id' => $noDescReservation->id,
-            'resource_id' => $this->resource->id,
+            'resource_id' => 1,
             'start_time' => $this->mockStartTime,
             'end_time' => $this->mockEndTime,
             'quantity' => 1,
@@ -366,13 +363,14 @@ describe('toOptimizedArray method', function () {
     });
 
     test('handles enum state values in optimized array', function () {
-        $enumStateReservation = Reservation::factory()->create([
+        $enumStateReservation = new Reservation([
+            'id' => '01HZABC1234567890ABCDEF8',
             'name' => 'Enum State Reservation',
         ]);
 
-        $enumStatePivot = ReservationResource::create([
+        $enumStatePivot = new ReservationResource([
             'reservation_id' => $enumStateReservation->id,
-            'resource_id' => $this->resource->id,
+            'resource_id' => 1,
             'start_time' => $this->mockStartTime,
             'end_time' => $this->mockEndTime,
             'quantity' => 1,

@@ -27,7 +27,7 @@ class DutyFactory extends Factory
             'name' => $this->faker->jobTitle(),
             // generate html description
             'description' => '<p>'.$this->faker->paragraph(1).'</p><p>'.$this->faker->paragraph(1).'</p>',
-            'institution_id' => Institution::inRandomOrder()->select('id')->first()->id,
+            'institution_id' => Institution::factory(),
             'email' => $this->faker->safeEmail(),
         ];
     }

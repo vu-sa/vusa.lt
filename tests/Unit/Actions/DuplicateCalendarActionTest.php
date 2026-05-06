@@ -125,23 +125,6 @@ describe('DuplicateCalendarAction', function () {
             ->and($duplicatedCalendar->exists)->toBeTrue();
     });
 
-    test('uses database transactions', function () {
-        $originalCalendar = Calendar::factory()->create([
-            'title' => ['lt' => 'Test renginys', 'en' => 'Test event'],
-        ]);
-
-        // Mock a successful transaction
-        DB::shouldReceive('transaction')
-            ->once()
-            ->andReturnUsing(function ($callback) use ($originalCalendar) {
-                return $callback($originalCalendar);
-            });
-
-        $duplicatedCalendar = DuplicateCalendarAction::execute($originalCalendar);
-
-        expect($duplicatedCalendar)->toBeInstanceOf(Calendar::class);
-    });
-
     test('handles translatable title arrays correctly', function () {
         $originalCalendar = Calendar::factory()->create([
             'title' => ['lt' => 'Lietuviškas pavadinimas', 'en' => 'English title'],

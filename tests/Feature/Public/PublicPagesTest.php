@@ -65,7 +65,7 @@ test('can open news archive', function () {
 });
 
 test('can open news', function () {
-    $news = News::query()->inRandomOrder()->first();
+    $news = News::factory()->create();
 
     $this->get(route('news', ['subdomain' => 'www', 'lang' => 'lt', 'news' => $news->permalink, 'newsString' => 'naujiena']))
         ->assertInertia(fn (Assert $page) => $page
@@ -83,7 +83,7 @@ test('can open student representative page', function () {
 });
 
 test('can open institution page', function () {
-    $institution = Institution::query()->inRandomOrder()->first();
+    $institution = Institution::factory()->create();
 
     $this->get(route('contacts.institution', ['subdomain' => 'www', 'lang' => 'lt', 'institution' => $institution->id]))
         ->assertInertia(fn (Assert $page) => $page
