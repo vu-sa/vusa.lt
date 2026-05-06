@@ -67,7 +67,7 @@ import { Button } from '@/Components/ui/button';
 import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
 import { DateCell, TruncatedBadge, TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
 import { LocaleEnum } from '@/Types/enums';
-import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
+import { BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import type {
   IndexTablePageProps,
 } from '@/Types/TableConfigTypes';
@@ -97,13 +97,6 @@ const props = defineProps<{
 // Component constants
 const modelName = 'documents';
 const entityName = 'document';
-
-// Breadcrumbs setup
-usePageBreadcrumbs(() => [
-  BreadcrumbHelpers.homeItem(),
-  BreadcrumbHelpers.createBreadcrumbItem($t('Administravimas'), route('administration'), Icons.TYPE),
-  BreadcrumbHelpers.createBreadcrumbItem($t('Dokumentai'), undefined, Icons.DOCUMENT),
-]);
 
 const loading = ref(false);
 const bulkSyncLoading = ref(false);
@@ -343,6 +336,11 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Document>>(() => {
     headerTitle: $t('Documents'),
     headerDescription: $t('Documents are automatically synchronized from SharePoint. Manual refresh is rarely needed - the system updates content intelligently in the background.'),
     icon: Icons.DOCUMENT,
+    breadcrumbs: [
+      BreadcrumbHelpers.homeItem(),
+      BreadcrumbHelpers.createBreadcrumbItem($t('Administravimas'), route('administration'), Icons.TYPE),
+      BreadcrumbHelpers.createBreadcrumbItem($t('Dokumentai'), undefined, Icons.DOCUMENT),
+    ],
     canCreate: false,
   };
 });

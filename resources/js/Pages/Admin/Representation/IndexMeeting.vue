@@ -226,7 +226,6 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Meeting>>(() => {
 
     // Page layout
     headerTitle: capitalize($tChoice('entities.meeting.model', 2)),
-    headerDescription: $t('View and manage meeting records and their completion status'),
     icon: Icons.MEETING,
     createRoute: undefined, // Meetings are created from institution pages
     canCreate: false,

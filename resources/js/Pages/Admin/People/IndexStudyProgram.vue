@@ -150,7 +150,6 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.StudyProgram>>(() 
 
     // Page layout
     headerTitle: 'Studijų programos',
-    headerDescription: $t('Manage study programs and their degrees'),
     icon: Icons.STUDY_PROGRAM,
     createRoute: canCreate.value ? route('studyPrograms.create') : undefined,
     canCreate: canCreate.value,

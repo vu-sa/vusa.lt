@@ -88,27 +88,53 @@
               / {{ totalItems }}
             </div>
             <Pagination
-              v-slot="{ page }"
               :items-per-page="pageSize"
               :total="totalItems"
-              :default-page="(serverPagination?.pageIndex || 0) + 1"
+              :page="(serverPagination?.pageIndex || 0) + 1"
               class="min-w-0"
               @update:page="(newPage: number) => emit('page-change', newPage - 1)"
             >
               <PaginationContent class="gap-1">
+                <PaginationFirst size="icon">
+                  <ChevronsLeftIcon class="h-4 w-4" />
+                  <span class="sr-only">{{ $t('First page') }}</span>
+                </PaginationFirst>
+
                 <PaginationPrevious size="icon">
                   <ChevronLeftIcon class="h-4 w-4" />
                   <span class="sr-only">{{ $t('Previous page') }}</span>
                 </PaginationPrevious>
 
-                <div class="flex items-center text-xs font-medium px-2 tabular-nums">
-                  {{ page }} / {{ Math.ceil(totalItems / pageSize) }}
+                <div class="flex items-center gap-1.5 px-1">
+                  <Input
+                    type="number"
+                    min="1"
+                    :max="Math.max(1, Math.ceil(totalItems / pageSize))"
+                    :model-value="(serverPagination?.pageIndex || 0) + 1"
+                    class="h-7 w-14 px-1.5 text-center text-xs tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    @keydown.enter="(e: Event) => {
+                      const target = e.target as HTMLInputElement;
+                      const val = parseInt(target.value, 10);
+                      const max = Math.max(1, Math.ceil(totalItems / pageSize));
+                      if (!isNaN(val) && val >= 1 && val <= max) {
+                        emit('page-change', val - 1);
+                      }
+                    }"
+                  />
+                  <span class="text-xs text-muted-foreground tabular-nums">
+                    / {{ Math.max(1, Math.ceil(totalItems / pageSize)) }}
+                  </span>
                 </div>
 
                 <PaginationNext size="icon">
                   <ChevronRightIcon class="h-4 w-4" />
                   <span class="sr-only">{{ $t('Next page') }}</span>
                 </PaginationNext>
+
+                <PaginationLast size="icon">
+                  <ChevronsRightIcon class="h-4 w-4" />
+                  <span class="sr-only">{{ $t('Last page') }}</span>
+                </PaginationLast>
               </PaginationContent>
             </Pagination>
           </template>
@@ -143,14 +169,22 @@ import type { ColumnDef, SortingState, PaginationState, RowSelectionState } from
 import DataTable from './DataTable.vue';
 
 import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
 import {
   Pagination,
   PaginationContent,
+  PaginationFirst,
   PaginationItem,
+  PaginationLast,
   PaginationNext,
   PaginationPrevious,
 } from '@/Components/ui/pagination';
-import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-vue-next';
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronsLeftIcon,
+  ChevronsRightIcon,
+} from 'lucide-vue-next';
 
 const props = defineProps<{
   // Data props

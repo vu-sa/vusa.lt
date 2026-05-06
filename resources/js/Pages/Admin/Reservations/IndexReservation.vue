@@ -37,7 +37,7 @@ import ReservationsWithUnitResources from '@/Components/Tables/ReservationsWithU
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import type { IndexTablePageProps } from '@/Types/TableConfigTypes';
-import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
+import { BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 
 const props = defineProps<{
   reservations: {
@@ -64,20 +64,6 @@ const indexTablePageRef = ref<any>(null);
 const getRowId = (row: App.Entities.Reservation) => {
   return `reservation-${row.id}`;
 };
-
-// Breadcrumbs setup
-usePageBreadcrumbs(() => [
-  BreadcrumbHelpers.homeItem(),
-  BreadcrumbHelpers.createBreadcrumbItem(
-    $t('administration.title'),
-    route('administration'),
-  ),
-  BreadcrumbHelpers.createBreadcrumbItem(
-    capitalize($tChoice('entities.reservation.model', 2)),
-    undefined,
-    Icons.RESERVATION,
-  ),
-]);
 
 const columns = computed<Array<ColumnDef<App.Entities.Reservation, any>>>(() => [
   {
@@ -191,6 +177,18 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Reservation>>(
 
     headerTitle: capitalize($tChoice('entities.reservation.model', 2)),
     icon: Icons.RESERVATION,
+    breadcrumbs: [
+      BreadcrumbHelpers.homeItem(),
+      BreadcrumbHelpers.createBreadcrumbItem(
+        $t('administration.title'),
+        route('administration'),
+      ),
+      BreadcrumbHelpers.createBreadcrumbItem(
+        capitalize($tChoice('entities.reservation.model', 2)),
+        undefined,
+        Icons.RESERVATION,
+      ),
+    ],
     createRoute: route('reservations.create'),
     canCreate: true,
   }),

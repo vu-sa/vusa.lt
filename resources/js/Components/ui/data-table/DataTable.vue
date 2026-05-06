@@ -26,7 +26,8 @@
       <div class="flex items-center gap-2">
         <slot name="actions" />
 
-        <DropdownMenu v-if="enableColumnVisibility">
+        <!-- Column visibility temporarily hidden -->
+        <DropdownMenu v-if="false">
           <DropdownMenuTrigger as-child>
             <Button variant="outline" size="sm" class="ml-auto">
               <SlidersIcon class="mr-2 h-4 w-4" />

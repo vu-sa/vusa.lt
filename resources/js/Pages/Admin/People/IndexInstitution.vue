@@ -177,7 +177,6 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Institution>>(() =
 
     // Page layout
     headerTitle: 'Institutions',
-    headerDescription: $t('Manage institution records and their types'),
     icon: BuildingIcon,
     createRoute: canCreate.value ? route('institutions.create') : undefined,
     canCreate: canCreate.value,
