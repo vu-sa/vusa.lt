@@ -24,7 +24,16 @@
         <Input id="additional_email" v-model="form.additional_email" placeholder="petras.petraitis@vusa.lt" />
       </FormFieldWrapper>
       <FormFieldWrapper id="additional_photo" label="Papildoma nuotrauka" hint="Ši nuotrauka leidžia vienam asmeniui turėti daugiau negu vieną nuotrauką, kuri rodoma, kai puslapyje asmuo vaizduojamas su šia pareigybe." :error="form.errors.additional_photo">
-        <ImageUpload v-model:url="form.additional_photo" mode="immediate" folder="contacts" cropper :existing-url="dutiable?.additional_photo" />
+        <ImageUpload
+          v-model:url="form.additional_photo"
+          v-model:focal-point-value="form.additional_photo_focal_point"
+          mode="immediate"
+          folder="contacts"
+          cropper
+          focal-point
+          preview-aspect="4/3"
+          :existing-url="dutiable?.additional_photo"
+        />
       </FormFieldWrapper>
       <FormFieldWrapper id="study_program_id" label="Studijų programa" hint="Kai aktualu, galima pasirinkti studijų programą, kurią rodo prie įrašo" :error="form.errors.study_program_id">
         <SingleSelect

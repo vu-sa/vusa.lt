@@ -16,9 +16,18 @@
         <!-- Show existing/selected image -->
         <div
           v-if="hasContent"
-          class="group relative aspect-video w-full max-w-xs overflow-hidden rounded-lg border-2 border-zinc-200 bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800"
+          :class="[
+            'group relative w-full overflow-hidden rounded-lg border-2 border-zinc-200 bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800',
+            previewAspect === '4/3' ? 'aspect-[4/3] max-w-sm' : 'aspect-video max-w-xs',
+          ]"
         >
-          <img v-if="previewUrl" :src="previewUrl" alt="Preview" class="h-full w-full object-cover">
+          <img
+            v-if="previewUrl"
+            :src="previewUrl"
+            alt="Preview"
+            class="h-full w-full object-cover"
+            :style="focalPoint ? { objectPosition: previewObjectPosition } : undefined"
+          >
 
           <!-- Compression indicator -->
           <div
@@ -83,8 +92,28 @@
           </div>
         </div>
 
+        <!-- Focal point button -->
+        <Button
+          v-if="focalPoint && hasContent && previewUrl"
+          type="button"
+          variant="outline"
+          size="sm"
+          class="mt-2"
+          @click="showFocalPointModal = true"
+        >
+          <IFluentTarget24Regular class="mr-1.5 h-4 w-4" />
+          {{ $t("Nustatyti fokuso tašką") }}
+          <span v-if="focalPointValue" class="ml-1.5 font-mono text-[10px] text-muted-foreground">
+            {{ focalPointValue }}
+          </span>
+        </Button>
+
         <!-- Empty state / Drop zone -->
-        <UploadDropzone v-else size="default" class="w-full max-w-xs">
+        <UploadDropzone
+          v-else
+          size="default"
+          :class="previewAspect === '4/3' ? 'w-full max-w-sm' : 'w-full max-w-xs'"
+        >
           <template #default="{ isDragging }">
             <div class="flex flex-col items-center gap-3 text-center">
               <div
@@ -192,6 +221,18 @@
       />
     </DialogContent>
   </Dialog>
+
+  <!-- Focal Point Modal -->
+  <Dialog v-model:open="showFocalPointModal">
+    <DialogContent class="max-w-xl">
+      <FocalPointPicker
+        v-if="previewUrl"
+        :image-url="previewUrl"
+        :model-value="focalPointValue ?? null"
+        @update:model-value="(val: string) => { emit('update:focalPointValue', val); }"
+      />
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
@@ -202,6 +243,7 @@
  * - Single or multiple image uploads (controlled by `max` prop)
  * - Browser-side compression before upload/submit
  * - Optional image cropping via integrated cropper modal
+ * - Optional focal point picker in a dialog
  * - Deferred mode: Files stored locally for form submission (Spatie Media Library)
  * - Immediate mode: Files uploaded immediately to server and URL returned
  * - Existing image preview for edit forms
@@ -216,6 +258,7 @@ import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent } from '@/Components/ui/dialog';
 import { Label } from '@/Components/ui/label';
 import { ImageCropper } from '@/Components/ui/cropper';
+import FocalPointPicker from './FocalPointPicker.vue';
 
 export interface ImageUploadProps {
   /** Maximum number of files allowed. Use 1 for single file upload (default: 1) */
@@ -238,6 +281,12 @@ export interface ImageUploadProps {
   class?: string;
   /** Accepted file types */
   accept?: string;
+  /** Enable focal point picker */
+  focalPoint?: boolean;
+  /** Current focal point value (e.g. "50% 30%") */
+  focalPointValue?: string | null;
+  /** Preview aspect ratio: 'video' (16:9) or '4/3' */
+  previewAspect?: 'video' | '4/3';
 }
 
 const props = withDefaults(defineProps<ImageUploadProps>(), {
@@ -250,6 +299,7 @@ const props = withDefaults(defineProps<ImageUploadProps>(), {
   existingUrls: () => [],
   maxSize: 10 * 1024 * 1024,
   accept: 'image/jpg,image/jpeg,image/png,image/webp',
+  previewAspect: 'video',
 });
 
 const emit = defineEmits<{
@@ -259,6 +309,7 @@ const emit = defineEmits<{
   (e: 'update:urls', urls: string[]): void;
   (e: 'compression', result: CompressionResult): void;
   (e: 'remove:existing', item: { id: string | number; url: string }): void;
+  (e: 'update:focalPointValue', value: string | null): void;
 }>();
 
 // Models for two-way binding
@@ -280,6 +331,9 @@ const showCropperModal = ref(false);
 const cropperImageUrl = ref<string | null>(null);
 const cropperFileId = ref<string | null>(null);
 
+// Focal point modal state
+const showFocalPointModal = ref(false);
+
 // Compression composable
 const { compressImage, formatFileSize } = useImageCompression();
 
@@ -291,6 +345,11 @@ const hasExistingImages = computed(() => {
     return !!props.existingUrl || !!url.value;
   }
   return props.existingUrls.length > 0 || urls.value.length > 0;
+});
+
+const previewObjectPosition = computed(() => {
+  if (!props.focalPoint) return undefined;
+  return props.focalPointValue ?? '50% 30%';
 });
 
 // Compression options

@@ -263,6 +263,7 @@ declare global {
       study_program_id?: string | null
       additional_email?: string | null
       additional_photo?: string | null
+      additional_photo_focal_point?: string | null
       description?: Array<unknown> | null
       use_original_duty_name: boolean
       created_at: string
@@ -610,6 +611,14 @@ declare global {
     }
 
     export interface LecturerReview {
+      // columns
+      id: string
+      study_set_course_id: string
+      lecturer: Array<unknown>
+      comment: Array<unknown>
+      is_visible: boolean
+      created_at: string
+      updated_at: string
       // mutators
       translatable_columns_from: Array<unknown>
       translations: unknown
@@ -1481,6 +1490,15 @@ declare global {
     }
 
     export interface StudySet {
+      // columns
+      id: string
+      name: Array<unknown>
+      description?: Array<unknown> | null
+      order: number
+      is_visible: boolean
+      tenant_id: number
+      created_at: string
+      updated_at: string
       // mutators
       total_credits: number
       translatable_columns_from: Array<unknown>
@@ -1499,6 +1517,16 @@ declare global {
     }
 
     export interface StudySetCourse {
+      // columns
+      id: string
+      study_set_id: string
+      name: Array<unknown>
+      order: number
+      semester: string
+      credits: number
+      is_visible: boolean
+      created_at: string
+      updated_at: string
       // mutators
       translatable_columns_from: Array<unknown>
       translations: unknown
@@ -1804,6 +1832,7 @@ declare global {
       updated_at: string
       created_at: string
       profile_photo_path?: string | null
+      profile_photo_focal_point?: string | null
       deleted_at?: string | null
       name_was_changed?: boolean
       // mutators

@@ -47,6 +47,7 @@ class UpdateDutiableRequest extends FormRequest
             'study_program_id' => 'nullable|ulid|exists:study_programs,id',
             'additional_email' => 'nullable|email',
             'additional_photo' => 'nullable|string',
+            'additional_photo_focal_point' => 'nullable|string|max:20',
             'use_original_duty_name' => 'nullable|boolean',
         ];
     }

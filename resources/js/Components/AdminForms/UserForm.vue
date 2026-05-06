@@ -27,7 +27,7 @@
 
       <FormFieldWrapper id="email" label="El. paštas" required>
         <div v-if="isUserEmailMaybeDutyEmail" class="mb-1 text-xs text-amber-600 dark:text-amber-400">
-          Jeigu <strong>{{ user.email }}</strong> yra pareigybinis el.
+          Jeigu <strong>{{ user.email }}</strong> nėra pareigybinis el.
           paštas (<code>@vusa.lt</code> dažniausiai naudojami pareigybėms), pagal gerąsias praktikas jį reikėtų
           pakeisti į studentinį arba kitą VU paštą.
         </div>
@@ -60,7 +60,16 @@
       </div>
 
       <FormFieldWrapper id="profile_photo_path" :label="$t('forms.fields.picture')">
-        <ImageUpload v-model:url="form.profile_photo_path" mode="immediate" folder="contacts" cropper :existing-url="user?.profile_photo_path" />
+        <ImageUpload
+          v-model:url="form.profile_photo_path"
+          v-model:focal-point-value="form.profile_photo_focal_point"
+          mode="immediate"
+          folder="contacts"
+          cropper
+          focal-point
+          preview-aspect="4/3"
+          :existing-url="user?.profile_photo_path"
+        />
       </FormFieldWrapper>
 
       <FormFieldWrapper v-if="$page.props.auth?.user?.isSuperAdmin" id="roles" :label="$t('forms.fields.admin_role')">
@@ -545,9 +554,9 @@ const existingDutyColumns: ColumnDef<any, any>[] = [
                   <span
                     class="cursor-pointer text-muted-foreground hover:text-primary"
                     onClick={() => startEditingEmail(pivot?.id, '')}
-                    title="Spustelėkite pridėti kontaktinį el. paštą"
+                    title="Spustelėkite, kad pridėtumėte papildomą kontaktinį el. paštą. Įprastai bus naudojamas jau esamas vartotojo prisijungimo el. paštas."
                   >
-                    + Pridėti kontaktinį
+                    + Pridėti papildomą kontaktinį
                   </span>
                 )
               : null}

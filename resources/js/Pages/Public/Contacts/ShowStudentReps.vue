@@ -140,7 +140,7 @@
                       :src="getContactPhoto(user, duty)"
                       :alt="user.name"
                       class="size-[72px] rounded-full object-cover ring-2 ring-white shadow-sm dark:ring-zinc-700"
-                      style="object-position: 50% 20%"
+                      :style="{ objectPosition: getContactFocalPoint(user, duty) }"
                       loading="lazy"
                     >
                     <div
@@ -227,7 +227,7 @@
                           :src="getContactPhoto(user, duty)"
                           :alt="user.name"
                           class="size-[72px] rounded-full object-cover ring-2 ring-white shadow-sm dark:ring-zinc-700"
-                          style="object-position: 50% 20%"
+                          :style="{ objectPosition: getContactFocalPoint(user, duty) }"
                           loading="lazy"
                         >
                         <div
@@ -485,6 +485,13 @@ const getContactPhoto = (user: App.Entities.User, duty: App.Entities.Duty) => {
   if (duty?.pivot?.additional_photo) return duty.pivot.additional_photo;
   if (user.pivot?.additional_photo) return user.pivot.additional_photo;
   return user.profile_photo_path ?? null;
+};
+
+// Get contact focal point from user or duty pivot
+const getContactFocalPoint = (user: App.Entities.User, duty: App.Entities.Duty) => {
+  if (duty?.pivot?.additional_photo_focal_point) return duty.pivot.additional_photo_focal_point;
+  if (user.pivot?.additional_photo_focal_point) return user.pivot.additional_photo_focal_point;
+  return user.profile_photo_focal_point ?? '50% 30%';
 };
 
 // Get initials from name

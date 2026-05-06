@@ -10,6 +10,7 @@ export { default as SingleImageUpload } from './SingleImageUpload.vue';
 export { default as MultiImageUpload } from './MultiImageUpload.vue';
 export { default as MediaUpload } from './MediaUpload.vue';
 export { default as ImageUpload } from './ImageUpload.vue';
+export { default as FocalPointPicker } from './FocalPointPicker.vue';
 
 export const uploadVariants = cva(
   'relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors',

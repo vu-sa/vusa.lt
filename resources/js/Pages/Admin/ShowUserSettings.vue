@@ -28,7 +28,16 @@
               </FormFieldWrapper>
             </div>
             <FormFieldWrapper id="picture" :label="$t('forms.fields.picture')">
-              <ImageUpload v-model:url="form.profile_photo_path" mode="immediate" folder="contacts" cropper :existing-url="user?.profile_photo_path" />
+              <ImageUpload
+                v-model:url="form.profile_photo_path"
+                v-model:focal-point-value="form.profile_photo_focal_point"
+                mode="immediate"
+                folder="contacts"
+                cropper
+                focal-point
+                preview-aspect="4/3"
+                :existing-url="user?.profile_photo_path"
+              />
             </FormFieldWrapper>
 
             <div class="grid gap-4 lg:grid-cols-2">
@@ -234,6 +243,7 @@ const form = useForm({
   facebook_url: props.user.facebook_url,
   picture: props.user.profile_photo_path,
   profile_photo_path: props.user.profile_photo_path,
+  profile_photo_focal_point: props.user.profile_photo_focal_point,
   pronouns: props.user.pronouns,
   show_pronouns: props.user.show_pronouns,
 });

@@ -62,7 +62,7 @@
         v-if="!noSider && $slots.description"
         class="lg:col-span-4 xl:col-span-3"
       >
-        <div class="text-[13px] leading-[1.7] text-zinc-500 dark:text-zinc-400 [&_p]:mb-3 [&_p:last-child]:mb-0 [&_a]:text-primary [&_a]:underline [&_a]:decoration-primary/30 [&_a]:underline-offset-2 hover:[&_a]:decoration-primary/60 [&_strong]:font-medium [&_strong]:text-zinc-700 dark:[&_strong]:text-zinc-300">
+        <div class="text-xs leading-[1.4] text-zinc-500 dark:text-zinc-400 [&_p]:mb-3 [&_p:last-child]:mb-0 [&_a]:text-primary [&_a]:underline [&_a]:decoration-primary/30 [&_a]:underline-offset-2 hover:[&_a]:decoration-primary/60 [&_strong]:font-medium [&_strong]:text-zinc-700 dark:[&_strong]:text-zinc-300 [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5">
           <slot name="description" />
         </div>
       </aside>

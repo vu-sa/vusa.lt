@@ -32,6 +32,7 @@ class UserFactory extends Factory
             'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
             // random has photo or not
             'profile_photo_path' => $this->faker->boolean(50) ? fake('lt-LT')->imageUrl(640, 480, 'people') : null,
+            'profile_photo_focal_point' => $this->faker->optional(0.3)->randomElement(['50% 30%', '40% 25%', '60% 35%']),
         ];
     }
 }

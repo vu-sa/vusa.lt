@@ -32,6 +32,7 @@ const user = {
   current_duties: [],
   roles: [],
   profile_photo_path: null,
+  profile_photo_focal_point: null,
   pronouns: { lt: '', en: '' },
   show_pronouns: false,
 };

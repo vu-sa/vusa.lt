@@ -167,7 +167,7 @@ class ContactController extends PublicController
 
         $descendants->load(['institutions' => function ($query) {
             $query
-                ->with('duties.current_users:id,name,email,phone,facebook_url,profile_photo_path')
+                ->with('duties.current_users:id,name,email,phone,facebook_url,profile_photo_path,profile_photo_focal_point')
                 ->with('tenant:id,alias')
                 ->where('tenant_id', '=', $this->tenant->id)
                 ->where('is_active', true)
@@ -240,6 +240,7 @@ class ContactController extends PublicController
                         ? $contact->filtered_current_duties->where('institution_id', '=', $institution->id)->values()
                         : $contact->current_duties->where('institution_id', '=', $institution->id)->values(),
                     'profile_photo_path' => $contact->profile_photo_path,
+                    'profile_photo_focal_point' => $contact->profile_photo_focal_point,
                     'pronouns' => $contact->pronouns,
                     'show_pronouns' => $contact->show_pronouns,
                 ];
@@ -272,6 +273,7 @@ class ContactController extends PublicController
                             'facebook_url' => $item['user']->facebook_url,
                             'duties' => [$item['duty']->only(['id', 'name', 'description'])],
                             'profile_photo_path' => $item['user']->profile_photo_path,
+                            'profile_photo_focal_point' => $item['user']->profile_photo_focal_point,
                             'pronouns' => $item['user']->pronouns,
                             'show_pronouns' => $item['user']->show_pronouns,
                         ])->values()->toArray(),
@@ -295,6 +297,7 @@ class ContactController extends PublicController
                         'facebook_url' => $item['user']->facebook_url,
                         'duties' => [$item['duty']->only(['id', 'name', 'description'])],
                         'profile_photo_path' => $item['user']->profile_photo_path,
+                        'profile_photo_focal_point' => $item['user']->profile_photo_focal_point,
                         'pronouns' => $item['user']->pronouns,
                         'show_pronouns' => $item['user']->show_pronouns,
                     ])->values()->toArray(),
@@ -442,7 +445,7 @@ class ContactController extends PublicController
 
         $descendants->load(['institutions' => function ($query) use ($showAllTenants) {
             $query
-                ->with('duties.current_users:id,name,email,phone,facebook_url,profile_photo_path')
+                ->with('duties.current_users:id,name,email,phone,facebook_url,profile_photo_path,profile_photo_focal_point')
                 ->with('tenant:id,alias,shortname,type')
                 ->where('is_active', true)
                 // Order by tenant type 'pagrindinis' first, then by name

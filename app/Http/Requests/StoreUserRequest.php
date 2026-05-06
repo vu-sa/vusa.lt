@@ -29,6 +29,7 @@ class StoreUserRequest extends FormRequest
             'facebook_url' => 'nullable|url',
             'phone' => 'nullable|string',
             'profile_photo_path' => 'nullable|string',
+            'profile_photo_focal_point' => 'nullable|string|max:20',
             'current_duties' => 'required',
         ];
     }

@@ -48,6 +48,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $updated_at
  * @property Carbon $created_at
  * @property string|null $profile_photo_path
+ * @property string|null $profile_photo_focal_point
  * @property Carbon|null $deleted_at
  * @property bool $name_was_changed
  * @property-read Collection<int, Activity> $activities
@@ -104,7 +105,7 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name', 'email', 'facebook_url', 'password', 'phone', 'profile_photo_path', 'pronouns', 'show_pronouns',
+        'name', 'email', 'facebook_url', 'password', 'phone', 'profile_photo_path', 'profile_photo_focal_point', 'pronouns', 'show_pronouns',
         'notification_preferences',
     ];
 
@@ -184,7 +185,7 @@ class User extends Authenticatable
     {
         return $this->morphToMany(Duty::class, 'dutiable')
             ->using(Dutiable::class)
-            ->withPivot(['id', 'start_date', 'end_date', 'additional_photo', 'additional_email', 'use_original_duty_name', 'description']);
+            ->withPivot(['id', 'start_date', 'end_date', 'additional_photo', 'additional_photo_focal_point', 'additional_email', 'use_original_duty_name', 'description']);
     }
 
     public function previous_duties(): MorphToMany

@@ -172,7 +172,7 @@ class UserController extends AdminController
         );
 
         DB::transaction(function () use ($request, $user) {
-            $user->update($request->only('name', 'email', 'facebook_url', 'phone', 'profile_photo_path', 'pronouns', 'show_pronouns'));
+            $user->update($request->only('name', 'email', 'facebook_url', 'phone', 'profile_photo_path', 'profile_photo_focal_point', 'pronouns', 'show_pronouns'));
 
             // check if user is super admin
             if (User::find(Auth::id())->isSuperAdmin()) {

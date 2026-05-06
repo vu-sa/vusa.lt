@@ -28,6 +28,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $study_program_id
  * @property string|null $additional_email
  * @property string|null $additional_photo
+ * @property string|null $additional_photo_focal_point
  * @property array|string|null $description
  * @property bool $use_original_duty_name
  * @property Carbon $created_at

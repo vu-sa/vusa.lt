@@ -42,6 +42,7 @@ class DutiableFactory extends Factory
             'end_date' => $this->faker->optional(0.3)->dateTimeBetween('-1 year', 'now'),
             'additional_email' => $this->faker->optional(0.2)->safeEmail(),
             'additional_photo' => $this->faker->optional(0.1)->imageUrl(200, 200, 'people'),
+            'additional_photo_focal_point' => $this->faker->optional(0.1)->randomElement(['50% 30%', '40% 25%', '60% 35%']),
             'description' => $this->faker->optional(0.4)->randomElement([
                 ['lt' => $this->faker->paragraph(1), 'en' => $this->faker->paragraph(1)],
                 ['lt' => $this->faker->paragraph(1), 'en' => ''],

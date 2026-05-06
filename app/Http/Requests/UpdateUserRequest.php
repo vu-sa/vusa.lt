@@ -32,6 +32,7 @@ class UpdateUserRequest extends FormRequest
             'facebook_url' => ['nullable', 'url', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
             'profile_photo_path' => ['nullable', 'string', 'max:255'],
+            'profile_photo_focal_point' => ['nullable', 'string', 'max:20'],
             'pronouns' => ['nullable', 'array'],
             'pronouns.lt' => ['nullable', 'string', 'max:50'],
             'pronouns.en' => ['nullable', 'string', 'max:50'],
