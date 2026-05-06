@@ -25,14 +25,29 @@
           placeholder="Įrašyti vardą ir pavardę" />
       </FormFieldWrapper>
 
-      <FormFieldWrapper id="email" label="Studentinis el. paštas" required>
+      <FormFieldWrapper id="email" label="El. paštas" required>
         <div v-if="isUserEmailMaybeDutyEmail" class="mb-1 text-xs text-amber-600 dark:text-amber-400">
           Jeigu <strong>{{ user.email }}</strong> yra pareigybinis el.
-          paštas (ir panašu, kad šiuo atveju taip ir yra), jį reikėtų
-          pakeisti į studentinį.
+          paštas (<code>@vusa.lt</code> dažniausiai naudojami pareigybėms), pagal gerąsias praktikas jį reikėtų
+          pakeisti į studentinį arba kitą VU paštą.
         </div>
         <Input v-model="form.email"
-          placeholder="vardas.pavarde@padalinys.stud.vu.lt" />
+          placeholder="vardas.pavarde@stud.vu.lt" />
+        <div v-if="currentDutiesWithVusaEmail.length > 0" class="mt-2 rounded-md bg-blue-50 p-2.5 text-xs dark:bg-blue-950">
+          <p class="mb-1.5 font-medium text-blue-800 dark:text-blue-200">
+            Šie pareigybiniai el. paštai taip pat leidžia prisijungti prie sistemos:
+          </p>
+          <ul class="space-y-1">
+            <li v-for="duty in currentDutiesWithVusaEmail" :key="duty.id" class="flex items-center gap-1.5 text-blue-700 dark:text-blue-300">
+              <span class="truncate font-medium">{{ duty.name }}</span>
+              <span class="text-blue-400">→</span>
+              <code class="rounded bg-blue-100 px-1 py-0.5 text-[10px] dark:bg-blue-900">{{ duty.email }}</code>
+            </li>
+          </ul>
+        </div>
+        <div v-else-if="!user.current_duties?.some(d => d.email)" class="mt-2 text-xs text-muted-foreground">
+          Šis el. paštas yra vienintelis naudojamas prisijungimui.
+        </div>
       </FormFieldWrapper>
 
       <div class="grid gap-4 lg:grid-cols-2">
@@ -298,6 +313,8 @@ import { computed, ref } from 'vue';
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { useApiMutation } from '@/Composables/useApi';
+
 import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
 
 import AdminForm from './AdminForm.vue';
@@ -387,10 +404,58 @@ const dutyOptions: DutyTreeOption[] = props.tenantsWithDuties.map(
   },
 ).filter(tenant => props.permissableTenants.some(permissable => permissable.id === tenant.value));
 
-// check if email contains "vusa.lt"
+// check if user email looks like a duty email (@vusa.lt)
 const isUserEmailMaybeDutyEmail = computed(() => {
-  return props.user.email.includes('vusa.lt');
+  return props.user.email.toLowerCase().endsWith('@vusa.lt');
 });
+
+const currentDutiesWithVusaEmail = computed(() => {
+  return props.user.current_duties?.filter(duty => duty.email?.toLowerCase().endsWith('@vusa.lt')) ?? [];
+});
+
+// Inline editing state for dutiable additional_email
+const editingDutiableId = ref<string | null>(null);
+const editingEmail = ref('');
+
+const startEditingEmail = (dutiableId: string | undefined, currentEmail: string | null) => {
+  if (!dutiableId) return;
+  editingDutiableId.value = dutiableId;
+  editingEmail.value = currentEmail ?? '';
+};
+
+const updateDutiableUrl = ref('');
+const updateDutiableBody = ref<{ additional_email: string | null }>({ additional_email: null });
+
+const { execute: executeDutiableUpdate, isFetching: isUpdatingEmail, isSuccess: emailUpdateSuccess, error: emailUpdateError } = useApiMutation(
+  updateDutiableUrl,
+  'PATCH',
+  updateDutiableBody,
+  { showSuccessToast: true, successMessage: 'Kontaktinis el. paštas atnaujintas' }
+);
+
+const finishEditingEmail = async (dutiableId: string) => {
+  if (!editingDutiableId.value || editingDutiableId.value !== dutiableId) return;
+
+  const duty = props.user.current_duties?.find(d => d.pivot?.id === dutiableId);
+  const currentValue = duty?.pivot?.additional_email ?? duty?.email ?? props.user.email;
+
+  if (editingEmail.value === currentValue) {
+    editingDutiableId.value = null;
+    return;
+  }
+
+  updateDutiableUrl.value = route('dutiables.update', dutiableId);
+  updateDutiableBody.value = { additional_email: editingEmail.value || null };
+  await executeDutiableUpdate();
+
+  if (emailUpdateSuccess.value) {
+    if (duty && duty.pivot) {
+      duty.pivot.additional_email = editingEmail.value || null;
+    }
+  }
+
+  editingDutiableId.value = null;
+};
 
 const existingDutyColumns: ColumnDef<any, any>[] = [
   {
@@ -400,31 +465,94 @@ const existingDutyColumns: ColumnDef<any, any>[] = [
       <a
         target="_blank"
         href={route('duties.edit', { id: row.original.id })}
-        class="flex-inline gap-2"
+        class="flex-inline gap-2 text-sm"
       >
         {row.original.name}
       </a>
     ),
   },
   {
-    id: 'start_date',
-    header: () => 'Pradžia',
-    cell: ({ row }) => formatStaticTime(row.original.pivot.start_date),
+    id: 'period',
+    header: () => 'Laikotarpis',
+    cell: ({ row }) => {
+      const start = formatStaticTime(row.original.pivot.start_date);
+      const end = row.original.pivot?.end_date ? formatStaticTime(row.original.pivot.end_date) : '—';
+      return <span class="text-xs text-muted-foreground">{start} – {end}</span>;
+    },
   },
   {
-    id: 'end_date',
-    header: () => 'Pabaiga',
-    cell: ({ row }) => row.original.pivot?.end_date ? formatStaticTime(row.original.pivot.end_date) : 'Nenurodyta',
+    id: 'email',
+    header: () => 'El. paštai',
+    cell: ({ row }) => {
+      const pivot = row.original.pivot as App.Entities.Dutiable | undefined;
+      const dutyEmail = row.original.email as string | null;
+      const isCurrentDuty = props.user.current_duties?.some(d => d.pivot?.id === pivot?.id);
+
+      if (isCurrentDuty && editingDutiableId.value === pivot?.id) {
+        return (
+          <div class="flex items-center gap-1">
+            <Input
+              modelValue={editingEmail.value}
+              onUpdate:modelValue={(val: string) => { editingEmail.value = val; }}
+              onBlur={() => finishEditingEmail(pivot!.id)}
+              onKeydown={(e: KeyboardEvent) => {
+                if (e.key === 'Enter') finishEditingEmail(pivot!.id);
+                if (e.key === 'Escape') { editingDutiableId.value = null; }
+              }}
+              class="h-7 min-w-[160px] text-xs"
+              placeholder="Kontaktinis el. paštas"
+            />
+            {isUpdatingEmail.value && <span class="text-xs text-muted-foreground shrink-0">saugoma...</span>}
+            {emailUpdateError.value && !isUpdatingEmail.value && (
+              <span class="text-xs text-red-500 shrink-0" title={emailUpdateError.value}>!</span>
+            )}
+          </div>
+        );
+      }
+
+      return (
+        <div class="flex flex-col gap-0.5 text-xs">
+          {dutyEmail && (
+            <span class="text-muted-foreground">
+              Pareigybės: <span class="text-foreground">{dutyEmail}</span>
+              {dutyEmail.toLowerCase().endsWith('@vusa.lt') && (
+                <Badge variant="outline" class="ml-1 text-[10px] px-1 py-0 h-4 shrink-0">prisijungimas</Badge>
+              )}
+            </span>
+          )}
+          {pivot?.additional_email ? (
+            <span
+              class={['text-muted-foreground', isCurrentDuty ? 'cursor-pointer hover:text-primary' : '']}
+              onClick={() => isCurrentDuty && startEditingEmail(pivot?.id, pivot.additional_email)}
+              title={isCurrentDuty ? 'Spustelėkite redaguoti kontaktinį el. paštą' : ''}
+            >
+              Kontaktinis: <span class="text-foreground">{pivot.additional_email}</span>
+              <Badge variant="outline" class="ml-1 text-[10px] px-1 py-0 h-4 shrink-0">kontaktinis</Badge>
+            </span>
+          ) : isCurrentDuty ? (
+            <span
+              class="cursor-pointer text-muted-foreground hover:text-primary"
+              onClick={() => startEditingEmail(pivot?.id, '')}
+              title="Spustelėkite pridėti kontaktinį el. paštą"
+            >
+              + Pridėti kontaktinį
+            </span>
+          ) : null}
+
+        </div>
+      );
+    },
   },
   {
     id: 'actions',
     cell: ({ row }) => (
       <Button
-        variant="secondary"
+        variant="ghost"
         size="icon-xs"
         as="a"
         href={route('dutiables.edit', row.original.pivot.id as string)}
         target="_blank"
+        title="Redaguoti pareigybės laikotarpį"
       >
         <PersonEdit24Regular />
       </Button>

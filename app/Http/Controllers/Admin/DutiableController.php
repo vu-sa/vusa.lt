@@ -35,6 +35,13 @@ class DutiableController extends AdminController
 
         $dutiable->save();
 
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Pareigybės el. paštas sėkmingai atnaujintas!',
+            ]);
+        }
+
         return back()->with('success', 'Pareigybės laikotarpis sėkmingai atnaujintas!');
     }
 

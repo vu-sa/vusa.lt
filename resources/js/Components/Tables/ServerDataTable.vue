@@ -129,8 +129,15 @@ const props = defineProps<{
 
 const emit = defineEmits(['dataLoaded', 'update:rowSelection', 'create', 'sorting-changed', 'page-changed', 'filter-changed']);
 
+// Extract search from initialFilters so the input is pre-populated on back-navigation
+const extractSearchFromFilters = (filterRecord?: Record<string, unknown>): string => {
+  if (!filterRecord) return '';
+  const search = filterRecord.search;
+  return typeof search === 'string' ? search : '';
+};
+
 // Component state
-const searchText = ref('');
+const searchText = ref(extractSearchFromFilters(props.initialFilters));
 const pageIndex = ref(props.initialPage ? props.initialPage - 1 : 0);
 const sorting = ref<SortingState>(props.initialSorting || []);
 const filters = ref<Record<string, unknown>>({
@@ -240,9 +247,10 @@ const encodeTableState = () => {
     state.sorting = JSON.stringify(sorting.value);
   }
 
-  // Create filters object without showDeleted (to avoid duplication)
+  // Create filters object without showDeleted/search (to avoid duplication)
   const filtersToSend = { ...filters.value };
   delete filtersToSend.showDeleted;
+  delete filtersToSend.search;
 
   // Add filters if present (excluding showDeleted)
   if (Object.keys(filtersToSend).length > 0) {
@@ -327,6 +335,14 @@ watch(() => showDeleted.value, (newValue) => {
     reloadData();
   }
 });
+
+// Keep search input in sync with external filter changes (e.g. browser back)
+watch(() => props.initialFilters?.search, (newSearch) => {
+  const next = typeof newSearch === 'string' ? newSearch : '';
+  if (searchText.value !== next) {
+    searchText.value = next;
+  }
+}, { immediate: true });
 
 watch(() => props.initialFilters, (newValue) => {
   // Skip if this is an internal update

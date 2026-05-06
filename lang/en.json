@@ -954,5 +954,9 @@
     "Dar nėra greitųjų nuorodų": "No quick links yet",
     "Sukurti pirmą nuorodą": "Create first link",
     "Ištrinti greitąją nuorodą?": "Delete quick link?",
-    "Ar tikrai norite ištrinti šią greitąją nuorodą? Šis veiksmas neatšaukiamas.": "Are you sure you want to delete this quick link? This action cannot be undone."
+    "Ar tikrai norite ištrinti šią greitąją nuorodą? Šis veiksmas neatšaukiamas.": "Are you sure you want to delete this quick link? This action cannot be undone.",
+    "Pridėti instituciją": "Add institution",
+    "Pašalinti instituciją": "Remove institution",
+    "Pasirinkite instituciją": "Select institution",
+    "Nėra galimų institucijų pridėti.": "No institutions available to add."
 }

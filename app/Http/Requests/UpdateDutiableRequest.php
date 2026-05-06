@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Duty;
 use Carbon\Carbon;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -14,7 +13,7 @@ class UpdateDutiableRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()->can('update', Duty::find(request('duty')['id']));
+        return $this->user()->can('update', $this->route('dutiable')->duty);
     }
 
     protected function prepareForValidation(): void
@@ -42,7 +41,7 @@ class UpdateDutiableRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'start_date' => 'required|date',
+            'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after:start_date',
             'description' => 'nullable|array',
             'study_program_id' => 'nullable|ulid|exists:study_programs,id',
