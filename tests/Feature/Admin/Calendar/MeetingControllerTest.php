@@ -365,6 +365,76 @@ describe('end-to-end refactored meeting flow', function () {
     });
 });
 
+describe('joint meeting institution management', function () {
+    beforeEach(function () {
+        $this->meeting = Meeting::factory()->create(['start_time' => Carbon::now()->addDays(1)]);
+        $this->meeting->institutions()->attach($this->institution->id);
+        $this->secondInstitution = Institution::factory()->for($this->tenant)->create();
+    });
+
+    test('is_joint returns false for single institution', function () {
+        expect($this->meeting->is_joint)->toBeFalse();
+    });
+
+    test('is_joint returns true for multiple institutions', function () {
+        $this->meeting->institutions()->attach($this->secondInstitution->id);
+        $this->meeting->unsetRelation('institutions');
+
+        expect($this->meeting->is_joint)->toBeTrue();
+    });
+
+    test('admin can attach an additional institution', function () {
+        asUser($this->admin)
+            ->post(route('meetings.institutions.attach', $this->meeting), [
+                'institution_id' => $this->secondInstitution->id,
+            ])
+            ->assertStatus(302)
+            ->assertSessionHas('success');
+
+        expect($this->meeting->fresh()->institutions()->count())->toBe(2);
+    });
+
+    test('cannot attach an already-attached institution', function () {
+        asUser($this->admin)
+            ->post(route('meetings.institutions.attach', $this->meeting), [
+                'institution_id' => $this->institution->id,
+            ])
+            ->assertSessionHasErrors(['institution_id']);
+
+        expect($this->meeting->fresh()->institutions()->count())->toBe(1);
+    });
+
+    test('unauthorized user cannot attach institution', function () {
+        asUser($this->user)
+            ->post(route('meetings.institutions.attach', $this->meeting), [
+                'institution_id' => $this->secondInstitution->id,
+            ])
+            ->assertStatus(403);
+
+        expect($this->meeting->fresh()->institutions()->count())->toBe(1);
+    });
+
+    test('admin can detach an institution when multiple exist', function () {
+        $this->meeting->institutions()->attach($this->secondInstitution->id);
+
+        asUser($this->admin)
+            ->delete(route('meetings.institutions.detach', [$this->meeting, $this->secondInstitution]))
+            ->assertStatus(302)
+            ->assertSessionHas('success');
+
+        expect($this->meeting->fresh()->institutions()->count())->toBe(1);
+    });
+
+    test('cannot detach the last institution', function () {
+        asUser($this->admin)
+            ->delete(route('meetings.institutions.detach', [$this->meeting, $this->institution]))
+            ->assertStatus(302)
+            ->assertSessionHas('error');
+
+        expect($this->meeting->fresh()->institutions()->count())->toBe(1);
+    });
+});
+
 describe('relationship-based meeting access', function () {
     test('user can view meeting via authorized institution relationship', function () {
         // Create two institutions

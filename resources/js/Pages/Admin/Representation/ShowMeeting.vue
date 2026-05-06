@@ -86,6 +86,34 @@
 
       <!-- Overview Tab -->
       <TabsContent value="overview" class="space-y-6">
+        <!-- Joint meeting institution management (unobtrusive) -->
+        <div v-if="meeting.institutions && meeting.institutions.length > 0" class="flex flex-wrap items-center gap-2">
+          <span class="text-xs text-zinc-400 dark:text-zinc-500">{{ $t('Institucijos') }}:</span>
+          <div v-for="institution in meeting.institutions" :key="institution.id" class="flex items-center gap-0.5">
+            <Badge variant="outline" class="text-xs">
+              {{ institution.name }}
+            </Badge>
+            <button
+              v-if="(meeting.institutions?.length ?? 0) > 1"
+              type="button"
+              class="flex items-center justify-center h-4 w-4 rounded text-zinc-400 hover:text-destructive hover:bg-destructive/10 transition-colors"
+              :title="$t('Pašalinti instituciją')"
+              @click="handleDetachInstitution(institution.id)"
+            >
+              <X class="h-2.5 w-2.5" />
+            </button>
+          </div>
+          <button
+            type="button"
+            class="flex items-center gap-1 text-xs text-zinc-400 hover:text-primary transition-colors"
+            :title="$t('Pridėti instituciją')"
+            @click="showAddInstitutionDialog = true"
+          >
+            <Plus class="h-3 w-3" />
+            <span class="hidden sm:inline">{{ $t('Pridėti instituciją') }}</span>
+          </button>
+        </div>
+
         <MeetingOverviewSection
           :meeting
           :previous-meeting
@@ -166,6 +194,49 @@
       </DialogContent>
     </Dialog>
 
+    <!-- Add Institution Dialog -->
+    <Dialog v-model:open="showAddInstitutionDialog">
+      <DialogContent class="max-w-sm">
+        <DialogHeader>
+          <DialogTitle class="flex items-center gap-2">
+            <Link2 class="h-4 w-4" />
+            {{ $t('Pridėti instituciją') }}
+          </DialogTitle>
+          <DialogDescription class="text-sm text-zinc-500 mt-2">
+            Retais atvejais, atstovavimo organai gali turėti bendrų posėdžių. Jei šis posėdis yra bendras su kitomis institucijomis, pasirinkite jas.
+            Galite pasirinkti tik iš susijusių institucijų.
+          </DialogDescription>
+        </DialogHeader>
+        <div class="space-y-4 pt-2">
+          <Select v-model="addInstitutionId">
+            <SelectTrigger>
+              <SelectValue :placeholder="$t('Pasirinkite instituciją')" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                v-for="option in availableInstitutionsToAdd"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+          <p v-if="availableInstitutionsToAdd.length === 0" class="text-sm text-zinc-500">
+            {{ $t('Nėra galimų institucijų pridėti.') }}
+          </p>
+          <div class="flex justify-end gap-2">
+            <Button variant="outline" size="sm" @click="showAddInstitutionDialog = false">
+              {{ $t('Atšaukti') }}
+            </Button>
+            <Button size="sm" :disabled="!addInstitutionId" @click="handleAttachInstitution">
+              {{ $t('Pridėti') }}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+
     <!-- Delete Confirmation Dialog -->
     <Dialog v-model:open="showDeleteDialog">
       <DialogContent class="max-w-md">
@@ -216,7 +287,7 @@ import { ref, computed, watch, onMounted, nextTick } from 'vue';
 import { router, useForm, Link, Head as InertiaHead } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { AlertTriangle, AlertCircle, Plus, Trash2, ChevronLeft, ChevronRight, Clock, Globe, Edit, MoreHorizontal, Video } from 'lucide-vue-next';
+import { AlertTriangle, AlertCircle, Plus, Trash2, X, ChevronLeft, ChevronRight, Clock, Globe, Edit, MoreHorizontal, Video, Link2 } from 'lucide-vue-next';
 
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { formatMeetingDateTime, formatMeetingTimeOnly } from '@/Utils/MeetingDisplay';
@@ -232,6 +303,7 @@ import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import {
   DropdownMenu,
@@ -253,12 +325,14 @@ import FileManager from '@/Features/Admin/SharepointFileManager/SharepointFileMa
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 import ActivityLogButton from '@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue';
 import SpotlightBadge from '@/Components/Onboarding/SpotlightBadge.vue';
+import { DialogDescription } from 'reka-ui';
 
 const props = defineProps<{
   meeting: App.Entities.Meeting;
   representatives: App.Entities.User[];
   previousMeeting?: { id: string; start_time: string; type?: string | null } | null;
   nextMeeting?: { id: string; start_time: string; type?: string | null } | null;
+  availableInstitutionsForAttach?: { id: string; name: string; tenant_shortname?: string | null }[] | null;
 }>();
 
 // Urgency calculations for hero badge
@@ -374,15 +448,15 @@ const meetingAgendaForm = useForm({
 const mainInstitution: App.Entities.Institution | string
   = props.meeting.institutions?.[0] ?? 'Be institucijos';
 
+const isJoint = computed(
+  () => (props.meeting as any).is_joint ?? (props.meeting.institutions?.length ?? 0) > 1,
+);
+
 // Always derive the displayed title from start_time + institution.
 // The stored `meeting.title` is auto-generated server-side and historically
 // embedded a 23.59 timestamp for email meetings — recomputing here keeps the
 // header/breadcrumb correct without a data backfill.
 const meetingTitle = computed(() => {
-  const institutionName = typeof mainInstitution === 'string'
-    ? mainInstitution
-    : mainInstitution.name;
-
   const datePart = formatMeetingDateTime(props.meeting, {
     year: 'numeric',
     month: 'long',
@@ -391,11 +465,22 @@ const meetingTitle = computed(() => {
     minute: '2-digit',
   });
 
+  if (isJoint.value) {
+    return `${datePart} jungtinis posėdis`;
+  }
+
+  const institutionName = typeof mainInstitution === 'string'
+    ? mainInstitution
+    : mainInstitution.name;
+
   return `${datePart} ${genitivizeEveryWord(institutionName)} posėdis`;
 });
 
-// Hero subtitle - institution name with link
+// Hero subtitle - institution name(s) with link
 const heroSubtitle = computed(() => {
+  if (isJoint.value) {
+    return props.meeting.institutions?.map((i: App.Entities.Institution) => i.name).join(' · ') ?? '';
+  }
   if (typeof mainInstitution === 'string') {
     return mainInstitution;
   }
@@ -427,6 +512,36 @@ usePageBreadcrumbs(() => {
     Icons.MEETING,
   );
 });
+
+// Joint meeting — institution management
+const showAddInstitutionDialog = ref(false);
+const addInstitutionId = ref('');
+
+const availableInstitutionsToAdd = computed(() => {
+  const attached = new Set(props.meeting.institutions?.map((i: App.Entities.Institution) => i.id) ?? []);
+  return (props.availableInstitutionsForAttach ?? [])
+    .filter(inst => !attached.has(inst.id))
+    .map(inst => ({
+      label: inst.tenant_shortname ? `${inst.name} (${inst.tenant_shortname})` : inst.name,
+      value: inst.id,
+    }));
+});
+
+const handleAttachInstitution = () => {
+  if (!addInstitutionId.value) { return; }
+  router.post(route('meetings.institutions.attach', props.meeting.id), {
+    institution_id: addInstitutionId.value,
+  }, {
+    onSuccess: () => {
+      showAddInstitutionDialog.value = false;
+      addInstitutionId.value = '';
+    },
+  });
+};
+
+const handleDetachInstitution = (institutionId: string) => {
+  router.delete(route('meetings.institutions.detach', { meeting: props.meeting.id, institution: institutionId }));
+};
 
 // Event handlers
 const handleMeetingFormSubmit = (meeting: App.Entities.Meeting) => {

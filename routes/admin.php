@@ -50,6 +50,8 @@ Route::post('news/{news}/duplicate', [NewsController::class, 'duplicate'])->name
 Route::patch('duties/{duty}/restore', [DutyController::class, 'restore'])->name('duties.restore')->withTrashed();
 Route::patch('institutions/{institution}/restore', [InstitutionController::class, 'restore'])->name('institutions.restore')->withTrashed();
 Route::patch('meetings/{meeting}/restore', [MeetingController::class, 'restore'])->name('meetings.restore')->withTrashed();
+Route::post('meetings/{meeting}/institutions', [MeetingController::class, 'attachInstitution'])->name('meetings.institutions.attach');
+Route::delete('meetings/{meeting}/institutions/{institution}', [MeetingController::class, 'detachInstitution'])->name('meetings.institutions.detach');
 Route::patch('reservations/{reservation}/restore', [ReservationController::class, 'restore'])->name('reservations.restore')->withTrashed();
 Route::patch('resources/{resource}/restore', [ResourceController::class, 'restore'])->name('resources.restore')->withTrashed();
 Route::patch('types/{type}/restore', [TypeController::class, 'restore'])->name('types.restore')->withTrashed();

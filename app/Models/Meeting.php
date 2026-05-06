@@ -42,6 +42,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read string $completion_status
  * @property-read bool $has_protocol
  * @property-read bool $has_report
+ * @property-read bool $is_joint
  * @property-read bool $is_public
  * @property-read string|null $type_label
  * @property-read string|null $type_slug
@@ -76,6 +77,20 @@ class Meeting extends Model implements SharepointFileableContract
 
     // Note: is_public is NOT auto-appended due to performance (triggers N+1 queries).
     // Append it explicitly where needed: $meeting->append('is_public')
+
+    /**
+     * Check if meeting involves multiple institutions (joint meeting / jungtinis posėdis).
+     * Note: is_joint is NOT auto-appended due to performance (triggers N+1 queries).
+     * Append it explicitly where needed: $meeting->append('is_joint')
+     */
+    public function getIsJointAttribute(): bool
+    {
+        if (! $this->relationLoaded('institutions')) {
+            $this->load('institutions');
+        }
+
+        return $this->institutions->count() > 1;
+    }
 
     /**
      * Check if meeting is publicly visible based on institution types.
