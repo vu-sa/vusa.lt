@@ -1,12 +1,6 @@
 <template>
-  <IndexTablePage
-    ref="indexTablePageRef"
-    v-bind="tableConfig"
-    @data-loaded="onDataLoaded"
-    @sorting-changed="handleSortingChange"
-    @page-changed="handlePageChange"
-    @filter-changed="handleFilterChange"
-  >
+  <IndexTablePage ref="indexTablePageRef" v-bind="tableConfig" @data-loaded="onDataLoaded"
+    @sorting-changed="handleSortingChange" @page-changed="handlePageChange" @filter-changed="handleFilterChange">
     <!-- After-table: Reservations with unit resources -->
     <Card v-if="activeReservations?.length" class="mt-4">
       <CardHeader>
@@ -19,11 +13,11 @@
   </IndexTablePage>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
+import { h, ref, computed } from 'vue';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
-import { Link, usePage } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
+import { Link } from '@inertiajs/vue3';
 import { Info } from 'lucide-vue-next';
 
 import { Badge } from '@/Components/ui/badge';
@@ -34,9 +28,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/Components/ui/popover';
+import { DateCell, TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
 import { RESERVATION_DATE_TIME_FORMAT } from '@/Constants/DateTimeFormats';
 import { capitalize } from '@/Utils/String';
-import { formatRelativeTime, formatStaticTime } from '@/Utils/IntlTime';
 import Icons from '@/Types/Icons/regular';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import ReservationsWithUnitResources from '@/Components/Tables/ReservationsWithUnitResources.vue';
@@ -85,74 +79,47 @@ usePageBreadcrumbs(() => [
   ),
 ]);
 
-const columns = computed<ColumnDef<App.Entities.Reservation, any>[]>(() => [
+const columns = computed<Array<ColumnDef<App.Entities.Reservation, any>>>(() => [
   {
     accessorKey: 'name',
     header: () => $t('forms.fields.title'),
     cell: ({ row }) => {
       const reservation = row.original;
-      return (
-        <div class="flex items-center gap-1.5">
-          <Link
-            href={route('reservations.show', reservation.id)}
-            class="transition hover:text-vusa-red"
-          >
-            <div class="max-w-[250px] truncate" title={reservation.name}>
-              {reservation.name}
-            </div>
-          </Link>
-          {(reservation.description || reservation.resources?.length)
-            ? (
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="ghost" size="icon-sm" class="size-6 shrink-0">
-                      <Info class="size-3.5 text-muted-foreground" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent class="w-80">
-                    <div class="flex flex-col gap-3">
-                      {reservation.description && (
-                        <div>
-                          <p class="text-sm font-medium">
-                            {$t('forms.fields.description')}
-                          </p>
-                          <p class="text-sm text-muted-foreground">
-                            {reservation.description}
-                          </p>
-                        </div>
-                      )}
-                      {reservation.resources?.length
-                        ? (
-                            <div>
-                              <p class="text-sm font-medium">
-                                {capitalize($t('entities.reservation.resources'))}
-                              </p>
-                              <ul class="list-inside list-disc text-sm">
-                                {reservation.resources.map(resource => (
-                                  <li key={resource.id}>
-                                    <div class="inline-flex items-center gap-1.5">
-                                      <Link href={route('resources.edit', resource.id)}>
-                                        {resource.name}
-                                      </Link>
-                                      {resource.tenant?.shortname && (
-                                        <Badge variant="secondary" class="text-xs">
-                                          {$t(resource.tenant.shortname)}
-                                        </Badge>
-                                      )}
-                                    </div>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )
-                        : null}
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              )
-            : null}
-        </div>
-      );
+      return h('div', { class: 'flex items-center gap-1.5' }, [
+        h(TruncatedLink, {
+          href: route('reservations.show', reservation.id),
+          text: reservation.name,
+          class: 'transition hover:text-vusa-red',
+        }),
+        (reservation.description || reservation.resources?.length)
+          ? h(Popover, {}, () => [
+              h(PopoverTrigger, { asChild: true }, () => h(Button, {
+                variant: 'ghost',
+                size: 'icon-sm',
+                class: 'size-6 shrink-0',
+              }, () => h(Info, { class: 'size-3.5 text-muted-foreground' }))),
+              h(PopoverContent, { class: 'w-80' }, () => h('div', { class: 'flex flex-col gap-3' }, [
+                reservation.description
+                  ? h('div', {}, [
+                      h('p', { class: 'text-sm font-medium' }, $t('forms.fields.description')),
+                      h('p', { class: 'text-sm text-muted-foreground' }, reservation.description),
+                    ])
+                  : null,
+                reservation.resources?.length
+                  ? h('div', {}, [
+                      h('p', { class: 'text-sm font-medium' }, capitalize($t('entities.reservation.resources'))),
+                      h('ul', { class: 'list-inside list-disc text-sm' }, reservation.resources.map(resource => h('li', { key: resource.id }, h('div', { class: 'inline-flex items-center gap-1.5' }, [
+                        h(Link, { href: route('resources.edit', resource.id) }, () => resource.name),
+                        resource.tenant?.shortname
+                          ? h(Badge, { variant: 'secondary', class: 'text-xs' }, () => $t(resource.tenant.shortname))
+                          : null,
+                      ])))),
+                    ])
+                  : null,
+              ])),
+            ])
+          : null,
+      ]);
     },
     size: 300,
     enableSorting: true,
@@ -163,61 +130,40 @@ const columns = computed<ColumnDef<App.Entities.Reservation, any>[]>(() => [
     cell: ({ row }) => {
       const { users } = row.original;
       return users && users.length > 0
-        ? (
-            <UsersAvatarGroup class="align-middle" size={30} users={users} />
-          )
-        : (
-            <span class="text-muted-foreground">-</span>
-          );
+        ? h(UsersAvatarGroup, { class: 'align-middle', size: 30, users })
+        : h(TruncatedText, { text: '-' });
     },
     size: 150,
   },
   {
     accessorKey: 'start_time',
     header: () => capitalize($tChoice('entities.reservation.start_time', 2)),
-    cell: ({ row }) => {
-      const startTime = row.original.start_time;
-      return (
-        <div class="max-w-[180px] truncate" title={startTime}>
-          {formatStaticTime(
-            new Date(startTime),
-            RESERVATION_DATE_TIME_FORMAT,
-            usePage().props.app.locale,
-          )}
-        </div>
-      );
-    },
+    cell: ({ row }) => h(DateCell, {
+      date: row.original.start_time,
+      mode: 'absolute',
+      format: RESERVATION_DATE_TIME_FORMAT,
+    }),
     size: 180,
     enableSorting: true,
   },
   {
     accessorKey: 'end_time',
     header: () => capitalize($tChoice('entities.reservation.end_time', 2)),
-    cell: ({ row }) => {
-      const endTime = row.original.end_time;
-      return (
-        <div class="max-w-[180px] truncate" title={endTime}>
-          {formatStaticTime(
-            new Date(endTime),
-            RESERVATION_DATE_TIME_FORMAT,
-            usePage().props.app.locale,
-          )}
-        </div>
-      );
-    },
+    cell: ({ row }) => h(DateCell, {
+      date: row.original.end_time,
+      mode: 'absolute',
+      format: RESERVATION_DATE_TIME_FORMAT,
+    }),
     size: 180,
     enableSorting: true,
   },
   {
     accessorKey: 'created_at',
     header: () => $t('forms.fields.created_at'),
-    cell: ({ row }) => {
-      return formatRelativeTime(
-        new Date(row.original.created_at),
-        { numeric: 'auto' },
-        usePage().props.app.locale,
-      );
-    },
+    cell: ({ row }) => h(DateCell, {
+      date: row.original.created_at,
+      mode: 'relative',
+    }),
     size: 150,
   },
   createStandardActionsColumn<App.Entities.Reservation>('reservations', {
@@ -250,8 +196,8 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Reservation>>(
   }),
 );
 
-const onDataLoaded = (data: any) => {};
-const handleSortingChange = (sorting: any) => {};
-const handlePageChange = (page: any) => {};
-const handleFilterChange = (filterKey: any, value: any) => {};
+const onDataLoaded = (data: any) => { };
+const handleSortingChange = (sorting: any) => { };
+const handlePageChange = (page: any) => { };
+const handleFilterChange = (filterKey: any, value: any) => { };
 </script>

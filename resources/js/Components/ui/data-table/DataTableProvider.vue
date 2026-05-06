@@ -78,40 +78,44 @@
     >
       <template #pagination>
         <!-- Server-side pagination -->
-        <div v-if="enablePagination && isServerSide" class="flex flex-wrap items-center justify-between gap-2 p-4 border-t">
+        <div v-if="enablePagination && isServerSide" class="flex flex-nowrap items-center justify-between gap-4 py-2 px-3 border-t overflow-hidden">
           <!-- Show pagination controls when there are results -->
           <template v-if="totalItems > 0">
-            <div class="text-sm text-muted-foreground">
-              {{ $t('Showing') }}
+            <div class="text-xs text-muted-foreground shrink-0">
               <strong>{{ (serverPagination?.pageIndex || 0) * pageSize + 1 }}</strong>
-              {{ $t('to') }}
+              –
               <strong>{{ Math.min((serverPagination?.pageIndex || 0) * pageSize + pageSize, totalItems) }}</strong>
-              {{ $t('of') }}
-              <strong>{{ totalItems }}</strong>
-              {{ $t('results') }}
+              / {{ totalItems }}
             </div>
             <Pagination
               v-slot="{ page }"
               :items-per-page="pageSize"
               :total="totalItems"
               :default-page="(serverPagination?.pageIndex || 0) + 1"
+              class="min-w-0"
               @update:page="(newPage: number) => emit('page-change', newPage - 1)"
             >
-              <PaginationContent>
-                <PaginationPrevious />
+              <PaginationContent class="gap-1">
+                <PaginationPrevious size="icon">
+                  <ChevronLeftIcon class="h-4 w-4" />
+                  <span class="sr-only">{{ $t('Previous page') }}</span>
+                </PaginationPrevious>
 
-                <div class="flex items-center text-sm font-medium px-4">
-                  {{ $t('Page') }} {{ page }} {{ $t('of') }} {{ Math.ceil(totalItems / pageSize) }}
+                <div class="flex items-center text-xs font-medium px-2 tabular-nums">
+                  {{ page }} / {{ Math.ceil(totalItems / pageSize) }}
                 </div>
 
-                <PaginationNext />
+                <PaginationNext size="icon">
+                  <ChevronRightIcon class="h-4 w-4" />
+                  <span class="sr-only">{{ $t('Next page') }}</span>
+                </PaginationNext>
               </PaginationContent>
             </Pagination>
           </template>
 
           <!-- Show empty state when no results -->
           <template v-else>
-            <div class="text-sm text-muted-foreground">
+            <div class="text-xs text-muted-foreground">
               {{ $t('No results found') }}
             </div>
           </template>
@@ -146,6 +150,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/Components/ui/pagination';
+import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-vue-next';
 
 const props = defineProps<{
   // Data props

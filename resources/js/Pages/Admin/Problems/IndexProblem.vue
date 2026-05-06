@@ -29,15 +29,16 @@
   </IndexTablePage>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
+import { h, computed, ref, watch, capitalize } from 'vue';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
-import { computed, ref, watch, capitalize } from 'vue';
-import { Link, usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
-import { Badge } from '@/Components/ui/badge';
+import { DateCell, TagList, TruncatedBadge, TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
+import { createDateColumn } from '@/Composables/useDataTableColumns';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import type { IndexTablePageProps } from '@/Types/TableConfigTypes';
 import Icons from '@/Types/Icons/regular';
@@ -89,52 +90,41 @@ const statusVariant = (status: string) =>
 const statusLabel = (status: string) =>
   ({ open: $t('Atvira'), in_progress: $t('Vykdoma'), resolved: $t('Išspręsta') }[status] ?? status);
 
-const columns = computed<ColumnDef<App.Entities.Problem, any>[]>(() => [
+const columns = computed(() => [
   {
     accessorKey: 'title',
     header: () => capitalize($t('entities.problem.title')),
-    cell: ({ row }) => (
-      <Link href={route('problems.show', row.original.id)} class="font-medium hover:underline">
-        {row.original.title}
-      </Link>
-    ),
+    cell: ({ row }) => h(TruncatedLink, {
+      href: route('problems.show', row.original.id),
+      text: row.original.title,
+      lines: 2,
+    }),
     enableSorting: true,
     size: 250,
   },
   {
     accessorKey: 'status',
     header: () => capitalize($t('entities.problem.status')),
-    cell: ({ row }) => (
-      <Badge variant={statusVariant(row.original.status)}>
-        {statusLabel(row.original.status)}
-      </Badge>
-    ),
+    cell: ({ row }) => h(TruncatedBadge, {
+      text: statusLabel(row.original.status),
+      variant: statusVariant(row.original.status),
+    }),
     enableSorting: true,
     size: 120,
   },
-  {
-    accessorKey: 'occurred_at',
-    header: () => capitalize($t('entities.problem.occurred_at')),
-    cell: ({ row }) =>
-      row.original.occurred_at
-        ? new Date(row.original.occurred_at).toLocaleDateString('lt-LT')
-        : '—',
+  createDateColumn<App.Entities.Problem>('occurred_at', {
+    title: capitalize($t('entities.problem.occurred_at')),
+    width: 120,
     enableSorting: true,
-    size: 120,
-  },
-  {
-    accessorKey: 'resolved_at',
-    header: () => capitalize($t('entities.problem.resolved_at')),
-    cell: ({ row }) =>
-      row.original.resolved_at
-        ? new Date(row.original.resolved_at).toLocaleDateString('lt-LT')
-        : '—',
-    size: 120,
-  },
+  }),
+  createDateColumn<App.Entities.Problem>('resolved_at', {
+    title: capitalize($t('entities.problem.resolved_at')),
+    width: 120,
+  }),
   {
     id: 'responsible_user',
     header: () => capitalize($t('entities.problem.responsible_user')),
-    cell: ({ row }) => row.original.responsible_user?.name ?? '—',
+    cell: ({ row }) => h(TruncatedText, { text: row.original.responsible_user?.name }),
     size: 160,
   },
   {
@@ -142,27 +132,15 @@ const columns = computed<ColumnDef<App.Entities.Problem, any>[]>(() => [
     header: () => capitalize($t('entities.problem.categories')),
     cell: ({ row }) => {
       const cats = row.original.categories ?? [];
-      if (cats.length === 0) return <span class="text-muted-foreground">—</span>;
-      return (
-        <div class="flex flex-wrap gap-1">
-          {cats.slice(0, 2).map(cat => (
-            <Badge key={cat.id} variant="outline" class="text-xs">{cat.name}</Badge>
-          ))}
-          {cats.length > 2 && (
-            <Badge variant="outline" class="text-xs">
-              +
-              {cats.length - 2}
-            </Badge>
-          )}
-        </div>
-      );
+      if (cats.length === 0) return h(TruncatedText, { text: null });
+      return h(TagList, { items: cats, labelKey: 'name', maxVisible: 2 });
     },
     size: 180,
   },
   {
     id: 'tenant',
     header: () => capitalize($tChoice('entities.tenant.model', 1)),
-    cell: ({ row }) => row.original.tenant?.shortname ?? '—',
+    cell: ({ row }) => h(TruncatedText, { text: row.original.tenant?.shortname }),
     size: 100,
   },
   createStandardActionsColumn<App.Entities.Problem>(modelName, {
@@ -170,7 +148,7 @@ const columns = computed<ColumnDef<App.Entities.Problem, any>[]>(() => [
     canDelete: true,
     canRestore: true,
   }),
-]);
+]) as Array<ColumnDef<App.Entities.Problem, any>>;
 
 const tableConfig = computed<IndexTablePageProps<App.Entities.Problem>>(() => ({
   modelName,

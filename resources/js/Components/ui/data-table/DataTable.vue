@@ -49,17 +49,18 @@
       </div>
     </div>
 
-    <div class="border rounded-md">
-      <div class="w-full overflow-auto">
-        <Table class="w-full table-fixed">
+    <div class="border rounded-md flex flex-col">
+      <div ref="tableScrollRef" class="w-full overflow-auto max-h-[50vh] md:max-h-[calc(100vh-360px)]">
+        <Table class="w-full table-fixed isolate">
           <TableHeader>
             <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
               <TableHead
                 v-for="header in headerGroup.headers"
                 :key="header.id"
+                class="sticky top-0 z-10 bg-zinc-100 border-b border-border shadow-xs"
                 :class="{
-                  'cursor-pointer select-none hover:bg-muted/50 transition-colors': header.column.getCanSort(),
-                  'bg-muted/30': header.column.getIsSorted()
+                  'cursor-pointer select-none hover:bg-zinc-100 transition-colors': header.column.getCanSort(),
+                  'bg-zinc-50': header.column.getIsSorted()
                 }"
                 :style="{ width: header.column.columnDef.size ? `${header.column.columnDef.size}px` : 'auto' }"
                 @click="header.column.getToggleSortingHandler()?.({})"
@@ -91,6 +92,7 @@
                 <TableCell
                   v-for="cell in row.getVisibleCells()"
                   :key="cell.id"
+                  class="min-w-0"
                   :style="{ width: cell.column.columnDef.size ? `${cell.column.columnDef.size}px` : 'auto' }"
                 >
                   <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
@@ -112,45 +114,46 @@
 
       <!-- Use custom pagination slot if available (for server-side mode) -->
       <slot name="pagination">
-        <div v-if="pagination === true && table.getPageCount() > 1" class="flex flex-wrap items-center justify-between gap-2 p-4 border-t">
+        <div v-if="pagination === true && table.getPageCount() > 1" class="flex flex-nowrap items-center justify-between gap-4 py-2 px-3 border-t overflow-hidden">
+          <div class="text-xs text-muted-foreground shrink-0 tabular-nums">
+            {{ table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1 }}
+            –
+            {{ Math.min((table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize, table.getPrePaginationRowModel().rows.length) }}
+            / {{ table.getPrePaginationRowModel().rows.length }}
+          </div>
           <Pagination
             :items-per-page="table.getState().pagination.pageSize"
             :total="table.getPrePaginationRowModel().rows.length"
+            class="min-w-0"
           >
-            <PaginationContent>
+            <PaginationContent class="gap-1">
               <PaginationItem :value="1">
-                <PaginationFirst :disabled="!table.getCanPreviousPage()" @click="table.setPageIndex(0)">
+                <PaginationFirst :disabled="!table.getCanPreviousPage()" size="icon" @click="table.setPageIndex(0)">
                   <ChevronsLeftIcon class="h-4 w-4" />
                   <span class="sr-only">{{ $t('First page') }}</span>
                 </PaginationFirst>
               </PaginationItem>
               <PaginationItem :value="table.getState().pagination.pageIndex">
-                <PaginationPrevious :disabled="!table.getCanPreviousPage()" @click="table.previousPage()">
+                <PaginationPrevious :disabled="!table.getCanPreviousPage()" size="icon" @click="table.previousPage()">
                   <ChevronLeftIcon class="h-4 w-4" />
                   <span class="sr-only">{{ $t('Previous page') }}</span>
                 </PaginationPrevious>
               </PaginationItem>
 
-              <PaginationItem
-                v-for="page in table.getPageCount()"
-                :key="page"
-                :value="page"
-                :is-active="table.getState().pagination.pageIndex === page - 1"
-                @click="table.setPageIndex(page - 1)"
-              >
-                {{ page }}
-              </PaginationItem>
+              <div class="flex items-center text-xs font-medium px-2 tabular-nums">
+                {{ table.getState().pagination.pageIndex + 1 }} / {{ table.getPageCount() }}
+              </div>
 
               <PaginationItem :value="table.getState().pagination.pageIndex + 2">
-                <PaginationNext :disabled="!table.getCanNextPage()" @click="table.nextPage()">
-                  <span class="sr-only">{{ $t('Next page') }}</span>
+                <PaginationNext :disabled="!table.getCanNextPage()" size="icon" @click="table.nextPage()">
                   <ChevronRightIcon class="h-4 w-4" />
+                  <span class="sr-only">{{ $t('Next page') }}</span>
                 </PaginationNext>
               </PaginationItem>
               <PaginationItem :value="table.getPageCount()">
-                <PaginationLast :disabled="!table.getCanNextPage()" @click="table.setPageIndex(table.getPageCount() - 1)">
-                  <span class="sr-only">{{ $t('Last page') }}</span>
+                <PaginationLast :disabled="!table.getCanNextPage()" size="icon" @click="table.setPageIndex(table.getPageCount() - 1)">
                   <ChevronsRightIcon class="h-4 w-4" />
+                  <span class="sr-only">{{ $t('Last page') }}</span>
                 </PaginationLast>
               </PaginationItem>
             </PaginationContent>
@@ -171,7 +174,7 @@ import {
   getFilteredRowModel,
   useVueTable,
 } from '@tanstack/vue-table';
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, nextTick, onMounted } from 'vue';
 import {
   ChevronDownIcon,
   ChevronUpIcon,
@@ -252,6 +255,28 @@ const rowSelection = ref<RowSelectionState>(props.rowSelectionState || props.ini
 const pagination = ref<PaginationState>({
   pageIndex: props.externalPagination?.pageIndex || 0,
   pageSize: props.externalPagination?.pageSize || props.pageSize || 10,
+});
+
+// Ref to the scrollable table container
+const tableScrollRef = ref<HTMLDivElement>();
+
+// Track mount state to avoid scrolling on initial load
+const isTableMounted = ref(false);
+onMounted(() => {
+  isTableMounted.value = true;
+});
+
+// Scroll table to top when page changes
+const scrollTableToTop = () => {
+  nextTick(() => {
+    tableScrollRef.value?.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+};
+
+watch(pagination, (newVal, oldVal) => {
+  if (isTableMounted.value && oldVal && newVal.pageIndex !== oldVal.pageIndex) {
+    scrollTableToTop();
+  }
 });
 
 // Watch for external sorting changes

@@ -9,17 +9,17 @@
   />
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
+import { h, ref, computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
-import { ref, computed } from 'vue';
 
 import Icons from '@/Types/Icons/regular';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import {
   createTenantColumn,
-} from '@/Utils/DataTableColumns';
+} from '@/Composables/useDataTableColumns';
 import type {
   IndexTablePageProps,
 } from '@/Types/TableConfigTypes';
@@ -49,20 +49,20 @@ const getRowId = (row: App.Entities.Banner) => {
   return `banner-${row.id}`;
 };
 
-const columns = computed<ColumnDef<App.Entities.Banner, any>[]>(() => [
+const columns = computed<Array<ColumnDef<App.Entities.Banner, any>>>(() => [
   {
     accessorKey: 'title',
     header: () => 'Pavadinimas',
     cell: ({ row }) => {
       const banner = row.original;
-      return (
-        <a
-          class={banner.is_active ? 'font-bold text-green-700' : 'text-red-700'}
-          href={route('banners.edit', { id: banner.id })}
-        >
-          {banner.title}
-        </a>
-      );
+      return h('a', {
+        class: [
+          'block truncate',
+          banner.is_active ? 'font-bold text-green-700' : 'text-red-700',
+        ],
+        href: route('banners.edit', { id: banner.id }),
+        title: banner.title,
+      }, banner.title);
     },
     size: 300,
     enableSorting: true,

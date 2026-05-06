@@ -10,7 +10,8 @@
   </IndexTablePage>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
+import { h } from 'vue';
 import { computed, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
@@ -18,13 +19,13 @@ import type { ColumnDef } from '@tanstack/vue-table';
 import Icons from '@/Types/Icons/regular';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
-import { Badge } from '@/Components/ui/badge';
+import { TruncatedBadge } from '@/Components/ui/data-table/cells';
 import {
   createIdColumn,
   createTimestampColumn,
   createTextColumn,
   createTitleColumn,
-} from '@/Utils/DataTableColumns';
+} from '@/Composables/useDataTableColumns';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import type {
   IndexTablePageProps,
@@ -73,7 +74,7 @@ const modelTypeOptions = computed(() => {
 });
 
 // Table columns
-const columns = computed<ColumnDef<App.Entities.Type, any>[]>(() => [
+const columns = computed<Array<ColumnDef<App.Entities.Type, any>>>(() => [
   createIdColumn(),
   createTitleColumn<App.Entities.Type>({
     accessorKey: 'title',
@@ -82,14 +83,10 @@ const columns = computed<ColumnDef<App.Entities.Type, any>[]>(() => [
   }),
   createTextColumn('slug', {
     title: $t('forms.fields.slug'),
-    cell: ({ row }) => (
-      <Badge variant="outline">{row.getValue('slug')}</Badge>
-    ),
+    cell: ({ row }) => h(TruncatedBadge, { text: row.getValue('slug'), variant: 'outline' }),
   }),
   createTextColumn('model_type', {
-    cell: ({ row }) => (
-      <Badge variant="secondary">{row.getValue('model_type')}</Badge>
-    ),
+    cell: ({ row }) => h(TruncatedBadge, { text: row.getValue('model_type'), variant: 'secondary' }),
   }),
   createTimestampColumn('created_at'),
   createTimestampColumn('updated_at'),

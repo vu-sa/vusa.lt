@@ -9,17 +9,19 @@
   />
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
+import { h } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ref, computed } from 'vue';
 
+import { TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
 import Icons from '@/Types/Icons/regular';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import {
   createTenantColumn,
-} from '@/Utils/DataTableColumns';
+} from '@/Composables/useDataTableColumns';
 import type {
   IndexTablePageProps,
 } from '@/Types/TableConfigTypes';
@@ -49,17 +51,11 @@ const getRowId = (row: App.Entities.QuickLink) => {
   return `quickLink-${row.id}`;
 };
 
-const columns = computed<ColumnDef<App.Entities.QuickLink, any>[]>(() => [
+const columns = computed<Array<ColumnDef<App.Entities.QuickLink, any>>>(() => [
   {
     accessorKey: 'text',
     header: () => 'Pavadinimas',
-    cell: ({ row }) => {
-      return (
-        <div class="max-w-[300px] truncate" title={row.getValue('text') as string}>
-          {row.getValue('text')}
-        </div>
-      );
-    },
+    cell: ({ row }) => h(TruncatedText, { text: row.getValue('text') as string, lines: 2 }),
     size: 300,
     enableSorting: true,
   },
@@ -77,13 +73,12 @@ const columns = computed<ColumnDef<App.Entities.QuickLink, any>[]>(() => [
     header: () => 'Nuoroda',
     cell: ({ row }) => {
       const { link } = row.original;
-      return link
-        ? (
-            <div class="max-w-[200px] truncate" title={link}>
-              {link}
-            </div>
-          )
-        : null;
+      if (!link) return null;
+      return h(TruncatedLink, {
+        href: link,
+        text: link,
+        external: true,
+      });
     },
     size: 200,
   },

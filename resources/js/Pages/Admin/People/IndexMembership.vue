@@ -9,13 +9,15 @@
   />
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
+import { h } from 'vue';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ref, computed } from 'vue';
 
 import { capitalize } from '@/Utils/String';
-import { resolveTranslatable } from '@/Utils/DataTableColumns';
+import { resolveTranslatable } from '@/Composables/useDataTableColumns';
+import { TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import type { IndexTablePageProps } from '@/Types/TableConfigTypes';
@@ -45,11 +47,11 @@ const getRowId = (row: App.Entities.Membership) => {
   return `membership-${row.id}`;
 };
 
-const columns = computed<ColumnDef<App.Entities.Membership, any>[]>(() => [
+const columns = computed<Array<ColumnDef<App.Entities.Membership, any>>>(() => [
   {
     accessorKey: 'name',
     header: () => $t('forms.fields.title'),
-    cell: ({ row }) => resolveTranslatable(row.getValue('name')),
+    cell: ({ row }) => h(TruncatedText, { text: resolveTranslatable(row.getValue('name')) }),
     size: 250,
   },
   {
@@ -57,7 +59,7 @@ const columns = computed<ColumnDef<App.Entities.Membership, any>[]>(() => [
     header: () => $t('Padalinys'),
     cell: ({ row }) => {
       const { tenant } = row.original;
-      return tenant ? $t(tenant.shortname ?? '') : null;
+      return tenant ? h(TruncatedText, { text: $t(tenant.shortname ?? '') }) : null;
     },
     size: 200,
   },

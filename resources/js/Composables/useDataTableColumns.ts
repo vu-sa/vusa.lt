@@ -1,8 +1,18 @@
-import { type ColumnDef } from '@tanstack/vue-table';
+import { h } from 'vue';
+import type { ColumnDef } from '@tanstack/vue-table';
 import { format, isValid } from 'date-fns';
 import { trans as $t, transChoice as $tChoice, getActiveLanguage } from 'laravel-vue-i18n';
-import { Badge } from '@/Components/ui/badge';
-import { capitalize } from './String';
+
+import { LocaleEnum } from '@/Types/enums';
+import {
+  DateCell,
+  TagList,
+  TruncatedBadge,
+  TruncatedLink,
+  TruncatedText,
+} from '@/Components/ui/data-table/cells';
+import type { BadgeVariants } from '@/Components/ui/badge';
+import { capitalize } from '@/Utils/String';
 
 /**
  * Resolve a translatable value from toFullArray() format.
@@ -13,8 +23,10 @@ export function resolveTranslatable(value: unknown): string {
   if (value && typeof value === 'object' && !Array.isArray(value)) {
     const lang = getActiveLanguage();
     const obj = value as Record<string, string>;
+
     return obj[lang] ?? obj['lt'] ?? Object.values(obj)[0] ?? '';
   }
+
   return (value as string) ?? '';
 }
 
@@ -29,7 +41,7 @@ export function createIdColumn<T>(options: {
   return {
     accessorKey: 'id',
     header: () => 'ID',
-    cell: options.cell,
+    cell: options.cell ?? (({ row }) => h(TruncatedText, { text: String(row.getValue('id')) })),
     size: options.width || 60,
     enableSorting: options.enableSorting !== false,
   };
@@ -43,6 +55,7 @@ export function createTitleColumn<T extends { id: string | number }>(options: {
   routeName?: string;
   width?: number;
   enableSorting?: boolean;
+  lines?: 1 | 2 | 3;
   cell?: ColumnDef<T, any>['cell'];
 } = {}): ColumnDef<T, any> {
   const accessorKey = options.accessorKey || 'name';
@@ -51,17 +64,17 @@ export function createTitleColumn<T extends { id: string | number }>(options: {
   return {
     accessorKey,
     header: () => $t(accessorKey === 'name' ? 'forms.fields.name' : 'forms.fields.title'),
-    cell: options.cell || (({ row }) => {
+    cell: options.cell ?? (({ row }) => {
       const value = resolveTranslatable(row.getValue(accessorKey));
-      const id = row.original.id;
+      const { id } = row.original;
       const modelName = (row.original as any)?.type || '';
       const baseRouteName = modelName ? `${modelName}s.${routeName}` : `${routeName}`;
 
-      return (
-        <a href={route(baseRouteName, { id })} class="font-medium hover:underline">
-          {value}
-        </a>
-      );
+      return h(TruncatedLink, {
+        href: route(baseRouteName, { id }),
+        text: value,
+        lines: options.lines ?? 1,
+      });
     }),
     size: options.width || 250,
     enableSorting: options.enableSorting !== false,
@@ -82,22 +95,62 @@ export function createTimestampColumn<T>(accessorKey: string, options: {
   return {
     accessorKey,
     header: () => options.title || $t(accessorKey),
-    cell: options.cell || (({ row }) => {
+    cell: options.cell ?? (({ row }) => {
       const value = row.getValue(accessorKey);
-      if (!value) return null;
+      if (!value) return h(TruncatedText, { text: null });
 
       try {
         const date = new Date(value as string);
-        if (!isValid(date)) return value;
-        return format(date, options.format || 'yyyy-MM-dd HH:mm');
+        if (!isValid(date)) return h(TruncatedText, { text: String(value) });
+
+        return h(DateCell, {
+          date,
+          mode: 'absolute',
+          format: {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+          },
+        });
       }
       catch (e) {
-        return value;
+        return h(TruncatedText, { text: String(value) });
       }
     }),
     size: options.width || 160,
     enableSorting: options.enableSorting !== false,
     sortDescFirst: options.sortDescFirst,
+  };
+}
+
+/**
+ * Create a date column using DateCell component
+ */
+export function createDateColumn<T>(accessorKey: string, options: {
+  title?: string;
+  mode?: 'absolute' | 'relative';
+  format?: Intl.DateTimeFormatOptions;
+  width?: number;
+  enableSorting?: boolean;
+  cell?: ColumnDef<T, any>['cell'];
+} = {}): ColumnDef<T, any> {
+  return {
+    accessorKey,
+    header: () => options.title || $t(accessorKey),
+    cell: options.cell ?? (({ row }) => {
+      const value = row.getValue(accessorKey);
+      if (!value) return h(TruncatedText, { text: null });
+
+      return h(DateCell, {
+        date: value as string | Date,
+        mode: options.mode ?? 'absolute',
+        format: options.format,
+      });
+    }),
+    size: options.width || 150,
+    enableSorting: options.enableSorting !== false,
   };
 }
 
@@ -111,12 +164,13 @@ export function createTenantColumn<T>(options: {
 } = {}): ColumnDef<T, any> {
   return {
     accessorKey: 'tenant',
-    id: 'tenant.name', // Use this for sorting relationship columns
+    id: 'tenant.name',
     header: () => capitalize($tChoice('entities.tenant.model', 1)),
-    cell: options.cell || (({ row }) => {
-      const tenant = row.original.tenant;
-      if (!tenant) return '';
-      return $t(tenant.shortname);
+    cell: options.cell ?? (({ row }) => {
+      const { tenant } = row.original as any;
+      if (!tenant) return h(TruncatedText, { text: null });
+
+      return h(TruncatedText, { text: $t(tenant.shortname) });
     }),
     size: options.width || 150,
     enableSorting: options.enableSorting !== false,
@@ -134,7 +188,7 @@ export function createLanguageColumn<T>(options: {
   return {
     accessorKey: 'language',
     header: () => $t('Kalba'),
-    cell: options.cell || (({ row }) => row.getValue('language') as string),
+    cell: options.cell ?? (({ row }) => h(TruncatedText, { text: row.getValue('language') as string })),
     size: options.width || 100,
     enableSorting: options.enableSorting !== false,
   };
@@ -154,17 +208,16 @@ export function createBooleanColumn<T>(accessorKey: string, options: {
   return {
     accessorKey,
     header: () => options.title || $t(accessorKey),
-    cell: options.cell || (({ row }) => {
+    cell: options.cell ?? (({ row }) => {
       const value = row.getValue(accessorKey);
       const label = value
         ? (options.trueLabel || $t('Yes'))
         : (options.falseLabel || $t('No'));
 
-      return (
-        <Badge variant={value ? 'default' : 'secondary'} class="text-xs">
-          {label}
-        </Badge>
-      );
+      return h(TruncatedBadge, {
+        text: label,
+        variant: value ? 'default' : 'secondary',
+      });
     }),
     size: options.width || 100,
     enableSorting: options.enableSorting !== false,
@@ -177,6 +230,7 @@ export function createBooleanColumn<T>(accessorKey: string, options: {
 export function createTagsColumn<T>(accessorKey: string, options: {
   title?: string;
   labelKey?: string;
+  maxVisible?: number;
   width?: number;
   enableSorting?: boolean;
   cell?: ColumnDef<T, any>['cell'];
@@ -184,21 +238,16 @@ export function createTagsColumn<T>(accessorKey: string, options: {
   return {
     accessorKey,
     header: () => options.title || $t(accessorKey),
-    cell: options.cell || (({ row }) => {
+    cell: options.cell ?? (({ row }) => {
       const items = row.getValue(accessorKey) as any[] || [];
-      const labelKey = options.labelKey || 'title';
 
       if (!items || items.length === 0) return null;
 
-      return (
-        <div class="flex flex-wrap gap-1">
-          {items.map(item => (
-            <Badge variant="secondary" key={item.id} class="text-xs">
-              {resolveTranslatable(item[labelKey])}
-            </Badge>
-          ))}
-        </div>
-      );
+      return h(TagList, {
+        items,
+        labelKey: options.labelKey || 'title',
+        maxVisible: options.maxVisible ?? 3,
+      });
     }),
     size: options.width || 200,
     enableSorting: options.enableSorting !== false,
@@ -206,18 +255,44 @@ export function createTagsColumn<T>(accessorKey: string, options: {
 }
 
 /**
- * Create a standardized text column
+ * Create a standardized text column with truncation and tooltip
  */
 export function createTextColumn<T>(accessorKey: string, options: {
   title?: string;
   width?: number;
   enableSorting?: boolean;
+  lines?: 1 | 2 | 3;
   cell?: ColumnDef<T, any>['cell'];
 } = {}): ColumnDef<T, any> {
   return {
     accessorKey,
     header: () => options.title || $t(accessorKey),
-    cell: options.cell || (({ row }) => resolveTranslatable(row.getValue(accessorKey))),
+    cell: options.cell ?? (({ row }) => h(TruncatedText, {
+      text: resolveTranslatable(row.getValue(accessorKey)),
+      lines: options.lines ?? 1,
+    })),
+    size: options.width || 150,
+    enableSorting: options.enableSorting !== false,
+  };
+}
+
+/**
+ * Create a badge column with truncation and tooltip
+ */
+export function createBadgeColumn<T>(accessorKey: string, options: {
+  title?: string;
+  width?: number;
+  enableSorting?: boolean;
+  variant?: BadgeVariants['variant'];
+  cell?: ColumnDef<T, any>['cell'];
+} = {}): ColumnDef<T, any> {
+  return {
+    accessorKey,
+    header: () => options.title || $t(accessorKey),
+    cell: options.cell ?? (({ row }) => h(TruncatedBadge, {
+      text: resolveTranslatable(row.getValue(accessorKey)),
+      variant: options.variant ?? 'secondary',
+    })),
     size: options.width || 150,
     enableSorting: options.enableSorting !== false,
   };

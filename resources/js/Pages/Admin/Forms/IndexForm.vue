@@ -56,7 +56,7 @@
   />
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ref, computed } from 'vue';
@@ -68,7 +68,7 @@ import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import {
   createTextColumn,
   createTenantColumn,
-} from '@/Utils/DataTableColumns';
+} from '@/Composables/useDataTableColumns';
 import type {
   IndexTablePageProps,
 } from '@/Types/TableConfigTypes';
@@ -104,7 +104,7 @@ const getRowId = (row: App.Entities.Form) => {
   return `form-${row.id}`;
 };
 
-const columns = computed<ColumnDef<App.Entities.Form, any>[]>(() => [
+const columns = computed(() => [
   createTextColumn<App.Entities.Form>('name', {
     title: $t('forms.fields.name'),
     width: 300,

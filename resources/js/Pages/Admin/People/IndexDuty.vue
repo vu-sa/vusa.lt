@@ -9,15 +9,17 @@
   />
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
+import { h } from 'vue';
 import { transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ref, computed } from 'vue';
 
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
+import { TagList, TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
 import { capitalize } from '@/Utils/String';
-import { resolveTranslatable } from '@/Utils/DataTableColumns';
+import { resolveTranslatable } from '@/Composables/useDataTableColumns';
 import Icons from '@/Types/Icons/regular';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
@@ -48,11 +50,11 @@ const getRowId = (row: App.Entities.Duty) => {
   return `duty-${row.id}`;
 };
 
-const columns = computed<ColumnDef<App.Entities.Duty, any>[]>(() => [
+const columns = computed<Array<ColumnDef<App.Entities.Duty, any>>>(() => [
   {
     accessorKey: 'name',
     header: () => 'Pavadinimas',
-    cell: ({ row }) => resolveTranslatable(row.getValue('name')),
+    cell: ({ row }) => h(TruncatedText, { text: resolveTranslatable(row.getValue('name')) }),
     size: 200,
     enableSorting: true,
   },
@@ -62,13 +64,12 @@ const columns = computed<ColumnDef<App.Entities.Duty, any>[]>(() => [
     cell: ({ row }) => {
       const { email } = row.original;
       if (!email) return null;
-      return (
-        <a href={`mailto:${email}`} class="transition hover:text-vusa-red">
-          <div class="max-w-[200px] truncate" title={email}>
-            {email}
-          </div>
-        </a>
-      );
+      return h(TruncatedLink, {
+        href: `mailto:${email}`,
+        text: email,
+        external: true,
+        class: 'transition hover:text-vusa-red',
+      });
     },
     size: 200,
   },
@@ -79,20 +80,14 @@ const columns = computed<ColumnDef<App.Entities.Duty, any>[]>(() => [
       const { institution } = row.original;
       if (!institution) return null;
       const displayName = resolveTranslatable(institution.short_name ?? institution.name);
-      return (
-        <a
-          href={route('institutions.edit', { id: institution.id })}
-          target="_blank"
-          class="transition hover:text-vusa-red"
-        >
-          <Button variant="ghost" size="xs" class="rounded-full">
-            <Icons.INSTITUTION />
-            <span class="max-w-[150px] truncate" title={displayName}>
-              {displayName}
-            </span>
-          </Button>
-        </a>
-      );
+      return h('a', {
+        href: route('institutions.edit', { id: institution.id }),
+        target: '_blank',
+        class: 'transition hover:text-vusa-red',
+      }, h(Button, { variant: 'ghost', size: 'xs', class: 'rounded-full' }, () => [
+        h(Icons.INSTITUTION),
+        h(TruncatedText, { text: displayName }),
+      ]));
     },
     size: 200,
   },
@@ -102,15 +97,11 @@ const columns = computed<ColumnDef<App.Entities.Duty, any>[]>(() => [
     cell: ({ row }) => {
       const { types } = row.original;
       if (!types?.length) return null;
-      return (
-        <div class="flex flex-wrap gap-1">
-          {types.map(type => (
-            <Badge key={type.id} variant="secondary" class="text-xs">
-              {resolveTranslatable(type.title)}
-            </Badge>
-          ))}
-        </div>
-      );
+      return h(TagList, {
+        items: types,
+        labelKey: 'title',
+        maxVisible: 3,
+      });
     },
     size: 200,
   },

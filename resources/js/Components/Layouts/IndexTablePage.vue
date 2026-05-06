@@ -29,12 +29,12 @@
 
       <!-- Main table -->
       <div class="relative min-h-[400px]">
-        <!-- Loading Skeleton -->
+        <!-- Loading Overlay -->
         <div v-if="isLoading"
-          class="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-background/80 backdrop-blur-sm">
-          <div class="flex flex-col items-center space-y-4">
-            <div class="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
-            <p class="text-sm text-muted-foreground">
+          class="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-background/40 backdrop-blur-[2px]">
+          <div class="flex flex-col items-center gap-3 rounded-xl border border-border/50 bg-background/95 px-6 py-4 shadow-lg">
+            <Spinner class="h-6 w-6 text-primary" />
+            <p class="text-sm font-medium text-muted-foreground">
               {{ $t('Loading data') }}...
             </p>
           </div>
@@ -107,6 +107,7 @@ import AdminContentPage from './AdminContentPage.vue';
 
 import ServerDataTable from '@/Components/Tables/ServerDataTable.vue';
 import { Button } from '@/Components/ui/button';
+import { Spinner } from '@/Components/ui/spinner';
 import type {
   IndexTablePageProps,
 } from '@/Types/TableConfigTypes';

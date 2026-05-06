@@ -119,7 +119,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { Badge } from '@/Components/ui/badge';
 import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
-import { createIdColumn, createTimestampColumn, createTextColumn } from '@/Utils/DataTableColumns.tsx';
+import { createIdColumn, createTimestampColumn, createTextColumn } from '@/Composables/useDataTableColumns';
 
 const props = defineProps<{
   form: App.Entities.Form;

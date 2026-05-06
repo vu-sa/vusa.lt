@@ -39,7 +39,7 @@ import {
   DialogTitle,
 } from '@/Components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
-import { createIdColumn } from '@/Utils/DataTableColumns.tsx';
+import { createIdColumn } from '@/Composables/useDataTableColumns';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { cn } from '@/Utils/Shadcn/utils';
 

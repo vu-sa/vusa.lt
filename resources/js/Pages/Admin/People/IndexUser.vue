@@ -9,12 +9,12 @@
   />
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
+import { h, ref, computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
-import { ref, computed } from 'vue';
 
-import { formatRelativeTime } from '@/Utils/IntlTime';
+import { DateCell, TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
 import Icons from '@/Types/Icons/regular';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
@@ -47,11 +47,11 @@ const getRowId = (row: App.Entities.User) => {
   return `user-${row.id}`;
 };
 
-const columns = computed<ColumnDef<App.Entities.User, any>[]>(() => [
+const columns = computed(() => [
   {
     accessorKey: 'name',
     header: () => 'Vardas',
-    cell: ({ row }) => row.getValue('name'),
+    cell: ({ row }) => h(TruncatedText, { text: row.getValue('name') as string }),
     size: 200,
     enableSorting: true,
   },
@@ -61,13 +61,12 @@ const columns = computed<ColumnDef<App.Entities.User, any>[]>(() => [
     cell: ({ row }) => {
       const { email } = row.original;
       if (!email) return null;
-      return (
-        <a href={`mailto:${email}`} class="transition hover:text-vusa-red">
-          <div class="max-w-[200px] truncate" title={email}>
-            {email}
-          </div>
-        </a>
-      );
+      return h(TruncatedLink, {
+        href: `mailto:${email}`,
+        text: email,
+        external: true,
+        class: 'transition hover:text-vusa-red',
+      });
     },
     size: 200,
   },
@@ -77,11 +76,12 @@ const columns = computed<ColumnDef<App.Entities.User, any>[]>(() => [
     cell: ({ row }) => {
       const { phone } = row.original;
       if (!phone) return null;
-      return (
-        <a href={`tel:${phone}`} class="transition hover:text-vusa-red">
-          {phone}
-        </a>
-      );
+      return h(TruncatedLink, {
+        href: `tel:${phone}`,
+        text: phone,
+        external: true,
+        class: 'transition hover:text-vusa-red',
+      });
     },
     size: 150,
   },
@@ -90,20 +90,15 @@ const columns = computed<ColumnDef<App.Entities.User, any>[]>(() => [
     header: () => 'Paskutinis prisijungimas',
     cell: ({ row }) => {
       const lastAction = row.original.last_action;
-      return (
-        <span class={lastAction ? '' : 'text-vusa-red'}>
-          {lastAction
-            ? formatRelativeTime(new Date(lastAction))
-            : 'Niekada'}
-        </span>
-      );
+      if (!lastAction) return h('span', { class: 'text-vusa-red' }, 'Niekada');
+      return h(DateCell, { date: lastAction, mode: 'relative' });
     },
     size: 200,
   },
   {
     accessorKey: 'duties_count',
     header: () => 'Pareigų skaičius',
-    cell: ({ row }) => row.getValue('duties_count'),
+    cell: ({ row }) => h(TruncatedText, { text: String(row.getValue('duties_count')) }),
     size: 120,
   },
   createStandardActionsColumn<App.Entities.User>('users', {
@@ -111,7 +106,7 @@ const columns = computed<ColumnDef<App.Entities.User, any>[]>(() => [
     canEdit: true,
     canDelete: true,
   }),
-]);
+]) as Array<ColumnDef<App.Entities.User, any>>;
 
 const tableConfig = computed<IndexTablePageProps<App.Entities.User>>(() => {
   return {

@@ -17,7 +17,7 @@ import { ref, computed, watch, capitalize } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { CalendarIcon, CheckCircle2Icon, AlertCircleIcon, CircleSlashIcon } from 'lucide-vue-next';
 
-import { formatStaticTime } from '@/Utils/IntlTime';
+import { formatMeetingDateTime } from '@/Utils/MeetingDisplay';
 import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
 import { Badge } from '@/Components/ui/badge';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
@@ -102,12 +102,11 @@ const columns = computed<ColumnDef<App.Entities.Meeting, any>[]>(() => [
     accessorKey: 'start_time',
     header: () => $t('Start Time'),
     cell: ({ row }) => {
-      const startTime = row.getValue('start_time');
       return (
         <div class="flex items-center gap-2">
           <CalendarIcon class="h-4 w-4 text-muted-foreground" />
           <span class="font-medium">
-            {formatStaticTime(new Date(startTime as string), {
+            {formatMeetingDateTime(row.original, {
               year: 'numeric',
               month: 'long',
               day: '2-digit',

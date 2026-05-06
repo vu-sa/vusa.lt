@@ -9,14 +9,14 @@
   />
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
+import { h, ref, computed } from 'vue';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
-import { ref, computed } from 'vue';
 import { Icon } from '@iconify/vue';
 
-import { capitalize } from '@/Utils/String';
-import { resolveTranslatable } from '@/Utils/DataTableColumns';
+import { resolveTranslatable } from '@/Composables/useDataTableColumns';
+import { TruncatedText } from '@/Components/ui/data-table/cells';
 import Icons from '@/Types/Icons/regular';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
@@ -47,18 +47,11 @@ const getRowId = (row: App.Entities.ResourceCategory) => {
   return `resource-category-${row.id}`;
 };
 
-const columns = computed<ColumnDef<App.Entities.ResourceCategory, any>[]>(() => [
+const columns = computed<Array<ColumnDef<App.Entities.ResourceCategory, any>>>(() => [
   {
     accessorKey: 'name',
     header: () => $t('forms.fields.title'),
-    cell: ({ row }) => {
-      const name = resolveTranslatable(row.getValue('name'));
-      return (
-        <div class="max-w-[300px] truncate" title={name}>
-          {name}
-        </div>
-      );
-    },
+    cell: ({ row }) => h(TruncatedText, { text: resolveTranslatable(row.getValue('name')) }),
     size: 300,
   },
   {
@@ -66,16 +59,14 @@ const columns = computed<ColumnDef<App.Entities.ResourceCategory, any>[]>(() => 
     header: () => 'Ikona',
     cell: ({ row }) => {
       const { icon } = row.original;
-      return icon
-        ? (
-            <div class="flex items-center gap-2">
-              <Icon icon={`fluent:${icon}`} />
-              <span>{icon}</span>
-            </div>
-          )
-        : (
-            <span class="text-muted-foreground">-</span>
-          );
+      if (!icon) {
+        return h('span', { class: 'text-muted-foreground' }, '-');
+      }
+
+      return h('div', { class: 'flex items-center gap-2' }, [
+        h(Icon, { icon: `fluent:${icon}` }),
+        h('span', {}, icon),
+      ]);
     },
     size: 200,
   },

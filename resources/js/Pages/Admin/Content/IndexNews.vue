@@ -9,19 +9,20 @@
   />
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
+import { h, ref, computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
-import { ref, computed } from 'vue';
 
 import { formatStaticTime } from '@/Utils/IntlTime';
 import Icons from '@/Types/Icons/regular';
+import { TruncatedText } from '@/Components/ui/data-table/cells';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import {
   createIdColumn,
   createTenantColumn,
-} from '@/Utils/DataTableColumns';
+} from '@/Composables/useDataTableColumns';
 import type {
   IndexTablePageProps,
 } from '@/Types/TableConfigTypes';
@@ -51,18 +52,15 @@ const getRowId = (row: App.Entities.News) => {
   return `news-${row.id}`;
 };
 
-const columns = computed<ColumnDef<App.Entities.News, any>[]>(() => [
+const columns = computed<Array<ColumnDef<App.Entities.News, any>>>(() => [
   createIdColumn<App.Entities.News>({ width: 70 }),
   {
     accessorKey: 'title',
     header: () => 'Pavadinimas',
-    cell: ({ row }) => {
-      return (
-        <div class="max-w-[200px] text-wrap">
-          {row.getValue('title')}
-        </div>
-      );
-    },
+    cell: ({ row }) => h(TruncatedText, {
+      text: row.getValue('title') as string,
+      lines: 2,
+    }),
     size: 200,
     enableSorting: true,
   },
@@ -80,17 +78,12 @@ const columns = computed<ColumnDef<App.Entities.News, any>[]>(() => [
     cell: ({ row }) => {
       const otherNews = row.original.other_language_news;
       if (!otherNews) return null;
-      return (
-        <a
-          href={route('news.edit', { id: otherNews.id })}
-          target="_blank"
-          class="hover:underline"
-        >
-          <div class="max-w-[100px] truncate" title={otherNews.title}>
-            {otherNews.title}
-          </div>
-        </a>
-      );
+      return h('a', {
+        href: route('news.edit', { id: otherNews.id }),
+        target: '_blank',
+        class: 'hover:underline block truncate',
+        title: otherNews.title,
+      }, otherNews.title);
     },
     size: 110,
   },

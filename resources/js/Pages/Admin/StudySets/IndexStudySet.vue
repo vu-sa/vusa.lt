@@ -10,7 +10,8 @@
   </IndexTablePage>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
+import { h } from 'vue';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ref, computed, watch, capitalize } from 'vue';
@@ -18,14 +19,14 @@ import { usePage } from '@inertiajs/vue3';
 
 import Icons from '@/Types/Icons/regular';
 import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
-import { Badge } from '@/Components/ui/badge';
+import { TruncatedBadge } from '@/Components/ui/data-table/cells';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import {
   createTitleColumn,
   createTenantColumn,
   createBooleanColumn,
-} from '@/Utils/DataTableColumns';
+} from '@/Composables/useDataTableColumns';
 import type { IndexTablePageProps } from '@/Types/TableConfigTypes';
 
 interface StudySetRow {
@@ -73,7 +74,7 @@ const tenantOptions = computed(() => {
 
 const getRowId = (row: StudySetRow) => `study-set-${row.id}`;
 
-const columns = computed<ColumnDef<StudySetRow, any>[]>(() => [
+const columns = computed<Array<ColumnDef<StudySetRow, any>>>(() => [
   createTitleColumn<StudySetRow>({
     accessorKey: 'name',
     routeName: 'studySets.edit',
@@ -85,14 +86,7 @@ const columns = computed<ColumnDef<StudySetRow, any>[]>(() => [
   {
     accessorKey: 'courses_count',
     header: () => $t('Dalykų sk.'),
-    cell: ({ row }) => {
-      const count = row.original.courses_count;
-      return (
-        <Badge variant="outline">
-          {count}
-        </Badge>
-      );
-    },
+    cell: ({ row }) => h(TruncatedBadge, { text: String(row.original.courses_count), variant: 'outline' }),
     size: 120,
   },
   {

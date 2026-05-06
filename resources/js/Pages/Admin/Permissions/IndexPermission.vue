@@ -9,7 +9,7 @@
   />
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ref, computed } from 'vue';
@@ -19,7 +19,7 @@ import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import {
   createTextColumn,
   createTimestampColumn,
-} from '@/Utils/DataTableColumns';
+} from '@/Composables/useDataTableColumns';
 import type {
   IndexTablePageProps,
 } from '@/Types/TableConfigTypes';
@@ -49,7 +49,7 @@ const getRowId = (row: App.Entities.Permission) => {
   return `permission-${row.id}`;
 };
 
-const columns = computed<ColumnDef<App.Entities.Permission, any>[]>(() => [
+const columns = computed(() => [
   createTextColumn<App.Entities.Permission>('name', {
     title: $t('forms.fields.name'),
     width: 300,
