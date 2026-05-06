@@ -1,54 +1,32 @@
 <template>
-  <div class="space-y-2">
-    <Label>
-      Ikona. <span class="text-zinc-400"> Ikonų ieškokite <a target="_blank" class="font-bold underline"
-        href="https://icon-sets.iconify.design/fluent/">čia</a>. Suradę reikiamą ikoną pasirinkite iš
-        sąrašo. </span>
-    </Label>
-    <div class="flex items-center gap-2">
-      <Icon v-if="iconRef" :icon="`fluent:${iconRef}`" class="size-5 shrink-0" />
-      <Combobox v-model="iconRef" @update:model-value="(val) => $emit('update:icon', val)">
-        <ComboboxAnchor class="w-full">
-          <ComboboxInput v-model="searchTerm" placeholder="Pasirinkti..." />
-          <ComboboxTrigger />
-        </ComboboxAnchor>
-        <ComboboxList>
-          <ComboboxViewport class="max-h-60">
-            <ComboboxEmpty>Nerasta</ComboboxEmpty>
-            <ComboboxVirtualizer
-              v-slot="{ option }"
-              :options="filteredOptions"
-              :estimate-size="32"
-              :text-content="(opt: IconOption) => opt.label"
-            >
-              <ComboboxItem :value="option.value" class="flex items-center gap-2">
-                <Icon :icon="`fluent:${option.value}`" class="size-4 shrink-0" />
-                <span class="truncate">{{ option.label }}</span>
-              </ComboboxItem>
-            </ComboboxVirtualizer>
-          </ComboboxViewport>
-        </ComboboxList>
-      </Combobox>
-    </div>
+  <div class="flex items-center gap-2">
+    <Icon v-if="selectedIcon" :icon="`fluent:${selectedIcon.value}`" class="size-5 shrink-0" />
+    <SingleSelect
+      v-model="selectedIcon"
+      :options="iconOptions"
+      label-field="label"
+      value-field="value"
+      placeholder="Pasirinkti ikoną..."
+      empty-text="Nerasta"
+    >
+      <template #prefix="{ selected }">
+        <Icon v-if="selected" :icon="`fluent:${selected.value}`" class="size-4 shrink-0" />
+      </template>
+      <template #option="{ item }">
+        <div class="flex items-center gap-2">
+          <Icon :icon="`fluent:${item.value}`" class="size-4 shrink-0" />
+          <span class="truncate">{{ item.label }}</span>
+        </div>
+      </template>
+    </SingleSelect>
   </div>
 </template>
 
 <script setup lang="ts">
 import { Icon } from '@iconify/vue';
-import { computed, ref } from 'vue';
-import { ComboboxVirtualizer } from 'reka-ui';
+import { computed, ref, watch } from 'vue';
 
-import { Label } from '@/Components/ui/label';
-import {
-  Combobox,
-  ComboboxAnchor,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-  ComboboxViewport,
-  ComboboxTrigger,
-} from '@/Components/ui/combobox';
+import { SingleSelect } from '@/Components/ui/single-select';
 
 interface IconOption {
   value: string;
@@ -59,10 +37,9 @@ const props = defineProps<{
   icon: string | null;
 }>();
 
-defineEmits<(e: 'update:icon', value: string) => void>();
+const emit = defineEmits<(e: 'update:icon', value: string) => void>();
 
-const iconRef = ref(props.icon);
-const searchTerm = ref('');
+const iconOptions = ref<IconOption[]>([]);
 
 const getIconOptions = async () => {
   const response = await fetch('https://api.iconify.design/collection?prefix=fluent');
@@ -70,20 +47,22 @@ const getIconOptions = async () => {
   return iconData;
 };
 
-const icons = await getIconOptions();
-
-const iconOptions = computed<IconOption[]>(() => {
-  return icons.uncategorized?.map((icon: string) => ({
+getIconOptions().then((icons) => {
+  iconOptions.value = icons.uncategorized?.map((icon: string) => ({
     value: icon,
     label: icon,
   })) ?? [];
 });
 
-const filteredOptions = computed(() => {
-  if (!searchTerm.value) {
-    return iconOptions.value;
-  }
-  const term = searchTerm.value.toLowerCase();
-  return iconOptions.value.filter(opt => opt.label.toLowerCase().includes(term));
+const selectedIcon = computed({
+  get: () => {
+    if (!props.icon) return null;
+    return iconOptions.value.find(opt => opt.value === props.icon) ?? { value: props.icon, label: props.icon };
+  },
+  set: (val: IconOption | null) => {
+    if (val?.value) {
+      emit('update:icon', val.value);
+    }
+  },
 });
 </script>

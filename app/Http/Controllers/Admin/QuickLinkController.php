@@ -28,43 +28,33 @@ class QuickLinkController extends AdminController
     /**
      * Display a listing of the resource.
      */
-    public function index(IndexQuickLinkRequest $request)
+    public function index(Request $request)
     {
         $this->handleAuthorization('viewAny', QuickLink::class);
 
-        $query = QuickLink::query()->with('tenant:id,shortname');
+        $tenants = GetTenantsForUpserts::execute('quickLinks.read.padalinys', $this->authorizer)
+            ->filter(fn ($tenant) => in_array($tenant['type'], ['pagrindinis', 'padalinys']))
+            ->values();
 
-        $searchableColumns = ['text', 'link'];
+        $tenantId = $request->input('tenant', $tenants->first()['id'] ?? null);
+        $lang = $request->input('lang', 'lt');
 
-        $query = $this->applyTanstackFilters(
-            $query,
-            $request,
-            $this->tableService,
-            $searchableColumns,
-            [
-                'applySortBeforePagination' => true,
-                'tenantRelation' => 'tenant',
-                'permission' => 'quickLinks.read.padalinys',
-            ]
-        );
+        $tenant = $tenantId ? Tenant::find($tenantId) : null;
 
-        $quickLinks = $query->paginate($request->input('per_page', 20))
-            ->withQueryString();
+        $quickLinks = [];
+        if ($tenant) {
+            $quickLinks = QuickLink::query()
+                ->where('tenant_id', $tenant->id)
+                ->where('lang', $lang)
+                ->orderBy('order')
+                ->get();
+        }
 
         return $this->inertiaResponse('Admin/Content/IndexQuickLink', [
-            'quickLinks' => [
-                'data' => $quickLinks->items(),
-                'meta' => [
-                    'total' => $quickLinks->total(),
-                    'per_page' => $quickLinks->perPage(),
-                    'current_page' => $quickLinks->currentPage(),
-                    'last_page' => $quickLinks->lastPage(),
-                    'from' => $quickLinks->firstItem(),
-                    'to' => $quickLinks->lastItem(),
-                ],
-            ],
-            'filters' => $request->getFilters(),
-            'sorting' => $request->getSorting(),
+            'quickLinks' => $quickLinks,
+            'tenant' => $tenant,
+            'tenants' => $tenants,
+            'currentLang' => $lang,
         ]);
     }
 
@@ -178,19 +168,7 @@ class QuickLinkController extends AdminController
         return redirect()->route('quickLinks.index')->with('info', 'Sėkmingai ištrinta greitoji nuoroda!');
     }
 
-    public function editOrder(Tenant $tenant, string $lang)
-    {
-        $quickLinks = QuickLink::query()->where('tenant_id', $tenant->id)->where('lang', $lang)->orderBy('order')->get();
-
-        $this->handleAuthorization('update', $quickLinks->first());
-
-        return $this->inertiaResponse('Admin/Content/EditQuickLinkOrder', [
-            'quickLinks' => $quickLinks,
-            'tenant' => $tenant,
-        ]);
-    }
-
-    public function updateOrder(Request $request, Tenant $tenant)
+    public function updateOrder(Request $request)
     {
         $request->validate([
             'orderList' => 'required|array',
@@ -208,7 +186,13 @@ class QuickLinkController extends AdminController
             }
         });
 
-        return redirect()->route('quickLinks.index')->with('success', 'Sėkmingai atnaujinta greitųjų nuorodų tvarka!');
+        $tenantId = $request->input('tenant_id');
+        $lang = $request->input('lang', 'lt');
+
+        return redirect()->route('quickLinks.index', [
+            'tenant' => $tenantId,
+            'lang' => $lang,
+        ])->with('success', 'Sėkmingai atnaujinta greitųjų nuorodų tvarka!');
     }
 
     public static function getQuickLinkTypeOptions($type)

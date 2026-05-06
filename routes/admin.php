@@ -64,10 +64,6 @@ Route::resource('tags', TagController::class)->except(['show']);
 Route::get('tags/merge', [TagController::class, 'mergeTags'])->name('tags.merge');
 Route::post('tags/merge', [TagController::class, 'processMergeTags'])->name('tags.processMerge');
 
-// change order main page
-Route::get('quickLinks/tenant/{tenant}/edit-order/{lang}', [QuickLinkController::class, 'editOrder'])->name('quickLinks.edit-order')
-    ->whereIn('lang', ['lt', 'en']);
-
 Route::post('quickLinks/update-order', [QuickLinkController::class, 'updateOrder'])->name('quickLinks.update-order');
 Route::resource('quickLinks', QuickLinkController::class)->except(['show']);
 Route::resource('banners', BannerController::class)->except(['show']);

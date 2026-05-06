@@ -35,6 +35,11 @@ class QuickLink extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'is_active' => 'boolean',
+        'is_important' => 'boolean',
+    ];
+
     protected static function booted()
     {
         static::saved(function ($quickLink) {
