@@ -37,6 +37,7 @@ class DatabaseSeeder extends Seeder
         $this->call(CategoriesSeeder::class);
         $this->call(AdminSeeder::class);
         $this->call(TenantSeeder::class);
+        $this->call(StudySetSeeder::class);
         $this->call(TypeSeeder::class);
         $this->call(MemberRegistrationFormSeeder::class);
 
