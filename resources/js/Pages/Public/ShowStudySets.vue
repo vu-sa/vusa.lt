@@ -23,7 +23,10 @@
       <div v-if="tenantOptions.length > 0" class="mt-5 sm:mt-6 flex justify-center">
         <Select v-model="selectedTenantId">
           <SelectTrigger
-            class="h-11 min-w-48 rounded-full border-primary/20 bg-primary/5 px-5 text-base font-medium text-foreground shadow-sm hover:border-primary/40 hover:bg-primary/10 transition-colors"
+            :class="[
+              'h-11 min-w-48 rounded-full border-primary/20 bg-primary/5 px-5 text-base font-medium',
+              'text-foreground shadow-sm transition-colors hover:border-primary/40 hover:bg-primary/10',
+            ]"
           >
             <GraduationCap class="size-4 text-primary" />
             <SelectValue />
@@ -48,7 +51,10 @@
           v-model="searchQuery"
           type="text"
           :placeholder="$t('studySets.search_placeholder')"
-          class="h-10 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          :class="[
+            'h-10 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-sm',
+            'placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+          ]"
         >
         <Search class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
       </div>
@@ -63,9 +69,15 @@
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="__all__">{{ $t('studySets.all_semesters') }}</SelectItem>
-          <SelectItem value="autumn">{{ $t('studySets.autumn') }}</SelectItem>
-          <SelectItem value="spring">{{ $t('studySets.spring') }}</SelectItem>
+          <SelectItem value="__all__">
+            {{ $t('studySets.all_semesters') }}
+          </SelectItem>
+          <SelectItem value="autumn">
+            {{ $t('studySets.autumn') }}
+          </SelectItem>
+          <SelectItem value="spring">
+            {{ $t('studySets.spring') }}
+          </SelectItem>
         </SelectContent>
       </Select>
 
@@ -88,8 +100,12 @@
         <div class="rounded-full bg-muted/60 p-4">
           <FileX class="size-8 text-muted-foreground/60" />
         </div>
-        <p class="mt-4 text-sm font-medium text-foreground">{{ $t('studySets.no_sets') }}</p>
-        <p class="mt-1 text-sm text-muted-foreground">{{ $t('studySets.no_sets_description') }}</p>
+        <p class="mt-4 text-sm font-medium text-foreground">
+          {{ $t('studySets.no_sets') }}
+        </p>
+        <p class="mt-1 text-sm text-muted-foreground">
+          {{ $t('studySets.no_sets_description') }}
+        </p>
       </div>
 
       <!-- Filters returned no results -->
@@ -97,8 +113,12 @@
         <div class="rounded-full bg-muted/60 p-4">
           <Search class="size-8 text-muted-foreground/60" />
         </div>
-        <p class="mt-4 text-sm font-medium text-foreground">{{ $t('studySets.no_results') }}</p>
-        <p class="mt-1 text-sm text-muted-foreground">{{ $t('studySets.no_results_description') }}</p>
+        <p class="mt-4 text-sm font-medium text-foreground">
+          {{ $t('studySets.no_results') }}
+        </p>
+        <p class="mt-1 text-sm text-muted-foreground">
+          {{ $t('studySets.no_results_description') }}
+        </p>
       </div>
 
       <div v-else class="grid gap-4 lg:grid-cols-2">
@@ -145,64 +165,79 @@
                   <th class="py-2.5 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     {{ $t('studySets.credits_short') }}
                   </th>
+                  <th class="py-2.5 pl-3 text-right">
+                    <span class="sr-only">{{ $t('studySets.reviews') }}</span>
+                  </th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-border/40">
-                <tr
+                <template
                   v-for="course in getVisibleCourses(set)"
                   :key="course.id"
-                  class="transition-colors hover:bg-muted/30"
                 >
-                  <td class="py-3 pr-4">
-                    <span class="font-medium text-card-foreground">{{ course.name }}</span>
-                  </td>
-                  <td class="py-3 pr-4">
-                    <Badge
-                      variant="outline"
-                      :class="[
-                        'text-xs',
-                        course.semester === 'autumn'
-                          ? 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-400'
-                          : 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400'
-                      ]"
-                    >
-                      {{ course.semester === 'autumn' ? $t('studySets.autumn') : $t('studySets.spring') }}
-                    </Badge>
-                  </td>
-                  <td class="py-3 text-right tabular-nums text-muted-foreground font-medium">
-                    {{ course.credits }}
-                  </td>
-                </tr>
+                  <tr class="transition-colors hover:bg-muted/30">
+                    <td class="py-3 pr-4">
+                      <span class="font-medium text-card-foreground">{{ course.name }}</span>
+                    </td>
+                    <td class="py-3 pr-4">
+                      <Badge
+                        variant="outline"
+                        :class="[
+                          'text-xs',
+                          course.semester === 'autumn'
+                            ? 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-400'
+                            : 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400'
+                        ]"
+                      >
+                        {{ course.semester === 'autumn' ? $t('studySets.autumn') : $t('studySets.spring') }}
+                      </Badge>
+                    </td>
+                    <td class="py-3 text-right tabular-nums text-muted-foreground font-medium">
+                      {{ course.credits }}
+                    </td>
+                    <td class="py-3 pl-3 text-right">
+                      <Button
+                        v-if="course.reviews.length > 0"
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        class="-my-1 h-7 px-2 text-muted-foreground hover:text-foreground"
+                        :aria-expanded="isCourseReviewsExpanded(set, course)"
+                        :aria-controls="getCourseReviewPanelId(set, course)"
+                        :aria-label="$t('studySets.reviews')"
+                        @click="toggleCourseReviews(set, course)"
+                      >
+                        <MessageSquareText class="size-3.5" />
+                        <span class="tabular-nums text-xs">{{ course.reviews.length }}</span>
+                      </Button>
+                    </td>
+                  </tr>
+
+                  <tr
+                    v-if="isCourseReviewsExpanded(set, course)"
+                    :id="getCourseReviewPanelId(set, course)"
+                    class="bg-muted/20"
+                  >
+                    <td colspan="4" class="py-0">
+                      <div class="flex flex-col gap-3 px-3 py-3 sm:px-4">
+                        <div
+                          v-for="review in course.reviews"
+                          :key="review.id"
+                          class="rounded-lg border border-border/50 bg-background/70 p-4"
+                        >
+                          <p class="text-xs font-semibold text-foreground">
+                            {{ review.lecturer }}
+                          </p>
+                          <p class="mt-3 text-sm leading-relaxed text-muted-foreground">
+                            {{ review.comment }}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
               </tbody>
             </table>
-          </div>
-
-          <!-- Reviews accordion -->
-          <div v-if="getReviewsForSet(set).length > 0" class="px-4 sm:px-5 border-t border-border/50 mt-1">
-            <Accordion type="single" collapsible class="w-full">
-              <AccordionItem value="reviews" class="border-0">
-                <AccordionTrigger class="py-3.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:no-underline">
-                  {{ $t('studySets.reviews') }}
-                  <Badge variant="secondary" class="ml-2 text-xs">
-                    {{ getReviewsForSet(set).length }}
-                  </Badge>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div class="grid gap-3 pb-4 sm:grid-cols-2">
-                    <div
-                      v-for="review in getReviewsForSet(set)"
-                      :key="review.id"
-                      class="rounded-lg bg-muted/40 p-4 border border-border/50"
-                    >
-                      <p class="text-sm text-muted-foreground leading-relaxed">{{ review.comment }}</p>
-                      <p class="mt-3 text-xs font-semibold text-foreground">
-                        &mdash; {{ review.lecturer }}
-                      </p>
-                    </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
           </div>
 
           <!-- Footer with updated date -->
@@ -219,27 +254,29 @@
       <div class="rounded-full bg-muted/60 p-4">
         <FileX class="size-8 text-muted-foreground/60" />
       </div>
-      <p class="mt-4 text-sm font-medium text-foreground">{{ $t('studySets.no_sets') }}</p>
-      <p class="mt-1 text-sm text-muted-foreground">{{ $t('studySets.no_sets_description') }}</p>
+      <p class="mt-4 text-sm font-medium text-foreground">
+        {{ $t('studySets.no_sets') }}
+      </p>
+      <p class="mt-1 text-sm text-muted-foreground">
+        {{ $t('studySets.no_sets_description') }}
+      </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
-import { Head } from "@inertiajs/vue3";
-import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import { usePageBreadcrumbs, BreadcrumbHelpers, createBreadcrumbItem } from "@/Composables/useBreadcrumbsUnified";
+import { computed, ref, watch } from 'vue';
+import { Head } from '@inertiajs/vue3';
+import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+import { BookOpen, FileX, GraduationCap, MessageSquareText, Search, X } from 'lucide-vue-next';
 
-import { Button } from "@/Components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { Switch } from "@/Components/ui/switch";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/Components/ui/accordion";
-import { Badge } from "@/Components/ui/badge";
-import { BookOpen, FileX, GraduationCap, Search, X } from "lucide-vue-next";
-import { formatVuFacultyShortname } from "@/Utils/Tenant";
-
-import IFluentDocument16Regular from "~icons/fluent/document-16-regular";
+import { usePageBreadcrumbs, BreadcrumbHelpers, createBreadcrumbItem } from '@/Composables/useBreadcrumbsUnified';
+import { Button } from '@/Components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Switch } from '@/Components/ui/switch';
+import { Badge } from '@/Components/ui/badge';
+import { formatVuFacultyShortname } from '@/Utils/Tenant';
+import IFluentDocument16Regular from '~icons/fluent/document-16-regular';
 
 interface ReviewData {
   id: string;
@@ -282,39 +319,40 @@ usePageBreadcrumbs(() => {
     createBreadcrumbItem(
       $t('studySets.page_title'),
       undefined,
-      IFluentDocument16Regular
+      IFluentDocument16Regular,
     ),
   ]);
 });
 
 const tenantOptions = computed(() =>
-  props.tenants.map((t) => ({
+  props.tenants.map(t => ({
     value: String(t.id),
     label: formatVuFacultyShortname(t),
-  }))
+  })),
 );
 
 const getInitialTenantId = (): string => {
   const params = new URLSearchParams(window.location.search);
-  const facultyParam = params.get("faculty");
+  const facultyParam = params.get('faculty');
 
-  if (facultyParam && props.tenants.some((t) => String(t.id) === facultyParam)) {
+  if (facultyParam && props.tenants.some(t => String(t.id) === facultyParam)) {
     return facultyParam;
   }
 
-  return props.tenants.length > 0 ? String(props.tenants[0].id) : "";
+  return props.tenants.length > 0 ? String(props.tenants[0].id) : '';
 };
 
 const selectedTenantId = ref(getInitialTenantId());
-const searchQuery = ref("");
-const selectedSemester = ref("__all__");
+const searchQuery = ref('');
+const selectedSemester = ref('__all__');
 const searchAllFaculties = ref(false);
+const expandedCourseBySet = ref<Record<string, string | null>>({});
 
-const hasActiveFilters = computed(() => searchQuery.value !== "" || selectedSemester.value !== "__all__" || searchAllFaculties.value);
+const hasActiveFilters = computed(() => searchQuery.value !== '' || selectedSemester.value !== '__all__' || searchAllFaculties.value);
 
 const resetFilters = () => {
-  searchQuery.value = "";
-  selectedSemester.value = "__all__";
+  searchQuery.value = '';
+  selectedSemester.value = '__all__';
   searchAllFaculties.value = false;
 };
 
@@ -322,12 +360,13 @@ watch(selectedTenantId, (newId) => {
   const url = new URL(window.location.href);
 
   if (newId && props.tenants.length > 0 && newId !== String(props.tenants[0].id)) {
-    url.searchParams.set("faculty", newId);
-  } else {
-    url.searchParams.delete("faculty");
+    url.searchParams.set('faculty', newId);
+  }
+  else {
+    url.searchParams.delete('faculty');
   }
 
-  window.history.replaceState({}, "", url.toString());
+  window.history.replaceState({}, '', url.toString());
 
   resetFilters();
 });
@@ -346,7 +385,7 @@ const tenantStudySets = computed(() => {
 
 const allStudySets = computed((): StudySetData[] => {
   return Object.entries(props.studySetsByTenant).flatMap(([tenantId, sets]) =>
-    sets.map((set) => ({ ...set, _tenantLabel: tenantLabelMap.value[tenantId] }))
+    sets.map(set => ({ ...set, _tenantLabel: tenantLabelMap.value[tenantId] })),
   );
 });
 
@@ -360,8 +399,8 @@ const filteredStudySets = computed(() => {
 
   return searchPool.value.filter((set) => {
     // Semester filter: set must have at least one course matching the semester
-    if (semester !== "__all__") {
-      const hasMatchingSemester = set.courses.some((c) => c.semester === semester);
+    if (semester !== '__all__') {
+      const hasMatchingSemester = set.courses.some(c => c.semester === semester);
       if (!hasMatchingSemester) return false;
     }
 
@@ -369,7 +408,7 @@ const filteredStudySets = computed(() => {
     if (query) {
       const nameMatch = set.name.toLowerCase().includes(query);
       const descMatch = set.description?.toLowerCase().includes(query) ?? false;
-      const courseMatch = set.courses.some((c) => c.name.toLowerCase().includes(query));
+      const courseMatch = set.courses.some(c => c.name.toLowerCase().includes(query));
       if (!nameMatch && !descMatch && !courseMatch) return false;
     }
 
@@ -378,12 +417,19 @@ const filteredStudySets = computed(() => {
 });
 
 const getVisibleCourses = (set: StudySetData): CourseData[] => {
-  if (selectedSemester.value === "__all__") return set.courses;
-  return set.courses.filter((c) => c.semester === selectedSemester.value);
+  if (selectedSemester.value === '__all__') return set.courses;
+  return set.courses.filter(c => c.semester === selectedSemester.value);
 };
 
-const getReviewsForSet = (set: StudySetData): ReviewData[] => {
-  const courses = getVisibleCourses(set);
-  return courses.flatMap((c) => c.reviews);
+const getCourseReviewPanelId = (set: StudySetData, course: CourseData): string => {
+  return `study-set-${set.id}-course-${course.id}-reviews`;
+};
+
+const isCourseReviewsExpanded = (set: StudySetData, course: CourseData): boolean => {
+  return expandedCourseBySet.value[set.id] === course.id;
+};
+
+const toggleCourseReviews = (set: StudySetData, course: CourseData): void => {
+  expandedCourseBySet.value[set.id] = isCourseReviewsExpanded(set, course) ? null : course.id;
 };
 </script>
