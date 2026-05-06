@@ -29,16 +29,14 @@
         </p>
       </div>
       <FormFieldWrapper id="institution_id" :label="$t('Kas organizuoja mokymus?')" required :error="form.errors.institution_id">
-        <Select v-model="institutionIdString">
-          <SelectTrigger>
-            <SelectValue :placeholder="$t('Pasirinkite instituciją')" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem v-for="institution in institutions" :key="institution.value" :value="String(institution.value)">
-              {{ institution.label }}
-            </SelectItem>
-          </SelectContent>
-        </Select>
+        <SingleSelect
+          v-model="selectedInstitution"
+          :options="institutionOptions"
+          label-field="label"
+          value-field="value"
+          :placeholder="$t('Pasirinkite instituciją')"
+          :empty-text="$t('Nerasta institucijų')"
+        />
       </FormFieldWrapper>
       <FormFieldWrapper id="start_time" label="Preliminari mokymų pradžia" required :error="form.errors.start_time">
         <DateTimePicker v-model="form.start_time" :hour-range="[8, 22]" :minute-step="5" />
@@ -61,7 +59,7 @@ import AdminForm from './AdminForm.vue';
 
 import { DateTimePicker } from '@/Components/ui/date-picker';
 import { Label } from '@/Components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { SingleSelect } from '@/Components/ui/single-select';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 
 const { training } = defineProps<{
@@ -76,29 +74,28 @@ defineEmits<{
 const form = useForm('CreateTraining', training);
 const locale = ref('lt');
 
-// Shadcn Select requires string values
-const institutionIdString = computed({
-  get: () => form.institution_id != null ? String(form.institution_id) : '',
-  set: (val: string) => { form.institution_id = val ? Number(val) : null; },
-});
-
-// NOTE: Duplicated in InstitutionSelectorForm.vue
-const institutions = computed(() => {
-  return usePage()
-    .props.auth?.user?.current_duties?.map((duty) => {
-      if (!duty.institution) {
-        return;
-      }
-
+// Build searchable institution options from user's current duties
+const institutionOptions = computed(() => {
+  const duties = usePage().props.auth?.user?.current_duties ?? [];
+  const mapped = duties
+    .map((duty: any) => {
+      if (!duty.institution) return null;
       return {
-        label: duty.institution?.name,
-        value: duty.institution?.id,
+        label: duty.institution.name as string,
+        value: duty.institution.id as number,
       };
     })
-    // filter unique
-    .filter(institution => institution !== undefined).filter(
-      (value, index, self) =>
-        self.findIndex(t => t?.value === value?.value) === index,
-    );
+    .filter((item: { label: string; value: number } | null): item is { label: string; value: number } => item !== null);
+
+  // Dedupe by value
+  return mapped.filter((value, index, self) =>
+    self.findIndex(t => t.value === value.value) === index,
+  );
+});
+
+// Bridge: SingleSelect operates on full objects, form stores institution_id for server submission
+const selectedInstitution = computed({
+  get: () => institutionOptions.value.find(i => i.value === form.institution_id) ?? null,
+  set: (val: { label: string; value: number } | null) => { form.institution_id = val?.value ?? null; },
 });
 </script>

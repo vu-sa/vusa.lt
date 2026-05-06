@@ -24,22 +24,13 @@
           </Select>
         </FormFieldWrapper>
         <FormFieldWrapper id="parent_id" label="Tėvinis elementas">
-          <Select
-            :model-value="form.parent_id != null ? String(form.parent_id) : undefined"
-            @update:model-value="val => form.parent_id = val === '__none__' ? null : val"
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Pasirinkti tėvinį elementą..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__none__">
-                -- Nėra --
-              </SelectItem>
-              <SelectItem v-for="element in parentElements" :key="element.id" :value="String(element.id)">
-                {{ element.name }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          <SingleSelect
+            v-model="selectedParent"
+            :options="parentOptions"
+            label-field="label"
+            value-field="value"
+            placeholder="Pasirinkti tėvinį elementą..."
+          />
         </FormFieldWrapper>
       </div>
       <FormFieldWrapper id="link_style" label="Nuorodos stilius" required>
@@ -85,19 +76,13 @@
           </Select>
         </FormFieldWrapper>
         <FormFieldWrapper v-if="form.linkType !== 'url'" id="page" label="Pasirinkite puslapį">
-          <Select
-            :model-value="form.pageSelection != null ? String(form.pageSelection) : undefined"
-            @update:model-value="handlePageSelection"
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Pasirinkti puslapį..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="opt in typeOptions" :key="opt.value" :value="String(opt.value)">
-                {{ opt.label }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          <SingleSelect
+            v-model="selectedPage"
+            :options="typeOptions"
+            label-field="label"
+            value-field="value"
+            placeholder="Pasirinkti puslapį..."
+          />
         </FormFieldWrapper>
       </div>
       <FormFieldWrapper id="url" label="Nuoroda" required>
@@ -156,6 +141,7 @@ import { Button } from '@/Components/ui/button';
 import { ButtonGroup } from '@/Components/ui/button-group';
 import { Input } from '@/Components/ui/input';
 import { Textarea } from '@/Components/ui/textarea';
+import { SingleSelect } from '@/Components/ui/single-select';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 
 const props = defineProps<{
@@ -207,6 +193,28 @@ const columnOptions = [
   { value: 2, label: '2' },
   { value: 3, label: '3' },
 ];
+
+const parentOptions = computed(() => [
+  { value: '__none__', label: '-- Nėra --' },
+  ...props.parentElements.map(e => ({ value: String(e.id), label: e.name })),
+]);
+
+// Bridge: SingleSelect operates on full objects, form stores parent_id
+const selectedParent = computed({
+  get: () => parentOptions.value.find(p => p.value === String(form.parent_id ?? '__none__')) ?? parentOptions.value[0],
+  set: (val: { value: string; label: string } | null) => {
+    form.parent_id = val?.value === '__none__' ? null : val?.value ?? null;
+  },
+});
+
+// Bridge: SingleSelect operates on full objects, form stores pageSelection
+const selectedPage = computed({
+  get: () => typeOptions.value.find(opt => String(opt.value) === form.pageSelection) ?? null,
+  set: (val: { value: string | number; label: string; option: any } | null) => {
+    form.pageSelection = val?.value ? String(val.value) : null;
+    handlePageSelection(form.pageSelection);
+  },
+});
 
 const currentLang = usePage().props.app.locale;
 

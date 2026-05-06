@@ -29,16 +29,21 @@
 
       <div class="grid gap-4 lg:grid-cols-2">
         <FormFieldWrapper id="institution_id" label="Institucija" :error="form.errors.institution_id">
-          <Select v-model="institutionIdString">
-            <SelectTrigger>
-              <SelectValue placeholder="Pasirink instituciją pagal pavadinimą..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="inst in institutionsFromDatabase" :key="inst.value" :value="String(inst.value)">
-                {{ inst.label }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          <SingleSelect
+            v-model="selectedInstitution"
+            :options="assignableInstitutions"
+            label-field="name"
+            value-field="id"
+            :placeholder="$t('Pasirink instituciją pagal pavadinimą...')"
+            :empty-text="$t('Nerasta institucijų')"
+          >
+            <template #option="{ item }">
+              <span class="flex-1 truncate">{{ item.name }}</span>
+              <Badge v-if="item.tenant?.shortname" variant="secondary" class="text-xs shrink-0">
+                {{ item.tenant.shortname }}
+              </Badge>
+            </template>
+          </SingleSelect>
         </FormFieldWrapper>
 
         <FormFieldWrapper id="places_to_occupy" :label="$t('forms.fields.duty_people_count')" :error="form.errors.places_to_occupy">
@@ -218,7 +223,7 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { MultiSelect } from '@/Components/ui/multi-select';
 import { NumberField } from '@/Components/ui/number-field';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { SingleSelect } from '@/Components/ui/single-select';
 import { TransferList } from '@/Components/ui/transfer-list';
 import { changeDutyNameEndings } from '@/Utils/String';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
@@ -269,15 +274,10 @@ const selectedRoles = computed({
   set: (items: { label: string; value: number }[]) => { form.roles = items.map(item => item.value); },
 });
 
-const institutionsFromDatabase = props.assignableInstitutions.map(institution => ({
-  label: `${institution.name} (${institution.tenant?.shortname})`,
-  value: institution.id,
-}));
-
-// Shadcn Select requires string values
-const institutionIdString = computed({
-  get: () => form.institution_id != null ? String(form.institution_id) : '',
-  set: (val: string) => { form.institution_id = val ? Number(val) : null; },
+// Bridge: SingleSelect operates on full objects, form stores institution_id for server submission
+const selectedInstitution = computed({
+  get: () => props.assignableInstitutions.find(i => i.id === form.institution_id) ?? null,
+  set: (val: App.Entities.Institution | null) => { form.institution_id = val?.id ?? null; },
 });
 
 // Helper functions for displaying study program information

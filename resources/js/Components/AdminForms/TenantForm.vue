@@ -29,16 +29,13 @@
         <Input id="shortname_vu" v-model="form.shortname_vu" />
       </FormFieldWrapper>
       <FormFieldWrapper id="primary_institution_id" label="Pagrindinė įstaiga">
-        <Select v-model="primaryInstitutionIdString">
-          <SelectTrigger>
-            <SelectValue placeholder="Pasirinkite įstaigą..." />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem v-for="option in institutionOptions" :key="option.value" :value="String(option.value)">
-              {{ option.label }}
-            </SelectItem>
-          </SelectContent>
-        </Select>
+        <SingleSelect
+          v-model="selectedInstitution"
+          :options="assignableInstitutions"
+          label-field="name"
+          value-field="id"
+          placeholder="Pasirinkite įstaigą..."
+        />
       </FormFieldWrapper>
     </FormElement>
   </AdminForm>
@@ -52,7 +49,7 @@ import FormElement from './FormElement.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 import AdminForm from './AdminForm.vue';
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { SingleSelect } from '@/Components/ui/single-select';
 import { Input } from '@/Components/ui/input';
 
 const { tenant, assignableInstitutions, rememberKey } = defineProps<{
@@ -74,14 +71,9 @@ const typeOptions = [
   { label: 'Pagrindinis', value: 'pagrindinis' },
 ];
 
-const institutionOptions = assignableInstitutions.map(institution => ({
-  label: institution.name,
-  value: institution.id,
-}));
-
-// Shadcn Select requires string values
-const primaryInstitutionIdString = computed({
-  get: () => form.primary_institution_id != null ? String(form.primary_institution_id) : '',
-  set: (val: string) => { form.primary_institution_id = val ? Number(val) : null; },
+// Bridge: SingleSelect operates on full objects, form stores primary_institution_id for server submission
+const selectedInstitution = computed({
+  get: () => assignableInstitutions.find(i => i.id === form.primary_institution_id) ?? null,
+  set: (val: App.Entities.Institution | null) => { form.primary_institution_id = val?.id ?? null; },
 });
 </script>

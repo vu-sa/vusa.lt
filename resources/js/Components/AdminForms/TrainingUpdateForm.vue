@@ -23,16 +23,14 @@
         </p>
       </div>
       <FormFieldWrapper id="institution_id" :label="$t('Kas organizuoja mokymus?')" required :error="form.errors.institution_id">
-        <Select v-model="institutionIdString">
-          <SelectTrigger>
-            <SelectValue :placeholder="$t('Pasirinkite instituciją')" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem v-for="institution in institutions" :key="institution.value" :value="String(institution.value)">
-              {{ institution.label }}
-            </SelectItem>
-          </SelectContent>
-        </Select>
+        <SingleSelect
+          v-model="selectedInstitution"
+          :options="institutionOptions"
+          label-field="label"
+          value-field="value"
+          :placeholder="$t('Pasirinkite instituciją')"
+          :empty-text="$t('Nerasta institucijų')"
+        />
       </FormFieldWrapper>
       <div class="flex flex-wrap gap-4">
         <FormFieldWrapper id="start_time" label="Mokymų pradžia" required :error="form.errors.start_time">
@@ -172,7 +170,7 @@ import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { NumberField } from '@/Components/ui/number-field';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { SingleSelect } from '@/Components/ui/single-select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Button } from '@/Components/ui/button';
 import { ImageUpload } from '@/Components/ui/upload';
@@ -223,12 +221,6 @@ const onTasksCreate = () => ({
 
 const locale = ref('lt');
 
-// Shadcn Select requires string values
-const institutionIdString = computed({
-  get: () => form.institution_id != null ? String(form.institution_id) : '',
-  set: (val: string) => { form.institution_id = val ? Number(val) : null; },
-});
-
 const formTemplate = training.form?.id
   ? training.form
   : {
@@ -239,24 +231,29 @@ const formTemplate = training.form?.id
       tenant_id: training.tenant.id,
     };
 
-// NOTE: Duplicated in InstitutionSelectorForm.vue
-const institutions = computed(() => {
-  return usePage()
-    .props.auth?.user?.current_duties?.map((duty) => {
-      if (!duty.institution) {
-        return;
-      }
-
+// Build searchable institution options from user's current duties
+const institutionOptions = computed(() => {
+  const duties = usePage().props.auth?.user?.current_duties ?? [];
+  const mapped = duties
+    .map((duty: any) => {
+      if (!duty.institution) return null;
       return {
-        label: duty.institution?.name,
-        value: duty.institution?.id,
+        label: duty.institution.name as string,
+        value: duty.institution.id as number,
       };
     })
-    // filter unique
-    .filter(institution => institution !== undefined).filter(
-      (value, index, self) =>
-        self.findIndex(t => t?.value === value?.value) === index,
-    );
+    .filter((item: { label: string; value: number } | null): item is { label: string; value: number } => item !== null);
+
+  // Dedupe by value
+  return mapped.filter((value, index, self) =>
+    self.findIndex(t => t.value === value.value) === index,
+  );
+});
+
+// Bridge: SingleSelect operates on full objects, form stores institution_id for server submission
+const selectedInstitution = computed({
+  get: () => institutionOptions.value.find(i => i.value === form.institution_id) ?? null,
+  set: (val: { label: string; value: number } | null) => { form.institution_id = val?.value ?? null; },
 });
 
 const handleFormFormSubmit = (form: any) => {

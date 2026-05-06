@@ -24,44 +24,27 @@
       <!-- Resource Select -->
       <div class="space-y-2">
         <Label for="resource-select">{{ $t('forms.fields.title') }}</Label>
-        <Select v-model="selectedResourceId" @update:model-value="onResourceChange">
-          <SelectTrigger id="resource-select" class="w-full">
-            <template v-if="selectedResource">
-              <div class="flex items-center gap-2">
-                <component :is="Icons.RESOURCE" class="size-4 text-muted-foreground" />
-                <span>{{ selectedResource.name }}</span>
-                <span class="text-muted-foreground text-xs">
-                  {{ selectedResource.lowestCapacityAtDateTimeRange }} {{ $t('iš') }} {{ selectedResource.capacity }}
-                </span>
-                <Badge variant="outline" class="text-xs">
-                  {{ selectedResource.tenant?.shortname }}
-                </Badge>
-              </div>
-            </template>
-            <template v-else>
-              <SelectValue :placeholder="`${$t('Pasirinkite')}...`" />
-            </template>
-          </SelectTrigger>
-          <SelectContent side="bottom" align="start">
-            <SelectItem
-              v-for="resource in allResourceOptions"
-              :key="resource.id"
-              :value="String(resource.id)"
-              :disabled="resource.disabled"
-            >
-              <div class="flex items-center gap-2">
-                <component :is="Icons.RESOURCE" class="size-4 text-muted-foreground" />
-                <span>{{ resource.name }}</span>
-                <span class="text-muted-foreground text-xs">
-                  {{ resource.lowestCapacityAtDateTimeRange }} {{ $t('iš') }} {{ resource.capacity }}
-                </span>
-                <Badge variant="outline" class="text-xs">
-                  {{ resource.tenant?.shortname }}
-                </Badge>
-              </div>
-            </SelectItem>
-          </SelectContent>
-        </Select>
+        <SingleSelect
+          v-model="selectedResource"
+          :options="allResourceOptions"
+          label-field="name"
+          value-field="id"
+          :placeholder="`${$t('Pasirinkite')}...`"
+          @update:model-value="onResourceChange"
+        >
+          <template #option="{ item }">
+            <div class="flex items-center gap-2" :class="{ 'opacity-50': item.disabled }">
+              <component :is="Icons.RESOURCE" class="size-4 text-muted-foreground" />
+              <span>{{ item.name }}</span>
+              <span class="text-muted-foreground text-xs">
+                {{ item.lowestCapacityAtDateTimeRange }} {{ $t('iš') }} {{ item.capacity }}
+              </span>
+              <Badge variant="outline" class="text-xs">
+                {{ item.tenant?.shortname }}
+              </Badge>
+            </div>
+          </template>
+        </SingleSelect>
       </div>
 
       <!-- Quantity Input -->
@@ -105,13 +88,7 @@ import { Badge } from '@/Components/ui/badge';
 import { Spinner } from '@/Components/ui/spinner';
 import { NumberField } from '@/Components/ui/number-field';
 import { DateRangePicker } from '@/Components/ui/date-range-picker';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/Components/ui/select';
+import { SingleSelect } from '@/Components/ui/single-select';
 import { capitalize } from '@/Utils/String';
 import Icons from '@/Types/Icons/regular';
 
@@ -162,13 +139,6 @@ const dateRange = ref<DateRange>({
   end: timestampToCalendarDateTime(props.reservationResourceForm.end_time),
 });
 
-// Selected resource ID as string for Select component
-const selectedResourceId = ref<string | undefined>(
-  props.reservationResourceForm.resource_id
-    ? String(props.reservationResourceForm.resource_id)
-    : undefined,
-);
-
 // Validation computed properties
 const quantityError = computed(() => {
   if (reservationResourceForm.resource_id === null) return null;
@@ -190,22 +160,27 @@ const canSubmit = computed(() => {
   );
 });
 
-// Watch for resource changes
-const onResourceChange = (value: string | undefined) => {
-  if (value) {
-    reservationResourceForm.resource_id = value;
-    reservationResourceForm.quantity = 1;
-  }
-  else {
-    reservationResourceForm.resource_id = null;
-  }
-};
-
-// Selected resource computed
-const selectedResource = computed(() => {
-  if (!reservationResourceForm.resource_id) return null;
-  return props.allResources?.find(r => String(r.id) === reservationResourceForm.resource_id);
+// Bridge: SingleSelect operates on full objects, form stores resource_id for server submission
+const selectedResource = computed({
+  get: () => {
+    if (!reservationResourceForm.resource_id) return null;
+    return allResourceOptions.value.find(r => String(r.id) === reservationResourceForm.resource_id) ?? null;
+  },
+  set: (val: App.Entities.Resource | null) => {
+    if (val) {
+      reservationResourceForm.resource_id = String(val.id);
+      reservationResourceForm.quantity = 1;
+    }
+    else {
+      reservationResourceForm.resource_id = null;
+    }
+  },
 });
+
+// Watch for resource changes (called by SingleSelect via v-model)
+const onResourceChange = () => {
+  // Side effects are handled in the selectedResource setter
+};
 
 const isReservationResourceSameForUpdate = computed(() => {
   return (
@@ -261,7 +236,6 @@ const onDateChange = (value: DateRange) => {
 
   if (props.reservationResourceFormRouteName === 'reservationResources.store') {
     reservationResourceForm.resource_id = null;
-    selectedResourceId.value = undefined;
     reservationResourceForm.quantity = 1;
   }
 };
