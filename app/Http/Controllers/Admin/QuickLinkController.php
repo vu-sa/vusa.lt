@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
-use App\Http\Requests\IndexQuickLinkRequest;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Calendar;
 use App\Models\Category;
