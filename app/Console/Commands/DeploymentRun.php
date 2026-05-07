@@ -36,6 +36,11 @@ class DeploymentRun extends Command
             'args' => ['--force' => true],
             'critical' => true,
         ],
+        'clear-caches' => [
+            'name' => 'Clear stale framework caches',
+            'command' => 'optimize:clear',
+            'critical' => true,
+        ],
         'optimize' => [
             'name' => 'Optimize application',
             'command' => 'optimize',
