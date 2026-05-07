@@ -58,10 +58,10 @@
               <TableHead
                 v-for="header in headerGroup.headers"
                 :key="header.id"
-                class="sticky top-0 z-10 bg-zinc-100 border-b border-border shadow-xs"
+                class="sticky top-0 z-10 bg-zinc-100 dark:bg-zinc-800 border-b border-border shadow-xs"
                 :class="{
-                  'cursor-pointer select-none hover:bg-zinc-100 transition-colors': header.column.getCanSort(),
-                  'bg-zinc-50': header.column.getIsSorted()
+                  'cursor-pointer select-none hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors': header.column.getCanSort(),
+                  'bg-zinc-50 dark:bg-zinc-700': header.column.getIsSorted()
                 }"
                 :style="{ width: header.column.columnDef.size ? `${header.column.columnDef.size}px` : 'auto' }"
                 @click="header.column.getToggleSortingHandler()?.({})"
