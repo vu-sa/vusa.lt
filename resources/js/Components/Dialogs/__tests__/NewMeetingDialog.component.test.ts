@@ -8,7 +8,7 @@ import NewMeetingDialog from '../NewMeetingDialog.vue';
 // No need for local mocks - they would override the global ones
 
 describe('NewMeetingDialog.vue', () => {
-  let wrapper: any;
+  let wrapper: ReturnType<typeof mount>;
 
   const defaultProps = {
     showModal: true,

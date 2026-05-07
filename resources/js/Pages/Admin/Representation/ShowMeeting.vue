@@ -5,7 +5,6 @@
     <!-- Meeting Hero Section -->
     <ShowPageHero
       :title="meetingTitle"
-      :subtitle="heroSubtitle"
       :badge="meetingBadge"
     >
       <template #icon>
@@ -13,11 +12,40 @@
           {{ formatStaticTime(new Date(meeting.start_time), { day: "numeric" }) }}
         </span>
       </template>
+      <template #subtitle>
+        <!-- Joint meeting institution management (unobtrusive) -->
+        <div v-if="meeting.institutions && meeting.institutions.length > 0" class="flex flex-wrap mt-1 items-center gap-2">
+          <span class="text-xs text-zinc-400 dark:text-zinc-500">{{ $t('Institucijos') }}:</span>
+          <div v-for="institution in meeting.institutions" :key="institution.id" class="flex items-center gap-0.5">
+            <Badge variant="outline" class="text-xs">
+              {{ institution.name }}
+            </Badge>
+            <button
+              v-if="(meeting.institutions?.length ?? 0) > 1"
+              type="button"
+              class="flex items-center justify-center h-4 w-4 rounded text-zinc-400 hover:text-destructive hover:bg-destructive/10 transition-colors"
+              :title="$t('Pašalinti instituciją')"
+              @click="handleDetachInstitution(institution.id)"
+            >
+              <X class="h-2.5 w-2.5" />
+            </button>
+          </div>
+          <button
+            type="button"
+            class="flex items-center gap-1 text-xs text-zinc-400 hover:text-primary transition-colors"
+            :title="$t('Pridėti instituciją')"
+            @click="showAddInstitutionDialog = true"
+          >
+            <Plus class="h-3 w-3" />
+            <span class="hidden sm:inline">{{ $t('Pridėti instituciją') }}</span>
+          </button>
+        </div>
+      </template>
       <template #info>
         <div class="flex flex-wrap items-center gap-2 sm:gap-4 text-sm">
-          <div class="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400">
+          <div v-if="meetingTimeLabel" class="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400">
             <Clock class="h-4 w-4 text-green-500 shrink-0" />
-            <span>{{ formatStaticTime(new Date(meeting.start_time), { hour: "2-digit", minute: "2-digit" }) }}</span>
+            <span>{{ meetingTimeLabel }}</span>
           </div>
           <Badge v-if="meeting.type_label" variant="secondary" class="text-xs">
             {{ meeting.type_label }}
@@ -27,7 +55,65 @@
             <span class="hidden sm:inline">{{ $t('Rodomas viešai') }}</span>
             <span class="sm:hidden">{{ $t('Viešas') }}</span>
           </Badge>
-          <!-- Urgency badge based on document status -->
+          <!-- Protocol status -->
+          <span
+            v-if="isPastMeeting"
+            class="inline-flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400"
+            :title="hasProtocol ? $t('Protokolas įkeltas') : $t('Protokolas neįkeltas')"
+          >
+            <svg
+              class="h-4 w-4 shrink-0"
+              :class="hasProtocol ? 'text-green-600 dark:text-green-400' : 'text-amber-500 dark:text-amber-400'"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <template v-if="hasProtocol">
+                <path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4" />
+                <path d="M19 17V5a2 2 0 0 0-2-2H4" />
+                <path d="M15 8h-5" />
+                <path d="M15 12h-5" />
+              </template>
+              <template v-else>
+                <path d="M19 17V5a2 2 0 0 0-2-2H4" />
+                <path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4" />
+              </template>
+            </svg>
+            <span class="hidden sm:inline">{{ $t('Protokolas') }}</span>
+          </span>
+          <!-- Report status -->
+          <span
+            v-if="isPastMeeting"
+            class="inline-flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400"
+            :title="hasReport ? $t('Ataskaita įkelta') : $t('Ataskaita neįkelta')"
+          >
+            <svg
+              class="h-4 w-4 shrink-0"
+              :class="hasReport ? 'text-green-600 dark:text-green-400' : 'text-amber-500 dark:text-amber-400'"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <template v-if="hasReport">
+                <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+                <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+                <path d="M8 18v-2" />
+                <path d="M12 18v-4" />
+                <path d="M16 18v-6" />
+              </template>
+              <template v-else>
+                <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+                <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+              </template>
+            </svg>
+            <span class="hidden sm:inline">{{ $t('Ataskaita') }}</span>
+          </span>
         </div>
         <div v-if="representatives && representatives.length > 0" class="flex items-center gap-2">
           <span class="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:inline">{{ $t('Atstovai') }}:</span>
@@ -166,6 +252,49 @@
       </DialogContent>
     </Dialog>
 
+    <!-- Add Institution Dialog -->
+    <Dialog v-model:open="showAddInstitutionDialog">
+      <DialogContent class="max-w-sm">
+        <DialogHeader>
+          <DialogTitle class="flex items-center gap-2">
+            <Link2 class="h-4 w-4" />
+            {{ $t('Pridėti instituciją') }}
+          </DialogTitle>
+          <DialogDescription class="text-sm text-zinc-500 mt-2">
+            Retais atvejais, atstovavimo organai gali turėti bendrų posėdžių. Jei šis posėdis yra bendras su kitomis institucijomis, pasirinkite jas.
+            Galite pasirinkti tik iš susijusių institucijų.
+          </DialogDescription>
+        </DialogHeader>
+        <div class="space-y-4 pt-2">
+          <Select v-model="addInstitutionId">
+            <SelectTrigger>
+              <SelectValue :placeholder="$t('Pasirinkite instituciją')" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                v-for="option in availableInstitutionsToAdd"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+          <p v-if="availableInstitutionsToAdd.length === 0" class="text-sm text-zinc-500">
+            {{ $t('Nėra galimų institucijų pridėti.') }}
+          </p>
+          <div class="flex justify-end gap-2">
+            <Button variant="outline" size="sm" @click="showAddInstitutionDialog = false">
+              {{ $t('Atšaukti') }}
+            </Button>
+            <Button size="sm" :disabled="!addInstitutionId" @click="handleAttachInstitution">
+              {{ $t('Pridėti') }}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+
     <!-- Delete Confirmation Dialog -->
     <Dialog v-model:open="showDeleteDialog">
       <DialogContent class="max-w-md">
@@ -216,9 +345,11 @@ import { ref, computed, watch, onMounted, nextTick } from 'vue';
 import { router, useForm, Link, Head as InertiaHead } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { AlertTriangle, AlertCircle, Plus, Trash2, ChevronLeft, ChevronRight, Clock, Globe, Edit, MoreHorizontal, Video } from 'lucide-vue-next';
+import { AlertTriangle, AlertCircle, Plus, Trash2, X, ChevronLeft, ChevronRight, Clock, Globe, Edit, MoreHorizontal, Video, Link2 } from 'lucide-vue-next';
+import { DialogDescription } from 'reka-ui';
 
 import { formatStaticTime } from '@/Utils/IntlTime';
+import { formatMeetingDateTime, formatMeetingTimeOnly } from '@/Utils/MeetingDisplay';
 import { genitivizeEveryWord } from '@/Utils/String';
 import Icons from '@/Types/Icons/filled';
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
@@ -231,6 +362,7 @@ import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import {
   DropdownMenu,
@@ -256,12 +388,16 @@ import SpotlightBadge from '@/Components/Onboarding/SpotlightBadge.vue';
 const props = defineProps<{
   meeting: App.Entities.Meeting;
   representatives: App.Entities.User[];
-  previousMeeting?: { id: string; start_time: string } | null;
-  nextMeeting?: { id: string; start_time: string } | null;
+  previousMeeting?: { id: string; start_time: string; type?: string | null } | null;
+  nextMeeting?: { id: string; start_time: string; type?: string | null } | null;
+  availableInstitutionsForAttach?: { id: string; name: string; tenant_shortname?: string | null }[] | null;
 }>();
 
 // Urgency calculations for hero badge
-const { overallUrgency } = useMeetingUrgency(() => props.meeting);
+const { overallUrgency, hasProtocol, hasReport, isPastMeeting } = useMeetingUrgency(() => props.meeting);
+
+// Hide HH:MM for email/electronic meetings (start_time is forced to 23:59 as a deadline marker)
+const meetingTimeLabel = computed(() => formatMeetingTimeOnly(props.meeting));
 
 // Component state
 const showMeetingModal = ref(false);
@@ -370,24 +506,39 @@ const meetingAgendaForm = useForm({
 const mainInstitution: App.Entities.Institution | string
   = props.meeting.institutions?.[0] ?? 'Be institucijos';
 
+const isJoint = computed(
+  () => (props.meeting as any).is_joint ?? (props.meeting.institutions?.length ?? 0) > 1,
+);
+
+// Always derive the displayed title from start_time + institution.
+// The stored `meeting.title` is auto-generated server-side and historically
+// embedded a 23.59 timestamp for email meetings — recomputing here keeps the
+// header/breadcrumb correct without a data backfill.
 const meetingTitle = computed(() => {
-  if (props.meeting.title && props.meeting.title !== '') {
-    return props.meeting.title;
+  const datePart = formatMeetingDateTime(props.meeting, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  if (isJoint.value) {
+    return `${datePart} jungtinis posėdis`;
   }
 
   const institutionName = typeof mainInstitution === 'string'
     ? mainInstitution
     : mainInstitution.name;
 
-  return `${formatStaticTime(new Date(props.meeting.start_time), {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })} ${genitivizeEveryWord(institutionName)} posėdis`;
+  return `${datePart} ${genitivizeEveryWord(institutionName)} posėdis`;
 });
 
-// Hero subtitle - institution name with link
+// Hero subtitle - institution name(s) with link
 const heroSubtitle = computed(() => {
+  if (isJoint.value) {
+    return props.meeting.institutions?.map((i: App.Entities.Institution) => i.name).join(' · ') ?? '';
+  }
   if (typeof mainInstitution === 'string') {
     return mainInstitution;
   }
@@ -400,17 +551,6 @@ const meetingBadge = computed(() => ({
   variant: 'secondary' as const,
   icon: Video,
 }));
-
-// Format date for navigation buttons
-const formatMeetingNavDate = (date: string) => {
-  return formatStaticTime(new Date(date), {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
 
 // Generate breadcrumbs automatically with new simplified API
 usePageBreadcrumbs(() => {
@@ -430,6 +570,36 @@ usePageBreadcrumbs(() => {
     Icons.MEETING,
   );
 });
+
+// Joint meeting — institution management
+const showAddInstitutionDialog = ref(false);
+const addInstitutionId = ref('');
+
+const availableInstitutionsToAdd = computed(() => {
+  const attached = new Set(props.meeting.institutions?.map((i: App.Entities.Institution) => i.id) ?? []);
+  return (props.availableInstitutionsForAttach ?? [])
+    .filter(inst => !attached.has(inst.id))
+    .map(inst => ({
+      label: inst.tenant_shortname ? `${inst.name} (${inst.tenant_shortname})` : inst.name,
+      value: inst.id,
+    }));
+});
+
+const handleAttachInstitution = () => {
+  if (!addInstitutionId.value) { return; }
+  router.post(route('meetings.institutions.attach', props.meeting.id), {
+    institution_id: addInstitutionId.value,
+  }, {
+    onSuccess: () => {
+      showAddInstitutionDialog.value = false;
+      addInstitutionId.value = '';
+    },
+  });
+};
+
+const handleDetachInstitution = (institutionId: string) => {
+  router.delete(route('meetings.institutions.detach', { meeting: props.meeting.id, institution: institutionId }));
+};
 
 // Event handlers
 const handleMeetingFormSubmit = (meeting: App.Entities.Meeting) => {

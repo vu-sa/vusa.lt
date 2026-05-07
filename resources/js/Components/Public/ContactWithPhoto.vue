@@ -9,7 +9,7 @@
         :alt="contact?.name"
         class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         loading="lazy"
-        style="object-position: 50% 20%"
+        :style="{ objectPosition: focalPoint }"
       >
       <!-- Subtle gradient overlay at bottom for text readability -->
       <div class="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/20 to-transparent" />
@@ -190,6 +190,26 @@ const imageUrl = computed(() => {
   }
 
   return props.contact.profile_photo_path ?? '';
+});
+
+const focalPoint = computed(() => {
+  for (const duty of Object.keys(props.contact.duties ?? [])) {
+    if (!props.contact.duties?.[duty].pivot) {
+      continue;
+    }
+
+    return (
+      props.contact.duties?.[duty].pivot.additional_photo_focal_point
+      ?? props.contact.profile_photo_focal_point
+      ?? '50% 30%'
+    );
+  }
+
+  if (props.contact.pivot?.additional_photo_focal_point) {
+    return props.contact.pivot.additional_photo_focal_point;
+  }
+
+  return props.contact.profile_photo_focal_point ?? '50% 30%';
 });
 
 // Get initials from name for avatar fallback

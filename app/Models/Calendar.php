@@ -42,6 +42,7 @@ use Spatie\SchemaOrg\Place;
  * @property int|null $registration_form_id
  * @property-read Category|null $category
  * @property-read string|null $main_image_url
+ * @property-read array $translatable_columns_from
  * @property-read MediaCollection<int, Media> $media
  * @property-read Tenant $tenant
  * @property-read mixed $translations

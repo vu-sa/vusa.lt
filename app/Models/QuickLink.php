@@ -14,8 +14,8 @@ use Laravel\Scout\Searchable;
  * @property string|null $text
  * @property string|null $icon
  * @property int|null $order
- * @property int $is_active
- * @property int $is_important
+ * @property bool $is_active
+ * @property bool $is_important
  * @property int $tenant_id
  * @property string|null $lang
  * @property Carbon $created_at
@@ -34,6 +34,11 @@ class QuickLink extends Model
     use HasFactory, Searchable;
 
     protected $guarded = [];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+        'is_important' => 'boolean',
+    ];
 
     protected static function booted()
     {

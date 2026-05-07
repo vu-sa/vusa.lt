@@ -9,7 +9,7 @@
   />
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ref, computed } from 'vue';
@@ -20,7 +20,7 @@ import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import {
   createTextColumn,
   createTimestampColumn,
-} from '@/Utils/DataTableColumns';
+} from '@/Composables/useDataTableColumns';
 import type {
   IndexTablePageProps,
 } from '@/Types/TableConfigTypes';
@@ -50,7 +50,7 @@ const getRowId = (row: App.Entities.Role) => {
   return `role-${row.id}`;
 };
 
-const columns = computed<ColumnDef<App.Entities.Role, any>[]>(() => [
+const columns = computed(() => [
   createTextColumn<App.Entities.Role>('name', {
     title: $t('forms.fields.name'),
     width: 300,

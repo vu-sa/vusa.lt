@@ -43,7 +43,7 @@
               <div class="flex items-start justify-between gap-2">
                 <div class="flex-1 min-w-0">
                   <div class="font-semibold text-zinc-900 dark:text-zinc-100 truncate">
-                    {{ formatStaticTime(new Date(meeting.start_time), {
+                    {{ formatMeetingDateTime(meeting, {
                       month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric'
                     }) }}
                   </div>
@@ -192,7 +192,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/Componen
 import { Button } from '@/Components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import Icons from '@/Types/Icons/filled';
-import { formatStaticTime } from '@/Utils/IntlTime';
+import { formatMeetingDateTime } from '@/Utils/MeetingDisplay';
 import { dashboardCardClasses, dashboardCardFooterClasses, cardAccentColors } from '@/Composables/useDashboardCardStyles';
 
 interface Props {

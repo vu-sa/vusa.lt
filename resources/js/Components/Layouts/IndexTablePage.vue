@@ -1,40 +1,19 @@
 <template>
   <AdminContentPage>
     <div class="space-y-6">
-      <!-- Page Header -->
-      <div v-if="headerTitle" class="flex flex-col space-y-2 md:flex-row md:items-center md:justify-between">
-        <div class="flex items-center space-x-4">
-          <div v-if="icon" class="hidden rounded-md bg-primary/10 p-2 text-primary md:block">
-            <component :is="icon" class="h-5 w-5" />
-          </div>
-          <div>
-            <h2 class="text-2xl font-bold tracking-tight">
-              {{ headerTitle }}
-            </h2>
-            <p v-if="headerDescription" class="text-sm text-muted-foreground">
-              {{ headerDescription }}
-            </p>
-          </div>
-        </div>
-        <div class="flex items-center gap-2">
-          <slot name="headerActions" />
-          <Button v-if="canCreate && createRoute" as-child variant="default" class="ml-auto gap-1.5">
-            <Link :href="createRoute">
-              <PlusCircleIcon class="h-4 w-4" />
-              <span>{{ $t('forms.add') }}</span>
-            </Link>
-          </Button>
-        </div>
-      </div>
+      <!-- Optional description -->
+      <p v-if="headerDescription" class="text-sm text-muted-foreground">
+        {{ headerDescription }}
+      </p>
 
       <!-- Main table -->
       <div class="relative min-h-[400px]">
-        <!-- Loading Skeleton -->
+        <!-- Loading Overlay -->
         <div v-if="isLoading"
-          class="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-background/80 backdrop-blur-sm">
-          <div class="flex flex-col items-center space-y-4">
-            <div class="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
-            <p class="text-sm text-muted-foreground">
+          class="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-background/40 backdrop-blur-[2px]">
+          <div class="flex flex-col items-center gap-3 rounded-xl border border-border/50 bg-background/95 px-6 py-4 shadow-lg">
+            <Spinner class="h-6 w-6 text-primary" />
+            <p class="text-sm font-medium text-muted-foreground">
               {{ $t('Loading data') }}...
             </p>
           </div>
@@ -48,14 +27,17 @@
           @update:row-selection="handleRowSelectionChange" @sorting-changed="handleSortingChanged"
           @page-changed="handlePageChanged" @filter-changed="handleFilterChanged">
           <!-- Pass through the slots -->
-          <template #tableActions>
-            <slot name="tableActions" />
-          </template>
-
           <template #filters>
             <slot name="filters" />
           </template>
           <template #actions>
+            <slot name="headerActions" />
+            <Link v-if="canCreate && createRoute" :href="createRoute">
+              <Button variant="default" class="gap-1.5 shadow-sm">
+                <PlusCircleIcon class="h-4 w-4" />
+                <span>{{ $t('forms.add') }}</span>
+              </Button>
+            </Link>
             <slot name="actions" />
           </template>
 
@@ -107,12 +89,22 @@ import AdminContentPage from './AdminContentPage.vue';
 
 import ServerDataTable from '@/Components/Tables/ServerDataTable.vue';
 import { Button } from '@/Components/ui/button';
+import { Spinner } from '@/Components/ui/spinner';
+import { BreadcrumbHelpers, useBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import type {
   IndexTablePageProps,
 } from '@/Types/TableConfigTypes';
 
 // Props use the combined interface for better organization
 const props = defineProps<IndexTablePageProps<TData>>();
+
+// Auto-generate breadcrumbs from headerTitle/icon unless custom breadcrumbs are provided
+const breadcrumbState = useBreadcrumbs();
+if (props.headerTitle) {
+  breadcrumbState.set(
+    props.breadcrumbs ?? BreadcrumbHelpers.adminIndex(props.headerTitle, props.icon),
+  );
+}
 
 const emit = defineEmits([
   'data-loaded',
@@ -201,5 +193,4 @@ defineExpose({
   rowSelection,
 });
 
-// Breadcrumbs are now handled automatically by pages using usePageBreadcrumbs()
 </script>

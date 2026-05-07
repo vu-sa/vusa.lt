@@ -45,19 +45,9 @@ vi.mock('@/Composables/useDocumentSearch', () => ({
   useDocumentSearch: () => mockSearchController,
 }));
 
-// Mock Inertia.js - extend the global mock with test-specific overrides
-vi.mock('@inertiajs/vue3', async () => {
-  const inertiaMock = await import('@/mocks/inertia.mock');
-  return {
-    Link: inertiaMock.Link,
-    Head: inertiaMock.Head,
-    usePage: inertiaMock.usePage,
-    router: inertiaMock.router,
-    useForm: inertiaMock.useForm,
-  };
-});
+// Global mocks from tests/setup.ts already handle @inertiajs/vue3
 
-// Mock Laravel Vue i18n
+// Custom i18n mock with search-specific translations
 vi.mock('laravel-vue-i18n', () => ({
   trans: vi.fn((key: string) => {
     const translations: Record<string, string> = {

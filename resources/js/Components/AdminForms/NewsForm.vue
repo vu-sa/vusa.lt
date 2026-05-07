@@ -29,16 +29,17 @@
         <div class="grid gap-4 sm:grid-cols-2">
           <FormFieldWrapper id="lang" :label="$t('Kalba')" required :error="form.errors.lang"
             :valid="form.valid('lang')" :invalid="form.invalid('lang')">
-            <Select v-model="form.lang" @update:model-value="form.validate('lang')">
-              <SelectTrigger id="lang">
-                <SelectValue :placeholder="$t('Pasirinkti kalbą...')" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem v-for="opt in languageOptions" :key="opt.value" :value="opt.value">
-                  {{ opt.label }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <ToggleGroup v-model="form.lang" type="single" class="justify-start"
+              @update:model-value="form.validate('lang')">
+              <ToggleGroupItem value="lt" class="gap-2">
+                <img src="https://hatscripts.github.io/circle-flags/flags/lt.svg" class="h-4 w-4 rounded-full">
+                Lietuvių
+              </ToggleGroupItem>
+              <ToggleGroupItem value="en" class="gap-2">
+                <img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" class="h-4 w-4 rounded-full">
+                English
+              </ToggleGroupItem>
+            </ToggleGroup>
           </FormFieldWrapper>
 
           <FormFieldWrapper id="tags" :label="$t('Žymos')" :hint="$t('Pasirinkite temas')">
@@ -211,6 +212,7 @@ import { Label } from '@/Components/ui/label';
 import { MultiSelect } from '@/Components/ui/multi-select';
 import { OrderedListInput } from '@/Components/ui/ordered-list-input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
 import { ImageUpload } from '@/Components/ui/upload';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { newsTemplate } from '@/Types/formTemplates';
@@ -389,11 +391,6 @@ const selectedTags = computed({
     form.tags = items.map(item => item.value);
   },
 });
-
-const languageOptions = [
-  { value: 'lt', label: 'Lietuvių' },
-  { value: 'en', label: 'English' },
-];
 
 const layoutOptions = [
   {

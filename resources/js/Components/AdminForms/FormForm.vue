@@ -95,7 +95,7 @@
 
 <script setup lang="ts">
 import { Link, useForm } from '@inertiajs/vue3';
-import { computed, reactive, ref } from 'vue';
+import { computed, ref } from 'vue';
 
 import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
 import SimpleLocaleButton from '../Buttons/SimpleLocaleButton.vue';
@@ -131,8 +131,7 @@ const locale = ref('lt');
 const showFormFieldModal = ref(false);
 const selectedFormField = ref(formFieldTemplate);
 
-// Differently from other components, we use reactive because of nested form fields
-const form = reactive(props.form);
+const form = useForm(props.form);
 
 const hasRegistrations = computed(() => form?.registrations_count > 0);
 

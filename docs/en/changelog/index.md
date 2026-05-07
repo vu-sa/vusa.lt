@@ -7,6 +7,26 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.9 — Meetings & Admin Improvements (2026-05-06) {#v1-9}
+
+- ⭐ **Meetings with multiple institutions** — meetings can now be associated with multiple institutions instead of just one
+- ✨ **Improved index tables** — better table cells with date formatting, tag lists, truncated text, and links across the admin panel
+- ✨ **Quick link form optimization** — improved quick link creation and management interface
+- ✨ **Clearer email handling in user forms** — user forms now more clearly explain email fields
+- ✨ **Meeting display improvements** — updated meeting detail page layout
+- 🔧 **Fixed 23:59 display for meetings** — meetings without specific end times no longer show "23:59" in emails and displays
+- 🔧 **Fixed and optimized single select forms** — improved performance for large dropdowns across multiple admin forms
+
+> 🔗 [GitHub PR #566](https://github.com/vu-sa/vusa.lt/pull/566)
+
+## v1.8 — Study Sets (2026-05-05) {#v1-8}
+
+- ⭐ **[Study sets page](https://www.vusa.lt/ind-komplektai)** — public page to browse study sets by faculty, with course listings and lecturer reviews
+- ✨ **Search and filtering** — search by course or study set name, filter by semester and faculty
+- ⭐ **Study set management for administrators** — create and manage study sets, courses, and lecturer reviews
+
+> 🔗 [GitHub PR #565](https://github.com/vu-sa/vusa.lt/pull/565)
+
 ## v1.7 — Notification Improvements (2026-04-06) {#v1-7}
 
 - 🔧 **Fixed triplicate email digest notifications** — each notification was queued three times for the email digest, causing digest emails to show triple the actual notification count.

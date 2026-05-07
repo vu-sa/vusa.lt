@@ -50,9 +50,9 @@
   </IndexTablePage>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
+import { h, ref, computed, watch, capitalize } from 'vue';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { ref, computed, watch, capitalize } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ExternalLinkIcon, RefreshCwIcon } from 'lucide-vue-next';
@@ -65,18 +65,15 @@ import SmartLink from '@/Components/Public/SmartLink.vue';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
-import { formatRelativeTime, formatStaticTime } from '@/Utils/IntlTime';
+import { DateCell, TruncatedBadge, TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
 import { LocaleEnum } from '@/Types/enums';
-import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
+import { BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import type {
   IndexTablePageProps,
 } from '@/Types/TableConfigTypes';
 import {
-  createTimestampColumn,
-  createTextColumn,
-  createTitleColumn,
-} from '@/Utils/DataTableColumns';
+  createDateColumn,
+} from '@/Composables/useDataTableColumns';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
 
 const props = defineProps<{
@@ -100,13 +97,6 @@ const props = defineProps<{
 // Component constants
 const modelName = 'documents';
 const entityName = 'document';
-
-// Breadcrumbs setup
-usePageBreadcrumbs(() => [
-  BreadcrumbHelpers.homeItem(),
-  BreadcrumbHelpers.createBreadcrumbItem($t('Administravimas'), route('administration'), Icons.TYPE),
-  BreadcrumbHelpers.createBreadcrumbItem($t('Dokumentai'), undefined, Icons.DOCUMENT),
-]);
 
 const loading = ref(false);
 const bulkSyncLoading = ref(false);
@@ -155,50 +145,32 @@ const institutionOptions = computed(() => {
 });
 
 // Column definitions using Tanstack Table format and standardized column helpers
-const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
+const columns = computed(() => [
   {
     accessorKey: 'title',
     header: () => $t('forms.fields.title'),
     cell: ({ row }) => {
-      const title = row.getValue('title');
+      const title = row.getValue('title') as string;
       const hasUrl = row.original.anonymous_url;
 
-      return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div class="min-w-0 flex-1">
-                {hasUrl
-                  ? (
-                      <a
-                        href={row.original.anonymous_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="font-medium hover:underline text-blue-600 hover:text-blue-800 line-clamp-2 text-sm leading-tight"
-                        title={title}
-                      >
-                        {title}
-                        <ExternalLinkIcon class="inline h-3 w-3 ml-1 opacity-60" />
-                      </a>
-                    )
-                  : (
-                      <span class="font-medium text-gray-600 line-clamp-2 text-sm leading-tight" title={title}>
-                        {title}
-                      </span>
-                    )}
-              </div>
-            </TooltipTrigger>
-            <TooltipContent side="top" align="start" class="max-w-md">
-              <div class="space-y-1">
-                <p class="font-medium">{title}</p>
-                {hasUrl && (
-                  <p class="text-xs text-gray-400">Click to open document</p>
-                )}
-              </div>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      );
+      if (hasUrl) {
+        return h('div', { class: 'flex items-start gap-1' }, [
+          h(TruncatedLink, {
+            href: row.original.anonymous_url,
+            text: title,
+            lines: 2,
+            external: true,
+            class: 'text-blue-600 hover:text-blue-800 text-sm leading-tight',
+          }),
+          h(ExternalLinkIcon, { class: 'h-3 w-3 mt-0.5 opacity-60 flex-shrink-0' }),
+        ]);
+      }
+
+      return h(TruncatedText, {
+        text: title,
+        lines: 2,
+        class: 'font-medium text-gray-600 text-sm leading-tight',
+      });
     },
     size: 300,
     enableSorting: true,
@@ -207,122 +179,57 @@ const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
     accessorKey: 'language',
     header: () => $t('lang'),
     cell: ({ row }) => {
-      const language = row.getValue('language');
-      if (!language) return '—';
-      return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span class="text-xs px-2 py-1 bg-gray-100 rounded-md truncate" title={language}>
-                {language === 'Lietuvių' ? 'LT' : language === 'Anglų' ? 'EN' : language}
-              </span>
-            </TooltipTrigger>
-            <TooltipContent side="top">
-              <p>{language}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      );
+      const language = row.getValue('language') as string;
+      if (!language) return h(TruncatedText, { text: null });
+      const display = language === 'Lietuvių' ? 'LT' : language === 'Anglų' ? 'EN' : language;
+      return h(TruncatedBadge, { text: display, variant: 'secondary', class: 'text-xs' });
     },
     size: 70,
     enableSorting: true,
   },
-  {
-    accessorKey: 'document_date',
-    header: () => $t('date'),
-    cell: ({ row }) => {
-      const date = row.getValue('document_date');
-      if (!date) return '—';
-
-      return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span class="text-sm cursor-help font-mono">
-                {formatStaticTime(date, {
-                  year: 'numeric',
-                  month: '2-digit',
-                  day: '2-digit',
-                }, LocaleEnum.LT)}
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>
-                {formatStaticTime(date, {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  weekday: 'long',
-                }, LocaleEnum.LT)}
-              </p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      );
-    },
-    size: 100,
+  createDateColumn<App.Entities.Document>('document_date', {
+    title: $t('date'),
+    width: 100,
     enableSorting: true,
-  },
+    format: { year: 'numeric', month: '2-digit', day: '2-digit' },
+  }),
   {
     accessorKey: 'content_type',
     header: () => $t('content_type'),
     cell: ({ row }) => {
-      const contentType = row.getValue('content_type');
-      if (!contentType) return '—';
+      const contentType = row.getValue('content_type') as string;
+      if (!contentType) return h(TruncatedText, { text: null });
 
-      // Shorten common content types for display
       const shortType = contentType
         .replace('Parlamento ', 'Parl. ')
         .replace(' sprendimas', ' spr.')
         .replace(' protokolas', ' prot.')
         .replace(' darbotvarkė', ' d.t.');
 
-      return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span class="text-xs px-2 py-1 bg-gray-100 rounded-md truncate max-w-[140px] block" title={contentType}>
-                {shortType}
-              </span>
-            </TooltipTrigger>
-            <TooltipContent side="top">
-              <p>{contentType}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      );
+      return h(TruncatedBadge, {
+        text: shortType,
+        variant: 'secondary',
+        class: 'text-xs',
+      }, {
+        default: () => h(TruncatedText, { text: contentType }),
+      });
     },
     size: 150,
     enableSorting: true,
   },
-  // createTextColumn("language", {
-  //   width: 100
-  // }),
   {
     accessorKey: 'institution_name_lt',
     header: () => $t('institution'),
     cell: ({ row }) => {
-      // Using paginateRaw() workaround returns database models with nested institution
       const { institution } = row.original;
-      if (!institution) return '—';
+      if (!institution) return h(TruncatedText, { text: null });
 
       const shortName = institution.short_name || institution.name;
-      const fullName = institution.name;
-
-      return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span class="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md">
-                {shortName}
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{fullName || shortName}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      );
+      return h(TruncatedBadge, {
+        text: shortName,
+        variant: 'secondary',
+        class: 'text-xs font-medium text-indigo-600 bg-indigo-50',
+      });
     },
     size: 120,
     enableSorting: true,
@@ -373,17 +280,13 @@ const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
 
       const config = statusConfig[status] || statusConfig['pending'];
 
-      return (
-        <div class={`inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-medium ${config.bgColor} ${config.color}`}>
-          <div class={`w-2 h-2 rounded-full ${config.dotColor}`}></div>
-          <span>{config.label}</span>
-          {attempts > 1 && (
-            <span class="bg-white/50 px-1 rounded text-xs">
-              {attempts}
-            </span>
-          )}
-        </div>
-      );
+      return h('div', {
+        class: `inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-medium ${config.bgColor} ${config.color}`,
+      }, [
+        h('div', { class: `w-2 h-2 rounded-full ${config.dotColor}` }),
+        h('span', {}, config.label),
+        attempts > 1 ? h('span', { class: 'bg-white/50 px-1 rounded text-xs' }, String(attempts)) : null,
+      ]);
     },
     size: 140,
   },
@@ -393,60 +296,30 @@ const columns = computed<ColumnDef<App.Entities.Document, any>[]>(() => [
     cell: ({ row }) => {
       const checkedAt = row.getValue('checked_at');
 
-      return (
-        <div class="flex items-center gap-2">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span class="text-sm cursor-help">
-                  {checkedAt
-                    ? formatRelativeTime(checkedAt, { numeric: 'auto' }, LocaleEnum.LT)
-                    : $t('Never')}
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>
-                  {checkedAt
-                    ? formatStaticTime(checkedAt, {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      }, LocaleEnum.LT)
-                    : $t('Document has never been synced')}
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={() => handleDocumentRefresh(row.original)}
-            title={$t('refresh')}
-            class="h-6 w-6"
-          >
-            <RefreshCwIcon class="h-3 w-3" />
-          </Button>
-        </div>
-      );
+      return h('div', { class: 'flex items-center gap-2' }, [
+        checkedAt
+          ? h(DateCell, { date: checkedAt as string | Date, mode: 'relative' })
+          : h(TruncatedText, { text: $t('Never') }),
+        h(Button, {
+          size: 'icon',
+          variant: 'ghost',
+          onClick: () => handleDocumentRefresh(row.original),
+          title: $t('refresh'),
+          class: 'h-6 w-6',
+        }, () => h(RefreshCwIcon, { class: 'h-3 w-3' })),
+      ]);
     },
     size: 130,
     enableSorting: true,
   },
   createStandardActionsColumn<App.Entities.Document>('documents', {
-    // canView: true,
-    // canEdit: true,
     canDelete: true,
-    // canRestore: true
   }),
-]);
+]) as Array<ColumnDef<App.Entities.Document, any>>;
 
 // Simplified table configuration using the new interfaces
 const tableConfig = computed<IndexTablePageProps<App.Entities.Document>>(() => {
   return {
-    // Essential table configuration
     modelName,
     entityName,
     data: props.data,
@@ -455,18 +328,20 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Document>>(() => {
     initialPage: props.meta.current_page,
     pageSize: props.meta.per_page,
 
-    // Advanced features
     initialFilters: props.filters,
     initialSorting: props.sorting && props.sorting.length > 0 ? props.sorting : [{ id: 'created_at', desc: true }],
     enableFiltering: true,
     enableColumnVisibility: true,
 
-    // Page layout
     headerTitle: $t('Documents'),
     headerDescription: $t('Documents are automatically synchronized from SharePoint. Manual refresh is rarely needed - the system updates content intelligently in the background.'),
     icon: Icons.DOCUMENT,
+    breadcrumbs: [
+      BreadcrumbHelpers.homeItem(),
+      BreadcrumbHelpers.createBreadcrumbItem($t('Administravimas'), route('administration'), Icons.TYPE),
+      BreadcrumbHelpers.createBreadcrumbItem($t('Dokumentai'), undefined, Icons.DOCUMENT),
+    ],
     canCreate: false,
-    // breadcrumbs handled via usePageBreadcrumbs
   };
 });
 
@@ -494,22 +369,18 @@ const handleInstitutionFilterChange = (institutionId: number | null) => {
 
 // Event handlers
 const onDataLoaded = (data) => {
-  // Handle any additional logic after data is loaded
   console.log('Documents data loaded:', data);
 };
 
 const handleSortingChange = (sorting) => {
-  // Additional handling for sorting changes if needed
   console.log('Sorting changed:', sorting);
 };
 
 const handlePageChange = (page) => {
-  // Additional handling for page changes if needed
   console.log('Page changed:', page);
 };
 
 const handleFilterChange = (filterKey, value) => {
-  // Update local filter references if needed
   if (filterKey === 'content_type') {
     selectedContentType.value = value;
   }
@@ -534,7 +405,6 @@ const handleDocumentPick = (items: Item[]) => {
   router.post(route('documents.store'), { documents }, {
     onSuccess: () => {
       loading.value = false;
-      // Reload the current page to show new documents
       if (indexTablePageRef.value) {
         indexTablePageRef.value.reloadData();
       }
@@ -551,7 +421,6 @@ const handleDocumentRefresh = (document: App.Entities.Document) => {
   router.post(route('documents.refresh', document.id), {}, {
     onSuccess: () => {
       loading.value = false;
-      // Reload the current page after refreshing document
       if (indexTablePageRef.value) {
         indexTablePageRef.value.reloadData();
       }
@@ -568,7 +437,6 @@ const handleBulkSync = () => {
   router.post(route('documents.bulk-sync'), {}, {
     onSuccess: () => {
       bulkSyncLoading.value = false;
-      // Reload the current page after bulk sync
       if (indexTablePageRef.value) {
         indexTablePageRef.value.reloadData();
       }

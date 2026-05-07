@@ -40,6 +40,7 @@ use Spatie\Activitylog\Models\Activity;
  * @property-read string $completion_status
  * @property-read bool $has_protocol
  * @property-read bool $has_report
+ * @property-read bool $is_joint
  * @property-read bool $is_public
  * @property-read string|null $type_label
  * @property-read string|null $type_slug
@@ -91,6 +92,8 @@ class PublicMeeting extends Meeting
     /**
      * Override agendaItems relationship to use correct foreign key
      * Laravel would default to 'public_meeting_id' based on model name
+     *
+     * @return HasMany<AgendaItem, $this>
      */
     public function agendaItems(): HasMany
     {

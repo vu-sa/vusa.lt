@@ -24,22 +24,32 @@
         <Input id="additional_email" v-model="form.additional_email" placeholder="petras.petraitis@vusa.lt" />
       </FormFieldWrapper>
       <FormFieldWrapper id="additional_photo" label="Papildoma nuotrauka" hint="Ši nuotrauka leidžia vienam asmeniui turėti daugiau negu vieną nuotrauką, kuri rodoma, kai puslapyje asmuo vaizduojamas su šia pareigybe." :error="form.errors.additional_photo">
-        <ImageUpload v-model:url="form.additional_photo" mode="immediate" folder="contacts" cropper :existing-url="dutiable?.additional_photo" />
+        <ImageUpload
+          v-model:url="form.additional_photo"
+          v-model:focal-point-value="form.additional_photo_focal_point"
+          mode="immediate"
+          folder="contacts"
+          cropper
+          focal-point
+          preview-aspect="4/3"
+          :existing-url="dutiable?.additional_photo"
+        />
       </FormFieldWrapper>
       <FormFieldWrapper id="study_program_id" label="Studijų programa" hint="Kai aktualu, galima pasirinkti studijų programą, kurią rodo prie įrašo" :error="form.errors.study_program_id">
-        <Select v-model="studyProgramIdString">
-          <SelectTrigger>
-            <SelectValue placeholder="Studijų programa" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem v-for="program in studyPrograms" :key="program.id" :value="String(program.id)">
-              <span class="flex items-center gap-2">
-                {{ program.name }}
-                <Badge v-if="program.degree" variant="outline" class="text-xs">{{ program.degree }}</Badge>
-              </span>
-            </SelectItem>
-          </SelectContent>
-        </Select>
+        <SingleSelect
+          v-model="selectedStudyProgram"
+          :options="studyPrograms"
+          label-field="name"
+          value-field="id"
+          placeholder="Studijų programa"
+        >
+          <template #option="{ item }">
+            <span class="flex items-center gap-2">
+              {{ item.name }}
+              <Badge v-if="item.degree" variant="outline" class="text-xs">{{ item.degree }}</Badge>
+            </span>
+          </template>
+        </SingleSelect>
       </FormFieldWrapper>
 
       <div class="space-y-2">
@@ -92,7 +102,7 @@ import { Badge } from '@/Components/ui/badge';
 import { DatePicker } from '@/Components/ui/date-picker';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { SingleSelect } from '@/Components/ui/single-select';
 import { Switch } from '@/Components/ui/switch';
 import { ImageUpload } from '@/Components/ui/upload';
 import { changeDutyNameEndings } from '@/Utils/String';
@@ -118,10 +128,10 @@ if (Array.isArray(form.description)) {
 
 const locale = ref('lt');
 
-// Shadcn Select requires string values
-const studyProgramIdString = computed({
-  get: () => form.study_program_id != null ? String(form.study_program_id) : '',
-  set: (val: string) => { form.study_program_id = val ? Number(val) : null; },
+// Bridge: SingleSelect operates on full objects, form stores study_program_id for server submission
+const selectedStudyProgram = computed({
+  get: () => props.studyPrograms.find(p => p.id === form.study_program_id) ?? null,
+  set: (val: App.Entities.StudyProgram | null) => { form.study_program_id = val?.id ?? null; },
 });
 
 const shownDutyName = computed(() => {

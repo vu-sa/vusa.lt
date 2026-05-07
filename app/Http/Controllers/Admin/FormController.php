@@ -19,7 +19,6 @@ use App\Services\TanstackTableService;
 use App\Settings\FormSettings;
 use Illuminate\Support\Str;
 use Inertia\Response;
-use Maatwebsite\Excel\Facades\Excel;
 
 class FormController extends AdminController
 {
@@ -305,6 +304,6 @@ class FormController extends AdminController
         // slugify the form name up to 16 char, and add datetime
         $fileName = substr(Str::slug($form->getTranslation('name', app()->getLocale())), 0, 20).'-'.now()->format('Y-m-d-H-i-s');
 
-        return Excel::download(new FormRegistrationsExport($form), $fileName.'.xlsx');
+        return (new FormRegistrationsExport($form))->download($fileName.'.xlsx');
     }
 }

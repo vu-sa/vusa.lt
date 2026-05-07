@@ -52,6 +52,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, FileableFile> $fileableFiles
  * @property-read bool $has_protocol
  * @property-read bool $has_report
+ * @property-read array $translatable_columns_from
  * @property-read Institution|null $institution
  * @property-read Institution|null $institutions
  * @property-read Collection<int, Meeting> $meetings
@@ -62,6 +63,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, \App\Models\Resource> $resources
  * @property-read Collection<int, Role> $roles
  * @property-read Collection<int, Task> $tasks
+ * @property-read Collection<int, Permission> $teams
  * @property-read Collection<int, Tenant> $tenants
  * @property-read mixed $translations
  * @property-read Collection<int, Type> $types
@@ -80,6 +82,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty permission($permissions, bool $without = false)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty role($roles, ?string $guard = null, bool $without = false)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty team($teams, bool $without = false)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty whereLocale(string $column, string $locale)
@@ -87,6 +90,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty withoutPermission($permissions)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty withoutRole($roles, ?string $guard = null)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty withoutTeam($teams)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty withoutTrashed()
  *
  * @mixin \Eloquent
@@ -130,7 +134,7 @@ class Duty extends Model implements AuthorizableContract, SharepointFileableCont
     {
         return $this->morphedByMany(User::class, 'dutiable')
             ->using(Dutiable::class)
-            ->withPivot(['id', 'start_date', 'end_date', 'additional_photo', 'additional_email', 'use_original_duty_name', 'description', 'study_program_id']);
+            ->withPivot(['id', 'start_date', 'end_date', 'additional_photo', 'additional_photo_focal_point', 'additional_email', 'use_original_duty_name', 'description', 'study_program_id']);
     }
 
     // TODO: use current_duties as an example for current_users

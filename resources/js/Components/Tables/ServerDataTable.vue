@@ -8,26 +8,45 @@
       @page-change="handlePageChange" @update:sorting="handleSortChange" @update:global-filter="updateSearchText"
       @update:row-selection="handleRowSelectionChange">
       <template #filters>
-        <div class="flex gap-2 w-full">
-          <Input v-model="searchText" :placeholder="`${$t('Paieška')}...`" class="max-w-sm"
-            @keydown.enter="handleSearch" />
-          <Button @click="handleSearch">
-            {{ $t('Paieška') }}
-          </Button>
-        </div>
-        <div class="flex gap-2">
-          <!-- Toggle deleted items -->
-          <slot name="filters" />
-          <div v-if="allowToggleDeleted" class="flex ml-2 items-center space-x-2">
-            <Checkbox id="show-deleted" :model-value="showDeleted" @update:model-value="handleShowDeletedChange" />
-            <Label for="show-deleted" class="text-sm font-medium">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:flex-wrap w-full">
+          <!-- Search -->
+          <div class="relative flex-1 min-w-0 max-w-full sm:max-w-xs md:max-w-sm">
+            <SearchIcon class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              v-model="searchText"
+              :placeholder="`${$t('Search')}...`"
+              class="pl-9 pr-8 w-full"
+              @keydown.enter="handleSearch"
+            />
+            <button
+              v-if="searchText"
+              type="button"
+              class="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              @click="searchText = ''; handleSearch()"
+            >
+              <XIcon class="h-4 w-4" />
+            </button>
+          </div>
+
+          <!-- Custom filters from pages + show deleted -->
+          <div class="flex flex-wrap items-center gap-2">
+            <slot name="filters" />
+
+            <Button
+              v-if="allowToggleDeleted"
+              variant="ghost"
+              size="sm"
+              :class="showDeleted ? 'bg-secondary text-secondary-foreground' : 'text-muted-foreground'"
+              @click="handleShowDeletedChange(!showDeleted)"
+            >
               {{ $t('Show deleted') }}
-            </Label>
+            </Button>
           </div>
         </div>
       </template>
 
       <template #actions>
+        <!-- Page-level actions (Add button, headerActions, etc.) -->
         <slot name="actions" />
       </template>
 
@@ -55,14 +74,12 @@ import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef, SortingState, RowSelectionState } from '@tanstack/vue-table';
 import { router, Link } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
-import { PlusCircleIcon } from 'lucide-vue-next';
+import { PlusCircleIcon, SearchIcon, XIcon } from 'lucide-vue-next';
 
 import DataTableProvider from '../ui/data-table/DataTableProvider.vue';
 
 import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';
-import { Checkbox } from '@/Components/ui/checkbox';
-import { Label } from '@/Components/ui/label';
 import EmptyState from '@/Components/Empty/EmptyState.vue';
 
 // Define the props with TypeScript generics support
@@ -112,8 +129,15 @@ const props = defineProps<{
 
 const emit = defineEmits(['dataLoaded', 'update:rowSelection', 'create', 'sorting-changed', 'page-changed', 'filter-changed']);
 
+// Extract search from initialFilters so the input is pre-populated on back-navigation
+const extractSearchFromFilters = (filterRecord?: Record<string, unknown>): string => {
+  if (!filterRecord) return '';
+  const { search } = filterRecord;
+  return typeof search === 'string' ? search : '';
+};
+
 // Component state
-const searchText = ref('');
+const searchText = ref(extractSearchFromFilters(props.initialFilters));
 const pageIndex = ref(props.initialPage ? props.initialPage - 1 : 0);
 const sorting = ref<SortingState>(props.initialSorting || []);
 const filters = ref<Record<string, unknown>>({
@@ -223,9 +247,10 @@ const encodeTableState = () => {
     state.sorting = JSON.stringify(sorting.value);
   }
 
-  // Create filters object without showDeleted (to avoid duplication)
+  // Create filters object without showDeleted/search (to avoid duplication)
   const filtersToSend = { ...filters.value };
   delete filtersToSend.showDeleted;
+  delete filtersToSend.search;
 
   // Add filters if present (excluding showDeleted)
   if (Object.keys(filtersToSend).length > 0) {
@@ -310,6 +335,14 @@ watch(() => showDeleted.value, (newValue) => {
     reloadData();
   }
 });
+
+// Keep search input in sync with external filter changes (e.g. browser back)
+watch(() => props.initialFilters?.search, (newSearch) => {
+  const next = typeof newSearch === 'string' ? newSearch : '';
+  if (searchText.value !== next) {
+    searchText.value = next;
+  }
+}, { immediate: true });
 
 watch(() => props.initialFilters, (newValue) => {
   // Skip if this is an internal update

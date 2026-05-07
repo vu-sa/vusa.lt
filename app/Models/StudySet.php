@@ -14,14 +14,16 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
- * @property string|null $name
- * @property string|null $description
+ * @property array|string $name
+ * @property array|string|null $description
  * @property int $order
  * @property bool $is_visible
  * @property int $tenant_id
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read Collection<int, StudySetCourse> $courses
+ * @property-read int $total_credits
+ * @property-read array $translatable_columns_from
  * @property-read Collection<int, LecturerReview> $reviews
  * @property-read Tenant $tenant
  * @property-read mixed $translations
@@ -30,6 +32,10 @@ use Illuminate\Support\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StudySet newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StudySet newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StudySet query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StudySet whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StudySet whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StudySet whereLocale(string $column, string $locale)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StudySet whereLocales(string $column, array $locales)
  *
  * @mixin \Eloquent
  */

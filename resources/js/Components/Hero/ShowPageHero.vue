@@ -37,7 +37,7 @@
           </div>
 
           <!-- Title -->
-          <h1 class="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground line-clamp-2 sm:truncate">
+          <h1 class="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground line-clamp-2">
             <slot name="title">
               {{ title }}
             </slot>

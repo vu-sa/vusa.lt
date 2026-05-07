@@ -19,10 +19,10 @@
   </IndexTablePage>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
+import { h, ref, computed, watch, capitalize } from 'vue';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
-import { ref, computed, watch, capitalize } from 'vue';
 import { router, usePage, Link } from '@inertiajs/vue3';
 import {
   MergeIcon,
@@ -31,13 +31,12 @@ import { toast } from 'vue-sonner';
 
 import Icons from '@/Types/Icons/regular';
 import { Button } from '@/Components/ui/button';
-import { Badge } from '@/Components/ui/badge';
+import { TruncatedBadge, TruncatedText } from '@/Components/ui/data-table/cells';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import {
   createTitleColumn,
-} from '@/Utils/DataTableColumns';
+} from '@/Composables/useDataTableColumns';
 import type {
   IndexTablePageProps,
 } from '@/Types/TableConfigTypes';
@@ -78,47 +77,20 @@ const getRowId = (row: App.Entities.Tag) => {
 };
 
 // Table columns
-const columns = computed<ColumnDef<App.Entities.Tag, any>[]>(() => [
+const columns = computed<Array<ColumnDef<App.Entities.Tag, any>>>(() => [
   createTitleColumn<App.Entities.Tag>({
     accessorKey: 'name',
     routeName: 'tags.edit',
     width: 300,
-    cell: ({ row }) => {
-      const name = row.getValue('name');
-      const displayName = typeof name === 'object' ? (name.lt || name.en || '-') : name;
-      return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div class="max-w-[290px] truncate">
-                <a
-                  href={route('tags.edit', { id: row.original.id })}
-                  class="font-medium hover:underline"
-                >
-                  {displayName}
-                </a>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent side="top" align="start">
-              <p>{displayName}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      );
-    },
   }),
   {
     accessorKey: 'alias',
     header: () => $t('Alias'),
     cell: ({ row }) => {
       const { alias } = row.original;
-      return alias
-        ? (
-            <Badge variant="outline">
-              {alias}
-            </Badge>
-          )
-        : null;
+      if (!alias) return null;
+
+      return h(TruncatedBadge, { text: alias, variant: 'outline' });
     },
     size: 150,
   },
@@ -126,7 +98,7 @@ const columns = computed<ColumnDef<App.Entities.Tag, any>[]>(() => [
     accessorKey: 'created_at',
     header: () => $t('forms.fields.created_at'),
     cell: ({ row }) => {
-      return new Date(row.original.created_at).toLocaleDateString('lt-LT');
+      return h(TruncatedText, { text: new Date(row.original.created_at).toLocaleDateString('lt-LT') });
     },
     size: 150,
   },
@@ -161,7 +133,6 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Tag>>(() => {
 
     // Page layout
     headerTitle: 'Žymos',
-    headerDescription: $t('Tvarkykite turinio žymas'),
     icon: Icons.TAG,
     createRoute: canCreate.value ? route('tags.create') : undefined,
     canCreate: canCreate.value,

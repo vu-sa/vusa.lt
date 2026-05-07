@@ -20,7 +20,7 @@
           <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-5">
             <div class="flex-1">
               <h1 class="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight">
-                {{ formatMeetingDate(meeting.start_time) }}
+                {{ formatMeetingDateTime(meeting) }}
               </h1>
               <p v-if="meeting.description" class="text-zinc-600 dark:text-zinc-400 mt-2 text-sm leading-relaxed">
                 {{ meeting.description }}
@@ -246,7 +246,7 @@
             <div class="text-left">
               <span class="text-xs uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ $t('Ankstesnis posėdis') }}</span>
               <p class="text-sm font-medium text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-200 transition-colors">
-                {{ formatMeetingDate(previousMeeting.start_time) }}
+                {{ formatMeetingDateTime(previousMeeting) }}
               </p>
             </div>
           </InertiaLink>
@@ -260,7 +260,7 @@
             <div class="text-right">
               <span class="text-xs uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ $t('Kitas posėdis') }}</span>
               <p class="text-sm font-medium text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-200 transition-colors">
-                {{ formatMeetingDate(nextMeeting.start_time) }}
+                {{ formatMeetingDateTime(nextMeeting) }}
               </p>
             </div>
             <ChevronRight class="h-5 w-5 text-zinc-300 group-hover:text-zinc-500 dark:text-zinc-600 dark:group-hover:text-zinc-400 transition-colors" />
@@ -282,6 +282,7 @@ import { usePage, Link as InertiaLink } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { InfoIcon, CheckCircleIcon, AlertCircleIcon, ChevronLeft, ChevronRight, Building2, Users as UsersIcon } from 'lucide-vue-next';
 
+import { formatMeetingDateTime } from '@/Utils/MeetingDisplay';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { getMainVote, getAgendaItemStatusMeta, getMeetingStatusSummary, hasDecisionData, getVoteAlignmentLabel, canCompareVotes, isVoteAligned, getVoteComparisonText, getVoteComparisonColorClass, type AgendaItemStatus } from '@/Composables/useAgendaItemStyling';
 import PublicVotingExplainerModal from '@/Components/Public/PublicVotingExplainerModal.vue';
@@ -292,15 +293,14 @@ import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
-import { formatStaticTime } from '@/Utils/IntlTime';
 import IFluentPeople24Regular from '~icons/fluent/people-24-regular';
 
 const props = defineProps<{
   meeting: App.Entities.Meeting;
   institution: App.Entities.Institution;
   representatives: App.Entities.User[];
-  previousMeeting?: { id: string; start_time: string } | null;
-  nextMeeting?: { id: string; start_time: string } | null;
+  previousMeeting?: { id: string; start_time: string; type?: string | null } | null;
+  nextMeeting?: { id: string; start_time: string; type?: string | null } | null;
 }>();
 
 const page = usePage();
@@ -379,23 +379,13 @@ usePageBreadcrumbs(() => {
   // Current meeting
   items.push(
     BreadcrumbHelpers.createBreadcrumbItem(
-      formatMeetingDate(props.meeting.start_time),
+      formatMeetingDateTime(props.meeting),
       undefined,
     ),
   );
 
   return items;
 });
-
-const formatMeetingDate = (date: string) => {
-  return formatStaticTime(new Date(date), {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
 
 // Use composable functions for vote outcome display
 const getVoteOutcomeIcon = (item: App.Entities.AgendaItem) => {

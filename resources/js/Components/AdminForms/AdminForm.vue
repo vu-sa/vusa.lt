@@ -14,12 +14,12 @@
         <!-- Left side: Status indicators -->
         <div class="flex items-center gap-3 text-sm">
           <Transition name="fade" mode="out-in">
-            <div v-if="isSaving" key="saving" class="flex items-center gap-2 text-muted-foreground">
+            <div v-if="props.model.processing" key="saving" class="flex items-center gap-2 text-muted-foreground">
               <div
                 class="h-3 w-3 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-600 dark:border-zinc-600 dark:border-t-zinc-300" />
               <span class="hidden sm:inline">{{ $t('Išsaugoma...') }}</span>
             </div>
-            <div v-else-if="recentlySaved" key="saved"
+            <div v-else-if="props.model.recentlySuccessful" key="saved"
               class="flex items-center gap-2 text-green-600 dark:text-green-400">
               <IFluentCheckmarkCircle16Filled class="h-4 w-4" />
               <span class="hidden sm:inline">{{ $t('Išsaugota') }}</span>
@@ -60,7 +60,7 @@
               <IFluentDelete24Filled class="h-4 w-4" />
               <span class="hidden sm:inline ml-2">{{ $t('Ištrinti') }}</span>
             </Button>
-            <Button :disabled="isSaving" @click="handleSubmit">
+            <Button :disabled="props.model.processing" @click="handleSubmit">
               <IFluentSave24Filled class="h-4 w-4" />
               <span class="hidden sm:inline ml-2">{{ $t('Išsaugoti') }}</span>
             </Button>
@@ -94,8 +94,8 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 import { watch, ref, computed, onMounted, onUnmounted } from 'vue';
-import { useDebounceFn, useTimeoutFn } from '@vueuse/core';
-import { router, usePage } from '@inertiajs/vue3';
+import { useDebounceFn } from '@vueuse/core';
+import { router, usePage, type InertiaForm } from '@inertiajs/vue3';
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';
@@ -105,7 +105,7 @@ import { Separator } from '@/Components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 
 const props = defineProps<{
-  model: Record<string, any>;
+  model: InertiaForm<any>;
   enableDelete?: boolean;
   isCreateForm?: boolean;
 }>();
@@ -118,9 +118,8 @@ const emit = defineEmits<{
 const page = usePage();
 
 const showDeleteDialog = ref(false);
-const isSaving = ref(false);
-const recentlySaved = ref(false);
 const autosaveEnabled = ref(false);
+const isSubmitting = ref(false);
 
 // Auto-detect create page from URL path, with ability to override via prop
 const isCreatePage = computed(() => {
@@ -128,32 +127,22 @@ const isCreatePage = computed(() => {
   return page.props.app?.path?.endsWith('/create') || props.isCreateForm === true;
 });
 
-// Clear "saved" indicator after 3 seconds
-const { start: startSavedTimeout } = useTimeoutFn(() => {
-  recentlySaved.value = false;
-}, 3000, { immediate: false });
-
 const handleSubmit = () => {
-  isSaving.value = true;
+  isSubmitting.value = true;
   emit('submit:form');
 };
+
+// Reset isSubmitting when Inertia finishes processing (success or error)
+watch(() => props.model.processing, (processing, wasProcessing) => {
+  if (wasProcessing && !processing) {
+    isSubmitting.value = false;
+  }
+});
 
 const handleDelete = () => {
   emit('delete');
   showDeleteDialog.value = false;
 };
-
-// Watch for form processing state to update status
-watch(() => props.model.processing, (processing, wasProcessing) => {
-  if (wasProcessing && !processing) {
-    // Form finished processing
-    isSaving.value = false;
-    if (!props.model.hasErrors) {
-      recentlySaved.value = true;
-      startSavedTimeout();
-    }
-  }
-});
 
 // Inertia navigation guard - intercept navigation when form is dirty
 let removeBeforeListener: (() => void) | null = null;
@@ -163,14 +152,15 @@ onMounted(() => {
   removeBeforeListener = router.on('before', (event) => {
     // Skip prefetch requests
     if (event.detail.visit.prefetch) {
-      return true;
+      return;
     }
 
-    if (props.model.isDirty && !isSaving.value) {
+    if (props.model.isDirty && !props.model.processing && !isSubmitting.value) {
       // Use native browser confirm dialog
-      return confirm($t('Turite neišsaugotų pakeitimų. Ar tikrai norite išeiti?'));
+      if (!confirm($t('Turite neišsaugotų pakeitimų. Ar tikrai norite išeiti?'))) {
+        event.preventDefault();
+      }
     }
-    return true;
   });
 
   // Browser beforeunload event for tab close/refresh
@@ -185,27 +175,23 @@ onUnmounted(() => {
 
 // Browser beforeunload handler
 const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-  if (props.model.isDirty && !isSaving.value) {
+  if (props.model.isDirty && !props.model.processing && !isSubmitting.value) {
     event.preventDefault();
     // Modern browsers ignore custom messages, but we still need to set returnValue
-    event.returnValue = '';
+    (event as BeforeUnloadEvent & { returnValue: string }).returnValue = '';
     return '';
   }
 };
 
 // Autosave on form dirty with debounce (only when user enables autosave and not a create form)
 const autosaveFn = useDebounceFn(() => {
-  if (props.model?.isDirty && autosaveEnabled.value && !isSaving.value && !isCreatePage.value) {
+  if (props.model.isDirty && autosaveEnabled.value && !props.model.processing && !isCreatePage.value) {
     handleSubmit();
   }
 }, 5000);
 
 // Watch the model data for changes (deep watch to detect any field changes)
-watch(() => props.model.data(), () => {
-  if (props.model?.isDirty && autosaveEnabled.value && !isCreatePage.value) {
-    autosaveFn();
-  }
-}, { deep: true });
+watch(() => props.model.data(), autosaveFn, { deep: true });
 </script>
 
 <style scoped>

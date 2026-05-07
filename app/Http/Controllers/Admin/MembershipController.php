@@ -12,7 +12,6 @@ use App\Imports\MembershipUsersImport;
 use App\Models\Membership;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
-use Maatwebsite\Excel\Facades\Excel;
 
 class MembershipController extends AdminController
 {
@@ -130,7 +129,7 @@ class MembershipController extends AdminController
     {
         $this->handleAuthorization('update', $membership);
 
-        Excel::import(new MembershipUsersImport($membership), request()->file('file'));
+        (new MembershipUsersImport($membership))->import(request()->file('file'));
 
         return response()->json(['message' => 'Users imported.']);
     }

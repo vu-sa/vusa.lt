@@ -44,16 +44,17 @@
 
           <FormFieldWrapper id="lang" :label="$t('Kalba')" required :error="form.errors.lang"
             :valid="form.valid('lang')" :invalid="form.invalid('lang')">
-            <Select v-model="form.lang" @update:model-value="form.validate('lang')">
-              <SelectTrigger id="lang">
-                <SelectValue :placeholder="$t('Pasirinkti kalbą...')" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem v-for="lang in languageOptions" :key="lang.value" :value="lang.value">
-                  {{ lang.label }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <ToggleGroup v-model="form.lang" type="single" class="justify-start"
+              @update:model-value="form.validate('lang')">
+              <ToggleGroupItem value="lt" class="gap-2">
+                <img src="https://hatscripts.github.io/circle-flags/flags/lt.svg" class="h-4 w-4 rounded-full">
+                Lietuvių
+              </ToggleGroupItem>
+              <ToggleGroupItem value="en" class="gap-2">
+                <img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" class="h-4 w-4 rounded-full">
+                English
+              </ToggleGroupItem>
+            </ToggleGroup>
           </FormFieldWrapper>
         </div>
       </div>
@@ -143,19 +144,14 @@
             <!-- Other Language Page -->
             <FormFieldWrapper id="other_lang" :label="$t('Kitos kalbos puslapis')"
               :hint="$t('Susieti su to paties turinio puslapiu kita kalba')">
-              <Select v-model="form.other_lang_id" :disabled="isCreate">
-                <SelectTrigger id="other_lang">
-                  <SelectValue :placeholder="$t('Pasirinkti kitos kalbos puslapį...')" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">
-                    -- {{ $t('Nepasirinkta') }} --
-                  </SelectItem>
-                  <SelectItem v-for="page in otherPageOptions" :key="page.value" :value="page.value">
-                    {{ page.label }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <SingleSelect
+                v-model="selectedOtherLangPage"
+                :options="otherLangPageOptions"
+                label-field="label"
+                value-field="value"
+                :placeholder="$t('Pasirinkti kitos kalbos puslapį...')"
+                :disabled="isCreate"
+              />
             </FormFieldWrapper>
 
             <!-- SEO Section -->
@@ -194,6 +190,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, h } from 'vue';
 import { useForm, usePage } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 
 import RichContentFormElement from '../RichContent/RichContentFormElement.vue';
 
@@ -210,8 +207,10 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Component
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { OrderedListInput } from '@/Components/ui/ordered-list-input';
+import { SingleSelect } from '@/Components/ui/single-select';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
+import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
 import { DateTimePicker } from '@/Components/ui/date-picker';
 import { ImageUpload } from '@/Components/ui/upload';
 
@@ -359,10 +358,18 @@ const otherPageOptions = computed(() => {
     .reverse();
 });
 
-const languageOptions = [
-  { value: 'lt', label: 'Lietuvių' },
-  { value: 'en', label: 'English' },
-];
+const otherLangPageOptions = computed(() => [
+  { value: '__none__', label: `-- ${$t('Nepasirinkta')} --` },
+  ...otherPageOptions.value,
+]);
+
+// Bridge: SingleSelect operates on full objects, form stores other_lang_id for server submission
+const selectedOtherLangPage = computed({
+  get: () => otherLangPageOptions.value.find(p => p.value === (form.other_lang_id ?? '__none__')) ?? otherLangPageOptions.value[0],
+  set: (val: { value: string | number; label: string } | null) => {
+    form.other_lang_id = val?.value === '__none__' ? null : val?.value ?? null;
+  },
+});
 
 // Date/time picker compatibility
 const publishTimeDate = computed({
@@ -388,14 +395,4 @@ if (isCreate.value) {
     },
   );
 }
-
-// Handle other_lang_id sentinel value
-watch(
-  () => form.other_lang_id,
-  (value) => {
-    if (value === '__none__') {
-      form.other_lang_id = null;
-    }
-  },
-);
 </script>

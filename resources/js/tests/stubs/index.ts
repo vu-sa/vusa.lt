@@ -1,0 +1,1 @@
+export { commonStubs, stubDialog, stubDialogContent, stubDialogDescription, stubDialogFooter, stubDialogHeader, stubDialogTitle, stubIcon, stubTooltip, stubTooltipContent, stubTooltipProvider, stubTooltipTrigger } from './common';

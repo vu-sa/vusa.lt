@@ -3,6 +3,9 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { usePage } from '@inertiajs/vue3';
+
+import { createMockPage } from '@/tests/helpers/createMockPage';
 
 // Mock dependencies
 vi.mock('@vueuse/core', () => ({
@@ -10,23 +13,6 @@ vi.mock('@vueuse/core', () => ({
     return { value: { ...defaultValue } };
   }),
   useOnline: vi.fn(() => ({ value: true })),
-}));
-
-vi.mock('@inertiajs/vue3', () => ({
-  usePage: vi.fn(() => ({
-    props: {
-      app: { locale: 'lt' },
-      typesenseConfig: {
-        apiKey: 'test-key',
-        host: 'localhost',
-        port: 8108,
-        protocol: 'http',
-        collections: {
-          public_institutions: 'public_institutions',
-        },
-      },
-    },
-  })),
 }));
 
 vi.mock('../useSearchClient', () => ({
@@ -59,6 +45,19 @@ vi.mock('../../Services/InstitutionSearchService', () => ({
 describe('useInstitutionSearch (refactored)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(usePage).mockReturnValue(
+      createMockPage({
+        typesenseConfig: {
+          apiKey: 'test-key',
+          host: 'localhost',
+          port: 8108,
+          protocol: 'http',
+          collections: {
+            public_institutions: 'public_institutions',
+          },
+        },
+      }),
+    );
   });
 
   afterEach(() => {

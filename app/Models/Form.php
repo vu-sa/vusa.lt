@@ -25,6 +25,7 @@ use Laravel\Scout\Searchable;
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, FormField> $formFields
+ * @property-read array $translatable_columns_from
  * @property-read Collection<int, Registration> $registrations
  * @property-read Tenant $tenant
  * @property-read Training|null $training

@@ -28,14 +28,15 @@
   </IndexTablePage>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
+import { h, ref, computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
-import { ref, computed } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 
 import Icons from '@/Types/Icons/regular';
 import { Button } from '@/Components/ui/button';
+import { TruncatedText } from '@/Components/ui/data-table/cells';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,7 +49,7 @@ import {
   createIdColumn,
   createTenantColumn,
   createTimestampColumn,
-} from '@/Utils/DataTableColumns';
+} from '@/Composables/useDataTableColumns';
 import type {
   IndexTablePageProps,
 } from '@/Types/TableConfigTypes';
@@ -86,18 +87,15 @@ function handleTenantSelect(tenantId: number) {
   router.visit(route('tenants.editMainPage', { tenant: tenantId }));
 }
 
-const columns = computed<ColumnDef<App.Entities.Page, any>[]>(() => [
+const columns = computed<Array<ColumnDef<App.Entities.Page, any>>>(() => [
   createIdColumn<App.Entities.Page>({ width: 50 }),
   {
     accessorKey: 'title',
     header: () => 'Pavadinimas',
-    cell: ({ row }) => {
-      return (
-        <div class="max-w-[200px] text-wrap">
-          {row.getValue('title')}
-        </div>
-      );
-    },
+    cell: ({ row }) => h(TruncatedText, {
+      text: row.getValue('title') as string,
+      lines: 2,
+    }),
     size: 200,
     enableSorting: true,
   },
@@ -115,15 +113,11 @@ const columns = computed<ColumnDef<App.Entities.Page, any>[]>(() => [
     cell: ({ row }) => {
       const otherLangId = row.original.other_lang_id;
       if (!otherLangId) return null;
-      return (
-        <a
-          href={route('pages.edit', { id: otherLangId })}
-          target="_blank"
-          class="hover:underline"
-        >
-          {otherLangId}
-        </a>
-      );
+      return h('a', {
+        href: route('pages.edit', { id: otherLangId }),
+        class: 'hover:underline block truncate',
+        title: String(otherLangId),
+      }, otherLangId);
     },
     size: 150,
   },

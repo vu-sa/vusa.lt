@@ -118,6 +118,7 @@ declare global {
       registration_form_id?: number | null
       // mutators
       main_image_url: string
+      translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
       tenant?: Tenant
@@ -140,6 +141,7 @@ declare global {
       name?: Array<unknown> | null
       description?: Array<unknown> | null
       // mutators
+      translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
       pages?: Page[]
@@ -261,11 +263,13 @@ declare global {
       study_program_id?: string | null
       additional_email?: string | null
       additional_photo?: string | null
+      additional_photo_focal_point?: string | null
       description?: Array<unknown> | null
       use_original_duty_name: boolean
       created_at: string
       updated_at: string
       // mutators
+      translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
       dutiable?: Dutiable
@@ -295,6 +299,7 @@ declare global {
       // mutators
       has_protocol: boolean
       has_report: boolean
+      translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
       dutiables?: Dutiable[]
@@ -312,6 +317,7 @@ declare global {
       resources?: Resource
       available_trainings?: Training[]
       roles?: Role[]
+      teams?: Permission[]
       permissions?: Permission[]
       fileable_files?: FileableFile[]
       available_files?: FileableFile[]
@@ -325,6 +331,7 @@ declare global {
       types_count: number
       available_trainings_count: number
       roles_count: number
+      teams_count: number
       permissions_count: number
       fileable_files_count: number
       available_files_count: number
@@ -340,6 +347,7 @@ declare global {
       institutions_exists: boolean
       available_trainings_exists: boolean
       roles_exists: boolean
+      teams_exists: boolean
       permissions_exists: boolean
       fileable_files_exists: boolean
       available_files_exists: boolean
@@ -409,6 +417,7 @@ declare global {
       updated_at: string
       deleted_at?: string | null
       // mutators
+      translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
       form_fields?: FormField[]
@@ -446,6 +455,7 @@ declare global {
       created_at: string
       updated_at: string
       // mutators
+      translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
       form?: Form
@@ -485,6 +495,7 @@ declare global {
       has_public_meetings: boolean
       has_protocol: boolean
       has_report: boolean
+      translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
       duties?: Duty[]
@@ -599,6 +610,25 @@ declare global {
       institution_exists: boolean
     }
 
+    export interface LecturerReview {
+      // columns
+      id: string
+      study_set_course_id: string
+      lecturer: Array<unknown>
+      comment: Array<unknown>
+      is_visible: boolean
+      created_at: string
+      updated_at: string
+      // mutators
+      translatable_columns_from: Array<unknown>
+      translations: unknown
+      // relations
+      course?: StudySetCourse
+      // counts
+      // exists
+      course_exists: boolean
+    }
+
     export interface Meeting {
       // columns
       id: string
@@ -611,6 +641,7 @@ declare global {
       updated_at: string
       deleted_at?: string | null
       // mutators
+      is_joint: boolean
       is_public: boolean
       type_label: string
       type_slug: string
@@ -652,6 +683,7 @@ declare global {
       created_at: string
       updated_at: string
       // mutators
+      translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
       tenant?: Tenant
@@ -807,14 +839,17 @@ declare global {
       // relations
       roles?: Role[]
       users?: User[]
+      teams?: Permission[]
       permissions?: Permission[]
       // counts
       roles_count: number
       users_count: number
+      teams_count: number
       permissions_count: number
       // exists
       roles_exists: boolean
       users_exists: boolean
+      teams_exists: boolean
       permissions_exists: boolean
     }
 
@@ -835,6 +870,7 @@ declare global {
       updated_at: string
       deleted_at?: string | null
       // mutators
+      translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
       tenant?: Tenant
@@ -865,6 +901,7 @@ declare global {
       created_at: string
       updated_at: string
       // mutators
+      translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
       problems?: Problem[]
@@ -883,6 +920,7 @@ declare global {
       created_at: string
       updated_at: string
       // mutators
+      translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
       days?: ProgrammeDay[]
@@ -902,6 +940,7 @@ declare global {
       created_at: string
       updated_at: string
       // mutators
+      translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
       parts?: ProgrammePart[]
@@ -922,6 +961,7 @@ declare global {
       created_at: string
       updated_at: string
       // mutators
+      translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
       programme?: Programme
@@ -970,6 +1010,7 @@ declare global {
       created_at: string
       updated_at: string
       // mutators
+      translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
       programme_days?: ProgrammeDay[]
@@ -991,6 +1032,7 @@ declare global {
       created_at: string
       updated_at: string
       // mutators
+      translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
       programme_days?: ProgrammeDay[]
@@ -1031,6 +1073,7 @@ declare global {
       has_public_meetings: boolean
       has_protocol: boolean
       has_report: boolean
+      translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
       types?: Type[]
@@ -1099,6 +1142,7 @@ declare global {
       updated_at: string
       deleted_at?: string | null
       // mutators
+      is_joint: boolean
       is_public: boolean
       type_label: string
       type_slug: string
@@ -1296,6 +1340,7 @@ declare global {
       updated_at: string
       deleted_at?: string | null
       // mutators
+      translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
       reservations?: Reservation[]
@@ -1324,6 +1369,7 @@ declare global {
       created_at: string
       updated_at: string
       // mutators
+      translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
       resources?: Resource[]
@@ -1431,6 +1477,7 @@ declare global {
       created_at: string
       updated_at: string
       // mutators
+      translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
       tenant?: Tenant
@@ -1442,6 +1489,57 @@ declare global {
       dutiables_exists: boolean
     }
 
+    export interface StudySet {
+      // columns
+      id: string
+      name: Array<unknown>
+      description?: Array<unknown> | null
+      order: number
+      is_visible: boolean
+      tenant_id: number
+      created_at: string
+      updated_at: string
+      // mutators
+      total_credits: number
+      translatable_columns_from: Array<unknown>
+      translations: unknown
+      // relations
+      tenant?: Tenant
+      courses?: StudySetCourse[]
+      reviews?: LecturerReview[]
+      // counts
+      courses_count: number
+      reviews_count: number
+      // exists
+      tenant_exists: boolean
+      courses_exists: boolean
+      reviews_exists: boolean
+    }
+
+    export interface StudySetCourse {
+      // columns
+      id: string
+      study_set_id: string
+      name: Array<unknown>
+      order: number
+      semester: string
+      credits: number
+      is_visible: boolean
+      created_at: string
+      updated_at: string
+      // mutators
+      translatable_columns_from: Array<unknown>
+      translations: unknown
+      // relations
+      study_set?: StudySet
+      reviews?: LecturerReview[]
+      // counts
+      reviews_count: number
+      // exists
+      study_set_exists: boolean
+      reviews_exists: boolean
+    }
+
     export interface Tag {
       // columns
       id: number
@@ -1451,6 +1549,7 @@ declare global {
       name?: Array<unknown> | null
       description?: Array<unknown> | null
       // mutators
+      translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
       news?: News[]
@@ -1509,6 +1608,7 @@ declare global {
       pages?: Page[]
       quick_links?: QuickLink[]
       resources?: Resource[]
+      study_sets?: StudySet[]
       users?: User
       reservations?: Reservation
       primary_institution?: Institution
@@ -1522,6 +1622,7 @@ declare global {
       pages_count: number
       quick_links_count: number
       resources_count: number
+      study_sets_count: number
       // exists
       banners_exists: boolean
       calendar_exists: boolean
@@ -1531,6 +1632,7 @@ declare global {
       pages_exists: boolean
       quick_links_exists: boolean
       resources_exists: boolean
+      study_sets_exists: boolean
       primary_institution_exists: boolean
       content_exists: boolean
     }
@@ -1597,6 +1699,7 @@ declare global {
       created_at: string
       updated_at: string
       // mutators
+      translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
       trainables?: Trainable[]
@@ -1634,6 +1737,7 @@ declare global {
       created_at: string
       updated_at: string
       // mutators
+      translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
       training?: Training
@@ -1657,6 +1761,7 @@ declare global {
       // mutators
       has_protocol: boolean
       has_report: boolean
+      translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
       institutions?: Institution[]
@@ -1727,10 +1832,12 @@ declare global {
       updated_at: string
       created_at: string
       profile_photo_path?: string | null
+      profile_photo_focal_point?: string | null
       deleted_at?: string | null
       name_was_changed?: boolean
       // mutators
       has_password: unknown
+      translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
       duties?: Duty[]
@@ -1746,6 +1853,7 @@ declare global {
       available_trainings_through_user?: Training[]
       push_subscriptions?: PushSubscription[]
       roles?: Role[]
+      teams?: Permission[]
       permissions?: Permission[]
       activities?: Activity[]
       notifications?: DatabaseNotification[]
@@ -1763,6 +1871,7 @@ declare global {
       available_trainings_through_user_count: number
       push_subscriptions_count: number
       roles_count: number
+      teams_count: number
       permissions_count: number
       activities_count: number
       notifications_count: number
@@ -1780,6 +1889,7 @@ declare global {
       available_trainings_through_user_exists: boolean
       push_subscriptions_exists: boolean
       roles_exists: boolean
+      teams_exists: boolean
       permissions_exists: boolean
       activities_exists: boolean
       notifications_exists: boolean

@@ -9,18 +9,16 @@
   />
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
+import { h, ref, computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
-import { ref, computed } from 'vue';
 
-import { formatStaticTime } from '@/Utils/IntlTime';
+import { DateCell, TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
 import Icons from '@/Types/Icons/regular';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
-import {
-  createTenantColumn,
-} from '@/Utils/DataTableColumns';
+import { createTenantColumn } from '@/Composables/useDataTableColumns';
 import type {
   IndexTablePageProps,
 } from '@/Types/TableConfigTypes';
@@ -51,7 +49,7 @@ const getRowId = (row: App.Entities.Calendar) => {
   return `calendar-${row.id}`;
 };
 
-const columns = computed<ColumnDef<App.Entities.Calendar, any>[]>(() => [
+const columns = computed<Array<ColumnDef<App.Entities.Calendar, any>>>(() => [
   {
     accessorKey: 'title',
     header: () => 'Pavadinimas',
@@ -60,11 +58,7 @@ const columns = computed<ColumnDef<App.Entities.Calendar, any>[]>(() => [
       const displayTitle = typeof title === 'object' && title !== null
         ? ((title as any).lt || (title as any).en || '-')
         : title;
-      return (
-        <div class="max-w-[200px] truncate" title={displayTitle as string}>
-          {displayTitle}
-        </div>
-      );
+      return h(TruncatedText, { text: displayTitle as string, lines: 2 });
     },
     size: 200,
     enableSorting: true,
@@ -75,12 +69,10 @@ const columns = computed<ColumnDef<App.Entities.Calendar, any>[]>(() => [
     cell: ({ row }) => {
       const { date } = row.original;
       if (!date) return null;
-      return formatStaticTime(date, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
+      return h(DateCell, {
+        date,
+        mode: 'absolute',
+        format: { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' },
       });
     },
     size: 200,
@@ -94,7 +86,7 @@ const columns = computed<ColumnDef<App.Entities.Calendar, any>[]>(() => [
       const name = typeof category.name === 'object' && category.name !== null
         ? ((category.name as any).lt || (category.name as any).en || '-')
         : category.name;
-      return name;
+      return h(TruncatedText, { text: name });
     },
     size: 150,
   },

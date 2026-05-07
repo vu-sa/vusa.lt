@@ -7,12 +7,16 @@
 
   <!-- Only show breadcrumbs when there are 3+ items (meaningful navigation depth) -->
   <template v-else-if="shouldShowBreadcrumbs">
-    <!-- Mobile: Icon button with dropdown showing full trail -->
+    <!-- Mobile: Current page button with dropdown showing full trail -->
     <DropdownMenu v-if="isMobile">
       <DropdownMenuTrigger as-child>
-        <Button variant="outline" size="icon" class="h-8 w-8 shrink-0">
-          <FolderTree class="h-4 w-4" />
-          <span class="sr-only">{{ $t('Navigacija') }}</span>
+        <Button variant="outline" size="sm" class="h-8 shrink-0 gap-1.5 max-w-[200px]">
+          <div v-if="lastItem?.icon" class="flex items-center justify-center rounded-md bg-primary/10 p-1 text-primary">
+            <component :is="lastItem.icon" class="h-3.5 w-3.5" />
+          </div>
+          <FolderTree v-else class="h-4 w-4 text-muted-foreground" />
+          <span class="truncate">{{ lastItem ? $t(lastItem.label) : $t('Navigacija') }}</span>
+          <ChevronDown class="h-3.5 w-3.5 text-muted-foreground" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" class="w-56">
@@ -28,7 +32,9 @@
             <span :class="{ 'pl-6': !item.icon && index !== 0 }">{{ $t(item.label) }}</span>
           </Link>
           <span v-else class="flex items-center gap-2 font-medium">
-            <component :is="item.icon" v-if="item.icon" class="h-4 w-4" />
+            <div v-if="item.icon" class="flex items-center justify-center rounded-md bg-primary/10 p-1 text-primary">
+              <component :is="item.icon" class="h-3.5 w-3.5" />
+            </div>
             <span :class="{ 'pl-6': !item.icon }">{{ $t(item.label) }}</span>
           </span>
         </DropdownMenuItem>
@@ -76,9 +82,11 @@
         <!-- Last item (current page) -->
         <BreadcrumbItem v-if="lastItem">
           <BreadcrumbPage>
-            <div class="flex items-center gap-1.5">
-              <component :is="lastItem.icon" v-if="lastItem.icon" class="h-3.5 w-3.5 flex-shrink-0" />
-              <span class="truncate max-w-48 lg:max-w-64">{{ $t(lastItem.label) }}</span>
+            <div class="flex items-center gap-2">
+              <div v-if="lastItem.icon" class="flex items-center justify-center rounded-md bg-primary/10 p-1.5 text-primary">
+                <component :is="lastItem.icon" class="h-4 w-4 flex-shrink-0" />
+              </div>
+              <span class="truncate max-w-48 lg:max-w-64 font-medium">{{ $t(lastItem.label) }}</span>
             </div>
           </BreadcrumbPage>
         </BreadcrumbItem>
@@ -92,7 +100,7 @@ import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { useBreakpoints, breakpointsTailwind } from '@vueuse/core';
-import { Home, FolderTree } from 'lucide-vue-next';
+import { Home, FolderTree, ChevronDown } from 'lucide-vue-next';
 
 import {
   Breadcrumb,

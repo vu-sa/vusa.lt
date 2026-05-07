@@ -1,5 +1,7 @@
 import type { ColumnDef, SortingState, RowSelectionState } from '@tanstack/vue-table';
 
+import type { BreadcrumbItem } from '@/Composables/useBreadcrumbsUnified';
+
 /**
  * Essential table configuration - required props only
  */
@@ -66,6 +68,8 @@ export interface PageTableConfig {
   icon?: any;
   /** Back route (if applicable) */
   backRoute?: string;
+  /** Custom breadcrumbs (auto-generated from headerTitle + icon if not provided) */
+  breadcrumbs?: BreadcrumbItem[];
 
   // Create functionality
   /** Route to create a new item */

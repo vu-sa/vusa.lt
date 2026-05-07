@@ -50,17 +50,26 @@ abstract class BaseIndexRequest extends FormRequest
 
     /**
      * Get the filters from the request.
+     * Includes the standalone 'search' parameter so the frontend
+     * can pre-populate the search input on back-navigation.
      */
     public function getFilters(): array
     {
-        if (! $this->has('filters')) {
-            return [];
+        $filters = [];
+
+        if ($this->has('filters')) {
+            try {
+                $filters = json_decode($this->input('filters'), true) ?? [];
+            } catch (\Exception $e) {
+                $filters = [];
+            }
         }
 
-        try {
-            return json_decode($this->input('filters'), true) ?? [];
-        } catch (\Exception $e) {
-            return [];
+        // Merge standalone search so it survives round-trips
+        if ($this->filled('search')) {
+            $filters['search'] = $this->input('search');
         }
+
+        return $filters;
     }
 }

@@ -113,7 +113,7 @@ export class DocumentSearchService {
       if (error instanceof Error && error.name === 'AbortError') {
         throw error;
       }
-      throw new Error(`Search failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(`Search failed: ${error instanceof Error ? error.message : 'Unknown error'}`, { cause: error });
     }
   }
 

@@ -165,16 +165,13 @@ jobs:
         extensions: dom, curl, libxml, mbstring, zip, fileinfo
         coverage: xdebug
 
-    - name: Create SQLite database
+    - name: Create .env
       run: |
-        touch database/database.sqlite
         cp .env.example .env
         php artisan key:generate --force
 
     - name: Execute tests with coverage
       env:
-        DB_CONNECTION: sqlite
-        DB_DATABASE: database/database.sqlite
         SCOUT_DRIVER: database
         TYPESENSE_HOST: localhost
         TYPESENSE_PORT: 8108

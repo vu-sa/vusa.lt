@@ -8,8 +8,6 @@
 </template>
 
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
-
 import { formTemplate as form } from '../../../Types/formTemplates';
 
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
@@ -20,8 +18,7 @@ defineProps<{
   assignableTenants: App.Entities.Tenant[];
 }>();
 
-// Since the form has nested properties, we don't use useForm() helper and use router instead
 function handleFormSubmitted(form: any) {
-  router.post(route('forms.store'), form);
+  form.post(route('forms.store'));
 }
 </script>

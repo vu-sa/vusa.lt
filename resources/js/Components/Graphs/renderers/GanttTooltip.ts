@@ -113,6 +113,7 @@ export function buildMeetingTooltipContent(
     date: Date;
     institution_id: string | number;
     title?: string;
+    type_slug?: string;
     completion_status?: string;
     vote_alignment_status?: 'all_match' | 'mixed' | 'all_mismatch' | 'neutral';
     authorized?: boolean;
@@ -129,6 +130,7 @@ export function buildMeetingTooltipContent(
   },
   labelFor: (id: string | number) => string,
   fmt: Intl.DateTimeFormat,
+  fmtDateOnly?: Intl.DateTimeFormat,
 ): TooltipContent {
   const name = labelFor(meeting.institution_id);
   let statusBadge = '';
@@ -186,12 +188,19 @@ export function buildMeetingTooltipContent(
   // Build file status section (protocol and report indicators)
   const fileStatusHtml = buildFileStatusHtml(meeting.has_protocol, meeting.has_report);
 
+  // Email meetings store start_time as 23:59 (deadline marker) — show date only
+  // and use the institution name as the heading instead of a stored title that
+  // historically embedded the time.
+  const isEmail = meeting.type_slug === 'email';
+  const dateFmt = isEmail && fmtDateOnly ? fmtDateOnly : fmt;
+  const heading = isEmail ? name : (meeting.title ?? name);
+
   const html = `
     <div class="font-medium text-[12px] leading-tight flex items-center gap-1">
-      ${meeting.title ?? name} ${statusBadge}
+      ${heading} ${statusBadge}
     </div>
-    <div class="opacity-80">${fmt.format(meeting.date)}</div>
-    ${meeting.title ? `<div class="opacity-70">${name}</div>` : ''}
+    <div class="opacity-80">${dateFmt.format(meeting.date)}</div>
+    ${!isEmail && meeting.title ? `<div class="opacity-70">${name}</div>` : ''}
     ${fileStatusHtml}
     ${agendaHtml}
   `;

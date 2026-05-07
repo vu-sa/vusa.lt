@@ -151,23 +151,6 @@
       </div>
     </div>
 
-    <!-- Document Status - Compact -->
-    <div
-      class="flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3"
-      :class="hasAllDocuments ? 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900' : 'border-amber-200 dark:border-amber-900/50 bg-amber-50/50 dark:bg-amber-900/20'"
-    >
-      <div class="flex items-center gap-3">
-        <FileText class="h-5 w-5 text-zinc-500 dark:text-zinc-400 shrink-0" />
-        <span class="text-sm text-zinc-700 dark:text-zinc-300">
-          {{ documentStatusText }}
-        </span>
-      </div>
-      <Button v-if="!hasAllDocuments" variant="outline" size="sm" class="gap-1.5" @click="$emit('go-to-files')">
-        <Upload class="h-4 w-4" />
-        {{ $t('Įkelti') }}
-      </Button>
-    </div>
-
     <!-- Meeting Navigation -->
     <MeetingNavigationCards v-if="previousMeeting || nextMeeting" :previous-meeting :next-meeting />
   </div>
@@ -176,19 +159,19 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronDown, ChevronRight, ClipboardList, FileText, HelpCircle, Upload } from 'lucide-vue-next';
+import { ChevronDown, ChevronRight, ClipboardList, HelpCircle } from 'lucide-vue-next';
 
 import MeetingNavigationCards from './MeetingNavigationCards.vue';
 
 import VoteSelectionBadge from '@/Components/AgendaItems/VoteSelectionBadge.vue';
 import { Button } from '@/Components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
-import { useMeetingUrgency } from '@/Composables/useMeetingUrgency';
 import { useAgendaItemStyling } from '@/Composables/useAgendaItemStyling';
 
 interface MeetingNav {
   id: string;
   start_time: string;
+  type?: string | null;
 }
 
 const props = defineProps<{
@@ -207,7 +190,6 @@ defineEmits<{
 }>();
 
 // Use composables
-const { hasProtocol, hasReport } = useMeetingUrgency(() => props.meeting);
 const styling = useAgendaItemStyling();
 
 // State
@@ -215,16 +197,6 @@ const showHelp = ref(false);
 
 // Constants
 const MAX_DISPLAY_VOTES = 3;
-
-// Computed values
-const hasAllDocuments = computed(() => hasProtocol.value && hasReport.value);
-
-const documentStatusText = computed(() => {
-  if (hasAllDocuments.value) return $t('Protokolas ir ataskaita įkelti');
-  if (!hasProtocol.value && !hasReport.value) return $t('Protokolas ir ataskaita neįkelti');
-  if (!hasProtocol.value) return $t('Protokolas neįkeltas');
-  return $t('Ataskaita neįkelta');
-});
 
 // Agenda summary
 const agendaStatusSummary = computed(() => {

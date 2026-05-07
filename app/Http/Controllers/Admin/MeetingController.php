@@ -15,12 +15,16 @@ use App\Models\Task;
 use App\Models\User;
 use App\Services\CheckInService;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\RelationshipService;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Services\TanstackTableService;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 use Inertia\Inertia;
 
@@ -160,14 +164,14 @@ class MeetingController extends AdminController
         DB::beginTransaction();
 
         try {
-            // generate title for meeting - YYYY-mm-dd HH.mm posėdis
-            $title = Carbon::parse($validatedData['start_time'])->locale('lt-LT')->isoFormat('YYYY MMMM DD [d.] HH.mm [val.]').' posėdis';
+            $meetingType = $validatedData['type'] ?? null;
+            $title = $this->buildMeetingTitle($validatedData['start_time'], $meetingType);
 
             $meeting = Meeting::create([
                 'start_time' => $validatedData['start_time'],
                 'title' => $title,
                 'description' => $validatedData['description'] ?? null,
-                'type' => $validatedData['type'] ?? null,
+                'type' => $meetingType,
             ]);
 
             $meeting->institutions()->attach($validatedData['institution_id']);
@@ -223,8 +227,8 @@ class MeetingController extends AdminController
             },
         ]);
 
-        // Append is_public and file status now that relations are loaded (avoids N+1)
-        $meeting->append(['is_public', 'has_protocol', 'has_report']);
+        // Append is_public, is_joint and file status now that relations are loaded (avoids N+1)
+        $meeting->append(['is_public', 'is_joint', 'has_protocol', 'has_report']);
 
         // Transform tasks with computed properties (same as userTasks method)
         $transformedTasks = $meeting->tasks->map(function (Task $task, int $key) {
@@ -275,14 +279,14 @@ class MeetingController extends AdminController
                 ->whereHas('institutions', fn ($q) => $q->where('institutions.id', $primaryInstitution->id))
                 ->where('start_time', '<', $meeting->start_time)
                 ->orderBy('start_time', 'desc')
-                ->select(['id', 'start_time'])
+                ->select(['id', 'start_time', 'type'])
                 ->first();
 
             $nextMeeting = Meeting::query()
                 ->whereHas('institutions', fn ($q) => $q->where('institutions.id', $primaryInstitution->id))
                 ->where('start_time', '>', $meeting->start_time)
                 ->orderBy('start_time', 'asc')
-                ->select(['id', 'start_time'])
+                ->select(['id', 'start_time', 'type'])
                 ->first();
         }
 
@@ -297,6 +301,7 @@ class MeetingController extends AdminController
             'previousMeeting' => $previousMeeting,
             'nextMeeting' => $nextMeeting,
             'taskableInstitutions' => Inertia::optional(fn () => $meeting->institutions->load('users')),
+            'availableInstitutionsForAttach' => $this->getAvailableInstitutionsForAttach($meeting),
         ]);
     }
 
@@ -325,7 +330,10 @@ class MeetingController extends AdminController
             'type' => ['nullable', new Enum(MeetingType::class)],
         ]);
 
-        $validated['title'] = Carbon::parse($validated['start_time'])->locale('lt-LT')->isoFormat('YYYY MMMM DD [d.] HH.mm [val.]').' posėdis';
+        $validated['title'] = $this->buildMeetingTitle(
+            $validated['start_time'],
+            $validated['type'] ?? $meeting->type?->value
+        );
 
         $meeting->fill($validated);
         $meeting->save();
@@ -354,5 +362,111 @@ class MeetingController extends AdminController
         $meeting->restore();
 
         return back()->with('success', 'Posėdis atkurtas!');
+    }
+
+    /**
+     * Attach an additional institution to a joint meeting.
+     */
+    public function attachInstitution(Request $request, Meeting $meeting): RedirectResponse
+    {
+        $this->handleAuthorization('update', $meeting);
+
+        $validated = $request->validate([
+            'institution_id' => [
+                'required',
+                'ulid',
+                Rule::exists('institutions', 'id'),
+                Rule::notIn($meeting->institutions()->pluck('institutions.id')->all()),
+            ],
+        ]);
+
+        $meeting->institutions()->attach($validated['institution_id']);
+
+        $institution = Institution::find($validated['institution_id']);
+        if ($institution) {
+            $this->checkInService->adjustForMeeting($institution, $meeting->start_time);
+        }
+
+        return back()->with('success', 'Institucija pridėta.');
+    }
+
+    /**
+     * Detach an institution from a meeting (joint meeting must keep at least one).
+     */
+    public function detachInstitution(Meeting $meeting, Institution $institution): RedirectResponse
+    {
+        $this->handleAuthorization('update', $meeting);
+
+        if ($meeting->institutions()->count() <= 1) {
+            return back()->with('error', 'Posėdis turi turėti bent vieną instituciją.');
+        }
+
+        $meeting->institutions()->detach($institution->id);
+
+        return back()->with('success', 'Institucija pašalinta.');
+    }
+
+    /**
+     * Build the list of institutions the current user can attach to this meeting.
+     * Includes the user's own duty institutions plus institutions related to them
+     * via the relationship graph, minus those already attached to the meeting.
+     */
+    private function getAvailableInstitutionsForAttach(Meeting $meeting): Collection
+    {
+        $user = auth()->user();
+        $userInstitutionIds = $user->loadMissing('current_duties')
+            ->current_duties
+            ->pluck('institution_id')
+            ->filter()
+            ->unique();
+
+        $userInstitutions = Institution::whereIn('id', $userInstitutionIds)->get();
+
+        $relatedIds = collect();
+        foreach ($userInstitutions as $institution) {
+            foreach (RelationshipService::getRelatedInstitutionsCached($institution) as $item) {
+                $relatedIds->push($item['institution']->id);
+            }
+        }
+
+        $attachedIds = $meeting->institutions->pluck('id')->toArray();
+
+        $allAvailableIds = $userInstitutionIds
+            ->merge($relatedIds)
+            ->unique()
+            ->diff($attachedIds)
+            ->values();
+
+        if ($allAvailableIds->isEmpty()) {
+            return collect();
+        }
+
+        return Institution::whereIn('id', $allAvailableIds)
+            ->with('tenant:id,shortname')
+            ->get()
+            ->map(fn (Institution $i) => [
+                'id' => $i->id,
+                'name' => $i->name,
+                'tenant_shortname' => $i->tenant?->shortname,
+            ]);
+    }
+
+    /**
+     * Build the auto-generated meeting title.
+     *
+     * Email-type meetings use a 23:59 deadline marker for `start_time`, so the
+     * time portion is intentionally omitted from the title to avoid showing a
+     * misleading "23.59 val." in the UI.
+     */
+    private function buildMeetingTitle(mixed $startTime, mixed $type): string
+    {
+        $typeValue = $type instanceof MeetingType ? $type->value : $type;
+        $isEmail = $typeValue === MeetingType::Email->value;
+
+        $format = $isEmail
+            ? 'YYYY MMMM DD [d.]'
+            : 'YYYY MMMM DD [d.] HH.mm [val.]';
+
+        return Carbon::parse($startTime)->locale('lt-LT')->isoFormat($format).' posėdis';
     }
 }

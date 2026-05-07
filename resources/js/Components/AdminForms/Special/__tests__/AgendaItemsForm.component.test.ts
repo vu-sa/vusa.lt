@@ -5,7 +5,7 @@ import { nextTick } from 'vue';
 import AgendaItemsForm from '../AgendaItemsForm.vue';
 
 describe('AgendaItemsForm.vue', () => {
-  let wrapper: any;
+  let wrapper: ReturnType<typeof mount>;
 
   const defaultProps = {
     loading: false,

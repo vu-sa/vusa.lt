@@ -16,6 +16,7 @@ use Illuminate\Support\Carbon;
  * @property array|string|null $description
  * @property Carbon $created_at
  * @property Carbon $updated_at
+ * @property-read array $translatable_columns_from
  * @property-read Collection<int, ProgrammePart> $parts
  * @property-read mixed $translations
  *

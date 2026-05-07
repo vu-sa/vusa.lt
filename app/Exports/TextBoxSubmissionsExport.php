@@ -4,27 +4,26 @@ namespace App\Exports;
 
 use App\Models\ContentPart;
 use App\Models\TextBoxSubmission;
-use Maatwebsite\Excel\Concerns\FromArray;
-use Maatwebsite\Excel\Concerns\WithHeadings;
+use App\Support\Spreadsheet\SpreadsheetWriter;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class TextBoxSubmissionsExport implements FromArray, WithHeadings
+class TextBoxSubmissionsExport
 {
     public function __construct(public ContentPart $contentPart) {}
 
-    /**
-     * @return array<int, string>
-     */
-    public function headings(): array
+    public function download(string $filename): StreamedResponse
     {
-        return ['Response', 'Submitted by', 'Submitted at'];
+        return SpreadsheetWriter::downloadXlsx($this->rows(), $filename);
     }
 
     /**
      * @return array<int, array<int, string>>
      */
-    public function array(): array
+    public function rows(): array
     {
-        return $this->contentPart
+        $headings = ['Response', 'Submitted by', 'Submitted at'];
+
+        $data = $this->contentPart
             ->textBoxSubmissions()
             ->with('user:id,name')
             ->orderByDesc('created_at')
@@ -35,5 +34,7 @@ class TextBoxSubmissionsExport implements FromArray, WithHeadings
                 $submission->created_at->toDateTimeString(),
             ])
             ->toArray();
+
+        return array_merge([$headings], $data);
     }
 }

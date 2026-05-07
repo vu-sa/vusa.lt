@@ -5,7 +5,7 @@
 
 /**
  * A helper file for Laravel, to provide autocomplete information to your IDE
- * Generated for Laravel 13.3.0.
+ * Generated for Laravel 13.8.0.
  *
  * This file should not be included in your code, only analyzed by your IDE!
  *
@@ -404,7 +404,7 @@ namespace  {
          * Get the first record matching the attributes or instantiate it.
          *
          * @param array $attributes
-         * @param array $values
+         * @param (\Closure(): array)|array $values
          * @return TModel
          * @static
          */
@@ -447,7 +447,7 @@ namespace  {
          * Create or update a record matching the attributes, and fill it with values.
          *
          * @param array $attributes
-         * @param array $values
+         * @param (\Closure(): array)|array $values
          * @return TModel
          * @static
          */
@@ -1212,7 +1212,7 @@ namespace  {
          * @param callable(\Illuminate\Support\Collection<int, TValue>, int):  mixed  $callback
          * @param string|null $column
          * @param string|null $alias
-         * @param bool $descending
+         * @param \SortDirection|bool $descending
          * @return bool
          * @throws \RuntimeException
          * @static
@@ -2038,56 +2038,6 @@ namespace  {
         {
             /** @var \Illuminate\Database\Eloquent\Builder $instance */
             return $instance->mergeConstraintsFrom($from);
-        }
-
-        /**
-         * @see \Maatwebsite\Excel\Mixins\DownloadQueryMacro::__invoke()
-         * @param string $fileName
-         * @param string|null $writerType
-         * @param mixed $withHeadings
-         * @static
-         */
-        public static function downloadExcel($fileName, $writerType = null, $withHeadings = false)
-        {
-            return \Illuminate\Database\Eloquent\Builder::downloadExcel($fileName, $writerType, $withHeadings);
-        }
-
-        /**
-         * @see \Maatwebsite\Excel\Mixins\StoreQueryMacro::__invoke()
-         * @param string $filePath
-         * @param string|null $disk
-         * @param string|null $writerType
-         * @param mixed $withHeadings
-         * @static
-         */
-        public static function storeExcel($filePath, $disk = null, $writerType = null, $withHeadings = false)
-        {
-            return \Illuminate\Database\Eloquent\Builder::storeExcel($filePath, $disk, $writerType, $withHeadings);
-        }
-
-        /**
-         * @see \Maatwebsite\Excel\Mixins\ImportMacro::__invoke()
-         * @param string $filename
-         * @param string|null $disk
-         * @param string|null $readerType
-         * @static
-         */
-        public static function import($filename, $disk = null, $readerType = null)
-        {
-            return \Illuminate\Database\Eloquent\Builder::import($filename, $disk, $readerType);
-        }
-
-        /**
-         * @see \Maatwebsite\Excel\Mixins\ImportAsMacro::__invoke()
-         * @param string $filename
-         * @param callable $mapping
-         * @param string|null $disk
-         * @param string|null $readerType
-         * @static
-         */
-        public static function importAs($filename, $mapping, $disk = null, $readerType = null)
-        {
-            return \Illuminate\Database\Eloquent\Builder::importAs($filename, $mapping, $disk, $readerType);
         }
 
         /**
@@ -3961,12 +3911,12 @@ namespace  {
          * Add an "order by" clause to the query.
          *
          * @param \Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<*>|\Illuminate\Contracts\Database\Query\Expression|string $column
-         * @param string $direction
+         * @param \SortDirection|'asc'|'desc' $direction
          * @return \Illuminate\Database\Eloquent\Builder<static>
          * @throws \InvalidArgumentException
          * @static
          */
-        public static function orderBy($column, $direction = 'asc')
+        public static function orderBy($column, $direction = \SortDirection::Ascending)
         {
             /** @var \Illuminate\Database\Query\Builder $instance */
             return $instance->orderBy($column, $direction);
@@ -4154,11 +4104,11 @@ namespace  {
          * Remove all existing orders and optionally add a new order.
          *
          * @param \Closure|\Illuminate\Database\Query\Builder|\Illuminate\Contracts\Database\Query\Expression|string|null $column
-         * @param string $direction
+         * @param \SortDirection|'asc'|'desc' $direction
          * @return \Illuminate\Database\Eloquent\Builder<static>
          * @static
          */
-        public static function reorder($column = null, $direction = 'asc')
+        public static function reorder($column = null, $direction = \SortDirection::Ascending)
         {
             /** @var \Illuminate\Database\Query\Builder $instance */
             return $instance->reorder($column, $direction);

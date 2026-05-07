@@ -14,8 +14,11 @@ class TanstackTableService
     /**
      * Apply sorting to a query builder from Tanstack Table sorting format
      *
-     * @param  Builder  $query  The query builder to apply sorting to
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     *
+     * @param  Builder<TModel>  $query  The query builder to apply sorting to
      * @param  array  $sorting  Tanstack Table format sorting array: [{"id":"name","desc":true}]
+     * @return Builder<TModel>
      */
     public function applySorting(Builder $query, array $sorting): Builder
     {
@@ -93,8 +96,11 @@ class TanstackTableService
     /**
      * Apply filtering to a query builder from Tanstack Table filter format
      *
-     * @param  Builder  $query  The query builder to apply filters to
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     *
+     * @param  Builder<TModel>  $query  The query builder to apply filters to
      * @param  array  $filters  Tanstack Table format filters object: {"type.id":[1,2],"status":["active"]}
+     * @return Builder<TModel>
      */
     public function applyFiltering(Builder $query, array $filters): Builder
     {
@@ -113,9 +119,12 @@ class TanstackTableService
     /**
      * Apply global search to a query builder
      *
-     * @param  Builder  $query  The query builder to apply search to
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     *
+     * @param  Builder<TModel>  $query  The query builder to apply search to
      * @param  string|null  $searchText  The text to search for
      * @param  array  $searchableColumns  The columns to search in
+     * @return Builder<TModel>
      */
     public function applyGlobalSearch(Builder $query, ?string $searchText, array $searchableColumns = []): Builder
     {
@@ -182,10 +191,13 @@ class TanstackTableService
     /**
      * Apply tenant-based access restrictions to a query
      *
-     * @param  Builder  $query  The query builder
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     *
+     * @param  Builder<TModel>  $query  The query builder
      * @param  string  $tenantRelation  The relationship name pointing to the tenant
      * @param  string  $permission  The permission to check
      * @param  ModelAuthorizer  $authorizer  The authorizer service
+     * @return Builder<TModel>
      */
     public function applyTenantRestrictions(
         Builder $query,
@@ -208,8 +220,11 @@ class TanstackTableService
     /**
      * Apply soft delete filters to query
      *
-     * @param  Builder  $query  The query builder
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     *
+     * @param  Builder<TModel>  $query  The query builder
      * @param  bool  $showDeleted  Whether to include soft-deleted records
+     * @return Builder<TModel>
      */
     public function applySoftDeleteFilter(Builder $query, bool $showDeleted = false): Builder
     {
@@ -230,10 +245,13 @@ class TanstackTableService
     /**
      * Apply permission-based filtering using the ModelAuthorizer
      *
-     * @param  Builder  $query  The query builder
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     *
+     * @param  Builder<TModel>  $query  The query builder
      * @param  string  $tenantRelation  The relation name that connects to the tenant
      * @param  string  $permission  The permission string to check
      * @param  ModelAuthorizer  $authorizer  The authorizer service
+     * @return Builder<TModel>
      */
     public function applyPermissionFiltering(
         Builder $query,

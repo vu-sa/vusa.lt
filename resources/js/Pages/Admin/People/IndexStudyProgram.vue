@@ -25,10 +25,10 @@
   </IndexTablePage>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
+import { h, ref, computed, watch, capitalize } from 'vue';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
-import { ref, computed, watch, capitalize } from 'vue';
 import { router, usePage, Link } from '@inertiajs/vue3';
 import {
   MergeIcon,
@@ -39,14 +39,13 @@ import { toast } from 'vue-sonner';
 import Icons from '@/Types/Icons/regular';
 import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
 import { Button } from '@/Components/ui/button';
-import { Badge } from '@/Components/ui/badge';
+import { TruncatedBadge } from '@/Components/ui/data-table/cells';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import {
   createTitleColumn,
   createTenantColumn,
-} from '@/Utils/DataTableColumns';
+} from '@/Composables/useDataTableColumns';
 import type {
   IndexTablePageProps,
 } from '@/Types/TableConfigTypes';
@@ -102,68 +101,23 @@ const getRowId = (row: App.Entities.StudyProgram) => {
 };
 
 // Table columns
-const columns = computed<ColumnDef<App.Entities.StudyProgram, any>[]>(() => [
+const columns = computed<Array<ColumnDef<App.Entities.StudyProgram, any>>>(() => [
   createTitleColumn<App.Entities.StudyProgram>({
     accessorKey: 'name',
     routeName: 'studyPrograms.edit',
     width: 300,
-    cell: ({ row }) => {
-      const name = row.getValue('name');
-      return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div class="max-w-[290px] truncate">
-                <a
-                  href={route('studyPrograms.edit', { id: row.original.id })}
-                  class="font-medium hover:underline"
-                >
-                  {name}
-                </a>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent side="top" align="start">
-              <p>{name}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      );
-    },
   }),
   {
     accessorKey: 'degree',
     header: () => $t('Laipsnis'),
     cell: ({ row }) => {
       const { degree } = row.original;
-      return (
-        <Badge variant="outline">
-          {degree}
-        </Badge>
-      );
+      return h(TruncatedBadge, { text: degree, variant: 'outline' });
     },
     size: 150,
   },
   createTenantColumn({
     enableSorting: false,
-    cell: ({ row }) => {
-      const { tenant } = row.original;
-      return tenant
-        ? (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span class="flex items-center gap-1">
-                    <span class="max-w-[150px] truncate">{$t(tenant.shortname)}</span>
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent side="top" align="start">
-                  <p>{$t(tenant.shortname)}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )
-        : '';
-    },
   }),
   createStandardActionsColumn<App.Entities.StudyProgram>('studyPrograms', {
     canView: false,
@@ -196,7 +150,6 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.StudyProgram>>(() 
 
     // Page layout
     headerTitle: 'Studijų programos',
-    headerDescription: $t('Manage study programs and their degrees'),
     icon: Icons.STUDY_PROGRAM,
     createRoute: canCreate.value ? route('studyPrograms.create') : undefined,
     canCreate: canCreate.value,

@@ -18,6 +18,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read Collection<int, ProgrammeBlock> $blocks
+ * @property-read array $translatable_columns_from
  * @property-read ProgrammeElement|null $pivot
  * @property-read Collection<int, ProgrammeDay> $programmeDays
  * @property-read mixed $translations

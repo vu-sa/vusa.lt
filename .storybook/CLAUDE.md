@@ -1,50 +1,48 @@
-# Storybook - AI Guidance
+# Storybook — AI Guidance
 
-Quick reference for AI assistants working with Storybook in vusa.lt.
+For full configuration, story-writing, and Playwright setup, see [README.md](README.md). This file covers what to do (and what to avoid) when writing stories.
 
-**For comprehensive documentation**: See [README.md](README.md) in this directory.
+## When to use Storybook
 
-## Quick Reference
+- Visual components (buttons, modals, cards) and component documentation.
+- User-flow tests that need a real browser environment.
+- Accessibility checks via the a11y addon.
 
-### When to Use Storybook
+**Don't** use Storybook for services, composables, or utilities — those go in unit/component tests under Vitest. See the decision tree:
 
-- **Visual components**: UI elements like buttons, modals, cards
-- **Interactive testing**: User flows that need browser environment
-- **Documentation**: Component showcase for team
-- **Accessibility testing**: Using a11y addon
+```
+Visual appearance      → Storybook story
+User interactions      → Storybook story with `play` function
+Business logic         → Unit test (*.test.ts)
+Component API          → Component test (*.component.test.ts)
+```
 
-**Don't use for**: Services, composables, utilities (use unit tests instead)
+## Mocks
 
-## Mock System
+Mocks live in `resources/js/mocks/` — **not** in `.storybook/mocks/`. Available:
 
-### Available Mocks
+- `inertia.mock.ts` — `usePage`, `router`, `useForm`
+- `i18n.ts` — `trans`, `transChoice`, `$t` (uses real translations from `lang/*.json`)
+- `route.ts` — `route()` returning predictable mock URLs
 
-**Location**: `resources/js/mocks/` (NOT `.storybook/mocks/`)
+`$t()` and `route()` are registered globally in `.storybook/preview.ts` — you don't import them in stories.
 
-- **`inertia.mock.ts`**: usePage, router, useForm
-- **`i18n.ts`**: trans, transChoice, $t - uses actual translations from `lang/*.json`
-- **`route.ts`**: route() function - returns predictable mock URLs
-
-### Using Mocks in Stories
+Override per-story via mock methods:
 
 ```typescript
-import { usePage, router } from "@/mocks/inertia.mock";
+import { usePage } from '@/mocks/inertia.mock';
 
-// Override for specific test
 usePage.mockImplementation(() => ({
   props: {
     auth: { user: { id: 1, name: 'Test User' }, can: { create: { meeting: true } } },
-    flash: { success: 'Operation successful' }
-  }
+    flash: { success: 'Operation successful' },
+  },
 }));
-
-// Note: $t() and route() are globally available via .storybook/preview.ts
-// They use real translations from lang/lt.json and lang/php_admin_lt.json
 ```
 
-## Story Patterns
+**Always import the full filename** — `@/mocks/inertia.mock`, never `@/mocks/inertia`.
 
-### Basic Story
+## Story patterns
 
 ```typescript
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
@@ -53,20 +51,16 @@ import ComponentName from './ComponentName.vue';
 const meta: Meta<typeof ComponentName> = {
   title: 'Components/ComponentName',
   component: ComponentName,
-  tags: ['autodocs']
+  tags: ['autodocs'],
 };
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-  args: {
-    title: 'Example Title'
-  }
-};
+export const Default: Story = { args: { title: 'Example' } };
 ```
 
-### Interactive Story with Tests
+Interactive variant:
 
 ```typescript
 import { userEvent, within } from 'storybook/test';
@@ -74,195 +68,34 @@ import { userEvent, within } from 'storybook/test';
 export const Interactive: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-
-    const button = canvas.getByRole('button');
-    await userEvent.click(button);
-
+    await userEvent.click(canvas.getByRole('button'));
     await canvas.findByText('Expected result');
-  }
+  },
 };
 ```
 
-## Troubleshooting
+Clear mocks between stories: `beforeEach(() => vi.clearAllMocks())`.
 
-### Issue: "Failed to resolve import '@/mocks/...'"
+## Common gotchas
 
-**Cause**: Alias configuration mismatch
-**Solution**: Ensure `.storybook/main.ts` aliases match `vite.config.mts`
+- **Checkbox**: bind via `v-model` / `model-value`, never `v-model:checked`.
+- **Top-level `await` in components**: stalls the story. Accept data as a prop with a fallback fetch in `onMounted` instead.
+- **"Failed to resolve import '@/mocks/...'"**: aliases in `.storybook/main.ts` must match `vite.config.mts` exactly.
+- **"Tests failing with undefined globals"**: use `globalThis.route = route`, not `global.route`.
+- **Browser tests not running**: install Playwright browsers with `npx playwright install`.
 
-```typescript
-// .storybook/main.ts must have:
-resolve: {
-  alias: {
-    "@": "/resources/js",
-    "ziggy-js": "/vendor/tightenco/ziggy/dist"
-  }
-}
-```
+## Component design for testability
 
-### Issue: "Component stuck in loading state"
+- Accept data via props with sensible defaults.
+- Avoid top-level `await`.
+- Inject side-effectful dependencies (`onSave`, `fetcher`) so tests can stub them.
+- Render explicit loading and error states.
 
-**Cause**: Component uses top-level await or async data fetching
-**Solution**: Make component accept data via props
-
-```vue
-<!-- ❌ Avoid -->
-<script setup>
-const data = await fetch('/api/data');
-</script>
-
-<!-- ✅ Prefer -->
-<script setup>
-const props = defineProps<{ data?: ApiData[] }>();
-const data = ref(props.data || []);
-
-onMounted(async () => {
-  if (!props.data) {
-    data.value = await fetchApiData();
-  }
-});
-</script>
-```
-
-### Issue: "Tests failing with undefined globals"
-
-**Cause**: Missing mock setup
-**Solution**: Ensure `vitest.setup.ts` properly configures mocks
-
-Use `globalThis` instead of `global`:
-
-```typescript
-// ✅ Correct
-globalThis.route = route;
-
-// ❌ Wrong
-global.route = route;
-```
-
-### Issue: "Browser tests not running"
-
-**Cause**: Playwright browsers not installed
-**Solution**: Install Playwright browsers
+## Running
 
 ```bash
-npx playwright install
+npm run test            # daily (skips browser tests)
+npm run test:storybook  # Storybook tests only
+npm run test:all        # includes browser tests
+npm run storybook       # interactive UI
 ```
-
-### Issue: "Checkbox v-model not working"
-
-**Pattern**: Use `modelValue` prop, not `checked`
-
-```vue
-<!-- ✅ Correct -->
-<Checkbox v-model="isChecked" />
-
-<!-- ❌ Wrong -->
-<Checkbox v-model:checked="isChecked" />
-```
-
-## Configuration Gotchas
-
-### Alias Configuration
-
-**Critical**: Aliases in `.storybook/main.ts` **must** exactly match `vite.config.mts`
-
-### Mock Import Paths
-
-**Always use full mock file names**:
-- ✅ `@/mocks/inertia.mock`
-- ❌ `@/mocks/inertia` (missing `.mock`)
-
-### Test Environment
-
-- **Browser tests**: Chromium via Playwright
-- **Setup file**: `.storybook/vitest.setup.ts`
-- **Mocks**: Automatically applied globally
-
-## Best Practices for AI
-
-### When Creating Stories
-
-1. **Start with basic visual story** (no interactions)
-2. **Add interactive tests** if component has user interactions
-3. **Mock all Laravel dependencies** (Inertia, i18n, routes)
-4. **Use dependency injection** (props) over async fetching
-
-### Component Design
-
-1. **Accept data via props** when possible
-2. **Avoid top-level await** in components
-3. **Handle loading/error states** gracefully
-4. **Use semantic HTML** for accessibility
-
-### Testable Components
-
-```vue
-<!-- ✅ Good: Testable with dependency injection -->
-<script setup>
-const props = defineProps<{
-  users?: User[];
-  onSave?: (data: FormData) => void;
-}>();
-
-const users = ref(props.users || []);
-const handleSave = props.onSave || defaultSaveHandler;
-</script>
-
-<!-- ❌ Bad: Hard to test -->
-<script setup>
-const users = await fetchUsers(); // Top-level await
-const handleSave = () => {
-  axios.post('/api/save'); // Hard-coded dependency
-};
-</script>
-```
-
-## Running Tests
-
-```bash
-# Daily development (skips browser tests)
-npm run test
-
-# Storybook tests only
-npm run test:storybook
-
-# All tests including browser
-npm run test:all
-
-# Interactive Storybook UI
-npm run storybook
-```
-
-## Quick Decision Tree
-
-```
-Need to test visual appearance? → Write Storybook story
-Need to test user interactions? → Write Storybook story with `play` function
-Need to test business logic? → Write unit test (*.test.ts)
-Need to test component API? → Write component test (*.component.test.ts)
-```
-
-## Debug Tips
-
-1. **Use Storybook UI**: Run tests directly in browser
-2. **Check console**: Look for mock-related errors
-3. **Verify mocks**: Log mock return values
-4. **Test isolation**: Clear mocks between stories
-
-```typescript
-import { beforeEach, vi } from 'vitest';
-
-beforeEach(() => {
-  vi.clearAllMocks();
-});
-```
-
----
-
-**See [README.md](./README.md) for**:
-
-- Complete configuration details
-- Story writing guide
-- Testing integration setup
-- Best practices guide
-- Migration notes

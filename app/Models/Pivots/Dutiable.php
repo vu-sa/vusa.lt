@@ -28,12 +28,14 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $study_program_id
  * @property string|null $additional_email
  * @property string|null $additional_photo
+ * @property string|null $additional_photo_focal_point
  * @property array|string|null $description
  * @property bool $use_original_duty_name
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read Model $dutiable
  * @property-read Duty|null $duty
+ * @property-read array $translatable_columns_from
  * @property-read StudyProgram|null $study_program
  * @property-read Collection<int, Tenant> $tenants
  * @property-read mixed $translations

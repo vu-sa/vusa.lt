@@ -3,13 +3,22 @@
 namespace App\Exports;
 
 use App\Models\Form;
-use Maatwebsite\Excel\Concerns\FromArray;
+use App\Support\Spreadsheet\SpreadsheetWriter;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class FormRegistrationsExport implements FromArray
+class FormRegistrationsExport
 {
     public function __construct(public Form $form) {}
 
-    public function array(): array
+    public function download(string $filename): StreamedResponse
+    {
+        return SpreadsheetWriter::downloadXlsx($this->rows(), $filename);
+    }
+
+    /**
+     * @return array<int, array<int, mixed>>
+     */
+    public function rows(): array
     {
         $this->form->load('formFields', 'registrations.fieldResponses.formField');
 
@@ -27,7 +36,6 @@ class FormRegistrationsExport implements FromArray
             $this->form->formFields->each(function ($formField) use (&$registrationArray, $registration) {
                 $fieldResponse = $registration->fieldResponses->firstWhere('form_field_id', $formField->id);
 
-                // Use the FieldResponse helper method for consistent access
                 $responseValue = $fieldResponse?->getValue();
 
                 $registrationArray[] = $responseValue;

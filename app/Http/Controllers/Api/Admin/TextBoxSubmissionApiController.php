@@ -9,8 +9,7 @@ use App\Models\Page;
 use App\Models\TextBoxSubmission;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class TextBoxSubmissionApiController extends ApiController
 {
@@ -63,7 +62,7 @@ class TextBoxSubmissionApiController extends ApiController
         return $this->jsonSuccess(null, 'Visi atsakymai ištrinti');
     }
 
-    public function export(Request $request): BinaryFileResponse
+    public function export(Request $request): StreamedResponse
     {
         $this->requireAuth($request);
 
@@ -83,6 +82,6 @@ class TextBoxSubmissionApiController extends ApiController
 
         $fileName = "{$slug}-atsakymai.xlsx";
 
-        return Excel::download(new TextBoxSubmissionsExport($contentPart), $fileName);
+        return (new TextBoxSubmissionsExport($contentPart))->download($fileName);
     }
 }

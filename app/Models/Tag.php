@@ -17,6 +17,7 @@ use Illuminate\Support\Str;
  * @property Carbon $updated_at
  * @property array|string|null $name
  * @property array|string|null $description
+ * @property-read array $translatable_columns_from
  * @property-read Collection<int, News> $news
  * @property-read mixed $translations
  *

@@ -1,0 +1,15 @@
+{
+    "$schema": "https://opencode.ai/config.json",
+    "mcp": {
+        "laravel-boost": {
+            "type": "local",
+            "enabled": true,
+            "command": [
+                "vendor/bin/sail",
+                "artisan",
+                "boost:mcp"
+            ]
+        }
+    },
+    "lsp": true
+}

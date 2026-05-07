@@ -17,6 +17,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read Collection<int, ProgrammeDay> $days
+ * @property-read array $translatable_columns_from
  * @property-read Model|\Eloquent $programmable
  * @property-read mixed $translations
  *

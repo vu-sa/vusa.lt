@@ -3,23 +3,31 @@
         "claude_code",
         "copilot",
         "gemini",
-        "codex"
+        "codex",
+        "opencode"
     ],
+    "cloud": false,
     "guidelines": true,
-    "herd_mcp": false,
     "mcp": true,
-    "nightwatch_mcp": false,
+    "nightwatch": false,
     "packages": [
-        "spatie/laravel-medialibrary"
+        "spatie/laravel-medialibrary",
+        "spatie/laravel-permission",
+        "spatie/laravel-translatable",
+        "fruitcake/laravel-debugbar"
     ],
     "sail": true,
     "skills": [
+        "laravel-best-practices",
         "scout-development",
         "socialite-development",
         "pest-testing",
         "inertia-vue-development",
         "echo-development",
         "tailwindcss-development",
-        "medialibrary-development"
+        "medialibrary-development",
+        "laravel-permission-development",
+        "translatable-development",
+        "debug-using-debugbar"
     ]
 }
