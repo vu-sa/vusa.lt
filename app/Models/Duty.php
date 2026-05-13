@@ -45,11 +45,14 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activities
  * @property-read Collection<int, AgendaItem> $agendaItems
+ * @property-read Collection<int, Tenant> $assignableTenants
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Typeable|Dutiable|Trainable|null $pivot
  * @property-read Collection<int, Training> $availableTrainings
  * @property-read Collection<int, User> $current_users
  * @property-read Collection<int, Dutiable> $dutiables
+ * @property-read Collection<int, Duty> $exOfficioSourceDuties
+ * @property-read Collection<int, Duty> $exOfficioTargetDuties
  * @property-read Collection<int, FileableFile> $fileableFiles
  * @property-read bool $has_protocol
  * @property-read bool $has_report
@@ -67,9 +70,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Permission> $teams
  * @property-read Collection<int, Tenant> $tenants
  * @property-read mixed $translations
- * @property-read Collection<int, Tenant> $assignableTenants
- * @property-read Collection<int, Duty> $exOfficioTargetDuties
- * @property-read Collection<int, Duty> $exOfficioSourceDuties
  * @property-read Collection<int, Type> $types
  * @property-read Collection<int, User> $users
  * @property-read int|null $tenants_count

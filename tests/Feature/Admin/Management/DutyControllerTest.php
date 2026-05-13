@@ -8,6 +8,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Spatie\Permission\PermissionRegistrar;
 
 uses(RefreshDatabase::class);
@@ -512,7 +513,7 @@ describe('assignable users is_recent flag', function () {
             'last_action' => now()->subYears(2),
         ]);
         DB::table('dutiables')->insert([
-            'id' => (string) \Illuminate\Support\Str::ulid(),
+            'id' => (string) Str::ulid(),
             'duty_id' => $this->dutyManagerDuty->id,
             'dutiable_id' => $currentDutyUser->id,
             'dutiable_type' => User::class,
@@ -528,7 +529,7 @@ describe('assignable users is_recent flag', function () {
             'last_action' => now()->subYears(2),
         ]);
         DB::table('dutiables')->insert([
-            'id' => (string) \Illuminate\Support\Str::ulid(),
+            'id' => (string) Str::ulid(),
             'duty_id' => $this->dutyManagerDuty->id,
             'dutiable_id' => $recentPastDutyUser->id,
             'dutiable_type' => User::class,
@@ -556,7 +557,7 @@ describe('assignable users is_recent flag', function () {
             'last_action' => now()->subMonths(14),
         ]);
         DB::table('dutiables')->insert([
-            'id' => (string) \Illuminate\Support\Str::ulid(),
+            'id' => (string) Str::ulid(),
             'duty_id' => $this->dutyManagerDuty->id,
             'dutiable_id' => $staleUser->id,
             'dutiable_type' => User::class,

@@ -128,6 +128,59 @@ test('completely unauthorized user cannot batch-update duty users', function () 
     expect($response->status())->toBe(403);
 });
 
+test('cross-tenant admin can swap users within their quota', function () {
+    // Fill quota (2 slots).
+    $user1 = makeUser($this->assignableTenant);
+    $user2 = makeUser($this->assignableTenant);
+    $user3 = makeUser($this->assignableTenant);
+    $user4 = makeUser($this->assignableTenant);
+
+    // Add 2 active dutiables to fill the quota.
+    Dutiable::factory()->create([
+        'duty_id' => $this->duty->id,
+        'dutiable_id' => $user1->id,
+        'dutiable_type' => User::class,
+        'tenant_id' => $this->assignableTenant->id,
+        'start_date' => now()->subDay()->toDateString(),
+        'end_date' => null,
+    ]);
+    Dutiable::factory()->create([
+        'duty_id' => $this->duty->id,
+        'dutiable_id' => $user2->id,
+        'dutiable_type' => User::class,
+        'tenant_id' => $this->assignableTenant->id,
+        'start_date' => now()->subDay()->toDateString(),
+        'end_date' => null,
+    ]);
+
+    // Remove 2 and add 2 — net change is 0, so quota should allow it.
+    $response = asUser($this->crossAdmin)->post(route('duties.batchUpdateUsers', $this->duty), [
+        'user_changes' => [
+            ['user_id' => $user1->id, 'action' => 'remove', 'end_date' => now()->toDateString()],
+            ['user_id' => $user2->id, 'action' => 'remove', 'end_date' => now()->toDateString()],
+            ['user_id' => $user3->id, 'action' => 'add', 'start_date' => now()->toDateString()],
+            ['user_id' => $user4->id, 'action' => 'add', 'start_date' => now()->toDateString()],
+        ],
+    ]);
+
+    $response->assertRedirect();
+    $response->assertSessionHasNoErrors();
+
+    expect(
+        Dutiable::where('duty_id', $this->duty->id)
+            ->where('dutiable_id', $user3->id)
+            ->whereNull('end_date')
+            ->exists()
+    )->toBeTrue();
+
+    expect(
+        Dutiable::where('duty_id', $this->duty->id)
+            ->where('dutiable_id', $user4->id)
+            ->whereNull('end_date')
+            ->exists()
+    )->toBeTrue();
+});
+
 test('cross-tenant admin cannot exceed their quota', function () {
     // Fill quota (2 slots).
     $user1 = makeUser($this->assignableTenant);

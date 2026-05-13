@@ -93,12 +93,23 @@ class BatchUpdateDutyUsersRequest extends FormRequest
                     continue;
                 }
 
-                $addCount = collect($this->input('user_changes', []))
-                    ->where('action', 'add')
-                    ->count();
+                $userChanges = collect($this->input('user_changes', []));
+                $addCount = $userChanges->where('action', 'add')->count();
 
                 if ($addCount === 0) {
                     continue;
+                }
+
+                // Count only removals that actually target an active dutiable for this tenant.
+                $removeUserIds = $userChanges->where('action', 'remove')->pluck('user_id');
+                $validRemoveCount = 0;
+                if ($removeUserIds->isNotEmpty()) {
+                    $validRemoveCount = Dutiable::where('duty_id', $duty->id)
+                        ->where('dutiable_type', User::class)
+                        ->whereIn('dutiable_id', $removeUserIds)
+                        ->where('tenant_id', $tenant->id)
+                        ->whereNull('end_date')
+                        ->count();
                 }
 
                 // Count by tenant_id column — explicit and accurate.
@@ -108,7 +119,7 @@ class BatchUpdateDutyUsersRequest extends FormRequest
                     ->active()
                     ->count();
 
-                if (($currentCount + $addCount) > $tenant->pivot->quota) {
+                if (($currentCount + $addCount - $validRemoveCount) > $tenant->pivot->quota) {
                     $v->errors()->add('user_changes', "Padalinio kvota ({$tenant->pivot->quota}) viršyta.");
                 }
             }

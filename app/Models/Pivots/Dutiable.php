@@ -36,9 +36,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property bool $use_original_duty_name
  * @property Carbon $created_at
  * @property Carbon $updated_at
- * @property-read Model $dutiable
- * @property-read Dutiable|null $viaDutiable
  * @property-read Collection<int, Dutiable> $derivedDutiables
+ * @property-read Model $dutiable
  * @property-read Duty|null $duty
  * @property-read array $translatable_columns_from
  * @property-read StudyProgram|null $study_program
@@ -46,7 +45,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Tenant> $tenants
  * @property-read mixed $translations
  * @property-read User|null $user
+ * @property-read Dutiable|null $viaDutiable
  *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable active(?string $date = null)
  * @method static \Database\Factories\Pivots\DutiableFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable newQuery()
