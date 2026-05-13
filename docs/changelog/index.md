@@ -7,6 +7,14 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.10 — Ex-officio pareigos ir atstovai iš kitų padalinių (2026-05-12) {#v1-10}
+
+- ⭐ **Ex-officio pareigos** — pareigybės redagavimo lange galima nurodyti pareigas, kurios automatiškai suteikiamos kartu su šia (pvz. pirmininkavimas suteikia vietą dekanate). Susietų pareigybių datos sinchronizuojamos su pirmine, o pasibaigus pirminei — pažymima pabaiga
+- ⭐ **Atstovai iš kitų padalinių** — pareigybei (kuri priklauso vienam padaliniui) galima leisti, kad narius į ją skirtų ir kiti padaliniai, kiekvienam nustatant kvotą. Tokios pareigybės matomos pareigybių sąraše (galima filtruoti) ir narių vedlyje; tų padalinių administratoriai gali tvarkyti tik savo padalinio atstovus ir tik neviršydami kvotos
+- ✨ **Aktyvūs naudotojai narių sąraše** — pareigybės redagavimo formoje narių perdavimo sąraše pagal nutylėjimą rodomi tik per paskutinius 12 mėn. aktyvūs naudotojai (užima arba turėjo pareigybę, neseniai prisijungė arba yra naujas paskyra); visi kiti pasiekiami perjungus „Rodyti visus naudotojus"
+
+> 🔗 [GitHub PR #568](https://github.com/vu-sa/vusa.lt/pull/568)
+
 ## v1.9 — Susitikimų ir administravimo patobulinimai (2026-05-06) {#v1-9}
 
 - ⭐ **Bendri institucijų posėdžiai** — susitikimus dabar galima susieti su keliomis institucijomis, o ne tik su viena

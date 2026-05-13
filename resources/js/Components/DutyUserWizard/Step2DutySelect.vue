@@ -370,7 +370,9 @@ const dutyTypes = computed(() =>
 
 const page = usePage();
 const auth = page.props.auth as any;
-const canCreateDuty = computed(() => auth?.can?.create?.duty);
+// Cross-tenant ("external") institutions belong to another tenant — creating
+// duties there is not allowed (and the server rejects it anyway).
+const canCreateDuty = computed(() => !!auth?.can?.create?.duty && !(wizard.state.institution as { is_external?: boolean } | undefined)?.is_external);
 
 // Check if duty types are loading
 const isDutyTypesLoading = computed(() => !dutyTypes.value || dutyTypes.value.length === 0);

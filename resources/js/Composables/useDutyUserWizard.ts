@@ -110,11 +110,15 @@ export function formatDateForDisplay(dateString: string): string {
 }
 
 /**
- * Get today's date as YYYY-MM-DD
+ * Get today's date as YYYY-MM-DD in the browser's local timezone.
+ * Using local date (not UTC) avoids off-by-one errors during early morning hours.
  */
 export function getTodayDate(): string {
   const now = new Date();
-  return now.toISOString().split('T')[0] ?? '';
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 export function useDutyUserWizard(options: UseDutyUserWizardOptions = {}) {

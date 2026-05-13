@@ -255,7 +255,9 @@ declare global {
     export interface Dutiable {
       // columns
       id: string
+      via_dutiable_id?: string | null
       duty_id: string
+      tenant_id?: number | null
       dutiable_id: string
       dutiable_type: string
       start_date: string
@@ -276,11 +278,18 @@ declare global {
       duty?: Duty
       study_program?: StudyProgram
       user?: User
+      tenant?: Tenant
+      via_dutiable?: Dutiable
+      derived_dutiables?: Dutiable[]
       // counts
+      derived_dutiables_count: number
       // exists
       duty_exists: boolean
       study_program_exists: boolean
       user_exists: boolean
+      tenant_exists: boolean
+      via_dutiable_exists: boolean
+      derived_dutiables_exists: boolean
     }
 
     export interface Duty {
@@ -316,6 +325,9 @@ declare global {
       reservations?: Reservation
       resources?: Resource
       available_trainings?: Training[]
+      ex_officio_target_duties?: Duty[]
+      ex_officio_source_duties?: Duty[]
+      assignable_tenants?: Tenant[]
       roles?: Role[]
       teams?: Permission[]
       permissions?: Permission[]
@@ -330,6 +342,9 @@ declare global {
       previous_users_count: number
       types_count: number
       available_trainings_count: number
+      ex_officio_target_duties_count: number
+      ex_officio_source_duties_count: number
+      assignable_tenants_count: number
       roles_count: number
       teams_count: number
       permissions_count: number
@@ -346,6 +361,9 @@ declare global {
       institution_exists: boolean
       institutions_exists: boolean
       available_trainings_exists: boolean
+      ex_officio_target_duties_exists: boolean
+      ex_officio_source_duties_exists: boolean
+      assignable_tenants_exists: boolean
       roles_exists: boolean
       teams_exists: boolean
       permissions_exists: boolean

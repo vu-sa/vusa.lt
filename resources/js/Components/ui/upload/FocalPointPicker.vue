@@ -59,9 +59,7 @@ const props = defineProps<{
   modelValue?: string | null;
 }>();
 
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: string): void;
-}>();
+const emit = defineEmits<(e: 'update:modelValue', value: string) => void>();
 
 const DEFAULT_VALUE = '50% 30%';
 

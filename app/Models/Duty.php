@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -44,11 +45,14 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activities
  * @property-read Collection<int, AgendaItem> $agendaItems
+ * @property-read Collection<int, Tenant> $assignableTenants
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Typeable|Dutiable|Trainable|null $pivot
  * @property-read Collection<int, Training> $availableTrainings
  * @property-read Collection<int, User> $current_users
  * @property-read Collection<int, Dutiable> $dutiables
+ * @property-read Collection<int, Duty> $exOfficioSourceDuties
+ * @property-read Collection<int, Duty> $exOfficioTargetDuties
  * @property-read Collection<int, FileableFile> $fileableFiles
  * @property-read bool $has_protocol
  * @property-read bool $has_report
@@ -134,7 +138,7 @@ class Duty extends Model implements AuthorizableContract, SharepointFileableCont
     {
         return $this->morphedByMany(User::class, 'dutiable')
             ->using(Dutiable::class)
-            ->withPivot(['id', 'start_date', 'end_date', 'additional_photo', 'additional_photo_focal_point', 'additional_email', 'use_original_duty_name', 'description', 'study_program_id']);
+            ->withPivot(['id', 'via_dutiable_id', 'tenant_id', 'start_date', 'end_date', 'additional_photo', 'additional_photo_focal_point', 'additional_email', 'use_original_duty_name', 'description', 'study_program_id']);
     }
 
     // TODO: use current_duties as an example for current_users
@@ -209,6 +213,24 @@ class Duty extends Model implements AuthorizableContract, SharepointFileableCont
     public function availableTrainings()
     {
         return $this->morphToMany(Training::class, 'trainable')->using(Trainable::class);
+    }
+
+    /** Duties that are automatically granted when a user holds this duty. */
+    public function exOfficioTargetDuties(): BelongsToMany
+    {
+        return $this->belongsToMany(Duty::class, 'ex_officio_duties', 'source_duty_id', 'target_duty_id');
+    }
+
+    /** Duties that automatically grant this duty. */
+    public function exOfficioSourceDuties(): BelongsToMany
+    {
+        return $this->belongsToMany(Duty::class, 'ex_officio_duties', 'target_duty_id', 'source_duty_id');
+    }
+
+    /** Additional tenants whose admins may assign their own reps to this duty, with per-tenant quotas. */
+    public function assignableTenants(): BelongsToMany
+    {
+        return $this->belongsToMany(Tenant::class, 'duty_tenant')->withPivot(['quota'])->withTimestamps();
     }
 
     protected static function booted()

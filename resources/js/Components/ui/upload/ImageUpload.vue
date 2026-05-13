@@ -110,7 +110,7 @@
 
         <!-- Empty state / Drop zone -->
         <UploadDropzone
-          v-else
+          v-if="!hasContent"
           size="default"
           :class="previewAspect === '4/3' ? 'w-full max-w-sm' : 'w-full max-w-xs'"
         >
@@ -251,6 +251,8 @@
 import { computed, ref, watch, onMounted, nextTick } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 
+import FocalPointPicker from './FocalPointPicker.vue';
+
 import { cn } from '@/Utils/Shadcn/utils';
 import { useImageCompression, type CompressionOptions, type CompressionResult } from '@/Composables/useImageCompression';
 import { Upload, UploadDropzone, type UploadFile } from '@/Components/ui/upload';
@@ -258,7 +260,6 @@ import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent } from '@/Components/ui/dialog';
 import { Label } from '@/Components/ui/label';
 import { ImageCropper } from '@/Components/ui/cropper';
-import FocalPointPicker from './FocalPointPicker.vue';
 
 export interface ImageUploadProps {
   /** Maximum number of files allowed. Use 1 for single file upload (default: 1) */

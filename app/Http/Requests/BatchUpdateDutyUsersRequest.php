@@ -2,10 +2,13 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Duty;
+use App\Models\Pivots\Dutiable;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class BatchUpdateDutyUsersRequest extends FormRequest
 {
@@ -14,17 +17,16 @@ class BatchUpdateDutyUsersRequest extends FormRequest
      */
     public function authorize(): bool
     {
+        /** @var Duty $duty */
         $duty = $this->route('duty');
 
-        // Must be able to update the duty
-        if (! $this->user()->can('update', $duty)) {
+        // Owning-tenant admin or cross-tenant assignable-tenant admin.
+        if (! $this->user()->can('managePeople', $duty)) {
             return false;
         }
 
-        // If creating new users, check users.create.padalinys permission
-        $newUsers = $this->input('new_users', []);
-
-        if (! empty($newUsers)) {
+        // If creating new users, check users.create.padalinys permission.
+        if (! empty($this->input('new_users', []))) {
             $authorizer = app(ModelAuthorizer::class);
 
             if (! $authorizer->forUser($this->user())->checkAllRoleables('users.create.padalinys')) {
@@ -44,15 +46,15 @@ class BatchUpdateDutyUsersRequest extends FormRequest
     {
         return [
             'user_changes' => 'required|array',
+            'tenant_id' => 'nullable|integer|exists:tenants,id',
             'user_changes.*.user_id' => [
                 'required',
                 'string',
                 function ($attribute, $value, $fail) {
-                    // Allow temporary IDs for new users (prefixed with 'new-')
                     if (str_starts_with($value, 'new-')) {
                         return;
                     }
-                    // Validate existing user IDs exist in the database
+
                     if (! User::where('id', $value)->exists()) {
                         $fail(__('validation.exists', ['attribute' => 'user_id']));
                     }
@@ -66,8 +68,71 @@ class BatchUpdateDutyUsersRequest extends FormRequest
             'new_users.*.name' => 'required|string|max:255',
             'new_users.*.email' => 'required|email|unique:users,email',
             'new_users.*.phone' => 'nullable|string|max:50',
-            'new_users.*.temp_id' => 'required|string', // Track which user_change this belongs to
+            'new_users.*.temp_id' => 'required|string',
             'places_to_occupy' => 'nullable|integer|min:1',
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $v) {
+            /** @var Duty $duty */
+            $duty = $this->route('duty');
+            $isOwningAdmin = $this->user()->can('update', $duty);
+
+            if ($isOwningAdmin) {
+                return;
+            }
+
+            $duty->loadMissing('assignableTenants');
+            $authorizer = app(ModelAuthorizer::class)->forUser($this->user());
+            $adminTenantIds = $authorizer->getTenants('duties.update.padalinys')->pluck('id');
+
+            foreach ($duty->assignableTenants as $tenant) {
+                $quota = $tenant->getAttribute('pivot')?->quota;
+
+                if (! $adminTenantIds->contains($tenant->id) || $quota === null) {
+                    continue;
+                }
+
+                $userChanges = collect($this->input('user_changes', []));
+                $addCount = $userChanges->where('action', 'add')->count();
+
+                if ($addCount === 0) {
+                    continue;
+                }
+
+                // Count only removals that actually target an active dutiable for this tenant.
+                $removeUserIds = $userChanges->where('action', 'remove')->pluck('user_id');
+                $validRemoveCount = 0;
+                if ($removeUserIds->isNotEmpty()) {
+                    $validRemoveCount = Dutiable::where('duty_id', $duty->id)
+                        ->where('dutiable_type', User::class)
+                        ->whereIn('dutiable_id', $removeUserIds)
+                        ->where('tenant_id', $tenant->id)
+                        ->where(function ($query) {
+                            $query->whereNull('end_date')
+                                ->orWhere('end_date', '>=', now());
+                        })
+                        ->count();
+                }
+
+                // Count by tenant_id column — explicit and accurate.
+                // Must match Duty::current_users() semantics (end_date >= now()) so a
+                // rep end-dated today is no longer counted toward the quota.
+                $currentCount = Dutiable::where('duty_id', $duty->id)
+                    ->where('dutiable_type', User::class)
+                    ->where('tenant_id', $tenant->id)
+                    ->where(function ($query) {
+                        $query->whereNull('end_date')
+                            ->orWhere('end_date', '>=', now());
+                    })
+                    ->count();
+
+                if (($currentCount + $addCount - $validRemoveCount) > $quota) {
+                    $v->errors()->add('user_changes', "Padalinio kvota ({$quota}) viršyta.");
+                }
+            }
+        });
     }
 }

@@ -17,6 +17,7 @@ use App\Listeners\ReservationResource\HandleReservationResourceCreated;
 use App\Listeners\ReservationResource\HandleReservationResourceStateChanged;
 use App\Listeners\SendMemberRegistrationNotification;
 use App\Listeners\SendStudentRepRegistrationNotification;
+use App\Listeners\SyncExOfficioDutiables;
 use App\Listeners\UpdateSharepointFolder;
 use App\Models\Calendar;
 use App\Models\Document;
@@ -71,6 +72,7 @@ class EventServiceProvider extends ServiceProvider
         ],
         DutiableChanged::class => [
             HandleDutiableChange::class,
+            SyncExOfficioDutiables::class,
         ],
         ReservationResourceCreated::class => [
             HandleReservationResourceCreated::class,

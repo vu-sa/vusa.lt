@@ -6,16 +6,34 @@
     @sorting-changed="handleSortingChange"
     @page-changed="handlePageChange"
     @filter-changed="handleFilterChange"
-  />
+  >
+    <template #headerActions>
+      <Link :href="route('duties.updateUsersWizard')">
+        <Button variant="outline" size="sm">
+          <Icons.USER class="size-4" />
+          {{ $t('forms.fields.duty_user_wizard') }}
+        </Button>
+      </Link>
+    </template>
+    <template #filters>
+      <div class="flex items-center gap-2">
+        <Switch id="show-external-duties" :model-value="showExternal" @update:model-value="handleShowExternalChange" />
+        <Label for="show-external-duties" class="text-sm font-normal">{{ $t('forms.fields.show_external_duties') }}</Label>
+      </div>
+    </template>
+  </IndexTablePage>
 </template>
 
 <script setup lang="ts">
 import { h, ref, computed } from 'vue';
-import { transChoice as $tChoice } from 'laravel-vue-i18n';
+import { Link } from '@inertiajs/vue3';
+import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
+import { Label } from '@/Components/ui/label';
+import { Switch } from '@/Components/ui/switch';
 import { TagList, TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
 import { capitalize } from '@/Utils/String';
 import { resolveTranslatable } from '@/Composables/useDataTableColumns';
@@ -43,7 +61,16 @@ const props = defineProps<{
 const modelName = 'duties';
 const entityName = 'duty';
 
-const indexTablePageRef = ref<any>(null);
+const indexTablePageRef = ref<InstanceType<typeof IndexTablePage> | null>(null);
+
+// "External" = duties owned by another tenant but assignable to the current
+// user's tenant. Included by default; the toggle drives a `show_external` table filter.
+const showExternal = ref<boolean>(props.filters?.show_external !== false);
+
+const handleShowExternalChange = (value: boolean) => {
+  showExternal.value = value;
+  indexTablePageRef.value?.updateFilter('show_external', value ? undefined : false);
+};
 
 const getRowId = (row: App.Entities.Duty) => {
   return `duty-${row.id}`;
