@@ -2,7 +2,9 @@
 
 namespace App\Listeners;
 
+use App\Actions\ResolveExOfficioTenantId;
 use App\Events\DutiableChanged;
+use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -39,7 +41,7 @@ class SyncExOfficioDutiables implements ShouldQueue
 
     private function handleSaved(Dutiable $dutiable): void
     {
-        $dutiable->load('duty.exOfficioTargetDuties');
+        $dutiable->load('duty.institution', 'duty.exOfficioTargetDuties.assignableTenants');
 
         $targetDuties = $dutiable->duty->exOfficioTargetDuties ?? collect();
 
@@ -50,7 +52,7 @@ class SyncExOfficioDutiables implements ShouldQueue
         $userId = $dutiable->dutiable_id;
 
         foreach ($targetDuties as $targetDuty) {
-            $this->syncDerivedRow($dutiable, $userId, $targetDuty->id);
+            $this->syncDerivedRow($dutiable, $userId, $targetDuty);
         }
     }
 
@@ -60,9 +62,12 @@ class SyncExOfficioDutiables implements ShouldQueue
         Dutiable::where('via_dutiable_id', $dutiable->id)->delete();
     }
 
-    private function syncDerivedRow(Dutiable $source, string $userId, string $targetDutyId): void
+    private function syncDerivedRow(Dutiable $source, string $userId, Duty $targetDuty): void
     {
-        // If a derived row for this source already exists, mirror the dates.
+        $targetDutyId = $targetDuty->id;
+        $resolvedTenantId = ResolveExOfficioTenantId::execute($source, $targetDuty);
+
+        // If a derived row for this source already exists, mirror the dates and tenant_id.
         $derived = Dutiable::where('via_dutiable_id', $source->id)
             ->where('duty_id', $targetDutyId)
             ->where('dutiable_type', User::class)
@@ -72,6 +77,7 @@ class SyncExOfficioDutiables implements ShouldQueue
         if ($derived) {
             $derived->start_date = $source->start_date;
             $derived->end_date = $source->end_date;
+            $derived->tenant_id = $resolvedTenantId;
             $derived->save();
 
             return;
@@ -89,6 +95,7 @@ class SyncExOfficioDutiables implements ShouldQueue
             $manual->via_dutiable_id = $source->id;
             $manual->start_date = $source->start_date;
             $manual->end_date = $source->end_date;
+            $manual->tenant_id = $resolvedTenantId;
             $manual->save();
 
             return;
@@ -100,6 +107,7 @@ class SyncExOfficioDutiables implements ShouldQueue
             'dutiable_id' => $userId,
             'dutiable_type' => User::class,
             'via_dutiable_id' => $source->id,
+            'tenant_id' => $resolvedTenantId,
             'start_date' => $source->start_date,
             'end_date' => $source->end_date,
         ]);

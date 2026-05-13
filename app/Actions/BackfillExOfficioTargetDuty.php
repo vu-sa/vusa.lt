@@ -5,6 +5,7 @@ namespace App\Actions;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
+use Illuminate\Support\Collection;
 
 /**
  * When an ex-officio target duty is added to or removed from a source duty,
@@ -23,6 +24,8 @@ class BackfillExOfficioTargetDuty
             return;
         }
 
+        $sourceDuty->load('institution');
+
         // Load active (source) Dutiables for this duty — root sources only.
         $sourceRows = Dutiable::where('duty_id', $sourceDuty->id)
             ->where('dutiable_type', User::class)
@@ -30,10 +33,18 @@ class BackfillExOfficioTargetDuty
             ->whereNull('end_date')
             ->get();
 
+        /** @var Collection<string, Duty> $targetDuties */
+        $targetDuties = Duty::whereIn('id', $addedTargetDutyIds)
+            ->with('assignableTenants')
+            ->get()
+            ->keyBy('id');
+
         // Add derived rows for newly-linked targets.
         foreach ($addedTargetDutyIds as $targetDutyId) {
+            $targetDuty = $targetDuties->get($targetDutyId);
+
             foreach ($sourceRows as $source) {
-                self::createOrAdopt($source, $targetDutyId);
+                self::createOrAdopt($source, $targetDutyId, $targetDuty);
             }
         }
 
@@ -48,9 +59,10 @@ class BackfillExOfficioTargetDuty
         }
     }
 
-    private static function createOrAdopt(Dutiable $source, string $targetDutyId): void
+    private static function createOrAdopt(Dutiable $source, string $targetDutyId, ?Duty $targetDuty): void
     {
         $userId = $source->dutiable_id;
+        $resolvedTenantId = $targetDuty ? ResolveExOfficioTenantId::execute($source, $targetDuty) : null;
 
         $existing = Dutiable::where('via_dutiable_id', $source->id)
             ->where('duty_id', $targetDutyId)
@@ -74,6 +86,7 @@ class BackfillExOfficioTargetDuty
             $manual->via_dutiable_id = $source->id;
             $manual->start_date = $source->start_date;
             $manual->end_date = $source->end_date;
+            $manual->tenant_id = $resolvedTenantId;
             $manual->save();
 
             return;
@@ -84,6 +97,7 @@ class BackfillExOfficioTargetDuty
             'dutiable_id' => $userId,
             'dutiable_type' => User::class,
             'via_dutiable_id' => $source->id,
+            'tenant_id' => $resolvedTenantId,
             'start_date' => $source->start_date,
             'end_date' => $source->end_date,
         ]);

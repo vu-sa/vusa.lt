@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\BackfillExOfficioTargetDuty;
 use App\Events\DutiableChanged;
 use App\Listeners\SyncExOfficioDutiables;
 use App\Models\Duty;
@@ -209,4 +210,214 @@ test('listener skips derived rows to prevent chains', function () {
     $listener->handle(new DutiableChanged($derivedRow));
 
     expect(Dutiable::count())->toBe($before);
+});
+
+test('cross-tenant ex-officio sets tenant_id when target supports source tenant', function () {
+    $sourceTenant = Tenant::query()->inRandomOrder()->first();
+    $targetTenant = Tenant::query()->where('id', '!=', $sourceTenant->id)->inRandomOrder()->first();
+
+    if (! $targetTenant) {
+        $this->markTestSkipped('Need at least 2 tenants in the database.');
+    }
+
+    $sourceInstitution = Institution::factory()->for($sourceTenant)->create();
+    $targetInstitution = Institution::factory()->for($targetTenant)->create();
+
+    $sourceDuty = Duty::factory()->for($sourceInstitution)->create();
+    $targetDuty = Duty::factory()->for($targetInstitution)->create();
+    $targetDuty->assignableTenants()->attach($sourceTenant->id, ['quota' => 2]);
+
+    $sourceDuty->exOfficioTargetDuties()->attach($targetDuty);
+
+    $source = Dutiable::factory()->create([
+        'duty_id' => $sourceDuty->id,
+        'dutiable_id' => $this->user->id,
+        'dutiable_type' => User::class,
+        'start_date' => now()->subDay()->toDateString(),
+        'end_date' => null,
+        'via_dutiable_id' => null,
+    ]);
+
+    $listener = new SyncExOfficioDutiables;
+    $listener->handle(new DutiableChanged($source));
+
+    $derived = Dutiable::where('via_dutiable_id', $source->id)->first();
+
+    expect($derived)->not->toBeNull()
+        ->and($derived->tenant_id)->toBe($sourceTenant->id);
+});
+
+test('cross-tenant ex-officio does not set tenant_id when target does not support source tenant', function () {
+    $sourceTenant = Tenant::query()->inRandomOrder()->first();
+    $targetTenant = Tenant::query()->where('id', '!=', $sourceTenant->id)->inRandomOrder()->first();
+
+    if (! $targetTenant) {
+        $this->markTestSkipped('Need at least 2 tenants in the database.');
+    }
+
+    $sourceInstitution = Institution::factory()->for($sourceTenant)->create();
+    $targetInstitution = Institution::factory()->for($targetTenant)->create();
+
+    $sourceDuty = Duty::factory()->for($sourceInstitution)->create();
+    $targetDuty = Duty::factory()->for($targetInstitution)->create();
+    // Do NOT add sourceTenant to targetDuty's assignableTenants.
+
+    $sourceDuty->exOfficioTargetDuties()->attach($targetDuty);
+
+    $source = Dutiable::factory()->create([
+        'duty_id' => $sourceDuty->id,
+        'dutiable_id' => $this->user->id,
+        'dutiable_type' => User::class,
+        'start_date' => now()->subDay()->toDateString(),
+        'end_date' => null,
+        'via_dutiable_id' => null,
+    ]);
+
+    $listener = new SyncExOfficioDutiables;
+    $listener->handle(new DutiableChanged($source));
+
+    $derived = Dutiable::where('via_dutiable_id', $source->id)->first();
+
+    expect($derived)->not->toBeNull()
+        ->and($derived->tenant_id)->toBeNull();
+});
+
+test('same-tenant ex-officio keeps tenant_id null', function () {
+    // Default beforeEach already creates source and target in the same tenant.
+    $source = Dutiable::factory()->create([
+        'duty_id' => $this->sourceDuty->id,
+        'dutiable_id' => $this->user->id,
+        'dutiable_type' => User::class,
+        'start_date' => now()->subDay()->toDateString(),
+        'end_date' => null,
+        'via_dutiable_id' => null,
+    ]);
+
+    $listener = new SyncExOfficioDutiables;
+    $listener->handle(new DutiableChanged($source));
+
+    $derived = Dutiable::where('via_dutiable_id', $source->id)->first();
+
+    expect($derived)->not->toBeNull()
+        ->and($derived->tenant_id)->toBeNull();
+});
+
+test('listener preserves tenant_id when mirroring date changes', function () {
+    $sourceTenant = Tenant::query()->inRandomOrder()->first();
+    $targetTenant = Tenant::query()->where('id', '!=', $sourceTenant->id)->inRandomOrder()->first();
+
+    if (! $targetTenant) {
+        $this->markTestSkipped('Need at least 2 tenants in the database.');
+    }
+
+    $sourceInstitution = Institution::factory()->for($sourceTenant)->create();
+    $targetInstitution = Institution::factory()->for($targetTenant)->create();
+
+    $sourceDuty = Duty::factory()->for($sourceInstitution)->create();
+    $targetDuty = Duty::factory()->for($targetInstitution)->create();
+    $targetDuty->assignableTenants()->attach($sourceTenant->id, ['quota' => 2]);
+
+    $sourceDuty->exOfficioTargetDuties()->attach($targetDuty);
+
+    $source = Dutiable::factory()->create([
+        'duty_id' => $sourceDuty->id,
+        'dutiable_id' => $this->user->id,
+        'dutiable_type' => User::class,
+        'start_date' => now()->subMonth()->toDateString(),
+        'end_date' => null,
+        'via_dutiable_id' => null,
+    ]);
+
+    $listener = new SyncExOfficioDutiables;
+    $listener->handle(new DutiableChanged($source));
+
+    // Change source dates.
+    $source->start_date = now()->subWeek()->toDateString();
+    $source->save();
+    $listener->handle(new DutiableChanged($source));
+
+    $derived = Dutiable::where('via_dutiable_id', $source->id)->first();
+
+    expect($derived->tenant_id)->toBe($sourceTenant->id)
+        ->and($derived->start_date->toDateString())->toBe($source->start_date->toDateString());
+});
+
+test('listener adopts manual row and updates tenant_id when target supports source tenant', function () {
+    $sourceTenant = Tenant::query()->inRandomOrder()->first();
+    $targetTenant = Tenant::query()->where('id', '!=', $sourceTenant->id)->inRandomOrder()->first();
+
+    if (! $targetTenant) {
+        $this->markTestSkipped('Need at least 2 tenants in the database.');
+    }
+
+    $sourceInstitution = Institution::factory()->for($sourceTenant)->create();
+    $targetInstitution = Institution::factory()->for($targetTenant)->create();
+
+    $sourceDuty = Duty::factory()->for($sourceInstitution)->create();
+    $targetDuty = Duty::factory()->for($targetInstitution)->create();
+    $targetDuty->assignableTenants()->attach($sourceTenant->id, ['quota' => 2]);
+
+    $sourceDuty->exOfficioTargetDuties()->attach($targetDuty);
+
+    // Manual row on target duty without tenant_id.
+    $manualRow = Dutiable::factory()->create([
+        'duty_id' => $targetDuty->id,
+        'dutiable_id' => $this->user->id,
+        'dutiable_type' => User::class,
+        'start_date' => now()->subYear()->toDateString(),
+        'end_date' => null,
+        'via_dutiable_id' => null,
+        'tenant_id' => null,
+    ]);
+
+    $source = Dutiable::factory()->create([
+        'duty_id' => $sourceDuty->id,
+        'dutiable_id' => $this->user->id,
+        'dutiable_type' => User::class,
+        'start_date' => now()->subDay()->toDateString(),
+        'end_date' => null,
+        'via_dutiable_id' => null,
+    ]);
+
+    $listener = new SyncExOfficioDutiables;
+    $listener->handle(new DutiableChanged($source));
+
+    $manualRow->refresh();
+
+    expect($manualRow->via_dutiable_id)->toBe($source->id)
+        ->and($manualRow->tenant_id)->toBe($sourceTenant->id);
+});
+
+test('backfill sets tenant_id for cross-tenant ex-officio', function () {
+    $sourceTenant = Tenant::query()->inRandomOrder()->first();
+    $targetTenant = Tenant::query()->where('id', '!=', $sourceTenant->id)->inRandomOrder()->first();
+
+    if (! $targetTenant) {
+        $this->markTestSkipped('Need at least 2 tenants in the database.');
+    }
+
+    $sourceInstitution = Institution::factory()->for($sourceTenant)->create();
+    $targetInstitution = Institution::factory()->for($targetTenant)->create();
+
+    $sourceDuty = Duty::factory()->for($sourceInstitution)->create();
+    $targetDuty = Duty::factory()->for($targetInstitution)->create();
+    $targetDuty->assignableTenants()->attach($sourceTenant->id, ['quota' => 2]);
+
+    // Active source dutiable already exists before the ex-officio link is created.
+    $source = Dutiable::factory()->create([
+        'duty_id' => $sourceDuty->id,
+        'dutiable_id' => $this->user->id,
+        'dutiable_type' => User::class,
+        'start_date' => now()->subDay()->toDateString(),
+        'end_date' => null,
+        'via_dutiable_id' => null,
+    ]);
+
+    // Backfill after adding the target.
+    BackfillExOfficioTargetDuty::execute($sourceDuty, [$targetDuty->id], []);
+
+    $derived = Dutiable::where('via_dutiable_id', $source->id)->first();
+
+    expect($derived)->not->toBeNull()
+        ->and($derived->tenant_id)->toBe($sourceTenant->id);
 });
