@@ -37,6 +37,9 @@
           <p class="font-medium">
             {{ currentUsers.length }} / {{ wizard.state.duty?.places_to_occupy || '?' }}
           </p>
+          <p v-if="isExternalDuty" class="text-xs text-muted-foreground">
+            {{ $t('forms.fields.tenant_quota') }}: {{ tenantQuota ?? '∞' }}
+          </p>
         </div>
         <Button variant="ghost" size="sm" @click="wizard.previousStep()">
           <Edit3 class="h-4 w-4 mr-1" />
@@ -153,12 +156,18 @@
             </h3>
           </div>
 
+          <p v-if="quotaReached" class="text-xs text-vusa-yellow-dark dark:text-vusa-yellow flex items-center gap-1">
+            <AlertTriangle class="h-3 w-3" />
+            {{ $t('forms.fields.tenant_quota') }}: {{ tenantQuota }} — {{ $t('Pasiekta padalinio kvota') }}
+          </p>
+
           <!-- User search -->
           <div class="space-y-1">
             <div class="relative h-10">
               <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               <Input
                 v-model="userSearchQuery"
+                :disabled="quotaReached"
                 :placeholder="$t('Įveskite vardą arba el. paštą...')"
                 class="pl-10 h-10"
                 @focus="showUserSearch = true"
@@ -313,36 +322,6 @@
                   <AlertTriangle class="h-3 w-3" />
                   {{ $t('Pabaigos data negali būti ankstesnė nei pradžios data') }}
                 </p>
-
-                <!-- Study program (collapsible for relevant duties) -->
-                <Collapsible v-if="mightNeedStudyProgram" class="mt-2">
-                  <CollapsibleTrigger as-child>
-                    <Button variant="ghost" size="sm" class="h-6 px-2 text-xs w-full justify-start">
-                      <GraduationCap class="h-3 w-3 mr-1" />
-                      {{ change.studyProgramName || $t('Pridėti studijų programą') }}
-                      <ChevronDown class="h-3 w-3 ml-auto" />
-                    </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent class="pt-2">
-                    <Select
-                      :model-value="change.studyProgramId || undefined"
-                      @update:model-value="(v) => updateStudyProgram(change.userId, v ? String(v) : null)"
-                    >
-                      <SelectTrigger class="h-8 text-xs">
-                        <SelectValue :placeholder="$t('Pasirinkti programą...')" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem
-                          v-for="program in studyPrograms"
-                          :key="program.id"
-                          :value="program.id"
-                        >
-                          {{ program.name }}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </CollapsibleContent>
-                </Collapsible>
               </div>
 
               <!-- Empty state -->
@@ -437,7 +416,6 @@ import {
   Calendar,
   ChevronDown,
   Plus,
-  GraduationCap,
   Check,
   AlertTriangle,
   Loader2,
@@ -450,19 +428,14 @@ import { ScrollArea } from '@/Components/ui/scroll-area';
 import { Separator } from '@/Components/ui/separator';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
 import { Label } from '@/Components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import Icons from '@/Types/Icons/regular';
 import { getSuggestedEndDate, getTodayDate, formatDateForDisplay } from '@/Composables/useDutyUserWizard';
 import type { useDutyUserWizard, UserChange, NewUserData } from '@/Composables/useDutyUserWizard';
 
 const wizard = inject<ReturnType<typeof useDutyUserWizard>>('dutyUserWizard')!;
-const studyProgramsRef = inject<ComputedRef<App.Entities.StudyProgram[]> | App.Entities.StudyProgram[]>('studyPrograms', []);
 const allUsersRef = inject<ComputedRef<App.Entities.User[]> | App.Entities.User[]>('allUsers', []);
 
 // Unwrap computed refs or use arrays directly
-const studyPrograms = computed(() =>
-  'value' in studyProgramsRef ? studyProgramsRef.value : studyProgramsRef,
-);
 const allUsers = computed(() =>
   'value' in allUsersRef ? allUsersRef.value : allUsersRef,
 );
@@ -492,13 +465,20 @@ const batchStartDate = ref(getTodayDate());
 const batchEndDate = ref(getSuggestedEndDate());
 const showBatchDateSetter = ref(false);
 
-// Study program collapsible (for curator duties)
-const showStudyProgramSection = ref(false);
-
 // Current users from selected duty
 const currentUsers = computed(() => {
   return wizard.state.duty?.current_users || [];
 });
+
+// "External" duty: owned by another tenant, but the acting tenant may assign reps
+// to it (subject to a per-tenant quota). The quota is enforced server-side; here
+// it's shown for guidance.
+const assignableTenantPivot = computed<{ quota?: number | null } | null>(() => {
+  const list = (wizard.state.duty as { assignable_tenants?: Array<{ pivot?: { quota?: number | null } }> } | undefined)?.assignable_tenants;
+  return list && list.length > 0 ? (list[0].pivot ?? null) : null;
+});
+const isExternalDuty = computed(() => assignableTenantPivot.value !== null);
+const tenantQuota = computed<number | null>(() => assignableTenantPivot.value?.quota ?? null);
 
 // Filter out users that are already in the duty
 const availableUsers = computed(() => {
@@ -527,6 +507,17 @@ const usersToAdd = computed(() => {
   return wizard.state.userChanges.filter(c => c.action === 'add');
 });
 
+// For external duties the member list is already scoped to the acting tenant,
+// so we can guard the per-tenant quota client-side (server still enforces it).
+const projectedTenantMemberCount = computed(() => {
+  const removeIds = new Set(wizard.state.userChanges.filter(c => c.action === 'remove').map(c => c.userId));
+  const remaining = currentUsers.value.filter(u => !removeIds.has(u.id)).length;
+  return remaining + usersToAdd.value.length;
+});
+const quotaReached = computed(() =>
+  isExternalDuty.value && tenantQuota.value !== null && projectedTenantMemberCount.value >= tenantQuota.value,
+);
+
 // Users being removed
 const usersToRemove = computed(() => {
   return wizard.state.userChanges.filter(c => c.action === 'remove');
@@ -538,17 +529,9 @@ const remainingCurrentUsers = computed(() => {
   return currentUsers.value.filter(u => !removeIds.has(u.id));
 });
 
-// Check if duty might need study programs (curator-like duties)
-const mightNeedStudyProgram = computed(() => {
-  const dutyName = wizard.state.duty?.name?.toString().toLowerCase() || '';
-  return dutyName.includes('kurator')
-    || dutyName.includes('studij')
-    || dutyName.includes('atstovas')
-    || (wizard.state.duty?.places_to_occupy || 0) > 5;
-});
-
 // Handle adding a user
 const handleAddUser = (user: App.Entities.User) => {
+  if (quotaReached.value) return;
   wizard.addUserToAdd(user, {
     startDate: batchStartDate.value,
     endDate: batchEndDate.value,
@@ -575,15 +558,6 @@ const cancelAddition = (userId: string) => {
 // Update date for a change
 const updateChangeDate = (userId: string, field: 'startDate' | 'endDate', value: string) => {
   wizard.updateUserChange(userId, { [field]: value });
-};
-
-// Update study program
-const updateStudyProgram = (userId: string, programId: string | null) => {
-  const program = studyPrograms.value.find(p => p.id === programId);
-  wizard.updateUserChange(userId, {
-    studyProgramId: programId,
-    studyProgramName: program?.name?.toString() || null,
-  });
 };
 
 // Apply batch dates

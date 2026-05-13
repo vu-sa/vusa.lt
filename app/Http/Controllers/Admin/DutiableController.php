@@ -17,10 +17,10 @@ class DutiableController extends AdminController
      */
     public function edit(Dutiable $dutiable)
     {
-        $this->handleAuthorization('update', $dutiable->duty);
+        $this->authorize('manageDutiable', $dutiable);
 
         return $this->inertiaResponse('Admin/People/EditDutiable', [
-            'dutiable' => $dutiable->load('duty', 'dutiable')->toFullArray(),
+            'dutiable' => $dutiable->load('duty', 'dutiable', 'viaDutiable.duty')->toFullArray(),
             'studyPrograms' => StudyProgram::all(),
         ]);
     }
@@ -31,9 +31,17 @@ class DutiableController extends AdminController
      */
     public function update(Dutiable $dutiable, UpdateDutiableRequest $request)
     {
-        $dutiable->fill($request->validated());
+        $this->authorize('manageDutiable', $dutiable);
 
-        $dutiable->save();
+        $data = $request->validated();
+
+        // Derived (ex-officio) rows have their dates mirrored from the source;
+        // do not allow manual overrides.
+        if (! is_null($dutiable->via_dutiable_id)) {
+            unset($data['start_date'], $data['end_date']);
+        }
+
+        $dutiable->fill($data)->save();
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -50,7 +58,7 @@ class DutiableController extends AdminController
      */
     public function destroy(Dutiable $dutiable)
     {
-        $this->handleAuthorization('delete', $dutiable->duty);
+        $this->authorize('manageDutiable', $dutiable);
 
         $user = $dutiable->dutiable;
 

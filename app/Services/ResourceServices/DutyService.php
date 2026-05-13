@@ -2,6 +2,7 @@
 
 namespace App\Services\ResourceServices;
 
+use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\User;
@@ -47,6 +48,41 @@ class DutyService
             })
             ->with('tenant:id,shortname')
             ->get();
+    }
+
+    /**
+     * Duties selectable as ex-officio targets for a given duty (or, when creating
+     * a new duty, scoped to the tenants the user may create duties in).
+     *
+     * Ex-officio targets are restricted to the **same tenant** as the source duty —
+     * otherwise an admin of one tenant could funnel users into (and inherit the
+     * permissions of) a duty in another tenant. The only exception: admins with
+     * the global duties scope (`duties.update.*` when editing / `duties.create.*`
+     * when creating) may pick any duty (rare cross-tenant ex-officio cases, e.g.
+     * another tenant's chairman holding an ex-officio seat).
+     */
+    public static function getAssignableExOfficioDuties(ModelAuthorizer $authorizer, ?Duty $duty = null): Collection
+    {
+        $user = request()->user();
+        $authorizer = $authorizer->forUser($user);
+
+        $query = Duty::select('id', 'name', 'institution_id')
+            ->with(['institution:id,name,short_name,tenant_id', 'institution.tenant:id,shortname'])
+            ->orderBy('name');
+
+        if ($duty) {
+            $query->where('id', '!=', $duty->id);
+
+            if (! $authorizer->check('duties.update.*')) {
+                $tenantId = $duty->institution?->tenant_id;
+                $query->whereHas('institution', fn ($q) => $q->where('tenant_id', $tenantId));
+            }
+        } elseif (! $authorizer->check('duties.create.*')) {
+            $tenantIds = $authorizer->getTenants('duties.create.padalinys')->pluck('id');
+            $query->whereHas('institution', fn ($q) => $q->whereIn('tenant_id', $tenantIds));
+        }
+
+        return $query->get();
     }
 
     /**

@@ -81,7 +81,7 @@
             </p>
           </div>
           <Button
-            v-if="hasCapacityMismatch && !isEditingCapacity"
+            v-if="hasCapacityMismatch && !isEditingCapacity && !isExternalDuty"
             variant="ghost"
             size="sm"
             @click="startEditingCapacity"
@@ -93,7 +93,7 @@
     </div>
 
     <!-- Capacity mismatch alert -->
-    <Alert v-if="hasCapacityMismatch && !isEditingCapacity" variant="default" class="border-vusa-yellow/30 dark:border-vusa-yellow-dark/30 bg-vusa-yellow/10 dark:bg-vusa-yellow-dark/20">
+    <Alert v-if="hasCapacityMismatch && !isEditingCapacity && !isExternalDuty" variant="default" class="border-vusa-yellow/30 dark:border-vusa-yellow-dark/30 bg-vusa-yellow/10 dark:bg-vusa-yellow-dark/20">
       <AlertTriangle class="h-4 w-4 text-vusa-yellow-dark dark:text-vusa-yellow" />
       <AlertTitle class="text-vusa-yellow-dark dark:text-vusa-yellow">
         {{ $t('Vietų skaičiaus neatitikimas') }}
@@ -107,7 +107,7 @@
     </Alert>
 
     <!-- Capacity editor -->
-    <Card v-if="isEditingCapacity" class="border-primary/50">
+    <Card v-if="isEditingCapacity && !isExternalDuty" class="border-primary/50">
       <CardContent class="p-4">
         <div class="flex items-center gap-4">
           <div class="flex-1">
@@ -312,6 +312,13 @@ const wizard = inject<ReturnType<typeof useDutyUserWizard>>('dutyUserWizard')!;
 // Capacity editing
 const isEditingCapacity = ref(false);
 const newCapacity = ref(wizard.state.duty?.places_to_occupy || 0);
+
+// External (cross-tenant) duties: places_to_occupy is the owning tenant's soft cap,
+// not editable from here by an assigning-tenant admin.
+const isExternalDuty = computed(() => {
+  const list = (wizard.state.duty as { assignable_tenants?: unknown[] } | undefined)?.assignable_tenants;
+  return Array.isArray(list) && list.length > 0;
+});
 
 // Users being added
 const usersToAdd = computed(() => {

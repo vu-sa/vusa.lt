@@ -457,7 +457,7 @@ describe('DataTable.vue', () => {
         ],
         enableRowSelection: true,
         enableRowSelectionColumn: true,
-        rowSelectionState: { '0': true },
+        rowSelectionState: { 0: true },
       });
       await nextTick();
 

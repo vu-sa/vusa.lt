@@ -1,5 +1,5 @@
 <template>
-  <Combobox v-model="selectedItems" multiple :filter-function>
+  <Combobox v-model="selectedItems" multiple :filter-function :open="isOpen" @update:open="isOpen = $event">
     <ComboboxAnchor
       class="relative flex min-h-10 w-full flex-wrap items-center gap-1.5 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
       :class="{ 'opacity-50 cursor-not-allowed': disabled }"
@@ -28,9 +28,12 @@
       <!-- Search input -->
       <ComboboxInput
         v-if="!disabled"
+        v-model="searchTerm"
         class="min-w-[80px] flex-1 bg-transparent text-sm placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
         :placeholder="selectedItems.length === 0 ? placeholder : ''"
         :disabled
+        @focus="isOpen = true"
+        @click="isOpen = true"
       />
 
       <!-- Trigger button - inline with tags/input, pushed to end -->
@@ -46,11 +49,17 @@
           <p>{{ emptyText }}</p>
         </ComboboxEmpty>
 
-        <!-- Virtualized rendering for large lists -->
+        <!-- Virtualized rendering for large lists.
+             Note: reka-ui disables its built-in filtering in virtual mode, so we
+             pass an already-filtered list to the virtualizer ourselves. -->
         <template v-if="shouldVirtualize">
+          <p v-if="virtualOptions.length === 0" class="flex flex-col items-center justify-center py-6 text-center text-sm text-muted-foreground">
+            {{ emptyText }}
+          </p>
           <ComboboxVirtualizer
+            v-else
             v-slot="{ option }"
-            :options
+            :options="virtualOptions"
             :estimate-size
             :text-content="(opt: T) => getItemLabel(opt)"
           >
@@ -141,13 +150,26 @@ const emit = defineEmits<(e: 'update:modelValue', value: T[]) => void>();
 // Internal state for selected items
 const selectedItems = ref<T[]>([...props.modelValue]) as { value: T[] };
 
-// Determine if virtualization should be used
-const shouldVirtualize = computed(() => props.options.length > props.virtualizationThreshold);
+const isOpen = ref(false);
+
+// Search term — bound to ComboboxInput. reka-ui's built-in filtering is bypassed
+// in virtual mode, so we use this to filter the virtualized list ourselves.
+const searchTerm = ref('');
 
 // Get the label of an item
 const getItemLabel = (item: T): string => {
   return String(item[props.labelField] ?? item);
 };
+
+// Determine if virtualization should be used
+const shouldVirtualize = computed(() => props.options.length > props.virtualizationThreshold);
+
+// Options actually passed to the virtualizer (filtered by the search term).
+const virtualOptions = computed<T[]>(() => {
+  if (!searchTerm.value) return props.options;
+  const term = searchTerm.value.toLowerCase();
+  return props.options.filter(item => getItemLabel(item).toLowerCase().includes(term));
+});
 
 // Get the value/key of an item
 const getItemValue = (item: T): string | number => {

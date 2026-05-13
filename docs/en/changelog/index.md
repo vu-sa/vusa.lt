@@ -7,6 +7,14 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.10 — Ex-officio Duties & Cross-tenant Representatives (2026-05-12) {#v1-10}
+
+- ⭐ **Ex-officio duties** — on the duty edit page you can list duties that are granted automatically alongside this one (e.g. chairing a body grants a seat in its directorate). Derived assignments mirror the source's dates, and when the source ends the derived ones are end-dated too
+- ⭐ **Representatives from other tenants** — a duty (owned by one tenant) can allow other tenants to assign their own members to it, each with a quota. Such duties show up in the duties list (with a filter) and in the member wizard; those tenants' admins can manage only their own tenant's representatives and only up to the quota
+- ✨ **Per-tenant representative pickers** — each assignable-tenant row in the duty form now has its own transfer list in a collapsible accordion section; quota is shown in the section header and enforced without locking the picker so reps can always be removed; cross-tenant admins see only their own section, auto-expanded on page load
+- ✨ **Active users in member picker** — the transfer list for assigning duty members now shows only users active in the last 12 months by default (currently holds a duty, recently held one, recently logged in, or newly created account); all others are reachable via a "Show all users" toggle
+- 🔧 **Fixed ex-officio target not saving** — selecting an ex-officio target duty on the duty edit form now correctly persists after saving
+
 ## v1.9 — Meetings & Admin Improvements (2026-05-06) {#v1-9}
 
 - ⭐ **Meetings with multiple institutions** — meetings can now be associated with multiple institutions instead of just one

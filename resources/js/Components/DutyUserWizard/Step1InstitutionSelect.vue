@@ -264,6 +264,9 @@
                         <Badge v-if="institution.tenant?.shortname" variant="outline" class="text-xs">
                           {{ institution.tenant.shortname }}
                         </Badge>
+                        <Badge v-if="(institution as { is_external?: boolean }).is_external" variant="secondary" class="text-xs">
+                          {{ $t('forms.fields.external_duty_badge') }}
+                        </Badge>
                         <span v-if="institution.duties?.length" class="text-xs text-muted-foreground flex items-center gap-1">
                           <Users class="h-3 w-3" />
                           {{ institution.duties.length }} {{ $t('pareigybės') }}

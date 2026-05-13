@@ -13,7 +13,7 @@ class UpdateDutiableRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()->can('update', $this->route('dutiable')->duty);
+        return $this->user()->can('manageDutiable', $this->route('dutiable'));
     }
 
     protected function prepareForValidation(): void

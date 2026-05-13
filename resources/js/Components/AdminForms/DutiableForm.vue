@@ -9,11 +9,16 @@
         pareigybės laikotarpio ėjimo pabaiga, pareigybės pavadinimas bus
         giminizuotas pagal vardą ir pavardę.
       </template>
+      <Alert v-if="isExOfficio" class="mb-4">
+        <AlertDescription>
+          {{ $t('forms.fields.ex_officio_notice', { duty: exOfficioSourceName }) }}
+        </AlertDescription>
+      </Alert>
       <FormFieldWrapper id="start_date" label="Pareigų ėjimo pradžia" required :error="form.errors.start_date">
-        <DatePicker v-model="form.start_date" />
+        <DatePicker v-model="form.start_date" :disabled="isExOfficio" />
       </FormFieldWrapper>
       <FormFieldWrapper id="end_date" label="Pareigų ėjimo pabaiga" required :error="form.errors.end_date">
-        <DatePicker v-model="form.end_date" />
+        <DatePicker v-model="form.end_date" :disabled="isExOfficio" />
       </FormFieldWrapper>
     </FormElement>
     <FormElement>
@@ -26,11 +31,9 @@
       <FormFieldWrapper id="additional_photo" label="Papildoma nuotrauka" hint="Ši nuotrauka leidžia vienam asmeniui turėti daugiau negu vieną nuotrauką, kuri rodoma, kai puslapyje asmuo vaizduojamas su šia pareigybe." :error="form.errors.additional_photo">
         <ImageUpload
           v-model:url="form.additional_photo"
-          v-model:focal-point-value="form.additional_photo_focal_point"
           mode="immediate"
           folder="contacts"
           cropper
-          focal-point
           preview-aspect="4/3"
           :existing-url="dutiable?.additional_photo"
         />
@@ -81,7 +84,7 @@
         </p>
       </template>
       <FormFieldWrapper id="use_original_duty_name" label="Pareigos pavadinimo galūnės negiminizavimas" hint="Išjungia automatinį šios kontakto pareigybės giminizavimą pagal vardą ir pavardę. Bus naudojamas originalus pareigybės pavadinimas." :error="form.errors.use_original_duty_name">
-        <Switch :checked="!!form.use_original_duty_name" @update:checked="(val: boolean) => form.use_original_duty_name = val" />
+        <Switch :model-value="!!form.use_original_duty_name" @update:model-value="(val: boolean) => form.use_original_duty_name = val" />
       </FormFieldWrapper>
     </FormElement>
   </AdminForm>
@@ -98,6 +101,7 @@ import FormFieldWrapper from './FormFieldWrapper.vue';
 import AdminForm from './AdminForm.vue';
 
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
+import { Alert, AlertDescription } from '@/Components/ui/alert';
 import { Badge } from '@/Components/ui/badge';
 import { DatePicker } from '@/Components/ui/date-picker';
 import { Input } from '@/Components/ui/input';
@@ -127,6 +131,15 @@ if (Array.isArray(form.description)) {
 }
 
 const locale = ref('lt');
+
+const isExOfficio = computed(() => !!props.dutiable.via_dutiable_id);
+
+const exOfficioSourceName = computed(() => {
+  const name = props.dutiable.via_dutiable?.duty?.name as string | Record<string, string> | null | undefined;
+  if (!name) return '';
+  if (typeof name === 'string') return name;
+  return name[usePage().props.app.locale] ?? name.lt ?? '';
+});
 
 // Bridge: SingleSelect operates on full objects, form stores study_program_id for server submission
 const selectedStudyProgram = computed({

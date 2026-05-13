@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
@@ -20,7 +21,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
  * @property string $id
+ * @property string|null $via_dutiable_id
  * @property string $duty_id
+ * @property int|null $tenant_id
  * @property string $dutiable_id
  * @property string $dutiable_type
  * @property Carbon $start_date
@@ -34,9 +37,12 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read Model $dutiable
+ * @property-read Dutiable|null $viaDutiable
+ * @property-read Collection<int, Dutiable> $derivedDutiables
  * @property-read Duty|null $duty
  * @property-read array $translatable_columns_from
  * @property-read StudyProgram|null $study_program
+ * @property-read Tenant|null $tenant
  * @property-read Collection<int, Tenant> $tenants
  * @property-read mixed $translations
  * @property-read User|null $user
@@ -107,6 +113,38 @@ class Dutiable extends MorphPivot
     public function user()
     {
         return $this->belongsTo(User::class, 'dutiable_id');
+    }
+
+    /**
+     * The tenant a cross-tenant representative was assigned for.
+     * Null = a regular member belonging to the duty's own tenant.
+     *
+     * @return BelongsTo<Tenant, $this>
+     */
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
+    /**
+     * Scope to dutiables active on the given date (default today).
+     */
+    public function scopeActive($query, ?string $date = null)
+    {
+        $date ??= now()->toDateString();
+
+        return $query->whereDate('start_date', '<=', $date)
+            ->where(fn ($q) => $q->whereNull('end_date')->orWhereDate('end_date', '>=', $date));
+    }
+
+    public function viaDutiable(): BelongsTo
+    {
+        return $this->belongsTo(Dutiable::class, 'via_dutiable_id');
+    }
+
+    public function derivedDutiables(): HasMany
+    {
+        return $this->hasMany(Dutiable::class, 'via_dutiable_id');
     }
 
     public function tenants()

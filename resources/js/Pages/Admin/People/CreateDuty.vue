@@ -2,7 +2,7 @@
   <PageContent title="Nauja pareiga" :heading-icon="Icons.DUTY">
     <UpsertModelLayout>
       <DutyForm remember-key="CreateDuty" :duty :duty-types :assignable-institutions :assignable-users :roles
-        @submit:form="handleSubmit" />
+        :assignable-tenants :assignable-duties @submit:form="handleSubmit" />
     </UpsertModelLayout>
   </PageContent>
 </template>
@@ -20,6 +20,8 @@ const props = defineProps<{
   assignableInstitutions: App.Entities.Institution[];
   assignableUsers: App.Entities.User[];
   roles: App.Entities.Role[];
+  assignableTenants: { id: number; shortname: string; type?: string }[];
+  assignableDuties: Array<{ id: string; name: string; institution?: { id: string; name: string; short_name?: string | null; tenant?: { id: number; shortname: string } | null } | null }>;
   prefillInstitutionId?: string | null;
 }>();
 
@@ -33,6 +35,8 @@ const duty = {
   types: [],
   roles: [],
   current_users: [],
+  ex_officio_target_duties: [],
+  assignable_tenants: [],
 };
 
 const handleSubmit = (form: any) => {

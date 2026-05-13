@@ -5,6 +5,7 @@ namespace Database\Factories\Pivots;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\StudyProgram;
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -36,6 +37,7 @@ class DutiableFactory extends Factory
 
         return [
             'duty_id' => Duty::factory(),
+            'tenant_id' => null,
             'dutiable_type' => User::class,
             'dutiable_id' => User::factory(),
             'start_date' => $this->faker->dateTimeBetween('-2 years', '-1 year'),
@@ -76,6 +78,16 @@ class DutiableFactory extends Factory
                 'duty_id' => $duty->id,
             ];
         });
+    }
+
+    /**
+     * Create a dutiable assigned for a specific (cross-tenant) tenant.
+     */
+    public function forTenant(Tenant|int $tenant)
+    {
+        return $this->state(fn (array $attributes) => [
+            'tenant_id' => $tenant instanceof Tenant ? $tenant->id : $tenant,
+        ]);
     }
 
     /**
