@@ -41,7 +41,7 @@ class SyncExOfficioDutiables implements ShouldQueue
     {
         $dutiable->load('duty.exOfficioTargetDuties');
 
-        $targetDuties = $dutiable->duty?->exOfficioTargetDuties ?? collect();
+        $targetDuties = $dutiable->duty->exOfficioTargetDuties ?? collect();
 
         if ($targetDuties->isEmpty()) {
             return;

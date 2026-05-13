@@ -191,10 +191,15 @@ class DutyController extends AdminController
 
         // Build a map { tenantId => [userId, ...] } for active cross-tenant reps so the
         // UI can pre-populate each assignable-tenant's user picker.
+        // Must match Duty::current_users() semantics: end_date >= now() (datetime) so
+        // a rep whose end_date is today is already considered inactive.
         $crossTenantRepsQuery = Dutiable::where('duty_id', $duty->id)
             ->where('dutiable_type', User::class)
             ->whereNotNull('tenant_id')
-            ->active();
+            ->where(function ($query) {
+                $query->whereNull('end_date')
+                    ->orWhere('end_date', '>=', now());
+            });
 
         if (! $canEditDuty) {
             $crossTenantRepsQuery->whereIn('tenant_id', $actingAssignableTenantIds->all());
@@ -277,7 +282,10 @@ class DutyController extends AdminController
             $owningTenantCurrentIds = Dutiable::where('duty_id', $duty->id)
                 ->where('dutiable_type', User::class)
                 ->whereNull('tenant_id')
-                ->active()
+                ->where(function ($query) {
+                    $query->whereNull('end_date')
+                        ->orWhere('end_date', '>=', now());
+                })
                 ->pluck('dutiable_id');
             $this->handleUsersUpdate(
                 new Collection($owningTenantCurrentIds),
@@ -335,7 +343,10 @@ class DutyController extends AdminController
                     ->where('duty_id', $duty->id)
                     ->where('dutiable_type', User::class)
                     ->where('tenant_id', $tenantId)
-                    ->whereNull('end_date')
+                    ->where(function ($query) {
+                        $query->whereNull('end_date')
+                            ->orWhere('end_date', '>=', now());
+                    })
                     ->update(['end_date' => now()->subDay()]);
             }
 
@@ -387,7 +398,7 @@ class DutyController extends AdminController
                 'id' => $u->id,
                 'name' => $u->name,
                 'profile_photo_path' => $u->profile_photo_path,
-                'is_recent' => (bool) $u->is_recent,
+                'is_recent' => (bool) $u->getAttribute('is_recent'),
             ])
             ->all();
     }
@@ -408,27 +419,6 @@ class DutyController extends AdminController
         return $sync;
     }
 
-    /**
-     * Count currently-active reps assigned for $tenantId on $duty and check against quota.
-     * Returns true when the add is allowed, false when the quota would be exceeded.
-     */
-    private function tenantQuotaAllows(Duty $duty, int $tenantId, int $addCount = 1): bool
-    {
-        $quota = $duty->assignableTenants()->where('tenants.id', $tenantId)->first()?->pivot->quota;
-
-        if ($quota === null) {
-            return true;
-        }
-
-        $currentCount = Dutiable::where('duty_id', $duty->id)
-            ->where('dutiable_type', User::class)
-            ->where('tenant_id', $tenantId)
-            ->active()
-            ->count();
-
-        return ($currentCount + $addCount) <= $quota;
-    }
-
     private function handleUsersUpdate(Collection $existingUserIds, Collection $requestUserIds, Duty $duty)
     {
         $new = $requestUserIds->diff($existingUserIds);
@@ -442,7 +432,10 @@ class DutyController extends AdminController
                 ->whereIn('dutiable_id', $removed->all())
                 ->where('dutiable_type', User::class)
                 ->whereNull('tenant_id')
-                ->whereNull('end_date')
+                ->where(function ($query) {
+                    $query->whereNull('end_date')
+                        ->orWhere('end_date', '>=', now());
+                })
                 ->update(['end_date' => now()->subDay()]);
         }
 
@@ -469,7 +462,10 @@ class DutyController extends AdminController
         $currentUserIds = Dutiable::where('duty_id', $duty->id)
             ->where('dutiable_type', User::class)
             ->where('tenant_id', $tenantId)
-            ->active($today)
+            ->where(function ($query) {
+                $query->whereNull('end_date')
+                    ->orWhere('end_date', '>=', now());
+            })
             ->pluck('dutiable_id')
             ->all();
 
@@ -482,7 +478,10 @@ class DutyController extends AdminController
                 ->where('dutiable_type', User::class)
                 ->where('tenant_id', $tenantId)
                 ->whereIn('dutiable_id', $toRemove)
-                ->whereNull('end_date')
+                ->where(function ($query) {
+                    $query->whereNull('end_date')
+                        ->orWhere('end_date', '>=', now());
+                })
                 ->update(['end_date' => now()->subDay()]);
         }
 
@@ -667,11 +666,14 @@ class DutyController extends AdminController
                         ]);
                     }
                 } elseif ($change['action'] === 'remove') {
-                    // End-date only the row belonging to the acting tenant.
+                    // End-date only the active row belonging to the acting tenant.
                     $removeQuery = Dutiable::where('duty_id', $duty->id)
                         ->where('dutiable_type', User::class)
                         ->where('dutiable_id', $userId)
-                        ->whereNull('end_date');
+                        ->where(function ($query) {
+                            $query->whereNull('end_date')
+                                ->orWhere('end_date', '>=', now());
+                        });
 
                     if ($actingTenantId !== null) {
                         $removeQuery->where('tenant_id', $actingTenantId);

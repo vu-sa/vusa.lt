@@ -384,8 +384,19 @@ describe('utility functions', () => {
   describe('getTodayDate', () => {
     it('returns today in YYYY-MM-DD format', () => {
       const today = getTodayDate();
-      const expected = new Date().toISOString().split('T')[0];
-      expect(today).toBe(expected);
+      expect(today).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    });
+
+    it('uses local timezone instead of UTC', () => {
+      // Capture local midnight to verify we match the browser's calendar date
+      const now = new Date();
+      const localYear = now.getFullYear();
+      const localMonth = String(now.getMonth() + 1).padStart(2, '0');
+      const localDay = String(now.getDate()).padStart(2, '0');
+      const expectedLocal = `${localYear}-${localMonth}-${localDay}`;
+
+      const today = getTodayDate();
+      expect(today).toBe(expectedLocal);
     });
   });
 

@@ -89,7 +89,9 @@ class BatchUpdateDutyUsersRequest extends FormRequest
             $adminTenantIds = $authorizer->getTenants('duties.update.padalinys')->pluck('id');
 
             foreach ($duty->assignableTenants as $tenant) {
-                if (! $adminTenantIds->contains($tenant->id) || $tenant->pivot->quota === null) {
+                $quota = $tenant->getAttribute('pivot')?->quota;
+
+                if (! $adminTenantIds->contains($tenant->id) || $quota === null) {
                     continue;
                 }
 
@@ -108,19 +110,27 @@ class BatchUpdateDutyUsersRequest extends FormRequest
                         ->where('dutiable_type', User::class)
                         ->whereIn('dutiable_id', $removeUserIds)
                         ->where('tenant_id', $tenant->id)
-                        ->whereNull('end_date')
+                        ->where(function ($query) {
+                            $query->whereNull('end_date')
+                                ->orWhere('end_date', '>=', now());
+                        })
                         ->count();
                 }
 
                 // Count by tenant_id column — explicit and accurate.
+                // Must match Duty::current_users() semantics (end_date >= now()) so a
+                // rep end-dated today is no longer counted toward the quota.
                 $currentCount = Dutiable::where('duty_id', $duty->id)
                     ->where('dutiable_type', User::class)
                     ->where('tenant_id', $tenant->id)
-                    ->active()
+                    ->where(function ($query) {
+                        $query->whereNull('end_date')
+                            ->orWhere('end_date', '>=', now());
+                    })
                     ->count();
 
-                if (($currentCount + $addCount - $validRemoveCount) > $tenant->pivot->quota) {
-                    $v->errors()->add('user_changes', "Padalinio kvota ({$tenant->pivot->quota}) viršyta.");
+                if (($currentCount + $addCount - $validRemoveCount) > $quota) {
+                    $v->errors()->add('user_changes', "Padalinio kvota ({$quota}) viršyta.");
                 }
             }
         });
