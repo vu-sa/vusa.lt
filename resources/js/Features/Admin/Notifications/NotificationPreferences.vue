@@ -188,7 +188,7 @@
 
       <Button :disabled="loading" @click="handleSubmit">
         <IFluentSave24Regular v-if="!loading" class="mr-2" />
-        <IMdiLoading v-else class="mr-2 animate-spin" />
+        <Loader2 v-else class="mr-2 animate-spin" />
         {{ $t('Išsaugoti') }}
       </Button>
     </div>
@@ -215,7 +215,7 @@ import {
 } from '@/Components/ui/select';
 import IFluentAlertOff24Regular from '~icons/fluent/alert-off-24-regular';
 import IFluentSave24Regular from '~icons/fluent/save-24-regular';
-import IMdiLoading from '~icons/mdi/loading';
+import { Loader2 } from 'lucide-vue-next';
 
 // Category icons
 import IFluentComment24Regular from '~icons/fluent/comment-24-regular';

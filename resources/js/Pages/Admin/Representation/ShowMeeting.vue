@@ -351,7 +351,6 @@ import { DialogDescription } from 'reka-ui';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { formatMeetingDateTime, formatMeetingTimeOnly } from '@/Utils/MeetingDisplay';
 import { genitivizeEveryWord } from '@/Utils/String';
-import Icons from '@/Types/Icons/filled';
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { useMeetingUrgency } from '@/Composables/useMeetingUrgency';
 
@@ -384,6 +383,7 @@ import FileManager from '@/Features/Admin/SharepointFileManager/SharepointFileMa
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 import ActivityLogButton from '@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue';
 import SpotlightBadge from '@/Components/Onboarding/SpotlightBadge.vue';
+import { InstitutionIconFilled, MeetingIconFilled } from '@/Components/icons';
 
 const props = defineProps<{
   meeting: App.Entities.Meeting;
@@ -556,8 +556,8 @@ const meetingBadge = computed(() => ({
 usePageBreadcrumbs(() => {
   if (typeof mainInstitution === 'string') {
     return [
-      { label: mainInstitution, icon: Icons.INSTITUTION },
-      { label: meetingTitle.value, icon: Icons.MEETING },
+      { label: mainInstitution, icon: InstitutionIconFilled },
+      { label: meetingTitle.value, icon: MeetingIconFilled },
     ];
   }
 
@@ -566,8 +566,8 @@ usePageBreadcrumbs(() => {
     'institutions.show',
     { institution: mainInstitution.id },
     meetingTitle.value,
-    Icons.INSTITUTION,
-    Icons.MEETING,
+    InstitutionIconFilled,
+    MeetingIconFilled,
   );
 });
 

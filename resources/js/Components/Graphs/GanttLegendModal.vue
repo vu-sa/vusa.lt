@@ -19,7 +19,7 @@
           <!-- Meetings Section -->
           <div class="space-y-3">
             <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
-              <component :is="Icons.MEETING" class="h-4 w-4" />
+              <component :is="MeetingIconFilled" class="h-4 w-4" />
               {{ $t('Susitikimai') }}
             </h4>
             <div class="grid gap-2 pl-6">
@@ -56,7 +56,7 @@
           <!-- Coverage Section -->
           <div class="space-y-3">
             <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
-              <component :is="Icons.NOTIFICATION" class="h-4 w-4" />
+              <component :is="NotificationIconFilled" class="h-4 w-4" />
               {{ $t('Atstovavimo padengimas') }}
             </h4>
             <div class="grid gap-2 pl-6">
@@ -96,7 +96,7 @@
           <!-- Institution Indicators Section -->
           <div class="space-y-3">
             <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
-              <component :is="Icons.INSTITUTION" class="h-4 w-4" />
+              <component :is="InstitutionIconFilled" class="h-4 w-4" />
               {{ $t('Institucijų indikatoriai') }}
             </h4>
             <div class="grid gap-2 pl-6">
@@ -308,7 +308,7 @@ import { CalendarOff } from 'lucide-vue-next';
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';
-import Icons from '@/Types/Icons/filled';
+import { InstitutionIconFilled, MeetingIconFilled, NotificationIconFilled } from '@/Components/icons';
 
 defineProps<{
   isOpen: boolean;

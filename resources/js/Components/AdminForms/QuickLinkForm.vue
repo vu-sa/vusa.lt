@@ -44,7 +44,7 @@
             </FormFieldWrapper>
             <Button v-if="form.tenant_id" variant="secondary" size="sm" as="a"
               :href="route('quickLinks.index', { tenant: form.tenant_id, lang: form.lang ?? 'lt' })">
-              <component :is="Icons.QUICK_LINK" class="h-4 w-4" />
+              <component :is="QuickLinkIcon" class="h-4 w-4" />
               {{ $t('Tvarkyti eiliškumą') }}
             </Button>
           </div>
@@ -109,12 +109,12 @@ import FormElement from './FormElement.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 
 import Link24Regular from '~icons/fluent/link24-regular';
-import Icons from '@/Types/Icons/regular';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Switch } from '@/Components/ui/switch';
 import { SingleSelect } from '@/Components/ui/single-select';
 import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
+import { CalendarIcon, CategoryIcon, InstitutionIcon, NewsIcon, PageIcon, QuickLinkIcon } from '@/Components/icons';
 
 const props = defineProps<{
   quickLink: App.Entities.QuickLink;
@@ -168,27 +168,27 @@ const quickLinksType = [
   {
     value: 'page',
     label: 'Turinio puslapis',
-    icon: Icons.PAGE,
+    icon: PageIcon,
   },
   {
     value: 'news',
     label: 'Naujiena',
-    icon: Icons.NEWS,
+    icon: NewsIcon,
   },
   {
     value: 'calendarEvent',
     label: 'Įvykis',
-    icon: Icons.CALENDAR,
+    icon: CalendarIcon,
   },
   {
     value: 'institution',
     label: 'Institucija',
-    icon: Icons.INSTITUTION,
+    icon: InstitutionIcon,
   },
   {
     value: 'category',
     label: 'Kategorija',
-    icon: Icons.CATEGORY,
+    icon: CategoryIcon,
   },
 ];
 

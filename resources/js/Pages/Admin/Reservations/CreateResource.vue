@@ -2,7 +2,7 @@
   <PageContent :title="$tChoice('forms.new_model', 1, {
     model: $tChoice('entities.resource.model', 1),
   })
-  " :heading-icon="Icons.RESOURCE">
+  " :heading-icon="ResourceIcon">
     <UpsertModelLayout>
       <ResourceForm remember-key="CreateResource" :assignable-tenants :resource :categories
         @submit:form="(form) => form.post(route('resources.store'))" />
@@ -14,10 +14,10 @@
 import { usePage } from '@inertiajs/vue3';
 
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
-import Icons from '@/Types/Icons/regular';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import ResourceForm from '@/Components/AdminForms/ResourceForm.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import { ResourceIcon } from '@/Components/icons';
 
 export type ResourceCreationTemplate = Omit<
   App.Entities.Resource,
@@ -37,7 +37,7 @@ defineProps<{
 
 // Generate breadcrumbs automatically with new simplified API
 usePageBreadcrumbs(
-  BreadcrumbHelpers.adminForm('Ištekliai', 'resources.index', 'Naujas išteklius', Icons.RESOURCE),
+  BreadcrumbHelpers.adminForm('Ištekliai', 'resources.index', 'Naujas išteklius', ResourceIcon),
 );
 
 const resource: ResourceCreationTemplate = {

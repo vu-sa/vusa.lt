@@ -1,5 +1,5 @@
 <template>
-  <PageContent title="Nauja pareiga" :heading-icon="Icons.DUTY">
+  <PageContent title="Nauja pareiga" :heading-icon="DutyIcon">
     <UpsertModelLayout>
       <DutyForm remember-key="CreateDuty" :duty :duty-types :assignable-institutions :assignable-users :roles
         :assignable-tenants :assignable-duties @submit:form="handleSubmit" />
@@ -11,9 +11,9 @@
 import { router } from '@inertiajs/vue3';
 
 import DutyForm from '@/Components/AdminForms/DutyForm.vue';
-import Icons from '@/Types/Icons/regular';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import { DutyIcon } from '@/Components/icons';
 
 const props = defineProps<{
   dutyTypes: App.Entities.Type[];

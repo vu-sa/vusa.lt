@@ -9,7 +9,7 @@
       <Tabs v-model="currentTab" class="space-y-4">
         <TabsList class="h-auto flex-wrap gap-2">
           <TabsTrigger value="resources" class="gap-2">
-            <component :is="Icons.RESOURCE" class="size-4" />
+            <component :is="ResourceIconFilled" class="size-4" />
             {{ capitalize($tChoice('entities.resource.model', 2)) }}
             <Badge variant="secondary" class="ml-1">
               {{ reservation.resources?.length ?? 0 }}
@@ -20,7 +20,7 @@
             {{ $t('Aprašymas') }}
           </TabsTrigger>
           <TabsTrigger value="comments" class="gap-2">
-            <component :is="Icons.COMMENT" class="size-4" />
+            <component :is="CommentIconFilled" class="size-4" />
             {{ $t('Komentarai') }}
             <Badge v-if="allCommentsCount > 0" variant="secondary" class="ml-1">
               {{ allCommentsCount }}
@@ -89,7 +89,7 @@
           <Card>
             <CardHeader>
               <CardTitle class="flex items-center gap-2 text-base">
-                <component :is="Icons.COMMENT" class="size-5" />
+                <component :is="CommentIconFilled" class="size-5" />
                 {{ $t('Komentarai') }}
               </CardTitle>
               <CardDescription>
@@ -190,13 +190,13 @@ import { RESERVATION_HELP_TEXTS } from '@/Constants/I18n/HelpTexts';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import CommentViewer from '@/Features/Admin/CommentViewer/CommentViewer.vue';
-import Icons from '@/Types/Icons/filled';
 import MdSuspenseWrapper from '@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue';
 import ReservationResourceForm from '@/Components/AdminForms/ReservationResourceForm.vue';
 import ReservationResourceTable from '@/Components/Tables/ReservationResourceTable.vue';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import { MultiSelect } from '@/Components/ui/multi-select';
 import { Label } from '@/Components/ui/label';
+import { CommentIconFilled, ReservationIconFilled, ResourceIconFilled } from '@/Components/icons';
 
 const props = defineProps<{
   reservation: App.Entities.Reservation;
@@ -211,7 +211,7 @@ usePageBreadcrumbs(() => [
     capitalize($tChoice('entities.reservation.model', 2)),
     'reservations.index',
     {},
-    Icons.RESERVATION,
+    ReservationIconFilled,
   ),
   BreadcrumbHelpers.createBreadcrumbItem(props.reservation.name),
 ]);

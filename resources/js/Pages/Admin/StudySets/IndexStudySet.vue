@@ -16,7 +16,6 @@ import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { usePage } from '@inertiajs/vue3';
 
-import Icons from '@/Types/Icons/regular';
 import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
 import { TruncatedBadge } from '@/Components/ui/data-table/cells';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
@@ -27,6 +26,7 @@ import {
   createBooleanColumn,
 } from '@/Composables/useDataTableColumns';
 import type { IndexTablePageProps } from '@/Types/TableConfigTypes';
+import { TrainingIcon } from '@/Components/icons';
 
 interface StudySetRow {
   id: string;
@@ -122,7 +122,7 @@ const tableConfig = computed<IndexTablePageProps<StudySetRow>>(() => ({
   enableRowSelection: false,
 
   headerTitle: 'Individualių studijų komplektai',
-  icon: Icons.STUDY_SET,
+  icon: TrainingIcon,
   createRoute: canCreate.value ? route('studySets.create') : undefined,
   canCreate: canCreate.value,
 }));

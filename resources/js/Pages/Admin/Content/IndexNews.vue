@@ -15,10 +15,10 @@ import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 
 import { formatStaticTime } from '@/Utils/IntlTime';
-import Icons from '@/Types/Icons/regular';
 import { TruncatedText } from '@/Components/ui/data-table/cells';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
+import { NewsIcon } from '@/Components/icons';
 import {
   createIdColumn,
   createTenantColumn,
@@ -130,7 +130,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.News>>(() => {
     enableRowSelection: false,
 
     headerTitle: 'Naujienos',
-    icon: Icons.NEWS,
+    icon: NewsIcon,
     createRoute: route('news.create'),
     canCreate: true,
   };

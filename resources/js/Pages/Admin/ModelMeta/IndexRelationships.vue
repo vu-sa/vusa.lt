@@ -14,9 +14,9 @@ import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ref, computed } from 'vue';
 
-import Icons from '@/Types/Icons/regular';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
+import { RelationshipIcon } from '@/Components/icons';
 import {
   createTextColumn,
   createIdColumn,
@@ -89,7 +89,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Relationship>>(() 
     enableRowSelection: false,
 
     headerTitle: 'Ryšiai',
-    icon: Icons.RELATIONSHIP,
+    icon: RelationshipIcon,
     createRoute: route('relationships.create'),
     canCreate: true,
   };

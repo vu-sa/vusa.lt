@@ -59,7 +59,6 @@ import { ExternalLinkIcon, RefreshCwIcon } from 'lucide-vue-next';
 
 import type { Item } from '@/Features/Admin/SharepointFilePicker/picker';
 import FilePicker from '@/Features/Admin/SharepointFilePicker/FilePicker.vue';
-import Icons from '@/Types/Icons/regular';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { Badge } from '@/Components/ui/badge';
@@ -75,6 +74,7 @@ import {
   createDateColumn,
 } from '@/Composables/useDataTableColumns';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
+import { DocumentIcon, TypeIcon } from '@/Components/icons';
 
 const props = defineProps<{
   data: App.Entities.Document[];
@@ -335,11 +335,11 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Document>>(() => {
 
     headerTitle: $t('Documents'),
     headerDescription: $t('Documents are automatically synchronized from SharePoint. Manual refresh is rarely needed - the system updates content intelligently in the background.'),
-    icon: Icons.DOCUMENT,
+    icon: DocumentIcon,
     breadcrumbs: [
       BreadcrumbHelpers.homeItem(),
-      BreadcrumbHelpers.createBreadcrumbItem($t('Administravimas'), route('administration'), Icons.TYPE),
-      BreadcrumbHelpers.createBreadcrumbItem($t('Dokumentai'), undefined, Icons.DOCUMENT),
+      BreadcrumbHelpers.createBreadcrumbItem($t('Administravimas'), route('administration'), TypeIcon),
+      BreadcrumbHelpers.createBreadcrumbItem($t('Dokumentai'), undefined, DocumentIcon),
     ],
     canCreate: false,
   };

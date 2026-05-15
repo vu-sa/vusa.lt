@@ -6,7 +6,7 @@
       })
     "
     :back-url="route('problems.index')"
-    :heading-icon="Icons.PROBLEM"
+    :heading-icon="ProblemIcon"
   >
     <UpsertModelLayout>
       <ProblemForm
@@ -26,10 +26,10 @@
 import { useForm } from '@inertiajs/vue3';
 import { transChoice as $tChoice } from 'laravel-vue-i18n';
 
-import Icons from '@/Types/Icons/regular';
 import ProblemForm from '@/Components/AdminForms/ProblemForm.vue';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import { ProblemIcon } from '@/Components/icons';
 
 defineProps<{
   tenants: Array<App.Entities.Tenant>;

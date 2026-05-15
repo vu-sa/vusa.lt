@@ -149,7 +149,7 @@
           <FormFieldWrapper id="facebook_url" :label="$t('forms.fields.facebook_url')" :error="form.errors.facebook_url"
             :valid="form.valid('facebook_url')" :invalid="form.invalid('facebook_url')">
             <div class="flex items-center gap-2">
-              <IMdiFacebook class="h-4 w-4 shrink-0 text-[#1877F2]" />
+              <ISimpleIconsFacebook class="h-4 w-4 shrink-0 text-[#1877F2]" />
               <Input id="facebook_url" v-model="form.facebook_url" type="url"
                 placeholder="https://www.facebook.com/events/..." @change="form.validate('facebook_url')" />
             </div>

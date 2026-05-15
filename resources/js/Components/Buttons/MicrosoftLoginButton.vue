@@ -10,7 +10,7 @@
       {{ $t("auth.continue_microsoft") }}
     </span>
     <span v-else class="flex items-center">
-      <IMdiMicrosoft class="w-5 h-5 mr-2" />
+      <ISimpleIconsMicrosoft class="w-5 h-5 mr-2" />
       {{ $t("auth.continue_microsoft") }}
     </span>
   </Button>
@@ -22,7 +22,7 @@ import { router } from '@inertiajs/vue3';
 
 import { Button } from '@/Components/ui/button';
 import { usePWA } from '@/Composables/usePWA';
-import IMdiMicrosoft from '~icons/mdi/microsoft';
+import ISimpleIconsMicrosoft from '~icons/simple-icons/microsoft';
 
 const loading = ref(false);
 const { isPWA } = usePWA();

@@ -213,7 +213,6 @@ import {
 
 import IconFlowchart from '~icons/fluent/flowchart20-regular';
 import { capitalize } from '@/Utils/String';
-import Icons from '@/Types/Icons/regular';
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 
 // UI components
@@ -221,6 +220,7 @@ import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Badge } from '@/Components/ui/badge';
 import { Alert, AlertTitle, AlertDescription } from '@/Components/ui/alert';
+import { BannerIcon, CalendarIcon, CategoryIcon, DocumentIcon, DutyIcon, FormIcon, InstitutionIcon, MeetingIcon, NavigationIcon, NewsIcon, NotificationIcon, PageIcon, PermissionIcon, ProblemIcon, QuickLinkIcon, RelationshipIcon, ReservationIcon, ResourceIcon, RoleIcon, SettingIcon, SharepointFileIcon, StudyProgramIcon, TagIcon, TenantIcon, TrainingIcon, TypeIcon, UserIcon } from '@/Components/icons';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -237,7 +237,7 @@ import {
 const { auth } = usePage().props;
 
 // Set up breadcrumbs
-usePageBreadcrumbs([{ label: $t('Administravimas'), icon: Icons.TYPE }]);
+usePageBreadcrumbs([{ label: $t('Administravimas'), icon: TypeIcon }]);
 
 interface MenuItemType {
   title: string;
@@ -290,31 +290,31 @@ const menuItems = computed(() => [
     items: [
       {
         title: $t('Vartotojai'),
-        icon: Icons.USER,
+        icon: UserIcon,
         href: route('users.index'),
         show: auth?.can.create.user,
       },
       {
         title: $t('Pareigybės'),
-        icon: Icons.DUTY,
+        icon: DutyIcon,
         href: route('duties.index'),
         show: auth?.can.create.duty,
       },
       {
         title: $t('Narystės'),
-        icon: Icons.INSTITUTION,
+        icon: InstitutionIcon,
         href: route('memberships.index'),
         show: auth?.can.create.membership,
       },
       {
         title: $t('Mokymai'),
-        icon: Icons.TRAINING,
+        icon: TrainingIcon,
         href: route('trainings.index'),
         show: auth?.can.create.training,
       },
       {
         title: $t('Studijų programos'),
-        icon: Icons.STUDY_PROGRAM,
+        icon: StudyProgramIcon,
         href: route('studyPrograms.index'),
         show: auth?.can.create.studyProgram,
       },
@@ -332,13 +332,13 @@ const menuItems = computed(() => [
     items: [
       {
         title: $t('Institucijos'),
-        icon: Icons.INSTITUTION,
+        icon: InstitutionIcon,
         href: route('institutions.index'),
         show: auth?.can.create.institution,
       },
       {
         title: $t('Padaliniai'),
-        icon: Icons.TENANT,
+        icon: TenantIcon,
         href: route('tenants.index'),
         show: auth?.can.create.tenant,
       },
@@ -357,49 +357,49 @@ const menuItems = computed(() => [
     items: [
       {
         title: $t('Puslapiai'),
-        icon: Icons.PAGE,
+        icon: PageIcon,
         href: route('pages.index'),
         show: auth?.can.create.page,
       },
       {
         title: $t('Naujienos'),
-        icon: Icons.NEWS,
+        icon: NewsIcon,
         href: route('news.index'),
         show: auth?.can.create.news,
       },
       {
         title: $t('Greitosios nuorodos'),
-        icon: Icons.QUICK_LINK,
+        icon: QuickLinkIcon,
         href: route('quickLinks.index'),
         show: auth?.can.create.quickLink,
       },
       {
         title: $t('Baneriai'),
-        icon: Icons.BANNER,
+        icon: BannerIcon,
         href: route('banners.index'),
         show: auth?.can.create.banner,
       },
       {
         title: $t('Navigacija'),
-        icon: Icons.NAVIGATION,
+        icon: NavigationIcon,
         href: route('navigation.index'),
         show: auth?.can.create.navigation,
       },
       {
         title: $t('Kalendorius'),
-        icon: Icons.CALENDAR,
+        icon: CalendarIcon,
         href: route('calendar.index'),
         show: auth?.can.create.calendar,
       },
       {
         title: $t('Kategorijos'),
-        icon: Icons.CATEGORY,
+        icon: CategoryIcon,
         href: route('categories.index'),
         show: auth?.can.create.category,
       },
       {
         title: $t('Žymos'),
-        icon: Icons.TAG,
+        icon: TagIcon,
         href: route('tags.index'),
         show: auth?.can.create.tag,
       },
@@ -420,19 +420,19 @@ const menuItems = computed(() => [
     items: [
       {
         title: $t('Svetainės failai'),
-        icon: Icons.SHAREPOINT_FILE,
+        icon: SharepointFileIcon,
         href: route('files.index'),
         show: auth?.can.create.news || auth?.can.create.page,
       },
       {
         title: $t('Dokumentai'),
-        icon: Icons.DOCUMENT,
+        icon: DocumentIcon,
         href: route('documents.index'),
         show: auth?.can.create.document,
       },
       {
         title: $t('Sharepoint failai'),
-        icon: Icons.SHAREPOINT_FILE,
+        icon: SharepointFileIcon,
         href: route('sharepointFiles.index'),
         show: auth?.can.create.sharepointFile,
       },
@@ -449,13 +449,13 @@ const menuItems = computed(() => [
     items: [
       {
         title: $t('Susitikimai'),
-        icon: Icons.MEETING,
+        icon: MeetingIcon,
         href: route('meetings.index'),
         show: auth?.can.create.meeting,
       },
       {
         title: capitalize($tChoice('entities.problem.model', 2)),
-        icon: Icons.PROBLEM,
+        icon: ProblemIcon,
         href: route('problems.index'),
         show: auth?.can.create.problem,
       },
@@ -468,19 +468,19 @@ const menuItems = computed(() => [
     items: [
       {
         title: capitalize($tChoice('entities.reservation.model', 2)),
-        icon: Icons.RESERVATION,
+        icon: ReservationIcon,
         href: route('reservations.index'),
         show: auth?.can.create.reservation,
       },
       {
         title: capitalize($tChoice('entities.resource.model', 2)),
-        icon: Icons.RESOURCE,
+        icon: ResourceIcon,
         href: route('resources.index'),
         show: auth?.can.create.resource,
       },
       {
         title: capitalize($tChoice('entities.resource_category.model', 2)),
-        icon: Icons.CATEGORY,
+        icon: CategoryIcon,
         href: route('resourceCategories.index'),
         show: auth?.can.create.resource,
       },
@@ -494,7 +494,7 @@ const menuItems = computed(() => [
       {
         title: $t('Formos'),
         href: route('forms.index'),
-        icon: Icons.FORM,
+        icon: FormIcon,
         show: auth?.can.create.form,
       },
     ],
@@ -506,37 +506,37 @@ const menuItems = computed(() => [
     items: [
       {
         title: $t('Rolės'),
-        icon: Icons.ROLE,
+        icon: RoleIcon,
         href: route('roles.index'),
         show: auth?.can.create.role,
       },
       {
         title: $t('Leidimai'),
-        icon: Icons.PERMISSION,
+        icon: PermissionIcon,
         href: route('permissions.index'),
         show: auth?.can.create.permission,
       },
       {
         title: $t('Tipai'),
-        icon: Icons.TYPE,
+        icon: TypeIcon,
         href: route('types.index'),
         show: auth?.can.create.type,
       },
       {
         title: $t('Ryšiai'),
-        icon: Icons.RELATIONSHIP,
+        icon: RelationshipIcon,
         href: route('relationships.index'),
         show: auth?.can.create.relationship,
       },
       {
         title: $t('Sistemos būsena'),
-        icon: Icons.NOTIFICATION,
+        icon: NotificationIcon,
         href: route('systemStatus'),
         show: auth?.can.create.role || auth?.can.create.permission,
       },
       {
         title: $t('settings.title'),
-        icon: Icons.SETTING,
+        icon: SettingIcon,
         href: route('settings.index'),
         show: auth?.can.manageSettings,
       },
@@ -628,7 +628,7 @@ const quickActions = computed(() => {
   if (auth?.can.create.problem) {
     actions.push({
       title: $t('Problema'),
-      icon: Icons.PROBLEM,
+      icon: ProblemIcon,
       href: route('problems.index'),
       isNew: true,
       description: $t(

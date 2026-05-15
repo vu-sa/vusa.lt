@@ -134,7 +134,6 @@ import FormElement from './FormElement.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 import AdminForm from './AdminForm.vue';
 
-import Icons from '@/Types/Icons/regular';
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
 import Link24Regular from '~icons/fluent/link24-regular';
 import { Button } from '@/Components/ui/button';
@@ -143,6 +142,7 @@ import { Input } from '@/Components/ui/input';
 import { Textarea } from '@/Components/ui/textarea';
 import { SingleSelect } from '@/Components/ui/single-select';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { CalendarIcon, CategoryIcon, InstitutionIcon, NewsIcon, PageIcon } from '@/Components/icons';
 
 const props = defineProps<{
   navigation: App.Entities.Navigation;
@@ -227,27 +227,27 @@ const quickLinkType = [
   {
     value: 'page',
     label: 'Turinio puslapis',
-    icon: Icons.PAGE,
+    icon: PageIcon,
   },
   {
     value: 'news',
     label: 'Naujiena',
-    icon: Icons.NEWS,
+    icon: NewsIcon,
   },
   {
     value: 'calendarEvent',
     label: 'Įvykis',
-    icon: Icons.CALENDAR,
+    icon: CalendarIcon,
   },
   {
     value: 'institution',
     label: 'Institucija',
-    icon: Icons.INSTITUTION,
+    icon: InstitutionIcon,
   },
   {
     value: 'category',
     label: 'Kategorija',
-    icon: Icons.CATEGORY,
+    icon: CategoryIcon,
   },
 ];
 

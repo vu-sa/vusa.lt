@@ -5,7 +5,7 @@
     <ShowPageHero
       :title="localizedTitle"
       :subtitle="problem.tenant?.shortname"
-      :icon="Icons.PROBLEM"
+      :icon="ProblemIcon"
       :badge="statusBadge"
     >
       <template #info>
@@ -295,7 +295,6 @@ import {
   Lightbulb, AlignLeft, List, CircleCheck, CircleX, Tags,
 } from 'lucide-vue-next';
 
-import Icons from '@/Types/Icons/regular';
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 
 // Layout
@@ -319,6 +318,7 @@ import {
 // Custom Components
 import ShowPageHero from '@/Components/Hero/ShowPageHero.vue';
 import ActivityLogButton from '@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue';
+import { ProblemIcon } from '@/Components/icons';
 
 const props = defineProps<{
   problem: App.Entities.Problem & { activities: any[] };
@@ -444,8 +444,8 @@ usePageBreadcrumbs(() =>
     'problems.index',
     {},
     localizedTitle.value,
-    Icons.PROBLEM,
-    Icons.PROBLEM,
+    ProblemIcon,
+    ProblemIcon,
   ),
 );
 

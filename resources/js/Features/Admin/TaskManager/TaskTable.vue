@@ -60,10 +60,10 @@ import { Checkbox } from '@/Components/ui/checkbox';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/hover-card';
-import IconsFilled from '@/Types/Icons/filled';
 import SimpleDataTable from '@/Components/Tables/SimpleDataTable.vue';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import { TaskActionType, type TaskProgress } from '@/Types/TaskTypes';
+import { HomeIconFilled, MeetingIconFilled, ReservationIconFilled, UserIconFilled } from '@/Components/icons';
 
 // Lazy load modals
 const NewMeetingDialog = defineAsyncComponent(() => import('@/Components/Dialogs/NewMeetingDialog.vue'));
@@ -349,10 +349,10 @@ const getTaskableIcon = (taskableType: string) => {
     : taskableType;
 
   switch (typeName) {
-    case 'Meeting': return IconsFilled.MEETING;
-    case 'User': return IconsFilled.USER;
-    case 'Reservation': return IconsFilled.RESERVATION;
-    default: return IconsFilled.HOME;
+    case 'Meeting': return MeetingIconFilled;
+    case 'User': return UserIconFilled;
+    case 'Reservation': return ReservationIconFilled;
+    default: return HomeIconFilled;
   }
 };
 

@@ -259,13 +259,13 @@ import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Separator } from '@/Components/ui/separator';
-import Icons from '@/Types/Icons/regular';
 
 // Step components
 import Step1InstitutionSelect from '@/Components/DutyUserWizard/Step1InstitutionSelect.vue';
 import Step2DutySelect from '@/Components/DutyUserWizard/Step2DutySelect.vue';
 import Step3UserAssignment from '@/Components/DutyUserWizard/Step3UserAssignment.vue';
 import Step4Review from '@/Components/DutyUserWizard/Step4Review.vue';
+import { DutyIcon } from '@/Components/icons';
 
 const props = defineProps<{
   institutions: App.Entities.Institution[];
@@ -345,7 +345,7 @@ const steps = computed(() => [
     id: 2,
     title: $t('Pareigybė'),
     description: $t('Pasirinkite pareigybę, kurios narius norite keisti'),
-    icon: Icons.DUTY,
+    icon: DutyIcon,
     completed: wizard.state.maxCompletedStep >= 2,
     active: wizard.state.currentStep === 2,
     hint: wizard.state.duty?.name,

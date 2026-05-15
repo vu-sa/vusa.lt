@@ -15,7 +15,6 @@ import { h, computed, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 
-import Icons from '@/Types/Icons/regular';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
 import { TruncatedBadge } from '@/Components/ui/data-table/cells';
@@ -26,6 +25,7 @@ import {
   createTitleColumn,
 } from '@/Composables/useDataTableColumns';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
+import { TypeIcon } from '@/Components/icons';
 import type {
   IndexTablePageProps,
 } from '@/Types/TableConfigTypes';
@@ -118,7 +118,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Type>>(() => {
 
     // Page layout
     headerTitle: $t('Turinio tipai'),
-    icon: Icons.TYPE,
+    icon: TypeIcon,
     createRoute: route('types.create'),
     canCreate: true,
   };

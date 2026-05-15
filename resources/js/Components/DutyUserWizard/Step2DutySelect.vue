@@ -3,7 +3,7 @@
     <!-- Selected institution header -->
     <div class="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
       <div class="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-        <Icons.INSTITUTION class="h-5 w-5 text-primary" />
+        <InstitutionIcon class="h-5 w-5 text-primary" />
       </div>
       <div class="flex-1 min-w-0">
         <p class="text-xs text-muted-foreground">
@@ -216,7 +216,7 @@
                   'bg-red-50 dark:bg-red-950/30': getDutyStatus(duty).type === 'over'
                 }"
               >
-                <Icons.DUTY
+                <DutyIcon
                   class="h-5 w-5"
                   :class="{
                     'text-zinc-500': getDutyStatus(duty).type === 'unknown',
@@ -307,7 +307,7 @@
           <!-- Empty state -->
           <div v-if="sortedDuties.length === 0" class="text-center py-12">
             <div class="h-16 w-16 rounded-full bg-muted mx-auto flex items-center justify-center mb-4">
-              <Icons.DUTY class="h-8 w-8 text-muted-foreground" />
+              <DutyIcon class="h-8 w-8 text-muted-foreground" />
             </div>
             <p v-if="searchQuery" class="text-muted-foreground">
               {{ $t('Nerasta pareigybių pagal paiešką') }}
@@ -357,8 +357,8 @@ import { Label } from '@/Components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
-import Icons from '@/Types/Icons/regular';
 import type { useDutyUserWizard } from '@/Composables/useDutyUserWizard';
+import { DutyIcon, InstitutionIcon } from '@/Components/icons';
 
 const wizard = inject<ReturnType<typeof useDutyUserWizard>>('dutyUserWizard')!;
 const dutyTypesRef = inject<ComputedRef<App.Entities.Type[]> | App.Entities.Type[]>('dutyTypes', []);

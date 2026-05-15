@@ -177,9 +177,9 @@ import {
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import { usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
-import Icons from '@/Types/Icons/regular';
 import { Button } from '@/Components/ui/button';
 import type { TaskProgress, TaskActionType } from '@/Types/TaskTypes';
+import { TaskIcon } from '@/Components/icons';
 
 // Lazy load modals
 const NewMeetingDialog = defineAsyncComponent(() => import('@/Components/Dialogs/NewMeetingDialog.vue'));
@@ -333,6 +333,6 @@ const handleReportNoMeetingFromDetail = () => {
 
 // Generate breadcrumbs
 usePageBreadcrumbs([
-  { label: $t('Užduotys'), icon: Icons.TASK },
+  { label: $t('Užduotys'), icon: TaskIcon },
 ]);
 </script>

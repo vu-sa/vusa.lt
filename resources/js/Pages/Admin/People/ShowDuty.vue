@@ -272,8 +272,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 
 // Utils
-import Icons from '@/Types/Icons/filled';
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
+import { DutyIconFilled, InstitutionIconFilled } from '@/Components/icons';
 
 const props = defineProps<{
   duty: App.Entities.Duty & { sharepointPath?: string };
@@ -405,8 +405,8 @@ usePageBreadcrumbs(() =>
     'institutions.show',
     { institution: props.duty?.institution?.id },
     props.duty.name,
-    Icons.INSTITUTION,
-    Icons.DUTY,
+    InstitutionIconFilled,
+    DutyIconFilled,
   ),
 );
 </script>

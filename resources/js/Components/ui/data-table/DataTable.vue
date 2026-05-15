@@ -186,6 +186,10 @@ import {
   ChevronsLeftIcon,
 } from 'lucide-vue-next';
 import { trans as $t } from 'laravel-vue-i18n';
+import { Input } from '@/Components/ui/input';
+import { Button } from '@/Components/ui/button';
+import { Checkbox } from '@/Components/ui/checkbox';
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
 
 import {
   Table,
@@ -195,10 +199,6 @@ import {
   TableHeader,
   TableRow,
   TableEmpty } from '@/Components/ui/table';
-import { Input } from '@/Components/ui/input';
-import { Button } from '@/Components/ui/button';
-import { Checkbox } from '@/Components/ui/checkbox';
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
 import {
   Pagination,
   PaginationContent,

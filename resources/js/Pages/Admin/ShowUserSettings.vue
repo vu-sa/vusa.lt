@@ -52,7 +52,7 @@
               </FormFieldWrapper>
             </div>
             <Button :disabled="loading" variant="default" @click="handleSubmit">
-              <IMdiContentSave />
+              <Save />
               {{ $t("Išsaugoti") }}
             </Button>
           </FormElement>
@@ -87,7 +87,7 @@
               />
             </FormFieldWrapper>
             <Button :disabled="passwordLoading" variant="default" @click="handlePasswordUpdate">
-              <IMdiLock />
+              <Lock />
               {{ $t("Keisti slaptažodį") }}
             </Button>
           </FormElement>
@@ -106,7 +106,7 @@
                 variant="outline"
                 @click="handleResetTutorials"
               >
-                <IMdiRefresh />
+                <RefreshCw />
                 {{ $t("Atstatyti vadovus") }}
               </Button>
               <span v-if="tutorialResetSuccess" class="text-sm text-green-600 dark:text-green-400">
@@ -184,10 +184,7 @@ import InfoText from '@/Components/SmallElements/InfoText.vue';
 import NotificationPreferences from '@/Features/Admin/Notifications/NotificationPreferences.vue';
 import PushDeviceManagement from '@/Features/Admin/Notifications/PushDeviceManagement.vue';
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
-import IMdiContentSave from '~icons/mdi/content-save';
-import IMdiLock from '~icons/mdi/lock';
-import IMdiRefresh from '~icons/mdi/refresh';
-import IMdiSettings from '~icons/mdi/settings';
+import { Lock, RefreshCw, Save, Settings } from 'lucide-vue-next';
 
 const props = defineProps<{
   user: App.Entities.User;
@@ -256,7 +253,7 @@ const passwordForm = useForm({
 
 // Generate breadcrumbs automatically with new simplified API
 usePageBreadcrumbs([
-  { label: $t('Nustatymai'), icon: IMdiSettings },
+  { label: $t('Nustatymai'), icon: Settings },
 ]);
 
 const handleSubmit = () => {

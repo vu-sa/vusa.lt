@@ -39,7 +39,7 @@
                 :disabled="loading"
               >
                 <CheckCircle v-if="state === 'completed'" class="size-4" />
-                <component :is="Icons.INSTITUTION" v-else class="size-4" />
+                <component :is="InstitutionIconFilled" v-else class="size-4" />
               </button>
             </StepperTrigger>
 
@@ -84,7 +84,7 @@
                 :disabled="loading || (2 > meetingCreation.state.maxCompletedStep + 1 && meetingCreation.state.currentStep < 2)"
               >
                 <CheckCircle v-if="state === 'completed'" class="size-4" />
-                <component :is="Icons.MEETING" v-else class="size-4" />
+                <component :is="MeetingIconFilled" v-else class="size-4" />
               </button>
             </StepperTrigger>
 
@@ -137,7 +137,7 @@
                 :disabled="loading || (3 > meetingCreation.state.maxCompletedStep + 1 && meetingCreation.state.currentStep < 3)"
               >
                 <CheckCircle v-if="state === 'completed'" class="size-4" />
-                <component :is="Icons.AGENDA_ITEM" v-else class="size-4" />
+                <component :is="AgendaItemIconFilled" v-else class="size-4" />
               </button>
             </StepperTrigger>
 
@@ -293,7 +293,6 @@ import MeetingForm from '@/Components/AdminForms/MeetingForm.vue';
 import MeetingReviewForm from '@/Components/AdminForms/MeetingReviewForm.vue';
 import InstitutionSelectorForm from '@/Components/AdminForms/Special/InstitutionSelectorForm.vue';
 import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
-import Icons from '@/Types/Icons/filled';
 import { Button } from '@/Components/ui/button';
 import {
   Stepper,
@@ -311,6 +310,7 @@ import {
   TooltipTrigger,
 } from '@/Components/ui/tooltip';
 import { getMeetingTypeOptions, type MeetingTypeValue } from '@/Types/MeetingType';
+import { AgendaItemIconFilled, InstitutionIconFilled, MeetingIconFilled } from '@/Components/icons';
 
 const props = defineProps<{
   meetingCreation: ReturnType<typeof useMeetingCreation>;

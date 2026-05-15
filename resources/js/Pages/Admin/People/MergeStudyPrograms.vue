@@ -1,5 +1,5 @@
 <template>
-  <PageContent title="Studijų programų suliejimas" :heading-icon="Icons.STUDY_PROGRAM">
+  <PageContent title="Studijų programų suliejimas" :heading-icon="StudyProgramIcon">
     <UpsertModelLayout>
       <AdminForm :model="form" @submit:form="handleFormSubmit">
         <FormElement>
@@ -63,9 +63,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import AdminForm from '@/Components/AdminForms/AdminForm.vue';
 import FormElement from '@/Components/AdminForms/FormElement.vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
-import Icons from '@/Types/Icons/regular';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import { StudyProgramIcon } from '@/Components/icons';
 
 const { studyPrograms } = defineProps<{
   studyPrograms: App.Entities.StudyProgram[];

@@ -88,8 +88,8 @@ import AdminFacetSidebar from '@/Features/Admin/AdminSearch/Components/AdminFace
 import AdminSearchResults from '@/Features/Admin/AdminSearch/Components/AdminSearchResults.vue';
 import ResourceSearchCard from '@/Features/Admin/AdminSearch/Components/Cards/ResourceSearchCard.vue';
 import { capitalize } from '@/Utils/String';
-import Icons from '@/Types/Icons/regular';
 import type { ResourceSearchResult } from '@/Shared/Search/types';
+import { ResourceIcon } from '@/Components/icons';
 
 // Props from controller
 interface Props {
@@ -102,7 +102,7 @@ defineProps<Props>();
 
 // Breadcrumbs
 const breadcrumbOptions = [
-  { label: $tChoice('entities.resource.model', 2), icon: Icons.RESOURCE },
+  { label: $tChoice('entities.resource.model', 2), icon: ResourceIcon },
 ];
 
 // Track if user has performed a search

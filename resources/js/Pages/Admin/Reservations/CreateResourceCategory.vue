@@ -2,7 +2,7 @@
   <PageContent :title="$tChoice('forms.new_model', 1, {
     model: $tChoice('entities.resource_category.model', 1),
   })
-  " :heading-icon="Icons.RESOURCE_CATEGORY">
+  " :heading-icon="CategoryIcon">
     <UpsertModelLayout>
       <ResourceCategoryForm remember-key="CreateResourceCategory" :resource-category :categories
         @submit:form="(form) => form.post(route('resourceCategories.store'))" />
@@ -11,10 +11,10 @@
 </template>
 
 <script setup lang="tsx">
-import Icons from '@/Types/Icons/regular';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import ResourceCategoryForm from '@/Components/AdminForms/ResourceCategoryForm.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import { CategoryIcon } from '@/Components/icons';
 
 defineProps<{
   categories: any;

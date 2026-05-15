@@ -6,6 +6,20 @@ import importPlugin from 'eslint-plugin-import-x';
 import stylistic from '@stylistic/eslint-plugin';
 import globals from 'globals';
 
+// Shared import restriction fragments — reused in per-surface blocks so the
+// global lodash ban is not silently dropped when a later config overrides this rule.
+const lodashImportPaths = [
+  { name: 'lodash', message: 'Import from "lodash-es" for tree-shaking, or use "@vueuse/core" utilities like useDebounceFn.' },
+];
+const lodashImportPatterns = [
+  { group: ['lodash/*'], message: 'Import from "lodash-es/*" for tree-shaking.' },
+];
+// Icon sets that have been fully removed from the codebase.
+const removedIconPatterns = [
+  { group: ['~icons/mdi/*'], message: 'MDI was removed. Use lucide-vue-next for admin icons or ~icons/simple-icons/* for brand glyphs.' },
+  { group: ['@/Types/Icons/*'], message: 'Legacy default-export barrel was deleted. Use direct imports from lucide-vue-next or @/Components/icons.' },
+];
+
 // ESLint server doesn't support 'configs' yet...
 export default tseslint.config(
   eslint.configs.recommended,
@@ -101,15 +115,10 @@ export default tseslint.config(
       'import-x/no-duplicates': 'warn',
 
       // Prevent full lodash imports (use lodash-es or @vueuse/core utilities)
+      // Also ban icon sets that have been fully removed from the codebase.
       'no-restricted-imports': ['error', {
-        paths: [{
-          name: 'lodash',
-          message: 'Import from "lodash-es" for tree-shaking, or use "@vueuse/core" utilities like useDebounceFn.',
-        }],
-        patterns: [{
-          group: ['lodash/*'],
-          message: 'Import from "lodash-es/*" for tree-shaking.',
-        }],
+        paths: [...lodashImportPaths],
+        patterns: [...lodashImportPatterns, ...removedIconPatterns],
       }],
 
       // TypeScript modern patterns
@@ -184,6 +193,42 @@ export default tseslint.config(
       // Accessibility - disabled for ShadcnVue compatibility
       'vuejs-accessibility/label-has-for': 'off',
       'vuejs-accessibility/form-control-has-label': 'off',
+    },
+  },
+
+  // Icon surface conventions (warn = migrate as you touch, not a hard block)
+  // Admin surfaces must use Lucide; Fluent is for Public only.
+  {
+    files: [
+      'resources/js/Pages/Admin/**/*.{vue,ts}',
+      'resources/js/Features/Admin/**/*.{vue,ts}',
+    ],
+    rules: {
+      'no-restricted-imports': ['warn', {
+        paths: [...lodashImportPaths],
+        patterns: [
+          ...lodashImportPatterns,
+          ...removedIconPatterns,
+          { group: ['~icons/fluent/*'], message: 'Admin uses Lucide (lucide-vue-next). Fluent is reserved for Public surfaces.' },
+        ],
+      }],
+    },
+  },
+
+  // Public surfaces must use Fluent; Lucide is for Admin only.
+  {
+    files: [
+      'resources/js/Pages/Public/**/*.{vue,ts}',
+      'resources/js/Components/Public/**/*.{vue,ts}',
+    ],
+    rules: {
+      'no-restricted-imports': ['warn', {
+        paths: [
+          ...lodashImportPaths,
+          { name: 'lucide-vue-next', message: 'Public uses Fluent (~icons/fluent/*) for a more stylized look. Lucide is reserved for Admin surfaces.' },
+        ],
+        patterns: [...lodashImportPatterns, ...removedIconPatterns],
+      }],
     },
   },
 );

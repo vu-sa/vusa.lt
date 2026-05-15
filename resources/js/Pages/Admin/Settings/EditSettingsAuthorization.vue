@@ -13,7 +13,7 @@
           <div class="space-y-4">
             <div class="space-y-2">
               <Label class="inline-flex items-center gap-1">
-                <component :is="Icons.ROLE" class="h-4 w-4" />
+                <component :is="RoleIcon" class="h-4 w-4" />
                 {{ $t('settings.authorization_form.role_label') }}
               </Label>
               <Select v-model="selectedRoleId">
@@ -55,6 +55,7 @@ import AdminForm from '@/Components/AdminForms/AdminForm.vue';
 import FormElement from '@/Components/AdminForms/FormElement.vue';
 import { Alert, AlertDescription } from '@/Components/ui/alert';
 import { Label } from '@/Components/ui/label';
+import { RoleIcon } from '@/Components/icons';
 import {
   Select,
   SelectContent,
@@ -62,7 +63,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/Components/ui/select';
-import Icons from '@/Types/Icons/regular';
 
 const props = defineProps<{
   settings_manager_role_id: string | null;

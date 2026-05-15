@@ -6,7 +6,7 @@
           <p class="mt-0">
             <span>Kiekvienas posėdis turi</span>
             <Badge size="tiny" variant="secondary" class="mx-1">
-              <component :is="IconsRegular.AGENDA_ITEM" class="h-3 w-3" />
+              <component :is="AgendaItemIcon" class="h-3 w-3" />
               <strong>darbotvarkės klausimų</strong>
             </Badge>
           </p>
@@ -19,7 +19,7 @@
           <p class="mt-0">
             <span>Each meeting has</span>
             <Badge size="tiny" variant="secondary" class="mx-1">
-              <component :is="IconsRegular.AGENDA_ITEM" class="h-3 w-3" />
+              <component :is="AgendaItemIcon" class="h-3 w-3" />
               <strong>agenda items</strong>
             </Badge>
           </p>
@@ -38,7 +38,7 @@
             <FormItem>
               <FormLabel class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                  <component :is="IconsFilled.AGENDA_ITEM" class="h-4 w-4" />
+                  <component :is="AgendaItemIconFilled" class="h-4 w-4" />
                   {{ $t("Darbotvarkės klausimai") }}
                 </div>
                 <div class="text-xs text-muted-foreground">
@@ -213,7 +213,7 @@
                 <div v-if="props.mode === 'create' && fields.length === 0 && !showQuestionInputInTextArea && !agendaInputMode"
                   class="text-center py-8 space-y-6">
                   <div>
-                    <component :is="IconsRegular.AGENDA_ITEM" class="h-10 w-10 mx-auto text-muted-foreground/50 mb-3" />
+                    <component :is="AgendaItemIcon" class="h-10 w-10 mx-auto text-muted-foreground/50 mb-3" />
                     <h4 class="font-medium text-lg mb-2">
                       {{ $t('Kaip norite sukurti darbotvarkę?') }}
                     </h4>
@@ -375,8 +375,6 @@ import {
 } from 'lucide-vue-next';
 
 import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
-import IconsFilled from '@/Types/Icons/filled';
-import IconsRegular from '@/Types/Icons/regular';
 import { Badge } from '@/Components/ui/badge';
 import SuggestionAlert from '@/Components/Alerts/SuggestionAlert.vue';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
@@ -393,6 +391,7 @@ import {
   FormMessage,
 } from '@/Components/ui/form';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
+import { AgendaItemIcon, AgendaItemIconFilled } from '@/Components/icons';
 
 const emit = defineEmits<(e: 'submit', data: Record<string, any>) => void>();
 

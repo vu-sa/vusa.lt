@@ -25,13 +25,14 @@ import Settings24Filled from '~icons/fluent/settings24-filled';
 // =============================================================================
 // TREE-SHAKABLE EXPORTS - Clean, concise naming
 // =============================================================================
-export const FileIcon = DocumentMultiple24Regular;
+// FileIcon / FileIconFilled are exported by model-icons.ts — do not re-export here
+const fileIconRegular = DocumentMultiple24Regular;
+const fileIconFilled = DocumentMultiple24Filled;
 export const HomeIcon = Home24Regular;
 export const ImageIcon = Image24Regular;
 export const NotificationIcon = Alert24Regular;
 export const SettingIcon = Settings24Regular;
 
-export const FileIconFilled = DocumentMultiple24Filled;
 export const HomeIconFilled = Home24Filled;
 export const ImageIconFilled = Image24Filled;
 export const NotificationIconFilled = Alert24Filled;
@@ -42,7 +43,7 @@ export const SettingIconFilled = Settings24Filled;
 // =============================================================================
 
 const otherIconMappingRegular: Record<keyof typeof OtherIconEnum, Component> = {
-  FILE: FileIcon,
+  FILE: fileIconRegular,
   HOME: HomeIcon,
   IMAGE: ImageIcon,
   NOTIFICATION: NotificationIcon,
@@ -50,7 +51,7 @@ const otherIconMappingRegular: Record<keyof typeof OtherIconEnum, Component> = {
 };
 
 const otherIconMappingFilled: Record<keyof typeof OtherIconEnum, Component> = {
-  FILE: FileIconFilled,
+  FILE: fileIconFilled,
   HOME: HomeIconFilled,
   IMAGE: ImageIconFilled,
   NOTIFICATION: NotificationIconFilled,

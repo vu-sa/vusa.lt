@@ -1,6 +1,6 @@
 <template>
   <PageContent title="Naujas navigacijos elementas" :back-url="route('navigation.index')"
-    :heading-icon="Icons.NAVIGATION">
+    :heading-icon="NavigationIcon">
     <UpsertModelLayout>
       <Suspense v-if="navigationElement.parent_id !== 0">
         <NavigationForm remember-key="CreateNavigation" :navigation="navigationElement" :parent-elements :type-options
@@ -13,11 +13,11 @@
 </template>
 
 <script setup lang="ts">
-import Icons from '@/Types/Icons/regular';
 import NavigationForm from '@/Components/AdminForms/NavigationForm.vue';
 import NavigationParentForm from '@/Components/AdminForms/NavigationParentForm.vue';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import { NavigationIcon } from '@/Components/icons';
 
 const props = defineProps<{
   parent_id: number | string;

@@ -34,7 +34,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { router, usePage } from '@inertiajs/vue3';
 
-import Icons from '@/Types/Icons/regular';
 import { Button } from '@/Components/ui/button';
 import { TruncatedText } from '@/Components/ui/data-table/cells';
 import {
@@ -45,6 +44,7 @@ import {
 } from '@/Components/ui/dropdown-menu';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
+import { PageIcon } from '@/Components/icons';
 import {
   createIdColumn,
   createTenantColumn,
@@ -160,7 +160,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Page>>(() => {
     enableRowSelection: false,
 
     headerTitle: 'Puslapiai',
-    icon: Icons.PAGE,
+    icon: PageIcon,
     createRoute: route('pages.create'),
     canCreate: true,
   };

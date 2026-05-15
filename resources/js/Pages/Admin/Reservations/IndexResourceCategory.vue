@@ -17,10 +17,10 @@ import { Icon } from '@iconify/vue';
 
 import { resolveTranslatable } from '@/Composables/useDataTableColumns';
 import { TruncatedText } from '@/Components/ui/data-table/cells';
-import Icons from '@/Types/Icons/regular';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import type { IndexTablePageProps } from '@/Types/TableConfigTypes';
+import { CategoryIcon } from '@/Components/icons';
 
 const props = defineProps<{
   resourceCategories: {
@@ -93,7 +93,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.ResourceCategory>>
   enableRowSelection: false,
 
   headerTitle: capitalize($tChoice('entities.resource_category.model', 2)),
-  icon: Icons.RESOURCE_CATEGORY,
+  icon: CategoryIcon,
   createRoute: route('resourceCategories.create'),
   canCreate: true,
 }));

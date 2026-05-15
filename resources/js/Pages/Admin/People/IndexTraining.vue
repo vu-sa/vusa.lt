@@ -14,10 +14,10 @@ import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ref, computed } from 'vue';
 
-import Icons from '@/Types/Icons/regular';
 import { capitalize } from '@/Utils/String';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
+import { TrainingIcon } from '@/Components/icons';
 import {
   createTextColumn,
 } from '@/Composables/useDataTableColumns';
@@ -80,7 +80,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Training>>(() => {
     enableRowSelection: false,
 
     headerTitle: capitalize($tChoice('entities.training.model', 2)),
-    icon: Icons.TRAINING,
+    icon: TrainingIcon,
     createRoute: route('trainings.create'),
     canCreate: true,
   };
