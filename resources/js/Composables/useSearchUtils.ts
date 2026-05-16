@@ -1,4 +1,5 @@
 import { usePage, router } from '@inertiajs/vue3';
+import { forceBrowserDocumentUrl } from '@/Composables/useDocumentDisplay';
 import { format } from 'date-fns';
 
 // Import icons for content types
@@ -57,7 +58,7 @@ export const useSearchUtils = () => {
         case 'calendar':
           return route('calendar.event', { ...baseParams, calendar: item.id });
         case 'documents':
-          return item.anonymous_url || '#';
+          return forceBrowserDocumentUrl(item.anonymous_url) || '#';
         case 'publicInstitutions':
           // Use alias route if available, otherwise use id route
           if (item.alias) {

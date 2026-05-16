@@ -184,7 +184,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Comp
 // Icons
 
 // Composables
-import { useDocumentDisplay, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
+import { useDocumentDisplay, forceBrowserDocumentUrl, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
 import { useToasts } from '@/Composables/useToasts';
 
 // Props
@@ -208,8 +208,9 @@ const {
 // For list view, use simple date format
 const formatDocumentDate = formatDocumentDateSimple;
 
-// Use share_url for linking, fallback to anonymous_url
-const documentUrl = computed(() => props.document.share_url || props.document.anonymous_url);
+// share_url goes through DocumentRedirectController which appends web=1 server-side.
+// Raw anonymous_url fallback needs web=1 added client-side.
+const documentUrl = computed(() => props.document.share_url || forceBrowserDocumentUrl(props.document.anonymous_url));
 
 // Download URL appends ?download=1 to the share/anonymous URL
 const downloadUrl = computed(() => {

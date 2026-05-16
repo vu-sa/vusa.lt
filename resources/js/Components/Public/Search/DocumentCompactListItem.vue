@@ -1,7 +1,7 @@
 <template>
   <div
     class="group transition-all duration-200 border border-border/50 rounded-md bg-card hover:shadow-lg hover:bg-accent/20 hover:border-primary/30">
-    <a :href="document.anonymous_url" target="_blank" rel="noopener noreferrer"
+    <a :href="documentUrl" target="_blank" rel="noopener noreferrer"
       class="block sm:flex sm:items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-ring rounded-md"
       @click="trackDocumentClick">
 
@@ -98,7 +98,8 @@ import { Icon } from '@iconify/vue';
 import { Badge } from '@/Components/ui/badge';
 
 // Composables
-import { useDocumentDisplay, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
+import { computed } from 'vue';
+import { useDocumentDisplay, forceBrowserDocumentUrl, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
 
 // Props
 interface Props {
@@ -116,6 +117,10 @@ const {
   getTenantDisplayName,
   trackDocumentClick,
 } = useDocumentDisplay(props.document);
+
+// share_url goes through DocumentRedirectController which appends web=1 server-side.
+// Raw anonymous_url fallback needs web=1 added client-side.
+const documentUrl = computed(() => props.document.share_url || forceBrowserDocumentUrl(props.document.anonymous_url));
 
 // Compact date formatting using the proper date parsing from useDocumentDisplay
 const formatCompactDate = () => {

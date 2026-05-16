@@ -35,6 +35,13 @@ class DocumentRedirectController extends Controller
             $targetUrl .= $separator.$queryString;
         }
 
+        // Force browser rendering instead of native apps (e.g. OneDrive/Copilot on mobile).
+        // Skip for downloads so the file downloads directly.
+        if (! request()->boolean('download') && ! str_contains($targetUrl, 'web=1')) {
+            $separator = str_contains($targetUrl, '?') ? '&' : '?';
+            $targetUrl .= $separator.'web=1';
+        }
+
         return redirect()->away($targetUrl);
     }
 }
