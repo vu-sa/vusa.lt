@@ -226,7 +226,7 @@ import {
 } from 'lucide-vue-next';
 import { Link, router, usePage, useForm } from '@inertiajs/vue3';
 import { loadLanguageAsync, trans as $t } from 'laravel-vue-i18n';
-import { computed, markRaw, ref } from 'vue';
+import { computed, markRaw, ref, watch } from 'vue';
 import { useDark } from '@vueuse/core';
 
 import NavMain from './NavMain.vue';
@@ -249,6 +249,7 @@ import {
   SidebarGroupLabel,
   SidebarSeparator,
   SidebarRail,
+  useSidebar,
   type SidebarProps,
 } from '@/Components/ui/sidebar';
 import {
@@ -283,6 +284,12 @@ import { capitalize } from '@/Utils/String';
 const props = withDefaults(defineProps<SidebarProps>(), {
   variant: 'inset',
 });
+
+const { isMobile, setOpenMobile } = useSidebar();
+watch(
+  () => usePage().props.app.path,
+  () => { if (isMobile.value) { setOpenMobile(false); } },
+);
 
 const isDark = useDark();
 const { lastUpdateDate, latestVersion, markAsSeen: markDocsUpdatesSeen } = useDocsUpdateIndicator();

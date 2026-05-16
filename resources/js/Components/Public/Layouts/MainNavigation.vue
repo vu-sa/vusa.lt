@@ -40,7 +40,7 @@
             <div class="ml-auto lg:hidden flex items-center gap-2">
               <!-- Hide LocaleButton on very small screens (smaller than sm breakpoint) -->
               <LocaleButton v-if="!smallerThanSm" :locale="$page.props.app.locale" size="default" />
-              <Drawer direction="left">
+              <Drawer v-model:open="drawerOpen" direction="left">
                 <DrawerTrigger>
                   <Button variant="outline" :size="smallerThanSm ? 'sm' : 'default'" class="gap-2">
                     <LineHorizontal320Filled class="h-4 w-4" />
@@ -72,7 +72,7 @@
 
 <script setup lang="tsx">
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core';
-import { computed, defineAsyncComponent, watch } from 'vue';
+import { computed, defineAsyncComponent, ref, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
@@ -102,12 +102,11 @@ const smallerThanSm = breakpoints.smaller('sm');
 const { hasSecondMenu, hasScrolledDown } = useSecondMenu();
 
 const currentPath = computed(() => usePage().props.app.path);
+const drawerOpen = ref(false);
 
 // When the route changes, close the drawer
 watch(
   () => currentPath.value,
-  () => {
-    // Drawer auto-closes when route changes
-  },
+  () => { drawerOpen.value = false; },
 );
 </script>
