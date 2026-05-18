@@ -149,6 +149,8 @@ if ($request->filled('field')) {
 }
 ```
 
+- Build/manipulate URLs with `Uri::of($url)->withHost(...)->withQuery(...)` (fluent `Illuminate\Support\Uri`) — never `parse_url()` + string concatenation. Prefer `route()`/`tenantRoute()` for internal links.
+
 ### Factories
 
 - Standard models → `database/factories/{Model}Factory.php`

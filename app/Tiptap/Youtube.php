@@ -2,6 +2,7 @@
 
 namespace App\Tiptap;
 
+use Illuminate\Support\Uri;
 use Tiptap\Core\Node;
 
 /**
@@ -51,12 +52,11 @@ class Youtube extends Node
             return ['div', ['class' => 'youtube-error']];
         }
 
-        $embedUrl = "https://www.youtube-nocookie.com/embed/{$videoId}";
-
-        // Add start time if present
-        if (isset($node->attrs->start) && $node->attrs->start > 0) {
-            $embedUrl .= "?start={$node->attrs->start}";
-        }
+        $embedUrl = (string) Uri::of("https://www.youtube-nocookie.com/embed/{$videoId}")
+            ->when(
+                isset($node->attrs->start) && $node->attrs->start > 0,
+                fn (Uri $uri) => $uri->withQuery(['start' => $node->attrs->start])
+            );
 
         $width = $node->attrs->width ?? $this->options['width'];
         $height = $node->attrs->height ?? $this->options['height'];
