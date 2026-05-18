@@ -14,9 +14,9 @@ import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ref, computed } from 'vue';
 
-import Icons from '@/Types/Icons/regular';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
+import { TenantIcon } from '@/Components/icons';
 import {
   createTextColumn,
 } from '@/Composables/useDataTableColumns';
@@ -91,7 +91,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Tenant>>(() => {
     enableRowSelection: false,
 
     headerTitle: 'Padaliniai',
-    icon: Icons.TENANT,
+    icon: TenantIcon,
     createRoute: route('tenants.create'),
     canCreate: true,
   };

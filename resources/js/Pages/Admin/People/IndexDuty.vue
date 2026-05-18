@@ -10,7 +10,7 @@
     <template #headerActions>
       <Link :href="route('duties.updateUsersWizard')">
         <Button variant="outline" size="sm">
-          <Icons.USER class="size-4" />
+          <UserIcon class="size-4" />
           {{ $t('forms.fields.duty_user_wizard') }}
         </Button>
       </Link>
@@ -37,10 +37,10 @@ import { Switch } from '@/Components/ui/switch';
 import { TagList, TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
 import { capitalize } from '@/Utils/String';
 import { resolveTranslatable } from '@/Composables/useDataTableColumns';
-import Icons from '@/Types/Icons/regular';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import type { IndexTablePageProps } from '@/Types/TableConfigTypes';
+import { DutyIcon, InstitutionIcon, UserIcon } from '@/Components/icons';
 
 const props = defineProps<{
   duties: {
@@ -111,7 +111,7 @@ const columns = computed<Array<ColumnDef<App.Entities.Duty, any>>>(() => [
         target: '_blank',
         class: 'transition hover:text-vusa-red',
       }, h(Button, { variant: 'ghost', size: 'xs', class: 'rounded-full' }, () => [
-        h(Icons.INSTITUTION),
+        h(InstitutionIcon),
         h(TruncatedText, { text: displayName }),
       ]));
     },
@@ -155,7 +155,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Duty>>(() => ({
   allowToggleDeleted: true,
 
   headerTitle: capitalize($tChoice('entities.duty.model', 2)),
-  icon: Icons.DUTY,
+  icon: DutyIcon,
   createRoute: route('duties.create'),
   canCreate: true,
 }));

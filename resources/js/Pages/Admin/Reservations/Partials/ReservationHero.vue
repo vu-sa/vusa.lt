@@ -9,7 +9,7 @@
           <!-- Header row: Icon + Title/Status -->
           <div class="flex items-start gap-3 sm:gap-4">
             <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-zinc-900 text-zinc-50 sm:size-14 sm:rounded-xl dark:bg-zinc-50 dark:text-zinc-900">
-              <component :is="Icons.RESERVATION" class="size-5 sm:size-7" />
+              <component :is="ReservationIconFilled" class="size-5 sm:size-7" />
             </div>
             <div class="flex min-w-0 flex-1 flex-col gap-1.5">
               <!-- Title row with badge -->
@@ -92,8 +92,8 @@ import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
 import { formatStaticTime } from '@/Utils/IntlTime';
-import Icons from '@/Types/Icons/filled';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
+import { ReservationIconFilled } from '@/Components/icons';
 
 const props = defineProps<{
   reservation: App.Entities.Reservation;

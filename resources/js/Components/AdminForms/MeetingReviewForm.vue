@@ -20,7 +20,7 @@
           <!-- Institution -->
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
-              <component :is="Icons.INSTITUTION" class="h-5 w-5 text-muted-foreground" />
+              <component :is="InstitutionIconFilled" class="h-5 w-5 text-muted-foreground" />
               <div>
                 <p class="font-medium">
                   {{ selectedInstitution?.name }}
@@ -65,7 +65,7 @@
           <!-- Meeting Type -->
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
-              <component :is="Icons.TYPE" class="h-5 w-5 text-muted-foreground" />
+              <component :is="TypeIconFilled" class="h-5 w-5 text-muted-foreground" />
               <div>
                 <p class="font-medium">
                   {{ meetingType?.title || $t('Posėdžio tipas nenurodytas') }}
@@ -118,7 +118,7 @@
       <CardContent class="pt-6">
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-2">
-            <component :is="Icons.AGENDA_ITEM" class="h-5 w-5 text-muted-foreground" />
+            <component :is="AgendaItemIconFilled" class="h-5 w-5 text-muted-foreground" />
             <span class="font-medium">{{ $t('Darbotvarkė') }}</span>
             <Badge variant="outline" class="text-xs ml-2">
               {{ agendaItems.length }}
@@ -201,12 +201,12 @@ import {
   Rocket,
 } from 'lucide-vue-next';
 
-import Icons from '@/Types/Icons/filled';
 import { getMeetingTypeOptions } from '@/Types/MeetingType';
 import { Card, CardHeader, CardTitle, CardContent } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
 import { Separator } from '@/Components/ui/separator';
+import { AgendaItemIconFilled, InstitutionIconFilled, TypeIconFilled } from '@/Components/icons';
 
 // Import Lucide icons
 

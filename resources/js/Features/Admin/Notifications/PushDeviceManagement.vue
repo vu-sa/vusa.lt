@@ -29,8 +29,8 @@
             size="sm"
             @click="handleSubscribe"
           >
-            <IMdiBellPlus v-if="!isSubscribingToPush" class="size-4" />
-            <IMdiLoading v-else class="size-4 animate-spin" />
+            <BellPlus v-if="!isSubscribingToPush" class="size-4" />
+            <Loader2 v-else class="size-4 animate-spin" />
             {{ $t('Įjungti') }}
           </Button>
           <Button
@@ -40,8 +40,8 @@
             size="sm"
             @click="handleUnsubscribe"
           >
-            <IMdiBellOff v-if="!isUnsubscribingFromPush" class="size-4" />
-            <IMdiLoading v-else class="size-4 animate-spin" />
+            <BellOff v-if="!isUnsubscribingFromPush" class="size-4" />
+            <Loader2 v-else class="size-4 animate-spin" />
             {{ $t('Išjungti') }}
           </Button>
           <span v-else-if="pushPermission === 'denied'" class="text-sm text-destructive">
@@ -64,18 +64,18 @@
           :disabled="isLoading || isRefreshingSubscriptionStatus"
           @click="refreshDevices"
         >
-          <IMdiRefresh :class="['size-4', { 'animate-spin': isLoading || isRefreshingSubscriptionStatus }]" />
+          <RefreshCw :class="['size-4', { 'animate-spin': isLoading || isRefreshingSubscriptionStatus }]" />
           {{ $t('Atnaujinti') }}
         </Button>
       </div>
 
       <!-- Devices list -->
       <div v-if="isLoading" class="flex items-center justify-center py-8">
-        <IMdiLoading class="size-6 animate-spin text-muted-foreground" />
+        <Loader2 class="size-6 animate-spin text-muted-foreground" />
       </div>
 
       <div v-else-if="devices.length === 0" class="text-center py-8 text-muted-foreground">
-        <IMdiCellphoneOff class="size-8 mx-auto mb-2 opacity-50" />
+        <PhoneOff class="size-8 mx-auto mb-2 opacity-50" />
         <p class="text-sm">
           {{ $t('Nėra įrenginių su įjungtais push pranešimais') }}
         </p>
@@ -116,8 +116,8 @@
               :disabled="removingDeviceId === device.id"
               @click="handleRemoveDevice(device)"
             >
-              <IMdiLoading v-if="removingDeviceId === device.id" class="size-4 animate-spin" />
-              <IMdiTrashCan v-else class="size-4" />
+              <Loader2 v-if="removingDeviceId === device.id" class="size-4 animate-spin" />
+              <Trash2 v-else class="size-4" />
             </Button>
           </div>
         </TransitionGroup>
@@ -131,8 +131,8 @@
           size="sm"
           @click="handleSendTestNotification"
         >
-          <IMdiBellRing v-if="!testNotificationLoading" class="size-4" />
-          <IMdiLoading v-else class="size-4 animate-spin" />
+          <BellRing v-if="!testNotificationLoading" class="size-4" />
+          <Loader2 v-else class="size-4 animate-spin" />
           {{ $t('Siųsti bandomąjį pranešimą') }}
         </Button>
         <p v-if="testNotificationSuccess" class="text-sm text-green-600 dark:text-green-400 mt-2">
@@ -151,21 +151,10 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { usePWA, type PushSubscriptionDevice } from '@/Composables/usePWA';
 import FormElement from '@/Components/AdminForms/FormElement.vue';
 import { Button } from '@/Components/ui/button';
-import IMdiBellPlus from '~icons/mdi/bell-plus';
-import IMdiBellOff from '~icons/mdi/bell-off';
-import IMdiBellRing from '~icons/mdi/bell-ring';
-import IMdiLoading from '~icons/mdi/loading';
-import IMdiRefresh from '~icons/mdi/refresh';
-import IMdiTrashCan from '~icons/mdi/trash-can';
-import IMdiCellphoneOff from '~icons/mdi/cellphone-off';
-import IMdiCellphone from '~icons/mdi/cellphone';
-import IMdiTablet from '~icons/mdi/tablet';
-import IMdiLaptop from '~icons/mdi/laptop';
-import IMdiDesktopClassic from '~icons/mdi/desktop-classic';
-import IMdiApple from '~icons/mdi/apple';
-import IMdiMicrosoftWindows from '~icons/mdi/microsoft-windows';
-import IMdiLinux from '~icons/mdi/linux';
-import IMdiWeb from '~icons/mdi/web';
+import { BellPlus, BellOff, BellRing, Globe, Laptop, Loader2, Monitor, PhoneOff, RefreshCw, Smartphone, Tablet, Trash2 } from 'lucide-vue-next';
+import ISimpleIconsApple from '~icons/simple-icons/apple';
+import ISimpleIconsLinux from '~icons/simple-icons/linux';
+import ISimpleIconsWindows from '~icons/simple-icons/windows';
 
 const {
   pushSupported,
@@ -191,7 +180,7 @@ const testNotificationSuccess = ref(false);
 
 // Get current device icon based on status
 const currentDeviceIcon = computed(() => {
-  if (!pushSupported.value) return IMdiWeb;
+  if (!pushSupported.value) return Globe;
   return getDeviceIcon(null);
 });
 
@@ -211,16 +200,16 @@ const currentDeviceStatus = computed(() => {
 
 // Get appropriate icon for device
 const getDeviceIcon = (deviceName: string | null) => {
-  if (!deviceName) return IMdiWeb;
+  if (!deviceName) return Globe;
 
   const name = deviceName.toLowerCase();
-  if (name.includes('iphone') || name.includes('android')) return IMdiCellphone;
-  if (name.includes('ipad') || name.includes('tablet')) return IMdiTablet;
-  if (name.includes('mac')) return IMdiApple;
-  if (name.includes('windows')) return IMdiMicrosoftWindows;
-  if (name.includes('linux')) return IMdiLinux;
-  if (name.includes('laptop')) return IMdiLaptop;
-  return IMdiDesktopClassic;
+  if (name.includes('iphone') || name.includes('android')) return Smartphone;
+  if (name.includes('ipad') || name.includes('tablet')) return Tablet;
+  if (name.includes('mac')) return ISimpleIconsApple;
+  if (name.includes('windows')) return ISimpleIconsWindows;
+  if (name.includes('linux')) return ISimpleIconsLinux;
+  if (name.includes('laptop')) return Laptop;
+  return Monitor;
 };
 
 // Format date

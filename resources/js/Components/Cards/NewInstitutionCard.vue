@@ -69,12 +69,12 @@
       <CardFooter class="flex gap-2">
         <a v-if="institution.facebook_url" :href="institution.facebook_url" target="_blank" rel="noopener noreferrer">
           <Button variant="ghost" size="icon-sm" class="rounded-full" @click.stop>
-            <IMdiFacebook />
+            <ISimpleIconsFacebook />
           </Button>
         </a>
         <a v-if="institution.instagram_url" :href="institution.instagram_url" target="_blank" rel="noopener noreferrer">
           <Button variant="ghost" size="icon-sm" class="rounded-full" @click.stop>
-            <IMdiInstagram />
+            <ISimpleIconsInstagram />
           </Button>
         </a>
         <a v-if="institution.website" :href="institution.website" target="_blank" rel="noopener noreferrer">

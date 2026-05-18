@@ -10,6 +10,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Uri;
 use Inertia\Inertia;
 use RalphJSmit\Laravel\SEO\Support\SEOData;
 use Spatie\SchemaOrg\BreadcrumbList;
@@ -225,39 +226,23 @@ class PublicController extends Controller
     protected function replaceSubdomainInUrl(string $url, ?Tenant $tenant = null): string
     {
         $targetSubdomain = $this->getSubdomainForTenant($tenant);
-        $parsedUrl = parse_url($url);
 
-        if (! $parsedUrl || ! isset($parsedUrl['host'])) {
+        $uri = Uri::of($url);
+
+        if (! $uri->host()) {
             return $url;
         }
 
         // Get the base domain from config (e.g., 'vusa.lt' from 'https://www.vusa.lt')
-        $baseUrl = config('app.url');
-        $parsedBase = parse_url($baseUrl);
-        $baseDomain = $parsedBase['host'] ?? 'vusa.lt';
+        $baseDomain = Uri::of(config('app.url'))->host() ?? 'vusa.lt';
 
         // Remove any subdomain prefix from base domain
         if (str_starts_with($baseDomain, 'www.')) {
             $baseDomain = substr($baseDomain, 4);
         }
 
-        // Build new URL with target subdomain
-        $scheme = $parsedUrl['scheme'] ?? 'https';
-        $newUrl = $scheme.'://'.$targetSubdomain.'.'.$baseDomain;
-
-        if (isset($parsedUrl['port'])) {
-            $newUrl .= ':'.$parsedUrl['port'];
-        }
-
-        if (isset($parsedUrl['path'])) {
-            $newUrl .= $parsedUrl['path'];
-        }
-
-        if (isset($parsedUrl['query'])) {
-            $newUrl .= '?'.$parsedUrl['query'];
-        }
-
-        return $newUrl;
+        // withHost() preserves scheme, port, path, query and fragment
+        return (string) $uri->withHost($targetSubdomain.'.'.$baseDomain);
     }
 
     /**

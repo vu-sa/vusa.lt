@@ -14,9 +14,9 @@ import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ref, computed } from 'vue';
 
-import Icons from '@/Types/Icons/regular';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
+import { RoleIcon } from '@/Components/icons';
 import {
   createTextColumn,
   createTimestampColumn,
@@ -88,7 +88,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Role>>(() => {
     enableRowSelection: false,
 
     headerTitle: 'Rolės',
-    icon: Icons.ROLE,
+    icon: RoleIcon,
     createRoute: route('roles.create'),
     canCreate: true,
   };

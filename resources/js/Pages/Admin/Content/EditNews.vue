@@ -1,5 +1,5 @@
 <template>
-  <PageContent :title="news.title" :back-url="route('news.index')" :heading-icon="Icons.NEWS">
+  <PageContent :title="news.title" :back-url="route('news.index')" :heading-icon="NewsIcon">
     <template #header>
       {{ news.title }}
     </template>
@@ -26,10 +26,10 @@ import { computed } from 'vue';
 import { router } from '@inertiajs/vue3';
 
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
-import Icons from '@/Types/Icons/regular';
 import NewsForm from '@/Components/AdminForms/NewsForm.vue';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import { NewsIcon } from '@/Components/icons';
 
 const props = defineProps<{
   news: App.Entities.News;
@@ -39,6 +39,6 @@ const props = defineProps<{
 
 // Generate breadcrumbs automatically with new simplified API
 usePageBreadcrumbs(() =>
-  BreadcrumbHelpers.adminForm('Naujienos', 'news.index', props.news.title, Icons.NEWS),
+  BreadcrumbHelpers.adminForm('Naujienos', 'news.index', props.news.title, NewsIcon),
 );
 </script>

@@ -2,7 +2,7 @@
   <PageContent :title="`${duty.name.lt} (${duty.institution?.short_name ??
     duty.institution?.name ??
     'Neturi institucijos'
-  })`" :back-url="route('duties.index')" :heading-icon="Icons.DUTY">
+  })`" :back-url="route('duties.index')" :heading-icon="DutyIcon">
     <UpsertModelLayout>
       <DutyForm
         :duty
@@ -26,9 +26,9 @@
 import { router } from '@inertiajs/vue3';
 
 import DutyForm from '@/Components/AdminForms/DutyForm.vue';
-import Icons from '@/Types/Icons/regular';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import { DutyIcon } from '@/Components/icons';
 
 const props = defineProps<{
   duty: App.Entities.Duty;

@@ -1,5 +1,5 @@
 <template>
-  <PageContent :title="page.title" :back-url="route('pages.index')" :heading-icon="Icons.PAGE">
+  <PageContent :title="page.title" :back-url="route('pages.index')" :heading-icon="PageIcon">
     <template #header>
       {{ page.title }}
     </template>
@@ -24,10 +24,10 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
 
-import Icons from '@/Types/Icons/regular';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import PageForm from '@/Components/AdminForms/PageForm.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import { PageIcon } from '@/Components/icons';
 
 defineProps<{
   categories: App.Entities.Category[];

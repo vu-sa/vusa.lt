@@ -20,11 +20,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import File from '~icons/mdi/File';
-import FileExcel from '~icons/mdi/FileExcel';
-import FilePdf from '~icons/mdi/FilePdf';
-import FileWord from '~icons/mdi/FileWord';
-import Folder from '~icons/mdi/Folder';
+import { File, FileSpreadsheet, FileText, Folder } from 'lucide-vue-next';
 import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
 
 const props = defineProps<{
@@ -45,18 +41,16 @@ const icon = computed(() => {
     return File;
   }
 
-  if (
-    props.iconString === 'file-word'
-  ) {
-    return FileWord;
+  if (props.iconString === 'file-word') {
+    return FileText;
   }
 
   if (props.iconString === 'file-excel') {
-    return FileExcel;
+    return FileSpreadsheet;
   }
 
   if (props.iconString === 'file-pdf') {
-    return FilePdf;
+    return FileText;
   }
 
   return File;

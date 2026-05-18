@@ -1,5 +1,5 @@
 <template>
-  <PageContent title="Duplikatų suliejimas" :heading-icon="Icons.USER">
+  <PageContent title="Duplikatų suliejimas" :heading-icon="UserIcon">
     <UpsertModelLayout>
       <AdminForm :model="form" @submit:form="handleFormSubmit">
         <FormElement>
@@ -82,10 +82,10 @@ import { SingleSelect } from '@/Components/ui/single-select';
 import AdminForm from '@/Components/AdminForms/AdminForm.vue';
 import FormElement from '@/Components/AdminForms/FormElement.vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
-import Icons from '@/Types/Icons/regular';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
+import { UserIcon } from '@/Components/icons';
 
 const { users } = defineProps<{
   users: App.Entities.Role[];

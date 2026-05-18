@@ -2,7 +2,7 @@
   <PageContent
     :title
     :back-url="route('resources.index')"
-    :heading-icon="Icons.RESOURCE"
+    :heading-icon="ResourceIcon"
   >
     <UpsertModelLayout :errors="$page.props.errors" :model="reservation">
       <ReservationForm
@@ -17,10 +17,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import Icons from '@/Types/Icons/regular';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import ReservationForm from '@/Components/AdminForms/ReservationForm.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import { ResourceIcon } from '@/Components/icons';
 
 export type ReservationEditType = Omit<
   App.Entities.Reservation,

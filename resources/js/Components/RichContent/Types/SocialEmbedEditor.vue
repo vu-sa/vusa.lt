@@ -76,8 +76,8 @@
 import { computed, defineAsyncComponent } from 'vue';
 
 import type { SocialEmbed } from '@/Types/contentParts';
-import FacebookIcon from '~icons/mdi/facebook';
-import InstagramIcon from '~icons/mdi/instagram';
+import FacebookIcon from '~icons/simple-icons/facebook';
+import InstagramIcon from '~icons/simple-icons/instagram';
 
 const SocialEmbedPreview = defineAsyncComponent(() => import('./SocialEmbedPreview.vue'));
 

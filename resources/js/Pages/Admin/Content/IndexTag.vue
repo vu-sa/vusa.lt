@@ -29,11 +29,11 @@ import {
 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 
-import Icons from '@/Types/Icons/regular';
 import { Button } from '@/Components/ui/button';
 import { TruncatedBadge, TruncatedText } from '@/Components/ui/data-table/cells';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
+import { TagIcon } from '@/Components/icons';
 import {
   createTitleColumn,
 } from '@/Composables/useDataTableColumns';
@@ -133,7 +133,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Tag>>(() => {
 
     // Page layout
     headerTitle: 'Žymos',
-    icon: Icons.TAG,
+    icon: TagIcon,
     createRoute: canCreate.value ? route('tags.create') : undefined,
     canCreate: canCreate.value,
   };

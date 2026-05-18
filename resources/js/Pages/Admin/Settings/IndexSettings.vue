@@ -17,7 +17,7 @@
             <Card class="h-full transition-all duration-200 hover:shadow-md hover:ring-1 hover:ring-primary/20">
               <CardHeader>
                 <CardTitle class="flex items-center gap-2">
-                  <component :is="Icons.FORM" class="size-5" />
+                  <component :is="FormIcon" class="size-5" />
                   {{ $t('settings.pages.forms.title') }}
                 </CardTitle>
                 <CardDescription>
@@ -32,7 +32,7 @@
             <Card class="h-full transition-all duration-200 hover:shadow-md hover:ring-1 hover:ring-primary/20">
               <CardHeader>
                 <CardTitle class="flex items-center gap-2">
-                  <component :is="Icons.MEETING" class="size-5" />
+                  <component :is="MeetingIcon" class="size-5" />
                   {{ $t('settings.pages.meetings.title') }}
                 </CardTitle>
                 <CardDescription>
@@ -47,7 +47,7 @@
             <Card class="h-full transition-all duration-200 hover:shadow-md hover:ring-1 hover:ring-primary/20">
               <CardHeader>
                 <CardTitle class="flex items-center gap-2">
-                  <component :is="Icons.INSTITUTION" class="size-5" />
+                  <component :is="InstitutionIcon" class="size-5" />
                   {{ $t('settings.pages.atstovavimas.title') }}
                 </CardTitle>
                 <CardDescription>
@@ -62,7 +62,7 @@
             <Card class="h-full transition-all duration-200 hover:shadow-md hover:ring-1 hover:ring-primary/20">
               <CardHeader>
                 <CardTitle class="flex items-center gap-2">
-                  <component :is="Icons.DOCUMENT" class="size-5" />
+                  <component :is="DocumentIcon" class="size-5" />
                   {{ $t('settings.pages.documents.title') }}
                 </CardTitle>
                 <CardDescription>
@@ -85,7 +85,7 @@
             <Card class="h-full transition-all duration-200 hover:shadow-md hover:ring-1 hover:ring-primary/20">
               <CardHeader>
                 <CardTitle class="flex items-center gap-2">
-                  <component :is="Icons.ROLE" class="size-5" />
+                  <component :is="RoleIcon" class="size-5" />
                   {{ $t('settings.pages.authorization.title') }}
                 </CardTitle>
                 <CardDescription>
@@ -105,7 +105,7 @@ import { Link } from '@inertiajs/vue3';
 
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/Components/ui/card';
-import Icons from '@/Types/Icons/regular';
+import { DocumentIcon, FormIcon, InstitutionIcon, MeetingIcon, RoleIcon } from '@/Components/icons';
 
 defineProps<{
   isSuperAdmin: boolean;

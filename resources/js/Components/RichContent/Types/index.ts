@@ -7,7 +7,7 @@ export * from './types';
 import AppsListDetail24Regular from '~icons/fluent/apps-list-detail24-regular';
 import CalendarDay24Regular from '~icons/fluent/calendar-day24-regular';
 import ImageMultiple24Regular from '~icons/fluent/image-multiple24-regular';
-import SpotifyIcon from '~icons/mdi/spotify';
+import SpotifyIcon from '~icons/simple-icons/spotify';
 import NewsIcon from '~icons/fluent/news24-regular';
 import CalendarIcon from '~icons/fluent/calendar-ltr24-regular';
 import FlowIcon from '~icons/fluent/flow24-regular';

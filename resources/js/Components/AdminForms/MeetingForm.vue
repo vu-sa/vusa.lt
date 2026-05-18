@@ -6,7 +6,7 @@
       <FormField v-slot="{ componentField }" name="type">
         <FormItem>
           <FormLabel class="inline-flex items-center gap-1">
-            <component :is="Icons.TYPE" class="h-4 w-4" />
+            <component :is="TypeIconFilled" class="h-4 w-4" />
             {{ $tChoice("forms.fields.type", 0) }}
           </FormLabel>
           <FormControl>
@@ -36,7 +36,7 @@
       <FormField v-slot="{ componentField, value }" name="start_time">
         <FormItem>
           <FormLabel class="inline-flex items-center gap-1">
-            <component :is="Icons.DATE" class="h-4 w-4" />
+            <component :is="DateIconFilled" class="h-4 w-4" />
             {{ isEmailMeeting(values.type) ? $t("forms.fields.date") : `${$t("forms.fields.date")} / ${$t("forms.fields.time")}` }}
           </FormLabel>
           <FormControl>
@@ -69,7 +69,7 @@
       <FormField v-slot="{ componentField }" name="description">
         <FormItem>
           <FormLabel class="inline-flex items-center gap-1">
-            <component :is="Icons.DESCRIPTION" class="h-4 w-4" />
+            <component :is="DocumentIconFilled" class="h-4 w-4" />
             {{ $t('Aprašymas') }}
           </FormLabel>
           <FormControl>
@@ -95,7 +95,6 @@ import { computed, useTemplateRef, watch, nextTick } from 'vue';
 import { Form } from 'vee-validate';
 import { Loader2 } from 'lucide-vue-next';
 
-import Icons from '@/Types/Icons/filled';
 import { useMeetingForm } from '@/Composables/useMeetingForm';
 
 // Import Shadcn UI components
@@ -115,6 +114,7 @@ import {
 } from '@/Components/ui/radio-group';
 import { Label } from '@/Components/ui/label';
 import { DateTimePicker, DatePicker } from '@/Components/ui/date-picker';
+import { DateIconFilled, DocumentIconFilled, TypeIconFilled } from '@/Components/icons';
 
 const emit = defineEmits<(event: 'submit', form: any) => void>();
 

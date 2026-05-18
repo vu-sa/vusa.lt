@@ -98,12 +98,12 @@
               <a v-if="institution.facebook_url" :href="institution.facebook_url" target="_blank"
                 rel="noopener noreferrer" class="text-muted-foreground hover:text-blue-600 transition-colors"
                 @click.stop>
-                <IMdiFacebook class="w-4 h-4" />
+                <ISimpleIconsFacebook class="w-4 h-4" />
               </a>
               <a v-if="institution.instagram_url" :href="institution.instagram_url" target="_blank"
                 rel="noopener noreferrer" class="text-muted-foreground hover:text-pink-600 transition-colors"
                 @click.stop>
-                <IMdiInstagram class="w-4 h-4" />
+                <ISimpleIconsInstagram class="w-4 h-4" />
               </a>
               <a v-if="institution.website" :href="institution.website" target="_blank" rel="noopener noreferrer"
                 class="text-muted-foreground hover:text-primary transition-colors" @click.stop>

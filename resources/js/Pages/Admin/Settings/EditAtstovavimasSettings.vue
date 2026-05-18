@@ -12,7 +12,7 @@
 
           <div class="space-y-2">
             <Label class="inline-flex items-center gap-1">
-              <component :is="Icons.ROLE" class="h-4 w-4" />
+              <component :is="RoleIcon" class="h-4 w-4" />
               {{ $t('settings.atstovavimas_settings.manager_role_label') }}
             </Label>
 
@@ -45,9 +45,9 @@ import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 import AdminForm from '@/Components/AdminForms/AdminForm.vue';
 import FormElement from '@/Components/AdminForms/FormElement.vue';
-import Icons from '@/Types/Icons/regular';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { RoleIcon } from '@/Components/icons';
 
 interface Role {
   id: string;

@@ -183,7 +183,6 @@ import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 // Icons and utils
 
-import Icons from '@/Types/Icons/filled';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 // Types
 import TabsContent from '@/Components/ui/tabs/TabsContent.vue';
@@ -196,10 +195,11 @@ import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue';
 import NewMeetingDialog from '@/Components/Dialogs/NewMeetingDialog.vue';
 import PageHero from '@/Components/Hero/PageHero.vue';
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
+import { MeetingIconFilled } from '@/Components/icons';
 
 // Setup breadcrumbs
 usePageBreadcrumbs(() => [
-  BreadcrumbHelpers.createBreadcrumbItem('ViSAK', undefined, Icons.MEETING),
+  BreadcrumbHelpers.createBreadcrumbItem('ViSAK', undefined, MeetingIconFilled),
 ]);
 
 // Setup product tour

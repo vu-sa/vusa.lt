@@ -3,7 +3,7 @@
     :title="$tChoice('forms.new_model', 0, {
       model: $tChoice('entities.reservation.model', 1),
     })"
-    :heading-icon="Icons.RESERVATION">
+    :heading-icon="ReservationIcon">
     <UpsertModelLayout>
       <ReservationForm remember-key="CreateReservation" model-route="reservations.store" :reservation :all-resources="resources" />
     </UpsertModelLayout>
@@ -14,11 +14,11 @@
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { capitalize } from 'vue';
 
-import Icons from '@/Types/Icons/regular';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import ReservationForm from '@/Components/AdminForms/ReservationForm.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
+import { ReservationIcon } from '@/Components/icons';
 
 export type ReservationCreationTemplate = Omit<
   App.Entities.Reservation,
@@ -44,7 +44,7 @@ const props = defineProps<{
 usePageBreadcrumbs([
   {
     label: capitalize($tChoice('entities.reservation.model', 2)),
-    icon: Icons.RESERVATION,
+    icon: ReservationIcon,
   },
 ]);
 

@@ -1,5 +1,5 @@
 <template>
-  <PageContent title="Naujas narys (-ė)" :heading-icon="Icons.USER">
+  <PageContent title="Naujas narys (-ė)" :heading-icon="UserIcon">
     <UpsertModelLayout>
       <UserForm remember-key="CreateUser" :user :roles :tenants-with-duties :permissable-tenants
         @submit:form="(form) => form.post(route('users.store'))" />
@@ -9,10 +9,10 @@
 
 <script setup lang="tsx">
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
-import Icons from '@/Types/Icons/regular';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 import UserForm from '@/Components/AdminForms/UserForm.vue';
+import { UserIcon } from '@/Components/icons';
 
 defineProps<{
   roles: App.Entities.Role[];
@@ -22,7 +22,7 @@ defineProps<{
 
 // Generate breadcrumbs automatically with new simplified API
 usePageBreadcrumbs(
-  BreadcrumbHelpers.adminForm('Nariai', 'users.index', 'Naujas narys (-ė)', Icons.USER),
+  BreadcrumbHelpers.adminForm('Nariai', 'users.index', 'Naujas narys (-ė)', UserIcon),
 );
 
 const user = {

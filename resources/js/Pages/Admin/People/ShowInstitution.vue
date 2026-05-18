@@ -359,11 +359,11 @@ import { Badge } from '@/Components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 
 // Utils
-import Icons from '@/Types/Icons/filled';
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { useInstitutionSubscription } from '@/Pages/Admin/Dashboard/Composables/useInstitutionSubscription';
 import { useShowPageData } from '@/Composables/useShowPageData';
 import { useInstitutionUrgency } from '@/Composables/useInstitutionUrgency';
+import { InstitutionIconFilled } from '@/Components/icons';
 
 const props = defineProps<{
   institution: App.Entities.Institution;
@@ -439,8 +439,8 @@ usePageBreadcrumbs(
     'institutions.index',
     {},
     props.institution.name,
-    Icons.INSTITUTION,
-    Icons.INSTITUTION,
+    InstitutionIconFilled,
+    InstitutionIconFilled,
   ),
 );
 

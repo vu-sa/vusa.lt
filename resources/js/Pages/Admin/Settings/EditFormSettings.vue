@@ -13,7 +13,7 @@
           <div class="space-y-4">
             <div class="space-y-2">
               <Label class="inline-flex items-center gap-1">
-                <component :is="Icons.FORM" class="h-4 w-4" />
+                <component :is="FormIcon" class="h-4 w-4" />
                 {{ $t('settings.form_settings.form_label') }}
               </Label>
               <Select v-model="form.member_registration_form_id">
@@ -30,7 +30,7 @@
 
             <div class="space-y-2">
               <Label class="inline-flex items-center gap-1">
-                <component :is="Icons.ROLE" class="h-4 w-4" />
+                <component :is="RoleIcon" class="h-4 w-4" />
                 {{ $t('settings.form_settings.role_label') }}
               </Label>
               <Select v-model="form.member_registration_notification_recipient_role_id">
@@ -59,7 +59,7 @@
           <div class="space-y-4">
             <div class="space-y-2">
               <Label class="inline-flex items-center gap-1">
-                <component :is="Icons.FORM" class="h-4 w-4" />
+                <component :is="FormIcon" class="h-4 w-4" />
                 {{ $t('settings.form_settings.student_rep_form_label') }}
               </Label>
               <Select v-model="form.student_rep_registration_form_id">
@@ -79,7 +79,7 @@
 
             <div class="space-y-2">
               <Label class="inline-flex items-center gap-1">
-                <component :is="Icons.TYPE" class="h-4 w-4" />
+                <component :is="TypeIcon" class="h-4 w-4" />
                 {{ $t('settings.form_settings.student_rep_types_label') }}
               </Label>
               <p class="text-sm text-muted-foreground">
@@ -109,9 +109,9 @@ import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 import AdminForm from '@/Components/AdminForms/AdminForm.vue';
 import FormElement from '@/Components/AdminForms/FormElement.vue';
-import Icons from '@/Types/Icons/regular';
 import { Label } from '@/Components/ui/label';
 import { MultiSelect } from '@/Components/ui/multi-select';
+import { FormIcon, RoleIcon, TypeIcon } from '@/Components/icons';
 import {
   Select,
   SelectContent,

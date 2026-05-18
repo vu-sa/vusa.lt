@@ -41,7 +41,7 @@ import { DateCell, TagList, TruncatedBadge, TruncatedLink, TruncatedText } from 
 import { createDateColumn } from '@/Composables/useDataTableColumns';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import type { IndexTablePageProps } from '@/Types/TableConfigTypes';
-import Icons from '@/Types/Icons/regular';
+import { ProblemIcon } from '@/Components/icons';
 
 const props = defineProps<{
   data: App.Entities.Problem[];
@@ -164,7 +164,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Problem>>(() => ({
   enableColumnVisibility: true,
   allowToggleDeleted: false,
   headerTitle: capitalize($tChoice('entities.problem.model', 2)),
-  icon: Icons.PROBLEM,
+  icon: ProblemIcon,
   createRoute: canCreate.value ? route('problems.create') : undefined,
   canCreate: canCreate.value,
 }));

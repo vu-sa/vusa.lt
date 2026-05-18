@@ -94,12 +94,12 @@
         <div v-if="variant !== 'past'" class="hidden sm:flex gap-1">
           <Button v-if="googleLink" as="a" :href="googleLink" target="_blank" variant="ghost"
             :size="variant === 'compact' ? 'sm' : 'default'" :title="$t('Pridėti į Google kalendorių')">
-            <IMdiGoogle class="w-4 h-4" />
+            <ISimpleIconsGoogle class="w-4 h-4" />
           </Button>
 
           <Button v-if="event.facebook_url" as="a" :href="event.facebook_url" target="_blank" variant="ghost"
             :size="variant === 'compact' ? 'sm' : 'default'" :title="$t('Facebook renginys')">
-            <IMdiFacebook class="w-4 h-4" />
+            <ISimpleIconsFacebook class="w-4 h-4" />
           </Button>
         </div>
       </div>

@@ -76,7 +76,7 @@
 
         <a v-if="contact.facebook_url" :href="contact.facebook_url" target="_blank" rel="noopener noreferrer">
           <Button variant="ghost" size="icon-sm" class="size-7 rounded-full text-zinc-500 hover:bg-blue-50 hover:text-blue-600 dark:text-zinc-400 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 sm:size-8">
-            <IMdiFacebook class="size-3.5 sm:size-4" />
+            <ISimpleIconsFacebook class="size-3.5 sm:size-4" />
           </Button>
         </a>
 
