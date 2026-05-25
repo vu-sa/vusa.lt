@@ -44,6 +44,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon|null $last_action
  * @property array<array-key, mixed>|null $tutorial_progress
  * @property array $notification_preferences
+ * @property string|null $ui_preferences
  * @property string|null $microsoft_token
  * @property Carbon $updated_at
  * @property Carbon $created_at
