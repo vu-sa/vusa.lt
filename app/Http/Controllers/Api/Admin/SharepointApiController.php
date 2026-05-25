@@ -146,6 +146,46 @@ class SharepointApiController extends ApiController
 
         $driveItems = $sharepointService->getDriveItemByPath($path, true);
 
+        // If fileable context is provided, attach FileableFile records
+        $fileableType = $request->get('fileable_type');
+        $fileableId = $request->get('fileable_id');
+
+        $driveItems = $this->attachFileableFilesToDriveItems($driveItems, $fileableType, $fileableId);
+
         return $this->jsonSuccess($driveItems);
+    }
+
+    /**
+     * Attach FileableFile records to drive items when fileable context is provided.
+     *
+     * @param  \Illuminate\Support\Collection<int, array>  $driveItems
+     * @return \Illuminate\Support\Collection<int, array>
+     */
+    protected function attachFileableFilesToDriveItems(\Illuminate\Support\Collection $driveItems, ?string $fileableType, ?string $fileableId): \Illuminate\Support\Collection
+    {
+        if (! $fileableType || ! $fileableId || ! isset(ALLOWED_FILEABLE_TYPES[$fileableType])) {
+            return $driveItems;
+        }
+
+        $driveItemIds = $driveItems->pluck('id')->filter()->values()->toArray();
+
+        if (empty($driveItemIds)) {
+            return $driveItems;
+        }
+
+        $fileableFiles = FileableFile::where('fileable_type', ALLOWED_FILEABLE_TYPES[$fileableType])
+            ->where('fileable_id', $fileableId)
+            ->whereIn('sharepoint_id', $driveItemIds)
+            ->whereNull('deleted_externally_at')
+            ->get()
+            ->keyBy('sharepoint_id');
+
+        return $driveItems->map(function (array $item) use ($fileableFiles) {
+            if (isset($item['id'])) {
+                $item['fileableFile'] = $fileableFiles->get($item['id']);
+            }
+
+            return $item;
+        });
     }
 }
