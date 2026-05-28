@@ -12,7 +12,7 @@
         <!-- Header with breadcrumbs and actions -->
         <header class="sticky top-0 z-40 flex h-14 shrink-0 items-center justify-between border-b bg-background px-4 md:h-16 md:px-6 md:rounded-t-xl">
           <div class="flex items-center flex-1 gap-2 md:gap-3 min-w-0">
-            <SidebarTrigger class="h-9 w-9 shrink-0 border md:h-7 md:w-7 md:border-0" />
+            <SidebarTrigger class="h-9 w-9 shrink-0 border md:h-7 md:w-7" />
             <Separator orientation="vertical" class="hidden md:block mr-2 h-4" />
             <AdminBreadcrumbs />
           </div>

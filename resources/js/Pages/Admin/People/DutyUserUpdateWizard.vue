@@ -294,13 +294,9 @@ const addInstitution = (institution: App.Entities.Institution) => {
   institutionsList.value = [institution, ...institutionsList.value];
 };
 
-// Close sidebar on mount to give more room
+// Sidebar state is managed by the user; do not force-close on this page
+// so the toggle trigger remains available if the sidebar is already open.
 const { setOpen, isMobile } = useSidebar();
-onMounted(() => {
-  if (!isMobile.value) {
-    setOpen(false);
-  }
-});
 
 // Initialize wizard - redirect to duty.show on success, expand sidebar
 const wizard = useDutyUserWizard({

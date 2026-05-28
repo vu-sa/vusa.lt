@@ -147,7 +147,7 @@
         </a>
       </div>
     </SidebarFooter>
-    <!-- <SidebarRail /> -->
+    <SidebarRail />
   </Sidebar>
 
   <!-- Feedback Dialog -->
