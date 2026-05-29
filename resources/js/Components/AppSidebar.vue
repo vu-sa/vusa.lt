@@ -23,33 +23,40 @@
         </SidebarMenuItem>
       </SidebarMenu>
     </SidebarHeader>
-    <SidebarContent class="flex flex-col">
+    <SidebarContent
+      :data-density="density"
+      :class="['flex flex-col group/density', density === 'compact' ? 'gap-2' : 'gap-4']">
       <!-- Main navigation -->
       <NavMain :items="navMainItems" />
 
       <SidebarSeparator class="my-2" />
 
-      <!-- Quick actions -->
-      <NavQuickActions @new-meeting="handleNewMeeting" @new-news="handleNewNews"
-        @new-reservation="handleNewReservation" />
-
-      <!-- Followed institutions -->
-      <FollowedInstitutionsHotbar />
-
-      <!-- Spacer to push secondary nav to bottom -->
-      <div class="flex-1" />
-
-      <SidebarSeparator class="my-2 group-data-[collapsible=icon]:hidden" />
-
-      <!-- START FM Radio -->
-      <div class="group-data-[collapsible=icon]:hidden">
-        <SidebarStartFM />
-      </div>
-
-      <!-- Secondary navigation -->
-      <div class="group-data-[collapsible=icon]:hidden">
-        <NavSecondary :items="navSecondaryItems" @item-click="handleSecondaryNavClick" />
-      </div>
+      <!-- Customizable sections (user-defined order, toggled via the customize dialog) -->
+      <template v-for="key in orderedSections" :key="key">
+        <NavQuickActions
+          v-if="key === 'quick_actions' && isSectionVisible(key)"
+          @new-meeting="handleNewMeeting" @new-news="handleNewNews"
+          @new-reservation="handleNewReservation" />
+        <PinnedPagesSection
+          v-else-if="key === 'pinned' && isSectionVisible(key)" />
+        <RecentlyVisitedSection
+          v-else-if="key === 'recently_visited' && isSectionVisible(key)" />
+        <FollowedInstitutionsHotbar
+          v-else-if="key === 'followed_institutions' && isSectionVisible(key)" />
+        <div
+          v-else-if="key === 'spacer' && isSectionVisible(key)"
+          class="flex-1 min-h-0" />
+        <div
+          v-else-if="key === 'start_fm' && isSectionVisible(key)"
+          class="group-data-[collapsible=icon]:hidden">
+          <SidebarStartFM />
+        </div>
+        <div
+          v-else-if="key === 'secondary' && isSectionVisible(key)"
+          class="group-data-[collapsible=icon]:hidden">
+          <NavSecondary :items="navSecondaryItems" @item-click="handleSecondaryNavClick" />
+        </div>
+      </template>
     </SidebarContent>
     <SidebarFooter class="border-t border-sidebar-border/50">
       <!-- Back to website link -->
@@ -61,7 +68,15 @@
       <SidebarMenu>
         <!-- User account dropdown -->
         <SidebarMenuItem data-tour="user-menu">
-          <DropdownMenu>
+          <SpotlightPopover
+            :title="$t('Pritaikyk šoninę juostą sau')"
+            :description="$t('Paskyros meniu gali pritaikyti šoninę juostą, prisegti puslapius ir peržiūrėti klaviatūros trumpinius.')"
+            :is-dismissed="settingsSpotlight.isDismissed.value"
+            position="top-right"
+            style="display: block; width: 100%;"
+            @dismiss="settingsSpotlight.dismiss"
+          >
+          <DropdownMenu @update:open="(o: boolean) => { if (o) { settingsSpotlight.dismiss(); } }">
             <DropdownMenuTrigger as-child>
               <SidebarMenuButton size="lg"
                 class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent/60 transition-all duration-200">
@@ -106,6 +121,14 @@
                     <span>{{ $t('Nustatymai') }}</span>
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem class="cursor-pointer" @select="showCustomizeDialog = true">
+                  <SlidersHorizontal class="mr-2 h-4 w-4" />
+                  <span>{{ $t('Pritaikyti šoninę juostą') }}</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem class="cursor-pointer" @select="showShortcutsDialog = true">
+                  <Keyboard class="mr-2 h-4 w-4" />
+                  <span>{{ $t('Klaviatūros trumpiniai') }}</span>
+                </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <div class="p-2">
@@ -134,6 +157,7 @@
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          </SpotlightPopover>
         </SidebarMenuItem>
       </SidebarMenu>
       <!-- Version info -->
@@ -201,6 +225,12 @@
 
   <!-- New Meeting Modal -->
   <NewMeetingDialog :show-modal="showMeetingModal" @close="showMeetingModal = false" />
+
+  <!-- Sidebar customization -->
+  <SidebarCustomizeDialog v-model:open="showCustomizeDialog" />
+
+  <!-- Keyboard shortcuts -->
+  <KeyboardShortcutsDialog v-model:open="showShortcutsDialog" />
 </template>
 
 <script setup lang="ts">
@@ -222,21 +252,30 @@ import {
   Github,
   Bell,
   Search,
+  SlidersHorizontal,
+  Keyboard,
   type LucideIcon,
 } from 'lucide-vue-next';
 import { Link, router, usePage, useForm } from '@inertiajs/vue3';
 import { loadLanguageAsync, trans as $t } from 'laravel-vue-i18n';
 import { computed, markRaw, ref, watch } from 'vue';
-import { useDark } from '@vueuse/core';
+import { useDark, useEventListener } from '@vueuse/core';
 
 import NavMain from './NavMain.vue';
 import NavSecondary from './NavSecondary.vue';
 import NavQuickActions from './NavQuickActions.vue';
 import FollowedInstitutionsHotbar from './Sidebar/FollowedInstitutionsHotbar.vue';
+import PinnedPagesSection from './Sidebar/PinnedPagesSection.vue';
+import RecentlyVisitedSection from './Sidebar/RecentlyVisitedSection.vue';
+import SidebarCustomizeDialog from './Sidebar/SidebarCustomizeDialog.vue';
 import SidebarStartFM from './SidebarStartFM.vue';
 import AppLogo from './AppLogo.vue';
+import KeyboardShortcutsDialog from './KeyboardShortcutsDialog.vue';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 
 import { useDocsUpdateIndicator } from '@/Composables/useDocsUpdateIndicator';
+import { useUIPreferences } from '@/Composables/useUIPreferences';
 import NewMeetingDialog from '@/Components/Dialogs/NewMeetingDialog.vue';
 import {
   Sidebar,
@@ -293,6 +332,35 @@ watch(
 
 const isDark = useDark();
 const { lastUpdateDate, latestVersion, markAsSeen: markDocsUpdatesSeen } = useDocsUpdateIndicator();
+const { isSectionVisible, orderedSections, density } = useUIPreferences();
+
+// Density is anchored here: `group/density` + `data-density` on SidebarContent.
+// The shared sidebar primitives react via `group-data-[density=compact]/density:`
+// variants (see ui/sidebar/*), so every element — including future ones —
+// scales consistently in compact mode without per-selector tuning here.
+
+const showCustomizeDialog = ref(false);
+const showShortcutsDialog = ref(false);
+
+// Draw attention to the account menu, which now hosts sidebar customization,
+// pinned pages and keyboard shortcuts. Dismisses once the menu is opened.
+const settingsSpotlight = useFeatureSpotlight('sidebar-settings-v1', { position: 'top-right' });
+
+// "?" opens the keyboard-shortcuts cheatsheet, unless the user is typing.
+useEventListener('keydown', (event: KeyboardEvent) => {
+  if (event.key !== '?' || event.metaKey || event.ctrlKey || event.altKey) {
+    return;
+  }
+  const target = event.target as HTMLElement | null;
+  if (target && (
+    target.isContentEditable
+    || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)
+  )) {
+    return;
+  }
+  event.preventDefault();
+  showShortcutsDialog.value = true;
+});
 
 const docsBase = computed(() => usePage().props.app.locale === 'en' ? '/docs/en' : '/docs');
 

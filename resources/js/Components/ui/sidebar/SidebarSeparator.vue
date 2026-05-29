@@ -1,7 +1,7 @@
 <template>
   <Separator
     data-sidebar="separator"
-    :class="cn('mx-2 w-auto bg-sidebar-border', props.class)"
+    :class="cn('mx-2 w-auto bg-sidebar-border group-data-[density=compact]/density:my-1.5', props.class)"
   >
     <slot />
   </Separator>

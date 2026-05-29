@@ -68,6 +68,7 @@ class HandleInertiaRequests extends Middleware
                     'tenants' => $user->tenants()->get(['tenants.id', 'tenants.shortname', 'tenants.alias'])->unique(),
                     'unreadNotifications' => $user->unreadNotifications()->get(),
                     'tutorial_progress' => $user->tutorial_progress ?? [],
+                    'ui_preferences' => $user->ui_preferences ?? [],
                 ],
                 'impersonating' => fn () => $this->getImpersonationState($request),
             ],

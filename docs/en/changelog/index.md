@@ -7,6 +7,14 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.11 — Customizable Sidebar & Recently Visited Pages (2026-05-19) {#v1-11}
+
+- ⭐ **Pinned pages** — pin any admin page (star it in recently-visited or the command palette) to keep it in a dedicated "Pinned" section in the sidebar; choices are saved to your account
+- ✨ **Compact view** — the "Customize sidebar" dialog now has a compact mode that tightens sidebar spacing
+- ✨ **Remembered sidebar state & shortcuts** — the collapsed/expanded sidebar state is now saved to your account and applies across devices, and pressing "?" shows a keyboard-shortcuts cheatsheet (search ⌘K, sidebar ⌘B)
+- ⭐ **Customizable sidebar** — a new "Customize sidebar" option in the account menu lets you hide or show optional sections (quick actions, followed institutions, START FM, help, recently visited) and drag to reorder them. The logo, account menu and main navigation stay visible. Choices are saved to your account and apply across browsers
+- ⭐ **Recently visited pages** — the sidebar and the command palette (Cmd/Ctrl+K, before searching) now show the admin pages you visited most recently
+
 ## v1.10 — Ex-officio Duties & Cross-tenant Representatives (2026-05-12) {#v1-10}
 
 - ⭐ **Ex-officio duties** — on the duty edit page you can list duties that are granted automatically alongside this one (e.g. chairing a body grants a seat in its directorate). Derived assignments mirror the source's dates, and when the source ends the derived ones are end-dated too

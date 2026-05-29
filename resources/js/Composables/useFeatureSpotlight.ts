@@ -56,7 +56,7 @@ export interface FeatureSpotlightOptions {
    * Position of the popover relative to the target element
    * @default 'bottom'
    */
-  position?: 'top' | 'bottom' | 'left' | 'right';
+  position?: 'top' | 'bottom' | 'left' | 'right' | 'top-right';
 
   /**
    * Callback when spotlight is dismissed

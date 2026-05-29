@@ -8,6 +8,7 @@ use App\Models\Pivots\MembershipUser;
 use App\Models\Pivots\Trainable;
 use App\Models\Traits\HasNotificationPreferences;
 use App\Models\Traits\HasTranslations;
+use App\Models\Traits\HasUIPreferences;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -44,7 +45,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon|null $last_action
  * @property array<array-key, mixed>|null $tutorial_progress
  * @property array $notification_preferences
- * @property string|null $ui_preferences
+ * @property array $ui_preferences
  * @property string|null $microsoft_token
  * @property Carbon $updated_at
  * @property Carbon $created_at
@@ -98,7 +99,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  */
 class User extends Authenticatable
 {
-    use HasFactory, HasNotificationPreferences, HasPushSubscriptions, HasRelationships, HasRoles, HasTranslations, HasUlids, LogsActivity, Notifiable, Searchable, SoftDeletes;
+    use HasFactory, HasNotificationPreferences, HasPushSubscriptions, HasRelationships, HasRoles, HasTranslations, HasUIPreferences, HasUlids, LogsActivity, Notifiable, Searchable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -108,6 +109,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name', 'email', 'facebook_url', 'password', 'phone', 'profile_photo_path', 'profile_photo_focal_point', 'pronouns', 'show_pronouns',
         'notification_preferences',
+        'ui_preferences',
     ];
 
     public $translatable = [
@@ -125,6 +127,7 @@ class User extends Authenticatable
         'email_verified_at',
         'tutorial_progress',
         'notification_preferences',
+        'ui_preferences',
         'last_action',
         'microsoft_token',
         'name_was_changed',
@@ -138,6 +141,7 @@ class User extends Authenticatable
             'name_was_changed' => 'boolean',
             'tutorial_progress' => 'array',
             'notification_preferences' => 'array',
+            'ui_preferences' => 'array',
         ];
     }
 
