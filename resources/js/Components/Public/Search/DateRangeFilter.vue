@@ -139,7 +139,7 @@ import {
 interface DateRange {
   from?: Date;
   to?: Date;
-  preset?: 'recent' | '3months' | '6months' | '1year' | 'year-range' | 'custom';
+  preset?: 'recent' | '1year' | 'year-range' | 'custom';
 }
 
 interface Props {
@@ -162,18 +162,6 @@ const datePresets = computed(() => [
     label: $t('search.date_recent'),
     description: $t('search.date_recent_desc'),
     icon: '🕒',
-  },
-  {
-    key: '3months',
-    label: $t('search.date_3_months'),
-    description: $t('search.date_3_months_desc'),
-    icon: '📅',
-  },
-  {
-    key: '6months',
-    label: $t('search.date_6_months'),
-    description: $t('search.date_6_months_desc'),
-    icon: '📅',
   },
   {
     key: '1year',

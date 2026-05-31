@@ -202,7 +202,7 @@ describe('DocumentSearchService', () => {
       const filters = {
         ...baseFilters,
         query: '*',
-        dateRange: { preset: '3months' as const },
+        dateRange: { preset: '1year' as const },
       };
 
       await service.performSearch(filters, 24, false, 0);

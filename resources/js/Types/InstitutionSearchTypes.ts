@@ -133,6 +133,7 @@ export interface InstitutionSearchController {
   // Internal
   searchClient: any;
   initializeSearchClient: () => any;
+  cancelPendingSearch?: () => void;
 }
 
 // Constants

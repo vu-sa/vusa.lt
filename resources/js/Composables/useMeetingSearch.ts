@@ -344,5 +344,6 @@ export const useMeetingSearch = (): MeetingSearchController => {
     // Internal
     searchClient: computed(() => searchClient.value),
     initializeSearchClient,
+    cancelPendingSearch: baseSearch.cancelPendingSearch,
   };
 };

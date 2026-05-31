@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { subMonths } from 'date-fns';
 
 import {
   LanguageUtils,
@@ -203,7 +204,7 @@ describe('FilterUtils', () => {
     });
 
     it('detects date range filters', () => {
-      const filters1 = { ...baseFilters, dateRange: { preset: '3months' as const } };
+      const filters1 = { ...baseFilters, dateRange: { preset: '1year' as const } };
       const filters2 = { ...baseFilters, dateRange: { from: new Date() } };
       const filters3 = { ...baseFilters, dateRange: { to: new Date() } };
 
@@ -229,7 +230,7 @@ describe('FilterUtils', () => {
         tenants: ['vu-sa', 'vu-mif'],
         contentTypes: ['protocol'],
         languages: ['Lithuanian', 'English'],
-        dateRange: { preset: '3months' },
+        dateRange: { preset: '1year' },
       };
 
       expect(FilterUtils.countActiveFilters(filters)).toBe(4);
@@ -264,7 +265,7 @@ describe('FilterUtils', () => {
         tenants: ['vu-sa', 'vu-mif'],
         contentTypes: ['protocol'],
         languages: ['Lithuanian'],
-        dateRange: { preset: '3months' },
+        dateRange: { preset: '1year' },
       };
 
       const summary = FilterUtils.getFilterSummary(filters);
@@ -282,7 +283,7 @@ describe('FilterUtils', () => {
         tenants: ['vu-sa'],
         contentTypes: ['protocol'],
         languages: ['Lithuanian'],
-        dateRange: { preset: '3months' },
+        dateRange: { preset: '1year' },
       };
 
       const cleared = FilterUtils.clearFilters(filters.query);
@@ -423,18 +424,18 @@ describe('DateUtils', () => {
   describe('getPresetDateRange', () => {
     it('returns correct ranges for presets', () => {
       const now = Date.now();
-      const result = DateUtils.getPresetDateRange('3months');
+      const result = DateUtils.getPresetDateRange('1year');
 
       expect(result.to).toBeCloseTo(Math.floor(now / 1000), -2); // Within ~100s of now
       expect(result.from).toBeLessThan(result.to);
 
-      // Should be approximately 3 months ago
-      const expectedFrom = now - (3 * 30 * 24 * 60 * 60 * 1000);
-      expect(result.from).toBeCloseTo(Math.floor(expectedFrom / 1000), -4); // Within ~10000s
+      // Should be approximately 1 year ago for '1year' preset, 3 months for default
+      const oneYearAgo = Math.floor(subMonths(new Date(now), 12).getTime() / 1000);
+      expect(result.from).toBeCloseTo(oneYearAgo, -3); // Within ~1000s
     });
 
     it('handles different preset values', () => {
-      const presets = ['recent', '3months', '6months', '1year'];
+      const presets = ['recent', '1year'];
 
       presets.forEach((preset) => {
         const range = DateUtils.getPresetDateRange(preset);

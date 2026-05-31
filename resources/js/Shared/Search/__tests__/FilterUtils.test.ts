@@ -74,8 +74,12 @@ describe('FilterUtils', () => {
       expect(FilterUtils.hasActiveDateRange(undefined)).toBe(false);
     });
 
-    it('returns true when preset is set', () => {
-      expect(FilterUtils.hasActiveDateRange({ preset: 'recent' })).toBe(true);
+    it('returns false for default recent preset', () => {
+      expect(FilterUtils.hasActiveDateRange({ preset: 'recent' })).toBe(false);
+    });
+
+    it('returns true for non-default preset', () => {
+      expect(FilterUtils.hasActiveDateRange({ preset: '1year' })).toBe(true);
     });
 
     it('returns true when from date is set', () => {
@@ -104,9 +108,9 @@ describe('FilterUtils', () => {
       expect(FilterUtils.hasActiveFilters(filters)).toBe(true);
     });
 
-    it('returns true when date range has values', () => {
+    it('returns true when date range has non-default preset', () => {
       const filters = createDefaultFilters();
-      filters.dateRange = { preset: 'recent' };
+      filters.dateRange = { preset: '1year' };
       expect(FilterUtils.hasActiveFilters(filters)).toBe(true);
     });
 
@@ -159,7 +163,7 @@ describe('FilterUtils', () => {
     it('returns summary of active filters', () => {
       const filters = createDefaultFilters();
       filters.tenants = ['VU SA', 'MIF'];
-      filters.dateRange = { preset: 'recent' };
+      filters.dateRange = { preset: '1year' };
 
       const summary = FilterUtils.getFilterSummary(filters, {
         tenants: 'orgs',
@@ -239,14 +243,14 @@ describe('FilterUtils', () => {
     it('parses URL params into filters', () => {
       const params = new URLSearchParams();
       params.set('q', 'test search');
-      params.set('datePreset', '3months');
+      params.set('datePreset', '1year');
       params.set('dateFrom', '1704067200');
 
       const defaults = createDefaultFilters();
       const result = FilterUtils.urlParamsToFilters(params, defaults);
 
       expect(result.query).toBe('test search');
-      expect(result.dateRange.preset).toBe('3months');
+      expect(result.dateRange.preset).toBe('1year');
       expect(result.dateRange.from).toBeInstanceOf(Date);
     });
   });

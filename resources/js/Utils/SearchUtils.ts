@@ -1,4 +1,5 @@
 import { trans as $t } from 'laravel-vue-i18n';
+import { subMonths, subYears } from 'date-fns';
 
 import type { DocumentSearchFilters, LanguageInfo, SearchError } from '@/Types/DocumentSearchTypes';
 
@@ -216,29 +217,13 @@ export class DateUtils {
 
   static getPresetDateRange(preset: string): { from: number; to: number } {
     const now = Date.now();
-    let fromTime: number;
 
     switch (preset) {
-      case 'recent':
-        fromTime = now - (3 * 30 * 24 * 60 * 60 * 1000);
-        break;
-      case '3months':
-        fromTime = now - (3 * 30 * 24 * 60 * 60 * 1000);
-        break;
-      case '6months':
-        fromTime = now - (6 * 30 * 24 * 60 * 60 * 1000);
-        break;
       case '1year':
-        fromTime = now - (365 * 24 * 60 * 60 * 1000);
-        break;
+        return { from: Math.floor(subYears(new Date(now), 1).getTime() / 1000), to: Math.floor(now / 1000) };
       default:
-        fromTime = now - (3 * 30 * 24 * 60 * 60 * 1000);
+        return { from: Math.floor(subMonths(new Date(now), 3).getTime() / 1000), to: Math.floor(now / 1000) };
     }
-
-    return {
-      from: Math.floor(fromTime / 1000),
-      to: Math.floor(now / 1000),
-    };
   }
 }
 

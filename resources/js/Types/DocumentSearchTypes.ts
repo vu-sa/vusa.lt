@@ -7,7 +7,7 @@ export interface DocumentSearchFilters {
   dateRange: {
     from?: Date;
     to?: Date;
-    preset?: 'recent' | '3months' | '6months' | '1year' | 'year-range' | 'custom';
+    preset?: 'recent' | '1year' | 'year-range' | 'custom';
   };
 }
 
@@ -186,6 +186,7 @@ export interface DocumentSearchController {
   // Internal
   searchClient: any;
   initializeSearchClient: () => any;
+  cancelPendingSearch?: () => void;
 }
 
 // Utility type for making properties optional
@@ -220,8 +221,6 @@ export const FACET_FIELD_LABELS: Record<string, string> = {
 
 export const DATE_RANGE_PRESETS = {
   'recent': 'Recent (3 months)',
-  '3months': 'Last 3 months',
-  '6months': 'Last 6 months',
   '1year': 'Last year',
   'year-range': 'Year range',
   'custom': 'Custom range',
