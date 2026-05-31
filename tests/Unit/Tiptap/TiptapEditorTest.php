@@ -194,6 +194,35 @@ describe('Youtube node', function () {
         expect($html)->toContain('class="aspect-video');
     });
 
+    it('appends start time query param when present', function () {
+        $content = [
+            'type' => 'doc',
+            'content' => [
+                ['type' => 'youtube', 'attrs' => ['src' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'start' => 42]],
+            ],
+        ];
+
+        $editor = new TiptapEditor;
+        $html = $editor->setContent($content)->getHTML();
+
+        expect($html)->toContain('youtube-nocookie.com/embed/dQw4w9WgXcQ?start=42');
+    });
+
+    it('omits start time query param when zero or missing', function () {
+        $content = [
+            'type' => 'doc',
+            'content' => [
+                ['type' => 'youtube', 'attrs' => ['src' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'start' => 0]],
+            ],
+        ];
+
+        $editor = new TiptapEditor;
+        $html = $editor->setContent($content)->getHTML();
+
+        expect($html)->toContain('youtube-nocookie.com/embed/dQw4w9WgXcQ');
+        expect($html)->not->toContain('start=');
+    });
+
     it('extracts video ID from youtu.be short URL', function () {
         $content = [
             'type' => 'doc',

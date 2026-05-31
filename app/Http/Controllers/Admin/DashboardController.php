@@ -7,6 +7,7 @@ use App\Enums\NotificationCategory;
 use App\Enums\NotificationChannel;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\UpdatePasswordRequest;
+use App\Http\Requests\UpdateUIPreferencesRequest;
 use App\Mail\FeedbackMail;
 use App\Models\Calendar;
 use App\Models\Institution;
@@ -537,6 +538,81 @@ class DashboardController extends AdminController
         $user->save();
 
         return $this->redirectBackWithSuccess('Pranešimų nustatymai išsaugoti.');
+    }
+
+    /**
+     * Update sidebar customization preferences (which sections are visible,
+     * their order, and which quick actions are shown).
+     */
+    public function updateUIPreferences(UpdateUIPreferencesRequest $request)
+    {
+        $user = User::find(Auth::id());
+
+        $sections = $request->input('sidebar.sections');
+        if (is_array($sections)) {
+            $user->setSidebarSectionVisibility($sections);
+        }
+
+        $order = $request->input('sidebar.order');
+        if (is_array($order)) {
+            $user->setSidebarSectionOrder($order);
+        }
+
+        $quickActions = $request->input('quick_actions');
+        if (is_array($quickActions)) {
+            $user->setQuickActionVisibility($quickActions);
+        }
+
+        if ($request->has('sidebar.collapsed')) {
+            $user->setSidebarCollapsed($request->boolean('sidebar.collapsed'));
+        }
+
+        $density = $request->input('appearance.density');
+        if (is_string($density)) {
+            $user->setDensity($density);
+        }
+
+        $pinnedPages = $request->input('pinned_pages');
+        if (is_array($pinnedPages)) {
+            $user->setPinnedPages($pinnedPages);
+        }
+
+        // Side-effect write driven by optimistic UI — no redirect needed.
+        return response()->noContent();
+    }
+
+    /**
+     * Record a recently visited admin page.
+     *
+     * Fire-and-forget: returns 204 (no redirect) so the calling page is not
+     * disrupted by an Inertia visit.
+     */
+    public function trackRecentPage(Request $request)
+    {
+        $validated = $request->validate([
+            'route' => 'required_without:clear|nullable|string',
+            'params' => 'nullable|array',
+            'title' => 'nullable|string|max:255',
+            'url' => 'nullable|string|max:2048',
+            'clear' => 'nullable|boolean',
+        ]);
+
+        $user = User::find(Auth::id());
+
+        if ($request->boolean('clear')) {
+            $user->clearRecentPages();
+
+            return response()->noContent();
+        }
+
+        $user->pushRecentPage(
+            $validated['route'],
+            $validated['params'] ?? [],
+            $validated['title'] ?? null,
+            $validated['url'] ?? null,
+        );
+
+        return response()->noContent();
     }
 
     public function userTasks(Request $request)

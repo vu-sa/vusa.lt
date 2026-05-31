@@ -89,11 +89,11 @@
               <a :href="training.meeting_url" target="_blank" class="underline">Prisijungti nuotoliu</a>
             </div>
             <div class="flex items-center gap-2">
-              <Icons.INSTITUTION />
+              <InstitutionIconFilled />
               <span>{{ training.institution?.name }}</span>
             </div>
             <div class="inline-flex items-center gap-2">
-              <Icons.USER />
+              <UserIconFilled />
               Organizuoja:
               <UserPopover show-name :size="20" :user="training.organizer" />
             </div>
@@ -119,9 +119,9 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/Components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import ProgrammePlanner from '@/Features/Admin/ProgrammePlanner/ProgrammePlanner.vue';
 import { formatStaticTime } from '@/Utils/IntlTime';
-import Icons from '@/Types/Icons/filled';
 import Sparkle20Filled from '~icons/fluent/sparkle20-filled';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
+import { InstitutionIconFilled, TrainingIconFilled, UserIconFilled } from '@/Components/icons';
 
 const props = defineProps<{
   training: App.Entities.Training;
@@ -144,7 +144,7 @@ usePageBreadcrumbs(() =>
     'trainings.index',
     {},
     props.training.name,
-    Icons.TRAINING,
+    TrainingIconFilled,
     Sparkle20Filled,
   ),
 );

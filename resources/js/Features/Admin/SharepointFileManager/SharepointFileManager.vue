@@ -317,8 +317,14 @@ async function fetchFiles(path: string) {
 
   loading.value = true;
   try {
+    const params: Record<string, string> = { path };
+    if (props.fileable) {
+      params.fileable_type = props.fileable.type;
+      params.fileable_id = String(props.fileable.id);
+    }
+
     const { data } = await useFetch(
-      route('api.v1.admin.sharepoint.driveItems', { path }),
+      route('api.v1.admin.sharepoint.driveItems', params),
     ).json();
 
     // Handle standardized API response format
@@ -443,28 +449,46 @@ function handleFileDeleted(id: string | number) {
 function handleSharepointFileDelete() {
   if (!selectedFile.value) return;
 
-  // Check if this file has an associated FileableFile record (sharepointFile)
-  // The sharepointFile property is added by the backend when file is linked to a fileable
-  const sharepointFileRecord = (selectedFile.value as Record<string, unknown>).sharepointFile as { id: number } | undefined;
+  // New system: FileableFile (created by current uploader)
+  const fileableFileRecord = (selectedFile.value as Record<string, unknown>).fileableFile as { id: string } | undefined;
 
-  if (!sharepointFileRecord?.id) {
-    // No associated FileableFile record - just remove from local state
-    handleFileDeleted(selectedFile.value.id ?? '');
+  if (fileableFileRecord?.id) {
+    router.delete(route('fileableFiles.destroy', fileableFileRecord.id), {
+      preserveState: true,
+      preserveScroll: true,
+      onSuccess: () => {
+        if (selectedFile.value?.id) {
+          handleFileDeleted(selectedFile.value.id);
+        }
+      },
+      onError: () => {
+        toast.error($t('Nepavyko ištrinti failo'));
+      },
+    });
     return;
   }
 
-  router.delete(route('sharepointFiles.destroy', sharepointFileRecord.id), {
-    preserveState: true,
-    preserveScroll: true,
-    onSuccess: () => {
-      if (selectedFile.value?.id) {
-        handleFileDeleted(selectedFile.value.id);
-      }
-    },
-    onError: () => {
-      toast.error('Failed to delete file');
-    },
-  });
+  // Legacy system: SharepointFile
+  const sharepointFileRecord = (selectedFile.value as Record<string, unknown>).sharepointFile as { id: string } | undefined;
+
+  if (sharepointFileRecord?.id) {
+    router.delete(route('sharepointFiles.destroy', sharepointFileRecord.id), {
+      preserveState: true,
+      preserveScroll: true,
+      onSuccess: () => {
+        if (selectedFile.value?.id) {
+          handleFileDeleted(selectedFile.value.id);
+        }
+      },
+      onError: () => {
+        toast.error($t('Nepavyko ištrinti failo'));
+      },
+    });
+    return;
+  }
+
+  // No associated record found - cannot delete backend state
+  toast.error($t('Nepavyko ištrinti failo: failas nėra susietas su jokiu įrašu'));
 }
 
 function handleUploadModeChange(value: boolean) {

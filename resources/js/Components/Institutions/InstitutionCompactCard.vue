@@ -124,7 +124,7 @@
         <Tooltip>
           <TooltipTrigger as-child>
             <Button variant="default" size="sm" class="h-8 w-8" @click="emit('schedule-meeting', institution.id)">
-              <component :is="Icons.MEETING" class="h-3.5 w-3.5" />
+              <component :is="MeetingIconFilled" class="h-3.5 w-3.5" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>{{ $t('Suplanuoti naują susitikimą šiai institucijai') }}</TooltipContent>
@@ -152,7 +152,7 @@
             <Button variant="ghost" size="sm"
               class="h-8 w-8 opacity-60 hover:opacity-100 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-900/30 dark:hover:text-rose-400 transition-all"
               @click="emit('remove-active-check-in', institution.id)">
-              <component :is="Icons.CLOSE" class="h-3.5 w-3.5" />
+              <component :is="X" class="h-3.5 w-3.5" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>{{ $t('Pašalinti pranešimą apie posėdžio nebuvimą') }}</TooltipContent>
@@ -212,13 +212,13 @@
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Link as InertiaLink } from '@inertiajs/vue3';
-import { Globe, Info, Eye, EyeOff, Bell, BellOff, Loader2, CalendarOff, CalendarCheck, CalendarClock, CalendarX, AlertTriangle, Clock } from 'lucide-vue-next';
+import { AlertTriangle, Bell, BellOff, CalendarCheck, CalendarClock, CalendarOff, CalendarX, Clock, Eye, EyeOff, Globe, Info, Loader2, X } from 'lucide-vue-next';
 
 import { Button } from '@/Components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
-import Icons from '@/Types/Icons/filled';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import type { AtstovavimosInstitution } from '@/Pages/Admin/Dashboard/types';
+import { MeetingIconFilled } from '@/Components/icons';
 
 const props = defineProps<{
   institution: AtstovavimosInstitution;

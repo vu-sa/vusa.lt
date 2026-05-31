@@ -12,8 +12,7 @@
  * const { open, toggle } = useCommandPalette()
  */
 
-import { ref, provide, inject, readonly, onMounted, onUnmounted, type InjectionKey, type Ref } from 'vue';
-import { useEventListener, useLocalStorage } from '@vueuse/core';
+import { ref, computed, provide, inject, readonly, onMounted, onUnmounted, type ComputedRef, type InjectionKey, type Ref } from 'vue';
 
 // Types
 export interface RecentItem {
@@ -21,7 +20,18 @@ export interface RecentItem {
   type: 'meeting' | 'agenda_item' | 'action' | 'news' | 'page' | 'calendar' | 'institution' | 'document';
   title: string;
   href?: string;
+  /** Ziggy route name, when the item is an admin page (used for icon lookup) */
+  routeName?: string;
   timestamp: number;
+}
+
+/**
+ * Source of recently visited pages. Wired to useUIPreferences (server-backed)
+ * so the command palette "Neseniai" list and the sidebar share one source.
+ */
+export interface RecentSource {
+  recentPages: ComputedRef<RecentItem[]> | Ref<RecentItem[]>;
+  clearRecent: () => void;
 }
 
 interface CommandPaletteContext {
@@ -29,7 +39,7 @@ interface CommandPaletteContext {
   isOpen: Ref<boolean>;
   /** Current search query */
   query: Ref<string>;
-  /** Recent items (persisted to localStorage) */
+  /** Recently visited pages (server-backed via useUIPreferences) */
   recentItems: Ref<RecentItem[]>;
   /** Open the command palette */
   open: () => void;
@@ -45,16 +55,21 @@ interface CommandPaletteContext {
 
 const COMMAND_PALETTE_INJECTION_KEY: InjectionKey<CommandPaletteContext> = Symbol('command-palette');
 
-const MAX_RECENT_ITEMS = 5;
-const RECENT_ITEMS_KEY = 'vusa-command-palette-recent';
-
 /**
- * Creates the command palette provider context (call in AdminLayout)
+ * Creates the command palette provider context (call in AdminLayout).
+ *
+ * Pass the useUIPreferences context as `recentSource` so the palette's
+ * "Neseniai" list reflects the same server-backed recently-visited pages as
+ * the sidebar. (Provide/inject can't resolve a sibling provider during the
+ * same setup, so the source is passed explicitly.)
  */
-export function createCommandPaletteProvider(): CommandPaletteContext {
+export function createCommandPaletteProvider(recentSource?: RecentSource): CommandPaletteContext {
   const isOpen = ref(false);
   const query = ref('');
-  const recentItems = useLocalStorage<RecentItem[]>(RECENT_ITEMS_KEY, []);
+  const fallbackRecent = ref<RecentItem[]>([]);
+  const recentItems = computed<RecentItem[]>(
+    () => recentSource?.recentPages.value ?? fallbackRecent.value,
+  ) as unknown as Ref<RecentItem[]>;
 
   const open = () => {
     isOpen.value = true;
@@ -75,26 +90,18 @@ export function createCommandPaletteProvider(): CommandPaletteContext {
     }
   };
 
-  const addRecentItem = (item: Omit<RecentItem, 'timestamp'>) => {
-    // Remove duplicate if exists
-    recentItems.value = recentItems.value.filter(
-      r => !(r.id === item.id && r.type === item.type),
-    );
-
-    // Add to beginning
-    recentItems.value.unshift({
-      ...item,
-      timestamp: Date.now(),
-    });
-
-    // Keep only MAX_RECENT_ITEMS
-    if (recentItems.value.length > MAX_RECENT_ITEMS) {
-      recentItems.value = recentItems.value.slice(0, MAX_RECENT_ITEMS);
-    }
-  };
+  // Recently visited is now driven by the global visit tracker
+  // (useUIPreferences). Kept as a no-op shim so existing callers
+  // (ActionResult, NewsResult, …) don't break.
+  const addRecentItem = (_item: Omit<RecentItem, 'timestamp'>) => {};
 
   const clearRecentItems = () => {
-    recentItems.value = [];
+    if (recentSource) {
+      recentSource.clearRecent();
+    }
+    else {
+      fallbackRecent.value = [];
+    }
   };
 
   // Register global keyboard shortcut

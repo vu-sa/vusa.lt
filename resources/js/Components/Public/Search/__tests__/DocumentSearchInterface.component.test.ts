@@ -236,12 +236,13 @@ describe('DocumentSearchInterface', () => {
       expect(mockSearchController.search).toHaveBeenCalledWith('recent search', true);
     });
 
-    it('handles clear search', async () => {
+    it('handles clear search by clearing filters and showing all documents', async () => {
       const wrapper = createWrapper();
 
       const searchInput = wrapper.findComponent({ name: 'DocumentSearchInput' });
       await searchInput.vm.$emit('clear');
 
+      expect(mockSearchController.clearFilters).toHaveBeenCalled();
       expect(mockSearchController.search).toHaveBeenCalledWith('*', true);
     });
 
@@ -289,7 +290,7 @@ describe('DocumentSearchInterface', () => {
 
     it('forwards date range filter updates', async () => {
       const wrapper = createWrapper();
-      const dateRange = { preset: '3months' };
+      const dateRange = { preset: '1year' };
 
       const sidebar = wrapper.findComponent({ name: 'DocumentFacetSidebar' });
       await sidebar.vm.$emit('update:dateRange', dateRange);
@@ -522,7 +523,8 @@ describe('DocumentSearchInterface', () => {
       const results = wrapper.findComponent({ name: 'DocumentResults' });
       await results.vm.$emit('clear-filters');
 
-      // Should trigger the same as clear - search all documents
+      // Should clear filters and then search all documents
+      expect(mockSearchController.clearFilters).toHaveBeenCalled();
       expect(mockSearchController.search).toHaveBeenCalledWith('*', true);
     });
   });
@@ -554,7 +556,7 @@ describe('DocumentSearchInterface', () => {
         tenants: ['VU SA', 'VU SA CHGF'],
         contentTypes: ['protokolas'],
         languages: [],
-        dateRange: { preset: '3months' },
+        dateRange: { preset: '1year' },
       };
 
       const wrapper = createWrapper();

@@ -14,9 +14,9 @@ import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ref, computed } from 'vue';
 
-import Icons from '@/Types/Icons/regular';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
+import { CategoryIcon } from '@/Components/icons';
 import {
   createTitleColumn,
   createTextColumn,
@@ -87,7 +87,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Category>>(() => {
     enableRowSelection: false,
 
     headerTitle: 'Kategorijos',
-    icon: Icons.CATEGORY,
+    icon: CategoryIcon,
     createRoute: canCreate.value ? route('categories.create') : undefined,
     canCreate: canCreate.value,
   };

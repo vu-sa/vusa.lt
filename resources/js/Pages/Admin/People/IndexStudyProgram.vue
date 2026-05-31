@@ -36,12 +36,12 @@ import {
 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 
-import Icons from '@/Types/Icons/regular';
 import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
 import { Button } from '@/Components/ui/button';
 import { TruncatedBadge } from '@/Components/ui/data-table/cells';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
+import { StudyProgramIcon } from '@/Components/icons';
 import {
   createTitleColumn,
   createTenantColumn,
@@ -150,7 +150,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.StudyProgram>>(() 
 
     // Page layout
     headerTitle: 'Studijų programos',
-    icon: Icons.STUDY_PROGRAM,
+    icon: StudyProgramIcon,
     createRoute: canCreate.value ? route('studyPrograms.create') : undefined,
     canCreate: canCreate.value,
   };

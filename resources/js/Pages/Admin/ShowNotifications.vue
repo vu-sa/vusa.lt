@@ -165,13 +165,13 @@ import {
   groupNotificationsByTime,
   type Notification,
 } from '@/Composables/useNotificationFormatting';
-import Icons from '@/Types/Icons/regular';
 import IFluentCheckmarkCircle24Regular from '~icons/fluent/checkmark-circle-24-regular';
 import IFluentCheckmark24Filled from '~icons/fluent/checkmark24-filled';
 import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
 import IFluentDeleteDismiss24Regular from '~icons/fluent/delete-dismiss24-regular';
 import IFluentMoreHorizontal20Regular from '~icons/fluent/more-horizontal20-regular';
 import IFluentAlertBadge24Regular from '~icons/fluent/alert-badge24-regular';
+import { NotificationIcon } from '@/Components/icons';
 
 const props = defineProps<{
   notifications: Notification[];
@@ -179,7 +179,7 @@ const props = defineProps<{
 
 // Breadcrumbs
 usePageBreadcrumbs([
-  { label: $t('Pranešimai'), icon: Icons.NOTIFICATION },
+  { label: $t('Pranešimai'), icon: NotificationIcon },
 ]);
 
 const toasts = useToasts();

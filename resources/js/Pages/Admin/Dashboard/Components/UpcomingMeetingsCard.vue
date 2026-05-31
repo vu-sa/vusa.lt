@@ -5,7 +5,7 @@
 
     <CardHeader class="pb-3 relative z-10">
       <CardTitle class="flex items-center gap-2">
-        <component :is="Icons.MEETING" :class="iconClasses" aria-hidden="true" />
+        <component :is="MeetingIconFilled" :class="iconClasses" aria-hidden="true" />
         {{ $t('Tavo artėjantys susitikimai') }}
       </CardTitle>
     </CardHeader>
@@ -101,7 +101,7 @@
             <Tooltip>
               <TooltipTrigger as-child>
                 <Button data-tour="all-meetings" size="sm" variant="outline" class="flex-1 mr-2" @click="$emit('show-all-meetings')">
-                  <component :is="Icons.MEETING" class="mr-2 h-4 w-4" />
+                  <component :is="MeetingIconFilled" class="mr-2 h-4 w-4" />
                   {{ $t('Visi susitikimai') }}
                 </Button>
               </TooltipTrigger>
@@ -115,7 +115,7 @@
               <Tooltip>
                 <TooltipTrigger as-child>
                   <Button data-tour="create-meeting-action" variant="ghost" size="sm" class="h-8 w-8" @click="$emit('create-meeting')">
-                    <component :is="Icons.PLUS" class="h-4 w-4" />
+                    <component :is="Plus" class="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>{{ $t('Sukurti naują susitikimą') }}</TooltipContent>
@@ -184,16 +184,16 @@
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowRight, Globe } from 'lucide-vue-next';
+import { ArrowRight, Globe, Plus } from 'lucide-vue-next';
 
 import type { AtstovavimosMeeting, InstitutionInsights } from '../types';
 
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
-import Icons from '@/Types/Icons/filled';
 import { formatMeetingDateTime } from '@/Utils/MeetingDisplay';
 import { dashboardCardClasses, dashboardCardFooterClasses, cardAccentColors } from '@/Composables/useDashboardCardStyles';
+import { MeetingIconFilled } from '@/Components/icons';
 
 interface Props {
   upcomingMeetings: AtstovavimosMeeting[];

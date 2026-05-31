@@ -46,7 +46,7 @@
 
             <!-- Empty state -->
             <div v-if="filteredInstitutions.length === 0" class="text-center py-8 text-zinc-500 dark:text-zinc-400">
-              <component :is="Icons.INSTITUTION" class="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <component :is="InstitutionIconFilled" class="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>{{ searchQuery ? $t('Institucijų nerasta pagal paiešką') : $t('Institucijų nerasta') }}</p>
             </div>
           </TabsContent>
@@ -74,7 +74,7 @@
 
             <!-- Empty state -->
             <div v-if="filteredRelatedInstitutions.length === 0" class="text-center py-8 text-zinc-500 dark:text-zinc-400">
-              <component :is="Icons.INSTITUTION" class="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <component :is="InstitutionIconFilled" class="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>{{ relatedSearchQuery ? $t('Institucijų nerasta pagal paiešką') : $t('Susijusių institucijų nerasta') }}</p>
             </div>
           </TabsContent>
@@ -105,7 +105,7 @@
 
           <!-- Empty state -->
           <div v-if="filteredInstitutions.length === 0" class="text-center py-8 text-zinc-500 dark:text-zinc-400">
-            <component :is="Icons.INSTITUTION" class="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <component :is="InstitutionIconFilled" class="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>{{ searchQuery ? $t('Institucijų nerasta pagal paiešką') : $t('Institucijų nerasta') }}</p>
           </div>
         </template>
@@ -132,7 +132,7 @@ import {
   DialogTitle,
 } from '@/Components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
-import Icons from '@/Types/Icons/filled';
+import { InstitutionIconFilled } from '@/Components/icons';
 
 interface Props {
   institutions: AtstovavimosInstitution[];

@@ -213,15 +213,6 @@ export class DocumentSearchService {
       let fromTime: number;
 
       switch (dateRange.preset) {
-        case 'recent':
-          fromTime = now - (3 * 30 * 24 * 60 * 60 * 1000);
-          break;
-        case '3months':
-          fromTime = now - (3 * 30 * 24 * 60 * 60 * 1000);
-          break;
-        case '6months':
-          fromTime = now - (6 * 30 * 24 * 60 * 60 * 1000);
-          break;
         case '1year':
           fromTime = now - (365 * 24 * 60 * 60 * 1000);
           break;

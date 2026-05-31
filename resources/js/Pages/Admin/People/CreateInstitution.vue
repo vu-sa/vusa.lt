@@ -1,5 +1,5 @@
 <template>
-  <PageContent :title="$page.props.seo.title" :heading-icon="Icons.INSTITUTION">
+  <PageContent :title="$page.props.seo.title" :heading-icon="InstitutionIcon">
     <UpsertModelLayout>
       <InstitutionForm remember-key="CreateInstitution" :assignable-tenants :institution :institution-types
         @submit:form="handleSubmit" />
@@ -10,10 +10,10 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
 
-import Icons from '@/Types/Icons/regular';
 import InstitutionForm from '@/Components/AdminForms/InstitutionForm.vue';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import { InstitutionIcon } from '@/Components/icons';
 
 defineProps<{
   assignableTenants: Array<App.Entities.Tenant>;

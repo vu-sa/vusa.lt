@@ -32,6 +32,18 @@ export interface DocumentDisplayItem {
 }
 
 /**
+ * Appends `web=1` to a SharePoint URL to force it to open in the browser viewer
+ * rather than the native OneDrive / Office / Copilot mobile app.
+ * Skipped when the URL already has `web=1` or `download=1`.
+ */
+export function forceBrowserDocumentUrl(url: string | null | undefined): string | undefined {
+  if (!url) return undefined;
+  if (url.includes('web=1') || url.includes('download=1')) return url;
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}web=1`;
+}
+
+/**
  * Composable for document display utilities
  * Centralizes all document formatting and display logic
  */

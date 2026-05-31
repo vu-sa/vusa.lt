@@ -27,15 +27,15 @@
 
       <template v-else>
         <!-- Recent items (when query is empty) -->
-        <CommandGroup v-if="!query && recentItems.length > 0" :heading="$t('Neseniai')" class="px-2">
-          <CommandItem v-for="item in recentItems" :key="`recent-${item.type}-${item.id}`"
+        <CommandGroup v-if="!query && topRecentItems.length > 0" :heading="$t('Neseniai')" class="px-2">
+          <CommandItem v-for="item in topRecentItems" :key="`recent-${item.type}-${item.id}`"
             :value="`recent-${item.type}-${item.id}`"
             class="group cursor-pointer rounded-lg px-3 py-2.5 transition-colors hover:bg-accent"
             @select="handleRecentSelect(item)">
             <div class="flex items-center gap-3 w-full">
               <div
                 class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted/50 text-muted-foreground group-hover:bg-background group-hover:shadow-sm transition-all">
-                <Clock class="size-4" />
+                <component :is="resolveRecentIcon(item)" class="size-4" />
               </div>
               <div class="flex-1 min-w-0">
                 <span class="block font-medium truncate text-sm">{{ item.title }}</span>
@@ -43,6 +43,19 @@
                   {{ getRecentTypeBadge(item.type) }}
                 </span>
               </div>
+              <button
+                v-if="item.type === 'page' && item.routeName"
+                type="button"
+                class="shrink-0 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-background transition-colors"
+                :class="isPinned({ routeName: item.routeName, href: item.href })
+                  ? 'text-amber-500 hover:text-amber-500 opacity-100'
+                  : 'opacity-0 group-hover:opacity-100'"
+                :title="isPinned({ routeName: item.routeName, href: item.href }) ? $t('Atsegti') : $t('Prisegti puslapį')"
+                :aria-label="isPinned({ routeName: item.routeName, href: item.href }) ? $t('Atsegti') : $t('Prisegti puslapį')"
+                @click.stop="togglePin({ routeName: item.routeName, href: item.href, title: item.title })"
+              >
+                <Star class="size-4" :fill="isPinned({ routeName: item.routeName, href: item.href }) ? 'currentColor' : 'none'" />
+              </button>
               <ChevronRight
                 class="size-4 text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
@@ -216,7 +229,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue';
+import { ref, computed, watch, nextTick, type Component } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { useDebounceFn } from '@vueuse/core';
@@ -229,6 +242,7 @@ import {
   SearchX,
   Sparkles,
   ArrowRight,
+  Star,
 } from 'lucide-vue-next';
 
 import { useCommandActions } from './useCommandActions';
@@ -243,6 +257,9 @@ import DocumentResult from './results/DocumentResult.vue';
 
 import { useAdminSearch, type MultiSearchResults } from '@/Composables/useAdminSearch';
 import { useCommandPalette, type RecentItem } from '@/Composables/useCommandPalette';
+import { resolvePageIcon } from '@/Composables/adminPageCatalog';
+import { useUIPreferences } from '@/Composables/useUIPreferences';
+import { useAvailableQuickActions } from '@/Composables/useQuickActions';
 import {
   CommandDialog,
   CommandList,
@@ -253,11 +270,15 @@ import {
 // Command palette state
 const { isOpen, query, recentItems, close } = useCommandPalette();
 
+// UI preferences (for quick-action visibility in the palette)
+const { isQuickActionVisible, isPinned, togglePin } = useUIPreferences();
+const { available: availableQuickActions } = useAvailableQuickActions();
+
 // Admin search
 const { multiSearch, initialize: initializeSearch, isRateLimited, isFromRelatedInstitution } = useAdminSearch();
 
 // Command actions
-const { filterActions } = useCommandActions();
+const { filterActions, actions: allCommandActions } = useCommandActions();
 
 // Local state
 const isSearching = ref(false);
@@ -273,9 +294,39 @@ const searchResults = ref<MultiSearchResults>({
 });
 const searchInputRef = ref<HTMLInputElement | null>(null);
 
-// Filtered actions based on query
+// Show only the top 5 recent items in the palette
+const topRecentItems = computed<RecentItem[]>(() => recentItems.value.slice(0, 5));
+
+function resolveRecentIcon(item: RecentItem): Component {
+  return resolvePageIcon(item.routeName, item.href);
+}
+
+// Filtered actions based on query — hide quick actions the user turned off
+// or lacks permission for.
 const filteredActions = computed(() => {
-  return filterActions(query.value).slice(0, 6); // Limit to 6 actions
+  let result = filterActions(query.value);
+
+  const permittedKeys = new Set(availableQuickActions.value.map(m => m.key));
+
+  result = result.filter((action) => {
+    if (action.category !== 'create') {
+      return true;
+    }
+    const map: Record<string, string> = {
+      'create-meeting': 'new_meeting',
+      'create-news': 'new_news',
+      'create-reservation': 'new_reservation',
+      'create-institution': 'new_institution',
+      'create-duty': 'duty_update',
+    };
+    const qaKey = map[action.id];
+    if (!qaKey) {
+      return true;
+    }
+    return permittedKeys.has(qaKey) && isQuickActionVisible(qaKey as any);
+  });
+
+  return result.slice(0, 6); // Limit to 6 actions
 });
 
 // Check if we have any results

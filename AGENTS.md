@@ -149,6 +149,8 @@ if ($request->filled('field')) {
 }
 ```
 
+- Build/manipulate URLs with `Uri::of($url)->withHost(...)->withQuery(...)` (fluent `Illuminate\Support\Uri`) — never `parse_url()` + string concatenation. Prefer `route()`/`tenantRoute()` for internal links.
+
 ### Factories
 
 - Standard models → `database/factories/{Model}Factory.php`
@@ -160,15 +162,22 @@ if ($request->filled('field')) {
 
 - **Checkbox** binds via `model-value` / `v-model` — never `:checked` + `@update:checked`. The underlying `reka-ui` `CheckboxRoot` exposes `modelValue`.
 
-### Icon system
+### Icon system — one set per surface
 
-`resources/js/Components/icons/` is tree-shakable. Prefer direct imports:
+| Surface | Primary set | Import path |
+|---|---|---|
+| Admin (`Pages/Admin/**`, admin Components) | **Lucide** | `import { Save, Lock } from 'lucide-vue-next'` |
+| Public (`Pages/Public/**`, `Components/Public/**`) | **Fluent** | `import IFluentX from '~icons/fluent/x24-regular'` |
+| Brand / social (FB, IG, Microsoft, Spotify…) | **Simple Icons** | `import ISimpleIconsFacebook from '~icons/simple-icons/facebook'` |
+| Dynamic (icon name stored as CMS data) | `@iconify/vue` | `<Icon :icon="\`fluent:${name}\`">` only for runtime-driven names |
+
+**Shared model/form barrel** (`@/Components/icons`): use for admin code that needs the model→icon mapping at runtime (CommandPalette, breadcrumbs, notifications). Contains Fluent icons; will migrate to Lucide once admin pages have moved.
 
 ```ts
-import { NewsIcon, SaveIcon, HomeIconFilled } from '@/Components/icons';
+import { NewsIcon, MeetingIconFilled } from '@/Components/icons';
 ```
 
-Dynamic helpers bundle the entire category — only use when selection is genuinely runtime-driven.
+**Do not** use `@/Types/Icons/regular` or `@/Types/Icons/filled` — these are deprecated and will be removed. Migrate callers to direct named imports.
 
 ### Data tables (TanStack)
 
@@ -192,6 +201,10 @@ Details: [resources/js/Composables/BREADCRUMBS_GUIDE.md](resources/js/Composable
 `form.defaults()` (no args) sets `isDirty = false` **synchronously**. Call it before `form.submit()` / `router.visit()` to avoid the unsaved-changes guard firing on programmatic navigation.
 
 `form.defaults(data)` (with arg) only updates stored defaults; `isDirty` recalculates asynchronously through a watcher — too late for `router.on('before')`.
+
+### Feature discovery (spotlights)
+
+New or relocated admin UI — anything a returning user wouldn't think to look for — **must ship with a spotlight** so it's discoverable. Wrap the entry point with `SpotlightPopover` (`@/Components/Onboarding/SpotlightPopover.vue`) and drive its dismissed state with `useFeatureSpotlight('<feature>-v<n>')` (`@/Composables/useFeatureSpotlight.ts`), which persists per-user via the tutorial-progress API. Dismiss it when the user engages the feature (e.g. opens the menu), not only via the popover button. Bump the `-v<n>` suffix when a feature changes enough to warrant re-surfacing. Example: the account-menu spotlight (`sidebar-settings-v1`) in `AppSidebar.vue`.
 
 ## Styling (Tailwind v4)
 

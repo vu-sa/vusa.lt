@@ -1,12 +1,14 @@
 <template>
-  <Head>
-    <title>{{ $t('search.document_page_title') }}</title>
-    <meta name="description" :content="$t('search.document_page_description')">
-  </Head>
+  <div>
+    <Head>
+      <title>{{ $t('search.document_page_title') }}</title>
+      <meta name="description" :content="$t('search.document_page_description')">
+    </Head>
 
-  <DocumentSearchInterface
-    :important-content-types
-  />
+    <DocumentSearchInterface
+      :important-content-types
+    />
+  </div>
 </template>
 
 <script setup lang="ts">

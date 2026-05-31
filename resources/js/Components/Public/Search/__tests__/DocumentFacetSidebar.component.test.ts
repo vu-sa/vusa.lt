@@ -437,7 +437,7 @@ describe('DocumentFacetSidebar', () => {
       const wrapper = createWrapper({
         filters: {
           ...defaultProps.filters,
-          dateRange: { preset: '3months' },
+          dateRange: { preset: '1year' },
         },
       });
 
@@ -471,7 +471,7 @@ describe('DocumentFacetSidebar', () => {
       const wrapper = createWrapper();
 
       const dateRangeFilter = wrapper.findComponent({ name: 'DateRangeFilter' });
-      const newRange = { preset: '6months' };
+      const newRange = { preset: '1year' };
       await dateRangeFilter.vm.$emit('update:date-range', newRange);
 
       expect(wrapper.emitted('update:dateRange')).toBeTruthy();

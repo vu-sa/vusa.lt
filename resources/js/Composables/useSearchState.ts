@@ -10,7 +10,7 @@ export interface DocumentSearchFilters {
   dateRange: {
     from?: Date;
     to?: Date;
-    preset?: 'recent' | '3months' | '6months' | '1year' | 'year-range' | 'custom';
+    preset?: 'recent' | '1year' | 'year-range' | 'custom';
   };
 }
 

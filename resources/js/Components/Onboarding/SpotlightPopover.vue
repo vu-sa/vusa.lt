@@ -82,7 +82,7 @@ interface Props {
   /**
    * Position of the tooltip
    */
-  position?: 'top' | 'bottom' | 'left' | 'right';
+  position?: 'top' | 'bottom' | 'left' | 'right' | 'top-right';
 
   /**
    * Whether to show the pulsing badge
@@ -133,6 +133,10 @@ const positionClasses = computed(() => {
   switch (props.position) {
     case 'top':
       return 'bottom-full left-1/2 -translate-x-1/2 mb-3 origin-bottom';
+    case 'top-right':
+      // Anchored to the left edge, opening up and to the right — avoids
+      // clipping against the viewport's left edge (e.g. the sidebar footer).
+      return 'bottom-full left-0 mb-3 origin-bottom-left';
     case 'bottom':
       return 'top-full left-1/2 -translate-x-1/2 mt-3 origin-top';
     case 'left':

@@ -328,5 +328,6 @@ export const useInstitutionSearch = (): InstitutionSearchController => {
     // Internal
     searchClient: computed(() => searchClient.value),
     initializeSearchClient,
+    cancelPendingSearch: baseSearch.cancelPendingSearch,
   };
 };

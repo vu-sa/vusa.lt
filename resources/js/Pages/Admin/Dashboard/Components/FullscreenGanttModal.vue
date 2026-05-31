@@ -4,7 +4,7 @@
       <DialogHeader class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <DialogTitle class="flex items-center gap-2">
-            <component :is="Icons.MEETING" class="h-5 w-5" />
+            <component :is="MeetingIconFilled" class="h-5 w-5" />
             {{
               ganttType === 'user'
                 ? $t('Tavo institucijos — laiko juosta')
@@ -139,8 +139,8 @@ import type {
 
 import TimelineGanttChart from './TimelineGanttChart.vue';
 import GanttFilterDropdown from './GanttFilterDropdown.vue';
+import { MeetingIconFilled } from '@/Components/icons';
 
-import Icons from '@/Types/Icons/filled';
 import {
   Dialog,
   DialogContent,

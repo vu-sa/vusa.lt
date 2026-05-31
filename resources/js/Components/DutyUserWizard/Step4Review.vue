@@ -23,7 +23,7 @@
       <div class="p-4 rounded-xl bg-gradient-to-br from-zinc-50 to-slate-50/50 dark:from-zinc-900/50 dark:to-slate-950/20 border border-zinc-100 dark:border-zinc-800">
         <div class="flex items-center gap-3">
           <div class="h-10 w-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-            <Icons.DUTY class="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
+            <DutyIcon class="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
           </div>
           <div class="flex-1 min-w-0">
             <p class="text-xs text-zinc-600/70 dark:text-zinc-400/70">
@@ -303,9 +303,9 @@ import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Separator } from '@/Components/ui/separator';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import Icons from '@/Types/Icons/regular';
 import { formatDateForDisplay } from '@/Composables/useDutyUserWizard';
 import type { useDutyUserWizard } from '@/Composables/useDutyUserWizard';
+import { DutyIcon } from '@/Components/icons';
 
 const wizard = inject<ReturnType<typeof useDutyUserWizard>>('dutyUserWizard')!;
 

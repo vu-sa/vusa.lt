@@ -14,9 +14,9 @@ import { h, ref, computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 
-import Icons from '@/Types/Icons/regular';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
+import { BannerIcon } from '@/Components/icons';
 import {
   createTenantColumn,
 } from '@/Composables/useDataTableColumns';
@@ -93,7 +93,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Banner>>(() => {
     enableRowSelection: false,
 
     headerTitle: 'Baneriai',
-    icon: Icons.BANNER,
+    icon: BannerIcon,
     createRoute: route('banners.create'),
     canCreate: true,
   };

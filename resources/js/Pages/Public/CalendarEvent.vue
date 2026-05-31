@@ -30,7 +30,7 @@
             target="_blank"
             rel="noopener noreferrer"
           >
-            <IMdiGoogle class="w-5 h-5" />
+            <ISimpleIconsGoogle class="w-5 h-5" />
             {{ $t('Į kalendorių') }}
           </Button>
 
@@ -45,7 +45,7 @@
             target="_blank"
             rel="noopener noreferrer"
           >
-            <IMdiFacebook class="w-5 h-5" />
+            <ISimpleIconsFacebook class="w-5 h-5" />
             Facebook
           </Button>
 
@@ -124,7 +124,7 @@
                   :href="googleLink"
                   target="_blank"
                 >
-                  <IMdiGoogle class="w-4 h-4" />
+                  <ISimpleIconsGoogle class="w-4 h-4" />
                   {{ $t('Kalendorius') }}
                 </Button>
                 <Button
@@ -136,7 +136,7 @@
                   :href="event.facebook_url"
                   target="_blank"
                 >
-                  <IMdiFacebook class="w-4 h-4" />
+                  <ISimpleIconsFacebook class="w-4 h-4" />
                   Facebook
                 </Button>
                 <Button
@@ -166,7 +166,7 @@
                   :href="googleLink"
                   target="_blank"
                 >
-                  <IMdiGoogle class="w-4 h-4" />
+                  <ISimpleIconsGoogle class="w-4 h-4" />
                   Google
                 </Button>
                 <Button
@@ -178,7 +178,7 @@
                   :href="event.facebook_url"
                   target="_blank"
                 >
-                  <IMdiFacebook class="w-4 h-4" />
+                  <ISimpleIconsFacebook class="w-4 h-4" />
                   Facebook
                 </Button>
                 <Button
@@ -235,7 +235,7 @@
           :href="googleLink"
           target="_blank"
         >
-          <IMdiGoogle class="w-5 h-5" />
+          <ISimpleIconsGoogle class="w-5 h-5" />
         </Button>
 
         <Button

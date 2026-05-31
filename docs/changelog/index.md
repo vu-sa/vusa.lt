@@ -7,6 +7,26 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.11 — Pritaikoma šoninė juosta ir neseniai aplankyti puslapiai (2026-06-...) {#v1-11}
+
+### Šoninė juosta
+
+- ⭐ **Pritaikoma šoninė juosta** — paskyros meniu atsirado pasirinkimas „Pritaikyti šoninę juostą", kur galima paslėpti ar rodyti pasirinktas sekcijas (greitus veiksmus, sekamas institucijas, START FM, pagalbą, neseniai aplankytus) ir pakeisti jų tvarką. Logotipas, paskyros meniu ir pagrindinė navigacija visada matomi. Pasirinkimai išsaugomi paskyroje ir veikia visose naršyklėse
+- ⭐ **Neseniai aplankyti puslapiai** — šoninėje juostoje ir komandų lange (Cmd/Ctrl+K, prieš paiešką) rodomi paskutiniai lankyti administravimo puslapiai
+- ⭐ **Prisegti puslapiai** — administravimo puslapį gali prisegti (žvaigždute ties neseniai aplankytais arba komandų lange), kad jis liktų atskiroje „Prisegti" sekcijoje šoninėje juostoje; pasirinkimai išsaugomi paskyroje
+- ✨ **Kompaktiškas vaizdas** — „Pritaikyti šoninę juostą" lange galima įjungti kompaktišką režimą, kuris sumažina tarpus šoninėje juostoje
+
+### Kita
+
+- ⭐ **Dokumentų peržiūra naršyklėje** — dokumentų nuorodose pridėtas `?web=1` parametras, kad jie atsidarytų tiesiai naršyklėje, o ne būtų bandoma atidaryti programėlėje
+- 🔧 **Mobilios navigacijos uždarymas** — paspaudus nuorodą mobilioje versijoje, šoninis meniu automatiškai užsidaro
+- 🔧 Failų trynimo pataisymas SharePoint aplinkoje
+- 🔧 **Pataisyta filtrų išvalymo funkcija dokumentų paieškoje** — „Išvalyti filtrus" mygtukas dabar tinkamai išvalo visus filtrus ir parodo visus dokumentus
+- ✨ **Supaprastinti datos intervalo filtrai** — pašalinti besidubliuojantys „3 mėn." ir „6 mėn." pasirinkimai; paliktas numatytasis „Neseniai" (3 mėn.), „1 metai", „Metų intervalas" ir „Pasirinkti datą"
+- ✨ **Matomas paieškos mygtukas administravimo lentelėse** — visose turinio lentelėse šalia paieškos laukelio pridėtas mygtukas „Ieškoti"; taip pat pagerintas filtrų išdėstymas
+
+> 🔗 [GitHub PR #569](https://github.com/vu-sa/vusa.lt/pull/569)
+
 ## v1.10 — Ex-officio pareigos ir atstovai iš kitų padalinių (2026-05-12) {#v1-10}
 
 - ⭐ **Ex-officio pareigos** — pareigybės redagavimo lange galima nurodyti pareigas, kurios automatiškai suteikiamos kartu su šia (pvz. pirmininkavimas suteikia vietą dekanate). Susietų pareigybių datos sinchronizuojamos su pirmine, o pasibaigus pirminei — pažymima pabaiga

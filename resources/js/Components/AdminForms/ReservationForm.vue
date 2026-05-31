@@ -29,7 +29,7 @@
           :placeholder="RESERVATION_PLACEHOLDERS.description[$page.props.app.locale]" />
       </FormFieldWrapper>
     </FormElement>
-    <FormElement :icon="Icons.RESOURCE">
+    <FormElement :icon="ResourceIcon">
       <template #title>
         {{
           capitalize($tChoice("entities.resource.model", 2))
@@ -136,10 +136,10 @@ import { SingleSelect } from '@/Components/ui/single-select';
 import { Textarea } from '@/Components/ui/textarea';
 import { RESERVATION_PLACEHOLDERS } from '@/Constants/I18n/Placeholders';
 import { capitalize } from '@/Utils/String';
-import Icons from '@/Types/Icons/regular';
 import type { ReservationCreationTemplate } from '@/Pages/Admin/Reservations/CreateReservation.vue';
 import type { ReservationEditType } from '@/Pages/Admin/Reservations/EditReservation.vue';
 import MdSuspenseWrapper from '@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue';
+import { ResourceIcon } from '@/Components/icons';
 
 defineEmits<{
   (event: 'update:value', value: number | null): void;

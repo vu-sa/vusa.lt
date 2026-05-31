@@ -581,5 +581,8 @@ export function useBaseSearch<
     // Facets
     loadInitialFacets,
     setSearchService,
+
+    // Cancellation
+    cancelPendingSearch: () => debouncedSearch.cancel(),
   };
 }

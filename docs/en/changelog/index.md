@@ -7,6 +7,26 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.11 — Customizable Sidebar & Recently Visited Pages (2026-06-...) {#v1-11}
+
+### Sidebar
+
+- ⭐ **Customizable sidebar** — a new "Customize sidebar" option in the account menu lets you hide or show optional sections (quick actions, followed institutions, START FM, help, recently visited) and drag to reorder them. The logo, account menu and main navigation stay visible. Choices are saved to your account and apply across browsers
+- ⭐ **Recently visited pages** — the sidebar and the command palette (Cmd/Ctrl+K, before searching) now show the admin pages you visited most recently
+- ⭐ **Pinned pages** — pin any admin page (star it in recently-visited or the command palette) to keep it in a dedicated "Pinned" section in the sidebar; choices are saved to your account
+- ✨ **Compact view** — the "Customize sidebar" dialog now has a compact mode that tightens sidebar spacing
+
+### Other
+
+- ⭐ **Browser document viewing** — added `?web=1` parameter to document links so they open directly in the browser instead of downloading
+- 🔧 **Mobile navigation close** — menus now automatically close when a link is tapped on mobile
+- 🔧 Fixed file deletion in SharePoint environment
+- 🔧 **Fixed filter clearing in document search** — the "Clear filters" button now properly clears all filters and shows all documents
+- ✨ **Simplified date range filters** — removed redundant "3 months" and "6 months" options; kept the default "Recent" (3 months), "1 year", "Year range", and "Custom date"
+- ✨ **Visible search button in admin tables** — all content tables now have a dedicated "Search" button next to the search field; filter layout spacing has also been improved
+
+> 🔗 [GitHub PR #569](https://github.com/vu-sa/vusa.lt/pull/569)
+
 ## v1.10 — Ex-officio Duties & Cross-tenant Representatives (2026-05-12) {#v1-10}
 
 - ⭐ **Ex-officio duties** — on the duty edit page you can list duties that are granted automatically alongside this one (e.g. chairing a body grants a seat in its directorate). Derived assignments mirror the source's dates, and when the source ends the derived ones are end-dated too

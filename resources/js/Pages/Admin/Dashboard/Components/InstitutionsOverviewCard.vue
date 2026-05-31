@@ -5,7 +5,7 @@
 
     <CardHeader class="pb-3 relative z-10">
       <CardTitle class="flex items-center gap-2.5">
-        <component :is="Icons.INSTITUTION" :class="iconClasses" aria-hidden="true" />
+        <component :is="InstitutionIconFilled" :class="iconClasses" aria-hidden="true" />
         <span class="font-semibold">{{ $t('Tavo institucijos') }}</span>
         <span v-if="limitedInstitutions.length < institutions.length"
           class="text-xs px-2 py-1 rounded-full bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 ml-auto font-medium">
@@ -29,14 +29,14 @@
     <CardFooter :class="footerClasses" class="p-4 relative z-10">
       <div class="flex gap-3 w-full">
         <Button data-tour="all-institutions" size="sm" variant="outline" class="flex-1 font-medium" @click="$emit('show-all-modal')">
-          <component :is="Icons.INSTITUTION" class="h-3.5 w-3.5 mr-2" />
+          <component :is="InstitutionIconFilled" class="h-3.5 w-3.5 mr-2" />
           {{ $t('Visos institucijos') }}
         </Button>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger as-child>
               <Button data-tour="create-meeting" size="sm" variant="default" class="w-11 h-9" @click="$emit('create-meeting')">
-                <component :is="Icons.MEETING" class="h-3.5 w-3.5" />
+                <component :is="MeetingIconFilled" class="h-3.5 w-3.5" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>{{ $t('Naujas susitikimas') }}</TooltipContent>
@@ -64,7 +64,7 @@ import InstitutionCompactCard from '@/Components/Institutions/InstitutionCompact
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
-import Icons from '@/Types/Icons/filled';
+import { InstitutionIconFilled, MeetingIconFilled } from '@/Components/icons';
 import {
   useDashboardCardStyles,
   type UrgencyLevel,

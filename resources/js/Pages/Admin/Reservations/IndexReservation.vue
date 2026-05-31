@@ -31,13 +31,13 @@ import {
 import { DateCell, TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
 import { RESERVATION_DATE_TIME_FORMAT } from '@/Constants/DateTimeFormats';
 import { capitalize } from '@/Utils/String';
-import Icons from '@/Types/Icons/regular';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import ReservationsWithUnitResources from '@/Components/Tables/ReservationsWithUnitResources.vue';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import type { IndexTablePageProps } from '@/Types/TableConfigTypes';
 import { BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
+import { ReservationIcon } from '@/Components/icons';
 
 const props = defineProps<{
   reservations: {
@@ -176,7 +176,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Reservation>>(
     allowToggleDeleted: true,
 
     headerTitle: capitalize($tChoice('entities.reservation.model', 2)),
-    icon: Icons.RESERVATION,
+    icon: ReservationIcon,
     breadcrumbs: [
       BreadcrumbHelpers.homeItem(),
       BreadcrumbHelpers.createBreadcrumbItem(
@@ -186,7 +186,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Reservation>>(
       BreadcrumbHelpers.createBreadcrumbItem(
         capitalize($tChoice('entities.reservation.model', 2)),
         undefined,
-        Icons.RESERVATION,
+        ReservationIcon,
       ),
     ],
     createRoute: route('reservations.create'),

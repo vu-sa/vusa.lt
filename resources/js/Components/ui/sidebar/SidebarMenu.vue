@@ -1,7 +1,7 @@
 <template>
   <ul
     data-sidebar="menu"
-    :class="cn('flex w-full min-w-0 flex-col gap-1', props.class)"
+    :class="cn('flex w-full min-w-0 flex-col gap-1 group-data-[density=compact]/density:gap-0.5', props.class)"
   >
     <slot />
   </ul>

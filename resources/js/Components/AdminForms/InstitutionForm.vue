@@ -109,12 +109,12 @@
             <InputWithOverlappingLabel v-model="form.email" :label="$t('El. paštas')" type="email"
               placeholder="info@vusa.lt">
               <template #icon>
-                <IMdiEmailOutline class="h-4 w-4 text-muted-foreground" />
+                <Mail class="h-4 w-4 text-muted-foreground" />
               </template>
             </InputWithOverlappingLabel>
             <InputWithOverlappingLabel v-model="form.phone" :label="$t('Telefonas')" type="tel" placeholder="+370...">
               <template #icon>
-                <IMdiPhone class="h-4 w-4 text-muted-foreground" />
+                <Phone class="h-4 w-4 text-muted-foreground" />
               </template>
             </InputWithOverlappingLabel>
             <InputWithOverlappingLabel v-model="form.website" :label="$t('Svetainė')" type="url"
@@ -126,13 +126,13 @@
             <InputWithOverlappingLabel v-model="form.facebook_url" label="Facebook" type="url"
               placeholder="facebook.com/...">
               <template #icon>
-                <IMdiFacebook class="h-4 w-4 text-[#1877F2]" />
+                <ISimpleIconsFacebook class="h-4 w-4 text-[#1877F2]" />
               </template>
             </InputWithOverlappingLabel>
             <InputWithOverlappingLabel v-model="form.instagram_url" label="Instagram" type="url"
               placeholder="instagram.com/...">
               <template #icon>
-                <IMdiInstagram class="h-4 w-4 text-[#E4405F]" />
+                <ISimpleIconsInstagram class="h-4 w-4 text-[#E4405F]" />
               </template>
             </InputWithOverlappingLabel>
           </div>
@@ -277,7 +277,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { router, useForm, usePage } from '@inertiajs/vue3';
-import { Briefcase, GripVertical, List, Plus, Save } from 'lucide-vue-next';
+import { Briefcase, GripVertical, List, Mail, Phone, Plus, Save } from 'lucide-vue-next';
+import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
+import ISimpleIconsInstagram from '~icons/simple-icons/instagram';
 
 import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
 import SimpleLocaleButton from '../Buttons/SimpleLocaleButton.vue';

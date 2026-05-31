@@ -6,13 +6,27 @@
     <StagingBanner />
     <ImpersonateBanner />
 
-    <SidebarProvider>
+    <SidebarProvider v-model:open="sidebarOpen">
       <AppSidebar />
       <SidebarInset class="flex flex-col">
         <!-- Header with breadcrumbs and actions -->
         <header class="sticky top-0 z-40 flex h-14 shrink-0 items-center justify-between border-b bg-background px-4 md:h-16 md:px-6 md:rounded-t-xl">
           <div class="flex items-center flex-1 gap-2 md:gap-3 min-w-0">
-            <SidebarTrigger class="h-9 w-9 shrink-0 border md:h-7 md:w-7 md:border-0" />
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <SidebarTrigger class="h-9 w-9 shrink-0 border md:h-7 md:w-7" />
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <div class="flex items-center gap-2">
+                    <span>{{ $t('Perjungti šoninę juostą') }}</span>
+                    <kbd class="inline-flex h-5 items-center rounded bg-white/20 dark:bg-black/20 px-1.5 font-mono text-[10px] font-medium">
+                      {{ isMac ? '⌘B' : 'Ctrl+B' }}
+                    </kbd>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <Separator orientation="vertical" class="hidden md:block mr-2 h-4" />
             <AdminBreadcrumbs />
           </div>
@@ -214,7 +228,7 @@
 
 <script setup lang="ts">
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { breakpointsTailwind, useBreakpoints, useOnline, useTimeoutFn } from '@vueuse/core';
+import { breakpointsTailwind, useBreakpoints, useOnline, useTimeoutFn, useDebounceFn } from '@vueuse/core';
 import { computed, onMounted, watch, onBeforeUnmount, ref, nextTick } from 'vue';
 import {
   InfoIcon,
@@ -259,6 +273,7 @@ import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { Toaster } from '@/Components/ui/sonner';
 import { createCommandPaletteProvider } from '@/Composables/useCommandPalette';
+import { createUIPreferencesProvider } from '@/Composables/useUIPreferences';
 import AdminCommandPalette from '@/Components/CommandPalette/AdminCommandPalette.vue';
 import CommandPaletteTrigger from '@/Components/CommandPalette/CommandPaletteTrigger.vue';
 
@@ -314,8 +329,88 @@ const breadcrumbState = createBreadcrumbState('admin');
 // Initialize tour provider - pages can register their tours via provideTour()
 const { hasTour, startTour: startPageTour, clearTour } = createTourProvider();
 
-// Initialize command palette provider for global Cmd+K / Ctrl+K search
-createCommandPaletteProvider();
+// Initialize UI preferences provider (sidebar customization + recently visited)
+const uiPreferences = createUIPreferencesProvider();
+
+// Sidebar expand/collapse, persisted per-user (cross-device) via ui_preferences.
+// SidebarProvider still writes its cookie for fast first paint; the server pref
+// is the authoritative source. Cmd+B / trigger / rail all flow through here.
+const sidebarOpen = computed({
+  get: () => !uiPreferences.sidebarCollapsed.value,
+  set: (value: boolean) => uiPreferences.setSidebarCollapsed(!value),
+});
+
+const isMac = computed(() => {
+  if (typeof navigator === 'undefined') {
+    return false;
+  }
+  return navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+});
+
+// Initialize command palette provider for global Cmd+K / Ctrl+K search.
+// Share the recently-visited source so the palette and sidebar stay in sync.
+createCommandPaletteProvider({
+  recentPages: uiPreferences.recentPages,
+  clearRecent: uiPreferences.clearRecent,
+});
+
+// Track every admin page the user visits. The page-specific title comes from
+// the breadcrumb trail (the last crumb), which every admin page registers —
+// document.title is unreliable (it's just the app name on pages without a
+// <Head>). The customization dialog is a Vue overlay (no component change) so
+// it is inherently excluded.
+const SITE_NAME = /^(mano\s+)?vu\s*sa$/i;
+
+// The admin landing page (/mano) is not worth keeping in history.
+const EXCLUDED_ROUTES = new Set(['dashboard']);
+const ADMIN_HOME_PATH = /^\/mano\/?$/;
+
+function resolveVisitTitle(): string | undefined {
+  const crumbs = breadcrumbState.breadcrumbs.value;
+  const last = crumbs[crumbs.length - 1];
+  if (crumbs.length > 1 && last?.label && !SITE_NAME.test(last.label)) {
+    return last.label;
+  }
+
+  const docTitle = document.title.split(/\s[|–-]\s/)[0].trim();
+  if (docTitle && !SITE_NAME.test(docTitle)) {
+    return docTitle;
+  }
+
+  return undefined; // useUIPreferences falls back to catalog label / route
+}
+
+watch(() => usePage().component, () => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+  const routeName = route().current();
+  if (!routeName || EXCLUDED_ROUTES.has(routeName)) {
+    return;
+  }
+  if (ADMIN_HOME_PATH.test(window.location.pathname)) {
+    return;
+  }
+  const params = (route().params ?? {}) as Record<string, unknown>;
+  // Identity is the path WITHOUT the query string: query params (?page=2,
+  // filters, …) are still the same page and must not create duplicates.
+  const url = window.location.pathname;
+
+  // Defer past the child page's setup so its breadcrumbs / <Head> are set.
+  nextTick(() => {
+    debouncedTrackVisit(routeName, params, resolveVisitTitle(), url);
+  });
+}, { flush: 'post', immediate: true });
+
+// Debounce rapid navigations (pagination, tab switching, etc.) so we don't
+// flood the server with PATCH requests.
+const debouncedTrackVisit = useDebounceFn(
+  (routeName: string, params: Record<string, unknown>, title: string | undefined, url: string) => {
+    uiPreferences.trackVisit(routeName, params, title, url);
+  },
+  1200,
+  { maxWait: 3000 },
+);
 
 // Spotlight for help button - shows once to draw attention to the help feature
 const helpButtonSpotlight = useFeatureSpotlight('help-button-v1');

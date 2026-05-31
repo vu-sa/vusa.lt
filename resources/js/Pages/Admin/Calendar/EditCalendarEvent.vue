@@ -1,5 +1,5 @@
 <template>
-  <PageContent :title="calendar.title.lt" :back-url="route('calendar.index')" :heading-icon="Icons.CALENDAR">
+  <PageContent :title="calendar.title.lt" :back-url="route('calendar.index')" :heading-icon="CalendarIcon">
     <UpsertModelLayout>
       <CalendarForm
         enable-delete
@@ -19,9 +19,9 @@
 import { router, type InertiaForm } from '@inertiajs/vue3';
 
 import CalendarForm from '@/Components/AdminForms/CalendarForm.vue';
-import Icons from '@/Types/Icons/regular';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import { CalendarIcon } from '@/Components/icons';
 
 const { calendar } = defineProps<{
   calendar: App.Entities.Calendar;

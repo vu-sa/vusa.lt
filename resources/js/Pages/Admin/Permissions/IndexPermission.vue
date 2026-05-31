@@ -14,8 +14,8 @@ import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ref, computed } from 'vue';
 
-import Icons from '@/Types/Icons/regular';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
+import { PermissionIcon } from '@/Components/icons';
 import {
   createTextColumn,
   createTimestampColumn,
@@ -82,7 +82,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Permission>>(() =>
     enableRowSelection: false,
 
     headerTitle: 'Leidimai',
-    icon: Icons.PERMISSION,
+    icon: PermissionIcon,
     canCreate: false,
   };
 });

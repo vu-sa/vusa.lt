@@ -10,7 +10,7 @@ export interface MeetingSearchFilters {
   dateRange: {
     from?: Date;
     to?: Date;
-    preset?: 'recent' | '3months' | '6months' | '1year' | 'year-range' | 'custom';
+    preset?: 'recent' | '1year' | 'year-range' | 'custom';
   };
 }
 
@@ -92,6 +92,7 @@ export interface MeetingSearchController {
   // Internal
   searchClient: any;
   initializeSearchClient: () => any;
+  cancelPendingSearch?: () => void;
 }
 
 // Constants

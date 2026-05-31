@@ -23,7 +23,7 @@
           <CardHeader>
             <CardTitle>
               <div class="inline-flex items-center gap-2">
-                <component :is="Icons.PAGE" />
+                <component :is="PageIconFilled" />
                 Puslapiai
               </div>
             </CardTitle>
@@ -43,7 +43,7 @@
           <CardFooter>
             <Link :href="route('pages.index')">
               <Button size="sm" variant="secondary">
-                <Icons.PAGE />
+                <PageIconFilled />
                 {{ $t('Rodyti visus') }}
               </Button>
             </Link>
@@ -53,7 +53,7 @@
           <CardHeader>
             <CardTitle>
               <div class="inline-flex items-center gap-2">
-                <component :is="Icons.NEWS" />
+                <component :is="NewsIconFilled" />
                 Naujienos
               </div>
             </CardTitle>
@@ -75,7 +75,7 @@
           <CardFooter>
             <Link :href="route('news.index')">
               <Button size="sm" variant="secondary">
-                <Icons.NEWS />
+                <NewsIconFilled />
                 {{ $t('Rodyti visus') }}
               </Button>
             </Link>
@@ -93,7 +93,7 @@
           <CardHeader>
             <CardTitle>
               <div class="inline-flex items-center gap-2">
-                <component :is="Icons.QUICK_LINK" />
+                <component :is="QuickLinkIconFilled" />
                 Greitieji mygtukai
               </div>
             </CardTitle>
@@ -106,7 +106,7 @@
           <CardFooter>
             <Link :href="route('quickLinks.index')">
               <Button size="sm" variant="secondary">
-                <Icons.QUICK_LINK />
+                <QuickLinkIconFilled />
                 {{ $t('Rodyti visus') }}
               </Button>
             </Link>
@@ -116,7 +116,7 @@
           <CardHeader>
             <CardTitle>
               <div class="inline-flex items-center gap-2">
-                <component :is="Icons.CALENDAR" />
+                <component :is="CalendarIconFilled" />
                 Kalendoriaus įrašai
               </div>
             </CardTitle>
@@ -132,7 +132,7 @@
           <CardFooter>
             <Link :href="route('calendar.index')">
               <Button size="sm" variant="secondary">
-                <Icons.CALENDAR />
+                <CalendarIconFilled />
                 {{ $t('Rodyti visus') }}
               </Button>
             </Link>
@@ -149,12 +149,12 @@ import { binX, plot, rectY } from '@observablehq/plot';
 import { onMounted, ref, watch, computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import Icons from '@/Types/Icons/filled';
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
+import { CalendarIconFilled, NewsIconFilled, PageIconFilled, QuickLinkIconFilled } from '@/Components/icons';
 
 const { tenants, providedTenant } = defineProps<{
   tenants: App.Entities.Tenant[];
@@ -191,7 +191,7 @@ const generatePlot = () => plot({
 
 // Setup breadcrumbs for the Svetaine page
 usePageBreadcrumbs([
-  { label: $t('Svetainė'), icon: Icons.PAGE },
+  { label: $t('Svetainė'), icon: PageIconFilled },
 ]);
 
 watch(() => providedTenant, () => {

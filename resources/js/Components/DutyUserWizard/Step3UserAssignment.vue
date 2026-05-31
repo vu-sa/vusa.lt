@@ -17,7 +17,7 @@
       <!-- Selected duty header -->
       <div class="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
         <div class="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-          <Icons.DUTY class="h-5 w-5 text-primary" />
+          <DutyIcon class="h-5 w-5 text-primary" />
         </div>
         <div class="flex-1 min-w-0">
           <p class="text-xs text-muted-foreground">
@@ -428,9 +428,9 @@ import { ScrollArea } from '@/Components/ui/scroll-area';
 import { Separator } from '@/Components/ui/separator';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
 import { Label } from '@/Components/ui/label';
-import Icons from '@/Types/Icons/regular';
 import { getSuggestedEndDate, getTodayDate, formatDateForDisplay } from '@/Composables/useDutyUserWizard';
 import type { useDutyUserWizard, UserChange, NewUserData } from '@/Composables/useDutyUserWizard';
+import { DutyIcon } from '@/Components/icons';
 
 const wizard = inject<ReturnType<typeof useDutyUserWizard>>('dutyUserWizard')!;
 const allUsersRef = inject<ComputedRef<App.Entities.User[]> | App.Entities.User[]>('allUsers', []);

@@ -34,7 +34,7 @@
         >
           <template #option="{ item }">
             <div class="flex items-center gap-2" :class="{ 'opacity-50': item.disabled }">
-              <component :is="Icons.RESOURCE" class="size-4 text-muted-foreground" />
+              <component :is="ResourceIcon" class="size-4 text-muted-foreground" />
               <span>{{ item.name }}</span>
               <span class="text-muted-foreground text-xs">
                 {{ item.lowestCapacityAtDateTimeRange }} {{ $t('iš') }} {{ item.capacity }}
@@ -90,7 +90,7 @@ import { NumberField } from '@/Components/ui/number-field';
 import { DateRangePicker } from '@/Components/ui/date-range-picker';
 import { SingleSelect } from '@/Components/ui/single-select';
 import { capitalize } from '@/Utils/String';
-import Icons from '@/Types/Icons/regular';
+import { ResourceIcon } from '@/Components/icons';
 
 const props = defineProps<{
   reservationResourceForm: InertiaForm<{

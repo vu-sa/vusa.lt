@@ -27,7 +27,7 @@
         </Select>
       </FormFieldWrapper>
     </FormElement>
-    <FormElement :icon="Icons.IMAGE">
+    <FormElement :icon="ImageIcon">
       <template #title>
         {{ $t("forms.fields.media") }}
       </template>
@@ -86,11 +86,11 @@ import { NumberField } from '@/Components/ui/number-field';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Switch } from '@/Components/ui/switch';
 import { ImageUpload } from '@/Components/ui/upload';
-import Icons from '@/Types/Icons/regular';
 import { RESOURCE_PLACEHOLDERS } from '@/Constants/I18n/Placeholders';
 import type { ResourceCreationTemplate } from '@/Pages/Admin/Reservations/CreateResource.vue';
 import type { ResourceEditType } from '@/Pages/Admin/Reservations/EditResource.vue';
 import MdSuspenseWrapper from '@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue';
+import { ImageIcon } from '@/Components/icons';
 
 const props = defineProps<{
   resource: ResourceCreationTemplate | ResourceEditType;

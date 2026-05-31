@@ -1,6 +1,6 @@
 <template>
   <PageContent :title="resource.name[$page.props.app.locale]" :back-url="route('resources.index')"
-    :heading-icon="Icons.RESOURCE">
+    :heading-icon="ResourceIcon">
     <Card class="mb-4 min-w-[450px]">
       <CardHeader>
         <CardTitle>{{ $t('Rezervacijų istorija') }}</CardTitle>
@@ -24,11 +24,11 @@ import { router, usePage } from '@inertiajs/vue3';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
-import Icons from '@/Types/Icons/regular';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import ResourceForm from '@/Components/AdminForms/ResourceForm.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 import ResourceReservationsTable from '@/Components/Tables/ResourceReservationsTable.vue';
+import { ResourceIcon } from '@/Components/icons';
 
 export type ResourceEditType = Omit<
   App.Entities.Resource,
@@ -48,7 +48,7 @@ const { resource } = defineProps<{
 
 // Generate breadcrumbs automatically with new simplified API
 usePageBreadcrumbs(() =>
-  BreadcrumbHelpers.adminForm('Ištekliai', 'resources.index', resource.name[usePage().props.app.locale], Icons.RESOURCE),
+  BreadcrumbHelpers.adminForm('Ištekliai', 'resources.index', resource.name[usePage().props.app.locale], ResourceIcon),
 );
 
 function handleResourceUpdate(form: InertiaForm<ResourceForm>) {

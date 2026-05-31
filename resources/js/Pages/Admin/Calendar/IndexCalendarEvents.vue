@@ -15,10 +15,10 @@ import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 
 import { DateCell, TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
-import Icons from '@/Types/Icons/regular';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import { createTenantColumn } from '@/Composables/useDataTableColumns';
+import { CalendarIcon } from '@/Components/icons';
 import type {
   IndexTablePageProps,
 } from '@/Types/TableConfigTypes';
@@ -125,7 +125,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Calendar>>(() => {
     enableRowSelection: false,
 
     headerTitle: 'Renginiai',
-    icon: Icons.CALENDAR,
+    icon: CalendarIcon,
     createRoute: route('calendar.create'),
     canCreate: true,
   };

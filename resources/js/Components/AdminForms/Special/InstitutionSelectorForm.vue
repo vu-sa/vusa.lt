@@ -13,7 +13,7 @@
         <p class="mt-4">
           {{ $t('Būtent') }}
           <Badge size="tiny" variant="secondary" class="mx-1">
-            <Icons.MEETING class="h-3 w-3" />
+            <MeetingIconFilled class="h-3 w-3" />
             <strong>{{ $t('posėdžiai') }}</strong>
           </Badge>
           <template v-if="$page.props.app.locale === 'lt'">
@@ -63,7 +63,7 @@
             @click="selectInstitution(inst.value)"
           >
             <component
-              :is="Icons.INSTITUTION"
+              :is="InstitutionIconFilled"
               class="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-primary transition-colors"
             />
             <span class="truncate max-w-48 sm:max-w-56 md:max-w-72" :title="inst.label">{{ inst.label }}</span>
@@ -132,7 +132,7 @@
                     class="w-full justify-start text-left h-auto p-2"
                     @click="selectInstitutionFromSearch(institution.value, institution.label)">
                     <div class="flex items-start gap-2 w-full">
-                      <component :is="Icons.INSTITUTION" class="h-4 w-4 mt-0.5 shrink-0" />
+                      <component :is="InstitutionIconFilled" class="h-4 w-4 mt-0.5 shrink-0" />
                       <div class="flex-1 min-w-0">
                         <p class="font-medium">
                           {{ institution.label }}
@@ -159,7 +159,7 @@
           <FormItem>
             <FormLabel class="flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <component :is="Icons.INSTITUTION" class="h-4 w-4" />
+                <component :is="InstitutionIconFilled" class="h-4 w-4" />
                 {{ $t("Institucija") }}
               </div>
               <div v-if="selectedInstitution" class="text-xs text-muted-foreground">
@@ -170,7 +170,7 @@
             <!-- Selected Institution Display -->
             <div v-if="selectedInstitution && selectedInstitutionData" class="mt-3 p-3 bg-muted/50 rounded-lg">
               <div class="flex items-start gap-3">
-                <component :is="Icons.INSTITUTION" class="h-5 w-5 mt-0.5 text-primary shrink-0" />
+                <component :is="InstitutionIconFilled" class="h-5 w-5 mt-0.5 text-primary shrink-0" />
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2 flex-wrap">
                     <h4 class="font-medium truncate" :title="selectedInstitutionData.name">
@@ -237,7 +237,6 @@ import {
   AlertCircle,
 } from 'lucide-vue-next';
 
-import Icons from '@/Types/Icons/filled';
 import SuggestionAlert from '@/Components/Alerts/SuggestionAlert.vue';
 import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
 
@@ -247,6 +246,7 @@ import { Input } from '@/Components/ui/input';
 import { Badge } from '@/Components/ui/badge';
 import { Separator } from '@/Components/ui/separator';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
+import { InstitutionIconFilled, MeetingIconFilled } from '@/Components/icons';
 import {
   FormField,
   FormItem,

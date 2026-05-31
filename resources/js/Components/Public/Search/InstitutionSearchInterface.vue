@@ -219,9 +219,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
-import { debounce } from 'lodash-es';
-import { trans as $t } from 'laravel-vue-i18n';
+import { onMounted } from 'vue';
 import {
   Building2,
   LayoutGrid,
@@ -241,96 +239,41 @@ import InstitutionResults from './InstitutionResults.vue';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { useInstitutionSearch } from '@/Composables/useInstitutionSearch';
+import { useSearchInterface } from '@/Composables/useSearchInterface';
 import type { InstitutionSearchFilters } from '@/Types/InstitutionSearchTypes';
 
 // Initialize search controller
 const searchController = useInstitutionSearch();
 
-// Local state
-const typeToSearch = ref(true); // Enable by default
-const inputQuery = ref('');
+// Shared interface state & handlers
+const {
+  inputQuery,
+  typeToSearch,
+  hasActiveFilters,
+  activeFilterCount,
+  handleQueryUpdate,
+  handleSearch,
+  handleSelectRecent,
+  handleClear,
+  handleTypeToSearchUpdate,
+  handleRemoveRecent,
+  handleClearAllHistory,
+} = useSearchInterface({ searchController });
 
-// Props interface
-interface Props {
+// Props
+const props = withDefaults(defineProps<{
   initialQuery?: string;
   initialFilters?: Partial<InstitutionSearchFilters>;
   typeLabels?: Record<string, string>;
-}
-
-const props = withDefaults(defineProps<Props>(), {
+}>(), {
   initialQuery: '',
   initialFilters: () => ({}),
   typeLabels: () => ({}),
 });
 
-// Computed properties for filter state
-const hasActiveFilters = computed(() => Boolean(searchController.hasActiveFilters.value));
-const activeFilterCount = computed(() => {
-  const filters = searchController.filters.value;
-  let count = 0;
-  if (filters.tenants.length > 0) count++;
-  if (filters.types.length > 0) count++;
-  if (filters.hasContacts !== null) count++;
-  return count;
-});
-
-// Debounced auto-search when typing
-const debouncedAutoSearch = debounce((q: string) => {
-  searchController.search(q);
-}, 200);
-
-// Event handlers
-const handleQueryUpdate = (value: string) => {
-  inputQuery.value = value;
-
-  // Only auto-search if typeToSearch is enabled
-  if (typeToSearch.value) {
-    if (value.trim() !== '') {
-      debouncedAutoSearch(value);
-    }
-    else {
-      debouncedAutoSearch.cancel();
-      searchController.search('*', true);
-    }
-  }
-};
-
-const handleTypeToSearchUpdate = (value: boolean) => {
-  typeToSearch.value = value;
-};
-
-const handleSearch = (query?: string) => {
-  debouncedAutoSearch.cancel();
-  const searchQuery = (query ?? inputQuery.value).trim() === '' ? '*' : (query ?? inputQuery.value);
-  searchController.search(searchQuery, true);
-};
-
-const handleSelectRecent = (search: string) => {
-  inputQuery.value = search;
-  debouncedAutoSearch.cancel();
-  searchController.search(search, true);
-};
-
-const handleClear = () => {
-  inputQuery.value = '';
-  debouncedAutoSearch.cancel();
-  searchController.search('*', true);
-};
-
-const handleRemoveRecent = (search: string) => {
-  searchController.removeRecentSearch(search);
-};
-
-const handleClearAllHistory = () => {
-  searchController.clearRecentSearches();
-};
-
 // Initialize from props and load all institutions
 onMounted(async () => {
-  // Initialize search client first
   await searchController.initializeSearchClient();
-
-  // Load initial facets
   await searchController.loadInitialFacets();
 
   // Apply initial filters if provided
@@ -345,22 +288,10 @@ onMounted(async () => {
 
   // Set initial query if provided, otherwise search all institutions
   if (props.initialQuery) {
-    inputQuery.value = props.initialQuery;
     searchController.search(props.initialQuery);
   }
   else {
-    // Trigger initial "show all institutions" search
     searchController.search('*', true);
   }
 });
-
-// Keep inputQuery in sync with controller query updates
-watch(
-  () => searchController.searchState.value.query,
-  (q) => {
-    if (q !== '*') {
-      inputQuery.value = q || '';
-    }
-  },
-);
 </script>

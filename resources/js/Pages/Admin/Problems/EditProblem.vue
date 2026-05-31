@@ -2,7 +2,7 @@
   <PageContent
     :title="localizedTitle"
     :back-url="route('problems.index')"
-    :heading-icon="Icons.PROBLEM"
+    :heading-icon="ProblemIcon"
   >
     <UpsertModelLayout>
       <ProblemForm
@@ -24,10 +24,10 @@ import { computed } from 'vue';
 import { router, useForm, type InertiaForm } from '@inertiajs/vue3';
 import { getActiveLanguage } from 'laravel-vue-i18n';
 
-import Icons from '@/Types/Icons/regular';
 import ProblemForm from '@/Components/AdminForms/ProblemForm.vue';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import { ProblemIcon } from '@/Components/icons';
 
 interface ProblemForm {
   title: { lt: string; en: string };

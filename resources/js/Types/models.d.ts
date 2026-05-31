@@ -1846,6 +1846,7 @@ declare global {
       last_action?: string | null
       tutorial_progress?: Array<unknown> | null
       notification_preferences?: Array<unknown> | null
+      ui_preferences?: Array<unknown> | null
       microsoft_token?: string | null
       updated_at: string
       created_at: string

@@ -178,6 +178,18 @@ describe('replaceSubdomainInUrl', function () {
         expect($newUrl)->toContain('/lt/kontaktai/id/123');
     });
 
+    it('preserves port when replacing subdomain', function () {
+        $this->controller->setTenant($this->mainTenant);
+
+        $originalUrl = 'https://www.vusa.lt:8080/lt/naujienos?page=2';
+        $newUrl = $this->controller->publicReplaceSubdomainInUrl($originalUrl, $this->mifTenant);
+
+        expect($newUrl)->toContain('mif.');
+        expect($newUrl)->toContain(':8080');
+        expect($newUrl)->toContain('/lt/naujienos');
+        expect($newUrl)->toContain('page=2');
+    });
+
     it('returns original URL if parsing fails', function () {
         $this->controller->setTenant($this->mainTenant);
 

@@ -23,10 +23,10 @@ import { Badge } from '@/Components/ui/badge';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
+import { MeetingIcon } from '@/Components/icons';
 import type {
   IndexTablePageProps,
 } from '@/Types/TableConfigTypes';
-import Icons from '@/Types/Icons/regular';
 
 const props = defineProps<{
   data: App.Entities.Meeting[];
@@ -226,7 +226,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Meeting>>(() => {
 
     // Page layout
     headerTitle: capitalize($tChoice('entities.meeting.model', 2)),
-    icon: Icons.MEETING,
+    icon: MeetingIcon,
     createRoute: undefined, // Meetings are created from institution pages
     canCreate: false,
   };

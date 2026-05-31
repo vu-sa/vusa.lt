@@ -193,10 +193,10 @@ import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import { usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
-import Icons from '@/Types/Icons/regular';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
 import type { TaskProgress, TaskActionType } from '@/Types/TaskTypes';
+import { TaskIcon } from '@/Components/icons';
 
 interface TaskWithDetails {
   id: string;
@@ -319,6 +319,6 @@ const goToPage = (page: number) => {
 
 // Generate breadcrumbs
 usePageBreadcrumbs([
-  { label: $t('tasks.summary.title'), icon: Icons.TASK },
+  { label: $t('tasks.summary.title'), icon: TaskIcon },
 ]);
 </script>

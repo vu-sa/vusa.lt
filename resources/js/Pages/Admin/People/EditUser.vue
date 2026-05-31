@@ -1,5 +1,5 @@
 <template>
-  <PageContent :title="userName" :back-url="route('users.index')" :heading-icon="Icons.USER">
+  <PageContent :title="userName" :back-url="route('users.index')" :heading-icon="UserIcon">
     <UpsertModelLayout>
       <UserForm :user :roles :tenants-with-duties :permissable-tenants
         @submit:form="(form) => form.patch(route('users.update', user.id), { preserveScroll: true })"
@@ -13,10 +13,10 @@ import { computed } from 'vue';
 import { usePage, router } from '@inertiajs/vue3';
 
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
-import Icons from '@/Types/Icons/regular';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 import UserForm from '@/Components/AdminForms/UserForm.vue';
+import { UserIcon } from '@/Components/icons';
 
 const props = defineProps<{
   user: App.Entities.User;
@@ -37,6 +37,6 @@ const userName = computed(() => {
 
 // Generate breadcrumbs automatically with new simplified API
 usePageBreadcrumbs(() =>
-  BreadcrumbHelpers.adminForm('Nariai', 'users.index', userName.value, Icons.USER),
+  BreadcrumbHelpers.adminForm('Nariai', 'users.index', userName.value, UserIcon),
 );
 </script>

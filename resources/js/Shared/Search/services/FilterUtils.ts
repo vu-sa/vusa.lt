@@ -52,10 +52,12 @@ export class FilterUtils {
   }
 
   /**
-   * Check if a date range has any active values
+   * Check if a date range has any active values.
+   * 'recent' is the default preset and is not considered active.
    */
   static hasActiveDateRange(dateRange: DateRangeFilter | undefined): boolean {
     if (!dateRange) return false;
+    if (dateRange.preset === 'recent') return false;
     return !!(dateRange.preset || dateRange.from || dateRange.to);
   }
 

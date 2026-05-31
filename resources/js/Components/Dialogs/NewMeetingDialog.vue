@@ -5,7 +5,7 @@
       <DialogHeader class="relative">
         <DialogTitle class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <component :is="Icons.MEETING" class="h-5 w-5" />
+            <component :is="MeetingIconFilled" class="h-5 w-5" />
             {{ $t('Sukurti susitikimą') }}
           </div>
         </DialogTitle>
@@ -32,7 +32,7 @@
   <div v-else class="bg-white dark:bg-zinc-950 border border-border rounded-lg p-6 md:p-8 max-w-5xl">
     <div class="mb-6">
       <h2 class="flex items-center gap-3 text-lg font-semibold">
-        <component :is="Icons.MEETING" class="h-5 w-5" />
+        <component :is="MeetingIconFilled" class="h-5 w-5" />
         {{ $t('Sukurti susitikimą') }}
       </h2>
       <p class="text-sm text-muted-foreground mt-1">
@@ -61,7 +61,7 @@ import { usePage } from '@inertiajs/vue3';
 
 import { useMeetingCreation } from '@/Composables/useMeetingCreation';
 import MeetingCreationWizard from '@/Components/Meetings/MeetingCreationWizard.vue';
-import Icons from '@/Types/Icons/filled';
+import { MeetingIconFilled } from '@/Components/icons';
 // Import Shadcn components
 import {
   Dialog,

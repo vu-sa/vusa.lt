@@ -5,7 +5,7 @@
         <CardHeader>
           <CardTitle>
             <div class="inline-flex items-center gap-2">
-              <component :is="Icons.RESERVATION" />
+              <component :is="ReservationIconFilled" />
               Tavo rezervacijos
             </div>
           </CardTitle>
@@ -35,7 +35,7 @@
             </Link>
 
             <Button size="sm" variant="secondary" @click="showReservationsModal = true">
-              <Icons.RESERVATION />
+              <ReservationIconFilled />
               {{ $t('Peržiūrėti visas') }}
             </Button>
             <CardModal v-model:show="showReservationsModal" title="Visos rezervacijos"
@@ -49,7 +49,7 @@
         <CardHeader>
           <CardTitle>
             <div class="inline-flex items-center gap-2">
-              <component :is="Icons.RESERVATION" />
+              <component :is="ReservationIconFilled" />
               Skolinami daiktai
             </div>
           </CardTitle>
@@ -109,7 +109,7 @@
         <CardHeader>
           <CardTitle>
             <div class="inline-flex items-center gap-2">
-              <component :is="Icons.RESERVATION" />
+              <component :is="ReservationIconFilled" />
               Aktyvios rezervacijos
             </div>
           </CardTitle>
@@ -129,11 +129,11 @@
         <CardFooter>
           <div class="flex items-center gap-2">
             <Button size="sm" @click="showTenantReservationsModal = true">
-              <Icons.RESERVATION />
+              <ReservationIconFilled />
               Peržiūrėti aktyvias
             </Button>
             <Button size="sm" variant="secondary" @click="showTenantUsersReservationsModal = true">
-              <Icons.TENANT />
+              <TenantIconFilled />
               Ką skolinasi padalinys?
             </Button>
           </div>
@@ -169,12 +169,12 @@ import CardModal from '@/Components/Dialogs/CardModal.vue';
 import ReservationsWithUnitResources from '@/Components/Tables/ReservationsWithUnitResources.vue';
 import SimpleDataTable from '@/Components/Tables/SimpleDataTable.vue';
 import { Separator } from '@/Components/ui/separator';
-import Icons from '@/Types/Icons/filled';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import IFluentBookmarkAdd24Filled from '~icons/fluent/bookmark-add-24-filled';
 import IFluentCube24Filled from '~icons/fluent/cube-24-filled';
 import IFluentClipboardTask24Filled from '~icons/fluent/clipboard-task-24-filled';
+import { ReservationIconFilled, TenantIconFilled } from '@/Components/icons';
 
 const { reservations, tenants, providedTenant } = defineProps<{
   reservations: App.Entities.Reservation[];
@@ -225,6 +225,6 @@ const reservationColumns: ColumnDef<App.Entities.Reservation, any>[] = [
 
 // Setup breadcrumbs for the Reservations page
 usePageBreadcrumbs([
-  { label: $t('Rezervacijos'), icon: Icons.RESERVATION },
+  { label: $t('Rezervacijos'), icon: ReservationIconFilled },
 ]);
 </script>

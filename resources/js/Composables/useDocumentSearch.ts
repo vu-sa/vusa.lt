@@ -509,5 +509,6 @@ export const useDocumentSearch = (): DocumentSearchController => {
     // Internal
     searchClient: computed(() => searchClient.value),
     initializeSearchClient: initializeWithUrlSync,
+    cancelPendingSearch: baseSearch.cancelPendingSearch,
   };
 };
