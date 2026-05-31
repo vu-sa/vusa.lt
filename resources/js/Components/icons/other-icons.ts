@@ -1,14 +1,9 @@
 // Tree-shakable other icons with regular and filled variants
 
-import type { Component } from 'vue';
-
-import type { OtherIconEnum } from '../../Types/otherEnums';
-
 // =============================================================================
 // REGULAR ICONS - Import each icon only ONCE
 // =============================================================================
 import Alert24Regular from '~icons/fluent/alert24-regular';
-import DocumentMultiple24Regular from '~icons/fluent/document-multiple24-regular';
 import Home24Regular from '~icons/fluent/home24-regular';
 import Image24Regular from '~icons/fluent/image24-regular';
 import Settings24Regular from '~icons/fluent/settings24-regular';
@@ -17,7 +12,6 @@ import Settings24Regular from '~icons/fluent/settings24-regular';
 // FILLED ICONS - Import each icon only ONCE
 // =============================================================================
 import Alert24Filled from '~icons/fluent/alert24-filled';
-import DocumentMultiple24Filled from '~icons/fluent/document-multiple24-filled';
 import Home24Filled from '~icons/fluent/home24-filled';
 import Image24Filled from '~icons/fluent/image24-filled';
 import Settings24Filled from '~icons/fluent/settings24-filled';
@@ -26,8 +20,6 @@ import Settings24Filled from '~icons/fluent/settings24-filled';
 // TREE-SHAKABLE EXPORTS - Clean, concise naming
 // =============================================================================
 // FileIcon / FileIconFilled are exported by model-icons.ts — do not re-export here
-const fileIconRegular = DocumentMultiple24Regular;
-const fileIconFilled = DocumentMultiple24Filled;
 export const HomeIcon = Home24Regular;
 export const ImageIcon = Image24Regular;
 export const NotificationIcon = Alert24Regular;
@@ -37,51 +29,3 @@ export const HomeIconFilled = Home24Filled;
 export const ImageIconFilled = Image24Filled;
 export const NotificationIconFilled = Alert24Filled;
 export const SettingIconFilled = Settings24Filled;
-
-// =============================================================================
-// DYNAMIC ACCESS MAPPINGS (for backward compatibility and helper functions)
-// =============================================================================
-
-const otherIconMappingRegular: Record<keyof typeof OtherIconEnum, Component> = {
-  FILE: fileIconRegular,
-  HOME: HomeIcon,
-  IMAGE: ImageIcon,
-  NOTIFICATION: NotificationIcon,
-  SETTING: SettingIcon,
-};
-
-const otherIconMappingFilled: Record<keyof typeof OtherIconEnum, Component> = {
-  FILE: fileIconFilled,
-  HOME: HomeIconFilled,
-  IMAGE: ImageIconFilled,
-  NOTIFICATION: NotificationIconFilled,
-  SETTING: SettingIconFilled,
-};
-
-// =============================================================================
-// HELPER FUNCTIONS
-// =============================================================================
-
-/**
- * Get other icon by enum key with variant support
- * @param otherKey - The other icon enum key
- * @param variant - Icon variant ('regular' or 'filled')
- * @returns Vue component for the icon
- */
-export function getOtherIcon(
-  otherKey: keyof typeof OtherIconEnum,
-  variant: 'regular' | 'filled' = 'regular',
-): Component {
-  return variant === 'filled'
-    ? otherIconMappingFilled[otherKey]
-    : otherIconMappingRegular[otherKey];
-}
-
-const otherIconMapping = otherIconMappingRegular;
-
-// Export mappings for external use
-export {
-  otherIconMapping,
-  otherIconMappingRegular,
-  otherIconMappingFilled,
-};

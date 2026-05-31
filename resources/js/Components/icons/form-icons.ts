@@ -1,9 +1,5 @@
 // Tree-shakable form icons with regular and filled variants
 
-import type { Component } from 'vue';
-
-import type { FormEnum } from '../../Types/otherEnums';
-
 // =============================================================================
 // REGULAR ICONS - Import each icon only ONCE
 // =============================================================================
@@ -28,47 +24,3 @@ export const TitleIcon = TextField24Regular;
 export const DateIconFilled = CalendarLtr24Filled;
 export const SaveIconFilled = DocumentSave24Filled;
 export const TitleIconFilled = TextField24Filled;
-
-// =============================================================================
-// DYNAMIC ACCESS MAPPINGS (for backward compatibility and helper functions)
-// =============================================================================
-
-const formIconMappingRegular: Record<keyof typeof FormEnum, Component> = {
-  DATE: DateIcon,
-  SAVE: SaveIcon,
-  TITLE: TitleIcon,
-};
-
-const formIconMappingFilled: Record<keyof typeof FormEnum, Component> = {
-  DATE: DateIconFilled,
-  SAVE: SaveIconFilled,
-  TITLE: TitleIconFilled,
-};
-
-// =============================================================================
-// HELPER FUNCTIONS
-// =============================================================================
-
-/**
- * Get form icon by enum key with variant support
- * @param formKey - The form enum key
- * @param variant - Icon variant ('regular' or 'filled')
- * @returns Vue component for the icon
- */
-export function getFormIcon(
-  formKey: keyof typeof FormEnum,
-  variant: 'regular' | 'filled' = 'regular',
-): Component {
-  return variant === 'filled'
-    ? formIconMappingFilled[formKey]
-    : formIconMappingRegular[formKey];
-}
-
-const formIconMapping = formIconMappingRegular;
-
-// Export mappings for external use
-export {
-  formIconMapping,
-  formIconMappingRegular,
-  formIconMappingFilled,
-};
