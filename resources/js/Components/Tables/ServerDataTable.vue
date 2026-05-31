@@ -8,24 +8,30 @@
       @page-change="handlePageChange" @update:sorting="handleSortChange" @update:global-filter="updateSearchText"
       @update:row-selection="handleRowSelectionChange">
       <template #filters>
-        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:flex-wrap w-full">
+        <div class="flex flex-col gap-3 w-full">
           <!-- Search -->
-          <div class="relative flex-1 min-w-0 max-w-full sm:max-w-xs md:max-w-sm">
-            <SearchIcon class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              v-model="searchText"
-              :placeholder="`${$t('Search')}...`"
-              class="pl-9 pr-8 w-full"
-              @keydown.enter="handleSearch"
-            />
-            <button
-              v-if="searchText"
-              type="button"
-              class="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              @click="searchText = ''; handleSearch()"
-            >
-              <XIcon class="h-4 w-4" />
-            </button>
+          <div class="flex items-center gap-2 flex-1 min-w-0">
+            <div class="relative flex-1 min-w-0 max-w-full sm:max-w-xs md:max-w-sm">
+              <SearchIcon class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                v-model="searchText"
+                :placeholder="`${$t('Search')}...`"
+                class="pl-9 pr-8 w-full"
+                @keydown.enter="handleSearch"
+              />
+              <button
+                v-if="searchText"
+                type="button"
+                class="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                @click="searchText = ''; handleSearch()"
+              >
+                <XIcon class="h-4 w-4" />
+              </button>
+            </div>
+            <Button variant="default" size="sm" class="gap-1.5" @click="handleSearch">
+              <SearchIcon class="h-4 w-4" />
+              <span>{{ $t('Search') }}</span>
+            </Button>
           </div>
 
           <!-- Custom filters from pages + show deleted -->

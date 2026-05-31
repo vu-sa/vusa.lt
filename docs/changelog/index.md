@@ -23,6 +23,7 @@ lastUpdated: true
 - 🔧 Failų trynimo pataisymas SharePoint aplinkoje
 - 🔧 **Pataisyta filtrų išvalymo funkcija dokumentų paieškoje** — „Išvalyti filtrus" mygtukas dabar tinkamai išvalo visus filtrus ir parodo visus dokumentus
 - ✨ **Supaprastinti datos intervalo filtrai** — pašalinti besidubliuojantys „3 mėn." ir „6 mėn." pasirinkimai; paliktas numatytasis „Neseniai" (3 mėn.), „1 metai", „Metų intervalas" ir „Pasirinkti datą"
+- ✨ **Matomas paieškos mygtukas administravimo lentelėse** — visose turinio lentelėse šalia paieškos laukelio pridėtas mygtukas „Ieškoti"; taip pat pagerintas filtrų išdėstymas
 
 > 🔗 [GitHub PR #569](https://github.com/vu-sa/vusa.lt/pull/569)
 

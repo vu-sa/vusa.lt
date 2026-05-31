@@ -23,6 +23,7 @@ Here you'll find all changes and improvements to the mano.vusa.lt platform.
 - 🔧 Fixed file deletion in SharePoint environment
 - 🔧 **Fixed filter clearing in document search** — the "Clear filters" button now properly clears all filters and shows all documents
 - ✨ **Simplified date range filters** — removed redundant "3 months" and "6 months" options; kept the default "Recent" (3 months), "1 year", "Year range", and "Custom date"
+- ✨ **Visible search button in admin tables** — all content tables now have a dedicated "Search" button next to the search field; filter layout spacing has also been improved
 
 > 🔗 [GitHub PR #569](https://github.com/vu-sa/vusa.lt/pull/569)
 
