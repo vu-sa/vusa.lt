@@ -11,6 +11,8 @@ Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
 - ✨ **Redesigned meeting view** — the meeting page is now a cleaner, read-first view: a compact date, how long ago the meeting was, and the protocol/report status moved next to the tab bar
 - ⭐ **Dedicated agenda item page** — clicking an agenda item opens a separate page for editing it, including votes and decisions
+- ⭐ **Real-time shared representative notes** — the agenda item page now has a private "Representatives' notes" area where several representatives can write at the same time; edits and other people's cursors appear instantly, and the notes can be opened in a larger window. These notes are never shown publicly
+- ✨ **Simple notes formatting** — selecting text shows a small toolbar (bold, italic, strikethrough, link), and typing "/" opens a block menu: bullet list, numbered list, a checklist with checkboxes, or a section title. Typing "@" mentions a meeting's student representative. The feature is experimental for now
 - ⭐ **Navigation between agenda items** — the item page now has previous/next buttons and an "Item N / total" overview at the top, letting you jump across the whole meeting's items and see their statuses at a glance
 - ✨ **Auto-save** — agenda item changes are saved automatically; a status indicator and the "Save" button live in a fixed bottom bar, and auto-save can be turned off
 - ⭐ **View and edit modes** — an agenda item now opens in a clean read view first (prominent data, subtle labels); a "Redaguoti" toggle switches to the form

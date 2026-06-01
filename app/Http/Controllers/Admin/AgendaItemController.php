@@ -66,7 +66,7 @@ class AgendaItemController extends AdminController
     {
         $this->handleAuthorization('update', $agendaItem);
 
-        $agendaItem->load(['votes', 'meeting.institutions', 'meeting.agendaItems' => function ($query) {
+        $agendaItem->load(['votes', 'note', 'meeting.institutions', 'meeting.agendaItems' => function ($query) {
             $query->orderBy('order')->with('mainVote');
         }]);
 

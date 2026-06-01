@@ -70,7 +70,7 @@
         :editing="editing"
         :meeting-is-public="meetingIsPublic"
       />
-      <AgendaItemNotesSidebar class="lg:sticky lg:top-16 lg:self-start" />
+      <AgendaItemNotesSidebar :agenda-item-id="agendaItem.id" class="lg:sticky lg:top-16 lg:self-start" />
     </div>
 
     <!-- Sticky bottom action bar (mirrors AdminForm), edit mode only -->

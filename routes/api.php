@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\AgendaItemNoteController;
 use App\Http\Controllers\Api\Admin\FileApiController;
 use App\Http\Controllers\Api\Admin\ImpersonateApiController;
 use App\Http\Controllers\Api\Admin\InstitutionSubscriptionApiController;
@@ -96,6 +97,10 @@ Route::prefix('v1')->name('v1.')->group(function () {
 
         // Meetings
         Route::get('meetings/recent', [MeetingApiController::class, 'recent'])->name('meetings.recent');
+
+        // Agenda item collaborative notes ("Atstovų pastabos")
+        Route::get('agenda-items/{agendaItem}/note', [AgendaItemNoteController::class, 'show'])->name('agendaItems.note.show');
+        Route::put('agenda-items/{agendaItem}/note', [AgendaItemNoteController::class, 'update'])->name('agendaItems.note.update');
 
         // Files
         Route::get('files', [FileApiController::class, 'index'])->name('files.index');

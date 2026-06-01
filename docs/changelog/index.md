@@ -11,6 +11,8 @@ lastUpdated: true
 
 - ✨ **Atnaujintas posėdžio vaizdas** — posėdžio puslapis perdarytas į švaresnį, peržiūrai skirtą vaizdą: kompaktiška data, kada posėdis vyko, o protokolo ir ataskaitos būsenos perkeltos prie kortelių juostos
 - ⭐ **Atskiras darbotvarkės punkto puslapis** — paspaudus darbotvarkės punktą atidaromas atskiras jo redagavimo puslapis su balsavimais ir sprendimais
+- ⭐ **Bendros atstovų pastabos realiu laiku** — darbotvarkės punkto puslapyje atsirado privati „Atstovų pastabos" sritis, kurioje keli atstovai gali rašyti vienu metu; pakeitimai ir kitų žmonių žymekliai matomi iškart, o pastabas galima atverti didesniame lange. Šios pastabos niekada nerodomos viešai
+- ✨ **Paprastas pastabų formatavimas** — pažymėjus tekstą iškyla mygtukai (paryškinimas, kursyvas, perbraukimas, nuoroda), o įvedus „/" atsiveria blokų meniu: sąrašas, numeruotas sąrašas, užduočių sąrašas su žymimaisiais langeliais ar skyriaus antraštė. Rašant „@" galima paminėti posėdžio studentų atstovą. Funkcija kol kas eksperimentinė
 - ⭐ **Navigacija tarp darbotvarkės punktų** — punkto puslapio viršuje atsirado „ankstesnis / kitas" mygtukai ir „Punktas N / iš viso" sąrašas, leidžiantis greitai peršokti tarp viso posėdžio punktų ir matyti jų būsenas
 - ✨ **Automatinis išsaugojimas** — darbotvarkės punkto pakeitimai išsaugomi automatiškai; juostoje apačioje matoma būsena, jį galima išjungti, o „Išsaugoti" mygtukas visada pasiekiamas
 - ⭐ **Peržiūros ir redagavimo režimai** — darbotvarkės punktas pirmiausia atidaromas patogiai skaitomu vaizdu (ryškūs duomenys, kuklios antraštės); „Redaguoti" jungiklis įjungia formą

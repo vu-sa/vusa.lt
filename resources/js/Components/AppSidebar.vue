@@ -29,7 +29,7 @@
       <!-- Main navigation -->
       <NavMain :items="navMainItems" />
 
-      <SidebarSeparator class="my-2" />
+      <SidebarSeparator />
 
       <!-- Customizable sections (user-defined order, toggled via the customize dialog) -->
       <template v-for="key in orderedSections" :key="key">
