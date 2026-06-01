@@ -7,19 +7,11 @@ import { defineAsyncComponent } from 'vue';
 import { i18nVue } from 'laravel-vue-i18n';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
+import { useCookieConsent } from './Composables/useCookieConsent';
+
 const PublicLayout = defineAsyncComponent(
   () => import('./Layouts/PersistentPublicLayout.vue'),
 );
-
-const getPosthog = async () => {
-  let PosthogPlugin = null;
-
-  if (import.meta.env.PROD) {
-    PosthogPlugin = await import('./Plugins/posthog');
-  }
-
-  return PosthogPlugin;
-};
 
 // const metaTitle =
 //  window.document.getElementsByTagName("title")[0]?.innerText || "VU SA";
@@ -90,15 +82,11 @@ createInertiaApp({
       })
       .use(ZiggyVue);
 
-    const PosthogPlugin = getPosthog();
-
-    PosthogPlugin.then((module) => {
-      if (module) {
-        application.use(module.default);
-      }
-    });
-
     application.mount(el);
+
+    // Load analytics only if the visitor has already opted in (GDPR). Otherwise the
+    // consent banner enables it on accept.
+    useCookieConsent().initAnalyticsFromConsent();
 
     delete el.dataset.page;
 
