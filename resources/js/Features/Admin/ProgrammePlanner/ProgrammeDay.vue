@@ -29,7 +29,7 @@
       </component>
       <!-- calculate current time from previous parts and blocks -->
     </div>
-    <CardModal v-model:show="showPartEditModal" :part="selectedPart" @close="showPartEditModal = false">
+    <CardModal v-model:show="showPartEditModal" @close="showPartEditModal = false">
       <FormFieldWrapper id="part-title" label="Dalies pavadinimas">
         <MultiLocaleInput v-model:input="selectedPart.title" />
       </FormFieldWrapper>
@@ -46,7 +46,7 @@
         Uždaryti
       </Button>
     </CardModal>
-    <CardModal v-model:show="showSectionEditModal" :section="selectedSection" @close="showSectionEditModal = false">
+    <CardModal v-model:show="showSectionEditModal" @close="showSectionEditModal = false">
       <FormFieldWrapper id="section-title" label="Sekcijos pavadinimas">
         <MultiLocaleInput v-model:input="selectedSection.title" />
       </FormFieldWrapper>

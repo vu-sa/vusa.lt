@@ -38,10 +38,14 @@
               <ReservationIconFilled />
               {{ $t('Peržiūrėti visas') }}
             </Button>
-            <CardModal v-model:show="showReservationsModal" title="Visos rezervacijos"
-              @close="showReservationsModal = false">
-              <SimpleDataTable :data="reservations" :columns="reservationColumns" enable-pagination :page-size="7" />
-            </CardModal>
+            <Dialog :open="showReservationsModal" @update:open="(open) => { if (!open) showReservationsModal = false }">
+              <DialogContent class="sm:max-w-[95vw] w-full max-h-[85vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Visos rezervacijos</DialogTitle>
+                </DialogHeader>
+                <SimpleDataTable :data="reservations" :columns="reservationColumns" enable-pagination :page-size="7" />
+              </DialogContent>
+            </Dialog>
           </div>
         </CardFooter>
       </Card>
@@ -137,18 +141,26 @@
               Ką skolinasi padalinys?
             </Button>
           </div>
-          <CardModal v-model:show="showTenantReservationsModal" class="max-w-6xl" title="Visos rezervacijos"
-            @close="showTenantReservationsModal = false">
-            <h4> Rezervacijos su padalinio ištekliais </h4>
-            <ReservationsWithUnitResources show-if-completed :pagination="{ pageSize: 8 }"
-              :active-reservations="providedTenant?.activeReservations" />
-          </CardModal>
-          <CardModal v-model:show="showTenantUsersReservationsModal" class="max-w-6xl" title="Visos rezervacijos"
-            @close="showTenantUsersReservationsModal = false">
-            <h4> Padalinio žmonių sukurtos rezervacijos </h4>
-            <ReservationsWithUnitResources show-if-completed :pagination="{ pageSize: 8 }"
-              :active-reservations="providedTenant?.reservations" />
-          </CardModal>
+          <Dialog :open="showTenantReservationsModal" @update:open="(open) => { if (!open) showTenantReservationsModal = false }">
+            <DialogContent class="sm:max-w-[95vw] w-full max-h-[85vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Visos rezervacijos</DialogTitle>
+                <DialogDescription>Rezervacijos su padalinio ištekliais</DialogDescription>
+              </DialogHeader>
+              <ReservationsWithUnitResources show-if-completed :pagination="{ pageSize: 8 }"
+                :active-reservations="providedTenant?.activeReservations" />
+            </DialogContent>
+          </Dialog>
+          <Dialog :open="showTenantUsersReservationsModal" @update:open="(open) => { if (!open) showTenantUsersReservationsModal = false }">
+            <DialogContent class="sm:max-w-[95vw] w-full max-h-[85vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Visos rezervacijos</DialogTitle>
+                <DialogDescription>Padalinio žmonių sukurtos rezervacijos</DialogDescription>
+              </DialogHeader>
+              <ReservationsWithUnitResources show-if-completed :pagination="{ pageSize: 8 }"
+                :active-reservations="providedTenant?.reservations" />
+            </DialogContent>
+          </Dialog>
         </CardFooter>
       </Card>
     </section>
@@ -165,7 +177,13 @@ import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import CardModal from '@/Components/Dialogs/CardModal.vue';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/Components/ui/dialog';
 import ReservationsWithUnitResources from '@/Components/Tables/ReservationsWithUnitResources.vue';
 import SimpleDataTable from '@/Components/Tables/SimpleDataTable.vue';
 import { Separator } from '@/Components/ui/separator';
