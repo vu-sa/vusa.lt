@@ -7,7 +7,14 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
-## v1.11 — Pritaikoma šoninė juosta ir neseniai aplankyti puslapiai (2026-06-...) {#v1-11}
+## v1.12 — Susitikimų sąsajos patobulinimas (2026-06-...) {#v1-12}
+
+- ✨ **Atnaujintas posėdžio vaizdas** — posėdžio puslapis perdarytas į švaresnį, peržiūrai skirtą vaizdą: kompaktiška data, kada posėdis vyko, o protokolo ir ataskaitos būsenos perkeltos prie kortelių juostos
+- ⭐ **Atskiras darbotvarkės punkto puslapis** — paspaudus darbotvarkės punktą atidaromas atskiras jo redagavimo puslapis su balsavimais ir sprendimais
+- ✨ **Darbotvarkės redagavimo jungiklis** — punktų pridėjimas, pertvarkymas ir šalinimas dabar slepiami po „Redaguoti" jungikliu, kad įprastas vaizdas liktų aiškus
+- ✨ **Išskleidžiamas atstovų sąrašas** — posėdžio atstovų avatarus galima išskleisti į visą sąrašą
+
+## v1.11 — Pritaikoma šoninė juosta ir neseniai aplankyti puslapiai (2026-06-01) {#v1-11}
 
 ### Šoninė juosta
 

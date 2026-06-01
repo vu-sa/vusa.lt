@@ -7,7 +7,14 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
-## v1.11 — Customizable Sidebar & Recently Visited Pages (2026-06-...) {#v1-11}
+## v1.12 — Meeting UI Refinement (2026-06-...) {#v1-12}
+
+- ✨ **Redesigned meeting view** — the meeting page is now a cleaner, read-first view: a compact date, how long ago the meeting was, and the protocol/report status moved next to the tab bar
+- ⭐ **Dedicated agenda item page** — clicking an agenda item opens a separate page for editing it, including votes and decisions
+- ✨ **Agenda edit toggle** — adding, reordering and removing items is now tucked behind an "Edit" toggle so the default view stays uncluttered
+- ✨ **Expandable representatives list** — the meeting representatives avatars can be expanded into a full list
+
+## v1.11 — Customizable Sidebar & Recently Visited Pages (2026-06-01) {#v1-11}
 
 ### Sidebar
 

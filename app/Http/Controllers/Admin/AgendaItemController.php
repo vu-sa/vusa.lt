@@ -52,7 +52,23 @@ class AgendaItemController extends AdminController
     {
         $this->handleAuthorization('view', $agendaItem);
 
+        $agendaItem->load(['votes', 'meeting.institutions']);
+
         return $this->inertiaResponse('Admin/Representation/ShowAgendaItem', [
+            'agendaItem' => $agendaItem,
+        ]);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(AgendaItem $agendaItem)
+    {
+        $this->handleAuthorization('update', $agendaItem);
+
+        $agendaItem->load(['votes', 'meeting.institutions']);
+
+        return $this->inertiaResponse('Admin/Representation/EditAgendaItem', [
             'agendaItem' => $agendaItem,
         ]);
     }

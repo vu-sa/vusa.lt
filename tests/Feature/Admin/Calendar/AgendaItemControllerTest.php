@@ -205,4 +205,32 @@ describe('agenda items controller', function () {
 
         $this->assertEquals($this->initialAgendaItemCount, AgendaItem::count());
     });
+
+    test('admin can open the agenda item edit page', function () {
+        $agendaItem = AgendaItem::factory()->create([
+            'meeting_id' => $this->meeting->id,
+        ]);
+
+        $response = asUser($this->admin)
+            ->get(route('agendaItems.edit', $agendaItem->id));
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->component('Admin/Representation/EditAgendaItem')
+            ->where('agendaItem.id', $agendaItem->id)
+        );
+    });
+
+    test('unauthorized user cannot open the agenda item edit page', function () {
+        $agendaItem = AgendaItem::factory()->create([
+            'meeting_id' => $this->meeting->id,
+        ]);
+
+        $outsider = makeUser(Tenant::query()->where('id', '!=', $this->tenant->id)->inRandomOrder()->first() ?? $this->tenant);
+
+        $response = asUser($outsider)
+            ->get(route('agendaItems.edit', $agendaItem->id));
+
+        $response->assertStatus(403);
+    });
 });
