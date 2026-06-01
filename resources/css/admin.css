@@ -9,6 +9,16 @@
 /* Reference Tailwind utilities for use in this file */
 @reference "tailwindcss";
 
+/*
+ * Admin density: lower the root font size so the rem-based Tailwind scale
+ * (text + spacing + icon sizes) renders ~10% more compact, giving more room
+ * for content. Scoped to the admin entry (admin.css is only loaded by admin.ts),
+ * so the public site is unaffected; teleported popovers/dialogs inherit it.
+ */
+:root {
+  font-size: 90%;
+}
+
 /* Naive UI form item alignment for MultiLocaleInput */
 .n-form-item {
   align-items: start;

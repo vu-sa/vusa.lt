@@ -11,6 +11,12 @@ lastUpdated: true
 
 - ✨ **Atnaujintas posėdžio vaizdas** — posėdžio puslapis perdarytas į švaresnį, peržiūrai skirtą vaizdą: kompaktiška data, kada posėdis vyko, o protokolo ir ataskaitos būsenos perkeltos prie kortelių juostos
 - ⭐ **Atskiras darbotvarkės punkto puslapis** — paspaudus darbotvarkės punktą atidaromas atskiras jo redagavimo puslapis su balsavimais ir sprendimais
+- ⭐ **Navigacija tarp darbotvarkės punktų** — punkto puslapio viršuje atsirado „ankstesnis / kitas" mygtukai ir „Punktas N / iš viso" sąrašas, leidžiantis greitai peršokti tarp viso posėdžio punktų ir matyti jų būsenas
+- ✨ **Automatinis išsaugojimas** — darbotvarkės punkto pakeitimai išsaugomi automatiškai; juostoje apačioje matoma būsena, jį galima išjungti, o „Išsaugoti" mygtukas visada pasiekiamas
+- ⭐ **Peržiūros ir redagavimo režimai** — darbotvarkės punktas pirmiausia atidaromas patogiai skaitomu vaizdu (ryškūs duomenys, kuklios antraštės); „Redaguoti" jungiklis įjungia formą
+- ✨ **Aiškesnis punkto redagavimas** — klausimo tipas ir balsavimai pertvarkyti, balsavimai sunumeruoti su „Pagrindinio" žyma, o laukai pažymėti, ar matomi viešai
+- ✨ **Aprašymas ir studentų pozicija – kortelėse** — abu tekstai sudėti į korteles su žyma, kuri rodo, ar jie užpildyti
+- ✨ **Talpesnė administravimo sąsaja** — sumažintas bazinis šrifto dydis, kad ekrane tilptų daugiau informacijos
 - ✨ **Darbotvarkės redagavimo jungiklis** — punktų pridėjimas, pertvarkymas ir šalinimas dabar slepiami po „Redaguoti" jungikliu, kad įprastas vaizdas liktų aiškus
 - ✨ **Išskleidžiamas atstovų sąrašas** — posėdžio atstovų avatarus galima išskleisti į visą sąrašą
 

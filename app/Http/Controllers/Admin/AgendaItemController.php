@@ -66,10 +66,29 @@ class AgendaItemController extends AdminController
     {
         $this->handleAuthorization('update', $agendaItem);
 
-        $agendaItem->load(['votes', 'meeting.institutions']);
+        $agendaItem->load(['votes', 'meeting.institutions', 'meeting.agendaItems' => function ($query) {
+            $query->orderBy('order')->with('mainVote');
+        }]);
+
+        // Whether votes/description are publicly visible follows the meeting's
+        // institution settings (computed attribute, not auto-appended).
+        $agendaItem->meeting->append('is_public');
+
+        // Lightweight sibling list for in-meeting navigation (popover + prev/next)
+        $siblingAgendaItems = $agendaItem->meeting->agendaItems
+            ->map(fn (AgendaItem $item) => [
+                'id' => $item->id,
+                'title' => $item->title,
+                'type' => $item->type?->value,
+                'order' => $item->order,
+                'brought_by_students' => (bool) $item->brought_by_students,
+                'main_vote' => $item->mainVote,
+            ])
+            ->values();
 
         return $this->inertiaResponse('Admin/Representation/EditAgendaItem', [
             'agendaItem' => $agendaItem,
+            'siblingAgendaItems' => $siblingAgendaItems,
         ]);
     }
 
