@@ -60,8 +60,24 @@ function toggleSidebar() {
   return isMobile.value ? setOpenMobile(!openMobile.value) : setOpen(!open.value);
 }
 
+// Don't hijack the shortcut while the user is typing in a field or rich-text
+// editor — there Ctrl/Cmd+B belongs to the input (e.g. bold), not the sidebar.
+function isEditableTarget(event: KeyboardEvent): boolean {
+  const target = event.target as HTMLElement | null;
+  if (!target) {
+    return false;
+  }
+  return target.isContentEditable
+    || target.tagName === 'INPUT'
+    || target.tagName === 'TEXTAREA'
+    || target.tagName === 'SELECT';
+}
+
 useEventListener('keydown', (event: KeyboardEvent) => {
   if (event.key === SIDEBAR_KEYBOARD_SHORTCUT && (event.metaKey || event.ctrlKey)) {
+    if (isEditableTarget(event)) {
+      return;
+    }
     event.preventDefault();
     toggleSidebar();
   }

@@ -99,7 +99,7 @@ import { Badge } from '@/Components/ui/badge';
 
 // Composables
 import { computed } from 'vue';
-import { useDocumentDisplay, forceBrowserDocumentUrl, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
+import { useDocumentDisplay, forceBrowserDocumentUrl, parseDocumentDate, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
 
 // Props
 interface Props {
@@ -124,20 +124,10 @@ const documentUrl = computed(() => props.document.share_url || forceBrowserDocum
 
 // Compact date formatting using the proper date parsing from useDocumentDisplay
 const formatCompactDate = () => {
-  if (!props.document.document_date) return '';
+  const date = parseDocumentDate(props.document.document_date);
+  if (!date) return '';
 
   try {
-    // Use the same date parsing logic as useDocumentDisplay
-    let date: Date;
-    if (typeof props.document.document_date === 'number'
-      || (typeof props.document.document_date === 'string' && /^\d+$/.test(props.document.document_date))) {
-      const timestamp = Number(props.document.document_date);
-      date = new Date(timestamp < 10000000000 ? timestamp * 1000 : timestamp);
-    }
-    else {
-      date = new Date(props.document.document_date);
-    }
-
     const now = new Date();
     const isCurrentYear = date.getFullYear() === now.getFullYear();
 

@@ -205,4 +205,51 @@ describe('agenda items controller', function () {
 
         $this->assertEquals($this->initialAgendaItemCount, AgendaItem::count());
     });
+
+    test('admin can open the agenda item edit page', function () {
+        $agendaItem = AgendaItem::factory()->create([
+            'meeting_id' => $this->meeting->id,
+        ]);
+
+        $response = asUser($this->admin)
+            ->get(route('agendaItems.edit', $agendaItem->id));
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->component('Admin/Representation/EditAgendaItem')
+            ->where('agendaItem.id', $agendaItem->id)
+        );
+    });
+
+    test('edit page returns ordered sibling agenda items for navigation', function () {
+        $first = AgendaItem::factory()->create(['meeting_id' => $this->meeting->id, 'order' => 1, 'title' => 'First']);
+        $second = AgendaItem::factory()->create(['meeting_id' => $this->meeting->id, 'order' => 2, 'title' => 'Second']);
+        $third = AgendaItem::factory()->create(['meeting_id' => $this->meeting->id, 'order' => 3, 'title' => 'Third']);
+
+        $response = asUser($this->admin)
+            ->get(route('agendaItems.edit', $second->id));
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->component('Admin/Representation/EditAgendaItem')
+            ->where('agendaItem.id', $second->id)
+            ->has('siblingAgendaItems', 3)
+            ->where('siblingAgendaItems.0.id', $first->id)
+            ->where('siblingAgendaItems.1.id', $second->id)
+            ->where('siblingAgendaItems.2.id', $third->id)
+        );
+    });
+
+    test('unauthorized user cannot open the agenda item edit page', function () {
+        $agendaItem = AgendaItem::factory()->create([
+            'meeting_id' => $this->meeting->id,
+        ]);
+
+        $outsider = makeUser(Tenant::query()->where('id', '!=', $this->tenant->id)->inRandomOrder()->first() ?? $this->tenant);
+
+        $response = asUser($outsider)
+            ->get(route('agendaItems.edit', $agendaItem->id));
+
+        $response->assertStatus(403);
+    });
 });

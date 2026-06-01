@@ -116,7 +116,7 @@ describe('pinned pages', function () {
     });
 
     test('endpoint stores pinned pages and returns 204', function () {
-        asUser($this->user)->patch(route('profile.updateUIPreferences'), [
+        asUser($this->user)->patch(route('api.v1.admin.user-preferences.update'), [
             'pinned_pages' => [
                 ['route' => 'users.index', 'params' => [], 'title' => 'Users', 'url' => '/mano/users'],
             ],
@@ -146,13 +146,13 @@ describe('density', function () {
     });
 
     test('endpoint rejects an invalid density', function () {
-        asUser($this->user)->patchJson(route('profile.updateUIPreferences'), [
+        asUser($this->user)->patchJson(route('api.v1.admin.user-preferences.update'), [
             'appearance' => ['density' => 'bogus'],
         ])->assertStatus(422);
     });
 
     test('endpoint stores a valid density', function () {
-        asUser($this->user)->patch(route('profile.updateUIPreferences'), [
+        asUser($this->user)->patch(route('api.v1.admin.user-preferences.update'), [
             'appearance' => ['density' => 'compact'],
         ])->assertNoContent();
 
@@ -167,7 +167,7 @@ describe('sidebar collapsed', function () {
     });
 
     test('endpoint persists the collapsed flag', function () {
-        asUser($this->user)->patch(route('profile.updateUIPreferences'), [
+        asUser($this->user)->patch(route('api.v1.admin.user-preferences.update'), [
             'sidebar' => ['collapsed' => true],
         ])->assertNoContent();
 
@@ -201,7 +201,7 @@ describe('quick action visibility', function () {
         $this->user->setSidebarSectionVisibility(['start_fm' => false]);
 
         // Simulate a full reset via the endpoint
-        asUser($this->user)->patch(route('profile.updateUIPreferences'), [
+        asUser($this->user)->patch(route('api.v1.admin.user-preferences.update'), [
             'sidebar' => [
                 'sections' => [
                     'quick_actions' => true,
@@ -228,15 +228,15 @@ describe('quick action visibility', function () {
     });
 });
 
-describe('profile.updateUIPreferences endpoint', function () {
+describe('api.v1.admin.user-preferences.update endpoint', function () {
     test('guests are not authorized', function () {
-        $this->patch(route('profile.updateUIPreferences'), [
+        $this->patch(route('api.v1.admin.user-preferences.update'), [
             'sidebar' => ['sections' => ['quick_actions' => false]],
         ])->assertStatus(302); // redirected to login
     });
 
     test('an authenticated user can toggle a section and gets 204', function () {
-        asUser($this->user)->patch(route('profile.updateUIPreferences'), [
+        asUser($this->user)->patch(route('api.v1.admin.user-preferences.update'), [
             'sidebar' => ['sections' => ['quick_actions' => false]],
         ])->assertNoContent();
 
@@ -245,7 +245,7 @@ describe('profile.updateUIPreferences endpoint', function () {
     });
 
     test('an authenticated user can reorder sections', function () {
-        asUser($this->user)->patch(route('profile.updateUIPreferences'), [
+        asUser($this->user)->patch(route('api.v1.admin.user-preferences.update'), [
             'sidebar' => ['order' => ['recently_visited', 'secondary', 'bogus']],
         ])->assertNoContent();
 
@@ -260,9 +260,9 @@ describe('profile.updateUIPreferences endpoint', function () {
     });
 });
 
-describe('profile.trackRecentPage endpoint', function () {
+describe('api.v1.admin.user-preferences.trackRecentPage endpoint', function () {
     test('records a visited page and returns 204', function () {
-        asUser($this->user)->patch(route('profile.trackRecentPage'), [
+        asUser($this->user)->patch(route('api.v1.admin.user-preferences.trackRecentPage'), [
             'route' => 'meetings.index',
             'params' => [],
         ])->assertNoContent();
@@ -276,7 +276,7 @@ describe('profile.trackRecentPage endpoint', function () {
     test('clear flag empties the recent list', function () {
         $this->user->pushRecentPage('meetings.index', []);
 
-        asUser($this->user)->patch(route('profile.trackRecentPage'), [
+        asUser($this->user)->patch(route('api.v1.admin.user-preferences.trackRecentPage'), [
             'clear' => true,
         ])->assertNoContent();
 

@@ -32,6 +32,32 @@ export interface DocumentDisplayItem {
 }
 
 /**
+ * Parse a document date value (ISO string, numeric string, or Unix timestamp)
+ * into a JavaScript Date. Returns null for invalid or missing input.
+ */
+export function parseDocumentDate(dateValue: string | number | null | undefined): Date | null {
+  if (dateValue === null || dateValue === undefined || dateValue === '') {
+    return null;
+  }
+
+  let date: Date;
+  if (typeof dateValue === 'number'
+    || (typeof dateValue === 'string' && /^\d+$/.test(dateValue))) {
+    const timestamp = Number(dateValue);
+    date = new Date(timestamp < 10000000000 ? timestamp * 1000 : timestamp);
+  }
+  else {
+    date = new Date(dateValue);
+  }
+
+  if (isNaN(date.getTime())) {
+    return null;
+  }
+
+  return date;
+}
+
+/**
  * Appends `web=1` to a SharePoint URL to force it to open in the browser viewer
  * rather than the native OneDrive / Office / Copilot mobile app.
  * Skipped when the URL already has `web=1` or `download=1`.
@@ -50,16 +76,10 @@ export function forceBrowserDocumentUrl(url: string | null | undefined): string 
 export const useDocumentDisplay = (document: DocumentDisplayItem) => {
   // Date formatting utilities
   const formatDate = (dateString: string): string => {
+    const date = parseDocumentDate(dateString);
+    if (!date) return dateString;
+
     try {
-      let date: Date;
-      if (typeof dateString === 'number'
-        || (typeof dateString === 'string' && /^\d+$/.test(dateString))) {
-        const timestamp = Number(dateString);
-        date = new Date(timestamp < 10000000000 ? timestamp * 1000 : timestamp);
-      }
-      else {
-        date = new Date(dateString);
-      }
       return format(date, 'yyyy-MM-dd', { locale: lt });
     }
     catch {
@@ -68,19 +88,10 @@ export const useDocumentDisplay = (document: DocumentDisplayItem) => {
   };
 
   const formatDocumentDate = (): string => {
-    if (!document.document_date) return 'Nėra datos';
+    const date = parseDocumentDate(document.document_date);
+    if (!date) return 'Nėra datos';
 
     try {
-      let date: Date;
-      if (typeof document.document_date === 'number'
-        || (typeof document.document_date === 'string' && /^\d+$/.test(document.document_date))) {
-        const timestamp = Number(document.document_date);
-        date = new Date(timestamp < 10000000000 ? timestamp * 1000 : timestamp);
-      }
-      else {
-        date = new Date(document.document_date);
-      }
-
       const now = new Date();
 
       // Show relative time for recent documents (for grid view)
@@ -98,43 +109,27 @@ export const useDocumentDisplay = (document: DocumentDisplayItem) => {
       }
     }
     catch {
-      return document.document_date;
+      return document.document_date ?? 'Nėra datos';
     }
   };
 
   const formatDocumentDateSimple = (): string => {
-    if (!document.document_date) return 'Nėra datos';
+    const date = parseDocumentDate(document.document_date);
+    if (!date) return 'Nėra datos';
 
     try {
-      let date: Date;
-      if (typeof document.document_date === 'number'
-        || (typeof document.document_date === 'string' && /^\d+$/.test(document.document_date))) {
-        const timestamp = Number(document.document_date);
-        date = new Date(timestamp < 10000000000 ? timestamp * 1000 : timestamp);
-      }
-      else {
-        date = new Date(document.document_date);
-      }
       return format(date, 'yyyy-MM-dd', { locale: lt });
     }
     catch {
-      return document.document_date;
+      return document.document_date ?? 'Nėra datos';
     }
   };
 
   const getRelativeDate = (): string => {
-    if (!document.document_date) return '';
+    const date = parseDocumentDate(document.document_date);
+    if (!date) return '';
 
     try {
-      let date: Date;
-      if (typeof document.document_date === 'number'
-        || (typeof document.document_date === 'string' && /^\d+$/.test(document.document_date))) {
-        const timestamp = Number(document.document_date);
-        date = new Date(timestamp < 10000000000 ? timestamp * 1000 : timestamp);
-      }
-      else {
-        date = new Date(document.document_date);
-      }
       return formatDistanceToNow(date, { addSuffix: true, locale: lt });
     }
     catch {

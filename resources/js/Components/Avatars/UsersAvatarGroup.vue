@@ -42,22 +42,54 @@
         </HoverCardContent>
       </HoverCard>
     </div>
+
+    <!-- Optional expand chevron: opens a dropdown listing all users -->
+    <Popover v-if="expandable && users.length > 0">
+      <PopoverTrigger as-child>
+        <button
+          type="button"
+          class="ml-1 flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+          :aria-label="$t('Rodyti visus')"
+        >
+          <ChevronDown class="h-4 w-4" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent class="w-64 p-2" align="end">
+        <div class="grid gap-1 max-h-72 overflow-y-auto pr-1">
+          <UserPopover
+            v-for="user in users"
+            :key="user.id || user.name"
+            show-name
+            :size="popoverAvatarSize"
+            :user
+          >
+            <template #additional-info>
+              <slot name="user-additional-info" :user />
+            </template>
+          </UserPopover>
+        </div>
+      </PopoverContent>
+    </Popover>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { ChevronDown } from 'lucide-vue-next';
 
 import UserPopover from './UserPopover.vue';
 
 import { Avatar, AvatarFallback, avatarSizeClasses, mapPixelToSize, avatarTextSizes, type AvatarSize } from '@/Components/ui/avatar';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/hover-card';
+import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 
 const props = defineProps<{
   users: App.Entities.User[];
   max?: number;
   size?: number | AvatarSize;
   limitByScreen?: boolean;
+  /** Render a trailing chevron that opens a dropdown listing all users. */
+  expandable?: boolean;
 }>();
 
 // Compute the maximum number of users to display, taking into account screen size if limitByScreen is true

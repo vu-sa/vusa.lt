@@ -69,7 +69,7 @@ describe('section visibility', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
     const { url, body } = lastFetch();
-    expect(url).toContain('profile.updateUIPreferences');
+    expect(url).toContain('api.v1.admin.user-preferences.update');
     expect(body.sidebar.sections.start_fm).toBe(false);
     expect(Array.isArray(body.sidebar.order)).toBe(true);
   });
@@ -158,7 +158,7 @@ describe('trackVisit', () => {
     expect(ctx.recentPages.value[0].title).toBe('New user');
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const { url, body } = lastFetch();
-    expect(url).toContain('profile.trackRecentPage');
+    expect(url).toContain('api.v1.admin.user-preferences.trackRecentPage');
     expect(body.title).toBe('New user');
   });
 
@@ -211,7 +211,7 @@ describe('pinned pages', () => {
     ctx.togglePin({ routeName: 'news.index', href: '/mano/news', title: 'News' });
     expect(ctx.isPinned({ routeName: 'news.index', href: '/mano/news' })).toBe(true);
     let { url, body } = lastFetch();
-    expect(url).toContain('profile.updateUIPreferences');
+    expect(url).toContain('api.v1.admin.user-preferences.update');
     expect(body.pinned_pages[0].url).toBe('/mano/news');
 
     ctx.togglePin({ routeName: 'news.index', href: '/mano/news', title: 'News' });
@@ -229,7 +229,7 @@ describe('density', () => {
     ctx.setDensity('compact');
     expect(ctx.density.value).toBe('compact');
     const { url, body } = lastFetch();
-    expect(url).toContain('profile.updateUIPreferences');
+    expect(url).toContain('api.v1.admin.user-preferences.update');
     expect(body.appearance.density).toBe('compact');
   });
 });
@@ -242,7 +242,7 @@ describe('sidebar collapsed', () => {
     ctx.setSidebarCollapsed(true);
     expect(ctx.sidebarCollapsed.value).toBe(true);
     const { url, body } = lastFetch();
-    expect(url).toContain('profile.updateUIPreferences');
+    expect(url).toContain('api.v1.admin.user-preferences.update');
     expect(body.sidebar.collapsed).toBe(true);
   });
 });
@@ -262,7 +262,7 @@ describe('quick action visibility', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
     const { url, body } = lastFetch();
-    expect(url).toContain('profile.updateUIPreferences');
+    expect(url).toContain('api.v1.admin.user-preferences.update');
     expect(body.quick_actions.new_news).toBe(false);
   });
 

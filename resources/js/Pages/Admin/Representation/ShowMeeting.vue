@@ -8,9 +8,14 @@
       :badge="meetingBadge"
     >
       <template #icon>
-        <span class="text-base sm:text-lg font-medium text-zinc-600 dark:text-zinc-300">
-          {{ formatStaticTime(new Date(meeting.start_time), { day: "numeric" }) }}
-        </span>
+        <div class="flex flex-col items-center justify-center leading-none">
+          <span class="text-lg sm:text-xl font-semibold text-zinc-700 dark:text-zinc-200">
+            {{ formatStaticTime(new Date(meeting.start_time), { day: "numeric" }) }}
+          </span>
+          <span class="mt-0.5 text-[10px] font-medium tracking-wide text-zinc-400 dark:text-zinc-500">
+            {{ formatMonthShort(new Date(meeting.start_time)) }}
+          </span>
+        </div>
       </template>
       <template #subtitle>
         <!-- Joint meeting institution management (unobtrusive) -->
@@ -46,6 +51,7 @@
           <div v-if="meetingTimeLabel" class="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400">
             <Clock class="h-4 w-4 text-green-500 shrink-0" />
             <span>{{ meetingTimeLabel }}</span>
+            <span class="text-zinc-400 dark:text-zinc-500">· {{ meetingRelativeTime }}</span>
           </div>
           <Badge v-if="meeting.type_label" variant="secondary" class="text-xs">
             {{ meeting.type_label }}
@@ -55,69 +61,10 @@
             <span class="hidden sm:inline">{{ $t('Rodomas viešai') }}</span>
             <span class="sm:hidden">{{ $t('Viešas') }}</span>
           </Badge>
-          <!-- Protocol status -->
-          <span
-            v-if="isPastMeeting"
-            class="inline-flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400"
-            :title="hasProtocol ? $t('Protokolas įkeltas') : $t('Protokolas neįkeltas')"
-          >
-            <svg
-              class="h-4 w-4 shrink-0"
-              :class="hasProtocol ? 'text-green-600 dark:text-green-400' : 'text-amber-500 dark:text-amber-400'"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <template v-if="hasProtocol">
-                <path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4" />
-                <path d="M19 17V5a2 2 0 0 0-2-2H4" />
-                <path d="M15 8h-5" />
-                <path d="M15 12h-5" />
-              </template>
-              <template v-else>
-                <path d="M19 17V5a2 2 0 0 0-2-2H4" />
-                <path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4" />
-              </template>
-            </svg>
-            <span class="hidden sm:inline">{{ $t('Protokolas') }}</span>
-          </span>
-          <!-- Report status -->
-          <span
-            v-if="isPastMeeting"
-            class="inline-flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400"
-            :title="hasReport ? $t('Ataskaita įkelta') : $t('Ataskaita neįkelta')"
-          >
-            <svg
-              class="h-4 w-4 shrink-0"
-              :class="hasReport ? 'text-green-600 dark:text-green-400' : 'text-amber-500 dark:text-amber-400'"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <template v-if="hasReport">
-                <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
-                <path d="M14 2v4a2 2 0 0 0 2 2h4" />
-                <path d="M8 18v-2" />
-                <path d="M12 18v-4" />
-                <path d="M16 18v-6" />
-              </template>
-              <template v-else>
-                <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
-                <path d="M14 2v4a2 2 0 0 0 2 2h4" />
-              </template>
-            </svg>
-            <span class="hidden sm:inline">{{ $t('Ataskaita') }}</span>
-          </span>
         </div>
         <div v-if="representatives && representatives.length > 0" class="flex items-center gap-2">
           <span class="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:inline">{{ $t('Atstovai') }}:</span>
-          <UsersAvatarGroup :users="representatives" :max="3" :size="24" class="sm:[--max:5]" />
+          <UsersAvatarGroup :users="representatives" :max="4" :size="24" expandable />
         </div>
       </template>
       <template #actions>
@@ -148,49 +95,71 @@
 
     <!-- Tabs Navigation -->
     <Tabs v-model="currentTab" class="mt-6">
-      <TabsList class="gap-2 mb-4">
-        <TabsTrigger value="overview">
-          {{ $t('Apžvalga') }}
-        </TabsTrigger>
-        <TabsTrigger value="agenda" class="relative">
-          {{ $t('Darbotvarkė') }}
-          <span v-if="meeting.agenda_items?.length" class="ml-1.5 text-xs opacity-70">
-            ({{ meeting.agenda_items.length }})
-          </span>
-          <SpotlightBadge v-if="showAgendaSpotlight" />
-        </TabsTrigger>
-        <TabsTrigger value="files">
-          {{ $t('Failai') }}
-        </TabsTrigger>
-        <TabsTrigger value="tasks">
-          {{ $t('Užduotys') }}
-          <span v-if="meeting.tasks?.length" class="ml-1.5 text-xs opacity-70">
-            ({{ meeting.tasks.length }})
-          </span>
-        </TabsTrigger>
-      </TabsList>
+      <div class="mb-4 flex items-center justify-between gap-4">
+        <TabsList class="h-10 gap-1 rounded-xl bg-zinc-100/80 p-1 dark:bg-zinc-800/60">
+          <TabsTrigger
+            value="agenda"
+            class="rounded-lg px-3.5 data-[state=active]:shadow-sm data-[state=active]:font-semibold"
+          >
+            {{ $t('Darbotvarkė') }}
+            <span v-if="meeting.agenda_items?.length" class="ml-1.5 text-xs font-normal text-zinc-400 dark:text-zinc-500">
+              {{ meeting.agenda_items.length }}
+            </span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="files"
+            class="rounded-lg px-3.5 data-[state=active]:shadow-sm data-[state=active]:font-semibold"
+          >
+            {{ $t('Failai') }}
+          </TabsTrigger>
+          <TabsTrigger
+            value="tasks"
+            class="rounded-lg px-3.5 data-[state=active]:shadow-sm data-[state=active]:font-semibold"
+          >
+            {{ $t('Užduotys') }}
+            <span v-if="meeting.tasks?.length" class="ml-1.5 text-xs font-normal text-zinc-400 dark:text-zinc-500">
+              {{ meeting.tasks.length }}
+            </span>
+          </TabsTrigger>
+        </TabsList>
 
-      <!-- Overview Tab -->
-      <TabsContent value="overview" class="space-y-6">
-        <MeetingOverviewSection
-          :meeting
-          :previous-meeting
-          :next-meeting
-          @go-to-agenda="navigateToTab('agenda')"
-          @go-to-agenda-item="navigateToAgendaItem"
-          @go-to-files="navigateToTab('files')"
-        />
-      </TabsContent>
+        <!-- Protocol / report status (past meetings only) -->
+        <div v-if="isPastMeeting" class="hidden sm:flex items-center gap-3">
+          <span
+            class="inline-flex items-center gap-1.5 text-xs"
+            :class="hasProtocol ? 'text-green-600 dark:text-green-400' : 'text-zinc-400 dark:text-zinc-500'"
+            :title="hasProtocol ? $t('Protokolas įkeltas') : $t('Protokolas neįkeltas')"
+          >
+            <FileText class="h-4 w-4 shrink-0" />
+            {{ $t('Protokolas') }}
+            <Check v-if="hasProtocol" class="h-3.5 w-3.5" />
+          </span>
+          <span
+            class="inline-flex items-center gap-1.5 text-xs"
+            :class="hasReport ? 'text-green-600 dark:text-green-400' : 'text-zinc-400 dark:text-zinc-500'"
+            :title="hasReport ? $t('Ataskaita įkelta') : $t('Ataskaita neįkelta')"
+          >
+            <FileBarChart class="h-4 w-4 shrink-0" />
+            {{ $t('Ataskaita') }}
+            <Check v-if="hasReport" class="h-3.5 w-3.5" />
+          </span>
+        </div>
+      </div>
 
       <!-- Agenda Tab -->
-      <TabsContent value="agenda">
-        <SortableCardContainer
-          ref="sortableContainerRef"
-          :items="meeting.agenda_items ?? []"
+      <TabsContent value="agenda" class="space-y-6">
+        <MeetingAgendaList
+          v-model:editing="agendaEditing"
+          :agenda-items="meeting.agenda_items ?? []"
           :meeting-id="meeting.id"
           @add="showSingleAgendaItemModal = true"
           @add-bulk="showAgendaItemStoreModal = true"
-          @delete="handleAgendaItemDelete"
+          @delete="requestAgendaItemDelete"
+        />
+        <MeetingNavigationCards
+          v-if="previousMeeting || nextMeeting"
+          :previous-meeting="previousMeeting"
+          :next-meeting="nextMeeting"
         />
       </TabsContent>
 
@@ -295,6 +264,35 @@
       </DialogContent>
     </Dialog>
 
+    <!-- Agenda Item Delete Confirmation -->
+    <Dialog v-model:open="showAgendaItemDeleteDialog">
+      <DialogContent class="max-w-md">
+        <DialogHeader>
+          <DialogTitle class="flex items-center gap-2 text-destructive">
+            <AlertTriangle class="h-5 w-5" />
+            {{ $t("Šalinti darbotvarkės punktą?") }}
+          </DialogTitle>
+        </DialogHeader>
+        <div class="space-y-4">
+          <p class="text-sm text-zinc-600 dark:text-zinc-400">
+            {{ $t("Ar tikrai norite ištrinti šį darbotvarkės punktą? Šis veiksmas negrįžtamas.") }}
+          </p>
+          <p v-if="agendaItemPendingDelete" class="rounded-lg bg-zinc-50 dark:bg-zinc-800/50 px-3 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            {{ agendaItemPendingDelete.title }}
+          </p>
+          <div class="flex justify-end gap-3">
+            <Button variant="outline" @click="showAgendaItemDeleteDialog = false">
+              {{ $t("Atšaukti") }}
+            </Button>
+            <Button variant="destructive" @click="confirmAgendaItemDelete">
+              <Trash2 class="h-4 w-4 mr-2" />
+              {{ $t("Šalinti") }}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+
     <!-- Delete Confirmation Dialog -->
     <Dialog v-model:open="showDeleteDialog">
       <DialogContent class="max-w-md">
@@ -341,14 +339,14 @@
 </template>
 
 <script setup lang="tsx">
-import { ref, computed, watch, onMounted, nextTick } from 'vue';
-import { router, useForm, Link, Head as InertiaHead } from '@inertiajs/vue3';
+import { ref, computed, watch, onMounted } from 'vue';
+import { router, useForm, Head as InertiaHead } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { AlertTriangle, AlertCircle, Plus, Trash2, X, ChevronLeft, ChevronRight, Clock, Globe, Edit, MoreHorizontal, Video, Link2 } from 'lucide-vue-next';
+import { AlertTriangle, Plus, Trash2, X, Clock, Globe, Edit, MoreHorizontal, Video, Link2, Check, FileText, FileBarChart } from 'lucide-vue-next';
 import { DialogDescription } from 'reka-ui';
 
-import { formatStaticTime } from '@/Utils/IntlTime';
+import { formatStaticTime, formatMonthShort, formatRelativeTime } from '@/Utils/IntlTime';
 import { formatMeetingDateTime, formatMeetingTimeOnly } from '@/Utils/MeetingDisplay';
 import { genitivizeEveryWord } from '@/Utils/String';
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
@@ -374,15 +372,14 @@ import {
 // Custom Components
 import ShowPageHero from '@/Components/Hero/ShowPageHero.vue';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
-import MeetingOverviewSection from '@/Components/Meetings/MeetingOverviewSection.vue';
-import SortableCardContainer from '@/Components/AgendaItems/SortableCardContainer.vue';
+import MeetingAgendaList from '@/Components/Meetings/MeetingAgendaList.vue';
+import MeetingNavigationCards from '@/Components/Meetings/MeetingNavigationCards.vue';
 import AddAgendaItemForm from '@/Components/AdminForms/AddAgendaItemForm.vue';
 import AgendaItemsForm from '@/Components/AdminForms/Special/AgendaItemsForm.vue';
 import MeetingForm from '@/Components/AdminForms/MeetingForm.vue';
 import FileManager from '@/Features/Admin/SharepointFileManager/SharepointFileManager.vue';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 import ActivityLogButton from '@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue';
-import SpotlightBadge from '@/Components/Onboarding/SpotlightBadge.vue';
 import { InstitutionIconFilled, MeetingIconFilled } from '@/Components/icons';
 
 const props = defineProps<{
@@ -394,10 +391,11 @@ const props = defineProps<{
 }>();
 
 // Urgency calculations for hero badge
-const { overallUrgency, hasProtocol, hasReport, isPastMeeting } = useMeetingUrgency(() => props.meeting);
+const { hasProtocol, hasReport, isPastMeeting } = useMeetingUrgency(() => props.meeting);
 
 // Hide HH:MM for email/electronic meetings (start_time is forced to 23:59 as a deadline marker)
 const meetingTimeLabel = computed(() => formatMeetingTimeOnly(props.meeting));
+const meetingRelativeTime = computed(() => formatRelativeTime(new Date(props.meeting.start_time)));
 
 // Component state
 const showMeetingModal = ref(false);
@@ -406,71 +404,62 @@ const showSingleAgendaItemModal = ref(false);
 const showDeleteDialog = ref(false);
 const loading = ref(false);
 
-// Tab state with smart defaults
-const hasVisitedAgendaTab = useStorage('meeting-agenda-tab-visited', false);
-const storedTab = useStorage('show-meeting-tab', 'overview');
+// Read-only by default; toggled on to add/reorder/delete agenda items
+const agendaEditing = ref(false);
+
+// Tab state with smart defaults (agenda is the landing tab)
+const TAB_NAMES = ['agenda', 'files', 'tasks'];
+const storedTab = useStorage('show-meeting-tab', 'agenda');
 
 // Check URL for tab parameter (priority over localStorage)
 const getInitialTab = () => {
   if (typeof window !== 'undefined') {
     const params = new URLSearchParams(window.location.search);
     const urlTab = params.get('tab');
-    if (urlTab && ['overview', 'agenda', 'files', 'tasks'].includes(urlTab)) {
+    if (urlTab && TAB_NAMES.includes(urlTab)) {
       return urlTab;
     }
   }
-  return storedTab.value;
+  return TAB_NAMES.includes(storedTab.value) ? storedTab.value : 'agenda';
 };
 
 const currentTab = ref(getInitialTab());
 
-// Show spotlight on agenda tab for users who haven't visited it yet
-const showAgendaSpotlight = computed(() => {
-  return !hasVisitedAgendaTab.value && (props.meeting.agenda_items?.length ?? 0) > 0;
-});
-
-// Mark agenda tab as visited when user clicks on it, and sync to URL
+// Sync tab state to URL without page reload
 watch(currentTab, (newTab) => {
   storedTab.value = newTab;
-  if (newTab === 'agenda') {
-    hasVisitedAgendaTab.value = true;
-  }
 
-  // Sync tab state to URL without page reload
   if (typeof window !== 'undefined') {
     const url = new URL(window.location.href);
-    if (newTab === 'overview') {
+    if (newTab === 'agenda') {
       url.searchParams.delete('tab');
-      url.searchParams.delete('action');
     }
     else {
       url.searchParams.set('tab', newTab);
-      // Clear action param when switching tabs normally
-      url.searchParams.delete('action');
     }
+    url.searchParams.delete('action');
     window.history.replaceState({}, '', url.toString());
   }
 });
 
-// Reset to overview for new meeting visits (unless URL specifies a tab)
 onMounted(() => {
   const lastVisitedMeetingId = useStorage('last-visited-meeting-id', '');
   const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
   const urlTab = params?.get('tab');
   const urlAction = params?.get('action');
 
-  // If no URL tab specified and it's a new meeting, reset to overview
+  // Reset to the agenda tab for a freshly visited meeting (unless URL pins a tab)
   if (!urlTab && lastVisitedMeetingId.value !== props.meeting.id) {
-    currentTab.value = 'overview';
+    currentTab.value = 'agenda';
   }
   lastVisitedMeetingId.value = props.meeting.id;
 
-  // Auto-open agenda add modal if action=add and on agenda tab
-  if (urlTab === 'agenda' && urlAction === 'add') {
-    // Small delay to ensure component is mounted
+  // Auto-open the add dialog in edit mode if action=add
+  if (urlAction === 'add') {
+    currentTab.value = 'agenda';
     setTimeout(() => {
+      agendaEditing.value = true;
       showSingleAgendaItemModal.value = true;
-      // Clear the action param from URL
       if (typeof window !== 'undefined') {
         const url = new URL(window.location.href);
         url.searchParams.delete('action');
@@ -479,22 +468,6 @@ onMounted(() => {
     }, 100);
   }
 });
-
-// Navigation helper
-const navigateToTab = (tab: string) => {
-  currentTab.value = tab;
-};
-
-// Navigate to specific agenda item
-const sortableContainerRef = ref<InstanceType<typeof SortableCardContainer> | null>(null);
-
-const navigateToAgendaItem = (itemId: string) => {
-  currentTab.value = 'agenda';
-  // Use setTimeout to ensure the tab content is fully rendered before expanding
-  setTimeout(() => {
-    sortableContainerRef.value?.expandItem(itemId);
-  }, 100);
-};
 
 // Form handling
 const meetingAgendaForm = useForm({
@@ -610,8 +583,24 @@ const handleMeetingFormSubmit = (meeting: App.Entities.Meeting) => {
   });
 };
 
-const handleAgendaItemDelete = (agendaItem: App.Entities.AgendaItem) => {
-  router.delete(route('agendaItems.destroy', agendaItem.id));
+// Agenda item deletion goes through a confirmation dialog
+const showAgendaItemDeleteDialog = ref(false);
+const agendaItemPendingDelete = ref<App.Entities.AgendaItem | null>(null);
+
+const requestAgendaItemDelete = (agendaItem: App.Entities.AgendaItem) => {
+  agendaItemPendingDelete.value = agendaItem;
+  showAgendaItemDeleteDialog.value = true;
+};
+
+const confirmAgendaItemDelete = () => {
+  if (!agendaItemPendingDelete.value) { return; }
+  router.delete(route('agendaItems.destroy', agendaItemPendingDelete.value.id), {
+    preserveScroll: true,
+    onSuccess: () => {
+      showAgendaItemDeleteDialog.value = false;
+      agendaItemPendingDelete.value = null;
+    },
+  });
 };
 
 const handleSingleAgendaItemSubmit = (data: { meeting_id: string; title: string; description?: string; brought_by_students?: boolean }) => {

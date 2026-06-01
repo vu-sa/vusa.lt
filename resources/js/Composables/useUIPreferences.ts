@@ -288,7 +288,7 @@ export function createUIPreferencesProvider(): UIPreferencesContext {
   const isSectionVisible = (key: ToggleableSection) => sectionVisibility[key] !== false;
 
   const persistSections = () => {
-    persist('profile.updateUIPreferences', {
+    persist('api.v1.admin.user-preferences.update', {
       sidebar: {
         sections: { ...sectionVisibility },
         order: [...sectionOrder.value],
@@ -354,7 +354,7 @@ export function createUIPreferencesProvider(): UIPreferencesContext {
   };
 
   const persistPinned = () => {
-    persist('profile.updateUIPreferences', { pinned_pages: [...pinnedRaw.value] });
+    persist('api.v1.admin.user-preferences.update', { pinned_pages: [...pinnedRaw.value] });
   };
 
   const togglePin = (item: { routeName?: string; href?: string; title?: string }) => {
@@ -383,12 +383,12 @@ export function createUIPreferencesProvider(): UIPreferencesContext {
 
   const setDensity = (value: SidebarDensity) => {
     density.value = value;
-    persist('profile.updateUIPreferences', { appearance: { density: value } });
+    persist('api.v1.admin.user-preferences.update', { appearance: { density: value } });
   };
 
   const setSidebarCollapsed = (value: boolean) => {
     sidebarCollapsed.value = value;
-    persist('profile.updateUIPreferences', { sidebar: { collapsed: value } });
+    persist('api.v1.admin.user-preferences.update', { sidebar: { collapsed: value } });
   };
 
   const trackVisit = (
@@ -415,12 +415,12 @@ export function createUIPreferencesProvider(): UIPreferencesContext {
 
     // One small request per real navigation — persisted immediately so it
     // survives a full page load.
-    persist('profile.trackRecentPage', { route: routeName, params, title, url });
+    persist('api.v1.admin.user-preferences.trackRecentPage', { route: routeName, params, title, url });
   };
 
   const clearRecent = () => {
     recentRaw.value = [];
-    persist('profile.trackRecentPage', { clear: true });
+    persist('api.v1.admin.user-preferences.trackRecentPage', { clear: true });
   };
 
   const context: UIPreferencesContext = {

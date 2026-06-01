@@ -3,6 +3,7 @@
 namespace App\Models\Pivots;
 
 use App\Enums\AgendaItemType;
+use App\Models\AgendaItemNote;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Tenant;
@@ -42,6 +43,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Institution> $institutions
  * @property-read Vote|null $mainVote
  * @property-read Meeting|null $meeting
+ * @property-read AgendaItemNote|null $note
  * @property-read Collection<int, Tenant> $tenants
  * @property-read Collection<int, Vote> $votes
  *
@@ -109,6 +111,14 @@ class AgendaItem extends Pivot
     public function additionalVotes(): HasMany
     {
         return $this->hasMany(Vote::class, 'agenda_item_id', 'id')->where('is_main', false)->orderBy('order');
+    }
+
+    /**
+     * The private collaborative notes document ("Atstovų pastabos") for this item.
+     */
+    public function note(): HasOne
+    {
+        return $this->hasOne(AgendaItemNote::class, 'agenda_item_id', 'id');
     }
 
     public function institutions()

@@ -81,7 +81,7 @@ describe('SidebarCustomizeDialog', () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, options] = fetchMock.mock.calls[0];
-    expect(url as string).toContain('profile.updateUIPreferences');
+    expect(url as string).toContain('api.v1.admin.user-preferences.update');
     const body = JSON.parse((options as RequestInit).body as string);
     expect(body.sidebar.sections.quick_actions).toBe(false);
   });
@@ -177,7 +177,7 @@ describe('QuickActionSettingsPopover', () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, options] = fetchMock.mock.calls[0];
-    expect(url as string).toContain('profile.updateUIPreferences');
+    expect(url as string).toContain('api.v1.admin.user-preferences.update');
     const body = JSON.parse((options as RequestInit).body as string);
     // new_meeting started visible (true) → toggled to false.
     expect(body.quick_actions.new_meeting).toBe(false);
@@ -255,7 +255,7 @@ describe('RecentlyVisitedSection', () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, options] = fetchMock.mock.calls[0];
-    expect(url as string).toContain('profile.updateUIPreferences');
+    expect(url as string).toContain('api.v1.admin.user-preferences.update');
     const body = JSON.parse((options as RequestInit).body as string);
     expect(body.pinned_pages[0].url).toBe('/mano/users/1/edit');
   });
@@ -326,7 +326,7 @@ describe('density toggle', () => {
     const lastCall = fetchMock.mock.calls[fetchMock.mock.calls.length - 1];
     const url = lastCall[0] as string;
     const body = JSON.parse((lastCall[1] as RequestInit).body as string);
-    expect(url).toContain('profile.updateUIPreferences');
+    expect(url).toContain('api.v1.admin.user-preferences.update');
     expect(body.appearance.density).toBe('compact');
   });
 });

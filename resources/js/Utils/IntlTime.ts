@@ -69,6 +69,21 @@ export const formatStaticTime = (
   return staticTime;
 };
 
+/**
+ * Format the short month name, uppercased and without a trailing period
+ * (e.g. a Lithuanian April date → "BAL"). Used for compact date badges.
+ */
+export const formatMonthShort = (
+  time: number | Date | undefined,
+  locale: LocaleEnum = LocaleEnum.LT,
+): string => {
+  if (!time) return '';
+
+  return formatStaticTime(time, { month: 'short' }, locale)
+    .replace(/\.$/, '')
+    .toUpperCase();
+};
+
 export const getDaysDifference = (time: number | Date) => {
   const now = new Date();
   const difference = new Date(time);

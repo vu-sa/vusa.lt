@@ -57,8 +57,8 @@
         <!-- Separator after first item -->
         <BreadcrumbSeparator v-if="firstItem" />
 
-        <!-- Middle items in hover card (if more than 3 total items) -->
-        <template v-if="middleItems.length > 0">
+        <!-- Deeper ancestors collapsed into a hover card (4+ total items) -->
+        <template v-if="collapsedItems.length > 0">
           <BreadcrumbItem>
             <HoverCard :open-delay="100" :close-delay="200">
               <HoverCardTrigger as-child>
@@ -68,13 +68,30 @@
                 </button>
               </HoverCardTrigger>
               <HoverCardContent align="start" class="w-48 p-1">
-                <Link v-for="(item, index) in middleItems" :key="index" :href="item.href || '#'"
+                <Link v-for="(item, index) in collapsedItems" :key="index" :href="item.href || '#'"
                   class="flex items-center gap-2 px-2 py-1.5 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground transition-colors">
                   <component :is="item.icon" v-if="item.icon" class="h-4 w-4 text-muted-foreground" />
                   <span>{{ $t(item.label) }}</span>
                 </Link>
               </HoverCardContent>
             </HoverCard>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+        </template>
+
+        <!-- Immediate parent (always inline) -->
+        <template v-if="parentItem">
+          <BreadcrumbItem>
+            <BreadcrumbLink v-if="parentItem.href" :href="parentItem.href" :prefetch="parentItem.prefetch ?? true">
+              <div class="flex items-center gap-1.5">
+                <component :is="parentItem.icon" v-if="parentItem.icon" class="h-3.5 w-3.5 flex-shrink-0" />
+                <span class="truncate max-w-32 lg:max-w-48">{{ $t(parentItem.label) }}</span>
+              </div>
+            </BreadcrumbLink>
+            <span v-else class="flex items-center gap-1.5">
+              <component :is="parentItem.icon" v-if="parentItem.icon" class="h-3.5 w-3.5 flex-shrink-0" />
+              <span class="truncate max-w-32 lg:max-w-48">{{ $t(parentItem.label) }}</span>
+            </span>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
         </template>
@@ -145,12 +162,16 @@ const isMobile = breakpoints.smaller('md');
 // 2 items = "Home → Current Page" which duplicates the page title
 const shouldShowBreadcrumbs = computed(() => breadcrumbs.value.length >= 3);
 
-// Split breadcrumbs into first, middle, and last for desktop display
+// Split breadcrumbs for desktop display. The immediate parent (the crumb right
+// before the current page) is always shown inline so its context — e.g. the
+// meeting date before an agenda item — stays visible; only deeper ancestors
+// collapse into the ellipsis hover-card.
 const firstItem = computed(() => breadcrumbs.value[0] || null);
 const lastItem = computed(() => breadcrumbs.value.length > 1 ? breadcrumbs.value[breadcrumbs.value.length - 1] : null);
-const middleItems = computed(() => {
-  if (breadcrumbs.value.length <= 2) return [];
-  return breadcrumbs.value.slice(1, -1);
+const parentItem = computed(() => breadcrumbs.value.length > 2 ? breadcrumbs.value[breadcrumbs.value.length - 2] : null);
+const collapsedItems = computed(() => {
+  if (breadcrumbs.value.length <= 3) return [];
+  return breadcrumbs.value.slice(1, -2);
 });
 </script>
 
