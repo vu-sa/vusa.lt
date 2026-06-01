@@ -7,20 +7,18 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
-## v1.12 — Meeting UI Refinement (2026-06-...) {#v1-12}
+## v1.12 — Meeting UI Refinement (2026-06-01) {#v1-12}
 
-- ✨ **Redesigned meeting view** — the meeting page is now a cleaner, read-first view: a compact date, how long ago the meeting was, and the protocol/report status moved next to the tab bar
+- ✨ Redesigned meeting view
 - ⭐ **Dedicated agenda item page** — clicking an agenda item opens a separate page for editing it, including votes and decisions
-- ⭐ **Real-time shared representative notes** — the agenda item page now has a private "Representatives' notes" area where several representatives can write at the same time; edits and other people's cursors appear instantly, and the notes can be opened in a larger window. These notes are never shown publicly
-- ✨ **Simple notes formatting** — selecting text shows a small toolbar (bold, italic, strikethrough, link), and typing "/" opens a block menu: bullet list, numbered list, a checklist with checkboxes, or a section title. Typing "@" mentions a meeting's student representative. The feature is experimental for now
+- ⭐ **Real-time shared representative notes** — the agenda item page now has a private "Representatives' notes" area where several representatives can write at the same time; edits and other people's cursors appear instantly, and the notes can be opened in a larger window. 
 - ⭐ **Navigation between agenda items** — the item page now has previous/next buttons and an "Item N / total" overview at the top, letting you jump across the whole meeting's items and see their statuses at a glance
 - ✨ **Auto-save** — agenda item changes are saved automatically; a status indicator and the "Save" button live in a fixed bottom bar, and auto-save can be turned off
-- ⭐ **View and edit modes** — an agenda item now opens in a clean read view first (prominent data, subtle labels); a "Redaguoti" toggle switches to the form
 - ✨ **Clearer item editing** — the question type and votes were reorganised, votes are numbered and tagged with a "Main" marker, and fields are labelled with whether they are publicly visible
-- ✨ **Description and student position in tabs** — both texts are now in tabs, with a dot indicating which ones are filled in
-- ✨ **More compact admin UI** — the base font size was lowered so more information fits on screen
-- ✨ **Agenda edit toggle** — adding, reordering and removing items is now tucked behind an "Edit" toggle so the default view stays uncluttered
-- ✨ **Expandable representatives list** — the meeting representatives avatars can be expanded into a full list
+
+### Other
+
+- ✨ More compact admin UI
 
 ## v1.11 — Customizable Sidebar & Recently Visited Pages (2026-06-01) {#v1-11}
 
