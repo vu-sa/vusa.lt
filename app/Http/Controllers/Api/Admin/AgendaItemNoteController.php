@@ -23,6 +23,7 @@ class AgendaItemNoteController extends ApiController
     {
         $this->authorize('update', $agendaItem);
 
+        /** @var \App\Models\AgendaItemNote $note */
         $note = $agendaItem->note()->firstOrCreate([]);
 
         $agendaItem->loadMissing('meeting.institutions');
@@ -58,6 +59,7 @@ class AgendaItemNoteController extends ApiController
             'notes_html' => ['nullable', 'string'],
         ]);
 
+        /** @var \App\Models\AgendaItemNote $note */
         $note = $agendaItem->note()->updateOrCreate([], [
             'yjs_state' => $validated['yjs_state'],
             'notes_html' => $validated['notes_html'] ?? null,

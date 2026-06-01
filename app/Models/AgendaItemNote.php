@@ -15,13 +15,20 @@ use Illuminate\Support\Carbon;
  *
  * @property string $id
  * @property string $agenda_item_id
- * @property string|null $yjs_state base64-encoded Y.js document snapshot
- * @property string|null $notes_html rendered HTML snapshot for read-only display
+ * @property string|null $yjs_state
+ * @property string|null $notes_html
  * @property string|null $updated_by
- * @property Carbon $created_at
- * @property Carbon $updated_at
- * @property-read AgendaItem|null $agendaItem
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read AgendaItem $agendaItem
  * @property-read User|null $editor
+ *
+ * @method static \Database\Factories\AgendaItemNoteFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItemNote newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItemNote newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItemNote query()
+ *
+ * @mixin \Eloquent
  */
 class AgendaItemNote extends Model
 {

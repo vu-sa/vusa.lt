@@ -21,6 +21,7 @@ declare global {
       votes?: Vote[]
       main_vote?: Vote
       additional_votes?: Vote[]
+      note?: AgendaItemNote
       activities?: Activity[]
       // counts
       votes_count: number
@@ -31,7 +32,26 @@ declare global {
       votes_exists: boolean
       main_vote_exists: boolean
       additional_votes_exists: boolean
+      note_exists: boolean
       activities_exists: boolean
+    }
+
+    export interface AgendaItemNote {
+      // columns
+      id: string
+      agenda_item_id: string
+      yjs_state?: string | null
+      notes_html?: string | null
+      updated_by?: string | null
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      agenda_item?: AgendaItem
+      editor?: User
+      // counts
+      // exists
+      agenda_item_exists: boolean
+      editor_exists: boolean
     }
 
     export interface Approval {
