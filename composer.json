@@ -14,7 +14,7 @@
         "hashids/hashids": "^5.0",
         "inertiajs/inertia-laravel": "^3.0",
         "intervention/image-laravel": "^4.0",
-        "laravel-notification-channels/webpush": "^10.4",
+        "laravel-notification-channels/webpush": "^11.0",
         "laravel/framework": "^13.3.0",
         "laravel/reverb": "^1.7",
         "laravel/scout": "^11.1.0",
