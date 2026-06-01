@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Models\AgendaItemNote;
 use App\Models\Pivots\AgendaItem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -23,7 +24,7 @@ class AgendaItemNoteController extends ApiController
     {
         $this->authorize('update', $agendaItem);
 
-        /** @var \App\Models\AgendaItemNote $note */
+        /** @var AgendaItemNote $note */
         $note = $agendaItem->note()->firstOrCreate([]);
 
         $agendaItem->loadMissing('meeting.institutions');
@@ -59,7 +60,7 @@ class AgendaItemNoteController extends ApiController
             'notes_html' => ['nullable', 'string'],
         ]);
 
-        /** @var \App\Models\AgendaItemNote $note */
+        /** @var AgendaItemNote $note */
         $note = $agendaItem->note()->updateOrCreate([], [
             'yjs_state' => $validated['yjs_state'],
             'notes_html' => $validated['notes_html'] ?? null,
