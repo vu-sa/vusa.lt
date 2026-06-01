@@ -1,5 +1,4 @@
 import { ref, computed, onMounted } from 'vue';
-import axios from 'axios';
 
 import { ErrorUtils } from '@/Shared/Search/services/SearchErrorUtils';
 import type {
@@ -134,25 +133,36 @@ export const useAdminSearch = () => {
 
     configFetchPromise = (async () => {
       try {
-        const response = await axios.get('/api/v1/admin/search/config');
-        config.value = response.data;
+        const response = await fetch('/api/v1/admin/search/config', {
+          headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+        });
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            configError.value = 'Unauthorized - please log in';
+          }
+          else if (response.status === 429) {
+            const retryAfter = parseInt(response.headers.get('retry-after') || '5', 10);
+            rateLimitedUntil.value = Date.now() + retryAfter * 1000;
+            configError.value = 'Too many requests. Please wait a moment.';
+          }
+          else if (response.status === 503) {
+            configError.value = 'Typesense search is not configured';
+          }
+          else {
+            configError.value = `Failed to load search configuration (HTTP ${response.status})`;
+          }
+          return;
+        }
+
+        config.value = await response.json();
       }
-      catch (error: any) {
-        if (error.response?.status === 401) {
-          configError.value = 'Unauthorized - please log in';
-        }
-        else if (error.response?.status === 429) {
-          // Rate limited - wait before retrying
-          const retryAfter = parseInt(error.response.headers?.['retry-after'] || '5', 10);
-          rateLimitedUntil.value = Date.now() + retryAfter * 1000;
-          configError.value = 'Too many requests. Please wait a moment.';
-        }
-        else if (error.response?.status === 503) {
-          configError.value = 'Typesense search is not configured';
-        }
-        else {
-          configError.value = error.message || 'Failed to load search configuration';
-        }
+      catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Failed to load search configuration';
+        configError.value = message;
       }
       finally {
         isConfigLoading.value = false;
@@ -183,20 +193,35 @@ export const useAdminSearch = () => {
 
     configFetchPromise = (async () => {
       try {
-        const response = await axios.post('/api/v1/admin/search/refresh-key');
-        if (response.data.success && response.data.config) {
-          config.value = response.data.config;
+        const response = await fetch('/api/v1/admin/search/refresh-key', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+        });
+
+        if (!response.ok) {
+          if (response.status === 429) {
+            const retryAfter = parseInt(response.headers.get('retry-after') || '5', 10);
+            rateLimitedUntil.value = Date.now() + retryAfter * 1000;
+            configError.value = 'Too many requests. Please wait a moment.';
+          }
+          else {
+            configError.value = `Failed to refresh search key (HTTP ${response.status})`;
+          }
+          return;
+        }
+
+        const data = await response.json();
+        if (data.success && data.config) {
+          config.value = data.config;
         }
       }
-      catch (error: any) {
-        if (error.response?.status === 429) {
-          const retryAfter = parseInt(error.response.headers?.['retry-after'] || '5', 10);
-          rateLimitedUntil.value = Date.now() + retryAfter * 1000;
-          configError.value = 'Too many requests. Please wait a moment.';
-        }
-        else {
-          configError.value = error.message || 'Failed to refresh search key';
-        }
+      catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Failed to refresh search key';
+        configError.value = message;
       }
       finally {
         isConfigLoading.value = false;

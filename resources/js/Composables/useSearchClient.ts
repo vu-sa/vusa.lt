@@ -1,6 +1,7 @@
 import { ref, type Ref } from 'vue';
-import TypesenseInstantSearchAdapter from 'typesense-instantsearch-adapter';
 import { usePage } from '@inertiajs/vue3';
+
+import { SearchClientFactory, type TypesenseClient } from '@/Shared/Search/services/SearchClientFactory';
 
 interface TypesenseNode {
   protocol: string;
@@ -14,18 +15,23 @@ interface TypesenseConfig {
   collections?: Record<string, string>;
 }
 
-interface SearchClient {
-  search: (collection: string, searchParams: Record<string, any>, abortSignal?: AbortSignal) => Promise<any>;
-  apiKey: string;
-  nodes: TypesenseNode[];
-}
-
 interface TypesenseClientOptions {
   additionalSearchParameters: Record<string, any>;
   collectionSpecificSearchParameters?: Record<string, any>;
   connectionTimeoutSeconds?: number;
 }
 
+/**
+ * Create a direct Typesense client for the dedicated search pages.
+ *
+ * Historically this also returned a `typesense-instantsearch-adapter` `searchClient`,
+ * but the public search no longer uses InstantSearch. We keep the `{ searchClient,
+ * typesenseClient }` shape for backward compatibility — both now point to the same
+ * direct REST client (`SearchClientFactory.createTypesenseClient`). The
+ * `additionalSearchParameters`/`collectionSpecificSearchParameters` options are
+ * accepted for call-site compatibility; per-request parameters are supplied by the
+ * search services themselves.
+ */
 export const createTypesenseClients = (
   typesenseConfig: TypesenseConfig,
   options: TypesenseClientOptions,
@@ -34,57 +40,21 @@ export const createTypesenseClients = (
     throw new Error('No Typesense nodes configured');
   }
 
-  const adapter = new TypesenseInstantSearchAdapter({
-    server: {
-      apiKey: typesenseConfig.apiKey,
-      nodes: typesenseConfig.nodes,
-      connectionTimeoutSeconds: options.connectionTimeoutSeconds ?? 10,
-    },
-    additionalSearchParameters: options.additionalSearchParameters,
-    collectionSpecificSearchParameters: options.collectionSpecificSearchParameters,
-  });
-
-  const typesenseClient: SearchClient = {
+  const typesenseClient = SearchClientFactory.createTypesenseClient({
     apiKey: typesenseConfig.apiKey,
     nodes: typesenseConfig.nodes,
-    search: async (collection: string, searchParams: Record<string, any>, abortSignal?: AbortSignal) => {
-      const node = typesenseConfig.nodes[0];
-      const baseUrl = `${node.protocol}://${node.host}:${node.port}`;
-      const url = new URL(`${baseUrl}/collections/${collection}/documents/search`);
-
-      Object.entries(searchParams).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-          url.searchParams.append(key, String(value));
-        }
-      });
-
-      const response = await fetch(url.toString(), {
-        method: 'GET',
-        headers: {
-          'X-TYPESENSE-API-KEY': typesenseConfig.apiKey,
-          'Content-Type': 'application/json',
-        },
-        signal: abortSignal,
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Typesense API error: ${response.status} - ${errorText}`);
-      }
-
-      return await response.json();
-    },
-  };
+    connectionTimeoutSeconds: options.connectionTimeoutSeconds ?? 10,
+  });
 
   return {
-    searchClient: adapter.searchClient,
+    searchClient: typesenseClient,
     typesenseClient,
   };
 };
 
 export const useSearchClient = () => {
-  const searchClient = ref<any>(null);
-  const typesenseClient = ref<SearchClient | null>(null);
+  const searchClient = ref<TypesenseClient | null>(null);
+  const typesenseClient = ref<TypesenseClient | null>(null);
   const isInitialized = ref(false);
   const initializationError = ref<string | null>(null);
 
@@ -99,34 +69,7 @@ export const useSearchClient = () => {
 
     try {
       const clients = createTypesenseClients(typesenseConfig, {
-        additionalSearchParameters: {
-          query_by: 'title,summary',
-          num_typos: 2,
-          typo_tokens_threshold: 1,
-          drop_tokens_threshold: 1,
-          max_hits: 1000,
-          per_page: 20,
-          facet_by: [
-            'content_type',
-            'tenant_shortname',
-            'language',
-            'document_date',
-          ].join(','),
-          max_facet_values: 50,
-          sort_by: 'document_date:desc,created_at:desc',
-        },
-        collectionSpecificSearchParameters: {
-          documents: {
-            query_by: 'title,summary',
-            facet_by: [
-              'content_type',
-              'tenant_shortname',
-              'language',
-              'document_date',
-            ].join(','),
-            per_page: 24,
-          },
-        },
+        additionalSearchParameters: {},
       });
 
       searchClient.value = clients.searchClient;
@@ -143,8 +86,8 @@ export const useSearchClient = () => {
   };
 
   return {
-    searchClient: searchClient as Ref<any>,
-    typesenseClient: typesenseClient as Ref<SearchClient | null>,
+    searchClient: searchClient as Ref<TypesenseClient | null>,
+    typesenseClient: typesenseClient as Ref<TypesenseClient | null>,
     isInitialized,
     initializationError,
     initializeSearchClient,

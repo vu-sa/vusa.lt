@@ -7,6 +7,11 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.13 — Unified Search (2026-06-02) {#v1-13}
+
+- ⭐ **Unified search** — a new search page that searches news, pages, documents, events, institutions and meetings at once; results are grouped by content type and ordered by relevance, with a "load more" per group
+- ✨ **Faster search** — the search dialog was replaced by a dedicated page and the heavy search library was dropped, so search loads faster
+
 ## v1.12 — Meeting UI Refinement (2026-06-01) {#v1-12}
 
 - ✨ Redesigned meeting view

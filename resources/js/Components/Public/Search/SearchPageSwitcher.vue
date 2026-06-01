@@ -44,9 +44,10 @@ import { Building2 } from 'lucide-vue-next';
 
 import DocumentIcon from '~icons/fluent/document-multiple24-filled';
 import MeetingIcon from '~icons/fluent/device-meeting-room-remote24-filled';
+import SearchIcon from '~icons/fluent/search24-filled';
 
 // Types
-type SearchPage = 'documents' | 'meetings' | 'contacts';
+type SearchPage = 'search' | 'documents' | 'meetings' | 'contacts';
 
 interface PageConfig {
   page: SearchPage;
@@ -69,6 +70,14 @@ const inertiaPage = useInertiaPage();
 
 // Page configurations
 const pages = computed<PageConfig[]>(() => [
+  {
+    page: 'search',
+    icon: SearchIcon,
+    titleKey: 'search.all_search_title',
+    ariaLabelKey: 'search.go_to_search',
+    routeName: 'search',
+    isGlobal: true,
+  },
   {
     page: 'documents',
     icon: DocumentIcon,

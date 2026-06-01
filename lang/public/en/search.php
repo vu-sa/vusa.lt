@@ -261,4 +261,24 @@ return [
     'go_to_documents' => 'Go to document search',
     'go_to_meetings' => 'Go to meeting search',
     'go_to_contacts' => 'Go to contacts search',
+    'go_to_search' => 'Go to global search',
+
+    // Unified search page
+    'all_page_title' => 'Search - VU SR',
+    'all_page_description' => 'Search VU SA news, pages, documents, events, institutions and meetings in one place.',
+    'all_search_title' => 'Search',
+    'all_search_description' => 'Search across all VU SA content – news, pages, documents, events, institutions and meetings.',
+    'all_search_placeholder' => 'Search news, documents, institutions...',
+    'all_search_prompt' => 'Start typing to find content',
+    'result_singular' => 'result',
+    'result_plural' => 'results',
+    'view_all' => 'View all',
+
+    // Unified search section headings
+    'section_institutions' => 'Institutions',
+    'section_meetings' => 'Meetings',
+    'section_documents' => 'Documents',
+    'section_news' => 'News',
+    'section_pages' => 'Pages',
+    'section_calendar' => 'Events',
 ];

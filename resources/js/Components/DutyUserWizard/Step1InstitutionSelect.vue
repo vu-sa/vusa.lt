@@ -24,7 +24,7 @@
               {{ $t('Pavadinimas') }} *
             </Label>
             <Input
-              v-model="newInstitution.name.lt"
+              v-model="http.name.lt"
               :placeholder="$t('Institucijos pavadinimas')"
               :class="{ 'border-vusa-red focus-visible:ring-vusa-red': createErrors['name.lt'] }"
             />
@@ -38,7 +38,7 @@
             <Label :class="{ 'text-vusa-red': createErrors['tenant_id'] }">
               {{ $t('Padalinys') }} *
             </Label>
-            <Select v-model="newInstitution.tenant_id">
+            <Select v-model="http.tenant_id">
               <SelectTrigger :class="{ 'border-vusa-red focus-visible:ring-vusa-red': createErrors['tenant_id'] }">
                 <SelectValue :placeholder="$t('Pasirinkti padalinį...')" />
               </SelectTrigger>
@@ -66,7 +66,7 @@
                 :key="type.id"
                 type="button"
                 class="inline-flex items-center px-3 py-1.5 rounded-full text-sm border transition-colors"
-                :class="newInstitution.types.includes(String(type.id))
+                :class="http.types.includes(String(type.id))
                   ? 'bg-primary text-primary-foreground border-primary'
                   : 'bg-background hover:bg-accent border-border'"
                 @click="toggleType(String(type.id))"
@@ -92,7 +92,7 @@
               <div class="space-y-2">
                 <Label>{{ $t('Trumpinys') }}</Label>
                 <Input
-                  v-model="newInstitution.short_name.lt"
+                  v-model="http.short_name.lt"
                   :placeholder="$t('Pvz.: VU SA FSF')"
                 />
               </div>
@@ -101,7 +101,7 @@
               <div class="space-y-2">
                 <Label :class="{ 'text-vusa-red': createErrors['email'] }">{{ $t('El. paštas') }}</Label>
                 <Input
-                  v-model="newInstitution.email"
+                  v-model="http.email"
                   type="email"
                   placeholder="institucija@vusa.lt"
                   :class="{ 'border-vusa-red': createErrors['email'] }"
@@ -115,7 +115,7 @@
               <div class="space-y-2">
                 <Label>{{ $t('Telefonas') }}</Label>
                 <Input
-                  v-model="newInstitution.phone"
+                  v-model="http.phone"
                   placeholder="+370 600 00000"
                 />
               </div>
@@ -123,7 +123,7 @@
               <!-- Contacts layout -->
               <div class="space-y-2">
                 <Label>{{ $t('Kontaktų išdėstymas') }}</Label>
-                <Select v-model="newInstitution.contacts_layout">
+                <Select v-model="http.contacts_layout">
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -143,12 +143,12 @@
 
         <!-- Actions -->
         <div class="flex items-center justify-between pt-4 border-t">
-          <Button variant="ghost" :disabled="isCreating" @click="cancelCreate">
+          <Button variant="ghost" :disabled="http.processing" @click="cancelCreate">
             {{ $t('Atšaukti') }}
           </Button>
-          <Button :disabled="isCreating" @click="createInstitution">
-            <Loader2 v-if="isCreating" class="h-4 w-4 mr-2 animate-spin" />
-            {{ isCreating ? $t('Kuriama...') : $t('Sukurti ir tęsti') }}
+          <Button :disabled="http.processing" @click="createInstitution">
+            <Loader2 v-if="http.processing" class="h-4 w-4 mr-2 animate-spin" />
+            {{ http.processing ? $t('Kuriama...') : $t('Sukurti ir tęsti') }}
           </Button>
         </div>
       </div>
@@ -310,10 +310,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject, reactive } from 'vue';
+import { ref, computed, inject } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { usePage } from '@inertiajs/vue3';
-import axios from 'axios';
+import { usePage, useHttp } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
 import {
   Search,
@@ -353,11 +352,9 @@ const searchQuery = ref('');
 
 // Creation mode
 const showCreateForm = ref(false);
-const isCreating = ref(false);
-const createErrors = ref<Record<string, string[]>>({});
 
-// New institution form data
-const newInstitution = reactive({
+// Form state via useHttp (handles CSRF, processing state, and server errors)
+const http = useHttp({
   name: { lt: '', en: '' },
   short_name: { lt: '', en: '' },
   tenant_id: '',
@@ -366,6 +363,15 @@ const newInstitution = reactive({
   email: '',
   phone: '',
   is_active: true,
+});
+
+// Normalize Inertia form errors to the array format expected by the template
+const createErrors = computed<Record<string, string[]>>(() => {
+  const errs: Record<string, string[]> = {};
+  for (const [key, val] of Object.entries(http.errors)) {
+    errs[key] = Array.isArray(val) ? val : [val];
+  }
+  return errs;
 });
 
 // Additional fields expanded
@@ -466,89 +472,58 @@ const clearSearch = () => {
 
 // Toggle type selection
 const toggleType = (typeId: string) => {
-  const idx = newInstitution.types.indexOf(typeId);
+  const idx = http.types.indexOf(typeId);
   if (idx === -1) {
-    newInstitution.types.push(typeId);
+    http.types.push(typeId);
   }
   else {
-    newInstitution.types.splice(idx, 1);
+    http.types.splice(idx, 1);
   }
 };
 
 // Create institution handlers
 const openCreateForm = () => {
   showCreateForm.value = true;
-  createErrors.value = {};
+  http.clearErrors();
 };
 
 const cancelCreate = () => {
   showCreateForm.value = false;
-  createErrors.value = {};
-  // Reset form
-  newInstitution.name = { lt: '', en: '' };
-  newInstitution.short_name = { lt: '', en: '' };
-  newInstitution.tenant_id = '';
-  newInstitution.types = [];
-  newInstitution.contacts_layout = 'aside';
-  newInstitution.email = '';
-  newInstitution.phone = '';
-  newInstitution.is_active = true;
+  http.reset();
   showAdditionalFields.value = false;
 };
 
 const validateCreateForm = (): boolean => {
-  createErrors.value = {};
+  http.clearErrors();
 
-  if (!newInstitution.name.lt?.trim()) {
-    createErrors.value['name.lt'] = [$t('Pavadinimas yra privalomas')];
+  if (!http.name.lt?.trim()) {
+    http.setError('name.lt', $t('Pavadinimas yra privalomas'));
   }
 
-  if (!newInstitution.tenant_id) {
-    createErrors.value['tenant_id'] = [$t('Padalinys yra privalomas')];
+  if (!http.tenant_id) {
+    http.setError('tenant_id', $t('Padalinys yra privalomas'));
   }
 
-  return Object.keys(createErrors.value).length === 0;
+  return !http.hasErrors;
 };
 
-const createInstitution = async () => {
+const createInstitution = () => {
   if (!validateCreateForm()) return;
 
-  isCreating.value = true;
-  createErrors.value = {};
-
-  try {
-    const response = await axios.post(route('institutions.store'), {
-      ...newInstitution,
-      is_active: true,
-    }, {
-      headers: {
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-      },
-    });
-
-    if (response.data.success && response.data.institution) {
-      // Add the new institution to the list
-      addInstitution?.(response.data.institution);
-      toast.success($t('Institucija sėkmingai sukurta'));
-      cancelCreate();
-    }
-  }
-  catch (error: any) {
-    // Handle validation errors
-    if (error.response?.status === 422 && error.response?.data?.errors) {
-      Object.entries(error.response.data.errors).forEach(([key, value]) => {
-        createErrors.value[key] = Array.isArray(value) ? value as string[] : [value as string];
-      });
+  http.post(route('institutions.store'), {
+    onSuccess: (response: any) => {
+      if (response?.institution) {
+        addInstitution?.(response.institution);
+        toast.success($t('Institucija sėkmingai sukurta'));
+        cancelCreate();
+      }
+    },
+    onError: () => {
       toast.error($t('Patikrinkite formos laukus'));
-    }
-    else {
-      createErrors.value['general'] = [$t('Nepavyko sukurti institucijos')];
+    },
+    onNetworkError: () => {
       toast.error($t('Nepavyko sukurti institucijos'));
-    }
-  }
-  finally {
-    isCreating.value = false;
-  }
+    },
+  });
 };
 </script>

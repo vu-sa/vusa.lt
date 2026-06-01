@@ -265,4 +265,24 @@ return [
     'go_to_documents' => 'Eiti į dokumentų paiešką',
     'go_to_meetings' => 'Eiti į posėdžių paiešką',
     'go_to_contacts' => 'Eiti į kontaktų paiešką',
+    'go_to_search' => 'Eiti į bendrąją paiešką',
+
+    // Unified search page
+    'all_page_title' => 'Paieška - VU SR',
+    'all_page_description' => 'Ieškokite VU SA naujienų, puslapių, dokumentų, renginių, institucijų ir posėdžių vienoje vietoje.',
+    'all_search_title' => 'Paieška',
+    'all_search_description' => 'Ieškokite visame VU SA turinyje – naujienose, puslapiuose, dokumentuose, renginiuose, institucijose ir posėdžiuose.',
+    'all_search_placeholder' => 'Ieškokite naujienų, dokumentų, institucijų...',
+    'all_search_prompt' => 'Pradėkite rašyti, kad surastumėte turinį',
+    'result_singular' => 'rezultatas',
+    'result_plural' => 'rezultatai',
+    'view_all' => 'Rodyti visus',
+
+    // Unified search section headings
+    'section_institutions' => 'Institucijos',
+    'section_meetings' => 'Posėdžiai',
+    'section_documents' => 'Dokumentai',
+    'section_news' => 'Naujienos',
+    'section_pages' => 'Puslapiai',
+    'section_calendar' => 'Renginiai',
 ];

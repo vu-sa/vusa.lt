@@ -113,7 +113,7 @@ import SearchPageSwitcher from '../SearchPageSwitcher.vue';
 
 interface Props {
   // Page identifier for SearchPageSwitcher
-  page: 'documents' | 'contacts' | 'meetings';
+  page: 'search' | 'documents' | 'contacts' | 'meetings';
 
   // Translation keys
   titleKey: string;
