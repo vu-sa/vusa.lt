@@ -378,9 +378,8 @@ html.dark-mode-init {
   transform: translateY(10px);
 }
 
-/* Prevent layout shifts during loading */
+/* Contain layout/style work; loading min-height is handled per-instance via the `minHeight` prop */
 .search-results-container {
-  min-height: 400px;
   contain: layout style;
 }
 

@@ -59,21 +59,19 @@
               <div class="text-xs sm:text-sm text-muted-foreground min-w-0 flex-1 pr-2">
                 <template v-if="totalHits > 0">
                   <template v-if="searchQuery === '*' && !hasActiveFilters">
-                    <span class="hidden sm:inline">{{ $t('search.showing_results') }} </span>
+                    <span class="hidden sm:inline">{{ $t('search.showing_results') }}&nbsp;</span>
                     <strong class="text-foreground">{{ totalHits.toLocaleString() }}</strong>
-                    <span class="hidden sm:inline"> {{ totalHits === 1 ?
-                      $t(resultSingularKey) : $t(resultPluralKey) }}</span>
-                    <span class="sm:hidden">{{ totalHits === 1 ? resultShortLabel : resultShortLabel }}</span>
-                    <span v-if="showNewestFirst" class="hidden sm:inline">{{ $t('search.newest_first') }}</span>
+                    <span class="hidden sm:inline">&nbsp;{{ totalHits === 1 ? $t(resultSingularKey) : $t(resultPluralKey) }}</span>
+                    <span class="sm:hidden">&nbsp;{{ totalHits === 1 ? resultShortLabel : resultShortLabel }}</span>
+                    <span v-if="showNewestFirst" class="hidden sm:inline">&nbsp;{{ $t('search.newest_first') }}</span>
                   </template>
                   <template v-else>
-                    <span class="hidden sm:inline">{{ $t('search.found_results') }} </span>
+                    <span class="hidden sm:inline">{{ $t('search.found_results') }}&nbsp;</span>
                     <strong class="text-foreground">{{ totalHits.toLocaleString() }}</strong>
-                    <span class="hidden sm:inline"> {{ totalHits === 1 ?
-                      $t(resultSingularKey) : $t(resultPluralKey) }}</span>
-                    <span class="sm:hidden">{{ totalHits === 1 ? resultShortLabel : resultShortLabel }}</span>
+                    <span class="hidden sm:inline">&nbsp;{{ totalHits === 1 ? $t(resultSingularKey) : $t(resultPluralKey) }}</span>
+                    <span class="sm:hidden">&nbsp;{{ totalHits === 1 ? resultShortLabel : resultShortLabel }}</span>
                     <template v-if="searchQuery && searchQuery !== '*'">
-                      <span class="hidden sm:inline"> {{ $t('search.by_query') }} </span>
+                      <span class="hidden sm:inline">&nbsp;{{ $t('search.by_query') }}&nbsp;</span>
                       <span class="hidden sm:inline"><strong class="text-foreground">"{{ searchQuery }}"</strong></span>
                     </template>
                   </template>

@@ -9,6 +9,7 @@
     :is-loading-more
     :has-error
     :has-active-filters
+    :min-height
     :skeleton-count="getSkeletonCount()"
     :loading-container-class="viewMode === 'compact' ? 'space-y-2' : 'space-y-4'"
     :results-container-class="viewMode === 'compact' ? 'space-y-2' : 'space-y-4'"
@@ -65,6 +66,7 @@ interface Props {
   hasError?: boolean;
   hasActiveFilters?: boolean;
   searchQuery?: string;
+  minHeight?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -78,6 +80,7 @@ const props = withDefaults(defineProps<Props>(), {
   hasError: false,
   hasActiveFilters: false,
   searchQuery: '',
+  minHeight: true,
 });
 
 const emit = defineEmits<{

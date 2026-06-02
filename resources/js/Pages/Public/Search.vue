@@ -44,19 +44,29 @@
           <h2 class="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-3">
             {{ $t('search.search_in') }}
           </h2>
-          <div class="flex flex-wrap gap-1.5">
-            <Badge
+          <div class="flex flex-wrap gap-2">
+            <button
               v-for="id in controller.allCollectionIds"
               :key="id"
-              :variant="controller.isEnabled(id) ? 'default' : 'outline'"
+              type="button"
+              role="checkbox"
+              :aria-checked="controller.isEnabled(id)"
               :class="[
-                'cursor-pointer transition-all duration-200 text-xs hover:scale-105 py-1 px-2',
-                controller.isEnabled(id) ? '' : 'hover:bg-accent',
+                'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-sm font-medium',
+                'transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
+                controller.isEnabled(id)
+                  ? 'border-primary/30 bg-primary/10 text-primary'
+                  : 'border-border/60 text-muted-foreground hover:bg-accent hover:text-foreground',
               ]"
               @click="controller.toggleCollection(id)"
             >
-              {{ $t(sectionMeta[id].labelKey) }}
-            </Badge>
+              <component
+                :is="collectionIcon[id]"
+                class="size-4"
+                :class="controller.isEnabled(id) ? 'opacity-90' : 'opacity-60'"
+              />
+              <span>{{ $t(sectionMeta[id].labelKey) }}</span>
+            </button>
           </div>
         </div>
       </template>
@@ -89,6 +99,7 @@
             <!-- Section header -->
             <div class="flex items-center justify-between mb-3">
               <h2 class="flex items-center gap-2 text-base font-semibold text-foreground">
+                <component :is="collectionIcon[id]" class="size-5 text-muted-foreground" />
                 {{ $t(sectionMeta[id].labelKey) }}
                 <span class="text-xs font-normal text-muted-foreground">
                   {{ controller.sections[id].totalHits.toLocaleString() }}
@@ -109,6 +120,7 @@
               v-if="id === 'institutions'"
               :results="controller.sections.institutions.hits"
               view-mode="list"
+              :min-height="false"
               :total-hits="controller.sections.institutions.totalHits"
               :has-more-results="controller.sections.institutions.hasMore"
               :is-loading-more="controller.sections.institutions.isLoadingMore"
@@ -119,6 +131,7 @@
             <MeetingResults
               v-else-if="id === 'meetings'"
               :results="controller.sections.meetings.hits"
+              :min-height="false"
               :total-hits="controller.sections.meetings.totalHits"
               :has-more-results="controller.sections.meetings.hasMore"
               :is-loading-more="controller.sections.meetings.isLoadingMore"
@@ -130,6 +143,7 @@
               v-else-if="id === 'documents'"
               :results="controller.sections.documents.hits"
               view-mode="compact"
+              :min-height="false"
               :total-hits="controller.sections.documents.totalHits"
               :has-more-results="controller.sections.documents.hasMore"
               :is-loading-more="controller.sections.documents.isLoadingMore"
@@ -141,6 +155,7 @@
               v-else
               :type="id"
               :results="controller.sections[id].hits"
+              :min-height="false"
               :total-hits="controller.sections[id].totalHits"
               :has-more-results="controller.sections[id].hasMore"
               :is-loading-more="controller.sections[id].isLoadingMore"
@@ -171,12 +186,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, type Component } from 'vue';
 import { Head, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowRight, SearchX } from 'lucide-vue-next';
 import SearchIcon from '~icons/fluent/search24-regular';
 import IFluentSearch16Regular from '~icons/fluent/search16-regular';
+import IFluentPeopleTeam from '~icons/fluent/people-team20-regular';
+import IFluentMeeting from '~icons/fluent/conference-room20-regular';
+import IFluentDocument from '~icons/fluent/document20-regular';
+import IFluentNews from '~icons/fluent/news20-regular';
+import IFluentPage from '~icons/fluent/document-text20-regular';
+import IFluentCalendar from '~icons/fluent/calendar20-regular';
 
 import BaseSearchInterface from '@/Components/Public/Search/Shared/BaseSearchInterface.vue';
 import BaseSearchInput from '@/Components/Public/Search/Shared/BaseSearchInput.vue';
@@ -185,7 +206,6 @@ import MeetingResults from '@/Components/Public/Search/MeetingResults.vue';
 import InstitutionResults from '@/Components/Public/Search/InstitutionResults.vue';
 import GenericResults from '@/Components/Public/Search/GenericResults.vue';
 import SmartLink from '@/Components/Public/SmartLink.vue';
-import { Badge } from '@/Components/ui/badge';
 
 import { usePublicMultiSearch, type SearchCollectionId } from '@/Composables/usePublicMultiSearch';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
@@ -194,7 +214,7 @@ const props = defineProps<{
   initialQuery?: string;
 }>();
 
-const controller = usePublicMultiSearch();
+const controller = usePublicMultiSearch({ perPage: 3 });
 const typeToSearch = ref(true);
 
 const page = usePage();
@@ -213,6 +233,15 @@ const sectionMeta: Record<SearchCollectionId, SectionMeta> = {
   calendar: { labelKey: 'search.section_calendar' },
 };
 
+const collectionIcon: Record<SearchCollectionId, Component> = {
+  institutions: IFluentPeopleTeam,
+  meetings: IFluentMeeting,
+  documents: IFluentDocument,
+  news: IFluentNews,
+  pages: IFluentPage,
+  calendar: IFluentCalendar,
+};
+
 const isQueryLongEnough = computed(() => controller.query.value.trim().length >= controller.minQueryLength);
 
 const viewAllUrl = (id: SearchCollectionId): string => {
@@ -221,10 +250,13 @@ const viewAllUrl = (id: SearchCollectionId): string => {
     return '#';
   }
   const locale = (page.props.app as { locale?: string })?.locale || 'lt';
-  const subdomain = meta.viewAll.isGlobal
-    ? 'www'
-    : ((page.props.tenant as { subdomain?: string })?.subdomain ?? 'www');
   try {
+    // Global routes (e.g. documents) are bound to the hardcoded `www.` domain
+    // group and have no `{subdomain}` parameter; only tenant routes take one.
+    if (meta.viewAll.isGlobal) {
+      return route(meta.viewAll.routeName, { lang: locale });
+    }
+    const subdomain = (page.props.tenant as { subdomain?: string })?.subdomain ?? 'www';
     return route(meta.viewAll.routeName, { subdomain, lang: locale });
   }
   catch {

@@ -8,6 +8,7 @@
     :has-more-results
     :is-loading-more
     :has-active-filters
+    :min-height
     :skeleton-count="getSkeletonCount()"
     :loading-container-class="viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-6' : 'space-y-4'"
     :results-container-class="viewMode === 'grid' ? '' : 'space-y-2'"
@@ -54,6 +55,7 @@ interface Props {
   hasMoreResults?: boolean;
   isLoadingMore?: boolean;
   hasActiveFilters?: boolean;
+  minHeight?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -64,6 +66,7 @@ const props = withDefaults(defineProps<Props>(), {
   hasMoreResults: false,
   isLoadingMore: false,
   hasActiveFilters: false,
+  minHeight: true,
 });
 
 const emit = defineEmits<{

@@ -227,6 +227,7 @@ export const useSearchUtils = () => {
   };
 
   return {
+    getItemUrl,
     trackSearchInteraction,
     navigateToItem,
     getIconComponent,

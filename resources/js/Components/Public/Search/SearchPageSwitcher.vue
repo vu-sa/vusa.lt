@@ -110,8 +110,9 @@ const getPageUrl = (item: PageConfig): string => {
 
   // Use the route helper with appropriate subdomain
   if (item.isGlobal) {
-    // Global routes use www subdomain
-    return route(item.routeName, { subdomain: 'www', lang: locale });
+    // Global routes are bound to the hardcoded `www.` domain group and have
+    // no `{subdomain}` parameter — passing one would leak into the query string.
+    return route(item.routeName, { lang: locale });
   }
   else {
     // Tenant-specific routes preserve current subdomain
