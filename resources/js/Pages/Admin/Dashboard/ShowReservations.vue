@@ -1,19 +1,19 @@
 <template>
-  <AdminContentPage title="Rezervacijos">
+  <AdminContentPage :title="$t('Rezervacijos')">
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
       <Card>
         <CardHeader>
           <CardTitle>
             <div class="inline-flex items-center gap-2">
               <component :is="ReservationIconFilled" />
-              Tavo rezervacijos
+              {{ $t('Tavo rezervacijos') }}
             </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div class="grid grid-cols-2 gap-2">
-            <p>Visos</p>
-            <p>Užbaigtos</p>
+            <p>{{ $t('Visos') }}</p>
+            <p>{{ $t('Užbaigtos') }}</p>
             <span class="inline-block text-4xl font-bold">
               {{ reservations.length }}
             </span>
@@ -22,7 +22,7 @@
             </span>
           </div>
           <p class="mt-4">
-            Užbaigtoje rezervacijoje visi daiktai yra pažymėti kaip grąžinti.
+            {{ $t('Užbaigtoje rezervacijoje visi daiktai yra pažymėti kaip grąžinti.') }}
           </p>
         </CardContent>
         <CardFooter>
@@ -30,7 +30,7 @@
             <Link :href="route('reservations.create')">
               <Button size="sm">
                 <IFluentBookmarkAdd24Filled />
-                Kurti naują
+                {{ $t('Kurti naują') }}
               </Button>
             </Link>
 
@@ -41,7 +41,7 @@
             <Dialog :open="showReservationsModal" @update:open="(open) => { if (!open) showReservationsModal = false }">
               <DialogContent class="sm:max-w-[95vw] w-full max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>Visos rezervacijos</DialogTitle>
+                  <DialogTitle>{{ $t('Visos rezervacijos') }}</DialogTitle>
                 </DialogHeader>
                 <SimpleDataTable :data="reservations" :columns="reservationColumns" enable-pagination :page-size="7" />
               </DialogContent>
@@ -54,14 +54,14 @@
           <CardTitle>
             <div class="inline-flex items-center gap-2">
               <component :is="ReservationIconFilled" />
-              Skolinami daiktai
+              {{ $t('Skolinami daiktai') }}
             </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div class="grid grid-cols-2 gap-2">
-            <p>Visi daiktai</p>
-            <p>Iš viso skirtingų išteklių</p>
+            <p>{{ $t('Visi daiktai') }}</p>
+            <p>{{ $t('Iš viso skirtingų išteklių') }}</p>
             <span class="inline-block text-4xl font-bold">
               {{ resources.sumOfCapacity }}
             </span>
@@ -75,7 +75,7 @@
             <Link :href="route('resources.index')">
               <Button size="sm" variant="secondary">
                 <IFluentCube24Filled />
-                Peržiūrėti visus
+                {{ $t('Peržiūrėti visus') }}
               </Button>
             </Link>
           </div>
@@ -87,12 +87,12 @@
       <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div class="inline-flex items-center gap-6">
           <h3 class="mb-0">
-            Rezervacijos padalinyje
+            {{ $t('Rezervacijos padalinyje') }}
           </h3>
           <div>
             <Select :model-value="selectedTenantId" @update:model-value="handleTenantUpdateValue">
               <SelectTrigger class="w-[200px]">
-                <SelectValue placeholder="Pasirinkite padalinį" />
+                <SelectValue :placeholder="$t('Pasirinkite padalinį')" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem v-for="tenant in tenants" :key="tenant.id" :value="String(tenant.id)">
@@ -114,14 +114,14 @@
           <CardTitle>
             <div class="inline-flex items-center gap-2">
               <component :is="ReservationIconFilled" />
-              Aktyvios rezervacijos
+              {{ $t('Aktyvios rezervacijos') }}
             </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div class="grid grid-cols-2 gap-2">
-            <p>Padalinio daiktų</p>
-            <p>Tos, kurias sukūrė padalinio žmonės</p>
+            <p>{{ $t('Padalinio daiktų') }}</p>
+            <p>{{ $t('Tos, kurias sukūrė padalinio žmonės') }}</p>
             <span class="inline-block text-4xl font-bold">
               {{ providedTenant?.activeReservations?.filter(reservation => !reservation.isCompleted).length }}
             </span>
@@ -134,18 +134,18 @@
           <div class="flex items-center gap-2">
             <Button size="sm" @click="showTenantReservationsModal = true">
               <ReservationIconFilled />
-              Peržiūrėti aktyvias
+              {{ $t('Peržiūrėti aktyvias') }}
             </Button>
             <Button size="sm" variant="secondary" @click="showTenantUsersReservationsModal = true">
               <TenantIconFilled />
-              Ką skolinasi padalinys?
+              {{ $t('Ką skolinasi padalinys?') }}
             </Button>
           </div>
           <Dialog :open="showTenantReservationsModal" @update:open="(open) => { if (!open) showTenantReservationsModal = false }">
             <DialogContent class="sm:max-w-[95vw] w-full max-h-[85vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Visos rezervacijos</DialogTitle>
-                <DialogDescription>Rezervacijos su padalinio ištekliais</DialogDescription>
+                <DialogTitle>{{ $t('Visos rezervacijos') }}</DialogTitle>
+                <DialogDescription>{{ $t('Rezervacijos su padalinio ištekliais') }}</DialogDescription>
               </DialogHeader>
               <ReservationsWithUnitResources show-if-completed :pagination="{ pageSize: 8 }"
                 :active-reservations="providedTenant?.activeReservations" />
@@ -154,8 +154,8 @@
           <Dialog :open="showTenantUsersReservationsModal" @update:open="(open) => { if (!open) showTenantUsersReservationsModal = false }">
             <DialogContent class="sm:max-w-[95vw] w-full max-h-[85vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Visos rezervacijos</DialogTitle>
-                <DialogDescription>Padalinio žmonių sukurtos rezervacijos</DialogDescription>
+                <DialogTitle>{{ $t('Visos rezervacijos') }}</DialogTitle>
+                <DialogDescription>{{ $t('Padalinio žmonių sukurtos rezervacijos') }}</DialogDescription>
               </DialogHeader>
               <ReservationsWithUnitResources show-if-completed :pagination="{ pageSize: 8 }"
                 :active-reservations="providedTenant?.reservations" />
@@ -216,7 +216,7 @@ const handleTenantUpdateValue = (value: string) => {
 
 const reservationColumns: ColumnDef<App.Entities.Reservation, any>[] = [
   {
-    header: 'Pavadinimas',
+    header: $t('Pavadinimas'),
     accessorKey: 'name',
     cell: ({ row }) => (
       <Link href={route('reservations.show', { reservation: row.original.id })}>
@@ -225,19 +225,19 @@ const reservationColumns: ColumnDef<App.Entities.Reservation, any>[] = [
     ),
   },
   {
-    header: 'Laikas',
+    header: $t('Laikas'),
     accessorKey: 'start_time',
     cell: ({ row }) => formatStaticTime(new Date(row.original.start_time)),
   },
   {
-    header: 'Pabaigos laikas',
+    header: $t('Pabaigos laikas'),
     accessorKey: 'end_time',
     cell: ({ row }) => formatStaticTime(new Date(row.original.end_time)),
   },
   {
-    header: 'Ar uzbaigta',
+    header: $t('Ar užbaigta'),
     accessorKey: 'isCompleted',
-    cell: ({ row }) => row.original.isCompleted ? 'Taip' : 'Ne',
+    cell: ({ row }) => row.original.isCompleted ? $t('Taip') : $t('Ne'),
   },
 ];
 

@@ -11,7 +11,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->tenant = Tenant::query()->inRandomOrder()->first();
+    $this->tenant = Tenant::query()->first();
 
     $this->user = makeUser($this->tenant);
 
@@ -104,7 +104,7 @@ test('contact manager can create user with duty', function () {
         'email' => 'test@email.com',
         'current_duties' => [
             [
-                'duty_id' => Duty::inRandomOrder()->first()->id,
+                'duty_id' => Duty::query()->first()->id,
             ],
         ],
     ]);

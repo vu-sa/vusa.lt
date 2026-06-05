@@ -14,7 +14,7 @@ use Spatie\Permission\PermissionRegistrar;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->tenant = Tenant::query()->inRandomOrder()->first();
+    $this->tenant = Tenant::query()->first();
 
     // Create role if it doesn't exist and give it permissions
     $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
@@ -425,7 +425,7 @@ describe('duty role management', function () {
 
 describe('ex-officio target tenant scoping', function () {
     test('padalinys-scope admin cannot set a cross-tenant duty as ex-officio target', function () {
-        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->inRandomOrder()->first();
+        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $foreignDuty = Duty::factory()->for(Institution::factory()->for($otherTenant))->create();
 
         $response = asUser($this->dutyManager)->put(route('duties.update', $this->dutyManagerDuty), [
@@ -458,7 +458,7 @@ describe('ex-officio target tenant scoping', function () {
 
     test('super admin can set a cross-tenant duty as ex-officio target', function () {
         $superAdmin = makeAdminUser($this->tenant);
-        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->inRandomOrder()->first();
+        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $foreignDuty = Duty::factory()->for(Institution::factory()->for($otherTenant))->create();
 
         $response = asUser($superAdmin)->put(route('duties.update', $this->dutyManagerDuty), [
@@ -489,7 +489,7 @@ describe('ex-officio target tenant scoping', function () {
 
 describe('duty index cross-tenant visibility', function () {
     test('cross-tenant duty appears by default but search still filters it out', function () {
-        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->inRandomOrder()->first();
+        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $externalDuty = Duty::factory()->for(Institution::factory()->for($otherTenant))->create([
             'name' => ['lt' => 'Zzz Unikalus Isorinis', 'en' => 'Zzz Unique External'],
         ]);
@@ -586,7 +586,7 @@ describe('assignable users is_recent flag', function () {
 
 describe('duty creation institution-tenant scoping', function () {
     test('padalinys-scope admin cannot create a duty in another tenant\'s institution', function () {
-        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->inRandomOrder()->first();
+        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $foreignInstitution = Institution::factory()->for($otherTenant)->create();
 
         $response = asUser($this->dutyManager)->post(route('duties.store'), [
@@ -617,7 +617,7 @@ describe('duty creation institution-tenant scoping', function () {
 
     test('super admin can create a duty in any institution', function () {
         $superAdmin = makeAdminUser($this->tenant);
-        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->inRandomOrder()->first();
+        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $foreignInstitution = Institution::factory()->for($otherTenant)->create();
 
         $response = asUser($superAdmin)->post(route('duties.store'), [

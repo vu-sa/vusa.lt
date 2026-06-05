@@ -33,7 +33,7 @@ beforeEach(function () {
 describe('ApprovalTaskSubscriber', function () {
     describe('approval task creation', function () {
         test('does not create task when no approvers exist', function () {
-            $tenant = Tenant::query()->inRandomOrder()->first()
+            $tenant = Tenant::query()->first()
                 ?? Tenant::factory()->create();
 
             $requester = User::factory()->create();
@@ -76,7 +76,7 @@ describe('ApprovalTaskSubscriber', function () {
 
     describe('approval task completion', function () {
         test('completes approval task when ApprovalDecisionMade event is fired', function () {
-            $tenant = Tenant::query()->inRandomOrder()->first()
+            $tenant = Tenant::query()->first()
                 ?? Tenant::factory()->create();
 
             $requester = User::factory()->create();
@@ -131,7 +131,7 @@ describe('ApprovalTaskSubscriber', function () {
         });
 
         test('completes multiple approval tasks for same reservation', function () {
-            $tenant = Tenant::query()->inRandomOrder()->first()
+            $tenant = Tenant::query()->first()
                 ?? Tenant::factory()->create();
 
             $requester = User::factory()->create();

@@ -33,6 +33,7 @@ import { h, ref, computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { router, usePage } from '@inertiajs/vue3';
+import type { IndexTablePageInstance } from '@/Types/TableConfigTypes';
 
 import { Button } from '@/Components/ui/button';
 import { TruncatedText } from '@/Components/ui/data-table/cells';
@@ -73,7 +74,7 @@ const props = defineProps<{
 const modelName = 'pages';
 const entityName = 'page';
 
-const indexTablePageRef = ref<any>(null);
+const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
 
 const getRowId = (row: App.Entities.Page) => {
   return `page-${row.id}`;
@@ -91,7 +92,7 @@ const columns = computed<Array<ColumnDef<App.Entities.Page, any>>>(() => [
   createIdColumn<App.Entities.Page>({ width: 50 }),
   {
     accessorKey: 'title',
-    header: () => 'Pavadinimas',
+    header: () => $t('Pavadinimas'),
     cell: ({ row }) => h(TruncatedText, {
       text: row.getValue('title') as string,
       lines: 2,
@@ -101,7 +102,7 @@ const columns = computed<Array<ColumnDef<App.Entities.Page, any>>>(() => [
   },
   {
     accessorKey: 'lang',
-    header: () => 'Kalba',
+    header: () => $t('Kalba'),
     cell: ({ row }) => {
       return row.original.lang === 'lt' ? '🇱🇹' : '🇬🇧';
     },
@@ -109,7 +110,7 @@ const columns = computed<Array<ColumnDef<App.Entities.Page, any>>>(() => [
   },
   {
     id: 'other_lang_id',
-    header: () => 'Kitos kalbos puslapis',
+    header: () => $t('Kitos kalbos puslapis'),
     cell: ({ row }) => {
       const otherLangId = row.original.other_lang_id;
       if (!otherLangId) return null;
@@ -123,7 +124,7 @@ const columns = computed<Array<ColumnDef<App.Entities.Page, any>>>(() => [
   },
   {
     accessorKey: 'is_active',
-    header: () => 'Aktyvus',
+    header: () => $t('Aktyvus'),
     cell: ({ row }) => {
       return row.original.is_active ? '✅' : '❌';
     },

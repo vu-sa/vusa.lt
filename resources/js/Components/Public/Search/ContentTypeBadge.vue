@@ -75,18 +75,18 @@ const getTypeIcon = (): string => {
 };
 
 const getBadgeClasses = (): string => {
-  const baseClasses = 'w-full p-3 rounded-lg border transition-all duration-200 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer';
+  const baseClasses = 'w-full p-3 rounded-lg border transition-all duration-200 hover:shadow-sm focus-visible:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer hover:-translate-y-0.5';
 
   if (props.isSelected) {
     switch (props.color) {
       case 'red':
-        return `${baseClasses} bg-red-50 dark:bg-red-950/30 border-red-500 dark:border-red-400 text-red-900 dark:text-red-100 focus:ring-red-500`;
+        return `${baseClasses} bg-red-50 dark:bg-red-950/30 border-red-500 dark:border-red-400 text-red-900 dark:text-red-100 focus:ring-red-500 shadow-md`;
       case 'purple':
-        return `${baseClasses} bg-purple-50 dark:bg-purple-950/30 border-purple-500 dark:border-purple-400 text-purple-900 dark:text-purple-100 focus:ring-purple-500`;
+        return `${baseClasses} bg-purple-50 dark:bg-purple-950/30 border-purple-500 dark:border-purple-400 text-purple-900 dark:text-purple-100 focus:ring-purple-500 shadow-md`;
       case 'blue':
-        return `${baseClasses} bg-blue-50 dark:bg-blue-950/30 border-blue-500 dark:border-blue-400 text-blue-900 dark:text-blue-100 focus:ring-blue-500`;
+        return `${baseClasses} bg-blue-50 dark:bg-blue-950/30 border-blue-500 dark:border-blue-400 text-blue-900 dark:text-blue-100 focus:ring-blue-500 shadow-md`;
       case 'green':
-        return `${baseClasses} bg-green-50 dark:bg-green-950/30 border-green-500 dark:border-green-400 text-green-900 dark:text-green-100 focus:ring-green-500`;
+        return `${baseClasses} bg-green-50 dark:bg-green-950/30 border-green-500 dark:border-green-400 text-green-900 dark:text-green-100 focus:ring-green-500 shadow-md`;
     }
   }
 
@@ -110,31 +110,3 @@ const getCountBadgeClasses = (): string => {
   return 'bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700';
 };
 </script>
-
-<style scoped>
-/* Hover animations */
-button:hover {
-  transform: translateY(-1px);
-}
-
-/* Focus states for accessibility */
-button:focus-visible {
-  outline: none;
-}
-
-/* Selected state animation */
-button[data-selected="true"] {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-/* Responsive text sizing */
-@media (max-width: 640px) {
-  .text-sm {
-    @apply text-xs;
-  }
-
-  .text-xs {
-    @apply text-xs;
-  }
-}
-</style>

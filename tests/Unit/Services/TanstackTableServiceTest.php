@@ -12,7 +12,7 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->service = new TanstackTableService;
-    $this->tenant = Tenant::query()->inRandomOrder()->first();
+    $this->tenant = Tenant::query()->first();
 });
 
 describe('applySorting', function () {

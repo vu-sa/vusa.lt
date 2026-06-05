@@ -12,8 +12,6 @@ use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use Spatie\Feed\Feedable;
 use Spatie\Feed\FeedItem;
-use Spatie\SchemaOrg\Organization;
-use Spatie\SchemaOrg\WebPage;
 use Spatie\Sitemap\Contracts\Sitemapable;
 use Spatie\Sitemap\Tags\Url;
 
@@ -159,49 +157,6 @@ class Page extends Model implements Feedable, Sitemapable
     public function content()
     {
         return $this->belongsTo(Content::class);
-    }
-
-    /**
-     * Generate JSON-LD WebPage schema for SEO.
-     */
-    public function toWebPageSchema(): WebPage
-    {
-        $schema = new WebPage;
-
-        $schema = $schema->name($this->title);
-        $schema = $schema->url(url('/'.$this->permalink));
-        $schema = $schema->inLanguage($this->lang);
-        $schema = $schema->datePublished($this->publish_time ?? $this->created_at);
-        $schema = $schema->dateModified($this->last_edited_at ?? $this->updated_at);
-
-        // Add description
-        if ($this->meta_description) {
-            $schema = $schema->description($this->meta_description);
-        }
-
-        // Add featured image
-        if ($imageUrl = $this->getFeaturedImageUrl()) {
-            $schema = $schema->image($imageUrl);
-        }
-
-        // Add highlights as main content summary
-        if (! empty($this->highlights)) {
-            $schema = $schema->abstract(implode(' • ', $this->highlights));
-        }
-
-        // Add publisher organization
-        $organization = (new Organization)
-            ->name($this->tenant->shortname)
-            ->url(url('/'));
-
-        if ($this->tenant->fullname) {
-            $organization = $organization->alternateName($this->tenant->fullname);
-        }
-
-        $schema = $schema->publisher($organization);
-        $schema = $schema->mainEntityOfPage(url('/'.$this->permalink));
-
-        return $schema;
     }
 
     /**

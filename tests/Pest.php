@@ -96,7 +96,7 @@ function asUserWithInertia(User $user): TestCase
 
 function makeTenantUser(?string $role = null, ?Tenant $tenant = null): User
 {
-    $tenant = $tenant ?? Tenant::query()->inRandomOrder()->first();
+    $tenant = $tenant ?? Tenant::query()->first();
 
     if (! $tenant) {
         throw new RuntimeException('No tenants found in database. Ensure test database is properly seeded.');

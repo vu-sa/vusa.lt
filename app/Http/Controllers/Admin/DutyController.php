@@ -9,6 +9,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\BatchUpdateDutyUsersRequest;
 use App\Http\Requests\IndexDutyRequest;
 use App\Http\Requests\StoreDutyRequest;
+use App\Http\Requests\UpdateDutyRequest;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -23,7 +24,6 @@ use App\Services\TanstackTableService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 
 class DutyController extends AdminController
@@ -227,53 +227,9 @@ class DutyController extends AdminController
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Duty $duty)
+    public function update(UpdateDutyRequest $request, Duty $duty)
     {
         $this->handleAuthorization('update', $duty);
-
-        $validator = Validator::make($request->all(), [
-            'name' => 'required',
-            'current_users' => 'nullable|array',
-            'institution_id' => 'required',
-            'places_to_occupy' => 'required|numeric',
-            'contacts_grouping' => 'required|in:none,study_program,tenant',
-            'types' => 'nullable|array',
-            'ex_officio_target_duty_ids' => 'nullable|array',
-            'ex_officio_target_duty_ids.*' => ['ulid', 'distinct', 'exists:duties,id', 'not_in:'.$duty->id],
-            'assignable_tenants' => 'nullable|array',
-            'assignable_tenants.*.tenant_id' => 'required|integer|exists:tenants,id',
-            'assignable_tenants.*.quota' => 'nullable|integer|min:1',
-            'assignable_tenants.*.user_ids' => 'nullable|array',
-            'assignable_tenants.*.user_ids.*' => 'string|exists:users,id',
-        ]);
-
-        $validator->after(function ($v) use ($request, $duty) {
-            $authorizer = $this->authorizer->forUser($request->user());
-            $hasGlobalDutyScope = $authorizer->check('duties.update.*');
-
-            if (! $hasGlobalDutyScope) {
-                $sourceTenantId = $duty->institution?->tenant_id;
-                $targetIds = array_filter((array) $request->input('ex_officio_target_duty_ids', []));
-
-                if ($targetIds && Duty::whereIn('id', $targetIds)
-                    ->whereHas('institution', fn ($q) => $q->where('tenant_id', '!=', $sourceTenantId))
-                    ->exists()) {
-                    $v->errors()->add('ex_officio_target_duty_ids', __('Ex-officio pareigos turi priklausyti tam pačiam padaliniui.'));
-                }
-
-            }
-
-            // Enforce per-tenant quota against the requested user_ids count.
-            foreach ((array) $request->input('assignable_tenants', []) as $i => $row) {
-                $quota = $row['quota'] ?? null;
-                $userCount = count(array_unique((array) ($row['user_ids'] ?? [])));
-                if ($quota !== null && $userCount > (int) $quota) {
-                    $v->errors()->add("assignable_tenants.$i.user_ids", __('Padalinio kvota (:quota) viršyta.', ['quota' => $quota]));
-                }
-            }
-        });
-
-        $validator->validate();
 
         DB::transaction(function () use ($request, $duty) {
             $duty->update($request->only('name', 'description', 'email', 'places_to_occupy', 'contacts_grouping'));
@@ -512,7 +468,7 @@ class DutyController extends AdminController
 
         $duty->restore();
 
-        return back()->with('success', 'Pareigybė sėkmingai atkurta!');
+        return back()->with('success', __('messages.duty.restored'));
     }
 
     /**

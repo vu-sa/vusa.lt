@@ -2,7 +2,6 @@
   <PageContent :title="`${$page.props.auth?.user?.name}`">
     <Card>
       <CardContent class="pt-6">
-        <!-- <p>{{ salutation }}</p> -->
         <div class="mb-4">
           <FormElement>
             <template #title>

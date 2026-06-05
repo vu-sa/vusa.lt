@@ -13,6 +13,7 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ref, computed } from 'vue';
+import type { IndexTablePageInstance } from '@/Types/TableConfigTypes';
 
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
@@ -44,7 +45,7 @@ const props = defineProps<{
 const modelName = 'categories';
 const entityName = 'category';
 
-const indexTablePageRef = ref<any>(null);
+const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
 
 const canCreate = computed(() => true);
 

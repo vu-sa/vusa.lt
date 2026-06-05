@@ -79,14 +79,14 @@ const getRowId = (row: App.Entities.Duty) => {
 const columns = computed<Array<ColumnDef<App.Entities.Duty, any>>>(() => [
   {
     accessorKey: 'name',
-    header: () => 'Pavadinimas',
+    header: () => $t('Pavadinimas'),
     cell: ({ row }) => h(TruncatedText, { text: resolveTranslatable(row.getValue('name')) }),
     size: 200,
     enableSorting: true,
   },
   {
     accessorKey: 'email',
-    header: () => 'El. paštas',
+    header: () => $t('El. paštas'),
     cell: ({ row }) => {
       const { email } = row.original;
       if (!email) return null;
@@ -101,7 +101,7 @@ const columns = computed<Array<ColumnDef<App.Entities.Duty, any>>>(() => [
   },
   {
     accessorKey: 'institution',
-    header: () => 'Institucija',
+    header: () => $t('Institucija'),
     cell: ({ row }) => {
       const { institution } = row.original;
       if (!institution) return null;
@@ -119,7 +119,7 @@ const columns = computed<Array<ColumnDef<App.Entities.Duty, any>>>(() => [
   },
   {
     accessorKey: 'types',
-    header: () => 'Tipai',
+    header: () => $t('Tipai'),
     cell: ({ row }) => {
       const { types } = row.original;
       if (!types?.length) return null;

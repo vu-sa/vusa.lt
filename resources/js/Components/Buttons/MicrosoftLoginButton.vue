@@ -82,7 +82,6 @@ const openPopupLogin = () => {
 
   // If popup was blocked, fall back to redirect
   if (!popup || popup.closed) {
-    console.log('[OAuth] Popup blocked, falling back to redirect');
     window.location.href = route('microsoft.redirect');
     return;
   }

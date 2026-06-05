@@ -10,7 +10,7 @@ use App\Models\News;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
-    $this->tenant = Tenant::query()->inRandomOrder()->first();
+    $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
     $this->admin = makeTagAdmin($this->tenant);
 

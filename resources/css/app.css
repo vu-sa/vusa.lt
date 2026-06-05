@@ -358,25 +358,7 @@ html.dark-mode-init {
   padding-right: 0;
 }
 
-/* Smooth transitions for layout changes */
-.document-grid-enter-active,
-.document-grid-leave-active,
-.document-list-enter-active,
-.document-list-leave-active,
-.document-compact-enter-active,
-.document-compact-leave-active {
-  transition: all 0.3s ease;
-}
-
-.document-grid-enter-from,
-.document-grid-leave-to,
-.document-list-enter-from,
-.document-list-leave-to,
-.document-compact-enter-from,
-.document-compact-leave-to {
-  opacity: 0;
-  transform: translateY(10px);
-}
+/* Transition classes are defined locally in BaseSearchResults.vue */
 
 /* Contain layout/style work; loading min-height is handled per-instance via the `minHeight` prop */
 .search-results-container {

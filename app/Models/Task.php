@@ -60,6 +60,14 @@ class Task extends Model
         ];
     }
 
+    /**
+     * Scope to incomplete tasks (not yet completed).
+     */
+    public function scopeIncomplete($query)
+    {
+        return $query->whereNull('completed_at');
+    }
+
     public function taskable(): MorphTo
     {
         return $this->morphTo();

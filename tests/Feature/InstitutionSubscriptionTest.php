@@ -9,7 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->tenant = Tenant::query()->inRandomOrder()->first()
+    $this->tenant = Tenant::query()->first()
         ?? Tenant::factory()->create();
 
     $this->user = User::factory()->create();

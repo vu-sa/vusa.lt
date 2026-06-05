@@ -78,6 +78,17 @@ class Calendar extends Model implements HasMedia
         ];
     }
 
+    /**
+     * Scope events relevant to the given locale.
+     * International events are always included; local-only events are excluded for 'en'.
+     */
+    public function scopeForLocale($query, string $locale)
+    {
+        return $locale === 'lt'
+            ? $query
+            : $query->where('is_international', 1);
+    }
+
     public $translatable = [
         'title',
         'description',

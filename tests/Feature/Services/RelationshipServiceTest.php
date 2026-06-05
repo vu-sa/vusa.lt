@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Cache;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->tenant = Tenant::query()->inRandomOrder()->first();
+    $this->tenant = Tenant::query()->first();
 
     // Create test relationship
     $this->relationship = new Relationship([

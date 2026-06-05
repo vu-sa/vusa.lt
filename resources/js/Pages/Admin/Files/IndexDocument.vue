@@ -368,17 +368,11 @@ const handleInstitutionFilterChange = (institutionId: number | null) => {
 };
 
 // Event handlers
-const onDataLoaded = (data) => {
-  console.log('Documents data loaded:', data);
-};
+const onDataLoaded = (_data: unknown) => {};
 
-const handleSortingChange = (sorting) => {
-  console.log('Sorting changed:', sorting);
-};
+const handleSortingChange = (_sorting: unknown) => {};
 
-const handlePageChange = (page) => {
-  console.log('Page changed:', page);
-};
+const handlePageChange = (_page: unknown) => {};
 
 const handleFilterChange = (filterKey, value) => {
   if (filterKey === 'content_type') {

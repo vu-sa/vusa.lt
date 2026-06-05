@@ -19,7 +19,7 @@
                         </p>
                         <p class="text-center text-xl">@yield('message')</p>
                         <p class="text-center mt-2 text-zinc-400 italic text-sm">@yield('extended-message').</p>
-                        <a class="underline mt-8 hover:text-red-600 transition text-xl" href="{{ config('app.url') }}">← Grįžti į vusa.lt</a>
+                        <a class="underline mt-8 hover:text-red-600 transition text-xl" href="{{ config('app.url') }}">← {{ __('Grįžti į vusa.lt') }}</a>
                     </div>
                 </div>
             </div>

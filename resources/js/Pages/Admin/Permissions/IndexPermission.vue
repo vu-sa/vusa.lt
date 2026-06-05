@@ -13,6 +13,7 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ref, computed } from 'vue';
+import type { IndexTablePageInstance } from '@/Types/TableConfigTypes';
 
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { PermissionIcon } from '@/Components/icons';
@@ -43,7 +44,7 @@ const props = defineProps<{
 const modelName = 'permissions';
 const entityName = 'permission';
 
-const indexTablePageRef = ref<any>(null);
+const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
 
 const getRowId = (row: App.Entities.Permission) => {
   return `permission-${row.id}`;

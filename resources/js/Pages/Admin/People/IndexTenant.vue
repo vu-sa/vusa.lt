@@ -13,6 +13,7 @@
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ref, computed } from 'vue';
+import type { IndexTablePageInstance } from '@/Types/TableConfigTypes';
 
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
@@ -43,7 +44,7 @@ const props = defineProps<{
 const modelName = 'tenants';
 const entityName = 'tenant';
 
-const indexTablePageRef = ref<any>(null);
+const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
 
 const getRowId = (row: App.Entities.Tenant) => {
   return `tenant-${row.id}`;

@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Event;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->tenant = Tenant::query()->inRandomOrder()->first();
+    $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
 
     $this->resourceManager = makeUser($this->tenant);

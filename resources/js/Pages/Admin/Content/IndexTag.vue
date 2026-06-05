@@ -28,6 +28,7 @@ import {
   MergeIcon,
 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
+import type { IndexTablePageInstance } from '@/Types/TableConfigTypes';
 
 import { Button } from '@/Components/ui/button';
 import { TruncatedBadge, TruncatedText } from '@/Components/ui/data-table/cells';
@@ -62,7 +63,7 @@ const modelName = 'tags';
 const entityName = 'tag';
 
 // Component refs
-const indexTablePageRef = ref<any>(null);
+const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
 
 // Permission checks
 const canCreate = computed(() => usePage().props.auth?.can?.create?.tag || false);

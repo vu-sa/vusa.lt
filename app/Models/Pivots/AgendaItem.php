@@ -8,6 +8,7 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Tenant;
 use App\Models\Vote;
+use App\Services\VoteStatisticsCalculator;
 use Database\Factories\AgendaItemFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -250,50 +251,18 @@ class AgendaItem extends Pivot
 
     /**
      * Calculate vote statistics from all votes for this agenda item.
+     * Delegates to VoteStatisticsCalculator.
      */
     protected function calculateVoteStatistics(): array
     {
-        $votes = $this->votes;
+        $votes = $this->relationLoaded('votes') ? $this->votes : $this->votes()->get();
 
-        if ($votes->isEmpty()) {
-            return [
-                'has_any_student_vote' => false,
-                'has_any_decision' => false,
-                'has_any_student_benefit' => false,
-                'all_votes_complete' => false,
-                'vote_matches' => 0,
-                'vote_mismatches' => 0,
-                'has_consensus_votes' => false,
-                'consensus_votes_count' => 0,
-            ];
-        }
-
-        $hasAnyStudentVote = $votes->contains(fn ($v) => ! empty($v->student_vote));
-        $hasAnyDecision = $votes->contains(fn ($v) => ! empty($v->decision));
-        $hasAnyStudentBenefit = $votes->contains(fn ($v) => ! empty($v->student_benefit));
-        $allComplete = $votes->every(fn ($v) => $v->is_complete);
-        $consensusVotes = $votes->filter(fn ($v) => $v->is_consensus);
-
-        // Count vote alignment
-        $votesWithBoth = $votes->filter(fn ($v) => ! empty($v->student_vote) && ! empty($v->decision));
-        $voteMatches = $votesWithBoth->filter(fn ($v) => $v->student_vote === $v->decision)->count();
-        $voteMismatches = $votesWithBoth->count() - $voteMatches;
-
-        return [
-            'has_any_student_vote' => $hasAnyStudentVote,
-            'has_any_decision' => $hasAnyDecision,
-            'has_any_student_benefit' => $hasAnyStudentBenefit,
-            'all_votes_complete' => $allComplete,
-            'vote_matches' => $voteMatches,
-            'vote_mismatches' => $voteMismatches,
-            'has_consensus_votes' => $consensusVotes->isNotEmpty(),
-            'consensus_votes_count' => $consensusVotes->count(),
-        ];
+        return app(VoteStatisticsCalculator::class)->calculate($votes);
     }
 
     /**
      * Calculate overall vote alignment status for this agenda item.
-     * Based on main vote if available, otherwise aggregated from all votes.
+     * Delegates to VoteStatisticsCalculator.
      *
      * @return string 'match', 'mismatch', 'mixed', 'incomplete', 'neutral'
      */
@@ -301,33 +270,7 @@ class AgendaItem extends Pivot
     {
         $votes = $this->relationLoaded('votes') ? $this->votes : $this->votes()->get();
 
-        if ($votes->isEmpty()) {
-            return 'neutral';
-        }
-
-        // Prefer main vote status if available
-        /** @var Vote|null $mainVote */
-        $mainVote = $votes->firstWhere('is_main', true);
-        if ($mainVote) {
-            return $mainVote->vote_alignment_status;
-        }
-
-        // Otherwise aggregate from all votes
-        $stats = $this->calculateVoteStatistics();
-
-        if ($stats['vote_matches'] === 0 && $stats['vote_mismatches'] === 0) {
-            return 'incomplete';
-        }
-
-        if ($stats['vote_mismatches'] === 0) {
-            return 'match';
-        }
-
-        if ($stats['vote_matches'] === 0) {
-            return 'mismatch';
-        }
-
-        return 'mixed';
+        return app(VoteStatisticsCalculator::class)->alignmentStatus($votes);
     }
 
     /**

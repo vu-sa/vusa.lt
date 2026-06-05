@@ -16,7 +16,7 @@ use App\States\ReservationResource\Reserved;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
-    $this->tenant = Tenant::query()->inRandomOrder()->first();
+    $this->tenant = Tenant::query()->first();
 
     $this->user = makeUser($this->tenant);
 

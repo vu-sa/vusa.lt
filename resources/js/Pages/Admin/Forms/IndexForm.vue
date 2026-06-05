@@ -62,6 +62,7 @@ import type { ColumnDef } from '@tanstack/vue-table';
 import { ref, computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { Users as UsersIcon, Eye as EyeIcon, UserPlus as UserPlusIcon } from 'lucide-vue-next';
+import type { IndexTablePageInstance } from '@/Types/TableConfigTypes';
 
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
@@ -98,7 +99,7 @@ const props = defineProps<{
 const modelName = 'forms';
 const entityName = 'form';
 
-const indexTablePageRef = ref<any>(null);
+const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
 
 const getRowId = (row: App.Entities.Form) => {
   return `form-${row.id}`;

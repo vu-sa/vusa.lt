@@ -9,6 +9,7 @@ use App\Models\Pivots\Trainable;
 use App\Models\Traits\HasNotificationPreferences;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\HasUIPreferences;
+use App\Services\NotificationRouter;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -170,20 +171,10 @@ class User extends Authenticatable
     /**
      * If the user has a duty, always send to current_duties if duty email ends with vusa.lt
      * More on this: https://laravel.com/docs/10.x/notifications#customizing-the-recipient
-     * TODO: it is not really optimal as sometimes notifications should be sent directly to user
      */
     public function routeNotificationForMail(Notification $notification): array|string
     {
-        if ($this->current_duties()->count() > 0) {
-            /** @var Duty $duty */
-            foreach ($this->current_duties()->get() as $duty) {
-                if (str_ends_with($duty->email, 'vusa.lt')) {
-                    return $duty->email;
-                }
-            }
-        }
-
-        return $this->email;
+        return app(NotificationRouter::class)->routeForMail($this, $notification);
     }
 
     public function duties(): MorphToMany
@@ -278,23 +269,6 @@ class User extends Authenticatable
     public function hasInstitution(Institution $institution): bool
     {
         return $this->institutions()->where('institutions.id', $institution->id)->exists();
-    }
-
-    /**
-     * Get all "interesting" institutions (duty + followed - muted).
-     *
-     * @return \Illuminate\Support\Collection<int, Institution>
-     */
-    public function interestingInstitutions(): \Illuminate\Support\Collection
-    {
-        $dutyInstitutions = $this->institutions()->get();
-        $followedInstitutions = $this->followedInstitutions()->get();
-        $mutedIds = $this->mutedInstitutions()->pluck('institutions.id');
-
-        return $dutyInstitutions->merge($followedInstitutions)
-            ->unique('id')
-            ->reject(fn ($institution) => $mutedIds->contains($institution->id))
-            ->values();
     }
 
     /**

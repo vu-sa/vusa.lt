@@ -122,6 +122,14 @@ class Institution extends Model implements SharepointFileableContract
         return $this->hasMany(Duty::class);
     }
 
+    /**
+     * Scope institutions that have at least one active duty with current users.
+     */
+    public function scopeHasActiveDuties($query)
+    {
+        return $query->whereHas('duties.current_users');
+    }
+
     public function types(): MorphToMany
     {
         return $this->morphToMany(Type::class, 'typeable');

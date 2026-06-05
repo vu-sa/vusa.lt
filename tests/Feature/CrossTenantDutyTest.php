@@ -14,12 +14,12 @@ beforeEach(function () {
     config(['queue.default' => 'sync']);
 
     // Owning tenant & duty.
-    $this->owningTenant = Tenant::query()->inRandomOrder()->first();
+    $this->owningTenant = Tenant::query()->first();
     $institution = Institution::factory()->for($this->owningTenant)->create();
     $this->duty = Duty::factory()->for($institution)->create();
 
     // Second tenant — will be assignable.
-    $this->assignableTenant = Tenant::query()->where('id', '!=', $this->owningTenant->id)->inRandomOrder()->first();
+    $this->assignableTenant = Tenant::query()->where('id', '!=', $this->owningTenant->id)->first();
 
     if (! $this->assignableTenant) {
         $this->markTestSkipped('Need at least 2 tenants in the database.');

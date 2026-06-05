@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Concerns\ApiResponses;
 use App\Http\Requests\IndexMembershipRequest;
 use App\Http\Requests\StoreMembershipRequest;
 use App\Http\Requests\UpdateMembershipRequest;
@@ -15,7 +16,7 @@ use App\Services\TanstackTableService;
 
 class MembershipController extends AdminController
 {
-    use HasTanstackTables;
+    use ApiResponses, HasTanstackTables;
 
     public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
@@ -131,6 +132,6 @@ class MembershipController extends AdminController
 
         (new MembershipUsersImport($membership))->import(request()->file('file'));
 
-        return response()->json(['message' => 'Users imported.']);
+        return $this->jsonSuccess(message: __('Users imported.'));
     }
 }

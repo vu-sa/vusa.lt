@@ -20,6 +20,7 @@ import { TruncatedText } from '@/Components/ui/data-table/cells';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import type { IndexTablePageProps } from '@/Types/TableConfigTypes';
+import type { IndexTablePageInstance } from '@/Types/TableConfigTypes';
 import { CategoryIcon } from '@/Components/icons';
 
 const props = defineProps<{
@@ -41,7 +42,7 @@ const props = defineProps<{
 const modelName = 'resourceCategories';
 const entityName = 'resource_category';
 
-const indexTablePageRef = ref<any>(null);
+const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
 
 const getRowId = (row: App.Entities.ResourceCategory) => {
   return `resource-category-${row.id}`;
@@ -56,7 +57,7 @@ const columns = computed<Array<ColumnDef<App.Entities.ResourceCategory, any>>>((
   },
   {
     accessorKey: 'icon',
-    header: () => 'Ikona',
+    header: () => $t('Ikona'),
     cell: ({ row }) => {
       const { icon } = row.original;
       if (!icon) {

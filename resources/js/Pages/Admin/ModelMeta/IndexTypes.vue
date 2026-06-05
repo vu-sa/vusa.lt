@@ -132,20 +132,11 @@ const handleModelTypeFilterChange = (modelType: string | null) => {
   }
 };
 
-const onDataLoaded = (data) => {
-  // Handle any additional logic after data is loaded
-  console.log('Types data loaded:', data);
-};
+const onDataLoaded = (_data: unknown) => {};
 
-const handleSortingChange = (sorting) => {
-  // Additional handling for sorting changes if needed
-  console.log('Sorting changed:', sorting);
-};
+const handleSortingChange = (_sorting: unknown) => {};
 
-const handlePageChange = (page) => {
-  // Additional handling for page changes if needed
-  console.log('Page changed:', page);
-};
+const handlePageChange = (_page: unknown) => {};
 
 const handleFilterChange = (filterKey, value) => {
   // Update local filter references if needed

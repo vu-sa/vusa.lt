@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\MeetingType;
 use App\Models\Pivots\AgendaItem;
+use App\Services\VoteStatisticsCalculator;
 use App\Settings\MeetingSettings;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -176,89 +177,27 @@ class PublicMeeting extends Meeting
 
     /**
      * Calculate vote statistics from agenda items' votes.
-     * Aggregates statistics from all votes across all agenda items.
+     * Delegates to VoteStatisticsCalculator.
      */
     protected function calculateVoteStatistics(): array
     {
-        // Collect all votes from all agenda items
         $allVotes = $this->agendaItems->flatMap(fn ($item) => $item->votes);
 
-        $totalVotes = $allVotes->count();
-
-        // Votes with all three fields filled
-        $completedVotes = $allVotes->filter(function ($vote) {
-            return ! empty($vote->student_vote)
-                && ! empty($vote->decision)
-                && ! empty($vote->student_benefit);
-        })->count();
-
-        // Votes with both student_vote and decision filled
-        $votesWithBoth = $allVotes->filter(function ($vote) {
-            return ! empty($vote->student_vote) && ! empty($vote->decision);
-        });
-
-        // Vote matches (student position accepted)
-        $voteMatches = $votesWithBoth->filter(function ($vote) {
-            return $vote->student_vote === $vote->decision;
-        })->count();
-
-        // Vote mismatches (student position not accepted)
-        $voteMismatches = $votesWithBoth->count() - $voteMatches;
-
-        // Votes with incomplete data (only one of student_vote/decision filled)
-        $incompleteVoteData = $allVotes->filter(function ($vote) {
-            $hasStudentVote = ! empty($vote->student_vote);
-            $hasDecision = ! empty($vote->decision);
-
-            return $hasStudentVote xor $hasDecision;
-        })->count();
-
-        // Count outcomes by type (from decision field)
-        $positive = $allVotes->where('decision', 'positive')->count();
-        $negative = $allVotes->where('decision', 'negative')->count();
-        $neutral = $allVotes->where('decision', 'neutral')->count();
-
-        return [
-            'total_votes' => $totalVotes,
-            'completed_votes' => $completedVotes,
-            'student_success_rate' => $totalVotes > 0 ? round(($voteMatches / $totalVotes) * 100) : 0,
-            'positive_outcomes' => $positive,
-            'negative_outcomes' => $negative,
-            'neutral_outcomes' => $neutral,
-            'vote_matches' => $voteMatches,
-            'vote_mismatches' => $voteMismatches,
-            'incomplete_vote_data' => $incompleteVoteData,
-        ];
+        return app(VoteStatisticsCalculator::class)->calculate($allVotes);
     }
 
     /**
-     * Calculate vote alignment status for colored dot display
+     * Calculate vote alignment status for colored dot display.
+     * Delegates to VoteStatisticsCalculator.
      *
      * @return string 'all_match' (green), 'mixed' (amber), 'all_mismatch' (red), 'neutral' (grey)
      */
     protected function calculateVoteAlignmentStatus(array $voteStats): string
     {
-        $matches = $voteStats['vote_matches'];
-        $mismatches = $voteStats['vote_mismatches'];
-        $total = $matches + $mismatches;
-
-        // No vote data available
-        if ($total === 0) {
-            return 'neutral';
-        }
-
-        // All matches (green)
-        if ($mismatches === 0) {
-            return 'all_match';
-        }
-
-        // All mismatches (red)
-        if ($matches === 0) {
-            return 'all_mismatch';
-        }
-
-        // Mixed (amber)
-        return 'mixed';
+        return app(VoteStatisticsCalculator::class)->alignmentStatusFromCounts(
+            $voteStats['vote_matches'],
+            $voteStats['vote_mismatches']
+        );
     }
 
     /**

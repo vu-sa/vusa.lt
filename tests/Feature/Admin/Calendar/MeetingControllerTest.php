@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Cache;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->tenant = Tenant::query()->inRandomOrder()->first();
+    $this->tenant = Tenant::query()->first();
 
     // Create a basic user for authorization tests
     $this->user = makeUser($this->tenant);

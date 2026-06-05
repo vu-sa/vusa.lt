@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Gate;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->tenant = Tenant::query()->inRandomOrder()->first();
+    $this->tenant = Tenant::query()->first();
     $this->institution = Institution::factory()->for($this->tenant)->create();
     $this->file = FileableFile::factory()->for($this->institution, 'fileable')->create();
 });
