@@ -5,16 +5,16 @@
         {{ $t("forms.context.main_info") }}
       </template>
       <template #description>
-        Pagrindinė informacija apie turinio tipą.
+        {{ $t('forms.helpers.type_main_info') }}
       </template>
-      <FormFieldWrapper id="title" label="Pavadinimas" required>
+      <FormFieldWrapper id="title" :label="$t('forms.fields.name')" required>
         <MultiLocaleInput v-model:input="form.title"
           :placeholder="{ lt: 'Studentų atstovų organas', en: 'Student representative body' }" />
       </FormFieldWrapper>
 
       <div class="space-y-2">
         <div class="flex items-center gap-2">
-          <Label>Aprašymas</Label>
+          <Label>{{ $t('forms.fields.description') }}</Label>
           <SimpleLocaleButton v-model:locale="locale" />
         </div>
         <TiptapEditor v-if="locale === 'lt'" v-model="form.description.lt" preset="full" :html="true" />
@@ -23,12 +23,12 @@
     </FormElement>
     <FormElement>
       <template #title>
-        Tipo parametrai
+        {{ $t('forms.sections.type_parameters') }}
       </template>
       <template #description>
-        Parametrai
+        {{ $t('forms.helpers.type_parameters_desc') }}
       </template>
-      <FormFieldWrapper id="model_type" label="Modelio tipas" required>
+      <FormFieldWrapper id="model_type" :label="$t('forms.fields.model_type')" required>
         <Select v-model="modelTypeString">
           <SelectTrigger>
             <SelectValue placeholder="Institucija" />
@@ -40,7 +40,7 @@
           </SelectContent>
         </Select>
       </FormFieldWrapper>
-      <FormFieldWrapper id="parent_id" label="Tėvinis tipas">
+      <FormFieldWrapper id="parent_id" :label="$t('forms.fields.parent_type')">
         <Select v-model="parentIdString">
           <SelectTrigger>
             <SelectValue placeholder="Studentų atstovybė" />
@@ -58,23 +58,22 @@
     </FormElement>
     <FormElement v-if="sharepointPath">
       <template #title>
-        Failai
+        {{ $t('forms.sections.files') }}
       </template>
       <template #description>
-        Failai, susiję su šiuo tipu. Šie failai rodomi atitinkamose vietose
-        prie modelių, kurie priklauso šiam tipui.
+        {{ $t('forms.helpers.type_files_desc') }}
       </template>
       <FileManager :starting-path="sharepointPath" :fileable="{ id: form.id, type: 'Type' }" />
     </FormElement>
     <FormElement>
       <template #title>
-        Tipą turintys modeliai
+        {{ $t('forms.sections.type_models') }}
       </template>
       <template #description>
-        Modeliai, kurie priklauso šiam tipui.
+        {{ $t('forms.helpers.type_models_desc') }}
       </template>
       <div class="col-span-6">
-        <Label class="mb-2">Modeliai</Label>
+        <Label class="mb-2">{{ $t('forms.fields.models') }}</Label>
         <TransferList v-model="form[props.modelType]" :options="modelOptions ?? []">
           <template #source-label="{ option }">
             <span class="inline-flex items-center gap-2">
@@ -91,14 +90,13 @@
     </FormElement>
     <FormElement v-if="form.model_type === 'App\\Models\\Duty'">
       <template #title>
-        Rolės, kurios priskiriamos pareigybėms
+        {{ $t('forms.sections.type_duty_roles') }}
       </template>
       <template #description>
-        Šios rolės automatiškai priskiriamos pareigybėms su šiuo
-        tipu.
+        {{ $t('forms.helpers.type_duty_roles_desc') }}
       </template>
       <div class="col-span-6">
-        <Label class="mb-2">Rolės</Label>
+        <Label class="mb-2">{{ $t('forms.fields.roles') }}</Label>
         <TransferList v-model="form.roles" :options="roles?.map((role) => ({
           value: role.id,
           label: role.name,
@@ -107,30 +105,30 @@
     </FormElement>
     <FormElement v-if="form.model_type === 'App\\Models\\Institution'">
       <template #title>
-        Institucijos nustatymai
+        {{ $t('forms.sections.institution_settings') }}
       </template>
       <template #description>
-        Nustatymai, taikomi visoms šio tipo institucijoms.
+        {{ $t('forms.helpers.institution_settings_desc') }}
       </template>
-      <FormFieldWrapper id="meeting_periodicity_days" label="Susitikimų periodiškumas (dienomis)"
-        hint="Rekomenduojamas laikotarpis tarp susitikimų. Jei nenurodyta, naudojamas 30 dienų numatymas.">
+      <FormFieldWrapper id="meeting_periodicity_days" :label="$t('forms.fields.meeting_periodicity_days')"
+        :hint="$t('forms.helpers.meeting_periodicity_hint')">
         <NumberField v-model="extraAttributesPeriodicityDays" :min="1" :max="365" />
       </FormFieldWrapper>
-      <FormFieldWrapper id="enable_sibling_relationships" label="Rodyti susijusias institucijas pagal tipą"
-        hint="Įjungus, institucijos su šiuo tipu tame pačiame padalinyje bus matomos kaip susijusios viena kitai (pvz., atstovavimo skydelyje).">
+      <FormFieldWrapper id="enable_sibling_relationships" :label="$t('forms.fields.enable_sibling_relationships')"
+        :hint="$t('forms.helpers.enable_sibling_hint')">
         <Switch :model-value="enableSiblingRelationships" @update:model-value="enableSiblingRelationships = $event" />
       </FormFieldWrapper>
-      <FormFieldWrapper id="enable_cross_tenant" label="Rodyti padalinių institucijas iš pagrindinio"
-        hint="Įjungus, pagrindinio padalinio institucija su šiuo tipu matys visas kitų padalinių institucijas su tuo pačiu tipu. Vienkryptis: padalinių institucijos nematys pagrindinės.">
+      <FormFieldWrapper id="enable_cross_tenant" :label="$t('forms.fields.enable_cross_tenant')"
+        :hint="$t('forms.helpers.enable_cross_tenant_hint')">
         <Switch :model-value="enableCrossTenantSiblingRelationships" @update:model-value="enableCrossTenantSiblingRelationships = $event" />
       </FormFieldWrapper>
     </FormElement>
     <FormElement no-divider>
       <template #title>
-        Kiti nustatymai
+        {{ $t('forms.sections.other_settings') }}
       </template>
-      <FormFieldWrapper id="slug" label="Techninė žymė"
-        hint="Keičiama tik išskirtiniais atvejais.">
+      <FormFieldWrapper id="slug" :label="$t('forms.fields.technical_slug')"
+        :hint="$t('forms.helpers.technical_slug_hint')">
         <Input v-model="form.slug" type="text" placeholder="pvz.: turinio-tipas" />
       </FormFieldWrapper>
     </FormElement>

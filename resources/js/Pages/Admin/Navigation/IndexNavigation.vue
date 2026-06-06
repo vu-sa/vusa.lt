@@ -3,11 +3,11 @@
     <div class="flex items-center gap-4 mb-4">
       <div class="flex items-center gap-2">
         <Label>Rodyti redagavimą</Label>
-        <Switch :checked="showAdminEdit" @update:checked="val => showAdminEdit = val" />
+        <Switch :model-value="showAdminEdit" @update:model-value="val => showAdminEdit = val" />
       </div>
       <div class="flex items-center gap-2">
         <Label>Rodyti stulpelių keitimo rodykles</Label>
-        <Switch :checked="showColumnChangeArrows" @update:checked="val => showColumnChangeArrows = val" />
+        <Switch :model-value="showColumnChangeArrows" @update:model-value="val => showColumnChangeArrows = val" />
       </div>
     </div>
     <TransitionGroup ref="el" tag="div">

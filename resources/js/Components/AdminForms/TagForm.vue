@@ -12,9 +12,9 @@
         <MultiLocaleInput v-model:input="form.name" />
       </FormFieldWrapper>
 
-      <MultiLocaleTiptapFormItem v-model:input="form.description" label="Aprašymas" />
+      <MultiLocaleTiptapFormItem v-model:input="form.description" :label="$t('forms.fields.description')" />
 
-      <FormFieldWrapper id="alias" label="Alias" helper-text="Papildomas pavadinimas žymai (neprivalomas). Jei neįvestas, bus sugeneruotas automatiškai iš pavadinimo.">
+      <FormFieldWrapper id="alias" :label="$t('forms.fields.alias')" :helper-text="$t('forms.helpers.tag_alias_hint')">
         <Input id="alias" v-model="form.alias" placeholder="Pvz: stipendijos" />
       </FormFieldWrapper>
     </FormElement>

@@ -45,7 +45,7 @@
               </FormFieldWrapper>
               <FormFieldWrapper id="show_pronouns" :label="$t('forms.fields.show_pronouns')">
                 <div class="flex items-center gap-2">
-                  <Switch :checked="form.show_pronouns" :disabled="form.pronouns === ''" @update:checked="val => form.show_pronouns = val" />
+                  <Switch :model-value="form.show_pronouns" :disabled="form.pronouns === ''" @update:model-value="val => form.show_pronouns = val" />
                   <span class="text-sm text-muted-foreground">{{ form.show_pronouns ? 'Įvardžiai rodomi viešai' : 'Įvardžiai nerodomi viešai' }}</span>
                 </div>
               </FormFieldWrapper>
@@ -124,7 +124,7 @@
             </template>
             <FormFieldWrapper id="reduce_motion" :label="$t('Išjungti puslapių perėjimo animacijas')">
               <div class="flex items-center gap-2">
-                <Switch :checked="reduceMotion" @update:checked="handleReduceMotionChange" />
+                <Switch :model-value="reduceMotion" @update:model-value="handleReduceMotionChange" />
                 <span class="text-sm text-muted-foreground">{{ reduceMotion ? $t('Animacijos išjungtos') : $t('Animacijos įjungtos') }}</span>
               </div>
             </FormFieldWrapper>

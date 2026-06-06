@@ -159,38 +159,38 @@ const selectedTenant = computed({
   },
 });
 
-const quickLinksType = [
+const quickLinksType = computed(() => [
   {
     value: 'url',
-    label: 'Nuoroda',
+    label: $t('Nuoroda'),
     icon: Link24Regular,
   },
   {
     value: 'page',
-    label: 'Turinio puslapis',
+    label: $t('Turinio puslapis'),
     icon: PageIcon,
   },
   {
     value: 'news',
-    label: 'Naujiena',
+    label: $t('Naujiena'),
     icon: NewsIcon,
   },
   {
     value: 'calendarEvent',
-    label: 'Įvykis',
+    label: $t('Įvykis'),
     icon: CalendarIcon,
   },
   {
     value: 'institution',
-    label: 'Institucija',
+    label: $t('Institucija'),
     icon: InstitutionIcon,
   },
   {
     value: 'category',
-    label: 'Kategorija',
+    label: $t('Kategorija'),
     icon: CategoryIcon,
   },
-];
+]);
 
 const typeOptions = computed(() => {
   if (!props.typeOptions) {

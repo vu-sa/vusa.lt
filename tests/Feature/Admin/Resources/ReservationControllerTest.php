@@ -35,6 +35,22 @@ beforeEach(function () {
     $this->reservationManager = User::factory()->hasAttached($this->reservation)->create();
 });
 
+describe('index activeReservations', function () {
+    test('indexes and dedupes a reservation spanning multiple resources to a single entry', function () {
+        // $this->reservation is attached to 3 resources in beforeEach; the payload
+        // must contain it exactly once (the refactor replaced PHP-side unique()).
+        asUser($this->admin)->get(route('reservations.index'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Reservations/IndexReservation')
+                ->has('activeReservations', 1)
+                ->where('activeReservations.0.id', $this->reservation->id)
+                ->has('activeReservations.0.resources')
+                ->has('activeReservations.0.users')
+            );
+    });
+});
+
 describe('auth: simple user', function () {
     beforeEach(function () {
         asUser($this->user)->get(route('dashboard'));

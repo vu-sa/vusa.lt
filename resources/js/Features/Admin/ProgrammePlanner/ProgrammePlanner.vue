@@ -1,6 +1,6 @@
 <template>
   <FormFieldWrapper v-if="showTimeSwitch" id="show-times" label="Rodyti laikus">
-    <Switch :checked="showTimes" @update:checked="val => showTimes = val" />
+    <Switch :model-value="showTimes" @update:model-value="val => showTimes = val" />
   </FormFieldWrapper>
   <div class="flex flex-col gap-4 bg-white dark:bg-zinc-800 rounded-lg">
     <div ref="programmeEl" class="mb-3 flex flex-col gap-2">

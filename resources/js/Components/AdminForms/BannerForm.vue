@@ -2,18 +2,18 @@
   <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
     <FormElement>
       <FormFieldWrapper id="title" :label="$t('forms.fields.title')">
-        <Input id="title" v-model="form.title" type="text" placeholder="Įrašyti pavadinimą" />
+        <Input id="title" v-model="form.title" type="text" :placeholder="$t('forms.placeholders.enter_title')" />
       </FormFieldWrapper>
 
-      <FormFieldWrapper id="link_url" label="Nuoroda, į kurią nukreipia paveikslėlis">
+      <FormFieldWrapper id="link_url" :label="$t('forms.fields.banner_link_url')">
         <Input id="link_url" v-model="form.link_url" type="text" placeholder="https://vu.lt" />
       </FormFieldWrapper>
 
-      <FormFieldWrapper id="is_active" label="Ar aktyvus?">
-        <Switch :checked="!!form.is_active" @update:checked="val => form.is_active = val ? 1 : 0" />
+      <FormFieldWrapper id="is_active" :label="$t('forms.fields.is_active')">
+        <Switch :model-value="!!form.is_active" @update:model-value="val => form.is_active = val ? 1 : 0" />
       </FormFieldWrapper>
 
-      <FormFieldWrapper id="image_url" label="Paveikslėlis">
+      <FormFieldWrapper id="image_url" :label="$t('forms.fields.image')">
         <ImageUpload v-model:url="form.image_url" mode="immediate" folder="banners" cropper :existing-url="banner?.image_url" />
       </FormFieldWrapper>
     </FormElement>

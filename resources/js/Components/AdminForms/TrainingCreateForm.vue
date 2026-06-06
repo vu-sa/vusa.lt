@@ -6,19 +6,18 @@
       </template>
       <template #description>
         <p>
-          Užpildžius šią informaciją, bus sukurtas mokymų juodraštis, kuriame bus galima užpildyti pilną mokymų
-          informaciją.
+          {{ $t('forms.helpers.training_create_info_1') }}
         </p>
         <p>
-          Įrašytą informaciją bus galima pakeisti.
+          {{ $t('forms.helpers.training_create_info_2') }}
         </p>
       </template>
-      <FormFieldWrapper id="name" label="Pavadinimas" required :error="form.errors.name">
+      <FormFieldWrapper id="name" :label="$t('forms.fields.name')" required :error="form.errors.name">
         <MultiLocaleInput v-model:input="form.name" />
       </FormFieldWrapper>
       <div class="space-y-2">
         <div class="inline-flex items-center gap-2">
-          <Label for="description">Aprašymas</Label>
+          <Label for="description">{{ $t('forms.fields.description') }}</Label>
           <span class="text-red-500">*</span>
           <SimpleLocaleButton v-model:locale="locale" />
         </div>
@@ -38,7 +37,7 @@
           :empty-text="$t('Nerasta institucijų')"
         />
       </FormFieldWrapper>
-      <FormFieldWrapper id="start_time" label="Preliminari mokymų pradžia" required :error="form.errors.start_time">
+      <FormFieldWrapper id="start_time" :label="$t('forms.fields.training_start_time')" required :error="form.errors.start_time">
         <DateTimePicker v-model="form.start_time" :hour-range="[8, 22]" :minute-step="5" />
       </FormFieldWrapper>
     </FormElement>

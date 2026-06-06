@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexInstitutionRequest;
+use App\Http\Requests\ReorderDutiesRequest;
 use App\Http\Requests\StoreInstitutionRequest;
 use App\Http\Requests\UpdateInstitutionRequest; // Create this request class
 use App\Http\Traits\HasTanstackTables;
@@ -328,12 +329,19 @@ class InstitutionController extends AdminController
      *
      * @return RedirectResponse
      */
-    public function reorderDuties(Request $request)
+    public function reorderDuties(ReorderDutiesRequest $request)
     {
-        foreach ($request->duties as $duty) {
-            $dutyModel = Duty::find($duty['id']);
-            $dutyModel->order = $duty['order'];
-            $dutyModel->save();
+        $duties = collect($request->validated('duties'));
+
+        $dutyModels = Duty::whereIn('id', $duties->pluck('id'))->get()->keyBy('id');
+
+        foreach ($duties as $duty) {
+            $dutyModel = $dutyModels->get($duty['id']);
+
+            if ($dutyModel) {
+                $dutyModel->order = $duty['order'];
+                $dutyModel->save();
+            }
         }
 
         return back()->with('success', 'Pareigų tvarka sėkmingai atnaujinta!');

@@ -111,7 +111,8 @@ describe('FormForm.vue', () => {
     it('displays registration count', () => {
       wrapper = createWrapper();
 
-      expect(wrapper.text()).toContain('Registracijų skaičius: 0');
+      // $t is mocked to return the key, so assert the i18n key renders.
+      expect(wrapper.text()).toContain('forms.helpers.registrations_count');
     });
   });
 

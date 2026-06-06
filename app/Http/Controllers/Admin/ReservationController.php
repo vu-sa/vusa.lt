@@ -52,9 +52,7 @@ class ReservationController extends AdminController
         $reservations = $query->paginate($request->input('per_page', 20))
             ->withQueryString();
 
-        $resources = Resource::withWhereHas('tenant', function ($query) {
-            $query->whereIn('id', $this->authorizer->getTenants()->pluck('id'));
-        });
+        $allowedTenantIds = $this->authorizer->getTenants()->pluck('id');
 
         return $this->inertiaResponse('Admin/Reservations/IndexReservation', [
             'reservations' => [
@@ -70,7 +68,9 @@ class ReservationController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $request->getSorting(),
-            'activeReservations' => $resources->with('reservations.resources.tenant', 'reservations.users')->get()->pluck('reservations')->flatten()->unique('id')->values(),
+            'activeReservations' => Reservation::whereHas('resources', function ($query) use ($allowedTenantIds) {
+                $query->whereIn('resources.tenant_id', $allowedTenantIds);
+            })->with(['resources.tenant', 'users'])->get(),
         ]);
     }
 

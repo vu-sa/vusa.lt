@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Tenant;
@@ -10,6 +11,53 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->tenant = Tenant::factory()->create();
+});
+
+describe('reorderDuties', function () {
+    beforeEach(function () {
+        $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    });
+
+    test('persists the new order for each duty in a single batch', function () {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+        $dutyA = Duty::factory()->create(['institution_id' => $institution->id, 'order' => 1]);
+        $dutyB = Duty::factory()->create(['institution_id' => $institution->id, 'order' => 2]);
+
+        asUser($this->admin)->post(route('institutions.reorderDuties'), [
+            'duties' => [
+                ['id' => $dutyA->id, 'order' => 5],
+                ['id' => $dutyB->id, 'order' => 3],
+            ],
+        ])->assertRedirect();
+
+        expect($dutyA->fresh()->order)->toBe(5);
+        expect($dutyB->fresh()->order)->toBe(3);
+    });
+
+    test('a user without institution update permission cannot reorder duties', function () {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+        $duty = Duty::factory()->create(['institution_id' => $institution->id, 'order' => 1]);
+
+        $plainUser = makeUser($this->tenant);
+
+        asUser($plainUser)->post(route('institutions.reorderDuties'), [
+            'duties' => [['id' => $duty->id, 'order' => 9]],
+        ])->assertStatus(403);
+
+        expect($duty->fresh()->order)->toBe(1);
+    });
+
+    test('cannot reorder duties of an institution in another tenant', function () {
+        $otherTenant = Tenant::factory()->create();
+        $otherInstitution = Institution::factory()->create(['tenant_id' => $otherTenant->id]);
+        $otherDuty = Duty::factory()->create(['institution_id' => $otherInstitution->id, 'order' => 1]);
+
+        asUser($this->admin)->post(route('institutions.reorderDuties'), [
+            'duties' => [['id' => $otherDuty->id, 'order' => 9]],
+        ])->assertStatus(403);
+
+        expect($otherDuty->fresh()->order)->toBe(1);
+    });
 });
 
 describe('unauthorized access', function () {

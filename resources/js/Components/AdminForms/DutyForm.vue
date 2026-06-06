@@ -34,7 +34,7 @@
         </FormFieldWrapper>
 
         <div class="grid gap-4 lg:grid-cols-2">
-          <FormFieldWrapper id="institution_id" label="Institucija" :error="form.errors.institution_id">
+          <FormFieldWrapper id="institution_id" :label="$t('forms.fields.institution')" :error="form.errors.institution_id">
             <SingleSelect
               v-model="selectedInstitution"
               :options="assignableInstitutions"
@@ -57,10 +57,10 @@
           </FormFieldWrapper>
         </div>
 
-        <FormFieldWrapper id="contacts_grouping" label="Kontaktų grupavimas" :error="form.errors.contacts_grouping">
+        <FormFieldWrapper id="contacts_grouping" :label="$t('forms.fields.contacts_grouping')" :error="form.errors.contacts_grouping">
           <Select v-model="form.contacts_grouping">
             <SelectTrigger>
-              <SelectValue placeholder="Pasirinkite grupavimo būdą" />
+              <SelectValue :placeholder="$t('forms.placeholders.select_grouping')" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">
@@ -216,14 +216,14 @@
             </p>
           </div>
         </template>
-        <FormFieldWrapper id="types" label="Pareigybės tipas" :error="form.errors.types">
+        <FormFieldWrapper id="types" :label="$t('forms.fields.duty_type')" :error="form.errors.types">
           <MultiSelect v-model="selectedTypes" :options="dutyTypes" label-field="title" value-field="id"
-            placeholder="Pasirinkti kategoriją..." />
+            :placeholder="$t('forms.placeholders.select_category')" />
         </FormFieldWrapper>
 
-        <FormFieldWrapper id="roles" label="Administracinė vusa.lt rolė" :error="form.errors.roles">
+        <FormFieldWrapper id="roles" :label="$t('forms.fields.admin_role')" :error="form.errors.roles">
           <MultiSelect v-model="selectedRoles" :options="rolesOptions" label-field="label" value-field="value"
-            :disabled="!$page.props.auth?.user.isSuperAdmin" placeholder="Be rolės..." />
+            :disabled="!$page.props.auth?.user.isSuperAdmin" :placeholder="$t('forms.placeholders.no_role')" />
         </FormFieldWrapper>
 
         <FormFieldWrapper id="ex_officio_target_duty_ids" :label="$t('forms.fields.ex_officio_duties')" :error="form.errors.ex_officio_target_duty_ids">
@@ -289,7 +289,7 @@
         <!-- User filter toggle — only shown to cross-tenant admins (owning admins have it in the members section above) -->
         <template v-if="!canEditDuty">
           <div class="inline-flex items-center gap-2 text-sm">
-            <Switch id="show-all-users-tenant" v-model:checked="showAllUsers" />
+            <Switch id="show-all-users-tenant" v-model="showAllUsers" />
             <Label for="show-all-users-tenant" class="cursor-pointer font-normal">{{ $t('forms.fields.show_all_users') }}</Label>
           </div>
           <p v-if="!showAllUsers" class="text-xs text-muted-foreground">
