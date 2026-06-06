@@ -42,6 +42,8 @@ return [
     'commented_on' => 'commented on',
     'changed_status_on' => 'changed status on',
     'left_comment_on' => 'left a comment on',
+    'mentioned_you_in_comment' => 'mentioned you in a comment on',
+    'started_poll_on' => 'started a poll on',
 
     // Assignment notifications
     'assigned_to_resource_title' => 'Assigned to: :resource',

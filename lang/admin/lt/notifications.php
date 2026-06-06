@@ -42,6 +42,8 @@ return [
     'commented_on' => 'pakomentavo',
     'changed_status_on' => 'pakeitė statusą',
     'left_comment_on' => 'paliko komentarą',
+    'mentioned_you_in_comment' => 'paminėjo jus komentare',
+    'started_poll_on' => 'pradėjo apklausą',
 
     // Assignment notifications
     'assigned_to_resource_title' => 'Priskirta prie: :resource',

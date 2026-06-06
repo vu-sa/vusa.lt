@@ -223,9 +223,9 @@ class MeetingController extends AdminController
                 $query->with('users:id,name,email,profile_photo_path', 'taskable');
             },
             'agendaItems' => function ($query) {
-                $query->with('votes')->orderBy('order');
+                $query->with('votes')->withCount('comments')->withExists('note as has_notes')->orderBy('order');
             },
-        ]);
+        ])->loadCount('comments');
 
         // Append is_public, is_joint and file status now that relations are loaded (avoids N+1)
         $meeting->append(['is_public', 'is_joint', 'has_protocol', 'has_report']);

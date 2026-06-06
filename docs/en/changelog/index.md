@@ -7,6 +7,18 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.15 — Polls and Notifications (2026-06-02) {#v1-15}
+
+- ⭐ **Polls in discussions** — you can now create a poll in the comments: single- or multiple-choice options, ready-made templates (Yes / No, Approve / Reject…), and an optional voting deadline. Voting happens in place, you can see who voted for what, and a reply under a poll is badged with its author's choice — so you can see why they voted that way
+- ⭐ **Mention notifications** — mentioning someone in a comment (@) now notifies them
+- ✨ **More focused discussion notifications** — agenda item comments now reach the meeting's representatives, and replies notify only the thread's participants rather than the whole group
+
+## v1.14 — Discussions (2026-06-02) {#v1-14}
+
+- ⭐ **Discussions** — agenda items, meetings and institutions now have a comments area: threaded replies, reactions, @mentions, and the ability to mark a question as resolved. Comments appear in real time without a page reload
+- ✨ **Broader agenda item access** — coordinators and related-institution representatives can now open an agenda item page in read-only mode and take part in the discussion, even without edit rights
+- ✨ **Comment and note indicators in lists** — the meeting agenda list shows, per item, whether it has comments and notes
+
 ## v1.13 — Unified Search (2026-06-02) {#v1-13}
 
 - ⭐ **Unified search** — a new search page that searches news, pages, documents, events, institutions and meetings at once; results are grouped by content type and ordered by relevance, with a "load more" per group

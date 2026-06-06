@@ -141,7 +141,7 @@ trait NotificationTestHelpers
             'commentable_type' => ReservationResource::class,
             'commentable_id' => $reservationResource->id,
             'user_id' => $commenter->id,
-            'comment' => 'Test comment content',
+            'body' => 'Test comment content',
         ]);
     }
 

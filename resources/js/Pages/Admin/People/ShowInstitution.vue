@@ -115,6 +115,12 @@
         <TabsTrigger value="related" :disabled="relatedInstitutionCount === 0">
           {{ $t('Susijusios institucijos') }}
         </TabsTrigger>
+        <TabsTrigger value="discussion">
+          {{ $t('Diskusija') }}
+          <span v-if="institution.comments_count" class="ml-1.5 text-xs opacity-70">
+            ({{ institution.comments_count }})
+          </span>
+        </TabsTrigger>
       </TabsList>
 
       <TabsContent value="overview" class="space-y-6">
@@ -301,6 +307,10 @@
       </TabsContent>
 
       <!-- Related Institutions Tab -->
+      <TabsContent value="discussion" class="space-y-6">
+        <DiscussionPanel commentable-type="institution" :commentable-id="institution.id" />
+      </TabsContent>
+
       <TabsContent value="related" class="space-y-6">
         <RelatedInstitutions :institution />
       </TabsContent>
@@ -353,6 +363,7 @@ import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 
 // UI Components
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import DiscussionPanel from '@/Components/Discussions/DiscussionPanel.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';

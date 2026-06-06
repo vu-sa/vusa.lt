@@ -4,9 +4,11 @@ namespace App\Models\Pivots;
 
 use App\Enums\AgendaItemType;
 use App\Models\AgendaItemNote;
+use App\Models\Comment;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Tenant;
+use App\Models\Traits\HasComments;
 use App\Models\Vote;
 use App\Services\VoteStatisticsCalculator;
 use Database\Factories\AgendaItemFactory;
@@ -40,6 +42,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $description
  * @property string|null $start_time
  * @property-read Collection<int, Activity> $activities
+ * @property-read Collection<int, Comment> $comments
  * @property-read Collection<int, Vote> $additionalVotes
  * @property-read Collection<int, Institution> $institutions
  * @property-read Vote|null $mainVote
@@ -57,7 +60,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  */
 class AgendaItem extends Pivot
 {
-    use HasFactory, HasRelationships, HasUlids, LogsActivity, Searchable;
+    use HasComments, HasFactory, HasRelationships, HasUlids, LogsActivity, Searchable;
 
     protected $table = 'agenda_items';
 

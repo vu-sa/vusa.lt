@@ -119,7 +119,7 @@ describe('thread muting', function () {
             'commentable_type' => ReservationResource::class,
             'commentable_id' => $reservationResource->id,
             'user_id' => $commenter->id,
-            'comment' => 'Test',
+            'body' => 'Test',
         ]);
 
         event(new CommentPosted($comment));
@@ -148,7 +148,7 @@ describe('thread muting', function () {
             'commentable_type' => ReservationResource::class,
             'commentable_id' => $reservationResource2->id,
             'user_id' => $commenter->id,
-            'comment' => 'Test on unmuted thread',
+            'body' => 'Test on unmuted thread',
         ]);
 
         event(new CommentPosted($comment));

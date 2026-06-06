@@ -148,7 +148,7 @@ class InstitutionController extends AdminController
                         'agendaItems.votes',
                     ])->orderBy('start_time', 'asc');
             },
-        ])->load('activities.causer');
+        ])->load('activities.causer')->loadCount('comments');
 
         // Append public visibility flags now that types are loaded (avoids N+1)
         $institution->append('has_public_meetings');

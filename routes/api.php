@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\AgendaItemNoteController;
+use App\Http\Controllers\Api\Admin\CommentApiController;
+use App\Http\Controllers\Api\Admin\CommentPollVoteApiController;
+use App\Http\Controllers\Api\Admin\CommentReactionApiController;
 use App\Http\Controllers\Api\Admin\FileApiController;
 use App\Http\Controllers\Api\Admin\ImpersonateApiController;
 use App\Http\Controllers\Api\Admin\InstitutionSubscriptionApiController;
@@ -101,6 +104,20 @@ Route::prefix('v1')->name('v1.')->group(function () {
         // Agenda item collaborative notes ("Atstovų pastabos")
         Route::get('agenda-items/{agendaItem}/note', [AgendaItemNoteController::class, 'show'])->name('agendaItems.note.show');
         Route::put('agenda-items/{agendaItem}/note', [AgendaItemNoteController::class, 'update'])->name('agendaItems.note.update');
+
+        // Discussions (polymorphic comment threads). Read/write follow the
+        // parent's `view` ability. {commentableType} is resolved through the
+        // App\Support\Commentables allowlist.
+        Route::get('discussions/feed', [CommentApiController::class, 'feed'])->name('comments.feed');
+        Route::get('discussions/{commentableType}/{commentableId}', [CommentApiController::class, 'index'])->name('comments.index');
+        Route::post('discussions/{commentableType}/{commentableId}/comments', [CommentApiController::class, 'store'])->name('comments.store');
+        Route::get('discussions/{commentableType}/{commentableId}/mentionables', [CommentApiController::class, 'mentionables'])->name('comments.mentionables');
+        Route::patch('comments/{comment}', [CommentApiController::class, 'update'])->name('comments.update');
+        Route::delete('comments/{comment}', [CommentApiController::class, 'destroy'])->name('comments.destroy');
+        Route::post('comments/{comment}/resolve', [CommentApiController::class, 'resolve'])->name('comments.resolve');
+        Route::delete('comments/{comment}/resolve', [CommentApiController::class, 'unresolve'])->name('comments.unresolve');
+        Route::put('comments/{comment}/reactions', [CommentReactionApiController::class, 'toggle'])->name('comments.reactions.toggle');
+        Route::put('comments/{comment}/poll/votes', [CommentPollVoteApiController::class, 'toggle'])->name('comments.poll.votes.toggle');
 
         // Files
         Route::get('files', [FileApiController::class, 'index'])->name('files.index');

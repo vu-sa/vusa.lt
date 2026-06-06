@@ -161,6 +161,11 @@
           :previous-meeting="previousMeeting"
           :next-meeting="nextMeeting"
         />
+
+        <!-- Meeting-level discussion lives directly under the agenda. -->
+        <section class="border-t pt-6 dark:border-zinc-800">
+          <DiscussionPanel commentable-type="meeting" :commentable-id="meeting.id" />
+        </section>
       </TabsContent>
 
       <!-- Files Tab -->
@@ -373,6 +378,7 @@ import {
 import ShowPageHero from '@/Components/Hero/ShowPageHero.vue';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import MeetingAgendaList from '@/Components/Meetings/MeetingAgendaList.vue';
+import DiscussionPanel from '@/Components/Discussions/DiscussionPanel.vue';
 import MeetingNavigationCards from '@/Components/Meetings/MeetingNavigationCards.vue';
 import AddAgendaItemForm from '@/Components/AdminForms/AddAgendaItemForm.vue';
 import AgendaItemsForm from '@/Components/AdminForms/Special/AgendaItemsForm.vue';
