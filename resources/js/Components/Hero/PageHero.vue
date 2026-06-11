@@ -1,6 +1,6 @@
 <template>
   <section
-    :class="cn('relative mb-10 overflow-hidden rounded-lg bg-gradient-to-br from-primary/10 via-primary/5 to-background px-8 py-7 shadow-sm dark:from-zinc-800 dark:via-zinc-800/50 dark:to-zinc-900 dark:shadow-zinc-900/20', props.class)"
+    :class="cn('relative mb-10 overflow-hidden rounded-lg bg-gradient-to-br from-primary/10 via-primary/5 to-background px-8 py-7 dark:from-zinc-800 dark:via-zinc-800/50 dark:to-zinc-900', props.class)"
     data-slot="page-hero">
     <div class="flex items-start justify-between gap-4">
       <div>

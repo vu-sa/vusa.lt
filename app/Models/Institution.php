@@ -49,6 +49,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property int $is_active
  * @property int $meeting_periodicity_days
  * @property string $contacts_layout
+ * @property string|null $selection_method Default selection method for the institution's duties
+ * @property string|null $appointed_by Default appointing body for the institution's duties
+ * @property string|null $term_length Default term length for the institution's duties
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
@@ -110,7 +113,7 @@ class Institution extends Model implements SharepointFileableContract
     // Note: has_public_meetings is NOT auto-appended due to performance.
     // Append it explicitly where needed: $institution->append('has_public_meetings')
 
-    public $translatable = ['name', 'short_name', 'description', 'address'];
+    public $translatable = ['name', 'short_name', 'description', 'address', 'appointed_by', 'term_length'];
 
     public function getActivitylogOptions(): LogOptions
     {

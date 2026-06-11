@@ -9,6 +9,7 @@ use App\Http\Requests\ReorderDutiesRequest;
 use App\Http\Requests\StoreInstitutionRequest;
 use App\Http\Requests\UpdateInstitutionRequest; // Create this request class
 use App\Http\Traits\HasTanstackTables;
+use App\Models\Comment;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Meeting;
@@ -134,7 +135,7 @@ class InstitutionController extends AdminController
         $this->handleAuthorization('view', $institution);
 
         // TODO: only show current_users
-        $institution->load('tenant', 'duties.current_users')->load([
+        $institution->load('tenant', 'types', 'duties.current_users')->load([
             'tasks' => function ($query) {
                 $query->with('users:id,name,email,profile_photo_path', 'taskable');
             },
@@ -210,6 +211,27 @@ class InstitutionController extends AdminController
                 ];
             });
 
+        // Latest root comments for the overview discussion preview (bodies are
+        // not otherwise loaded — the DiscussionPanel fetches its own data via API).
+        $recentComments = $institution->comments()
+            ->roots()
+            ->withCount('replies')
+            ->latest()
+            ->limit(3)
+            ->get()
+            ->map(fn (Comment $comment) => [
+                'id' => $comment->id,
+                'body' => $comment->body,
+                'kind' => $comment->kind->value,
+                'created_at' => $comment->created_at->toISOString(),
+                'replies_count' => $comment->replies_count,
+                'user' => $comment->user ? [
+                    'id' => $comment->user->id,
+                    'name' => $comment->user->name,
+                    'profile_photo_path' => $comment->user->profile_photo_path,
+                ] : null,
+            ]);
+
         // Get related institutions as flat list with metadata (cached)
         $relatedInstitutionsFlat = RelationshipService::getRelatedInstitutionsCached($institution);
 
@@ -242,6 +264,7 @@ class InstitutionController extends AdminController
                 'sharepointPath' => $institution->tenant ? $institution->sharepoint_path() : null,
                 'lastMeeting' => $institution->lastMeeting(),
                 'allTasks' => $allTasks,
+                'recentComments' => $recentComments,
             ],
             'subscription' => $subscriptionStatus,
         ]);

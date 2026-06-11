@@ -44,6 +44,7 @@ return [
     'direction_outgoing' => 'Outgoing',
     'direction_incoming' => 'Incoming',
     'direction_sibling' => 'Sibling',
+    'related' => 'Related',
 
     // Authorization
     'authorized' => 'Authorized',

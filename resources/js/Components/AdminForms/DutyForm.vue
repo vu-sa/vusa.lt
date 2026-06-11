@@ -95,6 +95,61 @@
           </p>
         </div>
       </FormElement>
+
+      <FormElement>
+        <template #title>
+          {{ $t('Skyrimas ir atsakomybės') }}
+        </template>
+        <template #description>
+          {{ $t('Nurodykite, kaip užimama pareigybė ir kokios jos atsakomybės. Tušti laukai paveldimi iš institucijos.') }}
+        </template>
+
+        <FormFieldWrapper id="selection_method" :label="$t('Skyrimo būdas')" :error="form.errors.selection_method">
+          <Select v-model="form.selection_method">
+            <SelectTrigger>
+              <SelectValue :placeholder="$t('Paveldima iš institucijos')" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="option in selectionMethodOptions" :key="option.value" :value="option.value">
+                {{ option.label }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </FormFieldWrapper>
+
+        <div class="grid gap-4 lg:grid-cols-2">
+          <FormFieldWrapper id="appointed_by" :label="$t('Skiria')" :error="form.errors.appointed_by">
+            <MultiLocaleInput v-model:input="form.appointed_by" />
+          </FormFieldWrapper>
+          <FormFieldWrapper id="term_length" :label="$t('Kadencija')" :error="form.errors.term_length">
+            <MultiLocaleInput v-model:input="form.term_length" />
+          </FormFieldWrapper>
+        </div>
+
+        <div class="space-y-2">
+          <div class="inline-flex items-center gap-2">
+            <Label for="responsibilities">{{ $t('Atsakomybės') }}</Label>
+            <SimpleLocaleButton v-model:locale="locale" />
+          </div>
+          <Textarea
+            v-if="locale === 'lt'"
+            id="responsibilities"
+            v-model="form.responsibilities.lt"
+            :rows="4"
+            :placeholder="$t('Kiekviena atsakomybė nurodoma naujoje eilutėje')"
+          />
+          <Textarea
+            v-else
+            id="responsibilities"
+            v-model="form.responsibilities.en"
+            :rows="4"
+            :placeholder="$t('Kiekviena atsakomybė nurodoma naujoje eilutėje')"
+          />
+          <p v-if="form.errors.responsibilities" class="text-xs text-red-600 dark:text-red-400">
+            {{ form.errors.responsibilities }}
+          </p>
+        </div>
+      </FormElement>
     </template>
 
     <!-- Owning-tenant members — only when canEditDuty -->
@@ -376,6 +431,7 @@ import { NumberField } from '@/Components/ui/number-field';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { SingleSelect } from '@/Components/ui/single-select';
 import { Switch } from '@/Components/ui/switch';
+import { Textarea } from '@/Components/ui/textarea';
 import { TransferList } from '@/Components/ui/transfer-list';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/Components/ui/accordion';
 import { changeDutyNameEndings } from '@/Utils/String';
@@ -442,7 +498,17 @@ const initialFormData = {
     .map(u => u.id),
   ex_officio_target_duty_ids: props.duty.ex_officio_target_duties?.map(d => d.id) ?? [],
   assignable_tenants: initialAssignableTenantRows,
+  selection_method: (props.duty as any).selection_method ?? null,
+  appointed_by: (props.duty as any).appointed_by ?? { lt: '', en: '' },
+  term_length: (props.duty as any).term_length ?? { lt: '', en: '' },
+  responsibilities: (props.duty as any).responsibilities ?? { lt: '', en: '' },
 };
+
+const selectionMethodOptions = [
+  { value: 'elected', label: $t('Renkama') },
+  { value: 'delegated', label: $t('Deleguojama') },
+  { value: 'appointed', label: $t('Skiriama') },
+];
 
 const form = props.rememberKey
   ? useForm(props.rememberKey, initialFormData)

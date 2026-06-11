@@ -12,7 +12,7 @@
     </div>
     <TransitionGroup ref="el" tag="div">
       <div v-for="item in navigation" :key="item.id"
-        class="relative grid w-full grid-cols-[24px__1fr] gap-4 border border-zinc-300 p-3 shadow-xs first:rounded-t-lg last:rounded-b-lg dark:border-zinc-700/40 dark:bg-zinc-800/5">
+        class="relative grid w-full grid-cols-[24px__1fr] gap-4 border border-zinc-300 p-3 first:rounded-t-lg last:rounded-b-lg dark:border-zinc-700/40 dark:bg-zinc-800/5">
         <Button class="handle" style="height: 100%;" variant="ghost" size="sm">
           <IFluentReOrderDotsVertical24Regular />
         </Button>

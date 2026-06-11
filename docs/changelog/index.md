@@ -7,6 +7,15 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.17 — Atnaujintas pareigybės puslapis (2026-06-07) {#v1-17}
+
+- ⭐ **Naujas pareigybės puslapis** — pareigybės apžvalga pertvarkyta į vientisą skydelį: dabartiniai nariai, pareigų istorija pagal mokslo metus ir aprašymas su atsakomybėmis kairėje, o šone — skyrimo informacija, institucija, artimiausi posėdžiai, kitos institucijos pareigybės ir dokumentai
+- ⭐ **Skyrimo informacija** — galima nurodyti, kaip užimama pareigybė (renkama, deleguojama ar skiriama), kas ją skiria ir kokia kadencija; tušti laukai paveldimi iš institucijos numatytųjų nustatymų
+
+## v1.16 — Atnaujintas institucijos puslapis (2026-06-06) {#v1-16}
+
+- ✨ **Aiškesnis institucijos puslapis** — institucijos apžvalga pertvarkyta į vientisą skydelį: institucijos tipas ir vadovai matomi viršuje, o nariai, susitikimai, užduotys, diskusija ir susijusios institucijos sudėti į vienodo stiliaus korteles su nuorodomis į pilnus sąrašus
+
 ## v1.15 — Apklausos ir pranešimai (2026-06-02) {#v1-15}
 
 - ⭐ **Apklausos diskusijose** — komentaruose galima sukurti apklausą: vieno arba kelių pasirinkimų variantai, paruošti šablonai (Taip / Ne, Pritarti / Atmesti…) ir nebūtinas balsavimo terminas. Balsuojama vietoje, matyti, kas už kurį variantą balsavo, o atsakymas po apklausa paženklinamas balsuotojo pasirinkimu — taip aišku, kodėl balsuota būtent taip

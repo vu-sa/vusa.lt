@@ -44,6 +44,7 @@ return [
     'direction_outgoing' => 'Išeinantis',
     'direction_incoming' => 'Įeinantis',
     'direction_sibling' => 'Lygiagretus',
+    'related' => 'Susijusi',
 
     // Authorization
     'authorized' => 'Su prieiga',

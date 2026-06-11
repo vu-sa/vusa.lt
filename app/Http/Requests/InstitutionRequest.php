@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\DutySelectionMethod;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class InstitutionRequest extends FormRequest
 {
@@ -35,6 +37,9 @@ class InstitutionRequest extends FormRequest
             'contacts_layout' => 'required|in:aside,below',
             'types' => 'nullable|array',
             'meeting_periodicity_days' => 'nullable|integer|min:1|max:365',
+            'selection_method' => ['nullable', Rule::enum(DutySelectionMethod::class)],
+            'appointed_by' => 'nullable|array',
+            'term_length' => 'nullable|array',
         ];
     }
 }

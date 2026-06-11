@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Inertia\Testing\AssertableInertia;
 use Spatie\Permission\PermissionRegistrar;
 
 uses(RefreshDatabase::class);
@@ -630,5 +631,73 @@ describe('duty creation institution-tenant scoping', function () {
         $response->assertSessionDoesntHaveErrors('institution_id');
         $response->assertRedirect();
         $this->assertDatabaseHas('duties', ['institution_id' => $foreignInstitution->id]);
+    });
+});
+
+describe('show page', function () {
+    test('returns the dashboard payload with appointment, meetings and sibling duties', function () {
+        $institution = $this->dutyManagerDuty->institution;
+        $institution->update([
+            'selection_method' => 'delegated',
+            'appointed_by' => ['lt' => 'VU Senatas', 'en' => 'VU Senate'],
+            'term_length' => ['lt' => '1 metų kadencija', 'en' => '1 year term'],
+        ]);
+
+        // A sibling duty in the same institution.
+        Duty::factory()->for($institution)->create([
+            'name' => ['lt' => 'Kita pareiga', 'en' => 'Other duty'],
+        ]);
+
+        $response = asUser($this->dutyManager)->get(route('duties.show', $this->dutyManagerDuty));
+
+        $response->assertStatus(200)
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('Admin/People/ShowDuty')
+                ->has('duty.appointment')
+                ->where('duty.appointment.selection_method', 'delegated')
+                ->where('duty.appointment.appointed_by', 'VU Senatas')
+                ->has('duty.other_duties', 1)
+            );
+    });
+
+    test('duty appointment values override the institution defaults', function () {
+        $institution = $this->dutyManagerDuty->institution;
+        $institution->update([
+            'selection_method' => 'delegated',
+            'appointed_by' => ['lt' => 'Institucijos numatytas', 'en' => 'Institution default'],
+        ]);
+
+        $this->dutyManagerDuty->update([
+            'selection_method' => 'elected',
+            'appointed_by' => ['lt' => 'Pareigybės reikšmė', 'en' => 'Duty value'],
+        ]);
+
+        $response = asUser($this->dutyManager)->get(route('duties.show', $this->dutyManagerDuty));
+
+        $response->assertStatus(200)
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('duty.appointment.selection_method', 'elected')
+                ->where('duty.appointment.appointed_by', 'Pareigybės reikšmė')
+            );
+    });
+
+    test('persists appointment fields and responsibilities on update', function () {
+        $response = asUser($this->dutyManager)->put(route('duties.update', $this->dutyManagerDuty), [
+            'name' => ['lt' => 'Atnaujinta', 'en' => 'Updated'],
+            'institution_id' => $this->dutyManagerDuty->institution_id,
+            'places_to_occupy' => 1,
+            'contacts_grouping' => 'none',
+            'selection_method' => 'appointed',
+            'appointed_by' => ['lt' => 'Dekanas', 'en' => 'Dean'],
+            'term_length' => ['lt' => '2 metai', 'en' => '2 years'],
+            'responsibilities' => ['lt' => "Pirma\nAntra", 'en' => "First\nSecond"],
+        ]);
+
+        $response->assertSessionDoesntHaveErrors();
+
+        $this->dutyManagerDuty->refresh();
+        expect($this->dutyManagerDuty->selection_method)->toBe('appointed');
+        expect($this->dutyManagerDuty->getTranslation('appointed_by', 'lt'))->toBe('Dekanas');
+        expect($this->dutyManagerDuty->getTranslation('responsibilities', 'en'))->toBe("First\nSecond");
     });
 });

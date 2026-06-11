@@ -99,7 +99,7 @@
         <TabsList class="h-10 gap-1 rounded-xl bg-zinc-100/80 p-1 dark:bg-zinc-800/60">
           <TabsTrigger
             value="agenda"
-            class="rounded-lg px-3.5 data-[state=active]:shadow-sm data-[state=active]:font-semibold"
+            class="rounded-lg px-3.5 data-[state=active]:font-semibold"
           >
             {{ $t('Darbotvarkė') }}
             <span v-if="meeting.agenda_items?.length" class="ml-1.5 text-xs font-normal text-zinc-400 dark:text-zinc-500">
@@ -108,13 +108,13 @@
           </TabsTrigger>
           <TabsTrigger
             value="files"
-            class="rounded-lg px-3.5 data-[state=active]:shadow-sm data-[state=active]:font-semibold"
+            class="rounded-lg px-3.5 data-[state=active]:font-semibold"
           >
             {{ $t('Failai') }}
           </TabsTrigger>
           <TabsTrigger
             value="tasks"
-            class="rounded-lg px-3.5 data-[state=active]:shadow-sm data-[state=active]:font-semibold"
+            class="rounded-lg px-3.5 data-[state=active]:font-semibold"
           >
             {{ $t('Užduotys') }}
             <span v-if="meeting.tasks?.length" class="ml-1.5 text-xs font-normal text-zinc-400 dark:text-zinc-500">

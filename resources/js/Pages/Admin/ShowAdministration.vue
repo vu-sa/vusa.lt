@@ -70,7 +70,7 @@
           >
             <Link :href="item.href" class="block h-full w-full">
               <div
-                class="flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-linear-to-br from-white to-white p-4 text-left text-sm leading-4 text-zinc-700 shadow-xs transition-all duration-300 group-hover:shadow-md group-hover:ring-1 group-hover:ring-primary/20 dark:border-0 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300 dark:group-hover:shadow-white/10"
+                class="flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-linear-to-br from-white to-white p-4 text-left text-sm leading-4 text-zinc-700 transition-all duration-300 group-hover:ring-1 group-hover:ring-primary/20 dark:border-0 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300"
               >
                 <component :is="item.icon" width="28" height="28" />
                 {{ item.title }}
@@ -109,7 +109,7 @@
         >
           <Link :href="item.href" class="block h-full w-full">
             <div
-              class="flex w-full flex-col gap-3 rounded-md border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 p-4 text-left text-sm leading-4 text-zinc-700 shadow-sm transition-all duration-300 group-hover:border-primary/40 group-hover:shadow-lg group-hover:ring-2 group-hover:ring-primary/20 dark:border-primary/30 dark:from-primary/10 dark:to-primary/20 dark:text-zinc-200 dark:group-hover:border-primary/50"
+              class="flex w-full flex-col gap-3 rounded-md border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 p-4 text-left text-sm leading-4 text-zinc-700 transition-all duration-300 group-hover:border-primary/40 group-hover:ring-2 group-hover:ring-primary/20 dark:border-primary/30 dark:from-primary/10 dark:to-primary/20 dark:text-zinc-200 dark:group-hover:border-primary/50"
             >
               <div class="flex items-start justify-between">
                 <component
@@ -160,7 +160,7 @@
           >
             <Link :href="item.href" class="block h-full w-full">
               <div
-                class="flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-linear-to-br from-white to-white p-4 text-left text-sm leading-4 text-zinc-700 shadow-xs transition-all duration-300 group-hover:shadow-md group-hover:ring-1 group-hover:ring-primary/20 dark:border-0 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300 dark:group-hover:shadow-white/10"
+                class="flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-linear-to-br from-white to-white p-4 text-left text-sm leading-4 text-zinc-700 transition-all duration-300 group-hover:ring-1 group-hover:ring-primary/20 dark:border-0 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300"
               >
                 <component :is="item.icon" width="28" height="28" />
                 {{ item.title }}

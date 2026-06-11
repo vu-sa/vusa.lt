@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Comment;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Meeting;
@@ -153,6 +154,30 @@ describe('authorized access', function () {
                 ->has('institution.allTasks', 1)
                 ->where('institution.allTasks.0.taskable.name', 'Test Meeting Title')
                 ->where('institution.allTasks.0.taskable.type', 'Meeting')
+            );
+    });
+
+    test('exposes institution type and recent comments for the overview', function () {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        $type = Type::factory()->create(['model_type' => Institution::class]);
+        $institution->types()->attach($type);
+
+        Comment::factory()->create([
+            'commentable_type' => Institution::class,
+            'commentable_id' => $institution->id,
+            'body' => '<p>Hello overview</p>',
+        ]);
+
+        $response = asUser($this->admin)->get(route('institutions.show', $institution));
+
+        $response->assertStatus(200)
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/People/ShowInstitution')
+                ->has('institution.types', 1)
+                ->has('institution.recentComments', 1)
+                ->where('institution.recentComments.0.body', '<p>Hello overview</p>')
+                ->where('institution.recentComments.0.replies_count', 0)
             );
     });
 

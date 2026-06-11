@@ -1,0 +1,9 @@
+export { default as DutyHolderCard } from './DutyHolderCard.vue';
+export { default as DutyCurrentHoldersCard } from './DutyCurrentHoldersCard.vue';
+export { default as DutyAboutCard } from './DutyAboutCard.vue';
+export { default as DutyLineageCard } from './DutyLineageCard.vue';
+export { default as DutyAppointmentCard } from './DutyAppointmentCard.vue';
+export { default as DutyMeetingMiniCard } from './DutyMeetingMiniCard.vue';
+export { default as DutyOtherDutiesCard } from './DutyOtherDutiesCard.vue';
+export { default as DutyInstitutionCard } from './DutyInstitutionCard.vue';
+export { default as DutyDocumentsPreview } from './DutyDocumentsPreview.vue';

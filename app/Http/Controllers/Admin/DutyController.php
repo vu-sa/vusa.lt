@@ -151,9 +151,35 @@ class DutyController extends AdminController
 
         $duty->load('institution.tenant', 'users', 'activities.causer', 'types');
 
+        // Sibling duties for the sidebar (queried separately to keep the payload lean).
+        $otherDuties = $duty->institution
+            ? $duty->institution->duties()
+                ->where('id', '!=', $duty->id)
+                ->orderBy('order')
+                ->with('current_users:id,name,profile_photo_path')
+                ->get(['id', 'name', 'institution_id', 'places_to_occupy', 'order'])
+                ->map(fn (Duty $sibling) => $sibling->toArray())
+                ->values()
+            : collect();
+
+        // Next / last meeting (HasManyDeep through the institution).
+        $nextMeeting = $duty->meetings()
+            ->where('start_time', '>=', now())
+            ->orderBy('start_time')
+            ->first(['meetings.id', 'meetings.title', 'meetings.start_time']);
+
+        $lastMeeting = $duty->meetings()
+            ->where('start_time', '<', now())
+            ->orderByDesc('start_time')
+            ->first(['meetings.id', 'meetings.title', 'meetings.start_time']);
+
         return $this->inertiaResponse('Admin/People/ShowDuty', [
             'duty' => array_merge($duty->toArray(), [
                 'sharepointPath' => $duty->institution?->tenant ? $duty->sharepoint_path() : null,
+                'appointment' => $duty->resolveAppointment(),
+                'other_duties' => $otherDuties,
+                'next_meeting' => $nextMeeting?->toArray(),
+                'last_meeting' => $lastMeeting?->toArray(),
             ]),
         ]);
     }
@@ -232,7 +258,7 @@ class DutyController extends AdminController
         $this->handleAuthorization('update', $duty);
 
         DB::transaction(function () use ($request, $duty) {
-            $duty->update($request->only('name', 'description', 'email', 'places_to_occupy', 'contacts_grouping'));
+            $duty->update($request->only('name', 'description', 'email', 'places_to_occupy', 'contacts_grouping', 'selection_method', 'appointed_by', 'term_length', 'responsibilities'));
 
             // Only manage owning-tenant reps (tenant_id IS NULL) via the TransferList.
             $owningTenantCurrentIds = Dutiable::where('duty_id', $duty->id)

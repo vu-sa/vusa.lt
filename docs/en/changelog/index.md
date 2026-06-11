@@ -7,6 +7,15 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.17 — Redesigned duty page (2026-06-07) {#v1-17}
+
+- ⭐ **New duty page** — the duty overview is reorganised into a single dashboard: current holders, lineage grouped by academic year, and the description with responsibilities on the left, while appointment details, the institution, upcoming meetings, other duties in the institution and documents sit in the sidebar
+- ⭐ **Appointment details** — you can now record how a duty is filled (elected, delegated or appointed), who appoints it and its term length; empty fields are inherited from the institution defaults
+
+## v1.16 — Redesigned institution page (2026-06-06) {#v1-16}
+
+- ✨ **Clearer institution page** — the institution overview is reorganised into a single dashboard: the institution type and managers sit at the top, while members, meetings, tasks, discussion and related institutions are laid out in consistent cards that link straight to their full lists
+
 ## v1.15 — Polls and Notifications (2026-06-02) {#v1-15}
 
 - ⭐ **Polls in discussions** — you can now create a poll in the comments: single- or multiple-choice options, ready-made templates (Yes / No, Approve / Reject…), and an optional voting deadline. Voting happens in place, you can see who voted for what, and a reply under a poll is badged with its author's choice — so you can see why they voted that way

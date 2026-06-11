@@ -1,6 +1,6 @@
 <template>
   <SmartLink :href="institutionUrl" class="plain">
-    <Card class="border shadow-xs transition-all duration-300 hover:scale-105 hover:shadow-md dark:border-zinc-200/20"
+    <Card class="border transition-all duration-300 hover:scale-105 hover:border-primary/40 hover:bg-accent/40 dark:border-zinc-200/20"
       as="button">
       <!-- Cover Image Section with Placeholder -->
       <div class="relative h-32 w-full">
