@@ -65,11 +65,36 @@ Custom Pest expectations:
 expect($response->status())->toBeSecureResponse();
 expect($response->status())->toRequireAuth();
 expect($content)->toNotExposePassword();
+
+// Translatable models (Spatie HasTranslations)
+expect($model)->toHaveTranslations('name');          // array with lt + en keys
+expect($model)->toHaveTranslations('name', ['lt']);  // only the locales you pass
+expect($model)->toHaveTranslation('name', 'lt');     // a specific locale is a non-empty string
 ```
 
 ## Factories
 
-Always use factories. For translatable fields, supply both locales:
+Always use factories. For translatable fields, supply both locales. Factories with throwaway
+translatable values can use the `HasTranslatableFactory` concern instead of array literals:
+
+```php
+use Database\Factories\Concerns\HasTranslatableFactory;
+
+class CategoryFactory extends Factory
+{
+    use HasTranslatableFactory;
+
+    public function definition(): array
+    {
+        return [
+            'name'        => $this->translatable('Lietuviškas', 'English'), // explicit per locale
+            'description' => $this->translatable(),                          // faked lt + en sentences
+        ];
+    }
+}
+```
+
+Plain array literals remain fine when the content is fixed for an assertion:
 
 ```php
 News::factory()->create([
@@ -77,6 +102,9 @@ News::factory()->create([
     'content' => ['lt' => '…', 'en' => '…'],
 ]);
 ```
+
+To validate translatable input in Form Requests, use the `App\Rules\TranslatableField` rule
+(`new TranslatableField(['lt'])` for "at least one locale", `requireAll: true` for "all locales").
 
 For pivots, factories live in `database/factories/Pivots/` with namespace `Database\Factories\Pivots\…`.
 

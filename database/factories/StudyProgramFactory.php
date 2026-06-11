@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Enums\DegreeEnum;
 use App\Models\StudyProgram;
 use App\Models\Tenant;
+use Database\Factories\Concerns\HasTranslatableFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -12,6 +13,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class StudyProgramFactory extends Factory
 {
+    use HasTranslatableFactory;
+
     /**
      * Define the model's default state.
      *
@@ -48,10 +51,7 @@ class StudyProgramFactory extends Factory
         $degreeTranslation = $degreeTranslations[$degree] ?? $degree;
 
         return [
-            'name' => [
-                'lt' => "{$programName} {$degreeTranslation}",
-                'en' => $this->faker->words(2, true).' '.$degree,
-            ],
+            'name' => $this->translatable("{$programName} {$degreeTranslation}", $this->faker->words(2, true).' '.$degree),
             'degree' => $degree,
             'tenant_id' => Tenant::factory(),
         ];
@@ -80,10 +80,7 @@ class StudyProgramFactory extends Factory
 
             return [
                 'degree' => $degree,
-                'name' => [
-                    'lt' => "{$programName} {$degreeTranslation}",
-                    'en' => $this->faker->words(2, true).' '.$degree,
-                ],
+                'name' => $this->translatable("{$programName} {$degreeTranslation}", $this->faker->words(2, true).' '.$degree),
             ];
         });
     }
