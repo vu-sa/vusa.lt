@@ -1,6 +1,25 @@
 <template>
   <IndexTablePage ref="indexTablePageRef" v-bind="tableConfig" @filter-changed="handleFilterChange">
     <template #filters>
+      <Button
+        v-if="myTenantIds.length > 0"
+        variant="outline"
+        size="sm"
+        :class="{ 'border-primary': isMyTenantFilterActive }"
+        @click="toggleMyTenantFilter"
+      >
+        <Building2 class="mr-1.5 h-4 w-4" />
+        {{ $t("Mano padalinio problemos") }}
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        :class="{ 'border-primary': isMyProblemsFilterActive }"
+        @click="toggleMyProblemsFilter"
+      >
+        <UserIcon class="mr-1.5 h-4 w-4" />
+        {{ $t("Mano sukurtos problemos") }}
+      </Button>
       <DataTableFilter
         v-model:value="selectedStatuses"
         :options="statusOptions"
@@ -18,9 +37,20 @@
         {{ capitalize($t("entities.problem.categories")) }}
       </DataTableFilter>
       <DataTableFilter
+        v-if="tenantOptions.length > 0"
+        v-model:value="selectedTenantIds"
+        :options="tenantOptions"
+        multiple
+        searchable
+        @update:value="handleTenantFilterChange"
+      >
+        {{ capitalize($tChoice("entities.tenant.model", 1)) }}
+      </DataTableFilter>
+      <DataTableFilter
         v-model:value="selectedInstitutions"
         :options="institutionOptions"
         multiple
+        searchable
         @update:value="handleInstitutionFilterChange"
       >
         {{ capitalize($tChoice("entities.institution.model", 2)) }}
@@ -34,9 +64,11 @@ import { h, computed, ref, watch, capitalize } from 'vue';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { usePage } from '@inertiajs/vue3';
+import { Building2, UserIcon } from 'lucide-vue-next';
 
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
+import { Button } from '@/Components/ui/button';
 import { DateCell, TagList, TruncatedBadge, TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
 import { createDateColumn } from '@/Composables/useDataTableColumns';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
@@ -69,6 +101,8 @@ const canCreate = computed(() => usePage().props.auth?.can?.create?.problem || f
 const selectedStatuses = ref<string[]>(props.filters?.['status'] || []);
 const selectedCategories = ref<number[]>(props.filters?.['category'] || []);
 const selectedInstitutions = ref<string[]>(props.filters?.['institution'] || []);
+const selectedTenantIds = ref<number[]>(props.filters?.['tenant.id'] || []);
+const selectedCreatedBy = ref<string[]>(props.filters?.['created_by'] || []);
 
 const statusOptions = computed(() => [
   { label: $t('Atvira'), value: 'open' },
@@ -83,6 +117,44 @@ const categoryOptions = computed(() =>
 const institutionOptions = computed(() =>
   props.institutions.map(inst => ({ label: inst.name as string, value: inst.id })),
 );
+
+const tenantOptions = computed(() => {
+  const tenants = usePage().props.tenants || [];
+  return tenants.map(tenant => ({
+    label: $t(tenant.shortname),
+    value: tenant.id,
+  }));
+});
+
+// --- Quick filters ---
+const myTenantIds = computed<number[]>(() =>
+  (usePage().props.auth?.user?.tenants ?? []).map(tenant => tenant.id),
+);
+
+const isMyTenantFilterActive = computed(() => {
+  const selected = selectedTenantIds.value;
+  return selected.length > 0
+    && selected.length === myTenantIds.value.length
+    && myTenantIds.value.every(id => selected.includes(id));
+});
+
+const toggleMyTenantFilter = () => {
+  const values = isMyTenantFilterActive.value ? [] : [...myTenantIds.value];
+  selectedTenantIds.value = values;
+  indexTablePageRef.value?.updateFilter('tenant.id', values);
+};
+
+const isMyProblemsFilterActive = computed(() => {
+  const userId = usePage().props.auth?.user?.id;
+  return selectedCreatedBy.value.length === 1 && selectedCreatedBy.value[0] === userId;
+});
+
+const toggleMyProblemsFilter = () => {
+  const userId = usePage().props.auth?.user?.id;
+  const values = isMyProblemsFilterActive.value || !userId ? [] : [String(userId)];
+  selectedCreatedBy.value = values;
+  indexTablePageRef.value?.updateFilter('created_by', values);
+};
 
 const statusVariant = (status: string) =>
   ({ open: 'destructive', in_progress: 'warning', resolved: 'success' }[status] ?? 'secondary');
@@ -100,7 +172,7 @@ const columns = computed(() => [
       lines: 2,
     }),
     enableSorting: true,
-    size: 250,
+    size: 300,
   },
   {
     accessorKey: 'status',
@@ -181,10 +253,16 @@ const handleInstitutionFilterChange = (values: string[]) => {
   indexTablePageRef.value?.updateFilter('institution', values);
 };
 
+const handleTenantFilterChange = (values: number[]) => {
+  indexTablePageRef.value?.updateFilter('tenant.id', values);
+};
+
 const handleFilterChange = (filterKey: string, value: any) => {
   if (filterKey === 'status') selectedStatuses.value = value;
   if (filterKey === 'category') selectedCategories.value = value;
   if (filterKey === 'institution') selectedInstitutions.value = value;
+  if (filterKey === 'tenant.id') selectedTenantIds.value = value;
+  if (filterKey === 'created_by') selectedCreatedBy.value = value;
 };
 
 watch(
@@ -194,6 +272,8 @@ watch(
     if (newFilters['status'] !== undefined) selectedStatuses.value = newFilters['status'];
     if (newFilters['category'] !== undefined) selectedCategories.value = newFilters['category'];
     if (newFilters['institution'] !== undefined) selectedInstitutions.value = newFilters['institution'];
+    if (newFilters['tenant.id'] !== undefined) selectedTenantIds.value = newFilters['tenant.id'];
+    if (newFilters['created_by'] !== undefined) selectedCreatedBy.value = newFilters['created_by'];
   },
   { deep: true },
 );

@@ -7,6 +7,14 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.13 — Problemų registro patobulinimai (2026-06-12) {#v1-13}
+
+- ⭐ **Padalinio filtras problemų sąraše** — problemas dabar galima filtruoti pagal padalinį, ne tik pagal institucijas
+- ⭐ **Greitieji filtrai „Mano padalinio problemos" ir „Mano sukurtos problemos"** — vienu paspaudimu rodomos tik savo padalinio arba savo užregistruotos problemos
+- ✨ **Paieška filtrų sąrašuose** — padalinių ir institucijų filtruose atsirado paieškos laukelis, padedantis greitai rasti reikiamą įrašą
+- ✨ **Paaiškinimai problemos formoje** — prie kiekvieno formos lauko atsirado informacijos ženkliukas su paaiškinimu, ką reikia įrašyti, o kategorijų sąraše rodomi jų aprašymai
+- 🔧 **Ilgų problemų pavadinimų atvaizdavimas** — ilgi pavadinimai sąraše keliami į kitą eilutę ir nebeužlenda ant kitų lentelės elementų
+
 ## v1.12 — Susitikimų sąsajos patobulinimas (2026-06-01) {#v1-12}
 
 - ✨ Atnaujintas posėdžio puslapio vaizdas

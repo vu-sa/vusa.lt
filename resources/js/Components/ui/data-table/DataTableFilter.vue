@@ -1,5 +1,5 @@
 <template>
-  <DropdownMenu>
+  <DropdownMenu @update:open="handleOpenChange">
     <DropdownMenuTrigger as-child>
       <Button variant="outline" size="sm" :class="{'border-primary': isActive}" data-filter-button>
         <slot />
@@ -13,15 +13,27 @@
         <ChevronDownIcon class="ml-2 h-4 w-4" />
       </Button>
     </DropdownMenuTrigger>
-    <DropdownMenuContent align="start" class="w-[200px] p-2 max-h-[350px]">
+    <DropdownMenuContent align="start" :class="[searchable ? 'w-[240px]' : 'w-[200px]', 'p-2 max-h-[350px]']">
+      <!-- Search input (pinned above the scrollable list) -->
+      <Input
+        v-if="searchable"
+        v-model="searchTerm"
+        :placeholder="$t('Ieškoti...')"
+        class="mb-2 h-8"
+        @keydown="handleSearchKeydown"
+      />
+
       <!-- Multi-select mode -->
       <div v-if="multiple" class="space-y-2 max-h-[300px] overflow-auto pb-12">
         <!-- Add padding-bottom to prevent overlap -->
+        <p v-if="searchable && filteredOptions.length === 0" class="py-3 text-center text-sm text-muted-foreground">
+          {{ $t('Nerasta') }}
+        </p>
         <CheckboxGroupRoot
           v-model="selectedValues"
           class="flex flex-col gap-2.5"
         >
-          <div v-for="option in options" :key="option.value" class="flex items-center gap-2">
+          <div v-for="option in filteredOptions" :key="option.value" class="flex items-center gap-2">
             <Checkbox
               :id="`filter-${option.value}`"
               :value="option.value"
@@ -53,8 +65,11 @@
 
       <!-- Single-select mode -->
       <div v-else class="space-y-1">
+        <p v-if="searchable && filteredOptions.length === 0" class="py-3 text-center text-sm text-muted-foreground">
+          {{ $t('Nerasta') }}
+        </p>
         <DropdownMenuItem
-          v-for="option in options"
+          v-for="option in filteredOptions"
           :key="option.value"
           :class="{ 'bg-accent text-accent-foreground': value === option.value }"
           @click="handleSingleSelect(option.value)"
@@ -83,6 +98,7 @@ import { CheckboxGroupRoot } from 'reka-ui';
 
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
+import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import {
   DropdownMenu,
@@ -103,6 +119,7 @@ const props = defineProps<{
   multiple?: boolean;
   applyImmediately?: boolean;
   filterKey?: string; // Optional key to identify the filter
+  searchable?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -113,6 +130,34 @@ const emit = defineEmits<{
 
 // Keep a working copy of the selection for multi-select mode
 const selectedValues = ref(Array.isArray(props.value) ? [...props.value] : []);
+
+// Search term for filtering options client-side (only when `searchable`)
+const searchTerm = ref('');
+
+const filteredOptions = computed(() => {
+  if (!props.searchable || !searchTerm.value) {
+    return props.options;
+  }
+  const term = searchTerm.value.toLowerCase();
+  return props.options.filter(option => option.label.toLowerCase().includes(term));
+});
+
+/**
+ * The dropdown menu hijacks keystrokes for typeahead navigation,
+ * so they must not propagate from the search input. Escape (close)
+ * and Tab (focus traversal) are left for the menu to handle.
+ */
+const handleSearchKeydown = (event: KeyboardEvent) => {
+  if (event.key !== 'Escape' && event.key !== 'Tab') {
+    event.stopPropagation();
+  }
+};
+
+const handleOpenChange = (open: boolean) => {
+  if (!open) {
+    searchTerm.value = '';
+  }
+};
 
 // Update the internal selection when the external value changes
 watch(() => props.value, (newValue) => {

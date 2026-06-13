@@ -19,17 +19,18 @@
         </p>
       </template>
 
-      <FormFieldWrapper id="title" :label="capitalize($tChoice('entities.problem.title', 1))" required>
+      <FormFieldWrapper id="title" :label="capitalize($tChoice('entities.problem.title', 1))" :hint="$t('problems.hints.title')" required>
         <MultiLocaleInput v-model:input="form.title" />
       </FormFieldWrapper>
 
       <MultiLocaleTiptapFormItem
         v-model:input="form.description"
         :label="capitalize($tChoice('entities.problem.description', 1))"
+        :hint="$t('problems.hints.description')"
       />
 
       <div class="grid gap-x-4 lg:grid-cols-2">
-        <FormFieldWrapper id="tenant_id" :label="capitalize($tChoice('entities.tenant.model', 1))" required>
+        <FormFieldWrapper id="tenant_id" :label="capitalize($tChoice('entities.tenant.model', 1))" :hint="$t('problems.hints.tenant')" required>
           <Select v-model="tenantIdString">
             <SelectTrigger>
               <SelectValue :placeholder="capitalize($tChoice('entities.tenant.model', 1))" />
@@ -42,7 +43,7 @@
           </Select>
         </FormFieldWrapper>
 
-        <FormFieldWrapper id="status" :label="capitalize($tChoice('entities.problem.status', 1))" required>
+        <FormFieldWrapper id="status" :label="capitalize($tChoice('entities.problem.status', 1))" :hint="$t('problems.hints.status')" required>
           <Select v-model="form.status">
             <SelectTrigger>
               <SelectValue :placeholder="capitalize($tChoice('entities.problem.status', 1))" />
@@ -63,16 +64,16 @@
       </div>
 
       <div class="grid gap-x-4 lg:grid-cols-2">
-        <FormFieldWrapper id="occurred_at" :label="capitalize($tChoice('entities.problem.occurred_at', 1))" required>
+        <FormFieldWrapper id="occurred_at" :label="capitalize($tChoice('entities.problem.occurred_at', 1))" :hint="$t('problems.hints.occurred_at')" required>
           <Input v-model="form.occurred_at" type="date" />
         </FormFieldWrapper>
 
-        <FormFieldWrapper id="resolved_at" :label="capitalize($tChoice('entities.problem.resolved_at', 1))">
+        <FormFieldWrapper id="resolved_at" :label="capitalize($tChoice('entities.problem.resolved_at', 1))" :hint="$t('problems.hints.resolved_at')">
           <Input v-model="form.resolved_at" type="date" />
         </FormFieldWrapper>
       </div>
 
-      <FormFieldWrapper id="responsible_user_id" :label="capitalize($tChoice('entities.problem.responsible_user', 1))">
+      <FormFieldWrapper id="responsible_user_id" :label="capitalize($tChoice('entities.problem.responsible_user', 1))" :hint="$t('problems.hints.responsible_user')">
         <Combobox
           v-model="selectedUser"
           :filter-function="() => userOptions"
@@ -125,15 +126,22 @@
         </Combobox>
       </FormFieldWrapper>
 
-      <FormFieldWrapper id="categories" :label="capitalize($tChoice('entities.problem.categories', 2))">
+      <FormFieldWrapper id="categories" :label="capitalize($tChoice('entities.problem.categories', 2))" :hint="$t('problems.hints.categories')">
         <MultiSelect
           v-model="selectedCategories"
           :options="categoryOptions"
           :placeholder="capitalize($tChoice('entities.problem.categories', 2))"
-        />
+        >
+          <template #option="{ item }">
+            <div class="flex flex-col">
+              <span>{{ item.label }}</span>
+              <span v-if="item.description" class="text-xs text-muted-foreground line-clamp-2">{{ item.description }}</span>
+            </div>
+          </template>
+        </MultiSelect>
       </FormFieldWrapper>
 
-      <FormFieldWrapper id="institutions" :label="capitalize($tChoice('entities.institution.model', 2))">
+      <FormFieldWrapper id="institutions" :label="capitalize($tChoice('entities.institution.model', 2))" :hint="$t('problems.hints.institutions')">
         <MultiSelect
           v-model="selectedInstitutions"
           :options="institutionOptions"
@@ -159,6 +167,7 @@
       <MultiLocaleTiptapFormItem
         v-model:input="form.steps_taken"
         :label="capitalize($tChoice('entities.problem.steps_taken', 1))"
+        :hint="$t('problems.hints.steps_taken')"
       />
     </FormElement>
 
@@ -179,6 +188,7 @@
       <MultiLocaleTiptapFormItem
         v-model:input="form.solution"
         :label="capitalize($tChoice('entities.problem.solution', 1))"
+        :hint="$t('problems.hints.solution')"
       />
     </FormElement>
   </AdminForm>
@@ -306,6 +316,7 @@ const categoryOptions = computed(() =>
   props.categories.map(category => ({
     label: category.name as string,
     value: category.id,
+    description: category.description as string | null,
   })),
 );
 
