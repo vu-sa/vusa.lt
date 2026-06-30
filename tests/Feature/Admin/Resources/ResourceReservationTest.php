@@ -29,10 +29,7 @@ beforeEach(function () {
 describe('auth: simple user', function () {
     test('can view available resources for reservation', function () {
         asUser($this->user)->get(route('resources.index'))
-            ->assertStatus(200)
-            ->assertInertia(fn ($page) => $page
-                ->component('Admin/Search/SearchResources')
-            );
+            ->assertRedirect(route('search.index', ['tab' => 'resources']));
     });
 
     test('can create reservation for available resource', function () {
@@ -268,10 +265,7 @@ describe('resource availability logic', function () {
         // For now, just test that the resources index page works
         $response = asUser($this->user)->get(route('resources.index'));
 
-        $response->assertStatus(200)
-            ->assertInertia(fn ($page) => $page
-                ->component('Admin/Search/SearchResources')
-            );
+        $response->assertRedirect(route('search.index', ['tab' => 'resources']));
     });
 
     test('can check resource availability for specific time period', function () {

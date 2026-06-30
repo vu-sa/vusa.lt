@@ -48,6 +48,7 @@ use Spatie\SchemaOrg\Place;
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\CalendarFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar forLocale(string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar query()

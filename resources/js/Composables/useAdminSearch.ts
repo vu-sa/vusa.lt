@@ -1,6 +1,8 @@
 import { ref, computed, onMounted } from 'vue';
 
+import { buildInfix } from '@/Features/Admin/AdminSearch/Utils/searchParams';
 import { ErrorUtils } from '@/Shared/Search/services/SearchErrorUtils';
+import { createEmptyMultiSearchResults } from '@/Shared/Search/utils/createEmptyMultiSearchResults';
 import type {
   TypesenseNode,
   AdminSearchConfig,
@@ -13,6 +15,7 @@ import type {
   InstitutionSearchResult,
   DocumentSearchResult,
   ResourceSearchResult,
+  DutySearchResult,
   MultiSearchResults,
 } from '@/Shared/Search/types';
 
@@ -26,6 +29,7 @@ export type {
   InstitutionSearchResult,
   DocumentSearchResult,
   ResourceSearchResult,
+  DutySearchResult,
   MultiSearchResults,
 } from '@/Shared/Search/types';
 
@@ -268,6 +272,16 @@ export const useAdminSearch = () => {
   };
 
   /**
+   * Tenant ids the current user can access for a collection. Empty for
+   * super-admins (unrestricted) or when config has not loaded yet.
+   */
+  const getCollectionTenantIds = (collection: string): number[] => {
+    return config.value?.collections?.[collection]?.tenantIds ?? [];
+  };
+
+  const isSuperAdmin = computed(() => config.value?.isSuperAdmin ?? false);
+
+  /**
    * Perform a search against a collection
    */
   const search = async (
@@ -439,6 +453,9 @@ export const useAdminSearch = () => {
       calendarLimit?: number;
       institutionsLimit?: number;
       documentsLimit?: number;
+      resourcesLimit?: number;
+      dutiesLimit?: number;
+      usersLimit?: number;
       _retryCount?: number; // Internal retry counter
     } = {},
   ): Promise<MultiSearchResults> => {
@@ -450,8 +467,13 @@ export const useAdminSearch = () => {
       calendarLimit = 5,
       institutionsLimit = 5,
       documentsLimit = 5,
+      resourcesLimit = 5,
+      dutiesLimit = 5,
+      usersLimit = 5,
       _retryCount = 0,
     } = options;
+
+    const emptyResults = (): MultiSearchResults => createEmptyMultiSearchResults();
 
     // Check rate limit before doing anything
     if (isRateLimited.value) {
@@ -481,7 +503,7 @@ export const useAdminSearch = () => {
 
     // If user has no access to any collections, return empty results immediately
     if (!hasAnyAccess.value) {
-      return { meetings: [], agendaItems: [], news: [], pages: [], calendar: [], institutions: [], documents: [] };
+      return emptyResults();
     }
 
     const node = config.value.nodes?.[0];
@@ -499,6 +521,9 @@ export const useAdminSearch = () => {
     const calendarConfig = config.value.collections['calendar'];
     const institutionsConfig = config.value.collections['institutions'];
     const documentsConfig = config.value.collections['documents'];
+    const resourcesConfig = config.value.collections['resources'];
+    const dutiesConfig = config.value.collections['duties'];
+    const usersConfig = config.value.collections['users'];
 
     // Build searches array with per-search API keys embedded
     // This allows different scoped keys per collection in a single multi_search request
@@ -506,12 +531,32 @@ export const useAdminSearch = () => {
     const searches: Array<Record<string, unknown>> = [];
     const searchOrder: string[] = []; // Track which collection each search corresponds to
 
+    // When a query is present, rank by Typesense relevance (text_match) with the
+    // collection's date field as a recency tiebreak; with no query, browse by date.
+    const hasQuery = !!query && query.trim() !== '';
+    const relevanceSort = (dateField: string, direction: 'asc' | 'desc' = 'desc'): string =>
+      hasQuery
+        ? `_text_match(buckets:10):desc,${dateField}:${direction}`
+        : `${dateField}:${direction}`;
+
+    // Relevance tuning shared by every sub-search (mirrors config/scout.php
+    // typesense.model-settings, which the multi_search call does not otherwise apply).
+    const commonTuning = {
+      'prioritize_exact_match': true,
+      'prioritize_token_position': true,
+      'num_typos': 2,
+      'typo_tokens_threshold': 1,
+    } as const;
+
     if (meetingsConfig?.hasAccess && meetingsConfig?.key) {
       searches.push({
         'collection': meetingsConfig.name,
         'q': query || '*',
         'query_by': 'title,description,institution_name_lt,institution_name_en',
-        'sort_by': 'start_time:desc',
+        'query_by_weights': '10,5,4,4',
+        'infix': buildInfix('title,description,institution_name_lt,institution_name_en', 'meetings'),
+        'sort_by': relevanceSort('start_time'),
+        ...commonTuning,
         'per_page': meetingsLimit,
         'x-typesense-api-key': meetingsConfig.key,
       });
@@ -523,7 +568,10 @@ export const useAdminSearch = () => {
         'collection': agendaItemsConfig.name,
         'q': query || '*',
         'query_by': 'title,description,student_benefit,meeting_title',
-        'sort_by': 'meeting_start_time:desc',
+        'query_by_weights': '10,4,3,6',
+        'infix': buildInfix('title,description,student_benefit,meeting_title', 'agenda_items'),
+        'sort_by': relevanceSort('meeting_start_time'),
+        ...commonTuning,
         'per_page': agendaItemsLimit,
         'x-typesense-api-key': agendaItemsConfig.key,
       });
@@ -535,7 +583,10 @@ export const useAdminSearch = () => {
         'collection': newsConfig.name,
         'q': query || '*',
         'query_by': 'title,short',
-        'sort_by': 'publish_time:desc',
+        'query_by_weights': '10,5',
+        'infix': buildInfix('title,short', 'news'),
+        'sort_by': relevanceSort('publish_time'),
+        ...commonTuning,
         'per_page': newsLimit,
         'x-typesense-api-key': newsConfig.key,
       });
@@ -547,7 +598,10 @@ export const useAdminSearch = () => {
         'collection': pagesConfig.name,
         'q': query || '*',
         'query_by': 'title,meta_description',
-        'sort_by': 'created_at:desc',
+        'query_by_weights': '10,4',
+        'infix': buildInfix('title,meta_description', 'pages'),
+        'sort_by': relevanceSort('created_at'),
+        ...commonTuning,
         'per_page': pagesLimit,
         'x-typesense-api-key': pagesConfig.key,
       });
@@ -559,7 +613,10 @@ export const useAdminSearch = () => {
         'collection': calendarConfig.name,
         'q': query || '*',
         'query_by': 'title,title_lt,title_en',
-        'sort_by': 'date:desc',
+        'query_by_weights': '10,8,8',
+        'infix': buildInfix('title,title_lt,title_en', 'calendar'),
+        'sort_by': relevanceSort('date'),
+        ...commonTuning,
         'per_page': calendarLimit,
         'x-typesense-api-key': calendarConfig.key,
       });
@@ -571,7 +628,10 @@ export const useAdminSearch = () => {
         'collection': institutionsConfig.name,
         'q': query || '*',
         'query_by': 'name_lt,name_en,short_name_lt,short_name_en,alias,email',
-        'sort_by': 'created_at:desc',
+        'query_by_weights': '10,8,6,4,3,2',
+        'infix': buildInfix('name_lt,name_en,short_name_lt,short_name_en,alias,email', 'institutions'),
+        'sort_by': relevanceSort('created_at'),
+        ...commonTuning,
         'per_page': institutionsLimit,
         'x-typesense-api-key': institutionsConfig.key,
       });
@@ -583,16 +643,64 @@ export const useAdminSearch = () => {
         'collection': documentsConfig.name,
         'q': query || '*',
         'query_by': 'title,summary,content_type,document_year',
-        'sort_by': 'document_date:desc',
+        'query_by_weights': '10,5,3,2',
+        'infix': buildInfix('title,summary,content_type,document_year', 'documents'),
+        'sort_by': relevanceSort('document_date'),
+        ...commonTuning,
         'per_page': documentsLimit,
         'x-typesense-api-key': documentsConfig.key,
       });
       searchOrder.push('documents');
     }
 
+    if (resourcesConfig?.hasAccess && resourcesConfig?.key) {
+      searches.push({
+        'collection': resourcesConfig.name,
+        'q': query || '*',
+        'query_by': 'name_lt,name_en,description_lt,description_en,location',
+        'query_by_weights': '10,8,4,4,3',
+        'infix': buildInfix('name_lt,name_en,description_lt,description_en,location', 'resources'),
+        'sort_by': relevanceSort('created_at'),
+        ...commonTuning,
+        'per_page': resourcesLimit,
+        'x-typesense-api-key': resourcesConfig.key,
+      });
+      searchOrder.push('resources');
+    }
+
+    if (dutiesConfig?.hasAccess && dutiesConfig?.key) {
+      searches.push({
+        'collection': dutiesConfig.name,
+        'q': query || '*',
+        'query_by': 'name_lt,name_en,email,institution_name_lt,institution_name_en',
+        'query_by_weights': '10,8,4,4,3',
+        'infix': buildInfix('name_lt,name_en,email,institution_name_lt,institution_name_en', 'duties'),
+        // Duties have no meaningful date; tiebreak alphabetically by name.
+        'sort_by': relevanceSort('name_lt', 'asc'),
+        ...commonTuning,
+        'per_page': dutiesLimit,
+        'x-typesense-api-key': dutiesConfig.key,
+      });
+      searchOrder.push('duties');
+    }
+
+    if (usersConfig?.hasAccess && usersConfig?.key) {
+      searches.push({
+        'collection': usersConfig.name,
+        'q': query || '*',
+        'query_by': 'name,email,phone,current_duty_names',
+        'query_by_weights': '10,6,4,3',
+        'sort_by': relevanceSort('created_at'),
+        ...commonTuning,
+        'per_page': usersLimit,
+        'x-typesense-api-key': usersConfig.key,
+      });
+      searchOrder.push('users');
+    }
+
     // If no collections are accessible, return empty results
     if (searches.length === 0) {
-      return { meetings: [], agendaItems: [], news: [], pages: [], calendar: [], institutions: [], documents: [] };
+      return emptyResults();
     }
 
     try {
@@ -652,15 +760,7 @@ export const useAdminSearch = () => {
       const data = await response.json();
 
       // Initialize empty results
-      const results: MultiSearchResults = {
-        meetings: [],
-        agendaItems: [],
-        news: [],
-        pages: [],
-        calendar: [],
-        institutions: [],
-        documents: [],
-      };
+      const results: MultiSearchResults = emptyResults();
 
       // Map results back to their collections based on search order
       searchOrder.forEach((collectionKey, index) => {
@@ -670,8 +770,26 @@ export const useAdminSearch = () => {
           return;
         }
 
-        const hits = searchResult?.hits?.map((hit: { document: unknown }) => hit.document) || [];
-        results[collectionKey as keyof MultiSearchResults] = hits;
+        const key = collectionKey as keyof Omit<MultiSearchResults, 'counts'>;
+        // Attach the Typesense relevance score so the "All" tab can interleave
+        // results across collections by relevance (see SearchAllPanel.vue).
+        // Use the string `text_match_info.score`, not the numeric `text_match`:
+        // the int64 score exceeds JS's safe-integer range, so the number form
+        // loses precision and collapses distinct scores into ties. The string is
+        // compared with BigInt downstream.
+        const hits = searchResult?.hits?.map(
+          (hit: {
+            document: Record<string, unknown>;
+            text_match?: number;
+            text_match_info?: { score?: string };
+          }) => ({
+            ...hit.document,
+            _text_match: hit.text_match_info?.score
+              ?? (hit.text_match != null ? String(hit.text_match) : '0'),
+          }),
+        ) || [];
+        (results[key] as unknown[]) = hits;
+        results.counts[key] = typeof searchResult?.found === 'number' ? searchResult.found : hits.length;
       });
 
       return results;
@@ -679,7 +797,7 @@ export const useAdminSearch = () => {
     catch (error: unknown) {
       // Don't throw for aborted requests (user typed new query)
       if (ErrorUtils.isAbortError(error)) {
-        return { meetings: [], agendaItems: [], news: [], pages: [], calendar: [], institutions: [], documents: [] };
+        return emptyResults();
       }
       // Use ErrorUtils for consistent error handling
       const searchError = ErrorUtils.fromError(error, 'multi-search');
@@ -784,6 +902,12 @@ export const useAdminSearch = () => {
 
     if (sortBy) {
       searchParams.append('sort_by', sortBy);
+    }
+
+    // Partial in-word matching as a fallback when an exact search returns nothing.
+    const infix = buildInfix(queryBy || 'title,description', collection);
+    if (infix) {
+      searchParams.append('infix', infix);
     }
 
     try {
@@ -1012,6 +1136,8 @@ export const useAdminSearch = () => {
     // Per-collection helpers
     getCollectionApiKey,
     hasCollectionAccess,
+    getCollectionTenantIds,
+    isSuperAdmin,
 
     // Related institution helpers
     isFromRelatedInstitution,

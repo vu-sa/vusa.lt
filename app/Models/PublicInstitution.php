@@ -38,6 +38,9 @@ use Spatie\Activitylog\Models\Activity;
  * @property int $is_active
  * @property int $meeting_periodicity_days
  * @property string $contacts_layout
+ * @property string|null $selection_method
+ * @property array|string|null $appointed_by
+ * @property array|string|null $term_length
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
@@ -46,7 +49,6 @@ use Spatie\Activitylog\Models\Activity;
  * @property-read Relationshipable|InstitutionFollow|Trainable|null $pivot
  * @property-read Collection<int, Training> $availableTrainings
  * @property-read Collection<int, InstitutionCheckIn> $checkIns
- * @property-read Model|\Eloquent $commentable
  * @property-read Collection<int, Comment> $comments
  * @property-read Collection<int, Document> $documents
  * @property-read Collection<int, Duty> $duties
@@ -62,6 +64,7 @@ use Spatie\Activitylog\Models\Activity;
  * @property-read Collection<int, Meeting> $meetings
  * @property-read Collection<int, Relationship> $outgoingRelationships
  * @property-read Collection<int, Problem> $problems
+ * @property-read Collection<int, Comment> $rootComments
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Task> $tasksFromMeetings
  * @property-read Tenant|null $tenant
@@ -71,6 +74,7 @@ use Spatie\Activitylog\Models\Activity;
  * @property-read int|null $tasks_from_meetings_count
  * @property-read int|null $users_count
  *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution hasActiveDuties()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution onlyTrashed()

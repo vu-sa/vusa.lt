@@ -18,6 +18,7 @@ use Spatie\Enum\Laravel\Enum;
  * @method static self AGENDA_ITEM()
  * @method static self RESOURCE()
  * @method static self INSTITUTION()
+ * @method static self USER()
  */
 final class SearchableModelEnum extends Enum
 {
@@ -34,6 +35,7 @@ final class SearchableModelEnum extends Enum
             'AGENDA_ITEM' => 'agenda_item',
             'RESOURCE' => 'resource',
             'INSTITUTION' => 'institution',
+            'USER' => 'user',
         ];
     }
 

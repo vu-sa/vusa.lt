@@ -3,12 +3,55 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Models\Meeting;
 use App\Services\ResourceServices\DutyService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
 class MeetingApiController extends ApiController
 {
+    /**
+     * Lightweight meeting detail used by the admin search preview pane.
+     * Returns the agenda items, institutions and representatives that are not
+     * carried in the Typesense search document.
+     *
+     * @route GET /api/v1/admin/meetings/{meeting}/preview
+     *
+     * @routeName api.v1.admin.meetings.preview
+     */
+    public function preview(Meeting $meeting): JsonResponse
+    {
+        $this->authorizeApi('view', $meeting);
+
+        $meeting->load([
+            'institutions',
+            'agendaItems' => fn ($query) => $query->orderBy('order')->with('mainVote'),
+        ]);
+
+        return $this->jsonSuccess([
+            'institutions' => $meeting->institutions
+                ->map(fn ($institution) => [
+                    'id' => (string) $institution->id,
+                    'name' => $institution->name,
+                ])->values(),
+            'agenda_items' => $meeting->agendaItems
+                ->map(fn ($item) => [
+                    'id' => (string) $item->id,
+                    'title' => $item->title,
+                    'decision' => $item->mainVote?->decision,
+                    'student_benefit' => $item->mainVote?->student_benefit,
+                ])->values(),
+            // Student representatives whose duty was active at the meeting date
+            // (same calculation the meeting show page uses), not all-time members.
+            'representatives' => $meeting->getRepresentativesActiveAt()
+                ->map(fn ($user) => [
+                    'id' => (string) $user->id,
+                    'name' => $user->name,
+                    'profile_photo_path' => $user->profile_photo_path,
+                ])->values(),
+        ]);
+    }
+
     /**
      * Get recent meetings for the current user's institutions.
      * Used by NewMeetingModal for quick meeting selection.

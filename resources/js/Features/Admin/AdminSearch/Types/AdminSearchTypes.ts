@@ -15,6 +15,7 @@ export type {
   InstitutionSearchResult,
   DocumentSearchResult,
   ResourceSearchResult,
+  DutySearchResult,
 } from '@/Composables/useAdminSearch';
 
 /**
@@ -28,7 +29,9 @@ export type AdminCollection
     | 'calendar'
     | 'institutions'
     | 'documents'
-    | 'resources';
+    | 'resources'
+    | 'duties'
+    | 'users';
 
 /**
  * Facet value with count and selection state

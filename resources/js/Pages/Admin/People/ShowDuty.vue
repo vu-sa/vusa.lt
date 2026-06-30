@@ -67,7 +67,7 @@
 
       <!-- Overview Tab: two-column dashboard -->
       <TabsContent value="overview">
-        <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <div class="grid grid-cols-1 items-start gap-6 xl:grid-cols-3">
           <!-- Main column -->
           <div class="space-y-6 xl:col-span-2">
             <DutyCurrentHoldersCard

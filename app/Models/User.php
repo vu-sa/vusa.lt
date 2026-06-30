@@ -22,6 +22,7 @@ use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Carbon;
+use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use NotificationChannels\WebPush\HasPushSubscriptions;
 use NotificationChannels\WebPush\PushSubscription;
@@ -151,12 +152,53 @@ class User extends Authenticatable
         return LogOptions::defaults()->logFillable()->logOnlyDirty();
     }
 
+    /**
+     * Get the engine used to index the model.
+     * Users should use Typesense for admin search.
+     */
+    public function searchableUsing()
+    {
+        return app(EngineManager::class)->engine('typesense');
+    }
+
     public function toSearchableArray(): array
     {
+        $this->loadMissing(['current_duties.institution.tenant']);
+
+        $currentDuties = $this->current_duties;
+
+        $tenantIds = $currentDuties->pluck('institution.tenant_id')
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        $institutionIds = $currentDuties->pluck('institution_id')
+            ->filter()
+            ->unique()
+            ->values()
+            ->map(fn ($id) => (string) $id)
+            ->all();
+
+        $dutyNames = $currentDuties->pluck('name')
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        $tenantShortname = $currentDuties->first()?->institution?->tenant?->shortname;
+
         return [
+            'id' => (string) $this->id,
             'name' => $this->name,
             'email' => $this->email,
-            'phone' => $this->phone ?? '',
+            'phone' => $this->phone,
+            'tenant_ids' => $tenantIds,
+            'tenant_shortname' => $tenantShortname,
+            'institution_ids' => $institutionIds,
+            'current_duty_names' => $dutyNames,
+            'is_active' => $this->deleted_at === null,
+            'created_at' => $this->created_at->timestamp,
         ];
     }
 

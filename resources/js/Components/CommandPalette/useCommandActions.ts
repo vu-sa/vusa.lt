@@ -112,17 +112,15 @@ export function useCommandActions() {
       });
     }
 
-    // Search meetings
-    if (can.value.read?.meeting) {
-      result.push({
-        id: 'nav-search-meetings',
-        label: $t('Ieškoti posėdžių'),
-        keywords: ['search', 'meetings', 'ieskoti', 'posedziai', 'paieska'],
-        icon: Search,
-        category: 'navigation',
-        action: () => router.visit(route('meetings.search')),
-      });
-    }
+    // Unified search page
+    result.push({
+      id: 'nav-search',
+      label: $t('Paieška'),
+      keywords: ['search', 'paieska', 'ieskoti', 'viskas', 'posedziai', 'institucijos', 'istekliai'],
+      icon: Search,
+      category: 'navigation',
+      action: () => router.visit(route('search.index')),
+    });
 
     // Institutions
     if (can.value.read?.institution) {

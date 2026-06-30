@@ -26,32 +26,33 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $user_id
  * @property CommentKind $kind
  * @property string $body
- * @property array|null $metadata
- * @property array|null $mentioned_user_ids
+ * @property array<array-key, mixed>|null $metadata
+ * @property array<array-key, mixed>|null $mentioned_user_ids
  * @property Carbon|null $resolved_at
  * @property string|null $resolved_by
  * @property Carbon|null $edited_at
- * @property Carbon $created_at
- * @property Carbon $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activities
  * @property-read Model|\Eloquent $commentable
  * @property-read Comment|null $parent
- * @property-read Comment|null $threadRoot
- * @property-read Collection<int, Comment> $replies
+ * @property-read Collection<int, CommentPollVote> $pollVotes
  * @property-read Collection<int, CommentReaction> $reactions
- * @property-read User|null $user
+ * @property-read Collection<int, Comment> $replies
  * @property-read User|null $resolver
+ * @property-read Comment|null $threadRoot
+ * @property-read User|null $user
  *
  * @method static \Database\Factories\CommentFactory factory($count = null, $state = [])
- * @method static Builder<static>|Comment roots()
  * @method static Builder<static>|Comment forCommentable(string $type, string $id)
- * @method static Builder<static>|Comment resolved()
- * @method static Builder<static>|Comment unresolved()
  * @method static Builder<static>|Comment newModelQuery()
  * @method static Builder<static>|Comment newQuery()
  * @method static Builder<static>|Comment onlyTrashed()
  * @method static Builder<static>|Comment query()
+ * @method static Builder<static>|Comment resolved()
+ * @method static Builder<static>|Comment roots()
+ * @method static Builder<static>|Comment unresolved()
  * @method static Builder<static>|Comment withTrashed(bool $withTrashed = true)
  * @method static Builder<static>|Comment withoutTrashed()
  *

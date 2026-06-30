@@ -72,7 +72,7 @@ describe('authorization tests', function () {
         test('can access meetings index with permission', function () {
             asUser($this->admin)
                 ->get(route('meetings.index'))
-                ->assertStatus(200);
+                ->assertRedirect(route('search.index', ['tab' => 'meetings']));
         });
 
         test('can create a meeting with permission', function () {

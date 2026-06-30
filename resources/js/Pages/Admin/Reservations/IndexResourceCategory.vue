@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref, computed } from 'vue';
+import { h, ref, computed, capitalize } from 'vue';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { Icon } from '@iconify/vue';

@@ -36,7 +36,8 @@
         <NavQuickActions
           v-if="key === 'quick_actions' && isSectionVisible(key)"
           @new-meeting="handleNewMeeting" @new-news="handleNewNews"
-          @new-reservation="handleNewReservation" />
+          @new-reservation="handleNewReservation"
+          @open-customize="showCustomizeDialog = true" />
         <PinnedPagesSection
           v-else-if="key === 'pinned' && isSectionVisible(key)" />
         <RecentlyVisitedSection
@@ -411,20 +412,15 @@ const navMainItems = computed(() => {
         || route().current('duties.show'),
       dataTour: 'nav-visak',
     });
-
-    // Search (Paieška) - meetings and agenda items search pages
-    // items.push({
-    //   title: $t('Paieška'),
-    //   url: route('search.meetings'),
-    //   icon: markRaw(Search),
-    //   isActive: route().current('search.*'),
-    //   items: [
-    //     { title: $t('Posėdžiai'), url: route('search.meetings') },
-    //     { title: $t('Darbotvarkės punktai'), url: route('search.agendaItems') },
-    //     { title: $t('Institucijos'), url: route('search.institutions') },
-    //   ],
-    // })
   }
+
+  // Unified search page (collection access is enforced by scoped search keys)
+  items.push({
+    title: $t('Paieška'),
+    url: route('search.index'),
+    icon: markRaw(Search),
+    isActive: route().current('search.*'),
+  });
 
   // Website (Svetainė)
   if (usePage().props.auth?.can.create.page) {

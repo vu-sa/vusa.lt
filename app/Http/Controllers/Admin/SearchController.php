@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
 use App\Services\ModelAuthorizer as Authorizer;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
@@ -12,37 +14,67 @@ class SearchController extends AdminController
     public function __construct(public Authorizer $authorizer) {}
 
     /**
-     * Display the meetings search page.
+     * Display the unified admin search page.
      * Authorization is handled via scoped Typesense API keys at the search layer.
      */
-    public function meetings(): InertiaResponse
+    public function index(): InertiaResponse
     {
-        return Inertia::render('Admin/Search/SearchMeetings', [
+        $authorizer = $this->authorizer->forUser(auth()->user());
+
+        return Inertia::render('Admin/Search/SearchIndex', [
             'can' => [
-                'create' => $this->authorizer->forUser(auth()->user())->check('meetings.create.padalinys'),
+                'create' => [
+                    'meetings' => $authorizer->check('meetings.create.padalinys'),
+                    'institutions' => $authorizer->check('institutions.create.padalinys'),
+                    'resources' => $authorizer->check('resources.create.padalinys'),
+                    'duties' => $authorizer->check('duties.create.padalinys'),
+                    'documents' => $authorizer->check('documents.create.padalinys'),
+                    'news' => $authorizer->check('news.create.padalinys'),
+                    'pages' => $authorizer->check('pages.create.padalinys'),
+                    'calendar' => $authorizer->check('calendars.create.padalinys'),
+                    'users' => $authorizer->check('users.create.padalinys'),
+                ],
             ],
         ]);
     }
 
     /**
-     * Display the agenda items search page.
-     * Authorization is handled via scoped Typesense API keys at the search layer.
+     * Redirect the legacy meetings search page to the unified search page.
      */
-    public function agendaItems(): InertiaResponse
+    public function meetings(Request $request): RedirectResponse
     {
-        return Inertia::render('Admin/Search/SearchAgendaItems');
+        return $this->redirectToUnifiedSearch($request, 'meetings');
     }
 
     /**
-     * Display the institutions search page.
-     * Authorization is handled via scoped Typesense API keys at the search layer.
+     * Redirect the legacy agenda items search page to the unified search page.
      */
-    public function institutions(): InertiaResponse
+    public function agendaItems(Request $request): RedirectResponse
     {
-        return Inertia::render('Admin/Search/SearchInstitutions', [
-            'can' => [
-                'create' => $this->authorizer->forUser(auth()->user())->check('institutions.create.padalinys'),
-            ],
-        ]);
+        return $this->redirectToUnifiedSearch($request, 'agenda-items');
+    }
+
+    /**
+     * Redirect the legacy institutions search page to the unified search page.
+     */
+    public function institutions(Request $request): RedirectResponse
+    {
+        return $this->redirectToUnifiedSearch($request, 'institutions');
+    }
+
+    /**
+     * Redirect the legacy resources search page to the unified search page.
+     */
+    public function resources(Request $request): RedirectResponse
+    {
+        return $this->redirectToUnifiedSearch($request, 'resources');
+    }
+
+    /**
+     * Redirect to the unified search page with the given tab, preserving query parameters.
+     */
+    private function redirectToUnifiedSearch(Request $request, string $tab): RedirectResponse
+    {
+        return redirect()->route('search.index', array_merge($request->query(), ['tab' => $tab]));
     }
 }

@@ -184,12 +184,7 @@ describe('authorized access', function () {
     test('can index institutions', function () {
         $response = asUser($this->admin)->get(route('institutions.index'));
 
-        $response->assertStatus(200)
-            ->assertInertia(fn ($page) => $page
-                ->component('Admin/People/IndexInstitution')
-                ->has('data')
-                ->has('meta')
-            );
+        $response->assertRedirect(route('search.index', ['tab' => 'institutions']));
     });
 
     test('can access institution create page', function () {
@@ -366,17 +361,9 @@ describe('relationships', function () {
     });
 
     test('can only access institutions from own tenant', function () {
-        // Since we're dealing with Super Admin, they can see all institutions
-        // and the response is paginated, let's just verify the response structure is correct
         $response = asUser($this->admin)->get(route('institutions.index'));
 
-        $response->assertStatus(200)
-            ->assertInertia(fn ($page) => $page
-                ->has('data')
-                ->has('meta')
-                ->has('meta.total')
-                ->where('meta.total', fn ($total) => $total > 0)
-            );
+        $response->assertRedirect(route('search.index', ['tab' => 'institutions']));
     });
 
     test('cannot edit institution from different tenant', function () {

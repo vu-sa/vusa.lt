@@ -42,12 +42,13 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $description
  * @property string|null $start_time
  * @property-read Collection<int, Activity> $activities
- * @property-read Collection<int, Comment> $comments
  * @property-read Collection<int, Vote> $additionalVotes
+ * @property-read Collection<int, Comment> $comments
  * @property-read Collection<int, Institution> $institutions
  * @property-read Vote|null $mainVote
  * @property-read Meeting|null $meeting
  * @property-read AgendaItemNote|null $note
+ * @property-read Collection<int, Comment> $rootComments
  * @property-read Collection<int, Tenant> $tenants
  * @property-read Collection<int, Vote> $votes
  *

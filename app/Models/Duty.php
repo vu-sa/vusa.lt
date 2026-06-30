@@ -23,6 +23,7 @@ use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Models\Activity;
@@ -40,10 +41,10 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $email Commonly the @vusa.lt email address, which is used as the OAuth login. Personal mail is stored in users.email.
  * @property string $contacts_grouping
  * @property int|null $places_to_occupy Full number of positions to occupy for this duty
- * @property string|null $selection_method How the duty is filled (see DutySelectionMethod)
- * @property string|null $appointed_by Who appoints/elects the holder (overrides institution default)
- * @property string|null $term_length Human-readable term length (overrides institution default)
- * @property string|null $responsibilities Newline-separated responsibilities for this duty
+ * @property string|null $selection_method
+ * @property array|string|null $appointed_by
+ * @property array|string|null $term_length
+ * @property array|string|null $responsibilities
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
@@ -143,11 +144,61 @@ class Duty extends Model implements AuthorizableContract, SharepointFileableCont
         ];
     }
 
+    /**
+     * Get the engine used to index the model.
+     *
+     * Admin search runs on Typesense (scoped keys), so force the typesense
+     * engine even though the default Scout driver is the database engine.
+     */
+    public function searchableUsing()
+    {
+        return app(EngineManager::class)->engine('typesense');
+    }
+
     public function toSearchableArray(): array
     {
+        $this->loadMissing(['institution.tenant', 'types', 'assignableTenants']);
+
+        $homeTenantId = $this->institution?->tenant_id ? (int) $this->institution->tenant_id : null;
+
+        // tenant_ids drives the scoped-key access filter. It combines the duty's
+        // home tenant with any tenants it is assignable to, so cross-tenant admins
+        // can find duties they may staff (mirrors DutyController@index OR-clause).
+        $tenantIds = $this->assignableTenants
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->when($homeTenantId !== null, fn ($ids) => $ids->push($homeTenantId))
+            ->unique()
+            ->values()
+            ->all();
+
+        $currentUsersCount = $this->current_users()->count();
+        $currentUsers = $this->current_users()->limit(12)->get(['users.id', 'name']);
+        $previousUsers = $this->previous_users()
+            ->orderByPivot('end_date', 'desc')
+            ->limit(6)
+            ->get(['users.id', 'name']);
+
         return [
-            'name->'.app()->getLocale() => $this->getTranslation('name', app()->getLocale()),
+            'id' => (string) $this->id,
+            'name_lt' => $this->getTranslation('name', 'lt'),
+            'name_en' => $this->getTranslation('name', 'en'),
             'email' => $this->email,
+            'tenant_ids' => $tenantIds,
+            'home_tenant_id' => $homeTenantId,
+            'tenant_shortname' => $this->institution?->tenant?->shortname,
+            'institution_id' => $this->institution_id ? (string) $this->institution_id : null,
+            'institution_name_lt' => $this->institution?->getTranslation('name', 'lt'),
+            'institution_name_en' => $this->institution?->getTranslation('name', 'en'),
+            'type_titles' => $this->types
+                ->map(fn (Type $type) => $type->getTranslation('title', 'lt'))
+                ->filter()
+                ->values()
+                ->all(),
+            'current_user_names' => $currentUsers->pluck('name')->values()->all(),
+            'current_users_count' => $currentUsersCount,
+            'previous_user_names' => $previousUsers->pluck('name')->values()->all(),
+            'created_at' => $this->created_at?->timestamp,
         ];
     }
 

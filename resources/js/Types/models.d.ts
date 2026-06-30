@@ -22,10 +22,14 @@ declare global {
       main_vote?: Vote
       additional_votes?: Vote[]
       note?: AgendaItemNote
+      comments?: Comment[]
+      root_comments?: Comment[]
       activities?: Activity[]
       // counts
       votes_count: number
       additional_votes_count: number
+      comments_count: number
+      root_comments_count: number
       activities_count: number
       // exists
       meeting_exists: boolean
@@ -33,6 +37,8 @@ declare global {
       main_vote_exists: boolean
       additional_votes_exists: boolean
       note_exists: boolean
+      comments_exists: boolean
+      root_comments_exists: boolean
       activities_exists: boolean
     }
 
@@ -181,25 +187,78 @@ declare global {
       // columns
       id: string
       parent_id?: string | null
-      comment: string
-      user_id: string
+      thread_root_id?: string | null
       commentable_type: string
       commentable_id: string
-      created_at: string
-      updated_at: string
+      user_id: string
+      kind: CommentKind
+      body: string
+      metadata?: Array<unknown> | null
+      mentioned_user_ids?: Array<unknown> | null
+      resolved_at?: string | null
+      resolved_by?: string | null
+      edited_at?: string | null
+      created_at?: string | null
+      updated_at?: string | null
       deleted_at?: string | null
       // relations
       commentable?: Comment
-      comments?: Comment[]
       user?: User
+      parent?: Comment
+      replies?: Comment[]
+      thread_root?: Comment
+      reactions?: CommentReaction[]
+      poll_votes?: CommentPollVote[]
+      resolver?: User
       activities?: Activity[]
       // counts
-      comments_count: number
+      replies_count: number
+      reactions_count: number
+      poll_votes_count: number
       activities_count: number
       // exists
-      comments_exists: boolean
       user_exists: boolean
+      parent_exists: boolean
+      replies_exists: boolean
+      thread_root_exists: boolean
+      reactions_exists: boolean
+      poll_votes_exists: boolean
+      resolver_exists: boolean
       activities_exists: boolean
+    }
+
+    export interface CommentPollVote {
+      // columns
+      id: string
+      comment_id: string
+      user_id: string
+      option_id: string
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      comment?: Comment
+      user?: User
+      // counts
+      // exists
+      comment_exists: boolean
+      user_exists: boolean
+    }
+
+    export interface CommentReaction {
+      // columns
+      id: string
+      comment_id: string
+      user_id: string
+      emoji: string
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      comment?: Comment
+      user?: User
+      // counts
+      // exists
+      comment_exists: boolean
+      user_exists: boolean
     }
 
     export interface Content {
@@ -322,6 +381,10 @@ declare global {
       email?: string | null
       contacts_grouping: string
       places_to_occupy?: number | null
+      selection_method?: string | null
+      appointed_by?: Array<unknown> | null
+      term_length?: Array<unknown> | null
+      responsibilities?: Array<unknown> | null
       created_at: string
       updated_at: string
       deleted_at?: string | null
@@ -524,6 +587,9 @@ declare global {
       is_active: boolean
       meeting_periodicity_days?: number | null
       contacts_layout: string
+      selection_method?: string | null
+      appointed_by?: Array<unknown> | null
+      term_length?: Array<unknown> | null
       created_at: string
       updated_at: string
       deleted_at?: string | null
@@ -547,8 +613,8 @@ declare global {
       users?: User
       followers?: User[]
       available_trainings?: Training[]
-      commentable?: Institution
       comments?: Comment[]
+      root_comments?: Comment[]
       outgoing_relationships?: Relationship[]
       incoming_relationships?: Relationship[]
       fileable_files?: FileableFile[]
@@ -565,6 +631,7 @@ declare global {
       followers_count: number
       available_trainings_count: number
       comments_count: number
+      root_comments_count: number
       outgoing_relationships_count: number
       incoming_relationships_count: number
       fileable_files_count: number
@@ -582,6 +649,7 @@ declare global {
       followers_exists: boolean
       available_trainings_exists: boolean
       comments_exists: boolean
+      root_comments_exists: boolean
       outgoing_relationships_exists: boolean
       incoming_relationships_exists: boolean
       fileable_files_exists: boolean
@@ -690,7 +758,7 @@ declare global {
       agenda_items?: AgendaItem[]
       institutions?: Institution[]
       comments?: Comment[]
-      commentable?: Meeting
+      root_comments?: Comment[]
       fileable_files?: FileableFile[]
       available_files?: FileableFile[]
       tasks?: Task[]
@@ -699,6 +767,7 @@ declare global {
       agenda_items_count: number
       institutions_count: number
       comments_count: number
+      root_comments_count: number
       fileable_files_count: number
       available_files_count: number
       tasks_count: number
@@ -707,6 +776,7 @@ declare global {
       agenda_items_exists: boolean
       institutions_exists: boolean
       comments_exists: boolean
+      root_comments_exists: boolean
       fileable_files_exists: boolean
       available_files_exists: boolean
       tasks_exists: boolean
@@ -1102,6 +1172,9 @@ declare global {
       is_active: boolean
       meeting_periodicity_days?: number | null
       contacts_layout: string
+      selection_method?: string | null
+      appointed_by?: Array<unknown> | null
+      term_length?: Array<unknown> | null
       created_at: string
       updated_at: string
       deleted_at?: string | null
@@ -1125,8 +1198,8 @@ declare global {
       users?: User
       followers?: User[]
       available_trainings?: Training[]
-      commentable?: Institution
       comments?: Comment[]
+      root_comments?: Comment[]
       outgoing_relationships?: Relationship[]
       incoming_relationships?: Relationship[]
       fileable_files?: FileableFile[]
@@ -1143,6 +1216,7 @@ declare global {
       followers_count: number
       available_trainings_count: number
       comments_count: number
+      root_comments_count: number
       outgoing_relationships_count: number
       incoming_relationships_count: number
       fileable_files_count: number
@@ -1160,6 +1234,7 @@ declare global {
       followers_exists: boolean
       available_trainings_exists: boolean
       comments_exists: boolean
+      root_comments_exists: boolean
       outgoing_relationships_exists: boolean
       incoming_relationships_exists: boolean
       fileable_files_exists: boolean
@@ -1192,7 +1267,7 @@ declare global {
       types?: Type[]
       agenda_items?: AgendaItem[]
       comments?: Comment[]
-      commentable?: Meeting
+      root_comments?: Comment[]
       fileable_files?: FileableFile[]
       available_files?: FileableFile[]
       tasks?: Task[]
@@ -1202,6 +1277,7 @@ declare global {
       types_count: number
       agenda_items_count: number
       comments_count: number
+      root_comments_count: number
       fileable_files_count: number
       available_files_count: number
       tasks_count: number
@@ -1211,6 +1287,7 @@ declare global {
       types_exists: boolean
       agenda_items_exists: boolean
       comments_exists: boolean
+      root_comments_exists: boolean
       fileable_files_exists: boolean
       available_files_exists: boolean
       tasks_exists: boolean
@@ -1313,20 +1390,22 @@ declare global {
       // relations
       resources?: Resource[]
       users?: User[]
-      commentable?: Reservation
       comments?: Comment[]
+      root_comments?: Comment[]
       tasks?: Task[]
       activities?: Activity[]
       // counts
       resources_count: number
       users_count: number
       comments_count: number
+      root_comments_count: number
       tasks_count: number
       activities_count: number
       // exists
       resources_exists: boolean
       users_exists: boolean
       comments_exists: boolean
+      root_comments_exists: boolean
       tasks_exists: boolean
       activities_exists: boolean
     }
@@ -1351,16 +1430,18 @@ declare global {
       reservation?: Reservation
       resource?: Resource
       approvals?: Approval[]
-      commentable?: ReservationResource
       comments?: Comment[]
+      root_comments?: Comment[]
       // counts
       approvals_count: number
       comments_count: number
+      root_comments_count: number
       // exists
       reservation_exists: boolean
       resource_exists: boolean
       approvals_exists: boolean
       comments_exists: boolean
+      root_comments_exists: boolean
     }
 
     export interface Resource {
@@ -1469,20 +1550,22 @@ declare global {
       types?: Type[]
       institutions?: Institution[]
       meetings?: Meeting[]
-      commentable?: SharepointFile
       comments?: Comment[]
+      root_comments?: Comment[]
       // counts
       fileables_count: number
       types_count: number
       institutions_count: number
       meetings_count: number
       comments_count: number
+      root_comments_count: number
       // exists
       fileables_exists: boolean
       types_exists: boolean
       institutions_exists: boolean
       meetings_exists: boolean
       comments_exists: boolean
+      root_comments_exists: boolean
     }
 
     export interface SharepointFileable {
@@ -1980,6 +2063,13 @@ declare global {
     } as const;
 
     export type ApprovalDecision = typeof ApprovalDecision[keyof typeof ApprovalDecision]
+
+    const CommentKind = {
+      Comment: 'comment',
+      Poll: 'poll',
+    } as const;
+
+    export type CommentKind = typeof CommentKind[keyof typeof CommentKind]
 
     const MeetingType = {
       InPerson: 'in-person',

@@ -64,6 +64,11 @@ class ReindexSearchCommand extends Command
             }
         }
 
+        // Recreating collections drops their synonym/curation set attachments,
+        // so re-apply the search config afterwards.
+        $this->info('Re-applying Typesense search config (synonyms, curation)...');
+        Artisan::call('typesense:apply-search-config', [], $this->getOutput());
+
         $this->info('🎉 Reindexing completed!');
     }
 

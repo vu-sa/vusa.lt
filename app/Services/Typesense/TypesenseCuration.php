@@ -2,195 +2,121 @@
 
 namespace App\Services\Typesense;
 
-use Illuminate\Support\Facades\Config;
 use Typesense\Client;
 
 /**
- * Example configuration for Typesense curation (pinning/promoting results).
+ * Typesense curation (pinning/promoting/excluding results).
  *
- * Curations allow you to pin specific documents to the top of search results
- * for specific queries, or exclude certain documents from appearing.
+ * Curation lets you pin specific documents to the top of search results for
+ * specific queries, or exclude certain documents from appearing.
  *
- * This is NOT IMPLEMENTED yet - this file serves as documentation and
- * a starting point for future implementation.
+ * Typesense 30+ exposes curation as a top-level "curation set" resource
+ * (`/curation_sets`) that is attached to collections, replacing the old
+ * collection-nested `/collections/{c}/overrides` endpoints. The `override_tags`
+ * parameter was also renamed to `curation_tags` (not used here).
  *
- * Use cases for VU SA:
+ * The set (`vusa_curation`) is attached to every collection by the
+ * `typesense:apply-search-config` command. It ships empty — use {@see pinItem}
+ * and {@see excludeItem} to build items and pass them to {@see upsertCurationSet}
+ * once real query → result mappings are known.
+ *
+ * Use cases for VU SR:
  * - Pin important announcements when users search for related terms
  * - Pin official documents when searching for policies
- * - Exclude outdated content from search results
- * - Promote current events in calendar search
+ * - Exclude outdated/test content from search results
  *
- * @see https://typesense.org/docs/27.1/api/curation.html
- *
- * TODO: Implement admin UI for managing curations
- * TODO: Create artisan command for bulk curation management
+ * @see https://typesense.org/docs/latest/api/curation.html
  */
 class TypesenseCuration
 {
     /**
-     * Example curations for the VU SA platform
-     *
-     * Structure:
-     * - name: Unique identifier for the curation
-     * - collection: Which collection this applies to
-     * - match_query: The search query that triggers this curation (supports * wildcard)
-     * - includes: Documents to pin to the top (by document ID, with position)
-     * - excludes: Documents to hide from results (by document ID)
+     * Name of the curation set attached to collections.
      */
-    public const EXAMPLE_CURATIONS = [
-        // Example: When searching for "nuostatai" (regulations), pin the main regulations document
-        [
-            'name' => 'pin-main-regulations',
-            'collection' => 'documents',
-            'match_query' => 'nuostatai',
-            'includes' => [
-                ['id' => 'DOC_ID_HERE', 'position' => 1], // Replace with actual document ID
-            ],
-            'excludes' => [],
-        ],
-
-        // Example: When searching for "atstovavimas" (representation), show key info
-        [
-            'name' => 'pin-representation-info',
-            'collection' => 'pages',
-            'match_query' => 'atstovavimas*', // Matches atstovavimas, atstovavimo, etc.
-            'includes' => [
-                ['id' => 'PAGE_ID_HERE', 'position' => 1],
-            ],
-            'excludes' => [],
-        ],
-
-        // Example: Exclude test/draft documents from search
-        [
-            'name' => 'exclude-test-documents',
-            'collection' => 'documents',
-            'match_query' => '*', // Applies to all searches
-            'includes' => [],
-            'excludes' => [
-                ['id' => 'TEST_DOC_1'],
-                ['id' => 'TEST_DOC_2'],
-            ],
-        ],
-    ];
+    public const SET_NAME = 'vusa_curation';
 
     /**
-     * Create or update a curation rule
+     * Build a curation item that pins a document to a position for a query.
+     * Pure transform — no client needed.
      *
-     * @param  Client  $client  Typesense client
-     * @param  string  $collection  Collection name (without prefix)
-     * @param  string  $name  Curation rule name
-     * @param  string  $matchQuery  Query that triggers this curation
-     * @param  array  $includes  Documents to pin: [['id' => '123', 'position' => 1]]
-     * @param  array  $excludes  Documents to hide: [['id' => '456']]
+     * @return array{id: string, rule: array{query: string, match: string}, includes: array<int, array{id: string, position: int}>}
      */
-    public static function upsertCuration(
-        Client $client,
-        string $collection,
-        string $name,
-        string $matchQuery,
-        array $includes = [],
-        array $excludes = []
+    public static function pinItem(
+        string $id,
+        string $query,
+        string $documentId,
+        int $position = 1,
+        string $match = 'exact'
     ): array {
-        $prefix = Config::get('scout.prefix', '');
-        $prefixedCollection = $prefix.$collection;
-
-        $params = [
+        return [
+            'id' => $id,
             'rule' => [
-                'query' => $matchQuery,
-                'match' => 'exact', // or 'contains' for partial matching
+                'query' => $query,
+                'match' => $match,
+            ],
+            'includes' => [
+                ['id' => $documentId, 'position' => $position],
             ],
         ];
-
-        if (! empty($includes)) {
-            $params['includes'] = $includes;
-        }
-
-        if (! empty($excludes)) {
-            $params['excludes'] = $excludes;
-        }
-
-        try {
-            return $client->collections[$prefixedCollection]
-                ->overrides
-                ->upsert($name, $params);
-        } catch (\Exception $e) {
-            return ['error' => $e->getMessage()];
-        }
     }
 
     /**
-     * Get all curation rules for a collection
-     */
-    public static function getCurations(Client $client, string $collection): array
-    {
-        $prefix = Config::get('scout.prefix', '');
-        $prefixedCollection = $prefix.$collection;
-
-        try {
-            return $client->collections[$prefixedCollection]->overrides->retrieve();
-        } catch (\Exception $e) {
-            return ['error' => $e->getMessage()];
-        }
-    }
-
-    /**
-     * Delete a curation rule
-     */
-    public static function deleteCuration(Client $client, string $collection, string $name): array
-    {
-        $prefix = Config::get('scout.prefix', '');
-        $prefixedCollection = $prefix.$collection;
-
-        try {
-            return $client->collections[$prefixedCollection]->overrides[$name]->delete();
-        } catch (\Exception $e) {
-            return ['error' => $e->getMessage()];
-        }
-    }
-
-    /**
-     * Pin a specific document to the top of search results for a query
+     * Build a curation item that excludes a document from a query's results.
+     * Pure transform — no client needed.
      *
-     * Convenience method for common use case.
+     * @return array{id: string, rule: array{query: string, match: string}, excludes: array<int, array{id: string}>}
      */
-    public static function pinDocument(
-        Client $client,
-        string $collection,
+    public static function excludeItem(
+        string $id,
+        string $query,
         string $documentId,
-        string $forQuery,
-        int $position = 1
+        string $match = 'exact'
     ): array {
-        $curationName = 'pin-'.md5($forQuery.'-'.$documentId);
-
-        return self::upsertCuration(
-            $client,
-            $collection,
-            $curationName,
-            $forQuery,
-            [['id' => $documentId, 'position' => $position]],
-            []
-        );
+        return [
+            'id' => $id,
+            'rule' => [
+                'query' => $query,
+                'match' => $match,
+            ],
+            'excludes' => [
+                ['id' => $documentId],
+            ],
+        ];
     }
 
     /**
-     * Exclude a document from all search results
+     * Create or update the curation set. Defaults to an empty set (the
+     * mechanism is wired and attached, ready to receive real pins later).
      *
-     * Convenience method for hiding content without deleting it.
+     * @param  array<int, array<string, mixed>>  $items  Items from {@see pinItem} / {@see excludeItem}.
      */
-    public static function excludeDocument(
-        Client $client,
-        string $collection,
-        string $documentId
-    ): array {
-        $curationName = 'exclude-'.$documentId;
+    public static function upsertCurationSet(Client $client, array $items = []): array
+    {
+        return $client->curationSets->upsert(self::SET_NAME, [
+            'items' => $items,
+        ]);
+    }
 
-        return self::upsertCuration(
-            $client,
-            $collection,
-            $curationName,
-            '*', // Applies to all searches
-            [],
-            [['id' => $documentId]]
-        );
+    /**
+     * Retrieve the curation set.
+     */
+    public static function getCurationSet(Client $client): array
+    {
+        try {
+            return $client->curationSets[self::SET_NAME]->retrieve();
+        } catch (\Exception $e) {
+            return ['error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Delete the curation set.
+     */
+    public static function deleteCurationSet(Client $client): array
+    {
+        try {
+            return $client->curationSets[self::SET_NAME]->delete();
+        } catch (\Exception $e) {
+            return ['error' => $e->getMessage()];
+        }
     }
 }

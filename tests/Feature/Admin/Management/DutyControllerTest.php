@@ -61,15 +61,15 @@ describe('unauthorized access', function () {
 });
 
 describe('authorized access', function () {
-    test('duty manager can access duties index', function () {
+    test('duty manager is redirected from duties index to unified search', function () {
         $response = asUser($this->dutyManager)->get(route('duties.index'));
-        $response->assertStatus(200);
+        $response->assertRedirect(route('search.index', ['tab' => 'duties']));
     });
 
-    test('super admin can access duties index', function () {
+    test('super admin is redirected from duties index to unified search', function () {
         $admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
         $response = asUser($admin)->get(route('duties.index'));
-        $response->assertStatus(200);
+        $response->assertRedirect(route('search.index', ['tab' => 'duties']));
     });
 
     test('duty manager can create new duty', function () {
@@ -488,21 +488,38 @@ describe('ex-officio target tenant scoping', function () {
     });
 });
 
-describe('duty index cross-tenant visibility', function () {
-    test('cross-tenant duty appears by default but search still filters it out', function () {
+describe('duty search indexing (cross-tenant visibility)', function () {
+    test('searchable array indexes home tenant plus assignable tenants', function () {
         $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
-        $externalDuty = Duty::factory()->for(Institution::factory()->for($otherTenant))->create([
+        $duty = Duty::factory()->for(Institution::factory()->for($otherTenant))->create([
             'name' => ['lt' => 'Zzz Unikalus Isorinis', 'en' => 'Zzz Unique External'],
         ]);
-        $externalDuty->assignableTenants()->attach($this->tenant->id, ['quota' => 1]);
+        $duty->assignableTenants()->attach($this->tenant->id, ['quota' => 1]);
 
-        // Default: included.
-        asUser($this->dutyManager)->get(route('duties.index'))
-            ->assertInertia(fn ($page) => $page->where('duties.data', fn ($data) => collect($data)->pluck('id')->contains($externalDuty->id)));
+        $searchable = $duty->fresh()->toSearchableArray();
 
-        // With a non-matching search term: excluded (the OR-clause must not bypass search).
-        asUser($this->dutyManager)->get(route('duties.index', ['search' => 'TotallyUnrelatedSearchTerm']))
-            ->assertInertia(fn ($page) => $page->where('duties.data', fn ($data) => ! collect($data)->pluck('id')->contains($externalDuty->id)));
+        // home_tenant_id stays the owning tenant — used to flag "external" rows.
+        expect($searchable['home_tenant_id'])->toBe((int) $otherTenant->id);
+
+        // tenant_ids drives the scoped-key filter and must contain BOTH the home
+        // tenant and the assignable tenant so cross-tenant admins can find it.
+        expect($searchable['tenant_ids'])
+            ->toContain((int) $otherTenant->id)
+            ->toContain((int) $this->tenant->id);
+    });
+
+    test('searchable array exposes facet + member fields', function () {
+        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create([
+            'name' => ['lt' => 'Pirmininkas', 'en' => 'Chair'],
+        ]);
+        $member = User::factory()->create(['name' => 'Jonas Jonaitis']);
+        $duty->users()->attach($member->id, ['start_date' => now()->subYear(), 'end_date' => null]);
+
+        $searchable = $duty->fresh()->toSearchableArray();
+
+        expect($searchable)->toHaveKeys(['name_lt', 'name_en', 'tenant_shortname', 'type_titles', 'current_user_names']);
+        expect($searchable['current_user_names'])->toContain('Jonas Jonaitis');
+        expect($searchable['current_users_count'])->toBe(1);
     });
 });
 

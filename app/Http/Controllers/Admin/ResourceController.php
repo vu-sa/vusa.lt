@@ -9,23 +9,20 @@ use App\Http\Requests\UpdateResourceRequest;
 use App\Models\Resource;
 use App\Models\ResourceCategory;
 use App\Services\ModelAuthorizer as Authorizer;
+use Illuminate\Http\RedirectResponse;
 
 class ResourceController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
 
     /**
-     * Display a listing of the resource.
+     * Redirect the resource listing to the unified search page (resources tab).
      */
     public function index()
     {
         $this->handleAuthorization('viewAny', Resource::class);
 
-        return $this->inertiaResponse('Admin/Search/SearchResources', [
-            'can' => [
-                'create' => $this->authorizer->forUser(auth()->user())->check('resources.create.padalinys'),
-            ],
-        ]);
+        return redirect()->route('search.index', array_merge(request()->query(), ['tab' => 'resources']));
     }
 
     /**

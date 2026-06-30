@@ -14,7 +14,7 @@
       <div class="space-y-4">
         <!-- Task status info -->
         <div class="flex flex-wrap items-center gap-2 text-sm">
-          <Badge v-if="task.is_overdue" variant="destructive" class="gap-1">
+          <Badge v-if="task.is_overdue" variant="outline" class="gap-1 bg-rose-100 text-rose-700 border-transparent dark:bg-rose-900/30 dark:text-rose-300">
             <AlertCircleIcon class="h-3 w-3" />
             {{ $t('overdue') }}
           </Badge>

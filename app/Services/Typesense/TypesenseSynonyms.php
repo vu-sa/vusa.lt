@@ -2,7 +2,6 @@
 
 namespace App\Services\Typesense;
 
-use Illuminate\Support\Facades\Config;
 use Typesense\Client;
 
 /**
@@ -11,10 +10,20 @@ use Typesense\Client;
  * Synonyms allow searching for related terms to return matching results.
  * For example, searching "VU" will also match "Vilniaus universitetas".
  *
- * @see https://typesense.org/docs/27.1/api/synonyms.html
+ * Typesense 30+ exposes synonyms as a top-level "synonym set" resource
+ * (`/synonym_sets`) that is attached to collections, replacing the old
+ * collection-nested `/collections/{c}/synonyms` endpoints.
+ *
+ * @see https://typesense.org/docs/latest/api/synonyms.html
  */
 class TypesenseSynonyms
 {
+    /**
+     * Name of the synonym set holding all VU SR synonyms. Attached to every
+     * collection by the `typesense:apply-search-config` command.
+     */
+    public const SET_NAME = 'vusa_synonyms';
+
     /**
      * Multi-way synonyms - all terms are equivalent
      * When any term is searched, documents with any of the other terms will match
@@ -122,69 +131,62 @@ class TypesenseSynonyms
     ];
 
     /**
-     * Upsert all synonyms to a specific collection
+     * Build the `items` payload for the synonym set from the multi-way and
+     * one-way constants. Pure transform — no client needed.
+     *
+     * @return array<int, array{id: string, synonyms: array<int, string>, root?: string}>
      */
-    public static function upsertSynonymsForCollection(Client $client, string $collection): array
+    public static function buildSynonymSetItems(): array
     {
-        $prefix = Config::get('scout.prefix', '');
-        $prefixedCollection = $prefix.$collection;
-        $results = [];
+        $items = [];
 
-        // Upsert multi-way synonyms
         foreach (self::MULTI_WAY_SYNONYMS as $synonym) {
-            try {
-                $results[$synonym['id']] = $client->collections[$prefixedCollection]
-                    ->synonyms
-                    ->upsert($synonym['id'], [
-                        'synonyms' => $synonym['synonyms'],
-                    ]);
-            } catch (\Exception $e) {
-                $results[$synonym['id']] = ['error' => $e->getMessage()];
-            }
+            $items[] = [
+                'id' => $synonym['id'],
+                'synonyms' => $synonym['synonyms'],
+            ];
         }
 
-        // Upsert one-way synonyms
         foreach (self::ONE_WAY_SYNONYMS as $synonym) {
-            try {
-                $results[$synonym['id']] = $client->collections[$prefixedCollection]
-                    ->synonyms
-                    ->upsert($synonym['id'], [
-                        'root' => $synonym['root'],
-                        'synonyms' => $synonym['synonyms'],
-                    ]);
-            } catch (\Exception $e) {
-                $results[$synonym['id']] = ['error' => $e->getMessage()];
-            }
+            $items[] = [
+                'id' => $synonym['id'],
+                'root' => $synonym['root'],
+                'synonyms' => $synonym['synonyms'],
+            ];
         }
 
-        return $results;
+        return $items;
     }
 
     /**
-     * Retrieve all synonyms from a collection
+     * Create or update the synonym set with all configured synonyms.
      */
-    public static function getSynonymsForCollection(Client $client, string $collection): array
+    public static function upsertSynonymSet(Client $client): array
     {
-        $prefix = Config::get('scout.prefix', '');
-        $prefixedCollection = $prefix.$collection;
+        return $client->synonymSets->upsert(self::SET_NAME, [
+            'items' => self::buildSynonymSetItems(),
+        ]);
+    }
 
+    /**
+     * Retrieve the synonym set.
+     */
+    public static function getSynonymSet(Client $client): array
+    {
         try {
-            return $client->collections[$prefixedCollection]->synonyms->retrieve();
+            return $client->synonymSets[self::SET_NAME]->retrieve();
         } catch (\Exception $e) {
             return ['error' => $e->getMessage()];
         }
     }
 
     /**
-     * Delete a synonym from a collection
+     * Delete the synonym set.
      */
-    public static function deleteSynonym(Client $client, string $collection, string $synonymId): array
+    public static function deleteSynonymSet(Client $client): array
     {
-        $prefix = Config::get('scout.prefix', '');
-        $prefixedCollection = $prefix.$collection;
-
         try {
-            return $client->collections[$prefixedCollection]->synonyms[$synonymId]->delete();
+            return $client->synonymSets[self::SET_NAME]->delete();
         } catch (\Exception $e) {
             return ['error' => $e->getMessage()];
         }

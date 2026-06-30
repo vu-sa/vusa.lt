@@ -103,7 +103,7 @@ const columns = computed(() => [
     size: 120,
   },
   createStandardActionsColumn<App.Entities.User>('users', {
-    canView: false,
+    canView: true,
     canEdit: true,
     canDelete: true,
   }),

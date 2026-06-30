@@ -49,9 +49,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property int $is_active
  * @property int $meeting_periodicity_days
  * @property string $contacts_layout
- * @property string|null $selection_method Default selection method for the institution's duties
- * @property string|null $appointed_by Default appointing body for the institution's duties
- * @property string|null $term_length Default term length for the institution's duties
+ * @property string|null $selection_method
+ * @property array|string|null $appointed_by
+ * @property array|string|null $term_length
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
@@ -60,7 +60,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Relationshipable|InstitutionFollow|Trainable|null $pivot
  * @property-read Collection<int, Training> $availableTrainings
  * @property-read Collection<int, InstitutionCheckIn> $checkIns
- * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $commentable
  * @property-read Collection<int, Comment> $comments
  * @property-read Collection<int, Document> $documents
  * @property-read Collection<int, Duty> $duties
@@ -76,6 +75,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Meeting> $meetings
  * @property-read Collection<int, Relationship> $outgoingRelationships
  * @property-read Collection<int, Problem> $problems
+ * @property-read Collection<int, Comment> $rootComments
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Task> $tasksFromMeetings
  * @property-read Tenant|null $tenant
@@ -86,6 +86,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read int|null $users_count
  *
  * @method static \Database\Factories\InstitutionFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution hasActiveDuties()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution onlyTrashed()
@@ -261,6 +262,11 @@ class Institution extends Model implements SharepointFileableContract
             'tenant_id' => $this->tenant_id,
             'tenant_ids' => $this->tenant_id ? [$this->tenant_id] : [],
             'tenant_shortname' => $this->tenant?->shortname,
+            'type_titles' => $this->types
+                ->map(fn (Type $type) => $type->getTranslation('title', 'lt'))
+                ->filter()
+                ->values()
+                ->all(),
             // Self-referential institution_ids for .own permission filtering
             'institution_ids' => [(string) $this->id],
             'created_at' => $this->created_at->timestamp,

@@ -7,32 +7,6 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
-## v1.17 — Redesigned duty page (2026-06-07) {#v1-17}
-
-- ⭐ **New duty page** — the duty overview is reorganised into a single dashboard: current holders, lineage grouped by academic year, and the description with responsibilities on the left, while appointment details, the institution, upcoming meetings, other duties in the institution and documents sit in the sidebar
-- ⭐ **Appointment details** — you can now record how a duty is filled (elected, delegated or appointed), who appoints it and its term length; empty fields are inherited from the institution defaults
-
-## v1.16 — Redesigned institution page (2026-06-06) {#v1-16}
-
-- ✨ **Clearer institution page** — the institution overview is reorganised into a single dashboard: the institution type and managers sit at the top, while members, meetings, tasks, discussion and related institutions are laid out in consistent cards that link straight to their full lists
-
-## v1.15 — Polls and Notifications (2026-06-02) {#v1-15}
-
-- ⭐ **Polls in discussions** — you can now create a poll in the comments: single- or multiple-choice options, ready-made templates (Yes / No, Approve / Reject…), and an optional voting deadline. Voting happens in place, you can see who voted for what, and a reply under a poll is badged with its author's choice — so you can see why they voted that way
-- ⭐ **Mention notifications** — mentioning someone in a comment (@) now notifies them
-- ✨ **More focused discussion notifications** — agenda item comments now reach the meeting's representatives, and replies notify only the thread's participants rather than the whole group
-
-## v1.14 — Discussions (2026-06-02) {#v1-14}
-
-- ⭐ **Discussions** — agenda items, meetings and institutions now have a comments area: threaded replies, reactions, @mentions, and the ability to mark a question as resolved. Comments appear in real time without a page reload
-- ✨ **Broader agenda item access** — coordinators and related-institution representatives can now open an agenda item page in read-only mode and take part in the discussion, even without edit rights
-- ✨ **Comment and note indicators in lists** — the meeting agenda list shows, per item, whether it has comments and notes
-
-## v1.13 — Unified Search (2026-06-02) {#v1-13}
-
-- ⭐ **Unified search** — a new search page that searches news, pages, documents, events, institutions and meetings at once; results are grouped by content type and ordered by relevance, with a "load more" per group
-- ✨ **Faster search** — the search dialog was replaced by a dedicated page and the heavy search library was dropped, so search loads faster
-
 ## v1.12 — Meeting UI Refinement (2026-06-01) {#v1-12}
 
 - ✨ Redesigned meeting view

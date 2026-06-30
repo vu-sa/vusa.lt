@@ -17,3 +17,4 @@ export * from './Config/collectionFacetConfig';
 // Composables
 export { useAdminCollectionSearch } from './Composables/useAdminCollectionSearch';
 export type { AdminCollectionSearchController } from './Composables/useAdminCollectionSearch';
+export { useFilterPills } from './Composables/useFilterPills';

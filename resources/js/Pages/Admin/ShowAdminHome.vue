@@ -18,6 +18,11 @@
             </p>
           </div>
         </div>
+
+        <!-- Hero search: opens the command palette with the typed text -->
+        <div class="relative mt-5 w-full max-w-2xl">
+          <HomeSearchBar />
+        </div>
       </section>
 
       <!-- Main content grid - responsive layout -->
@@ -56,6 +61,7 @@ import { format } from 'date-fns';
 import { lt, enUS } from 'date-fns/locale';
 
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import HomeSearchBar from '@/Pages/Admin/Dashboard/Components/HomeSearchBar.vue';
 import TasksCard from '@/Pages/Admin/Dashboard/Components/TasksCard.vue';
 import UpcomingMeetingsCard from '@/Pages/Admin/Dashboard/Components/UpcomingMeetingsCard.vue';
 // Lazy load modal - only needed when user clicks "Create meeting"
@@ -140,7 +146,16 @@ const tourSteps = computed(() => {
     },
   });
 
-  // 2. Upcoming meetings card (if atstovavimas)
+  // 2. Hero search bar
+  steps.push({
+    element: '[data-tour="home-search"]',
+    popover: {
+      title: $t('tutorials.admin_home.home_search.title'),
+      description: $t('tutorials.admin_home.home_search.description'),
+    },
+  });
+
+  // 3. Upcoming meetings card (if atstovavimas)
   if (hasAtstovavimas.value) {
     steps.push({
       element: '[data-tour="meetings-card"]',

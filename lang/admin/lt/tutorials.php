@@ -96,6 +96,10 @@ return [
             'title' => 'Sveiki atvykę į Mano VU SA!',
             'description' => 'Mano VU SA atsinaujino!<br><br>Tai yra jūsų <strong>pagrindinis darbalaukis</strong>, kuriame rasite svarbiausius įrankius ir informaciją. Leiskite trumpai supažindinti su pagrindinėmis funkcijomis.',
         ],
+        'home_search' => [
+            'title' => 'Paieška visur',
+            'description' => 'Šioje paieškoje galite rasti <strong>posėdžius, institucijas, dokumentus ir kitus įrašus</strong>. Ją bet kada pasieksite paspaudę <strong>Ctrl+K</strong>.',
+        ],
         'meetings_card' => [
             'title' => 'Artėjantys susitikimai',
             'description' => 'Ši kortelė rodo jūsų <strong>artimiausius suplanuotus susitikimus</strong>. Galite greitai sukurti naują susitikimą arba peržiūrėti visus.',

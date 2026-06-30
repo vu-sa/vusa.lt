@@ -13,9 +13,7 @@
 
     <!-- About -->
     <SectionCard v-if="description" :title="$t('Apie')" :icon="Info">
-      <p class="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
-        {{ description }}
-      </p>
+      <div class="text-sm leading-relaxed text-muted-foreground" v-html="description" />
     </SectionCard>
 
     <!-- Members + Meetings -->

@@ -8,9 +8,10 @@
         <div v-else class="size-4 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
       </div>
       <input ref="searchInputRef" v-model="query" type="text" :placeholder="$t('Ieškoti veiksmų, posėdžių...')"
-        class="flex-1 h-12 bg-transparent text-sm outline-none placeholder:text-muted-foreground/50"
+        class="flex-1 h-12 bg-transparent text-base outline-none placeholder:text-muted-foreground/50 sm:text-sm"
         @keydown.escape="close"
-        @keydown.down.prevent="focusFirstResult">
+        @keydown.down.prevent="focusFirstResult"
+        @keydown.enter="query.trim() && goToUnifiedSearch()">
     </div>
 
     <CommandList class="max-h-[50vh] sm:max-h-[60vh] scroll-py-2">
@@ -26,6 +27,25 @@
       </div>
 
       <template v-else>
+        <!-- Search everything on the unified search page -->
+        <CommandGroup v-if="query.trim()" class="px-2">
+          <CommandItem
+            value="search-everywhere"
+            class="group cursor-pointer rounded-lg px-3 py-2.5 transition-colors hover:bg-accent data-[highlighted]:bg-accent"
+            @select="goToUnifiedSearch"
+          >
+            <div class="flex w-full items-center gap-3">
+              <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary/15">
+                <Search class="size-4" />
+              </div>
+              <span class="flex-1 truncate text-sm font-medium">
+                {{ $t('Ieškoti visur') }} „{{ query.trim() }}“
+              </span>
+              <ChevronRight class="size-4 shrink-0 text-muted-foreground/50 opacity-0 transition-opacity group-hover:opacity-100" />
+            </div>
+          </CommandItem>
+        </CommandGroup>
+
         <!-- Recent items (when query is empty) -->
         <CommandGroup v-if="!query && topRecentItems.length > 0" :heading="$t('Neseniai')" class="px-2">
           <CommandItem v-for="item in topRecentItems" :key="`recent-${item.type}-${item.id}`"
@@ -67,88 +87,17 @@
           <ActionResult v-for="action in filteredActions" :key="action.id" :action />
         </CommandGroup>
 
-        <!-- Institutions (Typesense search) - Priority section -->
-        <CommandGroup v-if="searchResults.institutions.length > 0" class="px-2">
-          <template #heading>
-            <div class="flex items-center justify-between w-full">
-              <span>{{ $t('Institucijos') }}</span>
-              <button
-                type="button"
-                class="flex items-center gap-1 text-[10px] font-medium text-primary hover:text-primary/80 transition-colors"
-                @click.stop="navigateToSearch('institutions')"
-              >
-                {{ $t('Rodyti visus') }}
-                <ArrowRight class="size-3" />
-              </button>
-            </div>
-          </template>
-          <InstitutionResult v-for="institution in searchResults.institutions" :key="`institution-${institution.id}`" :institution />
-        </CommandGroup>
-
-        <!-- Meetings (Typesense search) - Priority section -->
-        <CommandGroup v-if="searchResults.meetings.length > 0" class="px-2">
-          <template #heading>
-            <div class="flex items-center justify-between w-full">
-              <span>{{ $t('Posėdžiai') }}</span>
-              <button
-                type="button"
-                class="flex items-center gap-1 text-[10px] font-medium text-primary hover:text-primary/80 transition-colors"
-                @click.stop="navigateToSearch('meetings')"
-              >
-                {{ $t('Rodyti visus') }}
-                <ArrowRight class="size-3" />
-              </button>
-            </div>
-          </template>
-          <MeetingResult
-            v-for="meeting in searchResults.meetings"
-            :key="`meeting-${meeting.id}`"
-            :meeting
-            :is-related="isFromRelatedInstitution('meetings', meeting.institution_ids)"
-          />
-        </CommandGroup>
-
-        <!-- Agenda Items (Typesense search) - Priority section -->
-        <CommandGroup v-if="searchResults.agendaItems.length > 0" class="px-2">
-          <template #heading>
-            <div class="flex items-center justify-between w-full">
-              <span>{{ $t('Darbotvarkės punktai') }}</span>
-              <button
-                type="button"
-                class="flex items-center gap-1 text-[10px] font-medium text-primary hover:text-primary/80 transition-colors"
-                @click.stop="navigateToSearch('agendaItems')"
-              >
-                {{ $t('Rodyti visus') }}
-                <ArrowRight class="size-3" />
-              </button>
-            </div>
-          </template>
-          <AgendaItemResult
-            v-for="item in searchResults.agendaItems"
-            :key="`agenda-${item.id}`"
-            :item
-            :is-related="isFromRelatedInstitution('agenda_items', item.institution_ids)"
-          />
-        </CommandGroup>
-
-        <!-- Documents (Typesense search) -->
-        <CommandGroup v-if="searchResults.documents.length > 0" :heading="$t('Dokumentai')" class="px-2">
-          <DocumentResult v-for="doc in searchResults.documents" :key="`document-${doc.id}`" :document="doc" />
-        </CommandGroup>
-
-        <!-- News (Typesense search) -->
-        <CommandGroup v-if="searchResults.news.length > 0" :heading="$t('Naujienos')" class="px-2">
-          <NewsResult v-for="newsItem in searchResults.news" :key="`news-${newsItem.id}`" :news="newsItem" />
-        </CommandGroup>
-
-        <!-- Pages (Typesense search) -->
-        <CommandGroup v-if="searchResults.pages.length > 0" :heading="$t('Puslapiai')" class="px-2">
-          <PageResult v-for="pageItem in searchResults.pages" :key="`page-${pageItem.id}`" :page="pageItem" />
-        </CommandGroup>
-
-        <!-- Calendar (Typesense search) -->
-        <CommandGroup v-if="searchResults.calendar.length > 0" :heading="$t('Kalendorius')" class="px-2">
-          <CalendarResult v-for="event in searchResults.calendar" :key="`calendar-${event.id}`" :event />
+        <!-- Flat interleaved search results -->
+        <CommandGroup v-if="flatHits.length > 0" class="px-2">
+          <CommandItem
+            v-for="hit in flatHits"
+            :key="hit.id"
+            :value="hit.id"
+            class="group cursor-pointer rounded-lg px-3 py-2.5 transition-colors hover:bg-accent data-[highlighted]:bg-accent"
+            @select="handleHitSelect(hit)"
+          >
+            <SearchHitRow :hit="hit" />
+          </CommandItem>
         </CommandGroup>
 
         <!-- Rate limit warning -->
@@ -241,25 +190,24 @@ import {
   ChevronRight,
   SearchX,
   Sparkles,
-  ArrowRight,
   Star,
 } from 'lucide-vue-next';
 
 import { useCommandActions } from './useCommandActions';
-import MeetingResult from './results/MeetingResult.vue';
-import AgendaItemResult from './results/AgendaItemResult.vue';
 import ActionResult from './results/ActionResult.vue';
-import NewsResult from './results/NewsResult.vue';
-import PageResult from './results/PageResult.vue';
-import CalendarResult from './results/CalendarResult.vue';
-import InstitutionResult from './results/InstitutionResult.vue';
-import DocumentResult from './results/DocumentResult.vue';
 
 import { useAdminSearch, type MultiSearchResults } from '@/Composables/useAdminSearch';
+import { createEmptyMultiSearchResults } from '@/Shared/Search/utils/createEmptyMultiSearchResults';
 import { useCommandPalette, type RecentItem } from '@/Composables/useCommandPalette';
 import { resolvePageIcon } from '@/Composables/adminPageCatalog';
 import { useUIPreferences } from '@/Composables/useUIPreferences';
 import { useAvailableQuickActions } from '@/Composables/useQuickActions';
+import {
+  collectAllTabHits,
+  type MapperContext,
+  type NormalizedSearchHit,
+} from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import SearchHitRow from '@/Features/Admin/AdminSearch/Components/SearchHitRow.vue';
 import {
   CommandDialog,
   CommandList,
@@ -275,7 +223,7 @@ const { isQuickActionVisible, isPinned, togglePin } = useUIPreferences();
 const { available: availableQuickActions } = useAvailableQuickActions();
 
 // Admin search
-const { multiSearch, initialize: initializeSearch, isRateLimited, isFromRelatedInstitution } = useAdminSearch();
+const { multiSearch, initialize: initializeSearch, isRateLimited, getDirectInstitutionIds } = useAdminSearch();
 
 // Command actions
 const { filterActions, actions: allCommandActions } = useCommandActions();
@@ -283,15 +231,7 @@ const { filterActions, actions: allCommandActions } = useCommandActions();
 // Local state
 const isSearching = ref(false);
 const searchError = ref<string | null>(null);
-const searchResults = ref<MultiSearchResults>({
-  meetings: [],
-  agendaItems: [],
-  news: [],
-  pages: [],
-  calendar: [],
-  institutions: [],
-  documents: [],
-});
+const searchResults = ref<MultiSearchResults>(createEmptyMultiSearchResults());
 const searchInputRef = ref<HTMLInputElement | null>(null);
 
 // Show only the top 5 recent items in the palette
@@ -300,6 +240,19 @@ const topRecentItems = computed<RecentItem[]>(() => recentItems.value.slice(0, 5
 function resolveRecentIcon(item: RecentItem): Component {
   return resolvePageIcon(item.routeName, item.href);
 }
+
+// Context for mappers that need user-relative state (isRelated badges).
+const mapperCtx = computed<MapperContext>(() => ({
+  directInstitutionIds: [
+    ...getDirectInstitutionIds('meetings'),
+    ...getDirectInstitutionIds('agenda_items'),
+  ],
+}));
+
+// Flat, interleaved hits (relevance-sorted when a query is present).
+const flatHits = computed<NormalizedSearchHit[]>(() =>
+  collectAllTabHits(searchResults.value, { query: query.value, dutyCtx: mapperCtx.value }),
+);
 
 // Filtered actions based on query — hide quick actions the user turned off
 // or lacks permission for.
@@ -333,20 +286,14 @@ const filteredActions = computed(() => {
 const hasResults = computed(() => {
   return (
     filteredActions.value.length > 0
-    || searchResults.value.meetings.length > 0
-    || searchResults.value.agendaItems.length > 0
-    || searchResults.value.news.length > 0
-    || searchResults.value.pages.length > 0
-    || searchResults.value.calendar.length > 0
-    || searchResults.value.institutions.length > 0
-    || searchResults.value.documents.length > 0
+    || flatHits.value.length > 0
   );
 });
 
 // Debounced search function - 300ms debounce to reduce request frequency
 const performSearch = useDebounceFn(async (searchQuery: string) => {
   if (!searchQuery.trim()) {
-    searchResults.value = { meetings: [], agendaItems: [], news: [], pages: [], calendar: [], institutions: [], documents: [] };
+    searchResults.value = createEmptyMultiSearchResults();
     isSearching.value = false;
     return;
   }
@@ -394,7 +341,7 @@ watch(query, (newQuery) => {
     performSearch(newQuery);
   }
   else {
-    searchResults.value = { meetings: [], agendaItems: [], news: [], pages: [], calendar: [], institutions: [], documents: [] };
+    searchResults.value = createEmptyMultiSearchResults();
   }
 });
 
@@ -428,15 +375,19 @@ const focusFirstResult = () => {
   }
 };
 
-// Navigate to dedicated search page
-const navigateToSearch = (type: 'institutions' | 'meetings' | 'agendaItems') => {
+// Navigate to the unified search page with the current query (All tab)
+const goToUnifiedSearch = () => {
+  const trimmed = query.value.trim();
   close();
-  const routes = {
-    institutions: route('search.institutions', { q: query.value }),
-    meetings: route('search.meetings', { q: query.value }),
-    agendaItems: route('search.agendaItems', { q: query.value }),
-  };
-  router.visit(routes[type]);
+  router.visit(route('search.index', trimmed ? { q: trimmed } : {}));
+};
+
+// Handle a flat search hit selection
+const handleHitSelect = (hit: NormalizedSearchHit) => {
+  if (hit.href) {
+    close();
+    router.visit(hit.href);
+  }
 };
 
 // Handle recent item selection
