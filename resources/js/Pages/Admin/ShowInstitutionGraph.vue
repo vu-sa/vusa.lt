@@ -3,6 +3,8 @@
     <Graph
       :institution-relationships
       :institutions
+      :types
+      :type-relationships
     />
   </PageContent>
 </template>
@@ -16,9 +18,28 @@ import Graph from '@/Components/Graphs/InstitutionGraph.vue';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { InstitutionIconFilled } from '@/Components/icons';
 
+interface InstitutionGraphEdge {
+  source: string;
+  target: string;
+  direction: 'outgoing' | 'sibling';
+  type: 'direct' | 'type-based' | 'within-type' | 'cross-tenant-sibling';
+  scope: string;
+  bidirectional: boolean;
+  relationship_name: string | null;
+  relationship_description: string | null;
+}
+
+interface TypeGraphNode {
+  id: string;
+  name: string | null;
+  institutions_count: number;
+}
+
 defineProps<{
   institutions: App.Entities.Institution[];
-  institutionRelationships: Record<string, any>[];
+  institutionRelationships: InstitutionGraphEdge[];
+  types: TypeGraphNode[];
+  typeRelationships: InstitutionGraphEdge[];
 }>();
 
 // Setup breadcrumbs for the Institution Graph page

@@ -3,7 +3,7 @@
     :icon="InstitutionIcon"
     :kicker="$t('Institucija')"
     :title="institution.name_lt || institution.name_en || $t('Be pavadinimo')"
-    :subtitle="institution.short_name_lt || institution.short_name_en || institution.alias"
+    :subtitle="institution.short_name_lt || institution.short_name_en"
   >
     <template v-if="institution.tenant_shortname" #badges>
       <Badge variant="outline">{{ institution.tenant_shortname }}</Badge>
@@ -26,7 +26,6 @@
 
     <div class="divide-y rounded-lg border px-4">
       <DetailRow v-if="institution.email" :label="$t('El. paštas')" :value="institution.email" />
-      <DetailRow v-if="institution.alias" :label="$t('Alias')" :value="institution.alias" />
       <DetailRow :label="$t('Padalinys')" :value="institution.tenant_shortname || '—'" />
     </div>
 
@@ -59,6 +58,17 @@
           +{{ hiddenRepresentativeCount }}
         </span>
       </div>
+    </div>
+
+    <!-- Related institutions (one-deep graph) -->
+    <div v-if="data?.related_institutions?.length" class="mt-6">
+      <h3 class="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        {{ $t('Ryšiai') }}
+      </h3>
+      <InstitutionRelationGraph
+        :center-name="institution.name_lt || institution.name_en || $t('Be pavadinimo')"
+        :related="data.related_institutions"
+      />
     </div>
 
     <!-- Recent meetings -->
@@ -102,6 +112,7 @@ import { Eye, Pencil } from 'lucide-vue-next';
 
 import DetailLayout from './DetailLayout.vue';
 import DetailRow from './DetailRow.vue';
+import InstitutionRelationGraph from './InstitutionRelationGraph.vue';
 import { formatSearchDate } from '../../Utils/searchHitMappers';
 
 import { InstitutionIcon } from '@/Components/icons';
@@ -115,6 +126,7 @@ interface InstitutionPreviewData {
   types: Array<{ id: string; title: string }>;
   last_meetings: Array<{ id: string; title: string; start_time: number | null }>;
   representatives: Array<{ id: string; name: string; profile_photo_path: string | null }>;
+  related_institutions: Array<{ id: string; name: string; direction: string; type: string; authorized: boolean }>;
 }
 
 /** Soft cap on representative avatars before collapsing into a "+N" indicator. */

@@ -1103,3 +1103,95 @@ describe('bidirectional relationships', function () {
         expect($inst->meetings)->toHaveCount(1);
     });
 });
+
+describe('getAllRelatedInstitutionsEnriched', function () {
+    test('returns enriched direct edges with relationship metadata', function () {
+        $relationshipable = new Relationshipable([
+            'relationship_id' => $this->relationship->id,
+            'relationshipable_type' => Institution::class,
+            'relationshipable_id' => $this->sourceInstitution->id,
+            'related_model_id' => $this->relatedInstitution->id,
+            'bidirectional' => true,
+        ]);
+        $relationshipable->save();
+
+        $edges = RelationshipService::getAllRelatedInstitutionsEnriched();
+
+        $edge = $edges->firstWhere('source', $this->sourceInstitution->id);
+
+        expect($edge)->not->toBeNull();
+        expect($edge['target'])->toBe($this->relatedInstitution->id);
+        expect($edge['direction'])->toBe('outgoing');
+        expect($edge['type'])->toBe('direct');
+        expect($edge['bidirectional'])->toBeTrue();
+        expect($edge['relationship_name'])->toBe('Test Relationship');
+    });
+
+    test('returns a base collection even when there are no direct edges', function () {
+        // No direct institution edges created; ensures the empty Eloquent collection
+        // does not break the merge with array-shaped edges.
+        $edges = RelationshipService::getAllRelatedInstitutionsEnriched();
+
+        expect($edges)->toBeInstanceOf(Illuminate\Support\Collection::class);
+    });
+
+    test('includes within-type sibling edges flagged as siblings', function () {
+        $type = Type::factory()->create([
+            'model_type' => Institution::class,
+            'extra_attributes' => ['enable_sibling_relationships' => true],
+        ]);
+
+        $this->sourceInstitution->types()->attach($type->id);
+        $this->relatedInstitution->types()->attach($type->id);
+
+        $edges = RelationshipService::getAllRelatedInstitutionsEnriched();
+
+        $sibling = $edges->firstWhere('type', 'within-type');
+
+        expect($sibling)->not->toBeNull();
+        expect($sibling['direction'])->toBe('sibling');
+        expect($sibling['bidirectional'])->toBeFalse();
+    });
+});
+
+describe('getTypeRelationshipGraph', function () {
+    test('returns type nodes and type-to-type edges with metadata', function () {
+        $sourceType = Type::factory()->create(['model_type' => Institution::class, 'title' => ['lt' => 'Tipas A', 'en' => 'Type A']]);
+        $targetType = Type::factory()->create(['model_type' => Institution::class, 'title' => ['lt' => 'Tipas B', 'en' => 'Type B']]);
+
+        $this->relationship->description = 'Aprašymas';
+        $this->relationship->save();
+
+        $this->sourceInstitution->types()->attach($sourceType->id);
+        $this->relatedInstitution->types()->attach($targetType->id);
+
+        (new Relationshipable([
+            'relationship_id' => $this->relationship->id,
+            'relationshipable_type' => Type::class,
+            'relationshipable_id' => $sourceType->id,
+            'related_model_id' => $targetType->id,
+            'scope' => Relationshipable::SCOPE_CROSS_TENANT,
+            'bidirectional' => true,
+        ]))->save();
+
+        $graph = RelationshipService::getTypeRelationshipGraph();
+
+        expect($graph['nodes']->pluck('id'))->toContain((string) $sourceType->id, (string) $targetType->id);
+
+        $edge = $graph['edges']->firstWhere('source', (string) $sourceType->id);
+        expect($edge)->not->toBeNull();
+        expect($edge['target'])->toBe((string) $targetType->id);
+        expect($edge['scope'])->toBe('cross-tenant');
+        expect($edge['bidirectional'])->toBeTrue();
+        expect($edge['relationship_name'])->toBe('Test Relationship');
+        expect($edge['relationship_description'])->toBe('Aprašymas');
+    });
+
+    test('includes institution types that have no relations', function () {
+        $isolatedType = Type::factory()->create(['model_type' => Institution::class]);
+
+        $graph = RelationshipService::getTypeRelationshipGraph();
+
+        expect($graph['nodes']->pluck('id'))->toContain((string) $isolatedType->id);
+    });
+});

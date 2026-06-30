@@ -3,7 +3,7 @@
     :icon="NewsIcon"
     :kicker="$t('Naujiena')"
     :title="news.title || $t('Be pavadinimo')"
-    :subtitle="news.short"
+    :subtitle="stripHtml(news.short)"
   >
     <template #badges>
       <Badge v-if="news.lang" variant="outline" class="uppercase">
@@ -37,7 +37,7 @@
 
     <div class="divide-y rounded-lg border px-4">
       <DetailRow :label="$t('Pavadinimas')" :value="news.title || '—'" />
-      <DetailRow v-if="news.short" :label="$t('Santrauka')" :value="news.short" />
+      <DetailRow v-if="news.short" :label="$t('Santrauka')" :value="stripHtml(news.short)" />
       <DetailRow :label="$t('Kalba')" :value="news.lang?.toUpperCase() || '—'" />
       <DetailRow v-if="news.tenant_name" :label="$t('Padalinys')" :value="news.tenant_name" />
       <DetailRow :label="$t('Publikavimo data')" :value="formatSearchDate(news.publish_time) || '—'" />
@@ -60,7 +60,14 @@ import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import type { NewsSearchResult } from '@/Shared/Search/types';
 
-defineProps<{
+const props = defineProps<{
   news: NewsSearchResult;
 }>();
+
+const stripHtml = (html?: string): string => {
+  if (!html) return '';
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || '';
+};
 </script>

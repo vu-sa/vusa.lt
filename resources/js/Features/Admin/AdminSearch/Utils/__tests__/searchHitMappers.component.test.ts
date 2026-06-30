@@ -57,12 +57,12 @@ describe('normalizeHit', () => {
     expect(hit.statusBadge).toEqual({ label: 'Užbaigtas', tone: 'success' });
   });
 
-  it('links an agenda item to its parent meeting', () => {
-    const hit = normalizeHit('agendaItems', { id: '3', title: 'Punktas', meeting_title: 'M', meeting_id: '9' });
+  it('links an agenda item to its edit page and uses institution as subtitle', () => {
+    const hit = normalizeHit('agendaItems', { id: '3', title: 'Punktas', meeting_title: 'M', meeting_id: '9', institution_name_lt: 'VU Senatas' });
 
     expect(hit.id).toBe('agendaItems-3');
-    expect(hit.subtitle).toBe('M');
-    expect(hit.href).toContain('meetings.show');
+    expect(hit.subtitle).toBe('VU Senatas');
+    expect(hit.href).toContain('agendaItems.edit');
   });
 
   it('joins resource location and category in the subtitle', () => {

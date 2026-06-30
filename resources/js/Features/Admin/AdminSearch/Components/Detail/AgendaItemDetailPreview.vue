@@ -14,9 +14,15 @@
       </Badge>
     </template>
 
-    <template v-if="item.meeting_id" #actions>
-      <Link :href="route('meetings.show', item.meeting_id)">
+    <template #actions>
+      <Link :href="route('agendaItems.edit', item.id)">
         <Button size="sm">
+          <Pencil class="mr-2 size-4" />
+          {{ $t('Redaguoti punktą') }}
+        </Button>
+      </Link>
+      <Link v-if="item.meeting_id" :href="route('meetings.show', item.meeting_id)">
+        <Button size="sm" variant="outline">
           <Eye class="mr-2 size-4" />
           {{ $t('Atidaryti posėdį') }}
         </Button>
@@ -24,8 +30,26 @@
     </template>
 
     <div class="divide-y rounded-lg border px-4">
-      <DetailRow :label="$t('Posėdis')" :value="item.meeting_title || '—'" />
-      <DetailRow v-if="institutionName" :label="$t('Institucija')" :value="institutionName" />
+      <DetailRow :label="$t('Posėdis')">
+        <Link
+          v-if="item.meeting_id"
+          :href="route('meetings.show', item.meeting_id)"
+          class="text-primary hover:underline"
+        >
+          {{ item.meeting_title || '—' }}
+        </Link>
+        <template v-else>{{ item.meeting_title || '—' }}</template>
+      </DetailRow>
+      <DetailRow v-if="institutionName" :label="$t('Institucija')">
+        <Link
+          v-if="item.institution_ids?.length"
+          :href="route('institutions.show', item.institution_ids[0])"
+          class="text-primary hover:underline"
+        >
+          {{ institutionName }}
+        </Link>
+        <template v-else>{{ institutionName }}</template>
+      </DetailRow>
       <DetailRow v-if="item.tenant_shortnames?.length" :label="$t('Padalinys')" :value="item.tenant_shortnames[0]" />
       <DetailRow :label="$t('Data')" :value="formatSearchDate(item.meeting_start_time) || '—'" />
       <DetailRow v-if="item.student_vote" :label="$t('Kaip balsavo studentai')">
@@ -53,7 +77,7 @@
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Eye } from 'lucide-vue-next';
+import { Pencil } from 'lucide-vue-next';
 
 import DetailLayout from './DetailLayout.vue';
 import DetailRow from './DetailRow.vue';

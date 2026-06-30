@@ -31,7 +31,16 @@
 
     <!-- Facts -->
     <div class="divide-y rounded-lg border px-4">
-      <DetailRow :label="$t('Institucija')" :value="institutionName || '—'" />
+      <DetailRow :label="$t('Institucija')">
+        <Link
+          v-if="meeting.institution_ids?.length"
+          :href="route('institutions.show', meeting.institution_ids[0])"
+          class="text-primary hover:underline"
+        >
+          {{ institutionName || '—' }}
+        </Link>
+        <template v-else>{{ institutionName || '—' }}</template>
+      </DetailRow>
       <DetailRow v-if="meeting.tenant_shortname" :label="$t('Padalinys')" :value="meeting.tenant_shortname" />
       <DetailRow :label="$t('Data')" :value="formatSearchDate(meeting.start_time) || '—'" />
       <DetailRow :label="$t('Punktai')" :value="agendaCount" />

@@ -299,9 +299,9 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
   agendaItems: (a: AgendaItemSearchResult, ctx?: MapperContext) => ({
     recordId: String(a.id),
     title: a.title ?? $t('Be pavadinimo'),
-    subtitle: a.meeting_title,
+    subtitle: a.institution_name_lt || a.institution_name_en,
     meta: formatSearchDate(a.meeting_start_time),
-    href: a.meeting_id ? route('meetings.show', a.meeting_id) : undefined,
+    href: route('agendaItems.edit', a.id),
     statusBadge: a.decision
       ? { label: getFacetValueLabel('decision', a.decision), tone: voteTone(a.decision) }
       : undefined,

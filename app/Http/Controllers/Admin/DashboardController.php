@@ -619,12 +619,16 @@ class DashboardController extends AdminController
 
     public function institutionGraph()
     {
-        // return institutions with user count
-        $institutions = Institution::withCount('users')->get();
+        // Only the fields the graph actually renders (id, name, users_count, tenant for grouping).
+        $institutions = Institution::withCount('users')->get(['id', 'name', 'tenant_id']);
+
+        $typeGraph = RelationshipService::getTypeRelationshipGraph();
 
         return $this->inertiaResponse('Admin/ShowInstitutionGraph', [
             'institutions' => $institutions,
-            'institutionRelationships' => RelationshipService::getAllRelatedInstitutions(),
+            'institutionRelationships' => RelationshipService::getAllRelatedInstitutionsEnriched(),
+            'types' => $typeGraph['nodes'],
+            'typeRelationships' => $typeGraph['edges'],
         ]);
     }
 

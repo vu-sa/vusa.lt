@@ -3,7 +3,7 @@
     :icon="PageIcon"
     :kicker="$t('Puslapis')"
     :title="page.title || $t('Be pavadinimo')"
-    :subtitle="page.meta_description"
+    :subtitle="stripHtml(page.meta_description)"
   >
     <template #badges>
       <Badge v-if="page.lang" variant="outline" class="uppercase">
@@ -34,7 +34,7 @@
 
     <div class="divide-y rounded-lg border px-4">
       <DetailRow :label="$t('Pavadinimas')" :value="page.title || '—'" />
-      <DetailRow v-if="page.meta_description" :label="$t('Meta aprašymas')" :value="page.meta_description" />
+      <DetailRow v-if="page.meta_description" :label="$t('Meta aprašymas')" :value="stripHtml(page.meta_description)" />
       <DetailRow :label="$t('Kalba')" :value="page.lang?.toUpperCase() || '—'" />
       <DetailRow v-if="page.category_name" :label="$t('Kategorija')" :value="page.category_name" />
       <DetailRow v-if="page.tenant_name" :label="$t('Padalinys')" :value="page.tenant_name" />
@@ -56,7 +56,14 @@ import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import type { PageSearchResult } from '@/Shared/Search/types';
 
-defineProps<{
+const props = defineProps<{
   page: PageSearchResult;
 }>();
+
+const stripHtml = (html?: string): string => {
+  if (!html) return '';
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || '';
+};
 </script>

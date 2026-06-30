@@ -38,7 +38,16 @@
     </div>
 
     <div class="divide-y rounded-lg border px-4">
-      <DetailRow v-if="institutionName" :label="$t('Institucija')" :value="institutionName" />
+      <DetailRow v-if="institutionName" :label="$t('Institucija')">
+        <Link
+          v-if="duty.institution_id"
+          :href="route('institutions.show', duty.institution_id)"
+          class="text-primary hover:underline"
+        >
+          {{ institutionName }}
+        </Link>
+        <template v-else>{{ institutionName }}</template>
+      </DetailRow>
       <DetailRow :label="$t('Padalinys')" :value="duty.tenant_shortname || '—'" />
       <DetailRow v-if="duty.email" :label="$t('El. paštas')" :value="duty.email" />
     </div>
