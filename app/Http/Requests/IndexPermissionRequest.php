@@ -4,5 +4,8 @@ namespace App\Http\Requests;
 
 class IndexPermissionRequest extends BaseIndexRequest
 {
-    // Additional permission-specific validation or methods can be added here
+    /** @var array<int, array{id: string, desc: bool}> */
+    protected array $defaultSorting = [
+        ['id' => 'created_at', 'desc' => true],
+    ];
 }

@@ -44,7 +44,7 @@
         <!-- Left sidebar: Stepper -->
         <aside class="lg:col-span-4 xl:col-span-3">
           <div class="lg:sticky lg:top-24">
-            <Card class="overflow-hidden border-0 shadow-lg shadow-primary/5">
+            <Card class="overflow-hidden border-0">
               <!-- Card header with gradient -->
               <div class="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-4 border-b">
                 <h2 class="font-medium text-foreground">
@@ -71,7 +71,7 @@
                     <div
                       class="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-300"
                       :class="{
-                        'bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/25': step.active,
+                        'bg-primary border-primary text-primary-foreground': step.active,
                         'bg-green-500 border-green-500 text-white': step.completed && !step.active,
                         'bg-background border-border text-muted-foreground group-hover:border-primary/50': !step.active && !step.completed
                       }"
@@ -112,7 +112,7 @@
             </Card>
 
             <!-- Helpful tips -->
-            <Card class="mt-4 border-0 shadow-md bg-gradient-to-br from-amber-50 to-orange-50/50 dark:from-amber-950/30 dark:to-orange-950/20">
+            <Card class="mt-4 border-0 bg-gradient-to-br from-amber-50 to-orange-50/50 dark:from-amber-950/30 dark:to-orange-950/20">
               <CardContent class="p-4">
                 <div class="flex items-start gap-3">
                   <div class="h-8 w-8 rounded-lg bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center shrink-0">
@@ -146,7 +146,7 @@
 
         <!-- Right: Step content -->
         <main class="lg:col-span-8 xl:col-span-9">
-          <Card class="border-0 shadow-lg shadow-black/5 overflow-hidden">
+          <Card class="border-0 overflow-hidden">
             <!-- Step header -->
             <div class="bg-gradient-to-r from-slate-50 to-white dark:from-zinc-800 dark:to-zinc-900 border-b px-6 py-4">
               <div class="flex items-center gap-3">

@@ -36,7 +36,8 @@
         <NavQuickActions
           v-if="key === 'quick_actions' && isSectionVisible(key)"
           @new-meeting="handleNewMeeting" @new-news="handleNewNews"
-          @new-reservation="handleNewReservation" />
+          @new-reservation="handleNewReservation"
+          @open-customize="showCustomizeDialog = true" />
         <PinnedPagesSection
           v-else-if="key === 'pinned' && isSectionVisible(key)" />
         <RecentlyVisitedSection
@@ -128,6 +129,11 @@
                 <DropdownMenuItem class="cursor-pointer" @select="showShortcutsDialog = true">
                   <Keyboard class="mr-2 h-4 w-4" />
                   <span>{{ $t('Klaviatūros trumpiniai') }}</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem class="cursor-pointer" @select="(e: Event) => { e.preventDefault(); setAnalytics(!analyticsAllowed); }">
+                  <Activity class="mr-2 h-4 w-4" />
+                  <span>{{ $t('Analitikos slapukai') }}</span>
+                  <Check v-if="analyticsAllowed" class="ml-auto h-4 w-4" />
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
@@ -254,6 +260,8 @@ import {
   Search,
   SlidersHorizontal,
   Keyboard,
+  Activity,
+  Check,
   type LucideIcon,
 } from 'lucide-vue-next';
 import { Link, router, usePage, useForm } from '@inertiajs/vue3';
@@ -273,6 +281,7 @@ import AppLogo from './AppLogo.vue';
 import KeyboardShortcutsDialog from './KeyboardShortcutsDialog.vue';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
+import { useCookieConsent } from '@/Composables/useCookieConsent';
 
 import { useDocsUpdateIndicator } from '@/Composables/useDocsUpdateIndicator';
 import { useUIPreferences } from '@/Composables/useUIPreferences';
@@ -342,6 +351,9 @@ const { isSectionVisible, orderedSections, density } = useUIPreferences();
 const showCustomizeDialog = ref(false);
 const showShortcutsDialog = ref(false);
 
+// Analytics cookie consent (opt-in/out for staff using the internal tool)
+const { analyticsAllowed, setAnalytics } = useCookieConsent();
+
 // Draw attention to the account menu, which now hosts sidebar customization,
 // pinned pages and keyboard shortcuts. Dismisses once the menu is opened.
 const settingsSpotlight = useFeatureSpotlight('sidebar-settings-v1', { position: 'top-right' });
@@ -400,20 +412,15 @@ const navMainItems = computed(() => {
         || route().current('duties.show'),
       dataTour: 'nav-visak',
     });
-
-    // Search (Paieška) - meetings and agenda items search pages
-    // items.push({
-    //   title: $t('Paieška'),
-    //   url: route('search.meetings'),
-    //   icon: markRaw(Search),
-    //   isActive: route().current('search.*'),
-    //   items: [
-    //     { title: $t('Posėdžiai'), url: route('search.meetings') },
-    //     { title: $t('Darbotvarkės punktai'), url: route('search.agendaItems') },
-    //     { title: $t('Institucijos'), url: route('search.institutions') },
-    //   ],
-    // })
   }
+
+  // Unified search page (collection access is enforced by scoped search keys)
+  items.push({
+    title: $t('Paieška'),
+    url: route('search.index'),
+    icon: markRaw(Search),
+    isActive: route().current('search.*'),
+  });
 
   // Website (Svetainė)
   if (usePage().props.auth?.can.create.page) {

@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Cache;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->tenant = Tenant::query()->inRandomOrder()->first();
+    $this->tenant = Tenant::query()->first();
 
     // Create a basic user for authorization tests
     $this->user = makeUser($this->tenant);
@@ -72,7 +72,7 @@ describe('authorization tests', function () {
         test('can access meetings index with permission', function () {
             asUser($this->admin)
                 ->get(route('meetings.index'))
-                ->assertStatus(200);
+                ->assertRedirect(route('search.index', ['tab' => 'meetings']));
         });
 
         test('can create a meeting with permission', function () {
@@ -552,5 +552,25 @@ describe('relationship-based meeting access', function () {
         // User SHOULD be able to view the meeting (bidirectional = authorized)
         $response = asUser($user)->get(route('meetings.show', $meeting->id));
         $response->assertStatus(200);
+    });
+});
+
+describe('meeting search indexing', function () {
+    test('searchable array exposes representative user names', function () {
+        $meeting = Meeting::factory()->create([
+            'start_time' => Carbon::now()->addDays(1),
+        ]);
+        $meeting->institutions()->attach($this->institution->id);
+
+        $duty = Duty::factory()->for($this->institution)->create([
+            'name' => ['lt' => 'Pirmininkas', 'en' => 'Chair'],
+        ]);
+        $member = User::factory()->create(['name' => 'Jonas Jonaitis']);
+        $duty->users()->attach($member->id, ['start_date' => now()->subYear(), 'end_date' => null]);
+
+        $searchable = $meeting->fresh()->toSearchableArray();
+
+        expect($searchable)->toHaveKey('user_names');
+        expect($searchable['user_names'])->toContain('Jonas Jonaitis');
     });
 });

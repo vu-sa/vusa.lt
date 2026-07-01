@@ -13,6 +13,7 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ref, computed } from 'vue';
+import type { IndexTablePageInstance } from '@/Types/TableConfigTypes';
 
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
@@ -44,7 +45,7 @@ const props = defineProps<{
 const modelName = 'relationships';
 const entityName = 'relationship';
 
-const indexTablePageRef = ref<any>(null);
+const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
 
 const getRowId = (row: App.Entities.Relationship) => {
   return `relationship-${row.id}`;
@@ -83,7 +84,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Relationship>>(() 
     pageSize: props.relationships.meta.per_page,
 
     initialFilters: props.filters,
-    initialSorting: props.sorting,
+    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'name', desc: false }],
     enableFiltering: true,
     enableColumnVisibility: false,
     enableRowSelection: false,

@@ -4,5 +4,8 @@ namespace App\Http\Requests;
 
 class IndexProblemRequest extends BaseIndexRequest
 {
-    // Additional problem-specific validation or methods can be added here
+    /** @var array<int, array{id: string, desc: bool}> */
+    protected array $defaultSorting = [
+        ['id' => 'occurred_at', 'desc' => true],
+    ];
 }

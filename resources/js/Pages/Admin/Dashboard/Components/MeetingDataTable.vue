@@ -39,7 +39,7 @@ import {
   DialogTitle,
 } from '@/Components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
-import { createIdColumn } from '@/Composables/useDataTableColumns';
+
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { cn } from '@/Utils/Shadcn/utils';
 
@@ -61,7 +61,6 @@ const sortedMeetings = computed(() => {
 
 // Modern TanStack columns for meetings
 const modernMeetingColumns = computed<ColumnDef<any, any>[]>(() => [
-  createIdColumn({ width: 60 }),
   {
     accessorKey: 'institutions.0.name',
     id: 'institution',

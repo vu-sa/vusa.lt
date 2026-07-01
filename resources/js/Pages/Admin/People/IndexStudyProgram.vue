@@ -35,6 +35,7 @@ import {
   PlusIcon,
 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
+import type { IndexTablePageInstance } from '@/Types/TableConfigTypes';
 
 import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
 import { Button } from '@/Components/ui/button';
@@ -72,7 +73,7 @@ const modelName = 'studyPrograms';
 const entityName = 'studyProgram';
 
 // Component refs
-const indexTablePageRef = ref<any>(null);
+const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
 
 // Permission checks
 const canCreate = computed(() => usePage().props.auth?.can?.create?.studyProgram || false);
@@ -142,7 +143,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.StudyProgram>>(() 
 
     // Advanced features
     initialFilters: props.filters,
-    initialSorting: props.sorting,
+    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'name', desc: false }],
     enableFiltering: true,
     enableColumnVisibility: true,
     enableRowSelection: false,

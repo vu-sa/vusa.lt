@@ -4,5 +4,8 @@ namespace App\Http\Requests;
 
 class IndexCalendarRequest extends BaseIndexRequest
 {
-    // Additional calendar-specific validation or methods can be added here
+    /** @var array<int, array{id: string, desc: bool}> */
+    protected array $defaultSorting = [
+        ['id' => 'date', 'desc' => true],
+    ];
 }

@@ -44,6 +44,7 @@ return [
     'direction_outgoing' => 'Outgoing',
     'direction_incoming' => 'Incoming',
     'direction_sibling' => 'Sibling',
+    'related' => 'Related',
 
     // Authorization
     'authorized' => 'Authorized',
@@ -67,4 +68,22 @@ return [
 
     // Validation
     'same_type_error' => 'Source and target cannot be the same type. Same-type sibling relationships are configured in the Type edit form using the "Show related institutions by type" setting.',
+
+    // Graph visualisation (legend, tooltips)
+    'graph' => [
+        'legend_title' => 'Relationship types',
+        'scope_legend_title' => 'Relationship scope',
+        'directional' => 'Directional',
+        'bidirectional' => 'Bidirectional',
+        'type_direct' => 'Direct',
+        'type_type_based' => 'By type',
+        'type_within_type' => 'Same kind',
+        'type_cross_tenant' => 'Cross-unit',
+        'direction_outgoing' => 'Outgoing',
+        'direction_incoming' => 'Incoming',
+        'direction_sibling' => 'Sibling',
+        'scope_within_tenant' => 'Within the same unit',
+        'scope_cross_tenant' => 'Across units',
+        'and_more' => '+:count more',
+    ],
 ];

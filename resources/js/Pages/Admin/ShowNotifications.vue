@@ -11,7 +11,7 @@
             :class="[
               'px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200',
               activeFilter === filter.value
-                ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm'
+                ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
             ]"
             @click="activeFilter = filter.value"

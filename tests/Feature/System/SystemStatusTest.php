@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Cache;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->tenant = Tenant::query()->inRandomOrder()->first();
+    $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
     $this->user->assignRole(config('permission.super_admin_role_name'));
 });

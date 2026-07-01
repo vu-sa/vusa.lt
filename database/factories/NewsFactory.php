@@ -8,6 +8,7 @@ use App\Models\News;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 class NewsFactory extends Factory
 {
@@ -23,17 +24,6 @@ class NewsFactory extends Factory
      *
      * @return array
      */
-    public $inc = 0;
-
-    private function incrementAndReturn()
-    {
-        global $inc;
-
-        $inc = $inc + 1;
-
-        return strval($inc);
-    }
-
     public function definition()
     {
         $editor = rand(1, 4);
@@ -51,7 +41,7 @@ class NewsFactory extends Factory
 
         return [
             'title' => $this->faker->sentence(),
-            'permalink' => 'news'.$this->incrementAndReturn(),
+            'permalink' => fn () => 'news-'.Str::uuid()->toString(),
             'category_id' => Category::inRandomOrder()->select('id')->first()->id,
             'short' => $this->faker->paragraph(1),
             'content_id' => Content::factory()->hasParts(1),

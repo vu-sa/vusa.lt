@@ -18,8 +18,8 @@
       <div v-if="taskStats" class="flex flex-wrap items-center gap-2">
         <Badge
           v-if="taskStats.overdue > 0"
-          variant="destructive"
-          class="gap-1 text-xs"
+          variant="outline"
+          class="gap-1 text-xs bg-rose-100 text-rose-700 border-transparent dark:bg-rose-900/30 dark:text-rose-300"
         >
           <AlertCircleIcon class="h-3 w-3" />
           {{ taskStats.overdue }} {{ $t('overdue') }}

@@ -2,9 +2,11 @@
   <PageContent :title="userName" :back-url="route('users.index')" :heading-icon="UserIcon">
     <UpsertModelLayout>
       <UserForm :user :roles :tenants-with-duties :permissable-tenants
-        @submit:form="(form) => form.patch(route('users.update', user.id), { preserveScroll: true })"
+        @submit:form="onSubmit"
         @delete="() => router.delete(route('users.destroy', user.id))" />
     </UpsertModelLayout>
+    <AccessChangeWarningDialog :open="open" :report="report"
+      @update:open="open = $event" @confirm="confirm" @cancel="cancel" />
   </PageContent>
 </template>
 
@@ -13,9 +15,11 @@ import { computed } from 'vue';
 import { usePage, router } from '@inertiajs/vue3';
 
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
+import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 import UserForm from '@/Components/AdminForms/UserForm.vue';
+import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
 import { UserIcon } from '@/Components/icons';
 
 const props = defineProps<{
@@ -25,6 +29,15 @@ const props = defineProps<{
   tenantsWithDuties: App.Entities.Tenant[];
   permissableTenants: App.Entities.Tenant[];
 }>();
+
+const { report, open, guardedSubmit, confirm, cancel } = useAccessChangeGuard();
+
+const onSubmit = (form: any) =>
+  guardedSubmit((acknowledge) =>
+    form
+      .transform((data: Record<string, unknown>) => ({ ...data, acknowledge_access_change: acknowledge }))
+      .patch(route('users.update', props.user.id), { preserveScroll: true, preserveState: true }),
+  );
 
 const userName = computed(() => {
   if (props.user.show_pronouns) {

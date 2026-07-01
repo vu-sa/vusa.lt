@@ -4,15 +4,17 @@
 
     <!-- Institution Hero -->
     <ShowPageHero
+      flat
       :title="institution.name"
       :subtitle="institution.short_name"
     >
       <template #icon>
-        <span class="text-lg font-medium text-zinc-600 dark:text-zinc-300">
-          {{ getInitials(institution.name) }}
-        </span>
+        <InstitutionIconFilled class="h-6 w-6 sm:h-7 sm:w-7 text-zinc-600 dark:text-zinc-300" />
       </template>
       <template #badge>
+        <Badge v-if="primaryType" variant="secondary" class="text-xs">
+          {{ primaryType }}
+        </Badge>
         <Badge v-if="institution.has_public_meetings" variant="outline" class="text-xs gap-1 text-green-600 border-green-300 dark:text-green-400 dark:border-green-700">
           <Globe class="h-3 w-3" />
           {{ $t('Vieši posėdžiai') }}
@@ -93,34 +95,45 @@
 
     <!-- Main Content -->
     <Tabs v-model="currentTab" class="mt-6">
-      <TabsList class="gap-2 mb-4">
+      <TabsList class="mb-4">
         <TabsTrigger value="overview">
           {{ $t('Apžvalga') }}
         </TabsTrigger>
         <TabsTrigger value="duties">
-          {{ $t('Pareigos') }} ({{ institution.duties?.length || 0 }})
+          {{ $t('Pareigos') }}
+          <span v-if="institution.duties?.length" class="ml-1.5 text-xs font-normal text-zinc-400 dark:text-zinc-500">
+            {{ institution.duties.length }}
+          </span>
         </TabsTrigger>
         <TabsTrigger value="meetings">
-          {{ $t('Susitikimai') }} ({{ institution.meetings?.length || 0 }})
+          {{ $t('Susitikimai') }}
+          <span v-if="institution.meetings?.length" class="ml-1.5 text-xs font-normal text-zinc-400 dark:text-zinc-500">
+            {{ institution.meetings.length }}
+          </span>
         </TabsTrigger>
         <TabsTrigger value="files">
           {{ $t('Failai') }}
         </TabsTrigger>
         <TabsTrigger value="tasks">
           {{ $t('Užduotys') }}
-          <span v-if="institution.allTasks?.length" class="ml-1.5 text-xs opacity-70">
-            ({{ institution.allTasks.length }})
+          <span v-if="institution.allTasks?.length" class="ml-1.5 text-xs font-normal text-zinc-400 dark:text-zinc-500">
+            {{ institution.allTasks.length }}
           </span>
         </TabsTrigger>
         <TabsTrigger value="related" :disabled="relatedInstitutionCount === 0">
           {{ $t('Susijusios institucijos') }}
+        </TabsTrigger>
+        <TabsTrigger value="discussion">
+          {{ $t('Diskusija') }}
+          <span v-if="institution.comments_count" class="ml-1.5 text-xs font-normal text-zinc-400 dark:text-zinc-500">
+            {{ institution.comments_count }}
+          </span>
         </TabsTrigger>
       </TabsList>
 
       <TabsContent value="overview" class="space-y-6">
         <InstitutionOverviewSection
           :institution
-          :activities="recentActivity"
           :can-edit-members="canManageMembers"
           @navigate-tab="navigateToTab"
           @schedule-meeting="showMeetingModal = true"
@@ -135,7 +148,7 @@
       <TabsContent value="duties" class="space-y-6">
         <div class="space-y-4">
           <div v-if="institution.duties?.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card v-for="duty in sortedDuties" :key="duty.id" class="hover:shadow-md transition-shadow cursor-pointer"
+            <Card v-for="duty in sortedDuties" :key="duty.id" class="cursor-pointer transition-colors hover:border-primary/40 hover:bg-accent/40"
               @click="router.visit(route('duties.show', duty.id))">
               <CardContent class="p-4">
                 <div class="flex items-start justify-between">
@@ -301,6 +314,10 @@
       </TabsContent>
 
       <!-- Related Institutions Tab -->
+      <TabsContent value="discussion" class="space-y-6">
+        <DiscussionPanel commentable-type="institution" :commentable-id="institution.id" />
+      </TabsContent>
+
       <TabsContent value="related" class="space-y-6">
         <RelatedInstitutions :institution />
       </TabsContent>
@@ -353,7 +370,8 @@ import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 
 // UI Components
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import DiscussionPanel from '@/Components/Discussions/DiscussionPanel.vue';
+import { Card, CardContent } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
@@ -375,7 +393,7 @@ const props = defineProps<{
 }>();
 
 // State - use shared composable for tab persistence and deferred rendering
-const { currentTab, deferredContentReady, navigateToTab } = useShowPageData({
+const { currentTab, navigateToTab } = useShowPageData({
   tabKey: 'institution',
   entityId: props.institution.id,
   defaultTab: 'overview',
@@ -460,21 +478,9 @@ const relatedInstitutionCount = computed(() => {
 // Note: totalPositions, lastMeeting, daysSinceLastMeeting, isOverdue, and periodicityStatusColor
 // are now calculated in useInstitutionUrgency composable and InstitutionOverviewSection
 
-const getInitials = (name?: string) => {
-  if (!name) return 'IN';
-  const words = name.split(' ').filter(word => word.length > 0);
-  if (words.length >= 2) {
-    return (words[0][0] + words[1][0]).toUpperCase();
-  }
-  if (words.length === 1) {
-    return words[0].substring(0, 2).toUpperCase();
-  }
-  return 'IN';
-};
-
-const recentActivity = computed(() => {
-  // This would come from the backend - placeholder for now
-  return [];
+const primaryType = computed(() => {
+  const type = props.institution.types?.[0];
+  return typeof type?.title === 'string' ? type.title : null;
 });
 
 // Permissions

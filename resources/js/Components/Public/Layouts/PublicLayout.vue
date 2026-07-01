@@ -128,7 +128,7 @@
       </main>
 
       <FadeTransition appear>
-        <ConsentCard v-if="!cookieConsent" @okay-cookie-consent="cookieConsent = true" />
+        <ConsentCard v-if="!cookieConsentDecided" />
       </FadeTransition>
     </div>
 
@@ -167,7 +167,7 @@
  * while maintaining all SEO functionality.
  */
 import { computed, defineAsyncComponent, onMounted, ref, watch, nextTick } from 'vue';
-import { useDark, useStorage } from '@vueuse/core';
+import { useDark } from '@vueuse/core';
 import { Head, usePage, router } from '@inertiajs/vue3';
 
 import SiteFooter from '../FullWidth/SiteFooter.vue';
@@ -177,6 +177,7 @@ import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
 import { Toaster } from '@/Components/ui/sonner';
 import { useToasts } from '@/Composables/useToasts';
+import { useCookieConsent } from '@/Composables/useCookieConsent';
 import { useSecondMenu } from '@/Composables/useSecondMenu';
 import 'vue-sonner/style.css';
 
@@ -346,7 +347,7 @@ const seo = computed(() => {
 
 const mounted = ref(false);
 
-const cookieConsent = useStorage('cookie-consent', false);
+const { decided: cookieConsentDecided } = useCookieConsent();
 
 // Initialize toast system for flash messages
 const toasts = useToasts();

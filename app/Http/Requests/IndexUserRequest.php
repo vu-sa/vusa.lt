@@ -4,5 +4,8 @@ namespace App\Http\Requests;
 
 class IndexUserRequest extends BaseIndexRequest
 {
-    // Additional user-specific validation or methods can be added here
+    /** @var array<int, array{id: string, desc: bool}> */
+    protected array $defaultSorting = [
+        ['id' => 'name', 'desc' => false],
+    ];
 }

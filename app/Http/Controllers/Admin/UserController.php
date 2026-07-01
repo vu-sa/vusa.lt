@@ -14,11 +14,13 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Duty;
 use App\Models\Role;
+use App\Models\Task;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ResourceServices\UserDutyService;
 use App\Services\TanstackTableService;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Auth;
@@ -132,10 +134,61 @@ class UserController extends AdminController
     {
         $this->handleAuthorization('view', $user);
 
+        $user->load([
+            'current_duties.institution.tenant',
+            'previous_duties.institution.tenant',
+            'roles',
+            'tasks.taskable',
+        ]);
+
+        $user->makeVisible(['last_action'])->append('has_password');
+
+        $tasks = $user->tasks->sortByDesc('created_at')->values();
+        $taskStats = [
+            'total' => $tasks->count(),
+            'completed' => $tasks->whereNotNull('completed_at')->count(),
+            'pending' => $tasks->whereNull('completed_at')->count(),
+            'overdue' => $tasks->filter(fn ($t) => $t->isOverdue())->count(),
+            'autoCompleting' => $tasks->filter(fn ($t) => ! $t->canBeManuallyCompleted())->count(),
+        ];
+
+        $transformedTasks = $tasks->map(function (Task $task) {
+            /** @var Model|null $taskable */
+            $taskable = $task->taskable;
+
+            return [
+                'id' => $task->id,
+                'name' => $task->name,
+                'description' => $task->description,
+                'due_date' => $task->due_date?->toISOString(),
+                'completed_at' => $task->completed_at?->toISOString(),
+                'created_at' => $task->created_at->toISOString(),
+                'action_type' => $task->action_type?->value,
+                'metadata' => $task->metadata,
+                'progress' => $task->getProgress(),
+                'is_overdue' => $task->isOverdue(),
+                'can_be_manually_completed' => $task->canBeManuallyCompleted(),
+                'icon' => $task->icon,
+                'color' => $task->color,
+                'taskable' => $taskable ? [
+                    'id' => $taskable->getKey(),
+                    'name' => $taskable->getAttribute('title') ?? $taskable->getAttribute('name') ?? null,
+                    'type' => class_basename($task->taskable_type),
+                ] : null,
+                'taskable_type' => class_basename($task->taskable_type ?? ''),
+                'taskable_id' => $task->taskable_id,
+                'users' => $task->users->map(fn (User $u) => [
+                    'id' => $u->id,
+                    'name' => $u->name,
+                    'profile_photo_path' => $u->profile_photo_path,
+                ])->all(),
+            ];
+        });
+
         return $this->inertiaResponse('Admin/People/ShowUser', [
-            'user' => $user->load(['duties' => function ($query) {
-                $query->withPivot('start_date', 'end_date');
-            }]),
+            'user' => $user->toFullArray(),
+            'tasks' => $transformedTasks,
+            'taskStats' => $taskStats,
         ]);
     }
 
@@ -164,25 +217,36 @@ class UserController extends AdminController
         // TODO: make duty attach / detach work properly
         $this->handleAuthorization('update', $user);
 
-        UserDutyService::syncDutiesForUser(
-            new SupportCollection($request->current_duties ?? []),
-            $user->current_duties->pluck('id'),
-            $user,
-            $this->authorizer
-        );
+        $actor = $request->user();
+        $actorIsSuperAdmin = $actor->isSuperAdmin();
+        $currentDutyIds = $user->current_duties->pluck('id');
 
-        DB::transaction(function () use ($request, $user) {
-            $user->update($request->only('name', 'email', 'facebook_url', 'phone', 'profile_photo_path', 'profile_photo_focal_point', 'pronouns', 'show_pronouns'));
+        $mutation = function () use ($request, $user, $currentDutyIds, $actorIsSuperAdmin) {
+            UserDutyService::syncDutiesForUser(
+                new SupportCollection($request->current_duties ?? []),
+                $currentDutyIds,
+                $user,
+                $this->authorizer
+            );
 
-            // check if user is super admin
-            if (User::find(Auth::id())->isSuperAdmin()) {
-                if ($request->has('roles')) {
-                    $user->roles()->sync($request->roles);
-                } else {
-                    $user->roles()->sync([]);
+            DB::transaction(function () use ($request, $user, $actorIsSuperAdmin) {
+                $user->update($request->only('name', 'email', 'facebook_url', 'phone', 'profile_photo_path', 'profile_photo_focal_point', 'pronouns', 'show_pronouns'));
+
+                // only a super admin may change roles
+                if ($actorIsSuperAdmin) {
+                    $user->roles()->sync($request->has('roles') ? $request->roles : []);
                 }
-            }
-        });
+            });
+        };
+
+        // Editing your own profile can drop the duties/roles that grant your
+        // access. (A super admin can only self-lock by removing the Super Admin
+        // role, but the analyzer detects that case too.)
+        $couldAffectSelf = $user->is($actor);
+
+        if ($warning = $this->guardSelfLockout($actor, $couldAffectSelf, $request, $mutation)) {
+            return $warning;
+        }
 
         return back()->with('success', 'Kontaktas sėkmingai atnaujintas!');
     }

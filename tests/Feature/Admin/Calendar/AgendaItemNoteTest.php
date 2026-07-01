@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Gate;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->tenant = Tenant::query()->inRandomOrder()->first();
+    $this->tenant = Tenant::query()->first();
     $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
 
     $this->institution = Institution::factory()->for($this->tenant)->create();
@@ -73,7 +73,7 @@ describe('agenda item notes API', function () {
     });
 
     test('unauthorized user cannot read notes (403)', function () {
-        $outsider = makeUser(Tenant::query()->where('id', '!=', $this->tenant->id)->inRandomOrder()->first() ?? $this->tenant);
+        $outsider = makeUser(Tenant::query()->where('id', '!=', $this->tenant->id)->first() ?? $this->tenant);
 
         asUser($outsider)
             ->getJson(route('api.v1.admin.agendaItems.note.show', $this->agendaItem->id))
@@ -81,7 +81,7 @@ describe('agenda item notes API', function () {
     });
 
     test('unauthorized user cannot persist notes (403)', function () {
-        $outsider = makeUser(Tenant::query()->where('id', '!=', $this->tenant->id)->inRandomOrder()->first() ?? $this->tenant);
+        $outsider = makeUser(Tenant::query()->where('id', '!=', $this->tenant->id)->first() ?? $this->tenant);
 
         asUser($outsider)
             ->putJson(route('api.v1.admin.agendaItems.note.update', $this->agendaItem->id), [
@@ -135,7 +135,7 @@ describe('agenda item notes presence channel auth', function () {
     });
 
     test('unauthorized user fails the update gate that guards the channel', function () {
-        $outsider = makeUser(Tenant::query()->where('id', '!=', $this->tenant->id)->inRandomOrder()->first() ?? $this->tenant);
+        $outsider = makeUser(Tenant::query()->where('id', '!=', $this->tenant->id)->first() ?? $this->tenant);
 
         expect(Gate::forUser($outsider)->allows('update', $this->agendaItem))->toBeFalse();
     });

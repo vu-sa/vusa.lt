@@ -31,7 +31,7 @@
     <Accordion
       v-else
       type="multiple"
-      :default-value="defaultOpenFacets"
+      :default-value="[]"
       class="space-y-3"
     >
       <FilterAccordion
@@ -88,7 +88,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, markRaw } from 'vue';
+import { markRaw } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
   Calendar,
@@ -170,13 +170,6 @@ const getFacetIcon = (iconName?: string): typeof Calendar => {
 
   return resolvedIcon || fallbackIcon;
 };
-
-// Get default open facets from config
-const defaultOpenFacets = computed(() => {
-  return props.facetConfig.fields
-    .filter(f => f.defaultOpen)
-    .map(f => f.field);
-});
 
 // Get selected values for a field
 const getSelectedValues = (field: string): (string | number)[] => {

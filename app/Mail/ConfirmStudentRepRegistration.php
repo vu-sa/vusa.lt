@@ -17,6 +17,8 @@ class ConfirmStudentRepRegistration extends Mailable
 
     public ?string $contactEmail;
 
+    public bool $hasValidContactEmail;
+
     /**
      * Create a new message instance.
      *
@@ -33,6 +35,8 @@ class ConfirmStudentRepRegistration extends Mailable
             ? GenitivizeHelper::genitivizeEveryWord($manager->name)
             : __('mail.student_rep.default_contact');
         $this->contactEmail = $manager?->email;
+        $this->hasValidContactEmail = $this->contactEmail !== null
+            && filter_var($this->contactEmail, FILTER_VALIDATE_EMAIL) !== false;
     }
 
     /**

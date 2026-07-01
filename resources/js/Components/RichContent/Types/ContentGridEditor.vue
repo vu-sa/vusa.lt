@@ -25,13 +25,13 @@
         </FormFieldWrapper>
         <FormFieldWrapper id="mobileStacking" label="Mobilusis vaizdas">
           <div class="flex items-center gap-2">
-            <Switch :checked="options.mobileStacking" @update:checked="val => options.mobileStacking = val" />
+            <Switch :model-value="options.mobileStacking" @update:model-value="val => options.mobileStacking = val" />
             <span class="text-sm">Dėti stulpelius vertikaliai</span>
           </div>
         </FormFieldWrapper>
         <FormFieldWrapper id="equalHeight" label="Vienodas aukštis">
           <div class="flex items-center gap-2">
-            <Switch :checked="options.equalHeight" @update:checked="val => options.equalHeight = val" />
+            <Switch :model-value="options.equalHeight" @update:model-value="val => options.equalHeight = val" />
             <span class="text-sm">Vienodo aukščio stulpeliai</span>
           </div>
         </FormFieldWrapper>

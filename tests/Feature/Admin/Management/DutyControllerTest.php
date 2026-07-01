@@ -9,12 +9,13 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Inertia\Testing\AssertableInertia;
 use Spatie\Permission\PermissionRegistrar;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->tenant = Tenant::query()->inRandomOrder()->first();
+    $this->tenant = Tenant::query()->first();
 
     // Create role if it doesn't exist and give it permissions
     $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
@@ -60,15 +61,15 @@ describe('unauthorized access', function () {
 });
 
 describe('authorized access', function () {
-    test('duty manager can access duties index', function () {
+    test('duty manager is redirected from duties index to unified search', function () {
         $response = asUser($this->dutyManager)->get(route('duties.index'));
-        $response->assertStatus(200);
+        $response->assertRedirect(route('search.index', ['tab' => 'duties']));
     });
 
-    test('super admin can access duties index', function () {
+    test('super admin is redirected from duties index to unified search', function () {
         $admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
         $response = asUser($admin)->get(route('duties.index'));
-        $response->assertStatus(200);
+        $response->assertRedirect(route('search.index', ['tab' => 'duties']));
     });
 
     test('duty manager can create new duty', function () {
@@ -123,6 +124,10 @@ describe('authorized access', function () {
             'institution_id' => $this->dutyManagerDuty->institution_id,
             'contacts_grouping' => 'none',
             'places_to_occupy' => 1,
+            // Preserve the role + own membership (as the real form does) so the
+            // manager doesn't lock themselves out of this duty.
+            'roles' => $this->dutyManagerDuty->roles()->pluck('id')->all(),
+            'current_users' => [$this->dutyManager->id],
         ]);
 
         $response->assertRedirect();
@@ -141,7 +146,8 @@ describe('authorized access', function () {
             'institution_id' => $this->dutyManagerDuty->institution_id,
             'contacts_grouping' => $this->dutyManagerDuty->contacts_grouping ?? 'none',
             'places_to_occupy' => $this->dutyManagerDuty->places_to_occupy ?? 1,
-            'current_users' => [$newUser->id],
+            'roles' => $this->dutyManagerDuty->roles()->pluck('id')->all(),
+            'current_users' => [$this->dutyManager->id, $newUser->id],
         ]);
 
         $response->assertRedirect();
@@ -182,7 +188,8 @@ describe('authorized access', function () {
             'institution_id' => $this->dutyManagerDuty->institution_id,
             'contacts_grouping' => $this->dutyManagerDuty->contacts_grouping ?? 'none',
             'places_to_occupy' => $this->dutyManagerDuty->places_to_occupy ?? 1,
-            'current_users' => [$user1->id, $user2->id],
+            'roles' => $this->dutyManagerDuty->roles()->pluck('id')->all(),
+            'current_users' => [$this->dutyManager->id, $user1->id, $user2->id],
         ]);
 
         $response->assertRedirect();
@@ -425,7 +432,7 @@ describe('duty role management', function () {
 
 describe('ex-officio target tenant scoping', function () {
     test('padalinys-scope admin cannot set a cross-tenant duty as ex-officio target', function () {
-        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->inRandomOrder()->first();
+        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $foreignDuty = Duty::factory()->for(Institution::factory()->for($otherTenant))->create();
 
         $response = asUser($this->dutyManager)->put(route('duties.update', $this->dutyManagerDuty), [
@@ -448,6 +455,8 @@ describe('ex-officio target tenant scoping', function () {
             'institution_id' => $this->dutyManagerDuty->institution_id,
             'contacts_grouping' => 'none',
             'places_to_occupy' => 1,
+            'roles' => $this->dutyManagerDuty->roles()->pluck('id')->all(),
+            'current_users' => [$this->dutyManager->id],
             'ex_officio_target_duty_ids' => [$sameTenantDuty->id],
         ]);
 
@@ -458,7 +467,7 @@ describe('ex-officio target tenant scoping', function () {
 
     test('super admin can set a cross-tenant duty as ex-officio target', function () {
         $superAdmin = makeAdminUser($this->tenant);
-        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->inRandomOrder()->first();
+        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $foreignDuty = Duty::factory()->for(Institution::factory()->for($otherTenant))->create();
 
         $response = asUser($superAdmin)->put(route('duties.update', $this->dutyManagerDuty), [
@@ -487,21 +496,60 @@ describe('ex-officio target tenant scoping', function () {
     });
 });
 
-describe('duty index cross-tenant visibility', function () {
-    test('cross-tenant duty appears by default but search still filters it out', function () {
-        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->inRandomOrder()->first();
-        $externalDuty = Duty::factory()->for(Institution::factory()->for($otherTenant))->create([
+describe('duty search indexing (cross-tenant visibility)', function () {
+    test('searchable array indexes home tenant plus assignable tenants', function () {
+        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
+        $duty = Duty::factory()->for(Institution::factory()->for($otherTenant))->create([
             'name' => ['lt' => 'Zzz Unikalus Isorinis', 'en' => 'Zzz Unique External'],
         ]);
-        $externalDuty->assignableTenants()->attach($this->tenant->id, ['quota' => 1]);
+        $duty->assignableTenants()->attach($this->tenant->id, ['quota' => 1]);
 
-        // Default: included.
-        asUser($this->dutyManager)->get(route('duties.index'))
-            ->assertInertia(fn ($page) => $page->where('duties.data', fn ($data) => collect($data)->pluck('id')->contains($externalDuty->id)));
+        $searchable = $duty->fresh()->toSearchableArray();
 
-        // With a non-matching search term: excluded (the OR-clause must not bypass search).
-        asUser($this->dutyManager)->get(route('duties.index', ['search' => 'TotallyUnrelatedSearchTerm']))
-            ->assertInertia(fn ($page) => $page->where('duties.data', fn ($data) => ! collect($data)->pluck('id')->contains($externalDuty->id)));
+        // home_tenant_id stays the owning tenant — used to flag "external" rows.
+        expect($searchable['home_tenant_id'])->toBe((int) $otherTenant->id);
+
+        // tenant_ids drives the scoped-key filter and must contain BOTH the home
+        // tenant and the assignable tenant so cross-tenant admins can find it.
+        expect($searchable['tenant_ids'])
+            ->toContain((int) $otherTenant->id)
+            ->toContain((int) $this->tenant->id);
+    });
+
+    test('searchable array exposes facet + member fields', function () {
+        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create([
+            'name' => ['lt' => 'Pirmininkas', 'en' => 'Chair'],
+        ]);
+        $member = User::factory()->create(['name' => 'Jonas Jonaitis']);
+        $duty->users()->attach($member->id, ['start_date' => now()->subYear(), 'end_date' => null]);
+
+        $searchable = $duty->fresh()->toSearchableArray();
+
+        expect($searchable)->toHaveKeys(['name_lt', 'name_en', 'tenant_shortname', 'type_titles', 'current_user_names']);
+        expect($searchable['current_user_names'])->toContain('Jonas Jonaitis');
+        expect($searchable['current_users_count'])->toBe(1);
+    });
+
+    test('searchable array indexes all current and previous members without limits', function () {
+        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create([
+            'name' => ['lt' => 'Pirmininkas', 'en' => 'Chair'],
+        ]);
+
+        $currentMembers = User::factory()->count(15)->create();
+        foreach ($currentMembers as $member) {
+            $duty->users()->attach($member->id, ['start_date' => now()->subYear(), 'end_date' => null]);
+        }
+
+        $previousMembers = User::factory()->count(10)->create();
+        foreach ($previousMembers as $member) {
+            $duty->users()->attach($member->id, ['start_date' => now()->subYears(2), 'end_date' => now()->subMonths(6)]);
+        }
+
+        $searchable = $duty->fresh()->toSearchableArray();
+
+        expect($searchable['current_user_names'])->toHaveCount(15);
+        expect($searchable['previous_user_names'])->toHaveCount(10);
+        expect($searchable['current_users_count'])->toBe(15);
     });
 });
 
@@ -586,7 +634,7 @@ describe('assignable users is_recent flag', function () {
 
 describe('duty creation institution-tenant scoping', function () {
     test('padalinys-scope admin cannot create a duty in another tenant\'s institution', function () {
-        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->inRandomOrder()->first();
+        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $foreignInstitution = Institution::factory()->for($otherTenant)->create();
 
         $response = asUser($this->dutyManager)->post(route('duties.store'), [
@@ -617,7 +665,7 @@ describe('duty creation institution-tenant scoping', function () {
 
     test('super admin can create a duty in any institution', function () {
         $superAdmin = makeAdminUser($this->tenant);
-        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->inRandomOrder()->first();
+        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $foreignInstitution = Institution::factory()->for($otherTenant)->create();
 
         $response = asUser($superAdmin)->post(route('duties.store'), [
@@ -630,5 +678,75 @@ describe('duty creation institution-tenant scoping', function () {
         $response->assertSessionDoesntHaveErrors('institution_id');
         $response->assertRedirect();
         $this->assertDatabaseHas('duties', ['institution_id' => $foreignInstitution->id]);
+    });
+});
+
+describe('show page', function () {
+    test('returns the dashboard payload with appointment, meetings and sibling duties', function () {
+        $institution = $this->dutyManagerDuty->institution;
+        $institution->update([
+            'selection_method' => 'delegated',
+            'appointed_by' => ['lt' => 'VU Senatas', 'en' => 'VU Senate'],
+            'term_length' => ['lt' => '1 metų kadencija', 'en' => '1 year term'],
+        ]);
+
+        // A sibling duty in the same institution.
+        Duty::factory()->for($institution)->create([
+            'name' => ['lt' => 'Kita pareiga', 'en' => 'Other duty'],
+        ]);
+
+        $response = asUser($this->dutyManager)->get(route('duties.show', $this->dutyManagerDuty));
+
+        $response->assertStatus(200)
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('Admin/People/ShowDuty')
+                ->has('duty.appointment')
+                ->where('duty.appointment.selection_method', 'delegated')
+                ->where('duty.appointment.appointed_by', 'VU Senatas')
+                ->has('duty.other_duties', 1)
+            );
+    });
+
+    test('duty appointment values override the institution defaults', function () {
+        $institution = $this->dutyManagerDuty->institution;
+        $institution->update([
+            'selection_method' => 'delegated',
+            'appointed_by' => ['lt' => 'Institucijos numatytas', 'en' => 'Institution default'],
+        ]);
+
+        $this->dutyManagerDuty->update([
+            'selection_method' => 'elected',
+            'appointed_by' => ['lt' => 'Pareigybės reikšmė', 'en' => 'Duty value'],
+        ]);
+
+        $response = asUser($this->dutyManager)->get(route('duties.show', $this->dutyManagerDuty));
+
+        $response->assertStatus(200)
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('duty.appointment.selection_method', 'elected')
+                ->where('duty.appointment.appointed_by', 'Pareigybės reikšmė')
+            );
+    });
+
+    test('persists appointment fields and responsibilities on update', function () {
+        $response = asUser($this->dutyManager)->put(route('duties.update', $this->dutyManagerDuty), [
+            'name' => ['lt' => 'Atnaujinta', 'en' => 'Updated'],
+            'institution_id' => $this->dutyManagerDuty->institution_id,
+            'places_to_occupy' => 1,
+            'contacts_grouping' => 'none',
+            'selection_method' => 'appointed',
+            'appointed_by' => ['lt' => 'Dekanas', 'en' => 'Dean'],
+            'term_length' => ['lt' => '2 metai', 'en' => '2 years'],
+            'responsibilities' => ['lt' => "Pirma\nAntra", 'en' => "First\nSecond"],
+            'roles' => $this->dutyManagerDuty->roles()->pluck('id')->all(),
+            'current_users' => [$this->dutyManager->id],
+        ]);
+
+        $response->assertSessionDoesntHaveErrors();
+
+        $this->dutyManagerDuty->refresh();
+        expect($this->dutyManagerDuty->selection_method)->toBe('appointed');
+        expect($this->dutyManagerDuty->getTranslation('appointed_by', 'lt'))->toBe('Dekanas');
+        expect($this->dutyManagerDuty->getTranslation('responsibilities', 'en'))->toBe("First\nSecond");
     });
 });

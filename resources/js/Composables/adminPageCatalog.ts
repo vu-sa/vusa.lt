@@ -107,13 +107,12 @@ export const ADMIN_PAGE_CATALOG: AdminPageEntry[] = [
     can: c => !!c.read?.meeting,
   },
   {
-    id: 'nav-search-meetings',
-    routeName: 'meetings.search',
-    labelKey: 'Ieškoti posėdžių',
+    id: 'nav-search',
+    routeName: 'search.index',
+    labelKey: 'Paieška',
     icon: Search,
     category: 'navigation',
-    keywords: ['search', 'meetings', 'ieskoti', 'posedziai', 'paieska'],
-    can: c => !!c.read?.meeting,
+    keywords: ['search', 'paieska', 'ieskoti', 'viskas', 'posedziai', 'institucijos', 'istekliai'],
   },
   {
     id: 'nav-institutions',

@@ -96,6 +96,10 @@ return [
             'title' => 'Welcome to Mano VU SA!',
             'description' => 'This is your <strong>main dashboard</strong> where you\'ll find the most important tools and information. Let us briefly introduce you to the main features.',
         ],
+        'home_search' => [
+            'title' => 'Search everywhere',
+            'description' => 'Use this search to find <strong>meetings, institutions, documents and other records</strong>. You can open it anywhere by pressing <strong>Ctrl+K</strong>.',
+        ],
         'meetings_card' => [
             'title' => 'Upcoming Meetings',
             'description' => 'This card shows your <strong>nearest scheduled meetings</strong>. You can quickly create a new meeting or view all of them.',

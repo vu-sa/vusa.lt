@@ -1,6 +1,6 @@
 <template>
   <Dialog :open="show" @update:open="(val) => { if (!val) $emit('close') }">
-    <DialogContent class="max-w-3xl" @escape-key-down="$emit('close')">
+    <DialogContent :class="cn('sm:max-w-3xl', props.class)" @escape-key-down="$emit('close')">
       <DialogHeader v-if="title">
         <DialogTitle>{{ title }}</DialogTitle>
       </DialogHeader>
@@ -14,11 +14,13 @@
 
 <script setup lang="ts">
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+import { cn } from '@/Utils/Shadcn/utils';
 
 defineEmits(['close']);
 
-defineProps<{
+const props = defineProps<{
   show: boolean;
   title?: string;
+  class?: any;
 }>();
 </script>

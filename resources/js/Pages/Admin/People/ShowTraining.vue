@@ -1,6 +1,6 @@
 <template>
   <AdminContentPage>
-    <Card class="border shadow-xs bg-white dark:bg-zinc-800 dark:border-zinc-700">
+    <Card class="border bg-white dark:bg-zinc-800 dark:border-zinc-700">
       <div class="h-48">
         <img :src="training.image" class="size-full rounded-t-lg object-cover">
       </div>
@@ -73,7 +73,7 @@
         </TabsTrigger>
       </TabsList>
       <TabsContent value="summary">
-        <Card class="border shadow-xs bg-white dark:bg-zinc-800 dark:border-zinc-700">
+        <Card class="border bg-white dark:bg-zinc-800 dark:border-zinc-700">
           <CardHeader>
             <h2 class="mb-0">
               Pagrindine informacija

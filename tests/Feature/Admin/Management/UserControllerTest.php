@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\Duty;
+use App\Models\Institution;
+use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -254,5 +256,38 @@ describe('relationships', function () {
 
         // Check if user can have duties (relationship exists)
         expect($user->duties())->toBeInstanceOf(BelongsToMany::class);
+    });
+});
+
+describe('duty removal', function () {
+    beforeEach(function () {
+        $this->admin = makeUser($this->tenant);
+        $this->admin->assignRole(config('permission.super_admin_role_name'));
+    });
+
+    test('removing a duty held across multiple dutiable rows ends the active row', function () {
+        $target = User::factory()->create();
+        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
+
+        // Same duty across two periods: an old ended one plus a current one.
+        $target->duties()->attach($duty->id, ['start_date' => now()->subYears(2), 'end_date' => now()->subYear()]);
+        $target->duties()->attach($duty->id, ['start_date' => now()->subDay(), 'end_date' => null]);
+
+        $activeCount = fn () => Dutiable::where('duty_id', $duty->id)
+            ->where('dutiable_type', User::class)
+            ->where('dutiable_id', $target->id)
+            ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', now()))
+            ->count();
+
+        expect($activeCount())->toBe(1);
+
+        asUser($this->admin)->put(route('users.update', $target), [
+            'name' => $target->name,
+            'email' => $target->email,
+            'current_duties' => [],
+        ])->assertRedirect();
+
+        // The active row must be end-dated even though an older ended row exists.
+        expect($activeCount())->toBe(0);
     });
 });

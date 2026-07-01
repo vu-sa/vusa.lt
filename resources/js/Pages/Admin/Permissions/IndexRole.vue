@@ -13,6 +13,7 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ref, computed } from 'vue';
+import type { IndexTablePageInstance } from '@/Types/TableConfigTypes';
 
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
@@ -44,7 +45,7 @@ const props = defineProps<{
 const modelName = 'roles';
 const entityName = 'role';
 
-const indexTablePageRef = ref<any>(null);
+const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
 
 const getRowId = (row: App.Entities.Role) => {
   return `role-${row.id}`;
@@ -82,7 +83,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Role>>(() => {
     pageSize: props.roles.meta.per_page,
 
     initialFilters: props.filters,
-    initialSorting: props.sorting,
+    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'created_at', desc: true }],
     enableFiltering: true,
     enableColumnVisibility: false,
     enableRowSelection: false,

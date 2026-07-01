@@ -9,6 +9,7 @@ use App\Models\Meeting;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
+use App\Services\ContactPresentationService;
 use App\Settings\FormSettings;
 use App\Settings\MeetingSettings;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,6 +21,11 @@ use Inertia\Response;
 
 class ContactController extends PublicController
 {
+    public function __construct(private ContactPresentationService $presentationService)
+    {
+        parent::__construct();
+    }
+
     public function contacts()
     {
         $this->getTenantLinks();
@@ -72,7 +78,7 @@ class ContactController extends PublicController
         }
 
         if ($hasGroupedDuties) {
-            $processedContacts = $this->processDutiesWithGrouping($duties);
+            $processedContacts = $this->presentationService->processDutiesWithGrouping($duties);
 
             return $this->renderInstitutionPage($institution, $processedContacts, $institution->name.' | Kontaktai', hasMixedGrouping: true);
         }
@@ -129,10 +135,10 @@ class ContactController extends PublicController
         }
 
         if ($hasGroupedDuties) {
-            $processedContacts = $this->processDutiesWithGrouping($duties);
+            $processedContacts = $this->presentationService->processDutiesWithGrouping($duties);
 
             // Filter processed contacts to only show duties related to the selected types
-            $processedContacts = $this->filterProcessedContactsByTypes($processedContacts, $types);
+            $processedContacts = $this->presentationService->filterProcessedContactsByTypes($processedContacts, $types);
 
             return $this->renderInstitutionPage($institution, $processedContacts, $institution->name.' | '.ucfirst($type->slug), hasMixedGrouping: true);
         }
@@ -480,156 +486,6 @@ class ContactController extends PublicController
         ])->withViewData(
             ['SEOData' => $seo]
         );
-    }
-
-    /**
-     * Process duties with individual grouping settings
-     */
-    private function processDutiesWithGrouping($duties): array
-    {
-        $result = [];
-
-        foreach ($duties as $duty) {
-            if ($duty->contacts_grouping && $duty->contacts_grouping !== 'none') {
-                // This duty needs grouping - collect all groups for this duty
-                $groups = $this->groupContactsByDuty($duty, $duty->contacts_grouping);
-
-                if (! empty($groups)) {
-                    $transformedGroups = [];
-                    foreach ($groups as $groupName => $contacts) {
-                        $transformedGroups[] = [
-                            'name' => $groupName,
-                            'contacts' => $contacts,
-                        ];
-                    }
-
-                    $result[] = [
-                        'type' => 'grouped_duty',
-                        'dutyName' => $duty->name,
-                        'duty' => $duty,
-                        'groups' => $transformedGroups,
-                    ];
-                }
-            } else {
-                // This duty doesn't need grouping, add contacts directly
-                $contacts = $duty->current_users->map(function ($user) use ($duty) {
-                    return [
-                        'user' => $user,
-                        'duty' => $duty,
-                    ];
-                })->toArray();
-
-                if (! empty($contacts)) {
-                    $result[] = [
-                        'type' => 'flat_duty',
-                        'dutyName' => $duty->name,
-                        'duty' => $duty,
-                        'contacts' => $contacts,
-                    ];
-                }
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * Group contacts for a single duty by study program or tenant
-     */
-    private function groupContactsByDuty($duty, string $groupingType): array
-    {
-        $groups = [];
-
-        // Load current users with their dutiables and study programs
-        $users = $duty->current_users->load([
-            'dutiables' => function ($query) use ($duty) {
-                $query->where('duty_id', $duty->id)
-                    ->with(['study_program.tenant']);
-            },
-        ]);
-
-        foreach ($users as $user) {
-            // Find the dutiable for this specific duty
-            $dutiable = $user->dutiables->where('duty_id', $duty->id)->first();
-
-            if (! $dutiable) {
-                continue;
-            }
-
-            $groupKey = $this->getGroupKey($dutiable, $groupingType);
-
-            if (! isset($groups[$groupKey])) {
-                $groups[$groupKey] = [];
-            }
-
-            $groups[$groupKey][] = [
-                'user' => $user,
-                'duty' => $duty,
-                'dutiable' => $dutiable,
-            ];
-        }
-
-        // Sort groups: named groups first (alphabetically), then "Other"
-        uksort($groups, function ($a, $b) {
-            if ($a === 'Other') {
-                return 1;
-            }
-            if ($b === 'Other') {
-                return -1;
-            }
-
-            return strcmp($a, $b);
-        });
-
-        return $groups;
-    }
-
-    /**
-     * Get the group key based on grouping type
-     */
-    private function getGroupKey($dutiable, string $groupingType): string
-    {
-        switch ($groupingType) {
-            case 'study_program':
-                return $dutiable->study_program ? $dutiable->study_program->name : 'Other';
-
-            case 'tenant':
-                return $dutiable->study_program && $dutiable->study_program->tenant
-                    ? $dutiable->study_program->tenant->shortname
-                    : 'Other';
-
-            default:
-                return 'Other';
-        }
-    }
-
-    /**
-     * Filter processed contacts to only show duties related to the selected types
-     */
-    private function filterProcessedContactsByTypes(array $processedContacts, $types): array
-    {
-        $typeIds = $types->pluck('id');
-        $filteredSections = [];
-
-        foreach ($processedContacts as $section) {
-            if ($section['type'] === 'grouped_duty') {
-                // Check if this duty has any of the selected types
-                $dutyHasMatchingTypes = $section['duty']->types->intersect($types)->count() > 0;
-
-                if ($dutyHasMatchingTypes) {
-                    $filteredSections[] = $section;
-                }
-            } else {
-                // For flat duties, check the same way
-                $dutyHasMatchingTypes = $section['duty']->types->intersect($types)->count() > 0;
-
-                if ($dutyHasMatchingTypes) {
-                    $filteredSections[] = $section;
-                }
-            }
-        }
-
-        return $filteredSections;
     }
 
     /**

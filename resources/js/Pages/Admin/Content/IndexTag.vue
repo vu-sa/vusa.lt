@@ -28,6 +28,7 @@ import {
   MergeIcon,
 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
+import type { IndexTablePageInstance } from '@/Types/TableConfigTypes';
 
 import { Button } from '@/Components/ui/button';
 import { TruncatedBadge, TruncatedText } from '@/Components/ui/data-table/cells';
@@ -62,7 +63,7 @@ const modelName = 'tags';
 const entityName = 'tag';
 
 // Component refs
-const indexTablePageRef = ref<any>(null);
+const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
 
 // Permission checks
 const canCreate = computed(() => usePage().props.auth?.can?.create?.tag || false);
@@ -101,6 +102,7 @@ const columns = computed<Array<ColumnDef<App.Entities.Tag, any>>>(() => [
       return h(TruncatedText, { text: new Date(row.original.created_at).toLocaleDateString('lt-LT') });
     },
     size: 150,
+    enableSorting: true,
   },
   createStandardActionsColumn<App.Entities.Tag>('tags', {
     canView: false,
@@ -125,7 +127,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Tag>>(() => {
 
     // Advanced features
     initialFilters: props.filters,
-    initialSorting: props.sorting,
+    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'created_at', desc: true }],
     enableFiltering: true,
     enableColumnVisibility: true,
     enableRowSelection: false,

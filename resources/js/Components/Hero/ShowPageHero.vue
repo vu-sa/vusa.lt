@@ -1,9 +1,10 @@
 <template>
   <section
     :class="cn(
-      'relative overflow-hidden rounded-lg px-4 sm:px-6 py-4 sm:py-5 shadow-sm',
-      'bg-gradient-to-br from-primary/10 via-primary/5 to-background',
-      'dark:from-zinc-800 dark:via-zinc-800/50 dark:to-zinc-900 dark:shadow-zinc-900/20',
+      'relative overflow-hidden rounded-lg px-4 sm:px-6 py-4 sm:py-5',
+      flat
+        ? 'bg-card border border-border'
+        : 'bg-gradient-to-br from-primary/10 via-primary/5 to-background dark:from-zinc-800 dark:via-zinc-800/50 dark:to-zinc-900',
       props.class
     )"
     :style="viewTransitionStyle"
@@ -88,6 +89,8 @@ const props = withDefaults(defineProps<{
   subtitle?: string;
   icon?: Component;
   badge?: BadgeConfig;
+  /** Use a flat card surface (subtle border) instead of the primary gradient. */
+  flat?: boolean;
   viewTransitionName?: string;
   class?: HTMLAttributes['class'];
 }>(), {
@@ -95,6 +98,7 @@ const props = withDefaults(defineProps<{
   subtitle: undefined,
   icon: undefined,
   badge: undefined,
+  flat: false,
   viewTransitionName: undefined,
 });
 

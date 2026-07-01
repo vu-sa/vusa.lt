@@ -1,4 +1,5 @@
 import type { ColumnDef, SortingState, RowSelectionState } from '@tanstack/vue-table';
+import type { Ref } from 'vue';
 
 import type { BreadcrumbItem } from '@/Composables/useBreadcrumbsUnified';
 
@@ -95,6 +96,17 @@ export interface IndexTablePageProps<TData> extends
   BaseTableConfig<TData>,
   AdvancedTableConfig,
   PageTableConfig {}
+
+/**
+ * Exposed interface of the IndexTablePage component for typed template refs
+ */
+export interface IndexTablePageInstance {
+  reloadData: (page?: number) => void;
+  updateFilter: (key: string, value: unknown) => void;
+  getSelectedRows: () => any[];
+  clearRowSelection: () => void;
+  rowSelection: Ref<RowSelectionState>;
+}
 
 /**
  * Configuration for ServerDataTable component (no page wrapper)

@@ -1,15 +1,65 @@
 <?php
 
+use App\Models\Comment;
+use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Tenant;
 use App\Models\Type;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->tenant = Tenant::factory()->create();
+});
+
+describe('reorderDuties', function () {
+    beforeEach(function () {
+        $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    });
+
+    test('persists the new order for each duty in a single batch', function () {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+        $dutyA = Duty::factory()->create(['institution_id' => $institution->id, 'order' => 1]);
+        $dutyB = Duty::factory()->create(['institution_id' => $institution->id, 'order' => 2]);
+
+        asUser($this->admin)->post(route('institutions.reorderDuties'), [
+            'duties' => [
+                ['id' => $dutyA->id, 'order' => 5],
+                ['id' => $dutyB->id, 'order' => 3],
+            ],
+        ])->assertRedirect();
+
+        expect($dutyA->fresh()->order)->toBe(5);
+        expect($dutyB->fresh()->order)->toBe(3);
+    });
+
+    test('a user without institution update permission cannot reorder duties', function () {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+        $duty = Duty::factory()->create(['institution_id' => $institution->id, 'order' => 1]);
+
+        $plainUser = makeUser($this->tenant);
+
+        asUser($plainUser)->post(route('institutions.reorderDuties'), [
+            'duties' => [['id' => $duty->id, 'order' => 9]],
+        ])->assertStatus(403);
+
+        expect($duty->fresh()->order)->toBe(1);
+    });
+
+    test('cannot reorder duties of an institution in another tenant', function () {
+        $otherTenant = Tenant::factory()->create();
+        $otherInstitution = Institution::factory()->create(['tenant_id' => $otherTenant->id]);
+        $otherDuty = Duty::factory()->create(['institution_id' => $otherInstitution->id, 'order' => 1]);
+
+        asUser($this->admin)->post(route('institutions.reorderDuties'), [
+            'duties' => [['id' => $otherDuty->id, 'order' => 9]],
+        ])->assertStatus(403);
+
+        expect($otherDuty->fresh()->order)->toBe(1);
+    });
 });
 
 describe('unauthorized access', function () {
@@ -108,15 +158,34 @@ describe('authorized access', function () {
             );
     });
 
-    test('can index institutions', function () {
-        $response = asUser($this->admin)->get(route('institutions.index'));
+    test('exposes institution type and recent comments for the overview', function () {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        $type = Type::factory()->create(['model_type' => Institution::class]);
+        $institution->types()->attach($type);
+
+        Comment::factory()->create([
+            'commentable_type' => Institution::class,
+            'commentable_id' => $institution->id,
+            'body' => '<p>Hello overview</p>',
+        ]);
+
+        $response = asUser($this->admin)->get(route('institutions.show', $institution));
 
         $response->assertStatus(200)
             ->assertInertia(fn ($page) => $page
-                ->component('Admin/People/IndexInstitution')
-                ->has('data')
-                ->has('meta')
+                ->component('Admin/People/ShowInstitution')
+                ->has('institution.types', 1)
+                ->has('institution.recentComments', 1)
+                ->where('institution.recentComments.0.body', '<p>Hello overview</p>')
+                ->where('institution.recentComments.0.replies_count', 0)
             );
+    });
+
+    test('can index institutions', function () {
+        $response = asUser($this->admin)->get(route('institutions.index'));
+
+        $response->assertRedirect(route('search.index', ['tab' => 'institutions']));
     });
 
     test('can access institution create page', function () {
@@ -293,17 +362,9 @@ describe('relationships', function () {
     });
 
     test('can only access institutions from own tenant', function () {
-        // Since we're dealing with Super Admin, they can see all institutions
-        // and the response is paginated, let's just verify the response structure is correct
         $response = asUser($this->admin)->get(route('institutions.index'));
 
-        $response->assertStatus(200)
-            ->assertInertia(fn ($page) => $page
-                ->has('data')
-                ->has('meta')
-                ->has('meta.total')
-                ->where('meta.total', fn ($total) => $total > 0)
-            );
+        $response->assertRedirect(route('search.index', ['tab' => 'institutions']));
     });
 
     test('cannot edit institution from different tenant', function () {
@@ -524,5 +585,24 @@ describe('meeting_periodicity_days', function () {
         ]);
 
         $response->assertSessionHasErrors('meeting_periodicity_days');
+    });
+});
+
+describe('institution search indexing', function () {
+    test('searchable array exposes duty names and current member names', function () {
+        $institution = Institution::factory()->for($this->tenant)->create([
+            'name' => ['lt' => 'Testinė institucija', 'en' => 'Test Institution'],
+        ]);
+        $duty = Duty::factory()->for($institution)->create([
+            'name' => ['lt' => 'Pirmininkas', 'en' => 'Chair'],
+        ]);
+        $member = User::factory()->create(['name' => 'Jonas Jonaitis']);
+        $duty->users()->attach($member->id, ['start_date' => now()->subYear(), 'end_date' => null]);
+
+        $searchable = $institution->fresh()->toSearchableArray();
+
+        expect($searchable)->toHaveKeys(['name_lt', 'duty_names', 'current_user_names']);
+        expect($searchable['duty_names'])->toContain('Pirmininkas');
+        expect($searchable['current_user_names'])->toContain('Jonas Jonaitis');
     });
 });

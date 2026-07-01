@@ -1,7 +1,7 @@
 <template>
   <div class="search-results-container transition-all duration-300 ease-out">
     <!-- Loading State -->
-    <div v-if="isLoading" class="min-h-[60vh] sm:min-h-[600px]" :class="loadingContainerClass">
+    <div v-if="isLoading" :class="[minHeight ? 'min-h-[60vh] sm:min-h-[600px]' : '', loadingContainerClass]">
       <slot name="skeleton" :count="skeletonCount">
         <!-- Default skeleton fallback -->
         <div v-for="i in skeletonCount" :key="i" class="h-20 bg-muted/50 rounded-lg animate-pulse" />
@@ -9,7 +9,7 @@
     </div>
 
     <!-- Results -->
-    <div v-else-if="results.length > 0" class="min-h-[60vh] sm:min-h-[600px]" :class="resultsContainerClass">
+    <div v-else-if="results.length > 0" :class="resultsContainerClass">
       <TransitionGroup :name="transitionName" :tag="transitionTag" :class="transitionClass" appear>
         <slot v-for="item in results" :key="getItemKey(item)" name="item" :item />
       </TransitionGroup>
@@ -117,6 +117,9 @@ interface Props {
   hasError?: boolean;
   hasActiveFilters?: boolean;
 
+  // Reserve a tall min-height (good for a full dedicated page, off for stacked sections)
+  minHeight?: boolean;
+
   // Skeleton configuration
   skeletonCount?: number;
 
@@ -153,6 +156,7 @@ const props = withDefaults(defineProps<Props>(), {
   isLoadingMore: false,
   hasError: false,
   hasActiveFilters: false,
+  minHeight: true,
   skeletonCount: 6,
   loadingContainerClass: 'space-y-4',
   resultsContainerClass: 'space-y-4',

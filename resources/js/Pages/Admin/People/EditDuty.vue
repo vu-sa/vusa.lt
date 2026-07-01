@@ -19,6 +19,8 @@
         @delete="() => router.delete(route('duties.destroy', duty.id))"
       />
     </UpsertModelLayout>
+    <AccessChangeWarningDialog :open="open" :report="report"
+      @update:open="open = $event" @confirm="confirm" @cancel="cancel" />
   </PageContent>
 </template>
 
@@ -28,6 +30,8 @@ import { router } from '@inertiajs/vue3';
 import DutyForm from '@/Components/AdminForms/DutyForm.vue';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
+import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 import { DutyIcon } from '@/Components/icons';
 
 const props = defineProps<{
@@ -43,9 +47,15 @@ const props = defineProps<{
   assignableDuties: Array<{ id: string; name: string; institution?: { id: string; name: string; short_name?: string | null; tenant?: { id: number; shortname: string } | null } | null }>;
 }>();
 
+const { report, open, guardedSubmit, confirm, cancel } = useAccessChangeGuard();
+
 const handleSubmit = (form: any) => {
   if (props.canEditDuty) {
-    form.patch(route('duties.update', props.duty.id), { preserveScroll: true });
+    guardedSubmit((acknowledge) =>
+      form
+        .transform((data: Record<string, unknown>) => ({ ...data, acknowledge_access_change: acknowledge }))
+        .patch(route('duties.update', props.duty.id), { preserveScroll: true, preserveState: true }),
+    );
     return;
   }
 
@@ -71,9 +81,12 @@ const handleSubmit = (form: any) => {
     })),
   ];
 
-  form.transform(() => ({
-    user_changes: userChanges,
-    ...(actingTenantId !== null ? { tenant_id: actingTenantId } : {}),
-  })).post(route('duties.batchUpdateUsers', props.duty.id), { preserveScroll: true });
+  guardedSubmit(acknowledge =>
+    form.transform(() => ({
+      user_changes: userChanges,
+      ...(actingTenantId !== null ? { tenant_id: actingTenantId } : {}),
+      acknowledge_access_change: acknowledge,
+    })).post(route('duties.batchUpdateUsers', props.duty.id), { preserveScroll: true }),
+  );
 };
 </script>

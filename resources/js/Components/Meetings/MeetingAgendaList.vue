@@ -103,6 +103,16 @@
 
           <!-- Simplified read-only vote indicator -->
           <div class="flex items-center gap-2 shrink-0 self-center">
+            <!-- Discussion + notes presence -->
+            <span
+              v-if="commentsCount(item) || hasNotes(item)"
+              class="flex items-center gap-1.5 text-xs text-zinc-400 dark:text-zinc-500"
+            >
+              <span v-if="commentsCount(item)" class="inline-flex items-center gap-0.5" :title="$t('Komentarai')">
+                <MessageSquare class="h-3.5 w-3.5" />{{ commentsCount(item) }}
+              </span>
+              <span v-if="hasNotes(item)" class="h-1.5 w-1.5 rounded-full bg-amber-400" :title="$t('Yra pastabų')" />
+            </span>
             <span v-if="voteCount(item) > 1" class="text-xs text-zinc-400 dark:text-zinc-500">
               {{ voteCount(item) }} {{ $t('balsavimai') }}
             </span>
@@ -160,7 +170,7 @@ import { ref, computed, watch, nextTick } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import { useSortable } from '@vueuse/integrations/useSortable';
 import { trans as $t } from 'laravel-vue-i18n';
-import { FileText, GripVertical, ListPlus, Plus, Trash2, Users } from 'lucide-vue-next';
+import { FileText, GripVertical, ListPlus, MessageSquare, Plus, Trash2, Users } from 'lucide-vue-next';
 
 import AdminVotingHelpButton from '@/Components/AgendaItems/AdminVotingHelpButton.vue';
 import VoteStatusIndicator from '@/Components/Public/VoteStatusIndicator.vue';
@@ -220,6 +230,8 @@ watch(
 
 const mainVoteOf = (item: App.Entities.AgendaItem) => getMainVote(item as any);
 const voteCount = (item: App.Entities.AgendaItem) => item.votes?.length ?? 0;
+const commentsCount = (item: App.Entities.AgendaItem) => (item as any).comments_count ?? 0;
+const hasNotes = (item: App.Entities.AgendaItem) => Boolean((item as any).has_notes);
 
 const agendaSummary = computed(() => {
   const items = localItems.value;

@@ -25,7 +25,7 @@ trait MeetingTaskTestHelpers
      */
     protected function createMeetingWithCreationTask(): array
     {
-        $tenant = Tenant::query()->inRandomOrder()->first()
+        $tenant = Tenant::query()->first()
             ?? Tenant::factory()->create();
 
         $institution = Institution::factory()->for($tenant)->create();
@@ -69,7 +69,7 @@ trait MeetingTaskTestHelpers
      */
     protected function createMeetingWithCompletionTask(int $agendaItemCount = 3): array
     {
-        $tenant = Tenant::query()->inRandomOrder()->first()
+        $tenant = Tenant::query()->first()
             ?? Tenant::factory()->create();
 
         $institution = Institution::factory()->for($tenant)->create();

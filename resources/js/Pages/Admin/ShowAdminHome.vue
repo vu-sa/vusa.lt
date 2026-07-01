@@ -6,8 +6,10 @@
       <!-- Simple greeting -->
       <section
         data-tour="greeting-section"
-        class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/8 via-primary/4 to-background border border-zinc-200 dark:border-zinc-800 p-6 shadow-sm dark:shadow-zinc-950/50 dark:from-primary/6 dark:via-primary/3">
-        <div class="absolute inset-0 bg-grid-pattern opacity-[0.03] dark:opacity-[0.015]" />
+        class="relative rounded-2xl bg-gradient-to-br from-primary/8 via-primary/4 to-background border border-zinc-200 dark:border-zinc-800 p-6 dark:from-primary/6 dark:via-primary/3">
+        <div class="absolute inset-0 overflow-hidden rounded-2xl">
+          <div class="absolute inset-0 bg-grid-pattern opacity-[0.03] dark:opacity-[0.015]" />
+        </div>
         <div class="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">
@@ -17,6 +19,11 @@
               {{ currentDate }}
             </p>
           </div>
+        </div>
+
+        <!-- Hero search: opens the command palette with the typed text -->
+        <div class="relative mt-5 w-full max-w-2xl">
+          <HomeSearchBar />
         </div>
       </section>
 
@@ -56,6 +63,7 @@ import { format } from 'date-fns';
 import { lt, enUS } from 'date-fns/locale';
 
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import HomeSearchBar from '@/Pages/Admin/Dashboard/Components/HomeSearchBar.vue';
 import TasksCard from '@/Pages/Admin/Dashboard/Components/TasksCard.vue';
 import UpcomingMeetingsCard from '@/Pages/Admin/Dashboard/Components/UpcomingMeetingsCard.vue';
 // Lazy load modal - only needed when user clicks "Create meeting"
@@ -140,7 +148,16 @@ const tourSteps = computed(() => {
     },
   });
 
-  // 2. Upcoming meetings card (if atstovavimas)
+  // 2. Hero search bar
+  steps.push({
+    element: '[data-tour="home-search"]',
+    popover: {
+      title: $t('tutorials.admin_home.home_search.title'),
+      description: $t('tutorials.admin_home.home_search.description'),
+    },
+  });
+
+  // 3. Upcoming meetings card (if atstovavimas)
   if (hasAtstovavimas.value) {
     steps.push({
       element: '[data-tour="meetings-card"]',

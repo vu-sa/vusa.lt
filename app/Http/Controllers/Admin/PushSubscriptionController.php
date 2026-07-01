@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\ApiResponses;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Notifications\TestPushNotification;
@@ -13,6 +14,8 @@ use NotificationChannels\WebPush\PushSubscription;
 
 class PushSubscriptionController extends Controller
 {
+    use ApiResponses;
+
     /**
      * Get all push subscriptions for the authenticated user.
      */
@@ -40,10 +43,7 @@ class PushSubscriptionController extends Controller
             ];
         });
 
-        return response()->json([
-            'success' => true,
-            'subscriptions' => $subscriptions,
-        ]);
+        return $this->jsonSuccess($subscriptions);
     }
 
     /**
@@ -82,10 +82,7 @@ class PushSubscriptionController extends Controller
                 ->update(['device_name' => $request->input('deviceName')]);
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => __('Push notification subscription created successfully.'),
-        ]);
+        return $this->jsonSuccess(message: __('Push notification subscription created successfully.'));
     }
 
     /**
@@ -104,12 +101,11 @@ class PushSubscriptionController extends Controller
             ->where('endpoint', $request->endpoint)
             ->delete();
 
-        return response()->json([
-            'success' => $deleted > 0,
-            'message' => $deleted > 0
-                ? __('Push notification subscription removed successfully.')
-                : __('Subscription not found.'),
-        ]);
+        if ($deleted > 0) {
+            return $this->jsonSuccess(message: __('Push notification subscription removed successfully.'));
+        }
+
+        return $this->jsonError(__('Subscription not found.'), 404);
     }
 
     /**
@@ -124,12 +120,11 @@ class PushSubscriptionController extends Controller
             ->where('id', $id)
             ->delete();
 
-        return response()->json([
-            'success' => $deleted > 0,
-            'message' => $deleted > 0
-                ? __('Push notification subscription removed successfully.')
-                : __('Subscription not found.'),
-        ]);
+        if ($deleted > 0) {
+            return $this->jsonSuccess(message: __('Push notification subscription removed successfully.'));
+        }
+
+        return $this->jsonError(__('Subscription not found.'), 404);
     }
 
     /**
@@ -141,17 +136,14 @@ class PushSubscriptionController extends Controller
         $user = Auth::user();
 
         if (! $user->pushSubscriptions()->exists()) {
-            return response()->json([
-                'success' => false,
-                'message' => __('No push subscription found. Please enable push notifications first.'),
-            ], 400);
+            return $this->jsonError(
+                __('No push subscription found. Please enable push notifications first.'),
+                400
+            );
         }
 
         $user->notify(new TestPushNotification);
 
-        return response()->json([
-            'success' => true,
-            'message' => __('Test notification sent successfully.'),
-        ]);
+        return $this->jsonSuccess(message: __('Test notification sent successfully.'));
     }
 }

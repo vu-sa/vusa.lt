@@ -24,7 +24,7 @@ beforeEach(function () {
 
 describe('PeriodicityGapTaskHandler', function () {
     test('creates periodicity gap task for institution', function () {
-        $tenant = Tenant::query()->inRandomOrder()->first()
+        $tenant = Tenant::query()->first()
             ?? Tenant::factory()->create();
 
         $institution = Institution::factory()
@@ -67,7 +67,7 @@ describe('PeriodicityGapTaskHandler', function () {
     });
 
     test('does not create duplicate periodicity gap task', function () {
-        $tenant = Tenant::query()->inRandomOrder()->first()
+        $tenant = Tenant::query()->first()
             ?? Tenant::factory()->create();
 
         $institution = Institution::factory()
@@ -120,7 +120,7 @@ describe('PeriodicityGapTaskHandler', function () {
     });
 
     test('completes periodicity gap task when meeting is created', function () {
-        $tenant = Tenant::query()->inRandomOrder()->first()
+        $tenant = Tenant::query()->first()
             ?? Tenant::factory()->create();
 
         $institution = Institution::factory()
@@ -168,7 +168,7 @@ describe('PeriodicityGapTaskHandler', function () {
     });
 
     test('completes periodicity gap task when check-in is created', function () {
-        $tenant = Tenant::query()->inRandomOrder()->first()
+        $tenant = Tenant::query()->first()
             ?? Tenant::factory()->create();
 
         $institution = Institution::factory()
@@ -220,7 +220,7 @@ describe('PeriodicityGapTaskHandler', function () {
 
 describe('GetInstitutionRepresentatives', function () {
     test('returns current representatives for institution', function () {
-        $tenant = Tenant::query()->inRandomOrder()->first()
+        $tenant = Tenant::query()->first()
             ?? Tenant::factory()->create();
 
         $institution = Institution::factory()
@@ -257,7 +257,7 @@ describe('GetInstitutionRepresentatives', function () {
     });
 
     test('returns empty collection when no student rep type', function () {
-        $tenant = Tenant::query()->inRandomOrder()->first()
+        $tenant = Tenant::query()->first()
             ?? Tenant::factory()->create();
 
         $institution = Institution::factory()

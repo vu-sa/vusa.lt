@@ -18,7 +18,7 @@
         </template>
       </ProgrammePart>
     </div>
-    <CardModal v-if="selectedPart" v-model:show="showPartEditModal" :part="selectedPart"
+    <CardModal v-if="selectedPart" v-model:show="showPartEditModal"
       @close="showPartEditModal = false">
       <FormFieldWrapper id="part-title" label="Dalies pavadinimas">
         <MultiLocaleInput v-model:input="selectedPart.title" />

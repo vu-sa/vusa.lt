@@ -50,7 +50,7 @@ describe('reservation flow duplicate prevention', function () {
             'commentable_type' => ReservationResource::class,
             'commentable_id' => $reservationResource->id,
             'user_id' => $commenter->id,
-            'comment' => 'Just a regular question',
+            'body' => 'Just a regular question',
         ]);
 
         event(new CommentPosted($comment));
@@ -87,7 +87,7 @@ describe('notification count limits', function () {
             'commentable_type' => ReservationResource::class,
             'commentable_id' => $reservationResource->id,
             'user_id' => $commenter->id,
-            'comment' => 'First question',
+            'body' => 'First question',
         ]);
         event(new CommentPosted($comment1));
 
@@ -96,7 +96,7 @@ describe('notification count limits', function () {
             'commentable_type' => ReservationResource::class,
             'commentable_id' => $reservationResource->id,
             'user_id' => $commenter->id,
-            'comment' => 'Follow up question',
+            'body' => 'Follow up question',
         ]);
         event(new CommentPosted($comment2));
 
@@ -120,7 +120,7 @@ describe('notification deduplication edge cases', function () {
             'commentable_type' => ReservationResource::class,
             'commentable_id' => $reservationResource->id,
             'user_id' => $commenter->id,
-            'comment' => 'Test',
+            'body' => 'Test',
         ]);
 
         event(new CommentPosted($comment));

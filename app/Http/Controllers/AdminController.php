@@ -2,8 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use App\Services\Permissions\AccessChangeAnalyzer;
+use App\Services\Permissions\AccessChangeReport;
+use Closure;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Response as InertiaResponse;
 
 /**
@@ -110,6 +116,67 @@ abstract class AdminController extends Controller
             // Fallback to first parameter as ability
             $this->authorize($modelOrAbility, $abilityOrModel);
         }
+    }
+
+    /**
+     * Run a persistence mutation, guarding against the acting user locking
+     * themselves out of admin access.
+     *
+     * The mutation is always executed exactly once. When the change could affect
+     * the acting user and hasn't been acknowledged, it runs through
+     * {@see AccessChangeAnalyzer} which rolls it back and returns a redirect
+     * carrying an `access_change_warning` flash if it would remove one of the
+     * user's own roles. Super admins are only blocked when the change removes the
+     * Super Admin role itself — losing an ordinary duty role never blocks them. In
+     * every other case the mutation is committed normally and null is returned,
+     * signalling the caller to continue to its success response.
+     *
+     * @param  Closure():mixed  $mutation  The persistence to perform
+     */
+    protected function guardSelfLockout(User $actor, bool $couldAffectSelf, Request $request, Closure $mutation): ?RedirectResponse
+    {
+        if (! $couldAffectSelf || $request->boolean('acknowledge_access_change')) {
+            $mutation();
+
+            if ($couldAffectSelf) {
+                $this->forgetActorPermissionMaps($actor);
+
+                // The actor acknowledged a change to their own roles. It may have
+                // removed the permission that lets them view the page they came
+                // from, so the caller's back() would 403 (and Inertia would throw a
+                // network error). Land them on the dashboard (auth-only) instead.
+                return redirect()->route('dashboard')->with('success', __('access_change.applied'));
+            }
+
+            return null;
+        }
+
+        $superRole = config('permission.super_admin_role_name');
+        $shouldBlock = $actor->isSuperAdmin()
+            ? fn (AccessChangeReport $report) => in_array($superRole, $report->lostRoles, true)
+            : fn (AccessChangeReport $report) => count($report->lostRoles) > 0;
+
+        $report = app(AccessChangeAnalyzer::class)->apply($actor, $mutation, $shouldBlock);
+
+        if ($shouldBlock($report)) {
+            return back()->with('access_change_warning', $report->toArray());
+        }
+
+        // The analyzer committed the change; refresh the actor's cached menus.
+        $this->forgetActorPermissionMaps($actor);
+
+        return null;
+    }
+
+    /**
+     * Forget the acting user's cached admin permission maps so the next request
+     * reflects their post-change access. resetCache() does not touch these, and
+     * create-permissions in particular is otherwise never invalidated.
+     */
+    private function forgetActorPermissionMaps(User $actor): void
+    {
+        Cache::forget('index-permissions-'.$actor->id);
+        Cache::forget('create-permissions-'.$actor->id);
     }
 
     /**

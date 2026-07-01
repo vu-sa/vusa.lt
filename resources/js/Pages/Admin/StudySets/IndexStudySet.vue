@@ -26,6 +26,7 @@ import {
   createBooleanColumn,
 } from '@/Composables/useDataTableColumns';
 import type { IndexTablePageProps } from '@/Types/TableConfigTypes';
+import type { IndexTablePageInstance } from '@/Types/TableConfigTypes';
 import { TrainingIcon } from '@/Components/icons';
 
 interface StudySetRow {
@@ -57,7 +58,7 @@ const props = defineProps<{
 const modelName = 'studySets';
 const entityName = 'studySet';
 
-const indexTablePageRef = ref<any>(null);
+const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
 
 const canCreate = computed(() => usePage().props.auth?.can?.create?.studySet || false);
 
@@ -116,7 +117,7 @@ const tableConfig = computed<IndexTablePageProps<StudySetRow>>(() => ({
   pageSize: props.studySets.meta.per_page,
 
   initialFilters: props.filters,
-  initialSorting: props.sorting,
+    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'order', desc: false }],
   enableFiltering: true,
   enableColumnVisibility: true,
   enableRowSelection: false,

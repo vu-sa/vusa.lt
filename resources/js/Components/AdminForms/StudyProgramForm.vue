@@ -6,7 +6,7 @@
       </template>
       <template #description>
         <p class="mb-4">
-          Studijų programa – tai konkreti studijų kryptis, kuriai priskiriami pareigūnai (pvz., studentų atstovai).
+          {{ $t('forms.helpers.study_program_main_info') }}
         </p>
       </template>
 
@@ -15,10 +15,10 @@
       </FormFieldWrapper>
 
       <div class="grid gap-x-4 lg:grid-cols-2">
-        <FormFieldWrapper id="degree" label="Laipsnis" required>
+        <FormFieldWrapper id="degree" :label="$t('forms.fields.degree')" required>
           <Select v-model="form.degree">
             <SelectTrigger>
-              <SelectValue placeholder="Pasirinkite laipsnį" />
+              <SelectValue :placeholder="$t('forms.placeholders.select_degree')" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem v-for="opt in degreeOptions" :key="opt.value" :value="opt.value">
@@ -28,10 +28,10 @@
           </Select>
         </FormFieldWrapper>
 
-        <FormFieldWrapper id="tenant_id" label="Padalinys" required>
+        <FormFieldWrapper id="tenant_id" :label="$t('forms.fields.tenant')" required>
           <Select v-model="tenantIdString">
             <SelectTrigger>
-              <SelectValue placeholder="Pasirinkite padalinį" />
+              <SelectValue :placeholder="$t('forms.placeholders.select_tenant')" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem v-for="opt in tenantOptions" :key="opt.value" :value="String(opt.value)">

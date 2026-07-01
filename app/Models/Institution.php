@@ -49,6 +49,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property int $is_active
  * @property int $meeting_periodicity_days
  * @property string $contacts_layout
+ * @property string|null $selection_method
+ * @property array|string|null $appointed_by
+ * @property array|string|null $term_length
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
@@ -57,7 +60,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Relationshipable|InstitutionFollow|Trainable|null $pivot
  * @property-read Collection<int, Training> $availableTrainings
  * @property-read Collection<int, InstitutionCheckIn> $checkIns
- * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $commentable
  * @property-read Collection<int, Comment> $comments
  * @property-read Collection<int, Document> $documents
  * @property-read Collection<int, Duty> $duties
@@ -73,6 +75,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Meeting> $meetings
  * @property-read Collection<int, Relationship> $outgoingRelationships
  * @property-read Collection<int, Problem> $problems
+ * @property-read Collection<int, Comment> $rootComments
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Task> $tasksFromMeetings
  * @property-read Tenant|null $tenant
@@ -83,6 +86,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read int|null $users_count
  *
  * @method static \Database\Factories\InstitutionFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution hasActiveDuties()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution onlyTrashed()
@@ -110,7 +114,7 @@ class Institution extends Model implements SharepointFileableContract
     // Note: has_public_meetings is NOT auto-appended due to performance.
     // Append it explicitly where needed: $institution->append('has_public_meetings')
 
-    public $translatable = ['name', 'short_name', 'description', 'address'];
+    public $translatable = ['name', 'short_name', 'description', 'address', 'appointed_by', 'term_length'];
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -120,6 +124,14 @@ class Institution extends Model implements SharepointFileableContract
     public function duties(): HasMany
     {
         return $this->hasMany(Duty::class);
+    }
+
+    /**
+     * Scope institutions that have at least one active duty with current users.
+     */
+    public function scopeHasActiveDuties($query)
+    {
+        return $query->whereHas('duties.current_users');
     }
 
     public function types(): MorphToMany
@@ -239,6 +251,22 @@ class Institution extends Model implements SharepointFileableContract
 
     public function toSearchableArray(): array
     {
+        $this->loadMissing(['duties.current_users', 'types']);
+
+        $currentUserNames = $this->duties
+            ->flatMap(fn (Duty $duty) => $duty->current_users->pluck('name'))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        $dutyNames = $this->duties
+            ->map(fn (Duty $duty) => $duty->getTranslation('name', 'lt'))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
         return [
             'id' => (string) $this->id,
             'name_lt' => $this->getTranslation('name', 'lt'),
@@ -250,8 +278,15 @@ class Institution extends Model implements SharepointFileableContract
             'tenant_id' => $this->tenant_id,
             'tenant_ids' => $this->tenant_id ? [$this->tenant_id] : [],
             'tenant_shortname' => $this->tenant?->shortname,
+            'type_titles' => $this->types
+                ->map(fn (Type $type) => $type->getTranslation('title', 'lt'))
+                ->filter()
+                ->values()
+                ->all(),
             // Self-referential institution_ids for .own permission filtering
             'institution_ids' => [(string) $this->id],
+            'current_user_names' => $currentUserNames,
+            'duty_names' => $dutyNames,
             'created_at' => $this->created_at->timestamp,
         ];
     }

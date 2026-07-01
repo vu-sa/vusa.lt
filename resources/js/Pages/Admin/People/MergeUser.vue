@@ -1,35 +1,35 @@
 <template>
-  <PageContent title="Duplikatų suliejimas" :heading-icon="UserIcon">
+  <PageContent :title="$t('Duplikatų suliejimas')" :heading-icon="UserIcon">
     <UpsertModelLayout>
       <AdminForm :model="form" @submit:form="handleFormSubmit">
         <FormElement>
           <template #title>
-            Sulieti duplikatus
+            {{ $t('Sulieti duplikatus') }}
           </template>
           <template #description>
             <div class="typography">
               <p>
-                Pasirinkus narius, <strong>tik</strong> egzistuojantys ryšiai bus perduoti vienam vartotojui, t.y.:
+                {{ $t('Pasirinkus narius,') }} <strong>{{ $t('tik') }}</strong> {{ $t('egzistuojantys ryšiai bus perduoti vienam vartotojui, t.y.:') }}
               </p>
               <ul>
-                <li> Pareigos </li>
-                <li> Užduotys </li>
-                <li> Veiklos </li>
-                <li> Reservacijos </li>
-                <li> Narystės </li>
+                <li>{{ $t('Pareigos') }}</li>
+                <li>{{ $t('Užduotys') }}</li>
+                <li>{{ $t('Veiklos') }}</li>
+                <li>{{ $t('Rezervacijos') }}</li>
+                <li>{{ $t('Narystės') }}</li>
               </ul>
-              Šią funkciją naudoti <strong>tik tada, kai duombazėje atsirado to paties žmogaus duplikatai.</strong> Nenaudoti, kai norima perduoti pareigybes kitam žmogui.
-              <p> Šis veiksmas yra <strong>neatstatomas</strong>! </p>
+              {{ $t('Šią funkciją naudoti') }} <strong>{{ $t('tik tada, kai duombazėje atsirado to paties žmogaus duplikatai.') }}</strong> {{ $t('Nenaudoti, kai norima perduoti pareigybes kitam žmogui.') }}
+              <p>{{ $t('Šis veiksmas yra') }} <strong>{{ $t('neatstatomas') }}</strong>!</p>
             </div>
           </template>
-          <FormFieldWrapper id="merged_user_id" label="Prijungiamas vartotojas" required>
+          <FormFieldWrapper id="merged_user_id" :label="$t('Prijungiamas vartotojas')" required>
             <SingleSelect
               v-model="selectedMergedUser"
               :options="users"
               label-field="name"
               value-field="id"
-              placeholder="Pasirinkite vartotoją"
-              empty-text="Nerasta"
+              :placeholder="$t('Pasirinkite vartotoją')"
+              :empty-text="$t('Nerasta')"
             >
               <template #option="{ item }">
                 <div class="flex items-center gap-2 w-full">
@@ -44,14 +44,14 @@
               </template>
             </SingleSelect>
           </FormFieldWrapper>
-          <FormFieldWrapper id="kept_user_id" label="Prijungti prie..." required>
+          <FormFieldWrapper id="kept_user_id" :label="$t('Prijungti prie...')" required>
             <SingleSelect
               v-model="selectedKeptUser"
               :options="users"
               label-field="name"
               value-field="id"
-              placeholder="Pasirinkite vartotoją"
-              empty-text="Nerasta"
+              :placeholder="$t('Pasirinkite vartotoją')"
+              :empty-text="$t('Nerasta')"
             >
               <template #option="{ item }">
                 <div class="flex items-center gap-2 w-full">
@@ -75,6 +75,7 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
 
 import IconEye from '~icons/fluent/eye16-regular';
 import { Button } from '@/Components/ui/button';

@@ -5,12 +5,12 @@
         {{ $t("forms.context.main_info") }}
       </template>
       <FormFieldWrapper id="name" :label="$t('forms.fields.title')">
-        <Input id="name" v-model="form.name" type="text" placeholder="Įrašyti pavadinimą..." />
+        <Input id="name" v-model="form.name" type="text" :placeholder="$t('forms.placeholders.enter_title')" />
       </FormFieldWrapper>
-      <FormFieldWrapper id="alias" label="Trumpinys">
+      <FormFieldWrapper id="alias" :label="$t('forms.fields.slug')">
         <Input id="alias" v-model="form.alias" type="text" placeholder="" :disabled="!!form.id" />
       </FormFieldWrapper>
-      <FormFieldWrapper id="description" label="Aprašymas">
+      <FormFieldWrapper id="description" :label="$t('forms.fields.description')">
         <Textarea id="description" v-model="form.description" placeholder="..." />
       </FormFieldWrapper>
     </FormElement>

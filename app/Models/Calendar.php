@@ -48,6 +48,7 @@ use Spatie\SchemaOrg\Place;
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\CalendarFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar forLocale(string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar query()
@@ -76,6 +77,17 @@ class Calendar extends Model implements HasMedia
             'created_at' => 'datetime:Y-m-d H:i:s',
             'is_draft' => 'boolean',
         ];
+    }
+
+    /**
+     * Scope events relevant to the given locale.
+     * International events are always included; local-only events are excluded for 'en'.
+     */
+    public function scopeForLocale($query, string $locale)
+    {
+        return $locale === 'lt'
+            ? $query
+            : $query->where('is_international', 1);
     }
 
     public $translatable = [

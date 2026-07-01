@@ -2,7 +2,7 @@
   <AdminContentPage :title="$t('Sistemos būsena')">
     <!-- Status overview cards -->
     <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5 items-start">
-      <Card class="h-fit hover:shadow-lg transition-shadow duration-300">
+      <Card class="h-fit transition-colors duration-300 hover:border-primary/40 hover:bg-accent/40">
         <CardHeader size="compact">
           <div class="flex items-center justify-between">
             <CardTitle class="text-sm font-medium">
@@ -25,7 +25,7 @@
         </CardContent>
       </Card>
 
-      <Card class="h-fit hover:shadow-lg transition-shadow duration-300">
+      <Card class="h-fit transition-colors duration-300 hover:border-primary/40 hover:bg-accent/40">
         <CardHeader size="compact">
           <div class="flex items-center justify-between">
             <CardTitle class="text-sm font-medium">
@@ -48,7 +48,7 @@
         </CardContent>
       </Card>
 
-      <Card class="h-fit hover:shadow-lg transition-shadow duration-300">
+      <Card class="h-fit transition-colors duration-300 hover:border-primary/40 hover:bg-accent/40">
         <CardHeader size="compact">
           <div class="flex items-center justify-between">
             <CardTitle class="text-sm font-medium">
@@ -71,7 +71,7 @@
         </CardContent>
       </Card>
 
-      <Card class="h-fit hover:shadow-lg transition-shadow duration-300">
+      <Card class="h-fit transition-colors duration-300 hover:border-primary/40 hover:bg-accent/40">
         <CardHeader size="compact">
           <div class="flex items-center justify-between">
             <CardTitle class="text-sm font-medium">
@@ -97,7 +97,7 @@
         </CardContent>
       </Card>
 
-      <Card class="h-fit hover:shadow-lg transition-shadow duration-300">
+      <Card class="h-fit transition-colors duration-300 hover:border-primary/40 hover:bg-accent/40">
         <CardHeader size="compact">
           <div class="flex items-center justify-between">
             <CardTitle class="text-sm font-medium">
@@ -140,7 +140,7 @@
     <!-- Detailed status sections -->
     <div class="grid gap-6 lg:grid-cols-2">
       <!-- Redis Details -->
-      <Card v-if="status.redis" class="hover:shadow-lg transition-shadow duration-300">
+      <Card v-if="status.redis" class="transition-colors duration-300 hover:border-primary/40 hover:bg-accent/40">
         <CardHeader size="compact">
           <CardTitle class="flex items-center gap-2">
             <DatabaseIcon class="h-5 w-5" />
@@ -185,7 +185,7 @@
       </Card>
 
       <!-- Database Details -->
-      <Card v-if="status.database" class="hover:shadow-lg transition-shadow duration-300">
+      <Card v-if="status.database" class="transition-colors duration-300 hover:border-primary/40 hover:bg-accent/40">
         <CardHeader size="compact">
           <CardTitle class="flex items-center gap-2">
             <HardDriveIcon class="h-5 w-5" />
@@ -222,7 +222,7 @@
       </Card>
 
       <!-- Typesense Details -->
-      <Card v-if="status.typesense" class="hover:shadow-lg transition-shadow duration-300">
+      <Card v-if="status.typesense" class="transition-colors duration-300 hover:border-primary/40 hover:bg-accent/40">
         <CardHeader size="compact">
           <CardTitle class="flex items-center gap-2">
             <SearchIcon class="h-5 w-5" />
@@ -413,7 +413,7 @@
       </Card>
 
       <!-- Integrations -->
-      <Card v-if="status.integrations" class="hover:shadow-lg transition-shadow duration-300">
+      <Card v-if="status.integrations" class="transition-colors duration-300 hover:border-primary/40 hover:bg-accent/40">
         <CardHeader>
           <CardTitle class="flex items-center gap-2">
             <LinkIcon class="h-5 w-5" />
@@ -511,7 +511,7 @@
       </Card>
 
       <!-- System Information -->
-      <Card v-if="status.system" class="hover:shadow-lg transition-shadow duration-300">
+      <Card v-if="status.system" class="transition-colors duration-300 hover:border-primary/40 hover:bg-accent/40">
         <CardHeader>
           <CardTitle class="flex items-center gap-2">
             <MonitorIcon class="h-5 w-5" />
@@ -569,7 +569,7 @@
     </div>
 
     <!-- Cache Performance -->
-    <Card v-if="status.redis && !status.redis.error" class="mt-6 h-fit hover:shadow-lg transition-shadow duration-300">
+    <Card v-if="status.redis && !status.redis.error" class="mt-6 h-fit transition-colors duration-300 hover:border-primary/40 hover:bg-accent/40">
       <CardHeader size="compact">
         <CardTitle class="flex items-center gap-2">
           <TrendingUpIcon class="h-5 w-5" />

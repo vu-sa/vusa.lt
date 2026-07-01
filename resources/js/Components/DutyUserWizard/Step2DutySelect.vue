@@ -35,7 +35,7 @@
         <div class="space-y-2">
           <Label class="text-sm font-medium">{{ $t('Pavadinimas') }} *</Label>
           <Input
-            v-model="newDuty.name.lt"
+            v-model="http.name.lt"
             :placeholder="$t('Pareigybės pavadinimas lietuvių kalba')"
             :class="{ 'border-destructive': createErrors['name.lt'] }"
           />
@@ -48,7 +48,7 @@
         <div class="space-y-2">
           <Label class="text-sm font-medium">{{ $t('Kiek vietų') }}</Label>
           <Input
-            v-model.number="newDuty.places_to_occupy"
+            v-model.number="http.places_to_occupy"
             type="number"
             min="1"
             :placeholder="$t('1')"
@@ -61,7 +61,7 @@
         <!-- Contacts Grouping -->
         <div class="space-y-2">
           <Label class="text-sm font-medium">{{ $t('Kontaktų grupavimas') }} *</Label>
-          <Select v-model="newDuty.contacts_grouping">
+          <Select v-model="http.contacts_grouping">
             <SelectTrigger :class="{ 'border-destructive': createErrors['contacts_grouping'] }">
               <SelectValue :placeholder="$t('Pasirinkite grupavimą')" />
             </SelectTrigger>
@@ -95,7 +95,7 @@
               :key="type.id"
               type="button"
               class="inline-flex items-center px-3 py-1.5 rounded-full text-sm border transition-colors"
-              :class="newDuty.types.includes(String(type.id))
+              :class="http.types.includes(String(type.id))
                 ? 'bg-primary text-primary-foreground border-primary'
                 : 'bg-background hover:bg-accent border-border'"
               @click="toggleType(String(type.id))"
@@ -119,7 +119,7 @@
             <div class="space-y-2">
               <Label class="text-sm font-medium">{{ $t('Pavadinimas anglų kalba') }}</Label>
               <Input
-                v-model="newDuty.name.en"
+                v-model="http.name.en"
                 :placeholder="$t('Duty name in English')"
               />
             </div>
@@ -128,7 +128,7 @@
             <div class="space-y-2">
               <Label class="text-sm font-medium">{{ $t('El. paštas') }}</Label>
               <Input
-                v-model="newDuty.email"
+                v-model="http.email"
                 type="email"
                 :placeholder="$t('pareigybe@vusa.lt')"
                 :class="{ 'border-destructive': createErrors['email'] }"
@@ -142,7 +142,7 @@
             <div class="space-y-2">
               <Label class="text-sm font-medium">{{ $t('Aprašymas') }}</Label>
               <Input
-                v-model="newDuty.description.lt"
+                v-model="http.description.lt"
                 :placeholder="$t('Pareigybės aprašymas')"
               />
             </div>
@@ -151,12 +151,12 @@
 
         <!-- Form actions -->
         <div class="flex justify-end gap-2 pt-2">
-          <Button variant="outline" :disabled="isCreating" @click="cancelCreate">
+          <Button variant="outline" :disabled="http.processing" @click="cancelCreate">
             {{ $t('Atšaukti') }}
           </Button>
-          <Button :disabled="isCreating || !newDuty.name.lt" @click="createDuty">
-            <Plus v-if="!isCreating" class="h-4 w-4 mr-1" />
-            {{ isCreating ? $t('Kuriama...') : $t('Sukurti pareigybę') }}
+          <Button :disabled="http.processing || !http.name.lt" @click="createDuty">
+            <Plus v-if="!http.processing" class="h-4 w-4 mr-1" />
+            {{ http.processing ? $t('Kuriama...') : $t('Sukurti pareigybę') }}
           </Button>
         </div>
       </CardContent>
@@ -330,9 +330,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject, reactive, type ComputedRef } from 'vue';
-import { usePage } from '@inertiajs/vue3';
-import axios from 'axios';
+import { ref, computed, inject, type ComputedRef } from 'vue';
+import { usePage, useHttp } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
@@ -388,11 +387,9 @@ const searchQuery = ref('');
 
 // Create duty form state
 const showCreateForm = ref(false);
-const isCreating = ref(false);
-const createErrors = ref<Record<string, string[]>>({});
 const showExtraFields = ref(false);
 
-const newDuty = reactive({
+const http = useHttp({
   name: { lt: '', en: '' },
   description: { lt: '', en: '' },
   email: '',
@@ -402,15 +399,17 @@ const newDuty = reactive({
   types: [] as string[],
 });
 
-// Reset form
+// Normalize Inertia form errors to the array format expected by the template
+const createErrors = computed<Record<string, string[]>>(() => {
+  const errs: Record<string, string[]> = {};
+  for (const [key, val] of Object.entries(http.errors)) {
+    errs[key] = Array.isArray(val) ? val : [val];
+  }
+  return errs;
+});
+
 const resetForm = () => {
-  newDuty.name = { lt: '', en: '' };
-  newDuty.description = { lt: '', en: '' };
-  newDuty.email = '';
-  newDuty.places_to_occupy = 1;
-  newDuty.contacts_grouping = 'none';
-  newDuty.types = [];
-  createErrors.value = {};
+  http.reset();
   showExtraFields.value = false;
 };
 
@@ -419,57 +418,35 @@ const cancelCreate = () => {
   resetForm();
 };
 
-const createDuty = async () => {
+const createDuty = () => {
   if (!wizard.state.institution?.id) return;
-
-  isCreating.value = true;
-  createErrors.value = {};
 
   const institutionId = wizard.state.institution.id;
 
-  try {
-    const response = await axios.post(route('duties.store'), {
-      ...newDuty,
-      institution_id: institutionId,
-    }, {
-      headers: {
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-      },
-    });
+  http.post(route('duties.store'), {
+    onSuccess: (response: any) => {
+      if (response?.duty) {
+        const newDutyData = response.duty as App.Entities.Duty;
 
-    if (response.data.success && response.data.duty) {
-      // Add the new duty to the current institution
-      const newDutyData = response.data.duty as App.Entities.Duty;
-
-      // Update the institution's duties list locally
-      if (wizard.state.institution) {
-        const updatedInstitution = {
-          ...wizard.state.institution,
-          duties: [...(wizard.state.institution.duties || []), newDutyData],
-        } as App.Entities.Institution;
-        wizard.setInstitution(updatedInstitution);
+        // Update the institution's duties list locally
+        if (wizard.state.institution) {
+          const updatedInstitution = {
+            ...wizard.state.institution,
+            duties: [...(wizard.state.institution.duties || []), newDutyData],
+          } as App.Entities.Institution;
+          wizard.setInstitution(updatedInstitution);
+        }
+        toast.success($t('Pareigybė sėkmingai sukurta'));
+        cancelCreate();
       }
-      toast.success($t('Pareigybė sėkmingai sukurta'));
-      cancelCreate();
-    }
-  }
-  catch (error: any) {
-    // Handle validation errors
-    if (error.response?.status === 422 && error.response?.data?.errors) {
-      Object.entries(error.response.data.errors).forEach(([key, value]) => {
-        createErrors.value[key] = Array.isArray(value) ? value as string[] : [value as string];
-      });
+    },
+    onError: () => {
       toast.error($t('Patikrinkite formos laukus'));
-    }
-    else {
-      createErrors.value['general'] = [$t('Nepavyko sukurti pareigybės')];
+    },
+    onNetworkError: () => {
       toast.error($t('Nepavyko sukurti pareigybės'));
-    }
-  }
-  finally {
-    isCreating.value = false;
-  }
+    },
+  });
 };
 
 // Get duties from selected institution
@@ -528,12 +505,12 @@ const clearSearch = () => {
 };
 
 const toggleType = (typeId: string) => {
-  const idx = newDuty.types.indexOf(typeId);
+  const idx = http.types.indexOf(typeId);
   if (idx === -1) {
-    newDuty.types.push(typeId);
+    http.types.push(typeId);
   }
   else {
-    newDuty.types.splice(idx, 1);
+    http.types.splice(idx, 1);
   }
 };
 </script>

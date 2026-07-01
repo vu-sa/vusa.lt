@@ -81,6 +81,8 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
         Route::get('dokumentai', [Public\DocumentController::class, 'index'])->name('documents');
 
+        Route::get('paieska', [Public\SearchController::class, 'index'])->name('search');
+
         Route::get('ind-komplektai', [Public\StudySetController::class, 'index'])->name('studySets');
 
         // Redirect reports to external subdomains

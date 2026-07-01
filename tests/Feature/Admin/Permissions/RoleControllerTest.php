@@ -5,12 +5,13 @@ use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\Type;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->tenant = Tenant::query()->inRandomOrder()->first();
+    $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
     $this->admin = makeAdminUser($this->tenant);
 });
@@ -287,6 +288,24 @@ describe('role permission management', function () {
             'model_id' => $duty->id,
             'model_type' => 'App\\Models\\Duty',
         ]);
+    });
+
+    test('syncing duties clears both index and create permission caches for affected users', function () {
+        $role = Role::factory()->create();
+        $duty = $this->admin->duties()->first();
+
+        // Pre-populate both permission caches for the admin
+        Cache::put('index-permissions-'.$this->admin->id, ['news' => true], 1800);
+        Cache::put('create-permissions-'.$this->admin->id, ['news' => true], 1800);
+
+        $data = ['duties' => [$duty->id]];
+
+        asUser($this->admin)
+            ->put(route('roles.syncDuties', $role), $data)
+            ->assertRedirect();
+
+        expect(Cache::has('index-permissions-'.$this->admin->id))->toBeFalse();
+        expect(Cache::has('create-permissions-'.$this->admin->id))->toBeFalse();
     });
 
     test('admin can sync attachable types to role', function () {

@@ -366,7 +366,6 @@ export function useBaseSearch<
 
         // Retry logic
         if (ErrorUtils.shouldRetry(err, attempt, maxRetries)) {
-          console.log(`Retrying search, attempt ${attempt + 1}/${maxRetries}`);
           retryCount.value = attempt;
 
           const delay = ErrorUtils.getRetryDelay(attempt);

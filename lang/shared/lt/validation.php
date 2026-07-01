@@ -89,6 +89,12 @@ return [
     |
     */
 
+    'translatable' => [
+        'array' => 'Laukelis „:attribute“ turi būti pateiktas su vertimais.',
+        'any' => 'Laukelis „:attribute“ turi turėti vertimą bent viena iš kalbų: :locales.',
+        'all' => 'Laukelis „:attribute“ turi turėti vertimus visomis kalbomis: :locales.',
+    ],
+
     'custom' => [
         'attribute-name' => [
             'rule-name' => 'custom-message',

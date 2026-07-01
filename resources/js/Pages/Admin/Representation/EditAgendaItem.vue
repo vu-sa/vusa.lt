@@ -41,7 +41,7 @@
             <component :is="statusMeta.icon" class="h-3 w-3" />
             {{ statusMeta.label }}
           </span>
-          <label class="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground select-none">
+          <label v-if="canUpdate" class="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground select-none">
             <Switch :model-value="editing" @update:model-value="setEditing" />
             {{ $t('Redaguoti') }}
           </label>
@@ -64,13 +64,26 @@
       </div>
     </header>
 
-    <div class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]" :class="editing ? 'pb-24' : 'pb-6'">
-      <AgendaItemBody
-        :form="form"
-        :editing="editing"
-        :meeting-is-public="meetingIsPublic"
+    <div class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <div class="min-w-0 space-y-8">
+        <AgendaItemBody
+          :form="form"
+          :editing="editing"
+          :meeting-is-public="meetingIsPublic"
+        />
+
+        <!-- Discussion: the attributed, threaded conversation (distinct from the
+             co-authored notes document). Available to anyone who can view the item. -->
+        <section class="border-t pt-6 dark:border-zinc-800" :class="editing ? 'pb-24' : 'pb-6'">
+          <DiscussionPanel commentable-type="agendaItem" :commentable-id="agendaItem.id" />
+        </section>
+      </div>
+
+      <AgendaItemNotesSidebar
+        v-if="canUpdate"
+        :agenda-item-id="agendaItem.id"
+        class="lg:sticky lg:top-16 lg:self-start"
       />
-      <AgendaItemNotesSidebar :agenda-item-id="agendaItem.id" class="lg:sticky lg:top-16 lg:self-start" />
     </div>
 
     <!-- Sticky bottom action bar (mirrors AdminForm), edit mode only -->
@@ -124,6 +137,7 @@ import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import AgendaItemBody from '@/Components/AgendaItems/AgendaItemBody.vue';
 import AgendaItemNavigator from '@/Components/AgendaItems/AgendaItemNavigator.vue';
 import AgendaItemNotesSidebar from '@/Components/AgendaItems/AgendaItemNotesSidebar.vue';
+import DiscussionPanel from '@/Components/Discussions/DiscussionPanel.vue';
 import { Button } from '@/Components/ui/button';
 import { Switch } from '@/Components/ui/switch';
 import { Separator } from '@/Components/ui/separator';
@@ -133,7 +147,7 @@ import { useAgendaItemAutosave, type AgendaItemFormData, type EditableVote, type
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { InstitutionIconFilled, MeetingIconFilled } from '@/Components/icons';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   agendaItem: App.Entities.AgendaItem;
   siblingAgendaItems: Array<{
     id: string;
@@ -142,8 +156,13 @@ const props = defineProps<{
     order: number;
     brought_by_students: boolean;
     main_vote?: unknown;
+    comments_count?: number;
+    has_notes?: boolean;
   }>;
-}>();
+  canUpdate?: boolean;
+}>(), {
+  canUpdate: true,
+});
 
 const form = useForm<AgendaItemFormData>({
   title: props.agendaItem.title,
@@ -168,8 +187,9 @@ const { autoSaveEnabled, saveStatus, submit, saveThen } = useAgendaItemAutosave(
   props.agendaItem.id,
 );
 
-// Read-first: configured items open in view mode; unconfigured ones in edit mode.
-const editing = ref(props.agendaItem.type == null);
+// Read-first: configured items open in view mode; unconfigured ones in edit
+// mode. View-only visitors (no update right) never enter edit mode.
+const editing = ref(props.canUpdate && props.agendaItem.type == null);
 
 // Auto-grow the title textarea so long titles wrap like the heading instead of
 // collapsing to one line.

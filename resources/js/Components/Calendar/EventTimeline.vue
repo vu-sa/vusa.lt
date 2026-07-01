@@ -408,7 +408,7 @@ const futureEventsCount = computed(() => {
   return props.events.filter(e => !isBefore(new Date(e.date), today.value)).length;
 });
 
-console.log('futureEventsCount', futureEventsCount.value);
+// futureEventsCount is used reactively in the template
 
 // Helper functions
 const getEventImage = (event: App.Entities.Calendar): string | null => {

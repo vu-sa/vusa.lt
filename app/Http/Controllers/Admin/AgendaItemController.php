@@ -10,6 +10,7 @@ use App\Models\Vote;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 class AgendaItemController extends AdminController
 {
@@ -64,10 +65,17 @@ class AgendaItemController extends AdminController
      */
     public function edit(AgendaItem $agendaItem)
     {
-        $this->handleAuthorization('update', $agendaItem);
+        // This page doubles as the read-only "show" surface (it hosts the notes
+        // and discussion). Gate it on the broad `view` ability so coordinators
+        // and related-institution viewers can open it; editing affordances are
+        // gated client-side by the `canUpdate` prop, and the update/store
+        // endpoints remain `update`-gated.
+        $this->handleAuthorization('view', $agendaItem);
+
+        $canUpdate = Gate::allows('update', $agendaItem);
 
         $agendaItem->load(['votes', 'note', 'meeting.institutions', 'meeting.agendaItems' => function ($query) {
-            $query->orderBy('order')->with('mainVote');
+            $query->orderBy('order')->with('mainVote')->withCount('comments')->withExists('note as has_notes');
         }]);
 
         // Whether votes/description are publicly visible follows the meeting's
@@ -83,12 +91,15 @@ class AgendaItemController extends AdminController
                 'order' => $item->order,
                 'brought_by_students' => (bool) $item->brought_by_students,
                 'main_vote' => $item->mainVote,
+                'comments_count' => $item->comments_count,
+                'has_notes' => (bool) $item->has_notes,
             ])
             ->values();
 
         return $this->inertiaResponse('Admin/Representation/EditAgendaItem', [
             'agendaItem' => $agendaItem,
             'siblingAgendaItems' => $siblingAgendaItems,
+            'canUpdate' => $canUpdate,
         ]);
     }
 

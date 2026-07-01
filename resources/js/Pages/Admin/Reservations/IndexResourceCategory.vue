@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref, computed } from 'vue';
+import { h, ref, computed, capitalize } from 'vue';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { Icon } from '@iconify/vue';
@@ -20,6 +20,7 @@ import { TruncatedText } from '@/Components/ui/data-table/cells';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import type { IndexTablePageProps } from '@/Types/TableConfigTypes';
+import type { IndexTablePageInstance } from '@/Types/TableConfigTypes';
 import { CategoryIcon } from '@/Components/icons';
 
 const props = defineProps<{
@@ -41,7 +42,7 @@ const props = defineProps<{
 const modelName = 'resourceCategories';
 const entityName = 'resource_category';
 
-const indexTablePageRef = ref<any>(null);
+const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
 
 const getRowId = (row: App.Entities.ResourceCategory) => {
   return `resource-category-${row.id}`;
@@ -56,7 +57,7 @@ const columns = computed<Array<ColumnDef<App.Entities.ResourceCategory, any>>>((
   },
   {
     accessorKey: 'icon',
-    header: () => 'Ikona',
+    header: () => $t('Ikona'),
     cell: ({ row }) => {
       const { icon } = row.original;
       if (!icon) {
@@ -87,7 +88,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.ResourceCategory>>
   pageSize: props.resourceCategories.meta.per_page,
 
   initialFilters: props.filters,
-  initialSorting: props.sorting,
+    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'name', desc: false }],
   enableFiltering: true,
   enableColumnVisibility: false,
   enableRowSelection: false,

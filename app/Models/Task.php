@@ -35,6 +35,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read int|null $tenants_count
  *
  * @method static \Database\Factories\TaskFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Task incomplete()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Task newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Task newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Task onlyTrashed()
@@ -58,6 +59,14 @@ class Task extends Model
             'action_type' => ActionType::class,
             'metadata' => 'array',
         ];
+    }
+
+    /**
+     * Scope to incomplete tasks (not yet completed).
+     */
+    public function scopeIncomplete($query)
+    {
+        return $query->whereNull('completed_at');
     }
 
     public function taskable(): MorphTo

@@ -48,6 +48,15 @@ class ModelAuthorizer
      */
     protected array $requestPermissionCache = [];
 
+    /**
+     * Request-level memoization cache for resolved tenant collections.
+     * Keyed per user + permission scope so repeated getTenants() calls within
+     * a single request avoid re-querying tenant resolution.
+     *
+     * @var array<string, Collection<int, Tenant>>
+     */
+    protected array $requestTenantCache = [];
+
     public function __construct()
     {
         $this->duties = new Collection;
@@ -71,8 +80,9 @@ class ModelAuthorizer
             $this->duties = new Collection;
             $this->isAllScope = false;
             $this->lastCheckedPermission = null;
-            // Clear request-level cache when switching users
+            // Clear request-level caches when switching users
             $this->requestPermissionCache = [];
+            $this->requestTenantCache = [];
         }
 
         return $this;
@@ -209,18 +219,15 @@ class ModelAuthorizer
         // Use the provided permission or fall back to the last checked one
         $effectivePermission = $permission ?? $this->lastCheckedPermission;
 
-        // Generate a specific cache key based on the effective permission
-        $permissionSuffix = $effectivePermission ? ":{$effectivePermission}" : '';
+        $allScopeKey = "{$this->user->id}:__all__";
 
-        // TODO: does not work for reservation.create, getting this error:
-        // ERROR: Typed property App\Services\ModelAuthorizer::$user must not be accessed before initialization
-        // $cacheKey = "auth:tenants:{$this->user->id}{$permissionSuffix}";
-
-        // TODO: reenable cache in the future, but needs to be fixed, because the values sometimes are not returned properly
-        // return Cache::remember($cacheKey, static::CACHE_TTL, function () use ($effectivePermission) {
+        // Cross-request duty caching is handled by loadDuties(); here we only
+        // memoize tenant resolution for the duration of the request. The
+        // side-effecting checkAllRoleables() below is always invoked so callers
+        // that read isAllScope / permissableDuties afterwards see correct state.
         // Super admin has access to all tenants
         if ($this->user->isSuperAdmin() || $this->isAllScope) {
-            return Tenant::all();
+            return $this->requestTenantCache[$allScopeKey] ??= Tenant::all();
         }
 
         // If a specific permission is provided, filter duties by that permission
@@ -230,7 +237,13 @@ class ModelAuthorizer
 
         // Re-check after checkAllRoleables may have set isAllScope
         if ($this->isAllScope) {
-            return Tenant::all();
+            return $this->requestTenantCache[$allScopeKey] ??= Tenant::all();
+        }
+
+        $resolutionKey = "{$this->user->id}:".($effectivePermission ?? '__none__');
+
+        if (isset($this->requestTenantCache[$resolutionKey])) {
+            return $this->requestTenantCache[$resolutionKey];
         }
 
         // If no specific permission, or no permissible duties found, use all current duties
@@ -247,8 +260,7 @@ class ModelAuthorizer
             ->values();
 
         // Convert to Eloquent Collection to match return type
-        return new Collection($tenants->all());
-        // });
+        return $this->requestTenantCache[$resolutionKey] = new Collection($tenants->all());
     }
 
     /**
@@ -285,6 +297,7 @@ class ModelAuthorizer
         // Clear in-memory caches if this is the currently loaded user
         if (isset($this->user) && (string) $this->user->id === (string) $userId) {
             $this->requestPermissionCache = [];
+            $this->requestTenantCache = [];
             $this->duties = new Collection;
             $this->permissableDuties = new Collection;
             $this->isAllScope = false;
@@ -292,26 +305,10 @@ class ModelAuthorizer
             unset($this->user); // @phpstan-ignore unset.possiblyHookedProperty
         }
 
+        // Persisted duty cache (loadDuties) is the only cross-request entry for this user.
         Cache::forget("auth:duties:{$userId}");
 
         // Clear Spatie's permission registrar cache
         app(PermissionRegistrar::class)->forgetCachedPermissions();
-
-        // Clear tenant caches with all possible permission suffixes
-        foreach (Cache::get("auth:permission_keys:{$userId}", []) as $key) {
-            if (strpos($key, "auth:permissions:{$userId}:") === 0) {
-                $permission = substr($key, strlen("auth:permissions:{$userId}:"));
-                Cache::forget("auth:tenants:{$userId}:{$permission}");
-            }
-        }
-        Cache::forget("auth:tenants:{$userId}");
-
-        // Clear all permission checks for this user
-        $keys = Cache::get("auth:permission_keys:{$userId}", []);
-        foreach ($keys as $key) {
-            Cache::forget($key);
-        }
-
-        Cache::forget("auth:permission_keys:{$userId}");
     }
 }

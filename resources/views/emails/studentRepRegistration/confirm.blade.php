@@ -9,7 +9,7 @@
 
 - {{ __('mail.student_rep.confirm.institution') }}: {{ $institution->name }}
 
-@if($contactEmail && filter_var($contactEmail, FILTER_VALIDATE_EMAIL))
+@if($hasValidContactEmail)
 {{ __('mail.student_rep.confirm.more_info1') }} [{{ $contactName }}](mailto:{{ $contactEmail }}), {{ __('mail.student_rep.confirm.more_info2') }}
 @else
 {{ __('mail.student_rep.confirm.will_contact') }}

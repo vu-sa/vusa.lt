@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Queue;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->tenant = Tenant::query()->inRandomOrder()->first();
+    $this->tenant = Tenant::query()->first();
     $this->regularUser = makeUser($this->tenant);
     $this->documentManager = makeUser($this->tenant);
     $this->documentManager->duties()->first()->assignRole('Resource Manager');

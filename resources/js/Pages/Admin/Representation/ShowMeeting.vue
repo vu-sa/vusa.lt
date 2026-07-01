@@ -99,7 +99,7 @@
         <TabsList class="h-10 gap-1 rounded-xl bg-zinc-100/80 p-1 dark:bg-zinc-800/60">
           <TabsTrigger
             value="agenda"
-            class="rounded-lg px-3.5 data-[state=active]:shadow-sm data-[state=active]:font-semibold"
+            class="rounded-lg px-3.5 data-[state=active]:font-semibold"
           >
             {{ $t('Darbotvarkė') }}
             <span v-if="meeting.agenda_items?.length" class="ml-1.5 text-xs font-normal text-zinc-400 dark:text-zinc-500">
@@ -108,13 +108,13 @@
           </TabsTrigger>
           <TabsTrigger
             value="files"
-            class="rounded-lg px-3.5 data-[state=active]:shadow-sm data-[state=active]:font-semibold"
+            class="rounded-lg px-3.5 data-[state=active]:font-semibold"
           >
             {{ $t('Failai') }}
           </TabsTrigger>
           <TabsTrigger
             value="tasks"
-            class="rounded-lg px-3.5 data-[state=active]:shadow-sm data-[state=active]:font-semibold"
+            class="rounded-lg px-3.5 data-[state=active]:font-semibold"
           >
             {{ $t('Užduotys') }}
             <span v-if="meeting.tasks?.length" class="ml-1.5 text-xs font-normal text-zinc-400 dark:text-zinc-500">
@@ -161,6 +161,11 @@
           :previous-meeting="previousMeeting"
           :next-meeting="nextMeeting"
         />
+
+        <!-- Meeting-level discussion lives directly under the agenda. -->
+        <section class="border-t pt-6 dark:border-zinc-800">
+          <DiscussionPanel commentable-type="meeting" :commentable-id="meeting.id" />
+        </section>
       </TabsContent>
 
       <!-- Files Tab -->
@@ -373,6 +378,7 @@ import {
 import ShowPageHero from '@/Components/Hero/ShowPageHero.vue';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import MeetingAgendaList from '@/Components/Meetings/MeetingAgendaList.vue';
+import DiscussionPanel from '@/Components/Discussions/DiscussionPanel.vue';
 import MeetingNavigationCards from '@/Components/Meetings/MeetingNavigationCards.vue';
 import AddAgendaItemForm from '@/Components/AdminForms/AddAgendaItemForm.vue';
 import AgendaItemsForm from '@/Components/AdminForms/Special/AgendaItemsForm.vue';

@@ -6,6 +6,7 @@ use App\Contracts\Approvable;
 use App\Enums\ApprovalDecision;
 use App\Enums\ModelEnum;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Concerns\ApiResponses;
 use App\Models\Approval;
 use App\Models\Traits\HasApprovals;
 use App\Services\ApprovalService;
@@ -16,6 +17,8 @@ use Spatie\Enum\Laravel\Rules\EnumRule;
 
 class ApprovalController extends AdminController
 {
+    use ApiResponses;
+
     public function __construct(
         public Authorizer $authorizer,
         protected ApprovalService $approvalService
@@ -172,7 +175,7 @@ class ApprovalController extends AdminController
         $approvable = $this->resolveApprovable($validated['approvable_type'], $validated['approvable_id']);
 
         if (! $approvable) {
-            return response()->json(['error' => 'Model not found'], 404);
+            return $this->jsonNotFound('Model not found');
         }
 
         $approvals = $approvable->approvals()
@@ -180,6 +183,6 @@ class ApprovalController extends AdminController
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return response()->json(['approvals' => $approvals]);
+        return $this->jsonSuccess($approvals);
     }
 }

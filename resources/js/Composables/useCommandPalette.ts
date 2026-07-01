@@ -41,8 +41,8 @@ interface CommandPaletteContext {
   query: Ref<string>;
   /** Recently visited pages (server-backed via useUIPreferences) */
   recentItems: Ref<RecentItem[]>;
-  /** Open the command palette */
-  open: () => void;
+  /** Open the command palette, optionally with a prefilled search query */
+  open: (initialQuery?: string) => void;
   /** Close the command palette */
   close: () => void;
   /** Toggle the command palette */
@@ -71,9 +71,9 @@ export function createCommandPaletteProvider(recentSource?: RecentSource): Comma
     () => recentSource?.recentPages.value ?? fallbackRecent.value,
   ) as unknown as Ref<RecentItem[]>;
 
-  const open = () => {
+  const open = (initialQuery?: string) => {
     isOpen.value = true;
-    query.value = '';
+    query.value = initialQuery ?? '';
   };
 
   const close = () => {

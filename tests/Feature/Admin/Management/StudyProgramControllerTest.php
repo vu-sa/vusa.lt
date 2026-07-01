@@ -14,7 +14,7 @@ beforeEach(function () {
         Tenant::factory()->count(2)->create();
     }
 
-    $this->tenant = Tenant::query()->inRandomOrder()->first();
+    $this->tenant = Tenant::query()->first();
     $this->otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
 
     $this->user = makeUser($this->tenant);

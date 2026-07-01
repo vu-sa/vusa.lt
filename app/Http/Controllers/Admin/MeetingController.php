@@ -223,9 +223,9 @@ class MeetingController extends AdminController
                 $query->with('users:id,name,email,profile_photo_path', 'taskable');
             },
             'agendaItems' => function ($query) {
-                $query->with('votes')->orderBy('order');
+                $query->with('votes')->withCount('comments')->withExists('note as has_notes')->orderBy('order');
             },
-        ]);
+        ])->loadCount('comments');
 
         // Append is_public, is_joint and file status now that relations are loaded (avoids N+1)
         $meeting->append(['is_public', 'is_joint', 'has_protocol', 'has_report']);
@@ -338,7 +338,7 @@ class MeetingController extends AdminController
         $meeting->fill($validated);
         $meeting->save();
 
-        return back()->with('success', 'Posėdis atnaujintas sėkmingai!');
+        return back()->with('success', __('messages.meeting.updated'));
     }
 
     /**
@@ -361,7 +361,7 @@ class MeetingController extends AdminController
 
         $meeting->restore();
 
-        return back()->with('success', 'Posėdis atkurtas!');
+        return back()->with('success', __('messages.meeting.restored'));
     }
 
     /**
@@ -387,7 +387,7 @@ class MeetingController extends AdminController
             $this->checkInService->adjustForMeeting($institution, $meeting->start_time);
         }
 
-        return back()->with('success', 'Institucija pridėta.');
+        return back()->with('success', __('messages.meeting.institution_attached'));
     }
 
     /**
@@ -398,12 +398,12 @@ class MeetingController extends AdminController
         $this->handleAuthorization('update', $meeting);
 
         if ($meeting->institutions()->count() <= 1) {
-            return back()->with('error', 'Posėdis turi turėti bent vieną instituciją.');
+            return back()->with('error', __('messages.meeting.institution_required'));
         }
 
         $meeting->institutions()->detach($institution->id);
 
-        return back()->with('success', 'Institucija pašalinta.');
+        return back()->with('success', __('messages.meeting.institution_detached'));
     }
 
     /**

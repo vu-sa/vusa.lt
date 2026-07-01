@@ -4,5 +4,8 @@ namespace App\Http\Requests;
 
 class IndexInstitutionRequest extends BaseIndexRequest
 {
-    // Additional institution-specific validation or methods can be added here
+    /** @var array<int, array{id: string, desc: bool}> */
+    protected array $defaultSorting = [
+        ['id' => 'name', 'desc' => false],
+    ];
 }

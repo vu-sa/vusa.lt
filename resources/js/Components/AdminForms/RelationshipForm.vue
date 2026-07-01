@@ -2,13 +2,13 @@
   <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
     <FormElement>
       <FormFieldWrapper id="name" :label="$t('forms.fields.title')" required>
-        <Input id="name" v-model="form.name" type="text" placeholder="Trumpas ryšio pavadinimas.." />
+        <Input id="name" v-model="form.name" type="text" :placeholder="$t('forms.placeholders.short_relationship_name')" />
       </FormFieldWrapper>
-      <FormFieldWrapper id="slug" label="Techninė žymė">
-        <Input id="slug" v-model="form.slug" type="text" placeholder="pvz.: simple-advisory" />
+      <FormFieldWrapper id="slug" :label="$t('forms.fields.technical_slug')">
+        <Input id="slug" v-model="form.slug" type="text" :placeholder="$t('forms.placeholders.slug_example')" />
       </FormFieldWrapper>
-      <FormFieldWrapper id="description" label="Aprašymas">
-        <Textarea id="description" v-model="form.description" placeholder="Trumpas apibūdinimas..." />
+      <FormFieldWrapper id="description" :label="$t('forms.fields.description')">
+        <Textarea id="description" v-model="form.description" :placeholder="$t('forms.placeholders.short_description')" />
       </FormFieldWrapper>
     </FormElement>
   </AdminForm>

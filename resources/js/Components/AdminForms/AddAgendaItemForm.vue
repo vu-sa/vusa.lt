@@ -51,8 +51,8 @@
         </div>
         <FormControl>
           <Switch
-            :checked="field.value"
-            @update:checked="handleChange"
+            :model-value="field.value"
+            @update:model-value="handleChange"
           />
         </FormControl>
       </FormItem>

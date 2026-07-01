@@ -208,7 +208,7 @@ describe('SendNewsNotifications command', function () {
     });
 
     test('sends notifications for recently published news to opted-in users', function () {
-        $tenant = Tenant::query()->inRandomOrder()->first();
+        $tenant = Tenant::query()->first();
 
         // Create a user who has opted in
         $user = User::factory()->hasAttached(
@@ -239,7 +239,7 @@ describe('SendNewsNotifications command', function () {
     });
 
     test('does not send notifications to users who have not opted in', function () {
-        $tenant = Tenant::query()->inRandomOrder()->first();
+        $tenant = Tenant::query()->first();
 
         // Create a user who has NOT opted in (default behavior - news disabled)
         $user = User::factory()->hasAttached(
@@ -260,7 +260,7 @@ describe('SendNewsNotifications command', function () {
     });
 
     test('does not send notifications for draft news', function () {
-        $tenant = Tenant::query()->inRandomOrder()->first();
+        $tenant = Tenant::query()->first();
 
         $user = User::factory()->hasAttached(
             Duty::factory()->for(Institution::factory()->for($tenant)),
@@ -290,7 +290,7 @@ describe('SendNewsNotifications command', function () {
     });
 
     test('does not send notifications for old published news', function () {
-        $tenant = Tenant::query()->inRandomOrder()->first();
+        $tenant = Tenant::query()->first();
 
         $user = User::factory()->hasAttached(
             Duty::factory()->for(Institution::factory()->for($tenant)),
@@ -332,7 +332,7 @@ describe('SendCalendarReminders command', function () {
     });
 
     test('sends reminders for events happening in 24 hours to opted-in users', function () {
-        $tenant = Tenant::query()->inRandomOrder()->first();
+        $tenant = Tenant::query()->first();
 
         // Create a user who has opted in with 24h reminder
         $user = User::factory()->hasAttached(
@@ -366,7 +366,7 @@ describe('SendCalendarReminders command', function () {
     });
 
     test('does not send reminders to users who have not opted in', function () {
-        $tenant = Tenant::query()->inRandomOrder()->first();
+        $tenant = Tenant::query()->first();
 
         // Create a user who has NOT opted in (default behavior - calendar disabled)
         $user = User::factory()->hasAttached(
@@ -387,7 +387,7 @@ describe('SendCalendarReminders command', function () {
     });
 
     test('does not send reminders for draft events', function () {
-        $tenant = Tenant::query()->inRandomOrder()->first();
+        $tenant = Tenant::query()->first();
 
         $user = User::factory()->hasAttached(
             Duty::factory()->for(Institution::factory()->for($tenant)),
@@ -420,7 +420,7 @@ describe('SendCalendarReminders command', function () {
     });
 
     test('respects user reminder hour preferences', function () {
-        $tenant = Tenant::query()->inRandomOrder()->first();
+        $tenant = Tenant::query()->first();
 
         // Create a user who only wants 1h reminders, not 24h
         $user = User::factory()->hasAttached(

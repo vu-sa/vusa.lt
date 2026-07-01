@@ -20,12 +20,18 @@ class AgendaItemNoteController extends ApiController
     /**
      * Return the persisted Y.js snapshot + HTML for an agenda item's notes.
      */
-    public function show(AgendaItem $agendaItem): JsonResponse
+    public function show(Request $request, AgendaItem $agendaItem): JsonResponse
     {
-        $this->authorize('update', $agendaItem);
+        // Read is allowed for the broad `view` audience (coordinators / related
+        // viewers) so they can see the persisted snapshot read-only. Editing
+        // (update) and realtime presence remain gated on `update`.
+        $this->authorize('view', $agendaItem);
 
-        /** @var AgendaItemNote $note */
-        $note = $agendaItem->note()->firstOrCreate([]);
+        // Editors get an auto-created row (so the collaborative editor always has
+        // a target); the broader view-only audience reads side-effect-free.
+        $note = $request->user()?->can('update', $agendaItem)
+            ? $agendaItem->note()->firstOrCreate([])
+            : $agendaItem->note;
 
         $agendaItem->loadMissing('meeting.institutions');
 
@@ -40,10 +46,10 @@ class AgendaItemNoteController extends ApiController
             ->all() ?? [];
 
         return $this->jsonSuccess([
-            'yjs_state' => $note->yjs_state,
-            'notes_html' => $note->notes_html,
-            'updated_by' => $note->updated_by,
-            'updated_at' => $note->updated_at?->toISOString(),
+            'yjs_state' => $note?->yjs_state,
+            'notes_html' => $note?->notes_html,
+            'updated_by' => $note?->updated_by,
+            'updated_at' => $note?->updated_at?->toISOString(),
             'representatives' => $representatives,
         ]);
     }

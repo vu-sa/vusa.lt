@@ -59,6 +59,16 @@
           </address>
         </section>
       </div>
+
+      <div class="mt-6 flex justify-end border-t border-zinc-200 pt-4 dark:border-zinc-800">
+        <button
+          type="button"
+          class="text-xs text-zinc-500 hover:text-vusa-red hover:underline dark:text-zinc-400"
+          @click="reopen"
+        >
+          {{ $t("Slapukų nustatymai") }}
+        </button>
+      </div>
     </div>
   </footer>
 </template>
@@ -66,7 +76,10 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { useCookieConsent } from '@/Composables/useCookieConsent';
 import FacebookButton from '../Nav/FacebookButton.vue';
 import InstagramButton from '../Nav/InstagramButton.vue';
 import StartFM from '../Nav/StartFM.vue';
+
+const { reopen } = useCookieConsent();
 </script>

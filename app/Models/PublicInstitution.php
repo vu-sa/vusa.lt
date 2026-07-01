@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Pivots\Relationshipable;
 use App\Models\Pivots\Trainable;
+use App\Services\PublicInstitutionSearchIndexBuilder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -37,6 +38,9 @@ use Spatie\Activitylog\Models\Activity;
  * @property int $is_active
  * @property int $meeting_periodicity_days
  * @property string $contacts_layout
+ * @property string|null $selection_method
+ * @property array|string|null $appointed_by
+ * @property array|string|null $term_length
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
@@ -45,7 +49,6 @@ use Spatie\Activitylog\Models\Activity;
  * @property-read Relationshipable|InstitutionFollow|Trainable|null $pivot
  * @property-read Collection<int, Training> $availableTrainings
  * @property-read Collection<int, InstitutionCheckIn> $checkIns
- * @property-read Model|\Eloquent $commentable
  * @property-read Collection<int, Comment> $comments
  * @property-read Collection<int, Document> $documents
  * @property-read Collection<int, Duty> $duties
@@ -61,6 +64,7 @@ use Spatie\Activitylog\Models\Activity;
  * @property-read Collection<int, Meeting> $meetings
  * @property-read Collection<int, Relationship> $outgoingRelationships
  * @property-read Collection<int, Problem> $problems
+ * @property-read Collection<int, Comment> $rootComments
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Task> $tasksFromMeetings
  * @property-read Tenant|null $tenant
@@ -70,6 +74,7 @@ use Spatie\Activitylog\Models\Activity;
  * @property-read int|null $tasks_from_meetings_count
  * @property-read int|null $users_count
  *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution hasActiveDuties()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution onlyTrashed()
@@ -140,64 +145,12 @@ class PublicInstitution extends Institution
     }
 
     /**
-     * Get searchable array for Typesense indexing
+     * Get searchable array for Typesense indexing.
+     * Delegates to PublicInstitutionSearchIndexBuilder.
      */
     public function toSearchableArray(): array
     {
-        // Load required relationships
-        $this->loadMissing([
-            'tenant',
-            'types',
-        ]);
-
-        // Get number of current duty holders
-        $activeDutiesCount = $this->duties()
-            ->whereHas('current_users')
-            ->count();
-
-        return [
-            'id' => $this->id,
-            'title' => $this->getTranslation('name', 'lt'), // For InstantSearch compatibility
-            'name_lt' => $this->getTranslation('name', 'lt'),
-            'name_en' => $this->getTranslation('name', 'en'),
-            'short_name_lt' => $this->getTranslation('short_name', 'lt'),
-            'short_name_en' => $this->getTranslation('short_name', 'en'),
-            'alias' => $this->alias,
-
-            // Contact info
-            'email' => $this->email,
-            'phone' => $this->phone,
-            'website' => $this->website,
-            'address_lt' => $this->getTranslation('address', 'lt'),
-            'address_en' => $this->getTranslation('address', 'en'),
-
-            // Media
-            'image_url' => $this->image_url,
-            'logo_url' => $this->logo_url,
-            'has_logo' => ! empty($this->logo_url),
-            'facebook_url' => $this->facebook_url,
-            'instagram_url' => $this->instagram_url,
-
-            // Tenant info
-            'tenant_id' => $this->tenant?->id,
-            'tenant_shortname' => $this->tenant?->shortname,
-            'tenant_alias' => $this->tenant?->alias,
-            'tenant_type' => $this->tenant?->type,
-
-            // Types for filtering
-            'type_ids' => $this->types->pluck('id')->toArray(),
-            'type_slugs' => $this->types->pluck('slug')->toArray(),
-            'type_titles_lt' => $this->types->map(fn ($t) => $t->getTranslation('title', 'lt'))->filter()->toArray(),
-            'type_titles_en' => $this->types->map(fn ($t) => $t->getTranslation('title', 'en'))->filter()->toArray(),
-
-            // Stats
-            'duties_count' => $activeDutiesCount,
-            'has_contacts' => $activeDutiesCount > 0,
-
-            // For sorting
-            'created_at' => $this->created_at->timestamp,
-            'updated_at' => $this->updated_at->timestamp,
-        ];
+        return app(PublicInstitutionSearchIndexBuilder::class)->build($this);
     }
 
     /**

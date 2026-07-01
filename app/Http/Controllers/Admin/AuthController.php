@@ -220,7 +220,7 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         // Cleanly return the user to homepage, without inertia
-        return back()->with('success', 'Sėkmingai atsijungta!');
+        return back()->with('success', __('messages.auth.logout_success'));
     }
 
     /**
