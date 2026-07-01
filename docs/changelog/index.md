@@ -7,11 +7,6 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
-## v1.13 — Bendra paieška (2026-06-02) {#v1-13}
-
-- ⭐ **Bendra paieška** — naujas paieškos puslapis, kuriame vienu metu ieškoma naujienose, puslapiuose, dokumentuose, renginiuose, institucijose ir posėdžiuose; rezultatai suskirstyti į grupes pagal turinio tipą ir rikiuojami pagal aktualumą, o kiekvienoje grupėje galima įkelti daugiau rezultatų
-- ✨ **Greitesnė paieška** — paieškos langą pakeitė atskiras puslapis, atsisakyta sunkios paieškos bibliotekos, todėl paieška kraunasi greičiau
-
 ## v1.12 — Susitikimų sąsajos patobulinimas (2026-06-01) {#v1-12}
 
 - ✨ Atnaujintas posėdžio puslapio vaizdas

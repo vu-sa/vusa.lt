@@ -554,3 +554,23 @@ describe('relationship-based meeting access', function () {
         $response->assertStatus(200);
     });
 });
+
+describe('meeting search indexing', function () {
+    test('searchable array exposes representative user names', function () {
+        $meeting = Meeting::factory()->create([
+            'start_time' => Carbon::now()->addDays(1),
+        ]);
+        $meeting->institutions()->attach($this->institution->id);
+
+        $duty = Duty::factory()->for($this->institution)->create([
+            'name' => ['lt' => 'Pirmininkas', 'en' => 'Chair'],
+        ]);
+        $member = User::factory()->create(['name' => 'Jonas Jonaitis']);
+        $duty->users()->attach($member->id, ['start_date' => now()->subYear(), 'end_date' => null]);
+
+        $searchable = $meeting->fresh()->toSearchableArray();
+
+        expect($searchable)->toHaveKey('user_names');
+        expect($searchable['user_names'])->toContain('Jonas Jonaitis');
+    });
+});

@@ -2,9 +2,9 @@
 
 namespace App\Http\Middleware;
 
-use App\Enums\ModelEnum;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\Permissions\PermissionMapBuilder;
 use App\Services\Typesense\TypesenseManager;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
@@ -81,6 +81,7 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn () => $request->session()->get('error'),
                 'toast_duration' => fn () => $request->session()->get('toast_duration'),
                 'toast_description' => fn () => $request->session()->get('toast_description'),
+                'access_change_warning' => fn () => $request->session()->get('access_change_warning'),
             ],
             'seo' => [
                 'title' => fn () => $request->session()->get('seo.title'),
@@ -148,20 +149,9 @@ class HandleInertiaRequests extends Middleware
      */
     private function getIndexPermissions(User $user): array
     {
-        return Cache::remember('index-permissions-'.$user->id, 1800, function () use ($user) {
-            $labels = ModelEnum::toLabels();
-
-            // remove where value is reservationResource
-            // TODO: maybe needs better solution
-            unset($labels[array_search('reservationResource', $labels)]);
-            // TODO: file is also a special case, since it isn't linked to models, but has permissions
-            unset($labels[array_search('file', $labels)]);
-
-            return collect($labels)
-                ->mapWithKeys(function ($model) use ($user) {
-                    return [$model => $user->can('viewAny', ['App\\Models\\'.ucfirst($model)])];
-                })->toArray();
-        });
+        return Cache::remember('index-permissions-'.$user->id, 1800,
+            fn () => app(PermissionMapBuilder::class)->indexMap($user)
+        );
     }
 
     /**
@@ -169,18 +159,8 @@ class HandleInertiaRequests extends Middleware
      */
     private function getCreatePermissions(User $user): array
     {
-        return Cache::remember('create-permissions-'.$user->id, 1800, function () use ($user) {
-            $labels = ModelEnum::toLabels();
-
-            // remove where value is reservationResource
-            // TODO: maybe needs better solution
-            unset($labels[array_search('reservationResource', $labels)]);
-            unset($labels[array_search('file', $labels)]);
-
-            return collect($labels)
-                ->mapWithKeys(function ($model) use ($user) {
-                    return [$model => $user->can('create', ['App\\Models\\'.ucfirst($model)])];
-                })->toArray();
-        });
+        return Cache::remember('create-permissions-'.$user->id, 1800,
+            fn () => app(PermissionMapBuilder::class)->createMap($user)
+        );
     }
 }

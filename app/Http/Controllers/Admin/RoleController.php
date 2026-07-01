@@ -260,6 +260,7 @@ class RoleController extends AdminController
     {
         $role->usersThroughDuties->each(function ($user) {
             Cache::forget('index-permissions-'.$user->id);
+            Cache::forget('create-permissions-'.$user->id);
         });
     }
 }

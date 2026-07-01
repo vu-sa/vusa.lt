@@ -217,25 +217,36 @@ class UserController extends AdminController
         // TODO: make duty attach / detach work properly
         $this->handleAuthorization('update', $user);
 
-        UserDutyService::syncDutiesForUser(
-            new SupportCollection($request->current_duties ?? []),
-            $user->current_duties->pluck('id'),
-            $user,
-            $this->authorizer
-        );
+        $actor = $request->user();
+        $actorIsSuperAdmin = $actor->isSuperAdmin();
+        $currentDutyIds = $user->current_duties->pluck('id');
 
-        DB::transaction(function () use ($request, $user) {
-            $user->update($request->only('name', 'email', 'facebook_url', 'phone', 'profile_photo_path', 'profile_photo_focal_point', 'pronouns', 'show_pronouns'));
+        $mutation = function () use ($request, $user, $currentDutyIds, $actorIsSuperAdmin) {
+            UserDutyService::syncDutiesForUser(
+                new SupportCollection($request->current_duties ?? []),
+                $currentDutyIds,
+                $user,
+                $this->authorizer
+            );
 
-            // check if user is super admin
-            if (User::find(Auth::id())->isSuperAdmin()) {
-                if ($request->has('roles')) {
-                    $user->roles()->sync($request->roles);
-                } else {
-                    $user->roles()->sync([]);
+            DB::transaction(function () use ($request, $user, $actorIsSuperAdmin) {
+                $user->update($request->only('name', 'email', 'facebook_url', 'phone', 'profile_photo_path', 'profile_photo_focal_point', 'pronouns', 'show_pronouns'));
+
+                // only a super admin may change roles
+                if ($actorIsSuperAdmin) {
+                    $user->roles()->sync($request->has('roles') ? $request->roles : []);
                 }
-            }
-        });
+            });
+        };
+
+        // Editing your own profile can drop the duties/roles that grant your
+        // access. (A super admin can only self-lock by removing the Super Admin
+        // role, but the analyzer detects that case too.)
+        $couldAffectSelf = $user->is($actor);
+
+        if ($warning = $this->guardSelfLockout($actor, $couldAffectSelf, $request, $mutation)) {
+            return $warning;
+        }
 
         return back()->with('success', 'Kontaktas sėkmingai atnaujintas!');
     }

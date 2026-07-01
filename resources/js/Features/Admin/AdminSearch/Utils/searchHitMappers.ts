@@ -328,12 +328,15 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
   }),
   duties: (d: DutySearchResult, ctx?: MapperContext) => {
     const external = isDutyExternal(d, ctx);
+    const memberMeta = d.current_user_names?.length
+      ? d.current_user_names.slice(0, 2).join(', ') + (d.current_user_names.length > 2 ? ` +${d.current_user_names.length - 2}` : '')
+      : d.type_titles?.[0];
     return {
       recordId: String(d.id),
       title: d.name_lt || d.name_en || $t('Be pavadinimo'),
       subtitle: d.institution_name_lt || d.institution_name_en,
       badge: d.tenant_shortname,
-      meta: d.type_titles?.[0],
+      meta: memberMeta,
       href: route('duties.show', d.id),
       isExternal: external,
       // Subtle cross-tenant indicator: only external duties get a badge, labelled

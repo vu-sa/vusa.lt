@@ -160,6 +160,7 @@ class Meeting extends Model implements SharepointFileableContract
             'institutions.types',
             'institutions.tenant',
             'agendaItems.votes',
+            'users',
         ]);
 
         // Get tenant IDs for filtering with scoped API keys
@@ -233,6 +234,9 @@ class Meeting extends Model implements SharepointFileableContract
             // Visibility status
             'is_public' => $this->is_public,
             'is_recent' => $this->start_time->isAfter(now()->subMonths(6)),
+
+            // Representatives attending the meeting
+            'user_names' => $this->users->pluck('name')->filter()->unique()->values()->all(),
 
             'created_at' => $this->created_at->timestamp,
             'updated_at' => $this->updated_at->timestamp,

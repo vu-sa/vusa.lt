@@ -13,6 +13,13 @@ class HandleDutiableChange implements ShouldQueue
     use InteractsWithQueue;
 
     /**
+     * Discard the job instead of failing when the dutiable can no longer be
+     * restored — it is dispatched on `deleted`, so by the time the job runs the
+     * row is gone and there is nothing left to invalidate.
+     */
+    public bool $deleteWhenMissingModels = true;
+
+    /**
      * Create the event listener.
      *
      * @return void
@@ -36,6 +43,7 @@ class HandleDutiableChange implements ShouldQueue
         $userId = $event->dutiable->user->id;
 
         Cache::forget('index-permissions-'.$userId);
+        Cache::forget('create-permissions-'.$userId);
         Permission::resetCache($userId);
     }
 }

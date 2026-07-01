@@ -124,6 +124,10 @@ describe('authorized access', function () {
             'institution_id' => $this->dutyManagerDuty->institution_id,
             'contacts_grouping' => 'none',
             'places_to_occupy' => 1,
+            // Preserve the role + own membership (as the real form does) so the
+            // manager doesn't lock themselves out of this duty.
+            'roles' => $this->dutyManagerDuty->roles()->pluck('id')->all(),
+            'current_users' => [$this->dutyManager->id],
         ]);
 
         $response->assertRedirect();
@@ -142,7 +146,8 @@ describe('authorized access', function () {
             'institution_id' => $this->dutyManagerDuty->institution_id,
             'contacts_grouping' => $this->dutyManagerDuty->contacts_grouping ?? 'none',
             'places_to_occupy' => $this->dutyManagerDuty->places_to_occupy ?? 1,
-            'current_users' => [$newUser->id],
+            'roles' => $this->dutyManagerDuty->roles()->pluck('id')->all(),
+            'current_users' => [$this->dutyManager->id, $newUser->id],
         ]);
 
         $response->assertRedirect();
@@ -183,7 +188,8 @@ describe('authorized access', function () {
             'institution_id' => $this->dutyManagerDuty->institution_id,
             'contacts_grouping' => $this->dutyManagerDuty->contacts_grouping ?? 'none',
             'places_to_occupy' => $this->dutyManagerDuty->places_to_occupy ?? 1,
-            'current_users' => [$user1->id, $user2->id],
+            'roles' => $this->dutyManagerDuty->roles()->pluck('id')->all(),
+            'current_users' => [$this->dutyManager->id, $user1->id, $user2->id],
         ]);
 
         $response->assertRedirect();
@@ -449,6 +455,8 @@ describe('ex-officio target tenant scoping', function () {
             'institution_id' => $this->dutyManagerDuty->institution_id,
             'contacts_grouping' => 'none',
             'places_to_occupy' => 1,
+            'roles' => $this->dutyManagerDuty->roles()->pluck('id')->all(),
+            'current_users' => [$this->dutyManager->id],
             'ex_officio_target_duty_ids' => [$sameTenantDuty->id],
         ]);
 
@@ -520,6 +528,28 @@ describe('duty search indexing (cross-tenant visibility)', function () {
         expect($searchable)->toHaveKeys(['name_lt', 'name_en', 'tenant_shortname', 'type_titles', 'current_user_names']);
         expect($searchable['current_user_names'])->toContain('Jonas Jonaitis');
         expect($searchable['current_users_count'])->toBe(1);
+    });
+
+    test('searchable array indexes all current and previous members without limits', function () {
+        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create([
+            'name' => ['lt' => 'Pirmininkas', 'en' => 'Chair'],
+        ]);
+
+        $currentMembers = User::factory()->count(15)->create();
+        foreach ($currentMembers as $member) {
+            $duty->users()->attach($member->id, ['start_date' => now()->subYear(), 'end_date' => null]);
+        }
+
+        $previousMembers = User::factory()->count(10)->create();
+        foreach ($previousMembers as $member) {
+            $duty->users()->attach($member->id, ['start_date' => now()->subYears(2), 'end_date' => now()->subMonths(6)]);
+        }
+
+        $searchable = $duty->fresh()->toSearchableArray();
+
+        expect($searchable['current_user_names'])->toHaveCount(15);
+        expect($searchable['previous_user_names'])->toHaveCount(10);
+        expect($searchable['current_users_count'])->toBe(15);
     });
 });
 
@@ -708,6 +738,8 @@ describe('show page', function () {
             'appointed_by' => ['lt' => 'Dekanas', 'en' => 'Dean'],
             'term_length' => ['lt' => '2 metai', 'en' => '2 years'],
             'responsibilities' => ['lt' => "Pirma\nAntra", 'en' => "First\nSecond"],
+            'roles' => $this->dutyManagerDuty->roles()->pluck('id')->all(),
+            'current_users' => [$this->dutyManager->id],
         ]);
 
         $response->assertSessionDoesntHaveErrors();

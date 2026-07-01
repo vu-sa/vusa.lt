@@ -173,10 +173,9 @@ class Duty extends Model implements AuthorizableContract, SharepointFileableCont
             ->all();
 
         $currentUsersCount = $this->current_users()->count();
-        $currentUsers = $this->current_users()->limit(12)->get(['users.id', 'name']);
+        $currentUsers = $this->current_users()->get(['users.id', 'name']);
         $previousUsers = $this->previous_users()
             ->orderByPivot('end_date', 'desc')
-            ->limit(6)
             ->get(['users.id', 'name']);
 
         return [

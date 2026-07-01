@@ -30,6 +30,7 @@ class RoleTypeObserver
 
         $role->usersThroughDuties->each(function ($user) {
             Cache::forget('index-permissions-'.$user->id);
+            Cache::forget('create-permissions-'.$user->id);
         });
     }
 
@@ -59,6 +60,7 @@ class RoleTypeObserver
 
         $role->usersThroughDuties->each(function ($user) {
             Cache::forget('index-permissions-'.$user->id);
+            Cache::forget('create-permissions-'.$user->id);
         });
     }
 }

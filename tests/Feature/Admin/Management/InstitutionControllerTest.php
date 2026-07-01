@@ -6,6 +6,7 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Tenant;
 use App\Models\Type;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -584,5 +585,24 @@ describe('meeting_periodicity_days', function () {
         ]);
 
         $response->assertSessionHasErrors('meeting_periodicity_days');
+    });
+});
+
+describe('institution search indexing', function () {
+    test('searchable array exposes duty names and current member names', function () {
+        $institution = Institution::factory()->for($this->tenant)->create([
+            'name' => ['lt' => 'Testinė institucija', 'en' => 'Test Institution'],
+        ]);
+        $duty = Duty::factory()->for($institution)->create([
+            'name' => ['lt' => 'Pirmininkas', 'en' => 'Chair'],
+        ]);
+        $member = User::factory()->create(['name' => 'Jonas Jonaitis']);
+        $duty->users()->attach($member->id, ['start_date' => now()->subYear(), 'end_date' => null]);
+
+        $searchable = $institution->fresh()->toSearchableArray();
+
+        expect($searchable)->toHaveKeys(['name_lt', 'duty_names', 'current_user_names']);
+        expect($searchable['duty_names'])->toContain('Pirmininkas');
+        expect($searchable['current_user_names'])->toContain('Jonas Jonaitis');
     });
 });

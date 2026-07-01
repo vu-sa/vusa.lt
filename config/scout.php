@@ -289,8 +289,8 @@ return [
                     'enable_nested_fields' => false,
                 ],
                 'search-parameters' => [
-                    'query_by' => 'title,summary,content_type,document_year,document_date_formatted',
-                    'query_by_weights' => '10,3,2,6,4',
+                    'query_by' => 'title,summary,content_type,institution_name_lt,institution_name_en,document_year,document_date_formatted',
+                    'query_by_weights' => '10,3,2,3,2,6,4',
                     'typo_tokens_threshold' => 1,
                     'num_typos' => 2,
                     'prioritize_exact_match' => true,
@@ -410,14 +410,17 @@ return [
                         ['name' => 'type_titles', 'type' => 'string[]', 'facet' => true, 'optional' => true],
                         // Self-referential institution_ids for .own permission filtering
                         ['name' => 'institution_ids', 'type' => 'string[]', 'facet' => true],
+                        // Linked members and duties for discoverability
+                        ['name' => 'current_user_names', 'type' => 'string[]', 'optional' => true],
+                        ['name' => 'duty_names', 'type' => 'string[]', 'optional' => true],
                         ['name' => 'created_at', 'type' => 'int64'],
                     ],
                     'default_sorting_field' => 'created_at',
                     'enable_nested_fields' => false,
                 ],
                 'search-parameters' => [
-                    'query_by' => 'name_lt,name_en,short_name_lt,short_name_en,alias,email',
-                    'query_by_weights' => '10,8,6,4,3,2',
+                    'query_by' => 'name_lt,name_en,short_name_lt,short_name_en,alias,email,current_user_names,duty_names',
+                    'query_by_weights' => '10,8,6,4,3,2,4,5',
                     'typo_tokens_threshold' => 1,
                     'num_typos' => 2,
                     'prioritize_exact_match' => true,
@@ -475,6 +478,9 @@ return [
                         ['name' => 'is_public', 'type' => 'bool', 'facet' => true],
                         ['name' => 'is_recent', 'type' => 'bool', 'facet' => true],
 
+                        // Representatives attending the meeting
+                        ['name' => 'user_names', 'type' => 'string[]', 'optional' => true],
+
                         ['name' => 'created_at', 'type' => 'int64'],
                         ['name' => 'updated_at', 'type' => 'int64', 'sort' => true],
                     ],
@@ -482,8 +488,8 @@ return [
                     'enable_nested_fields' => false,
                 ],
                 'search-parameters' => [
-                    'query_by' => 'title,description,institution_name_lt,institution_name_en,institution_names,tenant_shortnames',
-                    'query_by_weights' => '10,5,4,4,3,3',
+                    'query_by' => 'title,description,institution_name_lt,institution_name_en,institution_names,tenant_shortnames,user_names',
+                    'query_by_weights' => '10,5,4,4,3,3,4',
                     'typo_tokens_threshold' => 1,
                     'num_typos' => 2,
                     'prioritize_exact_match' => true,
@@ -541,8 +547,8 @@ return [
                     'enable_nested_fields' => false,
                 ],
                 'search-parameters' => [
-                    'query_by' => 'title,description,student_benefit,meeting_title',
-                    'query_by_weights' => '10,6,5,4',
+                    'query_by' => 'title,description,student_benefit,meeting_title,institution_name_lt,institution_name_en',
+                    'query_by_weights' => '10,6,5,4,3,3',
                     'typo_tokens_threshold' => 1,
                     'num_typos' => 2,
                     'prioritize_exact_match' => true,
@@ -581,8 +587,8 @@ return [
                     'enable_nested_fields' => false,
                 ],
                 'search-parameters' => [
-                    'query_by' => 'name_lt,name_en,description_lt,description_en,location',
-                    'query_by_weights' => '10,10,5,5,3',
+                    'query_by' => 'name_lt,name_en,description_lt,description_en,location,category_name',
+                    'query_by_weights' => '10,10,5,5,3,4',
                     'typo_tokens_threshold' => 1,
                     'num_typos' => 2,
                     'prioritize_exact_match' => true,
@@ -625,8 +631,8 @@ return [
                     'enable_nested_fields' => false,
                 ],
                 'search-parameters' => [
-                    'query_by' => 'name_lt,name_en,email,institution_name_lt,institution_name_en',
-                    'query_by_weights' => '10,8,4,4,3',
+                    'query_by' => 'name_lt,name_en,email,institution_name_lt,institution_name_en,current_user_names,previous_user_names',
+                    'query_by_weights' => '10,8,4,4,3,6,4',
                     'typo_tokens_threshold' => 1,
                     'num_typos' => 2,
                     'prioritize_exact_match' => true,

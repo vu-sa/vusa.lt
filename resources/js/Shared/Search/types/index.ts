@@ -345,6 +345,7 @@ export interface MeetingSearchResult {
   institution_type_title?: string;
   agenda_items_count?: number;
   year?: number;
+  user_names?: string[];
 }
 
 /**
@@ -429,6 +430,8 @@ export interface InstitutionSearchResult {
   tenant_id?: number;
   tenant_shortname?: string;
   type_titles?: string[];
+  current_user_names?: string[];
+  duty_names?: string[];
 }
 
 /**

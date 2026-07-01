@@ -251,6 +251,22 @@ class Institution extends Model implements SharepointFileableContract
 
     public function toSearchableArray(): array
     {
+        $this->loadMissing(['duties.current_users', 'types']);
+
+        $currentUserNames = $this->duties
+            ->flatMap(fn (Duty $duty) => $duty->current_users->pluck('name'))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        $dutyNames = $this->duties
+            ->map(fn (Duty $duty) => $duty->getTranslation('name', 'lt'))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
         return [
             'id' => (string) $this->id,
             'name_lt' => $this->getTranslation('name', 'lt'),
@@ -269,6 +285,8 @@ class Institution extends Model implements SharepointFileableContract
                 ->all(),
             // Self-referential institution_ids for .own permission filtering
             'institution_ids' => [(string) $this->id],
+            'current_user_names' => $currentUserNames,
+            'duty_names' => $dutyNames,
             'created_at' => $this->created_at->timestamp,
         ];
     }
