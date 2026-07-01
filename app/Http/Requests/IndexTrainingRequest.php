@@ -4,5 +4,8 @@ namespace App\Http\Requests;
 
 class IndexTrainingRequest extends BaseIndexRequest
 {
-    // Additional training-specific validation or methods can be added here
+    /** @var array<int, array{id: string, desc: bool}> */
+    protected array $defaultSorting = [
+        ['id' => 'start_time', 'desc' => true],
+    ];
 }

@@ -102,6 +102,7 @@ const columns = computed<Array<ColumnDef<App.Entities.Tag, any>>>(() => [
       return h(TruncatedText, { text: new Date(row.original.created_at).toLocaleDateString('lt-LT') });
     },
     size: 150,
+    enableSorting: true,
   },
   createStandardActionsColumn<App.Entities.Tag>('tags', {
     canView: false,
@@ -126,7 +127,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Tag>>(() => {
 
     // Advanced features
     initialFilters: props.filters,
-    initialSorting: props.sorting,
+    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'created_at', desc: true }],
     enableFiltering: true,
     enableColumnVisibility: true,
     enableRowSelection: false,

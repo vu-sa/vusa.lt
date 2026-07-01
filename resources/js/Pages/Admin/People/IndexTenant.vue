@@ -86,7 +86,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Tenant>>(() => {
     pageSize: props.tenants.meta.per_page,
 
     initialFilters: props.filters,
-    initialSorting: props.sorting,
+    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'fullname', desc: false }],
     enableFiltering: true,
     enableColumnVisibility: false,
     enableRowSelection: false,

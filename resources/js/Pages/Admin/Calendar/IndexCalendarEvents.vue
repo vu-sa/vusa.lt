@@ -77,6 +77,7 @@ const columns = computed<Array<ColumnDef<App.Entities.Calendar, any>>>(() => [
       });
     },
     size: 200,
+    enableSorting: true,
   },
   {
     id: 'category',
@@ -120,7 +121,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Calendar>>(() => {
     pageSize: props.calendar.meta.per_page,
 
     initialFilters: props.filters,
-    initialSorting: props.sorting,
+    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'date', desc: true }],
     enableFiltering: true,
     enableColumnVisibility: false,
     enableRowSelection: false,

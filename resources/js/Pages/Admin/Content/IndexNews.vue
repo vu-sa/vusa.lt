@@ -125,7 +125,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.News>>(() => {
     pageSize: props.news.meta.per_page,
 
     initialFilters: props.filters,
-    initialSorting: props.sorting ?? [{ id: 'publish_time', desc: true }],
+    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'publish_time', desc: true }],
     enableFiltering: true,
     enableColumnVisibility: false,
     enableRowSelection: false,

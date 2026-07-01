@@ -82,7 +82,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Category>>(() => {
     pageSize: props.categories.meta.per_page,
 
     initialFilters: props.filters,
-    initialSorting: props.sorting,
+    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'name', desc: false }],
     enableFiltering: true,
     enableColumnVisibility: false,
     enableRowSelection: false,

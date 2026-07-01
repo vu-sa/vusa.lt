@@ -103,8 +103,14 @@ describe('authorized access', function () {
         Form::query()->delete();
 
         $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
-        Form::factory()->for($this->tenant)->create(['name' => ['lt' => 'My Form', 'en' => 'My Form']]);
-        Form::factory()->for($otherTenant)->create(['name' => ['lt' => 'Other Form', 'en' => 'Other Form']]);
+        Form::factory()->for($this->tenant)->create([
+            'name' => ['lt' => 'My Form', 'en' => 'My Form'],
+            'publish_time' => now()->addDay(),
+        ]);
+        Form::factory()->for($otherTenant)->create([
+            'name' => ['lt' => 'Other Form', 'en' => 'Other Form'],
+            'publish_time' => now(),
+        ]);
 
         // Use Super Admin user for cross-tenant access
         $superAdmin = makeAdminUser();

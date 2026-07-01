@@ -170,7 +170,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Reservation>>(
     pageSize: props.reservations.meta.per_page,
 
     initialFilters: props.filters,
-    initialSorting: props.sorting ?? [{ id: 'start_time', desc: true }],
+    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'start_time', desc: true }],
     enableFiltering: true,
     enableColumnVisibility: false,
     enableRowSelection: false,

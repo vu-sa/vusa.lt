@@ -88,7 +88,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Banner>>(() => {
     pageSize: props.banners.meta.per_page,
 
     initialFilters: props.filters,
-    initialSorting: props.sorting,
+    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'title', desc: false }],
     enableFiltering: true,
     enableColumnVisibility: false,
     enableRowSelection: false,
