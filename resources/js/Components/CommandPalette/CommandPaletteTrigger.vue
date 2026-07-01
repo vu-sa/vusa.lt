@@ -5,17 +5,14 @@
         <Button
           variant="outline"
           size="icon"
-          class="relative h-9 w-9 rounded-full lg:h-9 lg:w-56 xl:w-64 lg:rounded-md lg:justify-start lg:px-3 lg:py-2"
+          class="rounded-full"
           @click="toggle"
         >
-          <Search class="size-4 text-primary lg:text-muted-foreground lg:mr-2" />
-          <span class="hidden lg:inline-flex text-sm text-muted-foreground">{{ $t('Ieškoti...') }}</span>
-          <kbd class="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 hidden lg:inline-flex h-5 items-center rounded border bg-muted/60 px-1.5 font-mono text-[10px] font-medium text-muted-foreground/70">
-            {{ isMac ? '⌘K' : 'Ctrl+K' }}
-          </kbd>
+          <Search class="h-4 w-4" />
+          <span class="sr-only">{{ $t('Ieškoti') }}</span>
         </Button>
       </TooltipTrigger>
-      <TooltipContent side="bottom" class="lg:hidden">
+      <TooltipContent side="bottom">
         <div class="flex items-center gap-2">
           <span>{{ $t('Ieškoti') }}</span>
           <kbd class="inline-flex h-5 items-center rounded bg-white/20 dark:bg-black/20 px-1.5 font-mono text-[10px] font-medium">
