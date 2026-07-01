@@ -9,7 +9,6 @@ use App\Http\Requests\UpdateResourceRequest;
 use App\Models\Resource;
 use App\Models\ResourceCategory;
 use App\Services\ModelAuthorizer as Authorizer;
-use Illuminate\Http\RedirectResponse;
 
 class ResourceController extends AdminController
 {
