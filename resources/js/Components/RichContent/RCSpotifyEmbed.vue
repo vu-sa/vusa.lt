@@ -18,8 +18,19 @@ const props = defineProps<{
 }>();
 
 const isMixcloud = computed(() => {
-  return /^https?:\/\/(www\.)?mixcloud\.com\//.test(props.element.json_content.url)
-    || props.element.json_content.url.includes('player-widget.mixcloud.com');
+  const { url } = props.element.json_content;
+
+  try {
+    const parsedUrl = new URL(url, window.location.origin);
+    const host = parsedUrl.hostname.toLowerCase();
+
+    return host === 'mixcloud.com'
+      || host === 'www.mixcloud.com'
+      || host === 'player-widget.mixcloud.com';
+  }
+  catch {
+    return false;
+  }
 });
 
 const isDark = useDark();
