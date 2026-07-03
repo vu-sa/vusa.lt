@@ -6,6 +6,7 @@ use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\Type;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Enumerable;
 
 class ContactPresentationService
 {
@@ -139,7 +140,7 @@ class ContactPresentationService
      * Filter processed contacts to only show duties related to the selected types.
      *
      * @param  array<int, array<string, mixed>>  $processedContacts
-     * @param  \Illuminate\Support\Enumerable<int, Type>  $types
+     * @param  Enumerable<int, Type>  $types
      * @return array<int, array<string, mixed>>
      */
     public function filterProcessedContactsByTypes(array $processedContacts, $types): array

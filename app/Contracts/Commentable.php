@@ -3,11 +3,12 @@
 namespace App\Contracts;
 
 use App\Models\Comment;
+use App\Models\Traits\HasComments;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 /**
  * A model that hosts a discussion thread. Satisfied by the
- * {@see \App\Models\Traits\HasComments} trait.
+ * {@see HasComments} trait.
  */
 interface Commentable
 {
