@@ -24,7 +24,12 @@
           :has-searched="hasSearched"
           :error="error"
           :empty-message="emptyMessage"
+          :selectable="selectable"
+          :multiple="multiple"
+          :selected-ids="selectedIds"
+          :disabled-ids="disabledIds"
           @select="onSelect"
+          @toggle="$emit('toggleSelect', $event)"
           @load-more="$emit('loadMore')"
         />
       </div>
@@ -43,7 +48,9 @@
             {{ $t('Atgal į sąrašą') }}
           </Button>
         </div>
-        <SearchDetailPane :hit="selectedHit" />
+        <slot name="detail" :hit="selectedHit">
+          <SearchDetailPane :hit="selectedHit" />
+        </slot>
       </div>
     </div>
   </div>
@@ -70,6 +77,13 @@ const props = withDefaults(defineProps<{
   hasSearched?: boolean;
   error?: string | null;
   emptyMessage?: string;
+  /** Selection mode: rows show a checkbox/radio and Enter toggles instead of navigating. */
+  selectable?: boolean;
+  multiple?: boolean;
+  /** Ids currently in the selection. */
+  selectedIds?: Set<string>;
+  /** Ids that cannot be toggled. */
+  disabledIds?: Set<string>;
 }>(), {
   isLoading: false,
   isLoadingMore: false,
@@ -77,10 +91,13 @@ const props = withDefaults(defineProps<{
   hasSearched: false,
   error: null,
   emptyMessage: '',
+  selectable: false,
+  multiple: false,
 });
 
 const emit = defineEmits<{
   'update:selectedHit': [hit: NormalizedSearchHit | null];
+  toggleSelect: [hit: NormalizedSearchHit];
   loadMore: [];
 }>();
 
@@ -118,8 +135,19 @@ useEventListener('keydown', (event: KeyboardEvent) => {
   const typing = target && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
 
   if (event.key === 'Enter') {
+    if (typing) {
+      return;
+    }
+    // In selection mode Enter toggles the highlighted hit rather than navigating.
+    if (props.selectable) {
+      if (props.selectedHit && !props.disabledIds?.has(props.selectedHit.id)) {
+        event.preventDefault();
+        emit('toggleSelect', props.selectedHit);
+      }
+      return;
+    }
     const href = props.selectedHit?.href;
-    if (!typing && href) {
+    if (href) {
       // External links (e.g. document URLs) open in a new tab; internal
       // routes use Inertia so we keep the SPA navigation.
       if (/^https?:\/\//.test(href)) {

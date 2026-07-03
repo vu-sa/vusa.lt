@@ -35,21 +35,26 @@
 
         <div class="grid gap-4 lg:grid-cols-2">
           <FormFieldWrapper id="institution_id" :label="$t('forms.fields.institution')" :error="form.errors.institution_id">
-            <SingleSelect
-              v-model="selectedInstitution"
-              :options="assignableInstitutions"
-              label-field="name"
-              value-field="id"
-              :placeholder="$t('Pasirink instituciją pagal pavadinimą...')"
-              :empty-text="$t('Nerasta institucijų')"
+            <InstitutionSelectDialog
+              v-model:open="institutionDialogOpen"
+              :institutions="assignableInstitutions as unknown as InstitutionOption[]"
+              :initial-hits="institutionInitialHits"
+              @confirm="onInstitutionConfirm"
             >
-              <template #option="{ item }">
-                <span class="flex-1 truncate">{{ item.name }}</span>
-                <Badge v-if="item.tenant?.shortname" variant="secondary" class="text-xs shrink-0">
-                  {{ item.tenant.shortname }}
-                </Badge>
+              <template #trigger>
+                <Button type="button" variant="outline" class="w-full justify-between font-normal">
+                  <span class="truncate" :class="{ 'text-muted-foreground': !selectedInstitution }">
+                    {{ selectedInstitution?.name ?? $t('Pasirink instituciją pagal pavadinimą...') }}
+                  </span>
+                  <span class="flex shrink-0 items-center gap-2">
+                    <Badge v-if="selectedInstitution?.tenant?.shortname" variant="secondary" class="text-xs">
+                      {{ selectedInstitution.tenant.shortname }}
+                    </Badge>
+                    <ChevronsUpDown class="size-4 opacity-50" />
+                  </span>
+                </Button>
               </template>
-            </SingleSelect>
+            </InstitutionSelectDialog>
           </FormFieldWrapper>
 
           <FormFieldWrapper id="places_to_occupy" :label="$t('forms.fields.duty_people_count')" :error="form.errors.places_to_occupy">
@@ -96,7 +101,7 @@
         </div>
       </FormElement>
 
-      <FormElement>
+      <FormElement v-if="false">
         <template #title>
           {{ $t('Skyrimas ir atsakomybės') }}
         </template>
@@ -282,18 +287,36 @@
         </FormFieldWrapper>
 
         <FormFieldWrapper id="ex_officio_target_duty_ids" :label="$t('forms.fields.ex_officio_duties')" :error="form.errors.ex_officio_target_duty_ids">
-          <MultiSelect v-model="selectedExOfficioDuties" :options="assignableDuties" label-field="name" value-field="id"
-            :placeholder="$t('forms.fields.ex_officio_duties')">
-            <template #option="{ item }">
-              <span class="flex-1 truncate">{{ item.name }}</span>
-              <Badge v-if="item.institution" variant="secondary" class="ml-2 shrink-0 text-xs">
-                {{ item.institution.short_name ?? item.institution.name }}
-                <template v-if="item.institution.tenant?.shortname">
-                  · {{ item.institution.tenant.shortname }}
-                </template>
-              </Badge>
+          <CollectionSelectDialog
+            v-model:open="exOfficioDialogOpen"
+            collection="duties"
+            multiple
+            allow-empty
+            :base-filter-by="exOfficioBaseFilterBy"
+            :disabled-ids="exOfficioDisabledIds"
+            :initial-hits="exOfficioInitialHits"
+            :title="$t('forms.fields.ex_officio_duties')"
+            :confirm-label="$t('Pasirinkti')"
+            :search-placeholder="$t('Ieškoti pareigų pagal pavadinimą...')"
+            :empty-message="$t('Pareigų nerasta')"
+            @confirm="onExOfficioConfirm"
+          >
+            <template #trigger>
+              <Button type="button" variant="outline" class="w-full justify-between font-normal">
+                <span class="truncate" :class="{ 'text-muted-foreground': selectedExOfficioDuties.length === 0 }">
+                  {{ selectedExOfficioDuties.length > 0
+                    ? selectedExOfficioDuties.map(d => d.name).join(', ')
+                    : $t('forms.fields.ex_officio_duties') }}
+                </span>
+                <span class="flex shrink-0 items-center gap-2">
+                  <Badge v-if="selectedExOfficioDuties.length > 0" variant="secondary" class="text-xs">
+                    {{ selectedExOfficioDuties.length }}
+                  </Badge>
+                  <ChevronsUpDown class="size-4 opacity-50" />
+                </span>
+              </Button>
             </template>
-          </MultiSelect>
+          </CollectionSelectDialog>
         </FormFieldWrapper>
       </FormElement>
     </template>
@@ -421,6 +444,7 @@ import AdminForm from './AdminForm.vue';
 
 import IconEdit from '~icons/fluent/edit16-filled';
 import IconEye from '~icons/fluent/eye16-regular';
+import { ChevronsUpDown } from 'lucide-vue-next';
 import { Alert, AlertDescription } from '@/Components/ui/alert';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
@@ -430,6 +454,8 @@ import { MultiSelect } from '@/Components/ui/multi-select';
 import { NumberField } from '@/Components/ui/number-field';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { SingleSelect } from '@/Components/ui/single-select';
+import { CollectionSelectDialog, InstitutionSelectDialog, type InstitutionOption } from '@/Features/Admin/AdminSearch/Components/Select';
+import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { Switch } from '@/Components/ui/switch';
 import { Textarea } from '@/Components/ui/textarea';
 import { TransferList } from '@/Components/ui/transfer-list';
@@ -585,6 +611,39 @@ watch(selectedExOfficioDuties, (val) => {
   form.ex_officio_target_duty_ids = val.map(d => d.id);
 }, { deep: true });
 
+const exOfficioDialogOpen = ref(false);
+
+/** Build a normalized duty hit from an assignable-duty option (for pre-selection). */
+function dutyOptionToHit(option: AssignableDutyOption): NormalizedSearchHit {
+  return normalizeHit('duties', {
+    id: option.id,
+    name_lt: option.name,
+    name_en: option.name,
+    institution_name_lt: option.institution?.name,
+    institution_name_en: option.institution?.name,
+    tenant_shortname: option.institution?.tenant?.shortname,
+  });
+}
+
+// Scope the duties search to the assignable set's tenants (reproduces the
+// server-side assignable scope); the current duty can't target itself.
+const exOfficioBaseFilterBy = computed(() => {
+  const tenantIds = [
+    ...new Set(props.assignableDuties.map(d => d.institution?.tenant?.id).filter((id): id is number => id != null)),
+  ];
+  return tenantIds.length > 0 ? `tenant_ids:[${tenantIds.join(',')}]` : undefined;
+});
+
+const exOfficioDisabledIds = computed(() => new Set([`duties-${props.duty.id}`]));
+
+const exOfficioInitialHits = computed(() => selectedExOfficioDuties.value.map(dutyOptionToHit));
+
+function onExOfficioConfirm(hits: NormalizedSearchHit[]) {
+  selectedExOfficioDuties.value = hits.map(hit =>
+    props.assignableDuties.find(d => d.id === hit.recordId) ?? { id: hit.recordId, name: hit.title },
+  );
+}
+
 // TransferList options for owning-tenant reps (exclude users already in a cross-tenant slot)
 const crossTenantUserIds = computed(() => selectedTenantUserIds.value.flat());
 
@@ -659,6 +718,25 @@ const selectedInstitution = computed({
     form.institution_id = val?.id ?? null;
   },
 });
+
+const institutionDialogOpen = ref(false);
+
+const institutionInitialHits = computed<NormalizedSearchHit[]>(() => {
+  const current = selectedInstitution.value as (App.Entities.Institution & { tenant?: { shortname?: string } }) | null;
+  if (!current) {
+    return [];
+  }
+  return [normalizeHit('institutions', {
+    id: current.id,
+    name_lt: current.name,
+    name_en: current.name,
+    tenant_shortname: current.tenant?.shortname,
+  })];
+});
+
+function onInstitutionConfirm(hits: NormalizedSearchHit[]) {
+  form.institution_id = hits[0]?.recordId ?? null;
+}
 
 const isExOfficioUser = (user: App.Entities.User) => !!(user as UserWithPivot).pivot?.via_dutiable_id;
 

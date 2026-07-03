@@ -153,33 +153,35 @@
           </template>
         </FormFieldWrapper>
 
-        <Separator class="my-4" />
+        <template v-if="false">
+          <Separator class="my-4" />
 
-        <div class="space-y-4">
-          <p class="text-sm text-muted-foreground">
-            {{ $t('Numatytasis skyrimo būdas, taikomas šios institucijos pareigybėms (kiekviena pareigybė gali jį perrašyti).') }}
-          </p>
-          <div class="grid gap-4 lg:grid-cols-3">
-            <FormFieldWrapper id="selection_method" :label="$t('Skyrimo būdas')" :error="form.errors.selection_method">
-              <Select v-model="form.selection_method">
-                <SelectTrigger>
-                  <SelectValue :placeholder="$t('Nenurodyta')" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem v-for="option in selectionMethodOptions" :key="option.value" :value="option.value">
-                    {{ option.label }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </FormFieldWrapper>
-            <FormFieldWrapper id="appointed_by" :label="$t('Skiria')" :error="form.errors.appointed_by">
-              <MultiLocaleInput v-model:input="form.appointed_by" />
-            </FormFieldWrapper>
-            <FormFieldWrapper id="term_length" :label="$t('Kadencija')" :error="form.errors.term_length">
-              <MultiLocaleInput v-model:input="form.term_length" />
-            </FormFieldWrapper>
+          <div class="space-y-4">
+            <p class="text-sm text-muted-foreground">
+              {{ $t('Numatytasis skyrimo būdas, taikomas šios institucijos pareigybėms (kiekviena pareigybė gali jį perrašyti).') }}
+            </p>
+            <div class="grid gap-4 lg:grid-cols-3">
+              <FormFieldWrapper id="selection_method" :label="$t('Skyrimo būdas')" :error="form.errors.selection_method">
+                <Select v-model="form.selection_method">
+                  <SelectTrigger>
+                    <SelectValue :placeholder="$t('Nenurodyta')" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem v-for="option in selectionMethodOptions" :key="option.value" :value="option.value">
+                      {{ option.label }}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormFieldWrapper>
+              <FormFieldWrapper id="appointed_by" :label="$t('Skiria')" :error="form.errors.appointed_by">
+                <MultiLocaleInput v-model:input="form.appointed_by" />
+              </FormFieldWrapper>
+              <FormFieldWrapper id="term_length" :label="$t('Kadencija')" :error="form.errors.term_length">
+                <MultiLocaleInput v-model:input="form.term_length" />
+              </FormFieldWrapper>
+            </div>
           </div>
-        </div>
+        </template>
       </div>
     </FormElement>
 

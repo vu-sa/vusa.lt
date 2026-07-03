@@ -55,6 +55,55 @@
       </h3>
       <p class="whitespace-pre-line text-sm text-muted-foreground">{{ description }}</p>
     </div>
+
+    <!-- Upcoming reservations (fetched — not in the search document) -->
+    <div class="mt-6">
+      <h3 class="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        {{ $t('Artimiausios rezervacijos') }}
+      </h3>
+
+      <div v-if="isFetching && !data" class="space-y-2">
+        <div v-for="i in 3" :key="i" class="h-9 animate-pulse rounded-md bg-muted/50" />
+      </div>
+
+      <ol v-else-if="data?.upcoming_reservations?.length" class="space-y-1.5">
+        <li
+          v-for="reservation in data.upcoming_reservations"
+          :key="reservation.id"
+          class="flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-sm"
+        >
+          <span class="min-w-0 flex-1 truncate">{{ reservation.name }}</span>
+          <span class="shrink-0 text-xs tabular-nums text-muted-foreground">
+            <template v-if="reservation.start_time">{{ formatSearchDate(reservation.start_time) }}</template>
+          </span>
+          <Badge variant="secondary" class="shrink-0">
+            {{ $t(':count vnt.', { count: String(reservation.quantity) }) }}
+          </Badge>
+        </li>
+      </ol>
+
+      <p v-else class="text-sm text-muted-foreground">
+        {{ $t('Nėra artimiausių rezervacijų') }}
+      </p>
+    </div>
+
+    <!-- Resource managers -->
+    <div v-if="data?.managers?.length" class="mt-6">
+      <h3 class="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        {{ $t('Atsakingi asmenys') }}
+      </h3>
+      <div class="flex flex-wrap items-center gap-1.5">
+        <Avatar
+          v-for="manager in data.managers"
+          :key="manager.id"
+          class="size-8 ring-2 ring-background"
+          :title="manager.name"
+        >
+          <AvatarImage v-if="manager.profile_photo_path" :src="manager.profile_photo_path" :alt="manager.name" />
+          <AvatarFallback class="text-[10px]">{{ initials(manager.name) }}</AvatarFallback>
+        </Avatar>
+      </div>
+    </div>
   </DetailLayout>
 </template>
 
@@ -67,12 +116,20 @@ import { Expand, Pencil } from 'lucide-vue-next';
 import DetailLayout from './DetailLayout.vue';
 import DetailRow from './DetailRow.vue';
 import { toneClass } from '../../Utils/searchBadges';
+import { formatSearchDate } from '../../Utils/searchHitMappers';
 
 import { ResourceIcon } from '@/Components/icons';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
+import { useApi } from '@/Composables/useApi';
 import type { ResourceSearchResult } from '@/Shared/Search/types';
+
+interface ResourcePreviewData {
+  upcoming_reservations: Array<{ id: string; name: string; quantity: number; state: string; start_time: number | null; end_time: number | null }>;
+  managers: Array<{ id: string; name: string; profile_photo_path: string | null }>;
+}
 
 const props = defineProps<{
   resource: ResourceSearchResult;
@@ -80,4 +137,12 @@ const props = defineProps<{
 
 const description = computed(() => props.resource.description_lt || props.resource.description_en);
 const imageAlt = computed(() => props.resource.name_lt || props.resource.name_en || '');
+
+// Remounted per selection (parent keys by hit id), so an immediate fetch is fresh each time.
+const { data, isFetching } = useApi<ResourcePreviewData>(
+  route('api.v1.admin.resources.preview', props.resource.id),
+  { immediate: true, showErrorToast: false },
+);
+
+const initials = (name: string): string => name.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase();
 </script>

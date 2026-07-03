@@ -9,6 +9,8 @@ use App\Http\Controllers\Api\Admin\ImpersonateApiController;
 use App\Http\Controllers\Api\Admin\InstitutionApiController;
 use App\Http\Controllers\Api\Admin\InstitutionSubscriptionApiController;
 use App\Http\Controllers\Api\Admin\MeetingApiController;
+use App\Http\Controllers\Api\Admin\ResourceApiController;
+use App\Http\Controllers\Api\Admin\ResourceAvailabilityApiController;
 use App\Http\Controllers\Api\Admin\SearchApiController;
 use App\Http\Controllers\Api\Admin\SharepointApiController;
 use App\Http\Controllers\Api\Admin\TaskApiController;
@@ -163,6 +165,12 @@ Route::prefix('v1')->name('v1.')->group(function () {
 
         // User search for forms (e.g. responsible user in problems)
         Route::get('users/search', [UserSearchApiController::class, 'search'])->name('users.search');
+
+        // Date-range resource availability for the reservation resource picker
+        Route::post('resources/availability', [ResourceAvailabilityApiController::class, 'index'])->name('resources.availability');
+
+        // Resource detail preview (reservations + managers) for the admin search pane
+        Route::get('resources/{resource}/preview', [ResourceApiController::class, 'preview'])->name('resources.preview');
 
         // Impersonation (local/staging only, super admins)
         Route::prefix('impersonate')->name('impersonate.')->group(function () {

@@ -95,9 +95,9 @@ export const contentTypeRegistry: Record<string, ContentType> = {
   },
   'spotify-embed': {
     value: 'spotify-embed',
-    label: 'Spotify',
+    label: 'Spotify / Mixcloud',
     icon: SpotifyIcon,
-    description: 'Spotify grojaraščio įterpimas',
+    description: 'Spotify grojaraščio ar Mixcloud įrašo įterpimas',
     defaultContent: () => ({ url: '' }),
   },
   'social-embed': {

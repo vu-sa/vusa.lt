@@ -50,6 +50,13 @@ export interface UseAdminCollectionSearchOptions {
   debounceMs?: number;
   /** Results per page */
   perPage?: number;
+  /**
+   * Always-on Typesense `filter_by` clause ANDed with the facet filters and
+   * applied to the initial facet universe too. Used to scope a collection to a
+   * caller-defined subset (e.g. the institution picker restricted to the
+   * duty-assignable tenants). Leave undefined for the unrestricted collection.
+   */
+  baseFilterBy?: string;
 }
 
 export function useAdminCollectionSearch(options: UseAdminCollectionSearchOptions) {
@@ -62,6 +69,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     preserveUrlKeys = [],
     debounceMs = 300,
     perPage = 24,
+    baseFilterBy,
   } = options;
 
   // Get the facet config for this collection
@@ -163,6 +171,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     try {
       const rawFacets = await adminSearch.loadInitialFacets(collection, facetConfig.facetBy, {
         queryBy: facetConfig.queryBy,
+        filterBy: baseFilterBy,
       });
 
       initialFacets.value = parseFacets(rawFacets, facetConfig, filters.value);
@@ -197,8 +206,10 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
       clearError();
     }
 
-    // Build filter string from current filters
-    const filterString = buildFilterString(filters.value, facetConfig);
+    // Build filter string from current filters, ANDed with any always-on base filter.
+    const filterString = [baseFilterBy, buildFilterString(filters.value, facetConfig)]
+      .filter(Boolean)
+      .join(' && ');
 
     // Set loading state
     if (isLoadMore) {

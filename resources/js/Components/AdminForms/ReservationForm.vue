@@ -55,37 +55,56 @@
         </div>
       </FormFieldWrapper>
       <FormFieldWrapper id="resources" :label="$t('Pasirinkti ištekliai')">
-        <DynamicListInput v-model="form.resources" :create-item="onCreate" allow-empty
-          empty-text="Nėra pridėtų išteklių" add-first-text="Pridėti pirmą išteklių" add-text="Pridėti išteklių">
-          <template #item="{ item }">
-            <div class="flex w-full gap-2">
-              <SingleSelect
-                :model-value="allResourceOptions.find(r => r.id === item.id) ?? null"
-                :options="allResourceOptions"
-                label-field="name"
-                value-field="id"
-                :placeholder="RESERVATION_PLACEHOLDERS.resource[$page.props.app.locale]"
-                class="min-w-64"
-                content-class="min-w-[30rem]"
-                @update:model-value="(val) => { item.id = val?.id; item.quantity = 1; }"
-              >
-                <template #option="{ item: resource }">
-                  <div class="flex items-center gap-2" :class="{ 'opacity-50': resource.disabled }">
-                    <IFluentCube24Regular class="h-4 w-4 text-gray-400" />
-                    <span>{{ resource.name }}</span>
-                    <span class="text-gray-400">
-                      {{ resource.lowestCapacityAtDateTimeRange }} {{ $t("iš") }} {{ resource.capacity }}
-                    </span>
-                    <Badge variant="secondary" class="text-xs">
-                      {{ resource.tenant?.shortname }}
-                    </Badge>
-                  </div>
-                </template>
-              </SingleSelect>
-              <NumberField v-model="item.quantity" :min="1" :max="getleftCapacity(item.id)" />
+        <div class="space-y-3">
+          <div>
+            <ResourceSelectDialog
+              v-model:open="resourceDialogOpen"
+              :date-time-range="dateTimeRange"
+              :excluded-ids="selectedResourceIds"
+              multiple
+              @confirm="onResourcesConfirm"
+            >
+              <template #trigger>
+                <Button type="button" variant="outline" :disabled="!hasValidRange">
+                  <IFluentCube24Regular class="mr-2 h-4 w-4" />
+                  {{ $t('Naršyti išteklius') }}
+                </Button>
+              </template>
+            </ResourceSelectDialog>
+            <p v-if="!hasValidRange" class="mt-1 text-xs text-muted-foreground">
+              {{ $t('Pirmiausia pasirinkite rezervacijos laikotarpį.') }}
+            </p>
+          </div>
+
+          <p v-if="form.resources.length === 0" class="text-sm text-muted-foreground">
+            {{ $t('Nėra pridėtų išteklių') }}
+          </p>
+
+          <div v-else class="space-y-2">
+            <div
+              v-for="(item, index) in form.resources"
+              :key="item.id"
+              class="flex items-center justify-between gap-3 rounded-lg border p-3"
+            >
+              <div class="flex min-w-0 items-center gap-2">
+                <IFluentCube24Regular class="h-4 w-4 shrink-0 text-gray-400" />
+                <span class="truncate">{{ resourceName(item.id) }}</span>
+                <Badge v-if="resourceTenant(item.id)" variant="secondary" class="shrink-0 text-xs">
+                  {{ resourceTenant(item.id) }}
+                </Badge>
+              </div>
+              <div class="flex shrink-0 items-center gap-2">
+                <span class="text-xs text-gray-400">
+                  {{ getleftCapacity(item.id) }} {{ $t("iš") }} {{ resourceCapacity(item.id) }}
+                </span>
+                <NumberField v-model="item.quantity" :min="1" :max="getleftCapacity(item.id)" />
+                <Button type="button" variant="ghost" size="icon" @click="removeResource(index)">
+                  <IFluentDelete24Regular />
+                </Button>
+              </div>
             </div>
-          </template>
-        </DynamicListInput>
+          </div>
+        </div>
       </FormFieldWrapper>
     </FormElement>
     <FormElement>
@@ -124,16 +143,17 @@ import FormFieldWrapper from './FormFieldWrapper.vue';
 import AdminForm from './AdminForm.vue';
 
 import IFluentCube24Regular from '~icons/fluent/cube24-regular';
+import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { DateTimePicker } from '@/Components/ui/date-picker';
-import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { NumberField } from '@/Components/ui/number-field';
-import { SingleSelect } from '@/Components/ui/single-select';
 import { Textarea } from '@/Components/ui/textarea';
+import { ResourceSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
+import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { RESERVATION_PLACEHOLDERS } from '@/Constants/I18n/Placeholders';
 import { capitalize } from '@/Utils/String';
 import type { ReservationCreationTemplate } from '@/Pages/Admin/Reservations/CreateReservation.vue';
@@ -175,11 +195,35 @@ watch([startDate, endDate], ([newStart, newEnd]) => {
   form.end_time = newEnd ? newEnd.getTime() : null;
 });
 
-const onCreate = () => {
-  return {
-    id: undefined,
-    quantity: 1,
-  };
+const resourceDialogOpen = ref(false);
+
+const selectedResourceIds = computed(() => form.resources.map(resource => resource.id));
+
+const dateTimeRange = computed(() => ({
+  start: form.start_time ?? 0,
+  end: form.end_time ?? 0,
+}));
+
+const hasValidRange = computed(() => !!form.start_time && !!form.end_time && form.start_time < form.end_time);
+
+const findResource = (id: string) => props.allResources.find(resource => resource.id === id);
+
+const resourceName = (id: string) => findResource(id)?.name ?? id;
+const resourceTenant = (id: string) => findResource(id)?.tenant?.shortname;
+const resourceCapacity = (id: string) => findResource(id)?.capacity;
+
+const onResourcesConfirm = (hits: NormalizedSearchHit[]) => {
+  const existing = new Set(selectedResourceIds.value);
+  for (const hit of hits) {
+    if (!existing.has(hit.recordId)) {
+      form.resources.push({ id: hit.recordId, quantity: 1 });
+      existing.add(hit.recordId);
+    }
+  }
+};
+
+const removeResource = (index: number) => {
+  form.resources.splice(index, 1);
 };
 
 const onDateChange = () => {
@@ -201,18 +245,6 @@ const getleftCapacity = (id: string) => {
   return props.allResources.find(resource => resource.id === id)
     ?.lowestCapacityAtDateTimeRange;
 };
-
-const allResourceOptions = computed(() => {
-  const selectedResources = form.resources.map(resource => resource.id);
-
-  return props.allResources.map(resource => ({
-    ...resource,
-    disabled:
-      resource.lowestCapacityAtDateTimeRange === 0
-      || selectedResources.includes(resource.id)
-      || !resource.is_reservable,
-  }));
-});
 
 const submit = () => {
   // Clear dirty state before navigating so the "unsaved changes" guard doesn't fire

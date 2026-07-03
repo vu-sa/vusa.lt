@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col gap-4">
     <Field>
-      <FieldLabel>Spotify URL</FieldLabel>
+      <FieldLabel>Spotify / Mixcloud URL</FieldLabel>
       <Input
         v-model="modelValue.url"
         type="url"
@@ -36,6 +36,8 @@ const modelValue = defineModel<SpotifyEmbed['json_content']>();
 const isValidSpotifyUrl = computed(() => {
   const url = modelValue.value?.url;
   if (!url) return false;
-  return /^https?:\/\/open\.spotify\.com\/(playlist|album|track|episode|show)\/[\w]+/.test(url);
+  const spotify = /^https?:\/\/open\.spotify\.com\/(playlist|album|track|episode|show)\/[\w]+/.test(url);
+  const mixcloud = /^https?:\/\/(www\.)?mixcloud\.com\/[\w-]+\/[\w-]+/.test(url);
+  return spotify || mixcloud;
 });
 </script>

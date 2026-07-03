@@ -78,8 +78,27 @@
         </FormFieldWrapper>
 
         <FormFieldWrapper v-if="form.type !== 'url'" id="page" :label="$t('Pasirinkite objektą')" required>
-          <SingleSelect v-model="selectedPage" :options="typeOptions" label-field="label" value-field="value"
-            :placeholder="$t('Pasirinkti puslapį...')" />
+          <CollectionSelectDialog
+            v-if="targetCollection"
+            v-model:open="targetDialogOpen"
+            :collection="targetCollection"
+            :initial-hits="targetInitialHits"
+            :title="$t('Pasirinkite objektą')"
+            :confirm-label="$t('Pasirinkti')"
+            :search-placeholder="$t('Ieškoti pagal pavadinimą...')"
+            @confirm="onQuickLinkTargetConfirm"
+          >
+            <template #trigger>
+              <Button type="button" variant="outline" class="w-full justify-between font-normal">
+                <span class="truncate" :class="{ 'text-muted-foreground': !selectedPage }">
+                  {{ selectedPage?.label ?? $t('Pasirinkti puslapį...') }}
+                </span>
+                <IFluentChevronDown24Regular class="size-4 opacity-50" />
+              </Button>
+            </template>
+          </CollectionSelectDialog>
+          <SingleSelect v-else v-model="selectedPage" :options="typeOptions" label-field="label" value-field="value"
+            :placeholder="$t('Pasirinkti...')" />
         </FormFieldWrapper>
 
         <FormFieldWrapper id="link" :label="$t('Nuoroda')" required :error="form.errors.link"
@@ -115,6 +134,9 @@ import { Switch } from '@/Components/ui/switch';
 import { SingleSelect } from '@/Components/ui/single-select';
 import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
 import { CalendarIcon, CategoryIcon, InstitutionIcon, NewsIcon, PageIcon, QuickLinkIcon } from '@/Components/icons';
+import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
+import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import type { AdminCollection } from '@/Features/Admin/AdminSearch/Types/AdminSearchTypes';
 
 const props = defineProps<{
   quickLink: App.Entities.QuickLink;
@@ -144,6 +166,44 @@ const selectedPage = computed({
     handlePageSelection(pageSelection.value);
   },
 });
+
+const targetDialogOpen = ref(false);
+
+// Which searchable collection backs the current target type. `category` is not
+// searchable (keeps the plain select); `url` has no object picker.
+const targetCollection = computed<AdminCollection | null>(() => {
+  switch (form.type) {
+    case 'page': return 'pages';
+    case 'news': return 'news';
+    case 'calendarEvent': return 'calendar';
+    case 'institution': return 'institutions';
+    default: return null;
+  }
+});
+
+const targetInitialHits = computed<NormalizedSearchHit[]>(() => {
+  const option = selectedPage.value;
+  const collection = targetCollection.value;
+  if (!option || !collection) {
+    return [];
+  }
+  const data = option.option ?? {};
+  return [normalizeHit(collection, {
+    id: option.value,
+    title: option.label,
+    name_lt: option.label,
+    name_en: option.label,
+    tenant_name: data.tenant?.shortname,
+  })];
+});
+
+// The dialog only picks an id; link-building still reads the full option from
+// `typeOptions` (which carries tenant.alias / permalink needed for the route).
+function onQuickLinkTargetConfirm(hits: NormalizedSearchHit[]) {
+  const id = hits[0]?.recordId ?? null;
+  pageSelection.value = id;
+  handlePageSelection(id);
+}
 
 const tenantOptions = computed(() =>
   props.tenantOptions.map(padalinys => ({

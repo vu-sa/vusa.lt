@@ -42,7 +42,12 @@
         :key="hit.id"
         :hit="hit"
         :selected="hit.id === selectedId"
+        :selectable="selectable"
+        :multiple="multiple"
+        :checked="selectedIds?.has(hit.id)"
+        :disabled="disabledIds?.has(hit.id)"
         @select="$emit('select', hit)"
+        @toggle="$emit('toggle', hit)"
       />
 
       <div v-if="hasMore" class="mt-2 px-1 pb-1">
@@ -72,6 +77,13 @@ withDefaults(defineProps<{
   hasSearched?: boolean;
   error?: string | null;
   emptyMessage?: string;
+  /** Selection mode (checkbox/radio affordance per row). */
+  selectable?: boolean;
+  multiple?: boolean;
+  /** Ids currently in the selection. */
+  selectedIds?: Set<string>;
+  /** Ids that cannot be toggled. */
+  disabledIds?: Set<string>;
 }>(), {
   isLoading: false,
   isLoadingMore: false,
@@ -79,10 +91,13 @@ withDefaults(defineProps<{
   hasSearched: false,
   error: null,
   emptyMessage: '',
+  selectable: false,
+  multiple: false,
 });
 
 defineEmits<{
   select: [hit: NormalizedSearchHit];
+  toggle: [hit: NormalizedSearchHit];
   loadMore: [];
 }>();
 </script>
