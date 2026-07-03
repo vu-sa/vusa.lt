@@ -42,7 +42,7 @@ class InstitutionApiController extends ApiController
                 ->map(fn ($meeting) => [
                     'id' => (string) $meeting->id,
                     'title' => $meeting->title,
-                    'start_time' => $meeting->start_time?->timestamp,
+                    'start_time' => $meeting->start_time->timestamp,
                 ])->values(),
             'representatives' => $institution->duties
                 ->flatMap->current_users

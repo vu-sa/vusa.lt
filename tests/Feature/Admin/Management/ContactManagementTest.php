@@ -229,8 +229,10 @@ test('contact manager can add type to duty', function () {
 
     $response = $admin->get(route('duties.index'));
 
-    // The duties index now redirects to the unified admin search.
-    $response->assertRedirect(route('search.index', ['tab' => 'duties']));
+    // The duties index renders its own paginated table.
+    $response->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->component('Admin/People/IndexDuty')
+    );
 
     $response = $admin->get(route('duties.edit', $userDuty->id));
 

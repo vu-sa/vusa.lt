@@ -119,11 +119,11 @@ class Resource extends Model implements HasMedia
             'is_reservable' => $this->is_reservable,
             'tenant_id' => $this->tenant_id,
             'tenant_ids' => $this->tenant_id ? [$this->tenant_id] : [],
-            'tenant_shortname' => $this->tenant?->shortname,
+            'tenant_shortname' => $this->tenant->shortname,
             'category_id' => $this->resource_category_id,
             'category_name' => $this->category?->getTranslation('name', 'lt'),
             'image_url' => $this->getFirstMediaUrl('images'),
-            'created_at' => $this->created_at?->timestamp,
+            'created_at' => $this->created_at->timestamp,
         ];
     }
 
@@ -137,6 +137,8 @@ class Resource extends Model implements HasMedia
 
     /**
      * Get all reservations for this resource
+     *
+     * @return BelongsToMany<Reservation, $this, ReservationResource, 'pivot'>
      */
     public function reservations(): BelongsToMany
     {
@@ -158,6 +160,8 @@ class Resource extends Model implements HasMedia
 
     /**
      * Get active reservations (created, reserved, or lent)
+     *
+     * @return BelongsToMany<Reservation, $this, ReservationResource, 'pivot'>
      */
     public function active_reservations(): BelongsToMany
     {

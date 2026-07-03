@@ -200,7 +200,7 @@ class Duty extends Model implements AuthorizableContract, SharepointFileableCont
             'current_users_count' => $currentUsersCount,
             'previous_user_names' => $previousUsers->pluck('name')->values()->all(),
             'previous_user_ids' => $previousUsers->pluck('id')->map(fn ($id) => (string) $id)->values()->all(),
-            'created_at' => $this->created_at?->timestamp,
+            'created_at' => $this->created_at->timestamp,
         ];
     }
 

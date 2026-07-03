@@ -185,13 +185,13 @@ class Calendar extends Model implements HasMedia
             'title' => $this->getTranslation('title', app()->getLocale()) ?: $this->getTranslation('title', 'lt') ?: $this->getTranslation('title', 'en'),
             'title_lt' => $this->getTranslation('title', 'lt'),
             'title_en' => $this->getTranslation('title', 'en'),
-            'date' => $this->date?->timestamp,
+            'date' => $this->date->timestamp,
             'end_date' => $this->end_date ? $this->end_date->timestamp : null,
             'lang' => $this->lang ?? app()->getLocale(),
             'tenant_id' => $this->tenant_id,
             'tenant_ids' => [$this->tenant_id],
-            'tenant_name' => $this->tenant?->fullname,
-            'created_at' => $this->created_at?->timestamp,
+            'tenant_name' => $this->tenant->fullname,
+            'created_at' => $this->created_at->timestamp,
         ];
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Contracts\Commentable;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
@@ -18,7 +19,7 @@ use Illuminate\Database\Eloquent\Model;
 class Commentables
 {
     /**
-     * @var array<string, class-string<Model>>
+     * @var array<string, class-string<Model&Commentable>>
      */
     public const TYPES = [
         'meeting' => Meeting::class,
@@ -29,23 +30,29 @@ class Commentables
     ];
 
     /**
-     * @return class-string<Model>|null
+     * @return class-string<Model&Commentable>|null
      */
     public static function classFor(string $type): ?string
     {
         return self::TYPES[$type] ?? null;
     }
 
-    public static function aliasFor(Model $model): ?string
+    public static function aliasFor(?Model $model): ?string
     {
+        if ($model === null) {
+            return null;
+        }
+
         return array_search($model::class, self::TYPES, true) ?: null;
     }
 
     /**
      * Resolve a commentable model instance from an alias + id, or null if the
      * alias is unknown or the model does not exist.
+     *
+     * @return (Model&Commentable)|null
      */
-    public static function resolve(string $type, string $id): ?Model
+    public static function resolve(string $type, string $id): ?Commentable
     {
         $class = self::classFor($type);
 
@@ -53,6 +60,8 @@ class Commentables
             return null;
         }
 
-        return $class::query()->find($id);
+        $model = $class::query()->find($id);
+
+        return $model instanceof Commentable ? $model : null;
     }
 }

@@ -76,7 +76,7 @@ class VoteStatisticsCalculator
             'vote_matches' => $voteMatches,
             'vote_mismatches' => $voteMismatches,
             'incomplete_vote_data' => $incompleteVoteData,
-            'student_success_rate' => $totalVotes > 0 ? round(($voteMatches / $totalVotes) * 100) : 0,
+            'student_success_rate' => round(($voteMatches / $totalVotes) * 100),
             'positive_outcomes' => $positive,
             'negative_outcomes' => $negative,
             'neutral_outcomes' => $neutral,

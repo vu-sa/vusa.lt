@@ -199,7 +199,7 @@ class User extends Authenticatable
             'previous_duty_names' => $previousDuties->pluck('name')->values()->all(),
             'previous_duty_ids' => $previousDuties->pluck('id')->map(fn ($id) => (string) $id)->values()->all(),
             'is_active' => $this->deleted_at === null,
-            'created_at' => $this->created_at?->timestamp,
+            'created_at' => $this->created_at->timestamp,
         ];
     }
 
@@ -239,6 +239,9 @@ class User extends Authenticatable
 
     // this needs more debugging. don't use with withWhereHas
     // TODO: implement current_duties where appropriate
+    /**
+     * @return MorphToMany<Duty, $this>
+     */
     public function current_duties(): MorphToMany
     {
         return $this->duties()

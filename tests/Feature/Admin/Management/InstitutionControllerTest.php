@@ -185,7 +185,8 @@ describe('authorized access', function () {
     test('can index institutions', function () {
         $response = asUser($this->admin)->get(route('institutions.index'));
 
-        $response->assertRedirect(route('search.index', ['tab' => 'institutions']));
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('Admin/People/IndexInstitution'));
     });
 
     test('can access institution create page', function () {
@@ -364,7 +365,8 @@ describe('relationships', function () {
     test('can only access institutions from own tenant', function () {
         $response = asUser($this->admin)->get(route('institutions.index'));
 
-        $response->assertRedirect(route('search.index', ['tab' => 'institutions']));
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('Admin/People/IndexInstitution'));
     });
 
     test('cannot edit institution from different tenant', function () {

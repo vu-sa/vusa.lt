@@ -126,7 +126,7 @@ class ContactPresentationService
                 return $dutiable->study_program ? $dutiable->study_program->name : 'Other';
 
             case 'tenant':
-                return $dutiable->study_program && $dutiable->study_program->tenant
+                return $dutiable->study_program
                     ? $dutiable->study_program->tenant->shortname
                     : 'Other';
 
@@ -139,7 +139,7 @@ class ContactPresentationService
      * Filter processed contacts to only show duties related to the selected types.
      *
      * @param  array<int, array<string, mixed>>  $processedContacts
-     * @param  Collection<int, Type>  $types
+     * @param  \Illuminate\Support\Enumerable<int, Type>  $types
      * @return array<int, array<string, mixed>>
      */
     public function filterProcessedContactsByTypes(array $processedContacts, $types): array

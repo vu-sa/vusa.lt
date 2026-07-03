@@ -61,15 +61,17 @@ describe('unauthorized access', function () {
 });
 
 describe('authorized access', function () {
-    test('duty manager is redirected from duties index to unified search', function () {
+    test('duty manager can access duties index', function () {
         $response = asUser($this->dutyManager)->get(route('duties.index'));
-        $response->assertRedirect(route('search.index', ['tab' => 'duties']));
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('Admin/People/IndexDuty'));
     });
 
-    test('super admin is redirected from duties index to unified search', function () {
+    test('super admin can access duties index', function () {
         $admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
         $response = asUser($admin)->get(route('duties.index'));
-        $response->assertRedirect(route('search.index', ['tab' => 'duties']));
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('Admin/People/IndexDuty'));
     });
 
     test('duty manager can create new duty', function () {

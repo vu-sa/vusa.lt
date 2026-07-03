@@ -35,7 +35,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activities
- * @property-read Model|\Eloquent $commentable
+ * @property-read Model|null $commentable
  * @property-read Comment|null $parent
  * @property-read Collection<int, CommentPollVote> $pollVotes
  * @property-read Collection<int, CommentReaction> $reactions

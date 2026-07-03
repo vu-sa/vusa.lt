@@ -84,7 +84,7 @@ class CommentRecipientResolver
         }
 
         if (method_exists($commentable, 'users')) {
-            $users = $commentable->users;
+            $users = $commentable->getAttribute('users');
 
             return $users instanceof Collection ? $users : collect($users)->filter()->values();
         }

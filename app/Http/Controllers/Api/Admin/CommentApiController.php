@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Contracts\Commentable;
 use App\Enums\CommentKind;
 use App\Events\CommentBroadcast;
 use App\Http\Controllers\Api\ApiController;
@@ -183,9 +184,9 @@ class CommentApiController extends ApiController
             'created_at' => $comment->created_at?->toISOString(),
             'commentable_type' => Commentables::aliasFor($comment->commentable),
             'commentable_id' => (string) $comment->commentable_id,
-            'commentable_name' => $comment->commentable->name
-                ?? $comment->commentable->title
-                ?? null,
+            'commentable_name' => $comment->commentable
+                ? ($comment->commentable->getAttribute('name') ?? $comment->commentable->getAttribute('title'))
+                : null,
         ]);
 
         return $this->jsonSuccess($data);
@@ -194,7 +195,7 @@ class CommentApiController extends ApiController
     /**
      * Resolve a commentable from the allowlist or 404.
      */
-    protected function resolveCommentable(string $type, string $id): Model
+    protected function resolveCommentable(string $type, string $id): Model&Commentable
     {
         $commentable = Commentables::resolve($type, $id);
 

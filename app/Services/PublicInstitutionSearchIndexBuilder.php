@@ -60,8 +60,8 @@ class PublicInstitutionSearchIndexBuilder
             'has_contacts' => $activeDutiesCount > 0,
 
             // For sorting
-            'created_at' => $institution->created_at?->timestamp,
-            'updated_at' => $institution->updated_at?->timestamp,
+            'created_at' => $institution->created_at->timestamp,
+            'updated_at' => $institution->updated_at->timestamp,
         ];
     }
 }

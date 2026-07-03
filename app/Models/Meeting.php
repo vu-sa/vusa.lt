@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Contracts\Commentable;
 use App\Contracts\SharepointFileableContract;
 use App\Enums\MeetingType;
 use App\Events\FileableNameUpdated;
@@ -64,7 +65,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
-class Meeting extends Model implements SharepointFileableContract
+class Meeting extends Model implements Commentable, SharepointFileableContract
 {
     use HasComments, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasUlids, LogsActivity, Searchable, SoftDeletes;
 
@@ -187,10 +188,10 @@ class Meeting extends Model implements SharepointFileableContract
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->description,
-            'start_time' => $this->start_time?->timestamp,
-            'start_time_formatted' => $this->start_time?->format('Y-m-d H:i'),
-            'year' => $this->start_time?->year,
-            'month' => $this->start_time?->month,
+            'start_time' => $this->start_time->timestamp,
+            'start_time_formatted' => $this->start_time->format('Y-m-d H:i'),
+            'year' => $this->start_time->year,
+            'month' => $this->start_time->month,
 
             // Tenant filtering (CRITICAL for scoped API keys)
             'tenant_ids' => $tenantIds,
@@ -233,13 +234,13 @@ class Meeting extends Model implements SharepointFileableContract
 
             // Visibility status
             'is_public' => $this->is_public,
-            'is_recent' => $this->start_time?->isAfter(now()->subMonths(6)) ?? false,
+            'is_recent' => $this->start_time->isAfter(now()->subMonths(6)),
 
             // Representatives attending the meeting
             'user_names' => $this->users->pluck('name')->filter()->unique()->values()->all(),
 
-            'created_at' => $this->created_at?->timestamp,
-            'updated_at' => $this->updated_at?->timestamp,
+            'created_at' => $this->created_at->timestamp,
+            'updated_at' => $this->updated_at->timestamp,
         ];
     }
 
@@ -257,11 +258,6 @@ class Meeting extends Model implements SharepointFileableContract
     public function institutions(): BelongsToMany
     {
         return $this->belongsToMany(Institution::class);
-    }
-
-    public function comments()
-    {
-        return $this->morphMany(Comment::class, 'commentable');
     }
 
     public function users()

@@ -72,7 +72,8 @@ describe('authorization tests', function () {
         test('can access meetings index with permission', function () {
             asUser($this->admin)
                 ->get(route('meetings.index'))
-                ->assertRedirect(route('search.index', ['tab' => 'meetings']));
+                ->assertOk()
+                ->assertInertia(fn ($page) => $page->component('Admin/Representation/IndexMeeting'));
         });
 
         test('can create a meeting with permission', function () {

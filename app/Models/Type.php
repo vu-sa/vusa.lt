@@ -8,6 +8,7 @@ use App\Models\Pivots\Relationshipable;
 use App\Models\Traits\HasContentRelationships;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTranslations;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -23,8 +24,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
 /**
  * @property int $id
  * @property int|null $parent_id
- * @property array|string|null $title
- * @property array|string|null $description
+ * @property string|null $title
+ * @property string|null $description
  * @property string|null $model_type
  * @property string|null $slug
  * @property array<array-key, mixed>|null $extra_attributes
@@ -192,7 +193,11 @@ class Type extends Model implements SharepointFileableContract
     /**
      * Scope to filter types for Institutions only.
      */
-    public function scopeForInstitutions($query)
+    /**
+     * @param  Builder<Type>  $query
+     * @return Builder<Type>
+     */
+    public function scopeForInstitutions(Builder $query): Builder
     {
         return $query->where('model_type', Institution::class);
     }

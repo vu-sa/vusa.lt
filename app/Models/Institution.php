@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Actions\GetInstitutionManagers;
+use App\Contracts\Commentable;
 use App\Contracts\SharepointFileableContract;
 use App\Events\FileableNameUpdated;
 use App\Models\Pivots\Relationshipable;
@@ -100,7 +101,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
-class Institution extends Model implements SharepointFileableContract
+class Institution extends Model implements Commentable, SharepointFileableContract
 {
     use HasComments, HasContentRelationships, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsActivity, Searchable, SoftDeletes;
 
@@ -121,6 +122,9 @@ class Institution extends Model implements SharepointFileableContract
         return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
+    /**
+     * @return HasMany<Duty, $this>
+     */
     public function duties(): HasMany
     {
         return $this->hasMany(Duty::class);
@@ -166,6 +170,9 @@ class Institution extends Model implements SharepointFileableContract
             ->where('end_date', '>=', now());
     }
 
+    /**
+     * @return BelongsToMany<Meeting, $this>
+     */
     public function meetings(): BelongsToMany
     {
         return $this->belongsToMany(Meeting::class);
@@ -287,7 +294,7 @@ class Institution extends Model implements SharepointFileableContract
             'institution_ids' => [(string) $this->id],
             'current_user_names' => $currentUserNames,
             'duty_names' => $dutyNames,
-            'created_at' => $this->created_at?->timestamp,
+            'created_at' => $this->created_at->timestamp,
         ];
     }
 

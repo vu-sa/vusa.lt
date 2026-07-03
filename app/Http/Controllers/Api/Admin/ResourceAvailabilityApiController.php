@@ -61,7 +61,8 @@ class ResourceAvailabilityApiController extends ApiController
                     'start_time' => $reservation->pivot->start_time?->timestamp,
                     'end_time' => $reservation->pivot->end_time?->timestamp,
                 ])
-                ->values();
+                ->values()
+                ->all();
 
             return [
                 'id' => (string) $resource->id,

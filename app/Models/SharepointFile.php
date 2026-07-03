@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Contracts\Commentable;
 use App\Models\Pivots\SharepointFileable;
 use App\Models\Traits\HasComments;
 use Illuminate\Database\Eloquent\Collection;
@@ -27,7 +28,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * @mixin \Eloquent
  */
-class SharepointFile extends Model
+class SharepointFile extends Model implements Commentable
 {
     use HasComments, HasFactory, HasUuids;
 

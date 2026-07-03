@@ -590,24 +590,24 @@ class RelationshipService
      * enriched with edge semantics (direction, type, scope, bidirectional and
      * the relationship-type name) that {@see getAllRelatedInstitutions()} discards.
      *
-     * @return \Illuminate\Support\Collection<int, array{
+     * @return list<array{
      *   source: string,
      *   target: string,
-     *   direction: 'outgoing'|'sibling',
-     *   type: 'direct'|'type-based'|'within-type',
+     *   direction: string,
+     *   type: string,
      *   scope: string,
      *   bidirectional: bool,
      *   relationship_name: string|null,
      *   relationship_description: string|null
      * }>
      */
-    public static function getAllRelatedInstitutionsEnriched(): \Illuminate\Support\Collection
+    public static function getAllRelatedInstitutionsEnriched(): array
     {
         // Direct institution -> institution edges
         $direct = Relationshipable::where('relationshipable_type', Institution::class)
             ->with('relationship:id,name,description')
             ->get()
-            ->map(fn ($relationshipable) => [
+            ->map(fn (Relationshipable $relationshipable) => [
                 'relationshipable_id' => $relationshipable->relationshipable_id,
                 'related_model_id' => $relationshipable->related_model_id,
                 'direction' => 'outgoing',
@@ -622,7 +622,7 @@ class RelationshipService
         $typeBased = Relationshipable::where('relationshipable_type', Type::class)
             ->with('relationship:id,name,description')
             ->get()
-            ->flatMap(fn ($relationshipable) => self::getGivenModelsFromModelType(Institution::class, $relationshipable, [
+            ->flatMap(fn (Relationshipable $relationshipable) => self::getGivenModelsFromModelType(Institution::class, $relationshipable, [
                 'direction' => 'outgoing',
                 'type' => 'type-based',
                 'scope' => $relationshipable->scope ?? Relationshipable::SCOPE_WITHIN_TENANT,
@@ -647,15 +647,16 @@ class RelationshipService
             ->map(fn ($edge) => [
                 'source' => $edge['relationshipable_id'],
                 'target' => $edge['related_model_id'],
-                'direction' => $edge['direction'],
-                'type' => $edge['type'],
-                'scope' => $edge['scope'],
-                'bidirectional' => $edge['bidirectional'],
+                'direction' => $edge['direction'] ?? '',
+                'type' => $edge['type'] ?? '',
+                'scope' => $edge['scope'] ?? Relationshipable::SCOPE_WITHIN_TENANT,
+                'bidirectional' => $edge['bidirectional'] ?? false,
                 'relationship_name' => $edge['relationship_name'] ?? null,
                 'relationship_description' => $edge['relationship_description'] ?? null,
             ])
             ->unique(fn ($edge) => $edge['source'].'_'.$edge['target'].'_'.$edge['type'])
-            ->values();
+            ->values()
+            ->all();
     }
 
     /**
@@ -664,8 +665,8 @@ class RelationshipService
      * relationshipable definitions (with scope/bidirectional and relationship meta).
      *
      * @return array{
-     *   nodes: \Illuminate\Support\Collection<int, array{id: string, name: string|null, institutions_count: int}>,
-     *   edges: \Illuminate\Support\Collection<int, array{source: string, target: string, direction: string, type: string, scope: string, bidirectional: bool, relationship_name: string|null, relationship_description: string|null}>
+     *   nodes: list<array{id: string, name: string|null, institutions_count: int}>,
+     *   edges: list<array{source: string, target: string, direction: string, type: string, scope: string, bidirectional: bool, relationship_name: string|null, relationship_description: string|null}>
      * }
      */
     public static function getTypeRelationshipGraph(): array
@@ -679,13 +680,13 @@ class RelationshipService
             ->withCount('institutions')
             ->get();
 
-        $nodes = $types->map(fn ($type) => [
+        $nodes = $types->map(fn (Type $type) => [
             'id' => (string) $type->id,
             'name' => $type->title,
             'institutions_count' => (int) $type->institutions_count,
-        ])->values();
+        ])->values()->all();
 
-        $edges = $relationshipables->map(fn ($relationshipable) => [
+        $edges = $relationshipables->map(fn (Relationshipable $relationshipable) => [
             'source' => (string) $relationshipable->relationshipable_id,
             'target' => (string) $relationshipable->related_model_id,
             'direction' => 'outgoing',
@@ -694,7 +695,7 @@ class RelationshipService
             'bidirectional' => (bool) ($relationshipable->bidirectional ?? false),
             'relationship_name' => $relationshipable->relationship?->name,
             'relationship_description' => $relationshipable->relationship?->description,
-        ])->values();
+        ])->values()->all();
 
         return ['nodes' => $nodes, 'edges' => $edges];
     }
@@ -702,6 +703,10 @@ class RelationshipService
     /**
      * Get all sibling relationships for types that have enable_sibling_relationships enabled.
      * Returns pairs of institutions that share the same type and tenant.
+     */
+    /**
+     * @param  array{direction?: string, type?: string, scope?: string, bidirectional?: bool, relationship_name?: string|null, relationship_description?: string|null}  $meta
+     * @return \Illuminate\Support\Collection<int, array{relationshipable_id: string, related_model_id: string, direction?: string, type?: string, scope?: string, bidirectional?: bool, relationship_name?: string|null, relationship_description?: string|null}>
      */
     protected static function getWithinTypeSiblingRelationships(array $meta = []): \Illuminate\Support\Collection
     {
@@ -726,8 +731,8 @@ class RelationshipService
                     for ($j = $i + 1; $j < $count; $j++) {
                         // Add both directions for the graph
                         $relationships->push(array_merge([
-                            'relationshipable_id' => $institutionIds[$i],
-                            'related_model_id' => $institutionIds[$j],
+                            'relationshipable_id' => (string) $institutionIds[$i],
+                            'related_model_id' => (string) $institutionIds[$j],
                         ], $meta));
                     }
                 }
@@ -745,7 +750,8 @@ class RelationshipService
      *
      * @param  mixed  $model_type
      * @param  mixed  $relationshipable
-     * @param  array<string, mixed>  $meta  Extra fields merged into every emitted edge (for the enriched graph).
+     * @param  array{direction?: string, type?: string, scope?: string, bidirectional?: bool, relationship_name?: string|null, relationship_description?: string|null}  $meta  Extra fields merged into every emitted edge (for the enriched graph).
+     * @return list<array{relationshipable_id: string, related_model_id: string, direction?: string, type?: string, scope?: string, bidirectional?: bool, relationship_name?: string|null, relationship_description?: string|null}>
      */
     protected static function getGivenModelsFromModelType($model_type, $relationshipable, array $meta = []): array
     {
@@ -789,8 +795,8 @@ class RelationshipService
 
             $query->get()->each(function ($receiver) use ($giver, &$relationships, $meta) {
                 $relationships[] = array_merge([
-                    'relationshipable_id' => $giver->getKey(),
-                    'related_model_id' => $receiver->getKey(),
+                    'relationshipable_id' => (string) $giver->getKey(),
+                    'related_model_id' => (string) $receiver->getKey(),
                 ], $meta);
             });
         });

@@ -204,9 +204,9 @@ class Page extends Model implements Feedable, Sitemapable
             'lang' => $this->lang,
             'tenant_id' => $this->tenant_id,
             'tenant_ids' => [$this->tenant_id],
-            'tenant_name' => $this->tenant?->fullname,
+            'tenant_name' => $this->tenant->fullname,
             'category_name' => $this->category?->name,
-            'created_at' => $this->created_at?->timestamp,
+            'created_at' => $this->created_at->timestamp,
         ];
     }
 

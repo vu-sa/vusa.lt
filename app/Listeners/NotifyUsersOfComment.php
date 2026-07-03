@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Notifications\CommentPostedNotification;
 use App\Services\CommentRecipientResolver;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
@@ -96,7 +97,7 @@ class NotifyUsersOfComment implements ShouldQueue
     protected function withDuties(Collection $users): Collection
     {
         return $users->merge(
-            $users->load('duties')
+            EloquentCollection::make($users->all())->load('duties')
                 ->pluck('duties')
                 ->flatten()
                 ->unique('id')

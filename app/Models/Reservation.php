@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Contracts\Commentable;
 use App\Models\Pivots\ReservationResource;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasTasks;
@@ -48,7 +49,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
-class Reservation extends Model
+class Reservation extends Model implements Commentable
 {
     use HasComments, HasFactory, HasRelationships, HasTasks, HasUlids, LogsActivity, Searchable, SoftDeletes;
 

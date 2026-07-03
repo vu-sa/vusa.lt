@@ -2,6 +2,7 @@
 
 namespace App\Models\Pivots;
 
+use App\Contracts\Commentable;
 use App\Enums\AgendaItemType;
 use App\Models\AgendaItemNote;
 use App\Models\Comment;
@@ -41,6 +42,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $student_position
  * @property string|null $description
  * @property string|null $start_time
+ * @property-read bool $has_notes Populated via ->withExists('note as has_notes')
  * @property-read Collection<int, Activity> $activities
  * @property-read Collection<int, Vote> $additionalVotes
  * @property-read Collection<int, Comment> $comments
@@ -59,7 +61,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
-class AgendaItem extends Pivot
+class AgendaItem extends Pivot implements Commentable
 {
     use HasComments, HasFactory, HasRelationships, HasUlids, LogsActivity, Searchable;
 
@@ -120,6 +122,8 @@ class AgendaItem extends Pivot
 
     /**
      * The private collaborative notes document ("Atstovų pastabos") for this item.
+     *
+     * @return HasOne<AgendaItemNote, $this>
      */
     public function note(): HasOne
     {
@@ -223,8 +227,8 @@ class AgendaItem extends Pivot
             'institution_name_en' => null,
             'institution_ids' => [],
 
-            'created_at' => $this->created_at?->timestamp,
-            'updated_at' => $this->updated_at?->timestamp,
+            'created_at' => $this->created_at->timestamp,
+            'updated_at' => $this->updated_at->timestamp,
         ];
 
         // Add meeting-derived tenant/institution data only when the meeting exists
