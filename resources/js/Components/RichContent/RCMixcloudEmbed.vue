@@ -27,21 +27,16 @@ const embedUrl = computed(() => {
 
   const lightParam = isDark.value ? '0' : '1';
 
-  // If already a widget URL, update the light param to match dark mode
-  if (url.includes('player-widget.mixcloud.com')) {
-    try {
-      const parsedUrl = new URL(url);
+  try {
+    const parsedUrl = new URL(url);
+
+    // If already a widget URL, update the light param to match dark mode
+    if (parsedUrl.hostname === 'player-widget.mixcloud.com') {
       parsedUrl.searchParams.set('light', lightParam);
       return parsedUrl.toString();
     }
-    catch {
-      return url;
-    }
-  }
 
-  // Convert regular Mixcloud URL to widget iframe URL
-  try {
-    const parsedUrl = new URL(url);
+    // Convert regular Mixcloud URL to widget iframe URL
     const path = parsedUrl.pathname;
     return `https://player-widget.mixcloud.com/widget/iframe/?hide_cover=1&light=${lightParam}&feed=${encodeURIComponent(path)}`;
   }
