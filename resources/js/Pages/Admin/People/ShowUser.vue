@@ -26,14 +26,6 @@
         <Badge v-if="pronounsBadge" variant="secondary" class="text-xs">
           {{ pronounsBadge }}
         </Badge>
-        <Badge v-if="user.last_action" variant="outline" class="text-xs gap-1">
-          <Clock class="h-3 w-3" />
-          {{ formatRelativeDate(user.last_action) }}
-        </Badge>
-        <Badge v-else variant="outline" class="text-xs gap-1 text-amber-600 border-amber-300 dark:text-amber-400 dark:border-amber-700">
-          <AlertCircle class="h-3 w-3" />
-          {{ $t('Niekada neprisijungęs') }}
-        </Badge>
       </template>
       <template #info>
         <div v-if="currentDuties.length > 0" class="flex items-center gap-2 flex-wrap">
@@ -120,12 +112,6 @@
                     {{ $t('Facebook') }}
                   </a>
                 </div>
-                <div class="flex items-center gap-3">
-                  <Clock class="h-4 w-4 text-muted-foreground" />
-                  <span class="text-sm text-muted-foreground">
-                    {{ lastActivityLabel }}
-                  </span>
-                </div>
               </CardContent>
             </Card>
 
@@ -149,21 +135,12 @@
                 <CardTitle class="text-base">{{ $t('Dabartinės pareigos') }}</CardTitle>
               </CardHeader>
               <CardContent class="space-y-2">
-                <Link
+                <DutySummaryCard
                   v-for="duty in currentDuties"
                   :key="duty.id"
-                  :href="route('duties.show', duty.id)"
-                  class="group flex items-center justify-between rounded-md border px-3 py-2 transition-colors hover:border-primary/30 hover:bg-accent"
-                >
-                  <div class="min-w-0">
-                    <p class="text-sm font-medium group-hover:text-foreground">{{ duty.name }}</p>
-                    <p v-if="duty.institution?.name" class="text-xs text-muted-foreground">
-                      {{ duty.institution.name }}
-                      <span v-if="duty.institution.tenant?.shortname">({{ duty.institution.tenant.shortname }})</span>
-                    </p>
-                  </div>
-                  <ChevronRight class="h-4 w-4 shrink-0 text-muted-foreground" />
-                </Link>
+                  :duty="duty"
+                  :exclude-user-id="user.id"
+                />
               </CardContent>
             </Card>
           </div>
@@ -176,10 +153,6 @@
                 <CardTitle class="text-base">{{ $t('Aktyvumas') }}</CardTitle>
               </CardHeader>
               <CardContent class="space-y-3">
-                <div class="flex items-center justify-between">
-                  <span class="text-sm text-muted-foreground">{{ $t('Paskutinis prisijungimas') }}</span>
-                  <span class="text-sm font-medium">{{ lastActivityShort }}</span>
-                </div>
                 <div class="flex items-center justify-between">
                   <span class="text-sm text-muted-foreground">{{ $t('Dabartinių pareigų') }}</span>
                   <span class="text-sm font-medium">{{ currentDuties.length }}</span>
@@ -205,34 +178,12 @@
           <div v-if="currentDuties.length">
             <h3 class="mb-3 text-lg font-medium">{{ $t('Dabartinės pareigos') }}</h3>
             <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-              <Card v-for="duty in currentDuties" :key="duty.id">
-                <CardHeader class="pb-2">
-                  <CardTitle class="text-sm">
-                    <Link :href="route('duties.show', duty.id)" class="hover:text-vusa-red transition">
-                      {{ duty.name }}
-                    </Link>
-                  </CardTitle>
-                  <CardDescription v-if="duty.institution?.name">
-                    <Link :href="route('institutions.show', duty.institution.id)" class="hover:text-vusa-red transition">
-                      {{ duty.institution.name }}
-                    </Link>
-                    <span v-if="duty.institution.tenant?.shortname">({{ duty.institution.tenant.shortname }})</span>
-                  </CardDescription>
-                </CardHeader>
-                <CardContent class="pt-0">
-                  <div v-if="duty.pivot" class="space-y-1 text-xs text-muted-foreground">
-                    <div v-if="duty.pivot.start_date">
-                      {{ $t('Nuo') }}: {{ formatDate(duty.pivot.start_date) }}
-                    </div>
-                    <div v-if="duty.pivot.end_date">
-                      {{ $t('Iki') }}: {{ formatDate(duty.pivot.end_date) }}
-                    </div>
-                    <div v-if="duty.pivot.additional_email">
-                      {{ $t('El. paštas') }}: {{ duty.pivot.additional_email }}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <DutySummaryCard
+                v-for="duty in currentDuties"
+                :key="duty.id"
+                :duty="duty"
+                :exclude-user-id="user.id"
+              />
             </div>
           </div>
 
@@ -240,30 +191,13 @@
           <div v-if="previousDuties.length">
             <h3 class="mb-3 text-lg font-medium">{{ $t('Buvusios pareigos') }}</h3>
             <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-              <Card v-for="duty in previousDuties" :key="duty.id" class="opacity-75">
-                <CardHeader class="pb-2">
-                  <CardTitle class="text-sm">
-                    <Link :href="route('duties.show', duty.id)" class="hover:text-vusa-red transition">
-                      {{ duty.name }}
-                    </Link>
-                  </CardTitle>
-                  <CardDescription v-if="duty.institution?.name">
-                    <Link :href="route('institutions.show', duty.institution.id)" class="hover:text-vusa-red transition">
-                      {{ duty.institution.name }}
-                    </Link>
-                  </CardDescription>
-                </CardHeader>
-                <CardContent class="pt-0">
-                  <div v-if="duty.pivot" class="space-y-1 text-xs text-muted-foreground">
-                    <div v-if="duty.pivot.start_date">
-                      {{ $t('Nuo') }}: {{ formatDate(duty.pivot.start_date) }}
-                    </div>
-                    <div v-if="duty.pivot.end_date">
-                      {{ $t('Iki') }}: {{ formatDate(duty.pivot.end_date) }}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <DutySummaryCard
+                v-for="duty in previousDuties"
+                :key="duty.id"
+                :duty="duty"
+                :exclude-user-id="user.id"
+                muted
+              />
             </div>
           </div>
 
@@ -287,7 +221,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { router, Head as InertiaHead, usePage } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -296,9 +230,6 @@ import {
   KeyRound,
   Mail,
   Phone,
-  Clock,
-  AlertCircle,
-  ChevronRight,
   Facebook,
 } from 'lucide-vue-next';
 
@@ -307,6 +238,7 @@ import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import ShowPageHero from '@/Components/Hero/ShowPageHero.vue';
 import MoreOptionsButton from '@/Components/Buttons/MoreOptionsButton.vue';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
+import { DutySummaryCard } from '@/Components/Duties';
 
 // UI Components
 import { Badge } from '@/Components/ui/badge';
@@ -314,12 +246,10 @@ import { Button } from '@/Components/ui/button';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/Components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
-import { Link } from '@inertiajs/vue3';
 
 // Utils
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
@@ -327,11 +257,10 @@ import { UserIconFilled } from '@/Components/icons';
 
 const props = defineProps<{
   user: App.Entities.User & {
-    current_duties: Array<App.Entities.Duty & { pivot?: { start_date?: string; end_date?: string | null; additional_email?: string } }>;
-    previous_duties: Array<App.Entities.Duty & { pivot?: { start_date?: string; end_date?: string | null; additional_email?: string } }>;
+    current_duties: Array<App.Entities.Duty & { current_users?: App.Entities.User[]; pivot?: { start_date?: string; end_date?: string | null; additional_email?: string } }>;
+    previous_duties: Array<App.Entities.Duty & { current_users?: App.Entities.User[]; pivot?: { start_date?: string; end_date?: string | null; additional_email?: string } }>;
     roles: Array<{ id: string; name: string }>;
     has_password: boolean;
-    last_action: string | null;
   };
   tasks: Array<{
     id: string;
@@ -397,41 +326,6 @@ const hiddenDutyCount = computed(() => Math.max(0, currentDuties.value.length - 
 const focalPointStyle = computed(() => {
   if (!props.user.profile_photo_focal_point) return {};
   return { objectPosition: props.user.profile_photo_focal_point };
-});
-
-// Activity labels
-function formatRelativeDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-
-  if (diffMins < 1) return $t('Dabar');
-  if (diffMins < 60) return `${diffMins} min. prieš`;
-  if (diffHours < 24) return `${diffHours} val. prieš`;
-  if (diffDays === 1) return $t('Vakar');
-  if (diffDays < 7) return `${diffDays} d. prieš`;
-  return date.toLocaleDateString('lt-LT', { year: 'numeric', month: 'short', day: 'numeric' });
-}
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('lt-LT', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-}
-
-const lastActivityLabel = computed(() => {
-  if (!props.user.last_action) return $t('Niekada neprisijungęs');
-  return formatRelativeDate(props.user.last_action);
-});
-
-const lastActivityShort = computed(() => {
-  if (!props.user.last_action) return $t('Niekada');
-  return formatRelativeDate(props.user.last_action);
 });
 
 // Permissions

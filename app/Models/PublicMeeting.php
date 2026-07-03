@@ -141,10 +141,10 @@ class PublicMeeting extends Meeting
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->description,
-            'start_time' => $this->start_time->timestamp,
-            'start_time_formatted' => $this->start_time->format('Y-m-d H:i'),
-            'year' => $this->start_time->year,
-            'month' => $this->start_time->month,
+            'start_time' => $this->start_time?->timestamp,
+            'start_time_formatted' => $this->start_time?->format('Y-m-d H:i'),
+            'year' => $this->start_time?->year,
+            'month' => $this->start_time?->month,
 
             // Institution info (first institution for primary display)
             'institution_id' => $this->institutions->first()?->id,
@@ -169,9 +169,9 @@ class PublicMeeting extends Meeting
             'vote_alignment_status' => $this->calculateVoteAlignmentStatus($voteStats),
 
             // For filtering
-            'is_recent' => $this->start_time->isAfter(now()->subMonths(6)),
+            'is_recent' => $this->start_time?->isAfter(now()->subMonths(6)) ?? false,
 
-            'created_at' => $this->created_at->timestamp,
+            'created_at' => $this->created_at?->timestamp,
         ];
     }
 

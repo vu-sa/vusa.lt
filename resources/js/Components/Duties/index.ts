@@ -1,4 +1,5 @@
 export { default as DutyHolderCard } from './DutyHolderCard.vue';
+export { default as DutySummaryCard } from './DutySummaryCard.vue';
 export { default as DutyCurrentHoldersCard } from './DutyCurrentHoldersCard.vue';
 export { default as DutyAboutCard } from './DutyAboutCard.vue';
 export { default as DutyLineageCard } from './DutyLineageCard.vue';

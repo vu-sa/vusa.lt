@@ -194,9 +194,12 @@ class Duty extends Model implements AuthorizableContract, SharepointFileableCont
                 ->filter()
                 ->values()
                 ->all(),
+            // Names + ids stay index-aligned so the detail pane can render clickable member links.
             'current_user_names' => $currentUsers->pluck('name')->values()->all(),
+            'current_user_ids' => $currentUsers->pluck('id')->map(fn ($id) => (string) $id)->values()->all(),
             'current_users_count' => $currentUsersCount,
             'previous_user_names' => $previousUsers->pluck('name')->values()->all(),
+            'previous_user_ids' => $previousUsers->pluck('id')->map(fn ($id) => (string) $id)->values()->all(),
             'created_at' => $this->created_at?->timestamp,
         ];
     }

@@ -11,17 +11,18 @@
     @load-more="controller.loadMore"
   >
     <template #toolbar>
-      <div class="flex flex-wrap items-center justify-between gap-3">
-        <!-- Count + active filter pills -->
-        <div class="flex flex-1 flex-wrap items-center gap-2">
-          <span class="text-sm text-muted-foreground">
+      <div class="flex flex-nowrap items-center justify-between gap-3">
+        <!-- Count + active filter pills (single row; scrolls instead of wrapping
+             so the toolbar height stays constant when filters are active) -->
+        <div class="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto">
+          <span class="shrink-0 whitespace-nowrap text-sm text-muted-foreground">
             <template v-if="controller.totalHits.value > 0">
               {{ $t('Rasta :count rezultatų', { count: String(controller.totalHits.value) }) }}
             </template>
           </span>
 
           <template v-for="(values, field) in activeFilterPills" :key="field">
-            <Badge variant="secondary" class="gap-1">
+            <Badge variant="secondary" class="shrink-0 gap-1">
               {{ getFieldLabel(field) }}: {{ formatFilterValues(field, values) }}
               <button type="button" class="ml-0.5 hover:text-destructive" @click="clearFieldFilter(field)">
                 <X class="size-3" />
@@ -32,7 +33,7 @@
             v-if="controller.activeFilterCount.value > 0"
             variant="ghost"
             size="sm"
-            class="h-6 px-2 text-xs"
+            class="h-6 shrink-0 px-2 text-xs"
             @click="controller.clearFilters"
           >
             {{ $t('Išvalyti visus') }}
@@ -40,7 +41,7 @@
         </div>
 
         <!-- Filters + sort -->
-        <div class="flex items-center gap-2">
+        <div class="flex shrink-0 items-center gap-2">
           <SearchFiltersPopover
             :facets="controller.facets.value"
             :filters="controller.filters.value"

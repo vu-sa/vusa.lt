@@ -51,12 +51,7 @@
       <h3 class="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
         {{ $t('Atstovai') }}
       </h3>
-      <div class="flex flex-wrap gap-1.5">
-        <Avatar v-for="rep in data.representatives" :key="rep.id" class="size-8 ring-2 ring-background" :title="rep.name">
-          <AvatarImage v-if="rep.profile_photo_path" :src="rep.profile_photo_path" :alt="rep.name" />
-          <AvatarFallback class="text-[10px]">{{ initials(rep.name) }}</AvatarFallback>
-        </Avatar>
-      </div>
+      <UsersAvatarGroup :users="data.representatives" :max="10" :size="32" clickable />
     </div>
 
     <!-- Agenda -->
@@ -73,7 +68,7 @@
         <li v-for="(item, index) in data.agenda_items" :key="item.id">
           <Link
             :href="route('agendaItems.show', item.id)"
-            class="group flex items-start gap-3 rounded-md border px-3 py-2 transition-colors hover:border-primary/30 hover:bg-accent"
+            :class="['group flex items-start gap-3 rounded-md border bg-card px-3 py-2', interactiveCardClass]"
           >
             <span class="mt-0.5 text-xs tabular-nums text-muted-foreground">{{ index + 1 }}</span>
             <span class="min-w-0 flex-1 whitespace-normal break-words text-sm group-hover:text-foreground">{{ item.title }}</span>
@@ -102,11 +97,12 @@ import DetailRow from './DetailRow.vue';
 import { completionTone, toneClass, voteTone } from '../../Utils/searchBadges';
 import { formatSearchDate } from '../../Utils/searchHitMappers';
 import { getFacetValueLabel } from '../../Config/collectionFacetConfig';
+import { interactiveCardClass } from '@/Utils/interactiveCard';
 
 import { MeetingIcon } from '@/Components/icons';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
+import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import { useApi } from '@/Composables/useApi';
 import type { MeetingSearchResult } from '@/Shared/Search/types';
 
@@ -135,5 +131,4 @@ const agendaCount = computed(() => {
   return props.meeting.agenda_items_count != null ? String(props.meeting.agenda_items_count) : '—';
 });
 
-const initials = (name: string): string => name.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase();
 </script>

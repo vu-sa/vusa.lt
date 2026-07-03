@@ -1,7 +1,7 @@
 <template>
   <Link
     :href="route('institutions.show', institution.id)"
-    class="group flex items-center gap-2.5 rounded-lg border border-border bg-card px-2.5 py-2 transition-colors hover:bg-accent/50"
+    :class="['group flex items-center gap-2.5 rounded-lg border border-border bg-card px-2.5 py-2', interactiveCardClass]"
   >
     <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted">
       <InstitutionIconFilled class="h-5 w-5 text-muted-foreground" />
@@ -24,6 +24,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronRight } from 'lucide-vue-next';
 
 import { InstitutionIconFilled } from '@/Components/icons';
+import { interactiveCardClass } from '@/Utils/interactiveCard';
 
 defineProps<{
   institution: { id: string | number; name: string; short_name?: string | null };

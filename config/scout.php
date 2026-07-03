@@ -271,6 +271,7 @@ return [
                         ['name' => 'institution_name_lt', 'type' => 'string', 'facet' => true, 'optional' => true, 'sort' => true],
                         ['name' => 'institution_name_en', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'tenant_shortname', 'type' => 'string', 'facet' => true, 'optional' => true],
+                        ['name' => 'institution_id', 'type' => 'string', 'optional' => true],
                         ['name' => 'document_date', 'type' => 'int64', 'facet' => true, 'sort' => true, 'optional' => true],
                         ['name' => 'document_year', 'type' => 'string', 'infix' => true, 'facet' => true, 'optional' => true],
                         ['name' => 'document_date_formatted', 'type' => 'string', 'optional' => true, 'infix' => true],
@@ -620,10 +621,13 @@ return [
                         // Facets
                         ['name' => 'type_titles', 'type' => 'string[]', 'facet' => true, 'optional' => true],
 
-                        // Members (for the detail pane)
+                        // Members (for the detail pane). Names are searchable; the parallel
+                        // id arrays stay index-aligned so the pane can render clickable links.
                         ['name' => 'current_user_names', 'type' => 'string[]', 'optional' => true],
+                        ['name' => 'current_user_ids', 'type' => 'string[]', 'index' => false, 'optional' => true],
                         ['name' => 'current_users_count', 'type' => 'int32', 'sort' => true, 'optional' => true],
                         ['name' => 'previous_user_names', 'type' => 'string[]', 'optional' => true],
+                        ['name' => 'previous_user_ids', 'type' => 'string[]', 'index' => false, 'optional' => true],
 
                         ['name' => 'created_at', 'type' => 'int64', 'sort' => true],
                     ],
@@ -631,6 +635,7 @@ return [
                     'enable_nested_fields' => false,
                 ],
                 'search-parameters' => [
+                    // Current members are weighted above previous ones for relevance.
                     'query_by' => 'name_lt,name_en,email,institution_name_lt,institution_name_en,current_user_names,previous_user_names',
                     'query_by_weights' => '10,8,4,4,3,6,4',
                     'typo_tokens_threshold' => 1,
@@ -656,8 +661,12 @@ return [
                         // Institution linkage for .own permission filtering
                         ['name' => 'institution_ids', 'type' => 'string[]', 'facet' => true, 'optional' => true],
 
-                        // Facets
+                        // Duties (for search + the detail pane). Current duties are weighted
+                        // above previous ones; parallel id arrays stay index-aligned for links.
                         ['name' => 'current_duty_names', 'type' => 'string[]', 'facet' => true, 'optional' => true],
+                        ['name' => 'current_duty_ids', 'type' => 'string[]', 'index' => false, 'optional' => true],
+                        ['name' => 'previous_duty_names', 'type' => 'string[]', 'facet' => true, 'optional' => true],
+                        ['name' => 'previous_duty_ids', 'type' => 'string[]', 'index' => false, 'optional' => true],
                         ['name' => 'is_active', 'type' => 'bool', 'facet' => true],
 
                         ['name' => 'created_at', 'type' => 'int64', 'sort' => true],
@@ -666,8 +675,9 @@ return [
                     'enable_nested_fields' => false,
                 ],
                 'search-parameters' => [
-                    'query_by' => 'name,email,phone,current_duty_names',
-                    'query_by_weights' => '10,6,4,3',
+                    // Current duties are weighted above previous ones for relevance.
+                    'query_by' => 'name,email,phone,current_duty_names,previous_duty_names',
+                    'query_by_weights' => '10,6,4,3,2',
                     'typo_tokens_threshold' => 1,
                     'num_typos' => 2,
                     'prioritize_exact_match' => true,

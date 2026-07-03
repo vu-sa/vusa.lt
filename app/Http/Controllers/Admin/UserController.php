@@ -136,12 +136,13 @@ class UserController extends AdminController
 
         $user->load([
             'current_duties.institution.tenant',
+            'current_duties.current_users:id,name,profile_photo_path',
             'previous_duties.institution.tenant',
             'roles',
             'tasks.taskable',
         ]);
 
-        $user->makeVisible(['last_action'])->append('has_password');
+        $user->append('has_password');
 
         $tasks = $user->tasks->sortByDesc('created_at')->values();
         $taskStats = [

@@ -1,7 +1,7 @@
 <template>
   <Link
     :href="route('meetings.show', meeting.id)"
-    class="flex items-center gap-2.5 rounded-lg border border-border bg-card px-2.5 py-2 transition-colors hover:bg-accent/50"
+    :class="['flex items-center gap-2.5 rounded-lg border border-border bg-card px-2.5 py-2', interactiveCardClass]"
   >
     <!-- Date badge -->
     <div class="flex size-10 shrink-0 flex-col items-center justify-center rounded-lg bg-muted leading-none">
@@ -33,6 +33,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronRight } from 'lucide-vue-next';
 
 import { formatStaticTime, formatMonthShort } from '@/Utils/IntlTime';
+import { interactiveCardClass } from '@/Utils/interactiveCard';
 
 export interface MiniMeeting {
   id: string | number;

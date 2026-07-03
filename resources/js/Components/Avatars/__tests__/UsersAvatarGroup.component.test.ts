@@ -40,4 +40,32 @@ describe('UsersAvatarGroup', () => {
     expect(content.text()).toContain('User 1');
     expect(content.text()).toContain('User 6');
   });
+
+  it('wraps visible avatars in a link to the user page when clickable', () => {
+    const wrapper = mount(UsersAvatarGroup, {
+      props: { users: makeUsers(2) as any, max: 4, clickable: true },
+      global: {
+        stubs: {
+          ...commonStubs,
+          UserPopover: { props: ['user'], template: '<div class="user-row">{{ user?.name }}</div>' },
+        },
+      },
+    });
+    const links = wrapper.findAll('[data-testid="inertia-link"]');
+    expect(links.length).toBe(2);
+    expect(links[0].attributes('href')).toContain('users.show');
+  });
+
+  it('does not wrap avatars in links by default', () => {
+    const wrapper = mount(UsersAvatarGroup, {
+      props: { users: makeUsers(2) as any, max: 4 },
+      global: {
+        stubs: {
+          ...commonStubs,
+          UserPopover: { props: ['user'], template: '<div class="user-row">{{ user?.name }}</div>' },
+        },
+      },
+    });
+    expect(wrapper.findAll('[data-testid="inertia-link"]').length).toBe(0);
+  });
 });

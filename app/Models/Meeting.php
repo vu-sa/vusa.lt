@@ -187,10 +187,10 @@ class Meeting extends Model implements SharepointFileableContract
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->description,
-            'start_time' => $this->start_time->timestamp,
-            'start_time_formatted' => $this->start_time->format('Y-m-d H:i'),
-            'year' => $this->start_time->year,
-            'month' => $this->start_time->month,
+            'start_time' => $this->start_time?->timestamp,
+            'start_time_formatted' => $this->start_time?->format('Y-m-d H:i'),
+            'year' => $this->start_time?->year,
+            'month' => $this->start_time?->month,
 
             // Tenant filtering (CRITICAL for scoped API keys)
             'tenant_ids' => $tenantIds,
@@ -233,13 +233,13 @@ class Meeting extends Model implements SharepointFileableContract
 
             // Visibility status
             'is_public' => $this->is_public,
-            'is_recent' => $this->start_time->isAfter(now()->subMonths(6)),
+            'is_recent' => $this->start_time?->isAfter(now()->subMonths(6)) ?? false,
 
             // Representatives attending the meeting
             'user_names' => $this->users->pluck('name')->filter()->unique()->values()->all(),
 
-            'created_at' => $this->created_at->timestamp,
-            'updated_at' => $this->updated_at->timestamp,
+            'created_at' => $this->created_at?->timestamp,
+            'updated_at' => $this->updated_at?->timestamp,
         ];
     }
 

@@ -258,8 +258,8 @@ class News extends Model implements Feedable, Sitemapable
             'lang' => $this->lang,
             'tenant_id' => $this->tenant_id,
             'tenant_ids' => [$this->tenant_id],
-            'tenant_name' => $this->tenant->fullname,
-            'created_at' => $this->created_at->timestamp,
+            'tenant_name' => $this->tenant?->fullname,
+            'created_at' => $this->created_at?->timestamp,
         ];
     }
 

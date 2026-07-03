@@ -287,7 +287,7 @@ class Institution extends Model implements SharepointFileableContract
             'institution_ids' => [(string) $this->id],
             'current_user_names' => $currentUserNames,
             'duty_names' => $dutyNames,
-            'created_at' => $this->created_at->timestamp,
+            'created_at' => $this->created_at?->timestamp,
         ];
     }
 

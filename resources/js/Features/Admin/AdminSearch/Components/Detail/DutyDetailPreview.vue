@@ -68,16 +68,19 @@
         {{ $t('Nariai') }}
       </h3>
       <div v-if="currentMembers.length" class="flex flex-wrap items-center gap-1.5">
-        <span
-          v-for="(name, i) in currentMembers"
+        <component
+          :is="member.id ? Link : 'span'"
+          v-for="(member, i) in currentMembers"
           :key="i"
-          class="inline-flex items-center gap-1.5 rounded-full border bg-muted/40 py-1 pl-1 pr-2.5 text-xs"
+          :href="member.id ? route('users.show', member.id) : undefined"
+          class="inline-flex items-center gap-1.5 rounded-full border bg-muted/40 py-1 pl-1 pr-2.5 text-xs transition-colors"
+          :class="member.id ? 'hover:border-primary/40 hover:bg-primary/5' : ''"
         >
           <Avatar class="size-5">
-            <AvatarFallback class="text-[9px]">{{ initials(name) }}</AvatarFallback>
+            <AvatarFallback class="text-[9px]">{{ initials(member.name) }}</AvatarFallback>
           </Avatar>
-          {{ name }}
-        </span>
+          {{ member.name }}
+        </component>
         <span v-if="hiddenCurrentCount > 0" class="text-xs font-medium text-muted-foreground">
           +{{ hiddenCurrentCount }}
         </span>
@@ -88,18 +91,21 @@
     </div>
 
     <!-- A few previous members -->
-    <div v-if="duty.previous_user_names?.length" class="mt-6">
+    <div v-if="previousMembers.length" class="mt-6">
       <h3 class="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
         {{ $t('Buvę nariai') }}
       </h3>
       <div class="flex flex-wrap gap-1.5">
-        <span
-          v-for="(name, i) in duty.previous_user_names"
+        <component
+          :is="member.id ? Link : 'span'"
+          v-for="(member, i) in previousMembers"
           :key="i"
-          class="rounded-full bg-muted/40 px-2.5 py-1 text-xs text-muted-foreground"
+          :href="member.id ? route('users.show', member.id) : undefined"
+          class="rounded-full bg-muted/40 px-2.5 py-1 text-xs text-muted-foreground transition-colors"
+          :class="member.id ? 'hover:bg-primary/5 hover:text-foreground' : ''"
         >
-          {{ name }}
-        </span>
+          {{ member.name }}
+        </component>
       </div>
     </div>
   </DetailLayout>
@@ -131,11 +137,25 @@ const props = defineProps<{
 
 const institutionName = computed(() => props.duty.institution_name_lt || props.duty.institution_name_en);
 
-const currentMembers = computed(() => (props.duty.current_user_names ?? []).slice(0, MEMBER_LIMIT));
+interface MemberChip {
+  name: string;
+  id?: string;
+}
+
+const currentMembers = computed<MemberChip[]>(() =>
+  (props.duty.current_user_names ?? [])
+    .slice(0, MEMBER_LIMIT)
+    .map((name, i) => ({ name, id: props.duty.current_user_ids?.[i] })),
+);
 const hiddenCurrentCount = computed(() => {
   const total = props.duty.current_users_count ?? props.duty.current_user_names?.length ?? 0;
   return Math.max(0, total - currentMembers.value.length);
 });
+
+const previousMembers = computed<MemberChip[]>(() =>
+  (props.duty.previous_user_names ?? [])
+    .map((name, i) => ({ name, id: props.duty.previous_user_ids?.[i] })),
+);
 
 const initials = (name: string): string => name.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase();
 </script>

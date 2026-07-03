@@ -1,7 +1,7 @@
 <template>
   <Link
     :href="route('users.show', member.id)"
-    class="flex items-center gap-2.5 rounded-lg border border-border bg-card px-2.5 py-2 text-left transition-colors hover:bg-accent/50"
+    :class="['flex items-center gap-2.5 rounded-lg border border-border bg-card px-2.5 py-2 text-left', interactiveCardClass]"
   >
     <UserPopover :user="member" :size="32" class="shrink-0" />
 
@@ -29,6 +29,7 @@ import { Calendar } from 'lucide-vue-next';
 import UserPopover from '@/Components/Avatars/UserPopover.vue';
 import { Badge } from '@/Components/ui/badge';
 import { formatStaticTime } from '@/Utils/IntlTime';
+import { interactiveCardClass } from '@/Utils/interactiveCard';
 
 const props = defineProps<{
   member: App.Entities.User;

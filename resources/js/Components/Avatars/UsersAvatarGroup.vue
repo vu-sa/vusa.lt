@@ -3,7 +3,14 @@
     <!-- Display avatars up to the maximum allowed -->
     <div v-for="(user, index) in visibleUsers" :key="user.id || index" class="relative flex items-center"
       :class="[avatarWrapperClass, { '-ml-2': index > 0 }]" :style="{ zIndex: visibleUsers.length - index }">
-      <UserPopover :user :size="avatarSize">
+      <Link v-if="clickable && user.id" :href="route('users.show', user.id)" class="contents">
+        <UserPopover :user :size="avatarSize">
+          <template #additional-info>
+            <slot name="user-additional-info" :user />
+          </template>
+        </UserPopover>
+      </Link>
+      <UserPopover v-else :user :size="avatarSize">
         <template #additional-info>
           <slot name="user-additional-info" :user />
         </template>
@@ -31,12 +38,20 @@
               {{ $t('Other users') }}
             </h4>
             <div class="grid gap-2">
-              <UserPopover v-for="user in hiddenUsers" :key="user.id || user.name" show-name :size="popoverAvatarSize"
-                :user>
-                <template #additional-info>
-                  <slot name="user-additional-info" :user />
-                </template>
-              </UserPopover>
+              <template v-for="user in hiddenUsers" :key="user.id || user.name">
+                <Link v-if="clickable && user.id" :href="route('users.show', user.id)" class="contents">
+                  <UserPopover show-name :size="popoverAvatarSize" :user>
+                    <template #additional-info>
+                      <slot name="user-additional-info" :user />
+                    </template>
+                  </UserPopover>
+                </Link>
+                <UserPopover v-else show-name :size="popoverAvatarSize" :user>
+                  <template #additional-info>
+                    <slot name="user-additional-info" :user />
+                  </template>
+                </UserPopover>
+              </template>
             </div>
           </div>
         </HoverCardContent>
@@ -56,17 +71,20 @@
       </PopoverTrigger>
       <PopoverContent class="w-64 p-2" align="end">
         <div class="grid gap-1 max-h-72 overflow-y-auto pr-1">
-          <UserPopover
-            v-for="user in users"
-            :key="user.id || user.name"
-            show-name
-            :size="popoverAvatarSize"
-            :user
-          >
-            <template #additional-info>
-              <slot name="user-additional-info" :user />
-            </template>
-          </UserPopover>
+          <template v-for="user in users" :key="user.id || user.name">
+            <Link v-if="clickable && user.id" :href="route('users.show', user.id)" class="contents">
+              <UserPopover show-name :size="popoverAvatarSize" :user>
+                <template #additional-info>
+                  <slot name="user-additional-info" :user />
+                </template>
+              </UserPopover>
+            </Link>
+            <UserPopover v-else show-name :size="popoverAvatarSize" :user>
+              <template #additional-info>
+                <slot name="user-additional-info" :user />
+              </template>
+            </UserPopover>
+          </template>
         </div>
       </PopoverContent>
     </Popover>
@@ -75,6 +93,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { Link } from '@inertiajs/vue3';
 import { ChevronDown } from 'lucide-vue-next';
 
 import UserPopover from './UserPopover.vue';
@@ -90,6 +109,8 @@ const props = defineProps<{
   limitByScreen?: boolean;
   /** Render a trailing chevron that opens a dropdown listing all users. */
   expandable?: boolean;
+  /** Wrap each avatar in a link to the user's show page (requires user.id). */
+  clickable?: boolean;
 }>();
 
 // Compute the maximum number of users to display, taking into account screen size if limitByScreen is true

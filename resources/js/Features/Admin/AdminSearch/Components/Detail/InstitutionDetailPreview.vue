@@ -44,20 +44,7 @@
       <h3 class="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
         {{ $t('Atstovai') }}
       </h3>
-      <div class="flex flex-wrap items-center gap-1.5">
-        <Avatar
-          v-for="rep in visibleRepresentatives"
-          :key="rep.id"
-          class="size-8 ring-2 ring-background"
-          :title="rep.name"
-        >
-          <AvatarImage v-if="rep.profile_photo_path" :src="rep.profile_photo_path" :alt="rep.name" />
-          <AvatarFallback class="text-[10px]">{{ initials(rep.name) }}</AvatarFallback>
-        </Avatar>
-        <span v-if="hiddenRepresentativeCount > 0" class="text-xs font-medium text-muted-foreground">
-          +{{ hiddenRepresentativeCount }}
-        </span>
-      </div>
+      <UsersAvatarGroup :users="data.representatives" :max="REPRESENTATIVE_LIMIT" :size="32" clickable />
     </div>
 
     <!-- Related institutions (one-deep graph) -->
@@ -85,7 +72,7 @@
         <li v-for="meeting in data.last_meetings" :key="meeting.id">
           <Link
             :href="route('meetings.show', meeting.id)"
-            class="group flex items-start gap-3 rounded-md border px-3 py-2 transition-colors hover:border-primary/30 hover:bg-accent"
+            :class="['group flex items-start gap-3 rounded-md border bg-card px-3 py-2', interactiveCardClass]"
           >
             <span class="min-w-0 flex-1 whitespace-normal break-words text-sm group-hover:text-foreground">
               {{ meeting.title || $t('Be pavadinimo') }}
@@ -114,11 +101,12 @@ import DetailLayout from './DetailLayout.vue';
 import DetailRow from './DetailRow.vue';
 import InstitutionRelationGraph from './InstitutionRelationGraph.vue';
 import { formatSearchDate } from '../../Utils/searchHitMappers';
+import { interactiveCardClass } from '@/Utils/interactiveCard';
 
 import { InstitutionIcon } from '@/Components/icons';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
+import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import { useApi } from '@/Composables/useApi';
 import type { InstitutionSearchResult } from '@/Shared/Search/types';
 
@@ -150,10 +138,4 @@ const types = computed<Array<{ id: string; title: string }>>(() => {
   return (props.institution.type_titles ?? []).map((title, index) => ({ id: String(index), title }));
 });
 
-const visibleRepresentatives = computed(() => data.value?.representatives?.slice(0, REPRESENTATIVE_LIMIT) ?? []);
-const hiddenRepresentativeCount = computed(() =>
-  Math.max(0, (data.value?.representatives?.length ?? 0) - REPRESENTATIVE_LIMIT),
-);
-
-const initials = (name: string): string => name.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase();
 </script>

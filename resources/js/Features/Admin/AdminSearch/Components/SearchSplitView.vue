@@ -1,7 +1,8 @@
 <template>
   <div class="flex min-h-0 flex-1 flex-col">
-    <!-- Toolbar (count, pills, filters, sort) -->
-    <div v-if="$slots.toolbar" class="mb-3 shrink-0">
+    <!-- Toolbar (count, pills, filters, sort) — fixed reserved height keeps the
+         result list from shifting when a panel supplies a taller toolbar. -->
+    <div v-if="$slots.toolbar" class="mb-3 flex min-h-9 shrink-0 flex-col justify-center">
       <slot name="toolbar" />
     </div>
 

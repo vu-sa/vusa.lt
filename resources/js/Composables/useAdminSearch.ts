@@ -662,6 +662,10 @@ export const useAdminSearch = () => {
         'infix': buildInfix('name_lt,name_en,description_lt,description_en,location', 'resources'),
         'sort_by': relevanceSort('created_at'),
         ...commonTuning,
+        // Disable typo tolerance on the structured address field: fuzzy matching
+        // there adds no value and produces noise (e.g. a personal name matching a
+        // common street word one typo away). Order must match query_by.
+        'num_typos': '2,2,2,2,0',
         'per_page': resourcesLimit,
         'x-typesense-api-key': resourcesConfig.key,
       });
@@ -672,9 +676,9 @@ export const useAdminSearch = () => {
       searches.push({
         'collection': dutiesConfig.name,
         'q': query || '*',
-        'query_by': 'name_lt,name_en,email,institution_name_lt,institution_name_en',
-        'query_by_weights': '10,8,4,4,3',
-        'infix': buildInfix('name_lt,name_en,email,institution_name_lt,institution_name_en', 'duties'),
+        'query_by': 'name_lt,name_en,email,institution_name_lt,institution_name_en,current_user_names,previous_user_names',
+        'query_by_weights': '10,8,4,4,3,3,2',
+        'infix': buildInfix('name_lt,name_en,email,institution_name_lt,institution_name_en,current_user_names,previous_user_names', 'duties'),
         // Duties have no meaningful date; tiebreak alphabetically by name.
         'sort_by': relevanceSort('name_lt', 'asc'),
         ...commonTuning,
@@ -688,8 +692,8 @@ export const useAdminSearch = () => {
       searches.push({
         'collection': usersConfig.name,
         'q': query || '*',
-        'query_by': 'name,email,phone,current_duty_names',
-        'query_by_weights': '10,6,4,3',
+        'query_by': 'name,email,phone,current_duty_names,previous_duty_names',
+        'query_by_weights': '10,6,4,3,2',
         'sort_by': relevanceSort('created_at'),
         ...commonTuning,
         'per_page': usersLimit,

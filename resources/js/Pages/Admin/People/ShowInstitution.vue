@@ -148,39 +148,12 @@
       <TabsContent value="duties" class="space-y-6">
         <div class="space-y-4">
           <div v-if="institution.duties?.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card v-for="duty in sortedDuties" :key="duty.id" class="cursor-pointer transition-colors hover:border-primary/40 hover:bg-accent/40"
-              @click="router.visit(route('duties.show', duty.id))">
-              <CardContent class="p-4">
-                <div class="flex items-start justify-between">
-                  <div class="flex-1">
-                    <h3 class="font-bold text-zinc-900 dark:text-zinc-100 mb-2">
-                      {{ duty.name }}
-                    </h3>
-
-                    <!-- Current Members -->
-                    <div class="flex items-center gap-3 mb-2">
-                      <UsersAvatarGroup :users="duty.current_users" :max="3" :size="24" />
-
-                      <span class="text-xs text-zinc-500 dark:text-zinc-400">
-                        {{ duty.current_users?.length || 0 }} / {{ duty.places_to_occupy || 0 }} {{ $t('užimta') }}
-                      </span>
-                    </div>
-
-                    <!-- Status Badge -->
-                    <div class="flex items-center gap-2">
-                      <Badge :variant="getDutyStatusVariant(duty)" class="text-xs">
-                        {{ getDutyStatusText(duty) }}
-                      </Badge>
-                      <span v-if="duty.email" class="text-xs text-zinc-500 dark:text-zinc-400">
-                        {{ duty.email }}
-                      </span>
-                    </div>
-                  </div>
-
-                  <ChevronRight class="h-4 w-4 text-zinc-400" />
-                </div>
-              </CardContent>
-            </Card>
+            <DutySummaryCard
+              v-for="duty in sortedDuties"
+              :key="duty.id"
+              :duty="duty"
+              :show-institution="false"
+            />
           </div>
 
           <!-- Empty State -->
@@ -367,6 +340,7 @@ import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import MeetingOutcomeIndicators from '@/Components/Public/Search/MeetingOutcomeIndicators.vue';
 import InstitutionOverviewSection from '@/Components/Institutions/InstitutionOverviewSection.vue';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
+import { DutySummaryCard } from '@/Components/Duties';
 
 // UI Components
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
@@ -543,26 +517,6 @@ const getMeetingTitle = (meeting: App.Entities.Meeting) => {
   }
   const institutionName = props.institution.name || 'Institucijos';
   return `${institutionName} ${$t('posėdis')}`;
-};
-
-const getDutyStatusVariant = (duty: App.Entities.Duty) => {
-  const currentCount = duty.current_users?.length || 0;
-  const maxCount = duty.places_to_occupy || 0;
-
-  if (currentCount === 0) return 'outline';
-  if (currentCount < maxCount) return 'secondary';
-  if (currentCount === maxCount) return 'default';
-  return 'destructive'; // Exceeds limit
-};
-
-const getDutyStatusText = (duty: App.Entities.Duty) => {
-  const currentCount = duty.current_users?.length || 0;
-  const maxCount = duty.places_to_occupy || 0;
-
-  if (currentCount === 0) return $t('Neužimta');
-  if (currentCount < maxCount) return $t('Dalinai užimta');
-  if (currentCount === maxCount) return $t('Pilnai užimta');
-  return $t('Viršija limitą');
 };
 
 </script>

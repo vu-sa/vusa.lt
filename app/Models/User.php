@@ -163,9 +163,11 @@ class User extends Authenticatable
 
     public function toSearchableArray(): array
     {
-        $this->loadMissing(['current_duties.institution.tenant']);
+        $this->loadMissing(['current_duties.institution.tenant', 'previous_duties']);
 
         $currentDuties = $this->current_duties;
+        // Order previous duties most-recent-first so the freshest history surfaces first.
+        $previousDuties = $this->previous_duties->sortByDesc(fn (Duty $duty) => $duty->pivot?->end_date)->values();
 
         $tenantIds = $currentDuties->pluck('institution.tenant_id')
             ->filter()
@@ -180,12 +182,6 @@ class User extends Authenticatable
             ->map(fn ($id) => (string) $id)
             ->all();
 
-        $dutyNames = $currentDuties->pluck('name')
-            ->filter()
-            ->unique()
-            ->values()
-            ->all();
-
         $tenantShortname = $currentDuties->first()?->institution?->tenant?->shortname;
 
         return [
@@ -196,9 +192,14 @@ class User extends Authenticatable
             'tenant_ids' => $tenantIds,
             'tenant_shortname' => $tenantShortname,
             'institution_ids' => $institutionIds,
-            'current_duty_names' => $dutyNames,
+            // Current duties are indexed (and weighted) above previous ones for search relevance.
+            // Names + ids are kept index-aligned so the detail pane can render clickable links.
+            'current_duty_names' => $currentDuties->pluck('name')->values()->all(),
+            'current_duty_ids' => $currentDuties->pluck('id')->map(fn ($id) => (string) $id)->values()->all(),
+            'previous_duty_names' => $previousDuties->pluck('name')->values()->all(),
+            'previous_duty_ids' => $previousDuties->pluck('id')->map(fn ($id) => (string) $id)->values()->all(),
             'is_active' => $this->deleted_at === null,
-            'created_at' => $this->created_at->timestamp,
+            'created_at' => $this->created_at?->timestamp,
         ];
     }
 

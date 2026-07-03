@@ -21,8 +21,8 @@
 
     <!-- Content -->
     <div class="flex-1 min-w-0">
-      <div class="flex items-center gap-2">
-        <span class="font-medium truncate text-sm">
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="min-w-0 flex-1 truncate font-medium text-sm">
           {{ hit.title }}
         </span>
 
@@ -51,10 +51,12 @@
           {{ hit.statusBadge.label }}
         </Badge>
       </div>
-      <div class="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
-        <span v-if="hit.subtitle" class="truncate">{{ hit.subtitle }}</span>
-        <span v-if="hit.subtitle && hit.meta" class="text-muted-foreground/40">•</span>
-        <span v-if="hit.meta" class="shrink-0 tabular-nums">{{ hit.meta }}</span>
+      <div class="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5 min-w-0">
+        <span v-if="hit.subtitle" class="min-w-0 truncate">{{ hit.subtitle }}</span>
+        <span v-if="hit.subtitle && hit.meta" class="shrink-0 text-muted-foreground/40">•</span>
+        <!-- meta may be a short date (other collections) or a long member list (duties):
+             cap its width and truncate so long values never overflow the row. -->
+        <span v-if="hit.meta" class="min-w-0 max-w-[55%] shrink-0 truncate tabular-nums">{{ hit.meta }}</span>
       </div>
     </div>
 

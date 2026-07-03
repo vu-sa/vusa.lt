@@ -18,7 +18,7 @@
     </template>
 
     <template #actions>
-      <a v-if="page.permalink" :href="page.permalink" target="_blank" rel="noopener noreferrer">
+      <a v-if="publicUrl" :href="publicUrl" target="_blank" rel="noopener noreferrer">
         <Button size="sm">
           <ExternalLink class="mr-2 size-4" />
           {{ $t('Atidaryti viešąjį puslapį') }}
@@ -44,12 +44,14 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ExternalLink, Pencil } from 'lucide-vue-next';
 
 import DetailLayout from './DetailLayout.vue';
 import DetailRow from './DetailRow.vue';
+import { resolveTenantSubdomain } from '../../Utils/publicUrl';
 
 import { PageIcon } from '@/Components/icons';
 import { Badge } from '@/Components/ui/badge';
@@ -59,6 +61,18 @@ import type { PageSearchResult } from '@/Shared/Search/types';
 const props = defineProps<{
   page: PageSearchResult;
 }>();
+
+const publicUrl = computed(() => {
+  if (!props.page.permalink) {
+    return undefined;
+  }
+  const lang = props.page.lang ?? 'lt';
+  return route('page', {
+    subdomain: resolveTenantSubdomain(props.page.tenant_id),
+    lang,
+    permalink: props.page.permalink,
+  });
+});
 
 const stripHtml = (html?: string): string => {
   if (!html) return '';

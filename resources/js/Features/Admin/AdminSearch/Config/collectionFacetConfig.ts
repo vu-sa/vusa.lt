@@ -298,7 +298,7 @@ export const RESOURCE_FACET_CONFIG: CollectionFacetConfig = {
  */
 export const DUTY_FACET_CONFIG: CollectionFacetConfig = {
   facetBy: 'tenant_shortname,type_titles',
-  queryBy: 'name_lt,name_en,email,institution_name_lt,institution_name_en',
+  queryBy: 'name_lt,name_en,email,institution_name_lt,institution_name_en,current_user_names,previous_user_names',
   defaultSortBy: 'name_lt:asc',
   fields: [
     {
@@ -327,7 +327,7 @@ export const DUTY_FACET_CONFIG: CollectionFacetConfig = {
  */
 export const USER_FACET_CONFIG: CollectionFacetConfig = {
   facetBy: 'tenant_shortname,current_duty_names,is_active',
-  queryBy: 'name,email,phone,current_duty_names',
+  queryBy: 'name,email,phone,current_duty_names,previous_duty_names',
   defaultSortBy: 'created_at:desc',
   fields: [
     {

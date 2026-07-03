@@ -16,6 +16,11 @@ describe('buildInfix', () => {
       .toBe('fallback,fallback,off,fallback,fallback');
   });
 
+  it('marks the duties user-name fields as off (no infix index)', () => {
+    expect(buildInfix('name_lt,name_en,email,institution_name_lt,institution_name_en,current_user_names,previous_user_names', 'duties'))
+      .toBe('fallback,fallback,off,fallback,fallback,off,off');
+  });
+
   it('enables fallback for fully infix-indexed query_by lists', () => {
     expect(buildInfix('title,short', 'news')).toBe('fallback,fallback');
   });

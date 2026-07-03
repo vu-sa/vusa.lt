@@ -159,31 +159,6 @@ class AgendaItem extends Pivot
 
         $meeting = $this->getRelation('meeting');
 
-        // Handle orphaned agenda items (meeting was deleted)
-        if (! $meeting instanceof Meeting) {
-            return [];
-        }
-
-        // Get tenant IDs for filtering with scoped API keys
-        $tenantIds = $meeting->institutions
-            ->pluck('tenant.id')
-            ->filter()
-            ->unique()
-            ->map(fn ($id) => (int) $id)
-            ->values()
-            ->toArray();
-
-        // Get tenant shortnames for faceting/display
-        $tenantShortnames = $meeting->institutions
-            ->pluck('tenant.shortname')
-            ->filter()
-            ->unique()
-            ->values()
-            ->toArray();
-
-        // Get institution info
-        $institution = $meeting->institutions->first();
-
         // Get main vote for backward-compatible fields
         /** @var Vote|null $mainVote */
         $mainVote = $this->votes->firstWhere('is_main', true);
@@ -194,7 +169,9 @@ class AgendaItem extends Pivot
         $type = $this->getAttribute('type');
         $typeValue = $type instanceof AgendaItemType ? $type->value : 'voting';
 
-        return [
+        // Build base array that is always returned (prevents false-positive schema
+        // mismatches when the model is validated without a loaded meeting)
+        $searchableArray = [
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->description,
@@ -217,25 +194,13 @@ class AgendaItem extends Pivot
             'has_consensus_votes' => $voteStats['has_consensus_votes'],
             'consensus_votes_count' => $voteStats['consensus_votes_count'],
 
-            // Tenant filtering (CRITICAL for scoped API keys)
-            'tenant_ids' => $tenantIds,
-            'tenant_shortnames' => $tenantShortnames,
-
-            // Meeting info for context
+            // Meeting info for context (null-safe for orphaned/empty items)
             'meeting_id' => $this->meeting_id,
-            'meeting_title' => $meeting->title,
-            'meeting_start_time' => $meeting->start_time->timestamp,
-            'meeting_start_time_formatted' => $meeting->start_time->format('Y-m-d H:i'),
-            'meeting_year' => $meeting->start_time->year,
-            'meeting_month' => $meeting->start_time->month,
-
-            // Institution info
-            'institution_id' => $institution?->id,
-            'institution_name_lt' => $institution?->getTranslation('name', 'lt'),
-            'institution_name_en' => $institution?->getTranslation('name', 'en'),
-
-            // All institutions (for .own scope filtering)
-            'institution_ids' => $meeting->institutions->pluck('id')->toArray(),
+            'meeting_title' => $meeting?->title,
+            'meeting_start_time' => $meeting?->start_time?->timestamp,
+            'meeting_start_time_formatted' => $meeting?->start_time?->format('Y-m-d H:i'),
+            'meeting_year' => $meeting?->start_time?->year,
+            'meeting_month' => $meeting?->start_time?->month,
 
             // Completion status indicators (based on all votes)
             'has_student_vote' => $voteStats['has_any_student_vote'],
@@ -248,9 +213,58 @@ class AgendaItem extends Pivot
             'vote_mismatches' => $voteStats['vote_mismatches'] > 0,
             'vote_alignment_status' => $this->calculateVoteAlignmentStatus(),
 
-            'created_at' => $this->created_at->timestamp,
-            'updated_at' => $this->updated_at->timestamp,
+            // Tenant / institution context — always present (empty defaults) so the
+            // document satisfies the required schema fields even for agenda items
+            // without a meeting; overridden below when the meeting exists.
+            'tenant_ids' => [],
+            'tenant_shortnames' => [],
+            'institution_id' => null,
+            'institution_name_lt' => null,
+            'institution_name_en' => null,
+            'institution_ids' => [],
+
+            'created_at' => $this->created_at?->timestamp,
+            'updated_at' => $this->updated_at?->timestamp,
         ];
+
+        // Add meeting-derived tenant/institution data only when the meeting exists
+        if ($meeting instanceof Meeting) {
+            // Get tenant IDs for filtering with scoped API keys
+            $tenantIds = $meeting->institutions
+                ->pluck('tenant.id')
+                ->filter()
+                ->unique()
+                ->map(fn ($id) => (int) $id)
+                ->values()
+                ->toArray();
+
+            // Get tenant shortnames for faceting/display
+            $tenantShortnames = $meeting->institutions
+                ->pluck('tenant.shortname')
+                ->filter()
+                ->unique()
+                ->values()
+                ->toArray();
+
+            // Get institution info
+            $institution = $meeting->institutions->first();
+
+            $searchableArray = array_merge($searchableArray, [
+                // Tenant filtering (CRITICAL for scoped API keys)
+                'tenant_ids' => $tenantIds,
+                'tenant_shortnames' => $tenantShortnames,
+
+                // Institution info
+                'institution_id' => $institution?->id,
+                'institution_name_lt' => $institution?->getTranslation('name', 'lt'),
+                'institution_name_en' => $institution?->getTranslation('name', 'en'),
+
+                // All institutions (for .own scope filtering)
+                'institution_ids' => $meeting->institutions->pluck('id')->toArray(),
+            ]);
+        }
+
+        return $searchableArray;
     }
 
     /**

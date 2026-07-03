@@ -21,7 +21,7 @@
     </template>
 
     <template #actions>
-      <a v-if="news.permalink" :href="news.permalink" target="_blank" rel="noopener noreferrer">
+      <a v-if="publicUrl" :href="publicUrl" target="_blank" rel="noopener noreferrer">
         <Button size="sm">
           <ExternalLink class="mr-2 size-4" />
           {{ $t('Atidaryti viešąjį puslapį') }}
@@ -47,6 +47,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ExternalLink, Pencil } from 'lucide-vue-next';
@@ -54,6 +55,7 @@ import { ExternalLink, Pencil } from 'lucide-vue-next';
 import DetailLayout from './DetailLayout.vue';
 import DetailRow from './DetailRow.vue';
 import { formatSearchDate } from '../../Utils/searchHitMappers';
+import { resolveTenantSubdomain } from '../../Utils/publicUrl';
 
 import { NewsIcon } from '@/Components/icons';
 import { Badge } from '@/Components/ui/badge';
@@ -63,6 +65,19 @@ import type { NewsSearchResult } from '@/Shared/Search/types';
 const props = defineProps<{
   news: NewsSearchResult;
 }>();
+
+const publicUrl = computed(() => {
+  if (!props.news.permalink) {
+    return undefined;
+  }
+  const lang = props.news.lang ?? 'lt';
+  return route('news', {
+    subdomain: resolveTenantSubdomain(props.news.tenant_id),
+    lang,
+    newsString: lang === 'lt' ? 'naujiena' : 'news',
+    news: props.news.permalink,
+  });
+});
 
 const stripHtml = (html?: string): string => {
   if (!html) return '';

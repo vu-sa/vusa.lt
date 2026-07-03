@@ -10,8 +10,8 @@
         :key="duty.id"
         :href="route('duties.show', duty.id)"
         :class="[
-          'flex items-center gap-3 rounded-md px-2 py-2',
-          'transition-colors hover:bg-accent/50',
+          'flex items-center gap-3 rounded-md border border-transparent px-2 py-2',
+          interactiveCardClass,
         ]"
       >
         <div class="min-w-0 flex-1">
@@ -43,6 +43,7 @@ import { Users, ChevronRight } from 'lucide-vue-next';
 
 import { SectionCard } from '@/Components/ui/section-card';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
+import { interactiveCardClass } from '@/Utils/interactiveCard';
 
 export interface OtherDuty {
   id: string | number;

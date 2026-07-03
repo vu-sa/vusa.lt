@@ -54,8 +54,8 @@
             :key="member.id"
             type="button"
             :class="[
-              'flex w-full items-center gap-3 rounded-md px-2 py-2 text-left',
-              'transition-colors hover:bg-accent/50',
+              'flex w-full items-center gap-3 rounded-md border border-transparent px-2 py-2 text-left',
+              interactiveCardClass,
               'focus:outline-none focus:ring-2 focus:ring-primary/50',
             ]"
             @click="$emit('view-profile', member)"
@@ -164,6 +164,7 @@ import { SectionCard } from '@/Components/ui/section-card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { useInstitutionUrgency } from '@/Composables/useInstitutionUrgency';
+import { interactiveCardClass } from '@/Utils/interactiveCard';
 
 const MEMBER_PREVIEW_LIMIT = 6;
 

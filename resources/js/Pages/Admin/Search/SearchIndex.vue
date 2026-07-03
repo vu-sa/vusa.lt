@@ -1,6 +1,9 @@
 <template>
   <AdminContentPage :title="$t('Paieška')">
     <template #create-button>
+      <!-- Reserved-height wrapper: keeps the action area stable across tabs
+           (empty on "all"/"agenda-items", widest on "duties") so it never jumps. -->
+      <div class="flex min-h-9 items-center justify-end gap-2">
       <Button v-if="activeTab === 'meetings' && can.create.meetings" @click="showMeetingModal = true">
         <Plus class="mr-2 size-4" />
         {{ $t('Naujas posėdis') }}
@@ -60,6 +63,7 @@
             {{ $t('Nauja pareigybė') }}
           </Button>
         </Link>
+      </div>
       </div>
     </template>
 

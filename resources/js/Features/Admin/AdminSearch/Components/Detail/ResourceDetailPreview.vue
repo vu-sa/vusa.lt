@@ -92,17 +92,7 @@
       <h3 class="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
         {{ $t('Atsakingi asmenys') }}
       </h3>
-      <div class="flex flex-wrap items-center gap-1.5">
-        <Avatar
-          v-for="manager in data.managers"
-          :key="manager.id"
-          class="size-8 ring-2 ring-background"
-          :title="manager.name"
-        >
-          <AvatarImage v-if="manager.profile_photo_path" :src="manager.profile_photo_path" :alt="manager.name" />
-          <AvatarFallback class="text-[10px]">{{ initials(manager.name) }}</AvatarFallback>
-        </Avatar>
-      </div>
+      <UsersAvatarGroup :users="data.managers" :max="10" :size="32" clickable />
     </div>
   </DetailLayout>
 </template>
@@ -121,7 +111,7 @@ import { formatSearchDate } from '../../Utils/searchHitMappers';
 import { ResourceIcon } from '@/Components/icons';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
+import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
 import { useApi } from '@/Composables/useApi';
 import type { ResourceSearchResult } from '@/Shared/Search/types';
@@ -144,5 +134,4 @@ const { data, isFetching } = useApi<ResourcePreviewData>(
   { immediate: true, showErrorToast: false },
 );
 
-const initials = (name: string): string => name.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase();
 </script>

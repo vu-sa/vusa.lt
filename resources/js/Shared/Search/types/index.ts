@@ -491,8 +491,12 @@ export interface DutySearchResult {
   institution_name_en?: string;
   type_titles?: string[];
   current_user_names?: string[];
+  /** Index-aligned with current_user_names; enables clickable member links. */
+  current_user_ids?: string[];
   current_users_count?: number;
   previous_user_names?: string[];
+  /** Index-aligned with previous_user_names. */
+  previous_user_ids?: string[];
   created_at?: number;
 }
 
@@ -508,6 +512,11 @@ export interface UserSearchResult {
   tenant_shortname?: string;
   institution_ids?: string[];
   current_duty_names?: string[];
+  /** Index-aligned with current_duty_names; enables clickable duty links. */
+  current_duty_ids?: string[];
+  previous_duty_names?: string[];
+  /** Index-aligned with previous_duty_names. */
+  previous_duty_ids?: string[];
   is_active?: boolean;
   created_at?: number;
 }
