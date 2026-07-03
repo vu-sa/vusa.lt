@@ -7,6 +7,14 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.13 — Problem Registry Improvements (2026-06-12) {#v1-13}
+
+- ⭐ **Unit filter in the problem list** — problems can now be filtered by unit, not just by institutions
+- ⭐ **Quick filters "My unit's problems" and "Problems I created"** — show only your unit's or your own registered problems with one click
+- ✨ **Search in filter lists** — the unit and institution filters now have a search box for quickly finding the right entry
+- ✨ **Explanations in the problem form** — every form field now has an info icon explaining what to enter, and category options show their descriptions
+- 🔧 **Long problem titles** — long titles in the list now wrap to the next line instead of overlapping other table elements
+
 ## v1.12 — Meeting UI Refinement (2026-06-01) {#v1-12}
 
 - ✨ Redesigned meeting view

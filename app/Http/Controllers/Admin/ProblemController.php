@@ -64,10 +64,6 @@ class ProblemController extends AdminController
             $query->whereHas('institutions', fn ($q) => $q->whereIn('institutions.id', $institutionValues));
         }
 
-        if ($request->boolean('show_my_problems')) {
-            $query->where('created_by', auth()->id());
-        }
-
         $problems = $query->paginate($request->input('per_page', 20))->withQueryString();
 
         return $this->inertiaResponse('Admin/Problems/IndexProblem', [

@@ -4,7 +4,6 @@
       <TooltipTrigger as-child>
         <span
           :class="[
-            'block',
             lineClass,
             props.class,
           ]"
@@ -40,11 +39,14 @@ const props = withDefaults(defineProps<{
 const displayText = computed(() => props.text ?? '—');
 const tooltipText = computed(() => props.text ?? undefined);
 
-const lineClass = computed(() => {
-  if (props.lines === 1) {
-    return 'truncate';
-  }
+// Static class map — Tailwind only generates classes it can find as literals in source.
+// `block` is only set for single-line truncation: line-clamp needs its own
+// `display: -webkit-box` and a later `block` utility would override it.
+const lineClasses = {
+  1: 'block truncate',
+  2: 'line-clamp-2 break-words',
+  3: 'line-clamp-3 break-words',
+} as const;
 
-  return `line-clamp-${props.lines}`;
-});
+const lineClass = computed(() => lineClasses[props.lines]);
 </script>
