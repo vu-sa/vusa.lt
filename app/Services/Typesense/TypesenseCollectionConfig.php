@@ -254,16 +254,20 @@ class TypesenseCollectionConfig
     }
 
     /**
-     * Get all collection names (both public and admin, with prefix)
+     * Get all collection names (both public and admin, with prefix).
+     *
+     * Deduplicated: news, pages, calendar and documents are configured in both the
+     * public and the admin set, and callers here address the Typesense collection —
+     * of which there is only one per name.
      *
      * @return array<string>
      */
     public static function getAllCollectionNames(): array
     {
-        return array_merge(
+        return array_values(array_unique(array_merge(
             self::getPublicCollectionNames(),
             self::getAdminCollectionNames()
-        );
+        )));
     }
 
     /**

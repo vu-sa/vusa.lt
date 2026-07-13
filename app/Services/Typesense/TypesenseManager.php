@@ -37,18 +37,45 @@ class TypesenseManager
 
         return [
             'apiKey' => $searchOnlyKey,
-            'nodes' => array_map(function ($node) {
-                // Replace Docker service name with localhost for frontend access
-                $host = $node['host'] === 'typesense' ? 'localhost' : $node['host'];
-
-                return [
-                    'host' => $host,
-                    'port' => (int) $node['port'],
-                    'protocol' => $node['protocol'],
-                ];
-            }, $nodes),
+            'nodes' => self::getBrowserNodes($nodes),
             'collections' => $collections,
         ];
+    }
+
+    /**
+     * The nodes the browser should talk to.
+     *
+     * These are not the nodes the server uses. The server should reach Typesense
+     * internally; only the browser needs the publicly routable address. When no public
+     * node is configured we fall back to the client nodes, so a deployment that has not
+     * split the two keeps working.
+     *
+     * @param  array<int, array<string, mixed>>  $nodes
+     * @return array<int, array{host: string, port: int, protocol: string}>
+     */
+    private static function getBrowserNodes(array $nodes): array
+    {
+        $publicNode = Config::get('scout.typesense.public-node', []);
+
+        if (! empty($publicNode['host'])) {
+            return [[
+                'host' => $publicNode['host'],
+                'port' => (int) ($publicNode['port'] ?: 443),
+                'protocol' => $publicNode['protocol'] ?: 'https',
+            ]];
+        }
+
+        return array_map(function ($node) {
+            // The Docker service name only resolves inside the network, so it is
+            // useless to a browser — swap it for the host-published address.
+            $host = $node['host'] === 'typesense' ? 'localhost' : $node['host'];
+
+            return [
+                'host' => $host,
+                'port' => (int) $node['port'],
+                'protocol' => $node['protocol'],
+            ];
+        }, $nodes);
     }
 
     /**

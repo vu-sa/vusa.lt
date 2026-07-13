@@ -23,7 +23,7 @@ class ReindexSearchCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): int
     {
         $models = $this->argument('model')
             ? ["App\\Models\\{$this->argument('model')}"]
@@ -32,7 +32,7 @@ class ReindexSearchCommand extends Command
         if (empty($models)) {
             $this->warn('No Typesense-enabled models found.');
 
-            return;
+            return self::SUCCESS;
         }
 
         if ($this->option('dry-run')) {
@@ -42,10 +42,21 @@ class ReindexSearchCommand extends Command
                 $this->line("  - {$model} (using {$engine})");
             }
 
-            return;
+            return self::SUCCESS;
         }
 
         $this->info('🔍 Starting search index reindexing...');
+
+        // Import synchronously. With scout.queue on (the default), scout:import only
+        // dispatches MakeSearchable jobs, so the collection is not recreated until a
+        // worker picks them up — and the search config below would then be applied to
+        // collections that do not exist yet.
+        if (config('scout.queue')) {
+            $this->line('  (importing synchronously — scout.queue is bypassed for this command)');
+            config(['scout.queue' => false]);
+        }
+
+        $failed = 0;
 
         foreach ($models as $model) {
             $engine = $this->getModelSearchEngine($model);
@@ -60,6 +71,7 @@ class ReindexSearchCommand extends Command
 
                 $this->info("✅ {$model} reindexed successfully");
             } catch (\Exception $e) {
+                $failed++;
                 $this->error("❌ Failed to reindex {$model}: ".$e->getMessage());
             }
         }
@@ -67,9 +79,18 @@ class ReindexSearchCommand extends Command
         // Recreating collections drops their synonym/curation set attachments,
         // so re-apply the search config afterwards.
         $this->info('Re-applying Typesense search config (synonyms, curation)...');
-        Artisan::call('typesense:apply-search-config', [], $this->getOutput());
+        $configExit = Artisan::call('typesense:apply-search-config', [], $this->getOutput());
+
+        if ($failed > 0 || $configExit !== self::SUCCESS) {
+            $this->newLine();
+            $this->error("❌ Reindexing finished with problems ({$failed} model(s) failed).");
+
+            return self::FAILURE;
+        }
 
         $this->info('🎉 Reindexing completed!');
+
+        return self::SUCCESS;
     }
 
     /**
@@ -106,15 +127,14 @@ class ReindexSearchCommand extends Command
         // Import will recreate the collection with the current schema
         Artisan::call('scout:import', ['model' => $model]);
 
-        // Verify collection was created
-        try {
-            $client = new Client(config('scout.typesense.client-settings'));
-            $collection = $client->collections[$collectionName]->retrieve();
-            $docCount = $collection['num_documents'] ?? 0;
-            $this->line("  - Recreated collection with fresh schema and data ({$docCount} documents)");
-        } catch (\Exception $e) {
-            $this->line('  - Recreated collection with fresh schema and data');
-        }
+        // Verify the collection really came back. Reporting success here without
+        // checking is how a silently-missing collection used to reach the attach step
+        // and fail there with a much less obvious error.
+        $client = new Client(config('scout.typesense.client-settings'));
+        $collection = $client->collections[$collectionName]->retrieve();
+        $docCount = $collection['num_documents'] ?? 0;
+
+        $this->line("  - Recreated collection with fresh schema and data ({$docCount} documents)");
     }
 
     /**

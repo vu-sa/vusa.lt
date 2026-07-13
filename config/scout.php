@@ -154,6 +154,26 @@ return [
             'num_retries' => env('TYPESENSE_NUM_RETRIES', 3),
             'retry_interval_seconds' => env('TYPESENSE_RETRY_INTERVAL_SECONDS', 1),
         ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | Public (browser) node
+        |--------------------------------------------------------------------------
+        |
+        | The browser has to reach Typesense over the public internet, but the server
+        | does not — and should not. Indexing through a public, rate-limited reverse
+        | proxy is slow, gets throttled, and sends the admin API key out and back.
+        |
+        | Set TYPESENSE_HOST to the internal address (127.0.0.1) and these to the
+        | public one. When unset, the frontend falls back to the client node, so
+        | existing deployments keep working unchanged.
+        |
+        */
+        'public-node' => [
+            'host' => env('TYPESENSE_PUBLIC_HOST'),
+            'port' => env('TYPESENSE_PUBLIC_PORT'),
+            'protocol' => env('TYPESENSE_PUBLIC_PROTOCOL'),
+        ],
         /*
         |--------------------------------------------------------------------------
         | Model-specific Typesense Configurations
