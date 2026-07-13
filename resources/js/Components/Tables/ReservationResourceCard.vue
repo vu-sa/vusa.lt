@@ -330,6 +330,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/h
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { RESERVATION_DATE_TIME_FORMAT } from '@/Constants/DateTimeFormats';
 import { formatStaticTime } from '@/Utils/IntlTime';
+import { isPivotOverdue } from '@/Utils/ReservationStatus';
 
 // Icons
 import IFluentAdd24Filled from '~icons/fluent/add-24-filled';
@@ -430,8 +431,7 @@ const formatDate = (dateString?: string | null) => {
 
 const isOverdue = (resource: App.Entities.Resource) => {
   if (!resource.pivot?.end_time) return false;
-  if (!['lent'].includes(resource.pivot?.state ?? '')) return false;
-  return new Date(resource.pivot.end_time) < new Date();
+  return isPivotOverdue(resource.pivot);
 };
 
 const getCardClasses = (resource: App.Entities.Resource) => {

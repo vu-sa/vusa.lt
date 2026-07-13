@@ -711,34 +711,22 @@ describe('reservations dashboard', function () {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowReservations')
-                ->has('reservations')
-                ->has('resources')
-                ->has('tenants')
+                ->has('myReservations')
+                ->has('administeredReservations')
+                ->has('managedTenants')
             );
     });
 
-    test('reservations dashboard includes resource statistics', function () {
+    test('reservations dashboard grants no resource managership to a role that lacks it', function () {
+        // A Communication Coordinator holds a duty in the tenant but no resources.update.padalinys,
+        // so they administer nothing here. See ReservationsDashboardTest for the manager's view.
         asUser($this->admin)
             ->get(route('dashboard.reservations'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowReservations')
-                ->has('resources.active')
-                ->has('resources.sumOfCapacity')
-                ->where('resources', function ($resources) {
-                    return isset($resources['active']) && is_numeric($resources['active']) &&
-                           isset($resources['sumOfCapacity']) && is_numeric($resources['sumOfCapacity']);
-                })
-            );
-    });
-
-    test('reservations dashboard handles tenant filtering', function () {
-        asUser($this->admin)
-            ->get(route('dashboard.reservations', ['tenant_id' => $this->tenant->id]))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowReservations')
-                ->has('providedTenant')
+                ->has('managedTenants', 0)
+                ->has('administeredReservations', 0)
             );
     });
 });

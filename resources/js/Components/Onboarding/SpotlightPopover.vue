@@ -1,5 +1,6 @@
 <template>
   <div
+    ref="triggerRef"
     class="relative inline-block cursor-pointer"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
@@ -17,7 +18,56 @@
       </span>
     </div>
 
+    <!--
+      When `float` is set the panel is teleported to the body and positioned from the trigger's
+      bounding rect. An ancestor with `overflow: auto` (the sidebar's scroll container) clips an
+      absolutely positioned panel, which would otherwise render offscreen and look like nothing
+      happened on hover.
+    -->
+    <Teleport v-if="float" to="body">
+      <Transition
+        enter-active-class="transition-all duration-300 ease-out"
+        enter-from-class="opacity-0 scale-95"
+        enter-to-class="opacity-100 scale-100"
+        leave-active-class="transition-all duration-200 ease-in"
+        leave-from-class="opacity-100 scale-100"
+        leave-to-class="opacity-0 scale-95"
+      >
+        <div
+          v-if="isOpen"
+          class="fixed z-50 w-80 max-w-[calc(100vw-2rem)]"
+          :style="floatingStyle"
+          @mouseenter="handleMouseEnter"
+          @mouseleave="handleMouseLeave"
+          @click.stop
+        >
+          <div class="space-y-3 rounded-lg border bg-popover p-4 shadow-lg">
+            <div class="flex items-start gap-3">
+              <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                <Sparkles class="h-4 w-4 text-primary" />
+              </div>
+              <div class="space-y-1.5">
+                <h4 class="text-base font-semibold leading-tight">
+                  {{ title }}
+                </h4>
+                <p class="text-sm leading-relaxed text-muted-foreground">
+                  {{ description }}
+                </p>
+              </div>
+            </div>
+
+            <div class="flex justify-end">
+              <Button size="sm" type="button" @click.stop="handleDismiss">
+                {{ computedDismissText }}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
     <Transition
+      v-else
       enter-active-class="transition-all duration-300 ease-out"
       enter-from-class="opacity-0 scale-95"
       enter-to-class="opacity-100 scale-100"
@@ -108,6 +158,12 @@ interface Props {
    * Delay before hiding tooltip (ms)
    */
   hideDelay?: number;
+
+  /**
+   * Teleport the panel to the body and position it from the trigger's rect. Required when an
+   * ancestor scroll container (`overflow: auto`) would otherwise clip it — e.g. the sidebar nav.
+   */
+  float?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -117,6 +173,7 @@ const props = withDefaults(defineProps<Props>(), {
   dismissText: undefined,
   showDelay: 150,
   hideDelay: 400,
+  float: false,
 });
 
 const emit = defineEmits<{
@@ -124,8 +181,34 @@ const emit = defineEmits<{
 }>();
 
 const isOpen = ref(false);
+const triggerRef = ref<HTMLElement | null>(null);
+const floatingStyle = ref<Record<string, string>>({});
 let showTimeout: ReturnType<typeof setTimeout> | null = null;
 let hideTimeout: ReturnType<typeof setTimeout> | null = null;
+
+const PANEL_WIDTH = 320;
+const GAP = 12;
+
+/** Anchor the teleported panel to the trigger, keeping it inside the viewport. */
+function positionFloatingPanel() {
+  const trigger = triggerRef.value;
+
+  if (!trigger) {
+    return;
+  }
+
+  const rect = trigger.getBoundingClientRect();
+  const overflowsRight = rect.right + GAP + PANEL_WIDTH > window.innerWidth;
+
+  const left = overflowsRight
+    ? Math.max(GAP, rect.left - GAP - PANEL_WIDTH)
+    : rect.right + GAP;
+
+  floatingStyle.value = {
+    left: `${left}px`,
+    top: `${Math.max(GAP, Math.min(rect.top, window.innerHeight - 200))}px`,
+  };
+}
 
 const computedDismissText = computed(() => props.dismissText ?? $t('tutorials.done'));
 
@@ -157,6 +240,9 @@ function handleMouseEnter() {
   }
 
   showTimeout = setTimeout(() => {
+    if (props.float) {
+      positionFloatingPanel();
+    }
     isOpen.value = true;
   }, props.showDelay);
 }

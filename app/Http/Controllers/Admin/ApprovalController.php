@@ -126,6 +126,57 @@ class ApprovalController extends AdminController
     }
 
     /**
+     * Fully resolve items — advance them straight to their final approved state.
+     *
+     * Housekeeping for stale requests: closing out something nobody ever collected should not mean
+     * clicking approve, hand over and mark returned in sequence. Each intermediate transition is
+     * still recorded, so the history shows what happened.
+     */
+    public function resolve(Request $request)
+    {
+        $validated = $request->validate([
+            'approvable_type' => ['required', new EnumRule(ModelEnum::class)],
+            'approvable_ids' => 'required|array|min:1',
+            'approvable_ids.*' => 'required|string',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        $user = auth()->user();
+        $notes = $validated['notes'] ?? null;
+
+        $resolved = 0;
+        $errors = [];
+
+        foreach ($validated['approvable_ids'] as $id) {
+            $approvable = $this->resolveApprovable($validated['approvable_type'], $id);
+
+            if (! $approvable) {
+                continue;
+            }
+
+            try {
+                if ($this->approvalService->fastForward($approvable, $user, $notes)->isNotEmpty()) {
+                    $resolved++;
+                }
+            } catch (\InvalidArgumentException $e) {
+                $errors[] = $e->getMessage();
+            }
+        }
+
+        if ($resolved === 0) {
+            return back()->with('error', $errors[0] ?? __('Nepavyko užbaigti nė vieno elemento.'));
+        }
+
+        $message = __(':count elementų užbaigta.', ['count' => $resolved]);
+
+        if (! empty($errors)) {
+            $message .= ' '.__(':skipped praleista dėl klaidų.', ['skipped' => count($errors)]);
+        }
+
+        return back()->with('success', $message);
+    }
+
+    /**
      * Resolve the approvable model from type and ID.
      */
     protected function resolveApprovable(string $type, string $id)

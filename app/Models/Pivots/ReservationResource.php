@@ -88,6 +88,7 @@ class ReservationResource extends Pivot implements Approvable
             'state' => ReservationResourceState::class,
             'start_time' => 'datetime',
             'end_time' => 'datetime',
+            'returned_at' => 'datetime',
         ];
     }
 
@@ -146,6 +147,12 @@ class ReservationResource extends Pivot implements Approvable
             ApprovalDecision::Rejected => $this->state->handleReject(),
             ApprovalDecision::Cancelled => $this->state->handleCancel(),
         };
+
+        // Stamp the return time so "recently returned" can be reported without
+        // leaning on updated_at, which any later write would move.
+        if ($this->state instanceof Returned && $this->returned_at === null) {
+            $this->forceFill(['returned_at' => now()])->save();
+        }
     }
 
     /**

@@ -8,6 +8,8 @@ return [
         'returned' => 'grąžinta',
         'rejected' => 'atmesta',
         'cancelled' => 'atšaukta',
+        // Display-only: a lent resource whose return time has passed. Not a real state.
+        'overdue' => 'vėluojama',
     ],
     'decision' => [
         'approve' => 'patvirtinti',

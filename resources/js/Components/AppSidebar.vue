@@ -358,6 +358,14 @@ const { analyticsAllowed, setAnalytics } = useCookieConsent();
 // pinned pages and keyboard shortcuts. Dismisses once the menu is opened.
 const settingsSpotlight = useFeatureSpotlight('sidebar-settings-v1', { position: 'top-right' });
 
+// The reservations page is now a console: review requests, approve, hand over and mark returned
+// without opening each reservation. Dismisses as soon as the page is opened.
+const reservationsSpotlight = useFeatureSpotlight('reservations-dashboard-v1', {
+  title: $t('Rezervacijos dabar tvarkomos vienoje vietoje'),
+  description: $t('Peržiūrėk laukiančias užklausas, tvirtink, išduok ir žymėk grąžintus daiktus tiesiai iš sąrašo — nebereikia atidaryti kiekvienos rezervacijos atskirai.'),
+  position: 'right',
+});
+
 // "?" opens the keyboard-shortcuts cheatsheet, unless the user is typing.
 useEventListener('keydown', (event: KeyboardEvent) => {
   if (event.key !== '?' || event.metaKey || event.ctrlKey || event.altKey) {
@@ -440,6 +448,13 @@ const navMainItems = computed(() => {
     isActive: route().current('dashboard.reservations*')
       || route().current('reservations.create')
       || route().current('reservations.show'),
+    spotlight: {
+      // title/description are plain strings on the composable, not refs.
+      title: reservationsSpotlight.title,
+      description: reservationsSpotlight.description,
+      isDismissed: reservationsSpotlight.isDismissed.value,
+      dismiss: reservationsSpotlight.dismiss,
+    },
   });
 
   // Settings/Admin (Administravimas) - only show if user can access administration

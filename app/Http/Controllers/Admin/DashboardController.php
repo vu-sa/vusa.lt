@@ -13,6 +13,7 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\News;
 use App\Models\Page;
+use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\Tenant;
 use App\Models\User;
@@ -23,6 +24,7 @@ use App\Settings\AtstovavimasSettings;
 use App\Settings\MeetingSettings;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
@@ -394,52 +396,112 @@ class DashboardController extends AdminController
 
     public function reservations()
     {
-        $selectedTenant = request()->input('tenant_id');
+        $user = User::query()->find(Auth::id()) ?? abort(404);
 
-        $user = User::find(Auth::id());
+        $this->authorizer = $this->authorizer->forUser($user);
 
-        $reservations = $user->reservations->load('resources')->append('isCompleted');
+        /**
+         * Resolve the tenants whose resources this user manages once.
+         * ReservationResource::canBeApprovedBy() applies the same rule per pivot, which would
+         * re-resolve the authorizer — and query the reservation's users — for every single row.
+         * getTenants() is relative to the last checked permission, hence the explicit check().
+         */
+        $managesResources = $this->authorizer->check(config('permission.resource_managership_indicating_permission'));
 
-        // Leave only tenants that are not 'pkp'
-        $tenants = collect(GetTenantsForUpserts::execute('reservations.update.padalinys', $this->authorizer));
+        /**
+         * The check result must gate getTenants(): with no permissable duties it falls back to
+         * *all* of the user's duties, which would hand resource-management rights to someone who
+         * merely holds a duty in the tenant. canBeApprovedBy() gates it the same way.
+         */
+        $managedTenantIds = $managesResources
+            ? $this->authorizer->getTenants()->pluck('id')
+            : collect();
 
-        // Check if selected tenant is in the list of tenants
-        if ($selectedTenant) {
-            $selectedTenant = $tenants->firstWhere('id', $selectedTenant);
-        } else {
-            // Check if there's tenant with type 'pagrindinis'
-            $selectedTenant = $tenants->firstWhere('type', 'pagrindinis');
-        }
+        $eagerLoads = [
+            'resources.tenant:id,shortname',
+            'users:id,name,email,profile_photo_path',
+        ];
 
-        // If not, select first tenant
-        if (! $selectedTenant) {
-            $selectedTenant = $tenants->first();
-        }
+        $myReservations = $user->reservations()->with($eagerLoads)->get();
 
-        if (! $selectedTenant) {
-            $providedTenant = null;
-            $tenantResourceReservations = new Collection;
-        } else {
-            $providedTenant = Tenant::query()->where('id', $selectedTenant['id'])->with('reservations.resources', 'resources')->first();
-
-            $tenantResourceReservations = $providedTenant->resources->load('reservations.users:id,name,email,profile_photo_path')->pluck('reservations')->flatten()->unique('id')->values();
-
-            $tenantResourceReservations = new Collection($tenantResourceReservations);
-        }
+        $administeredReservations = Reservation::query()
+            ->whereHas('resources', fn ($query) => $query->whereIn('resources.tenant_id', $managedTenantIds))
+            ->with($eagerLoads)
+            ->get();
 
         return $this->inertiaResponse('Admin/Dashboard/ShowReservations', [
-            'reservations' => $reservations,
-            'resources' => [
-                'active' => Resource::where('is_reservable', true)->count(),
-                'sumOfCapacity' => Resource::where('is_reservable', true)->sum('capacity'),
-            ],
-            'tenants' => $tenants,
-            'providedTenant' => $providedTenant ? [
-                ...$providedTenant->toArray(),
-                'reservations' => $providedTenant->reservations->load('resources.tenant', 'users:id,name,email,profile_photo_path')->append('isCompleted')->unique('id')->values(),
-                'activeReservations' => $tenantResourceReservations->append('isCompleted'),
-            ] : null,
+            'myReservations' => $this->serializeReservations($myReservations, $managedTenantIds, $user),
+            'administeredReservations' => $this->serializeReservations($administeredReservations, $managedTenantIds, $user),
+            // KPI counts are derived on the client, from whatever the table is currently showing:
+            // the tiles filter the table, so their numbers have to agree with the rows.
+            'managedTenants' => Tenant::query()
+                ->whereIn('id', $managedTenantIds)
+                ->orderBy('shortname')
+                ->get(['id', 'shortname']),
         ]);
+    }
+
+    /**
+     * Flatten reservations for the dashboard table.
+     *
+     * Each resource carries its pivot plus two permission flags that mirror the two branches of
+     * ReservationResource::canBeApprovedBy(), so the table never offers an action the server
+     * would reject. Pivot fields are listed explicitly: the pivot model declares
+     * $with = ['comments', 'approvals'], which has no business in a list payload.
+     *
+     * @param  SupportCollection<int, Reservation>  $reservations
+     * @param  SupportCollection<int, string>  $managedTenantIds
+     * @return array<int, array<string, mixed>>
+     */
+    private function serializeReservations(SupportCollection $reservations, SupportCollection $managedTenantIds, User $user): array
+    {
+        return $reservations->map(function (Reservation $reservation) use ($managedTenantIds, $user) {
+            $isParticipant = $reservation->users->contains('id', $user->id);
+
+            return [
+                'id' => $reservation->id,
+                'name' => $reservation->name,
+                'description' => $reservation->description,
+                'start_time' => $reservation->start_time,
+                'end_time' => $reservation->end_time,
+                'created_at' => $reservation->created_at,
+                'users' => $reservation->users->map(fn (User $manager) => [
+                    'id' => $manager->id,
+                    'name' => $manager->name,
+                    'email' => $manager->email,
+                    'profile_photo_path' => $manager->profile_photo_path,
+                ])->values(),
+                'resources' => $reservation->resources->map(function (Resource $resource) use ($managedTenantIds, $isParticipant) {
+                    $pivot = $resource->pivot;
+                    $state = $pivot->state->getValue();
+
+                    return [
+                        'id' => $resource->id,
+                        'name' => $resource->name,
+                        'tenant' => $resource->tenant ? [
+                            'id' => $resource->tenant->id,
+                            'shortname' => $resource->tenant->shortname,
+                        ] : null,
+                        'pivot' => [
+                            'id' => $pivot->id,
+                            'reservation_id' => $pivot->reservation_id,
+                            'resource_id' => $pivot->resource_id,
+                            'start_time' => $pivot->start_time,
+                            'end_time' => $pivot->end_time,
+                            'returned_at' => $pivot->returned_at,
+                            // Fallback for returned_at, which is only stamped on items returned
+                            // since it started being written.
+                            'updated_at' => $pivot->updated_at,
+                            'quantity' => $pivot->quantity,
+                            'state' => $state,
+                            'state_properties' => $pivot->state_properties,
+                            'approvable' => $managedTenantIds->contains($resource->tenant_id),
+                            'cancellable' => $isParticipant && in_array($state, ['created', 'reserved'], true),
+                        ],
+                    ];
+                })->values(),
+            ];
+        })->values()->all();
     }
 
     public function userSettings()

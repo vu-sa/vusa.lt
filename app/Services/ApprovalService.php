@@ -78,6 +78,44 @@ class ApprovalService
     }
 
     /**
+     * Drive an approvable all the way to its final approved state in one action.
+     *
+     * Approving advances a reservation resource one step along created → reserved → lent →
+     * returned. Housekeeping — closing out a stale request nobody ever picked up — would otherwise
+     * mean clicking through every step. This fast-forwards the chain, but does not bypass it: each
+     * transition still goes through approve(), so authorization, state validation, the Approval
+     * audit trail and the notifications all still happen.
+     *
+     * @param  ApprovableModel  $approvable
+     * @return Collection<int, Approval> The approvals recorded, in order. Empty if nothing moved.
+     *
+     * @throws \InvalidArgumentException If the user may not approve the item.
+     */
+    public function fastForward(
+        Model&Approvable $approvable,
+        User $user,
+        ?string $notes = null,
+        int $maxSteps = 5
+    ): Collection {
+        $approvals = collect();
+
+        // Bounded: the chain is 3 transitions long, the cap only guards against a future cycle.
+        for ($i = 0; $i < $maxSteps; $i++) {
+            if (! $approvable->isDecisionAllowed(ApprovalDecision::Approved)) {
+                break;
+            }
+
+            $approvals->push(
+                $this->approve($approvable, $user, ApprovalDecision::Approved, $notes)
+            );
+
+            $approvable->refresh();
+        }
+
+        return $approvals;
+    }
+
+    /**
      * Bulk approve multiple models.
      *
      * @param  Collection<int, ApprovableModel>  $approvables

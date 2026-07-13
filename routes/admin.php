@@ -147,6 +147,7 @@ Route::resource('reservationResources', ReservationResourceController::class)->e
 // Approval routes
 Route::post('approvals', [ApprovalController::class, 'store'])->name('approvals.store');
 Route::post('approvals/bulk', [ApprovalController::class, 'bulkStore'])->name('approvals.bulkStore');
+Route::post('approvals/resolve', [ApprovalController::class, 'resolve'])->name('approvals.resolve');
 Route::get('approvals/history', [ApprovalController::class, 'history'])->name('approvals.history');
 
 // File management routes
