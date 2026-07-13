@@ -52,10 +52,12 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ExternalLink, Pencil } from 'lucide-vue-next';
 
-import DetailLayout from './DetailLayout.vue';
-import DetailRow from './DetailRow.vue';
 import { formatSearchDate } from '../../Utils/searchHitMappers';
 import { resolveTenantSubdomain } from '../../Utils/publicUrl';
+import { stripHtml } from '../../Utils/html';
+
+import DetailRow from './DetailRow.vue';
+import DetailLayout from './DetailLayout.vue';
 
 import { NewsIcon } from '@/Components/icons';
 import { Badge } from '@/Components/ui/badge';
@@ -78,11 +80,4 @@ const publicUrl = computed(() => {
     news: props.news.permalink,
   });
 });
-
-const stripHtml = (html?: string): string => {
-  if (!html) return '';
-  const tmp = document.createElement('div');
-  tmp.innerHTML = html;
-  return tmp.textContent || tmp.innerText || '';
-};
 </script>

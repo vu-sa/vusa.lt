@@ -1,20 +1,21 @@
 <template>
   <SearchSelectView
-    :controller="controller"
-    :map-hit="mapHit"
-    :multiple="multiple"
-    :selected-ids="selectedIds"
-    :disabled-ids="disabledIds"
-    :pinned-hits="pinnedHits"
+    :controller
+    :map-hit
+    :multiple
+    :selected-ids
+    :disabled-ids
+    :pinned-hits
     :empty-message="$t('Išteklių nerasta')"
     :search-placeholder="$t('Ieškoti išteklių pagal pavadinimą, vietą...')"
     @toggle="$emit('toggle', $event)"
   >
     <template #detail="{ hit }">
-      <ResourceSelectDetail
+      <ResourceDetail
         v-if="hit"
         :resource="hit.raw as ResourceSearchResult"
         :availability="availability.get(hit.recordId)"
+        show-availability-box
       />
     </template>
   </SearchSelectView>
@@ -24,11 +25,13 @@
 import { computed, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import SearchSelectView from './SearchSelectView.vue';
-import ResourceSelectDetail from './ResourceSelectDetail.vue';
+import ResourceDetail from '../Detail/ResourceDetail.vue';
 import { useAdminCollectionSearch } from '../../Composables/useAdminCollectionSearch';
 import { useResourceAvailability, type DateTimeRange } from '../../Composables/useResourceAvailability';
 import { normalizeHit, type NormalizedSearchHit } from '../../Utils/searchHitMappers';
+
+import SearchSelectView from './SearchSelectView.vue';
+
 import type { ResourceSearchResult } from '@/Shared/Search/types';
 
 const props = defineProps<{

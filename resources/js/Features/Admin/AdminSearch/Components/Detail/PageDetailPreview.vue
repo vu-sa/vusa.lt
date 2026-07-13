@@ -49,9 +49,11 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ExternalLink, Pencil } from 'lucide-vue-next';
 
+import { resolveTenantSubdomain } from '../../Utils/publicUrl';
+import { stripHtml } from '../../Utils/html';
+
 import DetailLayout from './DetailLayout.vue';
 import DetailRow from './DetailRow.vue';
-import { resolveTenantSubdomain } from '../../Utils/publicUrl';
 
 import { PageIcon } from '@/Components/icons';
 import { Badge } from '@/Components/ui/badge';
@@ -73,11 +75,4 @@ const publicUrl = computed(() => {
     permalink: props.page.permalink,
   });
 });
-
-const stripHtml = (html?: string): string => {
-  if (!html) return '';
-  const tmp = document.createElement('div');
-  tmp.innerHTML = html;
-  return tmp.textContent || tmp.innerText || '';
-};
 </script>

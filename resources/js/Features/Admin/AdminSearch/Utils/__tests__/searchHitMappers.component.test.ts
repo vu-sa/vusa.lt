@@ -1,14 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
-import type { MultiSearchResults } from '@/Shared/Search/types';
-import { createEmptyMultiSearchResults } from '@/Shared/Search/utils/createEmptyMultiSearchResults';
 import {
   adminCollectionToKey,
   collectAllTabHits,
   COLLECTION_META,
   formatSearchDate,
+  formatSearchDateTime,
   normalizeHit,
 } from '../searchHitMappers';
+
+import type { MultiSearchResults } from '@/Shared/Search/types';
+import { createEmptyMultiSearchResults } from '@/Shared/Search/utils/createEmptyMultiSearchResults';
 
 describe('adminCollectionToKey', () => {
   it('maps snake_case agenda_items to the camelCase result key', () => {
@@ -30,6 +32,19 @@ describe('formatSearchDate', () => {
 
   it('formats a unix (seconds) timestamp', () => {
     expect(typeof formatSearchDate(1_700_000_000)).toBe('string');
+  });
+});
+
+describe('formatSearchDateTime', () => {
+  it('returns undefined for missing timestamps', () => {
+    expect(formatSearchDateTime(undefined)).toBeUndefined();
+    expect(formatSearchDateTime(0)).toBeUndefined();
+  });
+
+  it('formats a unix (seconds) timestamp with time', () => {
+    const formatted = formatSearchDateTime(1_700_000_000);
+    expect(typeof formatted).toBe('string');
+    expect(formatted).toContain(':');
   });
 });
 

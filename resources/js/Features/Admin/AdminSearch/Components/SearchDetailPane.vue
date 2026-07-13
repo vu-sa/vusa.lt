@@ -5,8 +5,12 @@
       <div class="mb-4 flex size-12 items-center justify-center rounded-full bg-muted/50">
         <MousePointerClick class="size-6 text-muted-foreground/50" />
       </div>
-      <p class="text-sm font-medium text-foreground">{{ $t('Pasirinkite rezultatą') }}</p>
-      <p class="mt-1 text-xs text-muted-foreground">{{ $t('Peržiūra bus rodoma čia') }}</p>
+      <p class="text-sm font-medium text-foreground">
+        {{ $t('Pasirinkite rezultatą') }}
+      </p>
+      <p class="mt-1 text-xs text-muted-foreground">
+        {{ $t('Peržiūra bus rodoma čia') }}
+      </p>
     </div>
 
     <!-- Rich previews -->
@@ -25,10 +29,14 @@
       :key="hit.id"
       :institution="hit.raw as InstitutionSearchResult"
     />
-    <ResourceDetailPreview
+    <ResourceDetail
       v-else-if="hit.collection === 'resources'"
       :key="hit.id"
       :resource="hit.raw as ResourceSearchResult"
+      show-upcoming-reservations
+      show-managers
+      allow-image-lightbox
+      show-actions
     />
     <DutyDetailPreview
       v-else-if="hit.collection === 'duties'"
@@ -63,7 +71,7 @@
     />
 
     <!-- Fallback for collections without a dedicated pane -->
-    <GenericDetailPreview v-else :key="hit.id" :hit="hit" />
+    <GenericDetailPreview v-else :key="hit.id" :hit />
   </div>
 </template>
 
@@ -71,10 +79,12 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { MousePointerClick } from 'lucide-vue-next';
 
+import type { NormalizedSearchHit } from '../Utils/searchHitMappers';
+
 import MeetingDetailPreview from './Detail/MeetingDetailPreview.vue';
 import AgendaItemDetailPreview from './Detail/AgendaItemDetailPreview.vue';
 import InstitutionDetailPreview from './Detail/InstitutionDetailPreview.vue';
-import ResourceDetailPreview from './Detail/ResourceDetailPreview.vue';
+import ResourceDetail from './Detail/ResourceDetail.vue';
 import DutyDetailPreview from './Detail/DutyDetailPreview.vue';
 import DocumentDetailPreview from './Detail/DocumentDetailPreview.vue';
 import NewsDetailPreview from './Detail/NewsDetailPreview.vue';
@@ -82,7 +92,6 @@ import PageDetailPreview from './Detail/PageDetailPreview.vue';
 import CalendarDetailPreview from './Detail/CalendarDetailPreview.vue';
 import UserDetailPreview from './Detail/UserDetailPreview.vue';
 import GenericDetailPreview from './Detail/GenericDetailPreview.vue';
-import type { NormalizedSearchHit } from '../Utils/searchHitMappers';
 
 import type {
   AgendaItemSearchResult,

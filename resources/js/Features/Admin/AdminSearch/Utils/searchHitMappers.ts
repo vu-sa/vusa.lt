@@ -10,6 +10,11 @@
 import type { Component } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import type { AdminCollection } from '../Types/AdminSearchTypes';
+import { getFacetValueLabel } from '../Config/collectionFacetConfig';
+
+import { completionTone, voteTone, type BadgeTone } from './searchBadges';
+
 import {
   AgendaItemIcon,
   CalendarIcon,
@@ -35,9 +40,6 @@ import type {
   ResourceSearchResult,
   UserSearchResult,
 } from '@/Shared/Search/types';
-import type { AdminCollection } from '../Types/AdminSearchTypes';
-import { completionTone, voteTone, type BadgeTone } from './searchBadges';
-import { getFacetValueLabel } from '../Config/collectionFacetConfig';
 
 /** Canonical collection keys, matching MultiSearchResults result arrays. */
 export type SearchCollectionKey
@@ -255,6 +257,20 @@ export function formatSearchDate(timestamp?: number): string | undefined {
   });
 }
 
+/** Format a Unix (seconds) timestamp as a localized date + time, or undefined. */
+export function formatSearchDateTime(timestamp?: number): string | undefined {
+  if (!timestamp) {
+    return undefined;
+  }
+  return new Date(timestamp * 1000).toLocaleDateString('lt-LT', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
 type Mapper<T> = (doc: T, ctx?: MapperContext) => Omit<NormalizedSearchHit, 'id' | 'collection' | 'icon' | 'raw'>;
 
 /**
@@ -283,6 +299,9 @@ function computeIsRelated(institutionIds?: string[], directIds?: string[]): bool
   return !hasDirectMatch;
 }
 
+// The union of all search-result types makes a single typed Mapper unwieldy here;
+// each concrete mapper below types its own parameter.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
   meetings: (m: MeetingSearchResult, ctx?: MapperContext) => ({
     recordId: String(m.id),
