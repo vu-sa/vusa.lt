@@ -21,7 +21,7 @@ return [
 
     'allowed_origins' => ['https://www.vusa.test'],
 
-    'allowed_origins_patterns' => ['#^https://([a-z0-9-]+\.)?vusa\.lt$#'],
+    'allowed_origins_patterns' => ['#^https://([a-z0-9-]+\.)*vusa\.lt$#'],
 
     'allowed_headers' => ['*'],
 
