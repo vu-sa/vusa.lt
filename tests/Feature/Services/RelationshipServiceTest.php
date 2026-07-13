@@ -1117,7 +1117,7 @@ describe('getAllRelatedInstitutionsEnriched', function () {
 
         $edges = RelationshipService::getAllRelatedInstitutionsEnriched();
 
-        $edge = $edges->firstWhere('source', $this->sourceInstitution->id);
+        $edge = collect($edges)->firstWhere('source', $this->sourceInstitution->id);
 
         expect($edge)->not->toBeNull();
         expect($edge['target'])->toBe($this->relatedInstitution->id);
@@ -1132,7 +1132,7 @@ describe('getAllRelatedInstitutionsEnriched', function () {
         // does not break the merge with array-shaped edges.
         $edges = RelationshipService::getAllRelatedInstitutionsEnriched();
 
-        expect($edges)->toBeInstanceOf(Illuminate\Support\Collection::class);
+        expect(collect($edges))->toBeInstanceOf(Illuminate\Support\Collection::class);
     });
 
     test('includes within-type sibling edges flagged as siblings', function () {
@@ -1146,7 +1146,7 @@ describe('getAllRelatedInstitutionsEnriched', function () {
 
         $edges = RelationshipService::getAllRelatedInstitutionsEnriched();
 
-        $sibling = $edges->firstWhere('type', 'within-type');
+        $sibling = collect($edges)->firstWhere('type', 'within-type');
 
         expect($sibling)->not->toBeNull();
         expect($sibling['direction'])->toBe('sibling');
@@ -1176,9 +1176,9 @@ describe('getTypeRelationshipGraph', function () {
 
         $graph = RelationshipService::getTypeRelationshipGraph();
 
-        expect($graph['nodes']->pluck('id'))->toContain((string) $sourceType->id, (string) $targetType->id);
+        expect(collect($graph['nodes'])->pluck('id'))->toContain((string) $sourceType->id, (string) $targetType->id);
 
-        $edge = $graph['edges']->firstWhere('source', (string) $sourceType->id);
+        $edge = collect($graph['edges'])->firstWhere('source', (string) $sourceType->id);
         expect($edge)->not->toBeNull();
         expect($edge['target'])->toBe((string) $targetType->id);
         expect($edge['scope'])->toBe('cross-tenant');
@@ -1192,6 +1192,6 @@ describe('getTypeRelationshipGraph', function () {
 
         $graph = RelationshipService::getTypeRelationshipGraph();
 
-        expect($graph['nodes']->pluck('id'))->toContain((string) $isolatedType->id);
+        expect(collect($graph['nodes'])->pluck('id'))->toContain((string) $isolatedType->id);
     });
 });

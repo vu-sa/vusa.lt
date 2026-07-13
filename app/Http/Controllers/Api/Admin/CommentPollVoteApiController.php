@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\ApiController;
 use App\Http\Resources\CommentResource;
 use App\Models\Comment;
 use App\Support\Commentables;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -59,8 +60,11 @@ class CommentPollVoteApiController extends ApiController
 
         $comment->load(['reactions.user:id,name', 'pollVotes.user:id,name']);
 
-        $canModerate = $comment->commentable !== null
-            && Gate::forUser($user)->allows('update', $comment->commentable);
+        /** @var Model|null $commentable */
+        $commentable = $comment->commentable;
+
+        $canModerate = $commentable !== null
+            && Gate::forUser($user)->allows('update', $commentable);
         $request->attributes->set('comment_can_moderate', $canModerate);
 
         $payload = (new CommentResource($comment))->resolve($request);

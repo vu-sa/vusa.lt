@@ -92,7 +92,7 @@ class AgendaItemController extends AdminController
                 'brought_by_students' => (bool) $item->brought_by_students,
                 'main_vote' => $item->mainVote,
                 'comments_count' => $item->comments_count,
-                'has_notes' => (bool) $item->has_notes,
+                'has_notes' => (bool) $item->getAttribute('has_notes'),
             ])
             ->values();
 

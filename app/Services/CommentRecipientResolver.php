@@ -46,6 +46,7 @@ class CommentRecipientResolver
      */
     public function audience(Comment $comment): Collection
     {
+        /** @var Model|null $commentable */
         $commentable = $comment->commentable;
 
         if ($commentable === null) {

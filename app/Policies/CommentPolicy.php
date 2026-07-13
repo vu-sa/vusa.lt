@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\Comment;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
 
 /**
@@ -19,8 +20,7 @@ class CommentPolicy
 {
     public function view(User $user, Comment $comment): bool
     {
-        return $comment->commentable !== null
-            && Gate::forUser($user)->allows('view', $comment->commentable);
+        return $this->canViewCommentable($user, $comment);
     }
 
     public function update(User $user, Comment $comment): bool
@@ -34,25 +34,39 @@ class CommentPolicy
             return true;
         }
 
-        return $comment->commentable !== null
-            && Gate::forUser($user)->allows('update', $comment->commentable);
+        return $this->canUpdateCommentable($user, $comment);
     }
 
     public function resolve(User $user, Comment $comment): bool
     {
-        return $comment->commentable !== null
-            && Gate::forUser($user)->allows('view', $comment->commentable);
+        return $this->canViewCommentable($user, $comment);
     }
 
     public function react(User $user, Comment $comment): bool
     {
-        return $comment->commentable !== null
-            && Gate::forUser($user)->allows('view', $comment->commentable);
+        return $this->canViewCommentable($user, $comment);
     }
 
     public function vote(User $user, Comment $comment): bool
     {
-        return $comment->commentable !== null
-            && Gate::forUser($user)->allows('view', $comment->commentable);
+        return $this->canViewCommentable($user, $comment);
+    }
+
+    private function canViewCommentable(User $user, Comment $comment): bool
+    {
+        /** @var Model|null $commentable */
+        $commentable = $comment->commentable;
+
+        return $commentable !== null
+            && Gate::forUser($user)->allows('view', $commentable);
+    }
+
+    private function canUpdateCommentable(User $user, Comment $comment): bool
+    {
+        /** @var Model|null $commentable */
+        $commentable = $comment->commentable;
+
+        return $commentable !== null
+            && Gate::forUser($user)->allows('update', $commentable);
     }
 }

@@ -173,21 +173,31 @@ class CommentApiController extends ApiController
             ->latest()
             ->limit(50)
             ->get()
-            ->filter(fn (Comment $comment) => $comment->commentable !== null
-                && Gate::forUser($user)->allows('view', $comment->commentable))
+            ->filter(function (Comment $comment) use ($user) {
+                /** @var Model|null $commentable */
+                $commentable = $comment->commentable;
+
+                return $commentable !== null
+                    && Gate::forUser($user)->allows('view', $commentable);
+            })
             ->take(20)
             ->values();
 
-        $data = $comments->map(fn (Comment $comment) => [
-            'id' => $comment->id,
-            'body' => $comment->body,
-            'created_at' => $comment->created_at?->toISOString(),
-            'commentable_type' => Commentables::aliasFor($comment->commentable),
-            'commentable_id' => (string) $comment->commentable_id,
-            'commentable_name' => $comment->commentable
-                ? ($comment->commentable->getAttribute('name') ?? $comment->commentable->getAttribute('title'))
-                : null,
-        ]);
+        $data = $comments->map(function (Comment $comment) {
+            /** @var Model|null $commentable */
+            $commentable = $comment->commentable;
+
+            return [
+                'id' => $comment->id,
+                'body' => $comment->body,
+                'created_at' => $comment->created_at?->toISOString(),
+                'commentable_type' => Commentables::aliasFor($commentable),
+                'commentable_id' => (string) $comment->commentable_id,
+                'commentable_name' => $commentable
+                    ? ($commentable->getAttribute('name') ?? $commentable->getAttribute('title'))
+                    : null,
+            ];
+        });
 
         return $this->jsonSuccess($data);
     }

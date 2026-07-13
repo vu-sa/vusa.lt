@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\AllowedRelationshipablesEnum;
 use App\Models\Institution;
 use App\Models\Pivots\Relationshipable;
+use App\Models\Relationship;
 use App\Models\Tenant;
 use App\Models\Type;
 use Illuminate\Database\Eloquent\Collection;
@@ -614,8 +615,7 @@ class RelationshipService
                 'type' => 'direct',
                 'scope' => $relationshipable->scope ?? Relationshipable::SCOPE_WITHIN_TENANT,
                 'bidirectional' => (bool) ($relationshipable->bidirectional ?? false),
-                'relationship_name' => $relationshipable->relationship?->name,
-                'relationship_description' => $relationshipable->relationship?->description,
+                ...self::relationshipMeta($relationshipable),
             ]);
 
         // Type-based edges, expanded to concrete institution pairs (scope-aware)
@@ -627,8 +627,7 @@ class RelationshipService
                 'type' => 'type-based',
                 'scope' => $relationshipable->scope ?? Relationshipable::SCOPE_WITHIN_TENANT,
                 'bidirectional' => (bool) ($relationshipable->bidirectional ?? false),
-                'relationship_name' => $relationshipable->relationship?->name,
-                'relationship_description' => $relationshipable->relationship?->description,
+                ...self::relationshipMeta($relationshipable),
             ]));
 
         // Within-type sibling edges (same type + same tenant)
@@ -693,8 +692,7 @@ class RelationshipService
             'type' => 'type-based',
             'scope' => $relationshipable->scope ?? Relationshipable::SCOPE_WITHIN_TENANT,
             'bidirectional' => (bool) ($relationshipable->bidirectional ?? false),
-            'relationship_name' => $relationshipable->relationship?->name,
-            'relationship_description' => $relationshipable->relationship?->description,
+            ...self::relationshipMeta($relationshipable),
         ])->values()->all();
 
         return ['nodes' => $nodes, 'edges' => $edges];
@@ -740,6 +738,23 @@ class RelationshipService
         }
 
         return $relationships->unique(fn ($r) => $r['relationshipable_id'].'_'.$r['related_model_id']);
+    }
+
+    /**
+     * Read relationship metadata from a loaded pivot, tolerating a missing
+     * relationship record without triggering PHPStan's non-null relation inference.
+     *
+     * @return array{relationship_name: string|null, relationship_description: string|null}
+     */
+    private static function relationshipMeta(Relationshipable $relationshipable): array
+    {
+        /** @var Relationship|null $relationship */
+        $relationship = $relationshipable->relationship;
+
+        return [
+            'relationship_name' => $relationship?->name,
+            'relationship_description' => $relationship?->description,
+        ];
     }
 
     /**
