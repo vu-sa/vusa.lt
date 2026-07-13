@@ -7,6 +7,23 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.14 — Search, Discussions & Reservations Console (2026-07-13) {#v1-14}
+
+- ⭐ **Reservations console** — the cards and modals are replaced by a KPI strip (awaiting review / lent / overdue / returned) and a table with "My reservations" and "Administered" tabs. You can approve, hand over and mark items returned straight from the list, act on several reservations at once, and close out a stale reservation in one action. Each status now has its own colour and icon, and overdue reservations are flagged in amber
+- ⭐ **Proper admin search page** — search now has a page of its own, showing previews of the records it finds. Several edit forms also use a new, more comfortable picker built on the same search
+- ⭐ **Discussions instead of comments** — comments were reworked into a discussion panel, now available on meetings and agenda items as well as institutions. Discussions can also carry polls
+- ⭐ **Standalone public search page** — public search opens on its own page instead of in a dialog
+- ⭐ **Mixcloud embeds** — Mixcloud players can now be embedded in content
+- ✨ **Refined institution graph** — and search previews now show the institutions and duties related to a record
+- ✨ **Self-lockout warning** — changing a duty's members now warns you if the change would remove your own access
+- ✨ **Smarter default sorting** on index pages
+- ✨ **Improved translations** across the platform
+- ✨ **Clearer cookie consent**
+- ✨ **Many styling fixes** — across various cards and pages
+- 🔧 **Form fixes** — including the "is reservable" select in the resource form
+- 🔧 **Fixed opening the resource category list**
+- 🔧 **Table pagination** — pagination controls were not appearing on tables that filter their data in the browser
+
 ## v1.13 — Problem Registry Improvements (2026-06-12) {#v1-13}
 
 - ⭐ **Unit filter in the problem list** — problems can now be filtered by unit, not just by institutions

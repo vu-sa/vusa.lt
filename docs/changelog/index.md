@@ -7,6 +7,23 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.14 — Paieška, diskusijos ir rezervacijų pultas (2026-07-13) {#v1-14}
+
+- ⭐ **Rezervacijų valdymo pultas** - visos administruojamos rezervacijos vienoje vietoje. Patvirtinti, išduoti ar pažymėti grąžintus daiktus galima tiesiai iš sąrašo, net kelias rezervacijas iš karto, o pasenusias rezervacijas galima uždaryti vienu veiksmu.
+- ⭐ **Administravimo paieškos puslapis** - paieška turi atskirą puslapį, kuriame rodomos rastų įrašų peržiūros. Dalyje redagavimo formų atsirado naujas, patogesnis įrašų pasirinkimas su ta pačia paieška.
+- ⭐ **Diskusijos vietoje komentarų** - komentarai pertvarkyti į diskusijų skydelį, kurį dabar turi ne tik posėdžiai, bet ir darbotvarkės punktai bei institucijos. Diskusijose galima paskelbti ir apklausą
+- ⭐ **Atskiras viešos paieškos puslapis** - vietoje modalinio lango paieška atidaroma savo puslapyje
+- ⭐ **Mixcloud įrašai** - turinyje galima įterpti Mixcloud.
+- ✨ **Patobulinta institucijų grafa** - taip pat, paieškos peržiūrose matomos ir su įrašu susijusios institucijos bei pareigybės
+- ✨ **Įspėjimas apie savo prieigos praradimą** - keičiant pareigybės narius, sistema perspėja, jei tokiu būdu prarastumėte prieigą prie sistemos
+- ✨ **Protingesnis numatytasis rikiavimas** sąrašų puslapiuose
+- ✨ **Patikslinti vertimai** visoje platformoje
+- ✨ **Aiškesnis slapukų sutikimo langas**
+- ✨ **Daug išvaizdos pataisymų** - sutvarkytos įvairios kortelės ir puslapiai
+- 🔧 **Pataisytos formos** - tarp jų resurso formos „ar rezervuojamas" pasirinkimas
+- 🔧 **Pataisytas resursų kategorijų sąrašo atidarymas**
+- 🔧 **Puslapiavimas lentelėse** - puslapiavimo mygtukai nebuvo rodomi lentelėse, kurios duomenis filtruoja naršyklėje
+
 ## v1.13 — Problemų registro patobulinimai (2026-06-12) {#v1-13}
 
 - ⭐ **Padalinio filtras problemų sąraše** — problemas dabar galima filtruoti pagal padalinį, ne tik pagal institucijas
