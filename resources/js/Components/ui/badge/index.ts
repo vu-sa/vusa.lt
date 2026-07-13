@@ -19,6 +19,8 @@ export const badgeVariants = cva(
           'border-transparent bg-green-500 text-white hover:bg-green-500/80 dark:bg-green-600 dark:text-white dark:hover:bg-green-600/80',
         warning:
           'border-transparent bg-amber-500 text-white hover:bg-amber-500/80 dark:bg-amber-600 dark:text-white dark:hover:bg-amber-600/80',
+        rose:
+          'border-transparent bg-rose-100 text-rose-700 hover:bg-rose-100/80 dark:bg-rose-900/30 dark:text-rose-300 dark:hover:bg-rose-900/20',
       },
       size: {
         default: 'px-2.5 py-0.5 text-xs',

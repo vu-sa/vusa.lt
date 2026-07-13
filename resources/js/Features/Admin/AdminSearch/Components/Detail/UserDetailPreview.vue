@@ -9,7 +9,7 @@
       <Badge v-if="user.tenant_shortname" variant="secondary">
         {{ user.tenant_shortname }}
       </Badge>
-      <Badge v-if="user.is_active === false" variant="destructive">
+      <Badge v-if="user.is_active === false" variant="rose">
         {{ $t('Ištrintas') }}
       </Badge>
     </template>

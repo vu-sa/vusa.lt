@@ -207,7 +207,7 @@
             </div>
 
             <!-- Overdue warning -->
-            <Badge v-if="isOverdue(resource)" variant="destructive" class="gap-1 text-xs">
+            <Badge v-if="isOverdue(resource)" variant="rose" class="gap-1 text-xs">
               <IFluentWarning24Filled class="size-3" />
               {{ $t('Vėluojama') }}
             </Badge>
@@ -475,7 +475,7 @@ const getDateWarningClass = (resource: App.Entities.Resource, type: 'start' | 'e
   if (type === 'end' && state === 'lent') {
     const endDate = new Date(resource.pivot?.end_time ?? '');
     if (endDate < new Date()) {
-      return 'font-semibold text-red-600 dark:text-red-400';
+      return 'font-semibold text-rose-600 dark:text-rose-400';
     }
   }
 

@@ -37,7 +37,7 @@
 
       <!-- Due date and status -->
       <div class="flex flex-wrap items-center gap-3">
-        <Badge v-if="task.due_date" :variant="isOverdue ? 'outline' : 'secondary'" class="gap-1.5" :class="isOverdue ? 'bg-rose-100 text-rose-700 border-transparent dark:bg-rose-900/30 dark:text-rose-300' : ''">
+        <Badge v-if="task.due_date" :variant="isOverdue ? 'rose' : 'secondary'" class="gap-1.5">
           <CalendarIcon class="h-3 w-3" />
           {{ formatDueDate(task.due_date) }}
         </Badge>

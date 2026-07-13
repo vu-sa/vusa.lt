@@ -37,7 +37,7 @@
           </h4>
         </div>
         <div class="flex items-center gap-2">
-          <Badge v-if="hasOverdue" variant="destructive" class="text-xs">
+          <Badge v-if="hasOverdue" variant="rose" class="text-xs">
             {{ overdueCount }} {{ $t('overdue') }}
           </Badge>
           <Badge variant="secondary" class="text-xs">

@@ -255,11 +255,7 @@ const formatDueDate = (dateString: string | null, isOverdue?: boolean) => {
  * Get due date badge variant and classes
  */
 const getDueDateClasses = (task: Task) => {
-  if (task.is_overdue) {
-    return 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300 border-transparent';
-  }
-
-  if (task.due_date) {
+  if (task.due_date && !task.is_overdue) {
     const daysUntil = differenceInDays(parseISO(task.due_date), new Date());
     if (daysUntil <= 3 && daysUntil >= 0) {
       return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
@@ -585,7 +581,7 @@ const columns = [
         <div class="flex items-center gap-2">
           {task.is_overdue && <AlertCircleIcon class="h-3.5 w-3.5 shrink-0 text-rose-500" />}
           <Badge
-            variant={task.is_overdue ? 'outline' : 'secondary'}
+            variant={task.is_overdue ? 'rose' : 'secondary'}
             class={`text-xs font-medium ${dueDateClasses}`}
           >
             {formattedDate}

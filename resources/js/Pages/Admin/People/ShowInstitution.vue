@@ -19,16 +19,6 @@
           <Globe class="h-3 w-3" />
           {{ $t('Vieši posėdžiai') }}
         </Badge>
-        <!-- Urgency badge based on overall institution status -->
-        <Badge
-          v-if="overallUrgency !== 'neutral' && overallUrgency !== 'success'"
-          :variant="overallUrgency === 'danger' ? 'destructive' : 'secondary'"
-          class="text-xs gap-1"
-        >
-          <AlertTriangle v-if="overallUrgency === 'danger'" class="h-3 w-3" />
-          <AlertCircle v-else class="h-3 w-3" />
-          {{ overallUrgency === 'danger' ? $t('Reikia dėmesio') : $t('Perspėjimas') }}
-        </Badge>
       </template>
       <template #info>
         <div v-if="institution.managers?.length > 0" class="flex items-center gap-2">
@@ -322,8 +312,6 @@ import {
   Bell,
   BellOff,
   Loader2,
-  AlertTriangle,
-  AlertCircle,
   FileCheck,
   ClipboardCheck,
   Trash2,
@@ -354,7 +342,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Comp
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { useInstitutionSubscription } from '@/Pages/Admin/Dashboard/Composables/useInstitutionSubscription';
 import { useShowPageData } from '@/Composables/useShowPageData';
-import { useInstitutionUrgency } from '@/Composables/useInstitutionUrgency';
 import { InstitutionIconFilled } from '@/Components/icons';
 
 const props = defineProps<{
@@ -377,8 +364,7 @@ const showMeetingModal = ref(false);
 const showCheckInModal = ref(false);
 const showAddMemberModal = ref(false);
 
-// Urgency calculations for hero badge
-const { overallUrgency } = useInstitutionUrgency(() => props.institution);
+
 
 // Subscription state
 const isFollowed = ref(props.subscription?.is_followed ?? false);

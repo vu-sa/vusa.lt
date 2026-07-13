@@ -22,8 +22,8 @@
           </Badge>
           <Badge
             v-if="taskStats.overdue > 0"
-            variant="outline"
-            class="text-xs font-medium tabular-nums bg-rose-100 text-rose-700 border-transparent dark:bg-rose-900/30 dark:text-rose-300"
+            variant="rose"
+            class="text-xs font-medium tabular-nums"
           >
             {{ taskStats.overdue }} {{ $t('overdue') }}
           </Badge>

@@ -1,15 +1,23 @@
 <template>
   <div class="space-y-6">
-    <!-- Priority Alert for overdue meetings -->
-    <PriorityAlert
-      v-if="isOverdue"
-      v-model="showOverdueAlert"
-      variant="warning"
-      :title="$t('Susitikimas vėluoja')"
-      :description="overdueAlertDescription"
-      :action-label="$t('Suplanuoti susitikimą')"
-      @action="$emit('schedule-meeting')"
-    />
+    <!-- Last meeting info -->
+    <div
+      v-if="lastMeeting"
+      class="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400"
+    >
+      <CalendarIcon class="h-4 w-4" />
+      {{ $t('Paskutinis susitikimas') }}:
+      <span class="font-medium text-zinc-900 dark:text-zinc-100">
+        {{ formatLastMeetingDate(lastMeeting.start_time) }}
+      </span>
+    </div>
+    <div
+      v-else
+      class="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400"
+    >
+      <CalendarIcon class="h-4 w-4" />
+      {{ $t('Nėra susitikimų') }}
+    </div>
 
     <!-- About -->
     <SectionCard v-if="description" :title="$t('Apie')" :icon="Info">
@@ -142,7 +150,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
   Users,
@@ -158,13 +166,13 @@ import InstitutionTasksPreview from './InstitutionTasksPreview.vue';
 import InstitutionDiscussionPreview from './InstitutionDiscussionPreview.vue';
 import InstitutionRelatedPreview from './InstitutionRelatedPreview.vue';
 
-import PriorityAlert from '@/Components/Alerts/PriorityAlert.vue';
 import UserPopover from '@/Components/Avatars/UserPopover.vue';
 import { SectionCard } from '@/Components/ui/section-card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { useInstitutionUrgency } from '@/Composables/useInstitutionUrgency';
 import { interactiveCardClass } from '@/Utils/interactiveCard';
+import { formatStaticTime } from '@/Utils/IntlTime';
 
 const MEMBER_PREVIEW_LIMIT = 6;
 
@@ -184,14 +192,10 @@ defineEmits<{
 
 // Use urgency composable
 const {
-  isOverdue,
-  daysSinceLastMeeting,
+  lastMeeting,
   totalPositions,
   filledPositions,
 } = useInstitutionUrgency(() => props.institution);
-
-// Alert state
-const showOverdueAlert = ref(true);
 
 // Description (localized string via toArray())
 const description = computed(() => {
@@ -240,11 +244,11 @@ const recentComments = computed(() => (props.institution as any).recentComments 
 // Related institutions (flat format from the controller)
 const relatedInstitutions = computed(() => (props.institution as any).relatedInstitutionsFlat ?? []);
 
-const overdueAlertDescription = computed(() => {
-  const periodicity = props.institution.meeting_periodicity_days ?? 30;
-  const overdueDays = (daysSinceLastMeeting.value ?? 0) - periodicity;
-  return $t('Praėjo :days d. nuo numatyto susitikimo periodiškumo. Rekomenduojame suplanuoti susitikimą.', {
-    days: overdueDays,
+const formatLastMeetingDate = (dateString: string) => {
+  return formatStaticTime(new Date(dateString), {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
   });
-});
+};
 </script>

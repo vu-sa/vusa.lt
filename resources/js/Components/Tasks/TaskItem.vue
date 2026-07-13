@@ -92,14 +92,12 @@
         <!-- Due date badge -->
         <div v-if="dueDate" class="shrink-0">
           <Badge
-            :variant="isOverdue ? 'outline' : 'secondary'"
+            :variant="isOverdue ? 'rose' : 'secondary'"
             :class="[
               'text-xs font-medium',
-              isOverdue
-                ? 'bg-rose-100 text-rose-700 border-transparent dark:bg-rose-900/30 dark:text-rose-300'
-                : isDueSoon
-                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                  : ''
+              isDueSoon && !isOverdue
+                ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                : ''
             ]"
           >
             {{ formattedDueDate }}

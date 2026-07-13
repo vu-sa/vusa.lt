@@ -540,11 +540,11 @@ const columns = computed<ColumnDef<App.Entities.Resource>[]>(() => [
 
       return (
         <div class="flex items-center gap-1.5">
-          <span class={isOverdue ? 'font-semibold text-red-600 dark:text-red-400' : ''}>
+          <span class={isOverdue ? 'font-semibold text-rose-600 dark:text-rose-400' : ''}>
             {formatStaticTime(endDate, RESERVATION_DATE_TIME_FORMAT, usePage().props.app.locale)}
           </span>
           {isOverdue && (
-            <Badge variant="destructive" class="h-5 gap-0.5 px-1.5 text-[10px] font-medium">
+            <Badge variant="rose" class="h-5 gap-0.5 px-1.5 text-[10px] font-medium">
               <Warning24Filled class="size-3" />
               {$t('Vėluojama')}
             </Badge>
