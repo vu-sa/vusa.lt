@@ -156,6 +156,7 @@ export enum SearchableModelEnum {
   AGENDA_ITEM = "agenda_item",
   RESOURCE = "resource",
   INSTITUTION = "institution",
+  USER = "user",
 }
 export enum SharepointConfigEnum {
   API_BASE_URL = "https://graph.microsoft.com/v1.0/",

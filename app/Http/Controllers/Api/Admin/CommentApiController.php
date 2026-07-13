@@ -107,7 +107,7 @@ class CommentApiController extends ApiController
         $this->authorize('update', $comment);
 
         $comment->body = $request->input('body');
-        $comment->mentioned_user_ids = Comment::extractMentions($request->input('body'));
+        $comment->mentioned_user_ids = Comment::extractMentions($comment->body);
         $comment->markEdited();
         $comment->save();
 

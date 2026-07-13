@@ -1,7 +1,8 @@
 <?php
 
-use App\Models\Content;
 use App\Models\ContentPart;
+use App\Models\Page;
+use App\Models\Tenant;
 use App\Models\TextBoxSubmission;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -9,12 +10,12 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 
 uses(RefreshDatabase::class);
 
-function makeTextBoxContentPart(): ContentPart
+function makeTextBoxContentPart(?Tenant $tenant = null): ContentPart
 {
-    $content = Content::factory()->create();
+    $page = Page::factory()->for($tenant ?? Tenant::query()->first())->create();
 
     return ContentPart::factory()->create([
-        'content_id' => $content->id,
+        'content_id' => $page->content_id,
         'type' => 'text-box',
         'json_content' => [],
         'options' => [
@@ -26,13 +27,21 @@ function makeTextBoxContentPart(): ContentPart
 
 function makeTiptapContentPart(): ContentPart
 {
-    $content = Content::factory()->create();
+    $page = Page::factory()->for(Tenant::query()->first())->create();
 
     return ContentPart::factory()->create([
-        'content_id' => $content->id,
+        'content_id' => $page->content_id,
         'type' => 'tiptap',
         'json_content' => [],
     ]);
+}
+
+/**
+ * A user permitted to view/manage the page that owns text-box submissions.
+ */
+function makeSubmissionsManager(): User
+{
+    return makeTenantUserWithRole('Communication Coordinator', Tenant::query()->first());
 }
 
 // Public store endpoint
@@ -151,7 +160,7 @@ it('requires auth for the admin submissions endpoint', function () {
 });
 
 it('returns submissions for a content part', function () {
-    $user = User::factory()->create();
+    $user = makeSubmissionsManager();
     $contentPart = makeTextBoxContentPart();
 
     TextBoxSubmission::factory()->count(3)->create([
@@ -168,7 +177,7 @@ it('returns submissions for a content part', function () {
 });
 
 it('returns submissions ordered by newest first', function () {
-    $user = User::factory()->create();
+    $user = makeSubmissionsManager();
     $contentPart = makeTextBoxContentPart();
 
     $first = TextBoxSubmission::factory()->create([
@@ -195,7 +204,7 @@ it('returns submissions ordered by newest first', function () {
 // Admin export endpoint
 
 it('exports submissions as an xlsx file', function () {
-    $user = User::factory()->create();
+    $user = makeSubmissionsManager();
     $contentPart = makeTextBoxContentPart();
 
     TextBoxSubmission::factory()->create([
@@ -231,7 +240,7 @@ it('exports submissions as an xlsx file', function () {
 });
 
 it('shows Anonymous for submissions without a user', function () {
-    $user = User::factory()->create();
+    $user = makeSubmissionsManager();
     $contentPart = makeTextBoxContentPart();
 
     TextBoxSubmission::factory()->create([

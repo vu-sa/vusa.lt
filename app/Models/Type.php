@@ -24,8 +24,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
 /**
  * @property int $id
  * @property int|null $parent_id
- * @property string|null $title
- * @property string|null $description
+ * @property array|string|null $title
+ * @property array|string|null $description
  * @property string|null $model_type
  * @property string|null $slug
  * @property array<array-key, mixed>|null $extra_attributes
@@ -50,18 +50,18 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\TypeFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Type forDuties()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Type forInstitutions()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Type newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Type newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Type onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Type query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Type whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Type whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Type whereLocale(string $column, string $locale)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Type whereLocales(string $column, array $locales)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Type withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Type withoutTrashed()
+ * @method static Builder<static>|Type forDuties()
+ * @method static Builder<static>|Type forInstitutions()
+ * @method static Builder<static>|Type newModelQuery()
+ * @method static Builder<static>|Type newQuery()
+ * @method static Builder<static>|Type onlyTrashed()
+ * @method static Builder<static>|Type query()
+ * @method static Builder<static>|Type whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|Type whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|Type whereLocale(string $column, string $locale)
+ * @method static Builder<static>|Type whereLocales(string $column, array $locales)
+ * @method static Builder<static>|Type withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|Type withoutTrashed()
  *
  * @mixin \Eloquent
  */

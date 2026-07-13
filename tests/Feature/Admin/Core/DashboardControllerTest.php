@@ -773,7 +773,7 @@ describe('user settings', function () {
 
     test('user can update settings', function () {
         $validData = [
-            'email' => 'updated@example.com',
+            'phone' => '+37060000000',
             'profile_photo_path' => '/path/to/photo.jpg',
             'show_pronouns' => true,
         ];
@@ -785,8 +785,30 @@ describe('user settings', function () {
 
         $this->assertDatabaseHas('users', [
             'id' => $this->admin->id,
-            'email' => 'updated@example.com',
+            'phone' => '+37060000000',
+            'profile_photo_path' => '/path/to/photo.jpg',
         ]);
+    });
+
+    test('user cannot change email or password via the profile endpoint', function () {
+        $originalEmail = $this->admin->email;
+        $originalPassword = $this->admin->password;
+
+        asUser($this->admin)
+            ->patch(route('profile.update'), [
+                'phone' => '+37061111111',
+                'email' => 'attacker@example.com',
+                'password' => 'hijacked-password',
+            ])
+            ->assertStatus(302);
+
+        $this->admin->refresh();
+
+        expect($this->admin->email)->toBe($originalEmail)
+            ->and($this->admin->password)->toBe($originalPassword);
+
+        // The legitimate field still updates.
+        expect($this->admin->phone)->toBe('+37061111111');
     });
 
     test('user cannot change name after it was previously changed', function () {
@@ -796,7 +818,7 @@ describe('user settings', function () {
 
         $updateData = [
             'name' => 'New Name',
-            'email' => 'updated@example.com',
+            'phone' => '+37062222222',
         ];
 
         asUser($this->admin)
@@ -810,10 +832,10 @@ describe('user settings', function () {
             'name' => 'New Name',
         ]);
 
-        // But email should be updated
+        // But the phone should be updated
         $this->assertDatabaseHas('users', [
             'id' => $this->admin->id,
-            'email' => 'updated@example.com',
+            'phone' => '+37062222222',
         ]);
     });
 

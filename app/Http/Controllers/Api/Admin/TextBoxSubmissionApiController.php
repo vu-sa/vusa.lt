@@ -22,6 +22,8 @@ class TextBoxSubmissionApiController extends ApiController
             'per_page' => ['nullable', 'integer', 'min:5', 'max:100'],
         ]);
 
+        $this->authorizeApi('view', $this->pageForContentPart($request->integer('content_part_id')));
+
         $paginator = TextBoxSubmission::query()
             ->where('content_part_id', $request->content_part_id)
             ->with('user:id,name')
@@ -42,6 +44,8 @@ class TextBoxSubmissionApiController extends ApiController
     {
         $this->requireAuth($request);
 
+        $this->authorizeApi('update', $this->pageForContentPart($submission->content_part_id));
+
         $submission->delete();
 
         return $this->jsonSuccess(null, 'Atsakymas ištrintas');
@@ -54,6 +58,8 @@ class TextBoxSubmissionApiController extends ApiController
         $request->validate([
             'content_part_id' => ['required', 'integer', 'exists:content_parts,id'],
         ]);
+
+        $this->authorizeApi('update', $this->pageForContentPart($request->integer('content_part_id')));
 
         TextBoxSubmission::query()
             ->where('content_part_id', $request->integer('content_part_id'))
@@ -72,6 +78,8 @@ class TextBoxSubmissionApiController extends ApiController
 
         $contentPart = ContentPart::findOrFail($request->content_part_id);
 
+        $this->authorizeApi('view', $this->pageForContentPart($contentPart));
+
         $pageTitle = Page::query()
             ->where('content_id', $contentPart->content_id)
             ->value('title');
@@ -83,5 +91,18 @@ class TextBoxSubmissionApiController extends ApiController
         $fileName = "{$slug}-atsakymai.xlsx";
 
         return (new TextBoxSubmissionsExport($contentPart))->download($fileName);
+    }
+
+    /**
+     * Resolve the Page that owns a content part so submissions can be authorized
+     * against the parent page's permissions (submissions have no policy of their own).
+     */
+    protected function pageForContentPart(ContentPart|int $contentPart): Page
+    {
+        $contentId = $contentPart instanceof ContentPart
+            ? $contentPart->content_id
+            : ContentPart::query()->whereKey($contentPart)->value('content_id');
+
+        return Page::query()->where('content_id', $contentId)->firstOrFail();
     }
 }

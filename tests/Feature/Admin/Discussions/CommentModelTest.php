@@ -95,6 +95,59 @@ describe('extractMentions', function () {
     });
 });
 
+describe('body sanitization', function () {
+    test('strips script tags on create', function () {
+        $this->actingAs($this->author);
+
+        $comment = $this->agendaItem->comment('<p>Hello</p><script>alert(1)</script>');
+
+        expect($comment->body)->not->toContain('<script')
+            ->and($comment->body)->toContain('Hello');
+    });
+
+    test('strips event handler attributes and disallowed tags', function () {
+        $this->actingAs($this->author);
+
+        $comment = $this->agendaItem->comment('<p><img src=x onerror="alert(1)">Hi</p>');
+
+        expect($comment->body)->not->toContain('onerror')
+            ->and($comment->body)->not->toContain('<img')
+            ->and($comment->body)->toContain('Hi');
+    });
+
+    test('keeps allowed formatting and mention markup', function () {
+        $this->actingAs($this->author);
+        $mentioned = User::factory()->create();
+
+        $body = '<p><strong>Bold</strong> <em>italic</em> '
+            .'<span data-type="mention" data-id="'.$mentioned->id.'">@Someone</span></p>';
+        $comment = $this->agendaItem->comment($body);
+
+        expect($comment->body)->toContain('<strong>')
+            ->and($comment->body)->toContain('<em>')
+            ->and($comment->body)->toContain('data-id="'.$mentioned->id.'"')
+            ->and($comment->mentioned_user_ids)->toBe([$mentioned->id]);
+    });
+
+    test('neutralizes javascript link schemes', function () {
+        $this->actingAs($this->author);
+
+        $comment = $this->agendaItem->comment('<p><a href="javascript:alert(1)">click</a></p>');
+
+        expect($comment->body)->not->toContain('javascript:');
+    });
+
+    test('sanitizes on direct body assignment', function () {
+        $this->actingAs($this->author);
+        $comment = $this->agendaItem->comment('<p>original</p>');
+
+        $comment->body = '<p>ok</p><script>alert(1)</script>';
+
+        expect($comment->body)->not->toContain('<script')
+            ->and($comment->body)->toContain('ok');
+    });
+});
+
 describe('resolve helpers', function () {
     test('resolve and unresolve toggle the resolved state', function () {
         $this->actingAs($this->author);

@@ -20,7 +20,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read Model|\Eloquent $related_model
- * @property-read Relationship|null $relationship
+ * @property-read Relationship $relationship
  * @property-read Model|\Eloquent $relationshipable
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Relationshipable newModelQuery()

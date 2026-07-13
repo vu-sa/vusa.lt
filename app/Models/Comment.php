@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Enums\CommentKind;
+use App\Services\HtmlSanitizerService;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -35,7 +37,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activities
- * @property-read Model|null $commentable
+ * @property-read Model|\Eloquent $commentable
  * @property-read Comment|null $parent
  * @property-read Collection<int, CommentPollVote> $pollVotes
  * @property-read Collection<int, CommentReaction> $reactions
@@ -97,6 +99,26 @@ class Comment extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
+    }
+
+    /**
+     * The body is user-authored HTML from the Tiptap editor. Sanitize it on the
+     * way in so it can be rendered with `v-html` without allowing script injection.
+     */
+    protected function body(): Attribute
+    {
+        return Attribute::make(
+            set: fn (string $value): string => static::sanitizeBody($value),
+        );
+    }
+
+    /**
+     * Strip disallowed markup from a comment body, keeping the editor's
+     * formatting, links and @mention spans.
+     */
+    public static function sanitizeBody(string $html): string
+    {
+        return app(HtmlSanitizerService::class)->sanitizeCommentBody($html);
     }
 
     public function commentable(): MorphTo

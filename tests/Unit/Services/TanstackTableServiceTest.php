@@ -92,6 +92,73 @@ describe('applyFiltering', function () {
 
         expect($result->count())->toBeGreaterThanOrEqual(1);
     });
+
+    test('applies relationship string filter as like', function () {
+        News::factory()->for($this->tenant)->create();
+
+        $result = $this->service->applyFiltering(News::query(), ['tenant.shortname' => $this->tenant->shortname]);
+
+        expect($result->count())->toBeGreaterThanOrEqual(1);
+    });
+});
+
+describe('filter key validation', function () {
+    test('ignores relationship filter with SQL injection in column name', function () {
+        News::factory()->for($this->tenant)->create(['title' => 'Visible']);
+        $total = News::count();
+
+        $result = $this->service->applyFiltering(News::query(), [
+            'tenant.shortname) OR 1=1 -- ' => 'x',
+        ]);
+
+        expect($result->count())->toBe($total);
+    });
+
+    test('ignores relationship filter with nonexistent column', function () {
+        News::factory()->for($this->tenant)->create();
+        $total = News::count();
+
+        $result = $this->service->applyFiltering(News::query(), ['tenant.nonexistent_column' => 'x']);
+
+        expect($result->count())->toBe($total);
+    });
+
+    test('does not invoke non-relation model methods from filter keys', function () {
+        News::factory()->for($this->tenant)->create();
+        $total = News::count();
+
+        $result = $this->service->applyFiltering(News::query(), ['save.title' => 'x']);
+
+        expect($result->count())->toBe($total)
+            ->and(News::count())->toBe($total);
+    });
+
+    test('does not invoke non-relation model methods from sorting keys', function () {
+        News::factory()->for($this->tenant)->create();
+        $total = News::count();
+
+        $result = $this->service->applySorting(News::query(), [['id' => 'delete.title', 'desc' => false]]);
+
+        expect($result->count())->toBe($total)
+            ->and(News::count())->toBe($total);
+    });
+
+    test('ignores relationship sort with SQL injection in column name', function () {
+        News::factory()->for($this->tenant)->create();
+        $total = News::count();
+
+        $result = $this->service->applySorting(News::query(), [['id' => 'tenant.shortname) DESC -- ', 'desc' => false]]);
+
+        expect($result->count())->toBe($total);
+    });
+
+    test('still sorts by valid relationship column', function () {
+        News::factory()->for($this->tenant)->create();
+
+        $result = $this->service->applySorting(News::query(), [['id' => 'tenant.shortname', 'desc' => false]]);
+
+        expect($result->count())->toBeGreaterThanOrEqual(1);
+    });
 });
 
 describe('applyGlobalSearch', function () {

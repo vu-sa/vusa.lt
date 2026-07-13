@@ -42,7 +42,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $student_position
  * @property string|null $description
  * @property string|null $start_time
- * @property-read bool $has_notes Populated via ->withExists('note as has_notes')
  * @property-read Collection<int, Activity> $activities
  * @property-read Collection<int, Vote> $additionalVotes
  * @property-read Collection<int, Comment> $comments

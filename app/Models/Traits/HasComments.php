@@ -42,6 +42,10 @@ trait HasComments
             $threadRootId = $parent->thread_root_id ?? $parent->id;
         }
 
+        // Extract mentions from the sanitized body so notifications can only
+        // target ids that survive sanitization (the model mutator sanitizes on set).
+        $body = Comment::sanitizeBody($body);
+
         $comment = $this->comments()->create(array_merge([
             'body' => $body,
             'user_id' => auth()->id(),

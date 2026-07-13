@@ -113,6 +113,25 @@ describe('unauthorized access', function () {
             ->delete(route('navigation.destroy', $this->navigation))
             ->assertStatus(403);
     });
+
+    test('cannot update navigation column', function () {
+        asUser($this->user)
+            ->post(route('navigation.updateColumn'), [
+                'id' => $this->navigation->id,
+                'direction' => 'right',
+            ])
+            ->assertStatus(403);
+    });
+
+    test('cannot update navigation order', function () {
+        asUser($this->user)
+            ->post(route('navigation.updateOrder'), [
+                'navigation' => [
+                    ['id' => $this->navigation->id],
+                ],
+            ])
+            ->assertStatus(403);
+    });
 });
 
 describe('authorized access', function () {

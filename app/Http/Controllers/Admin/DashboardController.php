@@ -465,12 +465,26 @@ class DashboardController extends AdminController
     {
         $user = User::find(Auth::id());
 
-        if ($user->name !== $request->input('name') && ! $user->name_was_changed) {
+        // Only self-service profile fields — never email/password, which have
+        // their own dedicated flows (updatePassword).
+        $validated = $request->validate([
+            'name' => ['nullable', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:255'],
+            'facebook_url' => ['nullable', 'string', 'max:255'],
+            'profile_photo_path' => ['nullable', 'string'],
+            'profile_photo_focal_point' => ['nullable', 'array'],
+            'pronouns' => ['nullable', 'array'],
+            'show_pronouns' => ['nullable', 'boolean'],
+        ]);
+
+        // The display name may only be changed once.
+        if (array_key_exists('name', $validated) && $user->name !== $validated['name'] && ! $user->name_was_changed) {
             $user->name_was_changed = true;
-            $user->update($request->all());
         } else {
-            $user->update($request->except('name'));
+            unset($validated['name']);
         }
+
+        $user->update($validated);
 
         return $this->redirectBackWithSuccess('Nustatymai išsaugoti.');
     }

@@ -131,6 +131,14 @@ describe('auth: news manager', function () {
         asUser($this->newsManager)->get(route('news.index'))->assertStatus(200);
     });
 
+    test('malicious filter key does not break the index query', function () {
+        $maliciousFilters = json_encode(['tenant.shortname) OR 1=1 -- ' => 'x']);
+
+        asUser($this->newsManager)
+            ->get(route('news.index', ['filters' => $maliciousFilters]))
+            ->assertStatus(200);
+    });
+
     test('can access news create page', function () {
         asUser($this->newsManager)->get(route('news.create'))->assertStatus(200);
     });
