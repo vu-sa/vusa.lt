@@ -41,10 +41,10 @@ class AccessChangeAnalyzer
         DB::beginTransaction();
 
         try {
-            // Fake only DutiableChanged so the measured mutation doesn't fire its
-            // queued cache-invalidation listener (which would also choke trying to
-            // restore a just-deleted pivot). Other model observers still run, so
-            // type -> role effects are reflected in the snapshot below.
+            // Fake only DutiableChanged: this mutation is speculative and may be rolled
+            // back below, so its listeners must not run — they would sync ex-officio rows
+            // and bust permission caches against state that never lands. Other model
+            // observers still run, so type -> role effects are reflected in the snapshot.
             Event::fakeFor(fn () => $mutation(), [DutiableChanged::class]);
 
             // Reset caches so the "after" snapshot reflects the just-applied

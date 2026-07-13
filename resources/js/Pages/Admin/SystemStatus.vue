@@ -1,7 +1,7 @@
 <template>
   <AdminContentPage :title="$t('Sistemos būsena')">
     <!-- Status overview cards -->
-    <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5 items-start">
+    <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 items-start">
       <Card class="h-fit transition-colors duration-300 hover:border-primary/40 hover:bg-accent/40">
         <CardHeader size="compact">
           <div class="flex items-center justify-between">
@@ -92,6 +92,83 @@
             {{ status.typesense?.collections?.total_documents || '0' }} {{ $t('dokumentų') }}
             <span v-if="status.typesense?.collections?.memory?.active_memory_mb || status.typesense?.collections?.memory?.resident_memory_mb || status.typesense?.collections?.memory?.estimated_collections_mb" class="block">
               {{ status.typesense.collections.memory.active_memory_mb || status.typesense.collections.memory.resident_memory_mb || status.typesense.collections.memory.estimated_collections_mb }} MB RAM
+            </span>
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card class="h-fit transition-colors duration-300 hover:border-primary/40 hover:bg-accent/40">
+        <CardHeader size="compact">
+          <div class="flex items-center justify-between">
+            <CardTitle class="text-sm font-medium">
+              {{ $t('Planuoklė') }}
+            </CardTitle>
+            <component
+              :is="getStatusIcon(status.scheduler?.status)"
+              :class="getStatusColor(status.scheduler?.status)"
+              class="h-4 w-4"
+            />
+          </div>
+        </CardHeader>
+        <CardContent size="compact">
+          <div class="text-2xl font-bold">
+            {{ status.scheduler?.running ? $t('Veikia') : $t('Neveikia') }}
+          </div>
+          <p class="text-xs text-muted-foreground">
+            {{ status.scheduler?.last_run
+              ? `${$t('Paskutinis paleidimas')}: ${formatRelativeSeconds(status.scheduler.seconds_since_last_run)}`
+              : $t('Niekada nepasileido') }}
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card class="h-fit transition-colors duration-300 hover:border-primary/40 hover:bg-accent/40">
+        <CardHeader size="compact">
+          <div class="flex items-center justify-between">
+            <CardTitle class="text-sm font-medium">
+              {{ $t('Laiškų eilė') }}
+            </CardTitle>
+            <component
+              :is="getStatusIcon(status.digest?.status)"
+              :class="getStatusColor(status.digest?.status)"
+              class="h-4 w-4"
+            />
+          </div>
+        </CardHeader>
+        <CardContent size="compact">
+          <div class="text-2xl font-bold">
+            {{ status.digest?.pending_items ?? 0 }}
+          </div>
+          <p class="text-xs text-muted-foreground">
+            {{ status.digest?.users_waiting ?? 0 }} {{ $t('naudotojų laukia') }}
+            <span v-if="status.digest?.oldest_age_hours" class="block">
+              {{ $t('Seniausias') }}: {{ formatRelativeSeconds(status.digest.oldest_age_hours * 3600) }}
+            </span>
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card class="h-fit transition-colors duration-300 hover:border-primary/40 hover:bg-accent/40">
+        <CardHeader size="compact">
+          <div class="flex items-center justify-between">
+            <CardTitle class="text-sm font-medium">
+              {{ $t('El. paštas') }}
+            </CardTitle>
+            <component
+              :is="getStatusIcon(status.mail?.status)"
+              :class="getStatusColor(status.mail?.status)"
+              class="h-4 w-4"
+            />
+          </div>
+        </CardHeader>
+        <CardContent size="compact">
+          <div class="text-2xl font-bold">
+            {{ status.mail?.authenticated ? $t('Veikia') : $t('Neveikia') }}
+          </div>
+          <p class="text-xs text-muted-foreground">
+            {{ status.mail?.host }}:{{ status.mail?.port }}
+            <span v-if="status.mail?.error" class="mt-1 block break-words text-red-500">
+              {{ status.mail.error }}
             </span>
           </p>
         </CardContent>
@@ -463,19 +540,26 @@
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
                 <component
-                  :is="getStatusIcon(status.integrations.mail?.status === 'configured' ? 'healthy' : 'error')"
-                  :class="getStatusColor(status.integrations.mail?.status === 'configured' ? 'healthy' : 'error')"
+                  :is="getStatusIcon(status.mail?.status)"
+                  :class="getStatusColor(status.mail?.status)"
                   class="h-4 w-4"
                 />
                 <span class="font-medium">{{ $t('El. paštas') }}</span>
               </div>
-              <Badge :variant="status.integrations.mail?.configured ? 'default' : 'secondary'">
-                {{ status.integrations.mail?.configured ? $t('Sukonfigūruota') : $t('Nesukonfigūruota') }}
+              <Badge :variant="status.mail?.authenticated ? 'default' : 'destructive'">
+                {{ status.mail?.authenticated ? $t('Prisijungta') : $t('Nepavyko prisijungti') }}
               </Badge>
             </div>
             <div v-if="status.integrations.mail?.configured" class="mt-2 text-sm text-muted-foreground">
               {{ status.integrations.mail.driver }} - {{ status.integrations.mail.host }}:{{ status.integrations.mail.port }}
             </div>
+            <p v-if="status.mail?.message" class="mt-2 text-sm text-muted-foreground">
+              {{ status.mail.message }}
+            </p>
+            <pre
+              v-if="status.mail?.error"
+              class="mt-2 overflow-x-auto rounded bg-destructive/10 p-2 text-xs text-destructive"
+            >{{ status.mail.error }}</pre>
           </div>
 
           <!-- Scout Integration -->
@@ -723,6 +807,36 @@ const props = defineProps<{
       error?: string;
       error_type?: string;
     };
+    scheduler?: {
+      status: string;
+      running: boolean;
+      last_run: string | null;
+      seconds_since_last_run: number | null;
+      message?: string | null;
+    };
+    digest?: {
+      status: string;
+      pending_items?: number;
+      users_waiting?: number;
+      oldest_item?: string | null;
+      oldest_age_hours?: number;
+      message?: string | null;
+      error?: string;
+    };
+    mail?: {
+      status: string;
+      driver?: string;
+      host?: string;
+      port?: number;
+      encryption?: string;
+      username?: string;
+      from?: string;
+      configured: boolean;
+      authenticated?: boolean;
+      error?: string | null;
+      message?: string | null;
+      checked_at?: string;
+    };
     integrations?: {
       microsoft?: {
         configured: boolean;
@@ -854,6 +968,16 @@ const getStatusColor = (status?: string) => {
     default:
       return 'text-red-500';
   }
+};
+
+const formatRelativeSeconds = (seconds?: number | null) => {
+  if (seconds === null || seconds === undefined) return $t('Nežinoma');
+
+  if (seconds < 60) return `${Math.round(seconds)} s`;
+  if (seconds < 3600) return `${Math.round(seconds / 60)} min.`;
+  if (seconds < 86400) return `${Math.round(seconds / 3600)} val.`;
+
+  return `${Math.round(seconds / 86400)} d.`;
 };
 
 // Format last updated time

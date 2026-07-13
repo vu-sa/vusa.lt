@@ -7,6 +7,11 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.15 — Notification email fix (2026-07-14) {#v1-15}
+
+- 🔧 **Notification emails are being sent again** — digest emails had not gone out since early April. They work again, and stale digests from that period will not be delivered. If a digest fails to send, its notifications are no longer lost — they stay queued for the next attempt
+- ⭐ **Test email** — settings now have a button next to your notification email addresses that sends a test digest, so you can confirm it reaches your inbox
+
 ## v1.14 — Search, Discussions & Reservations Console (2026-07-13) {#v1-14}
 
 - ⭐ **Reservations console** — the cards and modals are replaced by a KPI strip (awaiting review / lent / unresolved / returned) and a table with "My reservations" and "Administered" tabs. You can approve, hand over and mark items returned straight from the list, act on several reservations at once, and close out a stale reservation in one action. Each status now has its own colour and icon, and reservations with an active item past its window are flagged in amber

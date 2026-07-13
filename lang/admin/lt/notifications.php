@@ -128,6 +128,12 @@ return [
     'test_notification_title' => 'Bandomasis pranešimas',
     'test_notification_body' => 'Tai yra bandomasis pranešimas! Push pranešimai veikia.',
 
+    // Test email
+    'test_email_button' => 'Siųsti bandomąjį laišką',
+    'test_email_hint' => 'Laiškas bus išsiųstas išsaugotais adresais. Pirma išsaugokite pakeitimus.',
+    'test_email_sent' => 'Bandomasis laiškas išsiųstas: :emails',
+    'test_email_failed' => 'Nepavyko išsiųsti laiško: :error',
+
     // Actions
     'action_view_comment' => 'Peržiūrėti komentarą',
     'action_view_resource' => 'Peržiūrėti resursą',

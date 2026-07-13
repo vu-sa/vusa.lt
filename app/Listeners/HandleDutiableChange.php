@@ -4,6 +4,7 @@ namespace App\Listeners;
 
 use App\Events\DutiableChanged;
 use App\Facades\Permission;
+use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Cache;
@@ -13,37 +14,23 @@ class HandleDutiableChange implements ShouldQueue
     use InteractsWithQueue;
 
     /**
-     * Discard the job instead of failing when the dutiable can no longer be
-     * restored — it is dispatched on `deleted`, so by the time the job runs the
-     * row is gone and there is nothing left to invalidate.
-     */
-    public bool $deleteWhenMissingModels = true;
-
-    /**
-     * Create the event listener.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        //
-    }
-
-    /**
      * Handle the event.
      *
-     * @return void
+     * This runs on deletion as well as saving: losing a duty changes a user's
+     * permissions just as much as gaining one, so their cached maps must go either way.
      */
-    public function handle(DutiableChanged $event)
+    public function handle(DutiableChanged $event): void
     {
-        if (! $event->dutiable->user) {
+        // Only User dutiables carry permissions. Contacts and other morph types have
+        // none, and their id must not be used to look up a User that happens to share it.
+        if ($event->dutiableType !== User::class) {
             return;
         }
 
-        $userId = $event->dutiable->user->id;
+        // resetCache() deliberately leaves these two maps alone, so forget them here.
+        Cache::forget('index-permissions-'.$event->modelId);
+        Cache::forget('create-permissions-'.$event->modelId);
 
-        Cache::forget('index-permissions-'.$userId);
-        Cache::forget('create-permissions-'.$userId);
-        Permission::resetCache($userId);
+        Permission::resetCache($event->modelId);
     }
 }

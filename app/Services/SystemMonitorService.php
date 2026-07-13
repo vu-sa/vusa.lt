@@ -2,20 +2,46 @@
 
 namespace App\Services;
 
+use App\Console\Kernel;
 use App\Enums\SearchableModelEnum;
 use App\Services\Typesense\TypesenseManager;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redis;
 use Laravel\Scout\Engines\TypesenseEngine;
+use Symfony\Component\Mailer\Transport\Smtp\SmtpTransport;
+use Symfony\Component\Mailer\Transport\Smtp\Stream\SocketStream;
 use Typesense\Client;
 
 class SystemMonitorService
 {
     /**
+     * How long a live SMTP probe is cached.
+     *
+     * The probe authenticates against the mail server. Doing that on every page
+     * load would hammer the mailbox, and repeated failed auth is itself a way to
+     * get an account locked out.
+     */
+    private const MAIL_CHECK_TTL = 300;
+
+    /**
+     * Seconds to wait on the SMTP socket before giving up on the probe.
+     */
+    private const MAIL_PROBE_TIMEOUT = 5;
+
+    /**
+     * The scheduler runs every minute, so anything beyond a few minutes is suspect.
+     */
+    private const SCHEDULER_HEALTHY_SECONDS = 300;
+
+    private const SCHEDULER_WARNING_SECONDS = 3600;
+
+    /**
      * Get a complete snapshot of system health.
      *
-     * @return array{redis: array, database: array, cache: array, typesense: array, integrations: array, system: array}
+     * @return array{redis: array, database: array, cache: array, typesense: array, scheduler: array, digest: array, mail: array, integrations: array, system: array}
      */
     public function getAllStatus(): array
     {
@@ -24,9 +50,195 @@ class SystemMonitorService
             'database' => $this->getDatabaseStatus(),
             'cache' => $this->getCacheStatus(),
             'typesense' => $this->getTypesenseStatus(),
+            'scheduler' => $this->getSchedulerStatus(),
+            'digest' => $this->getDigestStatus(),
+            'mail' => $this->getMailStatus(),
             'integrations' => $this->getIntegrationsStatus(),
             'system' => $this->getSystemStatus(),
         ];
+    }
+
+    /**
+     * Report whether the task scheduler is actually running.
+     *
+     * Everything scheduled in the console kernel — digests, reminders, syncs —
+     * depends on cron invoking `schedule:run`. When that stops, nothing throws
+     * and nothing is logged; the work simply never happens. The heartbeat
+     * written by the scheduler itself is the only reliable signal.
+     *
+     * @return array<string, mixed>
+     */
+    public function getSchedulerStatus(): array
+    {
+        $lastRun = Cache::get(Kernel::HEARTBEAT_CACHE_KEY);
+
+        if (! is_string($lastRun) || $lastRun === '') {
+            return [
+                'status' => 'error',
+                'running' => false,
+                'last_run' => null,
+                'seconds_since_last_run' => null,
+                'message' => 'The scheduler has never reported in. Check that cron runs `schedule:run`.',
+                'last_check' => now()->toISOString(),
+            ];
+        }
+
+        $lastRunAt = Carbon::parse($lastRun);
+        $secondsSince = (int) $lastRunAt->diffInSeconds(now(), absolute: true);
+
+        $status = match (true) {
+            $secondsSince <= self::SCHEDULER_HEALTHY_SECONDS => 'healthy',
+            $secondsSince <= self::SCHEDULER_WARNING_SECONDS => 'warning',
+            default => 'error',
+        };
+
+        return [
+            'status' => $status,
+            'running' => $status === 'healthy',
+            'last_run' => $lastRunAt->toISOString(),
+            'seconds_since_last_run' => $secondsSince,
+            'message' => $status === 'healthy'
+                ? null
+                : 'The scheduler has not run recently. Check that cron runs `schedule:run`.',
+            'last_check' => now()->toISOString(),
+        ];
+    }
+
+    /**
+     * Report the health of the notification digest backlog.
+     *
+     * Items leave the queue only when a digest is successfully mailed, so a
+     * growing backlog means email delivery has stalled.
+     *
+     * @return array<string, mixed>
+     */
+    public function getDigestStatus(): array
+    {
+        try {
+            $stats = DB::table('notification_digest_queue')
+                ->selectRaw('COUNT(*) as pending_items, COUNT(DISTINCT user_id) as users_waiting, MIN(created_at) as oldest_item')
+                ->first();
+
+            $pendingItems = (int) ($stats->pending_items ?? 0);
+            $usersWaiting = (int) ($stats->users_waiting ?? 0);
+            $oldestItem = $stats->oldest_item ?? null;
+
+            $oldestAgeHours = $oldestItem
+                ? (int) Carbon::parse($oldestItem)->diffInHours(now(), absolute: true)
+                : 0;
+
+            $status = match (true) {
+                $pendingItems === 0, $oldestAgeHours < 24 => 'healthy',
+                $oldestAgeHours < 72 => 'warning',
+                default => 'error',
+            };
+
+            return [
+                'status' => $status,
+                'pending_items' => $pendingItems,
+                'users_waiting' => $usersWaiting,
+                'oldest_item' => $oldestItem ? Carbon::parse($oldestItem)->toISOString() : null,
+                'oldest_age_hours' => $oldestAgeHours,
+                'message' => $status === 'healthy'
+                    ? null
+                    : 'Digest emails are not being delivered — the backlog is not draining.',
+                'last_check' => now()->toISOString(),
+            ];
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'error' => $e->getMessage(),
+                'last_check' => now()->toISOString(),
+            ];
+        }
+    }
+
+    /**
+     * Probe the mail transport for real, rather than only checking that it is configured.
+     *
+     * Opening the transport performs connect → EHLO → STARTTLS → AUTH without
+     * sending a message, so bad credentials surface here. Checking config alone
+     * reports "healthy" while every outgoing mail is being rejected.
+     *
+     * @return array<string, mixed>
+     */
+    public function getMailStatus(): array
+    {
+        $config = [
+            'driver' => config('mail.default'),
+            'host' => config('mail.mailers.smtp.host'),
+            'port' => config('mail.mailers.smtp.port'),
+            'encryption' => config('mail.mailers.smtp.encryption'),
+            'username' => config('mail.mailers.smtp.username'),
+            'from' => config('mail.from.address'),
+            'configured' => ! empty(config('mail.mailers.smtp.host')),
+        ];
+
+        if (! $config['configured']) {
+            return array_merge($config, [
+                'status' => 'error',
+                'authenticated' => false,
+                'error' => 'No mail host is configured.',
+                'checked_at' => now()->toISOString(),
+            ]);
+        }
+
+        $probe = Cache::remember(
+            'system.mail_status',
+            self::MAIL_CHECK_TTL,
+            fn () => $this->probeMailTransport()
+        );
+
+        return array_merge($config, $probe);
+    }
+
+    /**
+     * Open the mail transport and immediately close it.
+     *
+     * @return array<string, mixed>
+     */
+    private function probeMailTransport(): array
+    {
+        $transport = Mail::mailer()->getSymfonyTransport();
+
+        // Only SMTP can be probed; log/array/sendmail have nothing to connect to.
+        if (! $transport instanceof SmtpTransport) {
+            return [
+                'status' => 'warning',
+                'authenticated' => false,
+                'error' => null,
+                'message' => 'The active mailer is not SMTP, so delivery cannot be verified.',
+                'checked_at' => now()->toISOString(),
+            ];
+        }
+
+        // A status page must never hang on an unresponsive mail server.
+        $stream = $transport->getStream();
+
+        if ($stream instanceof SocketStream) {
+            $stream->setTimeout(self::MAIL_PROBE_TIMEOUT);
+        }
+
+        try {
+            $transport->start();
+            $transport->stop();
+
+            return [
+                'status' => 'healthy',
+                'authenticated' => true,
+                'error' => null,
+                'message' => null,
+                'checked_at' => now()->toISOString(),
+            ];
+        } catch (\Throwable $e) {
+            return [
+                'status' => 'error',
+                'authenticated' => false,
+                'error' => $e->getMessage(),
+                'message' => 'The mail server rejected the connection or the credentials.',
+                'checked_at' => now()->toISOString(),
+            ];
+        }
     }
 
     /**

@@ -36,6 +36,7 @@ Route::get('dashboard/reservations', [DashboardController::class, 'reservations'
 Route::patch('profile', [DashboardController::class, 'updateUserSettings'])->name('profile.update');
 Route::patch('profile/password', [DashboardController::class, 'updatePassword'])->name('profile.updatePassword');
 Route::patch('profile/notification-preferences', [DashboardController::class, 'updateNotificationPreferences'])->name('profile.updateNotificationPreferences');
+Route::post('profile/notification-preferences/test-email', [DashboardController::class, 'sendTestNotificationEmail'])->name('profile.sendTestNotificationEmail');
 Route::get('tasks', [DashboardController::class, 'userTasks'])->name('userTasks');
 Route::get('institutionGraph', [DashboardController::class, 'institutionGraph'])->name('institutionGraph');
 

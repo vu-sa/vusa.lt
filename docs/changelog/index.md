@@ -7,6 +7,11 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.15 — Pranešimų el. laiškų pataisymas (2026-07-14) {#v1-15}
+
+- 🔧 **Vėl siunčiami pranešimų el. laiškai** — nuo balandžio pradžios pranešimų santraukos į el. paštą nebebuvo išsiunčiamos. Dabar jos veikia, o senos, nebeaktualios santraukos nebus siunčiamos. Nesėkmingo išsiuntimo atveju pranešimai nebedingsta — jie lieka eilėje kitam bandymui
+- ⭐ **Bandomasis el. laiškas** — nustatymuose, prie pranešimų el. pašto adresų, atsirado mygtukas išsiųsti bandomąjį laišką ir iškart pamatyti, ar jis pasiekia pašto dėžutę
+
 ## v1.14 — Paieška, diskusijos ir rezervacijų pultas (2026-07-13) {#v1-14}
 
 - ⭐ **Rezervacijų valdymo pultas** - visos administruojamos rezervacijos vienoje vietoje. Patvirtinti, išduoti ar pažymėti grąžintus daiktus galima tiesiai iš sąrašo, net kelias rezervacijas iš karto, o pasenusias rezervacijas galima uždaryti vienu veiksmu.

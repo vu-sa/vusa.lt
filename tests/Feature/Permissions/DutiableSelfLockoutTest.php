@@ -52,8 +52,12 @@ test('destroying another users dutiable is not guarded', function () {
         ->where('dutiable_type', User::class)
         ->first();
 
+    // The status assertion is load-bearing: assertSessionMissing and the row being
+    // gone are both true of a 404, so without it this test would pass while the
+    // request was actually erroring out.
     asUserWithInertia($this->admin)
         ->delete(route('dutiables.destroy', $otherDutiable))
+        ->assertRedirect()
         ->assertSessionMissing('access_change_warning');
 
     expect(Dutiable::find($otherDutiable->id))->toBeNull();

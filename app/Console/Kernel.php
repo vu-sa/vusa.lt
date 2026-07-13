@@ -7,9 +7,15 @@ use App\Jobs\SyncFileableFilesJob;
 use App\Jobs\SyncStaleDocumentsJob;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Support\Facades\Cache;
 
 class Kernel extends ConsoleKernel
 {
+    /**
+     * Cache key holding the timestamp of the scheduler's last run.
+     */
+    public const HEARTBEAT_CACHE_KEY = 'scheduler.last_run';
+
     /**
      * The Artisan commands provided by your application.
      *
@@ -93,6 +99,26 @@ class Kernel extends ConsoleKernel
             ->everyThirtyMinutes()
             ->name('calendar-reminders')
             ->withoutOverlapping(5);
+
+        // Prune stale digest items so a stalled mail pipeline cannot build an
+        // unbounded backlog of notifications nobody will ever want to read.
+        // The cutoff is deliberately conservative: a shorter one risks deleting
+        // digests that are merely undelivered rather than genuinely stale.
+        $schedule->command('notifications:prune-digests --older-than=30 --force')
+            ->daily()
+            ->name('prune-notification-digests')
+            ->withoutOverlapping(10);
+
+        // =====================================================================
+        // SCHEDULER HEARTBEAT
+        // =====================================================================
+
+        // Records that the scheduler ran. SystemMonitorService reads this to tell
+        // a working scheduler from a dead one — without it, a stopped cron is
+        // silent, and everything scheduled above simply never happens.
+        $schedule->call(fn () => Cache::forever(self::HEARTBEAT_CACHE_KEY, now()->toIso8601String()))
+            ->everyMinute()
+            ->name('scheduler-heartbeat');
     }
 
     /**

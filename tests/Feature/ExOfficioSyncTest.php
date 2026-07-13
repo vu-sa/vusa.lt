@@ -161,13 +161,14 @@ test('listener deletes derived rows when source is force-deleted', function () {
 
     expect(Dutiable::where('via_dutiable_id', $source->id)->count())->toBe(1);
 
-    // Simulate force delete: set exists = false on the event model.
-    $deletedSource = clone $source;
-    $deletedSource->exists = false;
+    // A real delete, not a simulated one: the event reads `exists` at construction,
+    // which is how it captures the delete signal before the row is gone.
+    $sourceId = $source->id;
+    $source->delete();
 
-    $listener->handle(new DutiableChanged($deletedSource));
+    $listener->handle(new DutiableChanged($source));
 
-    expect(Dutiable::where('via_dutiable_id', $source->id)->count())->toBe(0);
+    expect(Dutiable::where('via_dutiable_id', $sourceId)->count())->toBe(0);
 });
 
 test('listener skips non-User dutiable types', function () {

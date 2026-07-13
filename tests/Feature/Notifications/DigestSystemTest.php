@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
+use Symfony\Component\Mailer\Exception\TransportException;
 use Tests\Feature\Notifications\NotificationTestHelpers;
 
 uses(RefreshDatabase::class, NotificationTestHelpers::class);
@@ -206,7 +207,7 @@ describe('digest processing command', function () {
         Artisan::call('notifications:send-digests');
 
         // Digest SHOULD be queued (NotificationDigest implements ShouldQueue)
-        Mail::assertQueued(NotificationDigest::class, function ($mail) use ($user) {
+        Mail::assertSent(NotificationDigest::class, function ($mail) use ($user) {
             return $mail->hasTo($user->email);
         });
 
@@ -323,7 +324,7 @@ describe('digest processing command', function () {
 
         Artisan::call('notifications:send-digests');
 
-        Mail::assertQueued(NotificationDigest::class, function ($mail) use ($user) {
+        Mail::assertSent(NotificationDigest::class, function ($mail) use ($user) {
             // The mail should be queued to the correct user
             return $mail->hasTo($user->email);
         });
@@ -347,7 +348,7 @@ describe('digest frequency settings', function () {
 
         Artisan::call('notifications:send-digests');
 
-        Mail::assertQueued(NotificationDigest::class);
+        Mail::assertSent(NotificationDigest::class);
     });
 
     test('user with 24 hour frequency waits full day', function () {
@@ -367,7 +368,7 @@ describe('digest frequency settings', function () {
         Artisan::call('notifications:send-digests');
 
         // Should NOT be queued yet
-        Mail::assertNothingQueued();
+        Mail::assertNothingSent();
 
         // Travel to 25 hours after creation
         $this->travelTo(now()->addHours(13));
@@ -375,7 +376,33 @@ describe('digest frequency settings', function () {
         Artisan::call('notifications:send-digests');
 
         // NOW it should be queued
-        Mail::assertQueued(NotificationDigest::class);
+        Mail::assertSent(NotificationDigest::class);
+    });
+
+    test('digest items survive a mail transport failure', function () {
+        $user = $this->createUserWithPreferences();
+
+        $item = NotificationDigestQueue::create([
+            'user_id' => $user->id,
+            'notification_class' => CommentPostedNotification::class,
+            'category' => 'comment',
+            'data' => ['title' => 'Test', 'body' => 'Body', 'url' => '/test', 'icon' => '💬'],
+        ]);
+        $item->forceFill(['created_at' => now()->subHours(5)])->saveQuietly();
+
+        // Model the real asymmetry between the two send paths: send() merely enqueues
+        // a ShouldQueue mailable and returns successfully even when SMTP is broken,
+        // whereas sendNow() delivers inline and therefore surfaces the failure.
+        Mail::shouldReceive('to')->andReturnSelf();
+        Mail::shouldReceive('send')->andReturnNull();
+        Mail::shouldReceive('sendNow')
+            ->andThrow(new TransportException('535 Authentication failed'));
+
+        Artisan::call('notifications:send-digests');
+
+        // The items must still be there. Deleting them on a failed delivery destroys
+        // the notifications with no way to recover them — which is what send() did.
+        expect($this->getDigestQueueCountForUser($user))->toBe(1);
     });
 });
 

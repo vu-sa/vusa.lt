@@ -389,7 +389,7 @@ describe('ProcessNotificationDigests command', function () {
         $this->artisan(ProcessNotificationDigests::class)
             ->assertSuccessful();
 
-        Mail::assertQueued(NotificationDigest::class, function ($mail) {
+        Mail::assertSent(NotificationDigest::class, function ($mail) {
             return $mail->hasTo('user@example.com');
         });
     });
@@ -425,7 +425,7 @@ describe('ProcessNotificationDigests command', function () {
         $this->artisan(ProcessNotificationDigests::class)
             ->assertSuccessful();
 
-        Mail::assertQueued(NotificationDigest::class, function ($mail) {
+        Mail::assertSent(NotificationDigest::class, function ($mail) {
             return $mail->hasTo('duty@vusa.lt');
         });
     });
@@ -463,7 +463,7 @@ describe('ProcessNotificationDigests command', function () {
         $this->artisan(ProcessNotificationDigests::class)
             ->assertSuccessful();
 
-        Mail::assertQueued(NotificationDigest::class, function ($mail) {
+        Mail::assertSent(NotificationDigest::class, function ($mail) {
             return $mail->hasTo('user@example.com') && $mail->hasTo('duty@vusa.lt');
         });
     });

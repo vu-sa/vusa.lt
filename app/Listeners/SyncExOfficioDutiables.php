@@ -16,23 +16,29 @@ class SyncExOfficioDutiables implements ShouldQueue
 
     public function handle(DutiableChanged $event): void
     {
-        $dutiable = $event->dutiable;
-
         // Only sync User dutiables; contacts and other morphable types are excluded.
-        if ($dutiable->dutiable_type !== User::class) {
+        if ($event->dutiableType !== User::class) {
             return;
         }
 
         // Only process root-source rows. Derived rows (via_dutiable_id set) do not
         // themselves trigger further syncing — this prevents infinite loops and cycles.
-        if (! is_null($dutiable->via_dutiable_id)) {
+        if (! is_null($event->viaDutiableId)) {
             return;
         }
 
-        if (! $dutiable->exists) {
-            // The row was force-deleted — remove or clean up all derived rows.
-            $this->handleDeleted($dutiable);
+        if ($event->wasDeleted) {
+            // The row was deleted — clean up all rows derived from it.
+            $this->handleDeleted($event->dutiableRowId);
 
+            return;
+        }
+
+        $dutiable = Dutiable::with('duty.institution', 'duty.exOfficioTargetDuties.assignableTenants')
+            ->find($event->dutiableRowId);
+
+        // Deleted between dispatch and handling — nothing left to sync.
+        if (! $dutiable) {
             return;
         }
 
@@ -41,8 +47,6 @@ class SyncExOfficioDutiables implements ShouldQueue
 
     private function handleSaved(Dutiable $dutiable): void
     {
-        $dutiable->load('duty.institution', 'duty.exOfficioTargetDuties.assignableTenants');
-
         $targetDuties = $dutiable->duty->exOfficioTargetDuties ?? collect();
 
         if ($targetDuties->isEmpty()) {
@@ -56,10 +60,10 @@ class SyncExOfficioDutiables implements ShouldQueue
         }
     }
 
-    private function handleDeleted(Dutiable $dutiable): void
+    private function handleDeleted(string $sourceId): void
     {
         // All derived rows (created OR adopted) are deleted along with the source.
-        Dutiable::where('via_dutiable_id', $dutiable->id)->delete();
+        Dutiable::where('via_dutiable_id', $sourceId)->delete();
     }
 
     private function syncDerivedRow(Dutiable $source, string $userId, Duty $targetDuty): void

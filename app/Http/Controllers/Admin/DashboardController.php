@@ -6,8 +6,10 @@ use App\Actions\GetTenantsForUpserts;
 use App\Enums\NotificationCategory;
 use App\Enums\NotificationChannel;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Concerns\ApiResponses;
 use App\Http\Requests\UpdatePasswordRequest;
 use App\Mail\FeedbackMail;
+use App\Mail\NotificationDigest;
 use App\Models\Calendar;
 use App\Models\Institution;
 use App\Models\Meeting;
@@ -17,20 +19,25 @@ use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Notifications\TestPushNotification;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
 use App\Services\ResourceServices\DutyService;
 use App\Settings\AtstovavimasSettings;
 use App\Settings\MeetingSettings;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 class DashboardController extends AdminController
 {
+    use ApiResponses;
+
     public function __construct(public Authorizer $authorizer) {}
 
     public function index(Request $request)
@@ -638,6 +645,42 @@ class DashboardController extends AdminController
         $user->save();
 
         return $this->redirectBackWithSuccess('Pranešimų nustatymai išsaugoti.');
+    }
+
+    /**
+     * Send a sample digest email to the current user's configured digest addresses.
+     *
+     * Sent with sendNow() rather than send(): NotificationDigest is a ShouldQueue
+     * mailable, so send() would only enqueue it and report success even when the
+     * mail server is rejecting everything — which defeats the point of a test.
+     */
+    public function sendTestNotificationEmail(): JsonResponse
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        $emails = $user->getDigestEmails();
+
+        // Build the sample from a real notification so the item shape cannot drift
+        // away from what the digest template expects.
+        $notification = new TestPushNotification;
+
+        $sampleItems = [
+            $notification->category()->value => [$notification->toDigestItem($user)],
+        ];
+
+        try {
+            Mail::to($emails)->sendNow(new NotificationDigest($user, $sampleItems));
+        } catch (TransportExceptionInterface $e) {
+            return $this->jsonError(
+                __('notifications.test_email_failed', ['error' => $e->getMessage()]),
+                500
+            );
+        }
+
+        return $this->jsonSuccess(
+            message: __('notifications.test_email_sent', ['emails' => implode(', ', $emails)])
+        );
     }
 
     public function userTasks(Request $request)
