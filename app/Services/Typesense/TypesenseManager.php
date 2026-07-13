@@ -154,16 +154,9 @@ class TypesenseManager
             'headerKey' => $scopedKeysData['header_key'] ?? '',
             'expiresAt' => $scopedKeysData['expires_at'],
             'isSuperAdmin' => $scopedKeysData['is_super_admin'],
-            'nodes' => array_map(function ($node) {
-                // Replace Docker service name with localhost for frontend access
-                $host = $node['host'] === 'typesense' ? 'localhost' : $node['host'];
-
-                return [
-                    'host' => $host,
-                    'port' => (int) $node['port'],
-                    'protocol' => $node['protocol'],
-                ];
-            }, $nodes),
+            // Admin search runs in the browser too, so it needs the public node — not
+            // the internal address the server indexes against.
+            'nodes' => self::getBrowserNodes($nodes),
         ];
     }
 
