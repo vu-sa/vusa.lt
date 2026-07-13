@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Contracts\Commentable;
 use App\Models\Pivots\SharepointFileable;
 use App\Models\Traits\HasComments;
 use Illuminate\Database\Eloquent\Collection;
@@ -13,11 +14,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * @property string $sharepoint_id
  * @property string $id
- * @property-read Model|\Eloquent $commentable
  * @property-read Collection<int, Comment> $comments
  * @property-read Collection<int, SharepointFileable> $fileables
  * @property-read Collection<int, Institution> $institutions
  * @property-read Collection<int, Meeting> $meetings
+ * @property-read Collection<int, Comment> $rootComments
  * @property-read Collection<int, Type> $types
  *
  * @method static \Database\Factories\SharepointFileFactory factory($count = null, $state = [])
@@ -27,7 +28,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * @mixin \Eloquent
  */
-class SharepointFile extends Model
+class SharepointFile extends Model implements Commentable
 {
     use HasComments, HasFactory, HasUuids;
 

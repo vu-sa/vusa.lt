@@ -61,36 +61,6 @@ class TaskService
     }
 
     /**
-     * Find or create a task with progress tracking for a reservation.
-     * If task exists, updates the total items count.
-     *
-     * @deprecated Use PickupTaskHandler or ReturnTaskHandler directly
-     *
-     * @param  Model&object{id: int|string}  $model
-     */
-    public static function findOrCreateProgressTask(
-        string $name,
-        Model $model,
-        Collection $users,
-        ?string $due_date,
-        ActionType $actionType,
-        int $totalItems = 1
-    ): Task {
-        $handler = match ($actionType) {
-            ActionType::Pickup => new PickupTaskHandler,
-            ActionType::Return => new ReturnTaskHandler,
-            default => throw new \InvalidArgumentException('Progress tasks only support Pickup and Return action types'),
-        };
-
-        return $handler->findOrCreate(
-            name: $name,
-            model: $model,
-            users: $users,
-            dueDate: $due_date,
-        );
-    }
-
-    /**
      * Create a manual task (non-static method for DI usage).
      */
     public function createManualTask(CreateTaskData $data): Task

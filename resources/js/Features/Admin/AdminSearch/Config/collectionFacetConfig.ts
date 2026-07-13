@@ -64,7 +64,7 @@ export const MEETING_FACET_CONFIG: CollectionFacetConfig = {
  * Agenda items collection facet configuration
  */
 export const AGENDA_ITEM_FACET_CONFIG: CollectionFacetConfig = {
-  facetBy: 'meeting_year,student_vote,decision,is_complete,brought_by_students,vote_alignment_status,tenant_shortnames',
+  facetBy: 'meeting_year,student_vote,decision,student_benefit,is_complete,brought_by_students,vote_alignment_status,tenant_shortnames',
   queryBy: 'title,description,student_benefit,meeting_title',
   defaultSortBy: 'meeting_start_time:desc',
   fields: [
@@ -101,6 +101,14 @@ export const AGENDA_ITEM_FACET_CONFIG: CollectionFacetConfig = {
       sortBy: 'count',
     },
     {
+      field: 'student_benefit',
+      label: 'Palankumas studentams',
+      type: 'checkbox',
+      icon: 'Scale',
+      defaultOpen: false,
+      sortBy: 'count',
+    },
+    {
       field: 'brought_by_students',
       label: 'Pateikė studentai',
       type: 'checkbox',
@@ -129,10 +137,10 @@ export const AGENDA_ITEM_FACET_CONFIG: CollectionFacetConfig = {
 };
 
 /**
- * News collection facet configuration (for future use)
+ * News collection facet configuration
  */
 export const NEWS_FACET_CONFIG: CollectionFacetConfig = {
-  facetBy: 'lang,tenant_shortname',
+  facetBy: 'lang,tenant_name',
   queryBy: 'title,short',
   defaultSortBy: 'publish_time:desc',
   fields: [
@@ -145,7 +153,7 @@ export const NEWS_FACET_CONFIG: CollectionFacetConfig = {
       sortBy: 'count',
     },
     {
-      field: 'tenant_shortname',
+      field: 'tenant_name',
       label: 'Padalinys',
       type: 'checkbox',
       icon: 'Users',
@@ -157,10 +165,74 @@ export const NEWS_FACET_CONFIG: CollectionFacetConfig = {
 };
 
 /**
+ * Page collection facet configuration
+ */
+export const PAGE_FACET_CONFIG: CollectionFacetConfig = {
+  facetBy: 'lang,tenant_name,category_name',
+  queryBy: 'title,meta_description',
+  defaultSortBy: 'created_at:desc',
+  fields: [
+    {
+      field: 'lang',
+      label: 'Kalba',
+      type: 'checkbox',
+      icon: 'Globe',
+      defaultOpen: true,
+      sortBy: 'count',
+    },
+    {
+      field: 'category_name',
+      label: 'Kategorija',
+      type: 'checkbox',
+      icon: 'Tag',
+      defaultOpen: false,
+      sortBy: 'count',
+    },
+    {
+      field: 'tenant_name',
+      label: 'Padalinys',
+      type: 'checkbox',
+      icon: 'Users',
+      defaultOpen: false,
+      maxValues: 15,
+      sortBy: 'count',
+    },
+  ],
+};
+
+/**
+ * Calendar collection facet configuration
+ */
+export const CALENDAR_FACET_CONFIG: CollectionFacetConfig = {
+  facetBy: 'tenant_name,lang',
+  queryBy: 'title,title_lt,title_en',
+  defaultSortBy: 'date:desc',
+  fields: [
+    {
+      field: 'tenant_name',
+      label: 'Padalinys',
+      type: 'checkbox',
+      icon: 'Users',
+      defaultOpen: true,
+      maxValues: 15,
+      sortBy: 'count',
+    },
+    {
+      field: 'lang',
+      label: 'Kalba',
+      type: 'checkbox',
+      icon: 'Globe',
+      defaultOpen: false,
+      sortBy: 'count',
+    },
+  ],
+};
+
+/**
  * Institution collection facet configuration (for future use)
  */
 export const INSTITUTION_FACET_CONFIG: CollectionFacetConfig = {
-  facetBy: 'tenant_shortname',
+  facetBy: 'tenant_shortname,type_titles',
   queryBy: 'name_lt,name_en,short_name_lt,short_name_en,alias,email',
   defaultSortBy: 'created_at:desc',
   fields: [
@@ -170,6 +242,15 @@ export const INSTITUTION_FACET_CONFIG: CollectionFacetConfig = {
       type: 'checkbox',
       icon: 'Users',
       defaultOpen: true,
+      maxValues: 15,
+      sortBy: 'count',
+    },
+    {
+      field: 'type_titles',
+      label: 'Tipas',
+      type: 'checkbox',
+      icon: 'Building2',
+      defaultOpen: false,
       maxValues: 15,
       sortBy: 'count',
     },
@@ -213,6 +294,124 @@ export const RESOURCE_FACET_CONFIG: CollectionFacetConfig = {
 };
 
 /**
+ * Duty collection facet configuration
+ */
+export const DUTY_FACET_CONFIG: CollectionFacetConfig = {
+  facetBy: 'tenant_shortname,type_titles',
+  queryBy: 'name_lt,name_en,email,institution_name_lt,institution_name_en,current_user_names,previous_user_names',
+  defaultSortBy: 'name_lt:asc',
+  fields: [
+    {
+      field: 'tenant_shortname',
+      label: 'Padalinys',
+      type: 'checkbox',
+      icon: 'Users',
+      defaultOpen: true,
+      maxValues: 15,
+      sortBy: 'count',
+    },
+    {
+      field: 'type_titles',
+      label: 'Tipas',
+      type: 'checkbox',
+      icon: 'Tag',
+      defaultOpen: false,
+      maxValues: 15,
+      sortBy: 'count',
+    },
+  ],
+};
+
+/**
+ * User collection facet configuration
+ */
+export const USER_FACET_CONFIG: CollectionFacetConfig = {
+  facetBy: 'tenant_shortname,current_duty_names,is_active',
+  queryBy: 'name,email,phone,current_duty_names,previous_duty_names',
+  defaultSortBy: 'created_at:desc',
+  fields: [
+    {
+      field: 'tenant_shortname',
+      label: 'Padalinys',
+      type: 'checkbox',
+      icon: 'Users',
+      defaultOpen: true,
+      maxValues: 15,
+      sortBy: 'count',
+    },
+    {
+      field: 'current_duty_names',
+      label: 'Pareigos',
+      type: 'checkbox',
+      icon: 'Briefcase',
+      defaultOpen: false,
+      maxValues: 20,
+      sortBy: 'count',
+    },
+    {
+      field: 'is_active',
+      label: 'Aktyvus',
+      type: 'checkbox',
+      icon: 'CheckCircle',
+      defaultOpen: false,
+      sortBy: 'count',
+    },
+  ],
+};
+
+/**
+ * Document collection facet configuration
+ */
+export const DOCUMENT_FACET_CONFIG: CollectionFacetConfig = {
+  facetBy: 'document_year,content_type_category,language_code,tenant_shortname,is_active',
+  queryBy: 'title,summary,content_type,document_year',
+  defaultSortBy: 'document_date:desc',
+  fields: [
+    {
+      field: 'document_year',
+      label: 'Metai',
+      type: 'year-pills',
+      icon: 'Calendar',
+      defaultOpen: true,
+      sortBy: 'alpha',
+    },
+    {
+      field: 'content_type_category',
+      label: 'Tipas',
+      type: 'checkbox',
+      icon: 'FileText',
+      defaultOpen: true,
+      sortBy: 'count',
+    },
+    {
+      field: 'language_code',
+      label: 'Kalba',
+      type: 'checkbox',
+      icon: 'Globe',
+      defaultOpen: false,
+      sortBy: 'count',
+    },
+    {
+      field: 'tenant_shortname',
+      label: 'Padalinys',
+      type: 'checkbox',
+      icon: 'Users',
+      defaultOpen: false,
+      maxValues: 15,
+      sortBy: 'count',
+    },
+    {
+      field: 'is_active',
+      label: 'Aktyvus',
+      type: 'checkbox',
+      icon: 'CheckCircle',
+      defaultOpen: false,
+      sortBy: 'count',
+    },
+  ],
+};
+
+/**
  * Get facet config for a collection
  */
 export function getCollectionFacetConfig(collection: string): CollectionFacetConfig | null {
@@ -223,14 +422,52 @@ export function getCollectionFacetConfig(collection: string): CollectionFacetCon
       return AGENDA_ITEM_FACET_CONFIG;
     case 'news':
       return NEWS_FACET_CONFIG;
+    case 'pages':
+      return PAGE_FACET_CONFIG;
+    case 'calendar':
+      return CALENDAR_FACET_CONFIG;
     case 'institutions':
       return INSTITUTION_FACET_CONFIG;
     case 'resources':
       return RESOURCE_FACET_CONFIG;
+    case 'duties':
+      return DUTY_FACET_CONFIG;
+    case 'documents':
+      return DOCUMENT_FACET_CONFIG;
+    case 'users':
+      return USER_FACET_CONFIG;
     default:
       console.warn(`No facet config for collection: ${collection}`);
       return null;
   }
+}
+
+/**
+ * Sentinel sort value meaning "rank by Typesense relevance". Resolved to a
+ * concrete `_text_match(...)` expression (with the collection's date tiebreak)
+ * at search time, so it only makes sense while a query is active.
+ */
+export const RELEVANCE_SORT_VALUE = 'relevance';
+
+/** The relevance sort option, prepended to every collection's sort list. */
+const RELEVANCE_SORT_OPTION: SortOption = {
+  value: RELEVANCE_SORT_VALUE,
+  label: 'Pagal aktualumą',
+  icon: 'Sparkles',
+};
+
+/**
+ * Resolve the relevance sentinel into a concrete Typesense sort expression for a
+ * collection, falling back to the collection's default date tiebreak. Other sort
+ * values pass through unchanged.
+ */
+export function resolveSortValue(collection: string, sortBy: string): string {
+  if (sortBy !== RELEVANCE_SORT_VALUE) {
+    return sortBy;
+  }
+  const config = getCollectionFacetConfig(collection);
+  const tiebreak = config?.defaultSortBy ?? 'created_at:desc';
+  return `_text_match(buckets:10):desc,${tiebreak}`;
 }
 
 /**
@@ -253,20 +490,96 @@ export const AGENDA_ITEM_SORT_OPTIONS: SortOption[] = [
 ];
 
 /**
+ * Sort options for news
+ */
+export const NEWS_SORT_OPTIONS: SortOption[] = [
+  { value: 'publish_time:desc', label: 'Naujausi pirmi', icon: 'ArrowDown' },
+  { value: 'publish_time:asc', label: 'Seniausi pirmi', icon: 'ArrowUp' },
+  { value: 'title:asc', label: 'Pagal pavadinimą (A–Z)', icon: 'ArrowDownAZ' },
+  { value: 'title:desc', label: 'Pagal pavadinimą (Z–A)', icon: 'ArrowUpAZ' },
+];
+
+/**
+ * Sort options for pages
+ */
+export const PAGE_SORT_OPTIONS: SortOption[] = [
+  { value: 'created_at:desc', label: 'Naujausi pirmi', icon: 'ArrowDown' },
+  { value: 'created_at:asc', label: 'Seniausi pirmi', icon: 'ArrowUp' },
+  { value: 'title:asc', label: 'Pagal pavadinimą (A–Z)', icon: 'ArrowDownAZ' },
+  { value: 'title:desc', label: 'Pagal pavadinimą (Z–A)', icon: 'ArrowUpAZ' },
+];
+
+/**
+ * Sort options for calendar
+ */
+export const CALENDAR_SORT_OPTIONS: SortOption[] = [
+  { value: 'date:desc', label: 'Naujausi pirmi', icon: 'ArrowDown' },
+  { value: 'date:asc', label: 'Seniausi pirmi', icon: 'ArrowUp' },
+  { value: 'title:asc', label: 'Pagal pavadinimą (A–Z)', icon: 'ArrowDownAZ' },
+  { value: 'title:desc', label: 'Pagal pavadinimą (Z–A)', icon: 'ArrowUpAZ' },
+];
+
+/**
+ * Sort options for duties
+ */
+export const DUTY_SORT_OPTIONS: SortOption[] = [
+  { value: 'name_lt:asc', label: 'Pagal pavadinimą (A–Z)', icon: 'ArrowDownAZ' },
+  { value: 'name_lt:desc', label: 'Pagal pavadinimą (Z–A)', icon: 'ArrowUpAZ' },
+  { value: 'created_at:desc', label: 'Naujausi pirmi', icon: 'ArrowDown' },
+  { value: 'created_at:asc', label: 'Seniausi pirmi', icon: 'ArrowUp' },
+];
+
+/**
+ * Sort options for users
+ */
+export const USER_SORT_OPTIONS: SortOption[] = [
+  { value: 'created_at:desc', label: 'Naujausi pirmi', icon: 'ArrowDown' },
+  { value: 'created_at:asc', label: 'Seniausi pirmi', icon: 'ArrowUp' },
+  { value: 'name:asc', label: 'Pagal vardą (A–Z)', icon: 'ArrowDownAZ' },
+  { value: 'name:desc', label: 'Pagal vardą (Z–A)', icon: 'ArrowUpAZ' },
+];
+
+/**
+ * Sort options for documents
+ */
+export const DOCUMENT_SORT_OPTIONS: SortOption[] = [
+  { value: 'document_date:desc', label: 'Naujausi pirmi', icon: 'ArrowDown' },
+  { value: 'document_date:asc', label: 'Seniausi pirmi', icon: 'ArrowUp' },
+  { value: 'title:asc', label: 'Pagal pavadinimą (A–Z)', icon: 'ArrowDownAZ' },
+  { value: 'title:desc', label: 'Pagal pavadinimą (Z–A)', icon: 'ArrowUpAZ' },
+];
+
+/**
  * Get sort options for a collection
  */
 export function getCollectionSortOptions(collection: string): SortOption[] {
-  switch (collection) {
-    case 'meetings':
-      return MEETING_SORT_OPTIONS;
-    case 'agenda_items':
-      return AGENDA_ITEM_SORT_OPTIONS;
-    default:
-      return [
-        { value: 'created_at:desc', label: 'Naujausi pirmi', icon: 'ArrowDown' },
-        { value: 'created_at:asc', label: 'Seniausi pirmi', icon: 'ArrowUp' },
-      ];
-  }
+  const baseOptions = ((): SortOption[] => {
+    switch (collection) {
+      case 'meetings':
+        return MEETING_SORT_OPTIONS;
+      case 'agenda_items':
+        return AGENDA_ITEM_SORT_OPTIONS;
+      case 'news':
+        return NEWS_SORT_OPTIONS;
+      case 'pages':
+        return PAGE_SORT_OPTIONS;
+      case 'calendar':
+        return CALENDAR_SORT_OPTIONS;
+      case 'duties':
+        return DUTY_SORT_OPTIONS;
+      case 'documents':
+        return DOCUMENT_SORT_OPTIONS;
+      case 'users':
+        return USER_SORT_OPTIONS;
+      default:
+        return [
+          { value: 'created_at:desc', label: 'Naujausi pirmi', icon: 'ArrowDown' },
+          { value: 'created_at:asc', label: 'Seniausi pirmi', icon: 'ArrowUp' },
+        ];
+    }
+  })();
+
+  return [RELEVANCE_SORT_OPTION, ...baseOptions];
 }
 
 /**
@@ -277,24 +590,33 @@ export const FACET_VALUE_LABELS: Record<string, Record<string, string>> = {
     complete: 'Užbaigtas',
     incomplete: 'Neužbaigtas',
     partial: 'Dalinai užbaigtas',
+    no_items: 'Be punktų',
   },
+  // Meeting values: all_match, mixed, all_mismatch, neutral.
+  // Agenda item values: match, mismatch, mixed, incomplete, neutral.
   vote_alignment_status: {
-    'aligned': 'Atitinka',
-    'misaligned': 'Neatitinka',
-    'incomplete': 'Nepilna informacija',
-    'unknown': 'Nežinoma',
-    'no-vote': 'Nebalsuota',
+    all_match: 'Visi sutampa',
+    match: 'Sutampa',
+    mixed: 'Iš dalies sutampa',
+    all_mismatch: 'Visi nesutampa',
+    mismatch: 'Nesutampa',
+    incomplete: 'Nepilna informacija',
+    neutral: 'Neutralu',
   },
   student_vote: {
-    for: 'Už',
-    against: 'Prieš',
-    abstain: 'Susilaikė',
+    positive: 'Pritarė',
+    negative: 'Nepritarė',
+    neutral: 'Susilaikė',
   },
   decision: {
-    approved: 'Pritarta',
-    rejected: 'Atmesta',
-    postponed: 'Atidėta',
-    noted: 'Susipažinta',
+    positive: 'Priimtas',
+    negative: 'Nepriimtas',
+    neutral: 'Susilaikyta',
+  },
+  student_benefit: {
+    positive: 'Palanku',
+    negative: 'Nepalanku',
+    neutral: 'Neutralu',
   },
   is_complete: {
     true: 'Pilnai užpildyta',

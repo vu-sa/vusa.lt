@@ -3,16 +3,16 @@
     <div class="flex items-center gap-4 mb-4">
       <div class="flex items-center gap-2">
         <Label>Rodyti redagavimą</Label>
-        <Switch :checked="showAdminEdit" @update:checked="val => showAdminEdit = val" />
+        <Switch :model-value="showAdminEdit" @update:model-value="val => showAdminEdit = val" />
       </div>
       <div class="flex items-center gap-2">
         <Label>Rodyti stulpelių keitimo rodykles</Label>
-        <Switch :checked="showColumnChangeArrows" @update:checked="val => showColumnChangeArrows = val" />
+        <Switch :model-value="showColumnChangeArrows" @update:model-value="val => showColumnChangeArrows = val" />
       </div>
     </div>
     <TransitionGroup ref="el" tag="div">
       <div v-for="item in navigation" :key="item.id"
-        class="relative grid w-full grid-cols-[24px__1fr] gap-4 border border-zinc-300 p-3 shadow-xs first:rounded-t-lg last:rounded-b-lg dark:border-zinc-700/40 dark:bg-zinc-800/5">
+        class="relative grid w-full grid-cols-[24px__1fr] gap-4 border border-zinc-300 p-3 first:rounded-t-lg last:rounded-b-lg dark:border-zinc-700/40 dark:bg-zinc-800/5">
         <Button class="handle" style="height: 100%;" variant="ghost" size="sm">
           <IFluentReOrderDotsVertical24Regular />
         </Button>

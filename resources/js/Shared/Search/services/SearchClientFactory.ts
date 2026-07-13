@@ -9,7 +9,7 @@
  * Used by both admin and public search implementations.
  */
 
-import type { TypesenseConfig, TypesenseNode, SearchClientType, SearchClients } from '../types';
+import type { TypesenseConfig, TypesenseNode } from '../types';
 
 /**
  * Typesense client interface for direct API access
@@ -137,35 +137,6 @@ export class SearchClientFactory {
       apiKey,
       nodes,
     });
-  }
-
-  /**
-   * Create both direct and InstantSearch adapter clients
-   *
-   * Used when InstantSearch compatibility is needed.
-   */
-  static async createWithAdapter(options: ClientFactoryOptions): Promise<SearchClients> {
-    const typesenseClient = this.createTypesenseClient(options);
-
-    // Dynamically import the InstantSearch adapter only when needed
-    const { default: TypesenseInstantSearchAdapter } = await import(
-      'typesense-instantsearch-adapter',
-    );
-
-    const adapter = new TypesenseInstantSearchAdapter({
-      server: {
-        apiKey: options.apiKey,
-        nodes: options.nodes,
-        connectionTimeoutSeconds: options.connectionTimeoutSeconds ?? 10,
-      },
-      additionalSearchParameters: options.additionalSearchParameters || {},
-      collectionSpecificSearchParameters: options.collectionSpecificSearchParameters,
-    });
-
-    return {
-      typesenseClient,
-      searchClient: adapter.searchClient,
-    };
   }
 
   /**

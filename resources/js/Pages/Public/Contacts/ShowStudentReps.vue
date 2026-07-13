@@ -111,7 +111,7 @@
             :key="institution.id"
             :href="route('contacts.institution', {
               institution: institution.id,
-              subdomain: institution.tenant?.alias === 'vusa' ? 'www' : institution.tenant?.alias ?? 'www',
+              subdomain: resolveTenantSubdomain(institution.tenant?.id),
               lang: $page.props.app.locale,
             })"
             class="block"
@@ -198,7 +198,7 @@
               <SmartLink
                 :href="route('contacts.institution', {
                   institution: institution.id,
-                  subdomain: institution.tenant?.alias === 'vusa' ? 'www' : institution.tenant?.alias ?? 'www',
+                  subdomain: resolveTenantSubdomain(institution.tenant?.id),
                   lang: $page.props.app.locale,
                 })"
                 class="block flex-1"
@@ -303,6 +303,7 @@ import { usePage, router } from '@inertiajs/vue3';
 import { SearchIcon, GlobeIcon } from 'lucide-vue-next';
 
 import SmartLink from '@/Components/Public/SmartLink.vue';
+import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import PadalinysSelector from '@/Components/Public/Nav/PadalinysSelector.vue';
 import { pluralizeLithuanian } from '@/Utils/String';
 import { Label } from '@/Components/ui/label';

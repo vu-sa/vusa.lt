@@ -11,7 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->tenant = Tenant::query()->inRandomOrder()->first();
+    $this->tenant = Tenant::query()->first();
 
     $this->user = makeUser($this->tenant);
 
@@ -129,6 +129,14 @@ describe('auth: news manager', function () {
 
     test('can index news', function () {
         asUser($this->newsManager)->get(route('news.index'))->assertStatus(200);
+    });
+
+    test('malicious filter key does not break the index query', function () {
+        $maliciousFilters = json_encode(['tenant.shortname) OR 1=1 -- ' => 'x']);
+
+        asUser($this->newsManager)
+            ->get(route('news.index', ['filters' => $maliciousFilters]))
+            ->assertStatus(200);
     });
 
     test('can access news create page', function () {

@@ -13,6 +13,7 @@
 import { h, ref, computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
+import type { IndexTablePageInstance } from '@/Types/TableConfigTypes';
 
 import { DateCell, TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
@@ -43,7 +44,7 @@ const props = defineProps<{
 const modelName = 'calendar';
 const entityName = 'calendar';
 
-const indexTablePageRef = ref<any>(null);
+const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
 
 const getRowId = (row: App.Entities.Calendar) => {
   return `calendar-${row.id}`;
@@ -52,7 +53,7 @@ const getRowId = (row: App.Entities.Calendar) => {
 const columns = computed<Array<ColumnDef<App.Entities.Calendar, any>>>(() => [
   {
     accessorKey: 'title',
-    header: () => 'Pavadinimas',
+    header: () => $t('Pavadinimas'),
     cell: ({ row }) => {
       const title = row.getValue('title');
       const displayTitle = typeof title === 'object' && title !== null
@@ -65,7 +66,7 @@ const columns = computed<Array<ColumnDef<App.Entities.Calendar, any>>>(() => [
   },
   {
     accessorKey: 'date',
-    header: () => 'Data',
+    header: () => $t('Data'),
     cell: ({ row }) => {
       const { date } = row.original;
       if (!date) return null;
@@ -76,10 +77,11 @@ const columns = computed<Array<ColumnDef<App.Entities.Calendar, any>>>(() => [
       });
     },
     size: 200,
+    enableSorting: true,
   },
   {
     id: 'category',
-    header: () => 'Kategorija',
+    header: () => $t('Kategorija'),
     cell: ({ row }) => {
       const { category } = row.original;
       if (!category) return null;
@@ -92,7 +94,7 @@ const columns = computed<Array<ColumnDef<App.Entities.Calendar, any>>>(() => [
   },
   {
     accessorKey: 'is_draft',
-    header: () => 'Ar rodomas?',
+    header: () => $t('Ar rodomas?'),
     cell: ({ row }) => {
       return row.original.is_draft ? '❌ Ne' : '✅ Taip';
     },
@@ -119,7 +121,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Calendar>>(() => {
     pageSize: props.calendar.meta.per_page,
 
     initialFilters: props.filters,
-    initialSorting: props.sorting,
+    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'date', desc: true }],
     enableFiltering: true,
     enableColumnVisibility: false,
     enableRowSelection: false,

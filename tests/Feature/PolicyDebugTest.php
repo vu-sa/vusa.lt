@@ -10,7 +10,7 @@ uses(RefreshDatabase::class);
 
 describe('Policy Debug', function () {
     test('super admin should bypass form policies', function () {
-        $tenant = Tenant::query()->inRandomOrder()->first();
+        $tenant = Tenant::query()->first();
         $user = makeUser($tenant);
         $user->assignRole('Super Admin');
 
@@ -30,7 +30,7 @@ describe('Policy Debug', function () {
     });
 
     test('super admin should access form index endpoint', function () {
-        $tenant = Tenant::query()->inRandomOrder()->first();
+        $tenant = Tenant::query()->first();
         $user = makeUser($tenant);
         $user->assignRole('Super Admin');
 
@@ -41,7 +41,7 @@ describe('Policy Debug', function () {
     });
 
     test('super admin should bypass role policies', function () {
-        $tenant = Tenant::query()->inRandomOrder()->first();
+        $tenant = Tenant::query()->first();
         $user = makeUser($tenant);
         $user->assignRole('Super Admin');
 

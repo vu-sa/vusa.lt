@@ -25,7 +25,7 @@ trait NotificationTestHelpers
 {
     protected function createUserWithPreferences(array $preferences = []): User
     {
-        $tenant = Tenant::query()->inRandomOrder()->first()
+        $tenant = Tenant::query()->first()
             ?? throw new \RuntimeException('No tenants found in database.');
 
         $user = User::factory()->hasAttached(
@@ -141,7 +141,7 @@ trait NotificationTestHelpers
             'commentable_type' => ReservationResource::class,
             'commentable_id' => $reservationResource->id,
             'user_id' => $commenter->id,
-            'comment' => 'Test comment content',
+            'body' => 'Test comment content',
         ]);
     }
 

@@ -6,7 +6,7 @@
       'group relative flex items-start gap-3 rounded-lg p-3 transition-all duration-200',
       taskableLink ? 'cursor-pointer' : '',
       'hover:bg-zinc-100/80 dark:hover:bg-zinc-800/50',
-      isOverdue && 'bg-red-50/20 dark:bg-red-950/5',
+      isOverdue && 'bg-rose-50/20 dark:bg-rose-950/5',
       actionTypeStyles.bgHover
     ]"
   >
@@ -92,14 +92,12 @@
         <!-- Due date badge -->
         <div v-if="dueDate" class="shrink-0">
           <Badge
-            :variant="isOverdue ? 'destructive' : 'secondary'"
+            :variant="isOverdue ? 'rose' : 'secondary'"
             :class="[
               'text-xs font-medium',
-              isOverdue
-                ? ''
-                : isDueSoon
-                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                  : ''
+              isDueSoon && !isOverdue
+                ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                : ''
             ]"
           >
             {{ formattedDueDate }}

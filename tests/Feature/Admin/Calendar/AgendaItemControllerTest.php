@@ -14,7 +14,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->tenant = Tenant::query()->inRandomOrder()->first();
+    $this->tenant = Tenant::query()->first();
 
     // Create an admin user with Communication Coordinator role
     $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
@@ -245,7 +245,7 @@ describe('agenda items controller', function () {
             'meeting_id' => $this->meeting->id,
         ]);
 
-        $outsider = makeUser(Tenant::query()->where('id', '!=', $this->tenant->id)->inRandomOrder()->first() ?? $this->tenant);
+        $outsider = makeUser(Tenant::query()->where('id', '!=', $this->tenant->id)->first() ?? $this->tenant);
 
         $response = asUser($outsider)
             ->get(route('agendaItems.edit', $agendaItem->id));

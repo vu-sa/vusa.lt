@@ -42,15 +42,21 @@ const iframeName = `sp-picker-${channelId}`;
 const dialogOpen = ref(false);
 const iframeRef = ref<HTMLIFrameElement | null>(null);
 
+// SharePoint picker configuration. Configurable via VITE_SHAREPOINT_PICKER_*
+// env vars, falling back to the VU SR archive defaults.
+const sharePointBaseUrl = import.meta.env.VITE_SHAREPOINT_PICKER_BASE_URL ?? 'https://vustudentuatstovybe.sharepoint.com';
+const sharePointSiteUrl = import.meta.env.VITE_SHAREPOINT_PICKER_SITE_URL ?? `${sharePointBaseUrl}/sites/vieningai`;
+const sharePointList = import.meta.env.VITE_SHAREPOINT_PICKER_LIST ?? 'Bendrai naudojami dokumentai';
+const sharePointFolder = import.meta.env.VITE_SHAREPOINT_PICKER_FOLDER ?? 'Dokumentų sistema';
+
 const options: FilePickerOptions = {
   sdk: '8.0',
   entry: {
     sharePoint: {
       byPath: {
-        // TODO: Move to configuration - hardcoded SharePoint URLs and paths
-        web: 'https://vustudentuatstovybe.sharepoint.com/sites/vieningai',
-        list: 'Bendrai naudojami dokumentai', // TODO: Make configurable
-        folder: 'Dokumentų sistema', // TODO: Make configurable
+        web: sharePointSiteUrl,
+        list: sharePointList,
+        folder: sharePointFolder,
       },
     },
   },
@@ -72,8 +78,7 @@ const options: FilePickerOptions = {
     locations: {
       sharePoint: {
         byPath: {
-          // TODO: Move to configuration - hardcoded SharePoint site URL
-          folder: 'https://vustudentuatstovybe.sharepoint.com/sites/vieningai',
+          folder: sharePointSiteUrl,
         },
       },
     },
@@ -88,8 +93,7 @@ const options: FilePickerOptions = {
   title: 'Select Documents from SharePoint Archive',
 };
 
-// TODO: Move to configuration - hardcoded SharePoint base URL
-const baseUrl = 'https://vustudentuatstovybe.sharepoint.com';
+const baseUrl = sharePointBaseUrl;
 
 const msalParams = {
   auth: {

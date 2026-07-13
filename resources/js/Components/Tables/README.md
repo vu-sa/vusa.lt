@@ -66,7 +66,7 @@ IndexTablePage.vue          # Full page layout with header/actions
   <IndexTablePage
     model-name="institutions"
     entity-name="institution"
-    :icon="Icons.INSTITUTION"
+    :icon="Building2"
     :data="institutions.data"
     :columns="columns"
     :total-count="institutions.total"
@@ -101,7 +101,7 @@ IndexTablePage.vue          # Full page layout with header/actions
 
 <script setup lang="ts">
 import { IndexTablePage } from '@/Components/Tables';
-import { Icons } from '@/Types/Icons/filled';
+import { Building2 } from 'lucide-vue-next';
 
 const props = defineProps<{
   institutions: PaginatedResponse<Institution>
@@ -641,7 +641,7 @@ const columns: ColumnDef<Report, any>[] = [
     :create-route="route('institutions.create')"
     header-title="Institutions"
     header-description="Manage all institutions across tenants"
-    :icon="Icons.INSTITUTION"
+    :icon="Building2"
     can-create
     enable-filtering
     enable-column-visibility
@@ -678,7 +678,7 @@ const columns: ColumnDef<Report, any>[] = [
 
 <script setup lang="ts">
 import { IndexTablePage } from '@/Components/Tables';
-import { Icons } from '@/Types/Icons/filled';
+import { Building2 } from 'lucide-vue-next';
 import { router } from '@inertiajs/vue3';
 
 const props = defineProps<{

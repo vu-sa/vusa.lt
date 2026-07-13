@@ -22,7 +22,7 @@
           </Badge>
           <Badge
             v-if="taskStats.overdue > 0"
-            variant="destructive"
+            variant="rose"
             class="text-xs font-medium tabular-nums"
           >
             {{ taskStats.overdue }} {{ $t('overdue') }}
@@ -133,7 +133,7 @@ const isUpdating = ref<string | null>(null);
 const statusIndicatorClasses = computed(() => {
   const base = 'absolute top-0 right-0 w-12 h-12 -mr-6 -mt-6 rotate-45';
   if (props.taskStats.overdue > 0) {
-    return `${base} bg-red-300/40 dark:bg-red-800/25`;
+    return `${base} bg-rose-300/40 dark:bg-rose-800/25`;
   }
   if (props.taskStats.dueSoon > 0) {
     return `${base} ${cardAccentColors.amber.statusIndicatorActive}`;
@@ -146,7 +146,7 @@ const statusIndicatorClasses = computed(() => {
 
 const headerIconBgClass = computed(() => {
   if (props.taskStats.overdue > 0) {
-    return 'bg-red-100 dark:bg-red-900/30';
+    return 'bg-rose-100 dark:bg-rose-900/30';
   }
   if (props.taskStats.total > 0) {
     return 'bg-amber-100 dark:bg-amber-900/30';
@@ -156,7 +156,7 @@ const headerIconBgClass = computed(() => {
 
 const headerIconClass = computed(() => {
   if (props.taskStats.overdue > 0) {
-    return 'text-red-600 dark:text-red-400';
+    return 'text-rose-600 dark:text-rose-400';
   }
   if (props.taskStats.total > 0) {
     return 'text-amber-600 dark:text-amber-400';

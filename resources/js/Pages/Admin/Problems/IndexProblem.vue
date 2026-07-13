@@ -231,7 +231,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Problem>>(() => ({
   initialPage: props.meta.current_page,
   pageSize: props.meta.per_page,
   initialFilters: props.filters,
-  initialSorting: props.sorting,
+    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'occurred_at', desc: true }],
   enableFiltering: true,
   enableColumnVisibility: true,
   allowToggleDeleted: false,

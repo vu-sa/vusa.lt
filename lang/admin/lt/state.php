@@ -8,6 +8,7 @@ return [
         'returned' => 'grąžinta',
         'rejected' => 'atmesta',
         'cancelled' => 'atšaukta',
+
     ],
     'decision' => [
         'approve' => 'patvirtinti',

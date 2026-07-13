@@ -47,11 +47,7 @@
 
       <!-- Notifications List -->
       <ScrollArea class="h-[340px]">
-        <TransitionGroup
-          name="notification-list"
-          tag="div"
-          class="divide-y divide-zinc-100 dark:divide-zinc-800"
-        >
+        <div class="divide-y divide-zinc-100 dark:divide-zinc-800">
           <div
             v-for="notification in notifications"
             :key="notification.id"
@@ -120,7 +116,7 @@
               </div>
             </button>
           </div>
-        </TransitionGroup>
+        </div>
 
         <!-- Empty State -->
         <div
@@ -343,31 +339,6 @@ const markAllAsRead = () => {
 .count-leave-from {
   opacity: 1;
   transform: translateY(0);
-}
-
-/* Notification list transitions */
-.notification-list-enter-from {
-  opacity: 0;
-  transform: translateX(-20px);
-}
-
-.notification-list-leave-to {
-  opacity: 0;
-  transform: translateX(20px);
-}
-
-.notification-list-enter-active {
-  transition: all 0.3s ease-out;
-}
-
-.notification-list-leave-active {
-  transition: all 0.2s ease-in;
-  position: absolute;
-  width: 100%;
-}
-
-.notification-list-move {
-  transition: transform 0.3s ease;
 }
 
 /* Fade transition for mark-as-read button */

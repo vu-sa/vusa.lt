@@ -5,26 +5,26 @@
         {{ $t("forms.context.main_info") }}
       </template>
       <template #description>
-        Pagrindinė informacija apie registracijos formą.
+        {{ $t("forms.helpers.form_main_info") }}
       </template>
-      <FormFieldWrapper id="name" label="Pavadinimas" required>
+      <FormFieldWrapper id="name" :label="$t('forms.fields.name')" required>
         <MultiLocaleInput v-model:input="form.name" />
       </FormFieldWrapper>
 
       <div class="space-y-2">
         <Label class="inline-flex items-center gap-2">
-          Aprašymas
+          {{ $t("forms.fields.description") }}
           <SimpleLocaleButton v-model:locale="locale" />
         </Label>
         <TiptapEditor v-if="locale === 'lt'" v-model="form.description.lt" preset="full" :html="true" />
         <TiptapEditor v-else v-model="form.description.en" preset="full" :html="true" />
       </div>
 
-      <FormFieldWrapper id="path" label="Nuoroda">
+      <FormFieldWrapper id="path" :label="$t('forms.fields.link')">
         <MultiLocaleInput v-model:input="form.path" />
       </FormFieldWrapper>
 
-      <FormFieldWrapper v-if="assignableTenants && assignableTenants.length > 0" id="tenant_id" label="Padalinys">
+      <FormFieldWrapper v-if="assignableTenants && assignableTenants.length > 0" id="tenant_id" :label="$t('forms.fields.tenant')">
         <Select v-model="tenantIdString">
           <SelectTrigger>
             <SelectValue placeholder="VU SA ..." />
@@ -37,20 +37,20 @@
         </Select>
       </FormFieldWrapper>
 
-      <FormFieldWrapper id="publish_time" label="Formos paskelbimo laikas">
-        <DateTimePicker v-model="publishTimeDate" placeholder="Data..." @change="onPublishTimeChange" />
+      <FormFieldWrapper id="publish_time" :label="$t('forms.fields.form_publish_time')">
+        <DateTimePicker v-model="publishTimeDate" :placeholder="$t('forms.placeholders.date')" @change="onPublishTimeChange" />
       </FormFieldWrapper>
     </FormElement>
 
     <FormElement>
       <template #title>
-        Formos elementai
+        {{ $t("forms.sections.form_fields") }}
       </template>
       <template #description>
-        <p>Registracijų skaičius: {{ form.registrations_count ?? 0 }}</p>
+        <p>{{ $t("forms.helpers.registrations_count", { count: form.registrations_count ?? 0 }) }}</p>
         <p v-if="form.registrations_count > 0">
           <Link :href="route('forms.show', form.id)">
-            Peržiūrėti registracijas
+            {{ $t("forms.helpers.view_registrations") }}
           </Link>
         </p>
       </template>
@@ -86,7 +86,7 @@
         </Button>
       </div>
     </FormElement>
-    <CardModal v-model:show="showFormFieldModal" title="Formos laukelis" @close="showFormFieldModal = false">
+    <CardModal v-model:show="showFormFieldModal" :title="$t('forms.sections.form_field')" @close="showFormFieldModal = false">
       <FormFieldForm :field-models="fieldModelOptions" :field-model-attributes="fieldModelFields" :has-registrations
         :form-field="selectedFormField" @submit="handleFormFieldSubmitted" />
     </CardModal>

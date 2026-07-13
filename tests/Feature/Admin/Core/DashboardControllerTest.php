@@ -24,7 +24,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->tenant = Tenant::query()->inRandomOrder()->first();
+    $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
     $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
 
@@ -711,34 +711,22 @@ describe('reservations dashboard', function () {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowReservations')
-                ->has('reservations')
-                ->has('resources')
-                ->has('tenants')
+                ->has('myReservations')
+                ->has('administeredReservations')
+                ->has('managedTenants')
             );
     });
 
-    test('reservations dashboard includes resource statistics', function () {
+    test('reservations dashboard grants no resource managership to a role that lacks it', function () {
+        // A Communication Coordinator holds a duty in the tenant but no resources.update.padalinys,
+        // so they administer nothing here. See ReservationsDashboardTest for the manager's view.
         asUser($this->admin)
             ->get(route('dashboard.reservations'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowReservations')
-                ->has('resources.active')
-                ->has('resources.sumOfCapacity')
-                ->where('resources', function ($resources) {
-                    return isset($resources['active']) && is_numeric($resources['active']) &&
-                           isset($resources['sumOfCapacity']) && is_numeric($resources['sumOfCapacity']);
-                })
-            );
-    });
-
-    test('reservations dashboard handles tenant filtering', function () {
-        asUser($this->admin)
-            ->get(route('dashboard.reservations', ['tenant_id' => $this->tenant->id]))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowReservations')
-                ->has('providedTenant')
+                ->has('managedTenants', 0)
+                ->has('administeredReservations', 0)
             );
     });
 });
@@ -773,7 +761,7 @@ describe('user settings', function () {
 
     test('user can update settings', function () {
         $validData = [
-            'email' => 'updated@example.com',
+            'phone' => '+37060000000',
             'profile_photo_path' => '/path/to/photo.jpg',
             'show_pronouns' => true,
         ];
@@ -785,8 +773,30 @@ describe('user settings', function () {
 
         $this->assertDatabaseHas('users', [
             'id' => $this->admin->id,
-            'email' => 'updated@example.com',
+            'phone' => '+37060000000',
+            'profile_photo_path' => '/path/to/photo.jpg',
         ]);
+    });
+
+    test('user cannot change email or password via the profile endpoint', function () {
+        $originalEmail = $this->admin->email;
+        $originalPassword = $this->admin->password;
+
+        asUser($this->admin)
+            ->patch(route('profile.update'), [
+                'phone' => '+37061111111',
+                'email' => 'attacker@example.com',
+                'password' => 'hijacked-password',
+            ])
+            ->assertStatus(302);
+
+        $this->admin->refresh();
+
+        expect($this->admin->email)->toBe($originalEmail)
+            ->and($this->admin->password)->toBe($originalPassword);
+
+        // The legitimate field still updates.
+        expect($this->admin->phone)->toBe('+37061111111');
     });
 
     test('user cannot change name after it was previously changed', function () {
@@ -796,7 +806,7 @@ describe('user settings', function () {
 
         $updateData = [
             'name' => 'New Name',
-            'email' => 'updated@example.com',
+            'phone' => '+37062222222',
         ];
 
         asUser($this->admin)
@@ -810,10 +820,10 @@ describe('user settings', function () {
             'name' => 'New Name',
         ]);
 
-        // But email should be updated
+        // But the phone should be updated
         $this->assertDatabaseHas('users', [
             'id' => $this->admin->id,
-            'email' => 'updated@example.com',
+            'phone' => '+37062222222',
         ]);
     });
 

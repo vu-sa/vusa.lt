@@ -4,16 +4,16 @@
       <template #title>
         {{ $t("forms.context.main_info") }}
       </template>
-      <FormFieldWrapper id="fullname" label="Pavadinimas" required>
+      <FormFieldWrapper id="fullname" :label="$t('forms.fields.name')" required>
         <Input id="fullname" v-model="form.fullname" />
       </FormFieldWrapper>
-      <FormFieldWrapper id="shortname" label="Trumpinys" required>
+      <FormFieldWrapper id="shortname" :label="$t('forms.fields.slug')" required>
         <Input id="shortname" v-model="form.shortname" />
       </FormFieldWrapper>
-      <FormFieldWrapper id="type" label="Tipas" required>
+      <FormFieldWrapper id="type" :label="$t('forms.fields.type_label')" required>
         <Select v-model="form.type">
           <SelectTrigger>
-            <SelectValue placeholder="Pasirinkite tipą..." />
+            <SelectValue :placeholder="$t('forms.placeholders.select_type')" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem v-for="option in typeOptions" :key="option.value" :value="option.value">
@@ -22,19 +22,19 @@
           </SelectContent>
         </Select>
       </FormFieldWrapper>
-      <FormFieldWrapper id="alias" label="Alias">
+      <FormFieldWrapper id="alias" :label="$t('forms.fields.alias')">
         <Input id="alias" v-model="form.alias" />
       </FormFieldWrapper>
-      <FormFieldWrapper id="shortname_vu" label="Trumpinys VU">
+      <FormFieldWrapper id="shortname_vu" :label="$t('forms.fields.shortname_vu')">
         <Input id="shortname_vu" v-model="form.shortname_vu" />
       </FormFieldWrapper>
-      <FormFieldWrapper id="primary_institution_id" label="Pagrindinė įstaiga">
+      <FormFieldWrapper id="primary_institution_id" :label="$t('forms.fields.primary_institution')">
         <SingleSelect
           v-model="selectedInstitution"
           :options="assignableInstitutions"
           label-field="name"
           value-field="id"
-          placeholder="Pasirinkite įstaigą..."
+          :placeholder="$t('forms.placeholders.select_institution')"
         />
       </FormFieldWrapper>
     </FormElement>
@@ -42,6 +42,7 @@
 </template>
 
 <script setup lang="ts">
+import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 
@@ -65,11 +66,11 @@ defineEmits<{
 
 const form = rememberKey ? useForm(rememberKey, tenant) : useForm(tenant);
 
-const typeOptions = [
-  { label: 'PKP', value: 'pkp' },
-  { label: 'Padalinys', value: 'padalinys' },
-  { label: 'Pagrindinis', value: 'pagrindinis' },
-];
+const typeOptions = computed(() => [
+  { label: $t('forms.options.tenant_type_pkp'), value: 'pkp' },
+  { label: $t('forms.options.tenant_type_padalinys'), value: 'padalinys' },
+  { label: $t('forms.options.tenant_type_pagrindinis'), value: 'pagrindinis' },
+]);
 
 // Bridge: SingleSelect operates on full objects, form stores primary_institution_id for server submission
 const selectedInstitution = computed({

@@ -30,10 +30,6 @@
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" class="w-56">
-            <DropdownMenuCheckboxItem v-model="showOnlyFavorites">
-              {{ $t("Tik mėgstamiausi") }}
-            </DropdownMenuCheckboxItem>
-            <DropdownMenuSeparator />
             <DropdownMenuLabel>{{ $t("Kategorijos") }}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuCheckboxItem
@@ -48,51 +44,6 @@
         </DropdownMenu>
       </div>
     </div>
-
-    <!-- Favorites section (if any) -->
-    <Transition name="fade">
-      <section v-if="showFavoritesSection" class="mb-8">
-        <h2 class="mb-4 text-xl font-semibold">
-          {{ $t("Mėgstamiausi") }}
-          <Badge variant="outline" class="ml-2">
-            {{
-              favoriteMenuItems.length
-            }}
-          </Badge>
-        </h2>
-        <div
-          class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-        >
-          <div
-            v-for="item in favoriteMenuItems"
-            :key="item.title + item.href"
-            class="group relative rounded-lg transition-all duration-200"
-          >
-            <Link :href="item.href" class="block h-full w-full">
-              <div
-                class="flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-linear-to-br from-white to-white p-4 text-left text-sm leading-4 text-zinc-700 shadow-xs transition-all duration-300 group-hover:shadow-md group-hover:ring-1 group-hover:ring-primary/20 dark:border-0 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300 dark:group-hover:shadow-white/10"
-              >
-                <component :is="item.icon" width="28" height="28" />
-                {{ item.title }}
-              </div>
-            </Link>
-            <Button
-              variant="ghost"
-              size="icon"
-              class="absolute right-2 top-2 z-10 bg-background/80 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-              @click.prevent="toggleFavorite(item)"
-            >
-              <StarIcon
-                v-if="isFavorite(item)"
-                class="h-4 w-4 text-amber-500"
-                fill="currentColor"
-              />
-              <StarIcon v-else class="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </section>
-    </Transition>
 
     <!-- Quick Actions section -->
     <section v-if="showQuickActions" class="mb-8">
@@ -109,7 +60,7 @@
         >
           <Link :href="item.href" class="block h-full w-full">
             <div
-              class="flex w-full flex-col gap-3 rounded-md border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 p-4 text-left text-sm leading-4 text-zinc-700 shadow-sm transition-all duration-300 group-hover:border-primary/40 group-hover:shadow-lg group-hover:ring-2 group-hover:ring-primary/20 dark:border-primary/30 dark:from-primary/10 dark:to-primary/20 dark:text-zinc-200 dark:group-hover:border-primary/50"
+              class="flex w-full flex-col gap-3 rounded-md border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 p-4 text-left text-sm leading-4 text-zinc-700 transition-all duration-300 group-hover:border-primary/40 group-hover:ring-2 group-hover:ring-primary/20 dark:border-primary/30 dark:from-primary/10 dark:to-primary/20 dark:text-zinc-200 dark:group-hover:border-primary/50"
             >
               <div class="flex items-start justify-between">
                 <component
@@ -160,24 +111,23 @@
           >
             <Link :href="item.href" class="block h-full w-full">
               <div
-                class="flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-linear-to-br from-white to-white p-4 text-left text-sm leading-4 text-zinc-700 shadow-xs transition-all duration-300 group-hover:shadow-md group-hover:ring-1 group-hover:ring-primary/20 dark:border-0 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300 dark:group-hover:shadow-white/10"
+                class="relative flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-linear-to-br from-white to-white p-4 text-left text-sm leading-4 text-zinc-700 transition-all duration-300 group-hover:ring-1 group-hover:ring-primary/20 dark:border-0 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300"
               >
                 <component :is="item.icon" width="28" height="28" />
                 {{ item.title }}
               </div>
             </Link>
             <Button
+              v-if="item.searchTab"
               variant="ghost"
               size="icon"
               class="absolute right-2 top-2 z-10 bg-background/80 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-              @click.prevent="toggleFavorite(item)"
+              as-child
+              @click.stop
             >
-              <StarIcon
-                v-if="isFavorite(item)"
-                class="h-4 w-4 text-amber-500"
-                fill="currentColor"
-              />
-              <StarIcon v-else class="h-4 w-4" />
+              <Link :href="route('search.index', { tab: item.searchTab })">
+                <Search class="h-4 w-4" />
+              </Link>
             </Button>
           </div>
         </div>
@@ -197,14 +147,13 @@
 
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { useStorage } from '@vueuse/core';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { computed, ref, type Component } from 'vue';
 
 // Icons
 import {
   SearchIcon,
-  StarIcon,
+  Search,
   XIcon,
   ListFilterIcon,
   ChevronDownIcon,
@@ -244,6 +193,8 @@ interface MenuItemType {
   icon: Component;
   href: string;
   show: boolean | undefined;
+  /** Unified search tab name (e.g. 'institutions') for the dedicated search button */
+  searchTab?: string;
 }
 
 interface MenuItemsType {
@@ -255,26 +206,7 @@ interface MenuItemsType {
 
 // Search and filter states
 const searchQuery = ref('');
-const showOnlyFavorites = ref(false);
-const favoriteItems = useStorage<string[]>('favoriteItems', []);
 const selectedCategories = ref<Record<string, boolean>>({});
-
-// Helper functions for favorites
-const isFavorite = (item: MenuItemType): boolean => {
-  // Use a unique identifier combining title and href
-  return favoriteItems.value.includes(`${item.title}:${item.href}`);
-};
-
-const toggleFavorite = (item: MenuItemType) => {
-  const identifier = `${item.title}:${item.href}`;
-  const index = favoriteItems.value.indexOf(identifier);
-  if (index === -1) {
-    favoriteItems.value.push(identifier);
-  }
-  else {
-    favoriteItems.value.splice(index, 1);
-  }
-};
 
 // Filter items that match search query
 const matchesSearch = (item: MenuItemType): boolean => {
@@ -293,12 +225,14 @@ const menuItems = computed(() => [
         icon: UserIcon,
         href: route('users.index'),
         show: auth?.can.create.user,
+        searchTab: 'users',
       },
       {
         title: $t('Pareigybės'),
         icon: DutyIcon,
         href: route('duties.index'),
         show: auth?.can.create.duty,
+        searchTab: 'duties',
       },
       {
         title: $t('Narystės'),
@@ -335,6 +269,7 @@ const menuItems = computed(() => [
         icon: InstitutionIcon,
         href: route('institutions.index'),
         show: auth?.can.create.institution,
+        searchTab: 'institutions',
       },
       {
         title: $t('Padaliniai'),
@@ -360,12 +295,14 @@ const menuItems = computed(() => [
         icon: PageIcon,
         href: route('pages.index'),
         show: auth?.can.create.page,
+        searchTab: 'pages',
       },
       {
         title: $t('Naujienos'),
         icon: NewsIcon,
         href: route('news.index'),
         show: auth?.can.create.news,
+        searchTab: 'news',
       },
       {
         title: $t('Greitosios nuorodos'),
@@ -390,6 +327,7 @@ const menuItems = computed(() => [
         icon: CalendarIcon,
         href: route('calendar.index'),
         show: auth?.can.create.calendar,
+        searchTab: 'calendar',
       },
       {
         title: $t('Kategorijos'),
@@ -429,6 +367,7 @@ const menuItems = computed(() => [
         icon: DocumentIcon,
         href: route('documents.index'),
         show: auth?.can.create.document,
+        searchTab: 'documents',
       },
       {
         title: $t('Sharepoint failai'),
@@ -452,6 +391,7 @@ const menuItems = computed(() => [
         icon: MeetingIcon,
         href: route('meetings.index'),
         show: auth?.can.create.meeting,
+        searchTab: 'meetings',
       },
       {
         title: capitalize($tChoice('entities.problem.model', 2)),
@@ -477,6 +417,7 @@ const menuItems = computed(() => [
         icon: ResourceIcon,
         href: route('resources.index'),
         show: auth?.can.create.resource,
+        searchTab: 'resources',
       },
       {
         title: capitalize($tChoice('entities.resource_category.model', 2)),
@@ -565,7 +506,7 @@ uniqueCategories.value.forEach((category) => {
   }
 });
 
-// Filter menu items based on search, favorites and selected categories
+// Filter menu items based on search and selected categories
 const filteredMenuItems = computed(() => {
   return menuItems.value
     .map((category) => {
@@ -573,14 +514,9 @@ const filteredMenuItems = computed(() => {
       const filteredCategory = { ...category };
 
       // Filter items based on search and visibility
-      let filteredItems = category.items.filter(
+      const filteredItems = category.items.filter(
         item => item.show === true && matchesSearch(item),
       );
-
-      // Apply favorites filter if needed
-      if (showOnlyFavorites.value) {
-        filteredItems = filteredItems.filter(item => isFavorite(item));
-      }
 
       // Store filtered items for display
       filteredCategory.visibleItems = filteredItems;
@@ -595,22 +531,6 @@ const filteredMenuItems = computed(() => {
         && selectedCategories.value[category.category]
       );
     });
-});
-
-// Get all favorite menu items across categories
-const favoriteMenuItems = computed(() => {
-  // Collect all items across all categories
-  const allItems = menuItems.value.flatMap(category => category.items);
-
-  // Filter for favorites that are visible and match search
-  return allItems.filter(
-    item => item.show === true && isFavorite(item) && matchesSearch(item),
-  );
-});
-
-// Show favorites section if there are favorites and filter is not active
-const showFavoritesSection = computed(() => {
-  return favoriteMenuItems.value.length > 0 && !showOnlyFavorites.value;
 });
 
 // Check if any items are visible after filtering
@@ -647,13 +567,4 @@ const showQuickActions = computed(() => {
 </script>
 
 <style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
 </style>

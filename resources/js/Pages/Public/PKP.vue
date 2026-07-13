@@ -37,10 +37,7 @@
     <StaggeredTransitionGroup appear>
       <NewInstitutionCard v-for="(institution, index) in institutions" :key="institution.id" :institution :href="route('contacts.alias', {
         institution: institution.alias,
-        subdomain:
-          institution.tenant?.alias === 'vusa'
-            ? 'www'
-            : institution.tenant?.alias ?? 'www',
+        subdomain: resolveTenantSubdomain(institution.tenant?.id),
         lang: $page.props.app.locale,
       })" :data-index="index" />
     </StaggeredTransitionGroup>
@@ -51,6 +48,7 @@
 import NewInstitutionCard from '@/Components/Cards/NewInstitutionCard.vue';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import StaggeredTransitionGroup from '@/Components/Transitions/StaggeredTransitionGroup.vue';
+import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 
 defineProps<{
   institutions: Array<App.Entities.Institution>;

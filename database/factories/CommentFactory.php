@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\CommentKind;
 use App\Models\Comment;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -12,26 +13,38 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class CommentFactory extends Factory
 {
     /**
-     * Define the model's default state.
-     *
      * @return array<string, mixed>
      */
-    public function definition()
+    public function definition(): array
     {
-        // $commentable = $this->commentable();
-
         return [
-            'comment' => $this->faker->paragraph(),
+            'kind' => CommentKind::Comment,
+            'body' => '<p>'.$this->faker->paragraph().'</p>',
             'user_id' => User::factory(),
         ];
     }
 
-    // public function configure()
-    // {
-    //     return $this->for(
-    //         static::factoryForModel($this->commentable()),
-    //         'commentable',
-    //     );
-    // }
+    /**
+     * A reply to a given parent comment (inherits its thread root).
+     */
+    public function replyTo(Comment $parent): static
+    {
+        return $this->state(fn () => [
+            'parent_id' => $parent->id,
+            'thread_root_id' => $parent->thread_root_id ?? $parent->id,
+            'commentable_type' => $parent->commentable_type,
+            'commentable_id' => $parent->commentable_id,
+        ]);
+    }
 
+    /**
+     * A resolved thread root.
+     */
+    public function resolved(?User $by = null): static
+    {
+        return $this->state(fn () => [
+            'resolved_at' => now(),
+            'resolved_by' => $by?->id ?? User::factory(),
+        ]);
+    }
 }

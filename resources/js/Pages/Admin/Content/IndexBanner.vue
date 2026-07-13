@@ -13,6 +13,7 @@
 import { h, ref, computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
+import type { IndexTablePageInstance } from '@/Types/TableConfigTypes';
 
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
@@ -43,7 +44,7 @@ const props = defineProps<{
 const modelName = 'banners';
 const entityName = 'banner';
 
-const indexTablePageRef = ref<any>(null);
+const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
 
 const getRowId = (row: App.Entities.Banner) => {
   return `banner-${row.id}`;
@@ -52,7 +53,7 @@ const getRowId = (row: App.Entities.Banner) => {
 const columns = computed<Array<ColumnDef<App.Entities.Banner, any>>>(() => [
   {
     accessorKey: 'title',
-    header: () => 'Pavadinimas',
+    header: () => $t('Pavadinimas'),
     cell: ({ row }) => {
       const banner = row.original;
       return h('a', {
@@ -87,7 +88,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Banner>>(() => {
     pageSize: props.banners.meta.per_page,
 
     initialFilters: props.filters,
-    initialSorting: props.sorting,
+    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'title', desc: false }],
     enableFiltering: true,
     enableColumnVisibility: false,
     enableRowSelection: false,

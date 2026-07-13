@@ -39,12 +39,12 @@ use Illuminate\Support\Collection;
  * @property Carbon $updated_at
  * @property string|null $deleted_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Approval> $approvals
- * @property-read Model|\Eloquent $commentable
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Comment> $comments
  * @property-read bool $approvable
  * @property-read mixed $state_properties
  * @property-read Reservation|null $reservation
  * @property-read resource|null $resource
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Comment> $rootComments
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReservationResource newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReservationResource newQuery()
@@ -88,6 +88,7 @@ class ReservationResource extends Pivot implements Approvable
             'state' => ReservationResourceState::class,
             'start_time' => 'datetime',
             'end_time' => 'datetime',
+            'returned_at' => 'datetime',
         ];
     }
 
@@ -146,6 +147,12 @@ class ReservationResource extends Pivot implements Approvable
             ApprovalDecision::Rejected => $this->state->handleReject(),
             ApprovalDecision::Cancelled => $this->state->handleCancel(),
         };
+
+        // Stamp the return time so "recently returned" can be reported without
+        // leaning on updated_at, which any later write would move.
+        if ($this->state instanceof Returned && $this->returned_at === null) {
+            $this->forceFill(['returned_at' => now()])->save();
+        }
     }
 
     /**

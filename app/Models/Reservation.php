@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Contracts\Commentable;
 use App\Models\Pivots\ReservationResource;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasTasks;
@@ -29,11 +30,11 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activities
- * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $commentable
  * @property-read Collection<int, Comment> $comments
  * @property-read mixed $is_completed
  * @property-read ReservationResource|null $pivot
  * @property-read Collection<int, \App\Models\Resource> $resources
+ * @property-read Collection<int, Comment> $rootComments
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Tenant> $tenants
  * @property-read Collection<int, User> $users
@@ -48,7 +49,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
-class Reservation extends Model
+class Reservation extends Model implements Commentable
 {
     use HasComments, HasFactory, HasRelationships, HasTasks, HasUlids, LogsActivity, Searchable, SoftDeletes;
 

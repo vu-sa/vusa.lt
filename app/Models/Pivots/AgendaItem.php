@@ -2,12 +2,16 @@
 
 namespace App\Models\Pivots;
 
+use App\Contracts\Commentable;
 use App\Enums\AgendaItemType;
 use App\Models\AgendaItemNote;
+use App\Models\Comment;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Tenant;
+use App\Models\Traits\HasComments;
 use App\Models\Vote;
+use App\Services\VoteStatisticsCalculator;
 use Database\Factories\AgendaItemFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -40,10 +44,12 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $start_time
  * @property-read Collection<int, Activity> $activities
  * @property-read Collection<int, Vote> $additionalVotes
+ * @property-read Collection<int, Comment> $comments
  * @property-read Collection<int, Institution> $institutions
  * @property-read Vote|null $mainVote
  * @property-read Meeting|null $meeting
  * @property-read AgendaItemNote|null $note
+ * @property-read Collection<int, Comment> $rootComments
  * @property-read Collection<int, Tenant> $tenants
  * @property-read Collection<int, Vote> $votes
  *
@@ -54,9 +60,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
-class AgendaItem extends Pivot
+class AgendaItem extends Pivot implements Commentable
 {
-    use HasFactory, HasRelationships, HasUlids, LogsActivity, Searchable;
+    use HasComments, HasFactory, HasRelationships, HasUlids, LogsActivity, Searchable;
 
     protected $table = 'agenda_items';
 
@@ -115,6 +121,8 @@ class AgendaItem extends Pivot
 
     /**
      * The private collaborative notes document ("Atstovų pastabos") for this item.
+     *
+     * @return HasOne<AgendaItemNote, $this>
      */
     public function note(): HasOne
     {
@@ -154,31 +162,6 @@ class AgendaItem extends Pivot
 
         $meeting = $this->getRelation('meeting');
 
-        // Handle orphaned agenda items (meeting was deleted)
-        if (! $meeting instanceof Meeting) {
-            return [];
-        }
-
-        // Get tenant IDs for filtering with scoped API keys
-        $tenantIds = $meeting->institutions
-            ->pluck('tenant.id')
-            ->filter()
-            ->unique()
-            ->map(fn ($id) => (int) $id)
-            ->values()
-            ->toArray();
-
-        // Get tenant shortnames for faceting/display
-        $tenantShortnames = $meeting->institutions
-            ->pluck('tenant.shortname')
-            ->filter()
-            ->unique()
-            ->values()
-            ->toArray();
-
-        // Get institution info
-        $institution = $meeting->institutions->first();
-
         // Get main vote for backward-compatible fields
         /** @var Vote|null $mainVote */
         $mainVote = $this->votes->firstWhere('is_main', true);
@@ -189,7 +172,9 @@ class AgendaItem extends Pivot
         $type = $this->getAttribute('type');
         $typeValue = $type instanceof AgendaItemType ? $type->value : 'voting';
 
-        return [
+        // Build base array that is always returned (prevents false-positive schema
+        // mismatches when the model is validated without a loaded meeting)
+        $searchableArray = [
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->description,
@@ -212,25 +197,13 @@ class AgendaItem extends Pivot
             'has_consensus_votes' => $voteStats['has_consensus_votes'],
             'consensus_votes_count' => $voteStats['consensus_votes_count'],
 
-            // Tenant filtering (CRITICAL for scoped API keys)
-            'tenant_ids' => $tenantIds,
-            'tenant_shortnames' => $tenantShortnames,
-
-            // Meeting info for context
+            // Meeting info for context (null-safe for orphaned/empty items)
             'meeting_id' => $this->meeting_id,
-            'meeting_title' => $meeting->title,
-            'meeting_start_time' => $meeting->start_time->timestamp,
-            'meeting_start_time_formatted' => $meeting->start_time->format('Y-m-d H:i'),
-            'meeting_year' => $meeting->start_time->year,
-            'meeting_month' => $meeting->start_time->month,
-
-            // Institution info
-            'institution_id' => $institution?->id,
-            'institution_name_lt' => $institution?->getTranslation('name', 'lt'),
-            'institution_name_en' => $institution?->getTranslation('name', 'en'),
-
-            // All institutions (for .own scope filtering)
-            'institution_ids' => $meeting->institutions->pluck('id')->toArray(),
+            'meeting_title' => $meeting?->title,
+            'meeting_start_time' => $meeting?->start_time?->timestamp,
+            'meeting_start_time_formatted' => $meeting?->start_time?->format('Y-m-d H:i'),
+            'meeting_year' => $meeting?->start_time?->year,
+            'meeting_month' => $meeting?->start_time?->month,
 
             // Completion status indicators (based on all votes)
             'has_student_vote' => $voteStats['has_any_student_vote'],
@@ -243,57 +216,74 @@ class AgendaItem extends Pivot
             'vote_mismatches' => $voteStats['vote_mismatches'] > 0,
             'vote_alignment_status' => $this->calculateVoteAlignmentStatus(),
 
+            // Tenant / institution context — always present (empty defaults) so the
+            // document satisfies the required schema fields even for agenda items
+            // without a meeting; overridden below when the meeting exists.
+            'tenant_ids' => [],
+            'tenant_shortnames' => [],
+            'institution_id' => null,
+            'institution_name_lt' => null,
+            'institution_name_en' => null,
+            'institution_ids' => [],
+
             'created_at' => $this->created_at->timestamp,
             'updated_at' => $this->updated_at->timestamp,
         ];
+
+        // Add meeting-derived tenant/institution data only when the meeting exists
+        if ($meeting instanceof Meeting) {
+            // Get tenant IDs for filtering with scoped API keys
+            $tenantIds = $meeting->institutions
+                ->pluck('tenant.id')
+                ->filter()
+                ->unique()
+                ->map(fn ($id) => (int) $id)
+                ->values()
+                ->toArray();
+
+            // Get tenant shortnames for faceting/display
+            $tenantShortnames = $meeting->institutions
+                ->pluck('tenant.shortname')
+                ->filter()
+                ->unique()
+                ->values()
+                ->toArray();
+
+            // Get institution info
+            $institution = $meeting->institutions->first();
+
+            $searchableArray = array_merge($searchableArray, [
+                // Tenant filtering (CRITICAL for scoped API keys)
+                'tenant_ids' => $tenantIds,
+                'tenant_shortnames' => $tenantShortnames,
+
+                // Institution info
+                'institution_id' => $institution?->id,
+                'institution_name_lt' => $institution?->getTranslation('name', 'lt'),
+                'institution_name_en' => $institution?->getTranslation('name', 'en'),
+
+                // All institutions (for .own scope filtering)
+                'institution_ids' => $meeting->institutions->pluck('id')->toArray(),
+            ]);
+        }
+
+        return $searchableArray;
     }
 
     /**
      * Calculate vote statistics from all votes for this agenda item.
+     * Delegates to VoteStatisticsCalculator.
      */
     protected function calculateVoteStatistics(): array
     {
-        $votes = $this->votes;
+        $votes = $this->relationLoaded('votes') ? $this->votes : $this->votes()->get();
 
-        if ($votes->isEmpty()) {
-            return [
-                'has_any_student_vote' => false,
-                'has_any_decision' => false,
-                'has_any_student_benefit' => false,
-                'all_votes_complete' => false,
-                'vote_matches' => 0,
-                'vote_mismatches' => 0,
-                'has_consensus_votes' => false,
-                'consensus_votes_count' => 0,
-            ];
-        }
-
-        $hasAnyStudentVote = $votes->contains(fn ($v) => ! empty($v->student_vote));
-        $hasAnyDecision = $votes->contains(fn ($v) => ! empty($v->decision));
-        $hasAnyStudentBenefit = $votes->contains(fn ($v) => ! empty($v->student_benefit));
-        $allComplete = $votes->every(fn ($v) => $v->is_complete);
-        $consensusVotes = $votes->filter(fn ($v) => $v->is_consensus);
-
-        // Count vote alignment
-        $votesWithBoth = $votes->filter(fn ($v) => ! empty($v->student_vote) && ! empty($v->decision));
-        $voteMatches = $votesWithBoth->filter(fn ($v) => $v->student_vote === $v->decision)->count();
-        $voteMismatches = $votesWithBoth->count() - $voteMatches;
-
-        return [
-            'has_any_student_vote' => $hasAnyStudentVote,
-            'has_any_decision' => $hasAnyDecision,
-            'has_any_student_benefit' => $hasAnyStudentBenefit,
-            'all_votes_complete' => $allComplete,
-            'vote_matches' => $voteMatches,
-            'vote_mismatches' => $voteMismatches,
-            'has_consensus_votes' => $consensusVotes->isNotEmpty(),
-            'consensus_votes_count' => $consensusVotes->count(),
-        ];
+        return app(VoteStatisticsCalculator::class)->calculate($votes);
     }
 
     /**
      * Calculate overall vote alignment status for this agenda item.
-     * Based on main vote if available, otherwise aggregated from all votes.
+     * Delegates to VoteStatisticsCalculator.
      *
      * @return string 'match', 'mismatch', 'mixed', 'incomplete', 'neutral'
      */
@@ -301,33 +291,7 @@ class AgendaItem extends Pivot
     {
         $votes = $this->relationLoaded('votes') ? $this->votes : $this->votes()->get();
 
-        if ($votes->isEmpty()) {
-            return 'neutral';
-        }
-
-        // Prefer main vote status if available
-        /** @var Vote|null $mainVote */
-        $mainVote = $votes->firstWhere('is_main', true);
-        if ($mainVote) {
-            return $mainVote->vote_alignment_status;
-        }
-
-        // Otherwise aggregate from all votes
-        $stats = $this->calculateVoteStatistics();
-
-        if ($stats['vote_matches'] === 0 && $stats['vote_mismatches'] === 0) {
-            return 'incomplete';
-        }
-
-        if ($stats['vote_mismatches'] === 0) {
-            return 'match';
-        }
-
-        if ($stats['vote_matches'] === 0) {
-            return 'mismatch';
-        }
-
-        return 'mixed';
+        return app(VoteStatisticsCalculator::class)->alignmentStatus($votes);
     }
 
     /**

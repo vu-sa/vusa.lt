@@ -47,6 +47,37 @@
               :placeholder="$t('Pasirinkite žymas...')" />
           </FormFieldWrapper>
         </div>
+
+        <!-- Other Language News -->
+        <FormFieldWrapper id="other_lang" :label="$t('Kitos kalbos naujiena')"
+          :hint="$t('Susieti su ta pačia naujiena kita kalba')">
+          <CollectionSelectDialog
+            v-if="!isCreate"
+            v-model:open="otherLangDialogOpen"
+            collection="news"
+            allow-empty
+            :base-filter-by="otherLangBaseFilterBy"
+            :initial-hits="otherLangInitialHits"
+            :title="$t('Kitos kalbos naujiena')"
+            :confirm-label="$t('Pasirinkti')"
+            :search-placeholder="$t('Ieškoti naujienos pagal pavadinimą...')"
+            :empty-message="$t('Naujienų nerasta')"
+            @confirm="onOtherLangNewsConfirm"
+          >
+            <template #trigger>
+              <Button type="button" variant="outline" class="w-full justify-between font-normal">
+                <span class="truncate" :class="{ 'text-muted-foreground': !form.other_lang_id }">
+                  {{ selectedOtherLangNewsLabel }}
+                </span>
+                <IFluentChevronDown24Regular class="size-4 opacity-50" />
+              </Button>
+            </template>
+          </CollectionSelectDialog>
+          <Button v-else type="button" variant="outline" class="w-full justify-between font-normal" disabled>
+            <span class="text-muted-foreground">{{ $t('Pasirinkti kitos kalbos naujieną...') }}</span>
+            <IFluentChevronDown24Regular class="size-4 opacity-50" />
+          </Button>
+        </FormFieldWrapper>
       </div>
     </FormElement>
 
@@ -158,24 +189,6 @@
               </div>
             </div>
 
-            <!-- Other Language News -->
-            <FormFieldWrapper id="other_lang" :label="$t('Kitos kalbos naujiena')"
-              :hint="$t('Susieti su ta pačia naujiena kita kalba')">
-              <Select v-model="otherLangIdString" :disabled="isCreate">
-                <SelectTrigger id="other_lang">
-                  <SelectValue :placeholder="$t('Pasirinkti kitos kalbos naujieną...')" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">
-                    -- {{ $t('Nepasirinkta') }} --
-                  </SelectItem>
-                  <SelectItem v-for="opt in otherLangNewsOptions" :key="opt.value" :value="String(opt.value)">
-                    {{ opt.label }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </FormFieldWrapper>
-
             <!-- Permalink -->
             <FormFieldWrapper id="permalink" :label="$t('Nuoroda')"
               :helper-text="$t('Atsargiai: pakeitus nuorodą, sena nuoroda nebeveiks!')" :error="form.errors.permalink"
@@ -196,6 +209,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, h } from 'vue';
 import { useForm } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 
 import RichContentFormElement from '../RichContent/RichContentFormElement.vue';
 
@@ -211,8 +225,10 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { MultiSelect } from '@/Components/ui/multi-select';
 import { OrderedListInput } from '@/Components/ui/ordered-list-input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
+import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
+import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
+import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { ImageUpload } from '@/Components/ui/upload';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { newsTemplate } from '@/Types/formTemplates';
@@ -305,7 +321,7 @@ const statusLinks = computed(() => {
 
   const newsLang = form.lang ?? 'lt';
   const url = route('news', {
-    subdomain: props.news.tenant.alias ?? 'www',
+    subdomain: resolveTenantSubdomain(props.news.tenant.id),
     lang: newsLang,
     newsString: newsLang === 'lt' ? 'naujiena' : 'news',
     news: form.permalink,
@@ -330,13 +346,46 @@ function handlePublishTimeUpdate(val: Date | null) {
   }
 }
 
-// Handle other_lang_id as string for Select component
-const otherLangIdString = computed({
-  get: () => form.other_lang_id ? String(form.other_lang_id) : '__none__',
-  set: (val: string) => {
-    form.other_lang_id = val && val !== '__none__' ? parseInt(val) : null;
-  },
+const otherLangDialogOpen = ref(false);
+
+// Opposite language of the news being edited (only two locales exist).
+const otherLang = computed(() => (form.lang === 'lt' ? 'en' : 'lt'));
+
+// Scope the news search to the opposite-language news of the candidate tenants
+// — exactly reproducing the `otherLangNews` prop.
+const otherLangBaseFilterBy = computed(() => {
+  const tenantIds = [
+    ...new Set((props.otherLangNews ?? []).map(n => n.tenant?.id).filter((id): id is number => id != null)),
+  ];
+  const parts: string[] = [];
+  if (tenantIds.length > 0) {
+    parts.push(`tenant_ids:[${tenantIds.join(',')}]`);
+  }
+  parts.push(`lang:=${otherLang.value}`);
+  return parts.join(' && ');
 });
+
+const selectedOtherLangNewsLabel = computed(() => {
+  const current = (props.otherLangNews ?? []).find(n => String(n.id) === String(form.other_lang_id));
+  return current ? `${current.title} (${current.tenant?.shortname})` : `-- ${$t('Nepasirinkta')} --`;
+});
+
+const otherLangInitialHits = computed<NormalizedSearchHit[]>(() => {
+  const current = (props.otherLangNews ?? []).find(n => String(n.id) === String(form.other_lang_id));
+  if (!current) {
+    return [];
+  }
+  return [normalizeHit('news', {
+    id: current.id,
+    title: current.title,
+    tenant_name: current.tenant?.shortname,
+    lang: otherLang.value,
+  })];
+});
+
+function onOtherLangNewsConfirm(hits: NormalizedSearchHit[]) {
+  form.other_lang_id = hits[0] ? Number(hits[0].recordId) : null;
+}
 
 const otherLangNewsOptions = computed(() => {
   if (isCreate.value) {

@@ -1,23 +1,30 @@
 <template>
-  <Card>
-    <CardHeader class="pb-3">
-      <div class="flex items-center justify-between">
-        <CardTitle class="flex items-center gap-2 text-base">
-          <CalendarIcon class="h-5 w-5 text-primary" />
-          {{ $t('Paskutiniai susitikimai') }}
-        </CardTitle>
-        <div class="flex items-center gap-2">
-          <Badge v-if="totalCount > meetings.length" variant="secondary" class="text-xs">
-            {{ totalCount }} {{ $t('iš viso') }}
-          </Badge>
-          <Button v-if="isOverdue" variant="default" size="sm" class="gap-1.5" @click="$emit('schedule-meeting')">
-            <Plus class="h-3.5 w-3.5" />
-            {{ $t('Naujas') }}
-          </Button>
-        </div>
+  <SectionCard
+    :title="$t('Paskutiniai susitikimai')"
+    :icon="CalendarIcon"
+    @action="$emit('view-all')"
+  >
+    <template #action>
+      <div class="flex items-center gap-2">
+        <Badge v-if="totalCount > meetings.length" variant="secondary" class="text-xs">
+          {{ totalCount }} {{ $t('iš viso') }}
+        </Badge>
+        <Button v-if="isOverdue" variant="default" size="sm" class="gap-1.5" @click="$emit('schedule-meeting')">
+          <Plus class="h-3.5 w-3.5" />
+          {{ $t('Naujas') }}
+        </Button>
+        <button
+          type="button"
+          class="inline-flex shrink-0 items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          @click="$emit('view-all')"
+        >
+          {{ $t('Visi susitikimai') }}
+          <ChevronRight class="h-4 w-4" />
+        </button>
       </div>
-    </CardHeader>
-    <CardContent class="space-y-3">
+    </template>
+
+    <div class="space-y-3">
       <!-- Meeting cards -->
       <button
         v-for="meeting in meetings"
@@ -84,18 +91,8 @@
           />
         </div>
       </button>
-
-      <!-- View all button -->
-      <Button
-        variant="outline"
-        class="w-full"
-        @click="$emit('view-all')"
-      >
-        {{ $t('Peržiūrėti visus susitikimus') }}
-        <ChevronRight class="h-4 w-4 ml-2" />
-      </Button>
-    </CardContent>
-  </Card>
+    </div>
+  </SectionCard>
 </template>
 
 <script setup lang="ts">
@@ -111,7 +108,7 @@ import {
   Circle,
 } from 'lucide-vue-next';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { SectionCard } from '@/Components/ui/section-card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { formatStaticTime } from '@/Utils/IntlTime';

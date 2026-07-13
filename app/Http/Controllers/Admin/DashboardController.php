@@ -6,29 +6,38 @@ use App\Actions\GetTenantsForUpserts;
 use App\Enums\NotificationCategory;
 use App\Enums\NotificationChannel;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Concerns\ApiResponses;
 use App\Http\Requests\UpdatePasswordRequest;
 use App\Mail\FeedbackMail;
+use App\Mail\NotificationDigest;
 use App\Models\Calendar;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\News;
 use App\Models\Page;
+use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Notifications\TestPushNotification;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
 use App\Services\ResourceServices\DutyService;
 use App\Settings\AtstovavimasSettings;
 use App\Settings\MeetingSettings;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 class DashboardController extends AdminController
 {
+    use ApiResponses;
+
     public function __construct(public Authorizer $authorizer) {}
 
     public function index(Request $request)
@@ -394,52 +403,137 @@ class DashboardController extends AdminController
 
     public function reservations()
     {
-        $selectedTenant = request()->input('tenant_id');
+        $user = User::query()->find(Auth::id()) ?? abort(404);
 
-        $user = User::find(Auth::id());
+        $this->authorizer = $this->authorizer->forUser($user);
 
-        $reservations = $user->reservations->load('resources')->append('isCompleted');
+        /**
+         * Resolve the tenants whose resources this user manages once.
+         * ReservationResource::canBeApprovedBy() applies the same rule per pivot, which would
+         * re-resolve the authorizer — and query the reservation's users — for every single row.
+         * getTenants() is relative to the last checked permission, hence the explicit check().
+         */
+        $managesResources = $this->authorizer->check(config('permission.resource_managership_indicating_permission'));
 
-        // Leave only tenants that are not 'pkp'
-        $tenants = collect(GetTenantsForUpserts::execute('reservations.update.padalinys', $this->authorizer));
+        /**
+         * The check result must gate getTenants(): with no permissable duties it falls back to
+         * *all* of the user's duties, which would hand resource-management rights to someone who
+         * merely holds a duty in the tenant. canBeApprovedBy() gates it the same way.
+         */
+        $managedTenantIds = $managesResources
+            ? $this->authorizer->getTenants()->pluck('id')
+            : collect();
 
-        // Check if selected tenant is in the list of tenants
-        if ($selectedTenant) {
-            $selectedTenant = $tenants->firstWhere('id', $selectedTenant);
-        } else {
-            // Check if there's tenant with type 'pagrindinis'
-            $selectedTenant = $tenants->firstWhere('type', 'pagrindinis');
-        }
+        $eagerLoads = [
+            'resources.tenant:id,shortname',
+            'users:id,name,email,profile_photo_path',
+        ];
 
-        // If not, select first tenant
-        if (! $selectedTenant) {
-            $selectedTenant = $tenants->first();
-        }
+        $myReservations = $user->reservations()->with($eagerLoads)->get();
 
-        if (! $selectedTenant) {
-            $providedTenant = null;
-            $tenantResourceReservations = new Collection;
-        } else {
-            $providedTenant = Tenant::query()->where('id', $selectedTenant['id'])->with('reservations.resources', 'resources')->first();
-
-            $tenantResourceReservations = $providedTenant->resources->load('reservations.users:id,name,email,profile_photo_path')->pluck('reservations')->flatten()->unique('id')->values();
-
-            $tenantResourceReservations = new Collection($tenantResourceReservations);
-        }
+        $administeredReservations = Reservation::query()
+            ->whereHas('resources', fn ($query) => $query->whereIn('resources.tenant_id', $managedTenantIds))
+            ->with($eagerLoads)
+            ->get();
 
         return $this->inertiaResponse('Admin/Dashboard/ShowReservations', [
-            'reservations' => $reservations,
-            'resources' => [
-                'active' => Resource::where('is_reservable', true)->count(),
-                'sumOfCapacity' => Resource::where('is_reservable', true)->sum('capacity'),
-            ],
-            'tenants' => $tenants,
-            'providedTenant' => $providedTenant ? [
-                ...$providedTenant->toArray(),
-                'reservations' => $providedTenant->reservations->load('resources.tenant', 'users:id,name,email,profile_photo_path')->append('isCompleted')->unique('id')->values(),
-                'activeReservations' => $tenantResourceReservations->append('isCompleted'),
-            ] : null,
+            'myReservations' => $this->serializeReservations($myReservations, $managedTenantIds, $user),
+            'administeredReservations' => $this->serializeReservations($administeredReservations, $managedTenantIds, $user),
+            // KPI counts are derived on the client, from whatever the table is currently showing:
+            // the tiles filter the table, so their numbers have to agree with the rows.
+            'managedTenants' => Tenant::query()
+                ->whereIn('id', $managedTenantIds)
+                ->orderBy('shortname')
+                ->get(['id', 'shortname']),
         ]);
+    }
+
+    /**
+     * Flatten reservations for the dashboard table.
+     *
+     * Each resource carries its pivot plus two permission flags that mirror the two branches of
+     * ReservationResource::canBeApprovedBy(), so the table never offers an action the server
+     * would reject. Pivot fields are listed explicitly: the pivot model declares
+     * $with = ['comments', 'approvals'], which has no business in a list payload.
+     *
+     * @param  SupportCollection<int, Reservation>  $reservations
+     * @param  SupportCollection<int, int>  $managedTenantIds
+     * @return list<array<string, mixed>>
+     */
+    private function serializeReservations(SupportCollection $reservations, SupportCollection $managedTenantIds, User $user): array
+    {
+        return $reservations->map(function (Reservation $reservation) use ($managedTenantIds, $user) {
+            $isParticipant = $reservation->users->contains('id', $user->id);
+
+            return [
+                'id' => $reservation->id,
+                'name' => $reservation->name,
+                'description' => $reservation->description,
+                'start_time' => $reservation->start_time,
+                'end_time' => $reservation->end_time,
+                'created_at' => $reservation->created_at,
+                'users' => $reservation->users
+                    ->map(fn (User $manager) => $this->serializeReservationUser($manager))
+                    ->values()
+                    ->all(),
+                'resources' => $reservation->resources
+                    ->map(fn (Resource $resource) => $this->serializeReservationResource($resource, $managedTenantIds, $isParticipant))
+                    ->values()
+                    ->all(),
+            ];
+        })->values()->all();
+    }
+
+    /**
+     * Serialize one reserved resource, with the pivot the table acts on.
+     *
+     * @param  SupportCollection<int, int>  $managedTenantIds
+     * @return array<string, mixed>
+     */
+    private function serializeReservationResource(Resource $resource, SupportCollection $managedTenantIds, bool $isParticipant): array
+    {
+        $pivot = $resource->pivot;
+        $state = $pivot->state->getValue();
+
+        return [
+            'id' => $resource->id,
+            'name' => $resource->name,
+            'tenant' => [
+                'id' => $resource->tenant->id,
+                'shortname' => $resource->tenant->shortname,
+            ],
+            'pivot' => [
+                'id' => $pivot->id,
+                'reservation_id' => $pivot->reservation_id,
+                'resource_id' => $pivot->resource_id,
+                'start_time' => $pivot->start_time,
+                'end_time' => $pivot->end_time,
+                'returned_at' => $pivot->returned_at,
+                // Fallback for returned_at, which is only stamped on items returned
+                // since it started being written.
+                'updated_at' => $pivot->updated_at,
+                'quantity' => $pivot->quantity,
+                'state' => $state,
+                'state_properties' => $pivot->state_properties,
+                'approvable' => $managedTenantIds->contains($resource->tenant_id),
+                'cancellable' => $isParticipant && in_array($state, ['created', 'reserved'], true),
+            ],
+        ];
+    }
+
+    /**
+     * Serialize a single user attached to a reservation.
+     *
+     * @return array<string, mixed>
+     */
+    private function serializeReservationUser(User $user): array
+    {
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'profile_photo_path' => $user->profile_photo_path,
+        ];
     }
 
     public function userSettings()
@@ -465,12 +559,26 @@ class DashboardController extends AdminController
     {
         $user = User::find(Auth::id());
 
-        if ($user->name !== $request->input('name') && ! $user->name_was_changed) {
+        // Only self-service profile fields — never email/password, which have
+        // their own dedicated flows (updatePassword).
+        $validated = $request->validate([
+            'name' => ['nullable', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:255'],
+            'facebook_url' => ['nullable', 'string', 'max:255'],
+            'profile_photo_path' => ['nullable', 'string'],
+            'profile_photo_focal_point' => ['nullable', 'array'],
+            'pronouns' => ['nullable', 'array'],
+            'show_pronouns' => ['nullable', 'boolean'],
+        ]);
+
+        // The display name may only be changed once.
+        if (array_key_exists('name', $validated) && $user->name !== $validated['name'] && ! $user->name_was_changed) {
             $user->name_was_changed = true;
-            $user->update($request->all());
         } else {
-            $user->update($request->except('name'));
+            unset($validated['name']);
         }
+
+        $user->update($validated);
 
         return $this->redirectBackWithSuccess('Nustatymai išsaugoti.');
     }
@@ -537,6 +645,42 @@ class DashboardController extends AdminController
         $user->save();
 
         return $this->redirectBackWithSuccess('Pranešimų nustatymai išsaugoti.');
+    }
+
+    /**
+     * Send a sample digest email to the current user's configured digest addresses.
+     *
+     * Sent with sendNow() rather than send(): NotificationDigest is a ShouldQueue
+     * mailable, so send() would only enqueue it and report success even when the
+     * mail server is rejecting everything — which defeats the point of a test.
+     */
+    public function sendTestNotificationEmail(): JsonResponse
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        $emails = $user->getDigestEmails();
+
+        // Build the sample from a real notification so the item shape cannot drift
+        // away from what the digest template expects.
+        $notification = new TestPushNotification;
+
+        $sampleItems = [
+            $notification->category()->value => [$notification->toDigestItem($user)],
+        ];
+
+        try {
+            Mail::to($emails)->sendNow(new NotificationDigest($user, $sampleItems));
+        } catch (TransportExceptionInterface $e) {
+            return $this->jsonError(
+                __('notifications.test_email_failed', ['error' => $e->getMessage()]),
+                500
+            );
+        }
+
+        return $this->jsonSuccess(
+            message: __('notifications.test_email_sent', ['emails' => implode(', ', $emails)])
+        );
     }
 
     public function userTasks(Request $request)
@@ -619,12 +763,16 @@ class DashboardController extends AdminController
 
     public function institutionGraph()
     {
-        // return institutions with user count
-        $institutions = Institution::withCount('users')->get();
+        // Only the fields the graph actually renders (id, name, users_count, tenant for grouping).
+        $institutions = Institution::withCount('users')->get(['id', 'name', 'tenant_id']);
+
+        $typeGraph = RelationshipService::getTypeRelationshipGraph();
 
         return $this->inertiaResponse('Admin/ShowInstitutionGraph', [
             'institutions' => $institutions,
-            'institutionRelationships' => RelationshipService::getAllRelatedInstitutions(),
+            'institutionRelationships' => RelationshipService::getAllRelatedInstitutionsEnriched(),
+            'types' => $typeGraph['nodes'],
+            'typeRelationships' => $typeGraph['edges'],
         ]);
     }
 

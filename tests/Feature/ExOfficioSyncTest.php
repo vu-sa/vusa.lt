@@ -17,7 +17,7 @@ beforeEach(function () {
     config(['queue.default' => 'sync']);
     Event::fake([DutiableChanged::class]);
 
-    $this->tenant = Tenant::query()->inRandomOrder()->first();
+    $this->tenant = Tenant::query()->first();
     $institution = Institution::factory()->for($this->tenant)->create();
     $this->sourceDuty = Duty::factory()->for($institution)->create();
     $this->targetDuty = Duty::factory()->for($institution)->create();
@@ -161,13 +161,14 @@ test('listener deletes derived rows when source is force-deleted', function () {
 
     expect(Dutiable::where('via_dutiable_id', $source->id)->count())->toBe(1);
 
-    // Simulate force delete: set exists = false on the event model.
-    $deletedSource = clone $source;
-    $deletedSource->exists = false;
+    // A real delete, not a simulated one: the event reads `exists` at construction,
+    // which is how it captures the delete signal before the row is gone.
+    $sourceId = $source->id;
+    $source->delete();
 
-    $listener->handle(new DutiableChanged($deletedSource));
+    $listener->handle(new DutiableChanged($source));
 
-    expect(Dutiable::where('via_dutiable_id', $source->id)->count())->toBe(0);
+    expect(Dutiable::where('via_dutiable_id', $sourceId)->count())->toBe(0);
 });
 
 test('listener skips non-User dutiable types', function () {
@@ -213,8 +214,8 @@ test('listener skips derived rows to prevent chains', function () {
 });
 
 test('cross-tenant ex-officio sets tenant_id when target supports source tenant', function () {
-    $sourceTenant = Tenant::query()->inRandomOrder()->first();
-    $targetTenant = Tenant::query()->where('id', '!=', $sourceTenant->id)->inRandomOrder()->first();
+    $sourceTenant = Tenant::query()->first();
+    $targetTenant = Tenant::query()->where('id', '!=', $sourceTenant->id)->first();
 
     if (! $targetTenant) {
         $this->markTestSkipped('Need at least 2 tenants in the database.');
@@ -248,8 +249,8 @@ test('cross-tenant ex-officio sets tenant_id when target supports source tenant'
 });
 
 test('cross-tenant ex-officio does not set tenant_id when target does not support source tenant', function () {
-    $sourceTenant = Tenant::query()->inRandomOrder()->first();
-    $targetTenant = Tenant::query()->where('id', '!=', $sourceTenant->id)->inRandomOrder()->first();
+    $sourceTenant = Tenant::query()->first();
+    $targetTenant = Tenant::query()->where('id', '!=', $sourceTenant->id)->first();
 
     if (! $targetTenant) {
         $this->markTestSkipped('Need at least 2 tenants in the database.');
@@ -303,8 +304,8 @@ test('same-tenant ex-officio keeps tenant_id null', function () {
 });
 
 test('listener preserves tenant_id when mirroring date changes', function () {
-    $sourceTenant = Tenant::query()->inRandomOrder()->first();
-    $targetTenant = Tenant::query()->where('id', '!=', $sourceTenant->id)->inRandomOrder()->first();
+    $sourceTenant = Tenant::query()->first();
+    $targetTenant = Tenant::query()->where('id', '!=', $sourceTenant->id)->first();
 
     if (! $targetTenant) {
         $this->markTestSkipped('Need at least 2 tenants in the database.');
@@ -343,8 +344,8 @@ test('listener preserves tenant_id when mirroring date changes', function () {
 });
 
 test('listener adopts manual row and updates tenant_id when target supports source tenant', function () {
-    $sourceTenant = Tenant::query()->inRandomOrder()->first();
-    $targetTenant = Tenant::query()->where('id', '!=', $sourceTenant->id)->inRandomOrder()->first();
+    $sourceTenant = Tenant::query()->first();
+    $targetTenant = Tenant::query()->where('id', '!=', $sourceTenant->id)->first();
 
     if (! $targetTenant) {
         $this->markTestSkipped('Need at least 2 tenants in the database.');
@@ -389,8 +390,8 @@ test('listener adopts manual row and updates tenant_id when target supports sour
 });
 
 test('backfill sets tenant_id for cross-tenant ex-officio', function () {
-    $sourceTenant = Tenant::query()->inRandomOrder()->first();
-    $targetTenant = Tenant::query()->where('id', '!=', $sourceTenant->id)->inRandomOrder()->first();
+    $sourceTenant = Tenant::query()->first();
+    $targetTenant = Tenant::query()->where('id', '!=', $sourceTenant->id)->first();
 
     if (! $targetTenant) {
         $this->markTestSkipped('Need at least 2 tenants in the database.');

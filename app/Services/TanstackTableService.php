@@ -4,7 +4,10 @@ namespace App\Services;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -37,9 +40,9 @@ class TanstackTableService
                     [$relation, $column] = explode('.', $sort['id'], 2);
                     $model = $query->getModel();
 
-                    // Make sure the relationship exists
-                    if (method_exists($model, $relation)) {
-                        $relationObj = $model->{$relation}();
+                    $relationObj = $this->resolveRelation($model, $relation);
+
+                    if ($relationObj instanceof Relation && Schema::hasColumn($relationObj->getRelated()->getTable(), $column)) {
                         $relatedTable = $relationObj->getRelated()->getTable();
 
                         // Handle different relationship types
@@ -60,7 +63,7 @@ class TanstackTableService
                                 );
                                 $addedJoins[] = $joinName;
                             }
-                        } else {
+                        } elseif ($relationObj instanceof HasOneOrMany) {
                             // For HasMany, HasOne, etc.
                             $foreignKey = $relationObj->getForeignKeyName();
                             $localKey = $relationObj->getLocalKeyName() ?: 'id';
@@ -78,6 +81,9 @@ class TanstackTableService
                                 );
                                 $addedJoins[] = $joinName;
                             }
+                        } else {
+                            // Unsupported relation type for a join-based sort — skip it.
+                            continue;
                         }
 
                         // Apply sorting
@@ -167,7 +173,7 @@ class TanstackTableService
             }, null, null, $boolean);
         } else {
             // Handle regular columns - case-insensitive search
-            $query->whereRaw("LOWER({$column}) LIKE LOWER(?)", ["%{$searchText}%"], $boolean);
+            $query->whereLike($column, "%{$searchText}%", false, $boolean);
         }
     }
 
@@ -283,19 +289,24 @@ class TanstackTableService
             $relation = $parts[0];
             $column = $parts[1];
 
-            // Check if relation exists on model
-            if (method_exists($query->getModel(), $relation)) {
-                $query->whereHas($relation, function (Builder $q) use ($column, $value) {
-                    if (is_array($value)) {
-                        $q->whereIn($column, $value);
-                    } elseif (is_string($value)) {
-                        // Handle string values (text search) - case-insensitive
-                        $q->whereRaw("LOWER({$column}) LIKE LOWER(?)", ["%{$value}%"]);
-                    } else {
-                        $q->where($column, $value);
-                    }
-                });
+            $relationObj = $this->resolveRelation($query->getModel(), $relation);
+
+            // Both the relation and the column come from the request, so the
+            // column must exist on the related table before it may be used.
+            if (! $relationObj instanceof Relation || ! Schema::hasColumn($relationObj->getRelated()->getTable(), $column)) {
+                return;
             }
+
+            $query->whereHas($relation, function (Builder $q) use ($column, $value) {
+                if (is_array($value)) {
+                    $q->whereIn($column, $value);
+                } elseif (is_string($value)) {
+                    // Handle string values (text search) - case-insensitive
+                    $q->whereLike($column, "%{$value}%");
+                } else {
+                    $q->where($column, $value);
+                }
+            });
 
             return;
         }
@@ -307,7 +318,7 @@ class TanstackTableService
                 $query->whereIn($key, $value);
             } elseif (is_string($value)) {
                 // Handle string values (text search) - case-insensitive
-                $query->whereRaw("LOWER({$key}) LIKE LOWER(?)", ["%{$value}%"]);
+                $query->whereLike($key, "%{$value}%");
             } elseif ($value instanceof \DateTimeInterface) {
                 // Handle date values
                 $query->whereDate($key, $value);
@@ -339,17 +350,59 @@ class TanstackTableService
             $relation = $parts[0];
             $column = $parts[1];
 
-            // Check if relation exists
-            if (method_exists($model, $relation)) {
-                // For proper relationship sorting, you would need to join the related table
-                // This is a simplified example - you might want to implement more complex logic
-                $relationObj = $model->{$relation}();
+            $relationObj = $this->resolveRelation($model, $relation);
+
+            if ($relationObj instanceof Relation) {
                 $relatedTable = $relationObj->getRelated()->getTable();
 
-                return "{$relatedTable}.{$column}";
+                if (Schema::hasColumn($relatedTable, $column)) {
+                    return "{$relatedTable}.{$column}";
+                }
             }
         }
 
         return null;
+    }
+
+    /**
+     * Resolve a request-supplied relation name to an Eloquent relation.
+     *
+     * Filter and sorting keys come straight from the request, so the name must
+     * never be invoked blindly — `method_exists()` also matches methods such as
+     * `save()` or `delete()`. Only methods that declare a Relation return type,
+     * or untyped zero-argument methods defined in application code, are invoked.
+     */
+    protected function resolveRelation(Model $model, string $relation): ?Relation
+    {
+        if (! method_exists($model, $relation)) {
+            return null;
+        }
+
+        $method = new \ReflectionMethod($model, $relation);
+
+        if ($method->getNumberOfRequiredParameters() > 0) {
+            return null;
+        }
+
+        $returnType = $method->getReturnType();
+
+        if ($returnType === null) {
+            if (! str_starts_with((string) $method->getFileName(), app_path())) {
+                return null;
+            }
+        } elseif (! $returnType instanceof \ReflectionNamedType
+            || $returnType->isBuiltin()
+            || ! is_a($returnType->getName(), Relation::class, true)
+        ) {
+            return null;
+        }
+
+        try {
+            $result = $model->{$relation}();
+        } catch (\Throwable) {
+            return null;
+        }
+
+        return $result instanceof Relation ? $result : null;
     }
 }

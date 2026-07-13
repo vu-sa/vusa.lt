@@ -11,7 +11,7 @@
           </p>
           <div class="grid content-stretch gap-4 lg:grid-cols-2">
             <SmartLink v-for="page in category.pages" :key="page.id"
-              :href="route('page', { permalink: page.permalink, lang: page.lang, subdomain: page.tenant.alias === 'vusa' ? 'www' : page.tenant.alias })">
+              :href="route('page', { permalink: page.permalink, lang: page.lang, subdomain: resolveTenantSubdomain(page.tenant.id) })">
               <PageCard :page />
             </SmartLink>
           </div>
@@ -26,6 +26,7 @@ import PageCard from '../../Components/Cards/PageCard.vue';
 
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
+import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import IFluentFolder16Regular from '~icons/fluent/folder-16-regular';
 
 const props = defineProps<{

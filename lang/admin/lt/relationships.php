@@ -44,6 +44,7 @@ return [
     'direction_outgoing' => 'Išeinantis',
     'direction_incoming' => 'Įeinantis',
     'direction_sibling' => 'Lygiagretus',
+    'related' => 'Susijusi',
 
     // Authorization
     'authorized' => 'Su prieiga',
@@ -67,4 +68,22 @@ return [
 
     // Validation
     'same_type_error' => 'Šaltinis ir tikslas negali būti tas pats tipas. To paties tipo institucijų ryšiai (sibling) konfigūruojami tipo redagavimo formoje, naudojant "Rodyti susijusias institucijas pagal tipą" nustatymą.',
+
+    // Graph visualisation (legend, tooltips)
+    'graph' => [
+        'legend_title' => 'Ryšių tipai',
+        'scope_legend_title' => 'Ryšio aprėptis',
+        'directional' => 'Vienkryptis',
+        'bidirectional' => 'Dvikryptis',
+        'type_direct' => 'Tiesioginis',
+        'type_type_based' => 'Per tipą',
+        'type_within_type' => 'Tos pačios rūšies',
+        'type_cross_tenant' => 'Tarp padalinių',
+        'direction_outgoing' => 'Išeinantis',
+        'direction_incoming' => 'Įeinantis',
+        'direction_sibling' => 'Lygiagretus',
+        'scope_within_tenant' => 'Tame pačiame padalinyje',
+        'scope_cross_tenant' => 'Tarp padalinių',
+        'and_more' => '+:count daugiau',
+    ],
 ];

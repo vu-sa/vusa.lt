@@ -30,6 +30,7 @@ class ResourceCapacityCalculator
      * @param  string  $symbolEnd  Comparison operator for end time
      * @param  array<int, string>  $exceptReservations  Reservation IDs to exclude
      * @param  array<int, string>  $exceptResources  Resource IDs to exclude
+     * @param  bool  $ignoreTimeEndedActive  Ignore active reservations whose end_time has passed
      * @return int Available capacity at the specified time
      */
     public function calculateLeftCapacityAtTime(
@@ -37,13 +38,18 @@ class ResourceCapacityCalculator
         string $symbolStart = '<',
         string $symbolEnd = '>=',
         array $exceptReservations = [],
-        array $exceptResources = []
+        array $exceptResources = [],
+        bool $ignoreTimeEndedActive = false
     ): int {
         $query = $this->buildActiveReservationsQuery($datetime, $symbolStart, $symbolEnd);
 
         $this->applyExceptions($query, $exceptReservations, $exceptResources);
 
         $usedCapacity = $query->sum('quantity');
+
+        if ($ignoreTimeEndedActive) {
+            $usedCapacity -= $this->calculateTimeEndedActiveCapacity($datetime, $symbolStart, $symbolEnd);
+        }
 
         return $this->resource->capacity - $usedCapacity;
     }
@@ -54,16 +60,18 @@ class ResourceCapacityCalculator
      * @param  Carbon  $datetime  The time to check capacity at
      * @param  array<int, string>  $exceptReservations  Reservation IDs to exclude
      * @param  array<int, string>  $exceptResources  Resource IDs to exclude
+     * @param  bool  $ignoreTimeEndedActive  Ignore active reservations whose end_time has passed
      * @return array{before: int, after: int} Capacity before and after the time
      */
     public function calculateCapacityAtTimeArray(
         Carbon $datetime,
         array $exceptReservations = [],
-        array $exceptResources = []
+        array $exceptResources = [],
+        bool $ignoreTimeEndedActive = false
     ): array {
         return [
-            'before' => $this->calculateLeftCapacityAtTime($datetime, '<', '>=', $exceptReservations, $exceptResources),
-            'after' => $this->calculateLeftCapacityAtTime($datetime, '<=', '>', $exceptReservations, $exceptResources),
+            'before' => $this->calculateLeftCapacityAtTime($datetime, '<', '>=', $exceptReservations, $exceptResources, $ignoreTimeEndedActive),
+            'after' => $this->calculateLeftCapacityAtTime($datetime, '<=', '>', $exceptReservations, $exceptResources, $ignoreTimeEndedActive),
         ];
     }
 
@@ -73,27 +81,58 @@ class ResourceCapacityCalculator
      * @param  TimeRange  $timeRange  The time range to analyze
      * @param  array<int, string>  $exceptReservations  Reservation IDs to exclude
      * @param  array<int, string>  $exceptResources  Resource IDs to exclude
+     * @param  bool  $ignoreTimeEndedActive  Ignore active reservations whose end_time has passed
      * @return array<string, array{before: int, after: int, reservation?: array<string, mixed>, start?: bool, end?: bool}>
      */
     public function getCapacityTimeline(
         TimeRange $timeRange,
         array $exceptReservations = [],
-        array $exceptResources = []
+        array $exceptResources = [],
+        bool $ignoreTimeEndedActive = false
     ): array {
         $reservations = $this->getReservationsInRange($timeRange, $exceptReservations, $exceptResources);
 
         $capacityTimeline = [];
 
         // Add capacity points for each reservation start/end
-        $this->addReservationCapacityPoints($capacityTimeline, $reservations, $timeRange);
+        $this->addReservationCapacityPoints($capacityTimeline, $reservations, $timeRange, $ignoreTimeEndedActive);
 
         // Add capacity points for range boundaries
-        $this->addRangeCapacityPoints($capacityTimeline, $timeRange, $exceptReservations, $exceptResources);
+        $this->addRangeCapacityPoints($capacityTimeline, $timeRange, $exceptReservations, $exceptResources, $ignoreTimeEndedActive);
 
         // Sort by timestamp
         ksort($capacityTimeline);
 
         return $capacityTimeline;
+    }
+
+    /**
+     * Find active reservations whose end_time has passed and which overlap the given range.
+     *
+     * These are "discrepancies": the system still treats them as active, but their reserved time
+     * window is over, so they can be ignored for flexible capacity while still being surfaced to
+     * users as a warning.
+     *
+     * @param  TimeRange  $timeRange  The time range to analyze
+     * @param  array<int, string>  $exceptReservations  Reservation IDs to exclude
+     * @param  array<int, string>  $exceptResources  Resource IDs to exclude
+     * @return Collection<int, Reservation>
+     */
+    public function findTimeEndedActiveReservations(
+        TimeRange $timeRange,
+        array $exceptReservations = [],
+        array $exceptResources = []
+    ): Collection {
+        $now = Carbon::now();
+
+        return $this->getReservationsInRange($timeRange, $exceptReservations, $exceptResources)
+            ->filter(function (Reservation $reservation) use ($now) {
+                /** @var ReservationResource $pivot */
+                $pivot = $reservation->pivot;
+
+                return $this->isTimeEndedActivePivot($pivot, $now);
+            })
+            ->values();
     }
 
     /**
@@ -126,6 +165,42 @@ class ResourceCapacityCalculator
             ->active_reservations()
             ->wherePivot('start_time', $symbolStart, $datetime)
             ->wherePivot('end_time', $symbolEnd, $datetime);
+    }
+
+    /**
+     * Calculate capacity used by active reservations whose end_time has passed.
+     *
+     * This is subtracted from the strict used capacity when flexible mode is requested.
+     */
+    private function calculateTimeEndedActiveCapacity(
+        Carbon $datetime,
+        string $symbolStart,
+        string $symbolEnd
+    ): int {
+        $now = Carbon::now();
+
+        return (int) $this->resource
+            ->active_reservations()
+            ->wherePivot('start_time', $symbolStart, $datetime)
+            ->wherePivot('end_time', $symbolEnd, $datetime)
+            ->wherePivot('end_time', '<', $now)
+            ->sum('quantity');
+    }
+
+    /**
+     * Whether a pivot is in an active state and its end_time has already passed.
+     */
+    private function isTimeEndedActivePivot(ReservationResource $pivot, Carbon $now): bool
+    {
+        $state = (string) $pivot->state;
+
+        if (! in_array($state, ['created', 'reserved', 'lent'], true)) {
+            return false;
+        }
+
+        $endTime = $pivot->end_time;
+
+        return $endTime !== null && $endTime->lt($now);
     }
 
     /**
@@ -173,9 +248,13 @@ class ResourceCapacityCalculator
      * @param  array<int|string, mixed>  $capacityTimeline
      * @param  Collection<int, Reservation>  $reservations
      */
-    private function addReservationCapacityPoints(array &$capacityTimeline, Collection $reservations, TimeRange $timeRange): void
-    {
-        $reservations->each(function (Reservation $reservation) use (&$capacityTimeline, $timeRange) {
+    private function addReservationCapacityPoints(
+        array &$capacityTimeline,
+        Collection $reservations,
+        TimeRange $timeRange,
+        bool $ignoreTimeEndedActive = false
+    ): void {
+        $reservations->each(function (Reservation $reservation) use (&$capacityTimeline, $timeRange, $ignoreTimeEndedActive) {
             /** @var ReservationResource $pivot */
             $pivot = $reservation->pivot;
 
@@ -189,12 +268,12 @@ class ResourceCapacityCalculator
             $startKey = (string) $effectiveStart->getTimestampMs();
             $endKey = (string) $effectiveEnd->getTimestampMs();
 
-            $capacityTimeline[$startKey] = $this->calculateCapacityAtTimeArray($effectiveStart) + [
+            $capacityTimeline[$startKey] = $this->calculateCapacityAtTimeArray($effectiveStart, [], [], $ignoreTimeEndedActive) + [
                 'reservation' => $this->formatReservationData($reservation),
                 'start' => true,
             ];
 
-            $capacityTimeline[$endKey] = $this->calculateCapacityAtTimeArray($effectiveEnd) + [
+            $capacityTimeline[$endKey] = $this->calculateCapacityAtTimeArray($effectiveEnd, [], [], $ignoreTimeEndedActive) + [
                 'reservation' => $this->formatReservationData($reservation),
                 'end' => true,
             ];
@@ -212,13 +291,14 @@ class ResourceCapacityCalculator
         array &$capacityTimeline,
         TimeRange $timeRange,
         array $exceptReservations,
-        array $exceptResources
+        array $exceptResources,
+        bool $ignoreTimeEndedActive = false
     ): void {
         $startKey = (string) $timeRange->getStartTimestampMs();
         $endKey = (string) $timeRange->getEndTimestampMs();
 
-        $capacityTimeline[$startKey] = $this->calculateCapacityAtTimeArray($timeRange->start, $exceptReservations, $exceptResources);
-        $capacityTimeline[$endKey] = $this->calculateCapacityAtTimeArray($timeRange->end, $exceptReservations, $exceptResources);
+        $capacityTimeline[$startKey] = $this->calculateCapacityAtTimeArray($timeRange->start, $exceptReservations, $exceptResources, $ignoreTimeEndedActive);
+        $capacityTimeline[$endKey] = $this->calculateCapacityAtTimeArray($timeRange->end, $exceptReservations, $exceptResources, $ignoreTimeEndedActive);
     }
 
     /**

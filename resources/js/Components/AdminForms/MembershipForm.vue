@@ -4,10 +4,10 @@
       <template #title>
         {{ $t("forms.context.main_info") }}
       </template>
-      <FormFieldWrapper id="name" label="Pavadinimas" required :error="form.errors.name">
+      <FormFieldWrapper id="name" :label="$t('forms.fields.name')" required :error="form.errors.name">
         <MultiLocaleInput v-model:input="form.name" />
       </FormFieldWrapper>
-      <FormFieldWrapper id="tenant_id" label="Padalinys" :error="form.errors.tenant_id">
+      <FormFieldWrapper id="tenant_id" :label="$t('forms.fields.tenant')" :error="form.errors.tenant_id">
         <Select v-model="tenantIdString">
           <SelectTrigger>
             <SelectValue placeholder="VU SA ..." />
@@ -22,29 +22,28 @@
     </FormElement>
     <FormElement v-if="canImportMemberships">
       <template #title>
-        Importuoti narius
+        {{ $t('forms.sections.import_members') }}
       </template>
       <template #description>
         <p>
-          Galima importuoti narius į šią narystę. Importuojamas laikotarpis nėra perrašomas, o tik pridedamas prie
-          egzistuojančio.
+          {{ $t('forms.helpers.import_members_info_1') }}
         </p>
-        <p> Egzistuojančių narių informacija nėra perrašoma. Ar narys (-ė) egzistuoja, tikrinama pagal el. paštą. </p>
+        <p> {{ $t('forms.helpers.import_members_info_2') }} </p>
         <p>
-          Importavimo failą rasite <a class="font-bold" href="/imports/import_membershipuser_20241201.xlsx">čia</a>.
+          {{ $t('forms.helpers.import_file_location') }} <a class="font-bold" href="/imports/import_membershipuser_20241201.xlsx">{{ $t('čia') }}</a>.
         </p>
       </template>
 
       <div class="flex items-center gap-3">
         <Button variant="outline" as="label" class="cursor-pointer">
-          Įkelti failą
+          {{ $t('forms.upload_file') }}
           <input ref="fileInput" type="file" class="hidden" accept=".xlsx,.xls,.csv"
             @change="handleFileChange">
         </Button>
         <span v-if="selectedFile" class="text-sm text-muted-foreground">{{ selectedFile.name }}</span>
       </div>
       <Button :disabled="!selectedFile" class="mt-3" @click="handleImport">
-        Importuoti
+        {{ $t('forms.import') }}
       </Button>
     </FormElement>
   </AdminForm>

@@ -48,7 +48,7 @@
         <NumberField id="capacity" v-model="form.capacity" :min="1" />
       </FormFieldWrapper>
       <FormFieldWrapper id="is_reservable" :label="capitalize($t('entities.reservation.is_reservable'))" required :error="form.errors.is_reservable">
-        <Switch :checked="form.is_reservable === 1" @update:checked="(val: boolean) => form.is_reservable = val ? 1 : 0" />
+        <Switch :model-value="form.is_reservable === 1" @update:model-value="(val: boolean) => form.is_reservable = val ? 1 : 0" />
       </FormFieldWrapper>
       <FormFieldWrapper id="resource_category_id" label="Kategorija" :error="form.errors.resource_category_id">
         <Select v-model="categoryIdString">

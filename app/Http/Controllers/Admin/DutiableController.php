@@ -6,11 +6,29 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\UpdateDutiableRequest;
 use App\Models\Pivots\Dutiable;
 use App\Models\StudyProgram;
+use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
+use Illuminate\Http\Request;
 
 class DutiableController extends AdminController
 {
     public function __construct(public Authorizer $authorizer) {}
+
+    /**
+     * Whether the given dutiable belongs to the currently authenticated user,
+     * meaning a change to it could affect their own access.
+     */
+    private function affectsActingUser(Dutiable $dutiable, Request $request): bool
+    {
+        // Super admins short-circuit every permission, so duty changes can never
+        // lock them out — no need to analyze.
+        if ($request->user()->isSuperAdmin()) {
+            return false;
+        }
+
+        return $dutiable->dutiable_type === User::class
+            && (string) $dutiable->dutiable_id === (string) $request->user()->id;
+    }
 
     /**
      * Show the form for editing the specified resource.
@@ -41,7 +59,15 @@ class DutiableController extends AdminController
             unset($data['start_date'], $data['end_date']);
         }
 
-        $dutiable->fill($data)->save();
+        $mutation = fn () => $dutiable->fill($data)->save();
+
+        // Email-only edits (JSON) never change the active period, so they can't
+        // affect access; only guard the date-editing (Inertia) path.
+        $couldAffectSelf = ! $request->wantsJson() && $this->affectsActingUser($dutiable, $request);
+
+        if ($warning = $this->guardSelfLockout($request->user(), $couldAffectSelf, $request, $mutation)) {
+            return $warning;
+        }
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -56,13 +82,17 @@ class DutiableController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Dutiable $dutiable)
+    public function destroy(Dutiable $dutiable, Request $request)
     {
         $this->authorize('manageDutiable', $dutiable);
 
         $user = $dutiable->dutiable;
 
-        $dutiable->delete();
+        $mutation = fn () => $dutiable->delete();
+
+        if ($warning = $this->guardSelfLockout($request->user(), $this->affectsActingUser($dutiable, $request), $request, $mutation)) {
+            return $warning;
+        }
 
         return redirect()->route('users.edit', $user)->with('success', 'Pareigybės laikotarpis sėkmingai ištrintas!');
     }

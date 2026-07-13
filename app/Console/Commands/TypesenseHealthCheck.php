@@ -220,25 +220,26 @@ class TypesenseHealthCheck extends Command
         $this->newLine();
         $this->info('📖 Synonyms Configuration');
 
-        $prefix = Config::get('scout.prefix', '');
-        $collectionsToCheck = ['news', 'pages', 'documents'];
+        // Typesense 30+: synonyms live in a top-level synonym set, not nested per collection.
+        try {
+            $set = TypesenseSynonyms::getSynonymSet($this->client);
 
-        foreach ($collectionsToCheck as $collection) {
-            $prefixedName = $prefix.$collection;
-            try {
-                $synonyms = $this->client->collections[$prefixedName]->synonyms->retrieve();
-                $count = count($synonyms['synonyms'] ?? []);
-                $this->line("  📌 {$collection}: {$count} synonym rules");
+            if (isset($set['error'])) {
+                $this->warn('  ⚠️  Synonym set "'.TypesenseSynonyms::SET_NAME.'" not found (run typesense:apply-search-config)');
+            } else {
+                $items = $set['items'] ?? [];
+                $count = count($items);
+                $this->line('  📌 '.TypesenseSynonyms::SET_NAME.": {$count} synonym items");
 
                 if ($this->option('detailed') && $count > 0) {
-                    foreach ($synonyms['synonyms'] as $synonym) {
+                    foreach ($items as $synonym) {
                         $terms = implode(' ↔ ', $synonym['synonyms'] ?? [$synonym['root'] ?? '']);
                         $this->line("      - {$synonym['id']}: {$terms}");
                     }
                 }
-            } catch (\Exception $e) {
-                $this->warn("  ⚠️  {$collection}: Could not retrieve synonyms");
             }
+        } catch (\Exception $e) {
+            $this->warn('  ⚠️  Could not retrieve synonym set: '.$e->getMessage());
         }
 
         // Show configured synonyms count
@@ -246,7 +247,7 @@ class TypesenseHealthCheck extends Command
         $configuredOneWay = count(TypesenseSynonyms::ONE_WAY_SYNONYMS);
         $this->line('');
         $this->line("  💡 Configured synonyms: {$configuredMultiWay} multi-way, {$configuredOneWay} one-way");
-        $this->line('     Use TypesenseSynonyms::upsertSynonymsForCollection() to apply');
+        $this->line('     Use TypesenseSynonyms::upsertSynonymSet() (or typesense:apply-search-config) to apply');
     }
 
     /**

@@ -61,6 +61,27 @@ expect()->extend('toNotExposePassword', function () {
     return $this;
 });
 
+// Translatable-model expectations (Spatie HasTranslations).
+expect()->extend('toHaveTranslations', function (string $field, array $locales = ['lt', 'en']) {
+    $translations = $this->value->getTranslations($field);
+
+    expect($translations)->toBeArray();
+
+    foreach ($locales as $locale) {
+        expect($translations)->toHaveKey($locale);
+    }
+
+    return $this;
+});
+
+expect()->extend('toHaveTranslation', function (string $field, string $locale) {
+    $value = $this->value->getTranslation($field, $locale);
+
+    expect($value)->toBeString()->not->toBeEmpty();
+
+    return $this;
+});
+
 /*
 |--------------------------------------------------------------------------
 | Functions
@@ -96,7 +117,7 @@ function asUserWithInertia(User $user): TestCase
 
 function makeTenantUser(?string $role = null, ?Tenant $tenant = null): User
 {
-    $tenant = $tenant ?? Tenant::query()->inRandomOrder()->first();
+    $tenant = $tenant ?? Tenant::query()->first();
 
     if (! $tenant) {
         throw new RuntimeException('No tenants found in database. Ensure test database is properly seeded.');

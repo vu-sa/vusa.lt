@@ -86,7 +86,7 @@ describe('comment notifications', function () {
             'commentable_type' => ReservationResource::class,
             'commentable_id' => $reservationResource->id,
             'user_id' => $commenter->id,
-            'comment' => 'Test comment',
+            'body' => 'Test comment',
         ]);
 
         event(new CommentPosted($comment));
@@ -146,9 +146,10 @@ describe('reservation notifications', function () {
 });
 
 describe('notification not sent to commenter', function () {
-    test('comment author does not need to receive their own comment notification', function () {
-        // This is a behavior observation - the current implementation may or may not
-        // filter out the comment author. This test documents expected behavior.
+    test('comment author does not receive their own comment notification', function () {
+        // The recipient resolver excludes the author from every group, so even
+        // when the author is also part of the commentable's audience (here, the
+        // reservation owner) they are never notified about their own comment.
         $user = $this->createUserWithPreferences();
 
         ['reservationResource' => $reservationResource] = $this->createReservationWithResource($user);
@@ -158,13 +159,11 @@ describe('notification not sent to commenter', function () {
             'commentable_type' => ReservationResource::class,
             'commentable_id' => $reservationResource->id,
             'user_id' => $user->id, // Same user is the commenter
-            'comment' => 'My own comment',
+            'body' => 'My own comment',
         ]);
 
         event(new CommentPosted($comment));
 
-        // The user who commented is also the reservation owner, so they will receive the notification
-        // This is the current behavior - whether to exclude self-comments is a product decision
-        Notification::assertSentTo($user, CommentPostedNotification::class);
+        Notification::assertNotSentTo($user, CommentPostedNotification::class);
     });
 });

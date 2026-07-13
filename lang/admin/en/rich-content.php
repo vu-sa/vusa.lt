@@ -8,7 +8,7 @@ return [
     'shadcn-accordion' => 'Accordion',
     'image-grid' => 'Image Grid',
     'hero' => 'Hero Section',
-    'spotify-embed' => 'Spotify Embed',
+    'spotify-embed' => 'Spotify / Mixcloud Embed',
     'social-embed' => 'Facebook / Instagram Post',
     'number-stat-section' => 'Number Statistics',
     'news' => 'News',
@@ -82,7 +82,7 @@ return [
     'show_all_tenants' => 'Show events from all units',
     'show_all_tenants_description' => 'Enable to show events from all VU SA units',
     // Spotify
-    'spotify_url_hint' => 'Paste a Spotify playlist, album or track URL',
+    'spotify_url_hint' => 'Paste a Spotify playlist, album or track URL, or a Mixcloud link',
     'preview' => 'Preview',
     'valid_url' => 'URL recognized',
     // Flow graph

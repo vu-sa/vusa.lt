@@ -8,7 +8,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->tenant = Tenant::query()->inRandomOrder()->first();
+    $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
     $this->admin = makeTenantUserWithRole('Global Communication Coordinator', $this->tenant);
 
@@ -111,6 +111,25 @@ describe('unauthorized access', function () {
     test('cannot delete navigation', function () {
         asUser($this->user)
             ->delete(route('navigation.destroy', $this->navigation))
+            ->assertStatus(403);
+    });
+
+    test('cannot update navigation column', function () {
+        asUser($this->user)
+            ->post(route('navigation.updateColumn'), [
+                'id' => $this->navigation->id,
+                'direction' => 'right',
+            ])
+            ->assertStatus(403);
+    });
+
+    test('cannot update navigation order', function () {
+        asUser($this->user)
+            ->post(route('navigation.updateOrder'), [
+                'navigation' => [
+                    ['id' => $this->navigation->id],
+                ],
+            ])
             ->assertStatus(403);
     });
 });

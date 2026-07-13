@@ -84,6 +84,23 @@
         :available-emails="availableDigestEmails"
       />
 
+      <!-- Test email -->
+      <div class="border-t pt-4 dark:border-zinc-700">
+        <Button
+          :disabled="testEmailLoading"
+          variant="secondary"
+          size="sm"
+          @click="handleSendTestEmail"
+        >
+          <MailIcon v-if="!testEmailLoading" class="size-4" />
+          <Loader2 v-else class="size-4 animate-spin" />
+          {{ $t('notifications.test_email_button') }}
+        </Button>
+        <p class="mt-2 text-sm text-muted-foreground">
+          {{ $t('notifications.test_email_hint') }}
+        </p>
+      </div>
+
       <!-- Category Channel Settings -->
       <div class="space-y-2">
         <h4 class="font-medium">
@@ -200,6 +217,7 @@ import { computed, ref, reactive, watch } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { useApiMutation } from '@/Composables/useApi';
 import FormElement from '@/Components/AdminForms/FormElement.vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import DigestEmailSelector from '@/Features/Admin/Notifications/DigestEmailSelector.vue';
@@ -215,7 +233,7 @@ import {
 } from '@/Components/ui/select';
 import IFluentAlertOff24Regular from '~icons/fluent/alert-off-24-regular';
 import IFluentSave24Regular from '~icons/fluent/save-24-regular';
-import { Loader2 } from 'lucide-vue-next';
+import { Loader2, Mail as MailIcon } from 'lucide-vue-next';
 
 // Category icons
 import IFluentComment24Regular from '~icons/fluent/comment-24-regular';
@@ -267,7 +285,25 @@ const props = defineProps<{
 }>();
 
 const loading = ref(false);
+const testEmailLoading = ref(false);
 const muteSelection = ref<string>('');
+
+/**
+ * Sends a sample digest to the saved digest addresses. The toasts carry the
+ * server's message, so a transport failure shows the actual SMTP error.
+ */
+const handleSendTestEmail = async () => {
+  testEmailLoading.value = true;
+
+  try {
+    const { execute } = useApiMutation(route('profile.sendTestNotificationEmail'));
+
+    await execute();
+  }
+  finally {
+    testEmailLoading.value = false;
+  }
+};
 
 const form = useForm({
   channels: { ...props.notificationPreferences.channels },

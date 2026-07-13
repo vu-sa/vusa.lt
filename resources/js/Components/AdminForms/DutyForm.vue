@@ -34,22 +34,27 @@
         </FormFieldWrapper>
 
         <div class="grid gap-4 lg:grid-cols-2">
-          <FormFieldWrapper id="institution_id" label="Institucija" :error="form.errors.institution_id">
-            <SingleSelect
-              v-model="selectedInstitution"
-              :options="assignableInstitutions"
-              label-field="name"
-              value-field="id"
-              :placeholder="$t('Pasirink instituciją pagal pavadinimą...')"
-              :empty-text="$t('Nerasta institucijų')"
+          <FormFieldWrapper id="institution_id" :label="$t('forms.fields.institution')" :error="form.errors.institution_id">
+            <InstitutionSelectDialog
+              v-model:open="institutionDialogOpen"
+              :institutions="assignableInstitutions as unknown as InstitutionOption[]"
+              :initial-hits="institutionInitialHits"
+              @confirm="onInstitutionConfirm"
             >
-              <template #option="{ item }">
-                <span class="flex-1 truncate">{{ item.name }}</span>
-                <Badge v-if="item.tenant?.shortname" variant="secondary" class="text-xs shrink-0">
-                  {{ item.tenant.shortname }}
-                </Badge>
+              <template #trigger>
+                <Button type="button" variant="outline" class="w-full justify-between font-normal">
+                  <span class="truncate" :class="{ 'text-muted-foreground': !selectedInstitution }">
+                    {{ selectedInstitution?.name ?? $t('Pasirink instituciją pagal pavadinimą...') }}
+                  </span>
+                  <span class="flex shrink-0 items-center gap-2">
+                    <Badge v-if="selectedInstitution?.tenant?.shortname" variant="secondary" class="text-xs">
+                      {{ selectedInstitution.tenant.shortname }}
+                    </Badge>
+                    <ChevronsUpDown class="size-4 opacity-50" />
+                  </span>
+                </Button>
               </template>
-            </SingleSelect>
+            </InstitutionSelectDialog>
           </FormFieldWrapper>
 
           <FormFieldWrapper id="places_to_occupy" :label="$t('forms.fields.duty_people_count')" :error="form.errors.places_to_occupy">
@@ -57,10 +62,10 @@
           </FormFieldWrapper>
         </div>
 
-        <FormFieldWrapper id="contacts_grouping" label="Kontaktų grupavimas" :error="form.errors.contacts_grouping">
+        <FormFieldWrapper id="contacts_grouping" :label="$t('forms.fields.contacts_grouping')" :error="form.errors.contacts_grouping">
           <Select v-model="form.contacts_grouping">
             <SelectTrigger>
-              <SelectValue placeholder="Pasirinkite grupavimo būdą" />
+              <SelectValue :placeholder="$t('forms.placeholders.select_grouping')" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">
@@ -92,6 +97,61 @@
           <TiptapEditor v-else v-model="form.description.en" preset="full" :html="true" />
           <p v-if="form.errors.description" class="text-xs text-red-600 dark:text-red-400">
             {{ form.errors.description }}
+          </p>
+        </div>
+      </FormElement>
+
+      <FormElement v-if="false">
+        <template #title>
+          {{ $t('Skyrimas ir atsakomybės') }}
+        </template>
+        <template #description>
+          {{ $t('Nurodykite, kaip užimama pareigybė ir kokios jos atsakomybės. Tušti laukai paveldimi iš institucijos.') }}
+        </template>
+
+        <FormFieldWrapper id="selection_method" :label="$t('Skyrimo būdas')" :error="form.errors.selection_method">
+          <Select v-model="form.selection_method">
+            <SelectTrigger>
+              <SelectValue :placeholder="$t('Paveldima iš institucijos')" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="option in selectionMethodOptions" :key="option.value" :value="option.value">
+                {{ option.label }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </FormFieldWrapper>
+
+        <div class="grid gap-4 lg:grid-cols-2">
+          <FormFieldWrapper id="appointed_by" :label="$t('Skiria')" :error="form.errors.appointed_by">
+            <MultiLocaleInput v-model:input="form.appointed_by" />
+          </FormFieldWrapper>
+          <FormFieldWrapper id="term_length" :label="$t('Kadencija')" :error="form.errors.term_length">
+            <MultiLocaleInput v-model:input="form.term_length" />
+          </FormFieldWrapper>
+        </div>
+
+        <div class="space-y-2">
+          <div class="inline-flex items-center gap-2">
+            <Label for="responsibilities">{{ $t('Atsakomybės') }}</Label>
+            <SimpleLocaleButton v-model:locale="locale" />
+          </div>
+          <Textarea
+            v-if="locale === 'lt'"
+            id="responsibilities"
+            v-model="form.responsibilities.lt"
+            :rows="4"
+            :placeholder="$t('Kiekviena atsakomybė nurodoma naujoje eilutėje')"
+          />
+          <Textarea
+            v-else
+            id="responsibilities"
+            v-model="form.responsibilities.en"
+            :rows="4"
+            :placeholder="$t('Kiekviena atsakomybė nurodoma naujoje eilutėje')"
+          />
+          <p v-if="form.errors.responsibilities" class="text-xs text-red-600 dark:text-red-400">
+            {{ form.errors.responsibilities }}
           </p>
         </div>
       </FormElement>
@@ -216,29 +276,47 @@
             </p>
           </div>
         </template>
-        <FormFieldWrapper id="types" label="Pareigybės tipas" :error="form.errors.types">
+        <FormFieldWrapper id="types" :label="$t('forms.fields.duty_type')" :error="form.errors.types">
           <MultiSelect v-model="selectedTypes" :options="dutyTypes" label-field="title" value-field="id"
-            placeholder="Pasirinkti kategoriją..." />
+            :placeholder="$t('forms.placeholders.select_category')" />
         </FormFieldWrapper>
 
-        <FormFieldWrapper id="roles" label="Administracinė vusa.lt rolė" :error="form.errors.roles">
+        <FormFieldWrapper id="roles" :label="$t('forms.fields.admin_role')" :error="form.errors.roles">
           <MultiSelect v-model="selectedRoles" :options="rolesOptions" label-field="label" value-field="value"
-            :disabled="!$page.props.auth?.user.isSuperAdmin" placeholder="Be rolės..." />
+            :disabled="!$page.props.auth?.user.isSuperAdmin" :placeholder="$t('forms.placeholders.no_role')" />
         </FormFieldWrapper>
 
         <FormFieldWrapper id="ex_officio_target_duty_ids" :label="$t('forms.fields.ex_officio_duties')" :error="form.errors.ex_officio_target_duty_ids">
-          <MultiSelect v-model="selectedExOfficioDuties" :options="assignableDuties" label-field="name" value-field="id"
-            :placeholder="$t('forms.fields.ex_officio_duties')">
-            <template #option="{ item }">
-              <span class="flex-1 truncate">{{ item.name }}</span>
-              <Badge v-if="item.institution" variant="secondary" class="ml-2 shrink-0 text-xs">
-                {{ item.institution.short_name ?? item.institution.name }}
-                <template v-if="item.institution.tenant?.shortname">
-                  · {{ item.institution.tenant.shortname }}
-                </template>
-              </Badge>
+          <CollectionSelectDialog
+            v-model:open="exOfficioDialogOpen"
+            collection="duties"
+            multiple
+            allow-empty
+            :base-filter-by="exOfficioBaseFilterBy"
+            :disabled-ids="exOfficioDisabledIds"
+            :initial-hits="exOfficioInitialHits"
+            :title="$t('forms.fields.ex_officio_duties')"
+            :confirm-label="$t('Pasirinkti')"
+            :search-placeholder="$t('Ieškoti pareigų pagal pavadinimą...')"
+            :empty-message="$t('Pareigų nerasta')"
+            @confirm="onExOfficioConfirm"
+          >
+            <template #trigger>
+              <Button type="button" variant="outline" class="w-full justify-between font-normal">
+                <span class="truncate" :class="{ 'text-muted-foreground': selectedExOfficioDuties.length === 0 }">
+                  {{ selectedExOfficioDuties.length > 0
+                    ? selectedExOfficioDuties.map(d => d.name).join(', ')
+                    : $t('forms.fields.ex_officio_duties') }}
+                </span>
+                <span class="flex shrink-0 items-center gap-2">
+                  <Badge v-if="selectedExOfficioDuties.length > 0" variant="secondary" class="text-xs">
+                    {{ selectedExOfficioDuties.length }}
+                  </Badge>
+                  <ChevronsUpDown class="size-4 opacity-50" />
+                </span>
+              </Button>
             </template>
-          </MultiSelect>
+          </CollectionSelectDialog>
         </FormFieldWrapper>
       </FormElement>
     </template>
@@ -289,7 +367,7 @@
         <!-- User filter toggle — only shown to cross-tenant admins (owning admins have it in the members section above) -->
         <template v-if="!canEditDuty">
           <div class="inline-flex items-center gap-2 text-sm">
-            <Switch id="show-all-users-tenant" v-model:checked="showAllUsers" />
+            <Switch id="show-all-users-tenant" v-model="showAllUsers" />
             <Label for="show-all-users-tenant" class="cursor-pointer font-normal">{{ $t('forms.fields.show_all_users') }}</Label>
           </div>
           <p v-if="!showAllUsers" class="text-xs text-muted-foreground">
@@ -366,6 +444,7 @@ import AdminForm from './AdminForm.vue';
 
 import IconEdit from '~icons/fluent/edit16-filled';
 import IconEye from '~icons/fluent/eye16-regular';
+import { ChevronsUpDown } from 'lucide-vue-next';
 import { Alert, AlertDescription } from '@/Components/ui/alert';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
@@ -375,7 +454,10 @@ import { MultiSelect } from '@/Components/ui/multi-select';
 import { NumberField } from '@/Components/ui/number-field';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { SingleSelect } from '@/Components/ui/single-select';
+import { CollectionSelectDialog, InstitutionSelectDialog, type InstitutionOption } from '@/Features/Admin/AdminSearch/Components/Select';
+import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { Switch } from '@/Components/ui/switch';
+import { Textarea } from '@/Components/ui/textarea';
 import { TransferList } from '@/Components/ui/transfer-list';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/Components/ui/accordion';
 import { changeDutyNameEndings } from '@/Utils/String';
@@ -442,7 +524,17 @@ const initialFormData = {
     .map(u => u.id),
   ex_officio_target_duty_ids: props.duty.ex_officio_target_duties?.map(d => d.id) ?? [],
   assignable_tenants: initialAssignableTenantRows,
+  selection_method: (props.duty as any).selection_method ?? null,
+  appointed_by: (props.duty as any).appointed_by ?? { lt: '', en: '' },
+  term_length: (props.duty as any).term_length ?? { lt: '', en: '' },
+  responsibilities: (props.duty as any).responsibilities ?? { lt: '', en: '' },
 };
+
+const selectionMethodOptions = [
+  { value: 'elected', label: $t('Renkama') },
+  { value: 'delegated', label: $t('Deleguojama') },
+  { value: 'appointed', label: $t('Skiriama') },
+];
 
 const form = props.rememberKey
   ? useForm(props.rememberKey, initialFormData)
@@ -519,6 +611,39 @@ watch(selectedExOfficioDuties, (val) => {
   form.ex_officio_target_duty_ids = val.map(d => d.id);
 }, { deep: true });
 
+const exOfficioDialogOpen = ref(false);
+
+/** Build a normalized duty hit from an assignable-duty option (for pre-selection). */
+function dutyOptionToHit(option: AssignableDutyOption): NormalizedSearchHit {
+  return normalizeHit('duties', {
+    id: option.id,
+    name_lt: option.name,
+    name_en: option.name,
+    institution_name_lt: option.institution?.name,
+    institution_name_en: option.institution?.name,
+    tenant_shortname: option.institution?.tenant?.shortname,
+  });
+}
+
+// Scope the duties search to the assignable set's tenants (reproduces the
+// server-side assignable scope); the current duty can't target itself.
+const exOfficioBaseFilterBy = computed(() => {
+  const tenantIds = [
+    ...new Set(props.assignableDuties.map(d => d.institution?.tenant?.id).filter((id): id is number => id != null)),
+  ];
+  return tenantIds.length > 0 ? `tenant_ids:[${tenantIds.join(',')}]` : undefined;
+});
+
+const exOfficioDisabledIds = computed(() => new Set([`duties-${props.duty.id}`]));
+
+const exOfficioInitialHits = computed(() => selectedExOfficioDuties.value.map(dutyOptionToHit));
+
+function onExOfficioConfirm(hits: NormalizedSearchHit[]) {
+  selectedExOfficioDuties.value = hits.map(hit =>
+    props.assignableDuties.find(d => d.id === hit.recordId) ?? { id: hit.recordId, name: hit.title },
+  );
+}
+
 // TransferList options for owning-tenant reps (exclude users already in a cross-tenant slot)
 const crossTenantUserIds = computed(() => selectedTenantUserIds.value.flat());
 
@@ -593,6 +718,25 @@ const selectedInstitution = computed({
     form.institution_id = val?.id ?? null;
   },
 });
+
+const institutionDialogOpen = ref(false);
+
+const institutionInitialHits = computed<NormalizedSearchHit[]>(() => {
+  const current = selectedInstitution.value as (App.Entities.Institution & { tenant?: { shortname?: string } }) | null;
+  if (!current) {
+    return [];
+  }
+  return [normalizeHit('institutions', {
+    id: current.id,
+    name_lt: current.name,
+    name_en: current.name,
+    tenant_shortname: current.tenant?.shortname,
+  })];
+});
+
+function onInstitutionConfirm(hits: NormalizedSearchHit[]) {
+  form.institution_id = hits[0]?.recordId ?? null;
+}
 
 const isExOfficioUser = (user: App.Entities.User) => !!(user as UserWithPivot).pivot?.via_dutiable_id;
 

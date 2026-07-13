@@ -3,6 +3,7 @@
 namespace App\Services\ResourceServices;
 
 use App\Models\Duty;
+use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
@@ -49,7 +50,18 @@ class UserDutyService
                 continue;
             }
 
-            $user->duties()->updateExistingPivot($duty, ['end_date' => now()->subDay()]);
+            // A user may hold the same duty across several dutiable rows (past periods
+            // plus a current one). updateExistingPivot() only touches the first match
+            // under the custom pivot class, so end-date the active row(s) directly.
+            Dutiable::where('duty_id', $duty->id)
+                ->where('dutiable_type', User::class)
+                ->where('dutiable_id', $user->id)
+                ->where(function ($query) {
+                    $query->whereNull('end_date')
+                        ->orWhere('end_date', '>=', now());
+                })
+                ->get()
+                ->each(fn (Dutiable $dutiable) => $dutiable->update(['end_date' => now()->subDay()]));
         }
     }
 

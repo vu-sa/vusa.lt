@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Category;
+use Database\Factories\Concerns\HasTranslatableFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -11,6 +12,8 @@ use Illuminate\Support\Str;
  */
 class CategoryFactory extends Factory
 {
+    use HasTranslatableFactory;
+
     /**
      * Define the model's default state.
      *
@@ -18,20 +21,11 @@ class CategoryFactory extends Factory
      */
     public function definition(): array
     {
-        $nameLt = fake('lt_LT')->words(2, true);
         $nameEn = fake('en_US')->unique()->words(2, true);
-        $descriptionLt = fake('lt_LT')->sentence();
-        $descriptionEn = fake('en_US')->sentence();
 
         return [
-            'name' => [
-                'lt' => ucwords($nameLt),
-                'en' => ucwords($nameEn),
-            ],
-            'description' => [
-                'lt' => $descriptionLt,
-                'en' => $descriptionEn,
-            ],
+            'name' => $this->translatable(ucwords(fake('lt_LT')->words(2, true)), ucwords($nameEn)),
+            'description' => $this->translatable(),
             'alias' => Str::slug($nameEn),
         ];
     }

@@ -14,7 +14,7 @@
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <!-- Form Settings -->
           <Link :href="route('settings.forms.edit')">
-            <Card class="h-full transition-all duration-200 hover:shadow-md hover:ring-1 hover:ring-primary/20">
+            <Card class="h-full transition-colors duration-200 hover:border-primary/40 hover:bg-accent/40">
               <CardHeader>
                 <CardTitle class="flex items-center gap-2">
                   <component :is="FormIcon" class="size-5" />
@@ -29,7 +29,7 @@
 
           <!-- Meeting Settings -->
           <Link :href="route('settings.meetings.edit')">
-            <Card class="h-full transition-all duration-200 hover:shadow-md hover:ring-1 hover:ring-primary/20">
+            <Card class="h-full transition-colors duration-200 hover:border-primary/40 hover:bg-accent/40">
               <CardHeader>
                 <CardTitle class="flex items-center gap-2">
                   <component :is="MeetingIcon" class="size-5" />
@@ -44,7 +44,7 @@
 
           <!-- Atstovavimas Settings -->
           <Link :href="route('settings.atstovavimas.edit')">
-            <Card class="h-full transition-all duration-200 hover:shadow-md hover:ring-1 hover:ring-primary/20">
+            <Card class="h-full transition-colors duration-200 hover:border-primary/40 hover:bg-accent/40">
               <CardHeader>
                 <CardTitle class="flex items-center gap-2">
                   <component :is="InstitutionIcon" class="size-5" />
@@ -59,7 +59,7 @@
 
           <!-- Document Settings -->
           <Link :href="route('settings.documents.edit')">
-            <Card class="h-full transition-all duration-200 hover:shadow-md hover:ring-1 hover:ring-primary/20">
+            <Card class="h-full transition-colors duration-200 hover:border-primary/40 hover:bg-accent/40">
               <CardHeader>
                 <CardTitle class="flex items-center gap-2">
                   <component :is="DocumentIcon" class="size-5" />
@@ -82,7 +82,7 @@
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <!-- Settings Authorization -->
           <Link :href="route('settings.authorization.edit')">
-            <Card class="h-full transition-all duration-200 hover:shadow-md hover:ring-1 hover:ring-primary/20">
+            <Card class="h-full transition-colors duration-200 hover:border-primary/40 hover:bg-accent/40">
               <CardHeader>
                 <CardTitle class="flex items-center gap-2">
                   <component :is="RoleIcon" class="size-5" />

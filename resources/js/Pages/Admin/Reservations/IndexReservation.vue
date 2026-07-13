@@ -36,6 +36,7 @@ import ReservationsWithUnitResources from '@/Components/Tables/ReservationsWithU
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import type { IndexTablePageProps } from '@/Types/TableConfigTypes';
+import type { IndexTablePageInstance } from '@/Types/TableConfigTypes';
 import { BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { ReservationIcon } from '@/Components/icons';
 
@@ -59,7 +60,7 @@ const props = defineProps<{
 const modelName = 'reservations';
 const entityName = 'reservation';
 
-const indexTablePageRef = ref<any>(null);
+const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
 
 const getRowId = (row: App.Entities.Reservation) => {
   return `reservation-${row.id}`;
@@ -169,7 +170,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Reservation>>(
     pageSize: props.reservations.meta.per_page,
 
     initialFilters: props.filters,
-    initialSorting: props.sorting ?? [{ id: 'start_time', desc: true }],
+    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'start_time', desc: true }],
     enableFiltering: true,
     enableColumnVisibility: false,
     enableRowSelection: false,

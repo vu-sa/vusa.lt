@@ -52,9 +52,7 @@ class ReservationController extends AdminController
         $reservations = $query->paginate($request->input('per_page', 20))
             ->withQueryString();
 
-        $resources = Resource::withWhereHas('tenant', function ($query) {
-            $query->whereIn('id', $this->authorizer->getTenants()->pluck('id'));
-        });
+        $allowedTenantIds = $this->authorizer->getTenants()->pluck('id');
 
         return $this->inertiaResponse('Admin/Reservations/IndexReservation', [
             'reservations' => [
@@ -70,7 +68,9 @@ class ReservationController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $request->getSorting(),
-            'activeReservations' => $resources->with('reservations.resources.tenant', 'reservations.users')->get()->pluck('reservations')->flatten()->unique('id')->values(),
+            'activeReservations' => Reservation::whereHas('resources', function ($query) use ($allowedTenantIds) {
+                $query->whereIn('resources.tenant_id', $allowedTenantIds);
+            })->with(['resources.tenant', 'users'])->get(),
         ]);
     }
 
@@ -101,12 +101,23 @@ class ReservationController extends AdminController
         return $this->inertiaResponse('Admin/Reservations/CreateReservation', [
             // 'assignableTenants' => GetTenantsForUpserts::execute('resources.create.all', $this->authorizer)
             'resources' => Resource::with('tenant')->select('id', 'name', 'capacity', 'is_reservable', 'tenant_id')->get()->map(function ($resource) use ($dateTimeRange) {
-                $capacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($dateTimeRange['start'], $dateTimeRange['end']);
+                $strictCapacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($dateTimeRange['start'], $dateTimeRange['end']);
+                $flexibleCapacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($dateTimeRange['start'], $dateTimeRange['end'], [], [], true);
 
                 return [
                     ...$resource->toArray(),
-                    'capacityAtDateTimeRange' => $capacityAtDateTimeRange,
-                    'lowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($capacityAtDateTimeRange),
+                    'capacityAtDateTimeRange' => $strictCapacityAtDateTimeRange,
+                    'lowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($flexibleCapacityAtDateTimeRange),
+                    'strictLowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($strictCapacityAtDateTimeRange),
+                    'discrepancies' => $resource->findTimeEndedActiveReservations($dateTimeRange['start'], $dateTimeRange['end'])
+                        ->map(fn ($reservation) => [
+                            'id' => (string) $reservation->id,
+                            'name' => $reservation->name,
+                            'quantity' => (int) $reservation->pivot->quantity,
+                            'state' => (string) $reservation->pivot->state,
+                            'start_time' => $reservation->pivot->start_time?->timestamp,
+                            'end_time' => $reservation->pivot->end_time?->timestamp,
+                        ])->values()->all(),
                 ];
             }),
             'dateTimeRange' => $dateTimeRange,
@@ -159,9 +170,8 @@ class ReservationController extends AdminController
 
         return $this->inertiaResponse('Admin/Reservations/ShowReservation', [
             'reservation' => [
-                // load pivot relationship comments
-                ...$reservation->load('comments', 'activities.causer', 'users')->toArray(),
-                'resources' => $reservation->load('resources.media', 'resources.pivot.comments', 'resources.pivot.approvals.user', 'resources.tenant')->resources->map(function ($resource) use ($reservation) {
+                ...$reservation->load('activities.causer', 'users')->toArray(),
+                'resources' => $reservation->load('resources.media', 'resources.pivot.approvals.user', 'resources.tenant')->resources->map(function ($resource) use ($reservation) {
 
                     // This is used to update the left capacity of resources already attached to the reservation
                     $capacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($reservation->start_time, $reservation->end_time);

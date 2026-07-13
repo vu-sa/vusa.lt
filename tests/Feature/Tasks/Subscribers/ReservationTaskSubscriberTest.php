@@ -32,7 +32,7 @@ beforeEach(function () {
 describe('ReservationTaskSubscriber', function () {
     describe('pickup task creation', function () {
         test('creates pickup task when resource transitions to Reserved state', function () {
-            $tenant = Tenant::query()->inRandomOrder()->first()
+            $tenant = Tenant::query()->first()
                 ?? Tenant::factory()->create();
 
             $user = User::factory()->create();
@@ -74,7 +74,7 @@ describe('ReservationTaskSubscriber', function () {
         });
 
         test('does not create duplicate pickup task for same reservation', function () {
-            $tenant = Tenant::query()->inRandomOrder()->first()
+            $tenant = Tenant::query()->first()
                 ?? Tenant::factory()->create();
 
             $user = User::factory()->create();
@@ -136,7 +136,7 @@ describe('ReservationTaskSubscriber', function () {
 
     describe('pickup task progress', function () {
         test('auto-completes pickup task when resource transitions to Lent', function () {
-            $tenant = Tenant::query()->inRandomOrder()->first()
+            $tenant = Tenant::query()->first()
                 ?? Tenant::factory()->create();
 
             $user = User::factory()->create();
@@ -188,7 +188,7 @@ describe('ReservationTaskSubscriber', function () {
 
     describe('return task creation', function () {
         test('creates return task when resource transitions to Lent state', function () {
-            $tenant = Tenant::query()->inRandomOrder()->first()
+            $tenant = Tenant::query()->first()
                 ?? Tenant::factory()->create();
 
             $user = User::factory()->create();
@@ -231,7 +231,7 @@ describe('ReservationTaskSubscriber', function () {
 
     describe('return task progress', function () {
         test('auto-completes return task when resource transitions through full flow', function () {
-            $tenant = Tenant::query()->inRandomOrder()->first()
+            $tenant = Tenant::query()->first()
                 ?? Tenant::factory()->create();
 
             $user = User::factory()->create();

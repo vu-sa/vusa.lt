@@ -13,6 +13,7 @@
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ref, computed } from 'vue';
+import type { IndexTablePageInstance } from '@/Types/TableConfigTypes';
 
 import { capitalize } from '@/Utils/String';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
@@ -44,7 +45,7 @@ const props = defineProps<{
 const modelName = 'trainings';
 const entityName = 'training';
 
-const indexTablePageRef = ref<any>(null);
+const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
 
 const getRowId = (row: App.Entities.Training) => {
   return `training-${row.id}`;
@@ -74,7 +75,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Training>>(() => {
     pageSize: props.trainings.meta.per_page,
 
     initialFilters: props.filters,
-    initialSorting: props.sorting,
+    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'start_time', desc: true }],
     enableFiltering: true,
     enableColumnVisibility: false,
     enableRowSelection: false,

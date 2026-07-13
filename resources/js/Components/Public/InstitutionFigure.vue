@@ -82,7 +82,7 @@
               <a
                 v-if="institutionType.slug"
                 :href="route('contacts.category', {
-                  subdomain: institution.tenant?.alias === 'vusa' ? 'www' : institution.tenant?.alias ?? 'www',
+                  subdomain: resolveTenantSubdomain(institution.tenant?.id),
                   lang: $page.props.app.locale,
                   type: institutionType.slug,
                 }) + '?all=1'"
@@ -133,6 +133,8 @@ import Collapsible from '../ui/collapsible/Collapsible.vue';
 import CollapsibleContent from '../ui/collapsible/CollapsibleContent.vue';
 import CollapsibleTrigger from '../ui/collapsible/CollapsibleTrigger.vue';
 import InfoPopover from '../Buttons/InfoPopover.vue';
+
+import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 
 const props = defineProps<{
   institution: App.Entities.Institution;

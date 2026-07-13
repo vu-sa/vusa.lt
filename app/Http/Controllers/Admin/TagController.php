@@ -184,17 +184,14 @@ class TagController extends AdminController
         $targetTag = Tag::findOrFail($targetTagId);
         $sourceTags = Tag::whereIn('id', $sourceTagIds)->get();
 
-        // Move all relationships from source tags to target tag
+        // Move news relationships from source tags to target tag.
+        // syncWithoutDetaching attaches only the missing ids, avoiding duplicates
+        // without a per-news existence query.
         foreach ($sourceTags as $sourceTag) {
-            // Move news relationships
-            $sourceTag->news()->each(function ($news) use ($targetTag) {
-                // Only attach if not already attached to avoid duplicates
-                if (! $targetTag->news()->where('news.id', $news->id)->exists()) {
-                    $targetTag->news()->attach($news->id);
-                }
-            });
+            $sourceNewsIds = $sourceTag->news()->pluck('news.id');
 
-            // Detach relationships from source tag
+            $targetTag->news()->syncWithoutDetaching($sourceNewsIds);
+
             $sourceTag->news()->detach();
         }
 

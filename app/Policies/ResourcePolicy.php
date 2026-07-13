@@ -32,11 +32,12 @@ class ResourcePolicy extends ModelPolicy
     /**
      * Determine whether the user can view the model.
      *
-     * Resources belong to a single tenant, so we use hasManyTenants=false
+     * Resources are visible to all authenticated users across tenants so they can
+     * be discovered and reserved through the unified admin search.
      */
     public function view(User $user, Model $resource): bool
     {
-        return $this->commonChecker($user, $resource, CRUDEnum::READ()->label, null, false);
+        return true;
     }
 
     /**

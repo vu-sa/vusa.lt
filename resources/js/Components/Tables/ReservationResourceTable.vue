@@ -1,36 +1,15 @@
 <template>
   <div class="relative">
-    <!-- Floating Bulk Actions Bar - positioned absolutely to avoid layout shift -->
-    <Transition
-      enter-active-class="transition-all duration-200 ease-out"
-      enter-from-class="opacity-0 -translate-y-2 scale-95"
-      enter-to-class="opacity-100 translate-y-0 scale-100"
-      leave-active-class="transition-all duration-150 ease-in"
-      leave-from-class="opacity-100 translate-y-0 scale-100"
-      leave-to-class="opacity-0 -translate-y-2 scale-95"
-    >
-      <div
-        v-if="!isMobile && selectedRowIds.length > 0 && hasApprovableSelected"
-        class="absolute -top-12 left-0 z-20 inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 shadow-lg dark:border-zinc-700 dark:bg-zinc-800"
-      >
-        <div class="flex size-6 items-center justify-center rounded-full bg-zinc-900 text-xs font-bold text-white dark:bg-zinc-100 dark:text-zinc-900">
-          {{ selectedRowIds.length }}
-        </div>
-        <span class="text-sm font-medium text-zinc-600 dark:text-zinc-400">{{ $t('pasirinkta') }}</span>
-        <div class="mx-1 h-4 w-px bg-zinc-200 dark:bg-zinc-700" />
-        <Button size="sm" :disabled="bulkLoading" @click="showBulkApproveDialog = true">
-          <Checkmark24Regular class="size-4" />
-          {{ $t('Patvirtinti') }}
-        </Button>
-        <Button size="sm" variant="destructive" :disabled="bulkLoading" @click="showBulkRejectDialog = true">
-          <DismissCircle24Regular class="size-4" />
-          {{ $t('Atmesti') }}
-        </Button>
-        <Button size="icon-sm" variant="ghost" @click="clearSelection">
-          <Dismiss24Regular class="size-4" />
-        </Button>
-      </div>
-    </Transition>
+    <ReservationBulkActionBar
+      v-if="!isMobile"
+      :count="hasApprovableSelected ? selectedRowIds.length : 0"
+      :can-reject="hasRejectableSelected"
+      :disabled="bulkLoading"
+      @approve="showBulkApproveDialog = true"
+      @reject="showBulkRejectDialog = true"
+      @resolve="showBulkResolveDialog = true"
+      @clear="clearSelection"
+    />
 
     <!-- Mobile Card View -->
     <ReservationResourceCard
@@ -192,6 +171,49 @@
     </DialogContent>
   </Dialog>
 
+  <!-- Bulk Fully-resolve Dialog -->
+  <Dialog v-model:open="showBulkResolveDialog">
+    <DialogContent class="max-w-lg">
+      <DialogHeader>
+        <DialogTitle>{{ $t('reservations.bulk.resolve_title') }}</DialogTitle>
+      </DialogHeader>
+      <div class="space-y-4">
+        <div class="space-y-2 rounded-md border bg-muted/30 p-3 text-sm">
+          <div class="font-medium text-muted-foreground">
+            {{ $t('reservations.bulk.will_resolve') }}
+          </div>
+          <ul class="ml-4 space-y-0.5">
+            <template v-for="(resources, state) in selectedResourcesByState" :key="state">
+              <li v-for="(resource, idx) in resources" :key="`${state}-${idx}`" class="flex items-center gap-2">
+                <span class="size-1.5 rounded-full bg-primary" />
+                <span>{{ resource.name }}</span>
+                <span v-if="resource.quantity > 1" class="text-muted-foreground">({{ resource.quantity }} vnt.)</span>
+              </li>
+            </template>
+          </ul>
+        </div>
+
+        <p class="text-xs text-muted-foreground">
+          {{ $t('reservations.bulk.resolve_hint') }}
+        </p>
+
+        <div class="space-y-2">
+          <label class="text-sm font-medium">{{ $t('Pastabos') }} ({{ $t('neprivaloma') }})</label>
+          <Textarea v-model="bulkNotes" :placeholder="$t('Įveskite pastabas...')" rows="2" />
+        </div>
+        <div class="flex justify-end gap-2">
+          <Button variant="ghost" @click="showBulkResolveDialog = false">
+            {{ $t('Atšaukti') }}
+          </Button>
+          <Button :disabled="bulkLoading" @click="handleBulkResolve">
+            <CheckCheck class="size-4" />
+            {{ $t('reservations.actions.resolve') }}
+          </Button>
+        </div>
+      </div>
+    </DialogContent>
+  </Dialog>
+
   <!-- Bulk Reject Dialog with notes -->
   <Dialog v-model:open="showBulkRejectDialog">
     <DialogContent class="max-w-lg">
@@ -241,6 +263,8 @@ import { computed, ref } from 'vue';
 import { useBreakpoints, breakpointsTailwind } from '@vueuse/core';
 
 import InfoText from '../SmallElements/InfoText.vue';
+import ReservationBulkActionBar from './ReservationBulkActionBar.vue';
+import ReservationPeriod from '../SmallElements/ReservationPeriod.vue';
 import ReservationResourceStateTag from '../Tag/ReservationResourceStateTag.vue';
 import StateProgressIndicator from '../SmallElements/StateProgressIndicator.vue';
 import UsersAvatarGroup from '../Avatars/UsersAvatarGroup.vue';
@@ -254,18 +278,17 @@ import Delete16Regular from '~icons/fluent/delete16-regular';
 import Dismiss24Regular from '~icons/fluent/dismiss-24-regular';
 import DismissCircle24Regular from '~icons/fluent/dismiss-circle24-regular';
 import InfoIcon from '~icons/fluent/info-24-regular';
-import Warning24Filled from '~icons/fluent/warning-24-filled';
+import { CheckCheck } from 'lucide-vue-next';
 import { ApprovalActions } from '@/Features/Admin/Approvals';
-import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { DataTable } from '@/Components/ui/data-table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/hover-card';
 import { Textarea } from '@/Components/ui/textarea';
-import { RESERVATION_DATE_TIME_FORMAT } from '@/Constants/DateTimeFormats';
 import { capitalize } from '@/Utils/String';
 import { formatStaticTime } from '@/Utils/IntlTime';
+import { isPivotUnresolved } from '@/Utils/ReservationStatus';
 import CommentTipTap from '@/Features/Admin/CommentViewer/CommentTipTap.vue';
 
 const props = defineProps<{
@@ -291,6 +314,7 @@ const showCommentModal = ref(false);
 const showApprovalModal = ref(false);
 const showBulkApproveDialog = ref(false);
 const showBulkRejectDialog = ref(false);
+const showBulkResolveDialog = ref(false);
 const bulkNotes = ref('');
 
 // Resources - use directly from props (DataTable handles sorting)
@@ -320,6 +344,15 @@ const hasApprovableSelected = computed(() => {
   });
 });
 
+/** Rejection is only a legal transition out of `created`. */
+const hasRejectableSelected = computed(() => {
+  const resources = props.reservation?.resources ?? [];
+  return selectedRowIds.value.some((id) => {
+    const resource = resources.find(r => String(r.pivot?.id ?? r.id) === String(id));
+    return resource?.pivot?.approvable && resource.pivot?.state === 'created';
+  });
+});
+
 const handleRowSelectionChange = (newSelection: RowSelectionState) => {
   rowSelection.value = newSelection;
 };
@@ -333,7 +366,6 @@ const handleCardSelectionChange = (newIds: string[]) => {
 // Row styling based on state - subtle left border indicator instead of full background
 const getRowClassName = (row: App.Entities.Resource) => {
   const state = row.pivot?.state;
-  const isOverdue = state === 'lent' && new Date(row.pivot?.end_time ?? '') < new Date();
 
   // Using subtle left border instead of full background color
   switch (state) {
@@ -342,9 +374,7 @@ const getRowClassName = (row: App.Entities.Resource) => {
     case 'reserved':
       return 'border-l-2 border-l-blue-400 dark:border-l-blue-500';
     case 'lent':
-      return isOverdue
-        ? 'border-l-2 border-l-red-500 bg-red-50/20 dark:border-l-red-400 dark:bg-red-950/10'
-        : 'border-l-2 border-l-emerald-400 dark:border-l-emerald-500';
+      return 'border-l-2 border-l-emerald-400 dark:border-l-emerald-500';
     case 'returned':
       return 'border-l-2 border-l-zinc-300 dark:border-l-zinc-600 opacity-60';
     case 'rejected':
@@ -508,47 +538,17 @@ const columns = computed<ColumnDef<App.Entities.Resource>[]>(() => [
   },
   {
     accessorKey: 'pivot.start_time',
-    header: () => capitalize($t('entities.reservation.start_time')),
-    size: 150,
+    header: () => capitalize($t('entities.reservation.period')),
+    size: 190,
     cell: ({ row }) => {
-      const resource = row.original;
-      const startDate = new Date(resource.pivot?.start_time ?? '');
-      const isPickupOverdue = resource.pivot?.state === 'reserved' && startDate < new Date();
+      const { pivot } = row.original;
 
       return (
-        <div class="flex items-center gap-1.5">
-          <span class={isPickupOverdue ? 'font-semibold text-amber-600 dark:text-amber-400' : ''}>
-            {formatStaticTime(startDate, RESERVATION_DATE_TIME_FORMAT, usePage().props.app.locale)}
-          </span>
-          {isPickupOverdue && (
-            <span class="text-xs text-amber-600 dark:text-amber-400" title={$t('Laukiama atsiėmimo')}>
-              ⏳
-            </span>
-          )}
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: 'pivot.end_time',
-    header: () => capitalize($t('entities.reservation.end_time')),
-    size: 170,
-    cell: ({ row }) => {
-      const resource = row.original;
-      const endDate = new Date(resource.pivot?.end_time ?? '');
-      const isOverdue = resource.pivot?.state === 'lent' && endDate < new Date();
-
-      return (
-        <div class="flex items-center gap-1.5">
-          <span class={isOverdue ? 'font-semibold text-red-600 dark:text-red-400' : ''}>
-            {formatStaticTime(endDate, RESERVATION_DATE_TIME_FORMAT, usePage().props.app.locale)}
-          </span>
-          {isOverdue && (
-            <Badge variant="destructive" class="h-5 gap-0.5 px-1.5 text-[10px] font-medium">
-              <Warning24Filled class="size-3" />
-              {$t('Vėluojama')}
-            </Badge>
-          )}
+        <div class="flex flex-col items-start gap-1">
+          <ReservationPeriod
+            startTime={pivot?.start_time ?? ''}
+            endTime={pivot?.end_time ?? ''}
+          />
         </div>
       );
     },
@@ -569,6 +569,7 @@ const columns = computed<ColumnDef<App.Entities.Resource>[]>(() => [
             <div class="cursor-help">
               <ReservationResourceStateTag
                 state={resource.pivot?.state ?? 'created'}
+                unresolved={isPivotUnresolved(resource.pivot)}
                 state_properties={resource.pivot?.state_properties}
               />
             </div>
@@ -779,6 +780,36 @@ const handleBulkReject = () => {
         clearSelection();
       },
       onError: () => {
+        bulkLoading.value = false;
+      },
+    },
+  );
+};
+
+/**
+ * Fully resolve: drive the selected items straight to their final approved state, instead of
+ * clicking approve → hand over → mark returned in sequence. The server still records every step.
+ */
+const handleBulkResolve = () => {
+  const approvableIds = getApprovableSelectedIds().map(id => String(id));
+  if (approvableIds.length === 0) return;
+
+  bulkLoading.value = true;
+  router.post(
+    route('approvals.resolve'),
+    {
+      approvable_type: 'reservation_resource',
+      approvable_ids: approvableIds,
+      notes: bulkNotes.value || null,
+    },
+    {
+      preserveScroll: true,
+      onSuccess: () => {
+        showBulkResolveDialog.value = false;
+        bulkNotes.value = '';
+        clearSelection();
+      },
+      onFinish: () => {
         bulkLoading.value = false;
       },
     },

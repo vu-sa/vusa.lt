@@ -341,6 +341,11 @@ export interface MeetingSearchResult {
   institution_name_en?: string;
   institution_ids?: string[];
   completion_status?: string;
+  vote_alignment_status?: string;
+  institution_type_title?: string;
+  agenda_items_count?: number;
+  year?: number;
+  user_names?: string[];
 }
 
 /**
@@ -356,6 +361,15 @@ export interface AgendaItemSearchResult {
   vote_result?: string;
   meeting_start_time?: number;
   institution_ids?: string[];
+  institution_name_lt?: string;
+  institution_name_en?: string;
+  tenant_shortnames?: string[];
+  student_vote?: string;
+  decision?: string;
+  student_benefit?: string;
+  vote_alignment_status?: string;
+  is_complete?: boolean;
+  brought_by_students?: boolean;
 }
 
 /**
@@ -415,6 +429,9 @@ export interface InstitutionSearchResult {
   email?: string;
   tenant_id?: number;
   tenant_shortname?: string;
+  type_titles?: string[];
+  current_user_names?: string[];
+  duty_names?: string[];
 }
 
 /**
@@ -457,6 +474,54 @@ export interface ResourceSearchResult {
 }
 
 /**
+ * Duty search result (admin search)
+ */
+export interface DutySearchResult {
+  id: string;
+  name_lt?: string;
+  name_en?: string;
+  email?: string;
+  /** Home tenant ∪ assignable tenants — drives the scoped-key access filter. */
+  tenant_ids?: number[];
+  /** Institution's owning tenant; used to detect cross-tenant ("external") duties. */
+  home_tenant_id?: number | null;
+  tenant_shortname?: string;
+  institution_id?: string;
+  institution_name_lt?: string;
+  institution_name_en?: string;
+  type_titles?: string[];
+  current_user_names?: string[];
+  /** Index-aligned with current_user_names; enables clickable member links. */
+  current_user_ids?: string[];
+  current_users_count?: number;
+  previous_user_names?: string[];
+  /** Index-aligned with previous_user_names. */
+  previous_user_ids?: string[];
+  created_at?: number;
+}
+
+/**
+ * User search result (admin search)
+ */
+export interface UserSearchResult {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  tenant_ids?: number[];
+  tenant_shortname?: string;
+  institution_ids?: string[];
+  current_duty_names?: string[];
+  /** Index-aligned with current_duty_names; enables clickable duty links. */
+  current_duty_ids?: string[];
+  previous_duty_names?: string[];
+  /** Index-aligned with previous_duty_names. */
+  previous_duty_ids?: string[];
+  is_active?: boolean;
+  created_at?: number;
+}
+
+/**
  * Multi-search results container (admin search)
  */
 export interface MultiSearchResults {
@@ -467,4 +532,12 @@ export interface MultiSearchResults {
   calendar: CalendarSearchResult[];
   institutions: InstitutionSearchResult[];
   documents: DocumentSearchResult[];
+  resources: ResourceSearchResult[];
+  duties: DutySearchResult[];
+  users: UserSearchResult[];
+  /**
+   * Total hit count per result key (Typesense `found`), regardless of the
+   * per-collection limit applied. Used to drive tab count badges.
+   */
+  counts: Record<keyof Omit<MultiSearchResults, 'counts'>, number>;
 }

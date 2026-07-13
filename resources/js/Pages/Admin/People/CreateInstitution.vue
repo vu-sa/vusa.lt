@@ -33,6 +33,9 @@ const institution = {
   contacts_layout: 'aside',
   tenant_id: null,
   types: null,
+  selection_method: null,
+  appointed_by: { lt: '', en: '' },
+  term_length: { lt: '', en: '' },
 } as any;
 
 const handleSubmit = (form: any) => {

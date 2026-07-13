@@ -169,3 +169,29 @@ export const formatDateRange = (
     return `${start} - ${end}`;
   }
 };
+
+/** The Lithuanian academic year starts in September (month index 8). */
+const ACADEMIC_YEAR_START_MONTH = 8;
+
+/**
+ * Return the starting calendar year of the academic year a date falls in.
+ * E.g. 2025-10-01 → 2025, 2025-03-01 → 2024 (the 2024/25 academic year).
+ */
+export const academicYear = (time: number | Date): number => {
+  const date = new Date(time);
+  return date.getMonth() >= ACADEMIC_YEAR_START_MONTH
+    ? date.getFullYear()
+    : date.getFullYear() - 1;
+};
+
+/** The starting year of the academic year that contains today. */
+export const currentAcademicYear = (): number => academicYear(new Date());
+
+/**
+ * Format an academic year from its starting year as a compact label, e.g.
+ * 2025 → "2025/26".
+ */
+export const formatAcademicYearLabel = (startYear: number): string => {
+  const endYear = (startYear + 1) % 100;
+  return `${startYear}/${endYear.toString().padStart(2, '0')}`;
+};

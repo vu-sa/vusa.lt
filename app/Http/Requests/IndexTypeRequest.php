@@ -4,5 +4,8 @@ namespace App\Http\Requests;
 
 class IndexTypeRequest extends BaseIndexRequest
 {
-    // Additional type-specific validation or methods can be added here
+    /** @var array<int, array{id: string, desc: bool}> */
+    protected array $defaultSorting = [
+        ['id' => 'created_at', 'desc' => true],
+    ];
 }

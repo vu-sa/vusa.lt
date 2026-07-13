@@ -1,10 +1,16 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\AgendaItemNoteController;
+use App\Http\Controllers\Api\Admin\CommentApiController;
+use App\Http\Controllers\Api\Admin\CommentPollVoteApiController;
+use App\Http\Controllers\Api\Admin\CommentReactionApiController;
 use App\Http\Controllers\Api\Admin\FileApiController;
 use App\Http\Controllers\Api\Admin\ImpersonateApiController;
+use App\Http\Controllers\Api\Admin\InstitutionApiController;
 use App\Http\Controllers\Api\Admin\InstitutionSubscriptionApiController;
 use App\Http\Controllers\Api\Admin\MeetingApiController;
+use App\Http\Controllers\Api\Admin\ResourceApiController;
+use App\Http\Controllers\Api\Admin\ResourceAvailabilityApiController;
 use App\Http\Controllers\Api\Admin\SearchApiController;
 use App\Http\Controllers\Api\Admin\SharepointApiController;
 use App\Http\Controllers\Api\Admin\TaskApiController;
@@ -97,10 +103,28 @@ Route::prefix('v1')->name('v1.')->group(function () {
 
         // Meetings
         Route::get('meetings/recent', [MeetingApiController::class, 'recent'])->name('meetings.recent');
+        Route::get('meetings/{meeting}/preview', [MeetingApiController::class, 'preview'])->name('meetings.preview');
+
+        // Institutions
+        Route::get('institutions/{institution}/preview', [InstitutionApiController::class, 'preview'])->name('institutions.preview');
 
         // Agenda item collaborative notes ("Atstovų pastabos")
         Route::get('agenda-items/{agendaItem}/note', [AgendaItemNoteController::class, 'show'])->name('agendaItems.note.show');
         Route::put('agenda-items/{agendaItem}/note', [AgendaItemNoteController::class, 'update'])->name('agendaItems.note.update');
+
+        // Discussions (polymorphic comment threads). Read/write follow the
+        // parent's `view` ability. {commentableType} is resolved through the
+        // App\Support\Commentables allowlist.
+        Route::get('discussions/feed', [CommentApiController::class, 'feed'])->name('comments.feed');
+        Route::get('discussions/{commentableType}/{commentableId}', [CommentApiController::class, 'index'])->name('comments.index');
+        Route::post('discussions/{commentableType}/{commentableId}/comments', [CommentApiController::class, 'store'])->name('comments.store');
+        Route::get('discussions/{commentableType}/{commentableId}/mentionables', [CommentApiController::class, 'mentionables'])->name('comments.mentionables');
+        Route::patch('comments/{comment}', [CommentApiController::class, 'update'])->name('comments.update');
+        Route::delete('comments/{comment}', [CommentApiController::class, 'destroy'])->name('comments.destroy');
+        Route::post('comments/{comment}/resolve', [CommentApiController::class, 'resolve'])->name('comments.resolve');
+        Route::delete('comments/{comment}/resolve', [CommentApiController::class, 'unresolve'])->name('comments.unresolve');
+        Route::put('comments/{comment}/reactions', [CommentReactionApiController::class, 'toggle'])->name('comments.reactions.toggle');
+        Route::put('comments/{comment}/poll/votes', [CommentPollVoteApiController::class, 'toggle'])->name('comments.poll.votes.toggle');
 
         // Files
         Route::get('files', [FileApiController::class, 'index'])->name('files.index');
@@ -141,6 +165,12 @@ Route::prefix('v1')->name('v1.')->group(function () {
 
         // User search for forms (e.g. responsible user in problems)
         Route::get('users/search', [UserSearchApiController::class, 'search'])->name('users.search');
+
+        // Date-range resource availability for the reservation resource picker
+        Route::post('resources/availability', [ResourceAvailabilityApiController::class, 'index'])->name('resources.availability');
+
+        // Resource detail preview (reservations + managers) for the admin search pane
+        Route::get('resources/{resource}/preview', [ResourceApiController::class, 'preview'])->name('resources.preview');
 
         // Impersonation (local/staging only, super admins)
         Route::prefix('impersonate')->name('impersonate.')->group(function () {

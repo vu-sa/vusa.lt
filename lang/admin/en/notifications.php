@@ -42,6 +42,8 @@ return [
     'commented_on' => 'commented on',
     'changed_status_on' => 'changed status on',
     'left_comment_on' => 'left a comment on',
+    'mentioned_you_in_comment' => 'mentioned you in a comment on',
+    'started_poll_on' => 'started a poll on',
 
     // Assignment notifications
     'assigned_to_resource_title' => 'Assigned to: :resource',
@@ -125,6 +127,12 @@ return [
     'welcome_body' => 'Great job, :name! You\'ve completed your first intro to the platform. Enjoy exploring!',
     'test_notification_title' => 'Test Notification',
     'test_notification_body' => 'This is a test notification! Push notifications are working.',
+
+    // Test email
+    'test_email_button' => 'Send test email',
+    'test_email_sent' => 'Test email sent to: :emails',
+    'test_email_hint' => 'The email is sent to your saved addresses. Save your changes first.',
+    'test_email_failed' => 'Could not send the email: :error',
 
     // Actions
     'action_view_comment' => 'View Comment',

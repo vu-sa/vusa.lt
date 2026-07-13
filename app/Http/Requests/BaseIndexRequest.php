@@ -8,6 +8,15 @@ use Illuminate\Foundation\Http\FormRequest;
 abstract class BaseIndexRequest extends FormRequest
 {
     /**
+     * Default sorting applied when no explicit sorting is requested.
+     * Override in child classes, e.g.:
+     *   protected array $defaultSorting = [['id' => 'created_at', 'desc' => true]];
+     *
+     * @var array<int, array{id: string, desc: bool}>
+     */
+    protected array $defaultSorting = [];
+
+    /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
@@ -34,18 +43,21 @@ abstract class BaseIndexRequest extends FormRequest
 
     /**
      * Get the sorting state from the request.
+     * Falls back to {@see $defaultSorting} when the request carries no sorting param.
      */
     public function getSorting(): array
     {
-        if (! $this->has('sorting')) {
-            return [];
+        if ($this->has('sorting')) {
+            try {
+                $decoded = json_decode($this->input('sorting'), true);
+
+                return is_array($decoded) && ! empty($decoded) ? $decoded : $this->defaultSorting;
+            } catch (\Exception $e) {
+                return $this->defaultSorting;
+            }
         }
 
-        try {
-            return json_decode($this->input('sorting'), true) ?? [];
-        } catch (\Exception $e) {
-            return [];
-        }
+        return $this->defaultSorting;
     }
 
     /**

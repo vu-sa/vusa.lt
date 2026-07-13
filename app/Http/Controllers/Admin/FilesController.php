@@ -729,7 +729,7 @@ class FilesController extends AdminController
         if ($deletedCount > 0 && $skippedCount === 0) {
             return back()->with('success', "Sėkmingai ištrinta {$deletedCount} ".
                 ($deletedCount === 1 ? 'failas' : ($deletedCount < 10 ? 'failai' : 'failų')).'.');
-        } elseif ($deletedCount > 0 && $skippedCount > 0) {
+        } elseif ($deletedCount > 0) {
             $message = "Ištrinta {$deletedCount} ".
                 ($deletedCount === 1 ? 'failas' : ($deletedCount < 10 ? 'failai' : 'failų'));
             if (! empty($errors)) {

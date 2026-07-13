@@ -7,6 +7,7 @@ use App\Models\NotificationDigestQueue;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -36,6 +37,7 @@ class ProcessNotificationDigests extends Command
 
         $sentCount = 0;
         $skippedCount = 0;
+        $failedCount = 0;
 
         foreach ($usersWithPendingDigests as $userId) {
             $user = User::find($userId);
@@ -68,10 +70,16 @@ class ProcessNotificationDigests extends Command
                 ->map(fn ($items) => $items->pluck('data')->toArray())
                 ->toArray();
 
-            // Send the digest email
+            // Send the digest email.
+            //
+            // sendNow() is deliberate: NotificationDigest is a ShouldQueue mailable, so
+            // send() would merely enqueue it and return successfully. The items below
+            // would then be deleted before delivery was ever attempted, and a transport
+            // failure in the worker would destroy them. Sending synchronously means a
+            // failure leaves the items queued for the next run.
             try {
                 $digestEmails = $user->getDigestEmails();
-                Mail::to($digestEmails)->send(new NotificationDigest($user, $groupedItems));
+                Mail::to($digestEmails)->sendNow(new NotificationDigest($user, $groupedItems));
 
                 // Delete processed items
                 NotificationDigestQueue::where('user_id', $userId)
@@ -81,11 +89,19 @@ class ProcessNotificationDigests extends Command
                 $sentCount++;
                 $this->info('Sent digest to '.implode(', ', $digestEmails)." with {$digestItems->count()} notifications.");
             } catch (\Exception $e) {
+                $failedCount++;
                 $this->error("Failed to send digest to {$user->email}: {$e->getMessage()}");
+
+                // The command runs from cron, where console output goes nowhere.
+                Log::error('Failed to send notification digest', [
+                    'user_id' => $userId,
+                    'items' => $digestItems->count(),
+                    'error' => $e->getMessage(),
+                ]);
             }
         }
 
-        $this->info("Processed digests: {$sentCount} sent, {$skippedCount} skipped (not time yet).");
+        $this->info("Processed digests: {$sentCount} sent, {$skippedCount} skipped (not time yet), {$failedCount} failed.");
 
         return self::SUCCESS;
     }

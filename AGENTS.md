@@ -6,7 +6,7 @@ Shared instructions for any AI agent (Claude Code, Copilot, Cursor, etc.) workin
 
 **VU SR website (vusa.lt)** — a dual-purpose Laravel app: a **public website** for VU Students' Representation, and an **internal management platform** for student representation work.
 
-**Stack**: Laravel 12+, Vue 3, Inertia.js v2, Tailwind v4, Shadcn Vue, MySQL, Redis, Typesense (public search), Laravel Sail.
+**Stack**: Laravel 13+, Vue 3, Inertia.js v3, Tailwind v4, Shadcn Vue, MySQL, Redis, Typesense (public search), Laravel Sail.
 
 **Local dev**: `http://www.vusa.test` (the `www.` subdomain is required). Test login: `test@test.com` / `password`.
 
@@ -39,7 +39,7 @@ All Laravel-related commands MUST run through Sail:
 ./vendor/bin/sail npm run storybook
 ```
 
-Note: `npm run typecheck` is **not** configured in this repo.
+Note: `npm run typecheck` (`vue-tsc --noEmit`) is available and runs in CI, but is currently **non-blocking** (advisory only).
 
 ## Core Patterns
 

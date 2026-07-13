@@ -19,6 +19,7 @@
         :key="meta.key"
         :model-value="isQuickActionVisible(meta.key as QuickActionKey)"
         @update:model-value="(value: boolean) => setQuickActionVisibility(meta.key as QuickActionKey, value)"
+        @select.prevent
       >
         <span class="flex items-center gap-2">
           <component :is="meta.icon" class="size-3.5 shrink-0 text-muted-foreground" />

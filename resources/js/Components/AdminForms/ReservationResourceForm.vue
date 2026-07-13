@@ -24,27 +24,28 @@
       <!-- Resource Select -->
       <div class="space-y-2">
         <Label for="resource-select">{{ $t('forms.fields.title') }}</Label>
-        <SingleSelect
-          v-model="selectedResource"
-          :options="allResourceOptions"
-          label-field="name"
-          value-field="id"
-          :placeholder="`${$t('Pasirinkite')}...`"
-          @update:model-value="onResourceChange"
+        <ResourceSelectDialog
+          v-model:open="resourceDialogOpen"
+          :multiple="false"
+          :date-time-range="resourceDateTimeRange"
+          :initial-hits="resourceInitialHits"
+          @confirm="onResourceConfirm"
         >
-          <template #option="{ item }">
-            <div class="flex items-center gap-2" :class="{ 'opacity-50': item.disabled }">
-              <component :is="ResourceIcon" class="size-4 text-muted-foreground" />
-              <span>{{ item.name }}</span>
-              <span class="text-muted-foreground text-xs">
-                {{ item.lowestCapacityAtDateTimeRange }} {{ $t('iš') }} {{ item.capacity }}
+          <template #trigger>
+            <Button type="button" variant="outline" class="w-full justify-between font-normal">
+              <span class="inline-flex items-center gap-2 truncate" :class="{ 'text-muted-foreground': !selectedResource }">
+                <component :is="ResourceIcon" class="size-4" />
+                {{ selectedResource?.name ?? `${$t('Pasirinkite')}...` }}
               </span>
-              <Badge variant="outline" class="text-xs">
-                {{ item.tenant?.shortname }}
-              </Badge>
-            </div>
+              <span class="flex shrink-0 items-center gap-2">
+                <Badge v-if="selectedResource?.tenant?.shortname" variant="outline" class="text-xs">
+                  {{ selectedResource.tenant.shortname }}
+                </Badge>
+                <IFluentChevronDown24Regular class="size-4 opacity-50" />
+              </span>
+            </Button>
           </template>
-        </SingleSelect>
+        </ResourceSelectDialog>
       </div>
 
       <!-- Quantity Input -->
@@ -88,9 +89,10 @@ import { Badge } from '@/Components/ui/badge';
 import { Spinner } from '@/Components/ui/spinner';
 import { NumberField } from '@/Components/ui/number-field';
 import { DateRangePicker } from '@/Components/ui/date-range-picker';
-import { SingleSelect } from '@/Components/ui/single-select';
 import { capitalize } from '@/Utils/String';
 import { ResourceIcon } from '@/Components/icons';
+import { ResourceSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
+import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 
 const props = defineProps<{
   reservationResourceForm: InertiaForm<{
@@ -177,10 +179,35 @@ const selectedResource = computed({
   },
 });
 
-// Watch for resource changes (called by SingleSelect via v-model)
-const onResourceChange = () => {
-  // Side effects are handled in the selectedResource setter
-};
+const resourceDialogOpen = ref(false);
+
+const resourceDateTimeRange = computed(() => ({
+  start: reservationResourceForm.start_time,
+  end: reservationResourceForm.end_time,
+}));
+
+const resourceInitialHits = computed<NormalizedSearchHit[]>(() => {
+  const current = props.allResources?.find(r => String(r.id) === reservationResourceForm.resource_id);
+  if (!current) {
+    return [];
+  }
+  return [normalizeHit('resources', {
+    id: current.id,
+    name_lt: current.name,
+    name_en: current.name,
+    capacity: current.capacity,
+    is_reservable: current.is_reservable,
+    tenant_shortname: current.tenant?.shortname,
+  })];
+});
+
+function onResourceConfirm(hits: NormalizedSearchHit[]) {
+  const hit = hits[0];
+  if (hit) {
+    reservationResourceForm.resource_id = hit.recordId;
+    reservationResourceForm.quantity = 1;
+  }
+}
 
 const isReservationResourceSameForUpdate = computed(() => {
   return (

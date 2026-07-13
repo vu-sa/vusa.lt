@@ -2,7 +2,7 @@
   <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
     <FormElement>
       <FormFieldWrapper id="name" :label="$t('forms.fields.title')" required>
-        <Input id="name" v-model="form.name" type="text" placeholder="Turinio tipas" />
+        <Input id="name" v-model="form.name" type="text" :placeholder="$t('forms.placeholders.enter_title')" />
       </FormFieldWrapper>
     </FormElement>
   </AdminForm>

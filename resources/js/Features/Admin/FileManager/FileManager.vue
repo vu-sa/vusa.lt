@@ -724,8 +724,8 @@ function handleFileUpload(files: File[]) {
   }
 }
 
-function onFilesSelected(files: File[]) {
-  console.log('Files selected:', files);
+function onFilesSelected(_files: File[]) {
+  // Selection handled downstream by the upload flow; no action needed here.
 }
 </script>
 

@@ -29,7 +29,7 @@
       <p class="text-muted-foreground">
         {{ $t('Dar nėra greitųjų nuorodų') }}
       </p>
-      <Button :as="Link" :href="route('quickLinks.create')" variant="secondary" class="mt-4">
+      <Button :as="Link" :href="route('quickLinks.create')" variant="secondary" class="mt-4" data-testid="empty-create-button">
         <IFluentAdd24Regular class="h-4 w-4" />
         {{ $t('Sukurti pirmą nuorodą') }}
       </Button>
@@ -37,6 +37,13 @@
 
     <!-- Sortable List -->
     <template v-else>
+      <div class="mb-4 flex items-center justify-end">
+        <Button :as="Link" :href="route('quickLinks.create')" variant="secondary" data-testid="inline-create-button">
+          <IFluentAdd24Regular class="h-4 w-4" />
+          {{ $t('forms.add') }}
+        </Button>
+      </div>
+
       <TransitionGroup ref="el" tag="div" class="mb-4 flex flex-col gap-2">
         <div v-for="item in quickLinkList" :key="item.id"
           class="group relative flex items-center gap-3 rounded-lg border bg-background p-3 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50">

@@ -4,6 +4,7 @@ namespace App\Services\Typesense;
 
 use App\Models\Calendar;
 use App\Models\Document;
+use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\News;
@@ -12,6 +13,7 @@ use App\Models\Pivots\AgendaItem;
 use App\Models\PublicInstitution;
 use App\Models\PublicMeeting;
 use App\Models\Resource;
+use App\Models\User;
 use Illuminate\Support\Facades\Config;
 
 /**
@@ -114,8 +116,19 @@ class TypesenseCollectionConfig
         ],
         'resources' => [
             'model' => Resource::class,
-            'permission' => 'resources.read.padalinys',
-            'description' => 'Reservable resources with tenant-based access',
+            'permission' => null, // Resources are visible to all authenticated users across tenants
+            'description' => 'Reservable resources accessible to all authenticated users across tenants',
+            'skip_tenant_filter' => true,
+        ],
+        'duties' => [
+            'model' => Duty::class,
+            'permission' => 'duties.read.padalinys',
+            'description' => 'Duty positions with tenant-based (incl. assignable) access',
+        ],
+        'users' => [
+            'model' => User::class,
+            'permission' => 'users.read.padalinys',
+            'description' => 'Organization members with tenant scoping via duties',
         ],
     ];
 

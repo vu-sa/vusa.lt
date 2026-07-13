@@ -13,6 +13,7 @@
 import { h, ref, computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
+import type { IndexTablePageInstance } from '@/Types/TableConfigTypes';
 
 import { DateCell, TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
@@ -41,7 +42,7 @@ const props = defineProps<{
 const modelName = 'users';
 const entityName = 'user';
 
-const indexTablePageRef = ref<any>(null);
+const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
 
 const getRowId = (row: App.Entities.User) => {
   return `user-${row.id}`;
@@ -50,14 +51,14 @@ const getRowId = (row: App.Entities.User) => {
 const columns = computed(() => [
   {
     accessorKey: 'name',
-    header: () => 'Vardas',
+    header: () => $t('Vardas'),
     cell: ({ row }) => h(TruncatedText, { text: row.getValue('name') as string }),
     size: 200,
     enableSorting: true,
   },
   {
     accessorKey: 'email',
-    header: () => 'El. paštas',
+    header: () => $t('El. paštas'),
     cell: ({ row }) => {
       const { email } = row.original;
       if (!email) return null;
@@ -72,7 +73,7 @@ const columns = computed(() => [
   },
   {
     accessorKey: 'phone',
-    header: () => 'Telefonas',
+    header: () => $t('Telefonas'),
     cell: ({ row }) => {
       const { phone } = row.original;
       if (!phone) return null;
@@ -87,7 +88,7 @@ const columns = computed(() => [
   },
   {
     accessorKey: 'last_action',
-    header: () => 'Paskutinis prisijungimas',
+    header: () => $t('Paskutinis prisijungimas'),
     cell: ({ row }) => {
       const lastAction = row.original.last_action;
       if (!lastAction) return h('span', { class: 'text-vusa-red' }, 'Niekada');
@@ -97,12 +98,12 @@ const columns = computed(() => [
   },
   {
     accessorKey: 'duties_count',
-    header: () => 'Pareigų skaičius',
+    header: () => $t('Pareigų skaičius'),
     cell: ({ row }) => h(TruncatedText, { text: String(row.getValue('duties_count')) }),
     size: 120,
   },
   createStandardActionsColumn<App.Entities.User>('users', {
-    canView: false,
+    canView: true,
     canEdit: true,
     canDelete: true,
   }),
@@ -120,7 +121,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.User>>(() => {
     pageSize: props.users.meta.per_page,
 
     initialFilters: props.filters,
-    initialSorting: props.sorting,
+    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'name', desc: false }],
     enableFiltering: true,
     enableColumnVisibility: false,
     enableRowSelection: false,

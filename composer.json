@@ -40,15 +40,16 @@
         "spatie/laravel-translatable": "^6.11.4",
         "spatie/schema-org": "^4.0",
         "staudenmeir/eloquent-has-many-deep": "^v1.18",
+        "symfony/html-sanitizer": "^8.1",
         "symfony/psr-http-message-bridge": "^8.0",
         "tightenco/ziggy": "^2.0",
-        "typesense/typesense-php": "^5.1",
+        "typesense/typesense-php": "^6.0",
         "ueberdosis/tiptap-php": "^2.0"
     },
     "require-dev": {
+        "barryvdh/laravel-debugbar": "^4.4",
         "barryvdh/laravel-ide-helper": "^3.6",
         "fakerphp/faker": "^1.9.1",
-        "fruitcake/laravel-debugbar": "^4.0",
         "fumeapp/modeltyper": "^3.0",
         "kitloong/laravel-migrations-generator": "^7.0.1",
         "larastan/larastan": "^3.0",

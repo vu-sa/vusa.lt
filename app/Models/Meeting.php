@@ -2,14 +2,17 @@
 
 namespace App\Models;
 
+use App\Contracts\Commentable;
 use App\Contracts\SharepointFileableContract;
-use App\Enums\AgendaItemType;
 use App\Enums\MeetingType;
 use App\Events\FileableNameUpdated;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTasks;
+use App\Services\MeetingCompletionService;
+use App\Services\MeetingRepresentativeResolver;
+use App\Services\VoteStatisticsCalculator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -37,7 +40,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Activity> $activities
  * @property-read Collection<int, AgendaItem> $agendaItems
  * @property-read Collection<int, FileableFile> $availableFiles
- * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $commentable
  * @property-read Collection<int, Comment> $comments
  * @property-read Collection<int, FileableFile> $fileableFiles
  * @property-read string $completion_status
@@ -48,6 +50,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read string|null $type_label
  * @property-read string|null $type_slug
  * @property-read Collection<int, Institution> $institutions
+ * @property-read Collection<int, Comment> $rootComments
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Tenant> $tenants
  * @property-read Collection<int, User> $users
@@ -62,7 +65,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
-class Meeting extends Model implements SharepointFileableContract
+class Meeting extends Model implements Commentable, SharepointFileableContract
 {
     use HasComments, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasUlids, LogsActivity, Searchable, SoftDeletes;
 
@@ -115,12 +118,28 @@ class Meeting extends Model implements SharepointFileableContract
     }
 
     /**
-     * Get the index name for the model.
-     * Uses 'meetings' for admin search (with scoped API keys for tenant filtering).
+     * Calculate vote statistics from agenda items' votes.
+     * Delegates to VoteStatisticsCalculator.
      */
-    public function searchableAs(): string
+    protected function calculateVoteStatistics(): array
     {
-        return config('scout.prefix').'meetings';
+        $allVotes = $this->agendaItems->flatMap(fn ($item) => $item->votes);
+
+        return app(VoteStatisticsCalculator::class)->calculate($allVotes);
+    }
+
+    /**
+     * Calculate vote alignment status for filtering.
+     * Delegates to VoteStatisticsCalculator.
+     *
+     * @return string 'all_match', 'mixed', 'all_mismatch', 'neutral'
+     */
+    protected function calculateVoteAlignmentStatus(array $voteStats): string
+    {
+        return app(VoteStatisticsCalculator::class)->alignmentStatusFromCounts(
+            $voteStats['vote_matches'],
+            $voteStats['vote_mismatches']
+        );
     }
 
     /**
@@ -142,6 +161,7 @@ class Meeting extends Model implements SharepointFileableContract
             'institutions.types',
             'institutions.tenant',
             'agendaItems.votes',
+            'users',
         ]);
 
         // Get tenant IDs for filtering with scoped API keys
@@ -216,73 +236,12 @@ class Meeting extends Model implements SharepointFileableContract
             'is_public' => $this->is_public,
             'is_recent' => $this->start_time->isAfter(now()->subMonths(6)),
 
+            // Representatives attending the meeting
+            'user_names' => $this->users->pluck('name')->filter()->unique()->values()->all(),
+
             'created_at' => $this->created_at->timestamp,
             'updated_at' => $this->updated_at->timestamp,
         ];
-    }
-
-    /**
-     * Calculate vote statistics from agenda items' votes.
-     * Aggregates statistics from all votes across all agenda items.
-     */
-    protected function calculateVoteStatistics(): array
-    {
-        // Collect all votes from all agenda items
-        $allVotes = $this->agendaItems->flatMap(fn ($item) => $item->votes);
-
-        $totalVotes = $allVotes->count();
-
-        // Votes with both student_vote and decision filled
-        $votesWithBoth = $allVotes->filter(function ($vote) {
-            return ! empty($vote->student_vote) && ! empty($vote->decision);
-        });
-
-        $voteMatches = $votesWithBoth->filter(function ($vote) {
-            return $vote->student_vote === $vote->decision;
-        })->count();
-
-        $voteMismatches = $votesWithBoth->count() - $voteMatches;
-
-        // Votes with incomplete data (only one of student_vote/decision filled)
-        $incompleteVoteData = $allVotes->filter(function ($vote) {
-            $hasStudentVote = ! empty($vote->student_vote);
-            $hasDecision = ! empty($vote->decision);
-
-            return $hasStudentVote xor $hasDecision;
-        })->count();
-
-        return [
-            'total_votes' => $totalVotes,
-            'vote_matches' => $voteMatches,
-            'vote_mismatches' => $voteMismatches,
-            'incomplete_vote_data' => $incompleteVoteData,
-        ];
-    }
-
-    /**
-     * Calculate vote alignment status for filtering
-     *
-     * @return string 'all_match', 'mixed', 'all_mismatch', 'neutral'
-     */
-    protected function calculateVoteAlignmentStatus(array $voteStats): string
-    {
-        $matches = $voteStats['vote_matches'];
-        $mismatches = $voteStats['vote_mismatches'];
-        $total = $matches + $mismatches;
-
-        if ($total === 0) {
-            return 'neutral';
-        }
-
-        if ($mismatches === 0) {
-            return 'all_match';
-        }
-
-        if ($matches === 0) {
-            return 'all_mismatch';
-        }
-
-        return 'mixed';
     }
 
     public function getActivitylogOptions(): LogOptions
@@ -301,11 +260,6 @@ class Meeting extends Model implements SharepointFileableContract
         return $this->belongsToMany(Institution::class);
     }
 
-    public function comments()
-    {
-        return $this->morphMany(Comment::class, 'commentable');
-    }
-
     public function users()
     {
         return $this->hasManyDeepFromRelations($this->institutions(), (new Institution)->users());
@@ -313,59 +267,13 @@ class Meeting extends Model implements SharepointFileableContract
 
     /**
      * Get student representatives who were active at the time of this meeting.
-     * Filters duties by 'studentu-atstovai' type and checks dutiables pivot dates.
+     * Delegates to MeetingRepresentativeResolver.
      *
      * @return Collection<int, User>
      */
     public function getRepresentativesActiveAt(): Collection
     {
-        $meetingDate = $this->start_time->toDateString();
-
-        // Get all institution IDs for this meeting
-        $institutionIds = $this->institutions->pluck('id');
-
-        if ($institutionIds->isEmpty()) {
-            return new Collection;
-        }
-
-        // Get the student representative type
-        $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first();
-
-        if (! $studentRepType) {
-            return new Collection;
-        }
-
-        // Get duties that belong to these institutions and have the student rep type
-        $dutyIds = Duty::query()
-            ->whereIn('institution_id', $institutionIds)
-            ->whereHas('types', fn ($q) => $q->where('types.id', $studentRepType->id))
-            ->pluck('id');
-
-        if ($dutyIds->isEmpty()) {
-            return new Collection;
-        }
-
-        // Get users who were active in these duties at the meeting date
-        return User::query()
-            ->whereHas('duties', function ($query) use ($dutyIds, $meetingDate) {
-                $query->whereIn('duties.id', $dutyIds)
-                    ->where('dutiables.start_date', '<=', $meetingDate)
-                    ->where(function ($q) use ($meetingDate) {
-                        $q->whereNull('dutiables.end_date')
-                            ->orWhere('dutiables.end_date', '>=', $meetingDate);
-                    });
-            })
-            ->with(['duties' => function ($query) use ($dutyIds, $meetingDate) {
-                // Also load the specific duty info for context
-                $query->whereIn('duties.id', $dutyIds)
-                    ->where('dutiables.start_date', '<=', $meetingDate)
-                    ->where(function ($q) use ($meetingDate) {
-                        $q->whereNull('dutiables.end_date')
-                            ->orWhere('dutiables.end_date', '>=', $meetingDate);
-                    });
-            }])
-            ->get()
-            ->unique('id');
+        return app(MeetingRepresentativeResolver::class)->resolve($this);
     }
 
     public function tenants()
@@ -396,53 +304,7 @@ class Meeting extends Model implements SharepointFileableContract
      */
     public function getCompletionStatusAttribute(): string
     {
-        // Load agenda items with votes if not already loaded
-        if (! $this->relationLoaded('agendaItems')) {
-            $this->load('agendaItems.votes');
-        }
-
-        $agendaItems = $this->agendaItems;
-
-        // No agenda items = no_items status
-        if ($agendaItems->isEmpty()) {
-            return 'no_items';
-        }
-
-        // Check if all voting agenda items have at least one complete vote
-        $allComplete = $agendaItems->every(function ($item) {
-            // Informational items don't need votes
-            $type = $item->getAttribute('type');
-            if ($type instanceof AgendaItemType && $type->value === 'informational') {
-                return true;
-            }
-
-            // For voting items, check if they have at least one vote with all fields filled
-            if (! $item->relationLoaded('votes')) {
-                $item->load('votes');
-            }
-
-            // If no votes exist, not complete
-            if ($item->votes->isEmpty()) {
-                return false;
-            }
-
-            // Check if at least the main vote is complete
-            $mainVote = $item->votes->firstWhere('is_main', true);
-            if ($mainVote) {
-                return ! empty($mainVote->student_vote)
-                    && ! empty($mainVote->decision)
-                    && ! empty($mainVote->student_benefit);
-            }
-
-            // No main vote, check if any vote is complete
-            return $item->votes->contains(function ($vote) {
-                return ! empty($vote->student_vote)
-                    && ! empty($vote->decision)
-                    && ! empty($vote->student_benefit);
-            });
-        });
-
-        return $allComplete ? 'complete' : 'incomplete';
+        return app(MeetingCompletionService::class)->calculate($this);
     }
 
     protected static function booted()

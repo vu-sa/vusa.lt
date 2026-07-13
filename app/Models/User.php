@@ -9,6 +9,7 @@ use App\Models\Pivots\Trainable;
 use App\Models\Traits\HasNotificationPreferences;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\HasUIPreferences;
+use App\Services\NotificationRouter;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -21,6 +22,7 @@ use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Carbon;
+use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use NotificationChannels\WebPush\HasPushSubscriptions;
 use NotificationChannels\WebPush\PushSubscription;
@@ -150,12 +152,54 @@ class User extends Authenticatable
         return LogOptions::defaults()->logFillable()->logOnlyDirty();
     }
 
+    /**
+     * Get the engine used to index the model.
+     * Users should use Typesense for admin search.
+     */
+    public function searchableUsing()
+    {
+        return app(EngineManager::class)->engine('typesense');
+    }
+
     public function toSearchableArray(): array
     {
+        $this->loadMissing(['current_duties.institution.tenant', 'previous_duties']);
+
+        $currentDuties = $this->current_duties;
+        // Order previous duties most-recent-first so the freshest history surfaces first.
+        $previousDuties = $this->previous_duties->sortByDesc(fn (Duty $duty) => $duty->pivot?->end_date)->values();
+
+        $tenantIds = $currentDuties->pluck('institution.tenant_id')
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        $institutionIds = $currentDuties->pluck('institution_id')
+            ->filter()
+            ->unique()
+            ->values()
+            ->map(fn ($id) => (string) $id)
+            ->all();
+
+        $tenantShortname = $currentDuties->first()?->institution?->tenant?->shortname;
+
         return [
+            'id' => (string) $this->id,
             'name' => $this->name,
             'email' => $this->email,
-            'phone' => $this->phone ?? '',
+            'phone' => $this->phone,
+            'tenant_ids' => $tenantIds,
+            'tenant_shortname' => $tenantShortname,
+            'institution_ids' => $institutionIds,
+            // Current duties are indexed (and weighted) above previous ones for search relevance.
+            // Names + ids are kept index-aligned so the detail pane can render clickable links.
+            'current_duty_names' => $currentDuties->pluck('name')->values()->all(),
+            'current_duty_ids' => $currentDuties->pluck('id')->map(fn ($id) => (string) $id)->values()->all(),
+            'previous_duty_names' => $previousDuties->pluck('name')->values()->all(),
+            'previous_duty_ids' => $previousDuties->pluck('id')->map(fn ($id) => (string) $id)->values()->all(),
+            'is_active' => $this->deleted_at === null,
+            'created_at' => $this->created_at->timestamp,
         ];
     }
 
@@ -170,20 +214,10 @@ class User extends Authenticatable
     /**
      * If the user has a duty, always send to current_duties if duty email ends with vusa.lt
      * More on this: https://laravel.com/docs/10.x/notifications#customizing-the-recipient
-     * TODO: it is not really optimal as sometimes notifications should be sent directly to user
      */
     public function routeNotificationForMail(Notification $notification): array|string
     {
-        if ($this->current_duties()->count() > 0) {
-            /** @var Duty $duty */
-            foreach ($this->current_duties()->get() as $duty) {
-                if (str_ends_with($duty->email, 'vusa.lt')) {
-                    return $duty->email;
-                }
-            }
-        }
-
-        return $this->email;
+        return app(NotificationRouter::class)->routeForMail($this, $notification);
     }
 
     public function duties(): MorphToMany
@@ -205,6 +239,9 @@ class User extends Authenticatable
 
     // this needs more debugging. don't use with withWhereHas
     // TODO: implement current_duties where appropriate
+    /**
+     * @return MorphToMany<Duty, $this>
+     */
     public function current_duties(): MorphToMany
     {
         return $this->duties()
@@ -278,23 +315,6 @@ class User extends Authenticatable
     public function hasInstitution(Institution $institution): bool
     {
         return $this->institutions()->where('institutions.id', $institution->id)->exists();
-    }
-
-    /**
-     * Get all "interesting" institutions (duty + followed - muted).
-     *
-     * @return \Illuminate\Support\Collection<int, Institution>
-     */
-    public function interestingInstitutions(): \Illuminate\Support\Collection
-    {
-        $dutyInstitutions = $this->institutions()->get();
-        $followedInstitutions = $this->followedInstitutions()->get();
-        $mutedIds = $this->mutedInstitutions()->pluck('institutions.id');
-
-        return $dutyInstitutions->merge($followedInstitutions)
-            ->unique('id')
-            ->reject(fn ($institution) => $mutedIds->contains($institution->id))
-            ->values();
     }
 
     /**

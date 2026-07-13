@@ -57,6 +57,37 @@
             </ToggleGroup>
           </FormFieldWrapper>
         </div>
+
+        <!-- Other Language Page -->
+        <FormFieldWrapper id="other_lang" :label="$t('Kitos kalbos puslapis')"
+          :hint="$t('Susieti su to paties turinio puslapiu kita kalba')">
+          <CollectionSelectDialog
+            v-if="!isCreate"
+            v-model:open="otherLangDialogOpen"
+            collection="pages"
+            allow-empty
+            :base-filter-by="otherLangBaseFilterBy"
+            :initial-hits="otherLangInitialHits"
+            :title="$t('Kitos kalbos puslapis')"
+            :confirm-label="$t('Pasirinkti')"
+            :search-placeholder="$t('Ieškoti puslapio pagal pavadinimą...')"
+            :empty-message="$t('Puslapių nerasta')"
+            @confirm="onOtherLangPageConfirm"
+          >
+            <template #trigger>
+              <Button type="button" variant="outline" class="w-full justify-between font-normal">
+                <span class="truncate" :class="{ 'text-muted-foreground': !form.other_lang_id }">
+                  {{ selectedOtherLangPage.label }}
+                </span>
+                <IFluentChevronDown24Regular class="size-4 opacity-50" />
+              </Button>
+            </template>
+          </CollectionSelectDialog>
+          <Button v-else type="button" variant="outline" class="w-full justify-between font-normal" disabled>
+            <span class="text-muted-foreground">{{ $t('Pasirinkti kitos kalbos puslapį...') }}</span>
+            <IFluentChevronDown24Regular class="size-4 opacity-50" />
+          </Button>
+        </FormFieldWrapper>
       </div>
     </FormElement>
 
@@ -141,19 +172,6 @@
               :explanation="isCreate ? $t('Nuoroda generuojama automatiškai pagal pavadinimą') : $t('Nuoroda negali būti keičiama esamam puslapiui')"
               @update:permalink="form.permalink = $event" />
 
-            <!-- Other Language Page -->
-            <FormFieldWrapper id="other_lang" :label="$t('Kitos kalbos puslapis')"
-              :hint="$t('Susieti su to paties turinio puslapiu kita kalba')">
-              <SingleSelect
-                v-model="selectedOtherLangPage"
-                :options="otherLangPageOptions"
-                label-field="label"
-                value-field="value"
-                :placeholder="$t('Pasirinkti kitos kalbos puslapį...')"
-                :disabled="isCreate"
-              />
-            </FormFieldWrapper>
-
             <!-- SEO Section -->
             <div class="space-y-4 pt-2 border-t">
               <h4 class="text-sm font-medium">
@@ -207,8 +225,10 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Component
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { OrderedListInput } from '@/Components/ui/ordered-list-input';
-import { SingleSelect } from '@/Components/ui/single-select';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
+import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
+import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { Textarea } from '@/Components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
 import { DateTimePicker } from '@/Components/ui/date-picker';
@@ -278,7 +298,7 @@ const fullPageUrl = computed(() => {
 
   const pageLang = form.lang ?? 'lt';
   return route('page', {
-    subdomain: props.page.tenant.alias ?? props.page.tenant.alias === 'vusa' ? 'www' : props.page.tenant.alias,
+    subdomain: resolveTenantSubdomain(props.page.tenant.id),
     lang: pageLang,
     permalink: form.permalink,
   });
@@ -363,13 +383,49 @@ const otherLangPageOptions = computed(() => [
   ...otherPageOptions.value,
 ]);
 
-// Bridge: SingleSelect operates on full objects, form stores other_lang_id for server submission
-const selectedOtherLangPage = computed({
-  get: () => otherLangPageOptions.value.find(p => p.value === (form.other_lang_id ?? '__none__')) ?? otherLangPageOptions.value[0],
-  set: (val: { value: string | number; label: string } | null) => {
-    form.other_lang_id = val?.value === '__none__' ? null : val?.value ?? null;
-  },
+// Bridge: the dialog stores other_lang_id; this computed drives the trigger label.
+const selectedOtherLangPage = computed(
+  () => otherLangPageOptions.value.find(p => String(p.value) === String(form.other_lang_id ?? '__none__')) ?? otherLangPageOptions.value[0],
+);
+
+const otherLangDialogOpen = ref(false);
+
+// Opposite language of the page being edited (only two locales exist).
+const otherLang = computed(() => (form.lang === 'lt' ? 'en' : 'lt'));
+
+// Scope the pages search to the opposite-language pages of the candidate tenants
+// — exactly reproducing the `otherLangPages` prop.
+const otherLangBaseFilterBy = computed(() => {
+  const tenantIds = [
+    ...new Set((props.otherLangPages ?? []).map(p => p.tenant?.id).filter((id): id is number => id != null)),
+  ];
+  const parts: string[] = [];
+  if (tenantIds.length > 0) {
+    parts.push(`tenant_ids:[${tenantIds.join(',')}]`);
+  }
+  parts.push(`lang:=${otherLang.value}`);
+  return parts.join(' && ');
 });
+
+const otherLangInitialHits = computed<NormalizedSearchHit[]>(() => {
+  if (!form.other_lang_id) {
+    return [];
+  }
+  const page = (props.otherLangPages ?? []).find(p => String(p.id) === String(form.other_lang_id));
+  if (!page) {
+    return [];
+  }
+  return [normalizeHit('pages', {
+    id: page.id,
+    title: page.title,
+    tenant_name: page.tenant?.shortname,
+    lang: otherLang.value,
+  })];
+});
+
+function onOtherLangPageConfirm(hits: NormalizedSearchHit[]) {
+  form.other_lang_id = hits[0] ? Number(hits[0].recordId) : null;
+}
 
 // Date/time picker compatibility
 const publishTimeDate = computed({

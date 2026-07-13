@@ -2,8 +2,10 @@
 
 use App\Models\Calendar;
 use App\Models\Document;
+use App\Models\Duty;
 use App\Models\News;
 use App\Models\Page;
+use App\Models\User;
 use App\Services\Typesense\TypesenseManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -117,4 +119,48 @@ test('draft models are not searchable', function () {
     // Test that draft calendar events are not searchable
     $draftCalendar = Calendar::factory()->create(['is_draft' => true]);
     expect($draftCalendar->shouldBeSearchable())->toBeFalse();
+});
+
+test('duty search array carries index-aligned member ids for current and previous members', function () {
+    $duty = Duty::factory()->create();
+
+    $current = User::factory()->create(['name' => 'Current Member']);
+    $previous = User::factory()->create(['name' => 'Previous Member']);
+
+    $current->duties()->attach($duty->id, ['start_date' => now()->subMonth(), 'end_date' => null]);
+    $previous->duties()->attach($duty->id, ['start_date' => now()->subYear(), 'end_date' => now()->subMonth()]);
+
+    $array = $duty->fresh()->toSearchableArray();
+
+    expect($array)->toHaveKey('current_user_names')
+        ->and($array)->toHaveKey('current_user_ids')
+        ->and($array)->toHaveKey('previous_user_names')
+        ->and($array)->toHaveKey('previous_user_ids')
+        ->and($array['current_user_names'])->toContain('Current Member')
+        ->and($array['current_user_ids'])->toContain((string) $current->id)
+        // Names and ids share the same index so the detail pane can zip them into links.
+        ->and(count($array['current_user_ids']))->toBe(count($array['current_user_names']))
+        ->and($array['previous_user_ids'])->toContain((string) $previous->id);
+});
+
+test('user search array carries current and previous duties with aligned ids', function () {
+    $user = User::factory()->create();
+
+    $currentDuty = Duty::factory()->create();
+    $previousDuty = Duty::factory()->create();
+
+    $user->duties()->attach($currentDuty->id, ['start_date' => now()->subMonth(), 'end_date' => null]);
+    $user->duties()->attach($previousDuty->id, ['start_date' => now()->subYear(), 'end_date' => now()->subMonth()]);
+
+    $array = $user->fresh()->toSearchableArray();
+
+    expect($array)->toHaveKey('current_duty_names')
+        ->and($array)->toHaveKey('current_duty_ids')
+        ->and($array)->toHaveKey('previous_duty_names')
+        ->and($array)->toHaveKey('previous_duty_ids')
+        ->and($array['current_duty_ids'])->toContain((string) $currentDuty->id)
+        ->and(count($array['current_duty_ids']))->toBe(count($array['current_duty_names']))
+        ->and($array['previous_duty_ids'])->toContain((string) $previousDuty->id)
+        // The current duty must not leak into the previous-duty buckets.
+        ->and($array['previous_duty_ids'])->not->toContain((string) $currentDuty->id);
 });

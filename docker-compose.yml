@@ -94,7 +94,7 @@ services:
         depends_on:
           - mariadb
     typesense:
-        image: 'typesense/typesense:29.0'
+        image: 'typesense/typesense:30.2'
         ports:
             - '${FORWARD_TYPESENSE_PORT:-8108}:8108'
         environment:

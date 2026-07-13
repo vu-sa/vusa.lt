@@ -2,32 +2,16 @@
   <div class="flex flex-col gap-6">
     <FadeTransition>
       <SuggestionAlert v-if="props.showHint" :show-alert @alert-closed="showAlert = false">
-        <template v-if="$page.props.app.locale === 'lt'">
-          <p class="mt-0">
-            <span>Kiekvienas posėdis turi</span>
-            <Badge size="tiny" variant="secondary" class="mx-1">
-              <component :is="AgendaItemIcon" class="h-3 w-3" />
-              <strong>darbotvarkės klausimų</strong>
-            </Badge>
-          </p>
-          <p class="mb-4">
-            Įrašyk arba įkopijuok visus klausimus, kurie šiuo metu yra numatomi
-            posėdyje. Galite pradėti nuo ankstesnio posėdžio klausimų.
-          </p>
-        </template>
-        <template v-else>
-          <p class="mt-0">
-            <span>Each meeting has</span>
-            <Badge size="tiny" variant="secondary" class="mx-1">
-              <component :is="AgendaItemIcon" class="h-3 w-3" />
-              <strong>agenda items</strong>
-            </Badge>
-          </p>
-          <p class="mb-4">
-            Enter or paste all the questions that are currently planned for the
-            meeting. You can start from a previous meeting's agenda.
-          </p>
-        </template>
+        <p class="mt-0">
+          <span>{{ $t('Kiekvienas posėdis turi') }}</span>
+          <Badge size="tiny" variant="secondary" class="mx-1">
+            <component :is="AgendaItemIcon" class="h-3 w-3" />
+            <strong>{{ $t('darbotvarkės klausimų') }}</strong>
+          </Badge>
+        </p>
+        <p class="mb-4">
+          {{ $t('Įrašyk arba įkopijuok visus klausimus, kurie šiuo metu yra numatomi posėdyje. Galite pradėti nuo ankstesnio posėdžio klausimų.') }}
+        </p>
       </SuggestionAlert>
     </FadeTransition>
 
@@ -193,8 +177,8 @@
                   </div>
 
                   <FormControl>
-                    <Textarea v-model="questionInputInTextArea"
-                      :placeholder="$page.props.app.locale === 'lt' ? 'Kiekvienas klausimas turi būti iš naujos eilutės, pvz.:\n\nPraėjusio posėdžio protokolo tvirtinimas\nEinamųjų reikalų aptarimas\nAteities planų pristatymas\nKiti klausimai' : 'Every question must begin from new line, e.g.\n\nPrevious meeting protocol approval\nCurrent affairs discussion\nFuture plans presentation\nOther questions'"
+                      <Textarea v-model="questionInputInTextArea"
+                      :placeholder="$t('Kiekvienas klausimas turi būti iš naujos eilutės, pvz.:') + '\n\n' + $t('Praėjusio posėdžio protokolo tvirtinimas') + '\n' + $t('Einamųjų reikalų aptarimas') + '\n' + $t('Ateities planų pristatymas') + '\n' + $t('Kiti klausimai')"
                       class="w-full font-mono text-sm" :rows="8" />
                   </FormControl>
 
@@ -418,12 +402,7 @@ const props = withDefaults(defineProps<{
   hideActions: false,
 });
 
-// Debug logging
-console.log('[AgendaItemsForm] Props received:', {
-  institutionId: props.institutionId,
-  recentMeetings: props.recentMeetings,
-  mode: props.mode,
-});
+// Props are validated by the component's prop types
 
 // Composables
 const {

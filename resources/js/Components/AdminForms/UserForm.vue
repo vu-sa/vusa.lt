@@ -127,14 +127,12 @@
         </p>
       </template>
       <div class="space-y-2">
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 mb-2">
           <Label><strong>{{ $t("Pareigybės") }}</strong></Label>
-          <a target="_blank" :href="route('duties.create')">
-            <Button size="xs" variant="secondary">
-              <IFluentAdd24Filled />
-              Sukurti naują pareigybę?
-            </Button>
-          </a>
+          <Button size="xs" variant="secondary" as="a" :href="route('duties.create')" target="_blank">
+            <IFluentAdd24Filled />
+            Sukurti naują pareigybę?
+          </Button>
           <Button class="ml-auto" size="xs" variant="outline" @click="handleChangeDutyShowMode">
             Pakeisti rodymo būdą
           </Button>
@@ -154,17 +152,19 @@
               <template #item="{ item }">
                 <span class="inline-flex items-center gap-2">
                   {{ item.label }}
-                  <a
+                  <Button
                     v-if="typeof item.value !== 'number'"
-                    target="_blank"
+                    variant="ghost"
+                    size="icon-xs"
+                    as="a"
                     :href="item.checkboxDisabled
                       ? route('institutions.edit', item.value)
                       : route('duties.edit', item.value)"
+                    target="_blank"
+                    @click.stop
                   >
-                    <Button variant="ghost" size="icon-xs" @click.stop>
-                      <Eye16Regular />
-                    </Button>
-                  </a>
+                    <Eye16Regular />
+                  </Button>
                 </span>
               </template>
             </Tree>
@@ -172,11 +172,9 @@
           <template #target-label="{ option }">
             <span class="inline-flex items-center gap-2">
               {{ option.label }}
-              <a target="_blank" :href="route('duties.edit', option.value)">
-                <Button variant="ghost" size="icon-xs" @click.stop>
-                  <Eye16Regular />
-                </Button>
-              </a>
+              <Button variant="ghost" size="icon-xs" as="a" :href="route('duties.edit', option.value)" target="_blank" @click.stop>
+                <Eye16Regular />
+              </Button>
             </span>
           </template>
         </TransferList>
@@ -184,11 +182,9 @@
           <template #target-label="{ option }">
             <span class="inline-flex items-center gap-2">
               {{ option.label }}
-              <a target="_blank" :href="route('duties.edit', option.value)">
-                <Button variant="ghost" size="icon-xs" @click.stop>
-                  <Eye16Regular />
-                </Button>
-              </a>
+              <Button variant="ghost" size="icon-xs" as="a" :href="route('duties.edit', option.value)" target="_blank" @click.stop>
+                <Eye16Regular />
+              </Button>
             </span>
           </template>
         </TransferList>
@@ -313,6 +309,9 @@
         </div>
       </template>
     </FormElement>
+
+    <AccessChangeWarningDialog :open="accessChangeOpen" :report="accessChangeReport"
+      @update:open="accessChangeOpen = $event" @confirm="confirmAccessChange" @cancel="cancelAccessChange" />
   </AdminForm>
 </template>
 
@@ -325,9 +324,11 @@ import { trans as $t } from 'laravel-vue-i18n';
 import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
 
 import AdminForm from './AdminForm.vue';
+import AccessChangeWarningDialog from './AccessChangeWarningDialog.vue';
 import FormElement from './FormElement.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 
+import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 import { useApiMutation } from '@/Composables/useApi';
 import Delete24Regular from '~icons/fluent/delete24-regular';
 import Eye16Regular from '~icons/fluent/eye16-regular';
@@ -363,6 +364,26 @@ defineEmits<{
 const dutyShowMode = ref<'tree' | 'transfer'>('tree');
 const handleChangeDutyShowMode = () => {
   dutyShowMode.value = dutyShowMode.value === 'tree' ? 'transfer' : 'tree';
+};
+
+// Deleting a duty assignment may strip the acting user's own access; guard the
+// removal so the warning dialog surfaces instead of a silent no-op rollback.
+const {
+  report: accessChangeReport,
+  open: accessChangeOpen,
+  guardedSubmit: guardedDutiableDestroy,
+  confirm: confirmAccessChange,
+  cancel: cancelAccessChange,
+} = useAccessChangeGuard();
+
+const deleteDutiable = (pivotId: string) => {
+  guardedDutiableDestroy(acknowledge =>
+    router.delete(route('dutiables.destroy', pivotId), {
+      data: { acknowledge_access_change: acknowledge },
+      preserveState: true,
+      preserveScroll: true,
+    }),
+  );
 };
 
 const form = props.rememberKey
@@ -590,11 +611,7 @@ const previousDutyColumns: ColumnDef<any, any>[] = [
       <Button
         size="icon-xs"
         variant="destructive"
-        onClick={() =>
-          router.delete(route('dutiables.destroy', row.original.pivot.id), {
-            preserveState: true,
-            preserveScroll: true,
-          })}
+        onClick={() => deleteDutiable(row.original.pivot.id)}
       >
         <Delete24Regular />
       </Button>

@@ -137,6 +137,8 @@ class Resource extends Model implements HasMedia
 
     /**
      * Get all reservations for this resource
+     *
+     * @return BelongsToMany<Reservation, $this, ReservationResource, 'pivot'>
      */
     public function reservations(): BelongsToMany
     {
@@ -158,6 +160,8 @@ class Resource extends Model implements HasMedia
 
     /**
      * Get active reservations (created, reserved, or lent)
+     *
+     * @return BelongsToMany<Reservation, $this, ReservationResource, 'pivot'>
      */
     public function active_reservations(): BelongsToMany
     {
@@ -194,7 +198,8 @@ class Resource extends Model implements HasMedia
         string $symbol_start = '<',
         string $symbol_end = '>=',
         array $exceptReservations = [],
-        array $exceptResources = []
+        array $exceptResources = [],
+        bool $ignoreTimeEndedActive = false
     ): int {
         $calculator = new ResourceCapacityCalculator($this);
         $time = $datetime instanceof Carbon ? $datetime : Carbon::parse($datetime);
@@ -204,7 +209,8 @@ class Resource extends Model implements HasMedia
             $symbol_start,
             $symbol_end,
             $exceptReservations,
-            $exceptResources
+            $exceptResources,
+            $ignoreTimeEndedActive
         );
     }
 
@@ -219,12 +225,13 @@ class Resource extends Model implements HasMedia
     public function leftCapacityAtTimeArray(
         Carbon|string $datetime,
         array $exceptReservations = [],
-        array $exceptResources = []
+        array $exceptResources = [],
+        bool $ignoreTimeEndedActive = false
     ): array {
         $calculator = new ResourceCapacityCalculator($this);
         $time = $datetime instanceof Carbon ? $datetime : Carbon::parse($datetime);
 
-        return $calculator->calculateCapacityAtTimeArray($time, $exceptReservations, $exceptResources);
+        return $calculator->calculateCapacityAtTimeArray($time, $exceptReservations, $exceptResources, $ignoreTimeEndedActive);
     }
 
     /**
@@ -241,6 +248,7 @@ class Resource extends Model implements HasMedia
      * @param  Carbon|string|int  $to  End time (Carbon, string, or timestamp in ms)
      * @param  array<int, string>  $exceptReservations  Reservation IDs to exclude from calculation
      * @param  array<int, string>  $exceptResources  Resource IDs to exclude from calculation
+     * @param  bool  $ignoreTimeEndedActive  Ignore active reservations whose end_time has passed
      * @return array<string, array{before: int, after: int, reservation?: array<string, mixed>, start?: bool, end?: bool}>
      *                                                                                                                     Capacity timeline keyed by timestamp (ms), sorted chronologically
      */
@@ -248,12 +256,34 @@ class Resource extends Model implements HasMedia
         Carbon|string|int $from,
         Carbon|string|int $to,
         array $exceptReservations = [],
-        array $exceptResources = []
+        array $exceptResources = [],
+        bool $ignoreTimeEndedActive = false
     ): array {
         $timeRange = new TimeRange($from, $to);
         $calculator = new ResourceCapacityCalculator($this);
 
-        return $calculator->getCapacityTimeline($timeRange, $exceptReservations, $exceptResources);
+        return $calculator->getCapacityTimeline($timeRange, $exceptReservations, $exceptResources, $ignoreTimeEndedActive);
+    }
+
+    /**
+     * Find active reservations whose end_time has passed and which overlap the given range.
+     *
+     * @param  Carbon|string|int  $from  Start time (Carbon, string, or timestamp in ms)
+     * @param  Carbon|string|int  $to  End time (Carbon, string, or timestamp in ms)
+     * @param  array<int, string>  $exceptReservations  Reservation IDs to exclude
+     * @param  array<int, string>  $exceptResources  Resource IDs to exclude
+     * @return \Illuminate\Database\Eloquent\Collection<int, Reservation>
+     */
+    public function findTimeEndedActiveReservations(
+        Carbon|string|int $from,
+        Carbon|string|int $to,
+        array $exceptReservations = [],
+        array $exceptResources = []
+    ): Collection {
+        $timeRange = new TimeRange($from, $to);
+        $calculator = new ResourceCapacityCalculator($this);
+
+        return $calculator->findTimeEndedActiveReservations($timeRange, $exceptReservations, $exceptResources);
     }
 
     /**

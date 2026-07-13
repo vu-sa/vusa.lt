@@ -30,7 +30,7 @@ import {
   toggleNumericFilterValue,
 } from '../Services/AdminSearchService';
 import { mergeFacets, sortFacetsByConfig } from '../Services/AdminFacetMerger';
-import { getCollectionFacetConfig, getCollectionSortOptions } from '../Config/collectionFacetConfig';
+import { getCollectionFacetConfig, getCollectionSortOptions, resolveSortValue, RELEVANCE_SORT_VALUE } from '../Config/collectionFacetConfig';
 
 import { useAdminSearch } from '@/Composables/useAdminSearch';
 
@@ -44,10 +44,19 @@ export interface UseAdminCollectionSearchOptions {
   searchOnMount?: boolean;
   /** Whether to sync state to URL */
   syncToUrl?: boolean;
+  /** URL query keys to preserve when syncing state to URL (e.g. ['tab']) */
+  preserveUrlKeys?: string[];
   /** Debounce delay for search in ms */
   debounceMs?: number;
   /** Results per page */
   perPage?: number;
+  /**
+   * Always-on Typesense `filter_by` clause ANDed with the facet filters and
+   * applied to the initial facet universe too. Used to scope a collection to a
+   * caller-defined subset (e.g. the institution picker restricted to the
+   * duty-assignable tenants). Leave undefined for the unrestricted collection.
+   */
+  baseFilterBy?: string;
 }
 
 export function useAdminCollectionSearch(options: UseAdminCollectionSearchOptions) {
@@ -57,8 +66,10 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     loadFacetsOnMount = true,
     searchOnMount = true,
     syncToUrl = true,
+    preserveUrlKeys = [],
     debounceMs = 300,
     perPage = 24,
+    baseFilterBy,
   } = options;
 
   // Get the facet config for this collection
@@ -77,7 +88,11 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
   const status = ref<AdminSearchStatus>('idle');
   const query = ref(initialQuery);
   const filters = ref<AdminSearchFilters>({ query: initialQuery });
-  const sortBy = ref(facetConfig.defaultSortBy);
+  // An active query defaults to relevance ranking; an empty query browses by date.
+  const sortBy = ref(initialQuery.trim() !== '' ? RELEVANCE_SORT_VALUE : facetConfig.defaultSortBy);
+  // Tracks whether the user explicitly picked a sort. Until they do, the query
+  // state drives the default sort (relevance when querying, date when browsing).
+  const isSortUserSelected = ref(false);
   const currentPage = ref(1);
 
   // Results state (using shallowRef for performance with large arrays)
@@ -156,6 +171,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     try {
       const rawFacets = await adminSearch.loadInitialFacets(collection, facetConfig.facetBy, {
         queryBy: facetConfig.queryBy,
+        filterBy: baseFilterBy,
       });
 
       initialFacets.value = parseFacets(rawFacets, facetConfig, filters.value);
@@ -190,8 +206,10 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
       clearError();
     }
 
-    // Build filter string from current filters
-    const filterString = buildFilterString(filters.value, facetConfig);
+    // Build filter string from current filters, ANDed with any always-on base filter.
+    const filterString = [baseFilterBy, buildFilterString(filters.value, facetConfig)]
+      .filter(Boolean)
+      .join(' && ');
 
     // Set loading state
     if (isLoadMore) {
@@ -203,10 +221,14 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
       currentPage.value = 1;
     }
 
+    // Resolve the relevance sentinel into a concrete Typesense sort expression
+    // (with the collection's date field as a recency tiebreak).
+    const effectiveSortBy = resolveSortValue(collection, sortBy.value);
+
     try {
       const searchResult = await adminSearch.searchWithFacets(collection, query.value || '*', {
         filterBy: filterString || undefined,
-        sortBy: sortBy.value,
+        sortBy: effectiveSortBy,
         facetBy: facetConfig.facetBy,
         queryBy: facetConfig.queryBy,
         perPage,
@@ -273,6 +295,12 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     query.value = newQuery;
     filters.value.query = newQuery;
 
+    // Unless the user picked a sort, follow the query: relevance while searching,
+    // date order while browsing. Keeps the sort dropdown in sync with results.
+    if (!isSortUserSelected.value) {
+      sortBy.value = newQuery.trim() !== '' ? RELEVANCE_SORT_VALUE : facetConfig.defaultSortBy;
+    }
+
     if (immediate) {
       performSearch(false);
     }
@@ -328,6 +356,9 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
   const clearAll = () => {
     query.value = '';
     filters.value = { query: '' };
+    // Return to date-based browse ordering once the query is gone.
+    isSortUserSelected.value = false;
+    sortBy.value = facetConfig.defaultSortBy;
     debouncedSearch();
   };
 
@@ -345,6 +376,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
    */
   const setSortBy = (newSortBy: string) => {
     sortBy.value = newSortBy;
+    isSortUserSelected.value = true;
     performSearch(false);
   };
 
@@ -367,6 +399,17 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     // Add sort if not default
     if (sortBy.value !== facetConfig.defaultSortBy) {
       params.set('sort', sortBy.value);
+    }
+
+    // Preserve externally-owned URL keys (e.g. the active tab on the unified search page)
+    if (preserveUrlKeys.length > 0) {
+      const currentParams = new URLSearchParams(window.location.search);
+      for (const key of preserveUrlKeys) {
+        const value = currentParams.get(key);
+        if (value !== null && !params.has(key)) {
+          params.set(key, value);
+        }
+      }
     }
 
     // Update URL without page reload

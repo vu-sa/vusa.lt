@@ -18,9 +18,7 @@
                   {{ reservation.name }}
                 </h1>
                 <div class="inline-flex shrink-0 items-center gap-1">
-                  <Badge :variant="statusBadgeVariant">
-                    {{ statusLabel }}
-                  </Badge>
+                  <ReservationStateSummary :states="reservationStates" :unresolved="isUnresolved" />
                   <Button variant="ghost" size="icon-sm" class="size-6" @click="$emit('show-help')">
                     <IFluentInfo24Regular class="size-4 text-muted-foreground" />
                     <span class="sr-only">{{ $t('Būsenų informacija') }}</span>
@@ -88,12 +86,14 @@ import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
-import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
+import ReservationStateSummary from '@/Components/Tag/ReservationStateSummary.vue';
 import { ReservationIconFilled } from '@/Components/icons';
+import type { ReservationResourceState } from '@/Utils/ReservationStatus';
+import { isPivotUnresolved, summarizeStates } from '@/Utils/ReservationStatus';
 
 const props = defineProps<{
   reservation: App.Entities.Reservation;
@@ -131,48 +131,17 @@ const pendingCount = computed(() => {
   ).length ?? 0;
 });
 
-// Overall reservation status based on resources
-type ReservationStatus = 'empty' | 'pending' | 'approved' | 'mixed' | 'completed';
+/**
+ * The reservation's overall state, reported the same way the reservation hub reports it: every
+ * state its items are in, rather than one label that has to guess which of them matters.
+ */
+const reservationStates = computed(() => summarizeStates(
+  (props.reservation.resources ?? [])
+    .map(resource => resource.pivot?.state)
+    .filter((state): state is ReservationResourceState => state != null),
+));
 
-const overallStatus = computed<ReservationStatus>(() => {
-  const resources = props.reservation.resources ?? [];
-
-  if (resources.length === 0) return 'empty';
-
-  const states = resources.map(r => r.pivot?.state);
-  const allReturned = states.every(s => s === 'returned');
-  const allLent = states.every(s => s === 'lent' || s === 'returned');
-  const allPending = states.every(s => s === 'created' || s === 'reserved');
-  const hasCancelledOrRejected = states.some(s => s === 'cancelled' || s === 'rejected');
-
-  if (allReturned) return 'completed';
-  if (allLent && !hasCancelledOrRejected) return 'approved';
-  if (allPending) return 'pending';
-  return 'mixed';
-});
-
-const statusLabel = computed(() => {
-  const labels: Record<ReservationStatus, string> = {
-    empty: $t('Tuščia'),
-    pending: $t('Laukia patvirtinimo'),
-    approved: $t('Patvirtinta'),
-    mixed: $t('Mišri būsena'),
-    completed: $t('Užbaigta'),
-  };
-  return labels[overallStatus.value];
-});
-
-const statusBadgeVariant = computed<'default' | 'secondary' | 'destructive' | 'outline'>(() => {
-  switch (overallStatus.value) {
-    case 'approved':
-    case 'completed':
-      return 'default';
-    case 'pending':
-      return 'outline';
-    case 'mixed':
-    case 'empty':
-    default:
-      return 'secondary';
-  }
-});
+const isUnresolved = computed(() => (props.reservation.resources ?? []).some(
+  resource => resource.pivot != null && isPivotUnresolved(resource.pivot),
+));
 </script>

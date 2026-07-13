@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Cache;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->tenant = Tenant::query()->inRandomOrder()->first();
+    $this->tenant = Tenant::query()->first();
 
     $this->institution = Institution::factory()->create([
         'tenant_id' => $this->tenant->id,
@@ -195,6 +195,80 @@ describe('getTenants with cached permission state', function () {
             ->toEqual($tenants2->pluck('id')->sort()->values());
         expect($tenants1)->toHaveCount(1);
         expect($tenants1->first()->id)->toBe($this->tenant->id);
+    });
+});
+
+describe('request-level tenant memoization', function () {
+    test('repeated getTenants for the same permission returns the memoized collection', function () {
+        $admin = makeUser($this->tenant);
+        $admin->duties()->first()->assignRole($this->coordinatorRole);
+
+        $this->authorizer->forUser($admin);
+
+        $first = $this->authorizer->getTenants('users.update.padalinys');
+        $second = $this->authorizer->getTenants('users.update.padalinys');
+
+        // Same instance proves the resolution was memoized, not recomputed.
+        expect($second)->toBe($first);
+        expect($first)->toHaveCount(1);
+        expect($first->first()->id)->toBe($this->tenant->id);
+    });
+
+    test('super admin getTenants memoizes the all-tenants result', function () {
+        $superAdmin = User::factory()->create();
+        $superAdmin->assignRole(config('permission.super_admin_role_name'));
+
+        $this->authorizer->forUser($superAdmin);
+
+        $first = $this->authorizer->getTenants();
+        $second = $this->authorizer->getTenants();
+
+        expect($second)->toBe($first);
+        expect($first->count())->toBe(Tenant::count());
+    });
+
+    test('getTenants preserves isAllScope and permissableDuties side effects', function () {
+        // Regression guard: the previously disabled cache skipped checkAllRoleables,
+        // leaving callers that read these AFTER getTenants with stale/empty state.
+        $admin = makeUser($this->tenant);
+        $admin->duties()->first()->assignRole($this->coordinatorRole);
+
+        $this->authorizer->forUser($admin);
+
+        $tenants = $this->authorizer->getTenants('users.update.padalinys');
+
+        expect($this->authorizer->isAllScope)->toBeFalse();
+        expect($this->authorizer->getPermissableDuties())->toHaveCount(1);
+        expect($tenants)->toHaveCount(1);
+    });
+
+    test('switching users clears the tenant memoization', function () {
+        $admin = makeUser($this->tenant);
+        $admin->duties()->first()->assignRole($this->coordinatorRole);
+
+        $this->authorizer->forUser($admin);
+        $this->authorizer->getTenants('users.update.padalinys');
+
+        $other = makeUser($this->tenant);
+        $this->authorizer->forUser($other);
+
+        $cache = new ReflectionProperty(ModelAuthorizer::class, 'requestTenantCache');
+        $cache->setAccessible(true);
+        expect($cache->getValue($this->authorizer))->toBeEmpty();
+    });
+
+    test('resetCache clears the tenant memoization', function () {
+        $admin = makeUser($this->tenant);
+        $admin->duties()->first()->assignRole($this->coordinatorRole);
+
+        $this->authorizer->forUser($admin);
+        $this->authorizer->getTenants('users.update.padalinys');
+
+        $this->authorizer->resetCache($admin);
+
+        $cache = new ReflectionProperty(ModelAuthorizer::class, 'requestTenantCache');
+        $cache->setAccessible(true);
+        expect($cache->getValue($this->authorizer))->toBeEmpty();
     });
 });
 

@@ -10,7 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->tenant = Tenant::query()->inRandomOrder()->first();
+    $this->tenant = Tenant::query()->first();
     $this->admin = makeUser($this->tenant);
     $this->admin->assignRole('Super Admin');
     $this->institution = Institution::factory()->for($this->tenant)->create();

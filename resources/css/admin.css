@@ -19,7 +19,4 @@
   font-size: 90%;
 }
 
-/* Naive UI form item alignment for MultiLocaleInput */
-.n-form-item {
-  align-items: start;
-}
+/* Admin-specific component overrides can be added here */

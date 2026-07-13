@@ -36,6 +36,7 @@ Route::get('dashboard/reservations', [DashboardController::class, 'reservations'
 Route::patch('profile', [DashboardController::class, 'updateUserSettings'])->name('profile.update');
 Route::patch('profile/password', [DashboardController::class, 'updatePassword'])->name('profile.updatePassword');
 Route::patch('profile/notification-preferences', [DashboardController::class, 'updateNotificationPreferences'])->name('profile.updateNotificationPreferences');
+Route::post('profile/notification-preferences/test-email', [DashboardController::class, 'sendTestNotificationEmail'])->name('profile.sendTestNotificationEmail');
 Route::get('tasks', [DashboardController::class, 'userTasks'])->name('userTasks');
 Route::get('institutionGraph', [DashboardController::class, 'institutionGraph'])->name('institutionGraph');
 
@@ -126,9 +127,11 @@ Route::get('meetings-search', [MeetingController::class, 'search'])->name('meeti
 
 // Faceted search pages (uses scoped Typesense API keys for authorization)
 Route::prefix('search')->name('search.')->group(function () {
+    Route::get('/', [SearchController::class, 'index'])->name('index');
     Route::get('meetings', [SearchController::class, 'meetings'])->name('meetings');
     Route::get('agenda-items', [SearchController::class, 'agendaItems'])->name('agendaItems');
     Route::get('institutions', [SearchController::class, 'institutions'])->name('institutions');
+    Route::get('resources', [SearchController::class, 'resources'])->name('resources');
 });
 
 // Check-in actions for institutions
@@ -145,6 +148,7 @@ Route::resource('reservationResources', ReservationResourceController::class)->e
 // Approval routes
 Route::post('approvals', [ApprovalController::class, 'store'])->name('approvals.store');
 Route::post('approvals/bulk', [ApprovalController::class, 'bulkStore'])->name('approvals.bulkStore');
+Route::post('approvals/resolve', [ApprovalController::class, 'resolve'])->name('approvals.resolve');
 Route::get('approvals/history', [ApprovalController::class, 'history'])->name('approvals.history');
 
 // File management routes

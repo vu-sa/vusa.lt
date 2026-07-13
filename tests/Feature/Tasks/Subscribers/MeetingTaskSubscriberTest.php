@@ -34,7 +34,7 @@ beforeEach(function () {
 describe('MeetingTaskSubscriber', function () {
     describe('agenda creation task', function () {
         test('creates agenda creation task when meeting is created with student reps', function () {
-            $tenant = Tenant::query()->inRandomOrder()->first()
+            $tenant = Tenant::query()->first()
                 ?? Tenant::factory()->create();
 
             $institution = Institution::factory()
@@ -115,7 +115,7 @@ describe('MeetingTaskSubscriber', function () {
         });
 
         test('does not create any task when no student reps exist', function () {
-            $tenant = Tenant::query()->inRandomOrder()->first()
+            $tenant = Tenant::query()->first()
                 ?? Tenant::factory()->create();
 
             $institution = Institution::factory()
@@ -567,7 +567,7 @@ describe('MeetingTaskSubscriber', function () {
         });
 
         test('handles meeting with no agenda items gracefully', function () {
-            $tenant = Tenant::query()->inRandomOrder()->first()
+            $tenant = Tenant::query()->first()
                 ?? Tenant::factory()->create();
 
             $institution = Institution::factory()->for($tenant)->create();

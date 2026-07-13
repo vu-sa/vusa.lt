@@ -13,6 +13,7 @@
 import { h, ref, computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
+import type { IndexTablePageInstance } from '@/Types/TableConfigTypes';
 
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { TruncatedText } from '@/Components/ui/data-table/cells';
@@ -46,7 +47,7 @@ const props = defineProps<{
 const modelName = 'news';
 const entityName = 'news';
 
-const indexTablePageRef = ref<any>(null);
+const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
 
 const getRowId = (row: App.Entities.News) => {
   return `news-${row.id}`;
@@ -56,7 +57,7 @@ const columns = computed<Array<ColumnDef<App.Entities.News, any>>>(() => [
   createIdColumn<App.Entities.News>({ width: 70 }),
   {
     accessorKey: 'title',
-    header: () => 'Pavadinimas',
+    header: () => $t('Pavadinimas'),
     cell: ({ row }) => h(TruncatedText, {
       text: row.getValue('title') as string,
       lines: 2,
@@ -66,7 +67,7 @@ const columns = computed<Array<ColumnDef<App.Entities.News, any>>>(() => [
   },
   {
     accessorKey: 'lang',
-    header: () => 'Kalba',
+    header: () => $t('Kalba'),
     cell: ({ row }) => {
       return row.original.lang === 'lt' ? '🇱🇹' : '🇬🇧';
     },
@@ -74,7 +75,7 @@ const columns = computed<Array<ColumnDef<App.Entities.News, any>>>(() => [
   },
   {
     id: 'other_language_news',
-    header: () => 'Kitos kalbos naujiena',
+    header: () => $t('Kitos kalbos naujiena'),
     cell: ({ row }) => {
       const otherNews = row.original.other_language_news;
       if (!otherNews) return null;
@@ -90,7 +91,7 @@ const columns = computed<Array<ColumnDef<App.Entities.News, any>>>(() => [
   createTenantColumn<App.Entities.News>(),
   {
     accessorKey: 'publish_time',
-    header: () => 'Paskelbimo data',
+    header: () => $t('Paskelbimo data'),
     cell: ({ row }) => {
       const publishTime = row.original.publish_time;
       if (!publishTime) return null;
@@ -124,7 +125,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.News>>(() => {
     pageSize: props.news.meta.per_page,
 
     initialFilters: props.filters,
-    initialSorting: props.sorting ?? [{ id: 'publish_time', desc: true }],
+    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'publish_time', desc: true }],
     enableFiltering: true,
     enableColumnVisibility: false,
     enableRowSelection: false,

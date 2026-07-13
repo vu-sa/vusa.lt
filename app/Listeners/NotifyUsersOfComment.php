@@ -2,33 +2,36 @@
 
 namespace App\Listeners;
 
+use App\Enums\CommentKind;
 use App\Events\CommentPosted;
 use App\Models\Pivots\ReservationResource;
+use App\Models\User;
 use App\Notifications\CommentPostedNotification;
+use App\Services\CommentRecipientResolver;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 
 class NotifyUsersOfComment implements ShouldQueue
 {
+    public function __construct(protected CommentRecipientResolver $recipients) {}
+
     /**
      * Handle the event.
      */
     public function handle(CommentPosted $event): void
     {
-        $commentable = $event->comment->commentable;
+        $comment = $event->comment;
+        $commentable = $comment->commentable;
 
         // NOTE: in some cases, $commentable can be null, so we need to check if it's null
         if (! $commentable) {
             return;
         }
 
-        // Note: Previously, comments could have a 'decision' field for status changes.
-        // Decisions are now handled through the approvals table (see 2026_01_15_160000 migration).
-        // Comments are now purely for discussion/notes.
-
-        // let's assume for now, that the subject will always be a user
-        $user = $event->comment->user;
+        $user = $comment->user;
 
         $subject = [
             'modelClass' => class_basename(get_class($user)),
@@ -53,21 +56,52 @@ class NotifyUsersOfComment implements ShouldQueue
             'id' => $commentable->getKey(),
         ];
 
-        // Build the comment text
-        $text = "<p><strong>{$user->name}</strong> ".__('notifications.left_comment_on')." <strong>{$objectName}</strong></p>";
+        // Mentioned users get a personal notification ("X mentioned you …").
+        $mentioned = $this->recipients->mentioned($comment);
 
-        $notifiables = $commentable->users?->unique();
+        if ($mentioned->isNotEmpty()) {
+            $text = $this->text($user->name, $objectName, 'notifications.mentioned_you_in_comment');
+            Notification::send($mentioned, new CommentPostedNotification($text, $object, $subject));
+        }
 
-        // If notifiable users have duties with emails, also send notification to those emails
-        $notifiables = $notifiables?->merge(
-            $commentable->users?->unique()
-                ->load('duties')
+        // The rest of the audience (reps for a root comment, thread participants
+        // for a reply) get the standard comment / poll notification.
+        $audience = $this->recipients->audience($comment);
+
+        if ($audience->isNotEmpty()) {
+            $action = $comment->kind === CommentKind::Poll
+                ? 'notifications.started_poll_on'
+                : 'notifications.left_comment_on';
+
+            $text = $this->text($user->name, $objectName, $action);
+
+            Notification::send($this->withDuties($audience), new CommentPostedNotification($text, $object, $subject));
+        }
+    }
+
+    /**
+     * Build the notification body fragment ("<b>X</b> {action} <b>Y</b>").
+     */
+    protected function text(string $authorName, ?string $objectName, string $actionKey): string
+    {
+        return "<p><strong>{$authorName}</strong> ".__($actionKey)." <strong>{$objectName}</strong></p>";
+    }
+
+    /**
+     * Append the recipients' duties so duty inboxes (name@vusa.lt) also receive
+     * the mail notification — preserving the pre-existing behaviour.
+     *
+     * @param  Collection<int, User>  $users
+     * @return Collection<int, mixed>
+     */
+    protected function withDuties(Collection $users): Collection
+    {
+        return $users->merge(
+            EloquentCollection::make($users->all())->load('duties')
                 ->pluck('duties')
                 ->flatten()
                 ->unique('id')
                 ->values()
-        ) ?? collect();
-
-        Notification::send($notifiables, new CommentPostedNotification($text, $object, $subject));
+        );
     }
 }

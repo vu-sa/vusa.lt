@@ -28,7 +28,7 @@ beforeEach(function () {
 
 describe('InstitutionCheckInTaskSubscriber', function () {
     test('completes periodicity gap task when check-in is created', function () {
-        $tenant = Tenant::query()->inRandomOrder()->first()
+        $tenant = Tenant::query()->first()
             ?? Tenant::factory()->create();
 
         $institution = Institution::factory()
@@ -74,7 +74,7 @@ describe('InstitutionCheckInTaskSubscriber', function () {
     });
 
     test('does not fail when no periodicity gap task exists', function () {
-        $tenant = Tenant::query()->inRandomOrder()->first()
+        $tenant = Tenant::query()->first()
             ?? Tenant::factory()->create();
 
         $institution = Institution::factory()
@@ -93,7 +93,7 @@ describe('InstitutionCheckInTaskSubscriber', function () {
     });
 
     test('only completes tasks for the specific institution', function () {
-        $tenant = Tenant::query()->inRandomOrder()->first()
+        $tenant = Tenant::query()->first()
             ?? Tenant::factory()->create();
 
         $institution1 = Institution::factory()->for($tenant)->create(['is_active' => true]);

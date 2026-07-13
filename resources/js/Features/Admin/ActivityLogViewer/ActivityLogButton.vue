@@ -2,7 +2,7 @@
   <Button size="icon-sm" :disabled="!activities" variant="ghost" class="rounded-full" @click="showModal = true">
     <IFluentDocumentOnePage24Regular />
   </Button>
-  <CardModal v-model:show="showModal" :segmented="{ content: 'soft' }" class="max-w-xl" title="Įrašo pokyčiai"
+  <CardModal v-model:show="showModal" class="sm:max-w-xl" title="Įrašo pokyčiai"
     @close="showModal = false">
     <div v-if="activities.length > 0" class="flex flex-col gap-4 max-h-[60vh] overflow-y-auto">
       <div v-for="activity in activities" :key="activity.id"

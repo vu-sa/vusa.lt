@@ -42,6 +42,8 @@ return [
     'commented_on' => 'pakomentavo',
     'changed_status_on' => 'pakeitė statusą',
     'left_comment_on' => 'paliko komentarą',
+    'mentioned_you_in_comment' => 'paminėjo jus komentare',
+    'started_poll_on' => 'pradėjo apklausą',
 
     // Assignment notifications
     'assigned_to_resource_title' => 'Priskirta prie: :resource',
@@ -125,6 +127,12 @@ return [
     'welcome_body' => 'Puiku, :name! Sėkmingai baigėte pirmą pažintį su platforma. Smagaus naudojimosi!',
     'test_notification_title' => 'Bandomasis pranešimas',
     'test_notification_body' => 'Tai yra bandomasis pranešimas! Push pranešimai veikia.',
+
+    // Test email
+    'test_email_button' => 'Siųsti bandomąjį laišką',
+    'test_email_hint' => 'Laiškas bus išsiųstas išsaugotais adresais. Pirma išsaugokite pakeitimus.',
+    'test_email_sent' => 'Bandomasis laiškas išsiųstas: :emails',
+    'test_email_failed' => 'Nepavyko išsiųsti laiško: :error',
 
     // Actions
     'action_view_comment' => 'Peržiūrėti komentarą',

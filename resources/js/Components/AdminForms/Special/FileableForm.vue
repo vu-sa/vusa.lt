@@ -20,7 +20,7 @@
     </FadeTransition>
     <div class="mt-4 space-y-4">
       <div class="space-y-2">
-        <Label>Objektas</Label>
+        <Label>{{ $t('forms.fields.fileable_object') }}</Label>
         <Popover v-model:open="popoverOpen">
           <PopoverTrigger as-child>
             <Button
@@ -29,7 +29,7 @@
               class="w-full justify-between font-normal"
               :class="{ 'text-muted-foreground': !selectedFileable }"
             >
-              <span class="truncate">{{ selectedPath || 'Pasirink instituciją, susitikimą, etc.' }}</span>
+              <span class="truncate">{{ selectedPath || $t('forms.placeholders.select_fileable') }}</span>
               <div class="ml-auto flex shrink-0 items-center gap-1">
                 <button
                   v-if="selectedFileable"
@@ -46,7 +46,7 @@
           <PopoverContent class="w-[--reka-popover-trigger-width] p-0" align="start">
             <div class="flex flex-col">
               <div class="border-b p-2">
-                <Input v-model="filterText" placeholder="Ieškoti..." class="h-8" />
+                <Input v-model="filterText" :placeholder="$t('forms.placeholders.search')" class="h-8" />
               </div>
               <ScrollArea class="max-h-72">
                 <Tree
@@ -62,7 +62,7 @@
                 />
                 <div v-else class="flex items-center justify-center p-4 text-sm text-muted-foreground">
                   <Spinner v-if="isFetching" class="size-4" />
-                  <span v-else>Nėra pasirinkimų</span>
+                  <span v-else>{{ $t('forms.helpers.no_options') }}</span>
                 </div>
               </ScrollArea>
             </div>
@@ -70,7 +70,7 @@
         </Popover>
       </div>
       <Button type="button" @click="handleClick">
-        Pateikti
+        {{ $t('forms.submit') }}
       </Button>
     </div>
   </div>
@@ -79,6 +79,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useFetch } from '@vueuse/core';
+import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronsUpDown, X } from 'lucide-vue-next';
 
 import { Button } from '@/Components/ui/button';
@@ -139,12 +140,12 @@ watch([fileablesData, isFetching], ([data, fetching]) => {
 
     treeOptions.value = [
       {
-        label: 'Institucijos',
+        label: $t('forms.fields.institutions'),
         key: 'institutions',
         children: institutionOptions,
       },
       {
-        label: 'Tipai',
+        label: $t('forms.fields.types'),
         key: 'types',
         children: typeOptions,
       },

@@ -15,10 +15,13 @@ export const badgeVariants = cva(
         destructive:
           'border-transparent bg-red-500 text-zinc-50 hover:bg-red-500/80 dark:bg-red-900 dark:text-zinc-50 dark:hover:bg-red-900/80',
         outline: 'text-zinc-950 dark:text-zinc-50',
+        // Soft, low-saturation tints — a table full of status badges should not shout.
         success:
-          'border-transparent bg-green-500 text-white hover:bg-green-500/80 dark:bg-green-600 dark:text-white dark:hover:bg-green-600/80',
+          'border-transparent bg-emerald-100 text-emerald-700 hover:bg-emerald-100/80 dark:bg-emerald-900/30 dark:text-emerald-300 dark:hover:bg-emerald-900/20',
         warning:
-          'border-transparent bg-amber-500 text-white hover:bg-amber-500/80 dark:bg-amber-600 dark:text-white dark:hover:bg-amber-600/80',
+          'border-transparent bg-amber-100 text-amber-700 hover:bg-amber-100/80 dark:bg-amber-900/30 dark:text-amber-300 dark:hover:bg-amber-900/20',
+        rose:
+          'border-transparent bg-rose-100 text-rose-700 hover:bg-rose-100/80 dark:bg-rose-900/30 dark:text-rose-300 dark:hover:bg-rose-900/20',
       },
       size: {
         default: 'px-2.5 py-0.5 text-xs',

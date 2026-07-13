@@ -252,8 +252,13 @@ const globalFilter = ref(props.globalFilter || '');
 const columnVisibility = ref<VisibilityState>({});
 const rowSelection = ref<RowSelectionState>(props.rowSelectionState || props.initialRowSelection || {});
 
-// Create local pagination state that can be controlled externally
-const pagination = ref<PaginationState>({
+/**
+ * Local pagination state. Deliberately NOT named `pagination`: a setup binding of that name
+ * shadows the `pagination` prop inside the template, which silently made the
+ * `v-if="pagination === true"` on the pagination controls compare a state object to `true` —
+ * so client-side pagination controls never rendered.
+ */
+const paginationState = ref<PaginationState>({
   pageIndex: props.externalPagination?.pageIndex || 0,
   pageSize: props.externalPagination?.pageSize || props.pageSize || 10,
 });
@@ -274,7 +279,7 @@ const scrollTableToTop = () => {
   });
 };
 
-watch(pagination, (newVal, oldVal) => {
+watch(paginationState, (newVal, oldVal) => {
   if (isTableMounted.value && oldVal && newVal.pageIndex !== oldVal.pageIndex) {
     scrollTableToTop();
   }
@@ -290,10 +295,10 @@ watch(() => props.externalSorting, (newVal) => {
 // Watch for external pagination changes
 watch(() => props.externalPagination, (newVal) => {
   if (newVal && (
-    newVal.pageIndex !== pagination.value.pageIndex
-    || newVal.pageSize !== pagination.value.pageSize
+    newVal.pageIndex !== paginationState.value.pageIndex
+    || newVal.pageSize !== paginationState.value.pageSize
   )) {
-    pagination.value = newVal;
+    paginationState.value = newVal;
   }
 }, { immediate: true });
 
@@ -369,12 +374,12 @@ const tableOptions = computed(() => {
 
     onPaginationChange: (updaterOrValue) => {
       if (typeof updaterOrValue === 'function') {
-        pagination.value = updaterOrValue(pagination.value);
+        paginationState.value = updaterOrValue(paginationState.value);
       }
       else {
-        pagination.value = updaterOrValue;
+        paginationState.value = updaterOrValue;
       }
-      emit('update:pagination', pagination.value);
+      emit('update:pagination', paginationState.value);
     },
 
     onColumnVisibilityChange: (updaterOrValue) => {
@@ -405,7 +410,7 @@ const tableOptions = computed(() => {
       get sorting() { return sorting.value; },
       get globalFilter() { return globalFilter.value; },
       get columnVisibility() { return columnVisibility.value; },
-      get pagination() { return pagination.value; },
+      get pagination() { return paginationState.value; },
       get rowSelection() { return rowSelection.value; },
     },
 

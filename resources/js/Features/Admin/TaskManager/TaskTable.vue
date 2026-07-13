@@ -121,7 +121,7 @@ const rowClassName = (row: Task) => {
     return 'opacity-60 bg-zinc-50/30 dark:bg-zinc-900/20';
   }
   if (row.is_overdue) {
-    return 'bg-red-50/20 dark:bg-red-950/5';
+    return 'bg-rose-50/20 dark:bg-rose-950/5';
   }
   return '';
 };
@@ -255,11 +255,7 @@ const formatDueDate = (dateString: string | null, isOverdue?: boolean) => {
  * Get due date badge variant and classes
  */
 const getDueDateClasses = (task: Task) => {
-  if (task.is_overdue) {
-    return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
-  }
-
-  if (task.due_date) {
+  if (task.due_date && !task.is_overdue) {
     const daysUntil = differenceInDays(parseISO(task.due_date), new Date());
     if (daysUntil <= 3 && daysUntil >= 0) {
       return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
@@ -583,9 +579,9 @@ const columns = [
 
       return (
         <div class="flex items-center gap-2">
-          {task.is_overdue && <AlertCircleIcon class="h-3.5 w-3.5 shrink-0 text-red-500" />}
+          {task.is_overdue && <AlertCircleIcon class="h-3.5 w-3.5 shrink-0 text-rose-500" />}
           <Badge
-            variant={task.is_overdue ? 'destructive' : 'secondary'}
+            variant={task.is_overdue ? 'rose' : 'secondary'}
             class={`text-xs font-medium ${dueDateClasses}`}
           >
             {formattedDate}

@@ -8,7 +8,7 @@ return [
     'shadcn-accordion' => 'Akordeonas',
     'image-grid' => 'Nuotraukų tinklelis',
     'hero' => 'Antraštės sekcija',
-    'spotify-embed' => 'Spotify įterpimas',
+    'spotify-embed' => 'Spotify / Mixcloud įterpimas',
     'social-embed' => 'Facebook / Instagram įrašas',
     'number-stat-section' => 'Skaičių statistika',
     'news' => 'Naujienos',
@@ -82,7 +82,7 @@ return [
     'show_all_tenants' => 'Rodyti visų padalinių renginius',
     'show_all_tenants_description' => 'Įjungti, jei norite rodyti visų VU SA padalinių renginius',
     // Spotify
-    'spotify_url_hint' => 'Įklijuokite Spotify grojaraščio, albumo ar takelio nuorodą',
+    'spotify_url_hint' => 'Įklijuokite Spotify grojaraščio, albumo ar takelio, arba Mixcloud įrašo nuorodą',
     'preview' => 'Peržiūra',
     'valid_url' => 'Nuoroda atpažinta',
     // Flow graph

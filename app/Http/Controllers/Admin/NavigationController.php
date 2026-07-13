@@ -100,11 +100,14 @@ class NavigationController extends AdminController
 
     public function updateColumn(Request $request)
     {
-        $data = $request->all();
+        $data = $request->validate([
+            'id' => ['required', 'integer', 'exists:navigation,id'],
+            'direction' => ['required', 'string', 'in:left,right'],
+        ]);
 
-        $navigation = Navigation::find($data['id']);
+        $navigation = Navigation::findOrFail($data['id']);
 
-        // direction - left or right
+        $this->handleAuthorization('update', $navigation);
 
         $direction = $data['direction'];
 
@@ -137,10 +140,15 @@ class NavigationController extends AdminController
 
     public function updateOrder(Request $request)
     {
-        $data = $request->all();
+        $data = $request->validate([
+            'navigation' => ['required', 'array'],
+            'navigation.*.id' => ['required', 'integer', 'exists:navigation,id'],
+            'navigation.*.links' => ['sometimes', 'array'],
+        ]);
 
         foreach ($data['navigation'] as $key => $value) {
-            $navigation = Navigation::find($value['id']);
+            $navigation = Navigation::findOrFail($value['id']);
+            $this->handleAuthorization('update', $navigation);
             $navigation->order = $key;
             $navigation->save();
 
@@ -151,7 +159,8 @@ class NavigationController extends AdminController
                 $children = collect($children)->flatten(1)->toArray();
 
                 foreach ($children as $childKey => $child) {
-                    $childNavigation = Navigation::find($child['id']);
+                    $childNavigation = Navigation::findOrFail($child['id']);
+                    $this->handleAuthorization('update', $childNavigation);
                     $childNavigation->order = $childKey;
                     $childNavigation->save();
                 }

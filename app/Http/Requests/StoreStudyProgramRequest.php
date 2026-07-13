@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\DegreeEnum;
 use App\Models\StudyProgram;
+use App\Rules\TranslatableField;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -25,6 +26,7 @@ class StoreStudyProgramRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'name' => ['required', 'array', new TranslatableField(['lt'])],
             'name.lt' => 'required|string|max:255|unique:study_programs,name->lt',
             'name.en' => 'nullable|string|max:255',
             'degree' => ['required', 'string', DegreeEnum::getValidationRule()],

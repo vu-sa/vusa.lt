@@ -18,7 +18,7 @@
       <div v-if="taskStats" class="flex flex-wrap items-center gap-2">
         <Badge
           v-if="taskStats.overdue > 0"
-          variant="destructive"
+          variant="rose"
           class="gap-1 text-xs"
         >
           <AlertCircleIcon class="h-3 w-3" />

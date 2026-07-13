@@ -2,6 +2,7 @@
 
 use App\Models\Calendar;
 use App\Models\Document;
+use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\News;
@@ -9,6 +10,7 @@ use App\Models\Page;
 use App\Models\Pivots\AgendaItem;
 use App\Models\PublicInstitution;
 use App\Models\PublicMeeting;
+use App\Models\User;
 
 return [
 
@@ -269,13 +271,17 @@ return [
                         ['name' => 'institution_name_lt', 'type' => 'string', 'facet' => true, 'optional' => true, 'sort' => true],
                         ['name' => 'institution_name_en', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'tenant_shortname', 'type' => 'string', 'facet' => true, 'optional' => true],
+                        ['name' => 'institution_id', 'type' => 'string', 'optional' => true],
                         ['name' => 'document_date', 'type' => 'int64', 'facet' => true, 'sort' => true, 'optional' => true],
-                        ['name' => 'document_year', 'type' => 'string', 'infix' => true, 'optional' => true],
+                        ['name' => 'document_year', 'type' => 'string', 'infix' => true, 'facet' => true, 'optional' => true],
                         ['name' => 'document_date_formatted', 'type' => 'string', 'optional' => true, 'infix' => true],
                         ['name' => 'is_in_effect', 'type' => 'bool', 'facet' => true, 'optional' => true],
                         ['name' => 'anonymous_url', 'type' => 'string'],
                         ['name' => 'share_url', 'type' => 'string', 'optional' => true],
-                        ['name' => 'is_active', 'type' => 'bool'],
+                        ['name' => 'is_active', 'type' => 'bool', 'facet' => true],
+                        // Enhanced faceting fields (produced by Document::toSearchableArray)
+                        ['name' => 'content_type_category', 'type' => 'string', 'facet' => true, 'optional' => true],
+                        ['name' => 'language_code', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'sync_status', 'type' => 'string', 'sort' => true, 'optional' => true],
                         ['name' => 'checked_at', 'type' => 'int64', 'optional' => true, 'sort' => true],
                         ['name' => 'created_at', 'type' => 'int64'],
@@ -284,8 +290,8 @@ return [
                     'enable_nested_fields' => false,
                 ],
                 'search-parameters' => [
-                    'query_by' => 'title,summary,content_type,document_year,document_date_formatted',
-                    'query_by_weights' => '10,3,2,6,4',
+                    'query_by' => 'title,summary,content_type,institution_name_lt,institution_name_en,document_year,document_date_formatted',
+                    'query_by_weights' => '10,3,2,3,2,6,4',
                     'typo_tokens_threshold' => 1,
                     'num_typos' => 2,
                     'prioritize_exact_match' => true,
@@ -402,16 +408,20 @@ return [
                         ['name' => 'tenant_id', 'type' => 'int32', 'facet' => true, 'optional' => true],
                         ['name' => 'tenant_ids', 'type' => 'int32[]', 'facet' => true, 'optional' => true],
                         ['name' => 'tenant_shortname', 'type' => 'string', 'facet' => true, 'optional' => true],
+                        ['name' => 'type_titles', 'type' => 'string[]', 'facet' => true, 'optional' => true],
                         // Self-referential institution_ids for .own permission filtering
                         ['name' => 'institution_ids', 'type' => 'string[]', 'facet' => true],
+                        // Linked members and duties for discoverability
+                        ['name' => 'current_user_names', 'type' => 'string[]', 'optional' => true],
+                        ['name' => 'duty_names', 'type' => 'string[]', 'optional' => true],
                         ['name' => 'created_at', 'type' => 'int64'],
                     ],
                     'default_sorting_field' => 'created_at',
                     'enable_nested_fields' => false,
                 ],
                 'search-parameters' => [
-                    'query_by' => 'name_lt,name_en,short_name_lt,short_name_en,alias,email',
-                    'query_by_weights' => '10,8,6,4,3,2',
+                    'query_by' => 'name_lt,name_en,short_name_lt,short_name_en,alias,email,current_user_names,duty_names',
+                    'query_by_weights' => '10,8,6,4,3,2,4,5',
                     'typo_tokens_threshold' => 1,
                     'num_typos' => 2,
                     'prioritize_exact_match' => true,
@@ -469,6 +479,9 @@ return [
                         ['name' => 'is_public', 'type' => 'bool', 'facet' => true],
                         ['name' => 'is_recent', 'type' => 'bool', 'facet' => true],
 
+                        // Representatives attending the meeting
+                        ['name' => 'user_names', 'type' => 'string[]', 'optional' => true],
+
                         ['name' => 'created_at', 'type' => 'int64'],
                         ['name' => 'updated_at', 'type' => 'int64', 'sort' => true],
                     ],
@@ -476,8 +489,8 @@ return [
                     'enable_nested_fields' => false,
                 ],
                 'search-parameters' => [
-                    'query_by' => 'title,description,institution_name_lt,institution_name_en,institution_names,tenant_shortnames',
-                    'query_by_weights' => '10,5,4,4,3,3',
+                    'query_by' => 'title,description,institution_name_lt,institution_name_en,institution_names,tenant_shortnames,user_names',
+                    'query_by_weights' => '10,5,4,4,3,3,4',
                     'typo_tokens_threshold' => 1,
                     'num_typos' => 2,
                     'prioritize_exact_match' => true,
@@ -497,7 +510,7 @@ return [
                         // Decision fields (searchable content)
                         ['name' => 'student_vote', 'type' => 'string', 'optional' => true, 'facet' => true],
                         ['name' => 'decision', 'type' => 'string', 'optional' => true, 'facet' => true],
-                        ['name' => 'student_benefit', 'type' => 'string', 'optional' => true, 'infix' => true],
+                        ['name' => 'student_benefit', 'type' => 'string', 'optional' => true, 'infix' => true, 'facet' => true],
                         ['name' => 'brought_by_students', 'type' => 'bool', 'facet' => true],
 
                         // Tenant filtering (CRITICAL for scoped API keys)
@@ -535,8 +548,8 @@ return [
                     'enable_nested_fields' => false,
                 ],
                 'search-parameters' => [
-                    'query_by' => 'title,description,student_benefit,meeting_title',
-                    'query_by_weights' => '10,6,5,4',
+                    'query_by' => 'title,description,student_benefit,meeting_title,institution_name_lt,institution_name_en',
+                    'query_by_weights' => '10,6,5,4,3,3',
                     'typo_tokens_threshold' => 1,
                     'num_typos' => 2,
                     'prioritize_exact_match' => true,
@@ -575,8 +588,96 @@ return [
                     'enable_nested_fields' => false,
                 ],
                 'search-parameters' => [
-                    'query_by' => 'name_lt,name_en,description_lt,description_en,location',
-                    'query_by_weights' => '10,10,5,5,3',
+                    'query_by' => 'name_lt,name_en,description_lt,description_en,location,category_name',
+                    'query_by_weights' => '10,10,5,5,3,4',
+                    'typo_tokens_threshold' => 1,
+                    'num_typos' => 2,
+                    'prioritize_exact_match' => true,
+                    'prioritize_token_position' => true,
+                ],
+            ],
+
+            // Duties - All duty positions for authorized admin users (scoped by tenant_ids,
+            // which combines the home tenant with assignable tenants for cross-tenant access)
+            Duty::class => [
+                'collection-schema' => [
+                    'fields' => [
+                        ['name' => 'id', 'type' => 'string'],
+                        ['name' => 'name_lt', 'type' => 'string', 'infix' => true, 'sort' => true],
+                        ['name' => 'name_en', 'type' => 'string', 'infix' => true, 'sort' => true, 'optional' => true],
+                        ['name' => 'email', 'type' => 'string', 'optional' => true],
+
+                        // Tenant filtering (CRITICAL for scoped API keys)
+                        ['name' => 'tenant_ids', 'type' => 'int32[]', 'facet' => true],
+                        // Owning tenant — used to flag cross-tenant ("external") duties
+                        ['name' => 'home_tenant_id', 'type' => 'int32', 'facet' => true, 'optional' => true],
+                        ['name' => 'tenant_shortname', 'type' => 'string', 'facet' => true, 'optional' => true],
+
+                        // Institution info
+                        ['name' => 'institution_id', 'type' => 'string', 'optional' => true],
+                        ['name' => 'institution_name_lt', 'type' => 'string', 'infix' => true, 'optional' => true],
+                        ['name' => 'institution_name_en', 'type' => 'string', 'infix' => true, 'optional' => true],
+
+                        // Facets
+                        ['name' => 'type_titles', 'type' => 'string[]', 'facet' => true, 'optional' => true],
+
+                        // Members (for the detail pane). Names are searchable; the parallel
+                        // id arrays stay index-aligned so the pane can render clickable links.
+                        ['name' => 'current_user_names', 'type' => 'string[]', 'optional' => true],
+                        ['name' => 'current_user_ids', 'type' => 'string[]', 'index' => false, 'optional' => true],
+                        ['name' => 'current_users_count', 'type' => 'int32', 'sort' => true, 'optional' => true],
+                        ['name' => 'previous_user_names', 'type' => 'string[]', 'optional' => true],
+                        ['name' => 'previous_user_ids', 'type' => 'string[]', 'index' => false, 'optional' => true],
+
+                        ['name' => 'created_at', 'type' => 'int64', 'sort' => true],
+                    ],
+                    'default_sorting_field' => 'created_at',
+                    'enable_nested_fields' => false,
+                ],
+                'search-parameters' => [
+                    // Current members are weighted above previous ones for relevance.
+                    'query_by' => 'name_lt,name_en,email,institution_name_lt,institution_name_en,current_user_names,previous_user_names',
+                    'query_by_weights' => '10,8,4,4,3,6,4',
+                    'typo_tokens_threshold' => 1,
+                    'num_typos' => 2,
+                    'prioritize_exact_match' => true,
+                    'prioritize_token_position' => true,
+                ],
+            ],
+
+            // Users - Organization members scoped by tenant_ids derived from current duties
+            User::class => [
+                'collection-schema' => [
+                    'fields' => [
+                        ['name' => 'id', 'type' => 'string'],
+                        ['name' => 'name', 'type' => 'string', 'infix' => true, 'sort' => true],
+                        ['name' => 'email', 'type' => 'string', 'infix' => true, 'optional' => true],
+                        ['name' => 'phone', 'type' => 'string', 'optional' => true],
+
+                        // Tenant filtering (CRITICAL for scoped API keys)
+                        ['name' => 'tenant_ids', 'type' => 'int32[]', 'facet' => true, 'optional' => true],
+                        ['name' => 'tenant_shortname', 'type' => 'string', 'facet' => true, 'optional' => true],
+
+                        // Institution linkage for .own permission filtering
+                        ['name' => 'institution_ids', 'type' => 'string[]', 'facet' => true, 'optional' => true],
+
+                        // Duties (for search + the detail pane). Current duties are weighted
+                        // above previous ones; parallel id arrays stay index-aligned for links.
+                        ['name' => 'current_duty_names', 'type' => 'string[]', 'facet' => true, 'optional' => true],
+                        ['name' => 'current_duty_ids', 'type' => 'string[]', 'index' => false, 'optional' => true],
+                        ['name' => 'previous_duty_names', 'type' => 'string[]', 'facet' => true, 'optional' => true],
+                        ['name' => 'previous_duty_ids', 'type' => 'string[]', 'index' => false, 'optional' => true],
+                        ['name' => 'is_active', 'type' => 'bool', 'facet' => true],
+
+                        ['name' => 'created_at', 'type' => 'int64', 'sort' => true],
+                    ],
+                    'default_sorting_field' => 'created_at',
+                    'enable_nested_fields' => false,
+                ],
+                'search-parameters' => [
+                    // Current duties are weighted above previous ones for relevance.
+                    'query_by' => 'name,email,phone,current_duty_names,previous_duty_names',
+                    'query_by_weights' => '10,6,4,3,2',
                     'typo_tokens_threshold' => 1,
                     'num_typos' => 2,
                     'prioritize_exact_match' => true,

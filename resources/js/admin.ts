@@ -14,20 +14,11 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
 import { initPWA } from './Composables/usePWA';
 import { initProgress } from './Composables/useTutorialProgress';
+import { useCookieConsent } from './Composables/useCookieConsent';
 
 const AdminLayout = defineAsyncComponent(
   () => import('./Components/Layouts/AdminLayout.vue'),
 );
-
-const getPosthog = async () => {
-  let PosthogPlugin = null;
-
-  if (import.meta.env.PROD) {
-    PosthogPlugin = await import('./Plugins/posthog');
-  }
-
-  return PosthogPlugin;
-};
 
 const metaTitle
   = window.document.getElementsByTagName('title')[0]?.innerText || 'VU SA';
@@ -99,19 +90,15 @@ createInertiaApp({
       })
       .use(ZiggyVue);
 
-    const PosthogPlugin = getPosthog();
-
-    PosthogPlugin.then((module) => {
-      if (module) {
-        application.use(module.default);
-      }
-    });
-
     application.mount(el);
 
     // Initialize tutorial progress from server data after mounting
     // Inertia props are only available after the app is mounted
     initProgress();
+
+    // Load analytics only if the user has opted in (GDPR). Staff manage this via the
+    // account menu's cookie settings.
+    useCookieConsent().initAnalyticsFromConsent();
 
     delete el.dataset.page;
 

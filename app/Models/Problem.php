@@ -39,6 +39,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read Tenant $tenant
  * @property-read mixed $translations
  *
+ * @method static \Database\Factories\ProblemFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Problem newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Problem newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Problem onlyTrashed()

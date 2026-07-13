@@ -4,7 +4,9 @@ namespace App\Models\Pivots;
 
 use App\Models\Relationship;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
 
 /**
@@ -56,19 +58,23 @@ class Relationshipable extends MorphPivot
         ];
     }
 
-    public function relationshipable()
+    public function relationshipable(): MorphTo
     {
         return $this->morphTo('relationshipable', 'relationshipable_type', 'relationshipable_id');
     }
 
     // Ryšio gavėjas
-    public function related_model()
+    public function related_model(): MorphTo
     {
         return $this->morphTo('related_model', 'relationshipable_type');
     }
 
-    // Ryšys
-    public function relationship()
+    /**
+     * Ryšys
+     *
+     * @return BelongsTo<Relationship, $this>
+     */
+    public function relationship(): BelongsTo
     {
         return $this->belongsTo(Relationship::class);
     }

@@ -2,14 +2,14 @@
   <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
     <FormElement>
       <template #title>
-        Pagrindinė informacija
+        {{ $t('forms.context.main_info') }}
       </template>
       <template #description>
-        Šis navigacijos elementas yra pagrindinis, todėl kiti įprastų elementų nustatymai nėra pasiekiami.
+        {{ $t('forms.helpers.navigation_parent_info') }}
       </template>
       <div class="grid gap-3 lg:grid-cols-2">
-        <FormFieldWrapper id="name" label="Pavadinimas" required :error="form.errors.name">
-          <Input id="name" v-model="form.name" type="text" placeholder="Įrašyti pavadinimą..." />
+        <FormFieldWrapper id="name" :label="$t('forms.fields.name')" required :error="form.errors.name">
+          <Input id="name" v-model="form.name" type="text" :placeholder="$t('forms.placeholders.enter_title')" />
         </FormFieldWrapper>
       </div>
     </FormElement>

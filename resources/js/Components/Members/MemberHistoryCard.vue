@@ -13,7 +13,7 @@
           :href="route('users.edit', member.id)"
           class="flex-shrink-0 rounded-full ring-2 ring-transparent hover:ring-blue-500 transition-all"
         >
-          <UserPopover :user="member" :size="44" />
+          <UserPopover :user="member" :size="44" :clickable="false" />
         </Link>
 
         <!-- Main Info -->

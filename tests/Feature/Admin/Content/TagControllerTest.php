@@ -10,7 +10,7 @@ use App\Models\News;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
-    $this->tenant = Tenant::query()->inRandomOrder()->first();
+    $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
     $this->admin = makeTagAdmin($this->tenant);
 
@@ -309,6 +309,29 @@ describe('tag merging', function () {
         $targetTag->refresh();
         expect($targetTag->news)->toHaveCount(2);
         expect($targetTag->news->pluck('id')->toArray())->toContain($news1->id, $news2->id);
+    });
+
+    test('merging a news already on the target does not create a duplicate', function () {
+        $targetTag = Tag::factory()->create(['alias' => 'target-dedup']);
+        $sourceTag = Tag::factory()->create(['alias' => 'source-dedup']);
+
+        // The same news is attached to BOTH the target and the source.
+        $sharedNews = News::factory()->create();
+        $targetTag->news()->attach($sharedNews->id);
+        $sourceTag->news()->attach($sharedNews->id);
+
+        asUser($this->admin)
+            ->post(route('tags.processMerge'), [
+                'target_tag_id' => $targetTag->id,
+                'source_tag_ids' => [$sourceTag->id],
+            ])
+            ->assertRedirect(route('tags.index'));
+
+        $targetTag->refresh();
+        // No duplicate pivot row for the shared news.
+        expect($targetTag->news)->toHaveCount(1);
+        expect($targetTag->news->first()->id)->toBe($sharedNews->id);
+        expect(Tag::find($sourceTag->id))->toBeNull();
     });
 
     test('cannot merge tag into itself', function () {

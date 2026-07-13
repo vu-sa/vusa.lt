@@ -4,5 +4,8 @@ namespace App\Http\Requests;
 
 class IndexFormRequest extends BaseIndexRequest
 {
-    // Additional form-specific validation or methods can be added here
+    /** @var array<int, array{id: string, desc: bool}> */
+    protected array $defaultSorting = [
+        ['id' => 'publish_time', 'desc' => true],
+    ];
 }

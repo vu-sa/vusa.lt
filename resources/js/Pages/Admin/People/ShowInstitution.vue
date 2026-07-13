@@ -4,28 +4,20 @@
 
     <!-- Institution Hero -->
     <ShowPageHero
+      flat
       :title="institution.name"
       :subtitle="institution.short_name"
     >
       <template #icon>
-        <span class="text-lg font-medium text-zinc-600 dark:text-zinc-300">
-          {{ getInitials(institution.name) }}
-        </span>
+        <InstitutionIconFilled class="h-6 w-6 sm:h-7 sm:w-7 text-zinc-600 dark:text-zinc-300" />
       </template>
       <template #badge>
+        <Badge v-if="primaryType" variant="secondary" class="text-xs">
+          {{ primaryType }}
+        </Badge>
         <Badge v-if="institution.has_public_meetings" variant="outline" class="text-xs gap-1 text-green-600 border-green-300 dark:text-green-400 dark:border-green-700">
           <Globe class="h-3 w-3" />
           {{ $t('Vieši posėdžiai') }}
-        </Badge>
-        <!-- Urgency badge based on overall institution status -->
-        <Badge
-          v-if="overallUrgency !== 'neutral' && overallUrgency !== 'success'"
-          :variant="overallUrgency === 'danger' ? 'destructive' : 'secondary'"
-          class="text-xs gap-1"
-        >
-          <AlertTriangle v-if="overallUrgency === 'danger'" class="h-3 w-3" />
-          <AlertCircle v-else class="h-3 w-3" />
-          {{ overallUrgency === 'danger' ? $t('Reikia dėmesio') : $t('Perspėjimas') }}
         </Badge>
       </template>
       <template #info>
@@ -93,34 +85,45 @@
 
     <!-- Main Content -->
     <Tabs v-model="currentTab" class="mt-6">
-      <TabsList class="gap-2 mb-4">
+      <TabsList class="mb-4">
         <TabsTrigger value="overview">
           {{ $t('Apžvalga') }}
         </TabsTrigger>
         <TabsTrigger value="duties">
-          {{ $t('Pareigos') }} ({{ institution.duties?.length || 0 }})
+          {{ $t('Pareigos') }}
+          <span v-if="institution.duties?.length" class="ml-1.5 text-xs font-normal text-zinc-400 dark:text-zinc-500">
+            {{ institution.duties.length }}
+          </span>
         </TabsTrigger>
         <TabsTrigger value="meetings">
-          {{ $t('Susitikimai') }} ({{ institution.meetings?.length || 0 }})
+          {{ $t('Susitikimai') }}
+          <span v-if="institution.meetings?.length" class="ml-1.5 text-xs font-normal text-zinc-400 dark:text-zinc-500">
+            {{ institution.meetings.length }}
+          </span>
         </TabsTrigger>
         <TabsTrigger value="files">
           {{ $t('Failai') }}
         </TabsTrigger>
         <TabsTrigger value="tasks">
           {{ $t('Užduotys') }}
-          <span v-if="institution.allTasks?.length" class="ml-1.5 text-xs opacity-70">
-            ({{ institution.allTasks.length }})
+          <span v-if="institution.allTasks?.length" class="ml-1.5 text-xs font-normal text-zinc-400 dark:text-zinc-500">
+            {{ institution.allTasks.length }}
           </span>
         </TabsTrigger>
         <TabsTrigger value="related" :disabled="relatedInstitutionCount === 0">
           {{ $t('Susijusios institucijos') }}
+        </TabsTrigger>
+        <TabsTrigger value="discussion">
+          {{ $t('Diskusija') }}
+          <span v-if="institution.comments_count" class="ml-1.5 text-xs font-normal text-zinc-400 dark:text-zinc-500">
+            {{ institution.comments_count }}
+          </span>
         </TabsTrigger>
       </TabsList>
 
       <TabsContent value="overview" class="space-y-6">
         <InstitutionOverviewSection
           :institution
-          :activities="recentActivity"
           :can-edit-members="canManageMembers"
           @navigate-tab="navigateToTab"
           @schedule-meeting="showMeetingModal = true"
@@ -135,39 +138,12 @@
       <TabsContent value="duties" class="space-y-6">
         <div class="space-y-4">
           <div v-if="institution.duties?.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card v-for="duty in sortedDuties" :key="duty.id" class="hover:shadow-md transition-shadow cursor-pointer"
-              @click="router.visit(route('duties.show', duty.id))">
-              <CardContent class="p-4">
-                <div class="flex items-start justify-between">
-                  <div class="flex-1">
-                    <h3 class="font-bold text-zinc-900 dark:text-zinc-100 mb-2">
-                      {{ duty.name }}
-                    </h3>
-
-                    <!-- Current Members -->
-                    <div class="flex items-center gap-3 mb-2">
-                      <UsersAvatarGroup :users="duty.current_users" :max="3" :size="24" />
-
-                      <span class="text-xs text-zinc-500 dark:text-zinc-400">
-                        {{ duty.current_users?.length || 0 }} / {{ duty.places_to_occupy || 0 }} {{ $t('užimta') }}
-                      </span>
-                    </div>
-
-                    <!-- Status Badge -->
-                    <div class="flex items-center gap-2">
-                      <Badge :variant="getDutyStatusVariant(duty)" class="text-xs">
-                        {{ getDutyStatusText(duty) }}
-                      </Badge>
-                      <span v-if="duty.email" class="text-xs text-zinc-500 dark:text-zinc-400">
-                        {{ duty.email }}
-                      </span>
-                    </div>
-                  </div>
-
-                  <ChevronRight class="h-4 w-4 text-zinc-400" />
-                </div>
-              </CardContent>
-            </Card>
+            <DutySummaryCard
+              v-for="duty in sortedDuties"
+              :key="duty.id"
+              :duty="duty"
+              :show-institution="false"
+            />
           </div>
 
           <!-- Empty State -->
@@ -301,6 +277,10 @@
       </TabsContent>
 
       <!-- Related Institutions Tab -->
+      <TabsContent value="discussion" class="space-y-6">
+        <DiscussionPanel commentable-type="institution" :commentable-id="institution.id" />
+      </TabsContent>
+
       <TabsContent value="related" class="space-y-6">
         <RelatedInstitutions :institution />
       </TabsContent>
@@ -332,8 +312,6 @@ import {
   Bell,
   BellOff,
   Loader2,
-  AlertTriangle,
-  AlertCircle,
   FileCheck,
   ClipboardCheck,
   Trash2,
@@ -350,10 +328,12 @@ import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import MeetingOutcomeIndicators from '@/Components/Public/Search/MeetingOutcomeIndicators.vue';
 import InstitutionOverviewSection from '@/Components/Institutions/InstitutionOverviewSection.vue';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
+import { DutySummaryCard } from '@/Components/Duties';
 
 // UI Components
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import DiscussionPanel from '@/Components/Discussions/DiscussionPanel.vue';
+import { Card, CardContent } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
@@ -362,7 +342,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Comp
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { useInstitutionSubscription } from '@/Pages/Admin/Dashboard/Composables/useInstitutionSubscription';
 import { useShowPageData } from '@/Composables/useShowPageData';
-import { useInstitutionUrgency } from '@/Composables/useInstitutionUrgency';
 import { InstitutionIconFilled } from '@/Components/icons';
 
 const props = defineProps<{
@@ -375,7 +354,7 @@ const props = defineProps<{
 }>();
 
 // State - use shared composable for tab persistence and deferred rendering
-const { currentTab, deferredContentReady, navigateToTab } = useShowPageData({
+const { currentTab, navigateToTab } = useShowPageData({
   tabKey: 'institution',
   entityId: props.institution.id,
   defaultTab: 'overview',
@@ -385,8 +364,7 @@ const showMeetingModal = ref(false);
 const showCheckInModal = ref(false);
 const showAddMemberModal = ref(false);
 
-// Urgency calculations for hero badge
-const { overallUrgency } = useInstitutionUrgency(() => props.institution);
+
 
 // Subscription state
 const isFollowed = ref(props.subscription?.is_followed ?? false);
@@ -460,21 +438,9 @@ const relatedInstitutionCount = computed(() => {
 // Note: totalPositions, lastMeeting, daysSinceLastMeeting, isOverdue, and periodicityStatusColor
 // are now calculated in useInstitutionUrgency composable and InstitutionOverviewSection
 
-const getInitials = (name?: string) => {
-  if (!name) return 'IN';
-  const words = name.split(' ').filter(word => word.length > 0);
-  if (words.length >= 2) {
-    return (words[0][0] + words[1][0]).toUpperCase();
-  }
-  if (words.length === 1) {
-    return words[0].substring(0, 2).toUpperCase();
-  }
-  return 'IN';
-};
-
-const recentActivity = computed(() => {
-  // This would come from the backend - placeholder for now
-  return [];
+const primaryType = computed(() => {
+  const type = props.institution.types?.[0];
+  return typeof type?.title === 'string' ? type.title : null;
 });
 
 // Permissions
@@ -537,26 +503,6 @@ const getMeetingTitle = (meeting: App.Entities.Meeting) => {
   }
   const institutionName = props.institution.name || 'Institucijos';
   return `${institutionName} ${$t('posėdis')}`;
-};
-
-const getDutyStatusVariant = (duty: App.Entities.Duty) => {
-  const currentCount = duty.current_users?.length || 0;
-  const maxCount = duty.places_to_occupy || 0;
-
-  if (currentCount === 0) return 'outline';
-  if (currentCount < maxCount) return 'secondary';
-  if (currentCount === maxCount) return 'default';
-  return 'destructive'; // Exceeds limit
-};
-
-const getDutyStatusText = (duty: App.Entities.Duty) => {
-  const currentCount = duty.current_users?.length || 0;
-  const maxCount = duty.places_to_occupy || 0;
-
-  if (currentCount === 0) return $t('Neužimta');
-  if (currentCount < maxCount) return $t('Dalinai užimta');
-  if (currentCount === maxCount) return $t('Pilnai užimta');
-  return $t('Viršija limitą');
 };
 
 </script>

@@ -20,6 +20,7 @@ import { TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import type { IndexTablePageProps } from '@/Types/TableConfigTypes';
+import type { IndexTablePageInstance } from '@/Types/TableConfigTypes';
 
 const props = defineProps<{
   memberships: {
@@ -40,7 +41,7 @@ const props = defineProps<{
 const modelName = 'memberships';
 const entityName = 'membership';
 
-const indexTablePageRef = ref<any>(null);
+const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
 
 const getRowId = (row: App.Entities.Membership) => {
   return `membership-${row.id}`;
@@ -78,7 +79,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Membership>>(() =>
   pageSize: props.memberships.meta.per_page,
 
   initialFilters: props.filters,
-  initialSorting: props.sorting,
+    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'name', desc: false }],
   enableFiltering: true,
   enableColumnVisibility: false,
   enableRowSelection: false,

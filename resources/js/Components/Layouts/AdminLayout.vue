@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-background">
+  <div class="bg-background font-admin">
     <Head :title />
 
     <!-- Staging environment warning banner -->

@@ -34,7 +34,7 @@
                 <div class="inline-flex items-center" :class="textClasses(link)">
                   <Icon v-if="link.icon" :icon="`fluent:${link.icon}`" class="mr-2 size-5" />
                   {{ link.name }}
-                  <Badge v-if="link.small_text" variant="destructive" class="ml-2 rounded-full px-2 py-0 text-[10px]">
+                  <Badge v-if="link.small_text" variant="rose" class="ml-2 rounded-full px-2 py-0 text-[10px]">
                     {{ link.small_text }}
                   </Badge>
                 </div>

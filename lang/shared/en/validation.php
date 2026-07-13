@@ -157,6 +157,12 @@ return [
     |
     */
 
+    'translatable' => [
+        'array' => 'The :attribute field must be provided with translations.',
+        'any' => 'The :attribute field must have a translation in at least one of: :locales.',
+        'all' => 'The :attribute field must have translations in all of: :locales.',
+    ],
+
     'custom' => [
         'attribute-name' => [
             'rule-name' => 'custom-message',

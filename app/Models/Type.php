@@ -8,6 +8,7 @@ use App\Models\Pivots\Relationshipable;
 use App\Models\Traits\HasContentRelationships;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTranslations;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -49,18 +50,18 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\TypeFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Type forDuties()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Type forInstitutions()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Type newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Type newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Type onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Type query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Type whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Type whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Type whereLocale(string $column, string $locale)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Type whereLocales(string $column, array $locales)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Type withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Type withoutTrashed()
+ * @method static Builder<static>|Type forDuties()
+ * @method static Builder<static>|Type forInstitutions()
+ * @method static Builder<static>|Type newModelQuery()
+ * @method static Builder<static>|Type newQuery()
+ * @method static Builder<static>|Type onlyTrashed()
+ * @method static Builder<static>|Type query()
+ * @method static Builder<static>|Type whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|Type whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|Type whereLocale(string $column, string $locale)
+ * @method static Builder<static>|Type whereLocales(string $column, array $locales)
+ * @method static Builder<static>|Type withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|Type withoutTrashed()
  *
  * @mixin \Eloquent
  */
@@ -192,7 +193,11 @@ class Type extends Model implements SharepointFileableContract
     /**
      * Scope to filter types for Institutions only.
      */
-    public function scopeForInstitutions($query)
+    /**
+     * @param  Builder<Type>  $query
+     * @return Builder<Type>
+     */
+    public function scopeForInstitutions(Builder $query): Builder
     {
         return $query->where('model_type', Institution::class);
     }

@@ -218,7 +218,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Meeting>>(() => {
 
     // Advanced features
     initialFilters: props.filters,
-    initialSorting: props.sorting,
+    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'start_time', desc: true }],
     enableFiltering: true,
     enableColumnVisibility: true,
     allowToggleDeleted: true,

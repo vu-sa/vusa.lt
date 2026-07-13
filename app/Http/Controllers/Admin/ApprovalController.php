@@ -6,6 +6,7 @@ use App\Contracts\Approvable;
 use App\Enums\ApprovalDecision;
 use App\Enums\ModelEnum;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Concerns\ApiResponses;
 use App\Models\Approval;
 use App\Models\Traits\HasApprovals;
 use App\Services\ApprovalService;
@@ -16,6 +17,8 @@ use Spatie\Enum\Laravel\Rules\EnumRule;
 
 class ApprovalController extends AdminController
 {
+    use ApiResponses;
+
     public function __construct(
         public Authorizer $authorizer,
         protected ApprovalService $approvalService
@@ -123,6 +126,57 @@ class ApprovalController extends AdminController
     }
 
     /**
+     * Fully resolve items — advance them straight to their final approved state.
+     *
+     * Housekeeping for stale requests: closing out something nobody ever collected should not mean
+     * clicking approve, hand over and mark returned in sequence. Each intermediate transition is
+     * still recorded, so the history shows what happened.
+     */
+    public function resolve(Request $request)
+    {
+        $validated = $request->validate([
+            'approvable_type' => ['required', new EnumRule(ModelEnum::class)],
+            'approvable_ids' => 'required|array|min:1',
+            'approvable_ids.*' => 'required|string',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        $user = auth()->user();
+        $notes = $validated['notes'] ?? null;
+
+        $resolved = 0;
+        $errors = [];
+
+        foreach ($validated['approvable_ids'] as $id) {
+            $approvable = $this->resolveApprovable($validated['approvable_type'], $id);
+
+            if (! $approvable) {
+                continue;
+            }
+
+            try {
+                if ($this->approvalService->fastForward($approvable, $user, $notes)->isNotEmpty()) {
+                    $resolved++;
+                }
+            } catch (\InvalidArgumentException $e) {
+                $errors[] = $e->getMessage();
+            }
+        }
+
+        if ($resolved === 0) {
+            return back()->with('error', $errors[0] ?? __('Nepavyko užbaigti nė vieno elemento.'));
+        }
+
+        $message = __(':count elementų užbaigta.', ['count' => $resolved]);
+
+        if (! empty($errors)) {
+            $message .= ' '.__(':skipped praleista dėl klaidų.', ['skipped' => count($errors)]);
+        }
+
+        return back()->with('success', $message);
+    }
+
+    /**
      * Resolve the approvable model from type and ID.
      */
     protected function resolveApprovable(string $type, string $id)
@@ -172,7 +226,7 @@ class ApprovalController extends AdminController
         $approvable = $this->resolveApprovable($validated['approvable_type'], $validated['approvable_id']);
 
         if (! $approvable) {
-            return response()->json(['error' => 'Model not found'], 404);
+            return $this->jsonNotFound('Model not found');
         }
 
         $approvals = $approvable->approvals()
@@ -180,6 +234,6 @@ class ApprovalController extends AdminController
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return response()->json(['approvals' => $approvals]);
+        return $this->jsonSuccess($approvals);
     }
 }
