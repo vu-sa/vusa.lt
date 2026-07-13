@@ -53,12 +53,12 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ExternalLink, Pencil } from 'lucide-vue-next';
 
 import { formatSearchDate } from '../../Utils/searchHitMappers';
-import { resolveTenantSubdomain } from '../../Utils/publicUrl';
 import { stripHtml } from '../../Utils/html';
 
 import DetailRow from './DetailRow.vue';
 import DetailLayout from './DetailLayout.vue';
 
+import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import { NewsIcon } from '@/Components/icons';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';

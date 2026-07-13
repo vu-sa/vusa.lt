@@ -163,7 +163,14 @@ import type { ResourceSearchResult } from '@/Shared/Search/types';
 
 interface ResourcePreviewData {
   upcoming_reservations: Array<{ id: string; name: string; quantity: number; state: string; start_time: number | null; end_time: number | null }>;
-  managers: Array<{ id: string; name: string; profile_photo_path: string | null }>;
+  managers: Array<{
+    id: string;
+    name: string;
+    email: string | null;
+    phone: string | null;
+    facebook_url: string | null;
+    profile_photo_path: string | null;
+  }>;
 }
 
 const props = withDefaults(defineProps<{

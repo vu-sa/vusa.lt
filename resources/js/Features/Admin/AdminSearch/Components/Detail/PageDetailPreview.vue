@@ -49,12 +49,12 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ExternalLink, Pencil } from 'lucide-vue-next';
 
-import { resolveTenantSubdomain } from '../../Utils/publicUrl';
 import { stripHtml } from '../../Utils/html';
 
 import DetailLayout from './DetailLayout.vue';
 import DetailRow from './DetailRow.vue';
 
+import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import { PageIcon } from '@/Components/icons';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';

@@ -134,6 +134,7 @@ import FormElement from './FormElement.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 import AdminForm from './AdminForm.vue';
 
+import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
 import Link24Regular from '~icons/fluent/link24-regular';
 import { Button } from '@/Components/ui/button';
@@ -291,10 +292,7 @@ const handlePageSelection = (value: string) => {
 
   const optionData = selectedOption.option;
 
-  const subdomain
-    = optionData.tenant?.alias === 'vusa'
-      ? 'www'
-      : optionData.tenant?.alias;
+  const subdomain = resolveTenantSubdomain(optionData.tenant?.id);
 
   if (form.linkType === 'page') {
     form.url = route('page', {

@@ -226,6 +226,7 @@ import { Label } from '@/Components/ui/label';
 import { MultiSelect } from '@/Components/ui/multi-select';
 import { OrderedListInput } from '@/Components/ui/ordered-list-input';
 import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
+import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { ImageUpload } from '@/Components/ui/upload';
@@ -320,7 +321,7 @@ const statusLinks = computed(() => {
 
   const newsLang = form.lang ?? 'lt';
   const url = route('news', {
-    subdomain: props.news.tenant.alias ?? 'www',
+    subdomain: resolveTenantSubdomain(props.news.tenant.id),
     lang: newsLang,
     newsString: newsLang === 'lt' ? 'naujiena' : 'news',
     news: form.permalink,

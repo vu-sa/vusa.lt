@@ -226,6 +226,7 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { OrderedListInput } from '@/Components/ui/ordered-list-input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { Textarea } from '@/Components/ui/textarea';
@@ -297,7 +298,7 @@ const fullPageUrl = computed(() => {
 
   const pageLang = form.lang ?? 'lt';
   return route('page', {
-    subdomain: props.page.tenant.alias ?? props.page.tenant.alias === 'vusa' ? 'www' : props.page.tenant.alias,
+    subdomain: resolveTenantSubdomain(props.page.tenant.id),
     lang: pageLang,
     permalink: form.permalink,
   });

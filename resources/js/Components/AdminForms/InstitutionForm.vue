@@ -309,8 +309,6 @@ import { computed, ref } from 'vue';
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Briefcase, GripVertical, List, Mail, Phone, Plus, Save } from 'lucide-vue-next';
-import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
-import ISimpleIconsInstagram from '~icons/simple-icons/instagram';
 
 import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
 import SimpleLocaleButton from '../Buttons/SimpleLocaleButton.vue';
@@ -323,6 +321,9 @@ import FormElement from './FormElement.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 import FormStatusHeader from './FormStatusHeader.vue';
 
+import ISimpleIconsInstagram from '~icons/simple-icons/instagram';
+import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
+import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { Button } from '@/Components/ui/button';
 import { Input, InputWithOverlappingLabel } from '@/Components/ui/input';
@@ -385,7 +386,7 @@ const statusLinks = computed(() => {
   links.push({
     url: route('contacts.institution', {
       institution: props.institution.id,
-      subdomain: tenant?.alias || 'www',
+      subdomain: resolveTenantSubdomain(tenant?.id),
       lang: page.props.app?.locale || 'lt',
     }),
     label: 'Public',

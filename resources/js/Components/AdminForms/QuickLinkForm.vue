@@ -134,6 +134,7 @@ import { Switch } from '@/Components/ui/switch';
 import { SingleSelect } from '@/Components/ui/single-select';
 import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
 import { CalendarIcon, CategoryIcon, InstitutionIcon, NewsIcon, PageIcon, QuickLinkIcon } from '@/Components/icons';
+import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import type { AdminCollection } from '@/Features/Admin/AdminSearch/Types/AdminSearchTypes';
@@ -303,10 +304,7 @@ const handlePageSelection = (value: string | null) => {
 
   const optionData = selectedOption.option;
 
-  const subdomain
-    = optionData.tenant?.alias === 'vusa'
-      ? 'www'
-      : optionData.tenant?.alias;
+  const subdomain = resolveTenantSubdomain(optionData.tenant?.id);
 
   if (form.type === 'page') {
     form.link = route('page', {

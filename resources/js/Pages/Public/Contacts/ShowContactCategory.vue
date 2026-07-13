@@ -18,7 +18,7 @@
                   <div class="flex flex-wrap gap-1.5">
                     <Button v-for="section in padaliniaiSections" :key="section.alias" :as="SmartLink" :href="route('contacts.alias', {
                       institution: section.alias,
-                      subdomain: institution.alias === 'vusa' ? 'www' : institution.alias,
+                      subdomain: resolveTenantSubdomain(institution.tenant?.id),
                       lang: $page.props.app.locale,
                     })" variant="ghost" size="sm"
                       class="text-xs border border-zinc-200 bg-white text-zinc-700 transition-colors hover:bg-zinc-50 hover:border-zinc-300 hover:text-zinc-900 focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-1 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600 dark:hover:border-zinc-500 dark:hover:text-zinc-100"
@@ -60,6 +60,7 @@ import SmartLink from '@/Components/Public/SmartLink.vue';
 import Button from '@/Components/ui/button/Button.vue';
 import StaggeredTransitionGroup from '@/Components/Transitions/StaggeredTransitionGroup.vue';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
+import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import { UserIcon, TypeIcon } from '@/Components/icons';
 
 const $page = usePage();
