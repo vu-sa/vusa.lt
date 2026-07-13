@@ -116,8 +116,9 @@ class TypesenseCollectionConfig
         ],
         'resources' => [
             'model' => Resource::class,
-            'permission' => 'resources.read.padalinys',
-            'description' => 'Reservable resources with tenant-based access',
+            'permission' => null, // Resources are visible to all authenticated users across tenants
+            'description' => 'Reservable resources accessible to all authenticated users across tenants',
+            'skip_tenant_filter' => true,
         ],
         'duties' => [
             'model' => Duty::class,

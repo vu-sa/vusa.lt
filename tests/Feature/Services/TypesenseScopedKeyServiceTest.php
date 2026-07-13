@@ -5,6 +5,7 @@ use App\Models\News;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\InstitutionAccessService;
 use App\Services\ModelAuthorizer;
 use App\Services\Typesense\TypesenseCollectionConfig;
 use App\Services\Typesense\TypesenseManager;
@@ -55,7 +56,8 @@ describe('TypesenseCollectionConfig', function () {
             ->toContain('test_pages')
             ->toContain('test_calendar')
             ->toContain('test_institutions')
-            ->toContain('test_documents');
+            ->toContain('test_documents')
+            ->toContain('test_resources');
     });
 
     test('returns correct permission for admin collections', function () {
@@ -73,6 +75,12 @@ describe('TypesenseCollectionConfig', function () {
         expect(TypesenseCollectionConfig::getPermissionForCollection('documents'))
             ->toBeNull();
         expect(TypesenseCollectionConfig::shouldSkipTenantFilter('documents'))
+            ->toBeTrue();
+
+        // Resources are visible to all authenticated users across tenants
+        expect(TypesenseCollectionConfig::getPermissionForCollection('resources'))
+            ->toBeNull();
+        expect(TypesenseCollectionConfig::shouldSkipTenantFilter('resources'))
             ->toBeTrue();
     });
 
@@ -103,7 +111,7 @@ describe('TypesenseScopedKeyService', function () {
         // Mock the Typesense client for this specific test
         $mockKeys = Mockery::mock(Keys::class);
         $mockKeys->shouldReceive('generateScopedSearchKey')
-            ->times(8) // Once for each admin collection (7) + 1 header key for multi_search
+            ->times(11) // Once for each admin collection (10) + 1 header key for multi_search
             ->andReturnUsing(function ($parentKey, $params) {
                 // Super admin should NOT have filter_by in params
                 expect($params)->not->toHaveKey('filter_by');
@@ -115,7 +123,7 @@ describe('TypesenseScopedKeyService', function () {
         $mockClient = Mockery::mock(Client::class);
         $mockClient->shouldReceive('getKeys')->andReturn($mockKeys);
 
-        $service = new TypesenseScopedKeyService($mockClient, app(ModelAuthorizer::class));
+        $service = new TypesenseScopedKeyService($mockClient, app(ModelAuthorizer::class), app(InstitutionAccessService::class));
 
         $result = $service->generateScopedKeysForUser($superAdmin);
 
@@ -133,7 +141,10 @@ describe('TypesenseScopedKeyService', function () {
             ->toHaveKey('pages')
             ->toHaveKey('calendar')
             ->toHaveKey('institutions')
-            ->toHaveKey('documents');
+            ->toHaveKey('documents')
+            ->toHaveKey('resources')
+            ->toHaveKey('duties')
+            ->toHaveKey('users');
 
         foreach ($result['collections'] as $collection) {
             expect($collection['has_access'])->toBeTrue();
@@ -165,7 +176,7 @@ describe('TypesenseScopedKeyService', function () {
         $mockClient = Mockery::mock(Client::class);
         $mockClient->shouldReceive('getKeys')->andReturn($mockKeys);
 
-        $service = new TypesenseScopedKeyService($mockClient, app(ModelAuthorizer::class));
+        $service = new TypesenseScopedKeyService($mockClient, app(ModelAuthorizer::class), app(InstitutionAccessService::class));
 
         // Clear cache for this user first
         TypesenseScopedKeyService::invalidateForUser($user->id);
@@ -175,9 +186,9 @@ describe('TypesenseScopedKeyService', function () {
         expect($result['is_super_admin'])->toBeFalse();
 
         // Check that collections with tenant filtering include the tenant's ID
-        // Skip 'documents' since it has no permission requirement and no tenant filtering
+        // Skip 'documents' and 'resources' since they have no tenant filtering
         foreach ($result['collections'] as $name => $collection) {
-            if ($collection['has_access'] && $name !== 'documents') {
+            if ($collection['has_access'] && ! in_array($name, ['documents', 'resources'])) {
                 expect($collection['tenant_ids'])->toContain($tenant->id);
             }
         }
@@ -191,15 +202,15 @@ describe('TypesenseScopedKeyService', function () {
         // Do not give any roles or permissions
 
         $mockKeys = Mockery::mock(Keys::class);
-        // Header key + documents key (documents is accessible to all authenticated users)
+        // Header key + documents key + resources key (documents and resources are accessible to all authenticated users)
         $mockKeys->shouldReceive('generateScopedSearchKey')
-            ->times(2)
+            ->times(3)
             ->andReturn('scoped-key');
 
         $mockClient = Mockery::mock(Client::class);
         $mockClient->shouldReceive('getKeys')->andReturn($mockKeys);
 
-        $service = new TypesenseScopedKeyService($mockClient, app(ModelAuthorizer::class));
+        $service = new TypesenseScopedKeyService($mockClient, app(ModelAuthorizer::class), app(InstitutionAccessService::class));
 
         // Clear cache
         TypesenseScopedKeyService::invalidateForUser($user->id);
@@ -207,9 +218,11 @@ describe('TypesenseScopedKeyService', function () {
         $result = $service->generateScopedKeysForUser($user);
 
         expect($result['is_super_admin'])->toBeFalse();
-        // User without permissions still gets documents (public collection)
+        // User without permissions still gets documents and resources (accessible to all authenticated users)
         expect($result['collections'])->toHaveKey('documents');
         expect($result['collections']['documents']['has_access'])->toBeTrue();
+        expect($result['collections'])->toHaveKey('resources');
+        expect($result['collections']['resources']['has_access'])->toBeTrue();
         // But should NOT have access to permission-protected collections
         expect($result['collections'])->not->toHaveKey('meetings');
         expect($result['collections'])->not->toHaveKey('news');
@@ -222,13 +235,13 @@ describe('TypesenseScopedKeyService', function () {
         $mockKeys = Mockery::mock(Keys::class);
         // Should only be called once due to caching
         $mockKeys->shouldReceive('generateScopedSearchKey')
-            ->times(8) // 7 admin collections + 1 header key, first call only
+            ->times(11) // 10 admin collections + 1 header key, first call only
             ->andReturn('scoped-key-cached');
 
         $mockClient = Mockery::mock(Client::class);
         $mockClient->shouldReceive('getKeys')->andReturn($mockKeys);
 
-        $service = new TypesenseScopedKeyService($mockClient, app(ModelAuthorizer::class));
+        $service = new TypesenseScopedKeyService($mockClient, app(ModelAuthorizer::class), app(InstitutionAccessService::class));
 
         // Clear cache first
         TypesenseScopedKeyService::invalidateForUser($superAdmin->id);
@@ -267,7 +280,10 @@ describe('TypesenseScopedKeyService', function () {
             ->toContain('test_pages')
             ->toContain('test_calendar')
             ->toContain('test_institutions')
-            ->toContain('test_documents');
+            ->toContain('test_documents')
+            ->toContain('test_resources')
+            ->toContain('test_duties')
+            ->toContain('test_users');
     });
 
     test('skip_tenant_filter collections get keys without filter_by', function () {
@@ -279,14 +295,13 @@ describe('TypesenseScopedKeyService', function () {
         // Documents are accessible to all authenticated users
 
         $mockKeys = Mockery::mock(Keys::class);
-        $documentKeyGenerated = false;
+        $unfilteredKeyCount = 0;
 
         $mockKeys->shouldReceive('generateScopedSearchKey')
-            ->andReturnUsing(function ($parentKey, $params) use (&$documentKeyGenerated) {
-                // Documents collection should NOT have filter_by since skip_tenant_filter is true
-                // We can't directly check which collection, but filter_by should be absent for documents
+            ->andReturnUsing(function ($parentKey, $params) use (&$unfilteredKeyCount) {
+                // Documents and resources collections should NOT have filter_by since skip_tenant_filter is true
                 if (! isset($params['filter_by'])) {
-                    $documentKeyGenerated = true;
+                    $unfilteredKeyCount++;
                 }
 
                 return 'scoped-key-'.uniqid();
@@ -295,15 +310,16 @@ describe('TypesenseScopedKeyService', function () {
         $mockClient = Mockery::mock(Client::class);
         $mockClient->shouldReceive('getKeys')->andReturn($mockKeys);
 
-        $service = new TypesenseScopedKeyService($mockClient, app(ModelAuthorizer::class));
+        $service = new TypesenseScopedKeyService($mockClient, app(ModelAuthorizer::class), app(InstitutionAccessService::class));
 
         TypesenseScopedKeyService::invalidateForUser($user->id);
 
         $result = $service->generateScopedKeysForUser($user);
 
-        // Documents should be in the result for any authenticated user (no permission required)
-        expect($result['collections'])->toHaveKey('documents');
-        expect($documentKeyGenerated)->toBeTrue();
+        // Documents and resources should be in the result for any authenticated user (no permission required)
+        expect($result['collections'])->toHaveKey('documents')
+            ->toHaveKey('resources');
+        expect($unfilteredKeyCount)->toBe(2);
     });
 });
 

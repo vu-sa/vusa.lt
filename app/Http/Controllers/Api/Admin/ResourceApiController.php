@@ -42,6 +42,9 @@ class ResourceApiController extends ApiController
                 ->map(fn ($user) => [
                     'id' => (string) $user->id,
                     'name' => $user->name,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                    'facebook_url' => $user->facebook_url,
                     'profile_photo_path' => $user->profile_photo_path,
                 ])->values(),
         ]);
