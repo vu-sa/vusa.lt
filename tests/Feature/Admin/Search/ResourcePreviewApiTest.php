@@ -59,7 +59,12 @@ test('preview lists upcoming active reservations', function () {
         ->assertJsonPath('data.upcoming_reservations.0.quantity', 2);
 });
 
-test('preview omits past reservations from active list', function () {
+/**
+ * An item whose window has ended but which nobody has returned, rejected or cancelled is still
+ * open business, so it stays in the active list — the preview flags it as unresolved instead of
+ * hiding it. It is not terminal either, so dropping it here would lose it from both lists.
+ */
+test('preview keeps ended active reservations in the active list', function () {
     $admin = makeAdminUser($this->tenant);
 
     $reservation = Reservation::factory()->create(['name' => 'Past event']);
@@ -73,7 +78,8 @@ test('preview omits past reservations from active list', function () {
     asUser($admin)
         ->getJson(route('api.v1.admin.resources.preview', $this->resource))
         ->assertStatus(200)
-        ->assertJsonPath('data.upcoming_reservations', []);
+        ->assertJsonPath('data.upcoming_reservations.0.name', 'Past event')
+        ->assertJsonPath('data.upcoming_reservations.0.state', 'reserved');
 });
 
 test('preview includes terminal past reservations in previous list', function () {

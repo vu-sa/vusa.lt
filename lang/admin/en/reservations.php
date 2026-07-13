@@ -80,6 +80,7 @@ return [
     'show' => [
         'no_resources_for_tenant' => 'No resources match the selected unit.',
     ],
+    'status_mixed' => 'Mixed',
     'unresolved_days' => '{1} :count day late|[2,*] :count days late',
     'unresolved_help' => 'The reservation window has ended, but the reservation is not formally closed yet.',
     'discrepancy' => [

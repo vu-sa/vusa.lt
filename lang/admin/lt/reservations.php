@@ -80,6 +80,7 @@ return [
     'show' => [
         'no_resources_for_tenant' => 'Pagal pasirinktą padalinį išteklių nerasta.',
     ],
+    'status_mixed' => 'Mišri',
     'unresolved_days' => '{1} vėluojama :count d.|[2,*] vėluojama :count d.',
     'unresolved_help' => 'Rezervacijos numatytas laikas jau pasibaigęs, bet ji dar neuždaryta.',
     'discrepancy' => [

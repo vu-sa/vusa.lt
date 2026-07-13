@@ -19,8 +19,14 @@ export type ReservationResourceState
     | 'rejected'
     | 'cancelled';
 
-/** Row status is always a real stored state. */
+/** A status you can filter or colour by — always a real stored state, never a derived one. */
 export type ReservationRowStatus = ReservationResourceState;
+
+/** One of the states a reservation's items are in, and how many of them are in it. */
+export interface ReservationStateCount {
+  state: ReservationResourceState;
+  count: number;
+}
 
 /** The three buckets the KPI strip reports, in the order work arrives. */
 export type KpiStatus = Extract<ReservationRowStatus, 'created' | 'lent' | 'returned'>;
@@ -128,40 +134,63 @@ function scopedPivots(reservation: DashboardReservation, options: ScopeOptions =
     .filter(pivot => !options.approvableOnly || pivot.approvable);
 }
 
+/** Every state, in the order items move through them. Orders the badge's breakdown. */
+const STATE_CHAIN: ReservationResourceState[] = [
+  'created',
+  'reserved',
+  'lent',
+  'returned',
+  'rejected',
+  'cancelled',
+];
+
 /**
- * Collapse a reservation's pivots into the single status shown on its row.
+ * Every state a reservation's items are in, with how many items sit in each.
  *
- * Returns the highest-priority actionable state present (`created`, then `reserved`, then `lent`),
- * or a terminal state once nothing is live. Returns null when the scope leaves no pivots at all
- * (an administrator looking at a reservation of foreign items).
+ * A reservation is a bundle: one item can be out on loan while another still waits for approval.
+ * Collapsing that to a single status hid half the work, so the row reports all of it and the UI
+ * marks a reservation with more than one state as mixed.
  *
- * "Unresolved" is intentionally not returned here — it is a lateness indicator, not a status.
+ * Empty when the scope leaves no pivots at all (an administrator looking at a reservation made up
+ * entirely of foreign items).
+ *
+ * "Unresolved" is intentionally not one of these — it is a lateness indicator, not a state.
  */
-export function getReservationRowStatus(
+export function getReservationStates(
   reservation: DashboardReservation,
   options: ScopeOptions = {},
-  now: Date = new Date(),
-): ReservationRowStatus | null {
-  const pivots = scopedPivots(reservation, options);
+): ReservationStateCount[] {
+  return summarizeStates(scopedPivots(reservation, options).map(pivot => pivot.state));
+}
 
-  if (pivots.length === 0) {
-    return null;
-  }
+/**
+ * The same breakdown from a bare list of item states, for callers holding an
+ * `App.Entities.Reservation` rather than the dashboard's payload shape.
+ */
+export function summarizeStates(states: ReservationResourceState[]): ReservationStateCount[] {
+  return STATE_CHAIN
+    .map(state => ({ state, count: states.filter(present => present === state).length }))
+    .filter(({ count }) => count > 0);
+}
 
-  for (const state of ACTIONABLE_STATES) {
-    if (pivots.some(pivot => pivot.state === state)) {
-      return state;
-    }
-  }
+/** Whether any of the reservation's items in scope are in this state. */
+function hasState(
+  reservation: DashboardReservation,
+  state: ReservationResourceState,
+  options: ScopeOptions = {},
+): boolean {
+  return scopedPivots(reservation, options).some(pivot => pivot.state === state);
+}
 
-  if (pivots.some(pivot => pivot.state === 'returned')) {
-    return 'returned';
-  }
-  if (pivots.some(pivot => pivot.state === 'rejected')) {
-    return 'rejected';
-  }
-
-  return 'cancelled';
+/**
+ * The stage the row's single primary button acts on: the earliest one still open
+ * (`created`, then `reserved`, then `lent`), so approvals are never left blocking a hand-over.
+ */
+function getPrimaryActionableState(
+  reservation: DashboardReservation,
+  options: ScopeOptions = {},
+): ReservationResourceState | null {
+  return ACTIONABLE_STATES.find(state => hasState(reservation, state, options)) ?? null;
 }
 
 /** Whether any scoped pivot is past its reserved window. */
@@ -186,27 +215,22 @@ export function reservationDaysUnresolved(
 /**
  * The action the row's primary button performs, and the pivots it will submit.
  *
- * A reservation can hold items in several states at once. The action deliberately follows the row's
- * *status*, so the badge and the button can never disagree.
+ * A reservation can hold items in several states at once — the badge reports them all, and the
+ * button acts on the earliest stage still open, submitting only the items actually in it.
  */
 export function getPrimaryAction(
   reservation: DashboardReservation,
-  now: Date = new Date(),
 ): { state: ReservationResourceState; pivotIds: string[] } | null {
-  const status = getReservationRowStatus(reservation, { approvableOnly: true }, now);
+  const state = getPrimaryActionableState(reservation, { approvableOnly: true });
 
-  if (status === null || !ACTIONABLE_STATES.includes(status)) {
+  if (state === null) {
     return null;
   }
 
   const matching = scopedPivots(reservation, { approvableOnly: true })
-    .filter(pivot => pivot.state === status);
+    .filter(pivot => pivot.state === state);
 
-  if (matching.length === 0) {
-    return null;
-  }
-
-  return { state: status, pivotIds: matching.map(pivot => String(pivot.id)) };
+  return { state, pivotIds: matching.map(pivot => String(pivot.id)) };
 }
 
 /** Pivot IDs in the given states that the current user may act on. Used by row and bulk actions. */
@@ -240,34 +264,33 @@ export function getRejectablePivotIds(reservation: DashboardReservation): string
   return getActionablePivotIds(reservation, ['created']);
 }
 
-/** A reservation still has open business in this scope. */
+/** A reservation still has open business in this scope: any of its items is yet to be finished. */
 export function isReservationActive(
   reservation: DashboardReservation,
   options: ScopeOptions = {},
-  now: Date = new Date(),
 ): boolean {
-  const status = getReservationRowStatus(reservation, options, now);
-
-  return status !== null && !TERMINAL_STATUSES.includes(status);
+  return scopedPivots(reservation, options).some(pivot => ACTIONABLE_STATES.includes(pivot.state));
 }
 
-/** Does a reservation pass the status dropdown / KPI filter? */
+/**
+ * Does a reservation pass the status dropdown / KPI filter?
+ *
+ * Membership, not equality: a reservation holding one item awaiting approval and another already
+ * out on loan is genuinely doing both, so it shows up under either filter.
+ */
 export function matchesStatusFilter(
   reservation: DashboardReservation,
   filter: StatusFilter,
   options: ScopeOptions = {},
-  now: Date = new Date(),
 ): boolean {
   if (filter === 'all') {
     return true;
   }
   if (filter === 'active') {
-    return isReservationActive(reservation, options, now);
+    return isReservationActive(reservation, options);
   }
 
-  const status = getReservationRowStatus(reservation, options, now);
-
-  return status === filter;
+  return hasState(reservation, filter, options);
 }
 
 /**
@@ -309,6 +332,10 @@ const DUE_SOON_HOURS = 48;
  * table, so "Lent 5" has to mean "5 rows appear when you click this". Item counts still appear in
  * the captions, where they inform rather than mislead.
  *
+ * Counted by membership, matching matchesStatusFilter(): a reservation with an item awaiting
+ * approval and another already out counts in both tiles, because clicking either one shows it.
+ * The tiles therefore need not sum to the number of rows.
+ *
  * It runs client-side, over the already search- and tenant-filtered list, so the numbers track
  * whatever the user has narrowed the table down to.
  */
@@ -317,20 +344,14 @@ export function computeReservationStats(
   options: ScopeOptions = {},
   now: Date = new Date(),
 ): ReservationStats {
-  const rows = reservations.map(reservation => ({
-    reservation,
-    status: getReservationRowStatus(reservation, options, now),
-  }));
-
-  const awaiting = rows.filter(row => row.status === 'created');
-  const lent = rows.filter(row => row.status === 'lent');
+  const awaiting = reservations.filter(reservation => hasState(reservation, 'created', options));
+  const lent = reservations.filter(reservation => hasState(reservation, 'lent', options));
 
   const dueSoonCutoff = new Date(now.getTime() + DUE_SOON_HOURS * 60 * 60 * 1000);
   const returnedCutoff = new Date(now.getTime() - RETURNED_WINDOW_DAYS * DAY_MS);
 
-  const returnedRecently = rows.filter(row =>
-    row.status === 'returned'
-    && scopedPivots(row.reservation, options).some((pivot) => {
+  const returnedRecently = reservations.filter(reservation =>
+    scopedPivots(reservation, options).some((pivot) => {
       if (pivot.state !== 'returned') {
         return false;
       }
@@ -342,29 +363,26 @@ export function computeReservationStats(
   );
 
   const lentQuantity = lent.reduce(
-    (total, row) => total + scopedPivots(row.reservation, options)
+    (total, reservation) => total + scopedPivots(reservation, options)
       .filter(pivot => pivot.state === 'lent')
       .reduce((sum, pivot) => sum + (pivot.quantity ?? 1), 0),
     0,
   );
 
-  const awaitingUnresolved = awaiting.filter(row => isReservationUnresolved(row.reservation, options, now));
-  const lentUnresolved = lent.filter(row => isReservationUnresolved(row.reservation, options, now));
-
   return {
     awaiting: awaiting.length,
-    awaitingDueSoon: awaiting.filter((row) => {
-      const start = new Date(row.reservation.start_time);
+    awaitingDueSoon: awaiting.filter((reservation) => {
+      const start = new Date(reservation.start_time);
 
       return start >= now && start <= dueSoonCutoff;
     }).length,
-    awaitingUnresolved: awaitingUnresolved.length,
+    awaitingUnresolved: awaiting.filter(reservation => isReservationUnresolved(reservation, options, now)).length,
     lent: lent.length,
     lentQuantity,
-    lentUnresolved: lentUnresolved.length,
+    lentUnresolved: lent.filter(reservation => isReservationUnresolved(reservation, options, now)).length,
     returnedLast30Days: returnedRecently.length,
-    maxDaysLate: rows.reduce(
-      (worst, row) => Math.max(worst, reservationDaysUnresolved(row.reservation, options, now)),
+    maxDaysLate: reservations.reduce(
+      (worst, reservation) => Math.max(worst, reservationDaysUnresolved(reservation, options, now)),
       0,
     ),
   };

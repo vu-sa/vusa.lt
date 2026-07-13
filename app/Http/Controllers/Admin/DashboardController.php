@@ -450,8 +450,8 @@ class DashboardController extends AdminController
      * $with = ['comments', 'approvals'], which has no business in a list payload.
      *
      * @param  SupportCollection<int, Reservation>  $reservations
-     * @param  SupportCollection<int, string>  $managedTenantIds
-     * @return array<int, array<string, mixed>>
+     * @param  SupportCollection<int, int>  $managedTenantIds
+     * @return list<array<string, mixed>>
      */
     private function serializeReservations(SupportCollection $reservations, SupportCollection $managedTenantIds, User $user): array
     {
@@ -465,43 +465,68 @@ class DashboardController extends AdminController
                 'start_time' => $reservation->start_time,
                 'end_time' => $reservation->end_time,
                 'created_at' => $reservation->created_at,
-                'users' => $reservation->users->map(fn (User $manager) => [
-                    'id' => $manager->id,
-                    'name' => $manager->name,
-                    'email' => $manager->email,
-                    'profile_photo_path' => $manager->profile_photo_path,
-                ])->values(),
-                'resources' => $reservation->resources->map(function (Resource $resource) use ($managedTenantIds, $isParticipant) {
-                    $pivot = $resource->pivot;
-                    $state = $pivot->state->getValue();
-
-                    return [
-                        'id' => $resource->id,
-                        'name' => $resource->name,
-                        'tenant' => $resource->tenant ? [
-                            'id' => $resource->tenant->id,
-                            'shortname' => $resource->tenant->shortname,
-                        ] : null,
-                        'pivot' => [
-                            'id' => $pivot->id,
-                            'reservation_id' => $pivot->reservation_id,
-                            'resource_id' => $pivot->resource_id,
-                            'start_time' => $pivot->start_time,
-                            'end_time' => $pivot->end_time,
-                            'returned_at' => $pivot->returned_at,
-                            // Fallback for returned_at, which is only stamped on items returned
-                            // since it started being written.
-                            'updated_at' => $pivot->updated_at,
-                            'quantity' => $pivot->quantity,
-                            'state' => $state,
-                            'state_properties' => $pivot->state_properties,
-                            'approvable' => $managedTenantIds->contains($resource->tenant_id),
-                            'cancellable' => $isParticipant && in_array($state, ['created', 'reserved'], true),
-                        ],
-                    ];
-                })->values(),
+                'users' => $reservation->users
+                    ->map(fn (User $manager) => $this->serializeReservationUser($manager))
+                    ->values()
+                    ->all(),
+                'resources' => $reservation->resources
+                    ->map(fn (Resource $resource) => $this->serializeReservationResource($resource, $managedTenantIds, $isParticipant))
+                    ->values()
+                    ->all(),
             ];
         })->values()->all();
+    }
+
+    /**
+     * Serialize one reserved resource, with the pivot the table acts on.
+     *
+     * @param  SupportCollection<int, int>  $managedTenantIds
+     * @return array<string, mixed>
+     */
+    private function serializeReservationResource(Resource $resource, SupportCollection $managedTenantIds, bool $isParticipant): array
+    {
+        $pivot = $resource->pivot;
+        $state = $pivot->state->getValue();
+
+        return [
+            'id' => $resource->id,
+            'name' => $resource->name,
+            'tenant' => [
+                'id' => $resource->tenant->id,
+                'shortname' => $resource->tenant->shortname,
+            ],
+            'pivot' => [
+                'id' => $pivot->id,
+                'reservation_id' => $pivot->reservation_id,
+                'resource_id' => $pivot->resource_id,
+                'start_time' => $pivot->start_time,
+                'end_time' => $pivot->end_time,
+                'returned_at' => $pivot->returned_at,
+                // Fallback for returned_at, which is only stamped on items returned
+                // since it started being written.
+                'updated_at' => $pivot->updated_at,
+                'quantity' => $pivot->quantity,
+                'state' => $state,
+                'state_properties' => $pivot->state_properties,
+                'approvable' => $managedTenantIds->contains($resource->tenant_id),
+                'cancellable' => $isParticipant && in_array($state, ['created', 'reserved'], true),
+            ],
+        ];
+    }
+
+    /**
+     * Serialize a single user attached to a reservation.
+     *
+     * @return array<string, mixed>
+     */
+    private function serializeReservationUser(User $user): array
+    {
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'profile_photo_path' => $user->profile_photo_path,
+        ];
     }
 
     public function userSettings()

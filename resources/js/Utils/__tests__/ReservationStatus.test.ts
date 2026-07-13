@@ -5,7 +5,7 @@ import {
   daysUnresolved,
   getPrimaryAction,
   getRejectablePivotIds,
-  getReservationRowStatus,
+  getReservationStates,
   isPivotPickupOverdue,
   isPivotUnresolved,
   isReservationSelectable,
@@ -84,39 +84,55 @@ describe('unresolved rules', () => {
   });
 });
 
-describe('getReservationRowStatus', () => {
+describe('getReservationStates', () => {
+  it('reports every state the items are in, counted, in chain order', () => {
+    const row = reservation([
+      pivot({ state: 'lent' }),
+      pivot({ state: 'created' }),
+      pivot({ state: 'lent' }),
+    ]);
+
+    expect(getReservationStates(row)).toEqual([
+      { state: 'created', count: 1 },
+      { state: 'lent', count: 2 },
+    ]);
+  });
+
   it('keeps the real state even when a loan is past its end time', () => {
     const row = reservation([
       pivot({ state: 'lent' }),
       pivot({ state: 'lent', end_time: '2026-07-01T10:00:00Z' }),
     ]);
 
-    expect(getReservationRowStatus(row, {}, NOW)).toBe('lent');
+    expect(getReservationStates(row)).toEqual([{ state: 'lent', count: 2 }]);
   });
 
-  it('only reports a terminal status once nothing is live', () => {
-    expect(getReservationRowStatus(reservation([pivot({ state: 'returned' })]), {}, NOW)).toBe('returned');
-    expect(getReservationRowStatus(
-      reservation([pivot({ state: 'returned' }), pivot({ state: 'reserved' })]),
-      {},
-      NOW,
-    )).toBe('reserved');
+  it('reports live and terminal states side by side rather than hiding one', () => {
+    const row = reservation([pivot({ state: 'returned' }), pivot({ state: 'reserved' })]);
+
+    expect(getReservationStates(row)).toEqual([
+      { state: 'reserved', count: 1 },
+      { state: 'returned', count: 1 },
+    ]);
   });
 
-  it('scopes the status to the pivots the administrator owns', () => {
+  it('scopes the states to the pivots the administrator owns', () => {
     const row = reservation([
       pivot({ state: 'created', approvable: false }),
       pivot({ state: 'lent', approvable: true }),
     ]);
 
-    expect(getReservationRowStatus(row, {}, NOW)).toBe('created');
-    expect(getReservationRowStatus(row, { approvableOnly: true }, NOW)).toBe('lent');
+    expect(getReservationStates(row)).toEqual([
+      { state: 'created', count: 1 },
+      { state: 'lent', count: 1 },
+    ]);
+    expect(getReservationStates(row, { approvableOnly: true })).toEqual([{ state: 'lent', count: 1 }]);
   });
 
-  it('returns null when the scope leaves no pivots', () => {
+  it('is empty when the scope leaves no pivots', () => {
     const foreign = reservation([pivot({ state: 'created', approvable: false })]);
 
-    expect(getReservationRowStatus(foreign, { approvableOnly: true }, NOW)).toBeNull();
+    expect(getReservationStates(foreign, { approvableOnly: true })).toEqual([]);
   });
 
   it('reports the worst lateness across the row', () => {
@@ -152,7 +168,7 @@ describe('getPrimaryAction', () => {
       pivot({ id: 'p-created', state: 'created' }),
     ]);
 
-    expect(getPrimaryAction(row, NOW)).toEqual({ state: 'created', pivotIds: ['p-created'] });
+    expect(getPrimaryAction(row)).toEqual({ state: 'created', pivotIds: ['p-created'] });
   });
 
   it('advances reserved items to hand over once nothing is pending', () => {
@@ -161,19 +177,22 @@ describe('getPrimaryAction', () => {
       pivot({ id: 'p-returned', state: 'returned' }),
     ]);
 
-    expect(getPrimaryAction(row, NOW)).toEqual({ state: 'reserved', pivotIds: ['p-reserved'] });
+    expect(getPrimaryAction(row)).toEqual({ state: 'reserved', pivotIds: ['p-reserved'] });
   });
 
-  it('always acts on the state the row badge reports', () => {
-    // A row holding an unresolved loan AND an uncollected reservation still badges as "lent" now;
-    // unresolved is only an indicator. The button follows the real state.
+  it('acts on the earliest open stage while the badge reports every state', () => {
+    // The badge no longer collapses to one state, so the button is free to unblock the earliest
+    // stage: an uncollected reservation is handed over before a loan that is merely running late.
     const row = reservation([
       pivot({ id: 'p-lent', state: 'lent', end_time: '2026-07-01T10:00:00Z' }),
       pivot({ id: 'p-reserved', state: 'reserved' }),
     ]);
 
-    expect(getReservationRowStatus(row, { approvableOnly: true }, NOW)).toBe('lent');
-    expect(getPrimaryAction(row, NOW)).toEqual({ state: 'lent', pivotIds: ['p-lent'] });
+    expect(getReservationStates(row, { approvableOnly: true })).toEqual([
+      { state: 'reserved', count: 1 },
+      { state: 'lent', count: 1 },
+    ]);
+    expect(getPrimaryAction(row)).toEqual({ state: 'reserved', pivotIds: ['p-reserved'] });
   });
 
   it('ignores pivots the administrator does not own', () => {
@@ -182,11 +201,11 @@ describe('getPrimaryAction', () => {
       pivot({ id: 'p-mine', state: 'lent', approvable: true }),
     ]);
 
-    expect(getPrimaryAction(row, NOW)).toEqual({ state: 'lent', pivotIds: ['p-mine'] });
+    expect(getPrimaryAction(row)).toEqual({ state: 'lent', pivotIds: ['p-mine'] });
   });
 
   it('returns null when there is nothing left to advance', () => {
-    expect(getPrimaryAction(reservation([pivot({ state: 'returned' })]), NOW)).toBeNull();
+    expect(getPrimaryAction(reservation([pivot({ state: 'returned' })]))).toBeNull();
   });
 });
 
@@ -197,17 +216,25 @@ describe('matchesStatusFilter', () => {
   const returned = reservation([pivot({ state: 'returned' })]);
 
   it('counts a late item by its real state, not as a separate unresolved filter', () => {
-    expect(matchesStatusFilter(lateLent, 'lent', {}, NOW)).toBe(true);
-    expect(matchesStatusFilter(lent, 'lent', {}, NOW)).toBe(true);
-    expect(matchesStatusFilter(pending, 'lent', {}, NOW)).toBe(false);
+    expect(matchesStatusFilter(lateLent, 'lent')).toBe(true);
+    expect(matchesStatusFilter(lent, 'lent')).toBe(true);
+    expect(matchesStatusFilter(pending, 'lent')).toBe(false);
   });
 
   it('hides terminal reservations from the active view', () => {
-    expect(matchesStatusFilter(pending, 'active', {}, NOW)).toBe(true);
-    expect(matchesStatusFilter(lateLent, 'active', {}, NOW)).toBe(true);
-    expect(matchesStatusFilter(returned, 'active', {}, NOW)).toBe(false);
+    expect(matchesStatusFilter(pending, 'active')).toBe(true);
+    expect(matchesStatusFilter(lateLent, 'active')).toBe(true);
+    expect(matchesStatusFilter(returned, 'active')).toBe(false);
 
-    expect(matchesStatusFilter(returned, 'all', {}, NOW)).toBe(true);
+    expect(matchesStatusFilter(returned, 'all')).toBe(true);
+  });
+
+  it('matches a mixed reservation under every state it holds', () => {
+    const mixed = reservation([pivot({ state: 'created' }), pivot({ state: 'lent' })]);
+
+    expect(matchesStatusFilter(mixed, 'created')).toBe(true);
+    expect(matchesStatusFilter(mixed, 'lent')).toBe(true);
+    expect(matchesStatusFilter(mixed, 'returned')).toBe(false);
   });
 });
 
@@ -227,6 +254,18 @@ describe('computeReservationStats', () => {
     expect(stats.lent).toBe(1);
     expect(stats.lentUnresolved).toBe(1);
     expect(stats.returnedLast30Days).toBe(1);
+  });
+
+  it('counts a mixed reservation in every tile it belongs to, so each tile matches its filter', () => {
+    // The row shows up when you click either tile, so both tiles have to count it — the tiles are
+    // per-state counts of rows, not a partition of them.
+    const rows = [reservation([pivot({ state: 'created' }), pivot({ state: 'lent', quantity: 3 })])];
+
+    const stats = computeReservationStats(rows, {}, NOW);
+
+    expect(stats.awaiting).toBe(1);
+    expect(stats.lent).toBe(1);
+    expect(stats.lentQuantity).toBe(3);
   });
 });
 

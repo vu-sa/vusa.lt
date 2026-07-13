@@ -134,7 +134,7 @@ import { Ban, Check, CheckCheck, Undo2, X } from 'lucide-vue-next';
 
 import ReservationBulkActionBar from '@/Components/Tables/ReservationBulkActionBar.vue';
 import ReservationPeriod from '@/Components/SmallElements/ReservationPeriod.vue';
-import ReservationResourceStateTag from '@/Components/Tag/ReservationResourceStateTag.vue';
+import ReservationStateSummary from '@/Components/Tag/ReservationStateSummary.vue';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
@@ -154,7 +154,7 @@ import {
   getCancellablePivotIds,
   getPrimaryAction,
   getRejectablePivotIds,
-  getReservationRowStatus,
+  getReservationStates,
   isReservationSelectable,
   isReservationUnresolved,
   type DashboardReservation,
@@ -390,8 +390,8 @@ const submitDecision = () => {
   });
 };
 
-const rowStatus = (reservation: DashboardReservation) =>
-  getReservationRowStatus(reservation, { approvableOnly: isAdministered.value });
+const rowStates = (reservation: DashboardReservation) =>
+  getReservationStates(reservation, { approvableOnly: isAdministered.value });
 
 const getRowClassName = (_reservation: DashboardReservation) => '';
 
@@ -539,16 +539,11 @@ const columns = computed<ColumnDef<DashboardReservation, any>[]>(() => [
     header: () => $t('reservations.dashboard.columns.status'),
     size: 130,
     cell: ({ row }) => {
-      const status = rowStatus(row.original);
-
-      if (!status) {
-        return <span class="text-sm text-muted-foreground">—</span>;
-      }
-
-      // How late it is lives in the period cell; the badge only carries the status.
+      // A reservation's items can sit in several states at once, so the badge reports all of them.
+      // How late it is lives in the period cell; the badge only carries the states.
       return (
-        <ReservationResourceStateTag
-          state={status}
+        <ReservationStateSummary
+          states={rowStates(row.original)}
           unresolved={isReservationUnresolved(row.original, { approvableOnly: isAdministered.value })}
         />
       );

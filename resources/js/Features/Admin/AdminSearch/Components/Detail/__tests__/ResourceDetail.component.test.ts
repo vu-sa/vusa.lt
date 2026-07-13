@@ -4,6 +4,7 @@ import { ref } from 'vue';
 
 import ResourceDetail from '../ResourceDetail.vue';
 
+import ReservationResourceStateTag from '@/Components/Tag/ReservationResourceStateTag.vue';
 import { commonStubs } from '@/tests/stubs';
 
 const baseResource = {
@@ -174,9 +175,13 @@ describe('ResourceDetail', () => {
 
     const wrapper = mountDetail({ showUpcomingReservations: true });
 
+    // The tag capitalizes its label and hangs the unresolved hint off a title attribute, so assert
+    // on what it is handed rather than on the rendered text.
+    const tag = wrapper.findComponent(ReservationResourceStateTag);
+
     expect(wrapper.text()).toContain('Old active');
-    expect(wrapper.text()).toContain('state.status.reserved');
-    expect(wrapper.text()).toContain('reservations.unresolved_help');
+    expect(tag.props('state')).toBe('reserved');
+    expect(tag.props('unresolved')).toBe(true);
   });
 
   it('renders previous terminal reservations when enabled', () => {
