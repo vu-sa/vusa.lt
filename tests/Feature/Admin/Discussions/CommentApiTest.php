@@ -7,6 +7,7 @@ use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
+use App\Models\Reservation;
 use App\Models\Tenant;
 use App\Models\User;
 use Carbon\Carbon;
@@ -264,5 +265,56 @@ describe('feed', function () {
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.commentable_type', 'agendaItem');
+    });
+});
+
+describe('reservation', function () {
+    beforeEach(function () {
+        $this->reservation = Reservation::factory()->create();
+        $this->reservationUser = User::factory()->hasAttached($this->reservation)->create();
+        $this->reservationOutsider = makeUser($this->tenant);
+
+        $this->reservationIndexUrl = route('api.v1.admin.comments.index', ['commentableType' => 'reservation', 'commentableId' => $this->reservation->id]);
+        $this->reservationStoreUrl = route('api.v1.admin.comments.store', ['commentableType' => 'reservation', 'commentableId' => $this->reservation->id]);
+    });
+
+    test('returns root comments with nested replies', function () {
+        $this->actingAs($this->reservationUser);
+        $root = $this->reservation->comment('<p>Root</p>');
+        $this->reservation->comment('<p>Reply</p>', $root->id);
+
+        asUser($this->reservationUser)->getJson($this->reservationIndexUrl)
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonCount(1, 'data.0.replies')
+            ->assertJsonPath('data.0.body', '<p>Root</p>')
+            ->assertJsonPath('data.0.replies.0.body', '<p>Reply</p>');
+    });
+
+    test('a reservation user can post a comment and it broadcasts', function () {
+        Event::fake([CommentBroadcast::class]);
+
+        asUser($this->reservationUser)->postJson($this->reservationStoreUrl, ['body' => '<p>Hello from reservation user</p>'])
+            ->assertCreated()
+            ->assertJsonPath('data.body', '<p>Hello from reservation user</p>')
+            ->assertJsonPath('data.can.update', true)
+            ->assertJsonPath('data.can.delete', true);
+
+        Event::assertDispatched(CommentBroadcast::class, fn ($e) => $e->action === 'created'
+            && $e->channelName === "comments.reservation.{$this->reservation->id}");
+    });
+
+    test('an outsider is forbidden (403)', function () {
+        asUser($this->reservationOutsider)->getJson($this->reservationIndexUrl)->assertStatus(403);
+        asUser($this->reservationOutsider)->postJson($this->reservationStoreUrl, ['body' => '<p>x</p>'])->assertStatus(403);
+    });
+
+    test('mentionables returns reservation users', function () {
+        $otherUser = User::factory()->hasAttached($this->reservation)->create(['name' => 'Reservation Member']);
+
+        asUser($this->reservationUser)
+            ->getJson(route('api.v1.admin.comments.mentionables', ['commentableType' => 'reservation', 'commentableId' => $this->reservation->id]))
+            ->assertOk()
+            ->assertJsonFragment(['id' => (string) $otherUser->id, 'name' => 'Reservation Member']);
     });
 });

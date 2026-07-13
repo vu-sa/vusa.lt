@@ -1,7 +1,18 @@
 <template>
   <div class="comment-composer">
+    <button
+      v-if="collapsible && !isExpanded"
+      type="button"
+      class="w-full rounded-lg border border-transparent bg-transparent px-3.5 py-2.5 text-left transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
+      @click="expand"
+    >
+      <span class="text-zinc-500 dark:text-zinc-400">{{ placeholder || $t('Parašykite komentarą…') }}</span>
+    </button>
     <div
+      v-else
+      ref="composerRef"
       class="rounded-lg border border-zinc-200 bg-white focus-within:border-vusa-red/50 focus-within:ring-1 focus-within:ring-vusa-red/30 dark:border-zinc-700 dark:bg-zinc-900"
+      @focusout="onFocusOut"
     >
       <EditorContent :editor="editor" />
       <div class="flex items-center justify-between gap-2 border-t border-zinc-100 px-2 py-1.5 dark:border-zinc-800">
@@ -25,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { type Component, computed, onBeforeUnmount, ref } from 'vue';
+import { type Component, computed, nextTick, onBeforeUnmount, ref } from 'vue';
 import { EditorContent, useEditor, VueRenderer } from '@tiptap/vue-3';
 import Mention from '@tiptap/extension-mention';
 import { Placeholder } from '@tiptap/extensions';
@@ -46,17 +57,21 @@ const props = withDefaults(defineProps<{
   showCancel?: boolean;
   autofocus?: boolean;
   content?: string;
+  collapsible?: boolean;
 }>(), {
   mentionables: () => [],
   submitting: false,
   showCancel: false,
   autofocus: false,
   content: '',
+  collapsible: false,
 });
 
 const emit = defineEmits<{ submit: [html: string]; cancel: [] }>();
 
 const isEmpty = ref(props.content.trim() === '');
+const isExpanded = ref(!props.collapsible || props.autofocus || props.content.trim() !== '');
+const composerRef = ref<HTMLDivElement | null>(null);
 
 /**
  * Mount a Vue suggestion list with VueRenderer and position it with floating-ui
@@ -146,7 +161,7 @@ const editor = useEditor({
   ],
   editorProps: {
     attributes: {
-      class: 'focus:outline-none px-3.5 py-2.5 min-h-12',
+      class: 'focus:outline-none px-3.5 py-2.5 min-h-12 text-zinc-800 dark:text-zinc-200',
     },
   },
   onUpdate: ({ editor: instance }) => {
@@ -162,12 +177,40 @@ function submit() {
   emit('submit', instance.getHTML());
 }
 
+function expand() {
+  if (!props.collapsible) {
+    return;
+  }
+  isExpanded.value = true;
+  void nextTick(() => {
+    editor.value?.commands.focus();
+  });
+}
+
+function onFocusOut(event: FocusEvent) {
+  if (!props.collapsible || !isExpanded.value) {
+    return;
+  }
+  const target = event.relatedTarget as HTMLElement | null;
+  // Keep the composer expanded when focus moves into a dialog (e.g. poll composer)
+  // so the trigger stays mounted and the dialog can open properly.
+  if (target?.closest('[role="dialog"]')) {
+    return;
+  }
+  if (composerRef.value && (!target || !composerRef.value.contains(target)) && isEmpty.value) {
+    isExpanded.value = false;
+  }
+}
+
 /**
  * Clear the editor (called by the parent after a successful submit).
  */
 function reset() {
   editor.value?.commands.clearContent(true);
   isEmpty.value = true;
+  if (props.collapsible) {
+    isExpanded.value = false;
+  }
 }
 
 defineExpose({ reset });
@@ -196,16 +239,11 @@ onBeforeUnmount(() => {
 }
 
 .comment-composer :deep(.ProseMirror) {
-  color: rgb(39 39 42); /* zinc-800 — softer than pure black */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   font-feature-settings: "kern", "liga", "calt";
   caret-color: var(--vusa-red, #bd2835);
-}
-
-:global(.dark) .comment-composer :deep(.ProseMirror) {
-  color: rgb(228 228 231); /* zinc-200 */
 }
 
 .comment-composer :deep(.ProseMirror) ::selection {
@@ -230,5 +268,9 @@ onBeforeUnmount(() => {
   height: 0;
   pointer-events: none;
   color: rgb(161 161 170);
+}
+
+:global(.dark) .comment-composer :deep(.ProseMirror p.is-editor-empty:first-child::before) {
+  color: rgb(113 113 122);
 }
 </style>

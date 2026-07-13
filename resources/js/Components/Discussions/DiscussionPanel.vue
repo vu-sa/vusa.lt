@@ -26,29 +26,39 @@
     </div>
 
     <!-- Root composer -->
-    <PollComposer
-      v-if="composerMode === 'poll'"
-      :mentionables="mentionables"
-      :submitting="posting"
-      @submit="onCreatePoll"
-      @cancel="composerMode = 'comment'"
-    />
     <CommentComposer
-      v-else
       ref="rootComposer"
       :mentionables="mentionables"
       :submitting="posting"
+      collapsible
       @submit="onPost"
     >
       <template #leading>
-        <button
-          type="button"
-          class="inline-flex items-center gap-1 rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-foreground dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-          @click="composerMode = 'poll'"
-        >
-          <BarChart3 class="h-3.5 w-3.5" />
-          {{ $t('Apklausa') }}
-        </button>
+        <Dialog v-model:open="pollDialogOpen">
+          <DialogTrigger as-child>
+            <button
+              type="button"
+              class="inline-flex items-center gap-1 rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-foreground dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+            >
+              <BarChart3 class="h-3.5 w-3.5" />
+              {{ $t('Apklausa') }}
+            </button>
+          </DialogTrigger>
+          <DialogContent class="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>{{ $t('Sukurti apklausą') }}</DialogTitle>
+              <DialogDescription>
+                {{ $t('Sukurkite apklausą ir gaukite komandos atsakymus.') }}
+              </DialogDescription>
+            </DialogHeader>
+            <PollComposer
+              :mentionables="mentionables"
+              :submitting="posting"
+              @submit="onCreatePoll"
+              @cancel="pollDialogOpen = false"
+            />
+          </DialogContent>
+        </Dialog>
       </template>
     </CommentComposer>
 
@@ -63,11 +73,6 @@
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- Empty state -->
-    <div v-else-if="!visibleComments.length" class="rounded-lg border border-dashed border-zinc-200 py-8 text-center text-sm text-muted-foreground dark:border-zinc-700">
-      {{ showResolved || comments.length === 0 ? $t('Kol kas nėra komentarų. Pradėkite diskusiją.') : $t('Nėra neišspręstų komentarų.') }}
     </div>
 
     <!-- Threads -->
@@ -98,6 +103,14 @@ import { BarChart3, MessagesSquare } from 'lucide-vue-next';
 import CommentComposer from '@/Components/Discussions/CommentComposer.vue';
 import CommentThread from '@/Components/Discussions/CommentThread.vue';
 import PollComposer from '@/Components/Discussions/PollComposer.vue';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/Components/ui/dialog';
 import { useDiscussionApi } from '@/Composables/useDiscussionApi';
 import { useDiscussionChannel } from '@/Composables/useDiscussionChannel';
 import { useToasts } from '@/Composables/useToasts';
@@ -117,7 +130,7 @@ const loading = ref(true);
 const posting = ref(false);
 const mutating = ref(false);
 const showResolved = ref(true);
-const composerMode = ref<'comment' | 'poll'>('comment');
+const pollDialogOpen = ref(false);
 
 const rootComposer = ref<InstanceType<typeof CommentComposer> | null>(null);
 
@@ -199,7 +212,7 @@ async function onCreatePoll(html: string, poll: PollDraft) {
   posting.value = true;
   try {
     upsertComment(await api.createPoll(html, poll));
-    composerMode.value = 'comment';
+    pollDialogOpen.value = false;
   }
   catch (error) {
     toasts.error((error as Error).message);

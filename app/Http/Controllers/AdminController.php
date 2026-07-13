@@ -135,7 +135,12 @@ abstract class AdminController extends Controller
      */
     protected function guardSelfLockout(User $actor, bool $couldAffectSelf, Request $request, Closure $mutation): ?RedirectResponse
     {
-        if (! $couldAffectSelf || $request->boolean('acknowledge_access_change')) {
+        // DELETE requests from some clients/environments carry the acknowledgement
+        // in the query string rather than the body, so check both sources.
+        $acknowledged = $request->boolean('acknowledge_access_change')
+            || filter_var($request->query('acknowledge_access_change'), FILTER_VALIDATE_BOOLEAN);
+
+        if (! $couldAffectSelf || $acknowledged) {
             $mutation();
 
             if ($couldAffectSelf) {

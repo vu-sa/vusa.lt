@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
+use App\Models\Reservation;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -47,6 +48,7 @@ class CommentableMentionResolver
                 ? $this->meetingUsers($commentable->meeting)
                 : collect(),
             $commentable instanceof Institution => $commentable->users()->get(),
+            $commentable instanceof Reservation => $commentable->users()->get(),
             default => collect(),
         };
 

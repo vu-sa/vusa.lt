@@ -1208,5 +1208,20 @@
     "Neskolinamas": "Not lendable",
     "Rikiuoti": "Sort",
     "Data": "Date",
-    "Išjungti greitus veiksmus?": "Disable quick actions?"
+    "Išjungti greitus veiksmus?": "Disable quick actions?",
+    "Diskusija": "Discussion",
+    ":count peržiūri": ":count viewing",
+    "Rodyti tik neišspręstus": "Show only unresolved",
+    "Apklausa": "Poll",
+    "Kol kas nėra komentarų. Pradėkite diskusiją.": "No comments yet. Start the discussion.",
+    "Nėra neišspręstų komentarų.": "No unresolved comments.",
+    "Naudokite @ paminėti": "Use @ to mention",
+    "Parašykite komentarą…": "Write a comment…",
+    "Atsakykite…": "Reply…",
+    "Atsakyti": "Reply",
+    "Yra pastabų": "Has notes",
+    "redaguota": "edited",
+    "Išspręsta": "Resolved",
+    "Pažymėti išspręsta": "Mark resolved",
+    "Atžymėti": "Unmark"
 }

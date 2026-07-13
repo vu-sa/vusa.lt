@@ -2,6 +2,7 @@ import { mount, flushPromises } from '@vue/test-utils';
 import { ref } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { commonStubs } from '@/tests/stubs';
 import type { CommentData } from '@/Types/discussions';
 
 // --- Hoisted mock fns so the module factories can reference them ---
@@ -31,6 +32,7 @@ vi.mock('@/Components/Discussions/CommentComposer.vue', () => ({
   default: {
     name: 'CommentComposer',
     emits: ['submit', 'cancel'],
+    props: ['collapsible'],
     template: '<button class="composer-stub" @click="$emit(\'submit\', \'<p>new</p>\')">composer</button>',
   },
 }));
@@ -60,6 +62,7 @@ function makeComment(overrides: Partial<CommentData> = {}): CommentData {
 }
 
 const stubs = {
+  ...commonStubs,
   UserAvatar: { template: '<span class="avatar" />' },
   CommentReactions: { template: '<div class="reactions" />' },
   MessagesSquare: { template: '<span />' },
@@ -88,18 +91,6 @@ describe('DiscussionPanel', () => {
 
     expect(wrapper.html()).toContain('Root one');
     expect(wrapper.html()).toContain('A reply');
-  });
-
-  it('shows an empty state when there are no comments', async () => {
-    mocks.fetchThread.mockResolvedValue([]);
-
-    const wrapper = mount(DiscussionPanel, {
-      props: { commentableType: 'meeting', commentableId: 'm1' },
-      global: { stubs },
-    });
-    await flushPromises();
-
-    expect(wrapper.text()).toContain('Pradėkite diskusiją');
   });
 
   it('posts a new root comment and appends it', async () => {

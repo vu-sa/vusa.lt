@@ -40,6 +40,7 @@ test('acknowledged destroy proceeds', function () {
         ->delete(route('dutiables.destroy', $this->adminDutiable), [
             'acknowledge_access_change' => true,
         ])
+        ->assertRedirect(route('dashboard'))
         ->assertSessionHas('success');
 
     expect(Dutiable::find($this->adminDutiable->id))->toBeNull();

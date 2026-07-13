@@ -19,13 +19,6 @@
             <IFluentTextDescription24Regular class="size-4" />
             {{ $t('Aprašymas') }}
           </TabsTrigger>
-          <TabsTrigger value="comments" class="gap-2">
-            <component :is="CommentIconFilled" class="size-4" />
-            {{ $t('Komentarai') }}
-            <Badge v-if="allCommentsCount > 0" variant="secondary" class="ml-1">
-              {{ allCommentsCount }}
-            </Badge>
-          </TabsTrigger>
         </TabsList>
 
         <!-- Resources Tab -->
@@ -62,6 +55,11 @@
             @edit:reservation-resource="editReservationResource"
             @add-resource="handleAddResource"
           />
+
+          <!-- Reservation discussion lives below the resources. -->
+          <section class="border-t pt-6 dark:border-zinc-800">
+            <DiscussionPanel commentable-type="reservation" :commentable-id="reservation.id" />
+          </section>
         </TabsContent>
 
         <!-- Description Tab -->
@@ -84,23 +82,6 @@
           </Card>
         </TabsContent>
 
-        <!-- Comments Tab -->
-        <TabsContent value="comments" class="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle class="flex items-center gap-2 text-base">
-                <component :is="CommentIconFilled" class="size-5" />
-                {{ $t('Komentarai') }}
-              </CardTitle>
-              <CardDescription>
-                {{ RESERVATION_HELP_TEXTS.comments[$page.props.app.locale] }}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <CommentViewer commentable_type="reservation" :model="reservation" :comments="getAllComments()" />
-            </CardContent>
-          </Card>
-        </TabsContent>
       </Tabs>
     </div>
 
@@ -174,7 +155,7 @@
 
 <script setup lang="ts">
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { ref, toRaw, computed, watch, capitalize } from 'vue';
+import { ref, watch, capitalize } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';
 
@@ -186,17 +167,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Com
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { RESERVATION_CARD_MODAL_TITLES } from '@/Constants/I18n/CardModalTitles';
-import { RESERVATION_HELP_TEXTS } from '@/Constants/I18n/HelpTexts';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
-import CommentViewer from '@/Features/Admin/CommentViewer/CommentViewer.vue';
+import DiscussionPanel from '@/Components/Discussions/DiscussionPanel.vue';
 import MdSuspenseWrapper from '@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue';
 import ReservationResourceForm from '@/Components/AdminForms/ReservationResourceForm.vue';
 import ReservationResourceTable from '@/Components/Tables/ReservationResourceTable.vue';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import { MultiSelect } from '@/Components/ui/multi-select';
 import { Label } from '@/Components/ui/label';
-import { CommentIconFilled, ReservationIconFilled, ResourceIconFilled } from '@/Components/icons';
+import { ReservationIconFilled, ResourceIconFilled } from '@/Components/icons';
 
 const props = defineProps<{
   reservation: App.Entities.Reservation;
@@ -249,43 +229,6 @@ const userMultiSelectRef = ref<{ reset: () => void } | null>(null);
 watch(selectedUsersList, (users) => {
   reservationUserForm.users = users.map(u => u.id);
 }, { deep: true });
-
-// Comments computation
-const allCommentsCount = computed(() => {
-  const baseComments = props.reservation.comments?.length ?? 0;
-  const resourceComments = props.reservation.resources?.reduce(
-    (acc, r) => acc + (r.pivot?.comments?.length ?? 0),
-    0,
-  ) ?? 0;
-  return baseComments + resourceComments;
-});
-
-const getAllComments = () => {
-  let comments = toRaw(props.reservation.comments) ?? [];
-  const resources = toRaw(props.reservation.resources) ?? [];
-
-  if (resources.length > 0) {
-    resources.forEach((resource) => {
-      resource.pivot?.comments?.forEach((comment) => {
-        comments.push({
-          ...comment,
-          comment: `<strong>${resource.name}</strong> ${comment.comment}`,
-        });
-      });
-    });
-  }
-
-  comments.sort((a, b) => {
-    return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-  });
-
-  comments = comments.filter(
-    (comment, index, self) =>
-      index === self.findIndex(c => c.id === comment.id),
-  );
-
-  return comments;
-};
 
 // Action handlers
 const handleAddResource = () => {
