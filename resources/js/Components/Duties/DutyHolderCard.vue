@@ -3,7 +3,7 @@
     :href="route('users.show', member.id)"
     :class="['flex items-center gap-2.5 rounded-lg border border-border bg-card px-2.5 py-2 text-left', interactiveCardClass]"
   >
-    <UserPopover :user="member" :size="32" class="shrink-0" />
+    <UserPopover :user="member" :size="32" :clickable="false" class="shrink-0" />
 
     <div class="min-w-0 flex-1 leading-tight">
       <div class="flex min-w-0 items-center gap-1.5">

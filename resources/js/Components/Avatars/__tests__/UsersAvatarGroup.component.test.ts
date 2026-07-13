@@ -1,8 +1,10 @@
 import { mount } from '@vue/test-utils';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+import { usePage } from '@inertiajs/vue3';
 
 import UsersAvatarGroup from '../UsersAvatarGroup.vue';
 
+import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
 
 const makeUsers = (n: number) =>
@@ -10,6 +12,15 @@ const makeUsers = (n: number) =>
     id: `u${i + 1}`,
     name: `User ${i + 1}`,
   }));
+
+const adminPage = createMockPage({
+  app: { path: '/mano/institutions/123' },
+  auth: {
+    can: {
+      'users.read.padalinys': true,
+    },
+  },
+});
 
 describe('UsersAvatarGroup', () => {
   it('does not render the expand control by default', () => {
@@ -53,7 +64,7 @@ describe('UsersAvatarGroup', () => {
     });
     const links = wrapper.findAll('[data-testid="inertia-link"]');
     expect(links.length).toBe(2);
-    expect(links[0].attributes('href')).toContain('users.show');
+    expect(links[0]?.attributes('href')).toContain('users.show');
   });
 
   it('does not wrap avatars in links by default', () => {
@@ -67,5 +78,43 @@ describe('UsersAvatarGroup', () => {
       },
     });
     expect(wrapper.findAll('[data-testid="inertia-link"]').length).toBe(0);
+  });
+
+  it('auto-links avatars when rendered in the admin context', () => {
+    vi.mocked(usePage).mockReturnValue(adminPage);
+
+    const wrapper = mount(UsersAvatarGroup, {
+      props: { users: makeUsers(2) as any, max: 4 },
+      global: {
+        stubs: {
+          ...commonStubs,
+          UserPopover: { props: ['user'], template: '<div class="user-row">{{ user?.name }}</div>' },
+        },
+      },
+    });
+
+    const links = wrapper.findAll('[data-testid="inertia-link"]');
+    expect(links.length).toBe(2);
+    expect(links[0]?.attributes('href')).toContain('users.show');
+  });
+
+  it('passes clickable=false to internal UserPopover instances to avoid nested links', () => {
+    vi.mocked(usePage).mockReturnValue(adminPage);
+
+    const userPopoverStub = { props: ['user', 'clickable'], template: '<div class="user-row" :data-clickable="clickable">{{ user?.name }}</div>' };
+
+    const wrapper = mount(UsersAvatarGroup, {
+      props: { users: makeUsers(2) as any, max: 4, clickable: true },
+      global: {
+        stubs: {
+          ...commonStubs,
+          UserPopover: userPopoverStub,
+        },
+      },
+    });
+
+    const rows = wrapper.findAll('.user-row');
+    expect(rows.length).toBe(2);
+    expect(rows.every(row => row.attributes('data-clickable') === 'false')).toBe(true);
   });
 });

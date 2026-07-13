@@ -68,7 +68,7 @@
             ]"
             @click="$emit('view-profile', member)"
           >
-            <UserPopover :user="member" :size="32" />
+            <UserPopover :user="member" :size="32" :clickable="false" />
             <span class="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{{ member.name }}</span>
             <Badge v-if="roleForMember(member)" variant="secondary" class="shrink-0 text-xs">
               {{ roleForMember(member) }}

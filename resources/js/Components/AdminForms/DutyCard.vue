@@ -51,7 +51,7 @@
         >
           <div class="h-1.5 w-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
           <SmartLink :href="route('users.edit', user.id)" class="hover:underline">
-            <UserPopover :user :size="20" show-name class="text-muted-foreground" />
+            <UserPopover :user :size="20" show-name :clickable="false" class="text-muted-foreground" />
           </SmartLink>
           <span class="text-[10px] text-muted-foreground/70">{{ formatDate(user.pivot?.start_date) }}</span>
           <SmartLink

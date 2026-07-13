@@ -1,28 +1,56 @@
 <template>
   <HoverCard :open-delay="300" :close-delay="100">
     <HoverCardTrigger as-child>
-      <div
-        v-if="!showName"
-        v-bind="$attrs"
-        class="inline-flex items-center leading-none"
-        :class="avatarWrapperClass"
-      >
-        <UserAvatar
-          :user
-          :size="avatarSize"
-          :interactive="true"
-        />
-      </div>
-      <div
-        v-else
-        v-bind="$attrs"
-        class="inline-flex items-center gap-2 px-1 py-0.5 rounded-md transition-colors hover:bg-accent group"
-      >
-        <UserAvatar :user :size="avatarSize" :interactive="true" />
-        <span :class="[nameTextClass, 'font-medium group-hover:text-accent-foreground']">
-          {{ user.name }}
-        </span>
-      </div>
+      <template v-if="!showName">
+        <Link
+          v-if="shouldRenderLink"
+          :href="profileUrl"
+          v-bind="$attrs"
+          class="inline-flex items-center leading-none"
+          :class="avatarWrapperClass"
+        >
+          <UserAvatar
+            :user
+            :size="avatarSize"
+            :interactive="true"
+          />
+        </Link>
+        <div
+          v-else
+          v-bind="$attrs"
+          class="inline-flex items-center leading-none"
+          :class="avatarWrapperClass"
+        >
+          <UserAvatar
+            :user
+            :size="avatarSize"
+            :interactive="true"
+          />
+        </div>
+      </template>
+      <template v-else>
+        <Link
+          v-if="shouldRenderLink"
+          :href="profileUrl"
+          v-bind="$attrs"
+          class="inline-flex items-center gap-2 px-1 py-0.5 rounded-md transition-colors hover:bg-accent group"
+        >
+          <UserAvatar :user :size="avatarSize" :interactive="true" />
+          <span :class="[nameTextClass, 'font-medium group-hover:text-accent-foreground']">
+            {{ user.name }}
+          </span>
+        </Link>
+        <div
+          v-else
+          v-bind="$attrs"
+          class="inline-flex items-center gap-2 px-1 py-0.5 rounded-md transition-colors hover:bg-accent group"
+        >
+          <UserAvatar :user :size="avatarSize" :interactive="true" />
+          <span :class="[nameTextClass, 'font-medium group-hover:text-accent-foreground']">
+            {{ user.name }}
+          </span>
+        </div>
+      </template>
     </HoverCardTrigger>
 
     <HoverCardContent class="w-64 overflow-hidden p-0 shadow-lg">
@@ -93,18 +121,48 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { Link, usePage } from '@inertiajs/vue3';
 
 import UserAvatar from './UserAvatar.vue';
 
+import { useIsAdminContext } from '@/Composables/useIsAdminContext';
 import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/hover-card';
 import { avatarSizeClasses, mapPixelToSize, type AvatarSize } from '@/Components/ui/avatar';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   showName?: boolean;
   size?: number | AvatarSize;
   user: Record<string, any>;
-}>();
+  /** Whether the avatar/name should link to the admin user profile page.
+   *  Defaults to true when rendered inside `/mano/*` and the user has view permission. */
+  clickable?: boolean;
+}>(), {
+  clickable: undefined,
+});
+
+const page = usePage();
+const isAdminContext = useIsAdminContext();
+
+const canViewUserProfile = computed(() => {
+  return !!page.props.auth?.can?.['users.read.padalinys'];
+});
+
+const shouldRenderLink = computed(() => {
+  if (props.clickable === false) {
+    return false;
+  }
+
+  if (props.clickable === true) {
+    return !!props.user?.id;
+  }
+
+  return isAdminContext.value && !!props.user?.id && canViewUserProfile.value;
+});
+
+const profileUrl = computed(() => {
+  return route('users.show', props.user.id);
+});
 
 // Support both pixel values (backward compat) and size variant names
 const avatarSize = computed<AvatarSize>(() => {
