@@ -9,11 +9,13 @@ Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
 ## v1.14 — Search, Discussions & Reservations Console (2026-07-13) {#v1-14}
 
-- ⭐ **Reservations console** — the cards and modals are replaced by a KPI strip (awaiting review / lent / overdue / returned) and a table with "My reservations" and "Administered" tabs. You can approve, hand over and mark items returned straight from the list, act on several reservations at once, and close out a stale reservation in one action. Each status now has its own colour and icon, and overdue reservations are flagged in amber
+- ⭐ **Reservations console** — the cards and modals are replaced by a KPI strip (awaiting review / lent / unresolved / returned) and a table with "My reservations" and "Administered" tabs. You can approve, hand over and mark items returned straight from the list, act on several reservations at once, and close out a stale reservation in one action. Each status now has its own colour and icon, and reservations with an active item past its window are flagged in amber
 - ⭐ **Proper admin search page** — search now has a page of its own, showing previews of the records it finds. Several edit forms also use a new, more comfortable picker built on the same search
+- ⭐ **Resource reservation history in previews** — resource search previews and the resource picker dialog when creating a reservation now show active reservations (with times and status) and up to three previous reservations.
 - ⭐ **Discussions instead of comments** — comments were reworked into a discussion panel, now available on meetings and agenda items as well as institutions. Discussions can also carry polls
 - ⭐ **Standalone public search page** — public search opens on its own page instead of in a dialog
 - ⭐ **Mixcloud embeds** — Mixcloud players can now be embedded in content
+- ✨ **Unit filter on the reservation page** — when a reservation spans resources from several units, you can narrow the list down to one unit
 - ✨ **Refined institution graph** — and search previews now show the institutions and duties related to a record
 - ✨ **Self-lockout warning** — changing a duty's members now warns you if the change would remove your own access
 - ✨ **Smarter default sorting** on index pages
@@ -22,6 +24,7 @@ Here you'll find all changes and improvements to the mano.vusa.lt platform.
 - ✨ **Many styling fixes** — across various cards and pages
 - 🔧 **Form fixes** — including the "is reservable" select in the resource form
 - 🔧 **Fixed opening the resource category list**
+- ✨ **More flexible resource availability** — active reservations whose time window has already ended no longer block free units, but they are flagged so they can be closed out
 - 🔧 **Table pagination** — pagination controls were not appearing on tables that filter their data in the browser
 
 ## v1.13 — Problem Registry Improvements (2026-06-12) {#v1-13}

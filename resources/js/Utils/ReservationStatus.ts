@@ -7,8 +7,8 @@
  * pivots, and callers opt in to the `approvable` subset when they render an administrator's view.
  *
  * The backend state chain is `created → reserved → lent → returned`, plus `created → rejected`
- * and `created|reserved → cancelled`. "Overdue" is not a state — it is a lent item whose return
- * time has passed.
+ * and `created|reserved → cancelled`. "Unresolved" is not a state — it is any active pivot
+ * (`created`, `reserved`, or `lent`) whose reserved time window has already passed.
  */
 
 export type ReservationResourceState
@@ -19,21 +19,22 @@ export type ReservationResourceState
     | 'rejected'
     | 'cancelled';
 
-/** `overdue` is display-only; the server never stores it. */
-export type ReservationRowStatus = ReservationResourceState | 'overdue';
+/** Row status is always a real stored state. */
+export type ReservationRowStatus = ReservationResourceState;
 
-/** The four buckets the KPI strip reports, in the order work arrives. */
-export type KpiStatus = Extract<ReservationRowStatus, 'created' | 'lent' | 'overdue' | 'returned'>;
+/** The three buckets the KPI strip reports, in the order work arrives. */
+export type KpiStatus = Extract<ReservationRowStatus, 'created' | 'lent' | 'returned'>;
 
 /** KPI counts, derived on the client by computeReservationStats(). Counts reservations, not items. */
 export interface ReservationStats {
   awaiting: number;
   awaitingDueSoon: number;
+  awaitingUnresolved: number;
   lent: number;
   lentQuantity: number;
-  overdue: number;
-  overdueMaxDaysLate: number;
+  lentUnresolved: number;
   returnedLast30Days: number;
+  maxDaysLate: number;
 }
 
 /** The states an administrator can still advance. Ordered by which action takes priority. */
@@ -88,15 +89,22 @@ export interface ScopeOptions {
 }
 
 /**
- * The overdue checks take only the fields they read, so they also accept the generated
- * `App.Entities.ReservationResource` pivot and both tables can share one definition of "overdue".
+ * The unresolved checks take only the fields they read, so they also accept the generated
+ * `App.Entities.ReservationResource` pivot and both tables can share one definition of "unresolved".
  */
 type ReturnCheckable = Pick<ReservationPivot, 'state' | 'end_time'>;
 type PickupCheckable = Pick<ReservationPivot, 'state' | 'start_time'>;
 
-/** A lent item whose return time has passed. */
-export function isPivotOverdue(pivot: ReturnCheckable, now: Date = new Date()): boolean {
-  return pivot.state === 'lent' && new Date(pivot.end_time) < now;
+/**
+ * An active pivot (`created`, `reserved`, or `lent`) whose reserved end time has passed.
+ * The reservation is still open in the system even though its window is over.
+ */
+export function isPivotUnresolved(pivot: ReturnCheckable, now: Date = new Date()): boolean {
+  if (!['created', 'reserved', 'lent'].includes(pivot.state)) {
+    return false;
+  }
+
+  return new Date(pivot.end_time) < now;
 }
 
 /** A reserved item that was never picked up by its start time. */
@@ -104,8 +112,8 @@ export function isPivotPickupOverdue(pivot: PickupCheckable, now: Date = new Dat
   return pivot.state === 'reserved' && new Date(pivot.start_time) < now;
 }
 
-export function daysOverdue(pivot: ReturnCheckable, now: Date = new Date()): number {
-  if (!isPivotOverdue(pivot, now)) {
+export function daysUnresolved(pivot: ReturnCheckable, now: Date = new Date()): number {
+  if (!isPivotUnresolved(pivot, now)) {
     return 0;
   }
 
@@ -123,9 +131,11 @@ function scopedPivots(reservation: DashboardReservation, options: ScopeOptions =
 /**
  * Collapse a reservation's pivots into the single status shown on its row.
  *
- * Priority runs "needs attention" first: anything awaiting review outranks an overdue item, which
- * outranks an active loan, and terminal states only surface once nothing is live. Returns null when
- * the scope leaves no pivots at all (an administrator looking at a reservation of foreign items).
+ * Returns the highest-priority actionable state present (`created`, then `reserved`, then `lent`),
+ * or a terminal state once nothing is live. Returns null when the scope leaves no pivots at all
+ * (an administrator looking at a reservation of foreign items).
+ *
+ * "Unresolved" is intentionally not returned here — it is a lateness indicator, not a status.
  */
 export function getReservationRowStatus(
   reservation: DashboardReservation,
@@ -138,18 +148,12 @@ export function getReservationRowStatus(
     return null;
   }
 
-  if (pivots.some(pivot => pivot.state === 'created')) {
-    return 'created';
+  for (const state of ACTIONABLE_STATES) {
+    if (pivots.some(pivot => pivot.state === state)) {
+      return state;
+    }
   }
-  if (pivots.some(pivot => isPivotOverdue(pivot, now))) {
-    return 'overdue';
-  }
-  if (pivots.some(pivot => pivot.state === 'lent')) {
-    return 'lent';
-  }
-  if (pivots.some(pivot => pivot.state === 'reserved')) {
-    return 'reserved';
-  }
+
   if (pivots.some(pivot => pivot.state === 'returned')) {
     return 'returned';
   }
@@ -160,22 +164,30 @@ export function getReservationRowStatus(
   return 'cancelled';
 }
 
-/** The largest lateness across a row's items, for the "N days overdue" sub-line. */
-export function reservationDaysOverdue(
+/** Whether any scoped pivot is past its reserved window. */
+export function isReservationUnresolved(
+  reservation: DashboardReservation,
+  options: ScopeOptions = {},
+  now: Date = new Date(),
+): boolean {
+  return scopedPivots(reservation, options).some(pivot => isPivotUnresolved(pivot, now));
+}
+
+/** The largest lateness across a row's items, for the "N days late" sub-line. */
+export function reservationDaysUnresolved(
   reservation: DashboardReservation,
   options: ScopeOptions = {},
   now: Date = new Date(),
 ): number {
   return scopedPivots(reservation, options)
-    .reduce((worst, pivot) => Math.max(worst, daysOverdue(pivot, now)), 0);
+    .reduce((worst, pivot) => Math.max(worst, daysUnresolved(pivot, now)), 0);
 }
 
 /**
  * The action the row's primary button performs, and the pivots it will submit.
  *
  * A reservation can hold items in several states at once. The action deliberately follows the row's
- * *status*, so the badge and the button can never disagree — a row badged "Overdue" whose button
- * hands over some unrelated item is worse than useless.
+ * *status*, so the badge and the button can never disagree.
  */
 export function getPrimaryAction(
   reservation: DashboardReservation,
@@ -183,25 +195,18 @@ export function getPrimaryAction(
 ): { state: ReservationResourceState; pivotIds: string[] } | null {
   const status = getReservationRowStatus(reservation, { approvableOnly: true }, now);
 
-  if (status === null) {
-    return null;
-  }
-
-  // Overdue is a lent item that is late; the action on it is still "mark returned".
-  const state = (status === 'overdue' ? 'lent' : status) as ReservationResourceState;
-
-  if (!ACTIONABLE_STATES.includes(state)) {
+  if (status === null || !ACTIONABLE_STATES.includes(status)) {
     return null;
   }
 
   const matching = scopedPivots(reservation, { approvableOnly: true })
-    .filter(pivot => pivot.state === state);
+    .filter(pivot => pivot.state === status);
 
   if (matching.length === 0) {
     return null;
   }
 
-  return { state, pivotIds: matching.map(pivot => String(pivot.id)) };
+  return { state: status, pivotIds: matching.map(pivot => String(pivot.id)) };
 }
 
 /** Pivot IDs in the given states that the current user may act on. Used by row and bulk actions. */
@@ -262,12 +267,6 @@ export function matchesStatusFilter(
 
   const status = getReservationRowStatus(reservation, options, now);
 
-  // Overdue is a lent item that is late, not a state of its own: it belongs in both buckets, which
-  // is how the KPI counts it too. Filtering by "lent" must not hide the lent items that are late.
-  if (filter === 'lent') {
-    return status === 'lent' || status === 'overdue';
-  }
-
   return status === filter;
 }
 
@@ -280,7 +279,6 @@ const STATUS_DOT_CLASSES: Record<ReservationRowStatus, string> = {
   created: 'bg-amber-500',
   reserved: 'bg-sky-500',
   lent: 'bg-zinc-900 dark:bg-zinc-100',
-  overdue: 'bg-rose-500',
   returned: 'bg-emerald-500',
   rejected: 'bg-rose-600',
   cancelled: 'bg-zinc-400',
@@ -308,9 +306,8 @@ const DUE_SOON_HOURS = 48;
  * KPI counts over the reservations the table is showing.
  *
  * Deliberately counts *reservations*, not the resource rows underneath them: the tiles filter the
- * table, so "Overdue 2" has to mean "2 rows appear when you click this". Counting items instead
- * made the tile read 10 while the table showed 2. Item counts still appear in the captions, where
- * they inform rather than mislead.
+ * table, so "Lent 5" has to mean "5 rows appear when you click this". Item counts still appear in
+ * the captions, where they inform rather than mislead.
  *
  * It runs client-side, over the already search- and tenant-filtered list, so the numbers track
  * whatever the user has narrowed the table down to.
@@ -326,9 +323,7 @@ export function computeReservationStats(
   }));
 
   const awaiting = rows.filter(row => row.status === 'created');
-  const overdue = rows.filter(row => row.status === 'overdue');
-  // An overdue item is still lent, so it belongs in both — exactly as the filter treats it.
-  const lent = rows.filter(row => row.status === 'lent' || row.status === 'overdue');
+  const lent = rows.filter(row => row.status === 'lent');
 
   const dueSoonCutoff = new Date(now.getTime() + DUE_SOON_HOURS * 60 * 60 * 1000);
   const returnedCutoff = new Date(now.getTime() - RETURNED_WINDOW_DAYS * DAY_MS);
@@ -353,6 +348,9 @@ export function computeReservationStats(
     0,
   );
 
+  const awaitingUnresolved = awaiting.filter(row => isReservationUnresolved(row.reservation, options, now));
+  const lentUnresolved = lent.filter(row => isReservationUnresolved(row.reservation, options, now));
+
   return {
     awaiting: awaiting.length,
     awaitingDueSoon: awaiting.filter((row) => {
@@ -360,13 +358,14 @@ export function computeReservationStats(
 
       return start >= now && start <= dueSoonCutoff;
     }).length,
+    awaitingUnresolved: awaitingUnresolved.length,
     lent: lent.length,
     lentQuantity,
-    overdue: overdue.length,
-    overdueMaxDaysLate: overdue.reduce(
-      (worst, row) => Math.max(worst, reservationDaysOverdue(row.reservation, options, now)),
+    lentUnresolved: lentUnresolved.length,
+    returnedLast30Days: returnedRecently.length,
+    maxDaysLate: rows.reduce(
+      (worst, row) => Math.max(worst, reservationDaysUnresolved(row.reservation, options, now)),
       0,
     ),
-    returnedLast30Days: returnedRecently.length,
   };
 }

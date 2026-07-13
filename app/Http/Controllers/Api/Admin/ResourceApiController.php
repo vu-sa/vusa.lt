@@ -22,22 +22,30 @@ class ResourceApiController extends ApiController
     {
         $this->authorizeApi('view', $resource);
 
-        $reservations = $resource->active_reservations()
-            ->wherePivot('end_time', '>=', now())
+        $activeReservations = $resource->active_reservations()
             ->orderByPivot('start_time')
             ->limit(5)
             ->get();
 
+        $previousReservations = $resource->reservations()
+            ->wherePivotIn('state', ['returned', 'rejected', 'cancelled'])
+            ->wherePivot('end_time', '<', now())
+            ->orderByPivot('end_time', 'desc')
+            ->limit(3)
+            ->get();
+
+        $mapReservation = fn ($reservation) => [
+            'id' => (string) $reservation->id,
+            'name' => $reservation->name,
+            'quantity' => (int) $reservation->pivot->quantity,
+            'state' => (string) $reservation->pivot->state,
+            'start_time' => $reservation->pivot->start_time?->timestamp,
+            'end_time' => $reservation->pivot->end_time?->timestamp,
+        ];
+
         return $this->jsonSuccess([
-            'upcoming_reservations' => $reservations
-                ->map(fn ($reservation) => [
-                    'id' => (string) $reservation->id,
-                    'name' => $reservation->name,
-                    'quantity' => (int) $reservation->pivot->quantity,
-                    'state' => (string) $reservation->pivot->state,
-                    'start_time' => $reservation->pivot->start_time?->timestamp,
-                    'end_time' => $reservation->pivot->end_time?->timestamp,
-                ])->values(),
+            'upcoming_reservations' => $activeReservations->map($mapReservation)->values(),
+            'previous_reservations' => $previousReservations->map($mapReservation)->values(),
             'managers' => $resource->managers()
                 ->map(fn ($user) => [
                     'id' => (string) $user->id,

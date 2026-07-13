@@ -54,7 +54,13 @@
     <div
       v-if="showAvailabilityBox"
       class="mb-4 rounded-lg border p-4"
-      :class="isUnavailable ? 'border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30' : 'bg-muted/30'"
+      :class="[
+        isUnavailable
+          ? 'border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30'
+          : hasDiscrepancies
+            ? 'border-amber-200 bg-amber-50/50 dark:border-amber-900 dark:bg-amber-950/20'
+            : 'bg-muted/30',
+      ]"
     >
       <div class="flex items-center justify-between">
         <span class="text-sm font-medium">{{ $t('Laisva pasirinktu laiku') }}</span>
@@ -65,6 +71,10 @@
       </div>
       <p v-if="isUnavailable" class="mt-1 text-xs text-amber-700 dark:text-amber-400">
         {{ $t('Šiuo laikotarpiu išteklius nepasiekiamas.') }}
+      </p>
+      <p v-else-if="hasDiscrepancies" class="mt-1 flex items-start gap-1.5 text-xs text-amber-700 dark:text-amber-400">
+        <AlertTriangle class="mt-0.5 size-3.5 shrink-0" />
+        {{ $t('reservations.discrepancy.available_from_ended_reservations', { count: String(availability.discrepancies.length) }) }}
       </p>
     </div>
 
@@ -85,8 +95,15 @@
           v-for="reservation in availability.reservations"
           :key="reservation.id"
           class="flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm"
+          :class="isTimeEndedActiveReservation(reservation) ? 'border-amber-200 bg-amber-50/30 dark:border-amber-900 dark:bg-amber-950/20' : ''"
         >
-          <span class="min-w-0 truncate">{{ reservation.name }}</span>
+          <span class="flex min-w-0 items-center gap-2">
+            <AlertTriangle
+              v-if="isTimeEndedActiveReservation(reservation)"
+              class="size-3.5 shrink-0 text-amber-600 dark:text-amber-400"
+            />
+            <span class="truncate">{{ reservation.name }}</span>
+          </span>
           <Badge variant="secondary" class="shrink-0">
             {{ $t(':count vnt.', { count: String(reservation.quantity) }) }}
           </Badge>
@@ -100,27 +117,76 @@
       </p>
     </DetailSection>
 
-    <!-- Upcoming reservations (fetched — not in the search document) -->
+    <!-- Active reservations (current + future — fetched, not in the search document) -->
     <DetailAsyncSection
       v-if="showUpcomingReservations"
-      :title="$t('Artimiausios rezervacijos')"
+      :title="$t('Aktyvios rezervacijos')"
       :is-fetching
       :has-content="data?.upcoming_reservations?.length > 0"
-      :empty-message="$t('Nėra artimiausių rezervacijų')"
+      :empty-message="$t('Nėra aktyvių rezervacijų')"
     >
       <ol class="space-y-1.5">
         <li
           v-for="reservation in data!.upcoming_reservations"
           :key="reservation.id"
-          class="flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-sm"
+          class="flex flex-col gap-1.5 rounded-md border px-3 py-2 text-sm"
         >
-          <span class="min-w-0 flex-1 truncate">{{ reservation.name }}</span>
-          <span class="shrink-0 text-xs tabular-nums text-muted-foreground">
-            <template v-if="reservation.start_time">{{ formatSearchDate(reservation.start_time) }}</template>
-          </span>
-          <Badge variant="secondary" class="shrink-0">
-            {{ $t(':count vnt.', { count: String(reservation.quantity) }) }}
-          </Badge>
+          <div class="flex items-center justify-between gap-3">
+            <Link
+              :href="route('reservations.show', reservation.id)"
+              class="min-w-0 flex-1 truncate font-medium hover:underline"
+            >
+              {{ reservation.name }}
+            </Link>
+            <Badge variant="secondary" class="shrink-0">
+              {{ $t(':count vnt.', { count: String(reservation.quantity) }) }}
+            </Badge>
+          </div>
+          <div class="flex items-center justify-between gap-3">
+            <ReservationResourceStateTag
+              :state="reservation.state"
+              :unresolved="isTimeEndedActiveReservation(reservation)"
+              class="shrink-0"
+            />
+            <span class="shrink-0 text-xs tabular-nums text-muted-foreground">
+              {{ formatReservationPeriod(reservation.start_time, reservation.end_time) }}
+            </span>
+          </div>
+        </li>
+      </ol>
+    </DetailAsyncSection>
+
+    <!-- Previous terminal reservations (returned/rejected/cancelled) -->
+    <DetailAsyncSection
+      v-if="showPreviousReservations"
+      :title="$t('Ankstesnės rezervacijos')"
+      :is-fetching
+      :has-content="data?.previous_reservations?.length > 0"
+      :empty-message="$t('Nėra ankstesnių rezervacijų')"
+    >
+      <ol class="space-y-1.5">
+        <li
+          v-for="reservation in data!.previous_reservations"
+          :key="reservation.id"
+          class="flex flex-col gap-1.5 rounded-md border px-3 py-2 text-sm"
+        >
+          <div class="flex items-center justify-between gap-3">
+            <Link
+              :href="route('reservations.show', reservation.id)"
+              class="min-w-0 flex-1 truncate font-medium hover:underline"
+            >
+              {{ reservation.name }}
+            </Link>
+            <Badge variant="secondary" class="shrink-0">
+              {{ $t(':count vnt.', { count: String(reservation.quantity) }) }}
+            </Badge>
+          </div>
+          <div class="flex items-center justify-between gap-3">
+            <ReservationResourceStateTag :state="reservation.state" class="shrink-0" />
+            <span class="shrink-0 text-xs tabular-nums text-muted-foreground">
+              {{ formatReservationPeriod(reservation.start_time, reservation.end_time) }}
+            </span>
+          </div>
         </li>
       </ol>
     </DetailAsyncSection>
@@ -142,10 +208,10 @@
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Expand, Pencil } from 'lucide-vue-next';
+import { AlertTriangle, Expand, Pencil } from 'lucide-vue-next';
 
 import { toneClass } from '../../Utils/searchBadges';
-import { formatSearchDate } from '../../Utils/searchHitMappers';
+import { formatSearchDateTime } from '../../Utils/searchHitMappers';
 import type { ResourceAvailability } from '../../Composables/useResourceAvailability';
 
 import DetailLayout from './DetailLayout.vue';
@@ -158,11 +224,22 @@ import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
+import ReservationResourceStateTag from '@/Components/Tag/ReservationResourceStateTag.vue';
 import { useApi } from '@/Composables/useApi';
 import type { ResourceSearchResult } from '@/Shared/Search/types';
 
+interface ReservationPreview {
+  id: string;
+  name: string;
+  quantity: number;
+  state: App.Entities.ReservationResource['state'];
+  start_time: number | null;
+  end_time: number | null;
+}
+
 interface ResourcePreviewData {
-  upcoming_reservations: Array<{ id: string; name: string; quantity: number; state: string; start_time: number | null; end_time: number | null }>;
+  upcoming_reservations: ReservationPreview[];
+  previous_reservations: ReservationPreview[];
   managers: Array<{
     id: string;
     name: string;
@@ -178,26 +255,56 @@ const props = withDefaults(defineProps<{
   availability?: ResourceAvailability;
   showAvailabilityBox?: boolean;
   showUpcomingReservations?: boolean;
+  showPreviousReservations?: boolean;
   showManagers?: boolean;
   allowImageLightbox?: boolean;
   showActions?: boolean;
 }>(), {
   showAvailabilityBox: false,
   showUpcomingReservations: false,
+  showPreviousReservations: false,
   showManagers: false,
   allowImageLightbox: false,
   showActions: false,
 });
+
+const formatReservationPeriod = (start: number | null, end: number | null): string | undefined => {
+  const startFormatted = formatSearchDateTime(start ?? undefined);
+  const endFormatted = formatSearchDateTime(end ?? undefined);
+
+  if (startFormatted && endFormatted) {
+    return `${startFormatted} – ${endFormatted}`;
+  }
+
+  return startFormatted ?? endFormatted;
+};
 
 const description = computed(() => props.resource.description_lt || props.resource.description_en);
 const imageAlt = computed(() => props.resource.name_lt || props.resource.name_en || '');
 const isUnavailable = computed(() =>
   !props.resource.is_reservable || (props.availability != null && props.availability.lowestCapacityAtDateTimeRange <= 0),
 );
+const hasDiscrepancies = computed(() =>
+  props.availability != null && (props.availability.discrepancies ?? []).length > 0,
+);
+
+const isTimeEndedActiveReservation = (reservation: { start_time: number | null; end_time: number | null; state: string }): boolean => {
+  if (reservation.end_time == null) {
+    return false;
+  }
+
+  if (!['created', 'reserved', 'lent'].includes(reservation.state)) {
+    return false;
+  }
+
+  return reservation.end_time * 1000 < Date.now();
+};
 
 // Preview-mode data is only fetched when sections that need it are enabled.
 // The parent keys this component by hit id, so an immediate fetch is fresh each time.
-const shouldFetchPreview = computed(() => props.showUpcomingReservations || props.showManagers);
+const shouldFetchPreview = computed(() =>
+  props.showUpcomingReservations || props.showPreviousReservations || props.showManagers,
+);
 
 const { data, isFetching } = useApi<ResourcePreviewData>(
   () => route('api.v1.admin.resources.preview', props.resource.id),

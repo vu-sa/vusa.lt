@@ -82,20 +82,48 @@ const stubs = {
     props: ['modelValue', 'options'],
     template: '<div data-testid="multi-select" />',
   },
+  // reka-ui's Select relies on popper positioning, so drive the selection through a plain stub.
+  Select: {
+    props: ['modelValue'],
+    emits: ['update:modelValue'],
+    provide() {
+      return {
+        selectValue: (value: string) => (this as unknown as { $emit: (e: string, v: string) => void }).$emit('update:modelValue', value),
+      };
+    },
+    template: '<div data-testid="tenant-filter"><slot /></div>',
+  },
+  SelectTrigger: { template: '<div><slot /></div>' },
+  SelectValue: { props: ['placeholder'], template: '<span />' },
+  SelectContent: { template: '<div><slot /></div>' },
+  SelectItem: {
+    props: ['value'],
+    inject: ['selectValue'],
+    template: '<button class="select-item" :data-value="value" @click="selectValue(value)"><slot /></button>',
+  },
+};
+
+const resourceFromTenant = (id: string, tenantId: string, tenantShortname: string) => ({
+  id,
+  name: `Resource ${id}`,
+  tenant: { id: tenantId, shortname: tenantShortname },
+  pivot: { id: `pivot-${id}`, state: 'created', quantity: 1 },
+});
+
+const baseReservation = {
+  id: 'res1',
+  name: 'Test Reservation',
+  description: 'A test reservation',
+  start_time: new Date().toISOString(),
+  end_time: new Date(Date.now() + 86400000).toISOString(),
+  resources: [] as ReturnType<typeof resourceFromTenant>[],
+  users: [],
 };
 
 function createWrapper(props: Record<string, unknown> = {}) {
   return mount(ShowReservation, {
     props: {
-      reservation: {
-        id: 'res1',
-        name: 'Test Reservation',
-        description: 'A test reservation',
-        start_time: new Date().toISOString(),
-        end_time: new Date(Date.now() + 86400000).toISOString(),
-        resources: [],
-        users: [],
-      },
+      reservation: baseReservation,
       ...props,
     },
     global: { stubs },
@@ -121,5 +149,44 @@ describe('ShowReservation.vue', () => {
     const wrapper = createWrapper();
 
     expect(wrapper.text()).not.toContain('Komentarai');
+  });
+
+  it('hides the tenant filter when every resource belongs to the same tenant', () => {
+    const wrapper = createWrapper({
+      reservation: {
+        ...baseReservation,
+        resources: [
+          resourceFromTenant('r1', 'tenant-1', 'VU SA MIF'),
+          resourceFromTenant('r2', 'tenant-1', 'VU SA MIF'),
+        ],
+      },
+    });
+
+    expect(wrapper.find('[data-testid="tenant-filter"]').exists()).toBe(false);
+  });
+
+  it('filters the resource table down to the selected tenant', async () => {
+    const wrapper = createWrapper({
+      reservation: {
+        ...baseReservation,
+        resources: [
+          resourceFromTenant('r1', 'tenant-1', 'VU SA MIF'),
+          resourceFromTenant('r2', 'tenant-2', 'VU SA CHGF'),
+          resourceFromTenant('r3', 'tenant-2', 'VU SA CHGF'),
+        ],
+      },
+    });
+
+    expect(wrapper.find('[data-testid="tenant-filter"]').exists()).toBe(true);
+
+    const table = () => wrapper.findComponent({ name: 'ReservationResourceTable' });
+
+    expect((table().props('reservation') as { resources: unknown[] }).resources).toHaveLength(3);
+
+    await wrapper.find('[data-value="tenant-2"]').trigger('click');
+
+    const filtered = (table().props('reservation') as { resources: { id: string }[] }).resources;
+
+    expect(filtered.map(resource => resource.id)).toEqual(['r2', 'r3']);
   });
 });

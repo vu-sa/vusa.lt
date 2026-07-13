@@ -278,10 +278,8 @@ import Delete16Regular from '~icons/fluent/delete16-regular';
 import Dismiss24Regular from '~icons/fluent/dismiss-24-regular';
 import DismissCircle24Regular from '~icons/fluent/dismiss-circle24-regular';
 import InfoIcon from '~icons/fluent/info-24-regular';
-import Warning24Filled from '~icons/fluent/warning-24-filled';
 import { CheckCheck } from 'lucide-vue-next';
 import { ApprovalActions } from '@/Features/Admin/Approvals';
-import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { DataTable } from '@/Components/ui/data-table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
@@ -290,7 +288,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/h
 import { Textarea } from '@/Components/ui/textarea';
 import { capitalize } from '@/Utils/String';
 import { formatStaticTime } from '@/Utils/IntlTime';
-import { isPivotOverdue, isPivotPickupOverdue } from '@/Utils/ReservationStatus';
+import { isPivotUnresolved } from '@/Utils/ReservationStatus';
 import CommentTipTap from '@/Features/Admin/CommentViewer/CommentTipTap.vue';
 
 const props = defineProps<{
@@ -368,7 +366,6 @@ const handleCardSelectionChange = (newIds: string[]) => {
 // Row styling based on state - subtle left border indicator instead of full background
 const getRowClassName = (row: App.Entities.Resource) => {
   const state = row.pivot?.state;
-  const isOverdue = isPivotOverdue(row.pivot);
 
   // Using subtle left border instead of full background color
   switch (state) {
@@ -377,9 +374,7 @@ const getRowClassName = (row: App.Entities.Resource) => {
     case 'reserved':
       return 'border-l-2 border-l-blue-400 dark:border-l-blue-500';
     case 'lent':
-      return isOverdue
-        ? 'border-l-2 border-l-red-500 bg-red-50/20 dark:border-l-red-400 dark:bg-red-950/10'
-        : 'border-l-2 border-l-emerald-400 dark:border-l-emerald-500';
+      return 'border-l-2 border-l-emerald-400 dark:border-l-emerald-500';
     case 'returned':
       return 'border-l-2 border-l-zinc-300 dark:border-l-zinc-600 opacity-60';
     case 'rejected':
@@ -553,15 +548,7 @@ const columns = computed<ColumnDef<App.Entities.Resource>[]>(() => [
           <ReservationPeriod
             startTime={pivot?.start_time ?? ''}
             endTime={pivot?.end_time ?? ''}
-            overdue={isPivotOverdue(pivot)}
           />
-          {/* Reserved but never collected — here the pickup is late, not the return. */}
-          {isPivotPickupOverdue(pivot) && (
-            <Badge variant="warning" size="tiny" class="gap-0.5">
-              <Warning24Filled class="size-3" />
-              {$t('Laukiama atsiėmimo')}
-            </Badge>
-          )}
         </div>
       );
     },
@@ -582,6 +569,7 @@ const columns = computed<ColumnDef<App.Entities.Resource>[]>(() => [
             <div class="cursor-help">
               <ReservationResourceStateTag
                 state={resource.pivot?.state ?? 'created'}
+                unresolved={isPivotUnresolved(resource.pivot)}
                 state_properties={resource.pivot?.state_properties}
               />
             </div>

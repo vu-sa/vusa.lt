@@ -27,6 +27,14 @@
       >
         <span :class="['size-2 shrink-0 rounded-full', tile.dot]" />
         {{ tile.label }}
+        <span
+          v-if="tile.unresolvedCount > 0"
+          :title="$t('reservations.dashboard.kpi.unresolved_badge_title', { count: tile.unresolvedCount })"
+          class="inline-flex items-center gap-0.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-950 dark:text-amber-400"
+        >
+          <TriangleAlert class="size-3" />
+          {{ tile.unresolvedCount }}
+        </span>
       </span>
       <span :class="['mt-1 text-4xl font-bold tabular-nums', tile.emphasis]">
         {{ tile.count }}
@@ -41,6 +49,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+import { TriangleAlert } from 'lucide-vue-next';
 
 import { getStatusDotClass, type KpiStatus, type ReservationStats, type StatusFilter } from '@/Utils/ReservationStatus';
 
@@ -63,6 +72,7 @@ const tiles = computed(() => [
     status: 'created' as const,
     label: $t('reservations.dashboard.kpi.awaiting'),
     count: props.stats.awaiting,
+    unresolvedCount: props.stats.awaitingUnresolved,
     caption: $tChoice('reservations.dashboard.kpi.awaiting_caption', props.stats.awaitingDueSoon, {
       count: props.stats.awaitingDueSoon,
     }),
@@ -73,6 +83,7 @@ const tiles = computed(() => [
     status: 'lent' as const,
     label: $t('reservations.dashboard.kpi.lent'),
     count: props.stats.lent,
+    unresolvedCount: props.stats.lentUnresolved,
     caption: $tChoice('reservations.dashboard.kpi.lent_caption', props.stats.lentQuantity, {
       count: props.stats.lentQuantity,
     }),
@@ -80,20 +91,10 @@ const tiles = computed(() => [
     emphasis: '',
   },
   {
-    status: 'overdue' as const,
-    label: $t('reservations.dashboard.kpi.overdue'),
-    count: props.stats.overdue,
-    caption: $tChoice('reservations.dashboard.kpi.overdue_caption', props.stats.overdueMaxDaysLate, {
-      count: props.stats.overdueMaxDaysLate,
-    }),
-    dot: getStatusDotClass('overdue'),
-    // The only number on the page that means someone has to chase something down.
-    emphasis: props.stats.overdue > 0 ? 'text-red-600 dark:text-red-400' : '',
-  },
-  {
     status: 'returned' as const,
     label: $t('reservations.dashboard.kpi.returned'),
     count: props.stats.returnedLast30Days,
+    unresolvedCount: 0,
     caption: $t('reservations.dashboard.kpi.returned_caption'),
     dot: getStatusDotClass('returned'),
     emphasis: '',

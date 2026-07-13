@@ -25,7 +25,9 @@ export interface ResourceAvailability {
   capacity: number;
   is_reservable: boolean;
   lowestCapacityAtDateTimeRange: number;
+  strictLowestCapacityAtDateTimeRange: number;
   reservations: ReservationSummary[];
+  discrepancies: ReservationSummary[];
 }
 
 export interface DateTimeRange {

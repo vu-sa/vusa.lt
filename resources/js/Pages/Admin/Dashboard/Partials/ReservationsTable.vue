@@ -156,6 +156,7 @@ import {
   getRejectablePivotIds,
   getReservationRowStatus,
   isReservationSelectable,
+  isReservationUnresolved,
   type DashboardReservation,
   type ReservationResourceState,
 } from '@/Utils/ReservationStatus';
@@ -392,9 +393,7 @@ const submitDecision = () => {
 const rowStatus = (reservation: DashboardReservation) =>
   getReservationRowStatus(reservation, { approvableOnly: isAdministered.value });
 
-/** The amber flag on an overdue row, matching ReservationResourceTable's left-border language. */
-const getRowClassName = (reservation: DashboardReservation) =>
-  (rowStatus(reservation) === 'overdue' ? 'border-l-2 border-l-amber-500 dark:border-l-amber-400' : '');
+const getRowClassName = (_reservation: DashboardReservation) => '';
 
 const ACTION_LABELS: Record<string, string> = {
   created: 'reservations.actions.approve',
@@ -532,7 +531,6 @@ const columns = computed<ColumnDef<DashboardReservation, any>[]>(() => [
       <ReservationPeriod
         startTime={row.original.start_time}
         endTime={row.original.end_time}
-        overdue={rowStatus(row.original) === 'overdue'}
       />
     ),
   },
@@ -547,13 +545,11 @@ const columns = computed<ColumnDef<DashboardReservation, any>[]>(() => [
         return <span class="text-sm text-muted-foreground">—</span>;
       }
 
-      const overdue = status === 'overdue';
-
       // How late it is lives in the period cell; the badge only carries the status.
       return (
         <ReservationResourceStateTag
-          state={overdue ? 'lent' : status}
-          overdue={overdue}
+          state={status}
+          unresolved={isReservationUnresolved(row.original, { approvableOnly: isAdministered.value })}
         />
       );
     },

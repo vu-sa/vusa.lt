@@ -40,7 +40,8 @@ class ResourceAvailabilityApiController extends ApiController
             ->get();
 
         $data = $resources->map(function (Resource $resource) use ($start, $end, $rangeStart, $rangeEnd) {
-            $capacityTimeline = $resource->getCapacityAtDateTimeRange($start, $end);
+            $strictCapacityTimeline = $resource->getCapacityAtDateTimeRange($start, $end);
+            $flexibleCapacityTimeline = $resource->getCapacityAtDateTimeRange($start, $end, [], [], true);
 
             $overlappingReservations = $resource->active_reservations
                 ->filter(function ($reservation) use ($rangeStart, $rangeEnd) {
@@ -64,12 +65,26 @@ class ResourceAvailabilityApiController extends ApiController
                 ->values()
                 ->all();
 
+            $discrepancies = $resource->findTimeEndedActiveReservations($start, $end)
+                ->map(fn ($reservation) => [
+                    'id' => (string) $reservation->id,
+                    'name' => $reservation->name,
+                    'quantity' => (int) $reservation->pivot->quantity,
+                    'state' => $reservation->pivot->state,
+                    'start_time' => $reservation->pivot->start_time?->timestamp,
+                    'end_time' => $reservation->pivot->end_time?->timestamp,
+                ])
+                ->values()
+                ->all();
+
             return [
                 'id' => (string) $resource->id,
                 'capacity' => $resource->capacity,
                 'is_reservable' => $resource->is_reservable,
-                'lowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($capacityTimeline),
+                'lowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($flexibleCapacityTimeline),
+                'strictLowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($strictCapacityTimeline),
                 'reservations' => $overlappingReservations,
+                'discrepancies' => $discrepancies,
             ];
         })->keyBy('id');
 

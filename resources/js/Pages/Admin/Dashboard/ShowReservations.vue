@@ -218,7 +218,6 @@ const STATUS_OPTIONS: ReservationRowStatus[] = [
   'created',
   'reserved',
   'lent',
-  'overdue',
   'returned',
   'rejected',
   'cancelled',

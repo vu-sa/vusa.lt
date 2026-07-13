@@ -8,8 +8,7 @@ return [
         'returned' => 'returned',
         'rejected' => 'rejected',
         'cancelled' => 'cancelled',
-        // Display-only: a lent resource whose return time has passed. Not a real state.
-        'overdue' => 'overdue',
+
     ],
     'decision' => [
         'approve' => 'approve',

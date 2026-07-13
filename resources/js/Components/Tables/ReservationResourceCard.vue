@@ -160,6 +160,7 @@
                 <div class="shrink-0">
                   <ReservationResourceStateTag
                     :state="resource.pivot?.state ?? 'created'"
+                    :unresolved="isUnresolved(resource)"
                     :state_properties="resource.pivot?.state_properties"
                   />
                 </div>
@@ -206,11 +207,6 @@
               </span>
             </div>
 
-            <!-- Overdue warning -->
-            <Badge v-if="isOverdue(resource)" variant="rose" class="gap-1 text-xs">
-              <IFluentWarning24Filled class="size-3" />
-              {{ $t('Vėluojama') }}
-            </Badge>
           </div>
 
           <!-- Actions -->
@@ -322,7 +318,6 @@ import { Link, usePage } from '@inertiajs/vue3';
 import ReservationResourceStateTag from '@/Components/Tag/ReservationResourceStateTag.vue';
 import StateProgressIndicator from '@/Components/SmallElements/StateProgressIndicator.vue';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
-import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
@@ -330,7 +325,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/h
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { RESERVATION_DATE_TIME_FORMAT } from '@/Constants/DateTimeFormats';
 import { formatStaticTime } from '@/Utils/IntlTime';
-import { isPivotOverdue } from '@/Utils/ReservationStatus';
+import { isPivotUnresolved } from '@/Utils/ReservationStatus';
 
 // Icons
 import IFluentAdd24Filled from '~icons/fluent/add-24-filled';
@@ -349,7 +344,6 @@ import IFluentHandLeft24Regular from '~icons/fluent/hand-left-24-regular';
 import IFluentInfo24Regular from '~icons/fluent/info-24-regular';
 import IFluentMoreVertical24Regular from '~icons/fluent/more-vertical-24-regular';
 import IFluentStack24Regular from '~icons/fluent/stack-24-regular';
-import IFluentWarning24Filled from '~icons/fluent/warning-24-filled';
 
 const props = defineProps<{
   resources: App.Entities.Resource[];
@@ -429,9 +423,9 @@ const formatDate = (dateString?: string | null) => {
   return formatStaticTime(new Date(dateString), RESERVATION_DATE_TIME_FORMAT, locale.value);
 };
 
-const isOverdue = (resource: App.Entities.Resource) => {
+const isUnresolved = (resource: App.Entities.Resource) => {
   if (!resource.pivot?.end_time) return false;
-  return isPivotOverdue(resource.pivot);
+  return isPivotUnresolved(resource.pivot);
 };
 
 const getCardClasses = (resource: App.Entities.Resource) => {
@@ -471,11 +465,11 @@ const getDateWarningClass = (resource: App.Entities.Resource, type: 'start' | 'e
     }
   }
 
-  // Show end date warning for lent state (overdue)
-  if (type === 'end' && state === 'lent') {
+  // Show end date warning for active states (unresolved)
+  if (type === 'end' && ['created', 'reserved', 'lent'].includes(state ?? '')) {
     const endDate = new Date(resource.pivot?.end_time ?? '');
     if (endDate < new Date()) {
-      return 'font-semibold text-rose-600 dark:text-rose-400';
+      return 'font-semibold text-amber-600 dark:text-amber-400';
     }
   }
 

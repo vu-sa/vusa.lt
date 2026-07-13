@@ -9,13 +9,7 @@
           <div v-if="compact.secondary" class="text-xs text-muted-foreground">
             {{ compact.secondary }}
           </div>
-          <div
-            v-if="overdue && lateDays > 0"
-            class="mt-0.5 inline-flex items-center gap-1 whitespace-nowrap text-xs font-medium text-amber-600 dark:text-amber-400"
-          >
-            <TriangleAlert class="size-3 shrink-0" />
-            {{ $tChoice('reservations.overdue_days', lateDays, { count: lateDays }) }}
-          </div>
+
         </div>
       </TooltipTrigger>
       <TooltipContent>
@@ -27,9 +21,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { transChoice as $tChoice } from 'laravel-vue-i18n';
 import { usePage } from '@inertiajs/vue3';
-import { TriangleAlert } from 'lucide-vue-next';
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { formatStaticTime, isSameDay } from '@/Utils/IntlTime';
@@ -37,20 +29,12 @@ import { formatStaticTime, isSameDay } from '@/Utils/IntlTime';
 const props = defineProps<{
   startTime: string | Date;
   endTime: string | Date;
-  /** Renders the "N days overdue" sub-line. Callers derive this from ReservationStatus. */
-  overdue?: boolean;
 }>();
 
 const locale = computed(() => usePage().props.app.locale);
 
 const start = computed(() => new Date(props.startTime));
 const end = computed(() => new Date(props.endTime));
-
-const lateDays = computed(() => {
-  const elapsedMs = Date.now() - end.value.getTime();
-
-  return Math.max(0, Math.floor(elapsedMs / (1000 * 60 * 60 * 24)));
-});
 
 /**
  * Drop whatever the two dates share, so the eye only has to read what actually differs:

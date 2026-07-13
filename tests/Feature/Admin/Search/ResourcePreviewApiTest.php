@@ -17,12 +17,16 @@ test('unauthenticated request is rejected', function () {
         ->assertStatus(401);
 });
 
-test('user without access to the resource gets 403', function () {
+test('any authenticated user can preview a resource', function () {
     $user = makeUser($this->tenant);
 
     asUser($user)
         ->getJson(route('api.v1.admin.resources.preview', $this->resource))
-        ->assertStatus(403);
+        ->assertStatus(200)
+        ->assertJson(['success' => true])
+        ->assertJsonStructure([
+            'data' => ['upcoming_reservations', 'previous_reservations', 'managers'],
+        ]);
 });
 
 test('authorized admin receives the preview payload', function () {
@@ -33,7 +37,7 @@ test('authorized admin receives the preview payload', function () {
         ->assertStatus(200)
         ->assertJson(['success' => true])
         ->assertJsonStructure([
-            'data' => ['upcoming_reservations', 'managers'],
+            'data' => ['upcoming_reservations', 'previous_reservations', 'managers'],
         ]);
 });
 
@@ -55,7 +59,7 @@ test('preview lists upcoming active reservations', function () {
         ->assertJsonPath('data.upcoming_reservations.0.quantity', 2);
 });
 
-test('preview omits past reservations', function () {
+test('preview omits past reservations from active list', function () {
     $admin = makeAdminUser($this->tenant);
 
     $reservation = Reservation::factory()->create(['name' => 'Past event']);
@@ -70,4 +74,23 @@ test('preview omits past reservations', function () {
         ->getJson(route('api.v1.admin.resources.preview', $this->resource))
         ->assertStatus(200)
         ->assertJsonPath('data.upcoming_reservations', []);
+});
+
+test('preview includes terminal past reservations in previous list', function () {
+    $admin = makeAdminUser($this->tenant);
+
+    $reservation = Reservation::factory()->create(['name' => 'Returned event']);
+    $this->resource->reservations()->attach($reservation->id, [
+        'quantity' => 2,
+        'state' => 'returned',
+        'start_time' => now()->subDays(3),
+        'end_time' => now()->subDays(2),
+    ]);
+
+    asUser($admin)
+        ->getJson(route('api.v1.admin.resources.preview', $this->resource))
+        ->assertStatus(200)
+        ->assertJsonPath('data.previous_reservations.0.name', 'Returned event')
+        ->assertJsonPath('data.previous_reservations.0.quantity', 2)
+        ->assertJsonPath('data.previous_reservations.0.state', 'returned');
 });

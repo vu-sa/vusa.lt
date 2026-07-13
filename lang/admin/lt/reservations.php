@@ -14,8 +14,7 @@ return [
             'awaiting_caption' => '{0} nėra artėjančių|{1} :count prasideda per 48 val.|[2,*] :count prasideda per 48 val.',
             'lent' => 'Šiuo metu paskolinta',
             'lent_caption' => '{0} nėra daiktų|{1} :count daiktas|[2,9] :count daiktai|[10,*] :count daiktų',
-            'overdue' => 'Vėluojama',
-            'overdue_caption' => '{0} viskas laiku|[1,*] vėluojama iki :count d.',
+            'unresolved_badge_title' => '{1} :count rezervacija, kurios laikas pasibaigęs, bet ji dar neuždaryta|[2,*] :count rezervacijos, kurių laikas pasibaigęs, bet jos dar neuždarytos|[10,*] :count rezervacijų, kurių laikas pasibaigęs, bet jos dar neuždarytos',
             'returned' => 'Grąžinta · 30 d.',
             'returned_caption' => 'viskas apskaityta',
         ],
@@ -78,5 +77,12 @@ return [
         'resolve_hint' => 'Ištekliai bus iš karto pervesti į „grąžinta“ būseną, praleidžiant likusius patvirtinimo žingsnius. Kiekvienas žingsnis vis tiek bus užfiksuotas istorijoje.',
         'reject_only_pending' => 'Atmesti galima tik patvirtinimo laukiančius išteklius — kiti pasirinkti ištekliai bus praleisti.',
     ],
-    'overdue_days' => '{1} vėluojama :count d.|[2,*] vėluojama :count d.',
+    'show' => [
+        'no_resources_for_tenant' => 'Pagal pasirinktą padalinį išteklių nerasta.',
+    ],
+    'unresolved_days' => '{1} vėluojama :count d.|[2,*] vėluojama :count d.',
+    'unresolved_help' => 'Rezervacijos numatytas laikas jau pasibaigęs, bet ji dar neuždaryta.',
+    'discrepancy' => [
+        'available_from_ended_reservations' => '{1} :count vnt. laisva, nes aktyvi rezervacija jau pasibaigusi|[2,*] :count vnt. laisva, nes aktyvios rezervacijos jau pasibaigusios',
+    ],
 ];

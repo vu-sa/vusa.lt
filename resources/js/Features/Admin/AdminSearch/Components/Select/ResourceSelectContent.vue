@@ -13,9 +13,12 @@
     <template #detail="{ hit }">
       <ResourceDetail
         v-if="hit"
+        :key="hit.id"
         :resource="hit.raw as ResourceSearchResult"
         :availability="availability.get(hit.recordId)"
         show-availability-box
+        show-upcoming-reservations
+        show-previous-reservations
       />
     </template>
   </SearchSelectView>
@@ -76,6 +79,12 @@ const mapHit = (doc: unknown): NormalizedSearchHit => {
   const info = availability.value.get(resource.id);
   if (info) {
     hit.meta = `${info.lowestCapacityAtDateTimeRange} ${$t('iš')} ${info.capacity}`;
+    if (info.discrepancies.length > 0) {
+      hit.statusBadge = {
+        label: $t('Pasibaigęs laikas'),
+        tone: 'warning',
+      };
+    }
   }
   return hit;
 };
@@ -87,7 +96,7 @@ const disabledIds = computed<Set<string>>(() => {
   const disabled = new Set<string>((props.excludedIds ?? []).map(rowId));
   for (const doc of controller.results.value as ResourceSearchResult[]) {
     const info = availability.value.get(doc.id);
-    if (!doc.is_reservable || (info && info.lowestCapacityAtDateTimeRange <= 0)) {
+    if (!doc.is_reservable || (info && info.strictLowestCapacityAtDateTimeRange <= 0)) {
       disabled.add(rowId(doc.id));
     }
   }

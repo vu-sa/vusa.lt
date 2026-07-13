@@ -2,6 +2,11 @@
   <Badge :variant="badgeVariant" class="gap-1">
     <component :is="icon" class="size-3 shrink-0" />
     <span>{{ capitalize($t(`state.status.${displayState}`)) }}</span>
+    <TriangleAlert
+      v-if="unresolved"
+      :title="$t('reservations.unresolved_help')"
+      class="size-3 shrink-0 text-amber-600 dark:text-amber-400"
+    />
     <InfoPopover v-if="state_properties">
       {{ state_properties.description }}
     </InfoPopover>
@@ -25,21 +30,15 @@ import InfoPopover from '../Buttons/InfoPopover.vue';
 import type { BadgeVariants } from '@/Components/ui/badge';
 import { Badge } from '@/Components/ui/badge';
 import { capitalize } from '@/Utils/String';
-import type { ReservationRowStatus } from '@/Utils/ReservationStatus';
+import type { ReservationResourceState } from '@/Utils/ReservationStatus';
 
 const props = defineProps<{
-  state: App.Entities.ReservationResource['state'];
+  state: ReservationResourceState;
+  unresolved?: boolean;
   state_properties?: App.Entities.ReservationResource['state_properties'];
-  /**
-   * A lent resource whose return time has passed. Not a stored state — callers derive it with
-   * `isPivotOverdue` / `getReservationRowStatus`, and it takes over the badge when set.
-   */
-  overdue?: boolean;
 }>();
 
-const displayState = computed<ReservationRowStatus>(
-  () => (props.overdue ? 'overdue' : props.state ?? 'created') as ReservationRowStatus,
-);
+const displayState = computed<ReservationResourceState>(() => props.state ?? 'created');
 
 /**
  * Every state gets its own colour. `lent` and `returned` previously shared one, which made an item
@@ -53,14 +52,13 @@ const badgeVariant = computed<BadgeVariants['variant']>(() => {
       return 'outline';
     case 'lent':
       return 'default';
-    case 'overdue':
-    case 'rejected':
-      return 'rose';
     case 'returned':
       return 'success';
     // Cancelling is the requester calling it off, not a failure — it should not read as alarming.
     case 'cancelled':
       return 'secondary';
+    case 'rejected':
+      return 'rose';
     default:
       return 'secondary';
   }
@@ -74,8 +72,6 @@ const icon = computed(() => {
       return BookmarkCheck;
     case 'lent':
       return PackageOpen;
-    case 'overdue':
-      return TriangleAlert;
     case 'returned':
       return CircleCheck;
     case 'rejected':

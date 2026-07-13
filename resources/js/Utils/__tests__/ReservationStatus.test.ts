@@ -1,15 +1,17 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  daysOverdue,
+  computeReservationStats,
+  daysUnresolved,
   getPrimaryAction,
   getRejectablePivotIds,
   getReservationRowStatus,
-  isPivotOverdue,
   isPivotPickupOverdue,
+  isPivotUnresolved,
   isReservationSelectable,
+  isReservationUnresolved,
   matchesStatusFilter,
-  reservationDaysOverdue,
+  reservationDaysUnresolved,
   type DashboardReservation,
   type ReservationPivot,
   type ReservationResourceState,
@@ -50,24 +52,28 @@ function reservation(pivots: ReservationPivot[]): DashboardReservation {
   };
 }
 
-describe('overdue rules', () => {
-  it('treats a lent item past its end time as overdue', () => {
+describe('unresolved rules', () => {
+  it('treats a lent item past its end time as unresolved', () => {
     const lentLate = pivot({ state: 'lent', end_time: '2026-07-11T10:00:00Z' });
 
-    expect(isPivotOverdue(lentLate, NOW)).toBe(true);
-    expect(daysOverdue(lentLate, NOW)).toBe(2);
+    expect(isPivotUnresolved(lentLate, NOW)).toBe(true);
+    expect(daysUnresolved(lentLate, NOW)).toBe(2);
   });
 
-  it('does not treat a returned item past its end time as overdue', () => {
-    // ReservationResourceCard omits the state guard today and gets this wrong.
+  it('does not treat a returned item past its end time as unresolved', () => {
     const returnedLate = pivot({ state: 'returned', end_time: '2026-07-11T10:00:00Z' });
 
-    expect(isPivotOverdue(returnedLate, NOW)).toBe(false);
-    expect(daysOverdue(returnedLate, NOW)).toBe(0);
+    expect(isPivotUnresolved(returnedLate, NOW)).toBe(false);
+    expect(daysUnresolved(returnedLate, NOW)).toBe(0);
   });
 
-  it('does not treat a lent item still within its period as overdue', () => {
-    expect(isPivotOverdue(pivot({ state: 'lent' }), NOW)).toBe(false);
+  it('does not treat a lent item still within its period as unresolved', () => {
+    expect(isPivotUnresolved(pivot({ state: 'lent' }), NOW)).toBe(false);
+  });
+
+  it('treats any active state past its end time as unresolved', () => {
+    expect(isPivotUnresolved(pivot({ state: 'created', end_time: '2026-07-11T10:00:00Z' }), NOW)).toBe(true);
+    expect(isPivotUnresolved(pivot({ state: 'reserved', end_time: '2026-07-11T10:00:00Z' }), NOW)).toBe(true);
   });
 
   it('flags a reserved item that was never picked up', () => {
@@ -79,22 +85,13 @@ describe('overdue rules', () => {
 });
 
 describe('getReservationRowStatus', () => {
-  it('ranks anything awaiting review above an overdue loan', () => {
-    const row = reservation([
-      pivot({ state: 'lent', end_time: '2026-07-01T10:00:00Z' }),
-      pivot({ state: 'created' }),
-    ]);
-
-    expect(getReservationRowStatus(row, {}, NOW)).toBe('created');
-  });
-
-  it('ranks an overdue loan above a healthy one', () => {
+  it('keeps the real state even when a loan is past its end time', () => {
     const row = reservation([
       pivot({ state: 'lent' }),
       pivot({ state: 'lent', end_time: '2026-07-01T10:00:00Z' }),
     ]);
 
-    expect(getReservationRowStatus(row, {}, NOW)).toBe('overdue');
+    expect(getReservationRowStatus(row, {}, NOW)).toBe('lent');
   });
 
   it('only reports a terminal status once nothing is live', () => {
@@ -128,7 +125,23 @@ describe('getReservationRowStatus', () => {
       pivot({ state: 'lent', end_time: '2026-07-03T10:00:00Z' }),
     ]);
 
-    expect(reservationDaysOverdue(row, {}, NOW)).toBe(10);
+    expect(reservationDaysUnresolved(row, {}, NOW)).toBe(10);
+  });
+});
+
+describe('isReservationUnresolved', () => {
+  it('is true when any scoped pivot is past its end time', () => {
+    const row = reservation([
+      pivot({ state: 'lent', end_time: '2026-07-01T10:00:00Z' }),
+      pivot({ state: 'created' }),
+    ]);
+
+    expect(isReservationUnresolved(row, {}, NOW)).toBe(true);
+  });
+
+  it('is false when all pivots are on time or terminal', () => {
+    expect(isReservationUnresolved(reservation([pivot({ state: 'lent' })]), {}, NOW)).toBe(false);
+    expect(isReservationUnresolved(reservation([pivot({ state: 'returned' })]), {}, NOW)).toBe(false);
   });
 });
 
@@ -152,15 +165,15 @@ describe('getPrimaryAction', () => {
   });
 
   it('always acts on the state the row badge reports', () => {
-    // A row holding an overdue loan AND an uncollected reservation badges as "overdue". The button
-    // must chase the overdue item, not hand over the other one — otherwise badge and button lie.
+    // A row holding an unresolved loan AND an uncollected reservation still badges as "lent" now;
+    // unresolved is only an indicator. The button follows the real state.
     const row = reservation([
-      pivot({ id: 'p-overdue', state: 'lent', end_time: '2026-07-01T10:00:00Z' }),
+      pivot({ id: 'p-lent', state: 'lent', end_time: '2026-07-01T10:00:00Z' }),
       pivot({ id: 'p-reserved', state: 'reserved' }),
     ]);
 
-    expect(getReservationRowStatus(row, { approvableOnly: true }, NOW)).toBe('overdue');
-    expect(getPrimaryAction(row, NOW)).toEqual({ state: 'lent', pivotIds: ['p-overdue'] });
+    expect(getReservationRowStatus(row, { approvableOnly: true }, NOW)).toBe('lent');
+    expect(getPrimaryAction(row, NOW)).toEqual({ state: 'lent', pivotIds: ['p-lent'] });
   });
 
   it('ignores pivots the administrator does not own', () => {
@@ -180,28 +193,40 @@ describe('getPrimaryAction', () => {
 describe('matchesStatusFilter', () => {
   const pending = reservation([pivot({ state: 'created' })]);
   const lent = reservation([pivot({ state: 'lent' })]);
-  const overdue = reservation([pivot({ state: 'lent', end_time: '2026-07-01T10:00:00Z' })]);
+  const lateLent = reservation([pivot({ state: 'lent', end_time: '2026-07-01T10:00:00Z' })]);
   const returned = reservation([pivot({ state: 'returned' })]);
 
-  it('counts an overdue item as lent, since that is exactly what it is', () => {
-    // The KPI counts overdue items in both buckets; the filter has to agree, or "Lent 29" would
-    // show fewer than 29 rows.
-    expect(matchesStatusFilter(overdue, 'lent', {}, NOW)).toBe(true);
+  it('counts a late item by its real state, not as a separate unresolved filter', () => {
+    expect(matchesStatusFilter(lateLent, 'lent', {}, NOW)).toBe(true);
     expect(matchesStatusFilter(lent, 'lent', {}, NOW)).toBe(true);
     expect(matchesStatusFilter(pending, 'lent', {}, NOW)).toBe(false);
   });
 
-  it('keeps overdue as its own narrower filter', () => {
-    expect(matchesStatusFilter(overdue, 'overdue', {}, NOW)).toBe(true);
-    expect(matchesStatusFilter(lent, 'overdue', {}, NOW)).toBe(false);
-  });
-
   it('hides terminal reservations from the active view', () => {
     expect(matchesStatusFilter(pending, 'active', {}, NOW)).toBe(true);
-    expect(matchesStatusFilter(overdue, 'active', {}, NOW)).toBe(true);
+    expect(matchesStatusFilter(lateLent, 'active', {}, NOW)).toBe(true);
     expect(matchesStatusFilter(returned, 'active', {}, NOW)).toBe(false);
 
     expect(matchesStatusFilter(returned, 'all', {}, NOW)).toBe(true);
+  });
+});
+
+describe('computeReservationStats', () => {
+  it('counts unresolved items inside the awaiting and lent buckets', () => {
+    const rows = [
+      reservation([pivot({ state: 'created', end_time: '2026-07-01T10:00:00Z' })]),
+      reservation([pivot({ state: 'lent', end_time: '2026-07-01T10:00:00Z' })]),
+      reservation([pivot({ state: 'created' })]),
+      reservation([pivot({ state: 'returned' })]),
+    ];
+
+    const stats = computeReservationStats(rows, {}, NOW);
+
+    expect(stats.awaiting).toBe(2);
+    expect(stats.awaitingUnresolved).toBe(1);
+    expect(stats.lent).toBe(1);
+    expect(stats.lentUnresolved).toBe(1);
+    expect(stats.returnedLast30Days).toBe(1);
   });
 });
 

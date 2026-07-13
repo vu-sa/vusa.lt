@@ -69,8 +69,8 @@ function reservation(id: string, name: string, pivots: ReservationPivot[]): Dash
 
 const administered = [
   reservation('res-pending', 'Debate club finals', [pivot('p-1', 'created')]),
-  // Lent and past its end time — the overdue row.
-  reservation('res-overdue', 'Open lecture: AI', [pivot('p-2', 'lent', { end_time: '2020-01-01T10:00:00Z' })]),
+  // Lent and past its end time — the unresolved row.
+  reservation('res-unresolved', 'Open lecture: AI', [pivot('p-2', 'lent', { end_time: '2020-01-01T10:00:00Z' })]),
   reservation('res-returned', 'Spring fair', [pivot('p-3', 'returned')]),
 ];
 
@@ -119,21 +119,30 @@ describe('KPI strip', () => {
 
     expect(text).toContain('reservations.dashboard.kpi.awaiting');
     expect(text).toContain('reservations.dashboard.kpi.lent');
-    expect(text).toContain('reservations.dashboard.kpi.overdue');
     expect(text).toContain('reservations.dashboard.kpi.returned');
+    expect(text).not.toContain('reservations.dashboard.kpi.unresolved');
   });
 
-  it('counts reservations, so a tile agrees with the rows it filters to', async () => {
-    // The tiles used to count resource items, which made "Overdue 10" filter down to 2 rows.
+  it('counts reservations by real state, so a tile agrees with the rows it filters to', async () => {
+    // The late-lent row now counts under "lent", not a separate "unresolved" tile.
     const administeredView = mountAdministered();
 
-    expect(kpiCount(administeredView, 'reservations.dashboard.kpi.overdue')).toBe(1);
+    expect(kpiCount(administeredView, 'reservations.dashboard.kpi.lent')).toBe(1);
 
-    const overdueTile = administeredView.findAll('button')
-      .find(button => button.text().includes('reservations.dashboard.kpi.overdue'));
-    await overdueTile!.trigger('click');
+    const lentTile = administeredView.findAll('button')
+      .find(button => button.text().includes('reservations.dashboard.kpi.lent'));
+    await lentTile!.trigger('click');
 
     expect(administeredView.findAll('table tbody tr')).toHaveLength(1);
+  });
+
+  it('shows an amber warning badge count on buckets with unresolved reservations', async () => {
+    const administeredView = mountAdministered();
+
+    const lentTile = administeredView.findAll('button')
+      .find(button => button.text().includes('reservations.dashboard.kpi.lent'));
+
+    expect(lentTile!.text()).toContain('1');
   });
 
   it('recounts as the search narrows the table', async () => {
@@ -145,7 +154,7 @@ describe('KPI strip', () => {
     await administeredView.find('input').setValue('Open lecture');
 
     expect(kpiCount(administeredView, 'reservations.dashboard.kpi.awaiting')).toBe(0);
-    expect(kpiCount(administeredView, 'reservations.dashboard.kpi.overdue')).toBe(1);
+    expect(kpiCount(administeredView, 'reservations.dashboard.kpi.lent')).toBe(1);
   });
 
   it('filters the table to the bucket that was clicked', async () => {
@@ -155,12 +164,12 @@ describe('KPI strip', () => {
     expect(administeredView.text()).toContain('Open lecture: AI');
     expect(administeredView.text()).toContain('Debate club finals');
 
-    const overdueTile = administeredView.findAll('button')
-      .find(button => button.text().includes('reservations.dashboard.kpi.overdue'));
+    const lentTile = administeredView.findAll('button')
+      .find(button => button.text().includes('reservations.dashboard.kpi.lent'));
 
-    await overdueTile!.trigger('click');
+    await lentTile!.trigger('click');
 
-    expect(overdueTile!.attributes('aria-pressed')).toBe('true');
+    expect(lentTile!.attributes('aria-pressed')).toBe('true');
     // Only the lent-and-late row survives; the pending one is filtered out.
     expect(administeredView.text()).toContain('Open lecture: AI');
     expect(administeredView.text()).not.toContain('Debate club finals');
@@ -169,13 +178,13 @@ describe('KPI strip', () => {
   it('clears the filter when the active tile is clicked again', async () => {
     const administeredView = mountAdministered();
 
-    const overdueTile = administeredView.findAll('button')
-      .find(button => button.text().includes('reservations.dashboard.kpi.overdue'));
+    const lentTile = administeredView.findAll('button')
+      .find(button => button.text().includes('reservations.dashboard.kpi.lent'));
 
-    await overdueTile!.trigger('click');
-    await overdueTile!.trigger('click');
+    await lentTile!.trigger('click');
+    await lentTile!.trigger('click');
 
-    expect(overdueTile!.attributes('aria-pressed')).toBe('false');
+    expect(lentTile!.attributes('aria-pressed')).toBe('false');
     expect(administeredView.text()).toContain('Debate club finals');
   });
 });
@@ -209,7 +218,7 @@ describe('default view', () => {
   it('hides completed reservations so the open work is not buried', () => {
     const administeredView = mountAdministered();
 
-    // Pending and overdue are open work; the returned one is archive.
+    // Pending and unresolved are open work; the returned one is archive.
     expect(administeredView.text()).toContain('Debate club finals');
     expect(administeredView.text()).toContain('Open lecture: AI');
     expect(administeredView.text()).not.toContain('Spring fair');

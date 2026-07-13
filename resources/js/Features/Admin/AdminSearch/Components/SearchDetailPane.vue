@@ -34,6 +34,7 @@
       :key="hit.id"
       :resource="hit.raw as ResourceSearchResult"
       show-upcoming-reservations
+      show-previous-reservations
       show-managers
       allow-image-lightbox
       show-actions

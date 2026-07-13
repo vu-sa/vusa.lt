@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -28,6 +29,7 @@ describe('resource preview endpoint', function () {
             ->assertJsonStructure([
                 'data' => [
                     'upcoming_reservations',
+                    'previous_reservations',
                     'managers',
                 ],
             ]);
@@ -58,5 +60,74 @@ describe('resource preview endpoint', function () {
         expect($manager['email'])->toBe($this->manager->email);
         expect($manager['phone'])->toBe($this->manager->phone);
         expect($manager['facebook_url'])->toBe($this->manager->facebook_url);
+    });
+
+    test('preview lists previous terminal reservations', function () {
+        $reservation = Reservation::factory()->create(['name' => 'Returned event']);
+        $this->resource->reservations()->attach($reservation->id, [
+            'quantity' => 1,
+            'state' => 'returned',
+            'start_time' => now()->subDays(3),
+            'end_time' => now()->subDays(2),
+        ]);
+
+        $response = asUser($this->simpleUser)
+            ->getJson(route('api.v1.admin.resources.preview', $this->resource));
+
+        $response->assertOk()
+            ->assertJsonPath('data.previous_reservations.0.name', 'Returned event')
+            ->assertJsonPath('data.previous_reservations.0.quantity', 1)
+            ->assertJsonPath('data.previous_reservations.0.state', 'returned');
+    });
+
+    test('preview limits previous reservations to three', function () {
+        for ($i = 0; $i < 5; $i++) {
+            $reservation = Reservation::factory()->create(['name' => "Past event {$i}"]);
+            $this->resource->reservations()->attach($reservation->id, [
+                'quantity' => 1,
+                'state' => 'returned',
+                'start_time' => now()->subDays($i + 3),
+                'end_time' => now()->subDays($i + 2),
+            ]);
+        }
+
+        $response = asUser($this->simpleUser)
+            ->getJson(route('api.v1.admin.resources.preview', $this->resource));
+
+        $response->assertOk();
+        expect($response->json('data.previous_reservations'))->toHaveCount(3);
+    });
+
+    test('preview omits non-terminal past reservations from previous list', function () {
+        $reservation = Reservation::factory()->create(['name' => 'Stale active event']);
+        $this->resource->reservations()->attach($reservation->id, [
+            'quantity' => 1,
+            'state' => 'reserved',
+            'start_time' => now()->subDays(3),
+            'end_time' => now()->subDays(2),
+        ]);
+
+        $response = asUser($this->simpleUser)
+            ->getJson(route('api.v1.admin.resources.preview', $this->resource));
+
+        $response->assertOk()
+            ->assertJsonPath('data.previous_reservations', []);
+    });
+
+    test('preview includes time-ended active reservations in upcoming list', function () {
+        $reservation = Reservation::factory()->create(['name' => 'Stale active event']);
+        $this->resource->reservations()->attach($reservation->id, [
+            'quantity' => 1,
+            'state' => 'reserved',
+            'start_time' => now()->subDays(3),
+            'end_time' => now()->subDays(2),
+        ]);
+
+        $response = asUser($this->simpleUser)
+            ->getJson(route('api.v1.admin.resources.preview', $this->resource));
+
+        $response->assertOk()
+            ->assertJsonPath('data.upcoming_reservations.0.name', 'Stale active event')
+            ->assertJsonPath('data.upcoming_reservations.0.state', 'reserved');
     });
 });

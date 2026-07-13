@@ -25,22 +25,50 @@
         <TabsContent value="resources" class="space-y-4">
           <!-- Show card header only when there are resources -->
           <Card v-if="reservation.resources?.length">
-            <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-4">
+            <CardHeader class="flex flex-row flex-wrap items-center justify-between gap-3 space-y-0 pb-4">
               <div>
                 <CardTitle class="text-base">
                   {{ $t('Rezervuoti ištekliai') }}
                 </CardTitle>
                 <CardDescription>{{ $t('Valdyk rezervacijos išteklius ir jų būsenas') }}</CardDescription>
               </div>
-              <Button size="sm" @click="handleAddResource">
-                <IFluentAdd24Filled class="size-4" />
-                {{ $t('Pridėti') }}
-              </Button>
+              <div class="flex flex-wrap items-center gap-2">
+                <!-- Only worth showing once the reservation spans more than one unit. -->
+                <Select v-if="resourceTenants.length > 1" v-model="tenantFilter">
+                  <SelectTrigger class="w-[170px]">
+                    <SelectValue :placeholder="$t('reservations.dashboard.filters.tenant')" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">
+                      {{ $t('reservations.dashboard.filters.tenant_all') }}
+                    </SelectItem>
+                    <SelectItem v-for="tenant in resourceTenants" :key="tenant.id" :value="tenant.id">
+                      {{ $t(tenant.shortname) }}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button size="sm" @click="handleAddResource">
+                  <IFluentAdd24Filled class="size-4" />
+                  {{ $t('Pridėti') }}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent class="pt-0">
+              <div
+                v-if="!filteredReservation.resources?.length"
+                class="flex flex-col items-center gap-3 rounded-xl border-2 border-dashed border-zinc-200 py-12 dark:border-zinc-700"
+              >
+                <p class="text-sm text-muted-foreground">
+                  {{ $t('reservations.show.no_resources_for_tenant') }}
+                </p>
+                <Button variant="outline" size="sm" @click="tenantFilter = 'all'">
+                  {{ $t('reservations.dashboard.filters.clear') }}
+                </Button>
+              </div>
               <ReservationResourceTable
+                v-else
                 v-model:selected-reservation-resource="selectedReservationResource"
-                :reservation
+                :reservation="filteredReservation"
                 @edit:reservation-resource="editReservationResource"
                 @add-resource="handleAddResource"
               />
@@ -155,7 +183,7 @@
 
 <script setup lang="ts">
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { ref, watch, capitalize } from 'vue';
+import { computed, ref, watch, capitalize } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';
 
@@ -165,6 +193,13 @@ import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/Components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { RESERVATION_CARD_MODAL_TITLES } from '@/Constants/I18n/CardModalTitles';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
@@ -198,6 +233,38 @@ usePageBreadcrumbs(() => [
 
 // Tab management
 const currentTab = useStorage('show-reservation-tab', 'resources');
+
+// Tenant filter — a reservation can pull resources from several units, and a manager usually
+// only cares about the ones their unit owns.
+const tenantFilter = ref<string>('all');
+
+const resourceTenants = computed(() => {
+  const tenants = new Map<string, { id: string; shortname: string }>();
+
+  props.reservation.resources?.forEach((resource) => {
+    if (resource.tenant) {
+      tenants.set(String(resource.tenant.id), {
+        id: String(resource.tenant.id),
+        shortname: resource.tenant.shortname ?? '',
+      });
+    }
+  });
+
+  return [...tenants.values()];
+});
+
+const filteredReservation = computed(() => {
+  if (tenantFilter.value === 'all') {
+    return props.reservation;
+  }
+
+  return {
+    ...props.reservation,
+    resources: (props.reservation.resources ?? []).filter(
+      resource => String(resource.tenant?.id) === tenantFilter.value,
+    ),
+  };
+});
 
 // Resource form state
 const selectedReservationResource = ref<App.Entities.ReservationResource | null>(null);

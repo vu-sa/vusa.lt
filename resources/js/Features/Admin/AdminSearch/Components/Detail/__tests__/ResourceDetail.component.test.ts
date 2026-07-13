@@ -17,8 +17,18 @@ const baseResource = {
   tenant_shortname: 'MIF',
 };
 
+interface ReservationPreview {
+  id: string;
+  name: string;
+  quantity: number;
+  state: string;
+  start_time: number | null;
+  end_time: number | null;
+}
+
 interface ResourcePreviewData {
-  upcoming_reservations: Array<{ id: string; name: string; quantity: number; state: string; start_time: number | null; end_time: number | null }>;
+  upcoming_reservations: ReservationPreview[];
+  previous_reservations: ReservationPreview[];
   managers: Array<{
     id: string;
     name: string;
@@ -75,6 +85,7 @@ describe('ResourceDetail', () => {
         is_reservable: true,
         lowestCapacityAtDateTimeRange: 2,
         reservations: [],
+        discrepancies: [],
       },
     });
 
@@ -90,10 +101,29 @@ describe('ResourceDetail', () => {
         is_reservable: true,
         lowestCapacityAtDateTimeRange: 0,
         reservations: [],
+        discrepancies: [],
       },
     });
 
     expect(wrapper.text()).toContain('Šiuo laikotarpiu išteklius nepasiekiamas.');
+  });
+
+  it('shows discrepancy warning when active reservations ended but still occupy capacity', () => {
+    const wrapper = mountDetail({
+      showAvailabilityBox: true,
+      availability: {
+        id: 'r1',
+        capacity: 5,
+        is_reservable: true,
+        lowestCapacityAtDateTimeRange: 2,
+        reservations: [],
+        discrepancies: [
+          { id: 'res-1', name: 'Old booking', quantity: 1, state: 'lent', start_time: 1_600_000_000, end_time: 1_600_010_000 },
+        ],
+      },
+    });
+
+    expect(wrapper.text()).toContain('reservations.discrepancy.available_from_ended_reservations');
   });
 
   it('shows edit action in preview mode', () => {
@@ -109,30 +139,66 @@ describe('ResourceDetail', () => {
     expect(mockController.execute).not.toHaveBeenCalled();
   });
 
-  it('shows skeleton loaders for upcoming reservations while fetching', () => {
+  it('shows skeleton loaders for active reservations while fetching', () => {
     mockController.isFetching.value = true;
     const wrapper = mountDetail({ showUpcomingReservations: true });
 
     expect(wrapper.findAll('.animate-pulse').length).toBeGreaterThan(0);
   });
 
-  it('renders upcoming reservations when data is loaded', () => {
+  it('renders active reservations with state and period when data is loaded', () => {
     mockController.data.value = {
       upcoming_reservations: [
-        { id: 'res-1', name: 'Renginys', quantity: 2, state: 'confirmed', start_time: 1_700_000_000, end_time: null },
+        { id: 'res-1', name: 'Renginys', quantity: 2, state: 'reserved', start_time: 1_700_000_000, end_time: 1_700_010_000 },
       ],
+      previous_reservations: [],
       managers: [],
     };
 
     const wrapper = mountDetail({ showUpcomingReservations: true });
 
+    expect(wrapper.text()).toContain('Aktyvios rezervacijos');
     expect(wrapper.text()).toContain('Renginys');
     expect(wrapper.text()).toContain(':count vnt.');
+    expect(wrapper.find('a[href*="/mocked-route/reservations.show"]').exists()).toBe(true);
+  });
+
+  it('flags active reservations whose window ended with an unresolved indicator', () => {
+    mockController.data.value = {
+      upcoming_reservations: [
+        { id: 'res-1', name: 'Old active', quantity: 1, state: 'reserved', start_time: 1_600_000_000, end_time: 1_600_010_000 },
+      ],
+      previous_reservations: [],
+      managers: [],
+    };
+
+    const wrapper = mountDetail({ showUpcomingReservations: true });
+
+    expect(wrapper.text()).toContain('Old active');
+    expect(wrapper.text()).toContain('state.status.reserved');
+    expect(wrapper.text()).toContain('reservations.unresolved_help');
+  });
+
+  it('renders previous terminal reservations when enabled', () => {
+    mockController.data.value = {
+      upcoming_reservations: [],
+      previous_reservations: [
+        { id: 'res-2', name: 'Senas renginys', quantity: 1, state: 'returned', start_time: 1_600_000_000, end_time: 1_600_010_000 },
+      ],
+      managers: [],
+    };
+
+    const wrapper = mountDetail({ showPreviousReservations: true });
+
+    expect(wrapper.text()).toContain('Ankstesnės rezervacijos');
+    expect(wrapper.text()).toContain('Senas renginys');
+    expect(wrapper.find('a[href*="/mocked-route/reservations.show"]').exists()).toBe(true);
   });
 
   it('renders managers when data is loaded', () => {
     mockController.data.value = {
       upcoming_reservations: [],
+      previous_reservations: [],
       managers: [{ id: 'u1', name: 'Jonas Jonaitis', email: 'jonas@example.com', phone: '+37060000000', facebook_url: null, profile_photo_path: null }],
     };
 

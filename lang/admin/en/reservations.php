@@ -14,8 +14,7 @@ return [
             'awaiting_caption' => '{0} nothing starting soon|{1} :count due within 48 h|[2,*] :count due within 48 h',
             'lent' => 'Currently lent',
             'lent_caption' => '{0} no items|{1} across :count item|[2,*] across :count items',
-            'overdue' => 'Overdue',
-            'overdue_caption' => '{0} all on time|[1,*] return up to :count days late',
+            'unresolved_badge_title' => '{1} :count reservation whose time window ended but is not formally closed|[2,*] :count reservations whose time windows ended but are not formally closed',
             'returned' => 'Returned · 30 d',
             'returned_caption' => 'all accounted for',
         ],
@@ -78,5 +77,12 @@ return [
         'resolve_hint' => 'The resources jump straight to the "returned" state, skipping the remaining approval steps. Every step is still recorded in the history.',
         'reject_only_pending' => 'Only resources awaiting approval can be rejected — other selected resources will be skipped.',
     ],
-    'overdue_days' => '{1} :count day overdue|[2,*] :count days overdue',
+    'show' => [
+        'no_resources_for_tenant' => 'No resources match the selected unit.',
+    ],
+    'unresolved_days' => '{1} :count day late|[2,*] :count days late',
+    'unresolved_help' => 'The reservation window has ended, but the reservation is not formally closed yet.',
+    'discrepancy' => [
+        'available_from_ended_reservations' => '{1} :count unit free because an active reservation already ended|[2,*] :count units free because active reservations already ended',
+    ],
 ];

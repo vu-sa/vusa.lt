@@ -101,12 +101,23 @@ class ReservationController extends AdminController
         return $this->inertiaResponse('Admin/Reservations/CreateReservation', [
             // 'assignableTenants' => GetTenantsForUpserts::execute('resources.create.all', $this->authorizer)
             'resources' => Resource::with('tenant')->select('id', 'name', 'capacity', 'is_reservable', 'tenant_id')->get()->map(function ($resource) use ($dateTimeRange) {
-                $capacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($dateTimeRange['start'], $dateTimeRange['end']);
+                $strictCapacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($dateTimeRange['start'], $dateTimeRange['end']);
+                $flexibleCapacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($dateTimeRange['start'], $dateTimeRange['end'], [], [], true);
 
                 return [
                     ...$resource->toArray(),
-                    'capacityAtDateTimeRange' => $capacityAtDateTimeRange,
-                    'lowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($capacityAtDateTimeRange),
+                    'capacityAtDateTimeRange' => $strictCapacityAtDateTimeRange,
+                    'lowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($flexibleCapacityAtDateTimeRange),
+                    'strictLowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($strictCapacityAtDateTimeRange),
+                    'discrepancies' => $resource->findTimeEndedActiveReservations($dateTimeRange['start'], $dateTimeRange['end'])
+                        ->map(fn ($reservation) => [
+                            'id' => (string) $reservation->id,
+                            'name' => $reservation->name,
+                            'quantity' => (int) $reservation->pivot->quantity,
+                            'state' => (string) $reservation->pivot->state,
+                            'start_time' => $reservation->pivot->start_time?->timestamp,
+                            'end_time' => $reservation->pivot->end_time?->timestamp,
+                        ])->values()->all(),
                 ];
             }),
             'dateTimeRange' => $dateTimeRange,

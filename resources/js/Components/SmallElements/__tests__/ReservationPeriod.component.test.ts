@@ -6,9 +6,9 @@ import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-function createWrapper(startTime: string, endTime: string, overdue = false) {
+function createWrapper(startTime: string, endTime: string) {
   return mount(ReservationPeriod, {
-    props: { startTime, endTime, overdue },
+    props: { startTime, endTime },
     global: { stubs: { ...commonStubs } },
   });
 }
@@ -48,18 +48,12 @@ describe('compact period', () => {
   });
 });
 
-describe('overdue', () => {
-  it('adds a lateness sub-line when overdue', () => {
+describe('unresolved', () => {
+  it('does not add a lateness sub-line', () => {
     const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
-    const wrapper = createWrapper('2020-01-01T10:00:00Z', twoDaysAgo, true);
+    const wrapper = createWrapper('2020-01-01T10:00:00Z', twoDaysAgo);
 
-    expect(wrapper.text()).toContain('reservations.overdue_days');
-  });
-
-  it('stays quiet when not overdue', () => {
-    const wrapper = createWrapper('2026-07-20T10:00:00Z', '2026-07-24T10:00:00Z', false);
-
-    expect(wrapper.text()).not.toContain('reservations.overdue_days');
+    expect(wrapper.text()).not.toContain('reservations.unresolved_days');
   });
 });
 

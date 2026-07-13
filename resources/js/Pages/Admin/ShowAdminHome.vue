@@ -15,9 +15,6 @@
             <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">
               {{ greeting }}, <span class="text-primary dark:text-primary/85">{{ userNameAddress }}</span>!
             </h1>
-            <p class="mt-1 text-sm text-muted-foreground">
-              {{ currentDate }}
-            </p>
           </div>
         </div>
 
@@ -59,8 +56,6 @@
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, ref, onMounted, defineAsyncComponent } from 'vue';
-import { format } from 'date-fns';
-import { lt, enUS } from 'date-fns/locale';
 
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import HomeSearchBar from '@/Pages/Admin/Dashboard/Components/HomeSearchBar.vue';
@@ -295,9 +290,6 @@ const emptyInsights = {
   withOldMeetings: [],
 };
 
-// Locale for date formatting
-const dateLocale = computed(() => usePage().props.app.locale === 'lt' ? lt : enUS);
-
 // User name with addressivization for Lithuanian
 const userNameAddress = computed(() => {
   const name = usePage().props.auth?.user?.name;
@@ -313,11 +305,6 @@ const greeting = computed(() => {
   if (hour < 12) return $t('Labas rytas');
   if (hour < 18) return $t('Laba diena');
   return $t('Labas vakaras');
-});
-
-// Current date formatted
-const currentDate = computed(() => {
-  return format(new Date(), 'EEEE, MMMM d', { locale: dateLocale.value });
 });
 
 // Format meetings to match UpcomingMeetingsCard expected structure
