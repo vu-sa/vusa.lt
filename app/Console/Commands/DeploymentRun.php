@@ -22,7 +22,10 @@ class DeploymentRun extends Command
         'maintenance' => [
             'name' => 'Enter maintenance mode',
             'command' => 'down',
-            'args' => ['--retry' => 60],
+            // --render prerenders the view into storage/framework/maintenance.php, which
+            // public/index.php serves before loading Composer. Without it, the vendor/ swap
+            // in deployment:deploy-assets leaves a window where the app cannot boot at all.
+            'args' => ['--retry' => 60, '--render' => 'errors::maintenance', '--refresh' => 15],
             'critical' => true,
         ],
         'assets' => [

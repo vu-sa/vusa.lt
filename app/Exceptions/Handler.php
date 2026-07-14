@@ -4,6 +4,7 @@ namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -46,6 +47,10 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $e)
     {
+        if ($e instanceof HttpException && $this->isMaintenanceModeException($e) && ! $request->expectsJson()) {
+            return response()->view('errors.maintenance', ['exception' => $e], 503, $e->getHeaders());
+        }
+
         $response = parent::render($request, $e);
 
         // Handle 403 errors with redirect and flash message for Inertia requests
@@ -59,5 +64,17 @@ class Handler extends ExceptionHandler
         }
 
         return $response;
+    }
+
+    /**
+     * Determine whether the exception is the 503 raised by PreventRequestsDuringMaintenance.
+     *
+     * That middleware throws a plain HttpException with no maintenance-specific type, so the
+     * only way to tell it apart from a genuine 503 (which should keep the errors::503 view)
+     * is to ask the application whether it is currently down.
+     */
+    private function isMaintenanceModeException(HttpException $e): bool
+    {
+        return $e->getStatusCode() === 503 && app()->isDownForMaintenance();
     }
 }
