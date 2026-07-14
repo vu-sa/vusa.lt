@@ -28,6 +28,8 @@ Here you'll find all changes and improvements to the mano.vusa.lt platform.
 - 🔧 **Table pagination** — pagination controls were not appearing on tables that filter their data in the browser
 - 🔧 **Notification emails are being sent again** — digest emails had not gone out since early April. They work again, and stale digests from that period will not be delivered. If a digest fails to send, its notifications are no longer lost — they stay queued for the next attempt
 - ⭐ **Test email** — settings now have a button next to your notification email addresses that sends a test digest, so you can confirm it reaches your inbox
+- ✨ **Longer vote titles** — vote titles can now be up to 200 characters (was 125)
+- 🔧 **More reliable navigation and news saving** — fixed validation so saving a navigation divider without a name or creating news without an assigned tenant shows a clear error instead of throwing a SQL exception
 
 ## v1.13 — Problem Registry Improvements (2026-06-12) {#v1-13}
 

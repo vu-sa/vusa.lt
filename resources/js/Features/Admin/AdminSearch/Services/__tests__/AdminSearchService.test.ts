@@ -7,8 +7,11 @@ describe('escapeFilterValue', () => {
   describe('returns value unchanged when no special characters', () => {
     it('handles normal strings', () => {
       expect(escapeFilterValue('normal')).toBe('normal');
-      expect(escapeFilterValue('hello world')).toBe('hello world');
-      expect(escapeFilterValue('VU SA')).toBe('VU SA');
+    });
+
+    it('escapes values with spaces', () => {
+      expect(escapeFilterValue('hello world')).toBe('`hello world`');
+      expect(escapeFilterValue('VU SA')).toBe('`VU SA`');
     });
 
     it('handles empty string', () => {
@@ -118,7 +121,7 @@ describe('buildFilterString', () => {
       { query: '', tenant: ['VU SA', 'VU SA MIF'] },
       mockFacetConfig,
     );
-    expect(result).toBe('tenant:[VU SA,VU SA MIF]');
+    expect(result).toBe('tenant:=[`VU SA`,`VU SA MIF`]');
   });
 
   it('escapes special characters in filter values', () => {
@@ -126,7 +129,7 @@ describe('buildFilterString', () => {
       { query: '', tenant: ['Value, with comma'] },
       mockFacetConfig,
     );
-    expect(result).toBe('tenant:[`Value, with comma`]');
+    expect(result).toBe('tenant:=[`Value, with comma`]');
   });
 
   it('escapes backslashes in filter values', () => {
@@ -134,7 +137,7 @@ describe('buildFilterString', () => {
       { query: '', tenant: ['path\\to\\folder'] },
       mockFacetConfig,
     );
-    expect(result).toBe('tenant:[`path\\\\to\\\\folder`]');
+    expect(result).toBe('tenant:=[`path\\\\to\\\\folder`]');
   });
 
   it('builds filter with single string value', () => {
@@ -150,7 +153,7 @@ describe('buildFilterString', () => {
       { query: '', tenant: ['VU SA'], status: 'active' },
       mockFacetConfig,
     );
-    expect(result).toBe('tenant:[VU SA] && status:=active');
+    expect(result).toBe('tenant:=[`VU SA`] && status:=active');
   });
 
   it('ignores query field', () => {
@@ -158,6 +161,14 @@ describe('buildFilterString', () => {
       { query: 'search term', tenant: ['VU SA'] },
       mockFacetConfig,
     );
-    expect(result).toBe('tenant:[VU SA]');
+    expect(result).toBe('tenant:=[`VU SA`]');
+  });
+
+  it('uses exact-match operator for string arrays so spaces do not match partial tenants', () => {
+    const result = buildFilterString(
+      { query: '', tenant: ['VU SA'] },
+      mockFacetConfig,
+    );
+    expect(result).toBe('tenant:=[`VU SA`]');
   });
 });

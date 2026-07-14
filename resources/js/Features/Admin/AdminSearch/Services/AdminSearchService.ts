@@ -32,10 +32,10 @@ export function buildFilterString(
 
     // Handle array values (multi-select)
     if (Array.isArray(value) && value.length > 0) {
-      // For string arrays, wrap values in brackets
+      // For string arrays, wrap values in brackets and use exact-match operator
       if (typeof value[0] === 'string') {
         const escapedValues = value.map(v => escapeFilterValue(v as string));
-        filterParts.push(`${fieldConfig.field}:[${escapedValues.join(',')}]`);
+        filterParts.push(`${fieldConfig.field}:=[${escapedValues.join(',')}]`);
       }
       // For number arrays (like years)
       else if (typeof value[0] === 'number') {
@@ -64,8 +64,8 @@ export function buildFilterString(
  * Must escape backslashes first, then backticks, to prevent injection attacks
  */
 export function escapeFilterValue(value: string): string {
-  // Typesense requires backtick escaping for special characters
-  if (value.includes(',') || value.includes(':') || value.includes('`') || value.includes('\\')) {
+  // Typesense requires backtick escaping for special characters and spaces
+  if (value.includes(' ') || value.includes(',') || value.includes(':') || value.includes('`') || value.includes('\\')) {
     // Escape backslashes first, then backticks
     return `\`${value.replace(/\\/g, '\\\\').replace(/`/g, '\\`')}\``;
   }

@@ -525,7 +525,7 @@ const columns = computed<ColumnDef<DashboardReservation, any>[]>(() => [
   {
     accessorKey: 'start_time',
     header: () => $t('reservations.dashboard.columns.period'),
-    size: 170,
+    size: 120,
     enableSorting: true,
     cell: ({ row }) => (
       <ReservationPeriod

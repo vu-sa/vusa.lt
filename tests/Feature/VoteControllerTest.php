@@ -60,6 +60,45 @@ describe('vote controller', function () {
         expect($vote->student_vote)->toBe('positive');
     });
 
+    test('vote title cannot exceed 200 characters', function () {
+        $longTitle = str_repeat('a', 201);
+
+        $response = asUser($this->admin)
+            ->post(route('votes.store'), [
+                'agenda_item_id' => $this->agendaItem->id,
+                'is_main' => true,
+                'title' => $longTitle,
+                'decision' => 'positive',
+                'student_vote' => 'positive',
+                'student_benefit' => 'positive',
+            ]);
+
+        $response->assertStatus(302);
+        $response->assertSessionHasErrors(['title']);
+        $this->assertEquals(0, $this->agendaItem->votes()->count());
+    });
+
+    test('vote update rejects title longer than 200 characters', function () {
+        $vote = Vote::factory()->main()->for($this->agendaItem, 'agendaItem')->create([
+            'title' => 'Original Vote',
+        ]);
+
+        $longTitle = str_repeat('a', 201);
+
+        $response = asUser($this->admin)
+            ->patch(route('votes.update', $vote), [
+                'title' => $longTitle,
+                'decision' => 'positive',
+                'student_vote' => 'positive',
+            ]);
+
+        $response->assertStatus(302);
+        $response->assertSessionHasErrors(['title']);
+
+        $vote->refresh();
+        expect($vote->title)->toBe('Original Vote');
+    });
+
     test('admin can update a vote', function () {
         $vote = Vote::factory()->main()->for($this->agendaItem, 'agendaItem')->create([
             'decision' => 'positive',

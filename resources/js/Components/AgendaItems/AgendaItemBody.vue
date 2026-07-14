@@ -109,6 +109,7 @@
           v-if="editing"
           v-model="vote.title"
           class="h-8 max-w-sm text-sm"
+          maxlength="200"
           :placeholder="$t('Pridėti pavadinimą (nebūtina)')"
         />
 

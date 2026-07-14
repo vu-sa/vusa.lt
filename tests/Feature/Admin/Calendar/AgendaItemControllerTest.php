@@ -168,6 +168,36 @@ describe('agenda items controller', function () {
         $this->assertEquals(0, $agendaItem->votes()->count());
     });
 
+    test('validates agenda item vote title length', function () {
+        asUser($this->admin)
+            ->post(route('agendaItems.store'), [
+                'meeting_id' => $this->meeting->id,
+                'agendaItemTitles' => ['Vote Title Test'],
+            ]);
+
+        $agendaItem = $this->meeting->agendaItems()->first();
+        $longTitle = str_repeat('a', 201);
+
+        $response = asUser($this->admin)
+            ->patch(route('agendaItems.update', $agendaItem->id), [
+                'votes' => [
+                    [
+                        'is_main' => true,
+                        'title' => $longTitle,
+                        'decision' => 'positive',
+                        'student_vote' => 'positive',
+                        'student_benefit' => 'positive',
+                    ],
+                ],
+            ]);
+
+        $response->assertStatus(302);
+        $response->assertSessionHasErrors(['votes.0.title']);
+
+        $agendaItem->refresh();
+        $this->assertEquals(0, $agendaItem->votes()->count());
+    });
+
     test('deleting a meeting also deletes its agenda items', function () {
         // First create an agenda item
         asUser($this->admin)

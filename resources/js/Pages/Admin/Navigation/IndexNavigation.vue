@@ -11,7 +11,7 @@
       </div>
     </div>
     <TransitionGroup ref="el" tag="div">
-      <div v-for="item in navigation" :key="item.id"
+      <div v-for="item in contents" :key="item.id"
         class="relative grid w-full grid-cols-[24px__1fr] gap-4 border border-zinc-300 p-3 first:rounded-t-lg last:rounded-b-lg dark:border-zinc-700/40 dark:bg-zinc-800/5">
         <Button class="handle" style="height: 100%;" variant="ghost" size="sm">
           <IFluentReOrderDotsVertical24Regular />
@@ -92,25 +92,26 @@
           </ButtonGroup>
         </div>
       </div>
-      <div class="mt-4">
-        <ButtonGroup>
-          <Button :as="Link" :href="route('navigation.create', { parent_id: 0 })">
-            <Icon icon="fluent:add-16-regular" />
-            Pridėti pagrindinį navigacijos elementą
-          </Button>
-          <Button variant="secondary" @click="saveOrder()">
-            <Icon icon="fluent:save-16-regular" />
-            Išsaugoti rikiavimą
-          </Button>
-        </ButtonGroup>
-      </div>
     </TransitionGroup>
+    <div class="mt-4">
+      <ButtonGroup>
+        <Button :as="Link" :href="route('navigation.create', { parent_id: 0 })">
+          <Icon icon="fluent:add-16-regular" />
+          Pridėti pagrindinį navigacijos elementą
+        </Button>
+        <Button variant="secondary" @click="saveOrder()">
+          <Icon icon="fluent:save-16-regular" />
+          Išsaugoti rikiavimą
+        </Button>
+      </ButtonGroup>
+    </div>
   </PageContent>
 </template>
 
 <script setup lang="tsx">
 import { Icon } from '@iconify/vue';
 import { Link, router } from '@inertiajs/vue3';
+import { cloneDeep } from 'lodash-es';
 import { ref } from 'vue';
 import { useSortable } from '@vueuse/integrations/useSortable';
 
@@ -138,7 +139,10 @@ const props = defineProps<{
 }>();
 
 const el = ref(null);
-const contents = ref(props.navigation);
+const contents = ref(cloneDeep(props.navigation).map(item => ({
+  ...item,
+  links: Object.values(item.links || {}),
+})));
 
 const showAdminEdit = ref(true);
 const showColumnChangeArrows = ref(false);
@@ -149,7 +153,10 @@ useSortable(el, contents, {
 
 const saveOrder = () => {
   router.post(route('navigation.updateOrder'), {
-    navigation: contents.value,
+    navigation: contents.value.map(item => ({
+      id: item.id,
+      links: item.links?.map(col => col.map(link => ({ id: link.id }))),
+    })),
   });
 };
 
@@ -157,10 +164,16 @@ const moveUp = (parent, link) => {
   // Find contents array by parent id
   const contentsIndex = contents.value.findIndex(item => item.id === parent.id);
 
+  if (contentsIndex === -1) {
+    return;
+  }
+
+  const parentLinks = contents.value[contentsIndex].links;
+
   let linkArrayIndex = -1;
   // Find links index by iterating through links array
-  for (let i = 0; i < contents.value[contentsIndex].links.length; i++) {
-    if (contents.value[contentsIndex].links[i].find(item => item.id === link.id)) {
+  for (let i = 0; i < parentLinks.length; i++) {
+    if (parentLinks[i]?.find(item => item?.id === link?.id)) {
       linkArrayIndex = i;
       break;
     }
@@ -172,13 +185,13 @@ const moveUp = (parent, link) => {
   }
 
   // Find index of the link in the links array
-  const linkIndex = contents.value[contentsIndex].links[linkArrayIndex].findIndex(item => item.id === link.id);
+  const linkIndex = parentLinks[linkArrayIndex].findIndex(item => item?.id === link?.id);
 
-  // If link index is found, swap the links but not the linkArrays
-  if (linkIndex !== -1) {
-    const temp = contents.value[contentsIndex].links[linkArrayIndex][linkIndex];
-    contents.value[contentsIndex].links[linkArrayIndex][linkIndex] = contents.value[contentsIndex].links[linkArrayIndex][linkIndex - 1];
-    contents.value[contentsIndex].links[linkArrayIndex][linkIndex - 1] = temp;
+  // If link index is found and is not the first item, swap the links but not the linkArrays
+  if (linkIndex > 0) {
+    const temp = parentLinks[linkArrayIndex][linkIndex];
+    parentLinks[linkArrayIndex][linkIndex] = parentLinks[linkArrayIndex][linkIndex - 1];
+    parentLinks[linkArrayIndex][linkIndex - 1] = temp;
   }
 };
 
@@ -186,10 +199,16 @@ const moveDown = (parent, link) => {
   // Find contents array by parent id
   const contentsIndex = contents.value.findIndex(item => item.id === parent.id);
 
+  if (contentsIndex === -1) {
+    return;
+  }
+
+  const parentLinks = contents.value[contentsIndex].links;
+
   let linkArrayIndex = -1;
   // Find links index by iterating through links array
-  for (let i = 0; i < contents.value[contentsIndex].links.length; i++) {
-    if (contents.value[contentsIndex].links[i].find(item => item.id === link.id)) {
+  for (let i = 0; i < parentLinks.length; i++) {
+    if (parentLinks[i]?.find(item => item?.id === link?.id)) {
       linkArrayIndex = i;
       break;
     }
@@ -201,13 +220,13 @@ const moveDown = (parent, link) => {
   }
 
   // Find index of the link in the links array
-  const linkIndex = contents.value[contentsIndex].links[linkArrayIndex].findIndex(item => item.id === link.id);
+  const linkIndex = parentLinks[linkArrayIndex].findIndex(item => item?.id === link?.id);
 
-  // If link index is found, swap the links but not the linkArrays
-  if (linkIndex !== -1) {
-    const temp = contents.value[contentsIndex].links[linkArrayIndex][linkIndex];
-    contents.value[contentsIndex].links[linkArrayIndex][linkIndex] = contents.value[contentsIndex].links[linkArrayIndex][linkIndex + 1];
-    contents.value[contentsIndex].links[linkArrayIndex][linkIndex + 1] = temp;
+  // If link index is found and is not the last item, swap the links but not the linkArrays
+  if (linkIndex !== -1 && linkIndex < parentLinks[linkArrayIndex].length - 1) {
+    const temp = parentLinks[linkArrayIndex][linkIndex];
+    parentLinks[linkArrayIndex][linkIndex] = parentLinks[linkArrayIndex][linkIndex + 1];
+    parentLinks[linkArrayIndex][linkIndex + 1] = temp;
   }
 };
 

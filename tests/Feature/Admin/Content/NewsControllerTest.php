@@ -263,4 +263,39 @@ describe('auth: news manager', function () {
             ->and($duplicatedNews->tags->pluck('id')->sort()->values()->toArray())
             ->toBe($news->tags->pluck('id')->sort()->values()->toArray());
     });
+
+    test('storing news without resolvable tenant returns validation error', function () {
+        // Create a manager whose duty institution has no tenant, so tenant_id cannot be resolved
+        $orphanManager = User::factory()->create();
+        $institution = Institution::factory()->create(['tenant_id' => null]);
+        $duty = Duty::factory()->for($institution)
+            ->hasAttached($orphanManager, ['start_date' => now()->subDay(), 'end_date' => now()->addDays(1)])
+            ->create();
+        $duty->assignRole('Communication Coordinator');
+
+        $initialCount = News::count();
+
+        $response = asUser($orphanManager)->post(route('news.store'), [
+            'title' => 'Orphan News',
+            'permalink' => 'orphan-news',
+            'content' => [
+                'parts' => [
+                    [
+                        'type' => 'tiptap',
+                        'json_content' => ['lt' => 'News content'],
+                        'options' => [],
+                        'order' => 1,
+                    ],
+                ],
+            ],
+            'lang' => 'lt',
+            'image' => 'image.jpg',
+            'publish_time' => now()->timestamp,
+            'short' => 'Short news',
+        ]);
+
+        $response->assertStatus(302);
+        $response->assertSessionHasErrors(['tenant_id']);
+        expect(News::count())->toBe($initialCount);
+    });
 });

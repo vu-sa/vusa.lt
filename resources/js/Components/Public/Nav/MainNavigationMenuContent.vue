@@ -7,9 +7,16 @@
             <slot v-if="showEditIcons" :index :link :links name="editIconsDivider" />
           </div>
 
-          <NavigationMenuLink v-else-if="link.image" :as="linkComponent" prefetch
-            class="relative mb-4 flex rounded-md bg-zinc-900 transition-all duration-300 last:mb-0 hover:bg-zinc-800 hover:shadow-lg focus:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-400"
-            :href="link.url" :class="linkClasses(link)" @click="handleCloseMenu">
+          <component :is="isUsedWithoutRoot ? linkComponent : NavigationMenuLink"
+            v-else-if="link.image" :as="isUsedWithoutRoot ? undefined : linkComponent"
+            prefetch
+            :href="link.url"
+            :class="[
+              'relative mb-4 flex rounded-md bg-zinc-900 transition-all duration-300 last:mb-0',
+              'hover:bg-zinc-800 hover:shadow-lg focus:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-400',
+              linkClasses(link),
+            ]"
+            @click="handleCloseMenu">
             <img class="absolute left-0 top-0 size-full rounded-md object-cover opacity-60 contrast-110"
               :src="link.image" alt="Background image">
             <div class="absolute left-0 top-0 size-full rounded-md bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
@@ -24,11 +31,18 @@
             <div v-if="showEditIcons" class="relative z-20 my-auto inline-flex h-fit rounded-lg bg-white/90 p-2">
               <slot :index :link :links name="editIconsBg" />
             </div>
-          </NavigationMenuLink>
+          </component>
 
-          <NavigationMenuLink v-else :as="linkComponent" prefetch
-            class="mb-2 flex h-fit items-center rounded-md text-left leading-none transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-400" :href="link.url"
-            :class="linkClasses(link)" @click="handleCloseMenu">
+          <component :is="isUsedWithoutRoot ? linkComponent : NavigationMenuLink"
+            v-else :as="isUsedWithoutRoot ? undefined : linkComponent"
+            prefetch
+            :href="link.url"
+            :class="[
+              'mb-2 flex h-fit items-center rounded-md text-left leading-none transition-colors',
+              'focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:focus:ring-zinc-400',
+              linkClasses(link),
+            ]"
+            @click="handleCloseMenu">
             <div class="flex w-full items-center justify-between gap-2">
               <div class="h-fit">
                 <div class="inline-flex items-center" :class="textClasses(link)">
@@ -44,7 +58,7 @@
               </div>
               <slot v-if="showEditIcons" :index :link :links name="editIconsLink" />
             </div>
-          </NavigationMenuLink>
+          </component>
         </template>
       </li>
     </ul>

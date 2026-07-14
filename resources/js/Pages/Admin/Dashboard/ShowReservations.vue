@@ -17,12 +17,12 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
-          <Button variant="ghost" size="sm" @click="showHelpModal = true">
+          <Button variant="outline" size="sm" @click="showHelpModal = true">
             <Info class="size-4" />
             {{ $t('reservations.dashboard.rules') }}
           </Button>
           <Link :href="route('resources.index')">
-            <Button variant="ghost" size="sm">
+            <Button variant="outline" size="sm">
               <Box class="size-4" />
               {{ capitalize($tChoice('entities.resource.model', 2)) }}
             </Button>

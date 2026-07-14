@@ -270,6 +270,56 @@ describe('authorized access', function () {
             'id' => $this->navigation->id,
         ]);
     });
+
+    test('can store divider navigation without name', function () {
+        asUser($this->admin)
+            ->post(route('navigation.store'), [
+                'name' => null,
+                'url' => '#',
+                'parent_id' => 0,
+                'is_active' => true,
+                'extra_attributes' => ['type' => 'divider'],
+            ])
+            ->assertStatus(302)
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('navigation', [
+            'url' => '#',
+            'parent_id' => 0,
+        ]);
+    });
+
+    test('null parent_id is coerced to zero', function () {
+        asUser($this->admin)
+            ->post(route('navigation.store'), [
+                'name' => 'Root from null parent',
+                'url' => '/root',
+                'parent_id' => null,
+                'is_active' => true,
+                'extra_attributes' => [],
+            ])
+            ->assertStatus(302)
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('navigation', [
+            'name' => 'Root from null parent',
+            'url' => '/root',
+            'parent_id' => 0,
+        ]);
+    });
+
+    test('non-divider navigation requires name', function () {
+        asUser($this->admin)
+            ->post(route('navigation.store'), [
+                'name' => '',
+                'url' => '/missing-name',
+                'parent_id' => 0,
+                'is_active' => true,
+                'extra_attributes' => ['type' => 'link'],
+            ])
+            ->assertStatus(302)
+            ->assertSessionHasErrors(['name']);
+    });
 });
 
 describe('navigation ordering functionality', function () {
@@ -295,35 +345,29 @@ describe('navigation ordering functionality', function () {
     });
 
     test('can update navigation order', function () {
-        // Create a simpler structure to avoid array offset issues
         $orderData = [
             'navigation' => [
                 [
                     'id' => $this->parentNav->id,
                     'links' => [
-                        ['id' => $this->childNav2->id], // Child 2 first
-                        ['id' => $this->childNav1->id], // Child 1 second
+                        [
+                            ['id' => $this->childNav2->id], // Child 2 first
+                            ['id' => $this->childNav1->id], // Child 1 second
+                        ],
                     ],
                 ],
             ],
         ];
 
-        $response = asUser($this->admin)->post(route('navigation.updateOrder'), $orderData);
+        asUser($this->admin)
+            ->post(route('navigation.updateOrder'), $orderData)
+            ->assertStatus(302)
+            ->assertSessionHas('success');
 
-        // Handle different potential response patterns
-        if ($response->status() === 500) {
-            // If there's a server error, skip this test for now and mark as incomplete
-            $this->markTestIncomplete('Navigation ordering needs controller fixes - array offset issues');
-        } else {
-            $response->assertStatus(302)->assertSessionHas('success');
+        $child2 = Navigation::find($this->childNav2->id);
+        $child1 = Navigation::find($this->childNav1->id);
 
-            // Verify order was updated - use more flexible assertions
-            $child2 = Navigation::find($this->childNav2->id);
-            $child1 = Navigation::find($this->childNav1->id);
-
-            // Just verify the order relationship, not absolute values
-            expect($child2->order)->toBeLessThan($child1->order);
-        }
+        expect($child2->order)->toBeLessThan($child1->order);
     });
 
     test('can update navigation column', function () {

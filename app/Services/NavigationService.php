@@ -70,8 +70,8 @@ class NavigationService
                     $rootNavigation[$i]['links'][$j - 1] = array_values($rootNavigation[$i]['links'][$j - 1]);
                 }
 
-                // Remove empty arrays
-                $rootNavigation[$i]['links'] = array_filter($rootNavigation[$i]['links']);
+                // Remove empty arrays and re-index so the frontend receives a real array
+                $rootNavigation[$i]['links'] = array_values(array_filter($rootNavigation[$i]['links']));
 
                 // Add column count immediately for the front end
                 $rootNavigation[$i]['cols'] = count($rootNavigation[$i]['links']);

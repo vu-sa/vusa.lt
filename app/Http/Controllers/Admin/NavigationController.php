@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\StoreNavigationRequest;
+use App\Http\Requests\UpdateNavigationRequest;
 use App\Models\Navigation;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\NavigationService;
@@ -50,11 +52,11 @@ class NavigationController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreNavigationRequest $request)
     {
-        $this->handleAuthorization('create', Navigation::class);
+        $validated = $request->validated();
 
-        $navigation = new Navigation($request->only(['name', 'url', 'parent_id', 'padalinys_id', 'is_active', 'extra_attributes']));
+        $navigation = new Navigation($validated);
 
         $navigation->order = Navigation::where('parent_id', $navigation->parent_id)->max('order') + 1;
 
@@ -85,11 +87,9 @@ class NavigationController extends AdminController
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Navigation $navigation)
+    public function update(UpdateNavigationRequest $request, Navigation $navigation)
     {
-        $this->handleAuthorization('update', $navigation);
-
-        $navigation->fill($request->only(['name', 'url', 'parent_id', 'padalinys_id', 'is_active', 'extra_attributes']));
+        $navigation->fill($request->validated());
 
         $navigation->save();
 

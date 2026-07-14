@@ -15,6 +15,7 @@ use App\Models\Tenant;
 use App\Services\ContentService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
+use Illuminate\Validation\ValidationException;
 
 class NewsController extends AdminController
 {
@@ -103,6 +104,12 @@ class NewsController extends AdminController
             $tenant_id = Tenant::where('type', 'pagrindinis')->first()?->id;
         } else {
             $tenant_id = $this->authorizer->permissableDuties->first()?->tenants->first()?->id;
+        }
+
+        if ($tenant_id === null) {
+            throw ValidationException::withMessages([
+                'tenant_id' => 'Nėra prieinamo padalinio, kuriam galėtumėte sukurti naujieną. / No available tenant to create news for.',
+            ]);
         }
 
         $content = new Content;

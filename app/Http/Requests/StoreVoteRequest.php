@@ -27,7 +27,7 @@ class StoreVoteRequest extends FormRequest
         return [
             'agenda_item_id' => 'required|exists:agenda_items,id',
             'is_main' => 'nullable|boolean',
-            'title' => 'nullable|string|max:500',
+            'title' => 'nullable|string|max:200',
             'student_vote' => 'nullable|string|in:positive,negative,neutral',
             'decision' => 'nullable|string|in:positive,negative,neutral',
             'student_benefit' => 'nullable|string|in:positive,negative,neutral',
@@ -46,7 +46,7 @@ class StoreVoteRequest extends FormRequest
             'agenda_item_id.required' => 'Darbotvarkės punktas yra privalomas.',
             'agenda_item_id.exists' => 'Nurodytas darbotvarkės punktas neegzistuoja.',
             'title.string' => 'Balsavimo pavadinimas turi būti tekstas.',
-            'title.max' => 'Balsavimo pavadinimas negali būti ilgesnis nei 500 simbolių.',
+            'title.max' => 'Balsavimo pavadinimas negali būti ilgesnis nei 200 simbolių.',
             'student_vote.in' => 'Studentų balsavimo reikšmė turi būti viena iš: positive, negative, neutral.',
             'decision.in' => 'Sprendimo reikšmė turi būti viena iš: positive, negative, neutral.',
             'student_benefit.in' => 'Naudos studentams reikšmė turi būti viena iš: positive, negative, neutral.',

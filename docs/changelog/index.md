@@ -28,6 +28,8 @@ lastUpdated: true
 - 🔧 **Puslapiavimas lentelėse** - puslapiavimo mygtukai nebuvo rodomi lentelėse, kurios duomenis filtruoja naršyklėje
 - 🔧 **Vėl siunčiami pranešimų el. laiškai** — nuo balandžio pradžios pranešimų santraukos į el. paštą nebebuvo išsiunčiamos. Dabar jos veikia, o senos, nebeaktualios santraukos nebus siunčiamos. Nesėkmingo išsiuntimo atveju pranešimai nebedingsta — jie lieka eilėje kitam bandymui
 - ⭐ **Bandomasis el. laiškas** — nustatymuose, prie pranešimų el. pašto adresų, atsirado mygtukas išsiųsti bandomąjį laišką ir iškart pamatyti, ar jis pasiekia pašto dėžutę
+- ✨ **Ilgesni balsavimų pavadinimai** — balsavimo pavadinimas dabar gali būti iki 200 simbolių (buvo 125)
+- 🔧 **Patikimesnis navigacijos ir naujienų išsaugojimas** — sutvarkyta validacija, kad išsaugant navigacijos skirtuką be pavadinimo arba kuriant naujieną be priskirto padalinio sistema mestų aiškią klaidą, o ne SQL išimtį
 
 ## v1.13 — Problemų registro patobulinimai (2026-06-12) {#v1-13}
 
