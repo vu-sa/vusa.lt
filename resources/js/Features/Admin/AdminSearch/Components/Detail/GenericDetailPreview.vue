@@ -6,7 +6,9 @@
     :subtitle="hit.subtitle"
   >
     <template v-if="hit.badge" #badges>
-      <Badge variant="outline">{{ hit.badge }}</Badge>
+      <Badge variant="outline">
+        {{ hit.badge }}
+      </Badge>
     </template>
 
     <template v-if="hit.href" #actions>
@@ -36,9 +38,10 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Eye, ExternalLink } from 'lucide-vue-next';
 
+import { COLLECTION_META, type NormalizedSearchHit } from '../../Utils/searchHitMappers';
+
 import DetailLayout from './DetailLayout.vue';
 import DetailRow from './DetailRow.vue';
-import { COLLECTION_META, type NormalizedSearchHit } from '../../Utils/searchHitMappers';
 
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';

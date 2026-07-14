@@ -1,6 +1,7 @@
 import { usePage, router } from '@inertiajs/vue3';
-import { forceBrowserDocumentUrl } from '@/Composables/useDocumentDisplay';
 import { format } from 'date-fns';
+
+import { forceBrowserDocumentUrl } from '@/Composables/useDocumentDisplay';
 
 // Import icons for content types
 import IconNews from '~icons/fluent/news20-regular';

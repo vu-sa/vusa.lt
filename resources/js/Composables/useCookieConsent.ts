@@ -37,7 +37,8 @@ const consent = useStorage<CookieConsent>(
 function applyAnalyticsConsent(): void {
   if (consent.value.analytics) {
     void enablePosthog();
-  } else {
+  }
+  else {
     disablePosthog();
   }
 }

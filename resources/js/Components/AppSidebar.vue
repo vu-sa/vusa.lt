@@ -32,7 +32,7 @@
       <SidebarSeparator />
 
       <!-- Customizable sections (user-defined order, toggled via the customize dialog) -->
-      <template v-for="key in orderedSections" :key="key">
+      <template v-for="key in orderedSections" :key>
         <NavQuickActions
           v-if="key === 'quick_actions' && isSectionVisible(key)"
           @new-meeting="handleNewMeeting" @new-news="handleNewNews"
@@ -77,92 +77,92 @@
             style="display: block; width: 100%;"
             @dismiss="settingsSpotlight.dismiss"
           >
-          <DropdownMenu @update:open="(o: boolean) => { if (o) { settingsSpotlight.dismiss(); } }">
-            <DropdownMenuTrigger as-child>
-              <SidebarMenuButton size="lg"
-                class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent/60 transition-all duration-200">
-                <Avatar class="h-9 w-9 rounded-xl ring-2 ring-primary/10 shadow-sm">
-                  <AvatarImage v-if="currentUser.profile_photo_path" :src="currentUser.profile_photo_path"
-                    :alt="currentUser.name" />
-                  <AvatarFallback
-                    class="rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold">
-                    {{ currentUser.name ? currentUser.name.substring(0, 2).toUpperCase() : 'VU' }}
-                  </AvatarFallback>
-                </Avatar>
-                <div class="grid flex-1 text-left text-sm leading-tight">
-                  <span class="truncate font-semibold">{{ currentUser.name }}</span>
-                  <span class="truncate text-xs text-muted-foreground">{{ currentUser.email }}</span>
-                </div>
-                <ChevronsUpDown class="ml-auto size-4 text-muted-foreground" />
-              </SidebarMenuButton>
-            </DropdownMenuTrigger>
-            <!-- User dropdown menu -->
-            <DropdownMenuContent class="w-[--reka-dropdown-menu-trigger-width] min-w-56 rounded-lg" align="end"
-              :side-offset="4">
-              <DropdownMenuLabel class="p-0 font-normal">
-                <div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                  <Avatar class="h-8 w-8 rounded-lg">
+            <DropdownMenu @update:open="(o: boolean) => { if (o) { settingsSpotlight.dismiss(); } }">
+              <DropdownMenuTrigger as-child>
+                <SidebarMenuButton size="lg"
+                  class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent/60 transition-all duration-200">
+                  <Avatar class="h-9 w-9 rounded-xl ring-2 ring-primary/10 shadow-sm">
                     <AvatarImage v-if="currentUser.profile_photo_path" :src="currentUser.profile_photo_path"
                       :alt="currentUser.name" />
-                    <AvatarFallback class="rounded-lg">
+                    <AvatarFallback
+                      class="rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold">
                       {{ currentUser.name ? currentUser.name.substring(0, 2).toUpperCase() : 'VU' }}
                     </AvatarFallback>
                   </Avatar>
                   <div class="grid flex-1 text-left text-sm leading-tight">
                     <span class="truncate font-semibold">{{ currentUser.name }}</span>
-                    <span class="truncate text-xs">{{ currentUser.email }}</span>
+                    <span class="truncate text-xs text-muted-foreground">{{ currentUser.email }}</span>
                   </div>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuItem as-child>
-                  <Link :href="route('profile')" prefetch class="flex items-center w-full cursor-pointer">
-                    <UserIcon class="mr-2 h-4 w-4" />
-                    <span>{{ $t('Nustatymai') }}</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem class="cursor-pointer" @select="showCustomizeDialog = true">
-                  <SlidersHorizontal class="mr-2 h-4 w-4" />
-                  <span>{{ $t('Pritaikyti šoninę juostą') }}</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem class="cursor-pointer" @select="showShortcutsDialog = true">
-                  <Keyboard class="mr-2 h-4 w-4" />
-                  <span>{{ $t('Klaviatūros trumpiniai') }}</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem class="cursor-pointer" @select="(e: Event) => { e.preventDefault(); setAnalytics(!analyticsAllowed); }">
-                  <Activity class="mr-2 h-4 w-4" />
-                  <span>{{ $t('Analitikos slapukai') }}</span>
-                  <Check v-if="analyticsAllowed" class="ml-auto h-4 w-4" />
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <div class="p-2">
-                <div class="flex items-center justify-between">
-                  <!-- Dark mode toggle -->
-                  <div class="flex items-center">
-                    <Button variant="ghost" size="icon" class="h-8 w-8" @click="toggleDarkMode">
-                      <Sun v-if="isDark" class="size-4" />
-                      <Moon v-else class="size-4" />
-                      <span class="sr-only">{{ $t('Tamsus režimas') }}</span>
+                  <ChevronsUpDown class="ml-auto size-4 text-muted-foreground" />
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <!-- User dropdown menu -->
+              <DropdownMenuContent class="w-[--reka-dropdown-menu-trigger-width] min-w-56 rounded-lg" align="end"
+                :side-offset="4">
+                <DropdownMenuLabel class="p-0 font-normal">
+                  <div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                    <Avatar class="h-8 w-8 rounded-lg">
+                      <AvatarImage v-if="currentUser.profile_photo_path" :src="currentUser.profile_photo_path"
+                        :alt="currentUser.name" />
+                      <AvatarFallback class="rounded-lg">
+                        {{ currentUser.name ? currentUser.name.substring(0, 2).toUpperCase() : 'VU' }}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div class="grid flex-1 text-left text-sm leading-tight">
+                      <span class="truncate font-semibold">{{ currentUser.name }}</span>
+                      <span class="truncate text-xs">{{ currentUser.email }}</span>
+                    </div>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem as-child>
+                    <Link :href="route('profile')" prefetch class="flex items-center w-full cursor-pointer">
+                      <UserIcon class="mr-2 h-4 w-4" />
+                      <span>{{ $t('Nustatymai') }}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem class="cursor-pointer" @select="showCustomizeDialog = true">
+                    <SlidersHorizontal class="mr-2 h-4 w-4" />
+                    <span>{{ $t('Pritaikyti šoninę juostą') }}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem class="cursor-pointer" @select="showShortcutsDialog = true">
+                    <Keyboard class="mr-2 h-4 w-4" />
+                    <span>{{ $t('Klaviatūros trumpiniai') }}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem class="cursor-pointer" @select="(e: Event) => { e.preventDefault(); setAnalytics(!analyticsAllowed); }">
+                    <Activity class="mr-2 h-4 w-4" />
+                    <span>{{ $t('Analitikos slapukai') }}</span>
+                    <Check v-if="analyticsAllowed" class="ml-auto h-4 w-4" />
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <div class="p-2">
+                  <div class="flex items-center justify-between">
+                    <!-- Dark mode toggle -->
+                    <div class="flex items-center">
+                      <Button variant="ghost" size="icon" class="h-8 w-8" @click="toggleDarkMode">
+                        <Sun v-if="isDark" class="size-4" />
+                        <Moon v-else class="size-4" />
+                        <span class="sr-only">{{ $t('Tamsus režimas') }}</span>
+                      </Button>
+                      <span class="ml-2 text-sm">{{ $t(isDark ? 'Šviesus' : 'Tamsus') }}</span>
+                    </div>
+                    <!-- Language toggle -->
+                    <Button variant="ghost" size="icon" class="h-8 w-8" @click="changeLocale">
+                      <span class="flex items-center justify-center text-xs font-medium">
+                        {{ usePage().props.app.locale === 'en' ? 'LT' : 'EN' }}
+                      </span>
                     </Button>
-                    <span class="ml-2 text-sm">{{ $t(isDark ? 'Šviesus' : 'Tamsus') }}</span>
                   </div>
-                  <!-- Language toggle -->
-                  <Button variant="ghost" size="icon" class="h-8 w-8" @click="changeLocale">
-                    <span class="flex items-center justify-center text-xs font-medium">
-                      {{ usePage().props.app.locale === 'en' ? 'LT' : 'EN' }}
-                    </span>
-                  </Button>
                 </div>
-              </div>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem @click="handleLogout">
-                <LogOut class="mr-2 h-4 w-4" />
-                <span>{{ $t('auth.logout') }}</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem @click="handleLogout">
+                  <LogOut class="mr-2 h-4 w-4" />
+                  <span>{{ $t('auth.logout') }}</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </SpotlightPopover>
         </SidebarMenuItem>
       </SidebarMenu>
@@ -279,10 +279,10 @@ import SidebarCustomizeDialog from './Sidebar/SidebarCustomizeDialog.vue';
 import SidebarStartFM from './SidebarStartFM.vue';
 import AppLogo from './AppLogo.vue';
 import KeyboardShortcutsDialog from './KeyboardShortcutsDialog.vue';
+
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { useCookieConsent } from '@/Composables/useCookieConsent';
-
 import { useDocsUpdateIndicator } from '@/Composables/useDocsUpdateIndicator';
 import { useUIPreferences } from '@/Composables/useUIPreferences';
 import NewMeetingDialog from '@/Components/Dialogs/NewMeetingDialog.vue';

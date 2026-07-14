@@ -1,10 +1,10 @@
 <template>
   <SearchSplitView
     v-model:selected-hit="selectedHit"
-    :hits="hits"
+    :hits
     :is-loading="isSearching"
-    :has-searched="hasSearched"
-    :error="error"
+    :has-searched
+    :error
     :empty-message="$t('Rezultatų nerasta')"
   >
     <template #toolbar>
@@ -19,8 +19,10 @@
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import SearchSplitView from './SearchSplitView.vue';
 import { ALL_TAB_COLLECTION_ORDER, collectAllTabHits, type MapperContext, type NormalizedSearchHit } from '../Utils/searchHitMappers';
+
+import SearchSplitView from './SearchSplitView.vue';
+
 import type { MultiSearchResults } from '@/Shared/Search/types';
 
 const props = defineProps<{

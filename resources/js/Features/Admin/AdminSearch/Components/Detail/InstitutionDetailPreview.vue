@@ -6,7 +6,9 @@
     :subtitle="institution.short_name_lt || institution.short_name_en"
   >
     <template v-if="institution.tenant_shortname" #badges>
-      <Badge variant="outline">{{ institution.tenant_shortname }}</Badge>
+      <Badge variant="outline">
+        {{ institution.tenant_shortname }}
+      </Badge>
     </template>
 
     <template #actions>
@@ -35,7 +37,9 @@
         {{ $t('Tipai') }}
       </h3>
       <div class="flex flex-wrap gap-1.5">
-        <Badge v-for="type in types" :key="type.id" variant="secondary">{{ type.title }}</Badge>
+        <Badge v-for="type in types" :key="type.id" variant="secondary">
+          {{ type.title }}
+        </Badge>
       </div>
     </div>
 
@@ -97,12 +101,13 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Eye, Pencil } from 'lucide-vue-next';
 
+import { formatSearchDate } from '../../Utils/searchHitMappers';
+
 import DetailLayout from './DetailLayout.vue';
 import DetailRow from './DetailRow.vue';
 import InstitutionRelationGraph from './InstitutionRelationGraph.vue';
-import { formatSearchDate } from '../../Utils/searchHitMappers';
-import { interactiveCardClass } from '@/Utils/interactiveCard';
 
+import { interactiveCardClass } from '@/Utils/interactiveCard';
 import { InstitutionIcon } from '@/Components/icons';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';

@@ -25,7 +25,7 @@
 
       <div class="mx-1 h-4 w-px bg-zinc-200 dark:bg-zinc-700" />
 
-      <Button size="sm" :disabled="disabled" @click="$emit('approve')">
+      <Button size="sm" :disabled @click="$emit('approve')">
         <Check class="size-4" />
         {{ $t('reservations.actions.approve') }}
       </Button>
@@ -34,7 +34,7 @@
         v-if="canReject"
         size="sm"
         variant="destructive"
-        :disabled="disabled"
+        :disabled
         @click="$emit('reject')"
       >
         <X class="size-4" />
@@ -42,7 +42,7 @@
       </Button>
 
       <!-- Housekeeping: close a stale item out in one go instead of stepping through it. -->
-      <Button size="sm" variant="secondary" :disabled="disabled" @click="$emit('resolve')">
+      <Button size="sm" variant="secondary" :disabled @click="$emit('resolve')">
         <CheckCheck class="size-4" />
         {{ $t('reservations.actions.resolve') }}
       </Button>

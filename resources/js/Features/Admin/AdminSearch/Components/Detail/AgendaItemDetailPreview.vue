@@ -38,7 +38,9 @@
         >
           {{ item.meeting_title || '—' }}
         </Link>
-        <template v-else>{{ item.meeting_title || '—' }}</template>
+        <template v-else>
+          {{ item.meeting_title || '—' }}
+        </template>
       </DetailRow>
       <DetailRow v-if="institutionName" :label="$t('Institucija')">
         <Link
@@ -48,7 +50,9 @@
         >
           {{ institutionName }}
         </Link>
-        <template v-else>{{ institutionName }}</template>
+        <template v-else>
+          {{ institutionName }}
+        </template>
       </DetailRow>
       <DetailRow v-if="item.tenant_shortnames?.length" :label="$t('Padalinys')" :value="item.tenant_shortnames[0]" />
       <DetailRow :label="$t('Data')" :value="formatSearchDate(item.meeting_start_time) || '—'" />
@@ -68,7 +72,9 @@
       <h3 class="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
         {{ $t('Aprašymas') }}
       </h3>
-      <p class="whitespace-pre-line text-sm text-muted-foreground">{{ item.description }}</p>
+      <p class="whitespace-pre-line text-sm text-muted-foreground">
+        {{ item.description }}
+      </p>
     </div>
   </DetailLayout>
 </template>
@@ -79,11 +85,12 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Pencil } from 'lucide-vue-next';
 
-import DetailLayout from './DetailLayout.vue';
-import DetailRow from './DetailRow.vue';
 import { toneClass, voteTone } from '../../Utils/searchBadges';
 import { formatSearchDate } from '../../Utils/searchHitMappers';
 import { getFacetValueLabel } from '../../Config/collectionFacetConfig';
+
+import DetailRow from './DetailRow.vue';
+import DetailLayout from './DetailLayout.vue';
 
 import { AgendaItemIcon } from '@/Components/icons';
 import { Badge } from '@/Components/ui/badge';

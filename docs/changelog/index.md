@@ -7,6 +7,11 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.15 — Atostogos neskaičiuojamos į susitikimų laikotarpius {#v1-15}
+
+- ✨ **Atostogos neįskaičiuojamos į posėdžių periodiškumą** — vasaros, žiemos, sausio pabaigos ir Velykų atostogų dienos nebeskaičiuojamos vertinant, kiek laiko institucija neposėdžiavo. Todėl per atostogas nebekuriamos užduotys ir nebesiunčiami priminimai, o užduočių terminai nebenukrenta į atostogų laikotarpį
+- 🔧 **Veikia „Institucijos, kurioms reikia dėmesio“** — pradiniame lange šis blokas dėl skaičiavimo klaidos niekada nerodydavo vėluojančių institucijų
+
 ## v1.14 — Paieška, diskusijos ir rezervacijos (2026-07-13) {#v1-14}
 
 - ⭐ **Rezervacijų valdymo pultas** - visos administruojamos rezervacijos vienoje vietoje. Patvirtinti, išduoti ar pažymėti grąžintus daiktus galima tiesiai iš sąrašo, net kelias rezervacijas iš karto, o pasenusias rezervacijas galima uždaryti vienu veiksmu.

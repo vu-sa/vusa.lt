@@ -141,7 +141,7 @@
             <DutySummaryCard
               v-for="duty in sortedDuties"
               :key="duty.id"
-              :duty="duty"
+              :duty
               :show-institution="false"
             />
           </div>
@@ -363,8 +363,6 @@ const { currentTab, navigateToTab } = useShowPageData({
 const showMeetingModal = ref(false);
 const showCheckInModal = ref(false);
 const showAddMemberModal = ref(false);
-
-
 
 // Subscription state
 const isFollowed = ref(props.subscription?.is_followed ?? false);

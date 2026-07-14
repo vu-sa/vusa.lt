@@ -96,7 +96,7 @@
             class="group cursor-pointer rounded-lg px-3 py-2.5 transition-colors hover:bg-accent data-[highlighted]:bg-accent"
             @select="handleHitSelect(hit)"
           >
-            <SearchHitRow :hit="hit" />
+            <SearchHitRow :hit />
           </CommandItem>
         </CommandGroup>
 

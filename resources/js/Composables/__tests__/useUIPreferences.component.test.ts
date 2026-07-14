@@ -37,17 +37,17 @@ beforeEach(() => {
       csrf_token: 'test-token',
       auth: {
         user: {
-            ui_preferences: {
-              sidebar: {
-                sections: { quick_actions: false },
-                order: ['secondary', 'quick_actions'],
-              },
-              quick_actions: { new_meeting: false },
-              recent_pages: [
-                { route: 'meetings.index', params: {}, visited_at: '2026-05-19T10:00:00Z' },
-                { route: 'gone.route', params: {}, visited_at: '2026-05-19T09:00:00Z' },
-              ],
+          ui_preferences: {
+            sidebar: {
+              sections: { quick_actions: false },
+              order: ['secondary', 'quick_actions'],
             },
+            quick_actions: { new_meeting: false },
+            recent_pages: [
+              { route: 'meetings.index', params: {}, visited_at: '2026-05-19T10:00:00Z' },
+              { route: 'gone.route', params: {}, visited_at: '2026-05-19T09:00:00Z' },
+            ],
+          },
         },
       },
     }) as any,

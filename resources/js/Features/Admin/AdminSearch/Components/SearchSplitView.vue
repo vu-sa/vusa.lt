@@ -17,18 +17,18 @@
         ]"
       >
         <SearchResultList
-          :hits="hits"
+          :hits
           :selected-id="selectedHit?.id"
-          :is-loading="isLoading"
-          :is-loading-more="isLoadingMore"
-          :has-more="hasMore"
-          :has-searched="hasSearched"
-          :error="error"
-          :empty-message="emptyMessage"
-          :selectable="selectable"
-          :multiple="multiple"
-          :selected-ids="selectedIds"
-          :disabled-ids="disabledIds"
+          :is-loading
+          :is-loading-more
+          :has-more
+          :has-searched
+          :error
+          :empty-message
+          :selectable
+          :multiple
+          :selected-ids
+          :disabled-ids
           @select="onSelect"
           @toggle="$emit('toggleSelect', $event)"
           @load-more="$emit('loadMore')"
@@ -64,9 +64,11 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { useEventListener } from '@vueuse/core';
 import { ChevronLeft } from 'lucide-vue-next';
 
+import type { NormalizedSearchHit } from '../Utils/searchHitMappers';
+
 import SearchResultList from './SearchResultList.vue';
 import SearchDetailPane from './SearchDetailPane.vue';
-import type { NormalizedSearchHit } from '../Utils/searchHitMappers';
+
 import { Button } from '@/Components/ui/button';
 
 const props = withDefaults(defineProps<{
@@ -98,8 +100,8 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   'update:selectedHit': [hit: NormalizedSearchHit | null];
-  toggleSelect: [hit: NormalizedSearchHit];
-  loadMore: [];
+  'toggleSelect': [hit: NormalizedSearchHit];
+  'loadMore': [];
 }>();
 
 const mobileShowsDetail = ref(false);

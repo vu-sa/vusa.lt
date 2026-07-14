@@ -3,7 +3,7 @@
     <!-- Selection bubble: inline marks. Only while the editor is focused. -->
     <BubbleMenu
       v-if="editor"
-      :editor="editor"
+      :editor
       plugin-key="notesBubble"
       :should-show="bubbleShouldShow"
       :options="menuOptions"
@@ -40,7 +40,7 @@
       </div>
     </BubbleMenu>
 
-    <EditorContent :editor="editor" />
+    <EditorContent :editor />
   </div>
 </template>
 

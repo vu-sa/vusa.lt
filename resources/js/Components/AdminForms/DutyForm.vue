@@ -433,6 +433,7 @@
 import { computed, ref, watch } from 'vue';
 import { useForm, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
+import { ChevronsUpDown } from 'lucide-vue-next';
 
 import SimpleLocaleButton from '../Buttons/SimpleLocaleButton.vue';
 import UserAvatar from '../Avatars/UserAvatar.vue';
@@ -444,7 +445,6 @@ import AdminForm from './AdminForm.vue';
 
 import IconEdit from '~icons/fluent/edit16-filled';
 import IconEye from '~icons/fluent/eye16-regular';
-import { ChevronsUpDown } from 'lucide-vue-next';
 import { Alert, AlertDescription } from '@/Components/ui/alert';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';

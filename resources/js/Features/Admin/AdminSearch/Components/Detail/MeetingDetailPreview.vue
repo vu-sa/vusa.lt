@@ -39,7 +39,9 @@
         >
           {{ institutionName || '—' }}
         </Link>
-        <template v-else>{{ institutionName || '—' }}</template>
+        <template v-else>
+          {{ institutionName || '—' }}
+        </template>
       </DetailRow>
       <DetailRow v-if="meeting.tenant_shortname" :label="$t('Padalinys')" :value="meeting.tenant_shortname" />
       <DetailRow :label="$t('Data')" :value="formatSearchDate(meeting.start_time) || '—'" />
@@ -92,13 +94,14 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Eye, Pencil } from 'lucide-vue-next';
 
-import DetailLayout from './DetailLayout.vue';
-import DetailRow from './DetailRow.vue';
 import { completionTone, toneClass, voteTone } from '../../Utils/searchBadges';
 import { formatSearchDate } from '../../Utils/searchHitMappers';
 import { getFacetValueLabel } from '../../Config/collectionFacetConfig';
-import { interactiveCardClass } from '@/Utils/interactiveCard';
 
+import DetailRow from './DetailRow.vue';
+import DetailLayout from './DetailLayout.vue';
+
+import { interactiveCardClass } from '@/Utils/interactiveCard';
 import { MeetingIcon } from '@/Components/icons';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';

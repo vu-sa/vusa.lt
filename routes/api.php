@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\AcademicCalendarApiController;
 use App\Http\Controllers\Api\Admin\AgendaItemNoteController;
 use App\Http\Controllers\Api\Admin\CommentApiController;
 use App\Http\Controllers\Api\Admin\CommentPollVoteApiController;
@@ -100,6 +101,9 @@ Route::prefix('v1')->name('v1.')->group(function () {
     Route::prefix('admin')->name('admin.')->middleware(['web', 'auth'])->group(function () {
         // Tasks
         Route::get('tasks/indicator', [TaskApiController::class, 'indicator'])->name('tasks.indicator');
+
+        // Academic vacation periods (shaded in the meetings Gantt chart)
+        Route::get('academic-calendar/vacations', [AcademicCalendarApiController::class, 'vacations'])->name('academicCalendar.vacations');
 
         // Meetings
         Route::get('meetings/recent', [MeetingApiController::class, 'recent'])->name('meetings.recent');

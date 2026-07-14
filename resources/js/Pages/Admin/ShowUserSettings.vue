@@ -167,6 +167,7 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { ref, computed } from 'vue';
 import { useForm, usePage } from '@inertiajs/vue3';
+import { Lock, RefreshCw, Save, Settings } from 'lucide-vue-next';
 
 import { useApiMutation } from '@/Composables/useApi';
 import { resetInitialization } from '@/Composables/useTutorialProgress';
@@ -183,7 +184,6 @@ import InfoText from '@/Components/SmallElements/InfoText.vue';
 import NotificationPreferences from '@/Features/Admin/Notifications/NotificationPreferences.vue';
 import PushDeviceManagement from '@/Features/Admin/Notifications/PushDeviceManagement.vue';
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
-import { Lock, RefreshCw, Save, Settings } from 'lucide-vue-next';
 
 const props = defineProps<{
   user: App.Entities.User;

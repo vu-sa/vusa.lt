@@ -59,7 +59,7 @@
           <div>
             <ResourceSelectDialog
               v-model:open="resourceDialogOpen"
-              :date-time-range="dateTimeRange"
+              :date-time-range
               :excluded-ids="selectedResourceIds"
               multiple
               @confirm="onResourcesConfirm"

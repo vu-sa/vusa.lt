@@ -14,7 +14,7 @@
       :columns
       :data="reservations"
       :pagination="true"
-      :page-size="pageSize"
+      :page-size
       :initial-sort="INITIAL_SORT"
       :get-row-id="(row) => String(row.id)"
       :enable-row-selection="isAdministered ? canSelectRow : false"
@@ -23,7 +23,7 @@
       :row-selection-state="rowSelection"
       :row-class-name="getRowClassName"
       :show-selection-count="false"
-      :empty-message="emptyMessage"
+      :empty-message
       @update:row-selection="rowSelection = $event"
     >
       <!--
@@ -473,7 +473,10 @@ const columns = computed<ColumnDef<DashboardReservation, any>[]>(() => [
                 >
                   <span class="max-w-[110px] truncate">{resource.name}</span>
                   {resource.pivot.quantity > 1 && (
-                    <span class="text-muted-foreground">×{resource.pivot.quantity}</span>
+                    <span class="text-muted-foreground">
+                      ×
+                      {resource.pivot.quantity}
+                    </span>
                   )}
                 </Badge>
               );
@@ -501,7 +504,8 @@ const columns = computed<ColumnDef<DashboardReservation, any>[]>(() => [
                 <TooltipTrigger as-child>
                   <div class="cursor-help">
                     <Badge variant="outline" size="tiny" class="text-muted-foreground">
-                      +{hidden.length}
+                      +
+                      {hidden.length}
                     </Badge>
                   </div>
                 </TooltipTrigger>

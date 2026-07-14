@@ -64,14 +64,16 @@
       </div>
     </div>
 
-    <p v-if="error" class="text-xs text-destructive">{{ error }}</p>
+    <p v-if="error" class="text-xs text-destructive">
+      {{ error }}
+    </p>
 
     <!-- Question editor doubles as the submit control. -->
     <CommentComposer
-      :mentionables="mentionables"
+      :mentionables
       :placeholder="$t('Apklausos klausimas…')"
       :submit-label="$t('Sukurti apklausą')"
-      :submitting="submitting"
+      :submitting
       show-cancel
       @submit="onSubmit"
       @cancel="$emit('cancel')"

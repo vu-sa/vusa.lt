@@ -56,10 +56,10 @@
       <CommentComposer
         v-if="editing"
         class="mt-1.5"
-        :mentionables="mentionables"
+        :mentionables
         :content="comment.body"
         :submit-label="$t('Išsaugoti')"
-        :submitting="submitting"
+        :submitting
         show-cancel
         autofocus
         @submit="onEditSubmit"
@@ -126,13 +126,13 @@ const props = withDefaults(defineProps<{
 });
 
 const emit = defineEmits<{
-  reply: [id: string];
-  update: [id: string, body: string];
-  delete: [id: string];
-  resolve: [id: string];
-  unresolve: [id: string];
+  'reply': [id: string];
+  'update': [id: string, body: string];
+  'delete': [id: string];
+  'resolve': [id: string];
+  'unresolve': [id: string];
   'toggle-reaction': [id: string, emoji: string];
-  vote: [id: string, optionId: string];
+  'vote': [id: string, optionId: string];
 }>();
 
 const editing = ref(false);

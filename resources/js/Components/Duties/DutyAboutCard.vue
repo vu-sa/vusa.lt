@@ -44,7 +44,7 @@ const responsibilityItems = computed(() => {
   }
   return props.responsibilities
     .split('\n')
-    .map((line) => line.replace(/^[-*•\s]+/, '').trim())
-    .filter((line) => line.length > 0);
+    .map(line => line.replace(/^[-*•\s]+/, '').trim())
+    .filter(line => line.length > 0);
 });
 </script>

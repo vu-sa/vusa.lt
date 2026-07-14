@@ -216,6 +216,7 @@
 import { computed, ref, reactive, watch } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
+import { Loader2, Mail as MailIcon } from 'lucide-vue-next';
 
 import { useApiMutation } from '@/Composables/useApi';
 import FormElement from '@/Components/AdminForms/FormElement.vue';
@@ -233,7 +234,6 @@ import {
 } from '@/Components/ui/select';
 import IFluentAlertOff24Regular from '~icons/fluent/alert-off-24-regular';
 import IFluentSave24Regular from '~icons/fluent/save-24-regular';
-import { Loader2, Mail as MailIcon } from 'lucide-vue-next';
 
 // Category icons
 import IFluentComment24Regular from '~icons/fluent/comment-24-regular';

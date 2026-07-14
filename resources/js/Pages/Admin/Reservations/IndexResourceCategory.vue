@@ -19,8 +19,7 @@ import { resolveTranslatable } from '@/Composables/useDataTableColumns';
 import { TruncatedText } from '@/Components/ui/data-table/cells';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
-import type { IndexTablePageProps } from '@/Types/TableConfigTypes';
-import type { IndexTablePageInstance } from '@/Types/TableConfigTypes';
+import type { IndexTablePageProps, IndexTablePageInstance } from '@/Types/TableConfigTypes';
 import { CategoryIcon } from '@/Components/icons';
 
 const props = defineProps<{
@@ -88,7 +87,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.ResourceCategory>>
   pageSize: props.resourceCategories.meta.per_page,
 
   initialFilters: props.filters,
-    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'name', desc: false }],
+  initialSorting: props.sorting?.length ? props.sorting : [{ id: 'name', desc: false }],
   enableFiltering: true,
   enableColumnVisibility: false,
   enableRowSelection: false,

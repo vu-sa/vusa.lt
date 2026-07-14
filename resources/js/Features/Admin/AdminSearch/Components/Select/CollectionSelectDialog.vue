@@ -1,12 +1,12 @@
 <template>
   <SearchSelectDialog
-    :open="open"
-    :multiple="multiple"
-    :title="title"
-    :description="description"
-    :confirm-label="confirmLabel"
-    :initial-hits="initialHits"
-    :allow-empty="allowEmpty"
+    :open
+    :multiple
+    :title
+    :description
+    :confirm-label
+    :initial-hits
+    :allow-empty
     @update:open="$emit('update:open', $event)"
     @confirm="$emit('confirm', $event)"
   >
@@ -15,13 +15,13 @@
     </template>
     <template #default="{ selectedIds, multiple: isMultiple, toggle, pinnedHits }">
       <CollectionSelectContent
-        :collection="collection"
-        :base-filter-by="baseFilterBy"
+        :collection
+        :base-filter-by
         :multiple="isMultiple"
-        :selected-ids="selectedIds"
-        :disabled-ids="disabledIds"
-        :pinned-hits="pinnedHits"
-        :mapper-ctx="mapperCtx"
+        :selected-ids
+        :disabled-ids
+        :pinned-hits
+        :mapper-ctx
         :empty-message="emptyMessage ?? $t('Rezultatų nerasta')"
         :search-placeholder="searchPlaceholder ?? $t('Ieškoti...')"
         @toggle="toggle"
@@ -33,10 +33,11 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 
-import SearchSelectDialog from './SearchSelectDialog.vue';
-import CollectionSelectContent from './CollectionSelectContent.vue';
 import type { AdminCollection } from '../../Types/AdminSearchTypes';
 import type { MapperContext, NormalizedSearchHit } from '../../Utils/searchHitMappers';
+
+import SearchSelectDialog from './SearchSelectDialog.vue';
+import CollectionSelectContent from './CollectionSelectContent.vue';
 
 withDefaults(defineProps<{
   open: boolean;
@@ -58,6 +59,6 @@ withDefaults(defineProps<{
 
 defineEmits<{
   'update:open': [open: boolean];
-  confirm: [hits: NormalizedSearchHit[]];
+  'confirm': [hits: NormalizedSearchHit[]];
 }>();
 </script>

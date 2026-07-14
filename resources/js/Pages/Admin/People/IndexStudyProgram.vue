@@ -35,8 +35,9 @@ import {
   PlusIcon,
 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
-import type { IndexTablePageInstance } from '@/Types/TableConfigTypes';
 
+import type { IndexTablePageInstance,
+  IndexTablePageProps } from '@/Types/TableConfigTypes';
 import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
 import { Button } from '@/Components/ui/button';
 import { TruncatedBadge } from '@/Components/ui/data-table/cells';
@@ -47,9 +48,6 @@ import {
   createTitleColumn,
   createTenantColumn,
 } from '@/Composables/useDataTableColumns';
-import type {
-  IndexTablePageProps,
-} from '@/Types/TableConfigTypes';
 
 const props = defineProps<{
   studyPrograms: {

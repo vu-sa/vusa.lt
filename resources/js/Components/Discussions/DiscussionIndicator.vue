@@ -16,7 +16,7 @@
         <SheetTitle>{{ title || $t('Diskusija') }}</SheetTitle>
       </SheetHeader>
       <div class="mt-4">
-        <DiscussionPanel :commentable-type="commentableType" :commentable-id="commentableId" />
+        <DiscussionPanel :commentable-type :commentable-id />
       </div>
     </SheetContent>
   </Sheet>

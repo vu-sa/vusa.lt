@@ -13,7 +13,7 @@
     results-container-class="space-y-2"
     transition-name="list"
     transition-class="space-y-2"
-    :no-results-title-key="noResultsTitleKey"
+    :no-results-title-key
     no-results-description-key="search.no_results_criteria"
     empty-state-title-key="search.start_search"
     empty-state-description-key="search.search_across_types"
@@ -115,7 +115,7 @@ const thumbnailUrl = (item: any): string | null => {
   if (props.type !== 'news') {
     return null;
   }
-  const image = item.image;
+  const { image } = item;
   if (!image || typeof image !== 'string' || brokenImages.value.has(String(item.id))) {
     return null;
   }

@@ -14,7 +14,7 @@
       class="rounded-lg border border-zinc-200 bg-white focus-within:border-vusa-red/50 focus-within:ring-1 focus-within:ring-vusa-red/30 dark:border-zinc-700 dark:bg-zinc-900"
       @focusout="onFocusOut"
     >
-      <EditorContent :editor="editor" />
+      <EditorContent :editor />
       <div class="flex items-center justify-between gap-2 border-t border-zinc-100 px-2 py-1.5 dark:border-zinc-800">
         <div class="flex items-center gap-2">
           <span class="text-xs text-muted-foreground">{{ $t('Naudokite @ paminėti') }}</span>

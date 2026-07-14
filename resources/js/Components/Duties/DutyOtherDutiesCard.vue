@@ -19,7 +19,9 @@
             {{ duty.name }}
           </p>
           <p class="text-xs text-muted-foreground">
-            {{ (duty.current_users?.length ?? 0) }}<template v-if="duty.places_to_occupy"> / {{ duty.places_to_occupy }}</template>
+            {{ (duty.current_users?.length ?? 0) }}<template v-if="duty.places_to_occupy">
+              / {{ duty.places_to_occupy }}
+            </template>
             {{ $t('užimta') }}
           </p>
         </div>

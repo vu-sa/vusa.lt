@@ -10,8 +10,9 @@
 import { computed } from 'vue';
 import { useDark } from '@vueuse/core';
 
-import type { SpotifyEmbed } from '@/Types/contentParts';
 import RCMixcloudEmbed from './RCMixcloudEmbed.vue';
+
+import type { SpotifyEmbed } from '@/Types/contentParts';
 
 const props = defineProps<{
   element: SpotifyEmbed;

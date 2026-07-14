@@ -12,11 +12,11 @@
     <PopoverContent align="end" class="w-[340px] p-0">
       <div class="max-h-[60vh] overflow-y-auto p-4">
         <AdminFacetSidebar
-          :facets="facets"
-          :filters="filters"
-          :facet-config="facetConfig"
-          :is-loading="isLoading"
-          :active-filter-count="activeFilterCount"
+          :facets
+          :filters
+          :facet-config
+          :is-loading
+          :active-filter-count
           @toggle-filter="(field, value) => $emit('toggleFilter', field, value)"
           @set-filter="(field, value) => $emit('setFilter', field, value)"
           @clear-filters="$emit('clearFilters')"
@@ -39,8 +39,9 @@ import { ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { SlidersHorizontal } from 'lucide-vue-next';
 
-import AdminFacetSidebar from './AdminFacetSidebar.vue';
 import type { AdminFacet, AdminSearchFilters, CollectionFacetConfig } from '../Types/AdminSearchTypes';
+
+import AdminFacetSidebar from './AdminFacetSidebar.vue';
 
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';

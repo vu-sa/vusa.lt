@@ -542,10 +542,10 @@ export const useAdminSearch = () => {
     // Relevance tuning shared by every sub-search (mirrors config/scout.php
     // typesense.model-settings, which the multi_search call does not otherwise apply).
     const commonTuning = {
-      'prioritize_exact_match': true,
-      'prioritize_token_position': true,
-      'num_typos': 2,
-      'typo_tokens_threshold': 1,
+      prioritize_exact_match: true,
+      prioritize_token_position: true,
+      num_typos: 2,
+      typo_tokens_threshold: 1,
     } as const;
 
     if (meetingsConfig?.hasAccess && meetingsConfig?.key) {

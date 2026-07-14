@@ -11,6 +11,7 @@ import { mount } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
 
 import Search from '../Search.vue';
+
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
 

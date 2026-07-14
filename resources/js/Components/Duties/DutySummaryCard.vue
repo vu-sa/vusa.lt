@@ -21,7 +21,9 @@
           <span v-if="duty.institution.tenant?.shortname"> ({{ duty.institution.tenant.shortname }})</span>
         </p>
       </div>
-      <Badge :variant="statusVariant" class="shrink-0 text-xs">{{ statusText }}</Badge>
+      <Badge :variant="statusVariant" class="shrink-0 text-xs">
+        {{ statusText }}
+      </Badge>
     </div>
 
     <div class="flex items-center justify-between gap-2">

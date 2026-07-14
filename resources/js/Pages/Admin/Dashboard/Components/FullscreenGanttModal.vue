@@ -139,8 +139,8 @@ import type {
 
 import TimelineGanttChart from './TimelineGanttChart.vue';
 import GanttFilterDropdown from './GanttFilterDropdown.vue';
-import { MeetingIconFilled } from '@/Components/icons';
 
+import { MeetingIconFilled } from '@/Components/icons';
 import {
   Dialog,
   DialogContent,

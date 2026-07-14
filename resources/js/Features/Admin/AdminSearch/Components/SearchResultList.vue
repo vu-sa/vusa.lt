@@ -40,10 +40,10 @@
       <SearchResultListItem
         v-for="hit in hits"
         :key="hit.id"
-        :hit="hit"
+        :hit
         :selected="hit.id === selectedId"
-        :selectable="selectable"
-        :multiple="multiple"
+        :selectable
+        :multiple
         :checked="selectedIds?.has(hit.id)"
         :disabled="disabledIds?.has(hit.id)"
         @select="$emit('select', hit)"
@@ -64,8 +64,10 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { Clock, Sparkles, SearchX, Loader2 } from 'lucide-vue-next';
 
-import SearchResultListItem from './SearchResultListItem.vue';
 import type { NormalizedSearchHit } from '../Utils/searchHitMappers';
+
+import SearchResultListItem from './SearchResultListItem.vue';
+
 import { Button } from '@/Components/ui/button';
 
 withDefaults(defineProps<{

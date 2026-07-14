@@ -7,6 +7,11 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.15 — Meeting Periodicity & Notifications Fixes (2026-07-14) {#v1-15}
+
+- ✨ **Vacations no longer count toward meeting periodicity** — summer, winter, late January and Easter vacation days are excluded when measuring how long an institution has gone without a meeting. Tasks and reminders are no longer raised during a break, and task deadlines no longer land inside one
+- 🔧 **"Institutions needing attention" works again** — a calculation error meant this dashboard block never surfaced overdue institutions
+
 ## v1.14 — Search, Discussions & Reservations Console (2026-07-13) {#v1-14}
 
 - ⭐ **Reservations console** — the cards and modals are replaced by a KPI strip (awaiting review / lent / unresolved / returned) and a table with "My reservations" and "Administered" tabs. You can approve, hand over and mark items returned straight from the list, act on several reservations at once, and close out a stale reservation in one action. Each status now has its own colour and icon, and reservations with an active item past its window are flagged in amber

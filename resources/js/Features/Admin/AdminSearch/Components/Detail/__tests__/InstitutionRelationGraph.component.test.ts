@@ -2,8 +2,9 @@ import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { commonStubs } from '@/tests/stubs';
 import InstitutionRelationGraph from '../InstitutionRelationGraph.vue';
+
+import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

@@ -46,7 +46,9 @@
         >
           {{ institutionName }}
         </Link>
-        <template v-else>{{ institutionName }}</template>
+        <template v-else>
+          {{ institutionName }}
+        </template>
       </DetailRow>
       <DetailRow :label="$t('Padalinys')" :value="duty.tenant_shortname || '—'" />
       <DetailRow v-if="duty.email" :label="$t('El. paštas')" :value="duty.email" />
@@ -58,7 +60,9 @@
         {{ $t('Tipai') }}
       </h3>
       <div class="flex flex-wrap gap-1.5">
-        <Badge v-for="(title, i) in duty.type_titles" :key="i" variant="secondary">{{ title }}</Badge>
+        <Badge v-for="(title, i) in duty.type_titles" :key="i" variant="secondary">
+          {{ title }}
+        </Badge>
       </div>
     </div>
 
@@ -77,7 +81,9 @@
           :class="member.id ? 'hover:border-primary/40 hover:bg-primary/5' : ''"
         >
           <Avatar class="size-5">
-            <AvatarFallback class="text-[9px]">{{ initials(member.name) }}</AvatarFallback>
+            <AvatarFallback class="text-[9px]">
+              {{ initials(member.name) }}
+            </AvatarFallback>
           </Avatar>
           {{ member.name }}
         </component>

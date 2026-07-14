@@ -206,7 +206,6 @@
                 {{ formatDate(resource.pivot?.end_time) }}
               </span>
             </div>
-
           </div>
 
           <!-- Actions -->

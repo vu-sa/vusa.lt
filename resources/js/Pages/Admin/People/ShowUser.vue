@@ -6,7 +6,7 @@
     <ShowPageHero
       flat
       :title="user.name"
-      :subtitle="subtitle"
+      :subtitle
     >
       <template #icon>
         <div
@@ -91,7 +91,9 @@
             <!-- Contact Info -->
             <Card>
               <CardHeader class="pb-3">
-                <CardTitle class="text-base">{{ $t('Kontaktinė informacija') }}</CardTitle>
+                <CardTitle class="text-base">
+                  {{ $t('Kontaktinė informacija') }}
+                </CardTitle>
               </CardHeader>
               <CardContent class="space-y-3">
                 <div v-if="user.email" class="flex items-center gap-3">
@@ -118,7 +120,9 @@
             <!-- Roles -->
             <Card v-if="roles.length">
               <CardHeader class="pb-3">
-                <CardTitle class="text-base">{{ $t('Rolės') }}</CardTitle>
+                <CardTitle class="text-base">
+                  {{ $t('Rolės') }}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div class="flex flex-wrap gap-1.5">
@@ -132,13 +136,15 @@
             <!-- Current Duties Summary -->
             <Card v-if="currentDuties.length">
               <CardHeader class="pb-3">
-                <CardTitle class="text-base">{{ $t('Dabartinės pareigos') }}</CardTitle>
+                <CardTitle class="text-base">
+                  {{ $t('Dabartinės pareigos') }}
+                </CardTitle>
               </CardHeader>
               <CardContent class="space-y-2">
                 <DutySummaryCard
                   v-for="duty in currentDuties"
                   :key="duty.id"
-                  :duty="duty"
+                  :duty
                   :exclude-user-id="user.id"
                 />
               </CardContent>
@@ -150,7 +156,9 @@
             <!-- Activity Summary -->
             <Card>
               <CardHeader class="pb-3">
-                <CardTitle class="text-base">{{ $t('Aktyvumas') }}</CardTitle>
+                <CardTitle class="text-base">
+                  {{ $t('Aktyvumas') }}
+                </CardTitle>
               </CardHeader>
               <CardContent class="space-y-3">
                 <div class="flex items-center justify-between">
@@ -176,12 +184,14 @@
         <div class="space-y-6">
           <!-- Current Duties -->
           <div v-if="currentDuties.length">
-            <h3 class="mb-3 text-lg font-medium">{{ $t('Dabartinės pareigos') }}</h3>
+            <h3 class="mb-3 text-lg font-medium">
+              {{ $t('Dabartinės pareigos') }}
+            </h3>
             <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
               <DutySummaryCard
                 v-for="duty in currentDuties"
                 :key="duty.id"
-                :duty="duty"
+                :duty
                 :exclude-user-id="user.id"
               />
             </div>
@@ -189,12 +199,14 @@
 
           <!-- Previous Duties -->
           <div v-if="previousDuties.length">
-            <h3 class="mb-3 text-lg font-medium">{{ $t('Buvusios pareigos') }}</h3>
+            <h3 class="mb-3 text-lg font-medium">
+              {{ $t('Buvusios pareigos') }}
+            </h3>
             <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
               <DutySummaryCard
                 v-for="duty in previousDuties"
                 :key="duty.id"
-                :duty="duty"
+                :duty
                 :exclude-user-id="user.id"
                 muted
               />
@@ -202,7 +214,9 @@
           </div>
 
           <div v-if="!allDuties.length" class="py-8 text-center">
-            <p class="text-muted-foreground">{{ $t('Nėra priskirtų pareigų') }}</p>
+            <p class="text-muted-foreground">
+              {{ $t('Nėra priskirtų pareigų') }}
+            </p>
           </div>
         </div>
       </TabsContent>
@@ -210,8 +224,8 @@
       <!-- Tasks Tab -->
       <TabsContent value="tasks">
         <TaskManager
-          :tasks="tasks"
-          :task-stats="taskStats"
+          :tasks
+          :task-stats
           :disabled="false"
           @open-task-detail="handleOpenTaskDetail"
         />

@@ -19,13 +19,13 @@
       <Checkbox
         v-if="multiple"
         :model-value="checked"
-        :disabled="disabled"
+        :disabled
         @update:model-value="!disabled && $emit('toggle')"
       />
       <button
         v-else
         type="button"
-        :disabled="disabled"
+        :disabled
         class="flex size-4 items-center justify-center rounded-full border text-primary"
         :class="checked ? 'border-primary' : 'border-muted-foreground/40'"
         @click="!disabled && $emit('toggle')"
@@ -33,7 +33,7 @@
         <span v-if="checked" class="size-2 rounded-full bg-primary" />
       </button>
     </div>
-    <SearchHitRow :hit="hit" :selected="selected" />
+    <SearchHitRow :hit :selected />
   </div>
 
   <!-- Default (navigation) mode — unchanged. -->
@@ -46,13 +46,15 @@
     ]"
     @click="$emit('select')"
   >
-    <SearchHitRow :hit="hit" :selected="selected" />
+    <SearchHitRow :hit :selected />
   </button>
 </template>
 
 <script setup lang="ts">
-import SearchHitRow from './SearchHitRow.vue';
 import type { NormalizedSearchHit } from '../Utils/searchHitMappers';
+
+import SearchHitRow from './SearchHitRow.vue';
+
 import { Checkbox } from '@/Components/ui/checkbox';
 
 const props = defineProps<{

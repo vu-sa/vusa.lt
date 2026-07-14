@@ -1,5 +1,5 @@
 <template>
-  <Dialog :open="open" @update:open="emit('update:open', $event)">
+  <Dialog :open @update:open="emit('update:open', $event)">
     <DialogContent class="sm:max-w-md">
       <DialogHeader>
         <DialogTitle>{{ $t('Pritaikyti šoninę juostą') }}</DialogTitle>
@@ -11,7 +11,7 @@
       <div class="py-2">
         <div ref="listEl" class="grid gap-1">
           <div
-            v-for="key in orderList" :key="key"
+            v-for="key in orderList" :key
             class="flex items-center gap-2 rounded-md px-2 py-2.5 hover:bg-muted/50 transition-colors">
             <GripVertical class="handle size-4 shrink-0 cursor-grab text-muted-foreground active:cursor-grabbing" />
             <component :is="sectionMeta[key].icon" class="size-4 shrink-0 text-muted-foreground" />

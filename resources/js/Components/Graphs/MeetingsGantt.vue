@@ -221,6 +221,7 @@ import {
 
 import { Slider } from '@/Components/ui/slider';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/ui/tooltip';
+import { useVacationPeriods } from '@/Composables/useVacationPeriods';
 import { useGanttSettings } from '@/Pages/Admin/Dashboard/Composables/useGanttSettings';
 
 /**
@@ -416,9 +417,6 @@ const { layoutRows, rowTop, rowHeightFor, rowCenter, containerHeight } = layout;
 // Page props for locale access
 const page = usePage();
 
-// Import vacation configuration
-import { getVacationPeriods } from '@/Pages/Admin/Dashboard/Components/vacationConfig';
-
 // Initialize interaction composable for scroll, zoom, and navigation
 const interactions = useGanttInteractions(
   {
@@ -463,6 +461,16 @@ const {
   attachKeyboardHandler,
   updateCurrentYear,
 } = interactions;
+
+// Vacation periods come from the backend, which uses the same calendar when
+// deciding whether an institution has gone too long without a meeting.
+// Winter vacation starts in December and ends on January 1st, so the year before
+// the visible range can still contribute a period.
+const { periods: vacationPeriods, ensureYears: ensureVacationYears } = useVacationPeriods();
+
+watch([minTime, maxTime], ([min, max]) => {
+  ensureVacationYears(min.getFullYear() - 1, max.getFullYear());
+}, { immediate: true });
 
 // Initialize viewport composable for horizontal culling (performance optimization)
 const viewport = useGanttViewport(rightScroll, curXRef, { bufferPx: 300 });
@@ -608,6 +616,7 @@ const render = () => {
     innerWidth,
     minTime: minTime.value,
     maxTime: maxTime.value,
+    vacationPeriods: vacationPeriods.value,
     colors,
     rowTop,
     rowHeightFor,
@@ -872,7 +881,7 @@ watch(() => dragSelection.state.value, (state) => {
   });
 }, { deep: true });
 
-watch([parsedMeetings, parsedGaps, parsedDutyMembers, parsedInactivePeriods, institutions, layoutRows, () => props.daysBefore, () => props.daysAfter, () => props.startDate, () => props.tenantFilter, () => props.showOnlyWithActivity, () => props.showOnlyWithPublicMeetings, () => props.showDutyMembers, () => props.showActivityStatus, () => props.detailsExpanded, extraBefore, extraAfter, dayWidthPx], () => render());
+watch([parsedMeetings, parsedGaps, parsedDutyMembers, parsedInactivePeriods, institutions, layoutRows, vacationPeriods, () => props.daysBefore, () => props.daysAfter, () => props.startDate, () => props.tenantFilter, () => props.showOnlyWithActivity, () => props.showOnlyWithPublicMeetings, () => props.showDutyMembers, () => props.showActivityStatus, () => props.detailsExpanded, extraBefore, extraAfter, dayWidthPx], () => render());
 </script>
 
 <style scoped>

@@ -94,11 +94,11 @@
 // Icons
 import { ExternalLink } from 'lucide-vue-next';
 import { Icon } from '@iconify/vue';
+import { computed } from 'vue';
 
 import { Badge } from '@/Components/ui/badge';
 
 // Composables
-import { computed } from 'vue';
 import { useDocumentDisplay, forceBrowserDocumentUrl, parseDocumentDate, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
 
 // Props

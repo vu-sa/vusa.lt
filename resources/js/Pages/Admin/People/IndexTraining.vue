@@ -13,8 +13,9 @@
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ref, computed } from 'vue';
-import type { IndexTablePageInstance } from '@/Types/TableConfigTypes';
 
+import type { IndexTablePageInstance,
+  IndexTablePageProps } from '@/Types/TableConfigTypes';
 import { capitalize } from '@/Utils/String';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
@@ -22,9 +23,6 @@ import { TrainingIcon } from '@/Components/icons';
 import {
   createTextColumn,
 } from '@/Composables/useDataTableColumns';
-import type {
-  IndexTablePageProps,
-} from '@/Types/TableConfigTypes';
 
 const props = defineProps<{
   trainings: {

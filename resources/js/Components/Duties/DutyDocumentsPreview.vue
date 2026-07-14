@@ -64,5 +64,5 @@ const { data, isFetching } = useFetch(
 ).json<DriveItem[]>();
 
 /** Only surface actual files (skip folders) in the compact sidebar list. */
-const files = computed(() => (data.value ?? []).filter((item) => item.file));
+const files = computed(() => (data.value ?? []).filter(item => item.file));
 </script>

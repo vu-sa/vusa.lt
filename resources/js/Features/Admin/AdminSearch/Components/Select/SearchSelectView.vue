@@ -15,17 +15,17 @@
 
     <SearchSplitView
       v-model:selected-hit="selectedHit"
-      :hits="hits"
+      :hits
       :is-loading="controller.isSearching.value"
       :is-loading-more="controller.isLoadingMore.value"
       :has-more="controller.hasMoreResults.value"
-      :has-searched="hasSearched"
+      :has-searched
       :error="errorMessage"
-      :empty-message="emptyMessage"
+      :empty-message
       selectable
-      :multiple="multiple"
-      :selected-ids="selectedIds"
-      :disabled-ids="disabledIds"
+      :multiple
+      :selected-ids
+      :disabled-ids
       @toggle-select="$emit('toggle', $event)"
       @load-more="controller.loadMore"
     >
@@ -89,8 +89,8 @@
       </template>
 
       <template #detail="{ hit }">
-        <slot name="detail" :hit="hit">
-          <SearchDetailPane :hit="hit" />
+        <slot name="detail" :hit>
+          <SearchDetailPane :hit />
         </slot>
       </template>
     </SearchSplitView>
@@ -108,6 +108,7 @@ import SearchFiltersPopover from '../SearchFiltersPopover.vue';
 import { useFilterPills } from '../../Composables/useFilterPills';
 import type { AdminCollectionSearchController } from '../../Composables/useAdminCollectionSearch';
 import type { NormalizedSearchHit } from '../../Utils/searchHitMappers';
+
 import type { SelectSearchController } from './types';
 
 import { Badge } from '@/Components/ui/badge';

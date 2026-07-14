@@ -11,14 +11,14 @@ describe('getCollectionSortOptions', () => {
     const options = getCollectionSortOptions('meetings');
 
     expect(options[0].value).toBe(RELEVANCE_SORT_VALUE);
-    expect(options.some((o) => o.value === 'start_time:desc')).toBe(true);
+    expect(options.some(o => o.value === 'start_time:desc')).toBe(true);
   });
 
   it('prepends the relevance option for the generic fallback', () => {
     const options = getCollectionSortOptions('resources');
 
     expect(options[0].value).toBe(RELEVANCE_SORT_VALUE);
-    expect(options.some((o) => o.value === 'created_at:desc')).toBe(true);
+    expect(options.some(o => o.value === 'created_at:desc')).toBe(true);
   });
 });
 

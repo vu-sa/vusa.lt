@@ -1,22 +1,23 @@
 <template>
   <SearchSelectView
-    :controller="controller"
-    :map-hit="mapHit"
-    :multiple="multiple"
-    :selected-ids="selectedIds"
-    :disabled-ids="disabledIds"
-    :pinned-hits="pinnedHits"
-    :empty-message="emptyMessage"
-    :search-placeholder="searchPlaceholder"
+    :controller
+    :map-hit
+    :multiple
+    :selected-ids
+    :disabled-ids
+    :pinned-hits
+    :empty-message
+    :search-placeholder
     @toggle="$emit('toggle', $event)"
   />
 </template>
 
 <script setup lang="ts">
-import SearchSelectView from './SearchSelectView.vue';
 import { useAdminCollectionSearch } from '../../Composables/useAdminCollectionSearch';
 import { adminCollectionToKey, normalizeHit, type MapperContext, type NormalizedSearchHit } from '../../Utils/searchHitMappers';
 import type { AdminCollection } from '../../Types/AdminSearchTypes';
+
+import SearchSelectView from './SearchSelectView.vue';
 
 const props = defineProps<{
   collection: AdminCollection;

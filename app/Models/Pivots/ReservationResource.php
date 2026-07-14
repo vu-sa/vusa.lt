@@ -34,7 +34,7 @@ use Illuminate\Support\Collection;
  * @property Carbon|null $end_time
  * @property int $quantity
  * @property ReservationResourceState $state
- * @property string|null $returned_at
+ * @property Carbon|null $returned_at
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property string|null $deleted_at

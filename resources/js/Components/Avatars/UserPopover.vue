@@ -204,7 +204,7 @@ watch(() => photo.value, () => {
 const focalPoint = computed(() => props.user.profile_photo_focal_point ?? '50% 30%');
 
 const initials = computed(() => {
-  const name = props.user.name;
+  const { name } = props.user;
   if (!name || typeof name !== 'string') return '';
   const words = name.trim().split(/\s+/);
   if (words.length === 1) return words[0].substring(0, 2).toUpperCase();

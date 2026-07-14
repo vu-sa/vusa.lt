@@ -112,8 +112,12 @@
       class="pointer-events-none absolute z-10 max-w-[14rem] rounded-md border bg-popover px-2.5 py-1.5 text-xs text-popover-foreground shadow-md"
       :style="{ left: `${tooltip.x}px`, top: `${tooltip.y}px` }"
     >
-      <p class="font-semibold">{{ tooltip.title }}</p>
-      <p class="text-muted-foreground">{{ tooltip.subtitle }}</p>
+      <p class="font-semibold">
+        {{ tooltip.title }}
+      </p>
+      <p class="text-muted-foreground">
+        {{ tooltip.subtitle }}
+      </p>
       <p :class="tooltip.authorized ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'">
         {{ tooltip.authorized ? $t('relationships.authorized') : $t('relationships.not_authorized') }}
       </p>
@@ -197,7 +201,8 @@ const nodes = computed(() => {
     const last = groups[groups.length - 1];
     if (last && last.dir === dir) {
       last.items.push(item);
-    } else {
+    }
+    else {
       groups.push({ dir, items: [item] });
     }
   }

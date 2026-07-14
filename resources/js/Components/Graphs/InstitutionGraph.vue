@@ -58,7 +58,9 @@
 
     <!-- Legend -->
     <div class="absolute bottom-3 left-3 rounded-lg border bg-background/90 p-3 text-xs shadow-sm backdrop-blur">
-      <p class="mb-1.5 font-semibold text-muted-foreground">{{ $t(legendTitle) }}</p>
+      <p class="mb-1.5 font-semibold text-muted-foreground">
+        {{ $t(legendTitle) }}
+      </p>
       <ul class="space-y-1">
         <li v-for="entry in legendEntries" :key="entry.key" class="flex items-center gap-2">
           <span class="inline-block h-0.5 w-5 rounded-full" :style="{ backgroundColor: entry.color }" />
@@ -79,9 +81,15 @@
       class="pointer-events-none absolute z-10 max-w-xs rounded-md border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md"
       :style="{ left: `${tooltip.x}px`, top: `${tooltip.y}px` }"
     >
-      <p v-if="tooltip.title" class="font-semibold">{{ tooltip.title }}</p>
-      <p class="text-muted-foreground">{{ tooltip.subtitle }}</p>
-      <p v-if="tooltip.description" class="mt-1 whitespace-normal text-muted-foreground">{{ tooltip.description }}</p>
+      <p v-if="tooltip.title" class="font-semibold">
+        {{ tooltip.title }}
+      </p>
+      <p class="text-muted-foreground">
+        {{ tooltip.subtitle }}
+      </p>
+      <p v-if="tooltip.description" class="mt-1 whitespace-normal text-muted-foreground">
+        {{ tooltip.description }}
+      </p>
       <p v-if="tooltip.bidirectional" class="mt-0.5 flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
         <ArrowLeftRight class="size-3" /> {{ $t('relationships.graph.bidirectional') }}
       </p>
@@ -309,7 +317,8 @@ function showEdgeTooltip(event: MouseEvent, edge: GraphEdge) {
   if (mode.value === 'types') {
     tooltip.title = edge.relationship_name ?? $t('relationships.graph.type_type_based');
     tooltip.subtitle = $t(scopeKey);
-  } else {
+  }
+  else {
     const directionKey = edge.direction === 'sibling'
       ? 'relationships.graph.direction_sibling'
       : 'relationships.graph.direction_outgoing';
@@ -440,7 +449,8 @@ function render() {
       if (selectedEdge === d) {
         selectedEdge = null;
         clearHighlight();
-      } else {
+      }
+      else {
         selectedEdge = d;
         highlightEdge(d);
       }

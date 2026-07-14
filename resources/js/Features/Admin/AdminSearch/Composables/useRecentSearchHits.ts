@@ -9,13 +9,14 @@
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { useUIPreferences } from '@/Composables/useUIPreferences';
-import type { RecentItem } from '@/Composables/useCommandPalette';
 import {
   COLLECTION_META,
   type NormalizedSearchHit,
   type SearchCollectionKey,
 } from '../Utils/searchHitMappers';
+
+import { useUIPreferences } from '@/Composables/useUIPreferences';
+import type { RecentItem } from '@/Composables/useCommandPalette';
 
 /**
  * Infer the search collection from a Ziggy route name.

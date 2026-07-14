@@ -26,7 +26,7 @@
           :query="controller.query.value"
           :is-searching="controller.isSearching.value"
           :recent-searches="controller.recentSearches.value"
-          :type-to-search="typeToSearch"
+          :type-to-search
           placeholder-key="search.all_search_placeholder"
           @update:query="handleQueryUpdate"
           @search="handleSearch"
@@ -190,6 +190,7 @@ import { computed, onMounted, ref, type Component } from 'vue';
 import { Head, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowRight, SearchX } from 'lucide-vue-next';
+
 import SearchIcon from '~icons/fluent/search24-regular';
 import IFluentSearch16Regular from '~icons/fluent/search16-regular';
 import IFluentPeopleTeam from '~icons/fluent/people-team20-regular';
@@ -198,7 +199,6 @@ import IFluentDocument from '~icons/fluent/document20-regular';
 import IFluentNews from '~icons/fluent/news20-regular';
 import IFluentPage from '~icons/fluent/document-text20-regular';
 import IFluentCalendar from '~icons/fluent/calendar20-regular';
-
 import BaseSearchInterface from '@/Components/Public/Search/Shared/BaseSearchInterface.vue';
 import BaseSearchInput from '@/Components/Public/Search/Shared/BaseSearchInput.vue';
 import DocumentResults from '@/Components/Public/Search/DocumentResults.vue';
@@ -206,7 +206,6 @@ import MeetingResults from '@/Components/Public/Search/MeetingResults.vue';
 import InstitutionResults from '@/Components/Public/Search/InstitutionResults.vue';
 import GenericResults from '@/Components/Public/Search/GenericResults.vue';
 import SmartLink from '@/Components/Public/SmartLink.vue';
-
 import { usePublicMultiSearch, type SearchCollectionId } from '@/Composables/usePublicMultiSearch';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 
