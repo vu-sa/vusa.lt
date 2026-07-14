@@ -8,7 +8,7 @@ import type * as d3 from 'd3';
 
 import type { GanttColors } from '../ganttColors';
 
-import { getVacationPeriods, type VacationPeriod } from '@/Pages/Admin/Dashboard/Components/vacationConfig';
+import type { VacationPeriod } from '@/Composables/useVacationPeriods';
 
 interface LayoutRow {
   key: string | number;
@@ -29,6 +29,8 @@ export interface VacationRenderContext {
   minTime: Date;
   /** Maximum time */
   maxTime: Date;
+  /** Vacation periods loaded from the backend (see useVacationPeriods) */
+  vacationPeriods: VacationPeriod[];
   /** Color palette */
   colors: GanttColors;
   /** Get row top position */
@@ -48,7 +50,12 @@ export interface VacationRenderContext {
 export function renderVacations(ctx: VacationRenderContext): void {
   const { g, x, layoutRows, innerWidth, minTime, maxTime, colors, rowTop, rowHeightFor } = ctx;
 
-  const vacationPeriods = getVacationPeriods(minTime, maxTime);
+  const vacationPeriods = ctx.vacationPeriods.filter(
+    period => period.start <= maxTime && period.end >= minTime,
+  );
+
+  if (vacationPeriods.length === 0) return;
+
   const institutionRows = layoutRows.filter(r => r.type === 'institution');
 
   // Create vacation band data for each period × institution row

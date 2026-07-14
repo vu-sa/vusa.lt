@@ -20,6 +20,7 @@ use App\Models\Resource;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Notifications\TestPushNotification;
+use App\Services\AcademicCalendarService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
 use App\Services\ResourceServices\DutyService;
@@ -109,6 +110,7 @@ class DashboardController extends AdminController
         // Get institutions needing attention (overdue meetings based on periodicity)
         $meetingSettings = app(MeetingSettings::class);
         $excludedTypeIds = $meetingSettings->getExcludedInstitutionTypeIds();
+        $academicCalendar = app(AcademicCalendarService::class);
 
         $userInstitutions = Institution::query()
             ->whereIn('id', $userInstitutionIds)
@@ -124,7 +126,7 @@ class DashboardController extends AdminController
             });
 
         $institutionsNeedingAttention = $userInstitutions
-            ->map(function ($institution) {
+            ->map(function ($institution) use ($academicCalendar) {
                 $lastMeeting = $institution->meetings->first();
                 $periodicity = $institution->meeting_periodicity_days ?? 30;
 
@@ -138,7 +140,7 @@ class DashboardController extends AdminController
                     ];
                 }
 
-                $daysSinceLastMeeting = (int) now()->diffInDays($lastMeeting->start_time);
+                $daysSinceLastMeeting = $academicCalendar->effectiveDaysBetween($lastMeeting->start_time, now());
                 $isOverdue = $daysSinceLastMeeting > $periodicity;
                 $isApproaching = ! $isOverdue && $daysSinceLastMeeting >= ($periodicity * 0.8);
 

@@ -30,6 +30,8 @@ lastUpdated: true
 - ⭐ **Bandomasis el. laiškas** — nustatymuose, prie pranešimų el. pašto adresų, atsirado mygtukas išsiųsti bandomąjį laišką ir iškart pamatyti, ar jis pasiekia pašto dėžutę
 - ✨ **Ilgesni balsavimų pavadinimai** — balsavimo pavadinimas dabar gali būti iki 200 simbolių (buvo 125)
 - 🔧 **Patikimesnis navigacijos ir naujienų išsaugojimas** — sutvarkyta validacija, kad išsaugant navigacijos skirtuką be pavadinimo arba kuriant naujieną be priskirto padalinio sistema mestų aiškią klaidą, o ne SQL išimtį
+- ✨ **Atostogos neįskaičiuojamos į posėdžių periodiškumą** — vasaros, žiemos, sausio pabaigos ir Velykų atostogų dienos nebeskaičiuojamos vertinant, kiek laiko institucija neposėdžiavo. Todėl per atostogas nebekuriamos užduotys ir nebesiunčiami priminimai, o užduočių terminai nebenukrenta į atostogų laikotarpį
+- 🔧 **Veikia „Institucijos, kurioms reikia dėmesio“** — pradiniame lange šis blokas dėl skaičiavimo klaidos niekada nerodydavo vėluojančių institucijų
 
 ## v1.13 — Problemų registro patobulinimai (2026-06-12) {#v1-13}
 

@@ -8,6 +8,7 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\ReservationResource;
 use App\Models\Reservation;
+use App\Services\AcademicCalendarService;
 use App\States\ReservationResource\Lent;
 use App\States\ReservationResource\Reserved;
 use App\Tasks\Handlers\AgendaCompletionTaskHandler;
@@ -54,6 +55,7 @@ class RepopulateTasks extends Command
         protected ReturnTaskHandler $returnHandler,
         protected AgendaCreationTaskHandler $agendaCreationHandler,
         protected AgendaCompletionTaskHandler $agendaCompletionHandler,
+        protected AcademicCalendarService $academicCalendar,
     ) {
         parent::__construct();
     }
@@ -160,10 +162,10 @@ class RepopulateTasks extends Command
                 continue;
             }
 
-            // Calculate days since last meeting
+            // Calculate days since last meeting, ignoring academic vacation days
             $lastMeetingDate = $this->getLastMeetingDate($institution);
             $daysSinceLastMeeting = $lastMeetingDate
-                ? (int) $lastMeetingDate->diffInDays(Carbon::today())
+                ? $this->academicCalendar->effectiveDaysBetween($lastMeetingDate, Carbon::today())
                 : null;
 
             // Check if there's a future meeting scheduled
@@ -189,9 +191,12 @@ class RepopulateTasks extends Command
                 continue;
             }
 
-            // Calculate due date - at least 7 days from now to give time to act
+            // Calculate due date - at least 7 days from now to give time to act.
+            // Vacation days are skipped, so a deadline never lands inside a break.
             $minDueDays = 7;
-            $dueDate = Carbon::today()->addDays(max($minDueDays, $daysUntilThreshold));
+            $dueDate = Carbon::instance(
+                $this->academicCalendar->addEffectiveDays(Carbon::today(), max($minDueDays, $daysUntilThreshold))
+            );
 
             if ($dryRun) {
                 $this->line("    → Would create: {$institution->name}");
