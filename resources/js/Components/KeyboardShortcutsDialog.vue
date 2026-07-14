@@ -1,5 +1,5 @@
 <template>
-  <Dialog :open="open" @update:open="emit('update:open', $event)">
+  <Dialog :open @update:open="emit('update:open', $event)">
     <DialogContent class="sm:max-w-sm">
       <DialogHeader>
         <DialogTitle>{{ $t('Klaviatūros trumpiniai') }}</DialogTitle>

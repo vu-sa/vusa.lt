@@ -53,9 +53,10 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { History, Star } from 'lucide-vue-next';
 
+import RecentPagesDialog from './RecentPagesDialog.vue';
+
 import { resolvePageIcon } from '@/Composables/adminPageCatalog';
 import { useUIPreferences } from '@/Composables/useUIPreferences';
-import RecentPagesDialog from './RecentPagesDialog.vue';
 import {
   SidebarGroup,
   SidebarGroupContent,

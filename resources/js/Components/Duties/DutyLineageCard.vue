@@ -74,7 +74,7 @@ const groups = computed<LineageGroup[]>(() => {
 
     for (let year = startYear; year <= endYear; year++) {
       const bucket = buckets.get(year) ?? [];
-      if (!bucket.some((existing) => existing.id === member.id)) {
+      if (!bucket.some(existing => existing.id === member.id)) {
         bucket.push(member);
       }
       buckets.set(year, bucket);

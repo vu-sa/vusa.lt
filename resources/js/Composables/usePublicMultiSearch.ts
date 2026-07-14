@@ -20,13 +20,13 @@ import { debounce } from 'lodash-es';
 
 import { ErrorUtils } from '@/Shared/Search/services/SearchErrorUtils';
 
-export type SearchCollectionId =
-  | 'institutions'
-  | 'meetings'
-  | 'documents'
-  | 'news'
-  | 'pages'
-  | 'calendar';
+export type SearchCollectionId
+  = | 'institutions'
+    | 'meetings'
+    | 'documents'
+    | 'news'
+    | 'pages'
+    | 'calendar';
 
 interface TypesenseNode {
   protocol: string;

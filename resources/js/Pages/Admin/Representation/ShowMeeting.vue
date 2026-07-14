@@ -158,8 +158,8 @@
         />
         <MeetingNavigationCards
           v-if="previousMeeting || nextMeeting"
-          :previous-meeting="previousMeeting"
-          :next-meeting="nextMeeting"
+          :previous-meeting
+          :next-meeting
         />
 
         <!-- Meeting-level discussion lives directly under the agenda. -->

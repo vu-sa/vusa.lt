@@ -66,7 +66,7 @@ describe('InstitutionOverviewSection', () => {
       global: { stubs },
     });
 
-    const allMembers = wrapper.findAll('button').find((b) => b.text().includes('Visi nariai'));
+    const allMembers = wrapper.findAll('button').find(b => b.text().includes('Visi nariai'));
     await allMembers!.trigger('click');
 
     expect(wrapper.emitted('navigate-tab')?.[0]).toEqual(['duties']);

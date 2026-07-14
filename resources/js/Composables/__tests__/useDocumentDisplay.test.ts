@@ -1,4 +1,5 @@
 import { describe, test, expect } from 'vitest';
+
 import { forceBrowserDocumentUrl } from '../useDocumentDisplay';
 
 describe('forceBrowserDocumentUrl', () => {

@@ -13,8 +13,9 @@
 import { h, ref, computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
-import type { IndexTablePageInstance } from '@/Types/TableConfigTypes';
 
+import type { IndexTablePageInstance,
+  IndexTablePageProps } from '@/Types/TableConfigTypes';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { TruncatedText } from '@/Components/ui/data-table/cells';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
@@ -24,9 +25,6 @@ import {
   createIdColumn,
   createTenantColumn,
 } from '@/Composables/useDataTableColumns';
-import type {
-  IndexTablePageProps,
-} from '@/Types/TableConfigTypes';
 
 const props = defineProps<{
   news: {

@@ -6,7 +6,7 @@
         @submit:form="onSubmit"
         @delete="onDelete" />
     </UpsertModelLayout>
-    <AccessChangeWarningDialog :open="open" :report="report"
+    <AccessChangeWarningDialog :open :report
       @update:open="open = $event" @confirm="confirm" @cancel="cancel" />
   </PageContent>
 </template>
@@ -29,14 +29,14 @@ const props = defineProps<{
 const { report, open, guardedSubmit, confirm, cancel } = useAccessChangeGuard();
 
 const onSubmit = (form: any) =>
-  guardedSubmit((acknowledge) =>
+  guardedSubmit(acknowledge =>
     form
       .transform((data: Record<string, unknown>) => ({ ...data, acknowledge_access_change: acknowledge }))
       .patch(route('dutiables.update', props.dutiable.id), { preserveScroll: true, preserveState: true }),
   );
 
 const onDelete = () =>
-  guardedSubmit((acknowledge) =>
+  guardedSubmit(acknowledge =>
     router.delete(route('dutiables.destroy', props.dutiable.id), {
       data: { acknowledge_access_change: acknowledge },
       preserveScroll: true,

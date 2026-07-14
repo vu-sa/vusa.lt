@@ -147,11 +147,11 @@
 import { ref, computed, onMounted, h } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
+import { BellPlus, BellOff, BellRing, Globe, Laptop, Loader2, Monitor, PhoneOff, RefreshCw, Smartphone, Tablet, Trash2 } from 'lucide-vue-next';
 
 import { usePWA, type PushSubscriptionDevice } from '@/Composables/usePWA';
 import FormElement from '@/Components/AdminForms/FormElement.vue';
 import { Button } from '@/Components/ui/button';
-import { BellPlus, BellOff, BellRing, Globe, Laptop, Loader2, Monitor, PhoneOff, RefreshCw, Smartphone, Tablet, Trash2 } from 'lucide-vue-next';
 import ISimpleIconsApple from '~icons/simple-icons/apple';
 import ISimpleIconsLinux from '~icons/simple-icons/linux';
 import ISimpleIconsWindows from '~icons/simple-icons/windows';

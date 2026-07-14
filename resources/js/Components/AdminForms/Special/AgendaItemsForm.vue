@@ -177,7 +177,7 @@
                   </div>
 
                   <FormControl>
-                      <Textarea v-model="questionInputInTextArea"
+                    <Textarea v-model="questionInputInTextArea"
                       :placeholder="$t('Kiekvienas klausimas turi būti iš naujos eilutės, pvz.:') + '\n\n' + $t('Praėjusio posėdžio protokolo tvirtinimas') + '\n' + $t('Einamųjų reikalų aptarimas') + '\n' + $t('Ateities planų pristatymas') + '\n' + $t('Kiti klausimai')"
                       class="w-full font-mono text-sm" :rows="8" />
                   </FormControl>

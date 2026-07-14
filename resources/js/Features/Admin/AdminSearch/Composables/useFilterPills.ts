@@ -7,8 +7,9 @@
 
 import { ref, computed, watch } from 'vue';
 
-import type { AdminCollectionSearchController } from './useAdminCollectionSearch';
 import { getFacetValueLabel } from '../Config/collectionFacetConfig';
+
+import type { AdminCollectionSearchController } from './useAdminCollectionSearch';
 
 export function useFilterPills(controller: AdminCollectionSearchController) {
   // Track if user has performed a search (typed, filtered, or got results)

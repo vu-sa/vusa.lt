@@ -4,6 +4,7 @@ import { h } from 'vue';
 
 import SearchSelectDialog from '../SearchSelectDialog.vue';
 import type { NormalizedSearchHit } from '../../../Utils/searchHitMappers';
+
 import { commonStubs } from '@/tests/stubs';
 
 const hitA = { id: 'r-1', recordId: '1', collection: 'resources', title: 'Alpha', icon: {}, raw: {} } as unknown as NormalizedSearchHit;

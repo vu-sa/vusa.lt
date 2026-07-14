@@ -28,8 +28,9 @@ import {
   MergeIcon,
 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
-import type { IndexTablePageInstance } from '@/Types/TableConfigTypes';
 
+import type { IndexTablePageInstance,
+  IndexTablePageProps } from '@/Types/TableConfigTypes';
 import { Button } from '@/Components/ui/button';
 import { TruncatedBadge, TruncatedText } from '@/Components/ui/data-table/cells';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
@@ -38,9 +39,6 @@ import { TagIcon } from '@/Components/icons';
 import {
   createTitleColumn,
 } from '@/Composables/useDataTableColumns';
-import type {
-  IndexTablePageProps,
-} from '@/Types/TableConfigTypes';
 
 const props = defineProps<{
   tags: {

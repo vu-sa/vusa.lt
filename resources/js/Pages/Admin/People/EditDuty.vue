@@ -19,7 +19,7 @@
         @delete="() => router.delete(route('duties.destroy', duty.id))"
       />
     </UpsertModelLayout>
-    <AccessChangeWarningDialog :open="open" :report="report"
+    <AccessChangeWarningDialog :open :report
       @update:open="open = $event" @confirm="confirm" @cancel="cancel" />
   </PageContent>
 </template>
@@ -51,7 +51,7 @@ const { report, open, guardedSubmit, confirm, cancel } = useAccessChangeGuard();
 
 const handleSubmit = (form: any) => {
   if (props.canEditDuty) {
-    guardedSubmit((acknowledge) =>
+    guardedSubmit(acknowledge =>
       form
         .transform((data: Record<string, unknown>) => ({ ...data, acknowledge_access_change: acknowledge }))
         .patch(route('duties.update', props.duty.id), { preserveScroll: true, preserveState: true }),

@@ -114,12 +114,12 @@ function readServerPrefs(): ServerPrefs {
   const page = usePage();
   const prefs = (page.props.auth as { user?: { ui_preferences?: unknown } })?.user?.ui_preferences as
     | {
-        sidebar?: { sections?: Record<string, boolean>; order?: string[]; collapsed?: boolean };
-        quick_actions?: Record<string, boolean>;
-        appearance?: { density?: string };
-        pinned_pages?: StoredPinnedPage[];
-        recent_pages?: StoredRecentPage[];
-      }
+      sidebar?: { sections?: Record<string, boolean>; order?: string[]; collapsed?: boolean };
+      quick_actions?: Record<string, boolean>;
+      appearance?: { density?: string };
+      pinned_pages?: StoredPinnedPage[];
+      recent_pages?: StoredRecentPage[];
+    }
     | undefined;
 
   return {

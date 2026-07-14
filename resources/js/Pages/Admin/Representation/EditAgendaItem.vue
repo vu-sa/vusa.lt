@@ -6,7 +6,7 @@
       :meeting-id="agendaItem.meeting_id"
       :meeting-title="agendaItem.meeting?.title"
       :current-id="agendaItem.id"
-      :sibling-agenda-items="siblingAgendaItems"
+      :sibling-agenda-items
       @navigate="navigateTo"
     />
 
@@ -67,9 +67,9 @@
     <div class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
       <div class="min-w-0 space-y-8">
         <AgendaItemBody
-          :form="form"
-          :editing="editing"
-          :meeting-is-public="meetingIsPublic"
+          :form
+          :editing
+          :meeting-is-public
         />
 
         <!-- Discussion: the attributed, threaded conversation (distinct from the
@@ -225,7 +225,7 @@ const currentPosition = computed(() => {
 });
 
 const meetingLabel = computed(() => {
-  const meeting = props.agendaItem.meeting;
+  const { meeting } = props.agendaItem;
   if (!meeting) { return ''; }
   if (meeting.start_time) {
     return formatStaticTime(new Date(meeting.start_time), {

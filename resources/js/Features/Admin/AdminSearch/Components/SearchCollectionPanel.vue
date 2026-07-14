@@ -1,13 +1,13 @@
 <template>
   <SearchSplitView
     v-model:selected-hit="selectedHit"
-    :hits="hits"
+    :hits
     :is-loading="controller.isSearching.value"
     :is-loading-more="controller.isLoadingMore.value"
     :has-more="controller.hasMoreResults.value"
-    :has-searched="hasSearched"
+    :has-searched
     :error="controller.error.value"
-    :empty-message="emptyMessage"
+    :empty-message
     @load-more="controller.loadMore"
   >
     <template #toolbar>
@@ -79,12 +79,13 @@ import { computed, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { X } from 'lucide-vue-next';
 
-import SearchSplitView from './SearchSplitView.vue';
-import SearchFiltersPopover from './SearchFiltersPopover.vue';
 import { useAdminCollectionSearch } from '../Composables/useAdminCollectionSearch';
 import { useFilterPills } from '../Composables/useFilterPills';
 import { adminCollectionToKey, normalizeHit, type MapperContext, type NormalizedSearchHit } from '../Utils/searchHitMappers';
 import type { AdminCollection } from '../Types/AdminSearchTypes';
+
+import SearchFiltersPopover from './SearchFiltersPopover.vue';
+import SearchSplitView from './SearchSplitView.vue';
 
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';

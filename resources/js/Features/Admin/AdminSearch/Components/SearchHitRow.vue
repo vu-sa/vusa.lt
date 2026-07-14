@@ -75,10 +75,11 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronRight, Link as LinkIcon, Clock } from 'lucide-vue-next';
 
-import { Badge } from '@/Components/ui/badge';
 import { getCollectionColor } from '../Utils/searchHitMappers';
 import { toneClass } from '../Utils/searchBadges';
 import type { NormalizedSearchHit } from '../Utils/searchHitMappers';
+
+import { Badge } from '@/Components/ui/badge';
 
 const props = defineProps<{
   hit: NormalizedSearchHit;

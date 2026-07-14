@@ -261,14 +261,15 @@ import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { useBreakpoints, breakpointsTailwind } from '@vueuse/core';
+import { CheckCheck } from 'lucide-vue-next';
 
 import InfoText from '../SmallElements/InfoText.vue';
-import ReservationBulkActionBar from './ReservationBulkActionBar.vue';
 import ReservationPeriod from '../SmallElements/ReservationPeriod.vue';
 import ReservationResourceStateTag from '../Tag/ReservationResourceStateTag.vue';
 import StateProgressIndicator from '../SmallElements/StateProgressIndicator.vue';
 import UsersAvatarGroup from '../Avatars/UsersAvatarGroup.vue';
 
+import ReservationBulkActionBar from './ReservationBulkActionBar.vue';
 import ReservationResourceCard from './ReservationResourceCard.vue';
 
 import Add24Filled from '~icons/fluent/add-24-filled';
@@ -278,7 +279,6 @@ import Delete16Regular from '~icons/fluent/delete16-regular';
 import Dismiss24Regular from '~icons/fluent/dismiss-24-regular';
 import DismissCircle24Regular from '~icons/fluent/dismiss-circle24-regular';
 import InfoIcon from '~icons/fluent/info-24-regular';
-import { CheckCheck } from 'lucide-vue-next';
 import { ApprovalActions } from '@/Features/Admin/Approvals';
 import { Button } from '@/Components/ui/button';
 import { DataTable } from '@/Components/ui/data-table';

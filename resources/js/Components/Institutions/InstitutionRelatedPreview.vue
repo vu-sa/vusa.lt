@@ -10,7 +10,7 @@
       <RelatedInstitutionTile
         v-for="item in previewRelated"
         :key="item.id"
-        :item="item"
+        :item
       />
     </div>
   </SectionCard>

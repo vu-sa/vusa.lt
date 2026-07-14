@@ -76,10 +76,11 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { useCookieConsent } from '@/Composables/useCookieConsent';
 import FacebookButton from '../Nav/FacebookButton.vue';
 import InstagramButton from '../Nav/InstagramButton.vue';
 import StartFM from '../Nav/StartFM.vue';
+
+import { useCookieConsent } from '@/Composables/useCookieConsent';
 
 const { reopen } = useCookieConsent();
 </script>

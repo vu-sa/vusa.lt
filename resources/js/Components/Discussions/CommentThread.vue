@@ -1,9 +1,9 @@
 <template>
   <div class="rounded-lg border border-zinc-100 p-3 dark:border-zinc-800" :class="comment.is_resolved ? 'bg-zinc-50/60 dark:bg-zinc-900/40' : 'bg-white dark:bg-zinc-900'">
     <CommentItem
-      :comment="comment"
-      :mentionables="mentionables"
-      :submitting="submitting"
+      :comment
+      :mentionables
+      :submitting
       @reply="replyOpen = true"
       @update="(id, body) => $emit('update', id, body)"
       @delete="(id) => $emit('delete', id)"
@@ -19,8 +19,8 @@
         v-for="reply in comment.replies"
         :key="reply.id"
         :comment="reply"
-        :mentionables="mentionables"
-        :submitting="submitting"
+        :mentionables
+        :submitting
         is-reply
         :can-reply="false"
         :poll-context="comment.kind === 'poll' ? comment.poll : null"
@@ -34,10 +34,10 @@
     <CommentComposer
       v-if="replyOpen"
       class="mt-3 pl-3"
-      :mentionables="mentionables"
+      :mentionables
       :placeholder="$t('Atsakykite…')"
       :submit-label="$t('Atsakyti')"
-      :submitting="submitting"
+      :submitting
       show-cancel
       autofocus
       @submit="onReplySubmit"
@@ -64,13 +64,13 @@ const props = withDefaults(defineProps<{
 });
 
 const emit = defineEmits<{
-  reply: [parentId: string, body: string];
-  update: [id: string, body: string];
-  delete: [id: string];
-  resolve: [id: string];
-  unresolve: [id: string];
+  'reply': [parentId: string, body: string];
+  'update': [id: string, body: string];
+  'delete': [id: string];
+  'resolve': [id: string];
+  'unresolve': [id: string];
   'toggle-reaction': [id: string, emoji: string];
-  vote: [id: string, optionId: string];
+  'vote': [id: string, optionId: string];
 }>();
 
 const replyOpen = ref(false);

@@ -4,66 +4,66 @@
       <!-- Reserved-height wrapper: keeps the action area stable across tabs
            (empty on "all"/"agenda-items", widest on "duties") so it never jumps. -->
       <div class="flex min-h-9 items-center justify-end gap-2">
-      <Button v-if="activeTab === 'meetings' && can.create.meetings" @click="showMeetingModal = true">
-        <Plus class="mr-2 size-4" />
-        {{ $t('Naujas posėdis') }}
-      </Button>
-      <Link v-else-if="activeTab === 'institutions' && can.create.institutions" :href="route('institutions.create')">
-        <Button>
+        <Button v-if="activeTab === 'meetings' && can.create.meetings" @click="showMeetingModal = true">
           <Plus class="mr-2 size-4" />
-          {{ $t('Nauja institucija') }}
+          {{ $t('Naujas posėdis') }}
         </Button>
-      </Link>
-      <Link v-else-if="activeTab === 'resources' && can.create.resources" :href="route('resources.create')">
-        <Button>
-          <Plus class="mr-2 size-4" />
-          {{ $t('Sukurti išteklių') }}
-        </Button>
-      </Link>
-      <Link v-else-if="activeTab === 'documents' && can.create.documents" :href="route('documents.index')">
-        <Button>
-          <Plus class="mr-2 size-4" />
-          {{ $t('Dokumentai') }}
-        </Button>
-      </Link>
-      <Link v-else-if="activeTab === 'news' && can.create.news" :href="route('news.create')">
-        <Button>
-          <Plus class="mr-2 size-4" />
-          {{ $t('Nauja naujiena') }}
-        </Button>
-      </Link>
-      <Link v-else-if="activeTab === 'pages' && can.create.pages" :href="route('pages.create')">
-        <Button>
-          <Plus class="mr-2 size-4" />
-          {{ $t('Naujas puslapis') }}
-        </Button>
-      </Link>
-      <Link v-else-if="activeTab === 'calendar' && can.create.calendar" :href="route('calendar.create')">
-        <Button>
-          <Plus class="mr-2 size-4" />
-          {{ $t('Naujas įvykis') }}
-        </Button>
-      </Link>
-      <Link v-else-if="activeTab === 'users' && can.create.users" :href="route('users.create')">
-        <Button>
-          <Plus class="mr-2 size-4" />
-          {{ $t('Naujas narys') }}
-        </Button>
-      </Link>
-      <div v-else-if="activeTab === 'duties'" class="flex items-center gap-2">
-        <Link :href="route('duties.updateUsersWizard')">
-          <Button variant="outline">
-            <Users class="mr-2 size-4" />
-            {{ $t('forms.fields.duty_user_wizard') }}
-          </Button>
-        </Link>
-        <Link v-if="can.create.duties" :href="route('duties.create')">
+        <Link v-else-if="activeTab === 'institutions' && can.create.institutions" :href="route('institutions.create')">
           <Button>
             <Plus class="mr-2 size-4" />
-            {{ $t('Nauja pareigybė') }}
+            {{ $t('Nauja institucija') }}
           </Button>
         </Link>
-      </div>
+        <Link v-else-if="activeTab === 'resources' && can.create.resources" :href="route('resources.create')">
+          <Button>
+            <Plus class="mr-2 size-4" />
+            {{ $t('Sukurti išteklių') }}
+          </Button>
+        </Link>
+        <Link v-else-if="activeTab === 'documents' && can.create.documents" :href="route('documents.index')">
+          <Button>
+            <Plus class="mr-2 size-4" />
+            {{ $t('Dokumentai') }}
+          </Button>
+        </Link>
+        <Link v-else-if="activeTab === 'news' && can.create.news" :href="route('news.create')">
+          <Button>
+            <Plus class="mr-2 size-4" />
+            {{ $t('Nauja naujiena') }}
+          </Button>
+        </Link>
+        <Link v-else-if="activeTab === 'pages' && can.create.pages" :href="route('pages.create')">
+          <Button>
+            <Plus class="mr-2 size-4" />
+            {{ $t('Naujas puslapis') }}
+          </Button>
+        </Link>
+        <Link v-else-if="activeTab === 'calendar' && can.create.calendar" :href="route('calendar.create')">
+          <Button>
+            <Plus class="mr-2 size-4" />
+            {{ $t('Naujas įvykis') }}
+          </Button>
+        </Link>
+        <Link v-else-if="activeTab === 'users' && can.create.users" :href="route('users.create')">
+          <Button>
+            <Plus class="mr-2 size-4" />
+            {{ $t('Naujas narys') }}
+          </Button>
+        </Link>
+        <div v-else-if="activeTab === 'duties'" class="flex items-center gap-2">
+          <Link :href="route('duties.updateUsersWizard')">
+            <Button variant="outline">
+              <Users class="mr-2 size-4" />
+              {{ $t('forms.fields.duty_user_wizard') }}
+            </Button>
+          </Link>
+          <Link v-if="can.create.duties" :href="route('duties.create')">
+            <Button>
+              <Plus class="mr-2 size-4" />
+              {{ $t('Nauja pareigybė') }}
+            </Button>
+          </Link>
+        </div>
       </div>
     </template>
 
@@ -93,7 +93,7 @@
       <div v-if="isConfigLoading" class="flex gap-2 border-b pb-2">
         <div v-for="i in 4" :key="i" class="h-8 w-24 animate-pulse rounded-md bg-muted/50" />
       </div>
-      <SearchTabs v-else v-model="activeTab" :tabs="tabs" class="border-b" />
+      <SearchTabs v-else v-model="activeTab" :tabs class="border-b" />
 
       <!-- Panel area (bounded height for internal scroll) -->
       <div class="flex h-[calc(100dvh-19rem)] min-h-[360px] flex-col">
@@ -101,9 +101,9 @@
           v-if="activeTab === 'all'"
           :results="multiResults"
           :query="q"
-          :is-searching="isSearching"
-          :has-searched="hasSearched"
-          :error="error"
+          :is-searching
+          :has-searched
+          :error
           :duty-ctx="dutyMapperCtx"
         />
         <SearchCollectionPanel
@@ -286,18 +286,18 @@ const runMultiSearch = useDebounceFn(async (query: string) => {
   isSearching.value = true;
   error.value = null;
   try {
-      multiResults.value = await adminSearch.multiSearch(query, {
-        meetingsLimit: 12,
-        agendaItemsLimit: 12,
-        institutionsLimit: 12,
-        resourcesLimit: 12,
-        dutiesLimit: 12,
-        newsLimit: 6,
-        pagesLimit: 6,
-        calendarLimit: 6,
-        documentsLimit: 6,
-        usersLimit: 12,
-      });
+    multiResults.value = await adminSearch.multiSearch(query, {
+      meetingsLimit: 12,
+      agendaItemsLimit: 12,
+      institutionsLimit: 12,
+      resourcesLimit: 12,
+      dutiesLimit: 12,
+      newsLimit: 6,
+      pagesLimit: 6,
+      calendarLimit: 6,
+      documentsLimit: 6,
+      usersLimit: 12,
+    });
     hasSearched.value = true;
   }
   catch (err) {

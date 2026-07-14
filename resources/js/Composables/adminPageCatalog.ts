@@ -16,7 +16,6 @@
 
 import { computed, type Component } from 'vue';
 import { usePage } from '@inertiajs/vue3';
-
 import {
   Home,
   Search,

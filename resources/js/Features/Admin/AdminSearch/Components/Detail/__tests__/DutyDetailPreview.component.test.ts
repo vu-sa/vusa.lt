@@ -1,8 +1,9 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
-import { commonStubs } from '@/tests/stubs';
 import DutyDetailPreview from '../DutyDetailPreview.vue';
+
+import { commonStubs } from '@/tests/stubs';
 
 const baseDuty = {
   id: 'du1',

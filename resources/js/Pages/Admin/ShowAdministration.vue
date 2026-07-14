@@ -565,6 +565,3 @@ const showQuickActions = computed(() => {
   return quickActions.value.length > 0;
 });
 </script>
-
-<style scoped>
-</style>

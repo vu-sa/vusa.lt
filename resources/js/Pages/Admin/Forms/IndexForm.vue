@@ -62,17 +62,15 @@ import type { ColumnDef } from '@tanstack/vue-table';
 import { ref, computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { Users as UsersIcon, Eye as EyeIcon, UserPlus as UserPlusIcon } from 'lucide-vue-next';
-import type { IndexTablePageInstance } from '@/Types/TableConfigTypes';
 
+import type { IndexTablePageInstance,
+  IndexTablePageProps } from '@/Types/TableConfigTypes';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import {
   createTextColumn,
   createTenantColumn,
 } from '@/Composables/useDataTableColumns';
-import type {
-  IndexTablePageProps,
-} from '@/Types/TableConfigTypes';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 

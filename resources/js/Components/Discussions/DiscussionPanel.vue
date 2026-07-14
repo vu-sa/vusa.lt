@@ -28,7 +28,7 @@
     <!-- Root composer -->
     <CommentComposer
       ref="rootComposer"
-      :mentionables="mentionables"
+      :mentionables
       :submitting="posting"
       collapsible
       @submit="onPost"
@@ -52,7 +52,7 @@
               </DialogDescription>
             </DialogHeader>
             <PollComposer
-              :mentionables="mentionables"
+              :mentionables
               :submitting="posting"
               @submit="onCreatePoll"
               @cancel="pollDialogOpen = false"
@@ -80,8 +80,8 @@
       <CommentThread
         v-for="comment in visibleComments"
         :key="comment.id"
-        :comment="comment"
-        :mentionables="mentionables"
+        :comment
+        :mentionables
         :submitting="mutating"
         @reply="onReply"
         @update="onUpdate"

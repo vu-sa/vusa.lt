@@ -1,11 +1,11 @@
 <template>
   <SearchSelectDialog
-    :open="open"
-    :multiple="multiple"
+    :open
+    :multiple
     :title="$t('Pasirinkti išteklius')"
     :description="$t('Ieškokite ir filtruokite išteklius; laisvas kiekis rodomas pagal pasirinktą laikotarpį.')"
     :confirm-label="$t('Pridėti pasirinktus')"
-    :initial-hits="initialHits"
+    :initial-hits
     @update:open="$emit('update:open', $event)"
     @confirm="$emit('confirm', $event)"
   >
@@ -14,11 +14,11 @@
     </template>
     <template #default="{ selectedIds, multiple: isMultiple, toggle, pinnedHits }">
       <ResourceSelectContent
-        :selected-ids="selectedIds"
+        :selected-ids
         :multiple="isMultiple"
-        :date-time-range="dateTimeRange"
-        :excluded-ids="excludedIds"
-        :pinned-hits="pinnedHits"
+        :date-time-range
+        :excluded-ids
+        :pinned-hits
         @toggle="toggle"
       />
     </template>
@@ -28,10 +28,11 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 
-import SearchSelectDialog from './SearchSelectDialog.vue';
-import ResourceSelectContent from './ResourceSelectContent.vue';
 import type { DateTimeRange } from '../../Composables/useResourceAvailability';
 import type { NormalizedSearchHit } from '../../Utils/searchHitMappers';
+
+import SearchSelectDialog from './SearchSelectDialog.vue';
+import ResourceSelectContent from './ResourceSelectContent.vue';
 
 withDefaults(defineProps<{
   open: boolean;
@@ -47,6 +48,6 @@ withDefaults(defineProps<{
 
 defineEmits<{
   'update:open': [open: boolean];
-  confirm: [hits: NormalizedSearchHit[]];
+  'confirm': [hits: NormalizedSearchHit[]];
 }>();
 </script>

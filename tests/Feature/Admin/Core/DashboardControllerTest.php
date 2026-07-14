@@ -670,6 +670,76 @@ describe('atstovavimas dashboard periodicity', function () {
     });
 });
 
+describe('institutions needing attention', function () {
+    /**
+     * Create an institution with a 30-day periodicity, a representative and one past meeting.
+     */
+    function institutionForUserWithMeeting(string $lastMeetingDate): array
+    {
+        $tenant = Tenant::factory()->create(['type' => 'padalinys']);
+
+        $institution = Institution::factory()->for($tenant)->create([
+            'meeting_periodicity_days' => 30,
+            'alias' => 'attention-test-'.uniqid(),
+        ]);
+
+        $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
+            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => Duty::class]);
+
+        $duty = Duty::factory()
+            ->for($institution)
+            ->hasAttached($studentRepType, [], 'types')
+            ->create();
+
+        $user = User::factory()->create();
+        $user->duties()->attach($duty, [
+            'start_date' => now()->subYear(),
+            'end_date' => null,
+        ]);
+
+        Meeting::factory()
+            ->hasAttached($institution)
+            ->create(['start_time' => $lastMeetingDate]);
+
+        return [$user, $institution];
+    }
+
+    test('flags an institution whose meeting gap exceeds its periodicity', function () {
+        $this->travelTo('2025-11-15');
+
+        [$user, $institution] = institutionForUserWithMeeting('2025-10-01 10:00:00');
+
+        asUser($user)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('institutionsNeedingAttention', function ($institutions) use ($institution) {
+                    $entry = collect($institutions)->firstWhere('id', $institution->id);
+
+                    return $entry !== null
+                        && $entry['status'] === 'overdue'
+                        && $entry['days_since_last_meeting'] === 45;
+                })
+            );
+    });
+
+    test('does not flag an institution whose gap is made up of vacation days', function () {
+        // June 20 -> September 1: 73 calendar days, but only 11 outside summer vacation.
+        $this->travelTo('2025-09-01');
+
+        [$user, $institution] = institutionForUserWithMeeting('2025-06-20 10:00:00');
+
+        asUser($user)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('institutionsNeedingAttention', function ($institutions) use ($institution) {
+                    return collect($institutions)->firstWhere('id', $institution->id) === null;
+                })
+            );
+    });
+});
+
 describe('svetaine dashboard', function () {
     test('admin can access svetaine dashboard', function () {
         asUser($this->admin)

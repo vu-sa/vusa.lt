@@ -6,11 +6,15 @@
     :subtitle="document.content_type"
   >
     <template #badges>
-      <Badge v-if="document.tenant_shortname" variant="outline">{{ document.tenant_shortname }}</Badge>
+      <Badge v-if="document.tenant_shortname" variant="outline">
+        {{ document.tenant_shortname }}
+      </Badge>
       <Badge :class="toneClass(document.is_active ? 'success' : 'neutral')">
         {{ document.is_active ? $t('Aktyvus') : $t('Neaktyvus') }}
       </Badge>
-      <Badge v-if="document.language" variant="secondary">{{ document.language }}</Badge>
+      <Badge v-if="document.language" variant="secondary">
+        {{ document.language }}
+      </Badge>
     </template>
 
     <template #actions>
@@ -45,7 +49,9 @@
       <h3 class="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
         {{ $t('Santrauka') }}
       </h3>
-      <p class="whitespace-pre-line text-sm text-muted-foreground">{{ document.summary }}</p>
+      <p class="whitespace-pre-line text-sm text-muted-foreground">
+        {{ document.summary }}
+      </p>
     </div>
   </DetailLayout>
 </template>
@@ -56,10 +62,11 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Eye, ExternalLink } from 'lucide-vue-next';
 
-import DetailLayout from './DetailLayout.vue';
-import DetailRow from './DetailRow.vue';
 import { toneClass } from '../../Utils/searchBadges';
 import { formatSearchDate } from '../../Utils/searchHitMappers';
+
+import DetailLayout from './DetailLayout.vue';
+import DetailRow from './DetailRow.vue';
 
 import { DocumentIcon } from '@/Components/icons';
 import { Badge } from '@/Components/ui/badge';

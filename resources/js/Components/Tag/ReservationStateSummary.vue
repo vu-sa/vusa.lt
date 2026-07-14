@@ -5,7 +5,7 @@
   <ReservationResourceStateTag
     v-else-if="states.length === 1"
     :state="states[0].state"
-    :unresolved="unresolved"
+    :unresolved
   />
 
   <HoverCard v-else>

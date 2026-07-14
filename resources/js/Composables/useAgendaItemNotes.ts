@@ -173,7 +173,7 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
     try {
       const response = await fetch(route('api.v1.admin.agendaItems.note.show', agendaItemId), {
         credentials: 'same-origin',
-        headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
       });
       if (response.ok) {
         const json = await response.json();

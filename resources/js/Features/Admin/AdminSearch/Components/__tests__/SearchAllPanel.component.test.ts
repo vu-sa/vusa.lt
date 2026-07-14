@@ -4,6 +4,7 @@ import { defineComponent, h } from 'vue';
 
 import SearchAllPanel from '../SearchAllPanel.vue';
 import type { NormalizedSearchHit } from '../../Utils/searchHitMappers';
+
 import type { MultiSearchResults } from '@/Shared/Search/types';
 import { createEmptyMultiSearchResults } from '@/Shared/Search/utils/createEmptyMultiSearchResults';
 

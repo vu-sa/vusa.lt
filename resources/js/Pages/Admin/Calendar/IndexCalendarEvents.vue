@@ -13,16 +13,14 @@
 import { h, ref, computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
-import type { IndexTablePageInstance } from '@/Types/TableConfigTypes';
 
+import type { IndexTablePageInstance,
+  IndexTablePageProps } from '@/Types/TableConfigTypes';
 import { DateCell, TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import { createTenantColumn } from '@/Composables/useDataTableColumns';
 import { CalendarIcon } from '@/Components/icons';
-import type {
-  IndexTablePageProps,
-} from '@/Types/TableConfigTypes';
 
 const props = defineProps<{
   calendar: {

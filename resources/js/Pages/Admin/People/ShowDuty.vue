@@ -79,8 +79,8 @@
 
             <DutyAboutCard
               v-if="hasAbout"
-              :description="description"
-              :responsibilities="responsibilities"
+              :description
+              :responsibilities
             />
 
             <DutyLineageCard v-if="allMembers.length > 0" :members="allMembers" />

@@ -19,8 +19,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-
 import { File, FileSpreadsheet, FileText, Folder } from 'lucide-vue-next';
+
 import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
 
 const props = defineProps<{

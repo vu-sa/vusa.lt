@@ -1,5 +1,5 @@
 <template>
-  <AlertDialog :open="open" @update:open="$emit('update:open', $event)">
+  <AlertDialog :open @update:open="$emit('update:open', $event)">
     <!-- Neutralise the shared slide-in so the dialog simply fades/zooms in place
          (the default top-left slide reads as jittery for a centered confirm). -->
     <AlertDialogContent
@@ -15,7 +15,9 @@
             <p>{{ $t('access_change.intro') }}</p>
 
             <ul class="list-disc space-y-1 pl-5 font-medium text-amber-600 dark:text-amber-500">
-              <li v-for="role in report?.lostRoles ?? []" :key="role">{{ role }}</li>
+              <li v-for="role in report?.lostRoles ?? []" :key="role">
+                {{ role }}
+              </li>
             </ul>
 
             <p>{{ $t('access_change.note') }}</p>
@@ -60,7 +62,7 @@ defineProps<{
 
 defineEmits<{
   'update:open': [value: boolean];
-  confirm: [];
-  cancel: [];
+  'confirm': [];
+  'cancel': [];
 }>();
 </script>

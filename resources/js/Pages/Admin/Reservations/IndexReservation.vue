@@ -35,8 +35,7 @@ import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import ReservationsWithUnitResources from '@/Components/Tables/ReservationsWithUnitResources.vue';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
-import type { IndexTablePageProps } from '@/Types/TableConfigTypes';
-import type { IndexTablePageInstance } from '@/Types/TableConfigTypes';
+import type { IndexTablePageProps, IndexTablePageInstance } from '@/Types/TableConfigTypes';
 import { BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { ReservationIcon } from '@/Components/icons';
 

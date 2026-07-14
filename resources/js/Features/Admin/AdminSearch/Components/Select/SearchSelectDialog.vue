@@ -1,5 +1,5 @@
 <template>
-  <Dialog :open="open" @update:open="$emit('update:open', $event)">
+  <Dialog :open @update:open="$emit('update:open', $event)">
     <DialogTrigger v-if="$slots.trigger" as-child>
       <slot name="trigger" />
     </DialogTrigger>
@@ -18,8 +18,8 @@
         <!-- Body builds the search controller; only mounts while open. -->
         <slot
           v-if="open"
-          :selected-ids="selectedIds"
-          :multiple="multiple"
+          :selected-ids
+          :multiple
           :toggle="onToggle"
           :pinned-hits="initialHits ?? []"
         />
@@ -73,7 +73,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:open': [open: boolean];
-  confirm: [hits: NormalizedSearchHit[]];
+  'confirm': [hits: NormalizedSearchHit[]];
 }>();
 
 // Working selection: a Set of record ids + a Map to retain the full hit objects

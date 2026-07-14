@@ -9,7 +9,6 @@
           <div v-if="compact.secondary" class="text-xs text-muted-foreground">
             {{ compact.secondary }}
           </div>
-
         </div>
       </TooltipTrigger>
       <TooltipContent>

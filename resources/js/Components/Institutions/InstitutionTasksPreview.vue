@@ -80,7 +80,7 @@ const DUE_SOON_DAYS = 7;
 
 const openTasks = computed(() => {
   return (props.tasks ?? [])
-    .filter((task) => !task.completed_at)
+    .filter(task => !task.completed_at)
     .sort((a, b) => {
       // Overdue first, then by soonest due date, then undated last.
       if (!!a.is_overdue !== !!b.is_overdue) {
