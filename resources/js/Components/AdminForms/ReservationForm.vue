@@ -157,7 +157,6 @@ import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/sea
 import { RESERVATION_PLACEHOLDERS } from '@/Constants/I18n/Placeholders';
 import { capitalize } from '@/Utils/String';
 import type { ReservationCreationTemplate } from '@/Pages/Admin/Reservations/CreateReservation.vue';
-import type { ReservationEditType } from '@/Pages/Admin/Reservations/EditReservation.vue';
 import MdSuspenseWrapper from '@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue';
 import { ResourceIcon } from '@/Components/icons';
 
@@ -166,9 +165,10 @@ defineEmits<{
   (event: 'submit:form', form: unknown): void;
 }>();
 
-// TODO: cleanup the modelRoute
+// Only creation remains: a reservation is never updated as a whole, so the sole
+// caller is CreateReservation.vue passing `reservations.store`.
 const props = defineProps<{
-  reservation: ReservationCreationTemplate | ReservationEditType;
+  reservation: ReservationCreationTemplate;
   allResources: App.Entities.Resource[];
   modelRoute: string;
   rememberKey?: 'CreateReservation';

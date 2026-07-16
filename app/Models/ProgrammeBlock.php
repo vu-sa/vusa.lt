@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Contracts\BelongsToProgramme;
 use App\Models\Traits\HasTranslations;
 use Database\Factories\ProgrammeBlockFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
@@ -18,6 +20,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $updated_at
  * @property-read array $translatable_columns_from
  * @property-read Collection<int, ProgrammePart> $parts
+ * @property-read ProgrammeSection|null $section
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\ProgrammeBlockFactory factory($count = null, $state = [])
@@ -31,7 +34,7 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
-class ProgrammeBlock extends Model
+class ProgrammeBlock extends Model implements BelongsToProgramme
 {
     /** @use HasFactory<ProgrammeBlockFactory> */
     use HasFactory, HasTranslations;
@@ -43,5 +46,19 @@ class ProgrammeBlock extends Model
     public function parts()
     {
         return $this->belongsToMany(ProgrammePart::class, 'programme_block_part');
+    }
+
+    public function section(): BelongsTo
+    {
+        return $this->belongsTo(ProgrammeSection::class, 'programme_section_id');
+    }
+
+    /**
+     * The programme this block belongs to, reached through its section. Drives
+     * authorization — see {@see Programme::owningTraining()}.
+     */
+    public function owningProgramme(): ?Programme
+    {
+        return $this->section?->owningProgramme();
     }
 }

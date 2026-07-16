@@ -21,6 +21,7 @@ class ProgrammeDayFactory extends Factory
         return [
             'title' => $this->faker->sentence,
             'start_time' => $this->faker->dateTime(),
+            'order' => 0,
             'programme_id' => Programme::factory(),
         ];
     }

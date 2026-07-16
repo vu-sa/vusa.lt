@@ -140,3 +140,53 @@ describe('agenda item notes presence channel auth', function () {
         expect(Gate::forUser($outsider)->allows('update', $this->agendaItem))->toBeFalse();
     });
 });
+
+describe('html sanitization', function () {
+    /**
+     * Notes are authored by any representative on the meeting and re-served to
+     * every other participant through `v-html`, so the rendered snapshot is
+     * sanitized on write. `yjs_state` stays the untouched source of truth.
+     */
+    test('strips script from the rendered snapshot', function () {
+        asUser($this->admin)
+            ->putJson(route('api.v1.admin.agendaItems.note.update', $this->agendaItem->id), [
+                'yjs_state' => base64_encode('state'),
+                'notes_html' => '<p>Pastaba</p><script>alert(1)</script><img src=x onerror="alert(2)">',
+            ])
+            ->assertOk();
+
+        $note = AgendaItemNote::query()->where('agenda_item_id', $this->agendaItem->id)->sole();
+
+        expect($note->notes_html)
+            ->toContain('Pastaba')
+            ->not->toContain('<script')
+            ->not->toContain('onerror');
+    });
+
+    test('keeps legitimate formatting', function () {
+        asUser($this->admin)
+            ->putJson(route('api.v1.admin.agendaItems.note.update', $this->agendaItem->id), [
+                'yjs_state' => base64_encode('state'),
+                'notes_html' => '<h2 id="a">Tema</h2><ul><li><strong>Punktas</strong></li></ul>',
+            ])
+            ->assertOk();
+
+        $note = AgendaItemNote::query()->where('agenda_item_id', $this->agendaItem->id)->sole();
+
+        expect($note->notes_html)
+            ->toContain('<h2 id="a">Tema</h2>')
+            ->toContain('<strong>Punktas</strong>');
+    });
+
+    test('a null snapshot stays null', function () {
+        asUser($this->admin)
+            ->putJson(route('api.v1.admin.agendaItems.note.update', $this->agendaItem->id), [
+                'yjs_state' => base64_encode('state'),
+            ])
+            ->assertOk();
+
+        $note = AgendaItemNote::query()->where('agenda_item_id', $this->agendaItem->id)->sole();
+
+        expect($note->notes_html)->toBeNull();
+    });
+});

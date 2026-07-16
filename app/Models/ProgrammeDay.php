@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Contracts\BelongsToProgramme;
 use App\Models\Pivots\ProgrammeElement;
 use App\Models\Traits\HasTranslations;
 use Database\Factories\ProgrammeDayFactory;
@@ -38,7 +39,7 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
-class ProgrammeDay extends Model
+class ProgrammeDay extends Model implements BelongsToProgramme
 {
     /** @use HasFactory<ProgrammeDayFactory> */
     use HasFactory, HasTranslations;
@@ -73,5 +74,14 @@ class ProgrammeDay extends Model
     public function parts()
     {
         return $this->morphedByMany(ProgrammePart::class, 'elementable', 'programme_day_elements')->using(ProgrammeElement::class);
+    }
+
+    /**
+     * The programme this day belongs to. Drives authorization — see
+     * {@see Programme::owningTraining()}.
+     */
+    public function owningProgramme(): ?Programme
+    {
+        return $this->programme;
     }
 }

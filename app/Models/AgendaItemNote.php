@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Models\Pivots\AgendaItem;
+use App\Services\HtmlSanitizerService;
 use Database\Factories\AgendaItemNoteFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -44,6 +46,21 @@ class AgendaItemNote extends Model
      * @var list<string>
      */
     protected $hidden = ['yjs_state'];
+
+    /**
+     * The rendered snapshot is authored by any representative on the meeting and
+     * re-served to all the others through `v-html`, so it is sanitized on the way
+     * in. The CRDT state in `yjs_state` remains the source of truth — this column
+     * only ever feeds display.
+     */
+    protected function notesHtml(): Attribute
+    {
+        return Attribute::make(
+            set: fn (?string $value): ?string => $value === null
+                ? null
+                : app(HtmlSanitizerService::class)->sanitizeRichContent($value),
+        );
+    }
 
     public function agendaItem(): BelongsTo
     {

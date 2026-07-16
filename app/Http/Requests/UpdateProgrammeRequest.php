@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Programme;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
@@ -9,12 +10,24 @@ use Illuminate\Support\Carbon;
 class UpdateProgrammeRequest extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * Programmes carry no permissions of their own — a programme may only be
+     * edited by someone who may update the training that owns it.
      */
     public function authorize(): bool
     {
-        // TODO: figure out how to authorize this request
-        return true;
+        $programme = $this->route('programme');
+
+        if (! $programme instanceof Programme) {
+            return false;
+        }
+
+        $training = $programme->owningTraining();
+
+        if ($training === null) {
+            return false;
+        }
+
+        return $this->user()?->can('update', $training) ?? false;
     }
 
     public function prepareForValidation()

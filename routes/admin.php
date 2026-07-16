@@ -102,7 +102,7 @@ Route::post('memberships/{membership}/users/import', [MembershipController::clas
 Route::resource('trainings', TrainingController::class);
 Route::get('trainings/{training}/registration', [TrainingController::class, 'showRegistration'])->name('trainings.showRegistration');
 
-Route::resource('programmes', ProgrammeController::class);
+Route::resource('programmes', ProgrammeController::class)->only(['update']);
 Route::resource('programmeDays', ProgrammeDayController::class)->only(['destroy']);
 Route::resource('programmeBlocks', ProgrammeBlockController::class)->only(['destroy']);
 
@@ -142,7 +142,9 @@ Route::resource('resources', ResourceController::class);
 Route::resource('resourceCategories', ResourceCategoryController::class);
 
 Route::put('reservations/{reservation}/add-users', [ReservationController::class, 'addUsers'])->name('reservations.add-users');
-Route::resource('reservations', ReservationController::class);
+// Reservations are never updated directly — every mutation goes through the
+// reservationResources pivot below, so `edit`/`update` are not registered.
+Route::resource('reservations', ReservationController::class)->except(['edit', 'update']);
 Route::resource('reservationResources', ReservationResourceController::class)->except(['index', 'create', 'edit']);
 
 // Approval routes

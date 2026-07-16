@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Contracts\BelongsToProgramme;
 use App\Models\Pivots\ProgrammeElement;
 use App\Models\Traits\HasTranslations;
 use Database\Factories\ProgrammeSectionFactory;
@@ -34,7 +35,7 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
-class ProgrammeSection extends Model
+class ProgrammeSection extends Model implements BelongsToProgramme
 {
     /** @use HasFactory<ProgrammeSectionFactory> */
     use HasFactory, HasTranslations;
@@ -51,5 +52,17 @@ class ProgrammeSection extends Model
     public function blocks()
     {
         return $this->hasMany(ProgrammeBlock::class);
+    }
+
+    /**
+     * The programme this section belongs to, reached through the day it is
+     * placed on. Drives authorization — see {@see Programme::owningTraining()}.
+     */
+    public function owningProgramme(): ?Programme
+    {
+        /** @var ProgrammeDay|null $day */
+        $day = $this->programmeDays()->first();
+
+        return $day?->programme;
     }
 }

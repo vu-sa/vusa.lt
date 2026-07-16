@@ -43,7 +43,6 @@
       "vite-plugin-ziggy/routes"
     ],
     "sourceMap": true,
-    "baseUrl": ".",
     // For `<script setup>`
     // See <https://devblogs.microsoft.com/typescript/announcing-typescript-4-5-beta/#preserve-value-imports>
     "verbatimModuleSyntax": true,
