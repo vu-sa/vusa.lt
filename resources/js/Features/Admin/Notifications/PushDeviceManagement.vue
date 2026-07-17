@@ -126,16 +126,16 @@
       <!-- Test notification button -->
       <div v-if="hasAnyPushSubscription" class="pt-4 border-t dark:border-zinc-700">
         <Button
-          :disabled="testNotificationLoading"
+          :disabled="testHttp.processing"
           variant="secondary"
           size="sm"
           @click="handleSendTestNotification"
         >
-          <BellRing v-if="!testNotificationLoading" class="size-4" />
+          <BellRing v-if="!testHttp.processing" class="size-4" />
           <Loader2 v-else class="size-4 animate-spin" />
           {{ $t('Siųsti bandomąjį pranešimą') }}
         </Button>
-        <p v-if="testNotificationSuccess" class="text-sm text-green-600 dark:text-green-400 mt-2">
+        <p v-if="testHttp.recentlySuccessful" class="text-sm text-green-600 dark:text-green-400 mt-2">
           {{ $t('Bandomasis pranešimas išsiųstas!') }}
         </p>
       </div>
@@ -145,7 +145,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, h } from 'vue';
-import { usePage } from '@inertiajs/vue3';
+import { useHttp } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { BellPlus, BellOff, BellRing, Globe, Laptop, Loader2, Monitor, PhoneOff, RefreshCw, Smartphone, Tablet, Trash2 } from 'lucide-vue-next';
 
@@ -175,8 +175,7 @@ const {
 const devices = ref<PushSubscriptionDevice[]>([]);
 const isLoading = ref(false);
 const removingDeviceId = ref<number | null>(null);
-const testNotificationLoading = ref(false);
-const testNotificationSuccess = ref(false);
+const testHttp = useHttp({});
 
 // Get current device icon based on status
 const currentDeviceIcon = computed(() => {
@@ -269,34 +268,17 @@ const handleRemoveDevice = async (device: PushSubscriptionDevice) => {
 
 // Send test notification
 const handleSendTestNotification = async () => {
-  testNotificationLoading.value = true;
-  testNotificationSuccess.value = false;
-
-  try {
-    const page = usePage();
-    const csrfToken = (page.props.csrf_token as string) || '';
-
-    const response = await fetch(route('push-subscription.test'), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': csrfToken,
-      },
-    });
-
-    if (response.ok) {
-      testNotificationSuccess.value = true;
-      setTimeout(() => {
-        testNotificationSuccess.value = false;
-      }, 5000);
-    }
-  }
-  catch (error) {
-    console.error('Failed to send test notification:', error);
-  }
-  finally {
-    testNotificationLoading.value = false;
-  }
+  await testHttp.post(route('push-subscription.test'), {
+    onError: () => {
+      console.error('Failed to send test notification');
+    },
+    onHttpException: (response) => {
+      console.error('Failed to send test notification:', response);
+    },
+    onNetworkError: (error) => {
+      console.error('Failed to send test notification:', error);
+    },
+  });
 };
 
 onMounted(() => {

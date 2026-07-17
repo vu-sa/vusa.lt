@@ -48,7 +48,7 @@
 
       <!-- Task list -->
       <ScrollArea class="h-[340px]">
-        <div v-if="isLoading" class="flex items-center justify-center p-8">
+        <div v-if="http.processing" class="flex items-center justify-center p-8">
           <LoaderCircleIcon class="h-6 w-6 animate-spin text-zinc-400" />
         </div>
 
@@ -204,7 +204,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { Link, router, usePage } from '@inertiajs/vue3';
+import { Link, router, usePage, useHttp } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { formatDistanceToNow, parseISO, isToday, isTomorrow } from 'date-fns';
 import { lt, enUS } from 'date-fns/locale';
@@ -229,6 +229,7 @@ import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
 import { ScrollArea } from '@/Components/ui/scroll-area';
 import { TaskActionType, type TaskProgress } from '@/Types/TaskTypes';
+import type { ApiResponse } from '@/Types/api.d';
 
 // Task interface matching the API response
 interface Task {
@@ -250,9 +251,10 @@ interface Task {
 
 // State
 const tasks = ref<Task[]>([]);
-const isLoading = ref(true);
 const isUpdating = ref<string | null>(null);
 const maxTasksToDisplay = 5;
+
+const http = useHttp({});
 
 // Locale for date formatting
 const dateLocale = computed(() => usePage().props.app.locale === 'lt' ? lt : enUS);
@@ -277,32 +279,18 @@ const overdueCount = computed(() => tasks.value.filter(t => t.is_overdue).length
 
 // Fetch user tasks when component mounts
 onMounted(() => {
-  fetchUserTasks();
-});
-
-/**
- * Fetch current user's tasks
- */
-async function fetchUserTasks() {
-  isLoading.value = true;
-  try {
-    const response = await fetch(route('api.v1.admin.tasks.indicator'));
-    if (response.ok) {
-      const json = await response.json();
-      const data = json.success ? json.data : json;
-      tasks.value = data.slice(0, maxTasksToDisplay);
-    }
-    else {
+  http.get(route('api.v1.admin.tasks.indicator'), {
+    onSuccess: (json) => {
+      const response = json as ApiResponse<Task[]>;
+      if (response.success) {
+        tasks.value = response.data.slice(0, maxTasksToDisplay);
+      }
+    },
+    onError: () => {
       console.error('Failed to fetch tasks');
-    }
-  }
-  catch (error) {
-    console.error('Error fetching tasks:', error);
-  }
-  finally {
-    isLoading.value = false;
-  }
-}
+    },
+  });
+});
 
 /**
  * Format due date in a human-readable way

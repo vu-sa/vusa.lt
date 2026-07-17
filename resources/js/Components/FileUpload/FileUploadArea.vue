@@ -105,7 +105,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineEmits, onMounted, computed } from 'vue';
+import { ref, onMounted, computed } from 'vue';
+import { useHttp } from '@inertiajs/vue3';
 
 import { Button } from '@/Components/ui/button';
 
@@ -135,6 +136,7 @@ const fileInput = ref<HTMLInputElement | null>(null);
 const selectedFiles = ref<File[]>([]);
 const isDragOver = ref(false);
 const allowedTypes = ref<{ extensions: string[]; accept: string; maxSizeMB: number } | null>(null);
+const http = useHttp({});
 
 // Computed accept string for file input
 const acceptString = computed(() => {
@@ -153,7 +155,7 @@ const formattedExtensions = computed(() => {
   if (props.forceAccept && props.extensions && props.extensions.length > 0) {
     return props.extensions.join(', ').toUpperCase();
   }
-  if (allowedTypes.value === null) {
+  if (http.processing) {
     return 'Kraunama...';
   }
   if (allowedTypes.value) {
@@ -163,18 +165,24 @@ const formattedExtensions = computed(() => {
 });
 
 // Fetch allowed file types on component mount
-onMounted(async () => {
+onMounted(() => {
   // Skip fetching if caller forces accept/extensions
   if (props.forceAccept) return;
-  try {
-    const response = await fetch(route('api.v1.admin.files.allowedTypes'));
-    if (response.ok) {
-      allowedTypes.value = await response.json();
-    }
-  }
-  catch (error) {
-    console.warn('Could not fetch allowed file types:', error);
-  }
+
+  http.get(
+    route('api.v1.admin.files.allowedTypes'),
+    {
+      onSuccess: (data) => {
+        allowedTypes.value = data as { extensions: string[]; accept: string; maxSizeMB: number };
+      },
+      onHttpException: (response) => {
+        console.warn('Could not fetch allowed file types:', response);
+      },
+      onNetworkError: (error) => {
+        console.warn('Could not fetch allowed file types:', error);
+      },
+    },
+  );
 });
 
 function handleDrop(event: DragEvent) {

@@ -7,7 +7,7 @@
       <div class="relative">
         <Input
           id="document-search"
-          v-model="searchQuery"
+          v-model="http.search"
           type="text"
           placeholder="Ieškokite dokumento..."
           class="pr-10"
@@ -18,22 +18,22 @@
 
       <!-- Simple dropdown list -->
       <div
-        v-if="showResults && (documents.length > 0 || isLoading || searchQuery.length > 0)"
+        v-if="showResults && (documents.length > 0 || http.processing || http.search.length > 0)"
         class="max-h-60 overflow-y-auto rounded-md border bg-popover text-popover-foreground shadow-md"
       >
         <!-- Loading state -->
-        <div v-if="isLoading" class="flex items-center gap-2 p-3 text-sm text-muted-foreground">
+        <div v-if="http.processing" class="flex items-center gap-2 p-3 text-sm text-muted-foreground">
           <div class="h-4 w-4 animate-spin rounded-full border-2 border-muted border-r-transparent" />
           Ieškoma...
         </div>
 
         <!-- No results -->
-        <div v-else-if="documents.length === 0 && searchQuery.length > 0" class="p-3 text-sm text-muted-foreground">
+        <div v-else-if="documents.length === 0 && http.search.length > 0" class="p-3 text-sm text-muted-foreground">
           Dokumentų nerasta.
         </div>
 
         <!-- Search hint -->
-        <div v-else-if="documents.length === 0 && searchQuery.length === 0" class="p-3 text-sm text-muted-foreground">
+        <div v-else-if="documents.length === 0 && http.search.length === 0" class="p-3 text-sm text-muted-foreground">
           Pradėkite rašyti, kad ieškoti dokumentų...
         </div>
 
@@ -82,6 +82,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
+import { useHttp } from '@inertiajs/vue3';
 import { Search as SearchIcon, X as XIcon } from 'lucide-vue-next';
 
 import { Button } from '@/Components/ui/button';
@@ -98,42 +99,40 @@ const emit = defineEmits<{
   submit: [url: string];
 }>();
 
-const searchQuery = ref('');
 const selectedDocument = ref<Document | null>(null);
 const documents = ref<Document[]>([]);
-const isLoading = ref(false);
 const showResults = ref(false);
+
+const http = useHttp({
+  search: '',
+  limit: 20,
+});
 
 let searchTimeout: NodeJS.Timeout | null = null;
 
 // Debounced search function
-async function performSearch(query: string) {
-  if (query.length < 2) {
+function performSearch() {
+  if (http.search.length < 2) {
     documents.value = [];
-    isLoading.value = false;
     return;
   }
 
-  isLoading.value = true;
+  http.cancel();
 
-  try {
-    const response = await fetch(`${route('api.documents.index')}?search=${encodeURIComponent(query)}&limit=20`);
-    if (response.ok) {
-      const data = await response.json();
-      documents.value = data;
-    }
-    else {
-      console.error('Search failed:', response.statusText);
+  http.get(route('api.documents.index', {
+    search: http.search,
+    limit: http.limit,
+  }), {
+    onSuccess: (data) => {
+      documents.value = data as Document[];
+    },
+    onHttpException: () => {
       documents.value = [];
-    }
-  }
-  catch (error) {
-    console.error('Search error:', error);
-    documents.value = [];
-  }
-  finally {
-    isLoading.value = false;
-  }
+    },
+    onNetworkError: () => {
+      documents.value = [];
+    },
+  });
 }
 
 function handleSearch() {
@@ -146,19 +145,19 @@ function handleSearch() {
 
   // Debounce search by 300ms
   searchTimeout = setTimeout(() => {
-    performSearch(searchQuery.value);
+    performSearch();
   }, 300);
 }
 
 function selectDocument(document: Document) {
   selectedDocument.value = document;
   showResults.value = false;
-  searchQuery.value = document.title;
+  http.search = document.title;
 }
 
 function clearSelection() {
   selectedDocument.value = null;
-  searchQuery.value = '';
+  http.search = '';
   documents.value = [];
   showResults.value = false;
 }
