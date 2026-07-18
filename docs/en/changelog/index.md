@@ -7,6 +7,10 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.16 — Workspaces (2026-07-18) {#v1-16}
+
+- ⭐ **Workspaces** — a new place to prepare for meetings together. Create a workspace, invite members or attach an institution (its current representatives get access automatically) and collaborate: shared real-time documents (like representative notes), discussions, and linked meetings and problems in one place
+
 ## v1.15 — Meeting Periodicity & Notifications Fixes (2026-07-14) {#v1-15}
 
 - ✨ **Vacations no longer count toward meeting periodicity** — summer, winter, late January and Easter vacation days are excluded when measuring how long an institution has gone without a meeting. Tasks and reminders are no longer raised during a break, and task deadlines no longer land inside one

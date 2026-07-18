@@ -7,6 +7,10 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.16 — Darbo erdvės (2026-07-18) {#v1-16}
+
+- ⭐ **Darbo erdvės** — nauja vieta ruoštis posėdžiams kartu. Sukurkite darbo erdvę, pakvieskite narius arba prisekite instituciją (jos dabartiniai atstovai prieigą gauna automatiškai) ir dirbkite kartu: bendri dokumentai realiu laiku (kaip atstovų pastabos), diskusijos ir susieti posėdžiai bei problemos vienoje vietoje
+
 ## v1.15 — Atostogos neskaičiuojamos į susitikimų laikotarpius {#v1-15}
 
 - ✨ **Atostogos neįskaičiuojamos į posėdžių periodiškumą** — vasaros, žiemos, sausio pabaigos ir Velykų atostogų dienos nebeskaičiuojamos vertinant, kiek laiko institucija neposėdžiavo. Todėl per atostogas nebekuriamos užduotys ir nebesiunčiami priminimai, o užduočių terminai nebenukrenta į atostogų laikotarpį

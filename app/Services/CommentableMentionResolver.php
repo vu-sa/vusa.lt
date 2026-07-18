@@ -7,6 +7,7 @@ use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Reservation;
 use App\Models\User;
+use App\Models\Workspace;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
@@ -49,6 +50,7 @@ class CommentableMentionResolver
                 : collect(),
             $commentable instanceof Institution => $commentable->users()->get(),
             $commentable instanceof Reservation => $commentable->users()->get(),
+            $commentable instanceof Workspace => $this->workspaceUsers($commentable),
             default => collect(),
         };
 
@@ -63,5 +65,24 @@ class CommentableMentionResolver
         return $meeting->getRepresentativesActiveAt()
             ->concat($meeting->users)
             ->values();
+    }
+
+    /**
+     * Explicit members plus users holding an active duty in the attached
+     * institution — everyone the WorkspacePolicy grants access to.
+     */
+    private function workspaceUsers(Workspace $workspace): Collection
+    {
+        $members = $workspace->members()->get();
+
+        if ($workspace->institution_id === null) {
+            return $members;
+        }
+
+        $institutionUsers = User::query()
+            ->whereHas('current_duties', fn ($q) => $q->where('duties.institution_id', $workspace->institution_id))
+            ->get();
+
+        return $members->concat($institutionUsers)->values();
     }
 }

@@ -46,7 +46,7 @@ function mountSidebar() {
     global: {
       stubs: {
         ...commonStubs,
-        AgendaItemNotesEditor: { name: 'AgendaItemNotesEditor', template: '<div class="notes-editor-stub" />' },
+        CollaborativeDocEditor: { name: 'CollaborativeDocEditor', template: '<div class="notes-editor-stub" />' },
         SpotlightPopover: { name: 'SpotlightPopover', template: '<div><slot /></div>' },
         UserAvatar: { name: 'UserAvatar', template: '<span class="user-avatar-stub" />' },
       },

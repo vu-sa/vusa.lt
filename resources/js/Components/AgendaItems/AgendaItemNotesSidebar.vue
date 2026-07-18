@@ -76,12 +76,12 @@
       </div>
 
       <div v-else class="max-h-72 overflow-y-auto rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/40">
-        <AgendaItemNotesEditor
+        <CollaborativeDocEditor
           :doc="notes.doc"
           :awareness="notes.awareness"
           :user-name="currentUser.name"
           :user-color="notes.currentUserColor"
-          :representatives="notes.representatives.value"
+          :mention-users="notes.representatives.value"
           @html-change="notes.setHtml"
         />
       </div>
@@ -123,13 +123,13 @@
         </div>
 
         <div class="max-h-[60vh] min-h-64 overflow-y-auto rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/40">
-          <AgendaItemNotesEditor
+          <CollaborativeDocEditor
             v-if="expanded"
             :doc="notes.doc"
             :awareness="notes.awareness"
             :user-name="currentUser.name"
             :user-color="notes.currentUserColor"
-            :representatives="notes.representatives.value"
+            :mention-users="notes.representatives.value"
             @html-change="notes.setHtml"
           />
         </div>
@@ -149,8 +149,8 @@ import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Lock, Maximize2, Users } from 'lucide-vue-next';
 
-import AgendaItemNotesEditor from '@/Components/AgendaItems/AgendaItemNotesEditor.vue';
-import SaveStatusChip from '@/Components/AgendaItems/NotesSaveStatusChip.vue';
+import CollaborativeDocEditor from '@/Components/CollaborativeDocs/CollaborativeDocEditor.vue';
+import SaveStatusChip from '@/Components/CollaborativeDocs/SaveStatusChip.vue';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { Button } from '@/Components/ui/button';
@@ -184,7 +184,7 @@ const expand = () => {
 // (e.g. the @mention dropdown, which is portalled to <body>, i.e. "outside").
 const onDialogInteractOutside = (event: { detail?: { originalEvent?: Event }; preventDefault: () => void }) => {
   const target = event.detail?.originalEvent?.target as HTMLElement | null;
-  if (target?.closest?.('[data-agenda-notes-menu]')) {
+  if (target?.closest?.('[data-collab-doc-menu]')) {
     event.preventDefault();
   }
 };

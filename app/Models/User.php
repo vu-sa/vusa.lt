@@ -273,6 +273,18 @@ class User extends Authenticatable
     }
 
     /**
+     * Workspaces the user is an explicit member of.
+     *
+     * @return BelongsToMany<Workspace, $this>
+     */
+    public function workspaces(): BelongsToMany
+    {
+        return $this->belongsToMany(Workspace::class, 'workspace_user')
+            ->withPivot('role')
+            ->withTimestamps();
+    }
+
+    /**
      * Institutions the user is explicitly following.
      */
     public function followedInstitutions(): BelongsToMany

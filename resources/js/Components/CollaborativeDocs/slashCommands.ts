@@ -1,6 +1,7 @@
 /**
- * Block options offered by the "/" slash menu in the agenda-item notes editor.
- * Each item deletes the typed "/query" range, then applies its block command.
+ * Block options offered by the "/" slash menu in the collaborative document
+ * editor. Each item deletes the typed "/query" range, then applies its block
+ * command.
  */
 import type { Editor, Range } from '@tiptap/core';
 import { trans as $t } from 'laravel-vue-i18n';

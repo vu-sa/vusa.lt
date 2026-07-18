@@ -41,6 +41,9 @@ return [
     'membership' => [
         'model' => '{1} membership|[2,*] memberships',
     ],
+    'workspace' => [
+        'model' => '{1} workspace|[2,*] workspaces',
+    ],
     'problem' => [
         'model' => '{1} problem|[2,*] problems',
         'title' => 'problem title',

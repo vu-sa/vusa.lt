@@ -1,5 +1,5 @@
 <template>
-  <div class="agenda-notes-editor text-sm">
+  <div class="collab-doc-editor text-sm">
     <!-- Selection bubble: inline marks. Only while the editor is focused. -->
     <BubbleMenu
       v-if="editor"
@@ -8,7 +8,7 @@
       :should-show="bubbleShouldShow"
       :options="menuOptions"
     >
-      <div data-agenda-notes-menu class="notes-menu">
+      <div data-collab-doc-menu class="notes-menu">
         <template v-if="!linkOpen">
           <button type="button" :class="btnClass(editor.isActive('bold'))" :title="$t('Paryškinti')" @mousedown.prevent="toggle('toggleBold')">
             <Bold class="h-4 w-4" />
@@ -62,21 +62,22 @@ import { Bold, Check, Italic, Link as LinkIcon, Strikethrough } from 'lucide-vue
 import type { Awareness } from 'y-protocols/awareness';
 import type * as Y from 'yjs';
 
-import AgendaItemNotesMentionList from '@/Components/AgendaItems/AgendaItemNotesMentionList.vue';
-import AgendaItemNotesSlashMenu from '@/Components/AgendaItems/AgendaItemNotesSlashMenu.vue';
-import { buildSlashCommandItems } from '@/Components/AgendaItems/notesSlashCommands';
-import type { NotesMentionUser } from '@/Composables/useAgendaItemNotes';
+import CollabDocMentionList from '@/Components/CollaborativeDocs/CollabDocMentionList.vue';
+import CollabDocSlashMenu from '@/Components/CollaborativeDocs/CollabDocSlashMenu.vue';
+import { buildSlashCommandItems } from '@/Components/CollaborativeDocs/slashCommands';
+import type { NotesMentionUser } from '@/Composables/useCollaborativeDocument';
 
 const props = withDefaults(defineProps<{
   doc: Y.Doc;
   awareness: Awareness;
   userName: string;
   userColor: string;
-  representatives?: NotesMentionUser[];
+  /** Pool of users offered by the "@" mention menu. */
+  mentionUsers?: NotesMentionUser[];
   editable?: boolean;
   placeholder?: string;
 }>(), {
-  representatives: () => [],
+  mentionUsers: () => [],
   editable: true,
   placeholder: '',
 });
@@ -144,21 +145,21 @@ function createSuggestionRenderer(listComponent: Component) {
   };
 }
 
-/** "@" → mention the meeting's student representatives. */
+/** "@" → mention a user from the provided pool. */
 const mentionSuggestion = {
   char: '@',
   items: ({ query }: { query: string }) => {
     const q = query.toLowerCase();
-    return props.representatives
+    return props.mentionUsers
       .filter(user => user.name.toLowerCase().includes(q))
       .slice(0, 8);
   },
-  render: createSuggestionRenderer(AgendaItemNotesMentionList),
+  render: createSuggestionRenderer(CollabDocMentionList),
 };
 
 /** "/" → insert a block (heading / lists / checklist). */
 const SlashCommands = Extension.create({
-  name: 'notesSlashCommands',
+  name: 'collabDocSlashCommands',
   addProseMirrorPlugins() {
     return [
       Suggestion({
@@ -172,7 +173,7 @@ const SlashCommands = Extension.create({
         command: ({ editor: instance, range, props: item }: any) => {
           item.command({ editor: instance, range });
         },
-        render: createSuggestionRenderer(AgendaItemNotesSlashMenu),
+        render: createSuggestionRenderer(CollabDocSlashMenu),
       }),
     ];
   },
@@ -299,67 +300,67 @@ onBeforeUnmount(() => {
 
 /* Tailwind's reset strips list markers and there is no typography plugin, so the
  * editor styles its own content. */
-.agenda-notes-editor :deep(.ProseMirror) > * + * {
+.collab-doc-editor :deep(.ProseMirror) > * + * {
   margin-top: 0.4rem;
 }
 
-.agenda-notes-editor :deep(.ProseMirror h2) {
+.collab-doc-editor :deep(.ProseMirror h2) {
   font-size: 1rem;
   font-weight: 600;
   margin-top: 0.75rem;
   margin-bottom: 0.25rem;
 }
 
-.agenda-notes-editor :deep(.ProseMirror ul),
-.agenda-notes-editor :deep(.ProseMirror ol) {
+.collab-doc-editor :deep(.ProseMirror ul),
+.collab-doc-editor :deep(.ProseMirror ol) {
   padding-left: 1.25rem;
   margin: 0.25rem 0;
 }
 
-.agenda-notes-editor :deep(.ProseMirror ul) {
+.collab-doc-editor :deep(.ProseMirror ul) {
   list-style: disc;
 }
 
-.agenda-notes-editor :deep(.ProseMirror ol) {
+.collab-doc-editor :deep(.ProseMirror ol) {
   list-style: decimal;
 }
 
-.agenda-notes-editor :deep(.ProseMirror li) {
+.collab-doc-editor :deep(.ProseMirror li) {
   margin: 0.1rem 0;
 }
 
-.agenda-notes-editor :deep(.ProseMirror li > p) {
+.collab-doc-editor :deep(.ProseMirror li > p) {
   margin: 0;
 }
 
 /* Task list (checkboxes) */
-.agenda-notes-editor :deep(.ProseMirror ul[data-type='taskList']) {
+.collab-doc-editor :deep(.ProseMirror ul[data-type='taskList']) {
   list-style: none;
   padding-left: 0.25rem;
 }
 
-.agenda-notes-editor :deep(.ProseMirror ul[data-type='taskList'] li) {
+.collab-doc-editor :deep(.ProseMirror ul[data-type='taskList'] li) {
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
 }
 
-.agenda-notes-editor :deep(.ProseMirror ul[data-type='taskList'] li > label) {
+.collab-doc-editor :deep(.ProseMirror ul[data-type='taskList'] li > label) {
   margin-top: 0.2rem;
   flex: 0 0 auto;
   user-select: none;
 }
 
-.agenda-notes-editor :deep(.ProseMirror ul[data-type='taskList'] li > div) {
+.collab-doc-editor :deep(.ProseMirror ul[data-type='taskList'] li > div) {
   flex: 1 1 auto;
 }
 
-.agenda-notes-editor :deep(.ProseMirror ul[data-type='taskList'] input[type='checkbox']) {
+.collab-doc-editor :deep(.ProseMirror ul[data-type='taskList'] input[type='checkbox']) {
   cursor: pointer;
 }
 
 /* @mention chip */
-.agenda-notes-editor :deep(.notes-mention) {
+.collab-doc-editor :deep(.notes-mention) {
   border-radius: 0.3rem;
   padding: 0.05rem 0.3rem;
   font-weight: 600;
@@ -369,7 +370,7 @@ onBeforeUnmount(() => {
 
 /* Remote collaborators' carets + labels (CollaborationCaret renders these;
  * border/background colours are applied inline from the user colour). */
-.agenda-notes-editor :deep(.collaboration-carets__caret) {
+.collab-doc-editor :deep(.collaboration-carets__caret) {
   position: relative;
   margin-left: -1px;
   margin-right: -1px;
@@ -379,7 +380,7 @@ onBeforeUnmount(() => {
   pointer-events: none;
 }
 
-.agenda-notes-editor :deep(.collaboration-carets__label) {
+.collab-doc-editor :deep(.collaboration-carets__label) {
   position: absolute;
   top: -1.4em;
   left: -1px;
@@ -395,12 +396,12 @@ onBeforeUnmount(() => {
   border-radius: 0.25rem 0.25rem 0.25rem 0;
 }
 
-.agenda-notes-editor :deep(.collaboration-carets__selection) {
+.collab-doc-editor :deep(.collaboration-carets__selection) {
   border-radius: 0.15rem;
   mix-blend-mode: multiply;
 }
 
-.agenda-notes-editor :deep(.ProseMirror p.is-editor-empty:first-child::before) {
+.collab-doc-editor :deep(.ProseMirror p.is-editor-empty:first-child::before) {
   content: attr(data-placeholder);
   float: left;
   height: 0;

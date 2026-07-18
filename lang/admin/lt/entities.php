@@ -63,6 +63,9 @@ return [
     'membership' => [
         'model' => '{1} narystė|[2,9] narystės|[10,*] narystės',
     ],
+    'workspace' => [
+        'model' => '{1} darbo erdvė|[2,9] darbo erdvės|[10,*] darbo erdvių',
+    ],
     'problem' => [
         'model' => '{1} problema|[2,9] problemos|[10,*] problemų',
         'title' => 'problemos pavadinimas',

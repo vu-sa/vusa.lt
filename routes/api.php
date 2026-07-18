@@ -19,6 +19,8 @@ use App\Http\Controllers\Api\Admin\TextBoxSubmissionApiController;
 use App\Http\Controllers\Api\Admin\TutorialApiController;
 use App\Http\Controllers\Api\Admin\UserPreferencesController;
 use App\Http\Controllers\Api\Admin\UserSearchApiController;
+use App\Http\Controllers\Api\Admin\WorkspaceApiController;
+use App\Http\Controllers\Api\Admin\WorkspaceDocumentController;
 use App\Http\Controllers\Api\CalendarController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\NewsController;
@@ -115,6 +117,20 @@ Route::prefix('v1')->name('v1.')->group(function () {
         // Agenda item collaborative notes ("Atstovų pastabos")
         Route::get('agenda-items/{agendaItem}/note', [AgendaItemNoteController::class, 'show'])->name('agendaItems.note.show');
         Route::put('agenda-items/{agendaItem}/note', [AgendaItemNoteController::class, 'update'])->name('agendaItems.note.update');
+
+        // Workspace collaborative documents. Realtime sync is peer-to-peer over
+        // the workspace-documents.{id} presence channel; the state endpoints
+        // hydrate late joiners and persist durable snapshots.
+        Route::get('workspaces/{workspace}/documents', [WorkspaceDocumentController::class, 'index'])->name('workspaces.documents.index');
+        Route::post('workspaces/{workspace}/documents', [WorkspaceDocumentController::class, 'store'])->name('workspaces.documents.store');
+        Route::patch('workspaces/{workspace}/documents/{document}', [WorkspaceDocumentController::class, 'update'])->name('workspaces.documents.update');
+        Route::delete('workspaces/{workspace}/documents/{document}', [WorkspaceDocumentController::class, 'destroy'])->name('workspaces.documents.destroy');
+        Route::get('workspaces/{workspace}/documents/{document}/state', [WorkspaceDocumentController::class, 'showState'])->name('workspaces.documents.state.show');
+        Route::put('workspaces/{workspace}/documents/{document}/state', [WorkspaceDocumentController::class, 'updateState'])->name('workspaces.documents.state.update');
+
+        // Workspace management dialogs (member invites, record linking)
+        Route::get('workspaces/{workspace}/member-candidates', [WorkspaceApiController::class, 'memberCandidates'])->name('workspaces.memberCandidates');
+        Route::get('workspaces/{workspace}/link-candidates', [WorkspaceApiController::class, 'linkCandidates'])->name('workspaces.linkCandidates');
 
         // Discussions (polymorphic comment threads). Read/write follow the
         // parent's `view` ability. {commentableType} is resolved through the

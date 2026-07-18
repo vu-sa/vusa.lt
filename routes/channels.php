@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Pivots\AgendaItem;
+use App\Models\WorkspaceDocument;
 use App\Support\Commentables;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Gate;
@@ -31,6 +32,27 @@ Broadcast::channel('agenda-item-notes.{agendaItemId}', function ($user, string $
     $agendaItem = AgendaItem::find($agendaItemId);
 
     if (! $agendaItem || ! Gate::forUser($user)->allows('update', $agendaItem)) {
+        return false;
+    }
+
+    return [
+        'id' => $user->id,
+        'name' => $user->name,
+        'profile_photo_path' => $user->profile_photo_path,
+    ];
+});
+
+/*
+ * Presence channel for real-time collaborative workspace documents.
+ *
+ * Mirrors the agenda-item notes channel: membership is the single authorization
+ * gate for the realtime layer, following the workspace "update" ability (every
+ * collaborator may edit documents).
+ */
+Broadcast::channel('workspace-documents.{documentId}', function ($user, string $documentId) {
+    $document = WorkspaceDocument::find($documentId);
+
+    if (! $document || ! Gate::forUser($user)->allows('update', $document->workspace)) {
         return false;
     }
 

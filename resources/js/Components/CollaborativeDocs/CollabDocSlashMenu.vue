@@ -1,12 +1,12 @@
 <template>
   <div
-    data-agenda-notes-menu
+    data-collab-doc-menu
     class="z-50 max-h-64 w-56 overflow-y-auto rounded-lg border border-zinc-200 bg-popover p-1 shadow-md dark:border-zinc-700"
   >
     <template v-if="items.length">
       <button
         v-for="(item, index) in items"
-        :key="item.id"
+        :key="item.title"
         type="button"
         :class="[
           'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors',
@@ -14,12 +14,12 @@
         ]"
         @click="selectItem(index)"
       >
-        <UserAvatar :user="(item as any)" :size="22" />
-        <span class="truncate text-zinc-800 dark:text-zinc-100">{{ item.name }}</span>
+        <component :is="item.icon" class="h-4 w-4 shrink-0 text-zinc-500 dark:text-zinc-400" />
+        <span class="truncate text-zinc-800 dark:text-zinc-100">{{ item.title }}</span>
       </button>
     </template>
     <p v-else class="px-2 py-1.5 text-xs text-zinc-400">
-      {{ $t('Atstovų nerasta') }}
+      {{ $t('Nieko nerasta') }}
     </p>
   </div>
 </template>
@@ -28,12 +28,11 @@
 import { ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
-import type { NotesMentionUser } from '@/Composables/useAgendaItemNotes';
+import type { SlashCommandItem } from '@/Components/CollaborativeDocs/slashCommands';
 
 const props = defineProps<{
-  items: NotesMentionUser[];
-  command: (item: { id: string; label: string }) => void;
+  items: SlashCommandItem[];
+  command: (item: SlashCommandItem) => void;
 }>();
 
 const selectedIndex = ref(0);
@@ -45,11 +44,14 @@ watch(() => props.items, () => {
 function selectItem(index: number) {
   const item = props.items[index];
   if (item) {
-    props.command({ id: item.id, label: item.name });
+    props.command(item);
   }
 }
 
 function onKeyDown({ event }: { event: KeyboardEvent }): boolean {
+  if (!props.items.length) {
+    return false;
+  }
   if (event.key === 'ArrowUp') {
     selectedIndex.value = (selectedIndex.value + props.items.length - 1) % props.items.length;
     return true;

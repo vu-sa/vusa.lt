@@ -262,6 +262,7 @@ import {
   Keyboard,
   Activity,
   Check,
+  NotebookPen,
   type LucideIcon,
 } from 'lucide-vue-next';
 import { Link, router, usePage, useForm } from '@inertiajs/vue3';
@@ -366,6 +367,14 @@ const reservationsSpotlight = useFeatureSpotlight('reservations-dashboard-v1', {
   position: 'right',
 });
 
+// Workspaces: shared meeting-preparation spaces with collaborative documents
+// and discussions. Dismisses as soon as the page is opened.
+const workspacesSpotlight = useFeatureSpotlight('workspaces-v1', {
+  title: $t('Naujiena: darbo erdvės'),
+  description: $t('Ruoškitės posėdžiams kartu — bendri dokumentai realiu laiku, diskusijos ir susieti posėdžiai vienoje vietoje.'),
+  position: 'right',
+});
+
 // "?" opens the keyboard-shortcuts cheatsheet, unless the user is typing.
 useEventListener('keydown', (event: KeyboardEvent) => {
   if (event.key !== '?' || event.metaKey || event.ctrlKey || event.altKey) {
@@ -428,6 +437,20 @@ const navMainItems = computed(() => {
     url: route('search.index'),
     icon: markRaw(Search),
     isActive: route().current('search.*'),
+  });
+
+  // Workspaces (shared meeting-preparation spaces)
+  items.push({
+    title: $t('workspaces.title'),
+    url: route('workspaces.index'),
+    icon: markRaw(NotebookPen),
+    isActive: route().current('workspaces.*'),
+    spotlight: {
+      title: workspacesSpotlight.title,
+      description: workspacesSpotlight.description,
+      isDismissed: workspacesSpotlight.isDismissed.value,
+      dismiss: workspacesSpotlight.dismiss,
+    },
   });
 
   // Website (Svetainė)

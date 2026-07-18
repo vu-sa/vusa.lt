@@ -193,6 +193,15 @@ Route::patch('problems/{problem}/restore', [ProblemController::class, 'restore']
 Route::patch('problems/{problem}/status', [ProblemController::class, 'updateStatus'])->name('problems.updateStatus');
 Route::resource('problems', ProblemController::class);
 
+// Workspaces (meeting preparation spaces). Create/edit happen in dialogs on the
+// index/show pages, so only the data routes are registered.
+Route::resource('workspaces', WorkspaceController::class)->except(['create', 'edit']);
+Route::post('workspaces/{workspace}/members', [WorkspaceController::class, 'addMember'])->name('workspaces.members.add');
+Route::patch('workspaces/{workspace}/members/{user}', [WorkspaceController::class, 'updateMember'])->name('workspaces.members.update');
+Route::delete('workspaces/{workspace}/members/{user}', [WorkspaceController::class, 'removeMember'])->name('workspaces.members.remove');
+Route::post('workspaces/{workspace}/links', [WorkspaceController::class, 'attachLink'])->name('workspaces.links.attach');
+Route::delete('workspaces/{workspace}/links/{link}', [WorkspaceController::class, 'detachLink'])->name('workspaces.links.detach');
+
 Route::resource('types', TypeController::class);
 Route::resource('relationships', RelationshipController::class);
 Route::post('relationships/{relationship}/storeModelRelationship', [RelationshipController::class, 'storeModelRelationship'])->name('relationships.storeModelRelationship');

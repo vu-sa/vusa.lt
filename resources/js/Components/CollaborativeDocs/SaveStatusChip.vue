@@ -20,7 +20,7 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { Check, Loader2 } from 'lucide-vue-next';
 
-import type { NotesSaveStatus } from '@/Composables/useAgendaItemNotes';
+import type { NotesSaveStatus } from '@/Composables/useCollaborativeDocument';
 
 defineProps<{ status: NotesSaveStatus }>();
 </script>
