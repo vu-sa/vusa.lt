@@ -4,6 +4,7 @@ use App\Providers\AppServiceProvider;
 use App\Providers\EventServiceProvider;
 use App\Providers\RouteServiceProvider;
 use App\Providers\TelescopeServiceProvider;
+use App\Providers\TestingServiceProvider;
 use App\Providers\TypesenseServiceProvider;
 use Illuminate\Auth\AuthServiceProvider;
 use Illuminate\Auth\Passwords\PasswordResetServiceProvider;
@@ -232,6 +233,7 @@ return [
         RouteServiceProvider::class,
         TelescopeServiceProvider::class,
         TypesenseServiceProvider::class, // Register our new Typesense service provider
+        TestingServiceProvider::class, // Testing-only hooks (no-op outside the testing env)
         TinkerServiceProvider::class,
 
     ],

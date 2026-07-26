@@ -136,9 +136,12 @@
     @routes
 
     {{-- Umami analytics: cookieless, public pages only. Absent when unconfigured (staging, CI). --}}
+    {{-- data-performance opts into Web Vitals (TTFB/FCP/LCP/CLS); it is off by default and --}}
+    {{-- the figures cannot be backfilled, so it is collected from the start. --}}
     @if (config('services.umami.website_id') && str_starts_with($page['component'] ?? '', 'Public/'))
         <script defer src="{{ config('services.umami.script_url') }}"
-                data-website-id="{{ config('services.umami.website_id') }}"></script>
+                data-website-id="{{ config('services.umami.website_id') }}"
+                data-performance="true"></script>
     @endif
 
     @inertiaHead

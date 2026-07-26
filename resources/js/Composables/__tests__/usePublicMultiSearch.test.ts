@@ -7,6 +7,9 @@ import { flushPromises } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
 
 import { createMockPage } from '@/tests/helpers/createMockPage';
+import { trackEvent } from '@/Plugins/umami';
+
+vi.mock('@/Plugins/umami', () => ({ trackEvent: vi.fn() }));
 
 // Array-friendly localStorage mock (the default helper spreads objects, which breaks arrays).
 vi.mock('@vueuse/core', () => ({
@@ -178,5 +181,109 @@ describe('usePublicMultiSearch', () => {
     expect(collections).not.toContain('news');
     expect(collections).not.toContain('pages');
     expect(collections).toContain('documents');
+  });
+
+  describe('search term analytics', () => {
+    // The fake response totals 3 + 2 + 5 + 1 + 0 + 4 across the six collections.
+    const TOTAL_HITS = 15;
+
+    it('reports a submitted search with the term and total result count', async () => {
+      const { usePublicMultiSearch } = await import('../usePublicMultiSearch');
+      const controller = usePublicMultiSearch();
+
+      controller.search('studentai', true);
+      await flushPromises();
+
+      expect(trackEvent).toHaveBeenCalledTimes(1);
+      expect(trackEvent).toHaveBeenCalledWith('search_submitted', {
+        term: 'studentai',
+        results: TOTAL_HITS,
+      });
+    });
+
+    it('lowercases and truncates the reported term', async () => {
+      const { usePublicMultiSearch } = await import('../usePublicMultiSearch');
+      const controller = usePublicMultiSearch();
+
+      controller.search(`  STUDENTŲ ${'a'.repeat(80)}  `, true);
+      await flushPromises();
+
+      const [, payload] = vi.mocked(trackEvent).mock.calls[0];
+      expect(payload!.term).toHaveLength(60);
+      expect(payload!.term).toBe(`studentų ${'a'.repeat(80)}`.slice(0, 60));
+    });
+
+    it('reports only the settled term, not each keystroke', async () => {
+      vi.useFakeTimers();
+
+      const { usePublicMultiSearch } = await import('../usePublicMultiSearch');
+      const controller = usePublicMultiSearch();
+
+      // Type progressively; each keystroke goes through the as-you-type debounce.
+      controller.search('vu');
+      await vi.advanceTimersByTimeAsync(400);
+      controller.search('vusa');
+      await vi.advanceTimersByTimeAsync(400);
+
+      // Results have been fetched, but nothing is reported until typing settles.
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+      expect(trackEvent).not.toHaveBeenCalled();
+
+      await vi.advanceTimersByTimeAsync(2000);
+
+      expect(trackEvent).toHaveBeenCalledTimes(1);
+      expect(trackEvent).toHaveBeenCalledWith('search_submitted', {
+        term: 'vusa',
+        results: TOTAL_HITS,
+      });
+
+      vi.useRealTimers();
+    });
+
+    it('does not report the same term again when a collection is toggled', async () => {
+      const { usePublicMultiSearch } = await import('../usePublicMultiSearch');
+      const controller = usePublicMultiSearch();
+
+      controller.search('studentai', true);
+      await flushPromises();
+      expect(trackEvent).toHaveBeenCalledTimes(1);
+
+      // Re-runs the identical search behind the scenes.
+      controller.toggleCollection('news');
+      await flushPromises();
+
+      expect(trackEvent).toHaveBeenCalledTimes(1);
+    });
+
+    it('reports searches that found nothing', async () => {
+      mockFetch.mockImplementation(async (_url: string, init: { body: string }) => {
+        const { searches } = JSON.parse(init.body);
+        return {
+          ok: true,
+          json: async () => ({ results: searches.map(() => ({ found: 0, hits: [] })) }),
+        };
+      });
+
+      const { usePublicMultiSearch } = await import('../usePublicMultiSearch');
+      const controller = usePublicMultiSearch();
+
+      controller.search('nerandama', true);
+      await flushPromises();
+
+      expect(trackEvent).toHaveBeenCalledWith('search_submitted', {
+        term: 'nerandama',
+        results: 0,
+      });
+    });
+
+    it('does not report terms below the minimum length', async () => {
+      const { usePublicMultiSearch } = await import('../usePublicMultiSearch');
+      const controller = usePublicMultiSearch();
+
+      controller.search('a', true);
+      await flushPromises();
+
+      expect(trackEvent).not.toHaveBeenCalled();
+    });
   });
 });

@@ -16,6 +16,12 @@ test('public pages render the umami tracker when it is configured', function () 
         ->assertSee('data-website-id="test-website-id"', false);
 });
 
+test('the tracker opts into web vitals collection', function () {
+    $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']))
+        ->assertOk()
+        ->assertSee('data-performance="true"', false);
+});
+
 test('the tracker is omitted when no website id is configured', function () {
     config()->set('services.umami.website_id', null);
 

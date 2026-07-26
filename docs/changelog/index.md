@@ -11,6 +11,7 @@ lastUpdated: true
 
 - ⭐ **Lankomumo statistika „Svetainės“ skiltyje** — pasirinkto padalinio puslapių peržiūros, lankytojai, peržiūrų grafikas ir populiariausi puslapiai matomi tiesiai „Mano“ sistemoje. Rodomi tik to padalinio svetainės duomenys, todėl atskiros analitikos paskyros nebereikia
 - ⭐ **Peržiūros konkrečios naujienos ar puslapio redagavimo lange** — atidarius naujieną arba puslapį matosi, kiek kartų jis peržiūrėtas ir kiek turėjo lankytojų. Jei įrašas paskelbtas anksčiau, nei pradėti kaupti duomenys, apie tai įspėjama
+- ✨ **Kaupiami svetainės paieškos žodžiai** — įrašoma, ko lankytojai ieško vusa.lt paieškoje ir kiek rezultatų rado. Taip matysime, kokio turinio žmonės ieško, bet neranda. Įrašomas tik paieškos tekstas ir rezultatų skaičius, be jokių lankytojo duomenų
 
 ## v1.15 — Atostogos neskaičiuojamos į susitikimų laikotarpius {#v1-15}
 

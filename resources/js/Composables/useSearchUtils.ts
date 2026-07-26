@@ -86,18 +86,6 @@ export const useSearchUtils = () => {
   const trackSearchInteraction = (action: string, data: Record<string, any>) => {
     // Umami timestamps events server-side, so only the payload is sent.
     trackEvent(`search_${action}`, data);
-
-    try {
-      const searches = JSON.parse(localStorage.getItem('search_analytics') || '[]');
-      searches.push({ action, ...data, timestamp: Date.now() });
-      if (searches.length > 100) {
-        searches.splice(0, searches.length - 100);
-      }
-      localStorage.setItem('search_analytics', JSON.stringify(searches));
-    }
-    catch (e) {
-      // Ignore localStorage errors
-    }
   };
 
   const navigateToItem = (item: SearchItem) => {

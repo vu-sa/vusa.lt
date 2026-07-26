@@ -158,3 +158,27 @@ Frontend conventions (stubs, mock forms, fake timers) are documented in [resourc
 
 - Run the smallest filter possible: `./vendor/bin/sail artisan test --compact --filter=testName`.
 - Don't delete tests without approval — they're part of the application contract.
+
+## Test performance patterns
+
+These come from real profiling of this suite. Follow them to keep it fast.
+
+**No real `sleep()`/`usleep()` in code paths tests invoke.** Jobs and commands that throttle API calls (e.g. SharePoint sync) must take their delays as constructor parameters with production defaults, so tests can pass zero:
+
+```php
+// app/Jobs/SyncStaleDocumentsJob.php — reference implementation
+public function __construct(
+    public int $dispatchDelayMicroseconds = 250000,
+    public int $batchDelaySeconds = 2,
+) { ... }
+
+// In tests:
+$job = new SyncStaleDocumentsJob(dispatchDelayMicroseconds: 0, batchDelaySeconds: 0);
+```
+
+**Typesense is per-process isolated under `--parallel`.** `TestingServiceProvider` sets a unique `scout.prefix` (`testing_{token}_`) for every parallel process and clears stale prefixed collections once per process. Search-backed tests (`Document::search()`, admin document index, sitemap) are hermetic — do not add your own index cleanup. Note that `Document::searchableUsing()` hardcodes the Typesense engine, so these tests require a running Typesense (Sail provides one locally, CI starts one).
+
+**`RefreshDatabase` already caches migrations** per process — the first test pays migrate+seed, the rest run in rolled-back transactions. Don't build "seed once" abstractions on top of it, and don't clean tables manually (`Model::query()->delete()` in a test is wasted work).
+
+**Keep Scout queueing disabled only where queue assertions demand it** (`config(['scout.queue' => false])` in `beforeEach`). Never disable it globally in `phpunit.xml` — models sync through Typesense explicitly and global flags change sync semantics suite-wide.
+
