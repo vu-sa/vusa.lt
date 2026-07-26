@@ -34,7 +34,7 @@ jobs:
         with:
           php-version: ${{ inputs.php-version }}
           extensions: dom, curl, libxml, mbstring, zip, fileinfo
-          coverage: ${{ inputs.include-coverage && 'xdebug' || 'none' }}
+          coverage: ${{ inputs.include-coverage && 'pcov' || 'none' }}
 
       - name: Cache Composer dependencies
         uses: actions/cache@v6

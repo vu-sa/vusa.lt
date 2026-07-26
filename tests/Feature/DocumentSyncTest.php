@@ -30,9 +30,6 @@ describe('Document Sync Jobs', function () {
     });
 
     test('rolling refresh job identifies documents for 14-day cycle correctly', function () {
-        // Clear any existing documents to ensure clean test
-        Document::query()->delete();
-
         // Create critical documents (older than 14 days, should have priority)
         $criticalDocument1 = Document::factory()->create([
             'checked_at' => now()->subDays(15), // Critical - older than 14 days
@@ -60,7 +57,7 @@ describe('Document Sync Jobs', function () {
         ]);
 
         // Run the rolling refresh job
-        $job = new SyncStaleDocumentsJob;
+        $job = new SyncStaleDocumentsJob(dispatchDelayMicroseconds: 0, batchDelaySeconds: 0);
         $job->handle();
 
         // With 4 total documents, the dynamic quota should be at least 1 (4/14 = 0.28, ceil = 1)
@@ -80,9 +77,6 @@ describe('Document Sync Jobs', function () {
     });
 
     test('rolling refresh job skips documents with excessive failures', function () {
-        // Clear any existing documents to ensure clean test
-        Document::query()->delete();
-
         // Create document that has failed too many times (over the limit of 5)
         Document::factory()->create([
             'checked_at' => now()->subDays(15), // Old enough to be critical
@@ -91,7 +85,7 @@ describe('Document Sync Jobs', function () {
             'last_sync_attempt_at' => now()->subHours(1),
         ]);
 
-        $job = new SyncStaleDocumentsJob;
+        $job = new SyncStaleDocumentsJob(dispatchDelayMicroseconds: 0, batchDelaySeconds: 0);
         $job->handle();
 
         // No jobs should be dispatched for documents with excessive failures
@@ -99,9 +93,6 @@ describe('Document Sync Jobs', function () {
     });
 
     test('rolling refresh job skips recently failed documents', function () {
-        // Clear any existing documents to ensure clean test
-        Document::query()->delete();
-
         // Create document that failed recently with multiple attempts
         Document::factory()->create([
             'checked_at' => now()->subDays(15), // Old enough to be critical
@@ -110,7 +101,7 @@ describe('Document Sync Jobs', function () {
             'last_sync_attempt_at' => now()->subHours(2), // Recent failure (within 6 hours)
         ]);
 
-        $job = new SyncStaleDocumentsJob;
+        $job = new SyncStaleDocumentsJob(dispatchDelayMicroseconds: 0, batchDelaySeconds: 0);
         $job->handle();
 
         // Should skip recently failed documents
@@ -118,16 +109,13 @@ describe('Document Sync Jobs', function () {
     });
 
     test('rolling refresh job uses dynamic quota calculation', function () {
-        // Clear any existing documents to ensure clean test
-        Document::query()->delete();
-
         // Create exactly 14 documents (one per day in cycle)
         Document::factory()->count(14)->create([
             'checked_at' => now()->subDays(15), // All critical
             'sync_status' => 'success',
         ]);
 
-        $job = new SyncStaleDocumentsJob;
+        $job = new SyncStaleDocumentsJob(dispatchDelayMicroseconds: 0, batchDelaySeconds: 0);
         $job->handle();
 
         // With 14 documents, quota should be around 14/14 = 1 per day (with randomization ±10%)
@@ -138,9 +126,6 @@ describe('Document Sync Jobs', function () {
     });
 
     test('rolling refresh job prioritizes active and public documents', function () {
-        // Clear any existing documents to ensure clean test
-        Document::query()->delete();
-
         // Create documents with different priorities (all critical age)
         $highPriority = Document::factory()->create([
             'checked_at' => now()->subDays(15),
@@ -163,7 +148,7 @@ describe('Document Sync Jobs', function () {
             'sync_status' => 'success',
         ]);
 
-        $job = new SyncStaleDocumentsJob;
+        $job = new SyncStaleDocumentsJob(dispatchDelayMicroseconds: 0, batchDelaySeconds: 0);
         $job->handle();
 
         // High priority document should be more likely to be selected
@@ -211,9 +196,6 @@ describe('Document Sync Controller', function () {
 
 describe('Document Sync Command', function () {
     test('sync command shows document count for rolling refresh in dry run', function () {
-        // Clear any existing documents to ensure clean test
-        Document::query()->delete();
-
         // Create critical documents (older than 14 days)
         Document::factory()->count(2)->create([
             'checked_at' => now()->subDays(15), // Critical
@@ -260,10 +242,7 @@ describe('Document Sync Command', function () {
     });
 
     test('sync command respects limit parameter', function () {
-        // Clear any existing documents to ensure clean test
-        Document::query()->delete();
-
-        Document::factory()->count(100)->create([
+        Document::factory()->count(30)->create([
             'checked_at' => now()->subDays(2),
         ]);
 

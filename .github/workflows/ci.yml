@@ -158,12 +158,12 @@ jobs:
         # Wait for Typesense to be ready
         until curl -s http://localhost:8108/health | grep -q '"ok"'; do sleep 1; done
 
-    - name: Setup PHP with Xdebug
+    - name: Setup PHP with PCOV
       uses: shivammathur/setup-php@v2
       with:
         php-version: 8.5
         extensions: dom, curl, libxml, mbstring, zip, fileinfo
-        coverage: xdebug
+        coverage: pcov
 
     - name: Create .env
       run: |

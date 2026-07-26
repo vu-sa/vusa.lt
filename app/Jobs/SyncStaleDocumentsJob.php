@@ -26,8 +26,10 @@ class SyncStaleDocumentsJob implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct()
-    {
+    public function __construct(
+        public int $dispatchDelayMicroseconds = 250000,
+        public int $batchDelaySeconds = 2,
+    ) {
         // Set queue name for better organization
         $this->queue = 'sharepoint-sync';
     }
@@ -77,12 +79,12 @@ class SyncStaleDocumentsJob implements ShouldQueue
                 $successCount++;
 
                 // Small delay to be respectful to SharePoint API
-                usleep(250000); // 250ms delay between dispatches
+                usleep($this->dispatchDelayMicroseconds);
             }
 
             // Longer delay between batches
-            if (! $batch->isEmpty()) {
-                sleep(2); // 2 second delay between batches
+            if (! $batch->isEmpty() && $this->batchDelaySeconds > 0) {
+                sleep($this->batchDelaySeconds);
             }
         });
 
