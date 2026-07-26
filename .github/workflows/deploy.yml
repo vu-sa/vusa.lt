@@ -27,12 +27,15 @@ jobs:
           php-version: '8.5'
           extensions: dom, curl, libxml, mbstring, zip, fileinfo
 
-      - name: Cache Composer dependencies
+      # Only the package download cache is cached — never `vendor` itself.
+      # `restore-keys` falls back to a cache built from a *different* composer.lock, and a
+      # restored `vendor` keeps files from package versions that are no longer installed.
+      # That shipped a stale intervention/image-laravel and broke `artisan optimize` in
+      # production. Composer rebuilds vendor quickly from the warm download cache.
+      - name: Cache Composer downloads
         uses: actions/cache@v6
         with:
-          path: |
-            ~/.composer/cache
-            vendor
+          path: ~/.composer/cache
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-composer-
