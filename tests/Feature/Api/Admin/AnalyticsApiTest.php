@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\News;
+use App\Models\Page;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -161,4 +163,117 @@ test('rejects an unknown period', function () {
     asUser($user)->getJson(
         route('api.v1.admin.analytics.overview', ['tenant_id' => $tenant->id, 'period' => 'forever'])
     )->assertStatus(422);
+});
+
+describe('content analytics', function () {
+    test('returns lifetime views for a news article', function () {
+        fakeUmami();
+
+        $tenant = Tenant::query()->first();
+        $news = News::factory()->create([
+            'tenant_id' => $tenant->id,
+            'lang' => 'lt',
+            'permalink' => 'testine-naujiena',
+        ]);
+
+        asUser(makeAdminUser($tenant))->getJson(
+            route('api.v1.admin.analytics.content', ['type' => 'news', 'id' => $news->id])
+        )
+            ->assertSuccessful()
+            ->assertJsonPath('data.available', true)
+            ->assertJsonPath('data.path', '/lt/naujiena/testine-naujiena')
+            ->assertJsonPath('data.totals.pageviews', 120)
+            ->assertJsonPath('data.dataSince', '2026-07-26');
+    });
+
+    test('uses the english url segment for english news', function () {
+        fakeUmami();
+
+        $tenant = Tenant::query()->first();
+        $news = News::factory()->create([
+            'tenant_id' => $tenant->id,
+            'lang' => 'en',
+            'permalink' => 'a-news-item',
+        ]);
+
+        asUser(makeAdminUser($tenant))->getJson(
+            route('api.v1.admin.analytics.content', ['type' => 'news', 'id' => $news->id])
+        )->assertJsonPath('data.path', '/en/news/a-news-item');
+    });
+
+    test('builds the page path without a news segment', function () {
+        fakeUmami();
+
+        $tenant = Tenant::query()->first();
+        $page = Page::factory()->create([
+            'tenant_id' => $tenant->id,
+            'lang' => 'lt',
+            'permalink' => 'apie-mus/kontaktai',
+        ]);
+
+        asUser(makeAdminUser($tenant))->getJson(
+            route('api.v1.admin.analytics.content', ['type' => 'page', 'id' => $page->id])
+        )->assertJsonPath('data.path', '/lt/apie-mus/kontaktai');
+    });
+
+    test('scopes the upstream query to that single path', function () {
+        fakeUmami();
+
+        $tenant = Tenant::query()->first();
+        $news = News::factory()->create([
+            'tenant_id' => $tenant->id,
+            'lang' => 'lt',
+            'permalink' => 'testine-naujiena',
+        ]);
+
+        asUser(makeAdminUser($tenant))->getJson(
+            route('api.v1.admin.analytics.content', ['type' => 'news', 'id' => $news->id])
+        )->assertSuccessful();
+
+        Http::assertSent(function ($request) use ($tenant) {
+            return str_contains($request->url(), '/stats')
+                && $request['path'] === '/lt/naujiena/testine-naujiena'
+                && $request['hostname'] === $tenant->publicHostname();
+        });
+    });
+
+    test('forbids reading content the user cannot edit', function () {
+        fakeUmami();
+
+        $tenant = Tenant::query()->first();
+        $news = News::factory()->create(['tenant_id' => $tenant->id, 'lang' => 'lt', 'permalink' => 'x']);
+
+        // A user with no roles at all has no update ability on this news item.
+        asUser(makeTenantUser(null, $tenant))->getJson(
+            route('api.v1.admin.analytics.content', ['type' => 'news', 'id' => $news->id])
+        )->assertStatus(403);
+    });
+
+    test('rejects an arbitrary model type', function () {
+        $tenant = Tenant::query()->first();
+
+        asUser(makeAdminUser($tenant))->getJson(
+            route('api.v1.admin.analytics.content', ['type' => 'user', 'id' => 1])
+        )->assertStatus(422);
+    });
+
+    test('reports unavailable for content without a permalink', function () {
+        fakeUmami();
+
+        $tenant = Tenant::query()->first();
+
+        // A null permalink is not indexable, so skip the search sync for this edge case.
+        $news = News::withoutSyncingToSearch(
+            fn () => News::factory()->create(['tenant_id' => $tenant->id, 'lang' => 'lt', 'permalink' => null])
+        );
+
+        asUser(makeAdminUser($tenant))->getJson(
+            route('api.v1.admin.analytics.content', ['type' => 'news', 'id' => $news->id])
+        )
+            ->assertSuccessful()
+            ->assertJsonPath('data.available', false)
+            ->assertJsonPath('data.path', null);
+
+        Http::assertNothingSent();
+    });
 });

@@ -60,6 +60,12 @@ return [
         'api_url' => env('UMAMI_API_URL'),
         'username' => env('UMAMI_USERNAME'),
         'password' => env('UMAMI_PASSWORD'),
+
+        /*
+         * The date tracking started. Content published before this has views we simply do
+         * not have, so the UI says so instead of implying the numbers are lifetime totals.
+         */
+        'data_since' => env('UMAMI_DATA_SINCE', '2026-07-26'),
     ],
 
 ];

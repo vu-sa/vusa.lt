@@ -283,3 +283,21 @@ export interface AnalyticsOverviewData {
     views: number;
   }>;
 }
+
+/**
+ * Lifetime traffic for a single piece of content, shown on its edit page.
+ * Route: GET /api/v1/admin/analytics/content
+ *
+ * `dataSince` is the date tracking began — totals for content published before it are a
+ * floor, not a lifetime figure.
+ */
+export interface ContentAnalyticsData {
+  available: boolean;
+  path: string | null;
+  totals: {
+    pageviews: number;
+    visitors: number;
+    visits: number;
+  } | null;
+  dataSince: string;
+}

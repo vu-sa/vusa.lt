@@ -10,6 +10,7 @@ Here you'll find all changes and improvements to the mano.vusa.lt platform.
 ## v1.16 — New Website Analytics (2026-07-26) {#v1-16}
 
 - ⭐ **Traffic statistics on the Svetainė dashboard** — page views, visitors, a views-over-time chart and top pages for the selected unit, right inside the admin interface. Only that unit's site data is shown, so no separate analytics account is needed
+- ⭐ **Views for an individual news item or page** — opening a news item or page shows how many times it has been viewed and by how many visitors. If it was published before data collection began, the card says so
 
 ## v1.15 — Meeting Periodicity & Notifications Fixes (2026-07-14) {#v1-15}
 

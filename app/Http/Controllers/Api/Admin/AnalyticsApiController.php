@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\Api\ApiController;
+use App\Models\News;
 use App\Models\Page;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer;
 use App\Services\UmamiClient;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -87,5 +89,74 @@ class AnalyticsApiController extends ApiController
             'hostname' => $tenant->publicHostname(),
             ...$overview,
         ]);
+    }
+
+    /**
+     * Lifetime traffic for one piece of content, for its edit page.
+     *
+     * Takes a model type and id rather than a path: the URL is derived from the record
+     * here, so nobody can ask for traffic on an arbitrary URL, and authorization is the
+     * record's own `update` policy — the same one that gates the edit page.
+     */
+    public function content(Request $request): JsonResponse
+    {
+        $this->requireAuth($request);
+
+        $validated = $request->validate([
+            'type' => ['required', 'string', 'in:news,page'],
+            'id' => ['required', 'integer'],
+        ]);
+
+        /** @var News|Page $model */
+        $model = match ($validated['type']) {
+            'news' => News::query()->findOrFail($validated['id']),
+            'page' => Page::query()->findOrFail($validated['id']),
+        };
+
+        $this->authorize('update', $model);
+
+        $dataSince = Carbon::parse(config('services.umami.data_since'))->startOfDay();
+
+        $path = $this->publicPathFor($model, $validated['type']);
+        $hostname = $model->tenant?->publicHostname();
+
+        if ($path === null || $hostname === null) {
+            return $this->jsonSuccess([
+                'available' => false,
+                'path' => null,
+                'totals' => null,
+                'dataSince' => $dataSince->toDateString(),
+            ]);
+        }
+
+        $totals = $this->umami->pathStats($hostname, $path, $dataSince, now()->endOfDay());
+
+        return $this->jsonSuccess([
+            'available' => $totals !== null,
+            'path' => $path,
+            'totals' => $totals,
+            'dataSince' => $dataSince->toDateString(),
+        ]);
+    }
+
+    /**
+     * The public URL path Umami would have recorded for this record.
+     *
+     * Public URLs always carry the language prefix — a request without one is redirected
+     * to the canonical form, so only the prefixed path is ever tracked.
+     */
+    private function publicPathFor(News|Page $model, string $type): ?string
+    {
+        if (blank($model->permalink)) {
+            return null;
+        }
+
+        if ($type === 'news') {
+            $newsSegment = $model->lang === 'en' ? 'news' : 'naujiena';
+
+            return sprintf('/%s/%s/%s', $model->lang, $newsSegment, $model->permalink);
+        }
+
+        return sprintf('/%s/%s', $model->lang, $model->permalink);
     }
 }

@@ -105,6 +105,7 @@ Route::prefix('v1')->name('v1.')->group(function () {
 
         // Tenant-scoped page-view statistics (Umami) for the Svetainė dashboard
         Route::get('analytics/overview', [AnalyticsApiController::class, 'overview'])->name('analytics.overview');
+        Route::get('analytics/content', [AnalyticsApiController::class, 'content'])->name('analytics.content');
 
         // Academic vacation periods (shaded in the meetings Gantt chart)
         Route::get('academic-calendar/vacations', [AcademicCalendarApiController::class, 'vacations'])->name('academicCalendar.vacations');

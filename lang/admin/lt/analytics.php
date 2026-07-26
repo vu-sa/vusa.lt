@@ -16,4 +16,5 @@ return [
     'empty_description' => 'Šiuo laikotarpiu šio padalinio svetainėje peržiūrų neužfiksuota.',
     'hostname_hint' => 'Duomenys iš :hostname',
     'since_notice' => 'Lankomumo duomenys kaupiami nuo 2026 m. liepos 26 d. Dėl ankstesnės statistikos kreipkitės į administratorių.',
+    'partial_tooltip' => 'Šis įrašas paskelbtas anksčiau, nei pradėti kaupti lankomumo duomenys (:date), todėl tikrasis peržiūrų skaičius yra didesnis. Dėl ankstesnės statistikos kreipkitės į administratorių.',
 ];

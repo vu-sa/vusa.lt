@@ -101,6 +101,42 @@ class UmamiClient
     }
 
     /**
+     * Totals for a single public URL, e.g. one news article.
+     *
+     * The path is always derived server-side from the record being viewed — never accepted
+     * from the client, which would let anyone probe traffic for arbitrary URLs.
+     *
+     * @return array{pageviews: int, visitors: int, visits: int}|null
+     */
+    public function pathStats(string $hostname, string $path, CarbonInterface $start, CarbonInterface $end): ?array
+    {
+        if (! $this->isConfigured()) {
+            return null;
+        }
+
+        $cacheKey = sprintf('umami.path.%s.%s.%s', $hostname, md5($path), $start->toDateString());
+
+        return Cache::remember($cacheKey, self::RESULT_TTL, function () use ($hostname, $path, $start, $end) {
+            $stats = $this->get('stats', [
+                'startAt' => $start->getTimestampMs(),
+                'endAt' => $end->getTimestampMs(),
+                'hostname' => $hostname,
+                'path' => $path,
+            ]);
+
+            if ($stats === null) {
+                return null;
+            }
+
+            return [
+                'pageviews' => (int) ($stats['pageviews'] ?? 0),
+                'visitors' => (int) ($stats['visitors'] ?? 0),
+                'visits' => (int) ($stats['visits'] ?? 0),
+            ];
+        });
+    }
+
+    /**
      * GET a website-scoped endpoint, re-authenticating once if the cached token expired.
      *
      * @param  array<string, mixed>  $query
