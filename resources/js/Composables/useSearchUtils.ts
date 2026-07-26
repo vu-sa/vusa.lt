@@ -2,6 +2,7 @@ import { usePage, router } from '@inertiajs/vue3';
 import { format } from 'date-fns';
 
 import { forceBrowserDocumentUrl } from '@/Composables/useDocumentDisplay';
+import { trackEvent } from '@/Plugins/umami';
 
 // Import icons for content types
 import IconNews from '~icons/fluent/news20-regular';
@@ -83,12 +84,8 @@ export const useSearchUtils = () => {
   };
 
   const trackSearchInteraction = (action: string, data: Record<string, any>) => {
-    if (typeof window !== 'undefined' && (window as any).posthog) {
-      (window as any).posthog.capture(`search_${action}`, {
-        ...data,
-        timestamp: new Date().toISOString(),
-      });
-    }
+    // Umami timestamps events server-side, so only the payload is sent.
+    trackEvent(`search_${action}`, data);
 
     try {
       const searches = JSON.parse(localStorage.getItem('search_analytics') || '[]');

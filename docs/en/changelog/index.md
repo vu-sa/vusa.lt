@@ -7,6 +7,10 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.16 — New Website Analytics (2026-07-26) {#v1-16}
+
+- ⭐ **Traffic statistics on the Svetainė dashboard** — page views, visitors, a views-over-time chart and top pages for the selected unit, right inside the admin interface. Only that unit's site data is shown, so no separate analytics account is needed
+
 ## v1.15 — Meeting Periodicity & Notifications Fixes (2026-07-14) {#v1-15}
 
 - ✨ **Vacations no longer count toward meeting periodicity** — summer, winter, late January and Easter vacation days are excluded when measuring how long an institution has gone without a meeting. Tasks and reminders are no longer raised during a break, and task deadlines no longer land inside one

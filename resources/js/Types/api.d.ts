@@ -255,3 +255,31 @@ export interface TypesenseConfigData {
   apiKey: string;
   connectionTimeoutSeconds?: number;
 }
+
+/**
+ * Tenant-scoped page-view statistics from the self-hosted Umami instance.
+ * Route: GET /api/v1/admin/analytics/overview
+ *
+ * `available: false` means Umami is unconfigured or unreachable — render an empty state
+ * rather than treating it as a failed request.
+ */
+export interface AnalyticsOverviewData {
+  available: boolean;
+  period: '7d' | '30d' | '12m';
+  hostname: string;
+  totals: {
+    pageviews: number;
+    visitors: number;
+    visits: number;
+    bounces: number;
+  } | null;
+  series: Array<{
+    date: string;
+    pageviews: number;
+    visitors: number;
+  }>;
+  topPages: Array<{
+    path: string;
+    views: number;
+  }>;
+}

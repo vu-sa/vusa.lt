@@ -388,14 +388,13 @@ class DashboardController extends AdminController
             $selectedTenant = $tenants->first();
         }
 
-        if (! $selectedTenant) {
-            $providedTenant = null;
-        } else {
-            $providedTenant = Tenant::query()->where('id', $selectedTenant['id'])->with('pages', 'news', 'quickLinks')->with(['calendar' => function ($query) {
-                // get only future and pasts event 12 months ago
-                $query->where('date', '>=', now()->subMonths(12))->orderBy('date', 'asc');
-            }])->first();
-        }
+        /**
+         * Only identity is needed: the page's content counters were replaced by the
+         * Umami traffic section, which is fetched client-side and keyed on the tenant id.
+         */
+        $providedTenant = $selectedTenant
+            ? Tenant::query()->find($selectedTenant['id'], ['id', 'alias', 'shortname', 'type'])
+            : null;
 
         return $this->inertiaResponse('Admin/Dashboard/ShowSvetaine', [
             'tenants' => $tenants,

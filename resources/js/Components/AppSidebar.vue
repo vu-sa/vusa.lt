@@ -130,11 +130,6 @@
                     <Keyboard class="mr-2 h-4 w-4" />
                     <span>{{ $t('Klaviatūros trumpiniai') }}</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem class="cursor-pointer" @select="(e: Event) => { e.preventDefault(); setAnalytics(!analyticsAllowed); }">
-                    <Activity class="mr-2 h-4 w-4" />
-                    <span>{{ $t('Analitikos slapukai') }}</span>
-                    <Check v-if="analyticsAllowed" class="ml-auto h-4 w-4" />
-                  </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <div class="p-2">
@@ -260,8 +255,6 @@ import {
   Search,
   SlidersHorizontal,
   Keyboard,
-  Activity,
-  Check,
   type LucideIcon,
 } from 'lucide-vue-next';
 import { Link, router, usePage, useForm } from '@inertiajs/vue3';
@@ -282,7 +275,6 @@ import KeyboardShortcutsDialog from './KeyboardShortcutsDialog.vue';
 
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
-import { useCookieConsent } from '@/Composables/useCookieConsent';
 import { useDocsUpdateIndicator } from '@/Composables/useDocsUpdateIndicator';
 import { useUIPreferences } from '@/Composables/useUIPreferences';
 import NewMeetingDialog from '@/Components/Dialogs/NewMeetingDialog.vue';
@@ -350,9 +342,6 @@ const { isSectionVisible, orderedSections, density } = useUIPreferences();
 
 const showCustomizeDialog = ref(false);
 const showShortcutsDialog = ref(false);
-
-// Analytics cookie consent (opt-in/out for staff using the internal tool)
-const { analyticsAllowed, setAnalytics } = useCookieConsent();
 
 // Draw attention to the account menu, which now hosts sidebar customization,
 // pinned pages and keyboard shortcuts. Dismisses once the menu is opened.

@@ -7,8 +7,6 @@ import { defineAsyncComponent } from 'vue';
 import { i18nVue } from 'laravel-vue-i18n';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
-import { useCookieConsent } from './Composables/useCookieConsent';
-
 const PublicLayout = defineAsyncComponent(
   () => import('./Layouts/PersistentPublicLayout.vue'),
 );
@@ -83,10 +81,6 @@ createInertiaApp({
       .use(ZiggyVue);
 
     application.mount(el);
-
-    // Load analytics only if the visitor has already opted in (GDPR). Otherwise the
-    // consent banner enables it on accept.
-    useCookieConsent().initAnalyticsFromConsent();
 
     delete el.dataset.page;
 

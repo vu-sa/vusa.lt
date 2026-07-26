@@ -12,6 +12,8 @@ import {
 } from 'lucide-vue-next';
 import { Icon } from '@iconify/vue';
 
+import { trackEvent } from '@/Plugins/umami';
+
 // Document interface
 export interface DocumentDisplayItem {
   id: string | number;
@@ -229,15 +231,13 @@ export const useDocumentDisplay = (document: DocumentDisplayItem) => {
 
   // Analytics tracking
   const trackDocumentClick = () => {
-    if (typeof window !== 'undefined' && (window as any).posthog) {
-      (window as any).posthog.capture('document_click', {
-        document_id: document.id,
-        document_title: document.title,
-        content_type: document.content_type,
-        tenant: document.tenant_shortname,
-        source: 'search_results',
-      });
-    }
+    trackEvent('document_click', {
+      document_id: document.id,
+      document_title: document.title,
+      content_type: document.content_type,
+      tenant: document.tenant_shortname,
+      source: 'search_results',
+    });
   };
 
   return {

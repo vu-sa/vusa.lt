@@ -132,4 +132,30 @@ class Tenant extends Model
     {
         return $this->belongsTo(Content::class);
     }
+
+    /**
+     * The subdomain this tenant's public site is served from.
+     *
+     * Subdomain and alias are the same except for the main tenant, whose 'vusa' alias is
+     * served from 'www'.
+     */
+    public function subdomain(): string
+    {
+        return $this->alias === 'vusa' ? 'www' : $this->alias;
+    }
+
+    /**
+     * The fully qualified host of this tenant's public site, e.g. 'mif.vusa.lt'.
+     *
+     * The apex is derived from app.url the same way the public routes do
+     * (see routes/web.php), so local ('vusa.test') and production ('vusa.lt') both work.
+     * Used to scope analytics to a single tenant, since Umami records the hostname on
+     * every event.
+     */
+    public function publicHostname(): string
+    {
+        $apex = explode('.', parse_url(config('app.url'), PHP_URL_HOST) ?: '', 2)[1] ?? '';
+
+        return $this->subdomain().'.'.$apex;
+    }
 }

@@ -1,6 +1,5 @@
 import type { PageProps as InertiaPageProps } from '@inertiajs/core';
 import type { route as ziggyRoute } from 'ziggy-js';
-import type { PostHog } from 'posthog-js';
 import type { DriveItem } from '@microsoft/microsoft-graph-types';
 
 import type { PageProps as AppPageProps } from './';
@@ -56,8 +55,6 @@ declare global {
     | 'listItem'
     | 'thumbnails'
   >;
-
-  const $posthog: PostHog;
 }
 
 declare module 'vue' {
