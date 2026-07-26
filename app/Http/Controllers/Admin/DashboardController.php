@@ -20,7 +20,7 @@ use App\Models\Resource;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Notifications\TestPushNotification;
-use App\Services\AcademicCalendarService;
+use App\Services\InstitutionActivityStatusService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
 use App\Services\ResourceServices\DutyService;
@@ -39,7 +39,10 @@ class DashboardController extends AdminController
 {
     use ApiResponses;
 
-    public function __construct(public Authorizer $authorizer) {}
+    public function __construct(
+        public Authorizer $authorizer,
+        private readonly InstitutionActivityStatusService $activityStatusService,
+    ) {}
 
     public function index(Request $request)
     {
@@ -110,11 +113,15 @@ class DashboardController extends AdminController
         // Get institutions needing attention (overdue meetings based on periodicity)
         $meetingSettings = app(MeetingSettings::class);
         $excludedTypeIds = $meetingSettings->getExcludedInstitutionTypeIds();
-        $academicCalendar = app(AcademicCalendarService::class);
-
         $userInstitutions = Institution::query()
             ->whereIn('id', $userInstitutionIds)
-            ->with(['meetings' => fn ($q) => $q->orderByDesc('start_time')->take(1), 'types'])
+            ->with([
+                'meetings:id,start_time',
+                'types',
+                'checkIns' => fn ($query) => $query
+                    ->where('start_date', '<=', today())
+                    ->where('end_date', '>=', today()),
+            ])
             ->get()
             ->filter(function ($institution) use ($excludedTypeIds) {
                 // Exclude institutions with excluded types
@@ -126,39 +133,17 @@ class DashboardController extends AdminController
             });
 
         $institutionsNeedingAttention = $userInstitutions
-            ->map(function ($institution) use ($academicCalendar) {
-                $lastMeeting = $institution->meetings->first();
-                $periodicity = $institution->meeting_periodicity_days ?? 30;
-
-                if (! $lastMeeting) {
-                    return [
-                        'id' => $institution->id,
-                        'name' => $institution->name,
-                        'days_since_last_meeting' => null,
-                        'periodicity' => $periodicity,
-                        'status' => 'no_meetings',
-                    ];
-                }
-
-                $daysSinceLastMeeting = $academicCalendar->effectiveDaysBetween($lastMeeting->start_time, now());
-                $isOverdue = $daysSinceLastMeeting > $periodicity;
-                $isApproaching = ! $isOverdue && $daysSinceLastMeeting >= ($periodicity * 0.8);
-
-                if (! $isOverdue && ! $isApproaching) {
-                    return null;
-                }
+            ->map(function (Institution $institution) {
+                $activityStatus = $this->activityStatusService->resolve($institution);
 
                 return [
                     'id' => $institution->id,
                     'name' => $institution->name,
-                    'days_since_last_meeting' => $daysSinceLastMeeting,
-                    'periodicity' => $periodicity,
-                    'status' => $isOverdue ? 'overdue' : 'approaching',
-                    'last_meeting_date' => $lastMeeting->start_time->toISOString(),
+                    ...$activityStatus->toArray(),
                 ];
             })
-            ->filter()
-            ->sortByDesc(fn ($i) => ($i['days_since_last_meeting'] ?? 999) - $i['periodicity'])
+            ->filter(fn (array $status): bool => $status['requires_action'])
+            ->sortByDesc('priority')
             ->take(3)
             ->values();
 
@@ -240,6 +225,10 @@ class DashboardController extends AdminController
                 $institution->append('has_public_meetings');
                 // Append meeting_periodicity_days for overdue warnings (inherits from types, defaults to 30)
                 $institution->append('meeting_periodicity_days');
+                $institution->setAttribute(
+                    'activity_status',
+                    $this->activityStatusService->resolve($institution)->toArray()
+                );
 
                 // Add subscription status for follow/mute UI
                 $institution->subscription = [
@@ -322,6 +311,10 @@ class DashboardController extends AdminController
                     });
                     $institution->append('has_public_meetings');
                     $institution->append('meeting_periodicity_days');
+                    $institution->setAttribute(
+                        'activity_status',
+                        $this->activityStatusService->resolve($institution)->toArray()
+                    );
 
                     // Add subscription status for related institutions
                     // @phpstan-ignore property.notFound
@@ -334,31 +327,6 @@ class DashboardController extends AdminController
 
                 return $relatedInstitutions->values();
             })->once(),
-            // Lazy load tenant institutions - only fetched when tenant tab is opened
-            // Expects 'tenantIds' parameter in the reload request
-            'tenantInstitutions' => Inertia::optional(function () use ($excludedTypeIds, $appendInstitutionAttributes, $userDutyInstitutionIds) {
-                $tenantIds = request()->input('tenantIds', []);
-                $institutions = DutyService::getInstitutionsForTenants($tenantIds, $this->authorizer);
-
-                // Apply same filtering as user institutions
-                if ($excludedTypeIds->isNotEmpty()) {
-                    $institutions = $institutions->filter(function ($institution) use ($excludedTypeIds) {
-                        return $institution->types->pluck('id')->intersect($excludedTypeIds)->isEmpty();
-                    })->values();
-                }
-
-                // Append computed attributes (pass userDutyInstitutionIds for subscription status)
-                $appendInstitutionAttributes($institutions, $userDutyInstitutionIds);
-
-                return $institutions->values();
-            }),
-            // Lazy load representative activity stats - loaded together with tenantInstitutions
-            // Returns login activity stats and categorized user lists for the activity dashboard cards
-            'representativeActivity' => Inertia::optional(function () {
-                $tenantIds = request()->input('tenantIds', []);
-
-                return DutyService::getRepresentativeActivityForTenants($tenantIds);
-            }),
             'availableTenants' => $availableTenants,
             // Note: recentMeetings is fetched via API endpoint: api.v1.admin.meetings.recent
         ]);

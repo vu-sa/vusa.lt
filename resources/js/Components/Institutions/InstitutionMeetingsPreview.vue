@@ -9,7 +9,7 @@
         <Badge v-if="totalCount > meetings.length" variant="secondary" class="text-xs">
           {{ totalCount }} {{ $t('iš viso') }}
         </Badge>
-        <Button v-if="isOverdue" variant="default" size="sm" class="gap-1.5" @click="$emit('schedule-meeting')">
+        <Button v-if="requiresAction" variant="default" size="sm" class="gap-1.5" @click="$emit('schedule-meeting')">
           <Plus class="h-3.5 w-3.5" />
           {{ $t('Naujas') }}
         </Button>
@@ -115,9 +115,9 @@ import { formatStaticTime } from '@/Utils/IntlTime';
 
 const props = defineProps<{
   meetings: App.Entities.Meeting[];
-  institution: App.Entities.Institution;
+  institution: { id: string | number; name: string };
   totalCount: number;
-  isOverdue?: boolean;
+  requiresAction?: boolean;
 }>();
 
 const emit = defineEmits<{

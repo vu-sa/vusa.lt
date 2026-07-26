@@ -14,7 +14,9 @@ const stubs = {
   InstitutionRelatedPreview: true,
 };
 
-const makeInstitution = (overrides: Record<string, unknown> = {}) => ({
+type InstitutionProp = InstanceType<typeof InstitutionOverviewSection>['$props']['institution'];
+
+const makeInstitution = (overrides: Record<string, unknown> = {}): InstitutionProp => ({
   id: '1',
   name: 'Test Institution',
   short_name: 'TI',
@@ -27,13 +29,26 @@ const makeInstitution = (overrides: Record<string, unknown> = {}) => ({
   recentComments: [],
   relatedInstitutionsFlat: [],
   meeting_periodicity_days: 30,
+  activity_status: {
+    status: 'healthy',
+    requires_action: false,
+    priority: 0,
+    periodicity_days: 30,
+    effective_days_since_activity: 10,
+    progress_percentage: 33,
+    last_activity_type: 'meeting',
+    last_activity_at: '2025-11-01T10:00:00.000Z',
+    last_meeting_at: '2025-11-01T10:00:00.000Z',
+    next_meeting_at: null,
+    active_check_in_until: null,
+  },
   ...overrides,
-});
+}) as unknown as InstitutionProp;
 
 describe('InstitutionOverviewSection', () => {
   it('renders the About section when a description is present', () => {
     const wrapper = mount(InstitutionOverviewSection, {
-      props: { institution: makeInstitution() as any },
+      props: { institution: makeInstitution() },
       global: { stubs },
     });
 
@@ -43,7 +58,7 @@ describe('InstitutionOverviewSection', () => {
 
   it('hides the About section when there is no description', () => {
     const wrapper = mount(InstitutionOverviewSection, {
-      props: { institution: makeInstitution({ description: '' }) as any },
+      props: { institution: makeInstitution({ description: '' }) },
       global: { stubs },
     });
 
@@ -52,7 +67,7 @@ describe('InstitutionOverviewSection', () => {
 
   it('renders members with their duty role badge', () => {
     const wrapper = mount(InstitutionOverviewSection, {
-      props: { institution: makeInstitution() as any },
+      props: { institution: makeInstitution() },
       global: { stubs },
     });
 
@@ -60,9 +75,30 @@ describe('InstitutionOverviewSection', () => {
     expect(wrapper.text()).toContain('Chair');
   });
 
+  it('renders the shared backend activity status', () => {
+    const wrapper = mount(InstitutionOverviewSection, {
+      props: {
+        institution: makeInstitution({
+          activity_status: {
+            ...makeInstitution().activity_status,
+            status: 'overdue',
+            requires_action: true,
+            priority: 50,
+            effective_days_since_activity: 35,
+            progress_percentage: 117,
+          },
+        }),
+      },
+      global: { stubs },
+    });
+
+    expect(wrapper.text()).toContain('visak.activity.activity_status.overdue');
+    expect(wrapper.text()).toContain('35 d. / 30 d.');
+  });
+
   it('emits navigate-tab when the members action is used', async () => {
     const wrapper = mount(InstitutionOverviewSection, {
-      props: { institution: makeInstitution() as any },
+      props: { institution: makeInstitution() },
       global: { stubs },
     });
 

@@ -12,6 +12,7 @@
           <span>{{ $t('Padaliniai') }} ({{ selectedTenants.length }}/{{ tenants.length }})</span>
           <div class="flex gap-1">
             <Button
+              v-if="!requireTenantSelection"
               size="xs"
               variant="ghost"
               class="h-5 px-1.5 text-xs"
@@ -37,6 +38,7 @@
             v-for="t in tenants"
             :key="t.id"
             :model-value="selectedTenants.includes(String(t.id))"
+            :disabled="isFinalSelectedTenant(String(t.id))"
             @update:model-value="(checked: boolean) => toggleTenant(String(t.id), checked)"
             @select.prevent
           >
@@ -161,6 +163,7 @@ interface Props {
   // UI options
   showReset?: boolean;
   triggerLabelOverride?: string;
+  requireTenantSelection?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -171,6 +174,7 @@ const props = withDefaults(defineProps<Props>(), {
   hasRelatedInstitutions: false,
   showActivityStatus: false,
   showActivityStatusOption: false,
+  requireTenantSelection: false,
 });
 
 const emit = defineEmits<{
@@ -213,9 +217,19 @@ function toggleTenant(tenantId: string, checked: boolean) {
     }
   }
   else {
+    if (props.requireTenantSelection && props.selectedTenants.length === 1) {
+      return;
+    }
+
     const index = newSelection.indexOf(tenantId);
     if (index > -1) {
       newSelection.splice(index, 1);
+    }
+
+    function isFinalSelectedTenant(tenantId: string): boolean {
+      return props.requireTenantSelection
+        && props.selectedTenants.length === 1
+        && props.selectedTenants.includes(tenantId);
     }
   }
   emit('update:selectedTenants', newSelection);

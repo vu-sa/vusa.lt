@@ -19,12 +19,23 @@
             }}
           </DialogDescription>
         </div>
-        <!-- Filter dropdown for both views -->
-        <div class="flex items-center gap-2">
-          <GanttFilterDropdown
-            v-if="ganttType === 'tenant'"
+        <div class="flex flex-wrap items-center justify-end gap-2">
+          <TenantScopeSelector
+            v-if="ganttType === 'tenant' && availableTenants.length > 0"
+            compact
             :tenants="availableTenants"
             :selected-tenants="filters.selectedTenantForGantt.value"
+            @update:selected-tenants="filters.setSelectedTenants"
+          />
+          <TenantScopeSelector
+            v-else-if="ganttType === 'user' && filters.availableTenantsUser.value.length > 0"
+            compact
+            :tenants="filters.availableTenantsUser.value"
+            :selected-tenants="filters.userTenantFilter.value"
+            @update:selected-tenants="filters.setUserTenantFilter"
+          />
+          <GanttFilterDropdown
+            v-if="ganttType === 'tenant'"
             :show-only-with-activity="filters.showOnlyWithActivityTenant.value"
             :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsTenant.value"
             :show-duty-members="filters.showDutyMembersTenant.value"
@@ -32,7 +43,7 @@
             :show-activity-status-option="filters.showDutyMembersTenant.value"
             :show-tenant-headers="ganttSettings.showTenantHeaders.value"
             :show-reset="false"
-            @update:selected-tenants="(val: string[]) => filters.selectedTenantForGantt.value = val"
+            :trigger-label-override="$t('Rodymo nustatymai')"
             @update:show-only-with-activity="(val: boolean) => filters.showOnlyWithActivityTenant.value = val"
             @update:show-only-with-public-meetings="(val: boolean) => filters.showOnlyWithPublicMeetingsTenant.value = val"
             @update:show-duty-members="(val: boolean) => filters.showDutyMembersTenant.value = val"
@@ -41,8 +52,6 @@
           />
           <GanttFilterDropdown
             v-else-if="ganttType === 'user'"
-            :tenants="filters.availableTenantsUser.value"
-            :selected-tenants="filters.userTenantFilter.value"
             :show-only-with-activity="filters.showOnlyWithActivityUser.value"
             :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsUser.value"
             :show-duty-members="filters.showDutyMembersUser.value"
@@ -50,7 +59,7 @@
             :show-related-institutions="filters.showRelatedInstitutionsUser.value"
             :has-related-institutions
             :show-reset="false"
-            @update:selected-tenants="(val: string[]) => filters.userTenantFilter.value = val"
+            :trigger-label-override="$t('Rodymo nustatymai')"
             @update:show-only-with-activity="(val: boolean) => filters.showOnlyWithActivityUser.value = val"
             @update:show-only-with-public-meetings="(val: boolean) => filters.showOnlyWithPublicMeetingsUser.value = val"
             @update:show-duty-members="(val: boolean) => filters.showDutyMembersUser.value = val"
@@ -66,7 +75,7 @@
             :institutions="mergedUserInstitutions"
             :meetings="mergedUserMeetings"
             :gaps="userGaps"
-            :tenant-filter="filters.userTenantFilter.value"
+            :tenant-filter="[]"
             :show-only-with-activity="filters.showOnlyWithActivityUser.value"
             :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsUser.value"
             :institution-names="mergedUserInstitutionNames"
@@ -79,7 +88,7 @@
             :show-duty-members="filters.showDutyMembersUser.value"
             :empty-message="$t('Neturi tiesiogiai priskirtų institucijų')"
             height="100%"
-            :hide-fullscreen-button="true"
+            hide-fullscreen-button
             @create-meeting="$emit('create-meeting', $event)"
             @create-check-in="$emit('create-check-in', $event)"
           />
@@ -90,7 +99,7 @@
             :institutions="tenantInstitutions"
             :meetings="tenantMeetings"
             :gaps="tenantGaps"
-            :tenant-filter="filters.selectedTenantForGantt.value"
+            :tenant-filter="[]"
             :show-only-with-activity="filters.showOnlyWithActivityTenant.value"
             :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsTenant.value"
             :institution-names="tenantInstitutionNames"
@@ -104,7 +113,7 @@
             :show-activity-status="filters.showActivityStatusTenant.value"
             :empty-message="$t('Šiame padalinyje nėra institucijų')"
             height="100%"
-            :hide-fullscreen-button="true"
+            hide-fullscreen-button
             @create-meeting="$emit('create-meeting', $event)"
             @create-check-in="$emit('create-check-in', $event)"
           />
@@ -139,6 +148,7 @@ import type {
 
 import TimelineGanttChart from './TimelineGanttChart.vue';
 import GanttFilterDropdown from './GanttFilterDropdown.vue';
+import TenantScopeSelector from './TenantScopeSelector.vue';
 
 import { MeetingIconFilled } from '@/Components/icons';
 import {

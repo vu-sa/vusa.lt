@@ -1,6 +1,41 @@
 <template>
   <div class="space-y-6">
-    <!-- Last meeting info -->
+    <div
+      :class="[
+        'flex flex-col gap-3 rounded-lg border px-4 py-3 sm:flex-row sm:items-center sm:justify-between',
+        activityPanelClass,
+      ]"
+    >
+      <div class="flex items-start gap-3">
+        <component :is="activityIcon" class="mt-0.5 h-5 w-5 shrink-0" />
+        <div class="space-y-1">
+          <p class="font-medium">
+            {{ activityLabel }}
+          </p>
+          <p v-if="activityStatus.effective_days_since_activity !== null" class="text-sm opacity-80">
+            {{ activityStatus.effective_days_since_activity }} {{ $t('d.') }} /
+            {{ activityStatus.periodicity_days }} {{ $t('d.') }}
+          </p>
+          <p v-else-if="activityStatus.next_meeting_at" class="text-sm opacity-80">
+            {{ formatLastMeetingDate(activityStatus.next_meeting_at) }}
+          </p>
+          <p v-else-if="activityStatus.active_check_in_until" class="text-sm opacity-80">
+            {{ $t('iki') }} {{ formatLastMeetingDate(activityStatus.active_check_in_until) }}
+          </p>
+        </div>
+      </div>
+      <div v-if="activityStatus.requires_action" class="flex flex-wrap gap-2">
+        <Button size="sm" class="gap-2" @click="$emit('schedule-meeting')">
+          <CalendarIcon class="h-4 w-4" />
+          {{ $t('tasks.periodicity_gap.schedule_meeting') }}
+        </Button>
+        <Button variant="outline" size="sm" class="gap-2" @click="$emit('report-activity')">
+          <Clock class="h-4 w-4" />
+          {{ $t('tasks.periodicity_gap.report_no_meeting') }}
+        </Button>
+      </div>
+    </div>
+
     <div
       v-if="lastMeeting"
       class="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400"
@@ -10,13 +45,6 @@
       <span class="font-medium text-zinc-900 dark:text-zinc-100">
         {{ formatLastMeetingDate(lastMeeting.start_time) }}
       </span>
-    </div>
-    <div
-      v-else
-      class="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400"
-    >
-      <CalendarIcon class="h-4 w-4" />
-      {{ $t('Nėra susitikimų') }}
     </div>
 
     <!-- About -->
@@ -76,7 +104,7 @@
           </button>
 
           <p v-if="members.length > previewMembers.length" class="px-2 pt-1 text-xs text-muted-foreground">
-            {{ $t('ir dar :count', { count: members.length - previewMembers.length }) }}
+            {{ $t('ir dar :count', { count: String(members.length - previewMembers.length) }) }}
           </p>
         </div>
 
@@ -104,7 +132,7 @@
         :meetings="recentMeetings"
         :institution
         :total-count="meetingsCount"
-        :is-overdue
+        :requires-action="activityStatus.requires_action"
         @view-all="$emit('navigate-tab', 'meetings')"
         @schedule-meeting="$emit('schedule-meeting')"
         @view-meeting="(meeting) => $emit('view-meeting', meeting)"
@@ -159,6 +187,11 @@ import {
   Info,
   AlertTriangle,
   ChevronRight,
+  CheckCircle2,
+  CalendarClock,
+  CalendarCheck,
+  CalendarX,
+  Clock,
 } from 'lucide-vue-next';
 
 import InstitutionMeetingsPreview from './InstitutionMeetingsPreview.vue';
@@ -173,17 +206,19 @@ import { Button } from '@/Components/ui/button';
 import { useInstitutionUrgency } from '@/Composables/useInstitutionUrgency';
 import { interactiveCardClass } from '@/Utils/interactiveCard';
 import { formatStaticTime } from '@/Utils/IntlTime';
+import type { InstitutionPageData } from '@/Types/InstitutionPage';
 
 const MEMBER_PREVIEW_LIMIT = 6;
 
 const props = defineProps<{
-  institution: App.Entities.Institution;
+  institution: InstitutionPageData;
   canEditMembers?: boolean;
 }>();
 
 defineEmits<{
   'navigate-tab': [tab: string];
   'schedule-meeting': [];
+  'report-activity': [];
   'add-member': [];
   'view-profile': [member: App.Entities.User];
   'edit-member': [member: App.Entities.User];
@@ -196,6 +231,25 @@ const {
   totalPositions,
   filledPositions,
 } = useInstitutionUrgency(() => props.institution);
+
+const activityStatus = computed(() => props.institution.activity_status);
+const activityLabel = computed(() => $t(`visak.activity.activity_status.${activityStatus.value.status}`));
+const activityIcon = computed(() => ({
+  no_activity: CalendarX,
+  healthy: CheckCircle2,
+  approaching: Clock,
+  overdue: AlertTriangle,
+  covered_by_upcoming_meeting: CalendarClock,
+  covered_by_check_in: CalendarCheck,
+}[activityStatus.value.status]));
+const activityPanelClass = computed(() => ({
+  no_activity: 'border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-300',
+  healthy: 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300',
+  approaching: 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-300',
+  overdue: 'border-orange-200 bg-orange-50 text-orange-800 dark:border-orange-800 dark:bg-orange-950/30 dark:text-orange-300',
+  covered_by_upcoming_meeting: 'border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-800 dark:bg-blue-950/30 dark:text-blue-300',
+  covered_by_check_in: 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300',
+}[activityStatus.value.status]));
 
 // Description (localized string via toArray())
 const description = computed(() => {
@@ -239,10 +293,10 @@ const recentMeetings = computed(() => {
 });
 
 // Discussion preview (provided by the controller)
-const recentComments = computed(() => (props.institution as any).recentComments ?? []);
+const recentComments = computed(() => props.institution.recentComments ?? []);
 
 // Related institutions (flat format from the controller)
-const relatedInstitutions = computed(() => (props.institution as any).relatedInstitutionsFlat ?? []);
+const relatedInstitutions = computed(() => props.institution.relatedInstitutionsFlat ?? []);
 
 const formatLastMeetingDate = (dateString: string) => {
   return formatStaticTime(new Date(dateString), {

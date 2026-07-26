@@ -16,6 +16,7 @@
       <!-- Users List Card -->
       <RepresentativeUsersCard
         :users
+        :stats
         :loading
         @show-all="handleShowAll"
       />
@@ -23,7 +24,8 @@
 
     <!-- Representatives DataTable Modal -->
     <RepresentativeDataTable
-      :users
+      :tenant-ids
+      :stats
       :is-open="showDataTable"
       :initial-tab="dataTableInitialTab"
       @update:is-open="showDataTable = $event"
@@ -44,6 +46,7 @@ import RepresentativeDataTable from './RepresentativeDataTable.vue';
 interface Props {
   stats: RepresentativeActivityStats;
   users: RepresentativeUser[];
+  tenantIds: string[];
   loading?: boolean;
 }
 

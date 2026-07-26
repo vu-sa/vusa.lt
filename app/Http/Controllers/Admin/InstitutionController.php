@@ -16,6 +16,7 @@ use App\Models\Meeting;
 use App\Models\Task;
 use App\Models\Type;
 use App\Models\User;
+use App\Services\InstitutionActivityStatusService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
 use App\Services\TanstackTableService;
@@ -29,7 +30,11 @@ class InstitutionController extends AdminController
 {
     use HasTanstackTables;
 
-    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
+    public function __construct(
+        public Authorizer $authorizer,
+        private TanstackTableService $tableService,
+        private readonly InstitutionActivityStatusService $activityStatusService,
+    ) {}
 
     /**
      * Display a listing of the resource.
@@ -135,7 +140,7 @@ class InstitutionController extends AdminController
         $this->handleAuthorization('view', $institution);
 
         // TODO: only show current_users
-        $institution->load('tenant', 'types', 'duties.current_users')->load([
+        $institution->load('tenant', 'types', 'duties.current_users', 'checkIns')->load([
             'tasks' => function ($query) {
                 $query->with('users:id,name,email,profile_photo_path', 'taskable');
             },
@@ -154,6 +159,10 @@ class InstitutionController extends AdminController
         // Append public visibility flags now that types are loaded (avoids N+1)
         $institution->append('has_public_meetings');
         $institution->append('meeting_periodicity_days');
+        $institution->setAttribute(
+            'activity_status',
+            $this->activityStatusService->resolve($institution)->toArray()
+        );
         $institution->meetings->each(function (Meeting $meeting) {
             $meeting->append(['is_public', 'has_report', 'has_protocol']);
 

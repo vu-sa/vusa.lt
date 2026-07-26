@@ -13,6 +13,8 @@ Here you'll find all changes and improvements to the mano.vusa.lt platform.
 - ⭐ **Excel export for registrations** — the download button on the registrations page works again, alongside the total registration count and the date of the latest one
 - 🔧 **Student rep registrations are isolated by unit** — institution coordinators now see only registrations submitted for institutions in their own unit, including the scoped total.
 - ✨ **The form URL is generated automatically** — when creating a registration form the link is derived from its name (in both Lithuanian and English), with the full address shown plus copy and open buttons. Typing your own link stops the generation, and changing the link of an existing form now warns that the old one will stop working
+- ✨ **Institution activity statuses and reminders** — clearer labels show when activity is up to date, when reporting is approaching, and how the related actions are worded; a no-meeting report now counts as the latest activity update
+- ✨ **Unit institution status summary and consistent ViSAK filters** — administrators can select one or more units above the timeline, review status counts, and browse a searchable, paginated institution table; unit filters now behave the same in personal and fullscreen views, and at least one unit always remains selected
 - 🔧 **Form field descriptions no longer disappear** — editing a form that already had registrations overwrote every field's description with its type
 - 🔧 **More accurate empty institution contacts state** — institutions without public contacts no longer show a misleading message about student representatives
 

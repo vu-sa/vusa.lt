@@ -44,14 +44,15 @@ export interface TimelineFilters {
 
   // Actions
   setSelectedTenants: (tenantIds: string[]) => void;
+  setUserTenantFilter: (tenantIds: string[]) => void;
   resetTenantFilters: () => void;
   resetUserFilters: () => void;
   loadRelatedInstitutions: () => void;
-  loadTenantInstitutions: (tenantIds?: string[]) => void;
 }
 
 interface StoredFilters {
   selectedTenantForGantt: string[];
+  userTenantFilter: string[];
   showOnlyWithActivityTenant: boolean;
   showOnlyWithPublicMeetingsTenant: boolean;
   showDutyMembersTenant: boolean;
@@ -64,6 +65,50 @@ interface StoredFilters {
 }
 
 const TIMELINE_FILTERS_KEY: InjectionKey<TimelineFilters> = Symbol('timeline-filters');
+
+export function normalizeTenantSelection(
+  tenantIds: string[],
+  availableTenants: AtstovavimosTenant[],
+  fallback: 'first' | 'all' = 'first',
+): string[] {
+  const selectedIds = new Set(tenantIds.map(String));
+  const availableIds = availableTenants.map(tenant => String(tenant.id));
+  const validSelection = availableIds.filter(id => selectedIds.has(id));
+
+  if (validSelection.length > 0) {
+    return validSelection;
+  }
+
+  if (availableIds.length === 0) {
+    return [];
+  }
+
+  return fallback === 'all' ? availableIds : [availableIds[0]];
+}
+
+export function getInstitutionTenants(
+  institutions: AtstovavimosInstitution[],
+): AtstovavimosTenant[] {
+  const tenants = new Map<string, AtstovavimosTenant>();
+
+  institutions.forEach((institution) => {
+    const { tenant } = institution;
+
+    if (!tenant) {
+      return;
+    }
+
+    tenants.set(String(tenant.id), {
+      id: tenant.id,
+      shortname: tenant.shortname,
+      type: tenant.type ?? 'padalinys',
+    });
+  });
+
+  return Array.from(tenants.values()).sort((left, right) =>
+    left.shortname.localeCompare(right.shortname),
+  );
+}
 
 function loadStoredFilters(): Partial<StoredFilters> {
   if (typeof window === 'undefined') return {};
@@ -97,7 +142,14 @@ export function provideTimelineFilters(
   const stored = loadStoredFilters();
 
   // User section filters
-  const userTenantFilter = ref<string[]>([]);
+  const availableTenantsUser = computed(() => getInstitutionTenants(institutions));
+  const userTenantFilter = ref<string[]>(
+    normalizeTenantSelection(
+      stored.userTenantFilter ?? [],
+      availableTenantsUser.value,
+      'all',
+    ),
+  );
   const showOnlyWithActivityUser = ref(stored.showOnlyWithActivityUser ?? false);
   const showOnlyWithPublicMeetingsUser = ref(stored.showOnlyWithPublicMeetingsUser ?? false);
   const showDutyMembersUser = ref(stored.showDutyMembersUser ?? true);
@@ -107,7 +159,9 @@ export function provideTimelineFilters(
   const relatedInstitutionsLoaded = ref(false);
 
   // Tenant section filters
-  const selectedTenantForGantt = ref<string[]>(stored.selectedTenantForGantt ?? []);
+  const selectedTenantForGantt = ref<string[]>(
+    normalizeTenantSelection(stored.selectedTenantForGantt ?? [], availableTenants),
+  );
   const showOnlyWithActivityTenant = ref(stored.showOnlyWithActivityTenant ?? false);
   const showOnlyWithPublicMeetingsTenant = ref(stored.showOnlyWithPublicMeetingsTenant ?? false);
   const showDutyMembersTenant = ref(stored.showDutyMembersTenant ?? true);
@@ -116,26 +170,9 @@ export function provideTimelineFilters(
   // Track if tenant institutions have been loaded via Inertia lazy
   const tenantInstitutionsLoaded = ref(false);
   const tenantInstitutionsLoading = ref(false);
-  // Track which tenant IDs have been loaded to know when to reload
-  const loadedTenantIds = ref<string[]>([]);
 
   // Shared state
   const scrollPosition = ref<number>(stored.scrollPosition ?? 0);
-
-  // Initialize default tenant selection if needed
-  if (selectedTenantForGantt.value.length === 0 && availableTenants.length > 0) {
-    selectedTenantForGantt.value = [String(availableTenants[0]?.id)];
-  }
-
-  // Computed: available tenants for user section
-  const availableTenantsUser = computed(() => {
-    const ids = new Set<string>();
-    institutions.forEach((i: any) => {
-      const tid = String(i?.tenant?.id ?? '');
-      if (tid) ids.add(tid);
-    });
-    return availableTenants.filter(t => ids.has(String(t.id)));
-  });
 
   // Computed: current selected tenant for display
   const currentTenant = computed(() =>
@@ -148,6 +185,7 @@ export function provideTimelineFilters(
   function persistFilters() {
     saveStoredFilters({
       selectedTenantForGantt: selectedTenantForGantt.value,
+      userTenantFilter: userTenantFilter.value,
       showOnlyWithActivityTenant: showOnlyWithActivityTenant.value,
       showOnlyWithPublicMeetingsTenant: showOnlyWithPublicMeetingsTenant.value,
       showDutyMembersTenant: showDutyMembersTenant.value,
@@ -162,6 +200,7 @@ export function provideTimelineFilters(
 
   watch([
     selectedTenantForGantt,
+    userTenantFilter,
     showOnlyWithActivityTenant,
     showOnlyWithPublicMeetingsTenant,
     showDutyMembersTenant,
@@ -176,7 +215,15 @@ export function provideTimelineFilters(
   }, { deep: true });
 
   function setSelectedTenants(tenantIds: string[]) {
-    selectedTenantForGantt.value = tenantIds;
+    selectedTenantForGantt.value = normalizeTenantSelection(tenantIds, availableTenants);
+  }
+
+  function setUserTenantFilter(tenantIds: string[]) {
+    userTenantFilter.value = normalizeTenantSelection(
+      tenantIds,
+      availableTenantsUser.value,
+      'all',
+    );
   }
 
   function resetTenantFilters() {
@@ -185,21 +232,22 @@ export function provideTimelineFilters(
     showDutyMembersTenant.value = true;
     showActivityStatusTenant.value = false;
     scrollPosition.value = 0;
-    if (availableTenants.length > 0) {
-      selectedTenantForGantt.value = [String(availableTenants[0]?.id)];
-    }
-    else {
-      selectedTenantForGantt.value = [];
-    }
   }
 
   function resetUserFilters() {
-    userTenantFilter.value = [];
     showOnlyWithActivityUser.value = false;
     showOnlyWithPublicMeetingsUser.value = false;
     showDutyMembersUser.value = true;
     showRelatedInstitutionsUser.value = false;
   }
+
+  watch(availableTenantsUser, (tenants) => {
+    userTenantFilter.value = normalizeTenantSelection(
+      userTenantFilter.value,
+      tenants,
+      'all',
+    );
+  });
 
   // Load related institutions via Inertia lazy reload
   function loadRelatedInstitutions() {
@@ -209,43 +257,6 @@ export function provideTimelineFilters(
       only: ['relatedInstitutions'],
       onSuccess: () => {
         relatedInstitutionsLoaded.value = true;
-      },
-    });
-  }
-
-  // Load tenant institutions via Inertia lazy reload
-  // If tenantIds is not provided, uses the current selectedTenantForGantt value
-  // Also loads representativeActivity data for the same tenants
-  function loadTenantInstitutions(tenantIds?: string[]) {
-    const idsToLoad = tenantIds ?? selectedTenantForGantt.value;
-
-    // Skip if no tenants selected
-    if (idsToLoad.length === 0) return;
-
-    // Skip if already loading
-    if (tenantInstitutionsLoading.value) return;
-
-    // Check if we need to reload (different tenants selected)
-    const idsToLoadSorted = [...idsToLoad].sort();
-    const loadedIdsSorted = [...loadedTenantIds.value].sort();
-    const sameIds = idsToLoadSorted.length === loadedIdsSorted.length
-      && idsToLoadSorted.every((id, i) => id === loadedIdsSorted[i]);
-
-    // Skip if already loaded the same tenants
-    if (tenantInstitutionsLoaded.value && sameIds) return;
-
-    tenantInstitutionsLoading.value = true;
-
-    router.reload({
-      only: ['tenantInstitutions', 'representativeActivity'],
-      data: { tenantIds: idsToLoad },
-      onSuccess: () => {
-        tenantInstitutionsLoaded.value = true;
-        tenantInstitutionsLoading.value = false;
-        loadedTenantIds.value = [...idsToLoad];
-      },
-      onError: () => {
-        tenantInstitutionsLoading.value = false;
       },
     });
   }
@@ -273,10 +284,10 @@ export function provideTimelineFilters(
     currentTenant: currentTenant as unknown as Ref<AtstovavimosTenant | undefined>,
     // Actions
     setSelectedTenants,
+    setUserTenantFilter,
     resetTenantFilters,
     resetUserFilters,
     loadRelatedInstitutions,
-    loadTenantInstitutions,
   };
 
   provide(TIMELINE_FILTERS_KEY, filters);

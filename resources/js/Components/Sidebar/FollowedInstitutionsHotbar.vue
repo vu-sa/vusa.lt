@@ -58,6 +58,15 @@
                       v-if="institution.subscription.is_muted"
                       class="h-3 w-3 text-muted-foreground"
                     />
+                    <AlertCircle
+                      v-if="institution.activity_status.requires_action"
+                      :class="[
+                        'h-3.5 w-3.5 shrink-0',
+                        institution.activity_status.status === 'overdue'
+                          ? 'text-orange-500'
+                          : 'text-amber-500',
+                      ]"
+                    />
                     <!-- Next meeting indicator -->
                     <span
                       v-if="institution.next_meeting"
@@ -76,6 +85,12 @@
                 <div class="space-y-1">
                   <p class="font-medium">
                     {{ institution.name }}
+                  </p>
+                  <p
+                    v-if="institution.activity_status.requires_action"
+                    class="text-xs font-medium text-amber-600 dark:text-amber-400"
+                  >
+                    {{ $t(`visak.activity.activity_status.${institution.activity_status.status}`) }}
                   </p>
                   <p v-if="institution.next_meeting" class="text-xs text-muted-foreground">
                     {{ $t('Kitas posėdis') }}: {{ institution.next_meeting.title }}
@@ -103,7 +118,7 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { Link } from '@inertiajs/vue3';
 import { computed, onMounted, ref, defineAsyncComponent } from 'vue';
-import { Building2, Calendar, ChevronRight, BellOff, Settings2 } from 'lucide-vue-next';
+import { AlertCircle, Building2, Calendar, ChevronRight, BellOff, Settings2 } from 'lucide-vue-next';
 
 import { useApi } from '@/Composables/useApi';
 import { Skeleton } from '@/Components/ui/skeleton';
@@ -121,6 +136,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/Components/ui/tooltip';
+import type { InstitutionActivityStatus } from '@/Types/InstitutionActivity';
+import { formatStaticTime } from '@/Utils/IntlTime';
 
 // Async load the modal to avoid circular dependency issues
 const ManageSubscriptionsModal = defineAsyncComponent(
@@ -133,6 +150,7 @@ interface FollowedInstitution {
   short_name: string | null;
   alias: string;
   meeting_periodicity_days: number;
+  activity_status: InstitutionActivityStatus;
   next_meeting: {
     id: string;
     title: string;
@@ -150,7 +168,15 @@ const { data, isFetching, execute } = useApi<FollowedInstitution[]>(
   { immediate: false },
 );
 
-const institutions = computed(() => data.value ?? []);
+const institutions = computed(() => {
+  return [...(data.value ?? [])].sort((a, b) => {
+    if (a.activity_status.priority !== b.activity_status.priority) {
+      return b.activity_status.priority - a.activity_status.priority;
+    }
+
+    return a.name.localeCompare(b.name);
+  });
+});
 
 const hasInstitutions = computed(() => institutions.value.length > 0);
 
@@ -159,8 +185,7 @@ const showManageModal = ref(false);
 
 // Format date for display
 const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('lt-LT', { month: 'short', day: 'numeric' });
+  return formatStaticTime(new Date(dateString), { month: 'short', day: 'numeric' });
 };
 
 // Load data on mount

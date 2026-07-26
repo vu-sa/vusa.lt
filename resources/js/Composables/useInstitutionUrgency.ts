@@ -11,16 +11,18 @@
 import { computed, type ComputedRef, type MaybeRefOrGetter, toValue } from 'vue';
 
 import type { UrgencyLevel } from '@/Composables/useDashboardCardStyles';
+import type { InstitutionActivityStatus } from '@/Types/InstitutionActivity';
 
 interface InstitutionData {
   id: string | number;
   name?: string;
   meeting_periodicity_days?: number | null;
-  current_users?: any[];
+  activity_status?: InstitutionActivityStatus;
+  current_users?: unknown[];
   duties?: Array<{
     id: string | number;
     places_to_occupy?: number | null;
-    current_users?: any[];
+    current_users?: unknown[];
   }>;
   meetings?: Array<{
     id: string | number;
@@ -41,8 +43,8 @@ interface InstitutionUrgencyResult {
   /** Overall institution urgency (worst of all metrics) */
   overallUrgency: ComputedRef<UrgencyLevel>;
 
-  /** Days since last meeting (null if no meetings) */
-  daysSinceLastMeeting: ComputedRef<number | null>;
+  /** Effective days since the latest meeting or completed activity report */
+  effectiveDaysSinceActivity: ComputedRef<number | null>;
 
   /** Whether the institution is overdue for a meeting */
   isOverdue: ComputedRef<boolean>;
@@ -100,28 +102,24 @@ export function useInstitutionUrgency(
   // Find last meeting
   const lastMeeting = computed(() => {
     const inst = toValue(institution);
-    const { meetings } = inst;
-    if (!meetings?.length) return null;
+    const lastMeetingAt = inst.activity_status?.last_meeting_at;
+    if (!lastMeetingAt) return null;
 
-    return [...meetings].sort(
-      (a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime(),
-    )[0];
+    return inst.meetings?.find(
+      meeting => new Date(meeting.start_time).getTime() === new Date(lastMeetingAt).getTime(),
+    ) ?? {
+      id: 'last-meeting',
+      start_time: lastMeetingAt,
+    };
   });
 
-  // Days since last meeting
-  const daysSinceLastMeeting = computed(() => {
-    if (!lastMeeting.value) return null;
-    const date = new Date(lastMeeting.value.start_time);
-    const now = new Date();
-    return Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+  const effectiveDaysSinceActivity = computed(() => {
+    return toValue(institution).activity_status?.effective_days_since_activity ?? null;
   });
 
   // Check if overdue based on periodicity
   const isOverdue = computed(() => {
-    if (daysSinceLastMeeting.value === null) return false;
-    const inst = toValue(institution);
-    const periodicity = inst.meeting_periodicity_days ?? 30;
-    return daysSinceLastMeeting.value > periodicity;
+    return toValue(institution).activity_status?.status === 'overdue';
   });
 
   // Duty fill rate (duties with at least one member)
@@ -148,16 +146,7 @@ export function useInstitutionUrgency(
 
   // Meeting urgency based on periodicity
   const meetingUrgency = computed<UrgencyLevel>(() => {
-    const inst = toValue(institution);
-    const periodicity = inst.meeting_periodicity_days ?? 30;
-
-    if (daysSinceLastMeeting.value === null) return 'neutral';
-
-    const ratio = daysSinceLastMeeting.value / periodicity;
-    if (ratio <= 0.5) return 'success';
-    if (ratio <= 0.8) return 'success';
-    if (ratio <= 1) return 'warning';
-    return 'danger';
+    return matchActivityUrgency(toValue(institution).activity_status?.status);
   });
 
   // Duty urgency based on fill rate
@@ -189,7 +178,7 @@ export function useInstitutionUrgency(
     meetingUrgency,
     dutyUrgency,
     overallUrgency,
-    daysSinceLastMeeting,
+    effectiveDaysSinceActivity,
     isOverdue,
     memberFillRate,
     dutyFillRate,
@@ -197,4 +186,13 @@ export function useInstitutionUrgency(
     filledPositions,
     lastMeeting,
   };
+}
+
+function matchActivityUrgency(
+  status: InstitutionActivityStatus['status'] | undefined,
+): UrgencyLevel {
+  if (status === 'overdue') return 'danger';
+  if (status === 'approaching') return 'warning';
+  if (status === 'no_activity' || !status) return 'neutral';
+  return 'success';
 }

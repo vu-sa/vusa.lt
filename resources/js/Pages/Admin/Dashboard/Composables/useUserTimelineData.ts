@@ -60,25 +60,39 @@ export function useUserTimelineData(options: UseUserTimelineDataOptions) {
     baseInstitutionPeriodicity,
   } = options;
 
+  const directInstitutionIds = computed(() =>
+    new Set(institutions.value.map(institution => String(institution.id))),
+  );
+
+  const visibleRelatedInstitutions = computed(() =>
+    relatedInstitutions.value.filter((institution) => {
+      if (!institution.source_institution_id) {
+        return true;
+      }
+
+      return directInstitutionIds.value.has(String(institution.source_institution_id));
+    }),
+  );
+
   // Merged institutions: user's + related (when enabled)
   const mergedInstitutions = computed<GanttInstitution[]>(() => {
     const userFormatted = formatInstitutionsForGantt(institutions.value, false);
 
-    if (!showRelatedInstitutions.value || !relatedInstitutions.value?.length) {
+    if (!showRelatedInstitutions.value || !visibleRelatedInstitutions.value.length) {
       return userFormatted;
     }
 
-    const relatedFormatted = formatInstitutionsForGantt(relatedInstitutions.value, true);
+    const relatedFormatted = formatInstitutionsForGantt(visibleRelatedInstitutions.value, true);
     return [...userFormatted, ...relatedFormatted];
   });
 
   // Merged meetings: user's + extracted from related institutions
   const mergedMeetings = computed<GanttMeeting[]>(() => {
-    if (!showRelatedInstitutions.value || !relatedInstitutions.value?.length) {
+    if (!showRelatedInstitutions.value || !visibleRelatedInstitutions.value.length) {
       return meetings.value;
     }
 
-    const relatedMeetings = extractMeetingsFromInstitutions(relatedInstitutions.value);
+    const relatedMeetings = extractMeetingsFromInstitutions(visibleRelatedInstitutions.value);
     return [...meetings.value, ...relatedMeetings];
   });
 
@@ -86,11 +100,11 @@ export function useUserTimelineData(options: UseUserTimelineDataOptions) {
   const mergedDutyMembers = computed<GanttDutyMember[]>(() => {
     const base = baseDutyMembers?.value ?? [];
 
-    if (!showRelatedInstitutions.value || !relatedInstitutions.value?.length) {
+    if (!showRelatedInstitutions.value || !visibleRelatedInstitutions.value.length) {
       return base;
     }
 
-    const relatedMembers = extractDutyMembers(relatedInstitutions.value);
+    const relatedMembers = extractDutyMembers(visibleRelatedInstitutions.value);
     return [...base, ...relatedMembers];
   });
 
@@ -98,12 +112,12 @@ export function useUserTimelineData(options: UseUserTimelineDataOptions) {
   const mergedInactivePeriods = computed<InactivePeriod[]>(() => {
     const base = baseInactivePeriods?.value ?? [];
 
-    if (!showRelatedInstitutions.value || !relatedInstitutions.value?.length) {
+    if (!showRelatedInstitutions.value || !visibleRelatedInstitutions.value.length) {
       return base;
     }
 
-    const relatedMembers = extractDutyMembers(relatedInstitutions.value);
-    const relatedPeriods = calculateInactivePeriods(relatedInstitutions.value, relatedMembers);
+    const relatedMembers = extractDutyMembers(visibleRelatedInstitutions.value);
+    const relatedPeriods = calculateInactivePeriods(visibleRelatedInstitutions.value, relatedMembers);
     return [...base, ...relatedPeriods];
   });
 
@@ -111,11 +125,11 @@ export function useUserTimelineData(options: UseUserTimelineDataOptions) {
   const mergedInstitutionNames = computed<Record<string, string>>(() => {
     const base = baseInstitutionNames?.value ?? buildInstitutionNamesMap(institutions.value);
 
-    if (!showRelatedInstitutions.value || !relatedInstitutions.value?.length) {
+    if (!showRelatedInstitutions.value || !visibleRelatedInstitutions.value.length) {
       return base;
     }
 
-    const relatedNames = buildInstitutionNamesMap(relatedInstitutions.value);
+    const relatedNames = buildInstitutionNamesMap(visibleRelatedInstitutions.value);
     return mergeRecordMaps(base, relatedNames);
   });
 
@@ -123,11 +137,11 @@ export function useUserTimelineData(options: UseUserTimelineDataOptions) {
   const mergedInstitutionTenant = computed<Record<string, string>>(() => {
     const base = baseInstitutionTenant?.value ?? buildInstitutionTenantMap(institutions.value);
 
-    if (!showRelatedInstitutions.value || !relatedInstitutions.value?.length) {
+    if (!showRelatedInstitutions.value || !visibleRelatedInstitutions.value.length) {
       return base;
     }
 
-    const relatedTenants = buildInstitutionTenantMap(relatedInstitutions.value);
+    const relatedTenants = buildInstitutionTenantMap(visibleRelatedInstitutions.value);
     return mergeRecordMaps(base, relatedTenants);
   });
 
@@ -135,11 +149,11 @@ export function useUserTimelineData(options: UseUserTimelineDataOptions) {
   const mergedInstitutionHasPublicMeetings = computed<Record<string, boolean>>(() => {
     const base = baseInstitutionHasPublicMeetings?.value ?? buildInstitutionPublicMeetingsMap(institutions.value);
 
-    if (!showRelatedInstitutions.value || !relatedInstitutions.value?.length) {
+    if (!showRelatedInstitutions.value || !visibleRelatedInstitutions.value.length) {
       return base;
     }
 
-    const relatedPublic = buildInstitutionPublicMeetingsMap(relatedInstitutions.value);
+    const relatedPublic = buildInstitutionPublicMeetingsMap(visibleRelatedInstitutions.value);
     return mergeRecordMaps(base, relatedPublic);
   });
 
@@ -147,11 +161,11 @@ export function useUserTimelineData(options: UseUserTimelineDataOptions) {
   const mergedInstitutionPeriodicity = computed<Record<string, number>>(() => {
     const base = baseInstitutionPeriodicity?.value ?? buildInstitutionPeriodicityMap(institutions.value);
 
-    if (!showRelatedInstitutions.value || !relatedInstitutions.value?.length) {
+    if (!showRelatedInstitutions.value || !visibleRelatedInstitutions.value.length) {
       return base;
     }
 
-    const relatedPeriodicity = buildInstitutionPeriodicityMap(relatedInstitutions.value);
+    const relatedPeriodicity = buildInstitutionPeriodicityMap(visibleRelatedInstitutions.value);
     return mergeRecordMaps(base, relatedPeriodicity);
   });
 

@@ -20,7 +20,7 @@ import {
 } from '../utils/ganttHelpers';
 
 export function useGanttChartData(
-  tenantInstitutionsRef: Ref<App.Entities.Institution[]>, // Lazy loaded tenant institutions
+  tenantInstitutionsRef: Ref<AtstovavimosInstitution[]>, // Lazy loaded tenant institutions
   availableTenants: AtstovavimosTenant[],
 ) {
   // Use the lazy-loaded tenant institutions directly
@@ -101,9 +101,17 @@ export function useGanttChartData(
     })?.flat() ?? [];
   });
 
-  // Memoized tenant names lookup - only computed once since availableTenants is static
+  // Include relationship-linked institutions whose own tenant may not be selected.
   const cachedTenantNames = computed(() => {
-    return Object.fromEntries((availableTenants ?? []).map(t => [t.id, t.shortname]));
+    const names = Object.fromEntries((availableTenants ?? []).map(t => [String(t.id), t.shortname]));
+
+    tenantInstitutions.value.forEach((institution) => {
+      if (institution.tenant?.id && institution.tenant.shortname) {
+        names[String(institution.tenant.id)] = institution.tenant.shortname;
+      }
+    });
+
+    return names;
   });
 
   // Institution name mappings for Gantt charts - use shared helpers
@@ -139,7 +147,12 @@ export function useGanttChartData(
     return tenantInstitutions.value.map(i => ({
       id: i.id,
       name: String(i.name ?? ''),
-      tenant_id: String(i.tenant_id ?? ''),
+      tenant_id: String(i.tenant_id ?? i.tenant?.id ?? ''),
+      is_related: i.is_related,
+      relationship_direction: i.relationship_direction,
+      relationship_type: i.relationship_type,
+      source_institution_id: i.source_institution_id,
+      authorized: i.authorized,
     }));
   });
 

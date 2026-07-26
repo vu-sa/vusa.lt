@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Api\ApiController;
 use App\Models\Institution;
+use App\Services\InstitutionActivityStatusService;
 use App\Services\InstitutionSubscriptionService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -13,7 +14,8 @@ use Illuminate\Http\Request;
 class InstitutionSubscriptionApiController extends ApiController
 {
     public function __construct(
-        protected InstitutionSubscriptionService $subscriptionService
+        protected InstitutionSubscriptionService $subscriptionService,
+        private readonly InstitutionActivityStatusService $activityStatusService,
     ) {}
 
     /**
@@ -25,11 +27,13 @@ class InstitutionSubscriptionApiController extends ApiController
 
         /** @var Collection<int, Institution> $institutions */
         $institutions = $user->followedInstitutions()
-            ->with(['types', 'meetings' => function ($query) {
-                $query->where('start_time', '>=', now())
-                    ->orderBy('start_time', 'asc')
-                    ->limit(1);
-            }])
+            ->with([
+                'types',
+                'meetings:id,title,start_time',
+                'checkIns' => fn ($query) => $query
+                    ->where('start_date', '<=', today())
+                    ->where('end_date', '>=', today()),
+            ])
             ->get()
             ->map(function (Model $institution) use ($user) {
                 if (! $institution instanceof Institution) {
@@ -139,7 +143,10 @@ class InstitutionSubscriptionApiController extends ApiController
      */
     protected function transformInstitution(Institution $institution, $user): array
     {
-        $nextMeeting = $institution->meetings->first();
+        $nextMeeting = $institution->meetings
+            ->filter(fn ($meeting) => $meeting->start_time->isFuture())
+            ->sortBy('start_time')
+            ->first();
 
         return [
             'id' => $institution->id,
@@ -147,6 +154,7 @@ class InstitutionSubscriptionApiController extends ApiController
             'short_name' => $institution->short_name,
             'alias' => $institution->alias,
             'meeting_periodicity_days' => $institution->meeting_periodicity_days,
+            'activity_status' => $this->activityStatusService->resolve($institution)->toArray(),
             'next_meeting' => $nextMeeting ? [
                 'id' => $nextMeeting->id,
                 'title' => $nextMeeting->title,

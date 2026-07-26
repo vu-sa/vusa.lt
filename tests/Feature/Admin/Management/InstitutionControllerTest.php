@@ -129,6 +129,9 @@ describe('authorized access', function () {
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/People/ShowInstitution')
                 ->has('institution')
+                ->has('institution.activity_status')
+                ->has('institution.activity_status.status')
+                ->has('institution.activity_status.effective_days_since_activity')
             );
     });
 

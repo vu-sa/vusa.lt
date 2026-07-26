@@ -2,6 +2,7 @@
 
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\InstitutionCheckIn;
 use App\Models\Meeting;
 use App\Models\Task;
 use App\Models\Tenant;
@@ -83,6 +84,46 @@ describe('tasks:repopulate institution', function () {
         Meeting::factory()
             ->hasAttached($institution)
             ->create(['start_time' => '2025-06-20 10:00:00']);
+
+        $this->artisan('tasks:repopulate institution --force')->assertExitCode(0);
+
+        expect(periodicityGapTaskFor($institution))->toBeNull();
+    });
+
+    test('does not create a task while an upcoming meeting covers the institution', function () {
+        $this->travelTo('2025-11-15');
+
+        $institution = institutionWithRepresentative();
+
+        Meeting::factory()
+            ->hasAttached($institution)
+            ->create(['start_time' => '2025-10-01 10:00:00']);
+        Meeting::factory()
+            ->hasAttached($institution)
+            ->create(['start_time' => '2025-11-20 10:00:00']);
+
+        $this->artisan('tasks:repopulate institution --force')->assertExitCode(0);
+
+        expect(periodicityGapTaskFor($institution))->toBeNull();
+    });
+
+    test('does not create a task while an active activity report covers the institution', function () {
+        $this->travelTo('2025-11-15');
+
+        $institution = institutionWithRepresentative();
+        $representative = $institution->duties->flatMap->users->first();
+
+        Meeting::factory()
+            ->hasAttached($institution)
+            ->create(['start_time' => '2025-10-01 10:00:00']);
+        InstitutionCheckIn::factory()
+            ->for($institution)
+            ->for($representative)
+            ->for($institution->tenant)
+            ->create([
+                'start_date' => '2025-11-01',
+                'end_date' => '2025-11-30',
+            ]);
 
         $this->artisan('tasks:repopulate institution --force')->assertExitCode(0);
 

@@ -13,6 +13,8 @@ lastUpdated: true
 - ⭐ **Registracijų atsisiuntimas į Excel** — mygtukas registracijų lange vėl veikia, šalia matosi bendras registracijų skaičius ir paskutinės registracijos data
 - 🔧 **Studentų atstovų registracijos atskirtos pagal padalinį** — institucijų koordinatoriams rodomos tik jų padalinio institucijoms pateiktos registracijos ir jų skaičius.
 - ✨ **Nuoroda generuojama automatiškai** — kuriant registracijos formą nuoroda susikuria pagal pavadinimą (lietuviškai ir angliškai), matosi pilnas adresas su kopijavimo bei atidarymo mygtukais. Įrašius nuorodą ranka, automatinis generavimas nutrūksta, o keičiant esamos formos nuorodą įspėjama, kad sena nuoroda nustos veikti
+- ✨ **Institucijų veiklos statusai ir priminimai** — aiškesnės žymos parodo, kada veikla atnaujinta, kada artėja terminas pranešti ir kaip pateikiami susiję veiksmai; pranešimas apie neplanuojamą posėdį laikomas naujausiu veiklos atnaujinimu
+- ✨ **Padalinių institucijų būklės suvestinė ir nuoseklūs filtrai ViSAK** — administratoriai virš laiko juostos gali pasirinkti vieną ar kelis padalinius, matyti jų institucijų būklės skaičius ir peržiūrėti paieška bei puslapiavimu papildytą lentelę; asmeniniame bei viso ekrano vaizduose padalinių filtrai veikia taip pat, o bent vienas padalinys visada lieka pasirinktas
 - 🔧 **Formos laukelio aprašymas nebedingsta** — redaguojant formą, kuri jau turi registracijų, laukelių aprašymai būdavo perrašomi laukelio tipu
 - 🔧 **Tikslesnis tuščias institucijos kontaktų vaizdas** — institucijoms be viešų kontaktų neberodomas klaidinantis pranešimas apie studentų atstovus
 

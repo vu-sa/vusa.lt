@@ -21,37 +21,77 @@
     <VisakInfoModal :open="showVisakInfo" @close="showVisakInfo = false" @start-tour="startContextTour" />
 
     <Tabs v-model="activeTab" class="mt-6 mb-32">
-      <TabsList class="gap-2 overflow-visible">
-        <TabsTrigger value="user">
-          {{ props.user.name }}
-        </TabsTrigger>
-        <div class="relative">
-          <SpotlightPopover v-if="props.availableTenants.length > 0" :title="$t('tutorials.tenant_tab_spotlight.title')"
-            :description="$t('tutorials.tenant_tab_spotlight.description')"
-            :is-dismissed="tenantSpotlight.isDismissed.value" position="right" @dismiss="tenantSpotlight.dismiss">
-            <TabsTrigger value="tenant" :disabled="props.availableTenants.length === 0" data-spotlight="tenant-tab">
-              {{ currentTenant?.shortname || $t('Padalinys') }}
-            </TabsTrigger>
-          </SpotlightPopover>
-          <TabsTrigger v-else value="tenant" disabled data-spotlight="tenant-tab">
-            {{ $t('Padalinys') }}
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <TabsList class="gap-2 overflow-visible">
+          <TabsTrigger value="user">
+            {{ props.user.name }}
           </TabsTrigger>
-        </div>
-      </TabsList>
+          <div class="relative">
+            <SpotlightPopover v-if="props.availableTenants.length > 0" :title="$t('tutorials.tenant_tab_spotlight.title')"
+              :description="$t('tutorials.tenant_tab_spotlight.description')"
+              :is-dismissed="tenantSpotlight.isDismissed.value" position="right" @dismiss="tenantSpotlight.dismiss">
+              <TabsTrigger value="tenant" :disabled="props.availableTenants.length === 0" data-spotlight="tenant-tab">
+                {{ currentTenant?.shortname || $t('Padalinys') }}
+              </TabsTrigger>
+            </SpotlightPopover>
+            <TabsTrigger v-else value="tenant" disabled data-spotlight="tenant-tab">
+              {{ $t('Padalinys') }}
+            </TabsTrigger>
+          </div>
+        </TabsList>
+
+        <SpotlightPopover
+          v-if="activeTab === 'user' && timelineFilters.availableTenantsUser.value.length > 0"
+          class="ml-auto"
+          :title="$t('visak.user_tenant_scope.spotlight_title')"
+          :description="$t('visak.user_tenant_scope.spotlight_description')"
+          :is-dismissed="userTenantScopeSpotlight.isDismissed.value"
+          position="bottom"
+          @dismiss="userTenantScopeSpotlight.dismiss"
+        >
+          <TenantScopeSelector
+            compact
+            :tenants="timelineFilters.availableTenantsUser.value"
+            :selected-tenants="timelineFilters.userTenantFilter.value"
+            :title="$t('visak.user_tenant_scope.title')"
+            :description="$t('visak.user_tenant_scope.description')"
+            @update:selected-tenants="timelineFilters.setUserTenantFilter"
+            @engage="userTenantScopeSpotlight.dismiss"
+          />
+        </SpotlightPopover>
+
+        <SpotlightPopover
+          v-else-if="isAdmin && activeTab === 'tenant' && props.availableTenants.length > 0"
+          class="ml-auto"
+          :title="$t('visak.institution_summary.spotlight_title')"
+          :description="$t('visak.institution_summary.spotlight_description')"
+          :is-dismissed="institutionSummarySpotlight.isDismissed.value"
+          position="bottom"
+          @dismiss="institutionSummarySpotlight.dismiss"
+        >
+          <TenantScopeSelector
+            compact
+            :tenants="props.availableTenants"
+            :selected-tenants="timelineFilters.selectedTenantForGantt.value"
+            @update:selected-tenants="timelineFilters.setSelectedTenants"
+            @engage="institutionSummarySpotlight.dismiss"
+          />
+        </SpotlightPopover>
+      </div>
 
       <TabsContent value="user" class="mt-6 space-y-8">
         <!-- Personal Overview Section -->
-        <PersonalOverviewSection :institutions="atstovavimosData.institutions.value"
-          :upcoming-meetings="atstovavimosData.upcomingMeetings.value"
-          :institutions-insights="atstovavimosData.institutionsInsights.value" :is-admin
+        <PersonalOverviewSection :institutions="userScopedInstitutions"
+          :upcoming-meetings="userScopedUpcomingMeetings"
+          :institutions-insights="userScopedInsights" :is-admin
           :current-user-id="Number(props.user.id)" @show-all-institutions="actions.showAllInstitutionModal.value = true"
           @show-all-meetings="actions.showAllMeetingModal.value = true"
           @create-meeting="actions.showMeetingModal.value = true" @schedule-meeting="actions.handleScheduleMeeting"
           @show-institution-details="actions.handleShowInstitutionDetails" />
 
         <!-- User timeline section - deferred to prevent view transition lag -->
-        <UserTimelineSection v-if="deferredContentReady" :institutions="atstovavimosData.institutions.value"
-          :meetings="atstovavimosData.allUserMeetings.value" :gaps="atstovavimosData.userGaps.value"
+        <UserTimelineSection v-if="deferredContentReady" :institutions="userScopedInstitutions"
+          :meetings="userScopedGanttMeetings" :gaps="userScopedGaps"
           :institution-names="userInstitutionNames" :tenant-names :institution-tenant="userInstitutionTenant"
           :institution-has-public-meetings="userInstitutionHasPublicMeetings"
           :institution-periodicity="userInstitutionPeriodicity" :duty-members="userDutyMembers"
@@ -67,16 +107,25 @@
       </TabsContent>
 
       <TabsContent value="tenant" class="mt-6 space-y-6">
-        <TenantTimelineSection v-if="deferredContentReady" :available-tenants="props.availableTenants"
-          :tenant-institutions="ganttData.formattedTenantInstitutions.value" :meetings="ganttData.tenantMeetings.value"
-          :gaps="ganttData.tenantGaps.value" :institution-names="tenantInstitutionNames" :tenant-names
-          :institution-tenant="tenantInstitutionTenant"
-          :institution-has-public-meetings="tenantInstitutionHasPublicMeetings"
-          :institution-periodicity="tenantInstitutionPeriodicity" :duty-members="ganttData.tenantDutyMembers.value"
-          :inactive-periods="ganttData.tenantInactivePeriods.value" :is-hidden="actions.showFullscreenGantt.value"
-          :representative-activity="props.representativeActivity"
-          @create-meeting="actions.onGapCreateMeeting" @create-check-in="actions.onGapCreateCheckIn"
-          @fullscreen="actions.onGanttFullscreen('tenant')" />
+        <template v-if="deferredContentReady">
+          <InstitutionStatusSummary
+            v-if="isAdmin"
+            :institutions="tenantInstitutionsData"
+            :summary="institutionSummary"
+            :loading="timelineFilters.tenantInstitutionsLoading.value"
+          />
+
+          <TenantTimelineSection :available-tenants="props.availableTenants"
+            :tenant-institutions="ganttData.formattedTenantInstitutions.value" :meetings="ganttData.tenantMeetings.value"
+            :gaps="ganttData.tenantGaps.value" :institution-names="tenantInstitutionNames" :tenant-names
+            :institution-tenant="tenantInstitutionTenant"
+            :institution-has-public-meetings="tenantInstitutionHasPublicMeetings"
+            :institution-periodicity="tenantInstitutionPeriodicity" :duty-members="ganttData.tenantDutyMembers.value"
+            :inactive-periods="ganttData.tenantInactivePeriods.value" :is-hidden="actions.showFullscreenGantt.value"
+            :representative-activity="representativeActivityData" :show-tenant-selector="!isAdmin"
+            @create-meeting="actions.onGapCreateMeeting" @create-check-in="actions.onGapCreateCheckIn"
+            @fullscreen="actions.onGanttFullscreen('tenant')" />
+        </template>
         <!-- Timeline loading skeleton -->
         <div v-else class="space-y-4">
           <Skeleton class="h-8 w-48" />
@@ -97,8 +146,8 @@
 
     <!-- Modals - FullscreenGanttModal first so modals opened from within it appear on top -->
     <FullscreenGanttModal :is-open="actions.showFullscreenGantt.value" :gantt-type="actions.fullscreenGanttType.value"
-      :available-tenants="props.availableTenants" :user-institutions="atstovavimosData.institutions.value"
-      :user-meetings="atstovavimosData.allUserMeetings.value" :user-gaps="atstovavimosData.userGaps.value"
+      :available-tenants="props.availableTenants" :user-institutions="userScopedInstitutions"
+      :user-meetings="userScopedGanttMeetings" :user-gaps="userScopedGaps"
       :user-institution-names :user-institution-tenant :user-institution-has-public-meetings
       :user-institution-periodicity :user-duty-members :user-inactive-periods
       :user-related-institutions="relatedInstitutions"
@@ -106,7 +155,7 @@
       :tenant-institutions="ganttData.formattedTenantInstitutions.value"
       :tenant-meetings="ganttData.tenantMeetings.value" :tenant-gaps="ganttData.tenantGaps.value"
       :tenant-institution-names :tenant-institution-tenant :tenant-institution-has-public-meetings
-      :tenant-institution-periodicity :tenant-duty-members="enrichedTenantDutyMembers"
+      :tenant-institution-periodicity :tenant-duty-members="ganttData.tenantDutyMembers.value"
       :tenant-inactive-periods="ganttData.tenantInactivePeriods.value" :tenant-names
       @update:is-open="actions.showFullscreenGantt.value = $event" @create-meeting="actions.onGapCreateMeeting"
       @create-check-in="actions.onGapCreateCheckIn" />
@@ -114,7 +163,7 @@
     <!-- These modals can be opened from FullscreenGanttModal, so they must come after it in DOM order -->
     <NewMeetingDialog :show-modal="actions.showMeetingModal.value" :institution="actions.selectedInstitution.value"
       :suggested-at="actions.selectedSuggestedAt.value"
-      @close="actions.onCloseMeetingModal" />
+      @close="handleMeetingDialogClose" />
 
     <AddCheckInDialog v-if="actions.showCreateCheckIn.value" :open="!!actions.showCreateCheckIn.value"
       :institution-id="actions.showCreateCheckIn.value.institutionId!"
@@ -122,21 +171,21 @@
       :initial-start-date="actions.showCreateCheckIn.value.startDate"
       :initial-end-date="actions.showCreateCheckIn.value.endDate"
       :reload-tenant-ids="timelineFilters.selectedTenantForGantt.value"
-      :reload-props="['user', 'userInstitutions', 'tenantInstitutions']"
-      @close="actions.showCreateCheckIn.value = null" />
+      :reload-props="['user', 'userInstitutions']"
+      @close="handleCheckInDialogClose" />
 
-    <InstitutionDataTable :institutions="atstovavimosData.institutions.value"
+    <InstitutionDataTable :institutions="userScopedInstitutions"
       :related-institutions
       :is-open="actions.showAllInstitutionModal.value" :on-schedule-meeting="actions.handleScheduleMeeting"
       :on-add-check-in="actions.handleAddCheckIn" @update:is-open="actions.showAllInstitutionModal.value = $event" />
 
-    <MeetingDataTable :meetings="atstovavimosData.sortedMeetings.value" :is-open="actions.showAllMeetingModal.value"
+    <MeetingDataTable :meetings="userScopedMeetings" :is-open="actions.showAllMeetingModal.value"
       @update:is-open="actions.showAllMeetingModal.value = $event" />
   </AdminContentPage>
 </template>
 
 <script setup lang="tsx">
-import { Head as InertiaHead, Link, router } from '@inertiajs/vue3';
+import { Head as InertiaHead, Link } from '@inertiajs/vue3';
 import { computed, ref, watch, onMounted } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
@@ -164,6 +213,8 @@ import { Info, ClipboardList } from 'lucide-vue-next';
 import PersonalOverviewSection from './Components/PersonalOverviewSection.vue';
 import UserTimelineSection from './Components/UserTimelineSection.vue';
 import TenantTimelineSection from './Components/TenantTimelineSection.vue';
+import TenantScopeSelector from './Components/TenantScopeSelector.vue';
+import InstitutionStatusSummary from './Components/InstitutionStatusSummary.vue';
 import InstitutionDataTable from './Components/InstitutionDataTable.vue';
 import MeetingDataTable from './Components/MeetingDataTable.vue';
 import FullscreenGanttModal from './Components/FullscreenGanttModal.vue';
@@ -174,7 +225,13 @@ import { provideTimelineFilters } from './Composables/useTimelineFilters';
 import { useAtstovavimosActions } from './Composables/useAtstovavimasActions';
 import { useGanttChartData } from './Composables/useGanttChartData';
 import { provideGanttSettings } from './Composables/useGanttSettings';
-import type { AtstovavimosUser, AtstovavimosTenant, AtstovavimosInstitution, RepresentativeActivityData } from './types';
+import { useTenantTimelineData } from './Composables/useTenantTimelineData';
+import type {
+  AtstovavimosUser,
+  AtstovavimosTenant,
+  AtstovavimosInstitution,
+  InstitutionStatusSummaryData,
+} from './types';
 
 import VisakInfoModal from '@/Components/Dialogs/VisakInfoModal.vue';
 import { useProductTour } from '@/Composables/useProductTour';
@@ -363,19 +420,16 @@ onMounted(() => {
 
 // Setup spotlight for tenant tab (for users who can see the tenant view)
 const tenantSpotlight = useFeatureSpotlight('tenant-tab-spotlight-v1');
+const institutionSummarySpotlight = useFeatureSpotlight('institution-status-summary-v1');
+const userTenantScopeSpotlight = useFeatureSpotlight('user-tenant-scope-v1');
 
 const props = defineProps<{
   user: AtstovavimosUser;
   userInstitutions: App.Entities.Institution[];
-  tenantInstitutions?: App.Entities.Institution[];
   relatedInstitutions?: AtstovavimosInstitution[];
   mayHaveRelatedInstitutions?: boolean;
   availableTenants: AtstovavimosTenant[];
-  representativeActivity?: RepresentativeActivityData;
 }>();
-
-// Reactive computed for tenant institutions (from lazy-loaded props)
-const tenantInstitutionsData = computed(() => props.tenantInstitutions ?? []);
 
 // Related institutions computed (for passing to UserTimelineSection)
 const relatedInstitutions = computed<AtstovavimosInstitution[]>(() => {
@@ -438,7 +492,7 @@ watch(activeTab, (newTab) => {
 
 // Computed admin check
 const isAdmin = computed(() => {
-  const roles = (props.user as any)?.roles?.map((r: any) => r.name) ?? [];
+  const roles = props.user.roles?.map(role => role.name) ?? [];
   return roles.includes('Super Admin') || roles.includes('Administratorius')
     || roles.includes('Resource Manager') || roles.includes('Communication Coordinator');
 });
@@ -447,7 +501,87 @@ const isAdmin = computed(() => {
 const atstovavimosData = useAtstovavimosData(() => props.user);
 const timelineFilters = provideTimelineFilters(atstovavimosData.institutions.value, props.availableTenants);
 const actions = useAtstovavimosActions(props.userInstitutions);
-const ganttData = useGanttChartData(tenantInstitutionsData, props.availableTenants);
+const tenantTimelineData = useTenantTimelineData();
+const tenantInstitutionsData = computed(() => tenantTimelineData.data.value?.institutions ?? []);
+const tenantRelatedInstitutionsData = computed(() => tenantTimelineData.data.value?.related_institutions ?? []);
+const tenantTimelineInstitutions = computed(() => [
+  ...tenantInstitutionsData.value,
+  ...tenantRelatedInstitutionsData.value,
+]);
+const institutionSummary = computed<InstitutionStatusSummaryData>(() =>
+  tenantTimelineData.data.value?.institution_summary ?? {
+    all: 0,
+    needs_attention: 0,
+    overdue: 0,
+    approaching: 0,
+    no_activity: 0,
+    current: 0,
+  },
+);
+const representativeActivityData = computed(() => tenantTimelineData.data.value?.representative_activity);
+const ganttData = useGanttChartData(tenantTimelineInstitutions, props.availableTenants);
+
+watch(tenantTimelineData.isFetching, (loading) => {
+  timelineFilters.tenantInstitutionsLoading.value = loading;
+}, { immediate: true });
+
+watch(tenantTimelineData.loaded, (loaded) => {
+  timelineFilters.tenantInstitutionsLoaded.value = loaded;
+}, { immediate: true });
+
+const userScopedInstitutions = computed(() => {
+  const selectedTenantIds = new Set(timelineFilters.userTenantFilter.value);
+
+  return atstovavimosData.institutions.value.filter(institution =>
+    selectedTenantIds.has(String(institution.tenant?.id)),
+  );
+});
+
+const userScopedInstitutionIds = computed(() =>
+  new Set(userScopedInstitutions.value.map(institution => String(institution.id))),
+);
+
+const userScopedUpcomingMeetings = computed(() =>
+  atstovavimosData.upcomingMeetings.value.filter(meeting =>
+    meetingBelongsToSelectedUserInstitutions(meeting),
+  ),
+);
+
+const userScopedMeetings = computed(() =>
+  atstovavimosData.sortedMeetings.value.filter(meeting =>
+    meetingBelongsToSelectedUserInstitutions(meeting),
+  ),
+);
+
+const userScopedGanttMeetings = computed(() =>
+  atstovavimosData.allUserMeetings.value.filter(meeting =>
+    userScopedInstitutionIds.value.has(String(meeting.institution_id)),
+  ),
+);
+
+const userScopedGaps = computed(() =>
+  atstovavimosData.userGaps.value.filter(gap =>
+    userScopedInstitutionIds.value.has(String(gap.institution_id)),
+  ),
+);
+
+const userScopedInsights = computed(() => ({
+  attention: atstovavimosData.institutionsInsights.value.attention.filter(institution =>
+    userScopedInstitutionIds.value.has(String(institution.id)),
+  ),
+}));
+
+function meetingBelongsToSelectedUserInstitutions(
+  meeting: { institution_id?: string; institutions?: Array<{ id: string }> },
+): boolean {
+  if (meeting.institution_id) {
+    return userScopedInstitutionIds.value.has(String(meeting.institution_id));
+  }
+
+  return meeting.institutions?.some(institution =>
+    userScopedInstitutionIds.value.has(String(institution.id)),
+  ) ?? false;
+}
 
 // Provide Gantt settings to child components (eliminates prop drilling for dayWidthPx, etc.)
 provideGanttSettings();
@@ -455,7 +589,7 @@ provideGanttSettings();
 // Load tenant institutions when tenant tab is opened
 watch(activeTab, (newTab) => {
   if (newTab === 'tenant' && props.availableTenants.length > 0) {
-    timelineFilters.loadTenantInstitutions();
+    tenantTimelineData.load(timelineFilters.selectedTenantForGantt.value);
   }
 });
 
@@ -463,45 +597,53 @@ watch(activeTab, (newTab) => {
 watch(() => timelineFilters.selectedTenantForGantt.value, (newTenants) => {
   // Only reload if on tenant tab and we have tenants selected
   if (activeTab.value === 'tenant' && newTenants.length > 0) {
-    timelineFilters.loadTenantInstitutions(newTenants);
+    tenantTimelineData.load(newTenants);
   }
 }, { deep: true });
 
 // Load on mount if already on tenant tab
 onMounted(() => {
   if (activeTab.value === 'tenant' && props.availableTenants.length > 0) {
-    timelineFilters.loadTenantInstitutions();
+    tenantTimelineData.load(timelineFilters.selectedTenantForGantt.value);
   }
 });
 
 // Helper functions for Gantt data formatting
 const userInstitutionNames = computed(() => {
-  return ganttData.getInstitutionNames(atstovavimosData.institutions.value);
+  return ganttData.getInstitutionNames(userScopedInstitutions.value);
 });
 
 const userInstitutionTenant = computed(() => {
-  return ganttData.getInstitutionTenant(atstovavimosData.institutions.value);
+  return ganttData.getInstitutionTenant(userScopedInstitutions.value);
 });
 
 const userInstitutionHasPublicMeetings = computed(() => {
-  return ganttData.getInstitutionHasPublicMeetings(atstovavimosData.institutions.value);
+  return ganttData.getInstitutionHasPublicMeetings(userScopedInstitutions.value);
 });
 
 const userInstitutionPeriodicity = computed(() => {
-  return ganttData.getInstitutionPeriodicity(atstovavimosData.institutions.value);
+  return ganttData.getInstitutionPeriodicity(userScopedInstitutions.value);
 });
 
 // User duty members and inactive periods
 const userDutyMembers = computed(() => {
-  return ganttData.getDutyMembersFromInstitutions(atstovavimosData.institutions.value);
+  return ganttData.getDutyMembersFromInstitutions(userScopedInstitutions.value);
 });
 
 const userInactivePeriods = computed(() => {
-  return ganttData.getInactivePeriodsFromInstitutions(atstovavimosData.institutions.value);
+  return ganttData.getInactivePeriodsFromInstitutions(userScopedInstitutions.value);
 });
 
 const tenantNames = computed(() => {
-  return ganttData.getTenantNames();
+  const names = { ...ganttData.getTenantNames() };
+
+  [...atstovavimosData.institutions.value, ...relatedInstitutions.value].forEach((institution) => {
+    if (institution.tenant?.id && institution.tenant.shortname) {
+      names[String(institution.tenant.id)] = institution.tenant.shortname;
+    }
+  });
+
+  return names;
 });
 
 const currentTenant = computed(() => {
@@ -531,36 +673,13 @@ const tenantInstitutionHasPublicMeetings = computed(() => {
   const institutions = ganttData.tenantInstitutions.value;
   const result: Record<string, boolean> = {};
   for (const i of institutions) {
-    result[i.id as string] = Boolean((i as any).has_public_meetings);
+    result[i.id as string] = Boolean(i.has_public_meetings);
   }
   return result;
 });
 
 const tenantInstitutionPeriodicity = computed(() => {
   return ganttData.getInstitutionPeriodicity(ganttData.tenantInstitutions.value as unknown as AtstovavimosInstitution[]);
-});
-
-// Enrich tenant duty members with activity status from representativeActivity
-// This allows the FullscreenGanttModal to show activity rings on duty member avatars
-const enrichedTenantDutyMembers = computed(() => {
-  const dutyMembers = ganttData.tenantDutyMembers.value;
-  if (!dutyMembers) return [];
-  if (!props.representativeActivity?.users) return dutyMembers;
-
-  // Build lookup map from representativeActivity users
-  const activityByUserId = new Map(
-    props.representativeActivity.users.map(u => [u.id, { category: u.category, lastAction: u.last_action }]),
-  );
-
-  // Enrich each duty member's user object with activity data
-  return dutyMembers.map(dm => ({
-    ...dm,
-    user: {
-      ...dm.user,
-      activityCategory: activityByUserId.get(dm.user.id)?.category,
-      lastAction: activityByUserId.get(dm.user.id)?.lastAction,
-    },
-  }));
 });
 
 const checkInInstitutionName = computed(() => {
@@ -571,4 +690,20 @@ const checkInInstitutionName = computed(() => {
     ?? tenantInstitutionNames.value?.[institutionId]
     ?? undefined;
 });
+
+function refreshTenantData(): void {
+  if (activeTab.value === 'tenant') {
+    tenantTimelineData.load(timelineFilters.selectedTenantForGantt.value, true);
+  }
+}
+
+function handleMeetingDialogClose(): void {
+  actions.onCloseMeetingModal();
+  refreshTenantData();
+}
+
+function handleCheckInDialogClose(): void {
+  actions.showCreateCheckIn.value = null;
+  refreshTenantData();
+}
 </script>
