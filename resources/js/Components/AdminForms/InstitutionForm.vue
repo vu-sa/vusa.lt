@@ -46,30 +46,14 @@
           </FormFieldWrapper>
         </div>
 
-        <div class="grid gap-4 lg:grid-cols-2">
-          <FormFieldWrapper id="is_active" :label="$t('Aktyvumo būsena')">
-            <div class="flex items-center gap-3 pt-2">
-              <Switch v-model="isActiveBoolean" />
-              <span class="text-sm text-muted-foreground">
-                {{ isActiveBoolean ? $t('Aktyvi institucija') : $t('Neaktyvi institucija') }}
-              </span>
-            </div>
-          </FormFieldWrapper>
-
-          <FormFieldWrapper id="contacts_layout" :label="$t('Kontaktų išdėstymas')"
-            :hint="$t('Kaip kontaktai bus rodomi viešoje pusėje')">
-            <RadioGroup v-model="form.contacts_layout" class="flex gap-4 pt-2">
-              <div class="flex items-center gap-2">
-                <RadioGroupItem id="layout-aside" value="aside" />
-                <Label for="layout-aside" class="font-normal cursor-pointer">{{ $t('Šone') }}</Label>
-              </div>
-              <div class="flex items-center gap-2">
-                <RadioGroupItem id="layout-below" value="below" />
-                <Label for="layout-below" class="font-normal cursor-pointer">{{ $t('Po aprašymu') }}</Label>
-              </div>
-            </RadioGroup>
-          </FormFieldWrapper>
-        </div>
+        <FormFieldWrapper id="is_active" :label="$t('Aktyvumo būsena')">
+          <div class="flex items-center gap-3 pt-2">
+            <Switch v-model="isActiveBoolean" />
+            <span class="text-sm text-muted-foreground">
+              {{ isActiveBoolean ? $t('Aktyvi institucija') : $t('Neaktyvi institucija') }}
+            </span>
+          </div>
+        </FormFieldWrapper>
       </div>
     </FormElement>
 
@@ -327,9 +311,7 @@ import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { Button } from '@/Components/ui/button';
 import { Input, InputWithOverlappingLabel } from '@/Components/ui/input';
-import { Label } from '@/Components/ui/label';
 import { MultiSelect } from '@/Components/ui/multi-select';
-import { RadioGroup, RadioGroupItem } from '@/Components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Separator } from '@/Components/ui/separator';
 import { Switch } from '@/Components/ui/switch';

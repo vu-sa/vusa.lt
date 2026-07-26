@@ -33,8 +33,8 @@
           </span>
         </h3>
 
-        <!-- Duties -->
-        <div v-if="duties" class="mt-1.5 space-y-0.5 sm:mt-2 sm:space-y-1">
+        <!-- Duties (hidden when the surrounding section already names the duty) -->
+        <div v-if="duties && !hideDutyNames" class="mt-1.5 space-y-0.5 sm:mt-2 sm:space-y-1">
           <p
             v-for="duty in duties"
             :key="duty.id"
@@ -134,10 +134,14 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { changeDutyNameEndings } from '@/Utils/String';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   contact: App.Entities.User;
   duties: App.Entities.Duty[];
-}>();
+  /** Hide duty names — used when contacts are already sectioned by duty. */
+  hideDutyNames?: boolean;
+}>(), {
+  hideDutyNames: false,
+});
 
 const dutyDescription = (duty) => {
   const { locale } = usePage().props.app;

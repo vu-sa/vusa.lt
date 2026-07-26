@@ -204,7 +204,6 @@ describe('authorized access', function () {
             'short_name' => ['lt' => 'TI', 'en' => 'TI'],
             'tenant_id' => $this->tenant->id,
             'alias' => 'test-institution',
-            'contacts_layout' => 'aside',
         ];
 
         $response = asUser($this->admin)->post(route('institutions.store'), $institutionData);
@@ -237,7 +236,6 @@ describe('authorized access', function () {
             'short_name' => ['lt' => 'UI', 'en' => 'UI'],
             'tenant_id' => $this->tenant->id,
             'alias' => 'updated-institution',
-            'contacts_layout' => 'aside',
         ];
 
         $response = asUser($this->admin)->put(route('institutions.update', $institution), $updateData);
@@ -273,7 +271,6 @@ describe('validation', function () {
             'short_name' => ['lt' => 'TI'],
             'tenant_id' => $this->tenant->id,
             'alias' => 'test-alias',
-            'contacts_layout' => 'aside',
         ]);
 
         $response->assertStatus(302)
@@ -285,7 +282,6 @@ describe('validation', function () {
             'name' => ['lt' => 'Test Institution'],
             'tenant_id' => $this->tenant->id,
             'alias' => 'test-alias',
-            'contacts_layout' => 'aside',
         ]);
 
         // Check if it actually gets created without short_name (might not be required)
@@ -306,7 +302,6 @@ describe('validation', function () {
             'name' => ['lt' => 'Test Institution'],
             'short_name' => ['lt' => 'TI'],
             'tenant_id' => $this->tenant->id,
-            'contacts_layout' => 'aside',
             // Deliberately omitting 'alias'
         ]);
 
@@ -328,7 +323,6 @@ describe('validation', function () {
             'short_name' => ['lt' => 'TI'],
             'tenant_id' => $this->tenant->id,
             'alias' => 'existing-alias',
-            'contacts_layout' => 'aside',
         ]);
 
         $response->assertStatus(302)
@@ -342,7 +336,6 @@ describe('validation', function () {
             'short_name' => ['lt' => 'UI'],
             'tenant_id' => $this->tenant->id,
             'alias' => 'updated-alias',
-            'contacts_layout' => 'aside',
         ]);
 
         $response->assertStatus(302)
@@ -393,7 +386,6 @@ describe('meeting_periodicity_days', function () {
             'short_name' => ['lt' => 'TI', 'en' => 'TI'],
             'tenant_id' => $this->tenant->id,
             'alias' => 'test-periodicity-institution',
-            'contacts_layout' => 'aside',
             'meeting_periodicity_days' => 45,
         ];
 
@@ -422,7 +414,6 @@ describe('meeting_periodicity_days', function () {
             'short_name' => ['lt' => '', 'en' => ''],
             'tenant_id' => $this->tenant->id,
             'alias' => $uniqueAlias,
-            'contacts_layout' => 'aside',
             'meeting_periodicity_days' => 60,
         ];
 
@@ -450,7 +441,6 @@ describe('meeting_periodicity_days', function () {
             'short_name' => ['lt' => '', 'en' => ''],
             'tenant_id' => $this->tenant->id,
             'alias' => $uniqueAlias,
-            'contacts_layout' => 'aside',
             'meeting_periodicity_days' => null,
         ];
 
@@ -571,7 +561,6 @@ describe('meeting_periodicity_days', function () {
         $response = asUser($this->admin)->post(route('institutions.store'), [
             'name' => ['lt' => 'Test Institution'],
             'tenant_id' => $this->tenant->id,
-            'contacts_layout' => 'aside',
             'meeting_periodicity_days' => -5,
         ]);
 
@@ -582,7 +571,6 @@ describe('meeting_periodicity_days', function () {
         $response = asUser($this->admin)->post(route('institutions.store'), [
             'name' => ['lt' => 'Test Institution'],
             'tenant_id' => $this->tenant->id,
-            'contacts_layout' => 'aside',
             'meeting_periodicity_days' => 500,
         ]);
 

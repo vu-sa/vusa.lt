@@ -510,7 +510,6 @@ declare global {
       id: string
       name: Array<unknown>
       description?: Array<unknown> | null
-      user_id?: string | null
       tenant_id: number
       path?: Array<unknown> | null
       publish_time?: string | null
@@ -523,18 +522,14 @@ declare global {
       // relations
       form_fields?: FormField[]
       registrations?: Registration[]
-      user?: User
       tenant?: Tenant
-      training?: Training
       // counts
       form_fields_count: number
       registrations_count: number
       // exists
       form_fields_exists: boolean
       registrations_exists: boolean
-      user_exists: boolean
       tenant_exists: boolean
-      training_exists: boolean
     }
 
     export interface FormField {
@@ -586,7 +581,6 @@ declare global {
       tenant_id?: number | null
       is_active: boolean
       meeting_periodicity_days?: number | null
-      contacts_layout: string
       selection_method?: string | null
       appointed_by?: Array<unknown> | null
       term_length?: Array<unknown> | null
@@ -1175,7 +1169,6 @@ declare global {
       tenant_id?: number | null
       is_active: boolean
       meeting_periodicity_days?: number | null
-      contacts_layout: string
       selection_method?: string | null
       appointed_by?: Array<unknown> | null
       term_length?: Array<unknown> | null

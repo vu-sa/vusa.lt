@@ -119,24 +119,6 @@
                   placeholder="+370 600 00000"
                 />
               </div>
-
-              <!-- Contacts layout -->
-              <div class="space-y-2">
-                <Label>{{ $t('Kontaktų išdėstymas') }}</Label>
-                <Select v-model="http.contacts_layout">
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="aside">
-                      {{ $t('Šone') }}
-                    </SelectItem>
-                    <SelectItem value="below">
-                      {{ $t('Apačioje') }}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </CollapsibleContent>
           </Collapsible>
         </div>
@@ -359,7 +341,6 @@ const http = useHttp({
   short_name: { lt: '', en: '' },
   tenant_id: '',
   types: [] as string[],
-  contacts_layout: 'aside' as 'aside' | 'below',
   email: '',
   phone: '',
   is_active: true,
