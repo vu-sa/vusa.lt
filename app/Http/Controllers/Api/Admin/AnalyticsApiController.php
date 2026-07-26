@@ -111,6 +111,7 @@ class AnalyticsApiController extends ApiController
         $model = match ($validated['type']) {
             'news' => News::query()->findOrFail($validated['id']),
             'page' => Page::query()->findOrFail($validated['id']),
+            default => throw new \InvalidArgumentException('Unsupported content type'),
         };
 
         $this->authorize('update', $model);
@@ -118,9 +119,9 @@ class AnalyticsApiController extends ApiController
         $dataSince = Carbon::parse(config('services.umami.data_since'))->startOfDay();
 
         $path = $this->publicPathFor($model, $validated['type']);
-        $hostname = $model->tenant?->publicHostname();
+        $hostname = $model->tenant->publicHostname();
 
-        if ($path === null || $hostname === null) {
+        if ($path === null) {
             return $this->jsonSuccess([
                 'available' => false,
                 'path' => null,

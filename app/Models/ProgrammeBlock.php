@@ -59,6 +59,6 @@ class ProgrammeBlock extends Model implements BelongsToProgramme
      */
     public function owningProgramme(): ?Programme
     {
-        return $this->section?->owningProgramme();
+        return $this->section->owningProgramme();
     }
 }
