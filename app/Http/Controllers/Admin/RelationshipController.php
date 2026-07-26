@@ -13,6 +13,7 @@ use App\Services\RelationshipService;
 use App\Services\TanstackTableService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -123,8 +124,8 @@ class RelationshipController extends AdminController
         $model_type = $validated['modelType'] ?? null;
         $related_models = [];
 
-        // if model type is not null, get related models
-        // TODO: use a way to check allowed models
+        // getModelsByClass() already refuses anything outside
+        // AllowedRelationshipablesEnum and returns an empty list instead.
         if (! is_null($model_type)) {
             $related_models = RelationshipService::getModelsByClass($model_type);
         }
@@ -178,7 +179,9 @@ class RelationshipController extends AdminController
 
         $request->validate([
             'model_id' => 'required',
-            'model_type' => 'required',
+            // Feeds morphedByMany() below — constrained to the models that may
+            // actually take part in a relationship, never a free-form class.
+            'model_type' => ['required', 'string', Rule::in(RelationshipService::allowedModelClasses())],
             'related_model_id' => 'required',
             'scope' => 'nullable|in:within-tenant,cross-tenant',
             'bidirectional' => 'nullable|boolean',

@@ -135,6 +135,12 @@
     {{-- Ziggy Routes --}}
     @routes
 
+    {{-- Umami analytics: cookieless, public pages only. Absent when unconfigured (staging, CI). --}}
+    @if (config('services.umami.website_id') && str_starts_with($page['component'] ?? '', 'Public/'))
+        <script defer src="{{ config('services.umami.script_url') }}"
+                data-website-id="{{ config('services.umami.website_id') }}"></script>
+    @endif
+
     @inertiaHead
 
 </head>

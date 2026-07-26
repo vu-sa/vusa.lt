@@ -42,4 +42,30 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    /*
+     * Self-hosted Umami analytics. The tracker script tag is rendered server-side in
+     * app.blade.php, so these are plain (non-VITE_) env values: changing them needs no
+     * frontend rebuild. An empty 'website_id' disables tracking entirely (staging, CI).
+     */
+    'umami' => [
+        'script_url' => env('UMAMI_SCRIPT_URL'),
+        'website_id' => env('UMAMI_WEBSITE_ID'),
+
+        /*
+         * Server-to-server API access, used by UmamiClient for the admin dashboard.
+         * Point this at loopback rather than the public URL: it avoids a hairpin through
+         * nginx and keeps working if the public vhost is down. It must include Umami's
+         * BASE_PATH when one was baked in at build time (production: /analytics).
+         */
+        'api_url' => env('UMAMI_API_URL'),
+        'username' => env('UMAMI_USERNAME'),
+        'password' => env('UMAMI_PASSWORD'),
+
+        /*
+         * The date tracking started. Content published before this has views we simply do
+         * not have, so the UI says so instead of implying the numbers are lifetime totals.
+         */
+        'data_since' => env('UMAMI_DATA_SINCE', '2026-07-26'),
+    ],
+
 ];

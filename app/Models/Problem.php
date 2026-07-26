@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Models\Traits\HasTranslations;
+use App\Policies\ProblemPolicy;
+use App\Services\HtmlSanitizerService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -55,7 +57,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Problem extends Model
 {
-    use HasFactory, HasTranslations, HasUlids, LogsActivity, Searchable, SoftDeletes;
+    use HasFactory, HasTranslations, HasUlids, LogsActivity, Searchable, SoftDeletes {
+        HasTranslations::setTranslation as baseSetTranslation;
+    }
 
     protected $guarded = [];
 
@@ -65,6 +69,31 @@ class Problem extends Model
         'occurred_at' => 'date',
         'resolved_at' => 'date',
     ];
+
+    /**
+     * The Tiptap-authored fields rendered with `v-html` on ShowProblem. Problems
+     * are visible to every authenticated user (see {@see ProblemPolicy::view()})
+     * while only tenant staff may write them, so unsanitized markup here would let
+     * one tenant's editor reach every other user's browser.
+     *
+     * @var list<string>
+     */
+    private const SANITIZED_HTML_FIELDS = ['description', 'solution', 'steps_taken'];
+
+    /**
+     * Sanitize on write. Spatie funnels every write path — mass assignment,
+     * `update()`, `setTranslations()` — through `setTranslation()`, so overriding
+     * it here covers them all. An `Attribute` mutator would not fire at all,
+     * because translatable attributes never reach `setAttribute()`'s parent call.
+     */
+    public function setTranslation(string $key, string $locale, $value): self
+    {
+        if (in_array($key, self::SANITIZED_HTML_FIELDS, true) && is_string($value)) {
+            $value = app(HtmlSanitizerService::class)->sanitizeRichContent($value);
+        }
+
+        return $this->baseSetTranslation($key, $locale, $value);
+    }
 
     public function getActivitylogOptions(): LogOptions
     {

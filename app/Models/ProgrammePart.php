@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Contracts\BelongsToProgramme;
 use App\Models\Pivots\ProgrammeElement;
 use App\Models\Traits\HasTranslations;
 use Database\Factories\ProgrammePartFactory;
@@ -36,7 +37,7 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
-class ProgrammePart extends Model
+class ProgrammePart extends Model implements BelongsToProgramme
 {
     /** @use HasFactory<ProgrammePartFactory> */
     use HasFactory, HasTranslations;
@@ -53,5 +54,25 @@ class ProgrammePart extends Model
     public function programmeBlocks()
     {
         return $this->belongsToMany(ProgrammeBlock::class, 'programme_block_part');
+    }
+
+    /**
+     * The programme this part belongs to. A part is placed either directly on a
+     * day or inside a block, so both paths are tried. Drives authorization —
+     * see {@see Programme::owningTraining()}.
+     */
+    public function owningProgramme(): ?Programme
+    {
+        /** @var ProgrammeDay|null $day */
+        $day = $this->programmeDays()->first();
+
+        if ($day !== null) {
+            return $day->programme;
+        }
+
+        /** @var ProgrammeBlock|null $block */
+        $block = $this->programmeBlocks()->first();
+
+        return $block?->owningProgramme();
     }
 }

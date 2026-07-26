@@ -1032,11 +1032,13 @@ declare global {
       translations: unknown
       // relations
       days?: ProgrammeDay[]
-      programmable?: Programme
+      trainings?: Training[]
       // counts
       days_count: number
+      trainings_count: number
       // exists
       days_exists: boolean
+      trainings_exists: boolean
     }
 
     export interface ProgrammeBlock {
@@ -1052,10 +1054,12 @@ declare global {
       translations: unknown
       // relations
       parts?: ProgrammePart[]
+      section?: ProgrammeSection
       // counts
       parts_count: number
       // exists
       parts_exists: boolean
+      section_exists: boolean
     }
 
     export interface ProgrammeDay {

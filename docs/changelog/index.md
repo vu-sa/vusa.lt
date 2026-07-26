@@ -7,6 +7,11 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.16 — Nauja svetainės lankomumo analitika (2026-07-26) {#v1-16}
+
+- ⭐ **Lankomumo statistika „Svetainės“ skiltyje** — pasirinkto padalinio puslapių peržiūros, lankytojai, peržiūrų grafikas ir populiariausi puslapiai matomi tiesiai „Mano“ sistemoje. Rodomi tik to padalinio svetainės duomenys, todėl atskiros analitikos paskyros nebereikia
+- ⭐ **Peržiūros konkrečios naujienos ar puslapio redagavimo lange** — atidarius naujieną arba puslapį matosi, kiek kartų jis peržiūrėtas ir kiek turėjo lankytojų. Jei įrašas paskelbtas anksčiau, nei pradėti kaupti duomenys, apie tai įspėjama
+
 ## v1.15 — Atostogos neskaičiuojamos į susitikimų laikotarpius {#v1-15}
 
 - ✨ **Atostogos neįskaičiuojamos į posėdžių periodiškumą** — vasaros, žiemos, sausio pabaigos ir Velykų atostogų dienos nebeskaičiuojamos vertinant, kiek laiko institucija neposėdžiavo. Todėl per atostogas nebekuriamos užduotys ir nebesiunčiami priminimai, o užduočių terminai nebenukrenta į atostogų laikotarpį

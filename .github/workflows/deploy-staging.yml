@@ -51,7 +51,6 @@ jobs:
 
       - name: Build staging frontend assets
         run: |
-          VITE_POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }} \
           VITE_ARCHYVAS_PASSWORD=${{ secrets.ARCHYVAS_PASSWORD }} \
           VITE_ATSTOVAI_PASSWORD=${{ secrets.ATSTOVAI_PASSWORD }} \
           VITE_SHAREPOINT_CLIENT_ID=${{ secrets.SHAREPOINT_CLIENT_ID }} \

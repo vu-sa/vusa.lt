@@ -7,6 +7,7 @@ use Database\Factories\ProgrammeFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -18,7 +19,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $updated_at
  * @property-read Collection<int, ProgrammeDay> $days
  * @property-read array $translatable_columns_from
- * @property-read Model|\Eloquent $programmable
+ * @property-read Collection<int, Training> $trainings
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\ProgrammeFactory factory($count = null, $state = [])
@@ -46,8 +47,27 @@ class Programme extends Model
         return $this->hasMany(ProgrammeDay::class);
     }
 
-    public function programmable()
+    /**
+     * Inverse of {@see Training::programmes()}.
+     *
+     * Ownership lives in the `programmables` pivot table — the `programmes`
+     * table itself carries no `programmable_id`/`programmable_type` columns.
+     */
+    public function trainings(): MorphToMany
     {
-        return $this->morphTo();
+        return $this->morphedByMany(Training::class, 'programmable');
+    }
+
+    /**
+     * The training that owns this programme. Authorization for every programme
+     * mutation is delegated to this training's policy, since programmes carry
+     * no permissions of their own.
+     */
+    public function owningTraining(): ?Training
+    {
+        /** @var Training|null $training */
+        $training = $this->trainings()->first();
+
+        return $training;
     }
 }

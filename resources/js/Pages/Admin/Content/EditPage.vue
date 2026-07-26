@@ -3,6 +3,11 @@
     <template #header>
       {{ page.title }}
     </template>
+    <ContentAnalyticsCard
+      type="page"
+      :id="page.id"
+      :content-date="page.publish_time ?? page.created_at"
+      class="mb-4" />
     <UpsertModelLayout>
       <template #card-header>
         <span>Puslapio informacija</span>
@@ -24,6 +29,7 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
 
+import ContentAnalyticsCard from '@/Components/Analytics/ContentAnalyticsCard.vue';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import PageForm from '@/Components/AdminForms/PageForm.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';

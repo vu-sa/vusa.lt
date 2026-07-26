@@ -120,7 +120,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, provide } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { router, useHttp } from '@inertiajs/vue3';
 import { useFetch, useStorage } from '@vueuse/core';
 import { useFuse } from '@vueuse/integrations/useFuse';
 import { toast } from 'vue-sonner';
@@ -167,6 +167,10 @@ const selectedFile = ref<MyDriveItem | null>(null);
 const search = ref('');
 const itemsPerPage = ref(50);
 const currentPage = ref(1);
+const folderHttp = useHttp({
+  path: '',
+  name: '',
+});
 
 // Display name for upload context indicator
 const fileableDisplayName = computed(() => {
@@ -407,34 +411,26 @@ async function handleCreateFolder() {
   const folderName = prompt($t('Įveskite aplanko pavadinimą'));
   if (!folderName || !folderName.trim()) return;
 
+  folderHttp.path = currentPath.value;
+  folderHttp.name = folderName.trim();
+
   loading.value = true;
-  try {
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-    const response = await fetch(route('sharepoint.createFolder'), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': csrfToken,
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify({ path: currentPath.value, name: folderName.trim() }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      toast.error(error.message || $t('Nepavyko sukurti aplanko'));
-      return;
-    }
-
-    toast.success($t('Aplankas sukurtas'));
-    refreshFiles();
-  }
-  catch (error) {
-    toast.error($t('Nepavyko sukurti aplanko'));
-  }
-  finally {
-    loading.value = false;
-  }
+  await folderHttp.post(route('sharepoint.createFolder'), {
+    onSuccess: () => {
+      toast.success($t('Aplankas sukurtas'));
+      refreshFiles();
+    },
+    onHttpException: (response) => {
+      const data = response.data as { message?: string } | undefined;
+      toast.error(data?.message || $t('Nepavyko sukurti aplanko'));
+    },
+    onNetworkError: () => {
+      toast.error($t('Nepavyko sukurti aplanko'));
+    },
+    onFinish: () => {
+      loading.value = false;
+    },
+  });
 }
 
 function handleFileDeleted(id: string | number) {

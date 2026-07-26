@@ -211,7 +211,6 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import { usePage } from '@inertiajs/vue3';
 
 import { useApi, useApiMutation } from '@/Composables/useApi';
 import { useToasts } from '@/Composables/useToasts';
@@ -274,7 +273,6 @@ const props = defineProps<{
   contentPartId: number;
 }>();
 
-const page = usePage();
 const toasts = useToasts();
 
 const open = ref(false);
@@ -282,7 +280,6 @@ const currentPage = ref(1);
 const pendingDeleteId = ref<string | null>(null);
 const showDeleteOneDialog = ref(false);
 const deleteAllOpen = ref(false);
-const isDeletingOne = ref(false);
 
 const apiUrl = computed(() =>
   route('api.v1.admin.text-box-submissions.index', {
@@ -300,6 +297,11 @@ const deleteAllUrl = computed(() =>
   route('api.v1.admin.text-box-submissions.destroyAll', { content_part_id: props.contentPartId }),
 );
 
+const deleteOneUrl = computed(() => {
+  if (!pendingDeleteId.value) return '';
+  return route('api.v1.admin.text-box-submissions.destroy', { submission: pendingDeleteId.value });
+});
+
 const { data: submissions, response, isFetching, execute } = useApi<Submission[]>(apiUrl, {
   immediate: true,
   showErrorToast: true,
@@ -310,6 +312,13 @@ const { execute: executeDeleteAll, isFetching: isDeletingAll } = useApiMutation(
   'DELETE',
   undefined,
   { showSuccessToast: true },
+);
+
+const { execute: executeDeleteOne, isFetching: isDeletingOne, response: deleteOneResponse } = useApiMutation(
+  deleteOneUrl,
+  'DELETE',
+  undefined,
+  { showSuccessToast: false, showErrorToast: false },
 );
 
 const pagination = computed(() => {
@@ -357,44 +366,20 @@ async function handleDeleteOne(): Promise<void> {
   const id = pendingDeleteId.value;
   if (!id) { return; }
 
-  isDeletingOne.value = true;
+  await executeDeleteOne();
 
-  try {
-    const csrfToken = (page.props.csrf_token as string) || '';
-    const url = route('api.v1.admin.text-box-submissions.destroy', { submission: id });
-
-    const res = await fetch(url, {
-      method: 'DELETE',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRF-TOKEN': csrfToken,
-      },
-      credentials: 'same-origin',
-    });
-
-    const data = await res.json();
-
-    if (data.success) {
-      toasts.success(data.message || 'Submission deleted');
-      pendingDeleteId.value = null;
-      if (submissions.value?.length === 1 && currentPage.value > 1) {
-        currentPage.value -= 1;
-      }
-      else {
-        await execute();
-      }
+  if (deleteOneResponse.value?.success) {
+    toasts.success(deleteOneResponse.value.message || 'Submission deleted');
+    pendingDeleteId.value = null;
+    if (submissions.value?.length === 1 && currentPage.value > 1) {
+      currentPage.value -= 1;
     }
     else {
-      toasts.error(data.message || 'An error occurred');
+      await execute();
     }
   }
-  catch {
-    toasts.error('An error occurred');
-  }
-  finally {
-    isDeletingOne.value = false;
+  else {
+    toasts.error(deleteOneResponse.value?.message || 'An error occurred');
   }
 }
 

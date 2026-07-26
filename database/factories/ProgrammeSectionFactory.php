@@ -19,6 +19,7 @@ class ProgrammeSectionFactory extends Factory
     {
         return [
             'title' => $this->faker->sentence,
+            'duration' => $this->faker->numberBetween(15, 120),
         ];
     }
 }

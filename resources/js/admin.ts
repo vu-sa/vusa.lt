@@ -14,7 +14,6 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
 import { initPWA } from './Composables/usePWA';
 import { initProgress } from './Composables/useTutorialProgress';
-import { useCookieConsent } from './Composables/useCookieConsent';
 
 const AdminLayout = defineAsyncComponent(
   () => import('./Components/Layouts/AdminLayout.vue'),
@@ -95,10 +94,6 @@ createInertiaApp({
     // Initialize tutorial progress from server data after mounting
     // Inertia props are only available after the app is mounted
     initProgress();
-
-    // Load analytics only if the user has opted in (GDPR). Staff manage this via the
-    // account menu's cookie settings.
-    useCookieConsent().initAnalyticsFromConsent();
 
     delete el.dataset.page;
 

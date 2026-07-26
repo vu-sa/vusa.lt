@@ -2,6 +2,7 @@
 
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\Pivots\ReservationResource;
 use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\ResourceCategory;
@@ -10,6 +11,30 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
+
+/**
+ * Build a reservation owned by $owner holding one $resource. Reservations are
+ * only ever mutated through this pivot — `reservations.update` does not exist.
+ */
+function makeReservationResource(Resource $resource, User $owner): ReservationResource
+{
+    $reservation = Reservation::factory()->create([
+        'start_time' => now()->addDays(2),
+        'end_time' => now()->addDays(2)->addHours(1),
+    ]);
+
+    $reservation->users()->attach($owner->id);
+
+    $reservation->resources()->attach($resource->id, [
+        'quantity' => 1,
+        'start_time' => $reservation->start_time,
+        'end_time' => $reservation->end_time,
+    ]);
+
+    return ReservationResource::query()
+        ->where('reservation_id', $reservation->id)
+        ->sole();
+}
 
 beforeEach(function () {
     $this->tenant = Tenant::query()->first();
@@ -77,40 +102,37 @@ describe('auth: simple user', function () {
         ])->assertSessionHasErrors();
     });
 
-    test('can update own reservations', function () {
-        $reservation = Reservation::factory()->create([
-            'start_time' => now()->addDays(2),
-            'end_time' => now()->addDays(2)->addHours(1),
-        ]);
-        $reservation->users()->attach($this->user->id);
+    /**
+     * A reservation is never updated as a whole — `reservations.update` does not
+     * exist. Every mutation goes through the reservationResources pivot, which
+     * authorizes against the parent reservation.
+     */
+    test('can update resources on own reservations', function () {
+        $reservationResource = makeReservationResource($this->resource, $this->user);
 
-        // TODO: Direct reservation updates are not currently supported
-        // Updates should go through reservation resources instead
-        asUser($this->user)->put(route('reservations.update', $reservation), [
-            'name' => 'Updated Meeting Name',
-            'description' => 'Updated description',
-            'start_time' => now()->addDays(2)->format('Y-m-d H:i:s'),
-            'end_time' => now()->addDays(2)->addHours(2)->format('Y-m-d H:i:s'),
-        ]);
+        asUser($this->user)->put(route('reservationResources.update', $reservationResource), [
+            'start_time' => now()->addDays(2)->getTimestampMs(),
+            'end_time' => now()->addDays(2)->addHours(3)->getTimestampMs(),
+            'resource_id' => $this->resource->id,
+            'quantity' => 2,
+        ])->assertRedirect();
 
-        $reservation->refresh();
-        expect($reservation->name)->toBe('Updated Meeting Name');
-    })->todo('Direct reservation updates need to be implemented');
+        expect($reservationResource->fresh()->quantity)->toBe(2);
+    });
 
-    test('cannot update other users reservations', function () {
+    test('cannot update resources on other users reservations', function () {
         $otherUser = User::factory()->create();
-        $reservation = Reservation::factory()->create();
-        $reservation->users()->attach($otherUser->id);
+        $reservationResource = makeReservationResource($this->resource, $otherUser);
 
-        // Direct reservation updates are not allowed for anyone
-        asUser($this->user)->put(route('reservations.update', $reservation), [
-            'name' => 'Hijacked Meeting',
-        ]);
+        asUser($this->user)->put(route('reservationResources.update', $reservationResource), [
+            'start_time' => now()->addDays(2)->getTimestampMs(),
+            'end_time' => now()->addDays(2)->addHours(3)->getTimestampMs(),
+            'resource_id' => $this->resource->id,
+            'quantity' => 99,
+        ])->assertStatus(403);
 
-        // Should remain unchanged since updates aren't implemented
-        $reservation->refresh();
-        expect($reservation->name)->not()->toBe('Hijacked Meeting');
-    })->todo('Direct reservation updates need proper authorization');
+        expect($reservationResource->fresh()->quantity)->not->toBe(99);
+    });
 
     test('can delete own reservations', function () {
         $reservation = Reservation::factory()->create();
@@ -212,17 +234,17 @@ describe('auth: resource manager', function () {
             'start_date' => now(),
         ]);
 
-        $reservation = Reservation::factory()->create();
-        $reservation->users()->attach($otherUser->id);
+        $reservationResource = makeReservationResource($this->resource, $otherUser);
 
-        // TODO: Direct reservation updates are not supported anyway
-        asUser($this->resourceManager)->put(route('reservations.update', $reservation), [
-            'name' => 'Manager Updated Name',
-        ]);
+        asUser($this->resourceManager)->put(route('reservationResources.update', $reservationResource), [
+            'start_time' => now()->addDays(2)->getTimestampMs(),
+            'end_time' => now()->addDays(2)->addHours(3)->getTimestampMs(),
+            'resource_id' => $this->resource->id,
+            'quantity' => 3,
+        ])->assertRedirect();
 
-        $reservation->refresh();
-        expect($reservation->name)->toBe('Manager Updated Name');
-    })->todo('Resource managers should be able to update reservations in their tenant');
+        expect($reservationResource->fresh()->quantity)->toBe(3);
+    })->todo('Resource managers should be able to manage reservations for resources in their tenant');
 
     test('cannot manage reservations from other tenants', function () {
         // Create a user from completely different tenant structure
@@ -234,18 +256,18 @@ describe('auth: resource manager', function () {
             'start_date' => now(),
         ]);
 
-        $reservation = Reservation::factory()->create();
-        $reservation->users()->attach($otherUser->id);
+        $foreignResource = Resource::factory()->create(['tenant_id' => $otherTenant->id]);
+        $reservationResource = makeReservationResource($foreignResource, $otherUser);
 
-        // Resource Manager from different tenant should not be able to update
-        // TODO: Direct reservation updates are not supported anyway
-        asUser($this->resourceManager)->put(route('reservations.update', $reservation), [
-            'name' => 'Unauthorized Update',
-        ]);
+        asUser($this->resourceManager)->put(route('reservationResources.update', $reservationResource), [
+            'start_time' => now()->addDays(2)->getTimestampMs(),
+            'end_time' => now()->addDays(2)->addHours(3)->getTimestampMs(),
+            'resource_id' => $foreignResource->id,
+            'quantity' => 99,
+        ])->assertStatus(403);
 
-        $reservation->refresh();
-        expect($reservation->name)->not()->toBe('Unauthorized Update');
-    })->todo('Cross-tenant authorization for reservation updates');
+        expect($reservationResource->fresh()->quantity)->not->toBe(99);
+    })->todo('Cross-tenant authorization for reservation resource updates');
 });
 
 describe('resource availability logic', function () {

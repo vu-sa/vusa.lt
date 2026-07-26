@@ -19,14 +19,14 @@
       <!-- Honeypot: hidden from real users, bots fill it in -->
       <div aria-hidden="true" style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;">
         <label for="website">Website</label>
-        <input id="website" v-model="honeypot" type="text" name="website" tabindex="-1" autocomplete="off">
+        <input id="website" v-model="http.website" type="text" name="website" tabindex="-1" autocomplete="off">
       </div>
 
       <div class="relative">
         <Textarea
-          v-model="text"
+          v-model="http.text"
           :placeholder
-          :disabled="isSubmitting"
+          :disabled="http.processing"
           :maxlength="MAX_LENGTH"
           class="min-h-28 resize-y"
           required
@@ -39,8 +39,8 @@
         </span>
       </div>
       <div class="flex items-center gap-3">
-        <Button type="submit" :disabled="isSubmitting || !text.trim()">
-          <span v-if="isSubmitting" class="flex items-center gap-2">
+        <Button type="submit" :disabled="http.processing || !http.text.trim()">
+          <span v-if="http.processing" class="flex items-center gap-2">
             <span class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-r-transparent" />
             {{ $t('rich-content.text_box_submit') }}
           </span>
@@ -56,9 +56,10 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue';
-import { usePage } from '@inertiajs/vue3';
+import { useHttp, usePage } from '@inertiajs/vue3';
 
 import type { TextBox } from '@/Types/contentParts';
+import type { ApiResponse } from '@/Types/api.d';
 import { Button } from '@/Components/ui/button';
 import { Textarea } from '@/Components/ui/textarea';
 
@@ -96,13 +97,16 @@ const closedMessage = computed(() => {
 
 const storageKey = computed(() => `text_box_submitted_${props.element.id}`);
 
-const text = ref('');
-const honeypot = ref('');
 const submitted = ref(false);
-const isSubmitting = ref(false);
 const errorMessage = ref('');
 
-const remaining = computed(() => MAX_LENGTH - text.value.length);
+const http = useHttp({
+  content_part_id: props.element.id,
+  text: '',
+  website: '',
+});
+
+const remaining = computed(() => MAX_LENGTH - http.text.length);
 
 onMounted(() => {
   if (localStorage.getItem(storageKey.value) === '1') {
@@ -111,45 +115,27 @@ onMounted(() => {
 });
 
 async function submit(): Promise<void> {
-  if (!text.value.trim() || isSubmitting.value) { return; }
+  if (!http.text.trim() || http.processing) { return; }
 
-  isSubmitting.value = true;
   errorMessage.value = '';
 
-  try {
-    const csrfToken = (page.props.csrf_token as string) || '';
-
-    const response = await fetch(route('api.v1.text-box-submissions.store'), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRF-TOKEN': csrfToken,
-      },
-      credentials: 'same-origin',
-      body: JSON.stringify({
-        content_part_id: props.element.id,
-        text: text.value,
-        website: honeypot.value,
-      }),
-    });
-
-    const data = await response.json();
-
-    if (data.success) {
-      submitted.value = true;
-      localStorage.setItem(storageKey.value, '1');
-    }
-    else {
-      errorMessage.value = data.message || 'An error occurred. Please try again.';
-    }
-  }
-  catch {
-    errorMessage.value = 'An error occurred. Please try again.';
-  }
-  finally {
-    isSubmitting.value = false;
-  }
+  await http.post(route('api.v1.text-box-submissions.store'), {
+    onSuccess: (json) => {
+      const response = json as ApiResponse<unknown>;
+      if (response.success) {
+        submitted.value = true;
+        localStorage.setItem(storageKey.value, '1');
+      }
+      else {
+        errorMessage.value = response.message || 'An error occurred. Please try again.';
+      }
+    },
+    onHttpException: () => {
+      errorMessage.value = 'An error occurred. Please try again.';
+    },
+    onNetworkError: () => {
+      errorMessage.value = 'An error occurred. Please try again.';
+    },
+  });
 }
 </script>

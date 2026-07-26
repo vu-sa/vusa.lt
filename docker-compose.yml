@@ -109,6 +109,38 @@ services:
             test: [CMD, bash, -c, "exec 3<>/dev/tcp/localhost/8108 && printf 'GET /health HTTP/1.1\\r\\nConnection: close\\r\\n\\r\\n' >&3 && head -n1 <&3 | grep '200' && exec 3>&-"]
             retries: 5
             timeout: 7s
+    umami:
+        image: 'ghcr.io/umami-software/umami:postgresql-latest'
+        ports:
+            # Host port is 3001 because the container always listens on 3000 internally.
+            - '${FORWARD_UMAMI_PORT:-3001}:3000'
+        environment:
+            DATABASE_URL: 'postgresql://umami:umami@umami-db:5432/umami'
+            APP_SECRET: '${UMAMI_APP_SECRET:-local-dev-secret}'
+        depends_on:
+            umami-db:
+                condition: service_healthy
+        init: true
+        networks:
+            - sail
+        healthcheck:
+            test: ["CMD-SHELL", "curl -f http://localhost:3000/api/heartbeat || exit 1"]
+            retries: 5
+            timeout: 5s
+    umami-db:
+        image: 'postgres:15-alpine'
+        environment:
+            POSTGRES_DB: umami
+            POSTGRES_USER: umami
+            POSTGRES_PASSWORD: umami
+        volumes:
+            - 'sail-umami-db:/var/lib/postgresql/data'
+        networks:
+            - sail
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U umami -d umami"]
+            retries: 5
+            timeout: 5s
     reverb:
         build:
             context: ./vendor/laravel/sail/runtimes/8.5
@@ -155,4 +187,6 @@ volumes:
     sailredis:
         driver: local
     sail-typesense:
+        driver: local
+    sail-umami-db:
         driver: local

@@ -499,6 +499,21 @@ class RelationshipService
         return $loadedInstitutions;
     }
 
+    /**
+     * The model classes that may take part in a relationship — the fully
+     * qualified form of {@see AllowedRelationshipablesEnum}, for validation
+     * rules that must reject a free-form `model_type`.
+     *
+     * @return list<class-string>
+     */
+    public static function allowedModelClasses(): array
+    {
+        return [
+            Institution::class,
+            Type::class,
+        ];
+    }
+
     public static function getModelsByClass(string $modelClass)
     {
         if (! class_exists($modelClass)) {

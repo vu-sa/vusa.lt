@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Contracts\BelongsToProgramme;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\UpdateProgrammeRequest;
 use App\Models\Programme;
@@ -10,7 +11,7 @@ use App\Models\ProgrammeDay;
 use App\Models\ProgrammePart;
 use App\Models\ProgrammeSection;
 use App\Services\ModelAuthorizer as Authorizer;
-use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
 class ProgrammeController extends AdminController
@@ -18,47 +19,10 @@ class ProgrammeController extends AdminController
     public function __construct(public Authorizer $authorizer) {}
 
     /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Programme $programme)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Programme $programme)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
+     *
+     * Authorization is handled by {@see UpdateProgrammeRequest::authorize()},
+     * which delegates to the policy of the training that owns this programme.
      */
     public function update(UpdateProgrammeRequest $request, Programme $programme)
     {
@@ -67,6 +31,7 @@ class ProgrammeController extends AdminController
         DB::transaction(function () use ($validatedData, $programme) {
             foreach ($validatedData['days'] as $dayIndex => $dayData) {
                 $day = ProgrammeDay::query()->findOrNew($dayData['id']);
+                $this->assertBelongsToProgramme($programme, $day);
 
                 $day->title = $dayData['title'];
                 $day->start_time = $dayData['start_time'];
@@ -78,6 +43,7 @@ class ProgrammeController extends AdminController
                 foreach ($dayData['elements'] as $elementIndex => $elementData) {
                     if ($elementData['type'] === 'section') {
                         $section = ProgrammeSection::query()->findOrNew($elementData['id']);
+                        $this->assertBelongsToProgramme($programme, $section);
 
                         $section->title = $elementData['title'];
                         $section->duration = $elementData['duration'];
@@ -91,8 +57,16 @@ class ProgrammeController extends AdminController
                             $day->sections()->updateExistingPivot($section->id, ['order' => $elementIndex]);
                         }
 
-                        foreach ($elementData['blocks'] as $blockIndex => $blockData) {
+                        foreach ($elementData['blocks'] as $blockData) {
                             $block = ProgrammeBlock::query()->findOrNew($blockData['id']);
+
+                            // A block is owned by its section outright, so the
+                            // stricter parentage check applies.
+                            abort_if(
+                                $block->exists && $block->programme_section_id !== $section->id,
+                                403,
+                                'This block belongs to another section.'
+                            );
 
                             $block->title = $blockData['title'];
                             $block->description = $blockData['description'] ?? null;
@@ -103,6 +77,7 @@ class ProgrammeController extends AdminController
 
                             foreach ($blockData['parts'] as $partIndex => $partData) {
                                 $part = ProgrammePart::query()->findOrNew($partData['id']);
+                                $this->assertBelongsToProgramme($programme, $part);
 
                                 $part->title = $partData['title'];
                                 $part->description = $partData['description'] ?? null;
@@ -121,6 +96,7 @@ class ProgrammeController extends AdminController
                         }
                     } elseif ($elementData['type'] === 'part') {
                         $part = ProgrammePart::query()->findOrNew($elementData['id']);
+                        $this->assertBelongsToProgramme($programme, $part);
 
                         $part->title = $elementData['title'];
                         $part->description = $elementData['description'] ?? null;
@@ -144,10 +120,23 @@ class ProgrammeController extends AdminController
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Refuse to pull an existing day, section or part out of another programme
+     * and into this one. `findOrNew` happily resolves any id in the payload, so
+     * elements that already exist must be proven to belong here. Elements that
+     * are new (or not yet attached to anything) have no owner to violate.
      */
-    public function destroy(Programme $programme)
+    private function assertBelongsToProgramme(Programme $programme, Model&BelongsToProgramme $element): void
     {
-        //
+        if (! $element->exists) {
+            return;
+        }
+
+        $owner = $element->owningProgramme();
+
+        abort_if(
+            $owner !== null && $owner->id !== $programme->id,
+            403,
+            'This element belongs to another programme.'
+        );
     }
 }

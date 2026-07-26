@@ -257,6 +257,32 @@ return back()->with(['error' => '…', 'statusCode' => 403]);
 
 Authorization tests expect 403 status codes for direct requests — never `assertRedirect` for them.
 
+## Security rules
+
+These come from real bugs found in this codebase. Treat them as non-negotiable.
+
+**Every mutating route authorizes.** A controller that only injects `ModelAuthorizer` without calling it is unprotected — the `auth` middleware proves *who* the user is, not *what* they may touch. Check `routes/admin.php` against the controller: a registered route with no `authorize`/`handleAuthorization`/Form-Request `authorize()` is a hole.
+
+**A child resource authorizes against its parent.** When a model carries no permissions of its own, delegate to the policy of the model that owns it, rather than inventing unseeded permissions (which lock out everyone but super admins). Precedents: `ReservationResourceController` → `Reservation`; `Programme*Controller` → the owning `Training` (`App\Http\Traits\AuthorizesProgrammes`).
+
+**`findOrNew()` on request ids is an IDOR.** It resolves *any* id, not just ones belonging to the record in the URL. Assert parentage before writing:
+
+```php
+abort_if($day->exists && $day->programme_id !== $programme->id, 403);
+```
+
+**Never dispatch a method name built from request input.** `$model->{$request->model_type}()->sync(...)` reaches unintended relations and 500s on unknown values. Resolve through an allowlist — `Type::TYPEABLE_RELATIONS`, `AllowedRelationshipablesEnum` — and validate with `Rule::in(...)`.
+
+**No `$request->all()` into `create()`/`update()`.** Use a Form Request or explicit `->only([...])`. Never mass-assign a whole request onto a model whose `$guarded` is empty.
+
+**Stored HTML is sanitized on write, not at render.** Anything later shown with `v-html` / `{!! !!}` goes through `HtmlSanitizerService` in a model mutator, so every write path is covered:
+- `sanitizeCommentBody()` — comment-tier markup.
+- `sanitizeRichContent()` — the Tiptap `full` preset (headings, images, tables, YouTube).
+
+Pick the profile matching the editor that produced the HTML; a too-tight profile silently deletes the author's content. For Spatie-translatable fields an `Attribute` mutator never fires — override `setTranslation()` instead (see `Problem`).
+
+**No raw identifiers in SQL.** Validate request-derived columns against `Schema::hasColumn` and use query-builder methods so the grammar quotes identifiers.
+
 ## Changelog
 
 User-facing changes go in `docs/changelog/index.md` (LT) **and** `docs/en/changelog/index.md` (EN). Skip purely internal changes (deps, refactors).

@@ -98,6 +98,27 @@ class Type extends Model implements SharepointFileableContract
     }
 
     /**
+     * The only models a type may be attached to, mapped to the relation holding
+     * them. A request-supplied `model_type` is resolved through this map — it is
+     * never turned into a method name and dispatched, which previously allowed
+     * `roles` to be synced and any unknown value to raise a 500.
+     *
+     * @var array<class-string, string>
+     */
+    public const TYPEABLE_RELATIONS = [
+        Institution::class => 'institutions',
+        Duty::class => 'duties',
+    ];
+
+    /**
+     * Resolve the relation that holds the models of this type's `model_type`.
+     */
+    public function typeableRelation(): ?string
+    {
+        return self::TYPEABLE_RELATIONS[$this->model_type] ?? null;
+    }
+
+    /**
      * @return MorphToMany<Institution, $this>
      */
     public function institutions(): MorphToMany

@@ -137,14 +137,7 @@ class PublicController extends Controller
      */
     protected function getSubdomainForTenant(?Tenant $tenant = null): string
     {
-        $tenant = $tenant ?? $this->tenant;
-
-        // Main 'vusa' tenant uses 'www' subdomain
-        if ($tenant->alias === 'vusa') {
-            return 'www';
-        }
-
-        return $tenant->alias;
+        return ($tenant ?? $this->tenant)->subdomain();
     }
 
     /**

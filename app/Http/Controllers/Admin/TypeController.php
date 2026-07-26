@@ -4,13 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexTypeRequest;
+use App\Http\Requests\StoreTypeRequest;
+use App\Http\Requests\UpdateTypeRequest;
 use App\Http\Traits\HasTanstackTables;
+use App\Models\Duty;
 use App\Models\Role;
 use App\Models\Type;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class TypeController extends AdminController
 {
@@ -81,28 +82,15 @@ class TypeController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreTypeRequest $request)
     {
-        $this->handleAuthorization('create', Type::class);
+        $validated = $request->validated();
 
-        $request->validate([
-            'title.lt' => 'required|string',
-            'title.en' => 'nullable|string',
-            'description.lt' => 'nullable|string',
-            'description.en' => 'nullable|string',
-            'model_type' => 'string|required',
-            'parent_id' => 'nullable|exists:types,id|different:id',
-            'roles' => 'nullable|array',
-            'slug' => 'nullable|string',
-            'extra_attributes' => 'nullable|array',
-            'extra_attributes.meeting_periodicity_days' => 'nullable|integer|min:1|max:365',
-        ]);
+        $type = Type::query()->create(
+            $request->only('title', 'model_type', 'description', 'parent_id', 'slug', 'extra_attributes')
+        );
 
-        // TODO: somehow check if model_type is valid and allowed
-
-        $type = Type::query()->create($request->only('title', 'model_type', 'description', 'parent_id', 'slug', 'extra_attributes'));
-
-        if ($request['model_type'] === 'App\Models\Duty') {
+        if ($validated['model_type'] === Duty::class) {
             $type->roles()->sync($request->input('roles', []));
         }
 
@@ -129,11 +117,13 @@ class TypeController extends AdminController
     {
         $this->handleAuthorization('update', $type);
 
-        $modelType = Str::of($type->model_type)->afterLast('\\')->lower()->plural()->toString();
+        // A type persisted before the allowlist existed may carry an unsupported
+        // model_type; fall back to loading nothing rather than blowing up.
+        $modelType = $type->typeableRelation();
 
         return $this->inertiaResponse('Admin/ModelMeta/EditType', [
             'contentType' => [
-                ...$type->load($modelType)->toFullArray(),
+                ...($modelType === null ? $type : $type->load($modelType))->toFullArray(),
                 'roles' => $type->roles->pluck('id')->toArray(),
             ],
             'contentTypes' => Type::select('id', 'title', 'model_type')->get(),
@@ -147,28 +137,19 @@ class TypeController extends AdminController
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Type $type)
+    public function update(UpdateTypeRequest $request, Type $type)
     {
-        $this->handleAuthorization('update', $type);
-
-        $request->validate([
-            'title.lt' => 'required|string',
-            'title.en' => 'nullable|string',
-            'description.lt' => 'nullable|string',
-            'description.en' => 'nullable|string',
-            'model_type' => 'required',
-            'parent_id' => 'nullable|exists:types,id|different:id',
-            'extra_attributes' => 'nullable|array',
-            'extra_attributes.meeting_periodicity_days' => 'nullable|integer|min:1|max:365',
-        ]);
+        $validated = $request->validated();
 
         $type->update($request->only('title', 'model_type', 'description', 'parent_id', 'extra_attributes'));
 
-        $modelType = Str::of($request->model_type)->afterLast('\\')->lower()->plural()->toString();
+        // Resolved through the allowlist rather than built from the request, so
+        // only `institutions` and `duties` are ever reachable.
+        $relation = Type::TYPEABLE_RELATIONS[$validated['model_type']];
 
-        $type->$modelType()->sync($request->input($modelType, []));
+        $type->{$relation}()->sync($request->input($relation, []));
 
-        if ($request['model_type'] === 'App\Models\Duty') {
+        if ($validated['model_type'] === Duty::class) {
             $type->roles()->sync($request->input('roles', []));
         }
 

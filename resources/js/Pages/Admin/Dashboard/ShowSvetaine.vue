@@ -18,143 +18,127 @@
           </Select>
         </div>
       </div>
-      <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              <div class="inline-flex items-center gap-2">
-                <component :is="PageIconFilled" />
-                Puslapiai
-              </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div class="grid grid-cols-2 gap-2">
-              <p>Visi</p>
-              <p>Išversti</p>
-              <span class="inline-block text-4xl font-bold">
-                {{ providedTenant?.pages?.length }}
-              </span>
-              <span class="inline-block text-4xl font-bold">
-                {{ providedTenant?.pages?.filter(page => page.other_lang_id).length }}
-              </span>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Link :href="route('pages.index')">
-              <Button size="sm" variant="secondary">
-                <PageIconFilled />
-                {{ $t('Rodyti visus') }}
-              </Button>
-            </Link>
-          </CardFooter>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              <div class="inline-flex items-center gap-2">
-                <component :is="NewsIconFilled" />
-                Naujienos
-              </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div class="grid grid-cols-2 gap-2">
-              <p>Visos</p>
-              <p>Išverstos</p>
-
-              <span class="inline-block text-4xl font-bold">
-                {{ providedTenant?.news?.length }}
-              </span>
-
-              <span class="inline-block text-4xl font-bold">
-                {{ providedTenant?.news?.filter(news => news.other_lang_id).length }}
-              </span>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Link :href="route('news.index')">
-              <Button size="sm" variant="secondary">
-                <NewsIconFilled />
-                {{ $t('Rodyti visus') }}
-              </Button>
-            </Link>
-          </CardFooter>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Visų naujienų statistika</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div ref="wrapper" class="mx-auto w-fit" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              <div class="inline-flex items-center gap-2">
-                <component :is="QuickLinkIconFilled" />
-                Greitieji mygtukai
-              </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <span class="inline-block text-4xl font-bold">
-              {{ providedTenant?.quick_links?.length }}
-            </span>
-          </CardContent>
-          <CardFooter>
-            <Link :href="route('quickLinks.index')">
-              <Button size="sm" variant="secondary">
-                <QuickLinkIconFilled />
-                {{ $t('Rodyti visus') }}
-              </Button>
-            </Link>
-          </CardFooter>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              <div class="inline-flex items-center gap-2">
-                <component :is="CalendarIconFilled" />
-                Kalendoriaus įrašai
-              </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p class="mb-2">
-              Paskutinius 12 mėnesių:
+      <section class="mb-10">
+        <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h3 class="mb-0">
+              {{ $t('analytics.title') }}
+            </h3>
+            <p v-if="analytics?.hostname" class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+              {{ $t('analytics.hostname_hint', { hostname: analytics.hostname }) }}
             </p>
-            <span class="inline-block text-4xl font-bold">
-              {{ providedTenant?.calendar?.length }}
-            </span>
-          </CardContent>
-          <CardFooter>
-            <Link :href="route('calendar.index')">
-              <Button size="sm" variant="secondary">
-                <CalendarIconFilled />
-                {{ $t('Rodyti visus') }}
-              </Button>
-            </Link>
-          </CardFooter>
-        </Card>
-      </div>
+          </div>
+          <Tabs v-model="period">
+            <TabsList>
+              <TabsTrigger value="7d">
+                {{ $t('analytics.period_7d') }}
+              </TabsTrigger>
+              <TabsTrigger value="30d">
+                {{ $t('analytics.period_30d') }}
+              </TabsTrigger>
+              <TabsTrigger value="12m">
+                {{ $t('analytics.period_12m') }}
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+
+        <p class="mb-4 flex items-start gap-2 rounded-lg bg-zinc-100 p-3 text-sm text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+          <Info class="mt-0.5 size-4 shrink-0" />
+          <span>{{ $t('analytics.since_notice') }}</span>
+        </p>
+
+        <div v-if="isFetchingAnalytics" class="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+          <Skeleton v-for="n in 3" :key="n" class="h-44 w-full rounded-xl" />
+        </div>
+
+        <EmptyState
+          v-else-if="!analytics?.available"
+          :title="$t('analytics.unavailable_title')"
+          :description="$t('analytics.unavailable_description')" />
+
+        <EmptyState
+          v-else-if="!analytics.totals?.pageviews"
+          :title="$t('analytics.empty_title')"
+          :description="$t('analytics.empty_description')" />
+
+        <div v-else class="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                <div class="inline-flex items-center gap-2">
+                  <Eye class="size-5" />
+                  {{ $t('analytics.pageviews') }}
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div class="grid grid-cols-2 gap-2">
+                <p>{{ $t('analytics.pageviews') }}</p>
+                <p>{{ $t('analytics.visitors') }}</p>
+                <span class="inline-block text-4xl font-bold">
+                  {{ analytics.totals.pageviews }}
+                </span>
+                <span class="inline-block text-4xl font-bold">
+                  {{ analytics.totals.visitors }}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>{{ $t('analytics.trend') }}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div ref="analyticsWrapper" class="mx-auto w-fit" />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                <div class="inline-flex items-center gap-2">
+                  <component :is="PageIconFilled" />
+                  {{ $t('analytics.top_pages') }}
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ol class="flex flex-col gap-1 text-sm">
+                <li
+                  v-for="page in analytics.topPages"
+                  :key="page.path"
+                  class="flex items-center justify-between gap-4">
+                  <span class="truncate text-zinc-600 dark:text-zinc-300">{{ page.path }}</span>
+                  <span class="shrink-0 font-semibold tabular-nums">{{ page.views }}</span>
+                </li>
+              </ol>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
     </section>
   </AdminContentPage>
 </template>
 
 <script setup lang="ts">
-import { Link, router } from '@inertiajs/vue3';
-import { binX, plot, rectY } from '@observablehq/plot';
-import { onMounted, ref, watch, computed } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { areaY, line, plot, ruleY } from '@observablehq/plot';
+import { ref, watch, computed, nextTick } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
+import { Eye, Info } from 'lucide-vue-next';
 
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
-import { Button } from '@/Components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
+import EmptyState from '@/Components/Empty/EmptyState.vue';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
-import { CalendarIconFilled, NewsIconFilled, PageIconFilled, QuickLinkIconFilled } from '@/Components/icons';
+import { Skeleton } from '@/Components/ui/skeleton';
+import { Tabs, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import { useApi } from '@/Composables/useApi';
+import { usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
+import { PageIconFilled } from '@/Components/icons';
+import type { AnalyticsOverviewData } from '@/Types/api.d';
 
 const { tenants, providedTenant } = defineProps<{
   tenants: App.Entities.Tenant[];
@@ -167,43 +151,66 @@ const handleTenantUpdateValue = (value: string) => {
   router.reload({ data: { tenant_id: Number(value) } });
 };
 
-const wrapper = ref(null);
+/**
+ * Tenant-scoped traffic from the self-hosted Umami instance. The URL is computed so that
+ * changing either the tenant or the period re-fetches; `refetch` watches it.
+ */
+const period = ref<AnalyticsOverviewData['period']>('30d');
 
-const tenantNews = computed(() => providedTenant?.news?.map(news => ({
-  ...news,
-  publish_time: new Date(news.publish_time),
-})));
+const analyticsUrl = computed(() => route('api.v1.admin.analytics.overview', {
+  tenant_id: providedTenant?.id,
+  period: period.value,
+}));
 
-const generatePlot = () => plot({
-  x: { type: 'time', label: 'Paskelbimo laikas' },
-  // don't show decimal
-  y: { grid: true, label: 'Naujienų skaičius', round: true, nice: true, ticks: 3 },
+const { data: analytics, isFetching: isFetchingAnalytics } = useApi<AnalyticsOverviewData>(
+  analyticsUrl,
+  {
+    refetch: true,
+    immediate: Boolean(providedTenant?.id),
+    // The section renders its own unavailable state; a toast on every dashboard load
+    // whenever Umami is down would be noise.
+    showErrorToast: false,
+  },
+);
+
+const analyticsWrapper = ref<HTMLElement | null>(null);
+
+// Umami returns 'YYYY-MM-DD HH:mm:ss'; normalise to ISO so Date parsing is not
+// implementation-defined.
+const analyticsSeries = computed(() => analytics.value?.series?.map(point => ({
+  ...point,
+  date: new Date(point.date.replace(' ', 'T')),
+})) ?? []);
+
+const generateAnalyticsPlot = () => plot({
+  x: { type: 'time', label: null },
+  y: { grid: true, label: null, round: true, nice: true, ticks: 3 },
   marks: [
-    rectY(tenantNews.value, binX({ y: 'count' }, {
-      x: 'publish_time', fill: '#aa2430ee',
-    })),
+    ruleY([0]),
+    areaY(analyticsSeries.value, { x: 'date', y: 'pageviews', fill: '#aa243022' }),
+    line(analyticsSeries.value, { x: 'date', y: 'pageviews', stroke: '#aa2430', strokeWidth: 2 }),
   ],
-  marginTop: 30,
-  marginBottom: 45,
+  marginTop: 20,
+  marginBottom: 30,
+  marginLeft: 35,
   width: 350,
   height: 170,
+});
+
+// The chart card only exists once data has arrived, so wait for the DOM before drawing.
+watch(analyticsSeries, async () => {
+  await nextTick();
+
+  if (!analyticsWrapper.value) {
+    return;
+  }
+
+  analyticsWrapper.value.innerHTML = '';
+  analyticsWrapper.value.appendChild(generateAnalyticsPlot());
 });
 
 // Setup breadcrumbs for the Svetaine page
 usePageBreadcrumbs([
   { label: $t('Svetainė'), icon: PageIconFilled },
 ]);
-
-watch(() => providedTenant, () => {
-  if (wrapper.value) {
-    wrapper.value.innerHTML = '';
-    wrapper.value.appendChild(generatePlot());
-  }
-});
-
-onMounted(() => {
-  if (wrapper.value) {
-    wrapper.value?.appendChild(generatePlot());
-  }
-});
 </script>

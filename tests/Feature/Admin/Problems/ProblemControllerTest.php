@@ -91,3 +91,63 @@ describe('tenant isolation', function () {
             );
     });
 });
+
+describe('html sanitization', function () {
+    /**
+     * Problems are readable by every authenticated user while only tenant staff
+     * may write them, and ShowProblem renders these fields with `v-html`. Script
+     * stored here would otherwise execute in a super admin's browser.
+     */
+    test('strips script from tiptap fields when storing', function () {
+        asUser($this->coordinator)->post(route('problems.store'), [
+            'title' => ['lt' => 'Problema', 'en' => 'Problem'],
+            'description' => [
+                'lt' => '<p>Geras tekstas</p><script>alert(1)</script>',
+                'en' => '<p>Good text</p><img src=x onerror="alert(1)">',
+            ],
+            'steps_taken' => ['lt' => '<p>Bandyta</p><script>alert(2)</script>'],
+            'solution' => ['lt' => '<p>Spręsta</p><a href="javascript:alert(3)">x</a>'],
+            'tenant_id' => $this->tenant->id,
+            'occurred_at' => now()->subDay()->toDateString(),
+            'status' => 'open',
+        ])->assertRedirect();
+
+        $problem = Problem::query()->whereJsonContainsLocale('title', 'lt', 'Problema')->sole();
+
+        expect($problem->getTranslation('description', 'lt'))
+            ->toContain('Geras tekstas')
+            ->not->toContain('<script');
+
+        expect($problem->getTranslation('description', 'en'))
+            ->toContain('Good text')
+            ->not->toContain('onerror');
+
+        expect($problem->getTranslation('steps_taken', 'lt'))->not->toContain('<script');
+        expect($problem->getTranslation('solution', 'lt'))->not->toContain('javascript:');
+    });
+
+    test('sanitizes on every write path, not just the controller', function () {
+        $problem = Problem::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'description' => ['lt' => '<p>ok</p><script>alert(1)</script>'],
+        ]);
+
+        expect($problem->fresh()->getTranslation('description', 'lt'))->not->toContain('<script');
+
+        $problem->update(['description' => ['lt' => '<img src=x onerror="alert(1)">']]);
+
+        expect($problem->fresh()->getTranslation('description', 'lt'))->not->toContain('onerror');
+    });
+
+    test('keeps legitimate rich formatting', function () {
+        $problem = Problem::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'description' => ['lt' => '<h2 id="a">Antraštė</h2><p><strong>Svarbu</strong></p><img src="/uploads/a.png" alt="A">'],
+        ]);
+
+        expect($problem->fresh()->getTranslation('description', 'lt'))
+            ->toContain('<h2 id="a">Antraštė</h2>')
+            ->toContain('<strong>Svarbu</strong>')
+            ->toContain('src="/uploads/a.png"');
+    });
+});

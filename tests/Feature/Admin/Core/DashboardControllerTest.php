@@ -765,11 +765,27 @@ describe('svetaine dashboard', function () {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowSvetaine')
                 ->where('providedTenant.id', $this->tenant->id)
-                ->has('providedTenant.pages')
-                ->has('providedTenant.news')
-                ->where('providedTenant', function ($tenant) {
-                    return isset($tenant['id']) && isset($tenant['pages']) && isset($tenant['news']);
-                })
+                ->has('providedTenant.alias')
+                ->has('providedTenant.shortname')
+            );
+    });
+
+    /**
+     * The content counters this page used to show were replaced by the Umami traffic
+     * section, which is fetched client-side. Shipping the collections anyway would mean
+     * loading every page, news item, quick link and a year of calendar entries on each
+     * dashboard view for nothing.
+     */
+    test('svetaine dashboard does not ship unused content collections', function () {
+        asUser($this->admin)
+            ->get(route('dashboard.svetaine', ['tenant_id' => $this->tenant->id]))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowSvetaine')
+                ->missing('providedTenant.pages')
+                ->missing('providedTenant.news')
+                ->missing('providedTenant.quick_links')
+                ->missing('providedTenant.calendar')
             );
     });
 });

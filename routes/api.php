@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Admin\AcademicCalendarApiController;
 use App\Http\Controllers\Api\Admin\AgendaItemNoteController;
+use App\Http\Controllers\Api\Admin\AnalyticsApiController;
 use App\Http\Controllers\Api\Admin\CommentApiController;
 use App\Http\Controllers\Api\Admin\CommentPollVoteApiController;
 use App\Http\Controllers\Api\Admin\CommentReactionApiController;
@@ -101,6 +102,10 @@ Route::prefix('v1')->name('v1.')->group(function () {
     Route::prefix('admin')->name('admin.')->middleware(['web', 'auth'])->group(function () {
         // Tasks
         Route::get('tasks/indicator', [TaskApiController::class, 'indicator'])->name('tasks.indicator');
+
+        // Tenant-scoped page-view statistics (Umami) for the Svetainė dashboard
+        Route::get('analytics/overview', [AnalyticsApiController::class, 'overview'])->name('analytics.overview');
+        Route::get('analytics/content', [AnalyticsApiController::class, 'content'])->name('analytics.content');
 
         // Academic vacation periods (shaded in the meetings Gantt chart)
         Route::get('academic-calendar/vacations', [AcademicCalendarApiController::class, 'vacations'])->name('academicCalendar.vacations');
