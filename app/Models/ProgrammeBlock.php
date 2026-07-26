@@ -20,7 +20,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $updated_at
  * @property-read array $translatable_columns_from
  * @property-read Collection<int, ProgrammePart> $parts
- * @property-read ProgrammeSection|null $section
+ * @property-read ProgrammeSection $section
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\ProgrammeBlockFactory factory($count = null, $state = [])
