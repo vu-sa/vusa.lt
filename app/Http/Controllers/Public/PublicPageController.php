@@ -776,6 +776,11 @@ class PublicPageController extends PublicController
             $query->orderBy('order');
         }])->firstOrFail();
 
+        // Submissions are rejected before publish_time, so don't show a form that cannot be submitted.
+        if ($form->publish_time?->isFuture()) {
+            abort(404);
+        }
+
         $otherLocale = app()->getLocale() === 'lt' ? 'en' : 'lt';
 
         Inertia::share('otherLangURL', route('registrationPage', ['lang' => $otherLocale, 'registrationString' => $otherLocale === 'lt' ? 'registracija' : 'registration', 'registrationForm' => $form->getTranslation('path', $otherLocale)]));

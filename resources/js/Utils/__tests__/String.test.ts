@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { translitLithuanian, latinizeId, slugify } from '../String';
+import { translitLithuanian, latinizeId, slugify, generateSlug } from '../String';
 
 describe('translitLithuanian', () => {
   it('transliterates all Lithuanian lowercase letters', () => {
@@ -134,5 +134,33 @@ describe('integration: translitLithuanian + slugify', () => {
     expect(slugify(translitLithuanian('Žalioji ąžuolynas'))).toBe('zalioji-azuolynas');
     expect(slugify(translitLithuanian('VU SA – Studentų atstovybė')))
       .toBe('vu-sa-studentu-atstovybe');
+  });
+});
+
+describe('generateSlug', () => {
+  it('transliterates Lithuanian diacritics', () => {
+    expect(generateSlug('Narių registracija')).toBe('nariu-registracija');
+    expect(generateSlug('Studentų atstovų registracija')).toBe('studentu-atstovu-registracija');
+    expect(generateSlug('Žalioji ąžuolynas')).toBe('zalioji-azuolynas');
+  });
+
+  it('is unbounded when no maxLength is given', () => {
+    const long = 'Labai ilgas pavadinimas kuris tikrai virsija sesiasdesimt simboliu riba be jokiu abejoniu';
+
+    expect(generateSlug(long).length).toBeGreaterThan(60);
+  });
+
+  it('truncates to maxLength when given', () => {
+    expect(generateSlug('Labai ilgas pavadinimas', 11)).toBe('labai-ilgas');
+  });
+
+  it('does not leave a trailing hyphen after truncation', () => {
+    // Cutting at 12 lands right on the separator after "labai-ilgas".
+    expect(generateSlug('Labai ilgas pavadinimas', 12)).toBe('labai-ilgas');
+  });
+
+  it('handles empty and punctuation-only input', () => {
+    expect(generateSlug('')).toBe('');
+    expect(generateSlug('!!!')).toBe('');
   });
 });

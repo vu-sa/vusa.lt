@@ -285,6 +285,157 @@ describe('form creation with fields', function () {
     });
 });
 
+describe('index sorting and scoping', function () {
+    test('defaults to most recently updated first', function () {
+        Form::query()->delete();
+
+        $stale = Form::factory()->for($this->tenant)->create(['name' => ['lt' => 'Stale', 'en' => 'Stale']]);
+        $fresh = Form::factory()->for($this->tenant)->create(['name' => ['lt' => 'Fresh', 'en' => 'Fresh']]);
+
+        $stale->forceFill(['updated_at' => now()->subWeek()])->saveQuietly();
+        $fresh->forceFill(['updated_at' => now()])->saveQuietly();
+
+        asUser($this->admin)
+            ->get(route('forms.index'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('forms.data.0.name.lt', 'Fresh')
+                ->where('forms.data.1.name.lt', 'Stale')
+                ->where('sorting.0.id', 'updated_at')
+                ->where('sorting.0.desc', true)
+            );
+    });
+
+    test('does not list forms belonging to other tenants', function () {
+        Form::query()->delete();
+
+        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
+
+        Form::factory()->for($this->tenant)->create(['name' => ['lt' => 'Mine', 'en' => 'Mine']]);
+        Form::factory()->for($otherTenant)->create(['name' => ['lt' => 'Theirs', 'en' => 'Theirs']]);
+
+        asUser($this->admin)
+            ->get(route('forms.index'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('forms.data', 1)
+                ->where('forms.data.0.name.lt', 'Mine')
+            );
+    });
+
+    test('exposes the registration count and no longer passes the shortcut card props', function () {
+        Form::query()->delete();
+
+        $form = Form::factory()->for($this->tenant)->create();
+        $field = FormField::factory()->for($form)->create();
+
+        $registration = Registration::factory()->for($form)->create();
+        FieldResponse::factory()->for($registration)->for($field, 'formField')->create();
+
+        asUser($this->admin)
+            ->get(route('forms.index'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('forms.data.0.registrations_count', 1)
+                ->missing('memberFormId')
+                ->missing('canAccessMemberForm')
+                ->missing('studentRepFormId')
+                ->missing('canAccessStudentRepForm')
+            );
+    });
+});
+
+describe('updating form fields', function () {
+    test('cannot update a form field belonging to a different form', function () {
+        $form = Form::factory()->for($this->tenant)->create();
+        $otherForm = Form::factory()->for($this->tenant)->create();
+        $foreignField = FormField::factory()->for($otherForm)->create([
+            'label' => ['lt' => 'Svetimas', 'en' => 'Foreign'],
+        ]);
+
+        asUser($this->admin)
+            ->put(route('forms.update', $form), [
+                'name' => ['lt' => 'Forma', 'en' => 'Form'],
+                'description' => ['lt' => '', 'en' => ''],
+                'path' => ['lt' => 'forma', 'en' => 'form'],
+                'tenant_id' => $this->tenant->id,
+                'form_fields' => [
+                    [
+                        'id' => $foreignField->id,
+                        'type' => 'string',
+                        'label' => ['lt' => 'Pavogta', 'en' => 'Hijacked'],
+                        'is_required' => false,
+                        'order' => 1,
+                        'options' => null,
+                    ],
+                ],
+            ])
+            ->assertStatus(403);
+
+        expect($foreignField->fresh()->getTranslation('label', 'lt'))->toBe('Svetimas');
+    });
+
+    test('keeps the field description when the form already has registrations', function () {
+        $form = Form::factory()->for($this->tenant)->create();
+        $field = FormField::factory()->for($form)->create([
+            'type' => 'string',
+            'label' => ['lt' => 'Vardas', 'en' => 'Name'],
+            'description' => ['lt' => 'Įrašykite vardą', 'en' => 'Enter your name'],
+        ]);
+
+        $registration = Registration::factory()->for($form)->create();
+        FieldResponse::factory()->for($registration)->for($field, 'formField')->create();
+
+        asUser($this->admin)
+            ->put(route('forms.update', $form), [
+                'name' => ['lt' => 'Forma', 'en' => 'Form'],
+                'description' => ['lt' => '', 'en' => ''],
+                'path' => ['lt' => 'forma', 'en' => 'form'],
+                'tenant_id' => $this->tenant->id,
+                'form_fields' => [
+                    [
+                        'id' => $field->id,
+                        'type' => 'string',
+                        'label' => ['lt' => 'Vardas', 'en' => 'Name'],
+                        'description' => ['lt' => 'Įrašykite vardą', 'en' => 'Enter your name'],
+                        'is_required' => false,
+                        'order' => 1,
+                        'options' => null,
+                    ],
+                ],
+            ])
+            ->assertRedirect();
+
+        expect($field->fresh()->getTranslation('description', 'lt'))->toBe('Įrašykite vardą');
+    });
+
+    test('creates fields whose id carries the new- prefix', function () {
+        $form = Form::factory()->for($this->tenant)->create();
+
+        asUser($this->admin)
+            ->put(route('forms.update', $form), [
+                'name' => ['lt' => 'Forma', 'en' => 'Form'],
+                'description' => ['lt' => '', 'en' => ''],
+                'path' => ['lt' => 'forma', 'en' => 'form'],
+                'tenant_id' => $this->tenant->id,
+                'form_fields' => [
+                    [
+                        'id' => 'new-6a4e2c1f-0b8d-4c2e-9f11-3a5b7c9d1e2f',
+                        'type' => 'string',
+                        'label' => ['lt' => 'Naujas', 'en' => 'New'],
+                        'is_required' => false,
+                        'order' => 1,
+                        'options' => null,
+                    ],
+                ],
+            ])
+            ->assertRedirect();
+
+        expect($form->formFields()->count())->toBe(1)
+            ->and($form->formFields()->first()->getTranslation('label', 'lt'))->toBe('Naujas');
+    });
+});
+
 describe('validation', function () {
     test('store requires valid data', function () {
         $data = [

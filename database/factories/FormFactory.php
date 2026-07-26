@@ -21,7 +21,6 @@ class FormFactory extends Factory
         return [
             'name' => ['lt' => fake()->sentence, 'en' => fake()->sentence],
             'description' => ['lt' => fake()->paragraph, 'en' => fake()->paragraph],
-            'user_id' => null,
             'tenant_id' => Tenant::factory(),
             'path' => ['lt' => fake()->slug, 'en' => fake()->slug],
             'publish_time' => fake()->optional(0.8)->dateTimeBetween('-1 month', '+1 month'),

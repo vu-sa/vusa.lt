@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\User;
 use App\Services\Permissions\AccessChangeAnalyzer;
 use App\Services\Permissions\AccessChangeReport;
@@ -182,6 +183,7 @@ abstract class AdminController extends Controller
     {
         Cache::forget('index-permissions-'.$actor->id);
         Cache::forget('create-permissions-'.$actor->id);
+        Cache::forget(HandleInertiaRequests::registrationFormsCacheKey($actor->id));
     }
 
     /**

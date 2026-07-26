@@ -5,11 +5,11 @@
     </div>
 
     <h3 class="mt-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-      {{ $t('Šiuo metu atstovų nėra') }}
+      {{ $t('Šiuo metu kontaktų nėra') }}
     </h3>
 
     <p class="mt-2 max-w-sm text-center text-sm text-zinc-600 dark:text-zinc-400">
-      {{ $t('Šioje institucijoje šiuo metu nėra aktyvių studentų atstovų.') }}
+      {{ $t('Ši institucija šiuo metu neturi viešai skelbiamų kontaktų.') }}
     </p>
 
     <!-- Registration CTA -->

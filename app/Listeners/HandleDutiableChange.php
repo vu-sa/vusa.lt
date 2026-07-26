@@ -4,6 +4,7 @@ namespace App\Listeners;
 
 use App\Events\DutiableChanged;
 use App\Facades\Permission;
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
@@ -30,6 +31,7 @@ class HandleDutiableChange implements ShouldQueue
         // resetCache() deliberately leaves these two maps alone, so forget them here.
         Cache::forget('index-permissions-'.$event->modelId);
         Cache::forget('create-permissions-'.$event->modelId);
+        Cache::forget(HandleInertiaRequests::registrationFormsCacheKey($event->modelId));
 
         Permission::resetCache($event->modelId);
     }

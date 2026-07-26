@@ -7,6 +7,15 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.17 — Registracijos pasiekiamos iš šoninės juostos (2026-07-26) {#v1-17}
+
+- ⭐ **Narių ir studentų atstovų registracijos šoninėje juostoje ir formų sąraše** — abi registracijos formos pasiekiamos po „Svetainė“ punktu, o jas tvarkantys žmonės gali atidaryti ir bendrą formų sąrašą neturėdami formų redagavimo teisių.
+- ⭐ **Registracijų atsisiuntimas į Excel** — mygtukas registracijų lange vėl veikia, šalia matosi bendras registracijų skaičius ir paskutinės registracijos data
+- 🔧 **Studentų atstovų registracijos atskirtos pagal padalinį** — institucijų koordinatoriams rodomos tik jų padalinio institucijoms pateiktos registracijos ir jų skaičius.
+- ✨ **Nuoroda generuojama automatiškai** — kuriant registracijos formą nuoroda susikuria pagal pavadinimą (lietuviškai ir angliškai), matosi pilnas adresas su kopijavimo bei atidarymo mygtukais. Įrašius nuorodą ranka, automatinis generavimas nutrūksta, o keičiant esamos formos nuorodą įspėjama, kad sena nuoroda nustos veikti
+- 🔧 **Formos laukelio aprašymas nebedingsta** — redaguojant formą, kuri jau turi registracijų, laukelių aprašymai būdavo perrašomi laukelio tipu
+- 🔧 **Tikslesnis tuščias institucijos kontaktų vaizdas** — institucijoms be viešų kontaktų neberodomas klaidinantis pranešimas apie studentų atstovus
+
 ## v1.16 — Nauja svetainės lankomumo analitika (2026-07-26) {#v1-16}
 
 - ⭐ **Lankomumo statistika „Svetainės“ skiltyje** — pasirinkto padalinio puslapių peržiūros, lankytojai, peržiūrų grafikas ir populiariausi puslapiai matomi tiesiai „Mano“ sistemoje. Rodomi tik to padalinio svetainės duomenys, todėl atskiros analitikos paskyros nebereikia

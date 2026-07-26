@@ -7,6 +7,15 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.17 — Registrations Reachable From the Sidebar (2026-07-26) {#v1-17}
+
+- ⭐ **Member and student rep registrations in the sidebar and forms list** — both registration forms are available under "Website", and the people handling them can open the shared forms list without form-editing permission.
+- ⭐ **Excel export for registrations** — the download button on the registrations page works again, alongside the total registration count and the date of the latest one
+- 🔧 **Student rep registrations are isolated by unit** — institution coordinators now see only registrations submitted for institutions in their own unit, including the scoped total.
+- ✨ **The form URL is generated automatically** — when creating a registration form the link is derived from its name (in both Lithuanian and English), with the full address shown plus copy and open buttons. Typing your own link stops the generation, and changing the link of an existing form now warns that the old one will stop working
+- 🔧 **Form field descriptions no longer disappear** — editing a form that already had registrations overwrote every field's description with its type
+- 🔧 **More accurate empty institution contacts state** — institutions without public contacts no longer show a misleading message about student representatives
+
 ## v1.16 — New Website Analytics (2026-07-26) {#v1-16}
 
 - ⭐ **Traffic statistics on the Svetainė dashboard** — page views, visitors, a views-over-time chart and top pages for the selected unit, right inside the admin interface. Only that unit's site data is shown, so no separate analytics account is needed

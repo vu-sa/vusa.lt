@@ -36,7 +36,9 @@ Route::post('login', [Admin\AuthController::class, 'authenticate'])->middleware(
 
 Route::post('feedback', [Public\MainController::class, 'sendFeedback'])->name('feedback.send');
 
-Route::post('registration/{form}', [RegistrationController::class, 'store'])->name('registrations.store');
+Route::post('registration/{form}', [RegistrationController::class, 'store'])
+    ->middleware('throttle:10,1')
+    ->name('registrations.store');
 
 // Short URL redirects for documents
 Route::get('/d/{code}', [Public\DocumentRedirectController::class, 'redirect'])

@@ -5,6 +5,8 @@ namespace App\Models;
 use Database\Factories\RegistrationFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -28,12 +30,18 @@ class Registration extends Model
     /** @use HasFactory<RegistrationFactory> */
     use HasFactory;
 
-    public function form()
+    /**
+     * @return BelongsTo<Form, $this>
+     */
+    public function form(): BelongsTo
     {
         return $this->belongsTo(Form::class);
     }
 
-    public function fieldResponses()
+    /**
+     * @return HasMany<FieldResponse, $this>
+     */
+    public function fieldResponses(): HasMany
     {
         return $this->hasMany(FieldResponse::class);
     }

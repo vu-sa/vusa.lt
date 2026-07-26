@@ -11,7 +11,6 @@ use App\Models\FormField;
 use App\Models\Institution;
 use App\Models\Registration;
 use App\Settings\FormSettings;
-use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -26,7 +25,7 @@ class RegistrationController extends Controller
         // Check if form is published
         // If publish_time is null, form is available by default
         // If publish_time is set and in the future, block access
-        if ($form->publish_time && Carbon::parse($form->publish_time)->isFuture()) {
+        if ($form->publish_time?->isFuture()) {
             abort(403, 'Form is not yet published');
         }
 
@@ -35,15 +34,14 @@ class RegistrationController extends Controller
                 $registration = new Registration;
                 $registration->form()->associate($form);
 
-                if ($request->has('user_id')) {
-                    $registration->user_id = $request->validated()['user_id'];
-                } elseif ($request->user()) {
-                    $registration->user_id = $request->user()->id;
-                }
+                // Never trust the request for this: the endpoint is public and unauthenticated.
+                $registration->user_id = $request->user()?->id;
 
                 $formData = $request->validated()['data'];
                 /** @var Collection<int, FieldResponse> $fieldResponses */
                 $fieldResponses = collect();
+
+                $formFields = $form->formFields()->get()->keyBy(fn (FormField $field) => (string) $field->id);
 
                 // Use foreach instead of collect()->each() so return statements work properly
                 foreach ($formData as $key => $fieldData) {
@@ -51,20 +49,16 @@ class RegistrationController extends Controller
                     // Ensure consistent type casting for field IDs
                     $fieldId = (string) $key;
 
-                    // check if the form field exists and belongs to the form
-                    $formField = FormField::query()
-                        ->where('id', $fieldId)
-                        ->where('form_id', $form->id)
-                        ->first();
+                    $formField = $formFields->get($fieldId);
 
                     if (! $formField) {
                         Log::error('Form field not found', [
                             'field_id' => $fieldId,
                             'form_id' => $form->id,
-                            'available_fields' => $form->formFields()->pluck('id')->toArray(),
+                            'available_fields' => $formFields->keys()->toArray(),
                         ]);
 
-                        return back()->with('error', 'Įvyko nenumatyta klaida. Bandykite dar kartą.');
+                        return back()->with('error', __('registrations.error'));
                     }
 
                     // Extract the value from the field data array
@@ -96,8 +90,8 @@ class RegistrationController extends Controller
                 ]);
 
                 return back()->with([
-                    'success' => 'Registracija sėkmingai išsiųsta!',
-                    'toast_description' => 'Patikrinkite savo el. paštą.',
+                    'success' => __('registrations.success'),
+                    'toast_description' => __('registrations.check_email'),
                     'toast_duration' => 8000, // 8 seconds for important registration message
                 ]);
             });
@@ -108,7 +102,7 @@ class RegistrationController extends Controller
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return back()->with('error', 'Įvyko nenumatyta klaida. Bandykite dar kartą.');
+            return back()->with('error', __('registrations.error'));
         }
     }
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Requests\IndexRoleRequest;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Permission;
@@ -261,6 +262,7 @@ class RoleController extends AdminController
         $role->usersThroughDuties->each(function ($user) {
             Cache::forget('index-permissions-'.$user->id);
             Cache::forget('create-permissions-'.$user->id);
+            Cache::forget(HandleInertiaRequests::registrationFormsCacheKey($user->id));
         });
     }
 }

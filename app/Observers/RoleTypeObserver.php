@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\RoleType;
 use Illuminate\Support\Facades\Cache;
 
@@ -31,6 +32,7 @@ class RoleTypeObserver
         $role->usersThroughDuties->each(function ($user) {
             Cache::forget('index-permissions-'.$user->id);
             Cache::forget('create-permissions-'.$user->id);
+            Cache::forget(HandleInertiaRequests::registrationFormsCacheKey($user->id));
         });
     }
 
@@ -61,6 +63,7 @@ class RoleTypeObserver
         $role->usersThroughDuties->each(function ($user) {
             Cache::forget('index-permissions-'.$user->id);
             Cache::forget('create-permissions-'.$user->id);
+            Cache::forget(HandleInertiaRequests::registrationFormsCacheKey($user->id));
         });
     }
 }

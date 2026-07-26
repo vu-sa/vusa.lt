@@ -188,6 +188,24 @@ return [
         'other_settings' => 'Other settings',
         'import_members' => 'Import members',
     ],
+    'registrations' => [
+        'none' => 'No registrations yet',
+        'none_hint' => 'Once somebody fills in this form, their registration will show up here.',
+        'details' => 'Registration details',
+        'details_hint' => 'View detailed registration information',
+        'available_options' => 'Available options',
+        'show_options' => 'View options',
+        'hide_options' => 'Hide options',
+    ],
+    'field_models' => [
+        'tenant' => 'Unit',
+        'institution' => 'Institution',
+    ],
+    'field_model_attributes' => [
+        'fullname' => 'Full name',
+        'shortname' => 'Short name',
+        'name' => 'Name',
+    ],
     'context' => [
         'main_info' => 'Main information',
         'user_duties' => 'Platform user duties',

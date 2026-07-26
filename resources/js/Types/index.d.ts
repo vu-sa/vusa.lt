@@ -27,6 +27,14 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
       description: string;
       date: string;
     }>;
+    /**
+     * Ids of the member / student rep registration forms, already filtered by the
+     * form policy — an id is only present when this user is allowed to open it.
+     */
+    registrationForms?: {
+      member: string | null;
+      studentRep: string | null;
+    };
     user: User;
   } | null;
   csrf_token: string;

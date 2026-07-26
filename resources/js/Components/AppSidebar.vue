@@ -355,6 +355,14 @@ const reservationsSpotlight = useFeatureSpotlight('reservations-dashboard-v1', {
   position: 'right',
 });
 
+// Registration forms used to be buried behind cards on the forms index page. They now
+// hang off Svetainė, so returning users need to be told where they went.
+const registrationsSpotlight = useFeatureSpotlight('sidebar-registrations-v1', {
+  title: $t('Registracijos persikėlė į šoninę juostą'),
+  description: $t('Narių ir studentų atstovų registracijas dabar rasi po „Svetainė“ — nebereikia ieškoti formų sąraše.'),
+  position: 'right',
+});
+
 // "?" opens the keyboard-shortcuts cheatsheet, unless the user is typing.
 useEventListener('keydown', (event: KeyboardEvent) => {
   if (event.key !== '?' || event.metaKey || event.ctrlKey || event.altKey) {
@@ -393,6 +401,30 @@ const currentUser = computed(() => {
   };
 });
 
+// The member and student rep registration forms are the two forms admins actually work with.
+// The backend only shares an id when this user is allowed to open that form, so no extra
+// permission checks are needed here.
+const registrationFormItems = computed(() => {
+  const registrationForms = usePage().props.auth?.registrationForms;
+  const children: { title: string; url: string }[] = [];
+
+  if (registrationForms?.member) {
+    children.push({
+      title: $t('Narių registracija'),
+      url: route('forms.show', registrationForms.member),
+    });
+  }
+
+  if (registrationForms?.studentRep) {
+    children.push({
+      title: $t('Studentų atstovų registracija'),
+      url: route('forms.show', registrationForms.studentRep),
+    });
+  }
+
+  return children;
+});
+
 // Primary navigation items
 const navMainItems = computed(() => {
   const items = [];
@@ -419,13 +451,29 @@ const navMainItems = computed(() => {
     isActive: route().current('search.*'),
   });
 
-  // Website (Svetainė)
-  if (usePage().props.auth?.can.create.page) {
+  // Website (Svetainė) — with direct links to the registration forms this user may open
+  const canManagePages = usePage().props.auth?.can.create.page;
+  const registrationChildren = registrationFormItems.value;
+  const websiteUrl = canManagePages ? route('dashboard.svetaine') : registrationChildren[0]?.url;
+
+  if ((canManagePages || registrationChildren.length > 0) && websiteUrl) {
     items.push({
       title: $t('Svetainė'),
-      url: route('dashboard.svetaine'),
+      url: websiteUrl,
       icon: markRaw(Globe),
-      isActive: false,
+      // Drives both the highlight and whether the dropdown starts open.
+      isActive: route().current('dashboard.svetaine') || route().current('forms.*'),
+      items: registrationChildren,
+      ...(registrationFormItems.value.length > 0
+        ? {
+            spotlight: {
+              title: registrationsSpotlight.title,
+              description: registrationsSpotlight.description,
+              isDismissed: registrationsSpotlight.isDismissed.value,
+              dismiss: registrationsSpotlight.dismiss,
+            },
+          }
+        : {}),
     });
   }
 

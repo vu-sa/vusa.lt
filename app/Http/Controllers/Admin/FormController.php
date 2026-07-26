@@ -14,9 +14,12 @@ use App\Models\FormField;
 use App\Models\Institution;
 use App\Models\Tenant;
 use App\Models\Training;
+use App\Services\FormAccessService;
+use App\Services\FormRegistrationVisibilityService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
 use App\Settings\FormSettings;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Response;
 
@@ -24,7 +27,40 @@ class FormController extends AdminController
 {
     use HasTanstackTables;
 
-    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
+    /**
+     * Attributes accepted from the client for a form field.
+     *
+     * @var array<int, string>
+     */
+    private const FORM_FIELD_ATTRIBUTES = [
+        'label',
+        'description',
+        'type',
+        'subtype',
+        'options',
+        'is_required',
+        'default_value',
+        'placeholder',
+        'order',
+        'use_model_options',
+        'options_model',
+        'options_model_field',
+    ];
+
+    public function __construct(
+        public Authorizer $authorizer,
+        private TanstackTableService $tableService,
+        private FormAccessService $formAccess,
+        private FormRegistrationVisibilityService $registrationVisibility,
+    ) {}
+
+    /**
+     * Fields created in the browser carry a generated 'new-' prefixed id until they are persisted.
+     */
+    private static function isNewFormFieldId(mixed $id): bool
+    {
+        return $id === null || str_starts_with((string) $id, 'new-');
+    }
 
     /**
      * Display a listing of the resource.
@@ -33,7 +69,7 @@ class FormController extends AdminController
     {
         $this->handleAuthorization('viewAny', Form::class);
 
-        $query = Form::query()->with('tenant:id,shortname');
+        $query = Form::query()->with('tenant:id,shortname')->withCount('registrations');
 
         $searchableColumns = ['name', 'path'];
 
@@ -42,36 +78,36 @@ class FormController extends AdminController
             $request,
             $this->tableService,
             $searchableColumns,
-            [
-                'applySortBeforePagination' => true,
-            ]
         );
+
+        $query = $this->formAccess->applyIndexVisibility($query, $request->user());
 
         $forms = $query->paginate($request->input('per_page', 15))
             ->withQueryString();
 
-        // Check member registration form access
-        $memberFormId = app(FormSettings::class)->member_registration_form_id;
-        $canAccessMemberForm = $memberFormId &&
-            ! GetTenantsForUpserts::execute('forms.read.padalinys', $this->authorizer)->isEmpty();
-
-        // Check student rep registration form access
-        $studentRepFormId = app(FormSettings::class)->student_rep_registration_form_id;
-        $canAccessStudentRepForm = $studentRepFormId &&
-            ! GetTenantsForUpserts::execute('forms.read.padalinys', $this->authorizer)->isEmpty();
-
         $sorting = $request->getSorting();
+        $user = $request->user();
 
         return $this->inertiaResponse('Admin/Forms/IndexForm', [
             'forms' => [
                 'data' => $forms->getCollection()
-                    ->map(function ($form) {
+                    ->map(function ($form) use ($user) {
                         /** @var Form $form */
+                        $registrationsCount = $this->registrationVisibility->isSharedRegistrationForm($form)
+                            ? $this->registrationVisibility->count($form, $user)
+                            : $form->registrations_count;
+
                         return [
                             ...$form->toFullArray(),
+                            'registrations_count' => $registrationsCount,
                             'tenant' => [
                                 'id' => $form->tenant->id,
                                 'shortname' => $form->tenant->shortname,
+                            ],
+                            'can' => [
+                                'view' => $user->can('view', $form),
+                                'update' => $user->can('update', $form),
+                                'delete' => $user->can('delete', $form),
                             ],
                         ];
                     }),
@@ -86,10 +122,9 @@ class FormController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $sorting,
-            'memberFormId' => $memberFormId,
-            'canAccessMemberForm' => $canAccessMemberForm,
-            'studentRepFormId' => $studentRepFormId,
-            'canAccessStudentRepForm' => $canAccessStudentRepForm,
+            'can' => [
+                'create' => $user->can('create', Form::class),
+            ],
         ]);
     }
 
@@ -101,8 +136,29 @@ class FormController extends AdminController
         $this->handleAuthorization('create', Form::class);
 
         return $this->inertiaResponse('Admin/Forms/CreateForm', [
-            'assignableTenants' => GetTenantsForUpserts::execute('calendars.create.padalinys', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute('forms.create.padalinys', $this->authorizer),
+            ...$this->fieldModelChoices(),
         ]);
+    }
+
+    /**
+     * Models (and their label attributes) a form field can pull its options from.
+     *
+     * @return array{fieldModelOptions: array<int, array{label: string, value: string}>, fieldModelFields: array<int, array{label: string, value: string}>}
+     */
+    private function fieldModelChoices(): array
+    {
+        return [
+            'fieldModelOptions' => [
+                ['label' => __('forms.field_models.tenant'), 'value' => Tenant::class],
+                ['label' => __('forms.field_models.institution'), 'value' => Institution::class],
+            ],
+            'fieldModelFields' => [
+                ['label' => __('forms.field_model_attributes.fullname'), 'value' => 'fullname'],
+                ['label' => __('forms.field_model_attributes.shortname'), 'value' => 'shortname'],
+                ['label' => __('forms.field_model_attributes.name'), 'value' => 'name'],
+            ],
+        ];
     }
 
     /**
@@ -128,8 +184,7 @@ class FormController extends AdminController
 
         // Then, update or create the remaining form fields
         collect($request->only('form_fields')['form_fields'] ?? [])->each(function ($formField) use ($form) {
-            unset($formField['id']);
-            $form->formFields()->create($formField);
+            $form->formFields()->create(collect($formField)->only(self::FORM_FIELD_ATTRIBUTES)->all());
         });
 
         return redirect(request()->redirect_to ?? route('forms.index'))->with('success', 'Form created.');
@@ -138,43 +193,17 @@ class FormController extends AdminController
     /**
      * Display the specified resource.
      */
-    public function show(Form $form)
+    public function show(Request $request, Form $form)
     {
         $this->handleAuthorization('view', $form);
 
-        $form->load('formFields', 'registrations.fieldResponses.formField');
+        $form->load(['formFields' => fn ($query) => $query->orderBy('order')]);
 
-        $registrations = $form->registrations;
-
-        // If form is member registration form
-        if (app(FormSettings::class)->member_registration_form_id === $form->id) {
-            // Check which tenants should be shown
-            $tenants = GetTenantsForUpserts::execute('forms.read.padalinys', $this->authorizer);
-
-            if ($tenants->isEmpty()) {
-                abort(403, 'No tenants to show.');
-            }
-
-            // Filter form registrations
-            // 1. Find which fieldResponse has use_model_options and options_model Tenant
-            $tenantField = $form->formFields->first(function ($field) {
-                return $field->use_model_options && $field->options_model === Tenant::class;
-            });
-
-            // 2. Filter registrations that don't have a tenant field as in tenants
-            $registrations = $form->registrations->filter(function ($registration) use ($tenantField, $tenants) {
-                $tenantResponse = $registration->fieldResponses->first(function ($fieldResponse) use ($tenantField) {
-                    return $fieldResponse->formField->id === $tenantField->id;
-                });
-
-                // Check if tenant response exists and has a valid response
-                if (! $tenantResponse || ! $tenantResponse->response || ! isset($tenantResponse->response['value'])) {
-                    return false;
-                }
-
-                return $tenants->contains('id', $tenantResponse->response['value']);
-            });
-        }
+        $registrations = $this->registrationVisibility
+            ->query($form, $request->user())
+            ->with('fieldResponses.formField')
+            ->latest()
+            ->get();
 
         // If form is student rep registration form, pass institutions for display
         $institutions = collect();
@@ -197,10 +226,37 @@ class FormController extends AdminController
             }
         }
 
+        $canUpdate = $request->user()->can('update', $form);
+
         return $this->inertiaResponse('Admin/Forms/ShowForm', [
             'form' => $form,
             'registrations' => $registrations->values(),
             'institutions' => $institutions,
+            'exportUrl' => $canUpdate ? route('forms.export', $form->id) : null,
+            'publicUrl' => $this->publicFormUrl($form),
+            'can' => [
+                'update' => $canUpdate,
+                'export' => $canUpdate,
+            ],
+        ]);
+    }
+
+    /**
+     * Public URL of the registration form in the current locale, when it has a path.
+     */
+    private function publicFormUrl(Form $form): ?string
+    {
+        $locale = app()->getLocale();
+        $path = $form->getTranslation('path', $locale);
+
+        if (blank($path)) {
+            return null;
+        }
+
+        return route('registrationPage', [
+            'lang' => $locale,
+            'registrationString' => $locale === 'lt' ? 'registracija' : 'registration',
+            'registrationForm' => $path,
         ]);
     }
 
@@ -221,14 +277,8 @@ class FormController extends AdminController
                     }),
                 'registrations_count' => $form->registrations()->count(),
             ],
-            'assignableTenants' => GetTenantsForUpserts::execute('calendars.update.padalinys', $this->authorizer),
-            'fieldModelOptions' => [
-                ['label' => 'Tenant', 'value' => Tenant::class],
-            ],
-            'fieldModelFields' => [
-                ['label' => 'Pilnas pavadinimas', 'value' => 'fullname'],
-                ['label' => 'Trumpas pavadinimas', 'value' => 'shortname'],
-            ],
+            'assignableTenants' => GetTenantsForUpserts::execute('forms.update.padalinys', $this->authorizer),
+            ...$this->fieldModelChoices(),
         ]);
     }
 
@@ -247,39 +297,22 @@ class FormController extends AdminController
         // First, compare which form fields were removed
         $form->formFields->whereNotIn('id', collect($request->form_fields)->pluck('id'))->each->delete();
 
-        if ($form->registrations->count() > 0) {
-            collect($request->only('form_fields')['form_fields'])->each(function ($formField) {
-                $formFieldFromDb = FormField::query()->find($formField['id']);
+        collect($request->only('form_fields')['form_fields'] ?? [])->each(function ($formField) use ($form) {
+            $attributes = collect($formField)->only(self::FORM_FIELD_ATTRIBUTES)->all();
 
-                // Don't update type
-                $formFieldFromDb->update([
-                    'label' => $formField['label'],
-                    'description' => $formField['type'],
-                    'options' => $formField['options'],
-                    'is_required' => $formField['is_required'],
-                    'default_value' => $formField['default_value'],
-                    'placeholder' => $formField['placeholder'],
-                    'order' => $formField['order'],
-                ]);
-
-            });
-        }
-
-        // Then, update or create the remaining form fields
-        collect($request->only('form_fields')['form_fields'])->each(function ($formField) use ($form) {
-            // In frontend, the ID is a 6-length string if the form field is new
-            if (is_string($formField['id'])) {
-                unset($formField['id']);
-            }
-
-            if (! isset($formField['id'])) {
-                $form->formFields()->create($formField);
+            // The frontend prefixes ids of not-yet-persisted fields with 'new-'.
+            if (self::isNewFormFieldId($formField['id'] ?? null)) {
+                $form->formFields()->create($attributes);
 
                 return;
             }
 
-            $formFieldFromDb = FormField::query()->find($formField['id']);
-            $formFieldFromDb->update($formField);
+            // Resolve through the relation so a crafted payload cannot reach another form's fields.
+            $formFieldFromDb = $form->formFields()->find($formField['id']);
+
+            abort_if($formFieldFromDb === null, 403, 'Form field does not belong to this form.');
+
+            $formFieldFromDb->update($attributes);
         });
 
         return redirect()->back()->with('success', 'Form updated.');

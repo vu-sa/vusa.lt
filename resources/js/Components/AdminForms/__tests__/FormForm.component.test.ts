@@ -199,6 +199,99 @@ describe('FormForm.vue', () => {
     });
   });
 
+  describe('URL generation', () => {
+    const blankPathForm = {
+      ...defaultProps.form,
+      name: { lt: '', en: '' },
+      path: { lt: '', en: '' },
+    };
+
+    it('generates the path from the name when the path is empty', async () => {
+      wrapper = createWrapper({ form: blankPathForm });
+      const vm = wrapper.vm as any;
+
+      vm.form.name.lt = 'Narių registracija';
+      vm.form.name.en = 'Member registration';
+      await nextTick();
+
+      expect(vm.form.path.lt).toBe('nariu-registracija');
+      expect(vm.form.path.en).toBe('member-registration');
+    });
+
+    it('stops generating once the user edits the path', async () => {
+      wrapper = createWrapper({ form: blankPathForm });
+      const vm = wrapper.vm as any;
+
+      vm.form.name.lt = 'Narių registracija';
+      await nextTick();
+      expect(vm.form.path.lt).toBe('nariu-registracija');
+
+      vm.onPathInput('lt', 'mano-nuoroda');
+      vm.form.name.lt = 'Visai kitas pavadinimas';
+      await nextTick();
+
+      expect(vm.form.path.lt).toBe('mano-nuoroda');
+    });
+
+    it('never overwrites a path an existing form already has', async () => {
+      // defaultProps.form arrives with path { lt: 'testas', en: 'test' }
+      wrapper = createWrapper();
+      const vm = wrapper.vm as any;
+
+      vm.form.name.lt = 'Visiškai naujas pavadinimas';
+      await nextTick();
+
+      expect(vm.form.path.lt).toBe('testas');
+    });
+
+    it('warns only after the path of an existing form is changed', async () => {
+      wrapper = createWrapper();
+      const vm = wrapper.vm as any;
+
+      expect(vm.pathChangedOnExistingForm).toBe(false);
+
+      vm.onPathInput('lt', 'kita-nuoroda');
+      await nextTick();
+
+      expect(vm.pathChangedOnExistingForm).toBe(true);
+    });
+  });
+
+  describe('form field editing', () => {
+    it('hands the modal a clone so a dismissed edit does not mutate the form', async () => {
+      const formWithFields = {
+        ...defaultProps.form,
+        form_fields: [
+          { id: 'field-1', type: 'string', label: { lt: 'Field 1' }, order: 1, is_required: false },
+        ],
+      };
+      wrapper = createWrapper({ form: formWithFields });
+      const vm = wrapper.vm as any;
+
+      vm.handleEditFormField(vm.form.form_fields[0]);
+      vm.selectedFormField.label.lt = 'Discarded edit';
+      await nextTick();
+
+      expect(vm.form.form_fields[0].label.lt).toBe('Field 1');
+    });
+
+    it('gives each new field its own object rather than the shared template', async () => {
+      wrapper = createWrapper();
+      const vm = wrapper.vm as any;
+
+      vm.handleNewFormFieldCreate();
+      const first = vm.selectedFormField;
+      first.label.lt = 'First field';
+
+      vm.handleNewFormFieldCreate();
+      await nextTick();
+
+      expect(vm.selectedFormField.label.lt).toBe('');
+      expect(vm.selectedFormField.id).not.toBe(first.id);
+      expect(vm.selectedFormField.id).toMatch(/^new-/);
+    });
+  });
+
   describe('emits', () => {
     it('forwards submit:form event from AdminForm', async () => {
       wrapper = createWrapper();

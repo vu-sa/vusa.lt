@@ -1,15 +1,33 @@
 <template>
   <ShowPageLayout :model="form" :title="form.name">
     <template #more-options>
-      <MoreOptionsButton edit @edit-click="router.visit(route('forms.edit', form.id))" />
+      <MoreOptionsButton v-if="can.update" edit @edit-click="router.visit(route('forms.edit', form.id))" />
     </template>
-    <!-- <a target="_blank" :href="route('forms.export', form.id)" class="mb-4 w-fit block"> -->
-    <!--   <Button variant="outline" size="sm"> -->
-    <!--     Atsisiųsti Excel -->
-    <!--   </Button> -->
-    <!-- </a> -->
-
     <div class="space-y-4">
+      <!-- Summary + actions -->
+      <div class="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/20 p-4">
+        <div class="flex flex-wrap items-center gap-x-6 gap-y-1 text-sm">
+          <div>
+            <span class="text-muted-foreground">{{ $t('Registracijos') }}:</span>
+            <span class="ml-1 font-medium">{{ registrations.length }}</span>
+          </div>
+          <div v-if="latestRegistrationDate">
+            <span class="text-muted-foreground">{{ $t('Paskutinė registracija') }}:</span>
+            <span class="ml-1 font-medium">{{ latestRegistrationDate }}</span>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <Button v-if="publicUrl" as="a" :href="publicUrl" target="_blank" variant="outline" size="sm">
+            <ExternalLinkIcon class="mr-1.5 h-4 w-4" />
+            {{ $t('Atidaryti viešą formą') }}
+          </Button>
+          <Button v-if="can.export && exportUrl" as="a" :href="exportUrl" target="_blank" variant="outline" size="sm">
+            <DownloadIcon class="mr-1.5 h-4 w-4" />
+            {{ $t('Atsisiųsti Excel') }}
+          </Button>
+        </div>
+      </div>
+
       <SimpleDataTable
         :data="tableData"
         :columns="registrationColumns"
@@ -17,9 +35,25 @@
         :page-size="15"
         :enable-filtering="true"
         :enable-column-visibility="false"
-        :empty-message="$t('No registrations found')"
+        :empty-message="$t('forms.registrations.none')"
         :row-class-name="() => ''"
       >
+        <template #empty>
+          <div class="flex flex-col items-center justify-center gap-2 py-10 text-center">
+            <InboxIcon class="h-10 w-10 text-muted-foreground" />
+            <h3 class="text-lg font-medium">
+              {{ $t('forms.registrations.none') }}
+            </h3>
+            <p class="max-w-sm text-sm text-muted-foreground">
+              {{ $t('forms.registrations.none_hint') }}
+            </p>
+            <Button v-if="publicUrl" as="a" :href="publicUrl" target="_blank" variant="outline" size="sm" class="mt-2">
+              <ExternalLinkIcon class="mr-1.5 h-4 w-4" />
+              {{ $t('Atidaryti viešą formą') }}
+            </Button>
+          </div>
+        </template>
+
         <template #filters>
           <DataTableFilter
             v-for="field in enumFields"
@@ -39,9 +73,9 @@
     <Dialog v-model:open="showModal">
       <DialogContent class="sm:max-w-[95vw] w-full max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{{ $t('Registration Details') }}</DialogTitle>
+          <DialogTitle>{{ $t('forms.registrations.details') }}</DialogTitle>
           <DialogDescription>
-            {{ $t('View detailed registration information') }}
+            {{ $t('forms.registrations.details_hint') }}
           </DialogDescription>
         </DialogHeader>
 
@@ -64,7 +98,7 @@
                     @click="toggleFieldOptions(field.key)"
                   >
                     <span class="mr-1" v-html="showOptionsFor === field.key ? '&#9660;' : '&#9654;'" />
-                    {{ showOptionsFor === field.key ? 'Hide options' : 'View options' }}
+                    {{ showOptionsFor === field.key ? $t('forms.registrations.hide_options') : $t('forms.registrations.show_options') }}
                   </Button>
                 </div>
                 <div class="flex-1 min-w-0">
@@ -77,7 +111,7 @@
               <!-- Collapsible field options for enum fields -->
               <div v-if="getFieldOptions(field) && showOptionsFor === field.key" class="mt-3 pt-3 border-t">
                 <div class="text-xs font-medium text-muted-foreground mb-2">
-                  {{ $t('Available options') }}:
+                  {{ $t('forms.registrations.available_options') }}:
                 </div>
                 <div class="flex flex-wrap gap-1">
                   <Badge
@@ -103,7 +137,7 @@ import { router, usePage } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
-import { EyeIcon } from 'lucide-vue-next';
+import { Download as DownloadIcon, ExternalLink as ExternalLinkIcon, EyeIcon, Inbox as InboxIcon } from 'lucide-vue-next';
 
 import ShowPageLayout from '@/Components/Layouts/ShowModel/ShowPageLayout.vue';
 import MoreOptionsButton from '@/Components/Buttons/MoreOptionsButton.vue';
@@ -125,7 +159,20 @@ const props = defineProps<{
   form: App.Entities.Form;
   registrations: App.Entities.Registration[];
   institutions?: { id: string; name: string }[];
+  exportUrl: string | null;
+  publicUrl: string | null;
+  can: {
+    update: boolean;
+    export: boolean;
+  };
 }>();
+
+// Registrations arrive newest-first from the server.
+const latestRegistrationDate = computed(() => {
+  const latest = props.registrations[0]?.created_at;
+
+  return latest ? new Date(latest).toLocaleString() : null;
+});
 
 const showModal = ref(false);
 const selectedRegistration = ref<any>(null);
@@ -336,18 +383,17 @@ const registrationColumns = computed<ColumnDef<any, any>[]>(() => {
         enableSorting: true,
         // Proper TanStack header function - receives header context
         header: (info) => {
-          const truncatedLabel = field.label.length > 8 ? `${field.label.substring(0, 8)}...` : field.label;
           return (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
-                    class="cursor-help text-left inline-block w-full text-sm font-medium hover:bg-muted/50 px-1 py-1 rounded transition-colors"
+                    class="cursor-help text-left inline-flex w-full items-center gap-1 text-sm font-medium hover:bg-muted/50 px-1 py-1 rounded transition-colors"
                     onClick={() => info.column.toggleSorting()}
                   >
-                    <span>{truncatedLabel}</span>
-                    {info.column.getIsSorted() === 'asc' && <span> ↑</span>}
-                    {info.column.getIsSorted() === 'desc' && <span> ↓</span>}
+                    <span class="truncate">{field.label}</span>
+                    {info.column.getIsSorted() === 'asc' && <span class="shrink-0"> ↑</span>}
+                    {info.column.getIsSorted() === 'desc' && <span class="shrink-0"> ↓</span>}
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="top" align="start">

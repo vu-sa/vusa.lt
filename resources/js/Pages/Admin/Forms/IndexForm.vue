@@ -1,67 +1,13 @@
 <template>
-  <!-- Member Registration Special Section -->
-  <div v-if="props.canAccessMemberForm" class="mb-6">
-    <Card class="border-primary/20 bg-primary/5">
-      <CardHeader>
-        <CardTitle class="flex items-center gap-2">
-          <UsersIcon class="h-5 w-5" />
-          {{ $t('Member Registrations') }}
-        </CardTitle>
-        <CardDescription>
-          {{ $t('View and manage membership registrations from your tenant(s)') }}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Button as-child class="gap-2">
-          <Link :href="route('forms.show', props.memberFormId)">
-            <EyeIcon class="h-4 w-4" />
-            {{ $t('View Member Registrations') }}
-          </Link>
-        </Button>
-      </CardContent>
-    </Card>
-  </div>
-
-  <!-- Student Rep Registration Special Section -->
-  <div v-if="props.canAccessStudentRepForm" class="mb-6">
-    <Card class="border-green-500/20 bg-green-500/5">
-      <CardHeader>
-        <CardTitle class="flex items-center gap-2">
-          <UserPlusIcon class="h-5 w-5" />
-          {{ $t('Student Representative Registrations') }}
-        </CardTitle>
-        <CardDescription>
-          {{ $t('View and manage student representative registrations') }}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Button as-child variant="outline" class="gap-2">
-          <Link :href="route('forms.show', props.studentRepFormId)">
-            <EyeIcon class="h-4 w-4" />
-            {{ $t('View Student Rep Registrations') }}
-          </Link>
-        </Button>
-      </CardContent>
-    </Card>
-  </div>
-
-  <!-- Regular Forms Table -->
   <IndexTablePage
     ref="indexTablePageRef"
     v-bind="tableConfig"
-    @data-loaded="onDataLoaded"
-    @sorting-changed="handleSortingChange"
-    @page-changed="handlePageChange"
-    @filter-changed="handleFilterChange"
   />
 </template>
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import type { ColumnDef } from '@tanstack/vue-table';
 import { ref, computed } from 'vue';
-import { Link } from '@inertiajs/vue3';
-import { Users as UsersIcon, Eye as EyeIcon, UserPlus as UserPlusIcon } from 'lucide-vue-next';
 
 import type { IndexTablePageInstance,
   IndexTablePageProps } from '@/Types/TableConfigTypes';
@@ -70,13 +16,20 @@ import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import {
   createTextColumn,
   createTenantColumn,
+  createTimestampColumn,
 } from '@/Composables/useDataTableColumns';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
-import { Button } from '@/Components/ui/button';
+
+type FormRow = App.Entities.Form & {
+  can: {
+    view: boolean;
+    update: boolean;
+    delete: boolean;
+  };
+};
 
 const props = defineProps<{
   forms: {
-    data: App.Entities.Form[];
+    data: FormRow[];
     meta: {
       total: number;
       current_page: number;
@@ -86,12 +39,11 @@ const props = defineProps<{
       to: number;
     };
   };
-  filters?: Record<string, any>;
+  filters?: Record<string, unknown>;
   sorting?: { id: string; desc: boolean }[];
-  memberFormId?: string;
-  canAccessMemberForm?: boolean;
-  studentRepFormId?: string;
-  canAccessStudentRepForm?: boolean;
+  can: {
+    create: boolean;
+  };
 }>();
 
 const modelName = 'forms';
@@ -99,28 +51,37 @@ const entityName = 'form';
 
 const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
 
-const getRowId = (row: App.Entities.Form) => {
+const getRowId = (row: FormRow) => {
   return `form-${row.id}`;
 };
 
 const columns = computed(() => [
-  createTextColumn<App.Entities.Form>('name', {
+  createTextColumn<FormRow>('name', {
     title: $t('forms.fields.name'),
     width: 300,
   }),
-  createTextColumn<App.Entities.Form>('path', {
-    title: $t('Nuoroda'),
+  createTextColumn<FormRow>('path', {
+    title: $t('forms.fields.link'),
     width: 200,
   }),
-  createTenantColumn<App.Entities.Form>(),
-  createStandardActionsColumn<App.Entities.Form>('forms', {
-    canView: true,
-    canEdit: true,
-    canDelete: true,
+  createTenantColumn<FormRow>(),
+  createTextColumn<FormRow>('registrations_count', {
+    title: $t('Registracijos'),
+    width: 120,
+    enableSorting: false,
+  }),
+  createTimestampColumn<FormRow>('updated_at', {
+    title: $t('Atnaujinta'),
+    width: 160,
+  }),
+  createStandardActionsColumn<FormRow>('forms', {
+    canView: row => row.can.view,
+    canEdit: row => row.can.update,
+    canDelete: row => row.can.delete,
   }),
 ]);
 
-const tableConfig = computed<IndexTablePageProps<App.Entities.Form>>(() => {
+const tableConfig = computed<IndexTablePageProps<FormRow>>(() => {
   return {
     modelName,
     entityName,
@@ -132,19 +93,15 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Form>>(() => {
     pageSize: props.forms.meta.per_page,
 
     initialFilters: props.filters,
-    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'publish_time', desc: true }],
+    // Mirrors IndexFormRequest::$defaultSorting so the header arrow matches the server.
+    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'updated_at', desc: true }],
     enableFiltering: true,
     enableColumnVisibility: false,
     enableRowSelection: false,
 
-    headerTitle: 'Formos',
+    headerTitle: $t('Formos'),
     createRoute: route('forms.create'),
-    canCreate: true,
+    canCreate: props.can.create,
   };
 });
-
-const onDataLoaded = (data: any) => {};
-const handleSortingChange = (sorting: any) => {};
-const handlePageChange = (page: any) => {};
-const handleFilterChange = (filterKey: any, value: any) => {};
 </script>

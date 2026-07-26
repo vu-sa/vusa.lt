@@ -6,17 +6,24 @@ use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
 use App\Models\Form;
 use App\Models\User;
+use App\Services\FormAccessService;
 use App\Services\ModelAuthorizer;
-use App\Settings\FormSettings;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class FormPolicy extends ModelPolicy
 {
-    public function __construct(ModelAuthorizer $authorizer)
-    {
+    public function __construct(
+        ModelAuthorizer $authorizer,
+        private FormAccessService $formAccess,
+    ) {
         parent::__construct($authorizer);
         $this->pluralModelName = Str::plural(ModelEnum::FORM()->label);
+    }
+
+    public function viewAny(User $user): bool
+    {
+        return $this->formAccess->canViewAny($user);
     }
 
     /**
@@ -30,12 +37,20 @@ class FormPolicy extends ModelPolicy
             return true;
         }
 
-        // Check if form is a member registration form, defined in the settings. Since it belongs to VU SA, needs a bypass.
-        if (app(FormSettings::class)->member_registration_form_id === $form->id) {
-            return true;
-        }
+        return $this->canViewSpecialForm($user, $form);
+    }
 
-        return false;
+    /**
+     * The member and student rep registration forms belong to the central tenant, so the
+     * ordinary tenant check never passes for padalinys staff who nevertheless own the
+     * process. Access for those two forms is driven by the role settings that already
+     * define who handles each registration type.
+     *
+     * @param  Form  $form
+     */
+    public function canViewSpecialForm(User $user, Model $form): bool
+    {
+        return $this->formAccess->canViewSpecialForm($user, $form);
     }
 
     /**
