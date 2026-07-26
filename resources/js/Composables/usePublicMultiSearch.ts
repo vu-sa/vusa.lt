@@ -19,6 +19,7 @@ import { useLocalStorage } from '@vueuse/core';
 import { debounce } from 'lodash-es';
 
 import { ErrorUtils } from '@/Shared/Search/services/SearchErrorUtils';
+import { trackEvent } from '@/Plugins/umami';
 
 export type SearchCollectionId
   = | 'institutions'
@@ -66,6 +67,19 @@ interface CollectionDef {
 const MIN_QUERY_LENGTH = 2;
 const DEFAULT_PER_PAGE = 6;
 const MAX_RECENT = 8;
+
+/**
+ * How long typing must settle before a term is reported to analytics. `performSearch` runs
+ * behind a much shorter debounce so results feel live; reporting on that same cadence would
+ * record every keystroke fragment ("v", "vu", "vusa") and bury the terms people meant.
+ */
+const REPORT_SETTLE_MS = 2000;
+
+/** Search terms are free text, so they are capped before leaving the browser. */
+const MAX_REPORTED_TERM_LENGTH = 60;
+
+const normalizeReportedTerm = (term: string): string =>
+  term.trim().toLowerCase().slice(0, MAX_REPORTED_TERM_LENGTH);
 
 /** Fixed tiebreaker order when relevance scores are equal. */
 const PRIORITY: SearchCollectionId[] = [
@@ -285,6 +299,26 @@ export const usePublicMultiSearch = (options: { perPage?: number } = {}) => {
     recentSearches.value = [trimmed, ...recentSearches.value.filter(s => s !== trimmed)].slice(0, MAX_RECENT);
   };
 
+  /**
+   * The last term sent to analytics. Toggling a collection re-runs the same search, which
+   * would otherwise report the term again and inflate its apparent popularity.
+   */
+  let lastReportedTerm = '';
+
+  /**
+   * Reports a settled search so we learn what people look for — and, when `results` is 0,
+   * what they fail to find. Only the term and the result count are sent; see the privacy
+   * note on the `/privatumas` page.
+   */
+  const reportSearch = debounce((term: string, results: number): void => {
+    if (term === lastReportedTerm) {
+      return;
+    }
+
+    lastReportedTerm = term;
+    trackEvent('search_submitted', { term, results });
+  }, REPORT_SETTLE_MS);
+
   const performSearch = async (q: string): Promise<void> => {
     if (abortController) {
       abortController.abort();
@@ -295,6 +329,8 @@ export const usePublicMultiSearch = (options: { perPage?: number } = {}) => {
       resetSections();
       isSearching.value = false;
       searchError.value = null;
+      // Clearing the box starts a new search, so the same term may legitimately be reported again.
+      lastReportedTerm = '';
       return;
     }
 
@@ -325,6 +361,8 @@ export const usePublicMultiSearch = (options: { perPage?: number } = {}) => {
           Object.assign(sections[def.id], createEmptySection());
         }
       }
+
+      reportSearch(normalizeReportedTerm(trimmed), totalResultCount.value);
     }
     catch (error) {
       if (ErrorUtils.isAbortError(error)) {
@@ -346,7 +384,8 @@ export const usePublicMultiSearch = (options: { perPage?: number } = {}) => {
     if (immediate) {
       addRecentSearch(q);
       debouncedSearch.cancel();
-      performSearch(q);
+      // Submitting is an explicit signal, so the term is reported without waiting to settle.
+      void performSearch(q).then(() => reportSearch.flush());
     }
     else {
       debouncedSearch(q);
@@ -428,6 +467,7 @@ export const usePublicMultiSearch = (options: { perPage?: number } = {}) => {
   const clearFilters = (): void => {
     query.value = '';
     resetSections();
+    lastReportedTerm = '';
   };
 
   return {
