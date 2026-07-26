@@ -7,7 +7,9 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
-## v1.17 — Registrations Reachable From the Sidebar (2026-07-26) {#v1-17}
+## v1.17 — Registrations Reachable From the Sidebar (2026-07-27) {#v1-17}
+
+- 🔧 **Sidebar quick actions work again** — clicking "New meeting", "New news" or "New reservation" no longer throws an error and opens the correct page
 
 - ⭐ **Member and student rep registrations in the sidebar and forms list** — both registration forms are available under "Website", and the people handling them can open the shared forms list without form-editing permission.
 - ⭐ **Excel export for registrations** — the download button on the registrations page works again, alongside the total registration count and the date of the latest one

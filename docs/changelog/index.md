@@ -7,7 +7,9 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
-## v1.17 — Registracijos pasiekiamos iš šoninės juostos (2026-07-26) {#v1-17}
+## v1.17 — Registracijos pasiekiamos iš šoninės juostos (2026-07-27) {#v1-17}
+
+- 🔧 **Veikia greiti veiksmai šoninėje juostoje** — paspaudus „Naujas susitikimas“, „Nauja naujiena“ ar „Nauja rezervacija“ mygtukus nebemeta klaidos ir atidaromas atitinkamas puslapis
 
 - ⭐ **Narių ir studentų atstovų registracijos šoninėje juostoje ir formų sąraše** — abi registracijos formos pasiekiamos po „Svetainė“ punktu, o jas tvarkantys žmonės gali atidaryti ir bendrą formų sąrašą neturėdami formų redagavimo teisių.
 - ⭐ **Registracijų atsisiuntimas į Excel** — mygtukas registracijų lange vėl veikia, šalia matosi bendras registracijų skaičius ir paskutinės registracijos data
