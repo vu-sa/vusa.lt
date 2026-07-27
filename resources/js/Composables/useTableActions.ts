@@ -4,7 +4,16 @@ import type { ColumnDef } from '@tanstack/vue-table';
 
 import DataTableActionsColumn from '@/Components/ui/data-table/DataTableActionsColumn.vue';
 
-export interface ActionColumnOptions {
+type RowPermission<TData> = boolean | ((row: TData) => boolean);
+
+type ActionableRow = {
+  id: string | number;
+  deleted_at?: string | null;
+  /** Server-supplied explanation of why permanent deletion is refused for this row. */
+  force_delete_blocked_reason?: string | null;
+};
+
+export interface ActionColumnOptions<TData> {
   // Model information
   modelName: string;
 
@@ -14,13 +23,15 @@ export interface ActionColumnOptions {
   duplicateRoute?: string;
   deleteRoute?: string;
   restoreRoute?: string;
+  forceDeleteRoute?: string;
 
   // Permissions
-  canView?: boolean;
-  canEdit?: boolean;
-  canDuplicate?: boolean;
-  canDelete?: boolean;
-  canRestore?: boolean;
+  canView?: RowPermission<TData>;
+  canEdit?: RowPermission<TData>;
+  canDuplicate?: RowPermission<TData>;
+  canDelete?: RowPermission<TData>;
+  canRestore?: RowPermission<TData>;
+  canForceDelete?: RowPermission<TData>;
 
   // Confirmation settings
   confirmDelete?: boolean;
@@ -40,15 +51,20 @@ export interface ActionColumnOptions {
  * @param options Configuration options for the action column
  * @returns ColumnDef object to add to the table columns
  */
-export function createActionsColumn<TData extends { id: string | number; deleted_at?: string | null }>(
-  options: ActionColumnOptions,
-): ColumnDef<TData, any> {
+export function createActionsColumn<TData extends ActionableRow>(
+  options: ActionColumnOptions<TData>,
+): ColumnDef<TData, unknown> {
   return {
     id: options.id || 'actions',
-    header: () => options.header || $t('Veiksmai'),
+    header: () => options.header || $t('tables.actions'),
     enableSorting: options.enableSorting === undefined ? false : options.enableSorting,
-    size: options.width || 80,
+    // Wide enough for three inline icon buttons plus the overflow trigger.
+    size: options.width || 140,
     cell: ({ row }) => {
+      const resolvePermission = (permission?: RowPermission<TData>) => {
+        return typeof permission === 'function' ? permission(row.original) : permission;
+      };
+
       return h(DataTableActionsColumn, {
         row: row.original,
         modelName: options.modelName,
@@ -57,11 +73,13 @@ export function createActionsColumn<TData extends { id: string | number; deleted
         duplicateRoute: options.duplicateRoute,
         deleteRoute: options.deleteRoute,
         restoreRoute: options.restoreRoute,
-        canView: options.canView,
-        canEdit: options.canEdit,
-        canDuplicate: options.canDuplicate,
-        canDelete: options.canDelete,
-        canRestore: options.canRestore,
+        forceDeleteRoute: options.forceDeleteRoute,
+        canView: resolvePermission(options.canView),
+        canEdit: resolvePermission(options.canEdit),
+        canDuplicate: resolvePermission(options.canDuplicate),
+        canDelete: resolvePermission(options.canDelete),
+        canRestore: resolvePermission(options.canRestore),
+        canForceDelete: resolvePermission(options.canForceDelete),
         confirmDelete: options.confirmDelete,
         deleteConfirmMessage: options.deleteConfirmMessage,
         deleteConfirmTitle: options.deleteConfirmTitle,
@@ -77,19 +95,20 @@ export function createActionsColumn<TData extends { id: string | number; deleted
  * @param permissions Object containing permission flags
  * @returns ColumnDef object for action column
  */
-export function createStandardActionsColumn<TData extends { id: string | number; deleted_at?: string | null }>(
+export function createStandardActionsColumn<TData extends ActionableRow>(
   modelName: string,
   permissions: {
-    canView?: boolean;
-    canEdit?: boolean;
-    canDuplicate?: boolean;
-    canDelete?: boolean;
-    canRestore?: boolean;
+    canView?: RowPermission<TData>;
+    canEdit?: RowPermission<TData>;
+    canDuplicate?: RowPermission<TData>;
+    canDelete?: RowPermission<TData>;
+    canRestore?: RowPermission<TData>;
+    canForceDelete?: RowPermission<TData>;
     confirmDelete?: boolean;
     deleteConfirmMessage?: string;
     deleteConfirmTitle?: string;
   } = {},
-): ColumnDef<TData, any> {
+): ColumnDef<TData, unknown> {
   return createActionsColumn({
     modelName,
     // Use conventional route naming: [modelName].show, [modelName].edit, etc.
@@ -98,6 +117,7 @@ export function createStandardActionsColumn<TData extends { id: string | number;
     duplicateRoute: permissions.canDuplicate ? `${modelName}.duplicate` : undefined,
     deleteRoute: permissions.canDelete ? `${modelName}.destroy` : undefined,
     restoreRoute: permissions.canRestore ? `${modelName}.restore` : undefined,
+    forceDeleteRoute: permissions.canForceDelete ? `${modelName}.forceDelete` : undefined,
     // Enable confirmation by default if not explicitly disabled
     confirmDelete: permissions.confirmDelete !== false,
     deleteConfirmMessage: permissions.deleteConfirmMessage,

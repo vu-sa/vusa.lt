@@ -14,6 +14,7 @@
 import { h, computed, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
+import { usePage } from '@inertiajs/vue3';
 
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
@@ -42,6 +43,8 @@ const props = defineProps<{
   };
   filters?: Record<string, any>;
   sorting?: { id: string; desc: boolean }[];
+  showDeleted?: boolean;
+  deletedCount?: number;
 }>();
 
 const indexTablePageRef = ref<InstanceType<typeof IndexTablePage> | null>(null);
@@ -49,6 +52,8 @@ const indexTablePageRef = ref<InstanceType<typeof IndexTablePage> | null>(null);
 // Component constants
 const modelName = 'types';
 const entityName = 'type';
+
+const canForceDelete = computed(() => usePage().props.auth?.can?.forceDelete?.type ?? false);
 
 // Extract unique model types for filtering
 const modelTypes = computed(() => {
@@ -94,6 +99,7 @@ const columns = computed<Array<ColumnDef<App.Entities.Type, any>>>(() => [
     canEdit: true,
     canDelete: true,
     canRestore: true,
+    canForceDelete: canForceDelete.value,
   }),
 ]);
 
@@ -115,6 +121,8 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Type>>(() => {
     enableFiltering: true,
     enableColumnVisibility: true,
     allowToggleDeleted: true,
+    showDeleted: props.showDeleted,
+    deletedCount: props.deletedCount,
 
     // Page layout
     headerTitle: $t('Turinio tipai'),

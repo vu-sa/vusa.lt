@@ -40,78 +40,53 @@
 
       <!-- Status row -->
       <div class="flex items-center gap-2 ml-5">
-        <!-- Active check-in badge -->
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger as-child>
-              <span v-if="institution.active_check_in"
-                class="inline-flex items-center gap-1 sm:gap-1.5 text-xs px-1.5 sm:px-2.5 py-1 sm:py-1.5 rounded-full border font-medium bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-700/50">
-                <CalendarCheck class="h-3 w-3 sm:hidden shrink-0" />
-                <div class="hidden sm:block w-2 h-2 rounded-full bg-current opacity-75" />
-                <span class="hidden sm:inline">{{ $t('Pranešta apie nebuvimą') }}</span>
-                <span v-if="institution.active_check_in?.end_date" class="hidden sm:inline opacity-75">
-                  {{ $t('iki') }} {{ formatDate(institution.active_check_in.end_date) }}
+              <span :class="statusBadgeClass">
+                <component :is="statusIcon" class="h-3 w-3 shrink-0" />
+                <span class="hidden sm:inline">{{ statusLabel }}</span>
+                <span v-if="activityStatus.status === 'covered_by_upcoming_meeting' && activityStatus.next_meeting_at"
+                  class="opacity-75">
+                  {{ formatDate(activityStatus.next_meeting_at) }}
                 </span>
-              </span>
-              <!-- Upcoming meeting badge -->
-              <span v-else-if="nextMeetingDate"
-                class="inline-flex items-center gap-1 sm:gap-1.5 text-xs px-1.5 sm:px-2.5 py-1 sm:py-1.5 rounded-full border font-medium bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-700/50">
-                <CalendarClock class="h-3 w-3 sm:hidden shrink-0" />
-                <div class="hidden sm:block w-2 h-2 rounded-full bg-current opacity-75" />
-                <span class="hidden sm:inline">{{ $t('Suplanuotas susitikimas') }}</span>
-                <span class="opacity-75">{{ formatDate(nextMeetingDate) }}</span>
-              </span>
-              <!-- Needs meeting badge -->
-              <span v-else-if="!lastMeetingDate && !nextMeetingDate"
-                class="inline-flex items-center gap-1 text-xs px-1.5 sm:px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-700 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700 shrink-0 font-medium">
-                <CalendarX class="h-3 w-3 sm:hidden shrink-0" />
-                <span class="hidden sm:inline">{{ $t('Reikia susitikimo') }}</span>
-              </span>
-              <!-- Overdue badge -->
-              <span v-else-if="isOverdue"
-                class="inline-flex items-center gap-1 text-xs px-1.5 sm:px-2.5 py-1 rounded-full bg-orange-100 text-orange-700 border border-orange-200 dark:bg-orange-900/40 dark:text-orange-300 dark:border-orange-700/50 shrink-0 font-medium">
-                <AlertTriangle class="h-3 w-3 sm:hidden shrink-0" />
-                <span class="hidden sm:inline">{{ $t('Senokas susitikimas') }}</span>
-              </span>
-              <!-- Approaching badge -->
-              <span v-else-if="isApproaching"
-                class="inline-flex items-center gap-1 text-xs px-1.5 sm:px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700/50 shrink-0 font-medium">
-                <Clock class="h-3 w-3 sm:hidden shrink-0" />
-                <span class="hidden sm:inline">{{ $t('Artėja susitikimo laikas') }}</span>
+                <span v-else-if="activityStatus.status === 'covered_by_check_in' && activityStatus.active_check_in_until"
+                  class="hidden opacity-75 sm:inline">
+                  {{ $t('iki') }} {{ formatDate(activityStatus.active_check_in_until) }}
+                </span>
               </span>
             </TooltipTrigger>
             <TooltipContent side="top" class="max-w-xs">
-              <template v-if="institution.active_check_in">
-                {{ $t('Pranešta apie nebuvimą') }}
-                <span v-if="institution.active_check_in.end_date"> {{ $t('iki') }} {{ formatDate(institution.active_check_in.end_date) }}</span>
-                <p v-if="institution.active_check_in.note" class="mt-1 text-xs opacity-80">
+              <div>{{ statusLabel }}</div>
+              <template v-if="activityStatus.status === 'covered_by_check_in'">
+                <span v-if="activityStatus.active_check_in_until">
+                  {{ $t('iki') }} {{ formatDate(activityStatus.active_check_in_until) }}
+                </span>
+                <p v-if="institution.active_check_in?.note" class="mt-1 text-xs opacity-80">
                   {{ institution.active_check_in.note }}
                 </p>
               </template>
-              <template v-else-if="nextMeetingDate">
-                {{ $t('Suplanuotas susitikimas') }} {{ formatDate(nextMeetingDate) }}
-              </template>
-              <template v-else-if="!lastMeetingDate && !nextMeetingDate">
-                {{ $t('Reikia susitikimo') }}
-              </template>
-              <template v-else-if="isOverdue">
-                {{ $t('Senokas susitikimas') }} ({{ daysSinceLast }} {{ $t('d.') }})
-              </template>
-              <template v-else-if="isApproaching">
-                {{ $t('Artėja susitikimo laikas') }}
+              <template v-else-if="activityStatus.effective_days_since_activity !== null">
+                {{ activityStatus.effective_days_since_activity }} {{ $t('d.') }} /
+                {{ activityStatus.periodicity_days }} {{ $t('d.') }}
               </template>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
 
-        <!-- Last meeting info - only show when no upcoming meeting -->
-        <span v-if="!institution.active_check_in && !nextMeetingDate && lastMeetingDate" class="text-xs text-zinc-500 dark:text-zinc-400">
-          {{ formatDate(lastMeetingDate) }}
-          <span v-if="isOverdue" class="text-orange-600 dark:text-orange-400 font-medium">
-            ({{ daysSinceLast }} {{ $t('d.') }})
-          </span>
-          <span v-else-if="isApproaching" class="text-amber-600 dark:text-amber-400 font-medium">
-            ({{ daysSinceLast }} {{ $t('d.') }})
+        <span v-if="activityStatus.last_activity_at && !activityStatus.next_meeting_at"
+          class="text-xs text-zinc-500 dark:text-zinc-400">
+          <template v-if="activityStatus.last_activity_type === 'check_in'">
+            {{ $t('visak.activity.activity_status.reported_until', {
+              date: formatDate(activityStatus.last_activity_at),
+            }) }}
+          </template>
+          <template v-else>
+            {{ formatDate(activityStatus.last_activity_at) }}
+          </template>
+          <span v-if="activityStatus.effective_days_since_activity !== null"
+            :class="activityDaysClass">
+            ({{ activityStatus.effective_days_since_activity }} {{ $t('d.') }})
           </span>
         </span>
       </div>
@@ -212,7 +187,7 @@
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Link as InertiaLink } from '@inertiajs/vue3';
-import { AlertTriangle, Bell, BellOff, CalendarCheck, CalendarClock, CalendarOff, CalendarX, Clock, Eye, EyeOff, Globe, Info, Loader2, X } from 'lucide-vue-next';
+import { AlertTriangle, Bell, BellOff, CalendarCheck, CalendarClock, CalendarOff, CalendarX, CheckCircle2, Clock, Eye, EyeOff, Globe, Loader2, X } from 'lucide-vue-next';
 
 import { Button } from '@/Components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
@@ -238,68 +213,53 @@ const emit = defineEmits<{
   'toggle-mute': [institutionId: string];
 }>();
 
-// Helper functions
-const lastMeetingDate = computed(() => {
-  if (!Array.isArray(props.institution.meetings)) return undefined;
-  const now = new Date();
-  const past = props.institution.meetings
-    .map(m => new Date(m.start_time))
-    .filter(d => d <= now)
-    .sort((a, b) => b.getTime() - a.getTime());
-  return past[0];
-});
+const activityStatus = computed(() => props.institution.activity_status);
+const statusLabel = computed(() => $t(`visak.activity.activity_status.${activityStatus.value.status}`));
 
-const nextMeetingDate = computed(() => {
-  if (!Array.isArray(props.institution.meetings)) return undefined;
-  const now = new Date();
-  const upcoming = props.institution.meetings
-    .map(m => new Date(m.start_time))
-    .filter(d => d > now)
-    .sort((a, b) => a.getTime() - b.getTime());
-  return upcoming[0];
-});
-
-const daysSinceLast = computed(() => {
-  if (typeof props.institution.days_since_last_meeting === 'number') {
-    return props.institution.days_since_last_meeting;
-  }
-  if (!lastMeetingDate.value) return undefined;
-  const diffMs = Date.now() - lastMeetingDate.value.getTime();
-  return Math.floor(diffMs / (1000 * 60 * 60 * 24));
-});
-
-// Get periodicity from institution (accessor handles inheritance from types, defaults to 30)
-const periodicity = computed(() => {
-  return (props.institution as any).meeting_periodicity_days ?? 30;
-});
-
-// Calculate thresholds based on periodicity
-const APPROACHING_THRESHOLD = 0.8; // 80% of periodicity
-const isApproaching = computed(() => {
-  if (daysSinceLast.value === undefined) return false;
-  return daysSinceLast.value >= (periodicity.value * APPROACHING_THRESHOLD) && daysSinceLast.value <= periodicity.value;
-});
-
-const isOverdue = computed(() => {
-  if (daysSinceLast.value === undefined) return false;
-  return daysSinceLast.value > periodicity.value;
+const statusIcon = computed(() => {
+  return {
+    no_activity: CalendarX,
+    healthy: CheckCircle2,
+    approaching: Clock,
+    overdue: AlertTriangle,
+    covered_by_upcoming_meeting: CalendarClock,
+    covered_by_check_in: CalendarCheck,
+  }[activityStatus.value.status];
 });
 
 const statusDotClass = computed(() => {
-  const hasUpcoming = (props.institution.upcoming_meetings_count || 0) > 0;
-  if (hasUpcoming || props.institution.active_check_in) {
-    return 'bg-emerald-400';
+  return {
+    no_activity: 'bg-zinc-400',
+    healthy: 'bg-emerald-400',
+    approaching: 'bg-amber-400',
+    overdue: 'bg-orange-400',
+    covered_by_upcoming_meeting: 'bg-blue-400',
+    covered_by_check_in: 'bg-emerald-400',
+  }[activityStatus.value.status];
+});
+
+const statusBadgeClass = computed(() => {
+  const base = 'inline-flex shrink-0 items-center gap-1 rounded-full border px-1.5 py-1 text-xs font-medium sm:gap-1.5 sm:px-2.5 sm:py-1.5';
+  const color = {
+    no_activity: 'border-zinc-200 bg-zinc-100 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300',
+    healthy: 'border-emerald-200 bg-emerald-100 text-emerald-800 dark:border-emerald-700/50 dark:bg-emerald-900/40 dark:text-emerald-300',
+    approaching: 'border-amber-200 bg-amber-100 text-amber-700 dark:border-amber-700/50 dark:bg-amber-900/40 dark:text-amber-300',
+    overdue: 'border-orange-200 bg-orange-100 text-orange-700 dark:border-orange-700/50 dark:bg-orange-900/40 dark:text-orange-300',
+    covered_by_upcoming_meeting: 'border-blue-200 bg-blue-100 text-blue-800 dark:border-blue-700/50 dark:bg-blue-900/40 dark:text-blue-300',
+    covered_by_check_in: 'border-emerald-200 bg-emerald-100 text-emerald-800 dark:border-emerald-700/50 dark:bg-emerald-900/40 dark:text-emerald-300',
+  }[activityStatus.value.status];
+
+  return `${base} ${color}`;
+});
+
+const activityDaysClass = computed(() => {
+  if (activityStatus.value.status === 'overdue') {
+    return 'font-medium text-orange-600 dark:text-orange-400';
   }
-  if (isOverdue.value) {
-    return 'bg-orange-400';
+  if (activityStatus.value.status === 'approaching') {
+    return 'font-medium text-amber-600 dark:text-amber-400';
   }
-  if (isApproaching.value) {
-    return 'bg-amber-400';
-  }
-  if (!lastMeetingDate.value) {
-    return 'bg-zinc-400';
-  }
-  return 'bg-zinc-400';
+  return '';
 });
 
 // Subscription status helpers

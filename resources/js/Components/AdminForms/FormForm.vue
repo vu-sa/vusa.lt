@@ -20,9 +20,20 @@
         <TiptapEditor v-else v-model="form.description.en" preset="full" :html="true" />
       </div>
 
-      <FormFieldWrapper id="path" :label="$t('forms.fields.link')">
-        <MultiLocaleInput v-model:input="form.path" />
-      </FormFieldWrapper>
+      <div class="space-y-3">
+        <PermalinkField
+          :permalink="form.path.lt" :base-url="registrationBaseUrl('lt')" label="LT"
+          :view-url="publicUrl('lt')"
+          @update:permalink="onPathInput('lt', $event)" />
+        <PermalinkField
+          :permalink="form.path.en" :base-url="registrationBaseUrl('en')" label="EN"
+          :view-url="publicUrl('en')"
+          @update:permalink="onPathInput('en', $event)" />
+        <p v-if="pathChangedOnExistingForm" class="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-500">
+          <IFluentWarning24Regular class="h-3.5 w-3.5 shrink-0" />
+          {{ $t('Atsargiai: pakeitus nuorodą, sena nuoroda nebeveiks!') }}
+        </p>
+      </div>
 
       <FormFieldWrapper v-if="assignableTenants && assignableTenants.length > 0" id="tenant_id" :label="$t('forms.fields.tenant')">
         <Select v-model="tenantIdString">
@@ -54,6 +65,10 @@
           </Link>
         </p>
       </template>
+      <p v-if="hasRegistrations" class="flex items-center gap-1 text-xs text-muted-foreground">
+        <IFluentInfo16Regular class="h-3.5 w-3.5 shrink-0" />
+        {{ $t('Formos laukelių pridėti ar ištrinti nebegalima, nes forma jau turi registracijų.') }}
+      </p>
       <SortableFormFieldsTable v-model="form.form_fields" class="mt-2">
         <template #default="{ model }">
           <div class="grid grid-cols-[20px__22px__1fr__80px] items-center gap-1 pr-2 text-zinc-700 dark:text-zinc-200">
@@ -94,8 +109,8 @@
 </template>
 
 <script setup lang="ts">
-import { Link, useForm } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { Link, usePage, useForm } from '@inertiajs/vue3';
+import { computed, ref, toRaw, watch } from 'vue';
 
 import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
 import SimpleLocaleButton from '../Buttons/SimpleLocaleButton.vue';
@@ -107,12 +122,14 @@ import AdminForm from './AdminForm.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 import FormElement from './FormElement.vue';
 import FormFieldForm from './FormFieldForm.vue';
+import PermalinkField from './PermalinkField.vue';
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Label } from '@/Components/ui/label';
 import { DateTimePicker } from '@/Components/ui/date-picker';
 import { Button } from '@/Components/ui/button';
 import { formFieldTemplate } from '@/Types/formTemplates';
+import { generateSlug } from '@/Utils/String';
 
 defineEmits<{
   (event: 'submit:form', form: unknown): void;
@@ -131,9 +148,57 @@ const locale = ref('lt');
 const showFormFieldModal = ref(false);
 const selectedFormField = ref(formFieldTemplate);
 
-const form = useForm(props.form);
+// Translatable columns come back as null when never filled in, but the editor binds
+// straight into .lt / .en, so normalise them up front.
+const form = useForm({
+  ...props.form,
+  description: props.form.description ?? { lt: '', en: '' },
+  path: props.form.path ?? { lt: '', en: '' },
+});
 
 const hasRegistrations = computed(() => form?.registrations_count > 0);
+
+type Locale = 'lt' | 'en';
+
+const originalPath: Record<Locale, string> = {
+  lt: props.form.path?.lt ?? '',
+  en: props.form.path?.en ?? '',
+};
+
+// A path that already has a value was authored deliberately — never regenerate over it.
+const pathTouched = ref<Record<Locale, boolean>>({
+  lt: originalPath.lt !== '',
+  en: originalPath.en !== '',
+});
+
+const pathChangedOnExistingForm = computed(() =>
+  (originalPath.lt !== '' && form.path.lt !== originalPath.lt)
+  || (originalPath.en !== '' && form.path.en !== originalPath.en),
+);
+
+const registrationSegment = (locale: Locale) => (locale === 'lt' ? 'registracija' : 'registration');
+
+const registrationBaseUrl = (locale: Locale) =>
+  `${usePage().props.app.url}/${locale}/${registrationSegment(locale)}`;
+
+const publicUrl = (locale: Locale) =>
+  form.path[locale] ? `${registrationBaseUrl(locale)}/${form.path[locale]}` : undefined;
+
+const onPathInput = (locale: Locale, value: string) => {
+  pathTouched.value[locale] = true;
+  form.path[locale] = value;
+};
+
+// Keep the URL in step with the name until the user takes the field over.
+(['lt', 'en'] as Locale[]).forEach((locale) => {
+  watch(() => form.name?.[locale], (name) => {
+    if (pathTouched.value[locale]) {
+      return;
+    }
+
+    form.path[locale] = generateSlug(String(name || ''));
+  });
+});
 
 // Shadcn Select requires string values
 const tenantIdString = computed({
@@ -151,16 +216,18 @@ const onPublishTimeChange = (date: Date | null) => {
 };
 
 function handleNewFormFieldCreate() {
-  selectedFormField.value = formFieldTemplate;
-  // add string id to the form field
-  // NOTE: in backend, the string length is checked to know if the ID is generated or not
-  selectedFormField.value.id = Math.random().toString(36).substring(7);
+  // Clone: formFieldTemplate is a shared module-level object, mutating it would leak
+  // the previous field's values into every subsequent one.
+  selectedFormField.value = structuredClone(formFieldTemplate);
+  // NOTE: the backend treats a 'new-' prefixed id as a field that isn't persisted yet.
+  selectedFormField.value.id = `new-${crypto.randomUUID()}`;
   selectedFormField.value.order = form.form_fields.length + 1;
   showFormFieldModal.value = true;
 }
 
 function handleEditFormField(model) {
-  selectedFormField.value = model;
+  // Clone so dismissing the modal discards the edits instead of applying them.
+  selectedFormField.value = structuredClone(toRaw(model));
   showFormFieldModal.value = true;
 }
 

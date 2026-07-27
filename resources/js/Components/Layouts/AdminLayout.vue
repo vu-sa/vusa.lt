@@ -2,13 +2,12 @@
   <div class="bg-background font-admin">
     <Head :title />
 
-    <!-- Staging environment warning banner -->
-    <StagingBanner />
-    <ImpersonateBanner />
-
     <SidebarProvider v-model:open="sidebarOpen">
       <AppSidebar />
       <SidebarInset class="flex flex-col">
+        <StagingBanner class="mx-2 mt-2" />
+        <ImpersonateBanner class="mx-2 mt-2" />
+
         <!-- Header with breadcrumbs and actions -->
         <header class="sticky top-0 z-40 flex h-14 shrink-0 items-center justify-between border-b bg-background px-4 md:h-16 md:px-6 md:rounded-t-xl">
           <div class="flex items-center flex-1 gap-2 md:gap-3 min-w-0">

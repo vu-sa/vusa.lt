@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Contracts\GuardsForceDelete;
+use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasTranslations;
 use Database\Factories\FormFactory;
 use Illuminate\Database\Eloquent\Collection;
@@ -11,26 +13,23 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
-use Laravel\Scout\Searchable;
 
 /**
  * @property string $id
  * @property array|string $name
  * @property array|string|null $description
- * @property string|null $user_id
  * @property int $tenant_id
  * @property array|string|null $path URL path for visible forms
- * @property string|null $publish_time
+ * @property Carbon|null $publish_time
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, FormField> $formFields
+ * @property-read string|null $force_delete_blocked_reason
  * @property-read array $translatable_columns_from
  * @property-read Collection<int, Registration> $registrations
  * @property-read Tenant $tenant
- * @property-read Training|null $training
  * @property-read mixed $translations
- * @property-read User|null $user
  *
  * @method static \Database\Factories\FormFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Form newModelQuery()
@@ -46,10 +45,10 @@ use Laravel\Scout\Searchable;
  *
  * @mixin \Eloquent
  */
-class Form extends Model
+class Form extends Model implements GuardsForceDelete
 {
     /** @use HasFactory<FormFactory> */
-    use HasFactory, HasTranslations, HasUlids, Searchable, SoftDeletes;
+    use GuardsForceDeleteWhenReferenced, HasFactory, HasTranslations, HasUlids, SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -64,36 +63,49 @@ class Form extends Model
         'path',
     ];
 
-    public function toSearchableArray(): array
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
     {
         return [
-            'name->'.app()->getLocale() => $this->getTranslation('name', app()->getLocale()),
-            'path->'.app()->getLocale() => $this->getTranslation('path', app()->getLocale()),
+            'publish_time' => 'datetime',
         ];
     }
 
+    /**
+     * @return HasMany<FormField, $this>
+     */
     public function formFields(): HasMany
     {
         return $this->hasMany(FormField::class);
     }
 
-    public function registrations()
+    /**
+     * @return HasMany<Registration, $this>
+     */
+    public function registrations(): HasMany
     {
         return $this->hasMany(Registration::class);
     }
 
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
-
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
-    public function training()
+    /**
+     * `registrations.form_id` cascades, so permanent deletion would silently destroy
+     * every submitted registration along with the form.
+     */
+    public function forceDeleteBlockedReason(): ?string
     {
-        return $this->belongsTo(Training::class);
+        return $this->forceDeleteReasonFor([
+            'trash.blockers.registrations' => $this->countedRelation('registrations'),
+            'entities.training.model' => Training::query()->where('form_id', $this->id)->count(),
+        ]);
     }
 }

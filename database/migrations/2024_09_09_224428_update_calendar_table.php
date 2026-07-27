@@ -30,7 +30,7 @@ return new class extends Migration
             $table->boolean('is_international')->default(false)->after('is_all_day');
         });
 
-        $calendar = Calendar::all();
+        $calendar = Calendar::query()->withoutGlobalScopes()->get();
 
         foreach ($calendar as $calendarEvent) {
 

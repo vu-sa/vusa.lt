@@ -47,6 +47,11 @@ class UpdateFormRequest extends FormRequest
             'path' => 'required|array',
             'tenant_id' => 'required|exists:tenants,id',
             'form_fields' => 'array',
+            'form_fields.*.type' => 'required|string',
+            'form_fields.*.label' => 'required|array',
+            'form_fields.*.is_required' => 'boolean',
+            'form_fields.*.order' => 'integer',
+            'form_fields.*.options' => 'nullable|array',
             'publish_time' => 'nullable|date',
         ];
     }

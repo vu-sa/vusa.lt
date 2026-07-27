@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -29,7 +30,7 @@ class UpdateTenantRequest extends FormRequest
             'type' => 'required|in:pagrindinis,padalinys,pkp',
             'alias' => 'nullable|unique:tenants,alias,'.$this->tenant->id,
             'shortname_vu' => 'nullable|unique:tenants,shortname_vu,'.$this->tenant->id,
-            'primary_institution_id' => 'nullable|exists:institutions,id',
+            'primary_institution_id' => ['nullable', SoftDeleteRules::existsLive('institutions')],
         ];
     }
 }

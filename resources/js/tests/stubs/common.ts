@@ -67,6 +67,65 @@ export const stubTooltipTrigger = defineComponent({
   template: '<div><slot /></div>',
 });
 
+/**
+ * Dropdown menus render their content through a reka-ui portal and only mount it
+ * once open, neither of which jsdom handles predictably. The stubs render the
+ * content inline and turn `select` into a click so menu items stay assertable.
+ */
+export const stubDropdownMenu = defineComponent({
+  name: 'DropdownMenuStub',
+  template: '<div data-testid="dropdown-menu"><slot /></div>',
+});
+
+export const stubDropdownMenuTrigger = defineComponent({
+  name: 'DropdownMenuTriggerStub',
+  template: '<div><slot /></div>',
+});
+
+export const stubDropdownMenuContent = defineComponent({
+  name: 'DropdownMenuContentStub',
+  template: '<div data-testid="dropdown-menu-content"><slot /></div>',
+});
+
+export const stubDropdownMenuItem = defineComponent({
+  name: 'DropdownMenuItemStub',
+  props: ['disabled'],
+  emits: ['select'],
+  template: '<button type="button" :disabled="disabled" @click="$emit(\'select\', $event)"><slot /></button>',
+});
+
+export const stubDropdownMenuSeparator = defineComponent({
+  name: 'DropdownMenuSeparatorStub',
+  template: '<hr />',
+});
+
+export const stubDropdownMenuCheckboxItem = defineComponent({
+  name: 'DropdownMenuCheckboxItemStub',
+  props: ['modelValue', 'disabled'],
+  emits: ['select', 'update:modelValue'],
+  template: `
+    <button
+      type="button"
+      role="menuitemcheckbox"
+      :disabled="disabled"
+      :aria-checked="modelValue ? 'true' : 'false'"
+      @click="$emit('select', $event); $emit('update:modelValue', !modelValue)"
+    >
+      <slot />
+    </button>
+  `,
+});
+
+export const stubDropdownMenuLabel = defineComponent({
+  name: 'DropdownMenuLabelStub',
+  template: '<div><slot /></div>',
+});
+
+export const stubDropdownMenuGroup = defineComponent({
+  name: 'DropdownMenuGroupStub',
+  template: '<div><slot /></div>',
+});
+
 export const stubIcon = (className: string) => defineComponent({
   name: 'IconStub',
   template: `<span class="${className}" />`,
@@ -74,7 +133,7 @@ export const stubIcon = (className: string) => defineComponent({
 
 /**
  * Pre-built object ready to spread into `global.stubs`.
- * Covers Dialog, Tooltip, and common icon families.
+ * Covers Dialog, Tooltip, DropdownMenu, and common icon families.
  */
 export const commonStubs: Record<string, any> = {
   Dialog: stubDialog,
@@ -83,6 +142,14 @@ export const commonStubs: Record<string, any> = {
   DialogFooter: stubDialogFooter,
   DialogHeader: stubDialogHeader,
   DialogTitle: stubDialogTitle,
+  DropdownMenu: stubDropdownMenu,
+  DropdownMenuCheckboxItem: stubDropdownMenuCheckboxItem,
+  DropdownMenuContent: stubDropdownMenuContent,
+  DropdownMenuGroup: stubDropdownMenuGroup,
+  DropdownMenuItem: stubDropdownMenuItem,
+  DropdownMenuLabel: stubDropdownMenuLabel,
+  DropdownMenuSeparator: stubDropdownMenuSeparator,
+  DropdownMenuTrigger: stubDropdownMenuTrigger,
   Tooltip: stubTooltip,
   TooltipContent: stubTooltipContent,
   TooltipProvider: stubTooltipProvider,

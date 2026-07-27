@@ -32,10 +32,26 @@ class ModelPermissionSeeder extends Seeder
             $allowedScopes = ModelEnum::getAllowedScopes($pluralizedModel);
 
             foreach (CRUDEnum::toLabels() as $crud) {
+                $isForceDelete = $crud === CRUDEnum::FORCE_DELETE()->label;
+
+                // Permanent deletion only exists for soft-deletable models, and is
+                // never granted at the "own" scope — it is a tenant/global action.
+                if ($isForceDelete && ! ModelEnum::isSoftDeletable($pluralizedModel)) {
+                    foreach (['own', 'padalinys', '*'] as $scope) {
+                        $permissionsToDelete[] = $pluralizedModel.'.'.$crud.'.'.$scope;
+                    }
+
+                    continue;
+                }
+
                 // Special case: institutions only allow "own" scope for read operations
                 $operationAllowedScopes = $allowedScopes;
                 if ($pluralizedModel === 'institutions' && $crud !== 'read') {
                     $operationAllowedScopes = array_diff($allowedScopes, ['own']);
+                }
+
+                if ($isForceDelete) {
+                    $operationAllowedScopes = array_intersect($operationAllowedScopes, ['padalinys', '*']);
                 }
 
                 // Create permissions for allowed scopes

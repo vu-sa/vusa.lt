@@ -84,20 +84,4 @@ class FileableFilePolicy
         // Deleting a file requires update permission on the fileable
         return $user->can('update', $fileable);
     }
-
-    /**
-     * Determine whether the user can restore the file.
-     */
-    public function restore(User $user, FileableFile $fileableFile): bool
-    {
-        return $this->delete($user, $fileableFile);
-    }
-
-    /**
-     * Determine whether the user can permanently delete the file.
-     */
-    public function forceDelete(User $user, FileableFile $fileableFile): bool
-    {
-        return $this->delete($user, $fileableFile);
-    }
 }

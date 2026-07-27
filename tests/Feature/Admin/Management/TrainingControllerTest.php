@@ -183,7 +183,7 @@ describe('authorized access', function () {
             ->assertRedirect(route('trainings.index'))
             ->assertSessionHas('success');
 
-        $this->assertDatabaseMissing('trainings', [
+        $this->assertSoftDeleted('trainings', [
             'id' => $this->training->id,
         ]);
     });

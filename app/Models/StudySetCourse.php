@@ -23,7 +23,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $updated_at
  * @property-read array $translatable_columns_from
  * @property-read Collection<int, LecturerReview> $reviews
- * @property-read StudySet $studySet
+ * @property-read StudySet|null $studySet
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\StudySetCourseFactory factory($count = null, $state = [])

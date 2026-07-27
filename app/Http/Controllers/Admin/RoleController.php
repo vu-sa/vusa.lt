@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Requests\IndexRoleRequest;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Permission;
@@ -11,6 +12,7 @@ use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\Permissions\PermissionMapBuilder;
 use App\Services\TanstackTableService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -196,6 +198,7 @@ class RoleController extends AdminController
             'read' => 'string',
             'update' => 'string',
             'delete' => 'string',
+            'forceDelete' => 'string',
         ]);
 
         $newPermissions = [];
@@ -259,8 +262,8 @@ class RoleController extends AdminController
     protected function clearCacheforRoleUsers(Role $role)
     {
         $role->usersThroughDuties->each(function ($user) {
-            Cache::forget('index-permissions-'.$user->id);
-            Cache::forget('create-permissions-'.$user->id);
+            PermissionMapBuilder::forgetCachedMaps($user->id);
+            Cache::forget(HandleInertiaRequests::registrationFormsCacheKey($user->id));
         });
     }
 }

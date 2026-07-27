@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexBannerRequest;
+use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Banner;
 use App\Services\ModelAuthorizer as Authorizer;
@@ -16,7 +17,7 @@ use Inertia\Response as InertiaResponse;
 
 class BannerController extends AdminController
 {
-    use HasTanstackTables;
+    use HandlesSoftDeletes, HasTanstackTables;
 
     public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
@@ -43,6 +44,8 @@ class BannerController extends AdminController
             ]
         );
 
+        $deletedCount = $this->getTrashedCount($query);
+
         $banners = $query->paginate($request->input('per_page', 20))
             ->withQueryString();
 
@@ -60,6 +63,8 @@ class BannerController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $request->getSorting(),
+            'showDeleted' => $request->boolean('showDeleted', false),
+            'deletedCount' => $deletedCount,
         ]);
     }
 
@@ -92,8 +97,8 @@ class BannerController extends AdminController
         $banner->title = $request->title;
         $banner->is_active = $request->is_active ?? 0;
         $banner->link_url = $request->link_url ?? '';
-        // add random banner order for now
-        $banner->order = rand(1, 10);
+        // Order is assigned by the model's creating hook, which knows about trashed
+        // banners still holding a slot.
         $banner->image_url = $request->image_url;
         $banner->tenant_id = $tenants->first()['id'] ?? null;
         $banner->save();
@@ -148,5 +153,15 @@ class BannerController extends AdminController
         $banner->delete();
 
         return $this->redirectResponse('banners.index')->with('info', 'Baneris ištrintas!');
+    }
+
+    public function restore(Banner $banner): RedirectResponse
+    {
+        return $this->restoreModel($banner);
+    }
+
+    public function forceDelete(Banner $banner): RedirectResponse
+    {
+        return $this->forceDeleteModel($banner);
     }
 }

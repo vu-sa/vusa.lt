@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Enums\DutySelectionMethod;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Rules\SoftDeleteRules;
 use App\Services\ModelAuthorizer;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -45,12 +46,12 @@ class StoreDutyRequest extends FormRequest
             'roles' => 'nullable|array',
             'current_users' => 'nullable|array',
             'ex_officio_target_duty_ids' => 'nullable|array',
-            'ex_officio_target_duty_ids.*' => 'ulid|distinct|exists:duties,id',
+            'ex_officio_target_duty_ids.*' => ['ulid', 'distinct', SoftDeleteRules::existsLive('duties')],
             'assignable_tenants' => 'nullable|array',
             'assignable_tenants.*.tenant_id' => 'required|integer|exists:tenants,id',
             'assignable_tenants.*.quota' => 'nullable|integer|min:1',
             'assignable_tenants.*.user_ids' => 'nullable|array',
-            'assignable_tenants.*.user_ids.*' => 'string|exists:users,id',
+            'assignable_tenants.*.user_ids.*' => ['string', SoftDeleteRules::existsLive('users')],
         ];
     }
 

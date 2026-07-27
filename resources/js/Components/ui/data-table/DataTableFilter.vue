@@ -18,7 +18,7 @@
       <Input
         v-if="searchable"
         v-model="searchTerm"
-        :placeholder="$t('Ieškoti...')"
+        :placeholder="$t('tables.search_placeholder')"
         class="mb-2 h-8"
         @keydown="handleSearchKeydown"
       />
@@ -27,7 +27,7 @@
       <div v-if="multiple" class="space-y-2 max-h-[300px] overflow-auto pb-12">
         <!-- Add padding-bottom to prevent overlap -->
         <p v-if="searchable && filteredOptions.length === 0" class="py-3 text-center text-sm text-muted-foreground">
-          {{ $t('Nerasta') }}
+          {{ $t('tables.no_results') }}
         </p>
         <CheckboxGroupRoot
           v-model="selectedValues"
@@ -50,7 +50,7 @@
             :disabled="!hasSelection"
             @click="clearSelection"
           >
-            {{ $t('Clear') }}
+            {{ $t('tables.clear') }}
           </Button>
           <Button
             variant="default"
@@ -58,7 +58,7 @@
             :disabled="!hasChanges"
             @click="applyFilters"
           >
-            {{ $t('Apply') }}
+            {{ $t('tables.apply') }}
           </Button>
         </div>
       </div>
@@ -66,7 +66,7 @@
       <!-- Single-select mode -->
       <div v-else class="space-y-1">
         <p v-if="searchable && filteredOptions.length === 0" class="py-3 text-center text-sm text-muted-foreground">
-          {{ $t('Nerasta') }}
+          {{ $t('tables.no_results') }}
         </p>
         <DropdownMenuItem
           v-for="option in filteredOptions"
@@ -83,7 +83,7 @@
           :disabled="!hasSelection"
           @click="clearSelection"
         >
-          {{ $t('Clear Selection') }}
+          {{ $t('tables.clear_selection') }}
         </DropdownMenuItem>
       </div>
     </DropdownMenuContent>

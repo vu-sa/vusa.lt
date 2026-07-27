@@ -318,3 +318,23 @@ export function latinizeId(text: string, maxLength = 100): string {
     .replace(/(^-|-$)/g, '')
     .substring(0, maxLength);
 }
+
+/**
+ * Generate a URL slug from a human-readable title.
+ *
+ * Same transformation as {@link latinizeId}, but unbounded by default and trailing
+ * hyphens are trimmed *after* truncating, so a slug cut mid-word never ends in a
+ * dangling separator.
+ *
+ * @param text - The title to convert
+ * @param maxLength - Optional cap on the resulting slug's length
+ *
+ * @example
+ * generateSlug('Narių registracija') // 'nariu-registracija'
+ * generateSlug('Šiandien yra gera diena!', 12) // 'siandien-yra'
+ */
+export function generateSlug(text: string, maxLength?: number): string {
+  const slug = latinizeId(text);
+
+  return maxLength === undefined ? slug : slug.substring(0, maxLength).replace(/-+$/, '');
+}

@@ -25,8 +25,7 @@ class SendMeetingReminders extends Command
 
     public function handle(): int
     {
-        // Get default reminder hours (these are the checkpoints we run)
-        $checkHours = [24, 1];
+        $checkHours = $this->getConfiguredReminderHours();
 
         $sentCount = 0;
 
@@ -40,7 +39,7 @@ class SendMeetingReminders extends Command
                     // Check if user wants reminders at this hour interval
                     $userReminderHours = $user->getMeetingReminderHours();
 
-                    if (in_array($hoursAhead, $userReminderHours)) {
+                    if (in_array($hoursAhead, $userReminderHours, true)) {
                         $user->notify(new MeetingReminderNotification($meeting, $hoursAhead));
                         $sentCount++;
                     }
@@ -70,6 +69,22 @@ class SendMeetingReminders extends Command
             ->with(['institutions'])
             ->whereBetween('start_time', [$windowStart, $windowEnd])
             ->get();
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    protected function getConfiguredReminderHours(): array
+    {
+        return User::query()
+            ->get()
+            ->flatMap(fn (User $user): array => $user->getMeetingReminderHours())
+            ->map(fn ($hours): int => (int) $hours)
+            ->filter(fn (int $hours): bool => $hours > 0)
+            ->unique()
+            ->sortDesc()
+            ->values()
+            ->all();
     }
 
     /**

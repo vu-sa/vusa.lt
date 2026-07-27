@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Institution;
+use App\Models\Meeting;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\InstitutionSubscriptionService;
@@ -18,6 +19,22 @@ beforeEach(function () {
 });
 
 describe('InstitutionSubscriptionService', function () {
+    test('followed institutions API includes the shared activity status', function () {
+        $this->travelTo('2025-11-15');
+
+        $this->institution->update(['meeting_periodicity_days' => 30]);
+        Meeting::factory()
+            ->hasAttached($this->institution)
+            ->create(['start_time' => '2025-10-01 10:00:00']);
+        $this->service->follow($this->user, $this->institution);
+
+        $this->actingAs($this->user)
+            ->getJson(route('api.v1.admin.institutions.followed'))
+            ->assertSuccessful()
+            ->assertJsonPath('data.0.activity_status.status', 'overdue')
+            ->assertJsonPath('data.0.activity_status.effective_days_since_activity', 45);
+    });
+
     test('user can follow an institution', function () {
         $this->service->follow($this->user, $this->institution);
 

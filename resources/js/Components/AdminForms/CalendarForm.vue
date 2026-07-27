@@ -36,7 +36,8 @@
             <MultiLocaleInput v-model:input="form.organizer" />
           </FormFieldWrapper>
 
-          <FormFieldWrapper id="location" :label="$t('Renginio vieta')" :hint="$t('Fizinė arba virtuali vieta')">
+          <FormFieldWrapper id="location" :label="$t('Renginio vieta')"
+            :hint="$t('Kuo tikslesnis adresas, tuo tiksliau renginio puslapyje bus parodytas žemėlapis')">
             <MultiLocaleInput v-model:input="form.location" />
           </FormFieldWrapper>
         </div>

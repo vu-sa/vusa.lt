@@ -193,6 +193,24 @@ return [
         'tasks' => 'Užduotys',
         'participants' => 'Dalyviai',
     ],
+    'registrations' => [
+        'none' => 'Registracijų dar nėra',
+        'none_hint' => 'Kai kas nors užpildys šią formą, registracija atsiras čia.',
+        'details' => 'Registracijos informacija',
+        'details_hint' => 'Peržiūrėkite išsamią registracijos informaciją',
+        'available_options' => 'Galimi pasirinkimai',
+        'show_options' => 'Rodyti pasirinkimus',
+        'hide_options' => 'Slėpti pasirinkimus',
+    ],
+    'field_models' => [
+        'tenant' => 'Padalinys',
+        'institution' => 'Institucija',
+    ],
+    'field_model_attributes' => [
+        'fullname' => 'Pilnas pavadinimas',
+        'shortname' => 'Trumpas pavadinimas',
+        'name' => 'Pavadinimas',
+    ],
     'context' => [
         'main_info' => 'Pagrindinė informacija',
         'user_duties' => 'Asmens pareigos',

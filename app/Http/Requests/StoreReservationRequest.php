@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Reservation;
+use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
@@ -37,7 +38,7 @@ class StoreReservationRequest extends FormRequest
             'name' => 'required|string',
             'description' => 'required|string',
             'resources' => 'required|array',
-            'resources.*.id' => 'required|string|exists:resources,id',
+            'resources.*.id' => ['required', 'string', SoftDeleteRules::existsLive('resources')],
             'resources.*.quantity' => 'required|integer|min:1',
             'start_time' => 'required|date',
             'end_time' => 'required|date|after:start_time',

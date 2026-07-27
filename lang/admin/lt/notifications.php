@@ -66,6 +66,10 @@ return [
     'task_overdue_body_single' => 'Užduotis „:task" yra vėluojanti',
     'task_overdue_body_multiple' => 'Turite :count vėluojančias užduotis: :tasks ir kt.',
     'overdue_tasks' => 'Vėluojančios užduotys',
+    'periodicity_gap_title' => 'Laikas pranešti apie :institution veiklą',
+    'periodicity_gap_body' => 'Institucijai „:institution“ užregistruokite naują susitikimą arba praneškite apie veiklą.',
+    'action_register_meeting' => 'Registruoti susitikimą',
+    'action_report_activity' => 'Pranešti apie veiklą',
 
     // Registration notifications
     'member_registered_title' => 'Nauja nario registracija',

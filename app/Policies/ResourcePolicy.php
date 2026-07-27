@@ -13,6 +13,11 @@ use Illuminate\Support\Str;
 class ResourcePolicy extends ModelPolicy
 {
     /**
+     * These models belong to a single tenant through a `tenant` relation.
+     */
+    protected bool $hasManyTenants = false;
+
+    /**
      * Initialize policy with model name
      */
     public function __construct(ModelAuthorizer $authorizer)

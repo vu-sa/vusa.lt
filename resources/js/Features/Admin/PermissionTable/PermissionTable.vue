@@ -92,7 +92,11 @@ const getAbilityScopeFromModelPermissions = (
   abilityInForm: string,
 ) => {
   const filteredPermissions = permissions.filter((permission) => {
-    return permission.includes(abilityInForm);
+    const permissionDelimited = permission.split('.');
+
+    return permissionDelimited.length === 3
+      && permissionDelimited[0] === props.modelType
+      && permissionDelimited[1] === abilityInForm;
   });
 
   if (filteredPermissions.length !== 1) {
@@ -123,6 +127,7 @@ const formTemplate = {
   read: getPermissionScope(props.permissions, 'read'),
   update: getPermissionScope(props.permissions, 'update'),
   delete: getPermissionScope(props.permissions, 'delete'),
+  forceDelete: getPermissionScope(props.permissions, 'forceDelete'),
 };
 
 // Use reactive object instead of useForm for simpler state management

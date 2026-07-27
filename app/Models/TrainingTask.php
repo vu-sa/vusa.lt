@@ -14,7 +14,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read array $translatable_columns_from
- * @property-read Training $training
+ * @property-read Training|null $training
  * @property-read mixed $translations
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TrainingTask newModelQuery()

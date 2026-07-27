@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Contracts\GuardsForceDelete;
 use App\Contracts\SharepointFileableContract;
 use App\Events\FileableNameUpdated;
 use App\Models\Pivots\Relationshipable;
+use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasContentRelationships;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTranslations;
@@ -16,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Models\Activity;
@@ -37,6 +40,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read Collection<int, Type> $descendants
  * @property-read Collection<int, Duty> $duties
  * @property-read Collection<int, FileableFile> $fileableFiles
+ * @property-read string|null $force_delete_blocked_reason
  * @property-read bool $has_protocol
  * @property-read bool $has_report
  * @property-read array $translatable_columns_from
@@ -65,9 +69,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  *
  * @mixin \Eloquent
  */
-class Type extends Model implements SharepointFileableContract
+class Type extends Model implements GuardsForceDelete, SharepointFileableContract
 {
-    use HasContentRelationships, HasFactory, HasSharepointFiles, HasTranslations, LogsActivity, SoftDeletes;
+    use GuardsForceDeleteWhenReferenced, HasContentRelationships, HasFactory, HasSharepointFiles, HasTranslations, LogsActivity, SoftDeletes;
 
     protected $guarded = [];
 
@@ -253,5 +257,18 @@ class Type extends Model implements SharepointFileableContract
     public function hasCrossTenantSiblingRelationshipsEnabled(): bool
     {
         return (bool) ($this->extra_attributes['enable_cross_tenant_sibling_relationships'] ?? false);
+    }
+
+    /**
+     * `typeables`, `role_type` and `role_can_attach_types` all cascade, so permanently
+     * deleting a type would silently strip it from every institution and duty that
+     * carries it, and `types.parent_id` is SET NULL, which would orphan child types.
+     */
+    public function forceDeleteBlockedReason(): ?string
+    {
+        return $this->forceDeleteReasonFor([
+            'trash.blockers.type_assignments' => DB::table('typeables')->where('type_id', $this->id)->count(),
+            'entities.type.model' => static::query()->where('parent_id', $this->id)->count(),
+        ]);
     }
 }

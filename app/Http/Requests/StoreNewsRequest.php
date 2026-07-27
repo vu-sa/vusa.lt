@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\News;
+use App\Rules\UniqueAmongTrashed;
 use Illuminate\Support\Carbon;
 
 class StoreNewsRequest extends NewsRequest
@@ -34,7 +35,9 @@ class StoreNewsRequest extends NewsRequest
     public function rules(): array
     {
         return array_merge(parent::rules(), [
-            'permalink' => 'required|unique:news,permalink',
+            // `news` carries a global single-column unique index on permalink in addition to
+            // the per-tenant one, so this stays unscoped.
+            'permalink' => ['required', UniqueAmongTrashed::of('news', 'permalink')],
             'image' => 'required',
             'short' => 'required',
         ]);

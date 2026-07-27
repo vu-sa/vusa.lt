@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexTrainingRequest;
 use App\Http\Requests\StoreTrainingRequest;
 use App\Http\Requests\UpdateTrainingRequest;
+use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Duty;
 use App\Models\FormField;
@@ -20,11 +21,12 @@ use App\Models\Type;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Response;
 
 class TrainingController extends AdminController
 {
-    use HasTanstackTables;
+    use HandlesSoftDeletes, HasTanstackTables;
 
     public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
@@ -49,8 +51,15 @@ class TrainingController extends AdminController
             ]
         );
 
+        $deletedCount = $this->getTrashedCount($query);
+
+        // Trash view only: lets the table say why permanent deletion is refused.
+        $query = $this->withForceDeleteBlockers($query, $request, ['users']);
+
         $trainings = $query->paginate($request->input('per_page', 15))
             ->withQueryString();
+
+        $this->appendForceDeleteBlockedReason($trainings->getCollection(), $request);
 
         $sorting = $request->getSorting();
 
@@ -72,6 +81,8 @@ class TrainingController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $sorting,
+            'showDeleted' => $request->boolean('showDeleted', false),
+            'deletedCount' => $deletedCount,
         ]);
     }
 
@@ -311,5 +322,15 @@ class TrainingController extends AdminController
                 'form' => $processedForm,
             ],
         ]);
+    }
+
+    public function restore(Training $training): RedirectResponse
+    {
+        return $this->restoreModel($training);
+    }
+
+    public function forceDelete(Training $training): RedirectResponse
+    {
+        return $this->forceDeleteModel($training);
     }
 }

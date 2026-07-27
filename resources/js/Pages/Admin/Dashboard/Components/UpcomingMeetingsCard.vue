@@ -20,7 +20,7 @@
           {{ upcomingMeetings.length }}
         </span>
         <div :class="['px-2 py-1 rounded-full text-xs font-medium mb-2', badgeClasses]" role="status" :aria-label="$t('Būsenos indikatorius')">
-          {{ upcomingMeetings.length > 0 ? $t('Reikia dėmesio') : $t('Viskas tvarkoje') }}
+          {{ hasAttention ? $t('Reikia dėmesio') : $t('Viskas tvarkoje') }}
         </div>
       </div>
 
@@ -126,7 +126,7 @@
               <Tooltip>
                 <TooltipTrigger as-child>
                   <Button variant="ghost" size="sm" class="h-8 w-8" as-child>
-                    <Link :href="route('meetings.show', upcomingMeetings[0].id)">
+                    <Link :href="route('meetings.show', upcomingMeetings[0]!.id)">
                       <ArrowRight class="h-4 w-4" />
                     </Link>
                   </Button>
@@ -142,31 +142,16 @@
     <CardFooter :class="[dashboardCardFooterClasses, 'p-4 relative z-10']">
       <!-- Meeting insights to encourage registration -->
       <div class="text-xs text-center w-full space-y-1">
-        <div v-if="institutionsInsights.withoutMeetings.length > 0" class="text-zinc-600 dark:text-zinc-400">
+        <div v-if="attentionInstitution" :class="attentionTextClass">
           <div class="font-medium">
-            {{ $t('Reikia dėmesio') }}:
+            {{ $t(`visak.activity.activity_status.${attentionInstitution.status}`) }}:
           </div>
           <div>
-            {{ institutionsInsights.withoutMeetings.slice(0, 2).map(i => i.name).join(', ') }} {{ $t('be susitikimų')
-            }}
-          </div>
-        </div>
-        <div v-else-if="overdueInstitution" class="text-orange-600 dark:text-orange-400/70">
-          <div class="font-medium">
-            {{ $t('Senokas susitikimas') }}:
-          </div>
-          <div>
-            {{ overdueInstitution.name }}
-            ({{ overdueInstitution.daysSinceLastMeeting }} {{ $t('d.') }} / {{ overdueInstitution.periodicity }} {{ $t('d. rekomenduojama') }})
-          </div>
-        </div>
-        <div v-else-if="approachingInstitution" class="text-amber-600 dark:text-amber-400/70">
-          <div class="font-medium">
-            {{ $t('Artėja susitikimo laikas') }}:
-          </div>
-          <div>
-            {{ approachingInstitution.name }}
-            ({{ approachingInstitution.daysSinceLastMeeting }} {{ $t('d.') }} / {{ approachingInstitution.periodicity }} {{ $t('d.') }})
+            {{ attentionInstitution.name }}
+            <template v-if="attentionInstitution.effective_days_since_activity !== null">
+              ({{ attentionInstitution.effective_days_since_activity }} {{ $t('d.') }} /
+              {{ attentionInstitution.periodicity_days }} {{ $t('d.') }})
+            </template>
           </div>
         </div>
         <div v-else class="text-zinc-600 dark:text-zinc-400">
@@ -212,10 +197,11 @@ const isMeetingToday = (meeting: AtstovavimosMeeting): boolean => {
 
 // Computed classes based on meeting count using shared accent colors
 const hasMeetings = computed(() => props.upcomingMeetings.length > 0);
+const hasAttention = computed(() => props.institutionsInsights.attention.length > 0);
 
 const statusIndicatorClasses = computed(() => {
   const base = 'absolute top-0 right-0 w-12 h-12 -mr-6 -mt-6 rotate-45';
-  return `${base} ${hasMeetings.value ? cardAccentColors.amber.statusIndicatorActive : 'bg-zinc-200 dark:bg-zinc-700'}`;
+  return `${base} ${hasAttention.value ? cardAccentColors.amber.statusIndicatorActive : 'bg-zinc-200 dark:bg-zinc-700'}`;
 });
 
 const iconClasses = computed(() => {
@@ -223,17 +209,17 @@ const iconClasses = computed(() => {
 });
 
 const badgeClasses = computed(() => {
-  return hasMeetings.value ? cardAccentColors.amber.badge : 'bg-zinc-200 text-zinc-700 dark:bg-zinc-700/50 dark:text-zinc-300';
+  return hasAttention.value ? cardAccentColors.amber.badge : 'bg-zinc-200 text-zinc-700 dark:bg-zinc-700/50 dark:text-zinc-300';
 });
 
-// Find the first overdue institution (where days since last meeting exceeds periodicity)
-const overdueInstitution = computed(() => {
-  return props.institutionsInsights.withOldMeetings.find(inst => inst.isOverdue) ?? null;
+const attentionInstitution = computed(() => {
+  return props.institutionsInsights.attention[0] ?? null;
 });
 
-// Find the first approaching institution (80%+ but not yet overdue)
-const approachingInstitution = computed(() => {
-  return props.institutionsInsights.withOldMeetings.find(inst => inst.isApproaching) ?? null;
+const attentionTextClass = computed(() => {
+  return attentionInstitution.value?.status === 'overdue'
+    ? 'text-orange-600 dark:text-orange-400/70'
+    : 'text-amber-600 dark:text-amber-400/70';
 });
 
 const emit = defineEmits<{

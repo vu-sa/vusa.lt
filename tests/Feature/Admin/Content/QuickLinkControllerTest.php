@@ -166,9 +166,59 @@ describe('authorized access', function () {
             ->assertRedirect(route('quickLinks.index'))
             ->assertSessionHas('info');
 
-        $this->assertDatabaseMissing('quick_links', [
+        $this->assertSoftDeleted('quick_links', [
             'id' => $this->quickLink->id,
         ]);
+    });
+
+    test('show deleted index returns only trashed quick links', function () {
+        $trashedQuickLink = QuickLink::factory()->for($this->tenant)->create([
+            'text' => 'Deleted Quick Link',
+            'lang' => 'lt',
+            'order' => 2,
+        ]);
+        $trashedQuickLink->delete();
+
+        $response = asUser($this->admin)
+            ->get(route('quickLinks.index', [
+                'tenant' => $this->tenant->id,
+                'lang' => 'lt',
+                'showDeleted' => 'true',
+            ]));
+
+        $response->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Content/IndexQuickLink')
+                ->where('showDeleted', true)
+                ->where('deletedCount', 1)
+                ->has('quickLinks')
+            );
+
+        $ids = collect($response->viewData('page')['props']['quickLinks'])->pluck('id');
+
+        expect($ids)->toContain($trashedQuickLink->id)
+            ->and($ids)->not->toContain($this->quickLink->id);
+    });
+
+    test('deleted count is scoped to the selected tenant and language', function () {
+        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
+
+        $deletedQuickLink = QuickLink::factory()->for($this->tenant)->create(['lang' => 'lt']);
+        $deletedQuickLink->delete();
+
+        $deletedEnglishQuickLink = QuickLink::factory()->for($this->tenant)->create(['lang' => 'en']);
+        $deletedEnglishQuickLink->delete();
+
+        $deletedOtherTenantQuickLink = QuickLink::factory()->for($otherTenant)->create(['lang' => 'lt']);
+        $deletedOtherTenantQuickLink->delete();
+
+        asUser($this->admin)
+            ->get(route('quickLinks.index', [
+                'tenant' => $this->tenant->id,
+                'lang' => 'lt',
+            ]))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page->where('deletedCount', 1));
     });
 });
 

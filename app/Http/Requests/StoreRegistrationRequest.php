@@ -30,8 +30,18 @@ class StoreRegistrationRequest extends FormRequest
             'data' => 'required|array',
             'data.*' => 'required|array', // Each field response must be an array
             'data.*.value' => 'present', // Each response must have a 'value' key (can be null)
-            'user_id' => 'nullable|exists:users,id',
         ];
+    }
+
+    /**
+     * Human-readable field name for validation messages.
+     *
+     * The label is a translatable attribute, so interpolating the model attribute
+     * directly would render the literal string "Array".
+     */
+    private function fieldLabel(FormField $field): string
+    {
+        return (string) $field->getTranslation('label', app()->getLocale());
     }
 
     /**
@@ -56,7 +66,7 @@ class StoreRegistrationRequest extends FormRequest
 
                 // Check required fields
                 if ($field->is_required && empty($value)) {
-                    $validator->errors()->add("data.{$fieldId}.value", "The {$field->label} field is required.");
+                    $validator->errors()->add("data.{$fieldId}.value", "The {$this->fieldLabel($field)} field is required.");
                 }
 
                 // Validate based on field type
@@ -75,7 +85,7 @@ class StoreRegistrationRequest extends FormRequest
         // Handle email validation - check both type and subtype
         if ($field->type === 'email' || ($field->type === 'string' && $field->subtype === 'email')) {
             if (! filter_var($value, FILTER_VALIDATE_EMAIL)) {
-                $validator->errors()->add("data.{$fieldId}.value", "The {$field->label} must be a valid email address.");
+                $validator->errors()->add("data.{$fieldId}.value", "The {$this->fieldLabel($field)} must be a valid email address.");
             }
 
             return;
@@ -84,7 +94,7 @@ class StoreRegistrationRequest extends FormRequest
         switch ($field->type) {
             case 'number':
                 if (! is_numeric($value)) {
-                    $validator->errors()->add("data.{$fieldId}.value", "The {$field->label} must be a number.");
+                    $validator->errors()->add("data.{$fieldId}.value", "The {$this->fieldLabel($field)} must be a number.");
                 }
                 break;
 
@@ -100,14 +110,14 @@ class StoreRegistrationRequest extends FormRequest
                     }
 
                     if (! in_array($value, $validValues)) {
-                        $validator->errors()->add("data.{$fieldId}.value", "The selected {$field->label} is invalid.");
+                        $validator->errors()->add("data.{$fieldId}.value", "The selected {$this->fieldLabel($field)} is invalid.");
                     }
                 }
                 break;
 
             case 'date':
                 if (! strtotime($value)) {
-                    $validator->errors()->add("data.{$fieldId}.value", "The {$field->label} must be a valid date.");
+                    $validator->errors()->add("data.{$fieldId}.value", "The {$this->fieldLabel($field)} must be a valid date.");
                 }
                 break;
         }

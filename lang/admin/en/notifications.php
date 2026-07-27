@@ -66,6 +66,10 @@ return [
     'task_overdue_body_single' => 'Task ":task" is overdue',
     'task_overdue_body_multiple' => 'You have :count overdue tasks: :tasks and more',
     'overdue_tasks' => 'Overdue Tasks',
+    'periodicity_gap_title' => 'Time to report activity for :institution',
+    'periodicity_gap_body' => 'Register a new meeting or report activity for “:institution”.',
+    'action_register_meeting' => 'Register meeting',
+    'action_report_activity' => 'Report activity',
 
     // Registration notifications
     'member_registered_title' => 'New Member Registration',

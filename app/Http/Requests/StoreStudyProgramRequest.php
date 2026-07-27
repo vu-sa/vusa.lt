@@ -7,6 +7,7 @@ use App\Models\StudyProgram;
 use App\Rules\TranslatableField;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreStudyProgramRequest extends FormRequest
 {
@@ -27,7 +28,7 @@ class StoreStudyProgramRequest extends FormRequest
     {
         return [
             'name' => ['required', 'array', new TranslatableField(['lt'])],
-            'name.lt' => 'required|string|max:255|unique:study_programs,name->lt',
+            'name.lt' => ['required', 'string', 'max:255', Rule::unique('study_programs', 'name->lt')->withoutTrashed()],
             'name.en' => 'nullable|string|max:255',
             'degree' => ['required', 'string', DegreeEnum::getValidationRule()],
             'tenant_id' => 'required|exists:tenants,id',

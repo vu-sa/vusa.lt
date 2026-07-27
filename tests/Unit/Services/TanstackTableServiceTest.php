@@ -208,9 +208,78 @@ describe('applySoftDeleteFilter', function () {
         expect($result)->toBe($query);
     });
 
-    test('returns builder for soft-delete models', function () {
-        $result = $this->service->applySoftDeleteFilter(News::query(), true);
+    test('returns query unchanged when showDeleted is false', function () {
+        $query = News::query();
+        $result = $this->service->applySoftDeleteFilter($query, false);
 
-        expect($result)->toBeInstanceOf(Builder::class);
+        expect($result)->toBe($query)
+            ->and($result->toSql())->toContain('deleted_at')
+            ->and($result->toSql())->toContain('is null');
+    });
+
+    // Regression: withTrashed()/onlyTrashed() are Builder macros, so the previous
+    // method_exists($query, 'withTrashed') guard was always false and silently
+    // disabled the whole "show deleted" feature.
+    test('restricts the query to trashed records only when showDeleted is true', function () {
+        $live = News::factory()->for($this->tenant)->create(['title' => 'Live article']);
+        $trashed = News::factory()->for($this->tenant)->create(['title' => 'Trashed article']);
+        $trashed->delete();
+
+        $result = $this->service->applySoftDeleteFilter(News::query(), true);
+        $ids = $result->pluck('id')->all();
+
+        expect($result->toSql())->toContain('deleted_at')
+            ->and($result->toSql())->toContain('is not null')
+            ->and($ids)->toContain($trashed->id)
+            ->and($ids)->not->toContain($live->id);
+    });
+
+    test('detects soft deletes through traits composed on the model', function () {
+        expect($this->service->isSoftDeletable(News::query()))->toBeTrue()
+            ->and($this->service->isSoftDeletable(Tenant::query()))->toBeFalse();
+    });
+});
+
+describe('getTrashedCount', function () {
+    test('returns zero for models without soft deletes', function () {
+        expect($this->service->getTrashedCount(Tenant::query()))->toBe(0);
+    });
+
+    test('counts only trashed records', function () {
+        News::factory()->for($this->tenant)->count(2)->create();
+        $trashed = News::factory()->for($this->tenant)->count(3)->create();
+        $trashed->each->delete();
+
+        expect($this->service->getTrashedCount(News::query()))->toBe(3);
+    });
+
+    test('respects filters already applied to the query', function () {
+        $keptTenant = $this->tenant;
+        $otherTenant = Tenant::query()->where('id', '!=', $keptTenant->id)->first();
+
+        News::factory()->for($keptTenant)->create()->delete();
+        News::factory()->for($otherTenant)->create()->delete();
+
+        $scoped = News::query()->where('tenant_id', $keptTenant->id);
+
+        expect($this->service->getTrashedCount($scoped))->toBe(1);
+    });
+
+    test('is idempotent when the query is already restricted to trashed records', function () {
+        News::factory()->for($this->tenant)->create()->delete();
+
+        $trashedQuery = $this->service->applySoftDeleteFilter(News::query(), true);
+
+        expect($this->service->getTrashedCount($trashedQuery))->toBe(1);
+    });
+
+    test('leaves the original query untouched', function () {
+        News::factory()->for($this->tenant)->create();
+        News::factory()->for($this->tenant)->create()->delete();
+
+        $query = News::query();
+        $this->service->getTrashedCount($query);
+
+        expect($query->count())->toBe(1);
     });
 });

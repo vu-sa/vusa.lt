@@ -20,4 +20,5 @@ return [
     'continue_microsoft' => 'Continue with Microsoft',
     'use_other_login' => 'Use other account',
     'usage_status' => 'right now can be used by VU SR coordinators and student representatives',
+    'account_deleted' => 'This account has been deleted. Please contact your unit coordinator.',
 ];

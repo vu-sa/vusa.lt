@@ -161,7 +161,7 @@ describe('authorized access', function () {
         $response = asUser($this->calendarManager)->delete(route('calendar.destroy', $calendar));
         $response->assertRedirect();
 
-        $this->assertDatabaseMissing('calendar', [
+        $this->assertSoftDeleted('calendar', [
             'id' => $calendar->id,
         ]);
     });

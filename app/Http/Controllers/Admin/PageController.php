@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\PairTranslatedRecord;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexPageRequest;
 use App\Http\Requests\StorePageRequest;
 use App\Http\Requests\UpdatePageRequest;
+use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Category;
 use App\Models\Content;
@@ -14,11 +16,11 @@ use App\Models\Tenant;
 use App\Services\ContentService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 
 class PageController extends AdminController
 {
-    use HasTanstackTables;
+    use HandlesSoftDeletes, HasTanstackTables;
 
     public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
@@ -45,6 +47,8 @@ class PageController extends AdminController
             ]
         );
 
+        $deletedCount = $this->getTrashedCount($query);
+
         $pages = $query->paginate($request->input('per_page', 20))
             ->withQueryString();
 
@@ -62,6 +66,8 @@ class PageController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $request->getSorting(),
+            'showDeleted' => $request->boolean('showDeleted', false),
+            'deletedCount' => $deletedCount,
         ]);
     }
 
@@ -101,17 +107,20 @@ class PageController extends AdminController
 
         $content->parts()->createMany($request->content['parts']);
 
-        Page::query()->create([
+        $page = Page::query()->create([
             'title' => $request->title,
             'category_id' => $request->category_id,
             'content_id' => $content->id,
             'permalink' => $request->permalink,
             'lang' => $request->lang,
-            'other_lang_id' => $request->other_lang_id,
             'is_active' => $request->is_active,
             'layout' => $request->layout ?? 'default',
             'tenant_id' => $tenant_id,
         ]);
+
+        // Pairing goes through the action rather than the create payload: it has to
+        // release whoever already holds the counterpart id, trashed rows included.
+        PairTranslatedRecord::execute($page, $request->other_lang_id);
 
         return redirect()->route('pages.index')->with('success', 'Puslapis sėkmingai sukurtas!');
     }
@@ -147,25 +156,14 @@ class PageController extends AdminController
     {
         $this->handleAuthorization('update', $page);
 
-        $other_lang_page = Page::find($page->other_lang_id);
-
-        $page->update($request->only('title', 'lang', 'other_lang_id', 'category_id', 'is_active', 'layout'));
+        $page->update($request->only('title', 'lang', 'category_id', 'is_active', 'layout'));
 
         $content = Content::query()->find($page->content->id);
 
         // Use ContentService to efficiently update content parts
         app(ContentService::class)->updateContentParts($content, $request->content['parts']);
 
-        // update other lang id page
-        if ($request->other_lang_id) {
-            // overwrite other lang id page
-            $other_lang_page = Page::find($request->other_lang_id);
-            $other_lang_page->other_lang_id = $page->id;
-            $other_lang_page->save();
-        } elseif (is_null($request->other_lang_id) && ! is_null($other_lang_page)) {
-            $other_lang_page->other_lang_id = null;
-            $other_lang_page->save();
-        }
+        PairTranslatedRecord::execute($page, $request->other_lang_id);
 
         return back()->with('success', 'Puslapis atnaujintas!')->with('data', $page->load('content'));
     }
@@ -182,12 +180,13 @@ class PageController extends AdminController
         return redirect()->route('pages.index')->with('info', 'Puslapis ištrintas');
     }
 
-    public function restore(Page $page, Request $request)
+    public function restore(Page $page): RedirectResponse
     {
-        $this->handleAuthorization('restore', $page);
+        return $this->restoreModel($page, 'Puslapis sėkmingai atkurtas!');
+    }
 
-        $page->restore();
-
-        return back()->with('success', 'Puslapis sėkmingai atkurtas!');
+    public function forceDelete(Page $page): RedirectResponse
+    {
+        return $this->forceDeleteModel($page);
     }
 }

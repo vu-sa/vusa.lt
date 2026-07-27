@@ -17,12 +17,16 @@
         <IFluentDelete24Filled class="text-vusa-red" />
         Ištrinti
       </template>
+      <template v-if="ability === 'forceDelete'">
+        <IFluentDeleteForever24Filled class="text-vusa-red" />
+        Ištrinti negrįžtamai
+      </template>
     </td>
     <td>
       <div v-if="availableScopes.hasOwn || availableScopes.hasPadalinys" class="flex w-64 items-center gap-2">
         <!-- Show checkbox only if 'own' scope is available -->
         <Checkbox v-if="availableScopes.hasOwn" :model-value="checkboxPadalinys" :disabled="switchAll || disabled"
-          @update:model-value="val => { checkboxPadalinys = val; handleUpdate(); }" />
+          @update:model-value="val => { checkboxPadalinys = val === true; handleUpdate(); }" />
 
         <!-- For models with both own and padalinys scopes -->
         <div v-if="availableScopes.hasPadalinys && availableScopes.hasOwn" class="flex items-center gap-2">

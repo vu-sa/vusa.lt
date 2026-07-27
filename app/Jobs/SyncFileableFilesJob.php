@@ -59,8 +59,7 @@ class SyncFileableFilesJob implements ShouldQueue
         );
 
         $query = FileableFile::query()
-            ->whereNull('deleted_externally_at')
-            ->whereNull('deleted_at');
+            ->whereNull('deleted_externally_at');
 
         if ($this->fileableType) {
             $query->where('fileable_type', $this->fileableType);

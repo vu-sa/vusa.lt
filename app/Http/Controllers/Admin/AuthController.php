@@ -109,7 +109,20 @@ class AuthController extends Controller
         }
 
         // pirmiausia ieškome per vartotoją, per paštą
-        $user = User::where('email', $microsoftUser->getEmail())->first();
+        $user = User::withTrashed()->where('email', $microsoftUser->getEmail())->first();
+
+        // A deleted account must not be able to reinstate itself by logging back in,
+        // and it must not silently fall through to the duty branch and be re-created
+        // either — users_email_unique would reject that anyway.
+        if ($user?->trashed()) {
+            $message = __('auth.account_deleted');
+
+            if ($isPopup) {
+                return $this->handlePopupCallback(false, route('login'), $message);
+            }
+
+            return redirect()->route('login')->with('error', $message);
+        }
 
         if ($user) {
             // jei randama per vartotojo paštą, prijungiam

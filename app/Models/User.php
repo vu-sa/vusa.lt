@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Contracts\GuardsForceDelete;
 use App\Helpers\AddressivizeHelper;
 use App\Models\Pivots\Dutiable;
 use App\Models\Pivots\MembershipUser;
 use App\Models\Pivots\Trainable;
+use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasNotificationPreferences;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\HasUIPreferences;
@@ -62,6 +64,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Dutiable> $dutiables
  * @property-read Collection<int, Duty> $duties
  * @property-read Collection<int, Institution> $followedInstitutions
+ * @property-read string|null $force_delete_blocked_reason
  * @property-read mixed $has_password
  * @property-read array $translatable_columns_from
  * @property-read Collection<int, Institution> $institutions
@@ -99,9 +102,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
-class User extends Authenticatable
+class User extends Authenticatable implements GuardsForceDelete
 {
-    use HasFactory, HasNotificationPreferences, HasPushSubscriptions, HasRelationships, HasRoles, HasTranslations, HasUIPreferences, HasUlids, LogsActivity, Notifiable, Searchable, SoftDeletes;
+    use GuardsForceDeleteWhenReferenced, HasFactory, HasNotificationPreferences, HasPushSubscriptions, HasRelationships, HasRoles, HasTranslations, HasUIPreferences, HasUlids, LogsActivity, Notifiable, Searchable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -381,5 +384,21 @@ class User extends Authenticatable
     public function addressivizedName(): string
     {
         return AddressivizeHelper::addressivizeEveryWord($this->name);
+    }
+
+    /**
+     * Comments, check-ins and training records restrict deletes, and
+     * `problems.created_by` cascades — permanently deleting a person would take the
+     * problems they reported with them.
+     */
+    public function forceDeleteBlockedReason(): ?string
+    {
+        return $this->forceDeleteReasonFor([
+            'trash.blockers.comments' => Comment::query()->where('user_id', $this->id)->count(),
+            'trash.blockers.check_ins' => InstitutionCheckIn::query()->where('user_id', $this->id)->count(),
+            'trash.blockers.organised_trainings' => Training::query()->where('organizer_id', $this->id)->count(),
+            'trash.blockers.training_participation' => $this->countedRelation('trainings'),
+            'trash.blockers.reported_problems' => Problem::query()->where('created_by', $this->id)->count(),
+        ]);
     }
 }

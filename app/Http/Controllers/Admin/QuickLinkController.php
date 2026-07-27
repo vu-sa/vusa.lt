@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
+use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Calendar;
 use App\Models\Category;
@@ -13,13 +14,14 @@ use App\Models\Page;
 use App\Models\QuickLink;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class QuickLinkController extends AdminController
 {
-    use HasTanstackTables;
+    use HandlesSoftDeletes, HasTanstackTables;
 
     public function __construct(public Authorizer $authorizer) {}
 
@@ -39,13 +41,22 @@ class QuickLinkController extends AdminController
 
         $tenant = $tenantId ? Tenant::find($tenantId) : null;
 
+        $showDeleted = $request->boolean('showDeleted', false);
+        $deletedCount = 0;
         $quickLinks = [];
+
         if ($tenant) {
-            $quickLinks = QuickLink::query()
+            $quickLinksQuery = QuickLink::query()
                 ->where('tenant_id', $tenant->id)
-                ->where('lang', $lang)
-                ->orderBy('order')
-                ->get();
+                ->where('lang', $lang);
+
+            $deletedCount = (clone $quickLinksQuery)->onlyTrashed()->count();
+
+            if ($showDeleted) {
+                $quickLinksQuery->onlyTrashed();
+            }
+
+            $quickLinks = $quickLinksQuery->orderBy('order')->get();
         }
 
         return $this->inertiaResponse('Admin/Content/IndexQuickLink', [
@@ -53,6 +64,8 @@ class QuickLinkController extends AdminController
             'tenant' => $tenant,
             'tenants' => $tenants,
             'currentLang' => $lang,
+            'showDeleted' => $showDeleted,
+            'deletedCount' => $deletedCount,
         ]);
     }
 
@@ -221,5 +234,15 @@ class QuickLinkController extends AdminController
                 // code...
                 break;
         }
+    }
+
+    public function restore(QuickLink $quickLink): RedirectResponse
+    {
+        return $this->restoreModel($quickLink);
+    }
+
+    public function forceDelete(QuickLink $quickLink): RedirectResponse
+    {
+        return $this->forceDeleteModel($quickLink);
     }
 }

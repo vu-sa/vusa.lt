@@ -8,6 +8,7 @@ use App\Http\Requests\IndexInstitutionRequest;
 use App\Http\Requests\ReorderDutiesRequest;
 use App\Http\Requests\StoreInstitutionRequest;
 use App\Http\Requests\UpdateInstitutionRequest; // Create this request class
+use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Comment;
 use App\Models\Duty;
@@ -16,6 +17,7 @@ use App\Models\Meeting;
 use App\Models\Task;
 use App\Models\Type;
 use App\Models\User;
+use App\Services\InstitutionActivityStatusService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
 use App\Services\TanstackTableService;
@@ -27,9 +29,13 @@ use Inertia\Response;
 
 class InstitutionController extends AdminController
 {
-    use HasTanstackTables;
+    use HandlesSoftDeletes, HasTanstackTables;
 
-    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
+    public function __construct(
+        public Authorizer $authorizer,
+        private TanstackTableService $tableService,
+        private readonly InstitutionActivityStatusService $activityStatusService,
+    ) {}
 
     /**
      * Display a listing of the resource.
@@ -58,8 +64,15 @@ class InstitutionController extends AdminController
         );
 
         // Paginate results
+        $deletedCount = $this->getTrashedCount($query);
+
+        // Trash view only: lets the table say why permanent deletion is refused.
+        $query = $this->withForceDeleteBlockers($query, $request, ['meetings', 'duties', 'availableTrainings', 'checkIns']);
+
         $institutions = $query->paginate($request->input('per_page', 15))
             ->withQueryString();
+
+        $this->appendForceDeleteBlockedReason($institutions->getCollection(), $request);
 
         // Get institution types for filtering
         $types = Type::where('model_type', Institution::class)->get();
@@ -82,7 +95,8 @@ class InstitutionController extends AdminController
             'filters' => $request->getFilters(),
             'sorting' => $sorting, // Pass properly parsed sorting state to frontend
             'initialSorting' => $sorting, // Add initial sorting to persist state on first load
-            'showDeleted' => $request->boolean('showDeleted', false), // Add showDeleted state
+            'showDeleted' => $request->boolean('showDeleted', false),
+            'deletedCount' => $deletedCount,
         ]);
     }
 
@@ -135,7 +149,7 @@ class InstitutionController extends AdminController
         $this->handleAuthorization('view', $institution);
 
         // TODO: only show current_users
-        $institution->load('tenant', 'types', 'duties.current_users')->load([
+        $institution->load('tenant', 'types', 'duties.current_users', 'checkIns')->load([
             'tasks' => function ($query) {
                 $query->with('users:id,name,email,profile_photo_path', 'taskable');
             },
@@ -154,6 +168,10 @@ class InstitutionController extends AdminController
         // Append public visibility flags now that types are loaded (avoids N+1)
         $institution->append('has_public_meetings');
         $institution->append('meeting_periodicity_days');
+        $institution->setAttribute(
+            'activity_status',
+            $this->activityStatusService->resolve($institution)->toArray()
+        );
         $institution->meetings->each(function (Meeting $meeting) {
             $meeting->append(['is_public', 'has_report', 'has_protocol']);
 
@@ -337,13 +355,9 @@ class InstitutionController extends AdminController
     /**
      * Restore the specified resource from storage.
      */
-    public function restore(Institution $institution)
+    public function restore(Institution $institution): RedirectResponse
     {
-        $this->handleAuthorization('restore', $institution);
-
-        $institution->restore();
-
-        return back()->with('success', 'Institucija sėkmingai atkurta!');
+        return $this->restoreModel($institution, 'Institucija sėkmingai atkurta!');
     }
 
     /**
@@ -368,5 +382,10 @@ class InstitutionController extends AdminController
         }
 
         return back()->with('success', 'Pareigų tvarka sėkmingai atnaujinta!');
+    }
+
+    public function forceDelete(Institution $institution): RedirectResponse
+    {
+        return $this->forceDeleteModel($institution);
     }
 }

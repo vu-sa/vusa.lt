@@ -12,6 +12,7 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
+import { usePage } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 
 import type { IndexTablePageInstance,
@@ -38,6 +39,8 @@ const props = defineProps<{
   };
   filters?: Record<string, any>;
   sorting?: { id: string; desc: boolean }[];
+  showDeleted?: boolean;
+  deletedCount?: number;
 }>();
 
 const modelName = 'categories';
@@ -46,6 +49,7 @@ const entityName = 'category';
 const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
 
 const canCreate = computed(() => true);
+const canForceDelete = computed(() => usePage().props.auth?.can?.forceDelete?.category ?? false);
 
 const getRowId = (row: App.Entities.Category) => {
   return `category-${row.id}`;
@@ -65,6 +69,8 @@ const columns = computed(() => [
     canView: false,
     canEdit: true,
     canDelete: false,
+    canRestore: true,
+    canForceDelete: canForceDelete.value,
   }),
 ]);
 
@@ -84,6 +90,9 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Category>>(() => {
     enableFiltering: true,
     enableColumnVisibility: false,
     enableRowSelection: false,
+    allowToggleDeleted: true,
+    showDeleted: props.showDeleted,
+    deletedCount: props.deletedCount,
 
     headerTitle: 'Kategorijos',
     icon: CategoryIcon,

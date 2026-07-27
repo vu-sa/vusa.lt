@@ -35,9 +35,9 @@ export interface QuickActionMeta {
 }
 
 export interface QuickActionEmits {
-  newMeeting: () => void;
-  newNews: () => void;
-  newReservation: () => void;
+  (e: 'newMeeting'): void;
+  (e: 'newNews'): void;
+  (e: 'newReservation'): void;
 }
 
 /** Static metadata for every quick action. */
@@ -55,7 +55,7 @@ export const QUICK_ACTION_META: QuickActionMeta[] = [
     title: $t('Naujas susitikimas'),
     icon: CalendarPlus,
     requiresPermission: can => !!can.meeting,
-    execute: emit => emit?.newMeeting(),
+    execute: emit => emit?.('newMeeting'),
     gradient: 'from-amber-500/15 to-orange-500/15 hover:from-amber-500/25 hover:to-orange-500/25 dark:from-amber-400/10 dark:to-orange-400/10 dark:hover:from-amber-400/20 dark:hover:to-orange-400/20',
   },
   {
@@ -63,7 +63,7 @@ export const QUICK_ACTION_META: QuickActionMeta[] = [
     title: $t('Nauja naujiena'),
     icon: FileText,
     requiresPermission: can => !!can.news,
-    execute: emit => emit?.newNews(),
+    execute: emit => emit?.('newNews'),
     gradient: 'from-blue-500/15 to-cyan-500/15 hover:from-blue-500/25 hover:to-cyan-500/25 dark:from-blue-400/10 dark:to-cyan-400/10 dark:hover:from-blue-400/20 dark:hover:to-cyan-400/20',
   },
   {
@@ -71,7 +71,7 @@ export const QUICK_ACTION_META: QuickActionMeta[] = [
     title: $t('Nauja rezervacija'),
     icon: Building2,
     requiresPermission: can => !!can.reservation,
-    execute: emit => emit?.newReservation(),
+    execute: emit => emit?.('newReservation'),
     gradient: 'from-emerald-500/15 to-teal-500/15 hover:from-emerald-500/25 hover:to-teal-500/25 dark:from-emerald-400/10 dark:to-teal-400/10 dark:hover:from-emerald-400/20 dark:hover:to-teal-400/20',
   },
   {

@@ -99,4 +99,19 @@ class Reservation extends Model implements Commentable
     {
         return $this->resources->every(fn ($resource) => $resource->pivot->state::class === Returned::class);
     }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Reservation $reservation) {
+            // reservation_resource.reservation_id restricts deletes, so the links have
+            // to go before the row can. They are owned by the reservation, so nothing
+            // outlives it — but on a soft delete they must stay put for restore.
+            if (! $reservation->isForceDeleting()) {
+                return;
+            }
+
+            $reservation->resources()->detach();
+            $reservation->users()->detach();
+        });
+    }
 }

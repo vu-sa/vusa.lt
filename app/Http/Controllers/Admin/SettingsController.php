@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Requests\UpdateAtstovavimasSettingsRequest;
 use App\Http\Requests\UpdateDocumentSettingsRequest;
 use App\Http\Requests\UpdateFormSettingsRequest;
@@ -14,11 +15,13 @@ use App\Models\PublicInstitution;
 use App\Models\PublicMeeting;
 use App\Models\Role;
 use App\Models\Type;
+use App\Models\User;
 use App\Settings\AtstovavimasSettings;
 use App\Settings\DocumentSettings;
 use App\Settings\FormSettings;
 use App\Settings\MeetingSettings;
 use App\Settings\SettingsSettings;
+use Illuminate\Support\Facades\Cache;
 
 class SettingsController extends AdminController
 {
@@ -80,6 +83,11 @@ class SettingsController extends AdminController
         $formSettings->setStudentRepInstitutionTypeIds($request->input('student_rep_institution_type_ids', []));
 
         $formSettings->save();
+
+        // The sidebar links to these forms, so every user's cached ids are now stale.
+        User::query()->pluck('id')->each(
+            fn ($userId) => Cache::forget(HandleInertiaRequests::registrationFormsCacheKey($userId))
+        );
 
         return $this->redirectBackWithSuccess(__('settings.messages.updated'));
     }

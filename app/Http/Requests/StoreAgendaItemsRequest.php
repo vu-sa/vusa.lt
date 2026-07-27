@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Pivots\AgendaItem;
+use App\Rules\SoftDeleteRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreAgendaItemsRequest extends FormRequest
@@ -27,7 +28,7 @@ class StoreAgendaItemsRequest extends FormRequest
         return [
             'agendaItemTitles' => 'required|array',
             'agendaItemTitles.*' => 'required|string',
-            'meeting_id' => 'required|ulid|exists:meetings,id',
+            'meeting_id' => ['required', 'ulid', SoftDeleteRules::existsLive('meetings')],
             'broughtByStudentsFlags' => 'nullable|array',
             'broughtByStudentsFlags.*' => 'nullable|boolean',
         ];

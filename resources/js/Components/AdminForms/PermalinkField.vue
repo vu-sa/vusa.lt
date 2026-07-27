@@ -2,7 +2,7 @@
   <div class="space-y-2">
     <Label class="flex items-center gap-1.5">
       <IFluentLink24Regular class="h-4 w-4" />
-      {{ $t('Nuoroda') }}
+      {{ label ?? $t('Nuoroda') }}
     </Label>
 
     <div class="flex items-stretch gap-2">
@@ -66,6 +66,8 @@ const props = defineProps<{
   disabled?: boolean;
   viewUrl?: string;
   explanation?: string;
+  /** Overrides the default "Nuoroda" label — useful when several fields sit side by side. */
+  label?: string;
 }>();
 
 defineEmits<(e: 'update:permalink', value: string) => void>();

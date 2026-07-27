@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
@@ -52,7 +53,7 @@ class UpdateTrainingRequest extends FormRequest
             'address' => 'nullable|string',
             'meeting_url' => 'nullable|url',
             'image' => 'nullable|string',
-            'institution_id' => 'required|exists:institutions,id',
+            'institution_id' => ['required', SoftDeleteRules::existsLive('institutions')],
             'start_time' => 'required|date',
             'end_time' => 'nullable|date|after:start_time',
             'max_participants' => 'nullable|integer',

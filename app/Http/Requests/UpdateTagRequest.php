@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateTagRequest extends FormRequest
 {
@@ -29,7 +30,7 @@ class UpdateTagRequest extends FormRequest
             'name.en' => 'required|string|max:255',
             'description.lt' => 'nullable|string',
             'description.en' => 'nullable|string',
-            'alias' => 'nullable|string|max:255|unique:tags,alias,'.$tagId,
+            'alias' => ['nullable', 'string', 'max:255', Rule::unique('tags', 'alias')->ignore($tagId)->withoutTrashed()],
         ];
     }
 }

@@ -15,6 +15,16 @@ use Illuminate\Support\Facades\Log;
 trait HasCommonChecks
 {
     /**
+     * Whether the model relates to tenants through a `tenants` (many) relation.
+     *
+     * Policies whose model belongs to a single tenant (a `tenant` relation) must set
+     * this to false, mirroring the last argument they already pass to commonChecker().
+     * Getting this wrong throws RelationNotFoundException at runtime, because
+     * commonChecker() eager-loads the relation by name.
+     */
+    protected bool $hasManyTenants = true;
+
+    /**
      * Common checker logic for tenant-based authorization.
      *
      * @param  User  $user  The user to check permissions for
@@ -88,6 +98,14 @@ trait HasCommonChecks
         // Check for padalinys (tenant) scope - models belonging to user's tenants
         $tenantRelation = $hasManyTenants ? 'tenants' : 'tenant';
 
+        // Globally scoped models (tags, types, categories, navigation) have no tenant
+        // relation at all. They are only ever granted the "*" scope, so this branch is
+        // normally unreachable — but loading a missing relation would throw a 500 rather
+        // than simply denying, so deny explicitly instead.
+        if (! method_exists($model, $tenantRelation)) {
+            return false;
+        }
+
         if ($authorizer->forUser($user)->check($permissionBase.PermissionScopeEnum::PADALINYS()->label)) {
             $permissableTenants = $user->tenants()
                 ->whereIn('duties.id', $authorizer->getPermissableDuties()->pluck('id'))
@@ -129,10 +147,14 @@ trait HasCommonChecks
     }
 
     /**
-     * Common restore check for standard soft delete restoration
+     * Common restore check for standard soft delete restoration.
+     *
+     * Restoring is the inverse of deleting, so it deliberately reuses the model's
+     * existing `{resource}.delete.{scope}` permission rather than introducing one
+     * of its own.
      */
     public function restore(User $user, Model $model): bool
     {
-        return $this->commonChecker($user, $model, CRUDEnum::DELETE()->label);
+        return $this->commonChecker($user, $model, CRUDEnum::DELETE()->label, $this->pluralModelName, $this->hasManyTenants);
     }
 }

@@ -13,6 +13,7 @@
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ref, computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 
 import type { IndexTablePageInstance,
   IndexTablePageProps } from '@/Types/TableConfigTypes';
@@ -38,12 +39,16 @@ const props = defineProps<{
   };
   filters?: Record<string, any>;
   sorting?: { id: string; desc: boolean }[];
+  showDeleted?: boolean;
+  deletedCount?: number;
 }>();
 
 const modelName = 'trainings';
 const entityName = 'training';
 
 const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
+
+const canForceDelete = computed(() => usePage().props.auth?.can?.forceDelete?.training ?? false);
 
 const getRowId = (row: App.Entities.Training) => {
   return `training-${row.id}`;
@@ -58,6 +63,8 @@ const columns = computed(() => [
     canView: true,
     canEdit: true,
     canDelete: false,
+    canRestore: true,
+    canForceDelete: canForceDelete.value,
   }),
 ]);
 
@@ -77,6 +84,9 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Training>>(() => {
     enableFiltering: true,
     enableColumnVisibility: false,
     enableRowSelection: false,
+    allowToggleDeleted: true,
+    showDeleted: props.showDeleted,
+    deletedCount: props.deletedCount,
 
     headerTitle: capitalize($tChoice('entities.training.model', 2)),
     icon: TrainingIcon,

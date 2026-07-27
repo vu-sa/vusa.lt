@@ -41,6 +41,7 @@ const props = defineProps<{
   filters?: Record<string, any>;
   sorting?: { id: string; desc: boolean }[];
   showDeleted?: boolean;
+  deletedCount?: number;
 }>();
 
 // Component constants
@@ -52,6 +53,7 @@ const indexTablePageRef = ref<InstanceType<typeof IndexTablePage> | null>(null);
 
 // Permission checks
 const canCreate = computed(() => usePage().props.auth?.can?.create?.meeting || false);
+const canForceDelete = computed(() => usePage().props.auth?.can?.forceDelete?.meeting ?? false);
 
 // Filter states
 const selectedCompletionStatuses = ref<string[]>(props.filters?.['completion_status'] || []);
@@ -200,6 +202,7 @@ const columns = computed<ColumnDef<App.Entities.Meeting, any>[]>(() => [
     canEdit: false,
     canDelete: true,
     canRestore: true,
+    canForceDelete: canForceDelete.value,
   }),
 ]);
 
@@ -223,6 +226,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Meeting>>(() => {
     enableColumnVisibility: true,
     allowToggleDeleted: true,
     showDeleted: props.showDeleted,
+    deletedCount: props.deletedCount,
 
     // Page layout
     headerTitle: capitalize($tChoice('entities.meeting.model', 2)),

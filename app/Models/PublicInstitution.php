@@ -37,7 +37,6 @@ use Spatie\Activitylog\Models\Activity;
  * @property int|null $tenant_id
  * @property int $is_active
  * @property int $meeting_periodicity_days
- * @property string $contacts_layout
  * @property string|null $selection_method
  * @property array|string|null $appointed_by
  * @property array|string|null $term_length
@@ -54,6 +53,7 @@ use Spatie\Activitylog\Models\Activity;
  * @property-read Collection<int, Duty> $duties
  * @property-read Collection<int, FileableFile> $fileableFiles
  * @property-read Collection<int, User> $followers
+ * @property-read string|null $force_delete_blocked_reason
  * @property-read bool $has_protocol
  * @property-read bool $has_public_meetings
  * @property-read bool $has_report
@@ -141,7 +141,7 @@ class PublicInstitution extends Institution
      */
     public function shouldBeSearchable(): bool
     {
-        return $this->is_active === 1;
+        return ! $this->trashed() && $this->is_active === 1;
     }
 
     /**

@@ -35,7 +35,7 @@
       </div>
 
       <p v-if="openTasks.length > previewTasks.length" class="px-2 pt-1 text-xs text-muted-foreground">
-        {{ $t('ir dar :count', { count: openTasks.length - previewTasks.length }) }}
+        {{ $t('ir dar :count', { count: String(openTasks.length - previewTasks.length) }) }}
       </p>
     </div>
 

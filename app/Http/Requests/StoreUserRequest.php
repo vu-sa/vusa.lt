@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\User;
+use App\Rules\UniqueAmongTrashed;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -25,7 +26,7 @@ class StoreUserRequest extends FormRequest
     {
         return [
             'name' => 'required',
-            'email' => 'required|email|unique:users,email',
+            'email' => ['required', 'email', UniqueAmongTrashed::of('users', 'email')],
             'facebook_url' => 'nullable|url',
             'phone' => 'nullable|string',
             'profile_photo_path' => 'nullable|string',

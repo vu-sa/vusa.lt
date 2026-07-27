@@ -7,6 +7,7 @@ use App\Http\Requests\StoreAgendaItemsRequest;
 use App\Http\Requests\UpdateAgendaItemRequest;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Vote;
+use App\Rules\SoftDeleteRules;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -189,7 +190,7 @@ class AgendaItemController extends AdminController
     public function reorder(Request $request)
     {
         $request->validate([
-            'meeting_id' => 'required|exists:meetings,id',
+            'meeting_id' => ['required', SoftDeleteRules::existsLive('meetings')],
             'agenda_items' => 'required|array',
             'agenda_items.*.id' => 'required|exists:agenda_items,id',
             'agenda_items.*.order' => 'required|integer|min:1',

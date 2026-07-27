@@ -34,7 +34,6 @@ class InstitutionRequest extends FormRequest
             'facebook_url' => 'nullable|string',
             'instagram_url' => 'nullable|string',
             'is_active' => 'boolean',
-            'contacts_layout' => 'required|in:aside,below',
             'types' => 'nullable|array',
             'meeting_periodicity_days' => 'nullable|integer|min:1|max:365',
             'selection_method' => ['nullable', Rule::enum(DutySelectionMethod::class)],

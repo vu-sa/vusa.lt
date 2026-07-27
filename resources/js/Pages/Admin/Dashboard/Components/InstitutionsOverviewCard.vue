@@ -87,60 +87,17 @@ const emit = defineEmits<{
 const showCreateCheckIn = ref<string | null>(null);
 const actionLoading = reactive<Record<string, boolean>>({});
 
-// Computed values for institution analysis
-// Coverage means: has an upcoming meeting OR an active check-in
-const institutionsWithCheckInsOrMeetings = computed(() => {
-  return props.institutions.filter(inst =>
-    inst.active_check_in
-    || (Array.isArray(inst.meetings) && inst.meetings.some((meeting: any) => new Date(meeting.start_time) > new Date())),
-  );
-});
-
 const institutionsNeedingAttention = computed(() => {
-  return props.institutions.filter((inst) => {
-    const hasCoverageCheckIn = !!inst.active_check_in;
-    const hasUpcomingMeeting = Array.isArray(inst.meetings) && inst.meetings.some((meeting: any) => new Date(meeting.start_time) > new Date());
-    return !hasCoverageCheckIn && !hasUpcomingMeeting;
-  });
+  return props.institutions.filter(inst => inst.activity_status.requires_action);
 });
 
 // Sort institutions by priority - attention needed institutions first
 const sortedInstitutions = computed(() => {
   return [...props.institutions].sort((a, b) => {
-    const aHasCoverage = !!a.active_check_in;
-    const bHasCoverage = !!b.active_check_in;
-    const aHasUpcoming = !!a.upcoming_meetings_count && a.upcoming_meetings_count > 0;
-    const bHasUpcoming = !!b.upcoming_meetings_count && b.upcoming_meetings_count > 0;
-
-    // Priority 1: Institutions needing attention (no coverage check-in AND no upcoming meetings)
-    const aNeedsAttention = !aHasCoverage && !aHasUpcoming;
-    const bNeedsAttention = !bHasCoverage && !bHasUpcoming;
-
-    if (aNeedsAttention !== bNeedsAttention) {
-      return aNeedsAttention ? -1 : 1;
+    if (a.activity_status.priority !== b.activity_status.priority) {
+      return b.activity_status.priority - a.activity_status.priority;
     }
 
-    // Priority 2: No upcoming meetings (but has coverage check-in)
-    const aNoMeetings = !aHasUpcoming;
-    const bNoMeetings = !bHasUpcoming;
-
-    if (aNoMeetings !== bNoMeetings) {
-      return aNoMeetings ? -1 : 1;
-    }
-
-    // Priority 3: By days since last meeting (older meetings first)
-    if (a.days_since_last_meeting && b.days_since_last_meeting) {
-      return b.days_since_last_meeting - a.days_since_last_meeting;
-    }
-
-    // Priority 4: Check-ins expiring soon
-    if (a.active_check_in && b.active_check_in) {
-      const aDays = Math.ceil((new Date(a.active_check_in.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
-      const bDays = Math.ceil((new Date(b.active_check_in.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
-      return aDays - bDays;
-    }
-
-    // Priority 5: Alphabetical
     return a.name.localeCompare(b.name);
   });
 });
@@ -190,7 +147,7 @@ const handleRemoveActiveCheckIn = (institutionId: string) => {
     onFinish: () => setLoading(institutionId, false),
     onSuccess: () => {
       // Refresh data to update UI after check-in deletion
-      router.reload({ only: ['user', 'userInstitutions', 'tenantInstitutions'], preserveScroll: true });
+      router.reload({ only: ['user', 'userInstitutions', 'tenantInstitutions'] });
     },
   });
 };

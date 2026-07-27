@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Contracts\GuardsForceDelete;
 use App\Contracts\SharepointFileableContract;
 use App\Events\FileableNameUpdated;
 use App\Models\Pivots\AgendaItem;
@@ -59,6 +60,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Duty> $exOfficioSourceDuties
  * @property-read Collection<int, Duty> $exOfficioTargetDuties
  * @property-read Collection<int, FileableFile> $fileableFiles
+ * @property-read string|null $force_delete_blocked_reason
  * @property-read bool $has_protocol
  * @property-read bool $has_report
  * @property-read array $translatable_columns_from
@@ -104,7 +106,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
-class Duty extends Model implements AuthorizableContract, SharepointFileableContract
+class Duty extends Model implements AuthorizableContract, GuardsForceDelete, SharepointFileableContract
 {
     use Authorizable, HasFactory, HasRelationships, HasRoles, HasSharepointFiles, HasTranslations, HasUlids, LogsActivity, Notifiable, Searchable, SoftDeletes;
 
@@ -214,6 +216,35 @@ class Duty extends Model implements AuthorizableContract, SharepointFileableCont
         return $this->hasMany(Dutiable::class);
     }
 
+    /**
+     * Membership history is deliberately permanent — removing a member stamps
+     * `dutiables.end_date` instead of deleting the row, and `dutiables.duty_id`
+     * restricts deletes. A duty that ever had a member therefore cannot be erased
+     * without destroying that history, so permanent deletion is refused.
+     *
+     * Reads a pre-loaded `dutiables_count` when the caller eager-loaded it
+     * (see DutyController::index), which keeps the admin table free of N+1.
+     */
+    public function forceDeleteBlockedReason(): ?string
+    {
+        $dutiableCount = $this->dutiables_count ?? $this->dutiables()->count();
+
+        if ($dutiableCount < 1) {
+            return null;
+        }
+
+        return __('trash.blocked.duty_has_membership_history', ['count' => $dutiableCount]);
+    }
+
+    /**
+     * Appendable form of {@see forceDeleteBlockedReason()} so the admin index can
+     * serialize the reason per row and disable the action in the table.
+     */
+    public function getForceDeleteBlockedReasonAttribute(): ?string
+    {
+        return $this->forceDeleteBlockedReason();
+    }
+
     public function users(): MorphToMany
     {
         return $this->morphedByMany(User::class, 'dutiable')
@@ -321,5 +352,20 @@ class Duty extends Model implements AuthorizableContract, SharepointFileableCont
                 FileableNameUpdated::dispatch($duty);
             }
         });
+
+        // Institution::toSearchableArray() embeds duty_names and current_user_names, and
+        // Scout only reindexes the model that changed — so without this a trashed duty
+        // stays findable through its institution until that institution is next saved.
+        static::deleted(fn (Duty $duty) => $duty->reindexInstitution());
+        static::restored(fn (Duty $duty) => $duty->reindexInstitution());
+    }
+
+    /**
+     * Refresh the owning institution's search document after this duty's visibility
+     * changed.
+     */
+    protected function reindexInstitution(): void
+    {
+        $this->institution?->searchable();
     }
 }

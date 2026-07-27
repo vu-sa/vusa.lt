@@ -6,14 +6,16 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexCategoryRequest;
 use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
+use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Category;
 use App\Services\TanstackTableService;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Response;
 
 class CategoryController extends AdminController
 {
-    use HasTanstackTables;
+    use HandlesSoftDeletes, HasTanstackTables;
 
     public function __construct(private TanstackTableService $tableService) {}
 
@@ -38,8 +40,15 @@ class CategoryController extends AdminController
             ]
         );
 
+        $deletedCount = $this->getTrashedCount($query);
+
+        // Trash view only: lets the table say why permanent deletion is refused.
+        $query = $this->withForceDeleteBlockers($query, $request, ['news']);
+
         $categories = $query->paginate($request->input('per_page', 20))
             ->withQueryString();
+
+        $this->appendForceDeleteBlockedReason($categories->getCollection(), $request);
 
         $sorting = $request->getSorting();
 
@@ -61,6 +70,8 @@ class CategoryController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $sorting,
+            'showDeleted' => $request->boolean('showDeleted', false),
+            'deletedCount' => $deletedCount,
         ]);
     }
 
@@ -116,5 +127,15 @@ class CategoryController extends AdminController
         $category->delete();
 
         return $this->redirectToIndexWithSuccess('categories', 'Kategorija ištrinta.');
+    }
+
+    public function restore(Category $category): RedirectResponse
+    {
+        return $this->restoreModel($category);
+    }
+
+    public function forceDelete(Category $category): RedirectResponse
+    {
+        return $this->forceDeleteModel($category);
     }
 }

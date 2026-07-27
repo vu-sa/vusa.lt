@@ -31,7 +31,7 @@
       ]">
         <!-- Upcoming Meetings Card (first for atstovavimas users) -->
         <UpcomingMeetingsCard v-if="hasAtstovavimas" :upcoming-meetings="formattedMeetings"
-          :institutions-insights="emptyInsights"
+          :institutions-insights="{ attention: institutionsNeedingAttention }"
           data-tour="meetings-card"
           @show-all-meetings="() => router.visit(route('dashboard.atstovavimas'))"
           @create-meeting="showMeetingModal = true" />
@@ -70,6 +70,7 @@ import { useProductTour } from '@/Composables/useProductTour';
 import { provideTour } from '@/Composables/useTourProvider';
 import { useSidebar } from '@/Components/ui/sidebar/utils';
 import type { TaskProgress, TaskActionType } from '@/Types/TaskTypes';
+import type { InstitutionActivityInsight } from '@/Types/InstitutionActivity';
 
 // Types
 interface TaskStats {
@@ -104,7 +105,7 @@ const props = defineProps<{
   taskStats: TaskStats;
   upcomingTasks: UpcomingTask[];
   upcomingMeetings: UpcomingMeeting[];
-  institutionsNeedingAttention: any[];
+  institutionsNeedingAttention: InstitutionActivityInsight[];
   upcomingCalendarEvents: App.Entities.Calendar[];
   latestNews: App.Entities.News[];
 }>();
@@ -283,12 +284,6 @@ onMounted(() => {
     startTourIfNew();
   }, 1500);
 });
-
-// Empty insights for the UpcomingMeetingsCard (we don't have this data on the home page)
-const emptyInsights = {
-  withoutMeetings: [],
-  withOldMeetings: [],
-};
 
 // User name with addressivization for Lithuanian
 const userNameAddress = computed(() => {

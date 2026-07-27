@@ -1,18 +1,20 @@
 <template>
-  <div class="flex justify-center">
+  <div class="flex justify-start">
     <DataTableActions
       :model="row"
       :model-name
-      :view-route="viewRoute ? route(viewRoute, row.id) : undefined"
-      :edit-route="editRoute ? route(editRoute, row.id) : undefined"
-      :duplicate-route="duplicateRoute ? route(duplicateRoute, row.id) : undefined"
-      :delete-route="deleteRoute ? route(deleteRoute, row.id) : undefined"
-      :restore-route="restoreRoute ? route(restoreRoute, row.id) : undefined"
+      :view-route="viewRoute ? safeRoute(viewRoute, row.id) : undefined"
+      :edit-route="editRoute ? safeRoute(editRoute, row.id) : undefined"
+      :duplicate-route="duplicateRoute ? safeRoute(duplicateRoute, row.id) : undefined"
+      :delete-route="deleteRoute ? safeRoute(deleteRoute, row.id) : undefined"
+      :restore-route="restoreRoute ? safeRoute(restoreRoute, row.id) : undefined"
+      :force-delete-route="canForceDelete && forceDeleteRoute ? safeRoute(forceDeleteRoute, row.id) : undefined"
       :can-view
       :can-edit
       :can-duplicate
       :can-delete
       :can-restore
+      :can-force-delete
       :confirm-delete
       :delete-confirm-message
       :delete-confirm-title
@@ -26,7 +28,7 @@
   </div>
 </template>
 
-<script setup lang="ts" generic="TModel extends { id: string | number, deleted_at?: string | null }">
+<script setup lang="ts" generic="TModel extends { id: string | number, deleted_at?: string | null, force_delete_blocked_reason?: string | null }">
 import DataTableActions from './DataTableActions.vue';
 
 const props = defineProps<{
@@ -39,6 +41,7 @@ const props = defineProps<{
   duplicateRoute?: string;
   deleteRoute?: string;
   restoreRoute?: string;
+  forceDeleteRoute?: string;
 
   // Permissions
   canView?: boolean;
@@ -46,6 +49,7 @@ const props = defineProps<{
   canDuplicate?: boolean;
   canDelete?: boolean;
   canRestore?: boolean;
+  canForceDelete?: boolean;
 
   // Confirmation settings
   confirmDelete?: boolean;
@@ -57,6 +61,20 @@ const emit = defineEmits<{
   (e: 'action', action: string, model: TModel): void;
   (e: 'custom-action', action: string, model: TModel): void;
 }>();
+
+/**
+ * Route names are derived by convention from the model name, so a page can enable
+ * an action for a model that never registered the matching route. Resolve to
+ * undefined instead of throwing and taking the whole table down with it.
+ */
+const safeRoute = (routeName: string, id: string | number): string | undefined => {
+  try {
+    return route(routeName, id);
+  }
+  catch {
+    return undefined;
+  }
+};
 
 // Forward events from DataTableActions
 const handleAction = (action: string, model: TModel) => {

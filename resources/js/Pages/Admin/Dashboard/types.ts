@@ -4,32 +4,34 @@ export interface InstitutionSubscription {
   is_duty_based: boolean;
 }
 
-export interface AtstovavimosUser extends App.Entities.User {
+export type AtstovavimosUser = Omit<App.Entities.User, 'current_duties'> & {
   current_duties?: Array<{
     institution?: AtstovavimosInstitution;
   }>;
-}
+};
 
 export interface AtstovavimosInstitution {
   id: string;
   name: string;
+  tenant_id?: string | number;
   tenant?: {
-    id: string;
+    id: string | number;
     shortname: string;
+    type?: string;
   };
   meetings?: AtstovavimosMeeting[];
   check_ins?: InstitutionCheckIn[];
   active_check_in?: InstitutionCheckIn | null;
+  activity_status: InstitutionActivityStatus;
   hasUpcomingMeetings?: boolean;
   upcoming_meetings_count?: number;
-  days_since_last_meeting?: number;
   has_public_meetings?: boolean;
   // Subscription status for follow/mute UI
   subscription?: InstitutionSubscription;
   // Related institution metadata (only present for related institutions)
   is_related?: boolean;
   relationship_direction?: 'outgoing' | 'incoming' | 'sibling';
-  relationship_type?: 'direct' | 'type-based' | 'within-type';
+  relationship_type?: 'direct' | 'type-based' | 'within-type' | 'cross-tenant-sibling';
   source_institution_id?: string;
   // Whether the current user has authorization to access this institution's data
   // true for outgoing and sibling directions, false for incoming
@@ -49,6 +51,12 @@ export interface AtstovavimosMeeting {
   id: string;
   start_time: string;
   institution_id?: string;
+  completion_status?: 'complete' | 'incomplete' | 'no_items';
+  has_report?: boolean;
+  has_protocol?: boolean;
+  type?: string;
+  type_slug?: string;
+  agenda_items?: AtstovavimosAgendaItem[];
   institutions?: Array<{
     id: string;
     name: string;
@@ -61,6 +69,20 @@ export interface AtstovavimosMeeting {
   }>;
 }
 
+export interface AtstovavimosAgendaItem {
+  id: string | number;
+  title?: string;
+  type?: string | null;
+  main_vote?: AtstovavimosVote | null;
+  votes?: AtstovavimosVote[];
+}
+
+export interface AtstovavimosVote {
+  is_main?: boolean;
+  student_vote?: 'positive' | 'negative' | 'neutral' | null;
+  decision?: 'positive' | 'negative' | 'neutral' | null;
+}
+
 export interface AtstovavimosGap {
   institution_id: string;
   from: Date;
@@ -70,20 +92,13 @@ export interface AtstovavimosGap {
 }
 
 export interface AtstovavimosTenant {
-  id: number;
+  id: string | number;
   shortname: string;
   type: string;
 }
 
 export interface InstitutionInsights {
-  withoutMeetings: AtstovavimosInstitution[];
-  withOldMeetings: Array<AtstovavimosInstitution & {
-    lastMeetingDate: Date;
-    daysSinceLastMeeting: number;
-    periodicity: number;
-    isOverdue: boolean;
-    isApproaching: boolean;
-  }>;
+  attention: InstitutionActivityInsight[];
 }
 
 // Agenda item for Gantt tooltip display
@@ -120,7 +135,7 @@ export interface GanttInstitution {
   // Related institution metadata
   is_related?: boolean;
   relationship_direction?: 'outgoing' | 'incoming' | 'sibling';
-  relationship_type?: 'direct' | 'type-based' | 'within-type';
+  relationship_type?: 'direct' | 'type-based' | 'within-type' | 'cross-tenant-sibling';
   source_institution_id?: string;
   // Whether the current user has authorization to access this institution's data
   authorized?: boolean;
@@ -176,5 +191,37 @@ export interface RepresentativeActivityStats {
 
 export interface RepresentativeActivityData {
   stats: RepresentativeActivityStats;
-  users: RepresentativeUser[];
+  preview_users: RepresentativeUser[];
 }
+
+export interface InstitutionStatusSummaryData {
+  all: number;
+  needs_attention: number;
+  overdue: number;
+  approaching: number;
+  no_activity: number;
+  current: number;
+}
+
+export interface RepresentativePagination {
+  current_page: number;
+  last_page: number;
+  per_page: number;
+  total: number;
+}
+
+export interface RepresentativePageData {
+  users: RepresentativeUser[];
+  pagination: RepresentativePagination;
+}
+
+export interface AtstovavimosTenantTimelineData {
+  institutions: AtstovavimosInstitution[];
+  related_institutions: AtstovavimosInstitution[];
+  institution_summary: InstitutionStatusSummaryData;
+  representative_activity: RepresentativeActivityData;
+}
+import type {
+  InstitutionActivityInsight,
+  InstitutionActivityStatus,
+} from '@/Types/InstitutionActivity';

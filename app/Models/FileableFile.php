@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 
 /**
@@ -34,7 +33,6 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $deleted_externally_at Set when file deleted in SharePoint
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property Carbon|null $deleted_at
  * @property-read Model|\Eloquent $fileable
  * @property-read string|null $file_type_label
  * @property-read string|null $formatted_size
@@ -45,16 +43,13 @@ use Illuminate\Support\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FileableFile newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FileableFile notDeletedExternally()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FileableFile ofType(string $type)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FileableFile onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FileableFile query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FileableFile withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FileableFile withoutTrashed()
  *
  * @mixin \Eloquent
  */
 class FileableFile extends Model
 {
-    use HasFactory, HasUlids, SoftDeletes;
+    use HasFactory, HasUlids;
 
     protected $guarded = [];
 
@@ -131,11 +126,11 @@ class FileableFile extends Model
     }
 
     /**
-     * Scope: Only files that are available (not soft deleted, not externally deleted).
+     * Scope: Only files that are available (not externally deleted).
      */
     public function scopeAvailable($query)
     {
-        return $query->whereNull('deleted_externally_at')->whereNull('deleted_at');
+        return $query->whereNull('deleted_externally_at');
     }
 
     /**

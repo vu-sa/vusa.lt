@@ -10,6 +10,7 @@ use App\Http\Requests\BatchUpdateDutyUsersRequest;
 use App\Http\Requests\IndexDutyRequest;
 use App\Http\Requests\StoreDutyRequest;
 use App\Http\Requests\UpdateDutyRequest;
+use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -21,6 +22,7 @@ use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ResourceServices\DutyService;
 use App\Services\TanstackTableService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -28,7 +30,7 @@ use Inertia\Inertia;
 
 class DutyController extends AdminController
 {
-    use HasTanstackTables;
+    use HandlesSoftDeletes, HasTanstackTables;
 
     public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
@@ -43,7 +45,8 @@ class DutyController extends AdminController
             'institution:id,name,short_name,tenant_id',
             'institution.tenant:id,shortname',
             'types:id,title',
-        ]);
+            // Feeds Duty::forceDeleteBlockedReason() without a query per row.
+        ])->withCount('dutiables');
 
         $searchableColumns = ['name', 'email'];
 
@@ -70,6 +73,8 @@ class DutyController extends AdminController
             });
         }
 
+        $deletedCount = $this->getTrashedCount($query);
+
         $duties = $query->paginate($request->input('per_page', 20))
             ->withQueryString();
 
@@ -77,7 +82,7 @@ class DutyController extends AdminController
             'duties' => [
                 'data' => $duties->getCollection()->map(function ($duty) {
                     /** @var Duty $duty */
-                    return $duty->toFullArray();
+                    return $duty->append('force_delete_blocked_reason')->toFullArray();
                 })->values(),
                 'meta' => [
                     'total' => $duties->total(),
@@ -90,6 +95,8 @@ class DutyController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $request->getSorting(),
+            'showDeleted' => $request->boolean('showDeleted', false),
+            'deletedCount' => $deletedCount,
         ]);
     }
 
@@ -505,13 +512,9 @@ class DutyController extends AdminController
         return redirect()->route('duties.index')->with('info', trans_choice('messages.deleted', 0, ['model' => trans_choice('entities.duty.model', 1)]));
     }
 
-    public function restore(Duty $duty)
+    public function restore(Duty $duty): RedirectResponse
     {
-        $this->handleAuthorization('restore', $duty);
-
-        $duty->restore();
-
-        return back()->with('success', __('messages.duty.restored'));
+        return $this->restoreModel($duty);
     }
 
     /**
@@ -703,5 +706,10 @@ class DutyController extends AdminController
 
         return redirect()->route('duties.show', $duty)
             ->with('success', trans('Pareigybės nariai sėkmingai atnaujinti!'));
+    }
+
+    public function forceDelete(Duty $duty): RedirectResponse
+    {
+        return $this->forceDeleteModel($duty);
     }
 }

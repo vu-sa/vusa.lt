@@ -3,12 +3,14 @@
 namespace App\Console\Commands;
 
 use App\Actions\GetInstitutionRepresentatives;
+use App\Enums\InstitutionActivityStatus;
 use App\Listeners\QueueNotificationForDigest;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\ReservationResource;
 use App\Models\Reservation;
 use App\Services\AcademicCalendarService;
+use App\Services\InstitutionActivityStatusService;
 use App\States\ReservationResource\Lent;
 use App\States\ReservationResource\Reserved;
 use App\Tasks\Handlers\AgendaCompletionTaskHandler;
@@ -56,6 +58,7 @@ class RepopulateTasks extends Command
         protected AgendaCreationTaskHandler $agendaCreationHandler,
         protected AgendaCompletionTaskHandler $agendaCompletionHandler,
         protected AcademicCalendarService $academicCalendar,
+        protected InstitutionActivityStatusService $activityStatusService,
     ) {
         parent::__construct();
     }
@@ -136,19 +139,20 @@ class RepopulateTasks extends Command
     {
         $created = 0;
         $skipped = 0;
-        $warningDays = 7;
-
         $institutions = Institution::query()
             ->where('is_active', true)
-            ->with(['types', 'meetings' => function ($query) {
-                $query->where('start_time', '>=', now()->subYear())
-                    ->orWhere('start_time', '>=', now())
-                    ->orderBy('start_time', 'desc');
-            }])
+            ->with([
+                'types',
+                'meetings:id,start_time',
+                'checkIns' => fn ($query) => $query
+                    ->where('start_date', '<=', today())
+                    ->where('end_date', '>=', today()),
+            ])
             ->get();
 
         foreach ($institutions as $institution) {
-            $periodicityDays = $institution->meeting_periodicity_days;
+            $activityStatus = $this->activityStatusService->resolve($institution, Carbon::today());
+            $periodicityDays = $activityStatus->periodicityDays;
 
             // Skip if no periodicity is set
             if (! $periodicityDays) {
@@ -162,27 +166,14 @@ class RepopulateTasks extends Command
                 continue;
             }
 
-            // Calculate days since last meeting, ignoring academic vacation days
-            $lastMeetingDate = $this->getLastMeetingDate($institution);
-            $daysSinceLastMeeting = $lastMeetingDate
-                ? $this->academicCalendar->effectiveDaysBetween($lastMeetingDate, Carbon::today())
-                : null;
-
-            // Check if there's a future meeting scheduled
-            $hasFutureMeeting = $institution->meetings
-                ->filter(fn ($meeting) => $meeting->start_time->isFuture())
-                ->isNotEmpty();
-
-            if ($hasFutureMeeting) {
+            if (! in_array($activityStatus->status, [
+                InstitutionActivityStatus::Approaching,
+                InstitutionActivityStatus::Overdue,
+            ], true)) {
                 continue;
             }
 
-            // Check if we're approaching the threshold
-            $daysUntilThreshold = $periodicityDays - ($daysSinceLastMeeting ?? $periodicityDays);
-
-            if ($daysUntilThreshold > $warningDays) {
-                continue;
-            }
+            $daysUntilThreshold = $periodicityDays - ($activityStatus->effectiveDaysSinceActivity ?? $periodicityDays);
 
             // Get current representatives
             $representatives = GetInstitutionRepresentatives::execute($institution);
@@ -209,6 +200,7 @@ class RepopulateTasks extends Command
                 institution: $institution,
                 users: $representatives,
                 dueDate: $dueDate,
+                activityStatus: $activityStatus,
             );
 
             $this->line("    ✓ Created: {$institution->name}");
@@ -450,13 +442,4 @@ class RepopulateTasks extends Command
     /**
      * Get the date of the last meeting for an institution.
      */
-    protected function getLastMeetingDate(Institution $institution): ?Carbon
-    {
-        $lastMeeting = $institution->meetings
-            ->filter(fn ($meeting) => $meeting->start_time->isPast())
-            ->sortByDesc('start_time')
-            ->first();
-
-        return $lastMeeting?->start_time;
-    }
 }

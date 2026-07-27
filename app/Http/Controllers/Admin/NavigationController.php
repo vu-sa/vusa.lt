@@ -5,15 +5,20 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreNavigationRequest;
 use App\Http\Requests\UpdateNavigationRequest;
+use App\Http\Traits\HandlesSoftDeletes;
 use App\Models\Navigation;
+use App\Rules\SoftDeleteRules;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\NavigationService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 class NavigationController extends AdminController
 {
+    use HandlesSoftDeletes;
+
     public function __construct(public Authorizer $authorizer) {}
 
     /**
@@ -23,9 +28,26 @@ class NavigationController extends AdminController
     {
         $this->handleAuthorization('viewAny', Navigation::class);
 
+        $showDeleted = $request->boolean('showDeleted', false);
+        $locale = app()->getLocale();
+
+        $deletedCount = Navigation::onlyTrashed()
+            ->where('lang', $locale)
+            ->count();
+
+        $navigation = $showDeleted
+            ? Navigation::onlyTrashed()
+                ->where('lang', $locale)
+                ->orderBy('parent_id')
+                ->orderBy('order')
+                ->get()
+            : NavigationService::getNavigationForPublic();
+
         return $this->inertiaResponse('Admin/Navigation/IndexNavigation', [
-            'navigation' => NavigationService::getNavigationForPublic(),
+            'navigation' => $navigation,
             'typeOptions' => Inertia::optional(fn () => QuickLinkController::getQuickLinkTypeOptions($request->input('type'))),
+            'showDeleted' => $showDeleted,
+            'deletedCount' => $deletedCount,
         ]);
     }
 
@@ -58,10 +80,14 @@ class NavigationController extends AdminController
 
         $navigation = new Navigation($validated);
 
-        $navigation->order = Navigation::where('parent_id', $navigation->parent_id)->max('order') + 1;
+        // Trashed siblings still occupy their order, and a restored one would otherwise
+        // come back sharing a position with whatever was created in the meantime.
+        $navigation->order = Navigation::withTrashed()->where('parent_id', $navigation->parent_id)->max('order') + 1;
 
-        // The parent navigation element doesn't always exist
-        $navigation->lang = Navigation::where('id', $navigation->parent_id)->first()->lang ?? app()->getLocale();
+        // The parent navigation element doesn't always exist. Look through trashed ones
+        // too — falling back to the request locale would create the child in the wrong
+        // language, where it silently disappears from that language's menu.
+        $navigation->lang = Navigation::withTrashed()->where('id', $navigation->parent_id)->first()->lang ?? app()->getLocale();
 
         $navigation->save();
 
@@ -101,7 +127,7 @@ class NavigationController extends AdminController
     public function updateColumn(Request $request)
     {
         $data = $request->validate([
-            'id' => ['required', 'integer', 'exists:navigation,id'],
+            'id' => ['required', 'integer', SoftDeleteRules::existsLive('navigation')],
             'direction' => ['required', 'string', 'in:left,right'],
         ]);
 
@@ -142,7 +168,7 @@ class NavigationController extends AdminController
     {
         $data = $request->validate([
             'navigation' => ['required', 'array'],
-            'navigation.*.id' => ['required', 'integer', 'exists:navigation,id'],
+            'navigation.*.id' => ['required', 'integer', SoftDeleteRules::existsLive('navigation')],
             'navigation.*.links' => ['sometimes', 'array'],
         ]);
 
@@ -184,5 +210,15 @@ class NavigationController extends AdminController
         Cache::forget('mainNavigation-'.app()->getLocale());
 
         return redirect()->route('navigation.index')->with('info', 'Navigation deleted.');
+    }
+
+    public function restore(Navigation $navigation): RedirectResponse
+    {
+        return $this->restoreModel($navigation);
+    }
+
+    public function forceDelete(Navigation $navigation): RedirectResponse
+    {
+        return $this->forceDeleteModel($navigation);
     }
 }

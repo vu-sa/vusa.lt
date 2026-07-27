@@ -32,6 +32,8 @@ export function extractDutyMembers(institutions: AtstovavimosInstitution[]): Gan
             id: String(user.id),
             name: String(user.name ?? ''),
             profile_photo_path: user.profile_photo_path ?? null,
+            activityCategory: user.activity_category,
+            lastAction: user.last_action ?? null,
           },
           start_date: new Date(pivot.start_date),
           end_date: pivot.end_date ? new Date(pivot.end_date) : null,

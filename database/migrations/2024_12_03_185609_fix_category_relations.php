@@ -14,7 +14,7 @@ return new class extends Migration
     public function up(): void
     {
         $calendars = DB::table('calendar')->get(['id', 'category']);
-        $categories = Category::all(['id', 'alias']);
+        $categories = Category::query()->withoutGlobalScopes()->get(['id', 'alias']);
 
         Schema::table('calendar', function (Blueprint $table) {
             $table->dropForeign(['category']);

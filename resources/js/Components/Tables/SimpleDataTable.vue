@@ -8,7 +8,7 @@
     <div v-if="enableFiltering" class="flex gap-2">
       <Input
         v-model="searchText"
-        :placeholder="`${$t('Search')}...`"
+        :placeholder="$t('tables.search_placeholder')"
         class="max-w-sm"
       />
       <slot name="filters" />
@@ -34,10 +34,10 @@
           <div class="flex flex-col items-center justify-center py-8 text-center">
             <component :is="emptyIcon || CircleIcon" class="h-12 w-12 text-muted-foreground mb-4" />
             <h3 class="text-lg font-medium mb-2">
-              {{ emptyMessage || $t('No data found') }}
+              {{ emptyMessage || $t('tables.no_results') }}
             </h3>
             <p class="text-sm text-muted-foreground">
-              {{ $t('Try adjusting your search or filters') }}
+              {{ $t('tables.no_results_description') }}
             </p>
           </div>
         </slot>

@@ -11,6 +11,7 @@
 
 <script setup lang="ts">
 import { h, ref, computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 
@@ -37,12 +38,16 @@ const props = defineProps<{
   allCategories: App.Entities.Category[];
   filters?: Record<string, any>;
   sorting?: { id: string; desc: boolean }[];
+  showDeleted?: boolean;
+  deletedCount?: number;
 }>();
 
 const modelName = 'calendar';
 const entityName = 'calendar';
 
 const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
+
+const canForceDelete = computed(() => usePage().props.auth?.can?.forceDelete?.calendar ?? false);
 
 const getRowId = (row: App.Entities.Calendar) => {
   return `calendar-${row.id}`;
@@ -104,6 +109,8 @@ const columns = computed<Array<ColumnDef<App.Entities.Calendar, any>>>(() => [
     canEdit: true,
     canDelete: true,
     canDuplicate: true,
+    canRestore: true,
+    canForceDelete: canForceDelete.value,
   }),
 ]);
 
@@ -123,6 +130,9 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Calendar>>(() => {
     enableFiltering: true,
     enableColumnVisibility: false,
     enableRowSelection: false,
+    allowToggleDeleted: true,
+    showDeleted: props.showDeleted,
+    deletedCount: props.deletedCount,
 
     headerTitle: 'Renginiai',
     icon: CalendarIcon,

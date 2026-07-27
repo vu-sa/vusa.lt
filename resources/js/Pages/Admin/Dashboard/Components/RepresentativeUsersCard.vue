@@ -8,7 +8,7 @@
         <UserCheck :class="iconClasses" aria-hidden="true" />
         <span class="font-semibold">{{ $t('Atstovų sąrašas') }}</span>
         <span class="text-xs px-2 py-1 rounded-full bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 ml-auto font-medium">
-          {{ displayedUsers.length }}/{{ users.length }}
+          {{ displayedUsers.length }}/{{ stats.total }}
         </span>
       </CardTitle>
     </CardHeader>
@@ -32,12 +32,12 @@
             <TabsTrigger value="active" class="text-xs gap-1.5">
               <div class="h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400" />
               {{ $t('Aktyvūs') }}
-              <span class="text-zinc-500">({{ activeUsers.length }})</span>
+              <span class="text-zinc-500">({{ stats.activeLast30Days }})</span>
             </TabsTrigger>
             <TabsTrigger value="inactive" class="text-xs gap-1.5">
               <div class="h-1.5 w-1.5 rounded-full bg-red-500 dark:bg-red-400" />
               {{ $t('Neaktyvūs') }}
-              <span class="text-zinc-500">({{ inactiveUsers.length }})</span>
+              <span class="text-zinc-500">({{ inactiveCount }})</span>
             </TabsTrigger>
           </TabsList>
 
@@ -48,13 +48,13 @@
                 :key="user.id"
                 :user
               />
-              <div v-if="activeUsers.length > maxDisplayCount" class="text-center pt-2">
+              <div v-if="stats.activeLast30Days > activeUsers.length" class="text-center pt-2">
                 <button
                   type="button"
                   class="text-xs text-zinc-600 dark:text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline transition-colors"
                   @click="$emit('show-all', 'active')"
                 >
-                  {{ $t('ir dar') }} {{ activeUsers.length - maxDisplayCount }}...
+                  {{ $t('ir dar') }} {{ stats.activeLast30Days - activeUsers.length }}...
                 </button>
               </div>
             </template>
@@ -75,13 +75,13 @@
                 :key="user.id"
                 :user
               />
-              <div v-if="inactiveUsers.length > maxDisplayCount" class="text-center pt-2">
+              <div v-if="inactiveCount > inactiveUsers.length" class="text-center pt-2">
                 <button
                   type="button"
                   class="text-xs text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:underline transition-colors"
                   @click="$emit('show-all', 'inactive')"
                 >
-                  {{ $t('ir dar') }} {{ inactiveUsers.length - maxDisplayCount }}...
+                  {{ $t('ir dar') }} {{ inactiveCount - inactiveUsers.length }}...
                 </button>
               </div>
             </template>
@@ -112,7 +112,7 @@ import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { UserCheck, Users } from 'lucide-vue-next';
 
-import type { RepresentativeUser } from '../types';
+import type { RepresentativeActivityStats, RepresentativeUser } from '../types';
 
 import RepresentativeUserRow from './RepresentativeUserRow.vue';
 
@@ -124,6 +124,7 @@ import { dashboardCardClasses, dashboardCardFooterClasses } from '@/Composables/
 
 interface Props {
   users: RepresentativeUser[];
+  stats: RepresentativeActivityStats;
   loading?: boolean;
   maxDisplayCount?: number;
 }
@@ -159,8 +160,9 @@ const displayedUsers = computed(() => {
 });
 
 // Determine card styling based on inactive count
-const hasInactiveUsers = computed(() => inactiveUsers.value.length > 0);
-const hasNeverLoggedIn = computed(() => props.users.some(u => u.category === 'never'));
+const inactiveCount = computed(() => props.stats.total - props.stats.activeLast30Days);
+const hasInactiveUsers = computed(() => inactiveCount.value > 0);
+const hasNeverLoggedIn = computed(() => props.stats.neverLoggedIn > 0);
 
 const statusIndicatorClasses = computed(() => {
   const base = 'absolute top-0 right-0 w-12 h-12 -mr-6 -mt-6 rotate-45';

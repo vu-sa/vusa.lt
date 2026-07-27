@@ -20,4 +20,5 @@ return [
     'continue_microsoft' => 'Prisijungti su Microsoft',
     'use_other_login' => 'Naudoti kitą prisijungimą',
     'usage_status' => 'šiuo metu gali naudoti VU SA koordinatoriai ir studentų atstovai',
+    'account_deleted' => 'Ši paskyra ištrinta. Kreipkis į savo padalinio koordinatorių.',
 ];

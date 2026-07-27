@@ -11,6 +11,7 @@ use App\Http\Requests\IndexUserRequest;
 use App\Http\Requests\MergeUsersRequest;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Duty;
 use App\Models\Role;
@@ -21,14 +22,14 @@ use App\Services\ResourceServices\UserDutyService;
 use App\Services\TanstackTableService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class UserController extends AdminController
 {
-    use HasTanstackTables;
+    use HandlesSoftDeletes, HasTanstackTables;
 
     public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
@@ -59,8 +60,15 @@ class UserController extends AdminController
             ]
         );
 
+        $deletedCount = $this->getTrashedCount($query);
+
+        // Trash view only: lets the table say why permanent deletion is refused.
+        $query = $this->withForceDeleteBlockers($query, $request, ['trainings']);
+
         $users = $query->paginate($request->input('per_page', 20))
             ->withQueryString();
+
+        $this->appendForceDeleteBlockedReason($users->getCollection(), $request);
 
         /** @var Collection<int, User> $collection */
         $collection = $users->getCollection();
@@ -80,6 +88,8 @@ class UserController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $request->getSorting(),
+            'showDeleted' => $request->boolean('showDeleted', false),
+            'deletedCount' => $deletedCount,
         ]);
     }
 
@@ -301,28 +311,23 @@ class UserController extends AdminController
     /**
      * Restore a soft-deleted user.
      */
-    public function restore(User $user, Request $request)
+    public function restore(User $user): RedirectResponse
     {
-        $this->handleAuthorization('restore', $user);
-
-        $user->restore();
-
-        return back()->with('success', 'Kontaktas sėkmingai atkurtas!');
+        return $this->restoreModel($user, 'Kontaktas sėkmingai atkurtas!');
     }
 
     /**
      * Permanently delete a user.
      */
-    public function forceDelete($id, Request $request)
+    public function forceDelete(User $user): RedirectResponse
     {
-        $user = User::withTrashed()->findOrFail($id);
+        $this->authorize('forceDelete', $user);
 
-        $this->handleAuthorization('forceDelete', $user);
+        abort_unless($user->trashed(), 403, __('trash.must_be_deleted_first'));
 
         $user->duties()->detach();
-        $user->forceDelete();
 
-        return $this->redirectResponse('users.index')->with('success', 'Kontaktas sėkmingai ištrintas!');
+        return $this->forceDeleteModel($user, 'Kontaktas sėkmingai ištrintas!');
     }
 
     /**

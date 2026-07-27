@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Contracts\GuardsForceDelete;
 use App\Models\Pivots\Trainable;
+use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
@@ -30,8 +33,10 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property int|null $max_participants
  * @property Carbon $created_at
  * @property Carbon $updated_at
+ * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activities
  * @property-read Form|null $form
+ * @property-read string|null $force_delete_blocked_reason
  * @property-read array $translatable_columns_from
  * @property-read Institution|null $institution
  * @property-read User|null $organizer
@@ -44,17 +49,20 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static \Database\Factories\TrainingFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Training newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Training newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Training onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Training query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Training whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Training whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Training whereLocale(string $column, string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Training whereLocales(string $column, array $locales)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Training withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Training withoutTrashed()
  *
  * @mixin \Eloquent
  */
-class Training extends Model
+class Training extends Model implements GuardsForceDelete
 {
-    use HasFactory, HasRelationships, HasTranslations, HasUlids, LogsActivity, Searchable;
+    use GuardsForceDeleteWhenReferenced, HasFactory, HasRelationships, HasTranslations, HasUlids, LogsActivity, Searchable, SoftDeletes;
 
     public $table = 'trainings';
 
@@ -135,5 +143,16 @@ class Training extends Model
     public function programmes()
     {
         return $this->morphToMany(Programme::class, 'programmable');
+    }
+
+    /**
+     * `training_user.training_id` restricts deletes: who attended a training is a
+     * record in its own right.
+     */
+    public function forceDeleteBlockedReason(): ?string
+    {
+        return $this->forceDeleteReasonFor([
+            'trash.blockers.training_participation' => $this->countedRelation('users'),
+        ]);
     }
 }

@@ -7,6 +7,36 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.18 — Atnaujinti renginių ir stovyklų puslapiai (2026-07-27) {#v1-18}
+
+- ⭐ **Renginio vietos žemėlapis** — jei renginiui nurodyta vieta, šalia jos rodomas žemėlapis su žyma; nuoroda į Google Maps išlieka
+- ✨ **Pirmakursių stovyklų puslapis perdarytas** — stovyklos matomos iškart po trumpa įžanga, su datomis ir vietomis; jei padalinys organizuoja kelias stovyklas, matomos visos
+- ✨ **Renginio laikas rodomas sklandžiai** — kelias dienas trunkantys renginiai užrašomi vienu intervalu (pvz., „2026 m. rugpjūčio 25–27 d.“), o visą dieną trunkantys neberodo vidurnakčio
+- ✨ **Mažiau skubos ir pasikartojimų renginių puslapiuose** — panaikintos „Sekantis“, „Artėja“, „Netrukus“ žymos; likę tik faktai: „Vyksta dabar“ ir „Renginys įvyko“, o dalinimosi mygtukai nebedubliuojami
+- 🔧 **Renginio aprašymas vėl rodomas tvarkingai** — antraštės, sąrašai ir pastraipos nebeliejasi į vieną tekstą
+- 🔧 **Registracijos mygtukas veikia** — anksčiau nurodyta registracijos nuoroda renginio puslapyje nebuvo rodoma
+
+## v1.17 — Ištrintų įrašų valdymas ir patogesni sąrašai (2026-07-27) {#v1-17}
+
+- ⭐ **Ištrintus įrašus galima atkurti** — baneriai, kalendoriaus renginiai, greitosios nuorodos, navigacijos punktai, kategorijos, žymos, mokymai, studijų programos ir studijų rinkiniai nebeprarandami iškart
+- ⭐ **Ištrynimas visam laikui** — atskiroje ištrintų įrašų skiltyje, tik patvirtinus įrašo pavadinimą; veiksmui reikia atskiros teisės, kurią rolėse galima suteikti nekeičiant įprastos trynimo teisės
+- ⭐ **Narių ir studentų atstovų registracijos šoninėje juostoje** — abi formos pasiekiamos po „Svetainė“ punktu, o jas tvarkantys žmonės gali atidaryti formų sąrašą neturėdami formų redagavimo teisių
+- ⭐ **Registracijų atsisiuntimas į Excel** — mygtukas vėl veikia, šalia matosi bendras registracijų skaičius ir paskutinės registracijos data
+- ✨ **Perjungiklis tarp aktyvių ir ištrintų įrašų** — matosi, kurį vaizdą žiūri ir kiek įrašų ištrinta; lentelėje rodomas ir ištrynimo laikas
+- ✨ **Veiksmai matomi iškart sąrašuose** — peržiūra, redagavimas ir atkūrimas nebeslepiami po „⋯“ mygtuku; ištrynimas lieka atskirame meniu, kad nebūtų paspaustas netyčia
+- ✨ **Institucijų veiklos statusai ir priminimai** — aiškesnės žymos parodo, kada veikla atnaujinta ir kada artėja terminas pranešti; pranešimas apie neplanuojamą posėdį laikomas veiklos atnaujinimu
+- ✨ **Padalinių būklės suvestinė ViSAK** — virš laiko juostos galima pasirinkti kelis padalinius, matyti jų institucijų būklės skaičius ir naudotis paieška bei puslapiavimu
+- 🔧 **Negrįžtamas pareigybės ištrynimas nebemeta klaidos** — parodoma, kodėl pareigybės su narystės istorija ištrinti negalima; istorija išsaugoma
+- 🔧 **Studentų atstovų registracijos atskirtos pagal padalinį** — koordinatoriams rodomos tik jų padalinio institucijoms pateiktos registracijos
+- 🔧 **Formos laukelio aprašymas nebedingsta** — redaguojant formą su registracijomis aprašymai būdavo perrašomi laukelio tipu
+- 🔧 **Veikia greiti veiksmai šoninėje juostoje** — „Naujas susitikimas“, „Nauja naujiena“ ir „Nauja rezervacija“ nebemeta klaidos
+- 🔧 **Tikslesnis tuščias institucijos kontaktų vaizdas** — institucijoms be viešų kontaktų neberodomas klaidinantis pranešimas apie studentų atstovus
+- 🔧 **Ištrynimas nebepraranda susijusių duomenų** — atkūrus posėdį grįžta ir jo darbotvarkė su balsavimais, atkūrus žymą — jos naujienos, o ištrynus navigacijos punktą jo vidiniai punktai nebepasimeta
+- 🔧 **Ištrinti įrašai nebeblokuoja adresų, el. paštų ir turinio kalbos porų** — turinio kalbos pora atsilaisvina automatiškai, o dėl adreso ar el. pašto parodoma, kad juos naudoja ištrintas įrašas ir ką su tuo daryti
+- 🔧 **Negrįžtamas ištrynimas nebemeta klaidų** — kai įrašo ištrinti negalima dėl susietų duomenų, veiksmas iš karto neaktyvus ir parodoma, kas jį saugo
+- ✨ **Trynimo langai paaiškina pasekmes** — prie patvirtinimo parodoma, kas su įrašu nutiks, pvz. kad pareigybės narystės istorija išsaugoma
+- 🔧 **Failų naudojimo tikrinimas mato ištrintus įrašus** — failas, naudojamas tik ištrintame įraše, nebežymimas kaip saugus trinti
+
 ## v1.16 — Nauja svetainės lankomumo analitika (2026-07-26) {#v1-16}
 
 - ⭐ **Lankomumo statistika „Svetainės“ skiltyje** — pasirinkto padalinio puslapių peržiūros, lankytojai, peržiūrų grafikas ir populiariausi puslapiai matomi tiesiai „Mano“ sistemoje. Rodomi tik to padalinio svetainės duomenys, todėl atskiros analitikos paskyros nebereikia

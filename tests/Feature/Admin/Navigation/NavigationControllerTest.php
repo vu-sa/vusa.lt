@@ -266,9 +266,49 @@ describe('authorized access', function () {
             ->assertRedirect(route('navigation.index'))
             ->assertSessionHas('info');
 
-        $this->assertDatabaseMissing('navigation', [
+        $this->assertSoftDeleted('navigation', [
             'id' => $this->navigation->id,
         ]);
+    });
+
+    test('show deleted index returns only trashed navigation records', function () {
+        $trashedChild = Navigation::factory()->create([
+            'name' => 'Deleted Child Navigation',
+            'url' => '/deleted-child',
+            'parent_id' => $this->navigation->id,
+            'order' => 2,
+            'lang' => 'lt',
+        ]);
+        $trashedChild->delete();
+
+        $response = asUser($this->admin)
+            ->get(route('navigation.index', ['showDeleted' => 'true']));
+
+        $response->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Navigation/IndexNavigation')
+                ->where('showDeleted', true)
+                ->where('deletedCount', 1)
+                ->has('navigation')
+            );
+
+        $ids = collect($response->viewData('page')['props']['navigation'])->pluck('id');
+
+        expect($ids)->toContain($trashedChild->id)
+            ->and($ids)->not->toContain($this->navigation->id);
+    });
+
+    test('deleted count only includes records for the current language', function () {
+        $deletedLithuanianNavigation = Navigation::factory()->create(['lang' => 'lt']);
+        $deletedLithuanianNavigation->delete();
+
+        $deletedEnglishNavigation = Navigation::factory()->create(['lang' => 'en']);
+        $deletedEnglishNavigation->delete();
+
+        asUser($this->admin)
+            ->get(route('navigation.index'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page->where('deletedCount', 1));
     });
 
     test('can store divider navigation without name', function () {

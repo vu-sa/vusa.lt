@@ -7,17 +7,19 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexProblemRequest;
 use App\Http\Requests\StoreProblemRequest;
 use App\Http\Requests\UpdateProblemRequest;
+use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Institution;
 use App\Models\Problem;
 use App\Models\ProblemCategory;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class ProblemController extends AdminController
 {
-    use HasTanstackTables;
+    use HandlesSoftDeletes, HasTanstackTables;
 
     public function __construct(
         public Authorizer $authorizer,
@@ -64,6 +66,8 @@ class ProblemController extends AdminController
             $query->whereHas('institutions', fn ($q) => $q->whereIn('institutions.id', $institutionValues));
         }
 
+        $deletedCount = $this->getTrashedCount($query);
+
         $problems = $query->paginate($request->input('per_page', 20))->withQueryString();
 
         return $this->inertiaResponse('Admin/Problems/IndexProblem', [
@@ -79,6 +83,7 @@ class ProblemController extends AdminController
             'filters' => $request->getFilters(),
             'sorting' => $request->getSorting(),
             'showDeleted' => $request->boolean('showDeleted', false),
+            'deletedCount' => $deletedCount,
             'categories' => ProblemCategory::orderBy('slug')->get()->map(fn ($category) => $category->toArray()),
             'institutions' => Institution::select('id', 'name')->orderBy('name')->get()->map(fn ($institution) => $institution->toArray()),
         ]);
@@ -244,12 +249,13 @@ class ProblemController extends AdminController
     /**
      * Restore the specified resource from storage.
      */
-    public function restore(Problem $problem)
+    public function restore(Problem $problem): RedirectResponse
     {
-        $this->handleAuthorization('restore', $problem);
+        return $this->restoreModel($problem, trans_choice('messages.restored', 0, ['model' => trans_choice('entities.problem.model', 1)]));
+    }
 
-        $problem->restore();
-
-        return $this->redirectToIndexWithSuccess('problems', trans_choice('messages.restored', 0, ['model' => trans_choice('entities.problem.model', 1)]));
+    public function forceDelete(Problem $problem): RedirectResponse
+    {
+        return $this->forceDeleteModel($problem);
     }
 }

@@ -63,7 +63,7 @@ describe('DataTableFilter search', () => {
     await wrapper.find('input').setValue('xyz-no-match');
 
     expect(wrapper.findAll('label')).toHaveLength(0);
-    expect(wrapper.text()).toContain('Nerasta');
+    expect(wrapper.text()).toContain('tables.no_results');
   });
 
   it('keeps selected values hidden by the search term when applying', async () => {
@@ -73,7 +73,7 @@ describe('DataTableFilter search', () => {
     await wrapper.find('input').setValue('Filosofijos');
     await wrapper.find('button[id="filter-2"], [id="filter-2"]').trigger('click');
 
-    const applyButton = wrapper.findAll('button').find(button => button.text() === 'Apply');
+    const applyButton = wrapper.findAll('button').find(button => button.text() === 'tables.apply');
     expect(applyButton).toBeDefined();
     await applyButton!.trigger('click');
 

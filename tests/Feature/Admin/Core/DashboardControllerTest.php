@@ -399,6 +399,8 @@ describe('atstovavimas dashboard', function () {
                 ->has('user')
                 ->has('userInstitutions')
                 ->has('availableTenants')
+                ->missing('tenantInstitutions')
+                ->missing('representativeActivity')
             );
     });
 
@@ -468,10 +470,13 @@ describe('atstovavimas dashboard authorization', function () {
                 ->has('userInstitutions')
                 ->where('userInstitutions', function ($institutions) use ($userInstitutionId) {
                     $collection = collect($institutions);
+                    $institution = $collection->firstWhere('id', $userInstitutionId);
 
                     // Should only contain the user's assigned institution
                     return $collection->count() >= 1 &&
-                           $collection->contains(fn ($inst) => $inst['id'] == $userInstitutionId);
+                           $institution !== null &&
+                           isset($institution['activity_status']['status']) &&
+                           array_key_exists('effective_days_since_activity', $institution['activity_status']);
                 })
             );
     });
@@ -718,7 +723,8 @@ describe('institutions needing attention', function () {
 
                     return $entry !== null
                         && $entry['status'] === 'overdue'
-                        && $entry['days_since_last_meeting'] === 45;
+                        && $entry['effective_days_since_activity'] === 45
+                        && $entry['requires_action'] === true;
                 })
             );
     });

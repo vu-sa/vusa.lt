@@ -13,6 +13,7 @@
 import { h, ref, computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
+import { usePage } from '@inertiajs/vue3';
 
 import type { IndexTablePageInstance,
   IndexTablePageProps } from '@/Types/TableConfigTypes';
@@ -37,12 +38,16 @@ const props = defineProps<{
   };
   filters?: Record<string, any>;
   sorting?: { id: string; desc: boolean }[];
+  showDeleted?: boolean;
+  deletedCount?: number;
 }>();
 
 const modelName = 'banners';
 const entityName = 'banner';
 
 const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
+
+const canForceDelete = computed(() => usePage().props.auth?.can?.forceDelete?.banner ?? false);
 
 const getRowId = (row: App.Entities.Banner) => {
   return `banner-${row.id}`;
@@ -71,6 +76,8 @@ const columns = computed<Array<ColumnDef<App.Entities.Banner, any>>>(() => [
     canView: false,
     canEdit: true,
     canDelete: true,
+    canRestore: true,
+    canForceDelete: canForceDelete.value,
   }),
 ]);
 
@@ -90,6 +97,9 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Banner>>(() => {
     enableFiltering: true,
     enableColumnVisibility: false,
     enableRowSelection: false,
+    allowToggleDeleted: true,
+    showDeleted: props.showDeleted,
+    deletedCount: props.deletedCount,
 
     headerTitle: 'Baneriai',
     icon: BannerIcon,

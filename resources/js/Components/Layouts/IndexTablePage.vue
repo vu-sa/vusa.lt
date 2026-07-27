@@ -14,14 +14,14 @@
           <div class="flex flex-col items-center gap-3 rounded-xl border border-border/50 bg-background/95 px-6 py-4 shadow-lg">
             <Spinner class="h-6 w-6 text-primary" />
             <p class="text-sm font-medium text-muted-foreground">
-              {{ $t('Loading data') }}...
+              {{ $t('tables.loading') }}...
             </p>
           </div>
         </div>
 
         <ServerDataTable ref="dataTableRef" :model-name :entity-name="entityName || modelName" :data :columns
           :total-count :initial-page :page-size :can-create :create-route :enable-filtering :enable-column-visibility
-          :initial-sorting :initial-filters :allow-toggle-deleted :show-deleted :empty-message
+          :initial-sorting :initial-filters :allow-toggle-deleted :show-deleted :deleted-count :empty-message
           :empty-icon="emptyIcon || PlusCircleIcon" :enable-row-selection :enable-multi-row-selection
           :enable-row-selection-column :initial-row-selection :get-row-id @data-loaded="handleDataLoaded"
           @update:row-selection="handleRowSelectionChange" @sorting-changed="handleSortingChanged"
@@ -48,11 +48,11 @@
               </div>
               <div class="max-w-md space-y-1">
                 <h3 class="text-lg font-medium">
-                  {{ emptyMessage || $t('No data available') }}
+                  {{ emptyMessage || $t('tables.no_results') }}
                 </h3>
                 <p class="text-sm text-muted-foreground">
                   <slot name="emptyDescription">
-                    {{ emptyDescription || ($t('You can add new items with the button above')) }}
+                    {{ emptyDescription || $t('tables.empty_description') }}
                   </slot>
                 </p>
               </div>
@@ -95,6 +95,13 @@ import type {
   IndexTablePageProps,
 } from '@/Types/TableConfigTypes';
 
+type ServerDataTableInstance = {
+  reloadData: (page?: number) => void;
+  updateFilter: (key: string, value: unknown) => void;
+  getSelectedRows: () => unknown[];
+  clearRowSelection: () => void;
+};
+
 // Props use the combined interface for better organization
 const props = defineProps<IndexTablePageProps<TData>>();
 
@@ -115,7 +122,7 @@ const emit = defineEmits([
 ]);
 
 // Component refs
-const dataTableRef = ref<InstanceType<typeof ServerDataTable>>();
+const dataTableRef = ref<ServerDataTableInstance>();
 
 // UI state
 const isLoading = ref(false);
@@ -127,22 +134,22 @@ const rowSelection = ref<RowSelectionState>(props.initialRowSelection || {});
 const isBackSupportNeeded = computed(() => props.backRoute !== undefined);
 
 // Component event handlers
-const handleDataLoaded = (data) => {
+const handleDataLoaded = (data: unknown) => {
   isLoading.value = false;
   emit('data-loaded', data);
 };
 
-const handleSortingChanged = (sorting) => {
+const handleSortingChanged = (sorting: unknown) => {
   isLoading.value = true;
   emit('sorting-changed', sorting);
 };
 
-const handlePageChanged = (page) => {
+const handlePageChanged = (page: number) => {
   isLoading.value = true;
   emit('page-changed', page);
 };
 
-const handleFilterChanged = (key, value) => {
+const handleFilterChanged = (key: string, value: unknown) => {
   isLoading.value = true;
   emit('filter-changed', key, value);
 };

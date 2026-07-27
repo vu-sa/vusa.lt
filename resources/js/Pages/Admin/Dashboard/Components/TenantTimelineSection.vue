@@ -4,7 +4,8 @@
     <RepresentativeActivitySection
       v-if="representativeActivity"
       :stats="representativeActivity.stats"
-      :users="representativeActivity.users"
+      :users="representativeActivity.preview_users"
+      :tenant-ids="filters.selectedTenantForGantt.value"
       :loading="filters.tenantInstitutionsLoading.value"
     />
 
@@ -21,7 +22,7 @@
         </h2>
         <div data-tour="gantt-filters" class="flex flex-wrap items-center gap-2 ml-auto">
           <GanttFilterDropdown
-            :tenants="availableTenants"
+            :tenants="showTenantSelector ? availableTenants : undefined"
             :selected-tenants="filters.selectedTenantForGantt.value"
             :show-only-with-activity="filters.showOnlyWithActivityTenant.value"
             :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsTenant.value"
@@ -29,7 +30,8 @@
             :show-activity-status="filters.showActivityStatusTenant.value"
             :show-activity-status-option="!!representativeActivity"
             :show-tenant-headers="ganttSettings.showTenantHeaders.value"
-            @update:selected-tenants="(val: string[]) => filters.selectedTenantForGantt.value = val"
+            :require-tenant-selection="showTenantSelector"
+            @update:selected-tenants="filters.setSelectedTenants"
             @update:show-only-with-activity="(val: boolean) => filters.showOnlyWithActivityTenant.value = val"
             @update:show-only-with-public-meetings="(val: boolean) => filters.showOnlyWithPublicMeetingsTenant.value = val"
             @update:show-duty-members="(val: boolean) => filters.showDutyMembersTenant.value = val"
@@ -49,7 +51,7 @@
       </div>
       <div v-else-if="!isHidden" data-tour="gantt-chart">
         <TimelineGanttChart :institutions="formattedInstitutions" :meetings :gaps
-          :tenant-filter="filters.selectedTenantForGantt.value"
+          :tenant-filter="[]"
           :show-only-with-activity="filters.showOnlyWithActivityTenant.value"
           :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsTenant.value"
           :institution-names :tenant-names :institution-tenant :institution-has-public-meetings
@@ -65,7 +67,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, watch } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import type {
@@ -103,9 +105,12 @@ interface Props {
   institutionPeriodicity?: Record<string | number, number>;
   // Representative activity data for stats and user list
   representativeActivity?: RepresentativeActivityData;
+  showTenantSelector?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  showTenantSelector: true,
+});
 
 // Deferred rendering - wait for next frame after mount to render heavy Gantt chart
 const isReady = ref(false);
@@ -120,23 +125,7 @@ const ganttSettings = useGanttSettings();
 // Get shared filter state
 const filters = useTimelineFilters();
 
-// Check if we actually have data (not just the loaded flag)
-// This handles the case where an Inertia request resets the lazy-loaded props
 const hasData = computed(() => props.tenantInstitutions?.length > 0);
-
-// Watch for data being reset (e.g., by Inertia request) and trigger reload
-watch(
-  () => props.tenantInstitutions,
-  (newValue) => {
-    // If we thought data was loaded but now it's empty/undefined, reload
-    if (filters.tenantInstitutionsLoaded.value && (!newValue || newValue.length === 0)) {
-      // Reset the loaded flag so we can reload
-      filters.tenantInstitutionsLoaded.value = false;
-      // Trigger reload
-      filters.loadTenantInstitutions();
-    }
-  },
-);
 
 const emit = defineEmits<{
   'create-meeting': [payload: { institution_id: string | number; suggestedAt: Date; institutionName?: string }];
@@ -146,33 +135,10 @@ const emit = defineEmits<{
 
 // Format institutions for Gantt component
 const formattedInstitutions = computed(() => {
-  const formatted = props.tenantInstitutions.map(i => ({
-    id: i.id,
-    name: i.name,
-    tenant_id: i.tenant_id,
-  }));
-  return formatted;
+  return props.tenantInstitutions.map(institution => ({ ...institution }));
 });
 
-// Enrich duty members with activity status from representativeActivity
-// This avoids duplicate user loading - we reuse already-loaded activity data
 const enrichedDutyMembers = computed(() => {
-  if (!props.dutyMembers) return [];
-  if (!props.representativeActivity?.users) return props.dutyMembers;
-
-  // Build lookup map from representativeActivity users
-  const activityByUserId = new Map(
-    props.representativeActivity.users.map(u => [u.id, { category: u.category, lastAction: u.last_action }]),
-  );
-
-  // Enrich each duty member's user object with activity data
-  return props.dutyMembers.map(dm => ({
-    ...dm,
-    user: {
-      ...dm.user,
-      activityCategory: activityByUserId.get(dm.user.id)?.category,
-      lastAction: activityByUserId.get(dm.user.id)?.lastAction,
-    },
-  }));
+  return props.dutyMembers ?? [];
 });
 </script>

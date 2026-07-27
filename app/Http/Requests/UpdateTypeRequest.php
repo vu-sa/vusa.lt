@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Type;
+use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -30,7 +31,9 @@ class UpdateTypeRequest extends FormRequest
             // Constrained to the models a Type can actually be attached to —
             // see Type::TYPEABLE_RELATIONS.
             'model_type' => ['required', 'string', Rule::in(array_keys(Type::TYPEABLE_RELATIONS))],
-            'parent_id' => 'nullable|exists:types,id|different:id',
+            // `different:id` was inert — the payload carries no `id` field — so a type
+            // could be set as its own parent. Compare against the route model.
+            'parent_id' => ['nullable', SoftDeleteRules::existsLive('types'), Rule::notIn([$this->type->id])],
             'roles' => 'nullable|array',
             'extra_attributes' => 'nullable|array',
             'extra_attributes.meeting_periodicity_days' => 'nullable|integer|min:1|max:365',

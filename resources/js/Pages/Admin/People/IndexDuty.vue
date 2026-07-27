@@ -26,7 +26,7 @@
 
 <script setup lang="ts">
 import { h, ref, computed } from 'vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 
@@ -56,12 +56,16 @@ const props = defineProps<{
   };
   filters?: Record<string, any>;
   sorting?: { id: string; desc: boolean }[];
+  showDeleted?: boolean;
+  deletedCount?: number;
 }>();
 
 const modelName = 'duties';
 const entityName = 'duty';
 
 const indexTablePageRef = ref<InstanceType<typeof IndexTablePage> | null>(null);
+
+const canForceDelete = computed(() => usePage().props.auth?.can?.forceDelete?.duty ?? false);
 
 // "External" = duties owned by another tenant but assignable to the current
 // user's tenant. Included by default; the toggle drives a `show_external` table filter.
@@ -134,6 +138,9 @@ const columns = computed<Array<ColumnDef<App.Entities.Duty, any>>>(() => [
   createStandardActionsColumn<App.Entities.Duty>('duties', {
     canView: true,
     canEdit: true,
+    canDelete: true,
+    canRestore: true,
+    canForceDelete: canForceDelete.value,
   }),
 ]);
 
@@ -153,6 +160,8 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Duty>>(() => ({
   enableColumnVisibility: false,
   enableRowSelection: false,
   allowToggleDeleted: true,
+  showDeleted: props.showDeleted,
+  deletedCount: props.deletedCount,
 
   headerTitle: capitalize($tChoice('entities.duty.model', 2)),
   icon: DutyIcon,

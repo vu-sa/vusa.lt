@@ -44,6 +44,8 @@ export interface AdvancedTableConfig {
   allowToggleDeleted?: boolean;
   /** Whether to show deleted items initially */
   showDeleted?: boolean;
+  /** Number of soft-deleted items available for the model */
+  deletedCount?: number;
 
   // Row selection
   /** Whether to enable row selection (defaults to false) */
@@ -122,8 +124,6 @@ export interface ServerTableProps<TData> extends
   rowClassName?: (row: TData) => string;
   /** Whether to reload only this component (for Inertia.js optimization, defaults to false) */
   reloadOnly?: boolean;
-  /** Whether to show deleted items initially */
-  showDeleted?: boolean;
 }
 
 /**

@@ -254,7 +254,7 @@ describe('authorized access', function () {
             ->assertStatus(302)
             ->assertSessionHas('info');
 
-        $this->assertDatabaseMissing('study_sets', [
+        $this->assertSoftDeleted('study_sets', [
             'id' => $this->studySet->id,
         ]);
     });

@@ -30,7 +30,6 @@ const institution = {
   image_url: null,
   logo_url: null,
   is_active: true,
-  contacts_layout: 'aside',
   tenant_id: null,
   types: null,
   selection_method: null,

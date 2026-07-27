@@ -3,12 +3,19 @@
 use App\Events\CommentPosted;
 use App\Events\TaskCreated;
 use App\Models\Comment;
+use App\Models\Duty;
+use App\Models\Institution;
+use App\Models\Meeting;
 use App\Models\Pivots\ReservationResource;
 use App\Models\Task;
+use App\Models\Tenant;
 use App\Notifications\CommentPostedNotification;
+use App\Notifications\InstitutionActivityNotification;
+use App\Notifications\MeetingReminderNotification;
 use App\Notifications\ReservationStatusChangedNotification;
 use App\Notifications\TaskAssignedNotification;
 use App\States\ReservationResource\Reserved;
+use App\Tasks\Enums\ActionType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\Feature\Notifications\NotificationTestHelpers;
@@ -72,6 +79,62 @@ describe('task notifications', function () {
         event(new TaskCreated($task));
 
         Notification::assertNothingSent();
+    });
+
+    test('periodicity tasks send one specialized activity notification', function () {
+        $user = $this->createUserWithPreferences();
+        $institution = Institution::factory()->create();
+        $task = Task::factory()->create([
+            'taskable_type' => Institution::class,
+            'taskable_id' => $institution->id,
+            'action_type' => ActionType::PeriodicityGap,
+            'metadata' => ['activity_status' => 'approaching'],
+        ]);
+        $task->users()->attach($user);
+
+        event(new TaskCreated($task));
+
+        Notification::assertSentToTimes($user, InstitutionActivityNotification::class, 1);
+        Notification::assertNotSentTo($user, TaskAssignedNotification::class);
+        Notification::assertSentTo(
+            $user,
+            InstitutionActivityNotification::class,
+            function (InstitutionActivityNotification $notification) use ($user, $institution): bool {
+                $data = $notification->toArray($user);
+
+                return $data['title'] === __('visak.activity.activity_status.approaching')
+                    && str_contains($data['body'], $institution->name)
+                    && count($data['actions']) === 2;
+            }
+        );
+    });
+});
+
+describe('meeting reminder notifications', function () {
+    test('honors a configured reminder hour', function () {
+        $this->travelTo('2025-11-15 10:00:00');
+
+        $tenant = Tenant::query()->first() ?? Tenant::factory()->create();
+        $institution = Institution::factory()->for($tenant)->create();
+        $duty = Duty::factory()->for($institution)->create();
+        $user = $this->createUserWithPreferences();
+        $user->duties()->attach($duty, [
+            'start_date' => now()->subMonth(),
+            'end_date' => null,
+        ]);
+        $user->setMeetingReminderHours([6]);
+
+        Meeting::factory()
+            ->hasAttached($institution)
+            ->create(['start_time' => now()->addHours(6)]);
+
+        $this->artisan('notifications:meeting-reminders')->assertExitCode(0);
+
+        Notification::assertSentTo(
+            $user,
+            MeetingReminderNotification::class,
+            fn (MeetingReminderNotification $notification): bool => str_contains($notification->body($user), '6')
+        );
     });
 });
 

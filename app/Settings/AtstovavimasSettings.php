@@ -129,15 +129,24 @@ class AtstovavimasSettings extends Settings
         $cacheKey = self::getManagerTenantsCacheKey($user->id);
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($user, $roleId) {
+            $directRoleTenantIds = $user->roles()
+                ->where('id', $roleId)
+                ->exists()
+                    ? $user->tenants()->pluck('tenants.id')
+                    : collect();
+
             /** @var \Illuminate\Database\Eloquent\Collection<int, Duty> $duties */
             $duties = $user->current_duties()
                 ->with(['roles', 'institution'])
                 ->get();
 
-            return $duties
+            $dutyTenantIds = $duties
                 ->filter(fn (Duty $duty) => $duty->roles->pluck('id')->contains($roleId))
                 ->map(fn (Duty $duty) => $duty->institution?->tenant_id)
-                ->filter()
+                ->filter();
+
+            return collect($dutyTenantIds->all())
+                ->merge($directRoleTenantIds)
                 ->unique()
                 ->values();
         });

@@ -5,8 +5,8 @@
         v-for="file in data"
         :key="file.id"
         :file
-        :small="true"
-        :show-thumbnail="true"
+        small
+        show-thumbnail
       />
     </div>
     <FilePropertiesDrawer
@@ -27,19 +27,19 @@ import FilePropertiesDrawer from '@/Features/Admin/FileManager/Components/FilePr
 
 const props = defineProps<{
   fileable: {
-    id: number;
+    id: string | number;
     type: string;
   };
 }>();
 
-const selectedFile = ref(null);
+const selectedFile = ref<MyDriveItem | null>(null);
 
 const { data } = await useFetch(
   route('sharepoint.getTypesDriveItems', {
     type: props.fileable.type,
     id: props.fileable.id,
   }),
-).json();
+).json<MyDriveItem[]>();
 
 const handleFileSelect = (file: MyDriveItem) => {
   if (!file.file) {
@@ -65,12 +65,11 @@ const handleFileDblClick = (file: MyDriveItem) => {
   }
 
   if (file.folder) {
+    return;
+  }
 
-  }
-  else {
-    // TODO: use created link, not weburl
-    window.open(file.webUrl, '_blank');
-  }
+  // TODO: use created link, not weburl
+  window.open(file.webUrl, '_blank');
 };
 
 provide('handleFileSelect', handleFileSelect);

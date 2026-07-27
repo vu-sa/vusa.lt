@@ -194,37 +194,29 @@ test('institution page with study program grouping shows grouped sections', func
 });
 
 test('institution page with tenant grouping shows grouped sections', function () {
-    $institution = Institution::factory()->create();
+    $owningTenant = Tenant::where('shortname', 'VU SA')->firstOrFail();
+    $institution = Institution::factory()->create(['tenant_id' => $owningTenant->id]);
 
-    // Create tenants
+    // Create tenants whose admins delegate members into this duty
     $tenant1 = Tenant::factory()->create(['shortname' => 'VU CHGF']);
     $tenant2 = Tenant::factory()->create(['shortname' => 'VU MIF']);
-
-    // Create study programs under different tenants
-    $studyProgram1 = StudyProgram::factory()->create([
-        'name' => 'History',
-        'tenant_id' => $tenant1->id,
-    ]);
-
-    $studyProgram2 = StudyProgram::factory()->create([
-        'name' => 'Computer Science',
-        'tenant_id' => $tenant2->id,
-    ]);
 
     // Create duty with tenant grouping
     $duty = Duty::factory()->create([
         'institution_id' => $institution->id,
         'contacts_grouping' => 'tenant',
-        'name' => ['lt' => 'Dekano atstovai', 'en' => 'Dean Representatives'],
+        'name' => ['lt' => 'Parlamento narys', 'en' => 'Parliament Member'],
     ]);
 
     // Create users
     $user1 = User::factory()->create();
     $user2 = User::factory()->create();
+    $user3 = User::factory()->create();
 
-    // Attach users to duty with study programs from different tenants
-    $duty->users()->attach($user1, ['study_program_id' => $studyProgram1->id, 'start_date' => now()]);
-    $duty->users()->attach($user2, ['study_program_id' => $studyProgram2->id, 'start_date' => now()]);
+    // Attach users: one owning-tenant member (tenant_id null), two cross-tenant reps
+    $duty->users()->attach($user1, ['tenant_id' => null, 'start_date' => now()]);
+    $duty->users()->attach($user2, ['tenant_id' => $tenant1->id, 'start_date' => now()]);
+    $duty->users()->attach($user3, ['tenant_id' => $tenant2->id, 'start_date' => now()]);
 
     $this->get(route('contacts.institution', ['subdomain' => 'www', 'lang' => 'lt', 'institution' => $institution->id]))
         ->assertInertia(fn (Assert $page) => $page
@@ -235,10 +227,42 @@ test('institution page with tenant grouping shows grouped sections', function ()
             ->where('hasMixedGrouping', true)
             ->has('contactSections.0', fn (Assert $page) => $page
                 ->where('type', 'grouped_duty')
-                ->where('dutyName', 'Dekano atstovai')
-                ->has('groups', 2) // Two tenant groups
+                ->where('dutyName', 'Parlamento narys')
+                ->has('groups', 3) // Owning tenant + two cross-tenant groups
+                ->where('groups.0.name', 'VU CHGF')
+                ->where('groups.1.name', 'VU MIF')
+                ->where('groups.2.name', $owningTenant->shortname)
                 ->has('groups.0.contacts', 1)
                 ->has('groups.1.contacts', 1)
+                ->has('groups.2.contacts', 1)
+            )
+        );
+});
+
+test('grouped duty without groupable data renders as flat section', function () {
+    $institution = Institution::factory()->create();
+
+    // Duty wants study program grouping, but members have no study programs attached
+    $duty = Duty::factory()->create([
+        'institution_id' => $institution->id,
+        'contacts_grouping' => 'study_program',
+        'name' => ['lt' => 'Studentų atstovai', 'en' => 'Student Representatives'],
+    ]);
+
+    $duty->users()->attach(User::factory()->create(), ['start_date' => now()]);
+    $duty->users()->attach(User::factory()->create(), ['start_date' => now()]);
+
+    $this->get(route('contacts.institution', ['subdomain' => 'www', 'lang' => 'lt', 'institution' => $institution->id]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Public/Contacts/ShowInstitution')
+            ->missing('contacts')
+            ->where('hasMixedGrouping', true)
+            ->has('contactSections', 1)
+            ->has('contactSections.0', fn (Assert $page) => $page
+                ->where('type', 'flat_duty')
+                ->where('dutyName', 'Studentų atstovai')
+                ->has('contacts', 2)
+                ->missing('groups')
             )
         );
 });

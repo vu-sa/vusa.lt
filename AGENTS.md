@@ -283,6 +283,8 @@ Pick the profile matching the editor that produced the HTML; a too-tight profile
 
 **No raw identifiers in SQL.** Validate request-derived columns against `Schema::hasColumn` and use query-builder methods so the grammar quotes identifiers.
 
+**Account for soft-deleted records when editing backend requests.** When handling a request that references a model (by route-model binding, ID lookup, or relationship), remember that the model may already be soft-deleted. Restore, force-delete, and trash-management flows must use `withTrashed()` on routes, queries, and relationships where the UI needs to access trashed rows; otherwise a legitimate admin action will silently 404 or act on the wrong record. Always keep the same authorization checks for trashed records.
+
 ## Changelog
 
 User-facing changes go in `docs/changelog/index.md` (LT) **and** `docs/en/changelog/index.md` (EN). Skip purely internal changes (deps, refactors).

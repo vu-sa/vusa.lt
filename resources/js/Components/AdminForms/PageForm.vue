@@ -219,7 +219,7 @@ import FormStatusHeader from './FormStatusHeader.vue';
 import PermalinkField from './PermalinkField.vue';
 import SEOPreview from './SEOPreview.vue';
 
-import { translitLithuanian } from '@/Utils/String';
+import { generateSlug } from '@/Utils/String';
 import { Button } from '@/Components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
 import { Input } from '@/Components/ui/input';
@@ -440,14 +440,7 @@ if (isCreate.value) {
   watch(
     () => form.title,
     (title) => {
-      const latinizedTitle = translitLithuanian(String(title || ''));
-      form.permalink = latinizedTitle
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^-+/, '')
-        .replace(/-+$/, '')
-        .substring(0, 30);
+      form.permalink = generateSlug(String(title || ''), 30);
     },
   );
 }

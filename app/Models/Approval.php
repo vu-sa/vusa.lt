@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Models\Activity;
@@ -24,7 +23,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $notes
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activities
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $approvable
  * @property-read User|null $user
@@ -35,17 +33,14 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Approval forStep(int $step)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Approval newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Approval newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Approval onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Approval query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Approval rejected()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Approval withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Approval withoutTrashed()
  *
  * @mixin \Eloquent
  */
 class Approval extends Model
 {
-    use HasFactory, HasUlids, LogsActivity, SoftDeletes;
+    use HasFactory, HasUlids, LogsActivity;
 
     protected $guarded = [];
 

@@ -22,7 +22,7 @@ import FileButton from '@/Features/Admin/SharepointFileManager/Viewer/FileButton
 
 const props = defineProps<{
   file: MyDriveItem;
-  loading: boolean;
+  loading?: boolean;
   small?: boolean;
   showThumbnail: boolean;
 }>();

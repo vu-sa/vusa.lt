@@ -89,6 +89,8 @@ const props = defineProps<{
   sorting?: { id: string; desc: boolean }[];
   categories: App.Entities.ProblemCategory[];
   institutions: App.Entities.Institution[];
+  showDeleted?: boolean;
+  deletedCount?: number;
 }>();
 
 const modelName = 'problems';
@@ -97,6 +99,7 @@ const entityName = 'problem';
 const indexTablePageRef = ref<InstanceType<typeof IndexTablePage> | null>(null);
 
 const canCreate = computed(() => usePage().props.auth?.can?.create?.problem || false);
+const canForceDelete = computed(() => usePage().props.auth?.can?.forceDelete?.problem ?? false);
 
 const selectedStatuses = ref<string[]>(props.filters?.['status'] || []);
 const selectedCategories = ref<number[]>(props.filters?.['category'] || []);
@@ -219,6 +222,7 @@ const columns = computed(() => [
     canEdit: true,
     canDelete: true,
     canRestore: true,
+    canForceDelete: canForceDelete.value,
   }),
 ]) as Array<ColumnDef<App.Entities.Problem, any>>;
 
@@ -234,7 +238,9 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Problem>>(() => ({
   initialSorting: props.sorting?.length ? props.sorting : [{ id: 'occurred_at', desc: true }],
   enableFiltering: true,
   enableColumnVisibility: true,
-  allowToggleDeleted: false,
+  allowToggleDeleted: true,
+  showDeleted: props.showDeleted,
+  deletedCount: props.deletedCount,
   headerTitle: capitalize($tChoice('entities.problem.model', 2)),
   icon: ProblemIcon,
   createRoute: canCreate.value ? route('problems.create') : undefined,

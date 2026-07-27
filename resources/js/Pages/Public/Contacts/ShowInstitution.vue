@@ -184,6 +184,7 @@
                   :key="contact.id"
                   :contact
                   :duties="contact.duties || []"
+                  hide-duty-names
                 />
               </div>
             </div>
@@ -196,6 +197,7 @@
               :key="contact.id"
               :contact
               :duties="contact.duties || []"
+              hide-duty-names
             />
           </div>
         </div>

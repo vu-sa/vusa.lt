@@ -4,10 +4,12 @@ namespace App\Models;
 
 use App\Actions\GetInstitutionManagers;
 use App\Contracts\Commentable;
+use App\Contracts\GuardsForceDelete;
 use App\Contracts\SharepointFileableContract;
 use App\Events\FileableNameUpdated;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Pivots\Trainable;
+use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasContentRelationships;
 use App\Models\Traits\HasSharepointFiles;
@@ -49,7 +51,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property int|null $tenant_id
  * @property int $is_active
  * @property int $meeting_periodicity_days
- * @property string $contacts_layout
  * @property string|null $selection_method
  * @property array|string|null $appointed_by
  * @property array|string|null $term_length
@@ -66,6 +67,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Duty> $duties
  * @property-read Collection<int, FileableFile> $fileableFiles
  * @property-read Collection<int, User> $followers
+ * @property-read string|null $force_delete_blocked_reason
  * @property-read bool $has_protocol
  * @property-read bool $has_public_meetings
  * @property-read bool $has_report
@@ -101,9 +103,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
-class Institution extends Model implements Commentable, SharepointFileableContract
+class Institution extends Model implements Commentable, GuardsForceDelete, SharepointFileableContract
 {
-    use HasComments, HasContentRelationships, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsActivity, Searchable, SoftDeletes;
+    use GuardsForceDeleteWhenReferenced, HasComments, HasContentRelationships, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsActivity, Searchable, SoftDeletes;
 
     protected $guarded = [];
 
@@ -158,7 +160,10 @@ class Institution extends Model implements Commentable, SharepointFileableContra
         return $this->hasMany(Document::class);
     }
 
-    public function checkIns()
+    /**
+     * @return HasMany<InstitutionCheckIn, $this>
+     */
+    public function checkIns(): HasMany
     {
         return $this->hasMany(InstitutionCheckIn::class);
     }
@@ -306,6 +311,35 @@ class Institution extends Model implements Commentable, SharepointFileableContra
                 FileableNameUpdated::dispatch($institution);
             }
         });
+
+        static::deleted(function (Institution $institution) {
+            $institution->publicSearchModel()->unsearchable();
+        });
+
+        // Duty::toSearchableArray() derives tenant_ids from its institution, so the
+        // duties have to be reindexed when the institution's visibility changes.
+        static::deleted(fn (Institution $institution) => $institution->reindexDuties());
+        static::restored(fn (Institution $institution) => $institution->reindexDuties());
+
+        static::forceDeleted(function (Institution $institution) {
+            $institution->publicSearchModel()->unsearchable();
+        });
+
+        static::restored(function (Institution $institution) {
+            $publicInstitution = PublicInstitution::query()->find($institution->getKey());
+
+            if ($publicInstitution?->shouldBeSearchable()) {
+                $publicInstitution->searchable();
+            }
+        });
+    }
+
+    private function publicSearchModel(): PublicInstitution
+    {
+        $publicInstitution = new PublicInstitution;
+        $publicInstitution->setAttribute($publicInstitution->getKeyName(), $this->getKey());
+
+        return $publicInstitution;
     }
 
     public function getMaybeShortNameAttribute()
@@ -366,5 +400,30 @@ class Institution extends Model implements Commentable, SharepointFileableContra
     public function availableTrainings()
     {
         return $this->morphToMany(Training::class, 'trainable')->using(Trainable::class);
+    }
+
+    /**
+     * Meetings, trainings, check-ins and the primary-institution link all restrict
+     * deletes, and `duties.institution_id` carries no foreign key at all — permanently
+     * deleting would silently orphan every duty of this institution.
+     */
+    public function forceDeleteBlockedReason(): ?string
+    {
+        return $this->forceDeleteReasonFor([
+            'entities.meeting.model' => $this->countedRelation('meetings'),
+            'entities.duty.model' => $this->countedRelation('duties'),
+            'entities.training.model' => $this->countedRelation('availableTrainings'),
+            'trash.blockers.check_ins' => $this->countedRelation('checkIns'),
+            'trash.blockers.primary_institution_of_tenant' => Tenant::query()->where('primary_institution_id', $this->id)->count(),
+        ]);
+    }
+
+    /**
+     * Refresh the search documents of this institution's duties, whose indexed
+     * tenant scope is derived from it.
+     */
+    protected function reindexDuties(): void
+    {
+        $this->duties()->withTrashed()->get()->each->searchable();
     }
 }

@@ -460,7 +460,7 @@ class RelationshipService
                     'meetings.agendaItems.votes:id,agenda_item_id,title,decision,student_vote,student_benefit,is_main',
                     'meetings.fileableFiles:id,fileable_id,fileable_type,file_type,deleted_externally_at',
                     'tenant:id,shortname',
-                    'duties.users:id,name,email,profile_photo_path',
+                    'duties.users:id,name,profile_photo_path,last_action',
                     'duties.types:id,title,slug',
                     'checkIns',
                 ])
@@ -476,8 +476,9 @@ class RelationshipService
                     'meetings:id,title,start_time,type', // Meetings for Gantt display, but no agenda items
                     'meetings.fileableFiles:id,fileable_id,fileable_type,file_type,deleted_externally_at',
                     'tenant:id,shortname',
-                    'duties.users:id,name,email,profile_photo_path',
+                    'duties.users:id,name,profile_photo_path,last_action',
                     'duties.types:id,title,slug',
+                    'checkIns',
                 ])
                 ->get();
             $loadedInstitutions = $loadedInstitutions->merge($unauthorizedInstitutions);

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Tenant;
+use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -30,7 +31,7 @@ class StoreTenantRequest extends FormRequest
             'type' => 'required|in:pagrindinis,padalinys,pkp',
             'alias' => 'nullable|unique:tenants,alias',
             'shortname_vu' => 'nullable|unique:tenants,shortname_vu',
-            'primary_institution_id' => 'nullable|exists:institutions,id',
+            'primary_institution_id' => ['nullable', SoftDeleteRules::existsLive('institutions')],
         ];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\UniqueAmongTrashed;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -29,7 +30,7 @@ class UpdateCategoryRequest extends FormRequest
             'name.en' => 'required|string|max:255',
             'description.lt' => 'nullable|string',
             'description.en' => 'nullable|string',
-            'alias' => 'nullable|string|max:255|unique:categories,alias,'.$categoryId,
+            'alias' => ['nullable', 'string', 'max:255', UniqueAmongTrashed::of('categories', 'alias')->ignore($categoryId)],
         ];
     }
 }

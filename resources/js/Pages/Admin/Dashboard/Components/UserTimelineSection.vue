@@ -6,15 +6,13 @@
       </h2>
       <div class="flex items-center gap-2">
         <GanttFilterDropdown
-          :tenants="filters.availableTenantsUser.value"
-          :selected-tenants="filters.userTenantFilter.value"
           :show-only-with-activity="filters.showOnlyWithActivityUser.value"
           :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsUser.value"
           :show-duty-members="filters.showDutyMembersUser.value"
           :show-tenant-headers="ganttSettings.showTenantHeaders.value"
           :show-related-institutions="filters.showRelatedInstitutionsUser.value"
           :has-related-institutions
-          @update:selected-tenants="(val: string[]) => filters.userTenantFilter.value = val"
+          :trigger-label-override="$t('Rodymo nustatymai')"
           @update:show-only-with-activity="(val: boolean) => filters.showOnlyWithActivityUser.value = val"
           @update:show-only-with-public-meetings="(val: boolean) => filters.showOnlyWithPublicMeetingsUser.value = val"
           @update:show-duty-members="(val: boolean) => filters.showDutyMembersUser.value = val"
@@ -28,12 +26,13 @@
     <!-- Deferred Gantt chart rendering for better initial load performance -->
     <TimelineGanttSkeleton v-if="!isReady" />
     <TimelineGanttChart v-else :institutions="formattedInstitutions" :meetings="allMeetings" :gaps
-      :tenant-filter="filters.userTenantFilter.value"
+      :tenant-filter="[]"
       :show-only-with-activity="filters.showOnlyWithActivityUser.value"
       :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsUser.value"
       :institution-names="allInstitutionNames" :tenant-names :institution-tenant="allInstitutionTenant" :institution-has-public-meetings="allInstitutionHasPublicMeetings"
       :institution-periodicity="allInstitutionPeriodicity"
-      :duty-members :inactive-periods :show-duty-members="filters.showDutyMembersUser.value" :day-width="dayWidthPx"
+      :duty-members="mergedDutyMembers" :inactive-periods="mergedInactivePeriods"
+      :show-duty-members="filters.showDutyMembersUser.value" :day-width="dayWidthPx"
       :empty-message="$t('Neturi tiesiogiai priskirtų institucijų')" @create-meeting="$emit('create-meeting', $event)"
       @create-check-in="$emit('create-check-in', $event)"
       @fullscreen="$emit('fullscreen')" @update:day-width="emit('update:dayWidth', $event)" />
@@ -136,8 +135,8 @@ const baseInstitutionPeriodicityRef = computed(() => props.institutionPeriodicit
 const {
   mergedInstitutions: formattedInstitutions,
   mergedMeetings: allMeetings,
-  mergedDutyMembers: dutyMembers,
-  mergedInactivePeriods: inactivePeriods,
+  mergedDutyMembers,
+  mergedInactivePeriods,
   mergedInstitutionNames: allInstitutionNames,
   mergedInstitutionTenant: allInstitutionTenant,
   mergedInstitutionHasPublicMeetings: allInstitutionHasPublicMeetings,

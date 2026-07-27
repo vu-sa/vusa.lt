@@ -54,7 +54,6 @@ class FormField extends Model
     ];
 
     protected $fillable = [
-        'id',
         'label',
         'description',
         'type',

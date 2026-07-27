@@ -17,7 +17,7 @@
 import { h, ref, computed } from 'vue';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { Info } from 'lucide-vue-next';
 
 import { Badge } from '@/Components/ui/badge';
@@ -54,12 +54,16 @@ const props = defineProps<{
   filters?: Record<string, any>;
   sorting?: { id: string; desc: boolean }[];
   activeReservations: Array<App.Entities.Reservation>;
+  showDeleted?: boolean;
+  deletedCount?: number;
 }>();
 
 const modelName = 'reservations';
 const entityName = 'reservation';
 
 const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
+
+const canForceDelete = computed(() => usePage().props.auth?.can?.forceDelete?.reservation ?? false);
 
 const getRowId = (row: App.Entities.Reservation) => {
   return `reservation-${row.id}`;
@@ -154,6 +158,8 @@ const columns = computed<Array<ColumnDef<App.Entities.Reservation, any>>>(() => 
   },
   createStandardActionsColumn<App.Entities.Reservation>('reservations', {
     canView: true,
+    canRestore: true,
+    canForceDelete: canForceDelete.value,
   }),
 ]);
 
@@ -174,6 +180,8 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Reservation>>(
     enableColumnVisibility: false,
     enableRowSelection: false,
     allowToggleDeleted: true,
+    showDeleted: props.showDeleted,
+    deletedCount: props.deletedCount,
 
     headerTitle: capitalize($tChoice('entities.reservation.model', 2)),
     icon: ReservationIcon,

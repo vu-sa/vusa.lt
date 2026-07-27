@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\SoftDeleteRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 class MergeTagsRequest extends FormRequest
@@ -20,9 +21,9 @@ class MergeTagsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'target_tag_id' => 'required|integer|exists:tags,id',
+            'target_tag_id' => ['required', 'integer', SoftDeleteRules::existsLive('tags')],
             'source_tag_ids' => 'required|array|min:1',
-            'source_tag_ids.*' => 'integer|exists:tags,id',
+            'source_tag_ids.*' => ['integer', SoftDeleteRules::existsLive('tags')],
         ];
     }
 

@@ -24,6 +24,21 @@ class ContactPresentationService
                 $groups = $this->groupContactsByDuty($duty, $duty->contacts_grouping);
 
                 if (! empty($groups)) {
+                    // If every contact fell into the fallback group, the grouping
+                    // carries no information — render the duty flat instead.
+                    if (count($groups) === 1 && array_key_first($groups) === $this->fallbackGroupName()) {
+                        $result[] = [
+                            'type' => 'flat_duty',
+                            'dutyName' => $duty->name,
+                            'duty' => $duty,
+                            'contacts' => collect($groups[$this->fallbackGroupName()])
+                                ->map(fn ($item) => ['user' => $item['user'], 'duty' => $item['duty']])
+                                ->all(),
+                        ];
+
+                        continue;
+                    }
+
                     $transformedGroups = [];
                     foreach ($groups as $groupName => $contacts) {
                         $transformedGroups[] = [
@@ -64,17 +79,21 @@ class ContactPresentationService
     /**
      * Group contacts for a single duty by study program or tenant.
      *
-     * @param  Duty  $duty
      * @return array<string, array<int, array<string, mixed>>>
      */
-    public function groupContactsByDuty($duty, string $groupingType): array
+    public function groupContactsByDuty(Duty $duty, string $groupingType): array
     {
         $groups = [];
 
         $users = $duty->current_users->load([
             'dutiables' => function ($query) use ($duty) {
+                // Only active rows drive grouping, mirroring current_users semantics —
+                // otherwise a member's ended row could win over their current one.
                 $query->where('duty_id', $duty->id)
-                    ->with(['study_program.tenant']);
+                    ->where(function ($q) {
+                        $q->whereNull('end_date')->orWhere('end_date', '>=', now());
+                    })
+                    ->with(['study_program.tenant', 'tenant']);
             },
         ]);
 
@@ -85,7 +104,7 @@ class ContactPresentationService
                 continue;
             }
 
-            $groupKey = $this->getGroupKey($dutiable, $groupingType);
+            $groupKey = $this->getGroupKey($dutiable, $groupingType, $duty);
 
             if (! isset($groups[$groupKey])) {
                 $groups[$groupKey] = [];
@@ -98,13 +117,14 @@ class ContactPresentationService
             ];
         }
 
-        // Sort groups: named groups first (alphabetically), then "Other"
-        uksort($groups, function ($a, $b) {
-            if ($a === 'Other') {
+        // Sort groups: named groups first (alphabetically), then the fallback group
+        $fallback = $this->fallbackGroupName();
+        uksort($groups, function ($a, $b) use ($fallback) {
+            if ($a === $fallback) {
                 return 1;
             }
 
-            if ($b === 'Other') {
+            if ($b === $fallback) {
                 return -1;
             }
 
@@ -116,23 +136,33 @@ class ContactPresentationService
 
     /**
      * Get the group key based on grouping type.
-     *
-     * @param  Dutiable  $dutiable
      */
-    public function getGroupKey($dutiable, string $groupingType): string
+    public function getGroupKey(Dutiable $dutiable, string $groupingType, ?Duty $duty = null): string
     {
         switch ($groupingType) {
             case 'study_program':
-                return $dutiable->study_program ? $dutiable->study_program->name : 'Other';
+                return $dutiable->study_program
+                    ? $dutiable->study_program->name
+                    : $this->fallbackGroupName();
 
             case 'tenant':
-                return $dutiable->study_program
-                    ? $dutiable->study_program->tenant->shortname
-                    : 'Other';
+                // The padalinys the member represents: the cross-tenant assignment
+                // (dutiables.tenant_id), or the duty's own tenant when null.
+                return $dutiable->tenant?->shortname // @phpstan-ignore nullsafe.neverNull
+                    ?? $duty?->loadMissing('institution.tenant')->institution?->tenant?->shortname // @phpstan-ignore nullsafe.neverNull
+                    ?? $this->fallbackGroupName();
 
             default:
-                return 'Other';
+                return $this->fallbackGroupName();
         }
+    }
+
+    /**
+     * Name of the group for contacts that cannot be grouped (translated).
+     */
+    private function fallbackGroupName(): string
+    {
+        return __('Kita');
     }
 
     /**

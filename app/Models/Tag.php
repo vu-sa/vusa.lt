@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
@@ -17,6 +18,7 @@ use Illuminate\Support\Str;
  * @property Carbon $updated_at
  * @property array|string|null $name
  * @property array|string|null $description
+ * @property Carbon|null $deleted_at
  * @property-read array $translatable_columns_from
  * @property-read Collection<int, News> $news
  * @property-read mixed $translations
@@ -24,17 +26,20 @@ use Illuminate\Support\Str;
  * @method static \Database\Factories\TagFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag whereLocale(string $column, string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag whereLocales(string $column, array $locales)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag withoutTrashed()
  *
  * @mixin \Eloquent
  */
 class Tag extends Model
 {
-    use HasFactory, HasTranslations;
+    use HasFactory, HasTranslations, SoftDeletes;
 
     public $translatable = ['name', 'description'];
 
@@ -55,8 +60,14 @@ class Tag extends Model
             }
         });
 
-        // When a tag is being deleted, detach it from all related news and pages
-        static::deleting(function ($tag) {
+        // posts_tags.tag_id restricts deletes, so detaching is what makes permanent
+        // deletion possible — but on a soft delete it would strip the tag from every
+        // article with no way to put it back, leaving restore to return an empty tag.
+        static::deleting(function (Tag $tag) {
+            if (! $tag->isForceDeleting()) {
+                return;
+            }
+
             $tag->news()->detach();
             // Future: detach from pages when implemented
             // $tag->pages()->detach();
@@ -96,7 +107,9 @@ class Tag extends Model
         $alias = $baseAlias;
         $counter = 1;
 
-        while (static::where('alias', $alias)->where('id', '!=', $this->id ?? 0)->exists()) {
+        // Trashed tags are included: a restored tag must not come back sharing an
+        // alias with a tag created while it was in the trash.
+        while (static::withTrashed()->where('alias', $alias)->where('id', '!=', $this->id ?? 0)->exists()) {
             $alias = $baseAlias.'-'.$counter;
             $counter++;
         }

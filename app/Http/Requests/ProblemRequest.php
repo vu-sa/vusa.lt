@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -24,14 +25,14 @@ class ProblemRequest extends FormRequest
             'steps_taken.lt' => 'nullable|string',
             'steps_taken.en' => 'nullable|string',
             'tenant_id' => 'required|integer|exists:tenants,id',
-            'responsible_user_id' => 'nullable|string|exists:users,id',
+            'responsible_user_id' => ['nullable', 'string', SoftDeleteRules::existsLive('users')],
             'occurred_at' => 'required|date',
             'resolved_at' => 'nullable|date|after_or_equal:occurred_at',
             'status' => 'required|string|in:open,in_progress,resolved',
             'categories' => 'nullable|array',
             'categories.*' => 'integer|exists:problem_categories,id',
             'institutions' => 'nullable|array',
-            'institutions.*' => 'string|exists:institutions,id',
+            'institutions.*' => ['string', SoftDeleteRules::existsLive('institutions')],
         ];
     }
 

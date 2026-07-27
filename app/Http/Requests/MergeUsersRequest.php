@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\User;
+use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -25,8 +26,8 @@ class MergeUsersRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'kept_user_id' => 'required|ulid|exists:users,id',
-            'merged_user_id' => 'required|ulid|different:kept_user_id|exists:users,id',
+            'kept_user_id' => ['required', 'ulid', SoftDeleteRules::existsLive('users')],
+            'merged_user_id' => ['required', 'ulid', 'different:kept_user_id', SoftDeleteRules::existsLive('users')],
         ];
     }
 }

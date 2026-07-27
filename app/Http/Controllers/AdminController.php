@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\User;
 use App\Services\Permissions\AccessChangeAnalyzer;
 use App\Services\Permissions\AccessChangeReport;
+use App\Services\Permissions\PermissionMapBuilder;
 use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -180,8 +182,8 @@ abstract class AdminController extends Controller
      */
     private function forgetActorPermissionMaps(User $actor): void
     {
-        Cache::forget('index-permissions-'.$actor->id);
-        Cache::forget('create-permissions-'.$actor->id);
+        PermissionMapBuilder::forgetCachedMaps($actor->id);
+        Cache::forget(HandleInertiaRequests::registrationFormsCacheKey($actor->id));
     }
 
     /**

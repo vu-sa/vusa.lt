@@ -84,4 +84,26 @@ describe('NavQuickActions', () => {
     const btn = wrapper.find('button[type="button"]');
     expect(btn.exists()).toBe(true);
   });
+
+  it.each([
+    ['newMeeting', 'Naujas susitikimas'],
+    ['newNews', 'Nauja naujiena'],
+    ['newReservation', 'Nauja rezervacija'],
+  ])('emits "%s" event when "%s" quick action is clicked', async (eventName, title) => {
+    const wrapper = mount(harness(defineComponent({
+      components: { NavQuickActions },
+      template: '<NavQuickActions />',
+    })), {
+      global: { stubs: { ...commonStubs, ...sidebarStubs } },
+    });
+
+    const navQuickActions = wrapper.findComponent(NavQuickActions);
+    const actionItem = wrapper.findAll('li').find(item => item.text().includes(title));
+
+    expect(actionItem).toBeDefined();
+
+    await actionItem!.find('div').trigger('click');
+
+    expect(navQuickActions.emitted(eventName)).toHaveLength(1);
+  });
 });

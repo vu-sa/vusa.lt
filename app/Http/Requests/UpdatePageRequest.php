@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use App\Enums\ContentPartEnum;
+use App\Rules\SoftDeleteRules;
+use App\Rules\UniqueAmongTrashed;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -33,8 +35,11 @@ class UpdatePageRequest extends FormRequest
             'content.parts.*.options' => 'nullable',
             'content.parts.*.order' => 'nullable|integer',
             'lang' => 'required|string|in:lt,en',
-            'category_id' => 'nullable|exists:categories,id',
-            'other_lang_id' => 'nullable|exists:pages,id|different:id',
+            'permalink' => ['sometimes', 'required', 'string', 'max:255', UniqueAmongTrashed::of('pages')->ignore($this->page->id)],
+            'category_id' => ['nullable', SoftDeleteRules::existsLive('categories')],
+            // `different:id` was inert — the payload has no `id` field — so a page
+            // could be paired with itself. Compare against the route model instead.
+            'other_lang_id' => ['nullable', SoftDeleteRules::existsLive('pages'), Rule::notIn([$this->page->id])],
             'is_active' => 'required|boolean',
             'layout' => 'nullable|string|in:default,wide,focused',
         ];

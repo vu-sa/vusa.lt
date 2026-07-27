@@ -70,8 +70,9 @@ class ModelPolicy
 
     /**
      * Standard forceDelete method for soft-deletable models.
-     * This is restricted by default for most models.
-     * Override in child classes when needed.
+     *
+     * Permanent deletion is gated by its own `{resource}.forceDelete.{scope}` permission,
+     * which is seeded only for soft-deletable models and never at the "own" scope.
      *
      * @param  User  $user  The user performing the action
      * @param  Model  $model  The model being force-deleted
@@ -79,6 +80,6 @@ class ModelPolicy
      */
     public function forceDelete(User $user, Model $model): bool
     {
-        return false;
+        return $this->commonChecker($user, $model, CRUDEnum::FORCE_DELETE()->label, $this->pluralModelName, $this->hasManyTenants);
     }
 }

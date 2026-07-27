@@ -168,7 +168,7 @@ describe('authorized access', function () {
         $response->assertStatus(302);
 
         // Check that the study program is deleted
-        $this->assertDatabaseMissing('study_programs', ['id' => $programId]);
+        $this->assertSoftDeleted('study_programs', ['id' => $programId]);
     });
 
     test('can access merge study programs page', function () {
@@ -327,7 +327,7 @@ describe('merge functionality', function () {
         $response->assertRedirect();
 
         // Verify source program was deleted (main goal of merge operation)
-        $this->assertDatabaseMissing('study_programs', ['id' => $originalSourceId]);
+        $this->assertSoftDeleted('study_programs', ['id' => $originalSourceId]);
 
         // Verify dutiable was migrated to target program
         $dutiable->refresh();

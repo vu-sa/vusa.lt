@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\SoftDeleteRules;
 use App\Settings\SettingsSettings;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -24,10 +25,10 @@ class UpdateFormSettingsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'member_registration_form_id' => 'required|ulid|exists:forms,id',
-            'student_rep_registration_form_id' => 'nullable|ulid|exists:forms,id',
+            'member_registration_form_id' => ['required', 'ulid', SoftDeleteRules::existsLive('forms')],
+            'student_rep_registration_form_id' => ['nullable', 'ulid', SoftDeleteRules::existsLive('forms')],
             'student_rep_institution_type_ids' => 'nullable|array',
-            'student_rep_institution_type_ids.*' => 'integer|exists:types,id',
+            'student_rep_institution_type_ids.*' => ['integer', SoftDeleteRules::existsLive('types')],
         ];
     }
 }

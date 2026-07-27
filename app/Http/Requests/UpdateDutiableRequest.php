@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\SoftDeleteRules;
 use Carbon\Carbon;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -44,7 +45,7 @@ class UpdateDutiableRequest extends FormRequest
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after:start_date',
             'description' => 'nullable|array',
-            'study_program_id' => 'nullable|ulid|exists:study_programs,id',
+            'study_program_id' => ['nullable', 'ulid', SoftDeleteRules::existsLive('study_programs')],
             'additional_email' => 'nullable|email',
             'additional_photo' => 'nullable|string',
             'additional_photo_focal_point' => 'nullable|string|max:20',

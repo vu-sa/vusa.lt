@@ -7,6 +7,7 @@ use App\Http\Requests\IndexTagRequest;
 use App\Http\Requests\MergeTagsRequest;
 use App\Http\Requests\StoreTagRequest;
 use App\Http\Requests\UpdateTagRequest;
+use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\News;
 use App\Models\Tag;
@@ -17,7 +18,7 @@ use Inertia\Response;
 
 class TagController extends AdminController
 {
-    use HasTanstackTables;
+    use HandlesSoftDeletes, HasTanstackTables;
 
     public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
@@ -46,6 +47,8 @@ class TagController extends AdminController
         );
 
         // Paginate results
+        $deletedCount = $this->getTrashedCount($query);
+
         $tags = $query->paginate($request->input('per_page', 20))
             ->withQueryString();
 
@@ -70,6 +73,8 @@ class TagController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $sorting,
+            'showDeleted' => $request->boolean('showDeleted', false),
+            'deletedCount' => $deletedCount,
             'initialSorting' => $sorting,
         ]);
     }
@@ -216,5 +221,15 @@ class TagController extends AdminController
 
         return to_route('tags.index')
             ->with('success', __('Tag deleted successfully'));
+    }
+
+    public function restore(Tag $tag): RedirectResponse
+    {
+        return $this->restoreModel($tag);
+    }
+
+    public function forceDelete(Tag $tag): RedirectResponse
+    {
+        return $this->forceDeleteModel($tag);
     }
 }

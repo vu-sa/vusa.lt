@@ -2,10 +2,12 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Form;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Permissions\PermissionMapBuilder;
 use App\Services\Typesense\TypesenseManager;
+use App\Settings\FormSettings;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -59,6 +61,7 @@ class HandleInertiaRequests extends Middleware
                 'can' => fn () => [
                     'index' => fn () => $this->getIndexPermissions($user),
                     'create' => fn () => $this->getCreatePermissions($user),
+                    'forceDelete' => fn () => $this->getForceDeletePermissions($user),
                     'manageSettings' => fn () => $user->can('manage-settings'),
                     'accessAdministration' => fn () => $user->can('access-administration'),
                 ],
@@ -71,6 +74,7 @@ class HandleInertiaRequests extends Middleware
                     'ui_preferences' => $user->ui_preferences ?? [],
                 ],
                 'impersonating' => fn () => $this->getImpersonationState($request),
+                'registrationForms' => fn () => $this->getViewableRegistrationForms($user),
             ],
             'csrf_token' => fn () => csrf_token(),
             // 'flash' is used in the admin navigation to show only the allowed pages
@@ -149,7 +153,7 @@ class HandleInertiaRequests extends Middleware
      */
     private function getIndexPermissions(User $user): array
     {
-        return Cache::remember('index-permissions-'.$user->id, 1800,
+        return Cache::remember(PermissionMapBuilder::INDEX_CACHE_PREFIX.$user->id, 1800,
             fn () => app(PermissionMapBuilder::class)->indexMap($user)
         );
     }
@@ -159,8 +163,54 @@ class HandleInertiaRequests extends Middleware
      */
     private function getCreatePermissions(User $user): array
     {
-        return Cache::remember('create-permissions-'.$user->id, 1800,
+        return Cache::remember(PermissionMapBuilder::CREATE_CACHE_PREFIX.$user->id, 1800,
             fn () => app(PermissionMapBuilder::class)->createMap($user)
         );
+    }
+
+    /**
+     * @return array<string, bool>
+     */
+    private function getForceDeletePermissions(User $user): array
+    {
+        return Cache::remember(PermissionMapBuilder::FORCE_DELETE_CACHE_PREFIX.$user->id, 1800,
+            fn () => app(PermissionMapBuilder::class)->forceDeleteMap($user)
+        );
+    }
+
+    /**
+     * The member and student rep registration forms, but only when this user may open them.
+     *
+     * The sidebar links straight to these two forms, so the ids are filtered through the
+     * policy here — a link is never shown for a form that would then respond with 403.
+     *
+     * @return array{member: string|null, studentRep: string|null}
+     */
+    private function getViewableRegistrationForms(User $user): array
+    {
+        return Cache::remember(self::registrationFormsCacheKey($user->id), 1800, function () use ($user) {
+            $settings = app(FormSettings::class);
+
+            return [
+                'member' => $this->formIdIfViewable($user, $settings->member_registration_form_id),
+                'studentRep' => $this->formIdIfViewable($user, $settings->student_rep_registration_form_id),
+            ];
+        });
+    }
+
+    private function formIdIfViewable(User $user, ?string $formId): ?string
+    {
+        if (! $formId) {
+            return null;
+        }
+
+        $form = Form::find($formId);
+
+        return $form && $user->can('view', $form) ? $form->id : null;
+    }
+
+    public static function registrationFormsCacheKey(string $userId): string
+    {
+        return 'registration-forms-'.$userId;
     }
 }

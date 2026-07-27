@@ -6,7 +6,7 @@
     <ShowPageHero
       flat
       :title="institution.name"
-      :subtitle="institution.short_name"
+      :subtitle="institution.short_name ?? undefined"
     >
       <template #icon>
         <InstitutionIconFilled class="h-6 w-6 sm:h-7 sm:w-7 text-zinc-600 dark:text-zinc-300" />
@@ -23,7 +23,7 @@
       <template #info>
         <div v-if="institution.managers?.length > 0" class="flex items-center gap-2">
           <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('Vadovai') }}:</span>
-          <UsersAvatarGroup :users="institution.managers" :max="3" :size="24" />
+          <UsersAvatarGroup :users="institution.managers ?? []" :max="3" :size="24" />
         </div>
       </template>
       <template #actions>
@@ -127,6 +127,7 @@
           :can-edit-members="canManageMembers"
           @navigate-tab="navigateToTab"
           @schedule-meeting="showMeetingModal = true"
+          @report-activity="showCheckInModal = true"
           @add-member="showAddMemberModal = true"
           @view-profile="handleViewProfile"
           @edit-member="handleEditMember"
@@ -265,13 +266,13 @@
             </div>
           </template>
         </Suspense>
-        <FileManager :starting-path="institution.sharepointPath" :fileable="{ id: institution.id, type: 'Institution' }" />
+        <FileManager :starting-path="institution.sharepointPath ?? undefined" :fileable="{ id: institution.id, type: 'Institution' }" />
       </TabsContent>
 
       <!-- Tasks Tab -->
       <TabsContent value="tasks" class="space-y-6">
         <TaskManager
-          :tasks="institution.allTasks"
+          :tasks="taskManagerTasks"
           :taskable="{ id: institution.id, type: 'App\\Models\\Institution' }"
         />
       </TabsContent>
@@ -282,12 +283,12 @@
       </TabsContent>
 
       <TabsContent value="related" class="space-y-6">
-        <RelatedInstitutions :institution />
+        <RelatedInstitutions :institution="legacyInstitution" />
       </TabsContent>
     </Tabs>
 
     <!-- Modals -->
-    <NewMeetingDialog v-if="showMeetingModal" :show-modal="showMeetingModal" :institution
+    <NewMeetingDialog v-if="showMeetingModal" :show-modal="showMeetingModal" :institution="legacyInstitution"
       @close="showMeetingModal = false" />
 
     <AddCheckInDialog v-if="showCheckInModal" :open="showCheckInModal" :institution-id="institution.id"
@@ -329,6 +330,7 @@ import MeetingOutcomeIndicators from '@/Components/Public/Search/MeetingOutcomeI
 import InstitutionOverviewSection from '@/Components/Institutions/InstitutionOverviewSection.vue';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 import { DutySummaryCard } from '@/Components/Duties';
+import type { InstitutionPageData, InstitutionPageMeeting } from '@/Types/InstitutionPage';
 
 // UI Components
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
@@ -344,14 +346,26 @@ import { useInstitutionSubscription } from '@/Pages/Admin/Dashboard/Composables/
 import { useShowPageData } from '@/Composables/useShowPageData';
 import { InstitutionIconFilled } from '@/Components/icons';
 
+const page = usePage();
+const permissions = computed(
+  () => page.props.auth?.can as Record<string, boolean> | undefined,
+);
+
 const props = defineProps<{
-  institution: App.Entities.Institution;
+  institution: InstitutionPageData;
   subscription?: {
     is_followed: boolean;
     is_muted: boolean;
     is_duty_based: boolean;
   } | null;
 }>();
+
+const legacyInstitution = computed(
+  () => props.institution as unknown as App.Entities.Institution,
+);
+const taskManagerTasks = computed(
+  () => props.institution.allTasks as unknown as InstanceType<typeof TaskManager>['$props']['tasks'],
+);
 
 // State - use shared composable for tab persistence and deferred rendering
 const { currentTab, navigateToTab } = useShowPageData({
@@ -360,8 +374,9 @@ const { currentTab, navigateToTab } = useShowPageData({
   defaultTab: 'overview',
 });
 
-const showMeetingModal = ref(false);
-const showCheckInModal = ref(false);
+const activityAction = new URLSearchParams(page.url.split('?')[1] ?? '').get('activityAction');
+const showMeetingModal = ref(activityAction === 'register-meeting');
+const showCheckInModal = ref(activityAction === 'report-activity');
 const showAddMemberModal = ref(false);
 
 // Subscription state
@@ -442,21 +457,20 @@ const primaryType = computed(() => {
 });
 
 // Permissions
-const page = usePage();
 const canScheduleMeeting = computed(() => {
-  return page.props.auth?.can?.['meetings.create.padalinys'] || false;
+  return permissions.value?.['meetings.create.padalinys'] ?? false;
 });
 
 const canAddCheckIn = computed(() => {
-  return page.props.auth?.can?.['institution_check_ins.create.padalinys'] || false;
+  return permissions.value?.['institution_check_ins.create.padalinys'] ?? false;
 });
 
 const canManageMembers = computed(() => {
-  return page.props.auth?.can?.['institutions.update.padalinys'] || false;
+  return permissions.value?.['institutions.update.padalinys'] ?? false;
 });
 
 const canDeleteMeetings = computed(() => {
-  return page.props.auth?.can?.['meetings.delete.padalinys'] || false;
+  return permissions.value?.['meetings.delete.padalinys'] ?? false;
 });
 
 // Event handlers
@@ -468,7 +482,7 @@ const handleEditMember = (member: App.Entities.User) => {
   router.visit(route('users.edit', member.id));
 };
 
-const handleDeleteMeeting = (meeting: App.Entities.Meeting) => {
+const handleDeleteMeeting = (meeting: InstitutionPageMeeting) => {
   if (confirm($t('Ar tikrai norite ištrinti šį susitikimą?'))) {
     router.delete(route('meetings.destroy', meeting.id));
   }

@@ -7,6 +7,7 @@ use App\Models\Task;
 use App\Models\User;
 use App\Tasks\DTOs\CreateTaskData;
 use App\Tasks\Enums\ActionType;
+use App\ValueObjects\InstitutionActivityStatusData;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -32,7 +33,8 @@ class PeriodicityGapTaskHandler extends BaseTaskHandler
     public function findOrCreate(
         Institution $institution,
         Collection $users,
-        Carbon $dueDate
+        Carbon $dueDate,
+        ?InstitutionActivityStatusData $activityStatus = null,
     ): Task {
         $existingTask = $this->findExistingTask($institution);
 
@@ -51,6 +53,8 @@ class PeriodicityGapTaskHandler extends BaseTaskHandler
             actionType: ActionType::PeriodicityGap,
             metadata: [
                 'periodicity_days' => $institution->meeting_periodicity_days,
+                'activity_status' => $activityStatus?->status->value,
+                'effective_days_since_activity' => $activityStatus?->effectiveDaysSinceActivity,
             ],
             description: __('tasks.periodicity_gap.description'),
         );
