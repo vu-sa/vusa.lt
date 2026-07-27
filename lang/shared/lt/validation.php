@@ -76,6 +76,7 @@ return [
     'string' => 'The :attribute must be a string.',
     'timezone' => 'The :attribute must be a valid zone.',
     'unique' => ':attribute jau naudojama. Pasirinkite / įrašykite kitą reikšmę.',
+    'unique_trashed' => ':attribute naudoja ištrintas įrašas. Susirask jį ištrintų įrašų rodinyje ir atkurk arba ištrink negrįžtamai — tik tada ši reikšmė atsilaisvins.',
     'url' => 'The :attribute format is invalid.',
 
     /*

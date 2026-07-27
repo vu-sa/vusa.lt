@@ -54,6 +54,8 @@ const props = defineProps<{
   };
   filters?: Record<string, any>;
   sorting?: { id: string; desc: boolean }[];
+  showDeleted?: boolean;
+  deletedCount?: number;
 }>();
 
 // Component constants
@@ -65,6 +67,7 @@ const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
 
 // Permission checks
 const canCreate = computed(() => usePage().props.auth?.can?.create?.tag || false);
+const canForceDelete = computed(() => usePage().props.auth?.can?.forceDelete?.tag ?? false);
 const canExport = computed(() => false); // Export functionality disabled for tags
 
 // Row selection
@@ -106,7 +109,8 @@ const columns = computed<Array<ColumnDef<App.Entities.Tag, any>>>(() => [
     canView: false,
     canEdit: true,
     canDelete: true,
-    canRestore: false,
+    canRestore: true,
+    canForceDelete: canForceDelete.value,
   }),
 ]);
 
@@ -130,6 +134,9 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Tag>>(() => {
     enableColumnVisibility: true,
     enableRowSelection: false,
     enableRowSelectionColumn: false,
+    allowToggleDeleted: true,
+    showDeleted: props.showDeleted,
+    deletedCount: props.deletedCount,
 
     // Page layout
     headerTitle: 'Žymos',

@@ -140,6 +140,7 @@ return [
     'string' => 'The :attribute must be a string.',
     'timezone' => 'The :attribute must be a valid timezone.',
     'unique' => 'The :attribute has already been taken.',
+    'unique_trashed' => 'The :attribute is used by a deleted record. Find it in the deleted-records view and either restore it or delete it permanently — only then does this value become free.',
     'uploaded' => 'The :attribute failed to upload.',
     'uppercase' => 'The :attribute must be uppercase.',
     'url' => 'The :attribute must be a valid URL.',

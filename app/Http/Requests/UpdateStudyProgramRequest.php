@@ -6,6 +6,7 @@ use App\Enums\DegreeEnum;
 use App\Rules\TranslatableField;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateStudyProgramRequest extends FormRequest
 {
@@ -28,7 +29,7 @@ class UpdateStudyProgramRequest extends FormRequest
 
         return [
             'name' => ['required', 'array', new TranslatableField(['lt'])],
-            'name.lt' => 'required|string|max:255|unique:study_programs,name->lt,'.$studyProgramId,
+            'name.lt' => ['required', 'string', 'max:255', Rule::unique('study_programs', 'name->lt')->ignore($studyProgramId)->withoutTrashed()],
             'name.en' => 'nullable|string|max:255',
             'degree' => ['required', 'string', DegreeEnum::getValidationRule()],
             'tenant_id' => 'required|exists:tenants,id',

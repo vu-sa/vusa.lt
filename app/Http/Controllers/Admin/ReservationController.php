@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexReservationRequest;
 use App\Http\Requests\StoreReservationRequest;
+use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Reservation;
 use App\Models\Resource;
@@ -13,6 +14,7 @@ use App\Notifications\AssignedToResourceNotification;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
 /* use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests; */
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
@@ -20,7 +22,7 @@ use Inertia\Inertia;
 
 class ReservationController extends AdminController
 {
-    use HasTanstackTables;
+    use HandlesSoftDeletes, HasTanstackTables;
 
     public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService)
     {
@@ -48,6 +50,8 @@ class ReservationController extends AdminController
             $searchableColumns,
         );
 
+        $deletedCount = $this->getTrashedCount($query);
+
         $reservations = $query->paginate($request->input('per_page', 20))
             ->withQueryString();
 
@@ -67,6 +71,8 @@ class ReservationController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $request->getSorting(),
+            'showDeleted' => $request->boolean('showDeleted', false),
+            'deletedCount' => $deletedCount,
             'activeReservations' => Reservation::whereHas('resources', function ($query) use ($allowedTenantIds) {
                 $query->whereIn('resources.tenant_id', $allowedTenantIds);
             })->with(['resources.tenant', 'users'])->get(),
@@ -220,13 +226,9 @@ class ReservationController extends AdminController
         return back()->with('success', 'Rezervacija ištrinta sėkmingai!');
     }
 
-    public function restore(Reservation $reservation)
+    public function restore(Reservation $reservation): RedirectResponse
     {
-        $this->handleAuthorization('restore', [Reservation::class, $reservation, $this->authorizer]);
-
-        $reservation->restore();
-
-        return back()->with('success', 'Rezervacija atkurta!');
+        return $this->restoreModel($reservation, 'Rezervacija atkurta!');
     }
 
     public function addUsers(Reservation $reservation, Request $request)
@@ -240,5 +242,10 @@ class ReservationController extends AdminController
         Notification::send($reservation->refresh()->users->diff($old_users), AssignedToResourceNotification::fromModel($reservation, auth()->user()));
 
         return back()->with('success', __('messages.users_attached_to_reservation'));
+    }
+
+    public function forceDelete(Reservation $reservation): RedirectResponse
+    {
+        return $this->forceDeleteModel($reservation);
     }
 }

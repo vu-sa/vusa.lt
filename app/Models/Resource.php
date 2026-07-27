@@ -5,7 +5,9 @@ namespace App\Models;
 use AjCastro\EagerLoadPivotRelations\EagerLoadPivotTrait;
 use App\Actions\GetResourceManagers;
 use App\Collections\ReservationCollection;
+use App\Contracts\GuardsForceDelete;
 use App\Models\Pivots\ReservationResource;
+use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasTranslations;
 use App\Services\ResourceCapacityCalculator;
 use App\ValueObjects\TimeRange;
@@ -39,6 +41,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property-read ReservationResource|null $pivot
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Reservation> $active_reservations
  * @property-read ResourceCategory|null $category
+ * @property-read string|null $force_delete_blocked_reason
  * @property-read array $translatable_columns_from
  * @property-read MediaCollection<int, Media> $media
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Reservation> $reservations
@@ -60,9 +63,9 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  *
  * @mixin \Eloquent
  */
-class Resource extends Model implements HasMedia
+class Resource extends Model implements GuardsForceDelete, HasMedia
 {
-    use EagerLoadPivotTrait, HasFactory, HasTranslations, HasUlids, InteractsWithMedia, Searchable, SoftDeletes;
+    use EagerLoadPivotTrait, GuardsForceDeleteWhenReferenced, HasFactory, HasTranslations, HasUlids, InteractsWithMedia, Searchable, SoftDeletes;
 
     protected $fillable = [
         'name', 'description', 'location', 'capacity', 'is_reservable',
@@ -297,5 +300,16 @@ class Resource extends Model implements HasMedia
         $calculator = new ResourceCapacityCalculator($this);
 
         return $calculator->findLowestCapacity($capacityTimeline);
+    }
+
+    /**
+     * `reservation_resource.resource_id` restricts deletes — the reservation history
+     * has to survive the resource being retired.
+     */
+    public function forceDeleteBlockedReason(): ?string
+    {
+        return $this->forceDeleteReasonFor([
+            'entities.reservation.model' => $this->countedRelation('reservations'),
+        ]);
     }
 }

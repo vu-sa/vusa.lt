@@ -16,7 +16,11 @@ use App\Models\Training;
 use App\Models\Type;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
@@ -243,6 +247,27 @@ class FileUsageScanner
     /**
      * Try exact matches first (most efficient)
      */
+    /**
+     * Scan soft-deletable models with their trashed rows included.
+     *
+     * A file referenced only by a deleted banner, article or event is *not* unused:
+     * `is_safe_to_delete` drives a "safe to delete" badge, and removing the file from
+     * storage would leave the record permanently broken once it is restored.
+     *
+     * @param  class-string<Model>  $modelClass
+     * @return Builder<Model>
+     */
+    private static function queryIncludingTrashed(string $modelClass): Builder
+    {
+        $query = $modelClass::query();
+
+        // `withTrashed()` only exists on soft-deletable models; removing the global
+        // scope is the same operation and is typed on the base builder.
+        return in_array(SoftDeletes::class, class_uses_recursive($modelClass), true)
+            ? $query->withoutGlobalScope(SoftDeletingScope::class)
+            : $query;
+    }
+
     private function tryExactMatches(string $modelClass, string $field, array $variants): Collection
     {
         // For simple image URL fields, try exact matches
@@ -255,7 +280,7 @@ class FileUsageScanner
             return new Collection;
         }
 
-        return $modelClass::whereIn($field, $exactVariants)->get();
+        return self::queryIncludingTrashed($modelClass)->whereIn($field, $exactVariants)->get();
     }
 
     /**
@@ -267,7 +292,7 @@ class FileUsageScanner
         $maxVariantsToTry = 5; // Limit variants to avoid slow queries
 
         foreach (array_slice($variants, 0, $maxVariantsToTry) as $variant) {
-            $query = $modelClass::where($field, 'LIKE', '%'.$variant.'%');
+            $query = self::queryIncludingTrashed($modelClass)->where($field, 'LIKE', '%'.$variant.'%');
 
             // Add limit to prevent huge result sets
             $partialResults = $query->limit(10)->get();

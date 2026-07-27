@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Type;
+use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -27,7 +28,7 @@ class StoreTypeRequest extends FormRequest
             // Constrained to the models a Type can actually be attached to —
             // see Type::TYPEABLE_RELATIONS.
             'model_type' => ['required', 'string', Rule::in(array_keys(Type::TYPEABLE_RELATIONS))],
-            'parent_id' => 'nullable|exists:types,id|different:id',
+            'parent_id' => ['nullable', SoftDeleteRules::existsLive('types')],
             'roles' => 'nullable|array',
             'slug' => 'nullable|string',
             'extra_attributes' => 'nullable|array',

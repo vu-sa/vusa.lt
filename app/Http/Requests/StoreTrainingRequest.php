@@ -3,9 +3,11 @@
 namespace App\Http\Requests;
 
 use App\Models\Training;
+use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\Rule;
 
 class StoreTrainingRequest extends FormRequest
 {
@@ -43,12 +45,12 @@ class StoreTrainingRequest extends FormRequest
     {
         return [
             'name' => 'required|array',
-            'name.lt' => 'required|string|unique:trainings,name->lt',
+            'name.lt' => ['required', 'string', Rule::unique('trainings', 'name->lt')->withoutTrashed()],
             'name.en' => 'nullable|string',
             'description' => 'required|array',
             'description.lt' => 'required|string',
             'description.en' => 'nullable|string',
-            'institution_id' => 'required|exists:institutions,id',
+            'institution_id' => ['required', SoftDeleteRules::existsLive('institutions')],
             'start_time' => 'required|date',
             'end_time' => 'nullable|date|after:start_time',
             'address' => 'nullable|string|max:255',

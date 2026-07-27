@@ -7,17 +7,19 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexStudySetRequest;
 use App\Http\Requests\StoreStudySetRequest;
 use App\Http\Requests\UpdateStudySetRequest;
+use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\LecturerReview;
 use App\Models\StudySet;
 use App\Models\StudySetCourse;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 
 class StudySetController extends AdminController
 {
-    use HasTanstackTables;
+    use HandlesSoftDeletes, HasTanstackTables;
 
     public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
@@ -45,6 +47,8 @@ class StudySetController extends AdminController
             ]
         );
 
+        $deletedCount = $this->getTrashedCount($query);
+
         $studySets = $query->paginate($request->input('per_page', 20))
             ->withQueryString();
 
@@ -62,6 +66,8 @@ class StudySetController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $request->getSorting(),
+            'showDeleted' => $request->boolean('showDeleted', false),
+            'deletedCount' => $deletedCount,
         ]);
     }
 
@@ -217,5 +223,15 @@ class StudySetController extends AdminController
                 ]);
             }
         }
+    }
+
+    public function restore(StudySet $studySet): RedirectResponse
+    {
+        return $this->restoreModel($studySet);
+    }
+
+    public function forceDelete(StudySet $studySet): RedirectResponse
+    {
+        return $this->forceDeleteModel($studySet);
     }
 }

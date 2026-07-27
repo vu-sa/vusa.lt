@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Api\ApiController;
 use App\Models\User;
+use App\Rules\SoftDeleteRules;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -52,7 +53,7 @@ class ImpersonateApiController extends ApiController
         $this->guardSuperAdmin($user);
 
         $request->validate([
-            'user_id' => 'required|exists:users,id',
+            'user_id' => ['required', SoftDeleteRules::existsLive('users')],
         ]);
 
         $target = User::findOrFail($request->input('user_id'));

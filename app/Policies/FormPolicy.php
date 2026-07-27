@@ -13,6 +13,11 @@ use Illuminate\Support\Str;
 
 class FormPolicy extends ModelPolicy
 {
+    /**
+     * These models belong to a single tenant through a `tenant` relation.
+     */
+    protected bool $hasManyTenants = false;
+
     public function __construct(
         ModelAuthorizer $authorizer,
         private FormAccessService $formAccess,

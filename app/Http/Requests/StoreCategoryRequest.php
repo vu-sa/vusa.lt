@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Category;
+use App\Rules\UniqueAmongTrashed;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -28,7 +29,7 @@ class StoreCategoryRequest extends FormRequest
             'name.en' => 'required|string|max:255',
             'description.lt' => 'nullable|string',
             'description.en' => 'nullable|string',
-            'alias' => 'nullable|string|max:255|unique:categories,alias',
+            'alias' => ['nullable', 'string', 'max:255', UniqueAmongTrashed::of('categories', 'alias')],
         ];
     }
 }

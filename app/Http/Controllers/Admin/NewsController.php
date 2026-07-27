@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\DuplicateNewsAction;
+use App\Actions\PairTranslatedRecord;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexNewsRequest;
 use App\Http\Requests\StoreNewsRequest;
 use App\Http\Requests\UpdateNewsRequest;
+use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Content;
 use App\Models\News;
@@ -15,11 +17,12 @@ use App\Models\Tenant;
 use App\Services\ContentService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\ValidationException;
 
 class NewsController extends AdminController
 {
-    use HasTanstackTables;
+    use HandlesSoftDeletes, HasTanstackTables;
 
     public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
@@ -49,6 +52,8 @@ class NewsController extends AdminController
             ]
         );
 
+        $deletedCount = $this->getTrashedCount($query);
+
         $news = $query->paginate($request->input('per_page', 20))
             ->withQueryString();
 
@@ -66,6 +71,8 @@ class NewsController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $request->getSorting(),
+            'showDeleted' => $request->boolean('showDeleted', false),
+            'deletedCount' => $deletedCount,
         ]);
     }
 
@@ -124,7 +131,6 @@ class NewsController extends AdminController
             'short' => $request->short,
             'lang' => $request->lang,
             'content_id' => $content->id,
-            'other_lang_id' => $request->other_lang_id,
             'image' => $request->image,
             'image_author' => $request->image_author,
             'draft' => $request->draft ?? 0,
@@ -185,12 +191,9 @@ class NewsController extends AdminController
      */
     public function update(UpdateNewsRequest $request, News $news)
     {
-        $other_lang_page = News::find($news->other_lang_id);
-
         $news->update($request->only(
             'title',
             'lang',
-            'other_lang_id',
             'draft',
             'publish_time',
             'short',
@@ -211,25 +214,7 @@ class NewsController extends AdminController
             $news->tags()->sync($request->tags);
         }
 
-        // update other lang id page
-        if ($request->other_lang_id) {
-
-            // find page that has other lang id
-            $current_other_lang_page = News::where('other_lang_id', $news->id)->first();
-
-            if ($current_other_lang_page) {
-                $current_other_lang_page->other_lang_id = null;
-                $current_other_lang_page->save();
-            }
-
-            // overwrite other lang id page
-            $other_lang_page = News::find($request->other_lang_id);
-            $other_lang_page->other_lang_id = $news->id;
-            $other_lang_page->save();
-        } elseif (is_null($request->other_lang_id) && ! is_null($other_lang_page)) {
-            $other_lang_page->other_lang_id = null;
-            $other_lang_page->save();
-        }
+        PairTranslatedRecord::execute($news, $request->other_lang_id);
 
         return back()->with('success', 'Naujiena sėkmingai atnaujinta!')->with('data', $news->load('content'));
     }
@@ -249,12 +234,13 @@ class NewsController extends AdminController
     /**
      * Restore the specified resource from storage.
      */
-    public function restore(News $news)
+    public function restore(News $news): RedirectResponse
     {
-        $this->handleAuthorization('restore', $news);
+        return $this->restoreModel($news, 'Naujiena sėkmingai atkurta!');
+    }
 
-        $news->restore();
-
-        return back()->with('success', 'Naujiena sėkmingai atkurta!');
+    public function forceDelete(News $news): RedirectResponse
+    {
+        return $this->forceDeleteModel($news);
     }
 }

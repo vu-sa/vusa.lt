@@ -315,15 +315,48 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
                 FileableNameUpdated::dispatch($meeting);
             }
         });
+
+        static::deleted(function (Meeting $meeting) {
+            $meeting->publicSearchModel()->unsearchable();
+        });
+
+        static::forceDeleted(function (Meeting $meeting) {
+            $meeting->publicSearchModel()->unsearchable();
+        });
+
+        static::restored(function (Meeting $meeting) {
+            $publicMeeting = PublicMeeting::query()->find($meeting->getKey());
+
+            if ($publicMeeting?->shouldBeSearchable()) {
+                $publicMeeting->searchable();
+            }
+        });
+
+        static::deleting(function (Meeting $meeting) {
+            // A soft delete has to stay reversible. Agenda items are not soft-deletable
+            // and votes + agenda_item_notes CASCADE off them, so removing them here would
+            // destroy the substance of the meeting — restore would return an empty shell.
+            if (! $meeting->isForceDeleting()) {
+                return;
+            }
+
+            // Iterated rather than mass-deleted: `agendaItems()->delete()` fires no model
+            // events, so Scout never un-indexes the agenda items and they linger in the
+            // search index pointing at rows that no longer exist.
+            $meeting->agendaItems->each->delete();
+
+            // institution_meeting.meeting_id restricts deletes and nothing else detaches
+            // it, so without this permanent deletion fails for every meeting that has an
+            // institution — which is essentially all of them.
+            $meeting->institutions()->detach();
+        });
     }
 
-    protected static function boot()
+    private function publicSearchModel(): PublicMeeting
     {
-        parent::boot();
+        $publicMeeting = new PublicMeeting;
+        $publicMeeting->setAttribute($publicMeeting->getKeyName(), $this->getKey());
 
-        // When a meeting is deleted, also delete its agenda items
-        static::deleting(function ($meeting) {
-            $meeting->agendaItems()->delete();
-        });
+        return $publicMeeting;
     }
 }

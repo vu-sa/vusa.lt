@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use App\Models\User;
+use App\Rules\SoftDeleteRules;
+use App\Rules\UniqueAmongTrashed;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -28,7 +30,7 @@ class UpdateUserRequest extends FormRequest
 
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'unique:users,email,'.$user->id],
+            'email' => ['required', 'email', UniqueAmongTrashed::of('users', 'email')->ignore($user->id)],
             'facebook_url' => ['nullable', 'url', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
             'profile_photo_path' => ['nullable', 'string', 'max:255'],
@@ -40,7 +42,7 @@ class UpdateUserRequest extends FormRequest
             'roles' => ['nullable', 'array'],
             'roles.*' => ['exists:roles,id'],
             'current_duties' => ['nullable', 'array'],
-            'current_duties.*' => ['exists:duties,id'],
+            'current_duties.*' => [SoftDeleteRules::existsLive('duties')],
         ];
     }
 

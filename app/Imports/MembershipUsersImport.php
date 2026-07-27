@@ -20,12 +20,19 @@ class MembershipUsersImport
             $start_date = Date::excelToDateTimeObject($row['narystes_pradzia']);
             $end_date = Date::excelToDateTimeObject($row['narystes_pabaiga']);
 
-            $user = User::query()->firstOrCreate([
+            // users_email_unique ignores deleted_at, so a scoped firstOrCreate cannot
+            // see a trashed account and its INSERT violates the key, aborting the whole
+            // import. Importing a membership list is an explicit re-add, so restore.
+            $user = User::withTrashed()->firstOrCreate([
                 'email' => $row['studentinis_el_pastas'],
             ], [
                 'name' => $row['vardas_ir_pavarde'],
                 'phone' => $row['tel_nr'],
             ]);
+
+            if ($user->trashed()) {
+                $user->restore();
+            }
 
             $membership = $user->memberships()->where('membership_id', $this->membership->id)->first();
 

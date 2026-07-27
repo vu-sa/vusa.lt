@@ -43,19 +43,50 @@ Route::get('institutionGraph', [DashboardController::class, 'institutionGraph'])
 // System Status
 Route::get('system-status', [SystemStatusController::class, 'index'])->name('systemStatus');
 
-// Restore routes
-Route::patch('users/{user}/restore', [UserController::class, 'restore'])->name('users.restore')->withTrashed();
-Route::patch('pages/{page}/restore', [PageController::class, 'restore'])->name('pages.restore')->withTrashed();
-Route::patch('news/{news}/restore', [NewsController::class, 'restore'])->name('news.restore')->withTrashed();
-Route::post('news/{news}/duplicate', [NewsController::class, 'duplicate'])->name('news.duplicate');
+// Restore and permanent-delete routes
+Route::patch('banners/{banner}/restore', [BannerController::class, 'restore'])->name('banners.restore')->withTrashed();
+Route::delete('banners/{banner}/force-delete', [BannerController::class, 'forceDelete'])->name('banners.forceDelete')->withTrashed();
+Route::patch('calendar/{calendar}/restore', [CalendarController::class, 'restore'])->name('calendar.restore')->withTrashed();
+Route::delete('calendar/{calendar}/force-delete', [CalendarController::class, 'forceDelete'])->name('calendar.forceDelete')->withTrashed();
+Route::patch('categories/{category}/restore', [CategoryController::class, 'restore'])->name('categories.restore')->withTrashed();
+Route::delete('categories/{category}/force-delete', [CategoryController::class, 'forceDelete'])->name('categories.forceDelete')->withTrashed();
 Route::patch('duties/{duty}/restore', [DutyController::class, 'restore'])->name('duties.restore')->withTrashed();
+Route::delete('duties/{duty}/force-delete', [DutyController::class, 'forceDelete'])->name('duties.forceDelete')->withTrashed();
+Route::patch('forms/{form}/restore', [FormController::class, 'restore'])->name('forms.restore')->withTrashed();
+Route::delete('forms/{form}/force-delete', [FormController::class, 'forceDelete'])->name('forms.forceDelete')->withTrashed();
 Route::patch('institutions/{institution}/restore', [InstitutionController::class, 'restore'])->name('institutions.restore')->withTrashed();
+Route::delete('institutions/{institution}/force-delete', [InstitutionController::class, 'forceDelete'])->name('institutions.forceDelete')->withTrashed();
 Route::patch('meetings/{meeting}/restore', [MeetingController::class, 'restore'])->name('meetings.restore')->withTrashed();
+Route::delete('meetings/{meeting}/force-delete', [MeetingController::class, 'forceDelete'])->name('meetings.forceDelete')->withTrashed();
+Route::patch('navigation/{navigation}/restore', [NavigationController::class, 'restore'])->name('navigation.restore')->withTrashed();
+Route::delete('navigation/{navigation}/force-delete', [NavigationController::class, 'forceDelete'])->name('navigation.forceDelete')->withTrashed();
+Route::patch('news/{news}/restore', [NewsController::class, 'restore'])->name('news.restore')->withTrashed();
+Route::delete('news/{news}/force-delete', [NewsController::class, 'forceDelete'])->name('news.forceDelete')->withTrashed();
+Route::post('news/{news}/duplicate', [NewsController::class, 'duplicate'])->name('news.duplicate');
+Route::patch('pages/{page}/restore', [PageController::class, 'restore'])->name('pages.restore')->withTrashed();
+Route::delete('pages/{page}/force-delete', [PageController::class, 'forceDelete'])->name('pages.forceDelete')->withTrashed();
+Route::patch('problems/{problem}/restore', [ProblemController::class, 'restore'])->name('problems.restore')->withTrashed();
+Route::delete('problems/{problem}/force-delete', [ProblemController::class, 'forceDelete'])->name('problems.forceDelete')->withTrashed();
+Route::patch('quickLinks/{quickLink}/restore', [QuickLinkController::class, 'restore'])->name('quickLinks.restore')->withTrashed();
+Route::delete('quickLinks/{quickLink}/force-delete', [QuickLinkController::class, 'forceDelete'])->name('quickLinks.forceDelete')->withTrashed();
 Route::post('meetings/{meeting}/institutions', [MeetingController::class, 'attachInstitution'])->name('meetings.institutions.attach');
 Route::delete('meetings/{meeting}/institutions/{institution}', [MeetingController::class, 'detachInstitution'])->name('meetings.institutions.detach');
 Route::patch('reservations/{reservation}/restore', [ReservationController::class, 'restore'])->name('reservations.restore')->withTrashed();
+Route::delete('reservations/{reservation}/force-delete', [ReservationController::class, 'forceDelete'])->name('reservations.forceDelete')->withTrashed();
 Route::patch('resources/{resource}/restore', [ResourceController::class, 'restore'])->name('resources.restore')->withTrashed();
+Route::delete('resources/{resource}/force-delete', [ResourceController::class, 'forceDelete'])->name('resources.forceDelete')->withTrashed();
+Route::patch('studyPrograms/{studyProgram}/restore', [StudyProgramController::class, 'restore'])->name('studyPrograms.restore')->withTrashed();
+Route::delete('studyPrograms/{studyProgram}/force-delete', [StudyProgramController::class, 'forceDelete'])->name('studyPrograms.forceDelete')->withTrashed();
+Route::patch('studySets/{studySet}/restore', [StudySetController::class, 'restore'])->name('studySets.restore')->withTrashed();
+Route::delete('studySets/{studySet}/force-delete', [StudySetController::class, 'forceDelete'])->name('studySets.forceDelete')->withTrashed();
+Route::patch('tags/{tag}/restore', [TagController::class, 'restore'])->name('tags.restore')->withTrashed();
+Route::delete('tags/{tag}/force-delete', [TagController::class, 'forceDelete'])->name('tags.forceDelete')->withTrashed();
+Route::patch('trainings/{training}/restore', [TrainingController::class, 'restore'])->name('trainings.restore')->withTrashed();
+Route::delete('trainings/{training}/force-delete', [TrainingController::class, 'forceDelete'])->name('trainings.forceDelete')->withTrashed();
 Route::patch('types/{type}/restore', [TypeController::class, 'restore'])->name('types.restore')->withTrashed();
+Route::delete('types/{type}/force-delete', [TypeController::class, 'forceDelete'])->name('types.forceDelete')->withTrashed();
+Route::patch('users/{user}/restore', [UserController::class, 'restore'])->name('users.restore')->withTrashed();
+Route::delete('users/{user}/force-delete', [UserController::class, 'forceDelete'])->name('users.forceDelete')->withTrashed();
 
 // Resources with Precognition (live validation)
 Route::resource('pages', PageController::class)->except(['show'])
@@ -189,7 +220,6 @@ Route::resource('tenants', TenantController::class);
 Route::get('forms/{form}/export', [FormController::class, 'export'])->name('forms.export');
 Route::resource('forms', FormController::class);
 
-Route::patch('problems/{problem}/restore', [ProblemController::class, 'restore'])->name('problems.restore')->withTrashed();
 Route::patch('problems/{problem}/status', [ProblemController::class, 'updateStatus'])->name('problems.updateStatus');
 Route::resource('problems', ProblemController::class);
 

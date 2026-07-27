@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\ContentPartEnum;
+use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -19,7 +20,7 @@ class NewsRequest extends FormRequest
         return [
             'title' => 'required',
             'lang' => 'required',
-            'other_lang_id' => 'nullable|integer',
+            'other_lang_id' => ['nullable', 'integer', SoftDeleteRules::existsLive('news')],
             'draft' => 'nullable|boolean',
             'image_author' => 'nullable|string',
             'publish_time' => 'required',
@@ -34,7 +35,7 @@ class NewsRequest extends FormRequest
             'content.parts.*.options' => 'nullable',
             'content.parts.*.order' => 'nullable|integer',
             'tags' => 'nullable|array',
-            'tags.*' => 'integer|exists:tags,id',
+            'tags.*' => ['integer', SoftDeleteRules::existsLive('tags')],
         ];
     }
 

@@ -106,6 +106,10 @@ class PublicMeeting extends Meeting
      */
     public function shouldBeSearchable(): bool
     {
+        if ($this->trashed()) {
+            return false;
+        }
+
         // Load institutions if not already loaded
         if (! $this->relationLoaded('institutions')) {
             $this->load('institutions.types');

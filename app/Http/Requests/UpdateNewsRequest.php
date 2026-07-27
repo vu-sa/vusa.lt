@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\UniqueAmongTrashed;
+
 class UpdateNewsRequest extends NewsRequest
 {
     /**
@@ -31,7 +33,7 @@ class UpdateNewsRequest extends NewsRequest
     public function rules(): array
     {
         return array_merge(parent::rules(), [
-            'permalink' => 'required|string|unique:news,permalink,'.$this->news->id,
+            'permalink' => ['required', 'string', UniqueAmongTrashed::of('news', 'permalink')->ignore($this->news->id)],
             'image' => 'nullable|string',
             'short' => 'nullable',
             'lang' => 'required|string',

@@ -359,9 +359,13 @@ describe('end-to-end refactored meeting flow', function () {
 
         $response->assertStatus(200);
 
-        // 7. Clean up
+        // 7. Clean up. Deleting is reversible, so the agenda survives until the meeting
+        // is permanently deleted.
         $meeting->delete();
         $this->assertEquals($initialMeetingCount, Meeting::count());
+        $this->assertEquals($initialAgendaItemCount + 3, AgendaItem::count());
+
+        $meeting->forceDelete();
         $this->assertEquals($initialAgendaItemCount, AgendaItem::count());
     });
 });

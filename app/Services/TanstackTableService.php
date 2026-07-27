@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -224,28 +225,62 @@ class TanstackTableService
     }
 
     /**
-     * Apply soft delete filters to query
+     * Determine whether the query's model is soft-deletable.
+     *
+     * Uses class_uses_recursive because models may pick the trait up from a
+     * parent class or a composing trait, which plain class_uses would miss.
      *
      * @template TModel of \Illuminate\Database\Eloquent\Model
      *
      * @param  Builder<TModel>  $query  The query builder
-     * @param  bool  $showDeleted  Whether to include soft-deleted records
+     */
+    public function isSoftDeletable(Builder $query): bool
+    {
+        return in_array(SoftDeletes::class, class_uses_recursive($query->getModel()), true);
+    }
+
+    /**
+     * Restrict the query to soft-deleted records only.
+     *
+     * When $showDeleted is false the query is returned untouched, so the model's
+     * SoftDeletingScope keeps hiding trashed rows as usual.
+     *
+     * Note: withTrashed()/onlyTrashed() are registered by SoftDeletingScope as
+     * Builder *macros*, not real methods, so they must never be probed with
+     * method_exists() — that check always fails and silently disables the filter.
+     *
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     *
+     * @param  Builder<TModel>  $query  The query builder
+     * @param  bool  $showDeleted  Whether to show only soft-deleted records
      * @return Builder<TModel>
      */
     public function applySoftDeleteFilter(Builder $query, bool $showDeleted = false): Builder
     {
-        $model = $query->getModel();
-
-        // Check if model uses SoftDeletes trait
-        if (! in_array('Illuminate\Database\Eloquent\SoftDeletes', class_uses($model))) {
+        if (! $showDeleted || ! $this->isSoftDeletable($query)) {
             return $query;
         }
 
-        if ($showDeleted && method_exists($query, 'withTrashed')) {
-            return $query->withTrashed();
+        return $query->onlyTrashed();
+    }
+
+    /**
+     * Count the soft-deleted records matching an already-filtered query.
+     *
+     * The query is cloned so tenant/permission scoping is preserved while the
+     * caller's builder stays untouched. Returns 0 for models without soft deletes.
+     *
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     *
+     * @param  Builder<TModel>  $query  The scoped query builder
+     */
+    public function getTrashedCount(Builder $query): int
+    {
+        if (! $this->isSoftDeletable($query)) {
+            return 0;
         }
 
-        return $query;
+        return (clone $query)->onlyTrashed()->toBase()->getCountForPagination();
     }
 
     /**

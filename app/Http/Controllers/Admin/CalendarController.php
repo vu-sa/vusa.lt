@@ -9,17 +9,19 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexCalendarRequest;
 use App\Http\Requests\StoreCalendarRequest;
 use App\Http\Requests\UpdateCalendarRequest;
+use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Calendar;
 use App\Models\Category;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class CalendarController extends AdminController
 {
-    use HasTanstackTables;
+    use HandlesSoftDeletes, HasTanstackTables;
 
     public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
@@ -46,6 +48,8 @@ class CalendarController extends AdminController
             ]
         );
 
+        $deletedCount = $this->getTrashedCount($query);
+
         $calendar = $query->paginate($request->input('per_page', 20))
             ->withQueryString();
 
@@ -68,6 +72,8 @@ class CalendarController extends AdminController
             'allCategories' => Category::all(['id', 'alias', 'name', 'description']),
             'filters' => $request->getFilters(),
             'sorting' => $request->getSorting(),
+            'showDeleted' => $request->boolean('showDeleted', false),
+            'deletedCount' => $deletedCount,
         ]);
     }
 
@@ -193,5 +199,15 @@ class CalendarController extends AdminController
         $calendar->getMedia('images')->where('id', '=', $media->id)->first()?->delete();
 
         return back()->with('info', 'Nuotrauka ištrinta!');
+    }
+
+    public function restore(Calendar $calendar): RedirectResponse
+    {
+        return $this->restoreModel($calendar);
+    }
+
+    public function forceDelete(Calendar $calendar): RedirectResponse
+    {
+        return $this->forceDeleteModel($calendar);
     }
 }

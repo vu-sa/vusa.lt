@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Actions\PairTranslatedRecord;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -108,6 +109,22 @@ class News extends Model implements Feedable, Sitemapable
         static::deleted(function ($news) {
             // Clear sitemap cache when news is deleted
             Cache::tags(['sitemap', 'news', "tenant_{$news->tenant_id}"])->flush();
+        });
+
+        static::deleting(function (News $news) {
+            // Drop the surviving counterpart's back-reference so its language switcher
+            // stops linking to an article that is no longer public. This article keeps
+            // its own pointer, so the pairing can be re-established on restore.
+            PairTranslatedRecord::releaseCounterpart($news);
+
+            if ($news->isForceDeleting()) {
+                // posts_tags.news_id restricts deletes.
+                $news->tags()->detach();
+            }
+        });
+
+        static::restored(function (News $news) {
+            PairTranslatedRecord::repair($news);
         });
     }
 
@@ -266,10 +283,11 @@ class News extends Model implements Feedable, Sitemapable
     /**
      * Determine if the model should be searchable.
      */
-    public function shouldBeSearchable()
+    public function shouldBeSearchable(): bool
     {
         // Only index published (non-draft) news that has been published
-        return ! $this->draft &&
+        return ! $this->trashed() &&
+               ! $this->draft &&
                $this->publish_time &&
                $this->publish_time->isPast();
     }

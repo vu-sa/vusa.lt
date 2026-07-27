@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Actions\PairTranslatedRecord;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -92,6 +93,17 @@ class Page extends Model implements Feedable, Sitemapable
 
         static::deleted(function ($page) {
             Cache::tags(['sitemap', 'pages', "tenant_{$page->tenant_id}", "locale_{$page->lang}"])->flush();
+        });
+
+        static::deleting(function (Page $page) {
+            // Drop the surviving counterpart's back-reference so its language switcher
+            // stops linking to a page that is no longer public. This page keeps its own
+            // pointer, which is what lets the pairing be re-established on restore.
+            PairTranslatedRecord::releaseCounterpart($page);
+        });
+
+        static::restored(function (Page $page) {
+            PairTranslatedRecord::repair($page);
         });
     }
 
@@ -213,9 +225,13 @@ class Page extends Model implements Feedable, Sitemapable
     /**
      * Determine if the model should be searchable.
      */
-    public function shouldBeSearchable()
+    public function shouldBeSearchable(): bool
     {
         // Only index active pages that are published
+        if ($this->trashed()) {
+            return false;
+        }
+
         if (! $this->is_active) {
             return false;
         }

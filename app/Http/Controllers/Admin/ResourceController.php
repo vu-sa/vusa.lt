@@ -6,12 +6,16 @@ use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreResourceRequest;
 use App\Http\Requests\UpdateResourceRequest;
+use App\Http\Traits\HandlesSoftDeletes;
 use App\Models\Resource;
 use App\Models\ResourceCategory;
 use App\Services\ModelAuthorizer as Authorizer;
+use Illuminate\Http\RedirectResponse;
 
 class ResourceController extends AdminController
 {
+    use HandlesSoftDeletes;
+
     public function __construct(public Authorizer $authorizer) {}
 
     /**
@@ -130,12 +134,13 @@ class ResourceController extends AdminController
     /**
      * Restore the specified resource from storage.
      */
-    public function restore(Resource $resource)
+    public function restore(Resource $resource): RedirectResponse
     {
-        $this->handleAuthorization('restore', $resource);
+        return $this->restoreModel($resource, 'Išteklius sėkmingai atkurtas!');
+    }
 
-        $resource->restore();
-
-        return back()->with('success', 'Išteklius sėkmingai atkurtas!');
+    public function forceDelete(Resource $resource): RedirectResponse
+    {
+        return $this->forceDeleteModel($resource);
     }
 }

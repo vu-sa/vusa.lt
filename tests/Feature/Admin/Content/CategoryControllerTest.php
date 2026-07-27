@@ -171,7 +171,7 @@ describe('authorized access', function () {
             ->assertRedirect(route('categories.index'))
             ->assertSessionHas('success');
 
-        $this->assertDatabaseMissing('categories', [
+        $this->assertSoftDeleted('categories', [
             'id' => $this->category->id,
         ]);
     });

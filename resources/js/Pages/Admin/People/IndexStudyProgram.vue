@@ -64,6 +64,8 @@ const props = defineProps<{
   filters?: Record<string, any>;
   sorting?: { id: string; desc: boolean }[];
   degreeOptions: Array<{ label: string; value: string }>;
+  showDeleted?: boolean;
+  deletedCount?: number;
 }>();
 
 // Component constants
@@ -75,6 +77,7 @@ const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
 
 // Permission checks
 const canCreate = computed(() => usePage().props.auth?.can?.create?.studyProgram || false);
+const canForceDelete = computed(() => usePage().props.auth?.can?.forceDelete?.studyProgram ?? false);
 
 // Filter states
 const selectedDegrees = ref<string[]>(props.filters?.['degree'] || []);
@@ -122,7 +125,8 @@ const columns = computed<Array<ColumnDef<App.Entities.StudyProgram, any>>>(() =>
     canView: false,
     canEdit: true,
     canDelete: true,
-    canRestore: false,
+    canRestore: true,
+    canForceDelete: canForceDelete.value,
   }),
 ]);
 
@@ -146,6 +150,9 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.StudyProgram>>(() 
     enableColumnVisibility: true,
     enableRowSelection: false,
     enableRowSelectionColumn: false,
+    allowToggleDeleted: true,
+    showDeleted: props.showDeleted,
+    deletedCount: props.deletedCount,
 
     // Page layout
     headerTitle: 'Studijų programos',

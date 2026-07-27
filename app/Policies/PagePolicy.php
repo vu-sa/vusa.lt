@@ -11,6 +11,11 @@ use Illuminate\Support\Str;
 
 class PagePolicy extends ModelPolicy
 {
+    /**
+     * These models belong to a single tenant through a `tenant` relation.
+     */
+    protected bool $hasManyTenants = false;
+
     public function __construct(ModelAuthorizer $authorizer)
     {
         parent::__construct($authorizer);

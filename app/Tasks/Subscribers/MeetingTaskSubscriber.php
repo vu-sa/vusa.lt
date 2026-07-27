@@ -197,6 +197,13 @@ class MeetingTaskSubscriber
     {
         $meeting = $agendaItem->meeting;
 
+        // The meeting is gone when the agenda item is being removed as part of the
+        // meeting's own permanent deletion, and also whenever the meeting is trashed.
+        // There is no progress left to recalculate in either case.
+        if ($meeting === null) {
+            return;
+        }
+
         $meeting->load('agendaItems');
 
         // Get the user who made the change

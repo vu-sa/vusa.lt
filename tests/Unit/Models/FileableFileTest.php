@@ -69,11 +69,9 @@ describe('FileableFile scopes', function () {
         expect($availableFiles->first()->deleted_externally_at)->toBeNull();
     });
 
-    test('available scope excludes both soft-deleted and externally deleted files', function () {
+    test('available scope excludes externally deleted files', function () {
         $normalFile = FileableFile::factory()->for($this->institution, 'fileable')->create();
-        $externallyDeleted = FileableFile::factory()->for($this->institution, 'fileable')->deletedExternally()->create();
-        $softDeleted = FileableFile::factory()->for($this->institution, 'fileable')->create();
-        $softDeleted->delete();
+        FileableFile::factory()->for($this->institution, 'fileable')->deletedExternally()->create();
 
         $availableFiles = FileableFile::available()->get();
 
@@ -189,20 +187,11 @@ describe('FileableFile static helpers', function () {
     });
 });
 
-describe('FileableFile soft deletion', function () {
-    test('soft deleted files are excluded from normal queries', function () {
+describe('FileableFile deletion', function () {
+    test('deleted files are permanently removed', function () {
         $file = FileableFile::factory()->for($this->institution, 'fileable')->create();
         $file->delete();
 
         expect(FileableFile::find($file->id))->toBeNull();
-        expect(FileableFile::withTrashed()->find($file->id))->not()->toBeNull();
-    });
-
-    test('soft deleted files can be restored', function () {
-        $file = FileableFile::factory()->for($this->institution, 'fileable')->create();
-        $file->delete();
-        $file->restore();
-
-        expect(FileableFile::find($file->id))->not()->toBeNull();
     });
 });

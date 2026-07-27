@@ -3,6 +3,9 @@
 namespace App\Enums;
 
 use App\Enums\Traits\HasCamelCaseLabels;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 use Spatie\Enum\Laravel\Enum;
 
 /**
@@ -48,6 +51,34 @@ use Spatie\Enum\Laravel\Enum;
 final class ModelEnum extends Enum
 {
     use HasCamelCaseLabels;
+
+    /**
+     * Resolve the Eloquent model class for a pluralized permission resource name.
+     *
+     * e.g. "studyPrograms" => App\Models\StudyProgram::class. Returns null when no
+     * matching model exists (some resources, such as "files", are permission-only).
+     *
+     * @return class-string<Model>|null
+     */
+    public static function getModelClass(string $pluralizedModel): ?string
+    {
+        $class = 'App\\Models\\'.Str::studly(Str::singular($pluralizedModel));
+
+        return class_exists($class) && is_subclass_of($class, Model::class) ? $class : null;
+    }
+
+    /**
+     * Determine whether a pluralized permission resource maps to a soft-deletable model.
+     *
+     * Drives which resources receive forceDelete permissions, so the permission list
+     * stays in sync with the models automatically instead of via a duplicated list.
+     */
+    public static function isSoftDeletable(string $pluralizedModel): bool
+    {
+        $class = self::getModelClass($pluralizedModel);
+
+        return $class !== null && in_array(SoftDeletes::class, class_uses_recursive($class), true);
+    }
 
     /**
      * Get the allowed permission scopes for a specific model.

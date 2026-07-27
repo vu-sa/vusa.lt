@@ -56,6 +56,7 @@ const props = defineProps<{
   filters?: Record<string, any>;
   sorting?: { id: string; desc: boolean }[];
   showDeleted?: boolean;
+  deletedCount?: number;
 }>();
 
 // Component constants
@@ -67,6 +68,7 @@ const indexTablePageRef = ref<InstanceType<typeof IndexTablePage> | null>(null);
 
 // Permission checks
 const canCreate = computed(() => usePage().props.auth?.can?.create?.institution || false);
+const canForceDelete = computed(() => usePage().props.auth?.can?.forceDelete?.institution ?? false);
 
 // Filter states
 const selectedTypeIds = ref<number[]>(props.filters?.['types.id'] || []);
@@ -150,6 +152,7 @@ const columns = computed<Array<ColumnDef<App.Entities.Institution, any>>>(() => 
     canEdit: true,
     canDelete: true,
     canRestore: true,
+    canForceDelete: canForceDelete.value,
   }),
 ]);
 
@@ -173,6 +176,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Institution>>(() =
     enableColumnVisibility: true,
     allowToggleDeleted: true,
     showDeleted: props.showDeleted,
+    deletedCount: props.deletedCount,
 
     // Page layout
     headerTitle: 'Institutions',

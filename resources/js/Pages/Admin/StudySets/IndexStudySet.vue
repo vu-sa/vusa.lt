@@ -52,6 +52,8 @@ const props = defineProps<{
   };
   filters?: Record<string, any>;
   sorting?: { id: string; desc: boolean }[];
+  showDeleted?: boolean;
+  deletedCount?: number;
 }>();
 
 const modelName = 'studySets';
@@ -60,6 +62,7 @@ const entityName = 'studySet';
 const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
 
 const canCreate = computed(() => usePage().props.auth?.can?.create?.studySet || false);
+const canForceDelete = computed(() => usePage().props.auth?.can?.forceDelete?.studySet ?? false);
 
 const selectedTenantIds = ref<number[]>(props.filters?.['tenant.id'] || []);
 
@@ -101,7 +104,8 @@ const columns = computed<Array<ColumnDef<StudySetRow, any>>>(() => [
     canView: false,
     canEdit: true,
     canDelete: true,
-    canRestore: false,
+    canRestore: true,
+    canForceDelete: canForceDelete.value,
   }),
 ]);
 
@@ -120,6 +124,9 @@ const tableConfig = computed<IndexTablePageProps<StudySetRow>>(() => ({
   enableFiltering: true,
   enableColumnVisibility: true,
   enableRowSelection: false,
+  allowToggleDeleted: true,
+  showDeleted: props.showDeleted,
+  deletedCount: props.deletedCount,
 
   headerTitle: 'Individualių studijų komplektai',
   icon: TrainingIcon,

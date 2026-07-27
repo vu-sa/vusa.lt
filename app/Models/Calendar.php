@@ -7,6 +7,7 @@ use App\Services\IcalendarService;
 use Datetime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Scout\EngineManager;
@@ -40,6 +41,7 @@ use Spatie\SchemaOrg\Place;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property int|null $registration_form_id
+ * @property Carbon|null $deleted_at
  * @property-read Category|null $category
  * @property-read string|null $main_image_url
  * @property-read array $translatable_columns_from
@@ -51,17 +53,20 @@ use Spatie\SchemaOrg\Place;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar forLocale(string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar whereLocale(string $column, string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar whereLocales(string $column, array $locales)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar withoutTrashed()
  *
  * @mixin \Eloquent
  */
 class Calendar extends Model implements HasMedia
 {
-    use HasFactory, HasTranslations, InteractsWithMedia, Searchable;
+    use HasFactory, HasTranslations, InteractsWithMedia, Searchable, SoftDeletes;
 
     protected $table = 'calendar';
 
@@ -198,10 +203,10 @@ class Calendar extends Model implements HasMedia
     /**
      * Determine if the model should be searchable.
      */
-    public function shouldBeSearchable()
+    public function shouldBeSearchable(): bool
     {
         // Only index published (non-draft) calendar events
-        return ! $this->is_draft;
+        return ! $this->trashed() && ! $this->is_draft;
     }
 
     /**

@@ -7,6 +7,7 @@ use App\Events\MeetingFullyCreated;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexMeetingRequest;
 use App\Http\Requests\StoreMeetingRequest;
+use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Institution;
 use App\Models\Meeting;
@@ -30,7 +31,7 @@ use Inertia\Inertia;
 
 class MeetingController extends AdminController
 {
-    use HasTanstackTables;
+    use HandlesSoftDeletes, HasTanstackTables;
 
     public function __construct(
         public Authorizer $authorizer,
@@ -114,6 +115,8 @@ class MeetingController extends AdminController
         }
 
         // Paginate results
+        $deletedCount = $this->getTrashedCount($query);
+
         $meetings = $query->paginate($request->input('per_page', 20))
             ->withQueryString();
 
@@ -137,6 +140,7 @@ class MeetingController extends AdminController
             'filters' => $request->getFilters(),
             'sorting' => $sorting,
             'showDeleted' => $request->boolean('showDeleted', false),
+            'deletedCount' => $deletedCount,
         ]);
     }
 
@@ -355,13 +359,9 @@ class MeetingController extends AdminController
         return redirect($redirect_url)->with('success', 'Posėdis ištrintas sėkmingai!');
     }
 
-    public function restore(Meeting $meeting)
+    public function restore(Meeting $meeting): RedirectResponse
     {
-        $this->handleAuthorization('restore', $meeting);
-
-        $meeting->restore();
-
-        return back()->with('success', __('messages.meeting.restored'));
+        return $this->restoreModel($meeting, __('messages.meeting.restored'));
     }
 
     /**
@@ -468,5 +468,10 @@ class MeetingController extends AdminController
             : 'YYYY MMMM DD [d.] HH.mm [val.]';
 
         return Carbon::parse($startTime)->locale('lt-LT')->isoFormat($format).' posėdis';
+    }
+
+    public function forceDelete(Meeting $meeting): RedirectResponse
+    {
+        return $this->forceDeleteModel($meeting);
     }
 }

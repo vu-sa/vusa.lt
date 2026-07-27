@@ -9,16 +9,18 @@ use App\Http\Requests\IndexStudyProgramRequest;
 use App\Http\Requests\MergeStudyProgramsRequest;
 use App\Http\Requests\StoreStudyProgramRequest;
 use App\Http\Requests\UpdateStudyProgramRequest;
+use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Pivots\Dutiable;
 use App\Models\StudyProgram;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 
 class StudyProgramController extends AdminController
 {
-    use HasTanstackTables;
+    use HandlesSoftDeletes, HasTanstackTables;
 
     public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
@@ -52,8 +54,15 @@ class StudyProgramController extends AdminController
         );
 
         // Paginate results
+        $deletedCount = $this->getTrashedCount($query);
+
+        // Trash view only: lets the table say why permanent deletion is refused.
+        $query = $this->withForceDeleteBlockers($query, $request, ['dutiables']);
+
         $studyPrograms = $query->paginate($request->input('per_page', 20))
             ->withQueryString();
+
+        $this->appendForceDeleteBlockedReason($studyPrograms->getCollection(), $request);
 
         // Get the sorting state using the custom method to ensure consistent parsing
         $sorting = $request->getSorting();
@@ -72,6 +81,8 @@ class StudyProgramController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $sorting,
+            'showDeleted' => $request->boolean('showDeleted', false),
+            'deletedCount' => $deletedCount,
             'initialSorting' => $sorting,
             'degreeOptions' => DegreeEnum::getFormOptions(),
         ]);
@@ -188,5 +199,15 @@ class StudyProgramController extends AdminController
 
         return redirect()->route('studyPrograms.index')
             ->with('success', 'Study programs merged successfully.');
+    }
+
+    public function restore(StudyProgram $studyProgram): RedirectResponse
+    {
+        return $this->restoreModel($studyProgram);
+    }
+
+    public function forceDelete(StudyProgram $studyProgram): RedirectResponse
+    {
+        return $this->forceDeleteModel($studyProgram);
     }
 }

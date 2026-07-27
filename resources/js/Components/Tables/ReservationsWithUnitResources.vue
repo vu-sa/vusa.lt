@@ -80,7 +80,7 @@ const columns: ColumnDef<App.Entities.Reservation, any>[] = [
   },
   {
     id: 'actions',
-    header: () => $t('Veiksmai'),
+    header: () => $t('tables.actions'),
     size: 100,
     cell: ({ row }) => (
       <Link href={route('reservations.show', row.original.id)}>

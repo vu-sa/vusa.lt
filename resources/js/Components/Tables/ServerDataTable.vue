@@ -1,7 +1,38 @@
 <template>
-  <div>
+  <div class="space-y-4">
+    <!--
+      `Alert` is a grid whose first column is zero-width unless it has a direct
+      `svg` child, so its content must not be wrapped in a single plain element —
+      that element lands in the zero-width track and the text wraps one word per
+      line. Overriding the display with `flex` lays the banner out predictably.
+    -->
+    <Alert
+      v-if="showDeleted"
+      class="flex flex-col gap-3 border-amber-200 bg-amber-50 text-amber-950 sm:flex-row sm:items-center sm:justify-between dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
+    >
+      <div class="flex items-start gap-2.5">
+        <Trash2Icon class="mt-0.5 size-4 shrink-0" />
+        <div class="space-y-0.5">
+          <AlertTitle class="font-medium">
+            {{ $t('trash.showing_deleted_only') }}
+          </AlertTitle>
+          <AlertDescription class="text-sm text-amber-900 dark:text-amber-100">
+            {{ $t('trash.showing_deleted_only_description') }}
+          </AlertDescription>
+        </div>
+      </div>
+      <Button
+        variant="outline"
+        size="sm"
+        class="shrink-0 border-amber-300 bg-white text-amber-950 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-100 dark:hover:bg-amber-900/40"
+        @click="handleShowDeletedChange(false)"
+      >
+        {{ $t('trash.exit_trash_view') }}
+      </Button>
+    </Alert>
+
     <!-- Actual data table -->
-    <DataTableProvider ref="dataTableProviderRef" :columns :data :is-server-side="true" :total-items="totalCount"
+    <DataTableProvider ref="dataTableProviderRef" :columns="displayColumns" :data :is-server-side="true" :total-items="totalCount"
       :server-pagination :server-sorting="sorting" :page-size :enable-pagination="true" :row-class-name="computedRowClassName" :empty-message
       :enable-filtering="false" :enable-column-visibility :global-filter="searchText" :enable-row-selection
       :enable-multi-row-selection :enable-row-selection-column :row-selection-state="rowSelection" :get-row-id :loading
@@ -15,7 +46,7 @@
               <SearchIcon class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 v-model="searchText"
-                :placeholder="`${$t('Search')}...`"
+                :placeholder="$t('tables.search_placeholder')"
                 class="pl-9 pr-8 w-full"
                 @keydown.enter="handleSearch"
               />
@@ -30,23 +61,28 @@
             </div>
             <Button variant="default" size="sm" class="gap-1.5" @click="handleSearch">
               <SearchIcon class="h-4 w-4" />
-              <span>{{ $t('Search') }}</span>
+              <span>{{ $t('tables.search') }}</span>
             </Button>
           </div>
 
-          <!-- Custom filters from pages + show deleted -->
+          <!-- Custom filters from pages + active/deleted view toggle -->
           <div class="flex flex-wrap items-center gap-2">
             <slot name="filters" />
 
-            <Button
-              v-if="allowToggleDeleted"
-              variant="ghost"
-              size="sm"
-              :class="showDeleted ? 'bg-secondary text-secondary-foreground' : 'text-muted-foreground'"
-              @click="handleShowDeletedChange(!showDeleted)"
+            <SpotlightPopover
+              v-if="shouldShowDeletedToggle"
+              :title="$t('trash.spotlight_title')"
+              :description="$t('trash.spotlight_description')"
+              :is-dismissed="!shouldShowTrashSpotlight || trashSpotlightIsDismissed"
+              position="bottom"
+              @dismiss="dismissTrashSpotlight"
             >
-              {{ $t('Show deleted') }}
-            </Button>
+              <TrashViewToggle
+                :show-deleted
+                :deleted-count
+                @update:show-deleted="handleShowDeletedChange"
+              />
+            </SpotlightPopover>
           </div>
         </div>
       </template>
@@ -59,12 +95,15 @@
       <template #empty>
         <slot name="empty">
           <!-- Enhanced empty state -->
-          <EmptyState :title="emptyMessage || $t(`No ${modelName} found`)"
-            :description="$t(`There are no ${modelName} matching your criteria.`)" :icon="EmptyIcon">
+          <EmptyState
+            :title="emptyMessage || $t('tables.empty_title', { models: genitivePluralModelName })"
+            :description="$t('tables.empty_description')"
+            :icon="EmptyIcon"
+          >
             <!-- Create button in empty state -->
             <Link v-if="canCreate && createRoute" :href="createRoute">
               <Button>
-                {{ $t('Create') }} {{ singularModelName }}
+                {{ $t('forms.add') }}
               </Button>
             </Link>
           </EmptyState>
@@ -75,18 +114,29 @@
 </template>
 
 <script setup lang="ts" generic="TData">
-import { ref, watch, computed, onMounted } from 'vue';
+import { h, ref, watch, computed, onMounted } from 'vue';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef, SortingState, RowSelectionState } from '@tanstack/vue-table';
-import { router, Link } from '@inertiajs/vue3';
+import { router, Link, usePage } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
-import { PlusCircleIcon, SearchIcon, XIcon } from 'lucide-vue-next';
+import { PlusCircleIcon, SearchIcon, Trash2Icon, XIcon } from 'lucide-vue-next';
 
 import DataTableProvider from '../ui/data-table/DataTableProvider.vue';
+import TrashViewToggle from './TrashViewToggle.vue';
 
 import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';
 import EmptyState from '@/Components/Empty/EmptyState.vue';
+import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
+import DateCell from '@/Components/ui/data-table/cells/DateCell.vue';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
+import { LocaleEnum } from '@/Types/enums';
+
+type DataTableProviderInstance = {
+  getSelectedRows?: () => unknown[] | undefined;
+  clearRowSelection?: () => void;
+};
 
 // Define the props with TypeScript generics support
 const props = defineProps<{
@@ -115,6 +165,7 @@ const props = defineProps<{
   enableFiltering?: boolean;
   enableColumnVisibility?: boolean;
   showDeleted?: boolean;
+  deletedCount?: number;
 
   // Admin features
   allowToggleDeleted?: boolean;
@@ -177,14 +228,54 @@ const computedRowClassName = computed(() => {
   };
 });
 
-const pluralModelName = computed(() => {
+/**
+ * Lithuanian declines the model name after "Nėra …" into the genitive, which is the
+ * `[10,*]` plural form these keys already carry — so the empty-state heading reads
+ * correctly ("Nėra naujienų") without a case-specific translation key.
+ */
+const genitivePluralModelName = computed(() => {
   if (props.pluralModelName) return props.pluralModelName;
-  return $tChoice(`entities.${props.entityName || props.modelName}.model`, 2);
+  return $tChoice(`entities.${props.entityName || props.modelName}.model`, 10);
 });
 
-const singularModelName = computed(() => {
-  if (props.singularModelName) return props.singularModelName;
-  return $tChoice(`entities.${props.entityName || props.modelName}.model`, 1);
+const currentLocale = computed<LocaleEnum>(() => {
+  return (usePage().props as any)?.app?.locale === 'en' ? LocaleEnum.EN : LocaleEnum.LT;
+});
+
+/**
+ * The trash view adds a deletion-time column so a deleted record shows *when* it was
+ * removed. Injected here rather than in each of the ~19 index pages, and placed before
+ * the actions column so the actions stay flush with the right edge of the table.
+ */
+const displayColumns = computed<ColumnDef<TData, any>[]>(() => {
+  if (!showDeleted.value) {
+    return props.columns;
+  }
+
+  const deletedAtColumn: ColumnDef<TData, any> = {
+    id: 'deleted_at',
+    accessorKey: 'deleted_at',
+    header: () => $t('tables.deleted_at'),
+    enableSorting: false,
+    size: 140,
+    cell: ({ row }) => h(DateCell, {
+      date: (row.original as { deleted_at?: string | null })?.deleted_at ?? null,
+      mode: 'relative',
+      locale: currentLocale.value,
+    }),
+  };
+
+  const actionsIndex = props.columns.findIndex(column => column.id === 'actions');
+
+  if (actionsIndex === -1) {
+    return [...props.columns, deletedAtColumn];
+  }
+
+  return [
+    ...props.columns.slice(0, actionsIndex),
+    deletedAtColumn,
+    ...props.columns.slice(actionsIndex),
+  ];
 });
 
 // Server pagination for UI
@@ -193,8 +284,30 @@ const serverPagination = computed(() => ({
   pageSize: pageSize.value,
 }));
 
+const hasDeletedCount = computed(() => typeof props.deletedCount === 'number' && props.deletedCount > 0);
+
+/**
+ * The toggle is always offered when the table supports it, even at a count of zero,
+ * so the trash view is a predictable, discoverable part of every list rather than
+ * something that appears only once records happen to be deleted.
+ */
+const shouldShowDeletedToggle = computed(() => props.allowToggleDeleted === true);
+
+// Only spotlight a trash view that actually has something in it.
+const shouldShowTrashSpotlight = computed(() => shouldShowDeletedToggle.value && hasDeletedCount.value);
+
+type TrashSpotlight = Partial<ReturnType<typeof useFeatureSpotlight>>;
+
+const trashSpotlight = useFeatureSpotlight('trash-view-v1', { position: 'bottom' }) as TrashSpotlight | undefined;
+
+const trashSpotlightIsDismissed = computed(() => trashSpotlight?.isDismissed?.value ?? true);
+
+const dismissTrashSpotlight = () => {
+  void trashSpotlight?.dismiss?.();
+};
+
 // Reference to the DataTableProvider
-const dataTableProviderRef = ref<InstanceType<typeof DataTableProvider>>();
+const dataTableProviderRef = ref<DataTableProviderInstance>();
 
 // Debounce function for search
 const debouncedReload = useDebounceFn((resetPage = false) => {
@@ -288,7 +401,7 @@ const reloadData = (page?: number) => {
     data: state,
     preserveScroll: true,
     preserveState: true,
-    onSuccess: (response) => {
+    onSuccess: (response: { props: Record<string, unknown> }) => {
       const responseData = response.props[props.modelName];
       loading.value = false;
 
@@ -301,7 +414,7 @@ const reloadData = (page?: number) => {
         rowSelection: rowSelection.value,
       });
     },
-    onError: (errors) => {
+    onError: (errors: unknown) => {
       console.error('Error loading data:', errors);
       loading.value = false;
     },
@@ -317,6 +430,7 @@ const reloadData = (page?: number) => {
 
 // Handle show deleted toggle
 const handleShowDeletedChange = (checked: boolean) => {
+  dismissTrashSpotlight();
   showDeleted.value = checked;
   filters.value.showDeleted = checked;
   pageIndex.value = 0; // Reset to first page when toggling deleted items
@@ -405,12 +519,12 @@ watch(() => props.initialSorting, (newValue) => {
 
 // Row selection helper methods
 const getSelectedRows = () => {
-  return dataTableProviderRef.value?.getSelectedRows() || [];
+  return dataTableProviderRef.value?.getSelectedRows?.() || [];
 };
 
 const clearRowSelection = () => {
   if (dataTableProviderRef.value) {
-    dataTableProviderRef.value.clearRowSelection();
+    dataTableProviderRef.value.clearRowSelection?.();
     rowSelection.value = {};
   }
 };

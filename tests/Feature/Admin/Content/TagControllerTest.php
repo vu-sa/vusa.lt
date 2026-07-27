@@ -165,7 +165,7 @@ describe('auth: admin user with permissions', function () {
             ->assertStatus(302)
             ->assertRedirect(route('tags.index'));
 
-        expect(Tag::find($tagId))->toBeNull();
+        $this->assertSoftDeleted('tags', ['id' => $tagId]);
     });
 });
 
@@ -298,7 +298,9 @@ describe('tag merging', function () {
             ->assertRedirect(route('tags.index'))
             ->assertSessionHas('success');
 
-        // Verify source tags are deleted
+        // Verify source tags are soft-deleted and hidden from normal queries
+        $this->assertSoftDeleted('tags', ['id' => $sourceTag1->id]);
+        $this->assertSoftDeleted('tags', ['id' => $sourceTag2->id]);
         expect(Tag::find($sourceTag1->id))->toBeNull();
         expect(Tag::find($sourceTag2->id))->toBeNull();
 
@@ -331,6 +333,7 @@ describe('tag merging', function () {
         // No duplicate pivot row for the shared news.
         expect($targetTag->news)->toHaveCount(1);
         expect($targetTag->news->first()->id)->toBe($sharedNews->id);
+        $this->assertSoftDeleted('tags', ['id' => $sourceTag->id]);
         expect(Tag::find($sourceTag->id))->toBeNull();
     });
 

@@ -198,8 +198,10 @@ describe('agenda items controller', function () {
         $this->assertEquals(0, $agendaItem->votes()->count());
     });
 
-    test('deleting a meeting also deletes its agenda items', function () {
-        // First create an agenda item
+    // Meetings are soft-deletable, so deletion has to be reversible. Agenda items are
+    // not soft-deletable and votes cascade off them, so removing them here would make
+    // restore return an empty meeting.
+    test('deleting a meeting keeps its agenda items so it can be restored', function () {
         asUser($this->admin)
             ->post(route('agendaItems.store'), [
                 'meeting_id' => $this->meeting->id,
@@ -208,10 +210,25 @@ describe('agenda items controller', function () {
 
         $this->assertEquals(2, $this->meeting->agendaItems()->count());
 
-        // Delete the meeting
         $this->meeting->delete();
 
-        // Verify that agenda items were deleted
+        $this->assertEquals(2, AgendaItem::where('meeting_id', $this->meeting->id)->count());
+
+        $this->meeting->restore();
+
+        $this->assertEquals(2, $this->meeting->fresh()->agendaItems()->count());
+    });
+
+    test('permanently deleting a meeting also deletes its agenda items', function () {
+        asUser($this->admin)
+            ->post(route('agendaItems.store'), [
+                'meeting_id' => $this->meeting->id,
+                'agendaItemTitles' => ['Item One', 'Item Two'],
+            ]);
+
+        $this->meeting->delete();
+        $this->meeting->forceDelete();
+
         $this->assertEquals(0, AgendaItem::where('meeting_id', $this->meeting->id)->count());
     });
 

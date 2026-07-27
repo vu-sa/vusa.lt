@@ -61,6 +61,7 @@ class HandleInertiaRequests extends Middleware
                 'can' => fn () => [
                     'index' => fn () => $this->getIndexPermissions($user),
                     'create' => fn () => $this->getCreatePermissions($user),
+                    'forceDelete' => fn () => $this->getForceDeletePermissions($user),
                     'manageSettings' => fn () => $user->can('manage-settings'),
                     'accessAdministration' => fn () => $user->can('access-administration'),
                 ],
@@ -152,7 +153,7 @@ class HandleInertiaRequests extends Middleware
      */
     private function getIndexPermissions(User $user): array
     {
-        return Cache::remember('index-permissions-'.$user->id, 1800,
+        return Cache::remember(PermissionMapBuilder::INDEX_CACHE_PREFIX.$user->id, 1800,
             fn () => app(PermissionMapBuilder::class)->indexMap($user)
         );
     }
@@ -162,8 +163,18 @@ class HandleInertiaRequests extends Middleware
      */
     private function getCreatePermissions(User $user): array
     {
-        return Cache::remember('create-permissions-'.$user->id, 1800,
+        return Cache::remember(PermissionMapBuilder::CREATE_CACHE_PREFIX.$user->id, 1800,
             fn () => app(PermissionMapBuilder::class)->createMap($user)
+        );
+    }
+
+    /**
+     * @return array<string, bool>
+     */
+    private function getForceDeletePermissions(User $user): array
+    {
+        return Cache::remember(PermissionMapBuilder::FORCE_DELETE_CACHE_PREFIX.$user->id, 1800,
+            fn () => app(PermissionMapBuilder::class)->forceDeleteMap($user)
         );
     }
 

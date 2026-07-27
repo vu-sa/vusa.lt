@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Scout\Searchable;
@@ -20,18 +21,22 @@ use Laravel\Scout\Searchable;
  * @property string|null $lang
  * @property Carbon $created_at
  * @property Carbon $updated_at
+ * @property Carbon|null $deleted_at
  * @property-read Tenant $tenant
  *
  * @method static \Database\Factories\QuickLinkFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|QuickLink newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|QuickLink newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|QuickLink onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|QuickLink query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|QuickLink withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|QuickLink withoutTrashed()
  *
  * @mixin \Eloquent
  */
 class QuickLink extends Model
 {
-    use HasFactory, Searchable;
+    use HasFactory, Searchable, SoftDeletes;
 
     protected $guarded = [];
 

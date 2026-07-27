@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
@@ -26,7 +25,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon|null $completed_at
  * @property Carbon $created_at
  * @property Carbon $updated_at
- * @property Carbon|null $deleted_at
  * @property-read string $color
  * @property-read string $icon
  * @property-read Model|\Eloquent $taskable
@@ -38,16 +36,13 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Task incomplete()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Task newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Task newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Task onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Task query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Task withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Task withoutTrashed()
  *
  * @mixin \Eloquent
  */
 class Task extends Model
 {
-    use HasFactory, HasRelationships, HasUlids, SoftDeletes;
+    use HasFactory, HasRelationships, HasUlids;
 
     protected $guarded = [];
 

@@ -8,6 +8,7 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 import { ref, computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 
 import type { IndexTablePageInstance,
   IndexTablePageProps } from '@/Types/TableConfigTypes';
@@ -41,6 +42,8 @@ const props = defineProps<{
   };
   filters?: Record<string, unknown>;
   sorting?: { id: string; desc: boolean }[];
+  showDeleted?: boolean;
+  deletedCount?: number;
   can: {
     create: boolean;
   };
@@ -50,6 +53,8 @@ const modelName = 'forms';
 const entityName = 'form';
 
 const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
+
+const canForceDelete = computed(() => usePage().props.auth?.can?.forceDelete?.form ?? false);
 
 const getRowId = (row: FormRow) => {
   return `form-${row.id}`;
@@ -78,6 +83,8 @@ const columns = computed(() => [
     canView: row => row.can.view,
     canEdit: row => row.can.update,
     canDelete: row => row.can.delete,
+    canRestore: true,
+    canForceDelete: canForceDelete.value,
   }),
 ]);
 
@@ -98,6 +105,9 @@ const tableConfig = computed<IndexTablePageProps<FormRow>>(() => {
     enableFiltering: true,
     enableColumnVisibility: false,
     enableRowSelection: false,
+    allowToggleDeleted: true,
+    showDeleted: props.showDeleted,
+    deletedCount: props.deletedCount,
 
     headerTitle: $t('Formos'),
     createRoute: route('forms.create'),

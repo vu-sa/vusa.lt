@@ -4,9 +4,9 @@
       <div class="flex flex-wrap items-center gap-2">
         <!-- Show selection count when rows are selected (opt-in) -->
         <div v-if="showSelectionCount && enableRowSelection && table.getSelectedRowModel().rows.length > 0" class="bg-muted rounded-md px-2 py-1 text-sm flex items-center">
-          {{ $t('Selected') }}: {{ table.getSelectedRowModel().rows.length }}
+          {{ $t('tables.selected') }}: {{ table.getSelectedRowModel().rows.length }}
           <Button variant="ghost" size="sm" class="ml-2 h-6 w-6 p-0" @click="table.resetRowSelection()">
-            <span class="sr-only">{{ $t('Clear selection') }}</span>
+            <span class="sr-only">{{ $t('tables.clear_selection') }}</span>
             &times;
           </Button>
         </div>
@@ -14,7 +14,7 @@
         <div v-if="enableFiltering && !manualFiltering" class="flex items-center gap-2">
           <Input
             class="max-w-sm"
-            :placeholder="$t('Search...')"
+            :placeholder="$t('tables.search_placeholder')"
             :value="globalFilter"
             @input="handleGlobalFilter"
           />
@@ -31,7 +31,7 @@
           <DropdownMenuTrigger as-child>
             <Button variant="outline" size="sm" class="ml-auto">
               <SlidersIcon class="mr-2 h-4 w-4" />
-              {{ $t('Columns') }}
+              {{ $t('tables.columns') }}
               <ChevronDownIcon class="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -104,7 +104,7 @@
               <TableRow>
                 <TableCell :colspan="table.getAllColumns().length" class="h-24 text-center">
                   <slot name="empty">
-                    {{ emptyMessage || $t('No results.') }}
+                    {{ emptyMessage || $t('tables.no_results') }}
                   </slot>
                 </TableCell>
               </TableRow>
@@ -131,13 +131,13 @@
               <PaginationItem :value="1">
                 <PaginationFirst :disabled="!table.getCanPreviousPage()" size="icon" @click="table.setPageIndex(0)">
                   <ChevronsLeftIcon class="h-4 w-4" />
-                  <span class="sr-only">{{ $t('First page') }}</span>
+                  <span class="sr-only">{{ $t('tables.first_page') }}</span>
                 </PaginationFirst>
               </PaginationItem>
               <PaginationItem :value="table.getState().pagination.pageIndex">
                 <PaginationPrevious :disabled="!table.getCanPreviousPage()" size="icon" @click="table.previousPage()">
                   <ChevronLeftIcon class="h-4 w-4" />
-                  <span class="sr-only">{{ $t('Previous page') }}</span>
+                  <span class="sr-only">{{ $t('tables.previous_page') }}</span>
                 </PaginationPrevious>
               </PaginationItem>
 
@@ -148,13 +148,13 @@
               <PaginationItem :value="table.getState().pagination.pageIndex + 2">
                 <PaginationNext :disabled="!table.getCanNextPage()" size="icon" @click="table.nextPage()">
                   <ChevronRightIcon class="h-4 w-4" />
-                  <span class="sr-only">{{ $t('Next page') }}</span>
+                  <span class="sr-only">{{ $t('tables.next_page') }}</span>
                 </PaginationNext>
               </PaginationItem>
               <PaginationItem :value="table.getPageCount()">
                 <PaginationLast :disabled="!table.getCanNextPage()" size="icon" @click="table.setPageIndex(table.getPageCount() - 1)">
                   <ChevronsRightIcon class="h-4 w-4" />
-                  <span class="sr-only">{{ $t('Last page') }}</span>
+                  <span class="sr-only">{{ $t('tables.last_page') }}</span>
                 </PaginationLast>
               </PaginationItem>
             </PaginationContent>
@@ -325,7 +325,7 @@ const selectionColumn = computed<ColumnDef<TData, any>>(() => {
         <Checkbox
           modelValue={table.getIsAllPageRowsSelected()}
           onUpdate:modelValue={value => table.toggleAllPageRowsSelected(!!value)}
-          aria-label={$t('Select all')}
+          aria-label={$t('tables.select_all')}
           class="data-[state=checked]:bg-primary"
         />
       </div>
@@ -335,7 +335,7 @@ const selectionColumn = computed<ColumnDef<TData, any>>(() => {
         <Checkbox
           modelValue={row.getIsSelected()}
           onUpdate:modelValue={value => row.toggleSelected(!!value)}
-          aria-label={$t('Select row')}
+          aria-label={$t('tables.select_row')}
           disabled={!row.getCanSelect()}
           class="data-[state=checked]:bg-primary"
         />

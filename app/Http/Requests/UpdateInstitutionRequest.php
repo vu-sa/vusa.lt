@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Validation\Rule;
+
 class UpdateInstitutionRequest extends InstitutionRequest
 {
     /**
@@ -18,9 +20,11 @@ class UpdateInstitutionRequest extends InstitutionRequest
     public function rules(): array
     {
         return array_merge(parent::rules(), [
-            'name.lt' => 'required|unique:institutions,name,'.$this->institution->id,
-            'short_name.lt' => 'nullable|unique:institutions,short_name,'.$this->institution->id,
-            'alias' => 'nullable|unique:institutions,alias,'.$this->institution->id,
+            // No database unique index backs this, so a soft-deleted record must not
+            // reserve the value — `withoutTrashed()` is exactly right here.
+            'name.lt' => ['required', Rule::unique('institutions', 'name')->ignore($this->institution->id)->withoutTrashed()],
+            'short_name.lt' => ['nullable', Rule::unique('institutions', 'short_name')->ignore($this->institution->id)->withoutTrashed()],
+            'alias' => ['nullable', Rule::unique('institutions', 'alias')->ignore($this->institution->id)->withoutTrashed()],
         ]);
     }
 }

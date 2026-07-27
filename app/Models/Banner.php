@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Scout\Searchable;
@@ -19,18 +20,22 @@ use Laravel\Scout\Searchable;
  * @property int $tenant_id
  * @property Carbon $created_at
  * @property Carbon $updated_at
+ * @property Carbon|null $deleted_at
  * @property-read Tenant $tenant
  *
  * @method static \Database\Factories\BannerFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Banner newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Banner newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Banner onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Banner query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Banner withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Banner withoutTrashed()
  *
  * @mixin \Eloquent
  */
 class Banner extends Model
 {
-    use HasFactory, Searchable;
+    use HasFactory, Searchable, SoftDeletes;
 
     protected $guarded = [];
 
@@ -45,11 +50,14 @@ class Banner extends Model
 
             $order = data_get($banner, 'order');
 
-            if ($order === null || self::query()
+            // Both queries include trashed banners: banners_order_padalinys_id_unique
+            // covers (order, tenant_id) with no regard for deleted_at, so a trashed
+            // banner still owns its slot and handing it out again is a duplicate key.
+            if ($order === null || self::withTrashed()
                 ->where('tenant_id', $tenantId)
                 ->where('order', $order)
                 ->exists()) {
-                $maxOrder = self::query()
+                $maxOrder = self::withTrashed()
                     ->where('tenant_id', $tenantId)
                     ->max('order');
 

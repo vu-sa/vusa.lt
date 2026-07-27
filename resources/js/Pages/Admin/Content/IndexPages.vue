@@ -67,12 +67,16 @@ const props = defineProps<{
   };
   filters?: Record<string, any>;
   sorting?: { id: string; desc: boolean }[];
+  showDeleted?: boolean;
+  deletedCount?: number;
 }>();
 
 const modelName = 'pages';
 const entityName = 'page';
 
 const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
+
+const canForceDelete = computed(() => usePage().props.auth?.can?.forceDelete?.page ?? false);
 
 const getRowId = (row: App.Entities.Page) => {
   return `page-${row.id}`;
@@ -138,6 +142,8 @@ const columns = computed<Array<ColumnDef<App.Entities.Page, any>>>(() => [
     canView: false,
     canEdit: true,
     canDelete: true,
+    canRestore: true,
+    canForceDelete: canForceDelete.value,
   }),
 ]);
 
@@ -157,6 +163,9 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Page>>(() => {
     enableFiltering: true,
     enableColumnVisibility: false,
     enableRowSelection: false,
+    allowToggleDeleted: true,
+    showDeleted: props.showDeleted,
+    deletedCount: props.deletedCount,
 
     headerTitle: 'Puslapiai',
     icon: PageIcon,

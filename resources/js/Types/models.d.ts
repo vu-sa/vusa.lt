@@ -71,7 +71,6 @@ declare global {
       notes?: string | null
       created_at?: string | null
       updated_at?: string | null
-      deleted_at?: string | null
       // relations
       approvable?: Approval
       user?: User
@@ -114,6 +113,7 @@ declare global {
       tenant_id: number
       created_at: string
       updated_at: string
+      deleted_at?: string | null
       // relations
       tenant?: Tenant
       // counts
@@ -142,6 +142,7 @@ declare global {
       created_at: string
       updated_at: string
       registration_form_id?: number | null
+      deleted_at?: string | null
       // mutators
       main_image_url: string
       translatable_columns_from: Array<unknown>
@@ -166,7 +167,9 @@ declare global {
       updated_at: string
       name?: Array<unknown> | null
       description?: Array<unknown> | null
+      deleted_at?: string | null
       // mutators
+      force_delete_blocked_reason: string
       translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
@@ -389,6 +392,7 @@ declare global {
       updated_at: string
       deleted_at?: string | null
       // mutators
+      force_delete_blocked_reason: string
       has_protocol: boolean
       has_report: boolean
       translatable_columns_from: Array<unknown>
@@ -495,7 +499,6 @@ declare global {
       deleted_externally_at?: string | null
       created_at?: string | null
       updated_at?: string | null
-      deleted_at?: string | null
       // mutators
       formatted_size: string
       file_type_label: string
@@ -517,6 +520,7 @@ declare global {
       updated_at: string
       deleted_at?: string | null
       // mutators
+      force_delete_blocked_reason: string
       translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
@@ -591,6 +595,7 @@ declare global {
       related_institutions: unknown
       maybe_short_name: unknown
       has_public_meetings: boolean
+      force_delete_blocked_reason: string
       has_protocol: boolean
       has_report: boolean
       translatable_columns_from: Array<unknown>
@@ -835,6 +840,7 @@ declare global {
       extra_attributes?: Array<unknown> | null
       created_at?: string
       updated_at?: string
+      deleted_at?: string | null
       // relations
       user?: User
       // counts
@@ -1179,6 +1185,7 @@ declare global {
       related_institutions: unknown
       maybe_short_name: unknown
       has_public_meetings: boolean
+      force_delete_blocked_reason: string
       has_protocol: boolean
       has_report: boolean
       translatable_columns_from: Array<unknown>
@@ -1304,6 +1311,7 @@ declare global {
       lang?: string | null
       created_at: string
       updated_at: string
+      deleted_at?: string | null
       // relations
       tenant?: Tenant
       // counts
@@ -1456,6 +1464,7 @@ declare global {
       updated_at: string
       deleted_at?: string | null
       // mutators
+      force_delete_blocked_reason: string
       translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
@@ -1594,7 +1603,9 @@ declare global {
       tenant_id: number
       created_at: string
       updated_at: string
+      deleted_at?: string | null
       // mutators
+      force_delete_blocked_reason: string
       translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
@@ -1617,6 +1628,7 @@ declare global {
       tenant_id: number
       created_at: string
       updated_at: string
+      deleted_at?: string | null
       // mutators
       total_credits: number
       translatable_columns_from: Array<unknown>
@@ -1666,6 +1678,7 @@ declare global {
       updated_at: string
       name?: Array<unknown> | null
       description?: Array<unknown> | null
+      deleted_at?: string | null
       // mutators
       translatable_columns_from: Array<unknown>
       translations: unknown
@@ -1690,7 +1703,6 @@ declare global {
       completed_at?: string | null
       created_at: string
       updated_at: string
-      deleted_at?: string | null
       // mutators
       icon: string
       color: string
@@ -1816,7 +1828,9 @@ declare global {
       max_participants?: number | null
       created_at: string
       updated_at: string
+      deleted_at?: string | null
       // mutators
+      force_delete_blocked_reason: string
       translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
@@ -1877,6 +1891,7 @@ declare global {
       updated_at: string
       deleted_at?: string | null
       // mutators
+      force_delete_blocked_reason: string
       has_protocol: boolean
       has_report: boolean
       translatable_columns_from: Array<unknown>
@@ -1956,6 +1971,7 @@ declare global {
       name_was_changed?: boolean
       // mutators
       has_password: unknown
+      force_delete_blocked_reason: string
       translatable_columns_from: Array<unknown>
       translations: unknown
       // relations

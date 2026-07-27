@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Rules\SoftDeleteRules;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Collection;
 
@@ -44,7 +45,7 @@ class ReorderDutiesRequest extends FormRequest
     {
         return [
             'duties' => ['required', 'array'],
-            'duties.*.id' => ['required', 'exists:duties,id'],
+            'duties.*.id' => ['required', SoftDeleteRules::existsLive('duties')],
             'duties.*.order' => ['required', 'integer'],
         ];
     }

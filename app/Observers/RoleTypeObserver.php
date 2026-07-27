@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\RoleType;
+use App\Services\Permissions\PermissionMapBuilder;
 use Illuminate\Support\Facades\Cache;
 
 class RoleTypeObserver
@@ -30,8 +31,7 @@ class RoleTypeObserver
         $role->duties()->syncWithoutDetaching($duties);
 
         $role->usersThroughDuties->each(function ($user) {
-            Cache::forget('index-permissions-'.$user->id);
-            Cache::forget('create-permissions-'.$user->id);
+            PermissionMapBuilder::forgetCachedMaps($user->id);
             Cache::forget(HandleInertiaRequests::registrationFormsCacheKey($user->id));
         });
     }
@@ -61,8 +61,7 @@ class RoleTypeObserver
         $role->duties()->detach($duties);
 
         $role->usersThroughDuties->each(function ($user) {
-            Cache::forget('index-permissions-'.$user->id);
-            Cache::forget('create-permissions-'.$user->id);
+            PermissionMapBuilder::forgetCachedMaps($user->id);
             Cache::forget(HandleInertiaRequests::registrationFormsCacheKey($user->id));
         });
     }

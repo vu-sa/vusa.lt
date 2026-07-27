@@ -178,14 +178,17 @@ describe('authorized access', function () {
             ->assertRedirect(route('banners.index'))
             ->assertSessionHas('info');
 
-        $this->assertDatabaseMissing('banners', [
+        $this->assertSoftDeleted('banners', [
             'id' => $this->banner->id,
         ]);
     });
 });
 
 describe('banner functionality', function () {
-    test('banner is created with random order', function () {
+    // Order used to be `rand(1, 10)`, which could collide with the
+    // banners_order_padalinys_id_unique index. The model now appends to the end of the
+    // tenant's existing banners, counting trashed ones since they still hold their slot.
+    test('banner is created at the end of its tenant order', function () {
         $validData = getControllerTestData('Banner')['valid'];
         $validData['title'] = 'Banner with order';
 
@@ -194,7 +197,26 @@ describe('banner functionality', function () {
             ->assertStatus(302);
 
         $banner = Banner::where('title', 'Banner with order')->first();
-        expect($banner->order)->toBeGreaterThan(0)->toBeLessThanOrEqual(10);
+        $highestOtherOrder = Banner::withTrashed()
+            ->where('tenant_id', $banner->tenant_id)
+            ->whereKeyNot($banner->id)
+            ->max('order') ?? 0;
+
+        expect($banner->order)->toBe($highestOtherOrder + 1);
+    });
+
+    test('a trashed banner keeps its order slot so the unique index is not violated', function () {
+        $trashed = Banner::factory()->for($this->tenant)->create(['order' => 500]);
+        $trashed->delete();
+
+        $validData = getControllerTestData('Banner')['valid'];
+        $validData['title'] = 'Banner after trashed';
+
+        asUser($this->admin)
+            ->post(route('banners.store'), $validData)
+            ->assertStatus(302);
+
+        expect(Banner::where('title', 'Banner after trashed')->first()->order)->toBe(501);
     });
 
     test('banner defaults is_active to false when not provided', function () {
@@ -319,7 +341,7 @@ describe('cache functionality', function () {
             ->assertStatus(302);
 
         // Verify the banner was deleted (cache should be cleared)
-        $this->assertDatabaseMissing('banners', [
+        $this->assertSoftDeleted('banners', [
             'id' => $this->banner->id,
         ]);
     });

@@ -132,7 +132,7 @@ describe('DataTable.vue', () => {
 
     it('shows empty state message when data is empty', () => {
       wrapper = createWrapper({ data: [] });
-      expect(wrapper.find('tbody tr').text()).toContain('No results');
+      expect(wrapper.find('tbody tr').text()).toContain('tables.no_results');
     });
 
     it('shows custom empty message via prop', () => {
@@ -348,7 +348,7 @@ describe('DataTable.vue', () => {
       await rowCheckbox!.setValue(true);
       await nextTick();
 
-      expect(wrapper.text()).toContain('Selected');
+      expect(wrapper.text()).toContain('tables.selected');
       expect(wrapper.text()).toContain('1');
     });
 

@@ -39,7 +39,7 @@
         <slot name="empty">
           <div class="flex flex-col items-center justify-center py-6 text-center">
             <p class="text-sm text-muted-foreground">
-              {{ emptyMessage || $t('No results found.') }}
+              {{ emptyMessage || $t('tables.no_results') }}
             </p>
           </div>
         </slot>
@@ -97,12 +97,12 @@
               <PaginationContent class="gap-1">
                 <PaginationFirst size="icon">
                   <ChevronsLeftIcon class="h-4 w-4" />
-                  <span class="sr-only">{{ $t('First page') }}</span>
+                  <span class="sr-only">{{ $t('tables.first_page') }}</span>
                 </PaginationFirst>
 
                 <PaginationPrevious size="icon">
                   <ChevronLeftIcon class="h-4 w-4" />
-                  <span class="sr-only">{{ $t('Previous page') }}</span>
+                  <span class="sr-only">{{ $t('tables.previous_page') }}</span>
                 </PaginationPrevious>
 
                 <div class="flex items-center gap-1.5 px-1">
@@ -128,12 +128,12 @@
 
                 <PaginationNext size="icon">
                   <ChevronRightIcon class="h-4 w-4" />
-                  <span class="sr-only">{{ $t('Next page') }}</span>
+                  <span class="sr-only">{{ $t('tables.next_page') }}</span>
                 </PaginationNext>
 
                 <PaginationLast size="icon">
                   <ChevronsRightIcon class="h-4 w-4" />
-                  <span class="sr-only">{{ $t('Last page') }}</span>
+                  <span class="sr-only">{{ $t('tables.last_page') }}</span>
                 </PaginationLast>
               </PaginationContent>
             </Pagination>
@@ -142,7 +142,7 @@
           <!-- Show empty state when no results -->
           <template v-else>
             <div class="text-xs text-muted-foreground">
-              {{ $t('No results found') }}
+              {{ $t('tables.no_results') }}
             </div>
           </template>
         </div>
@@ -152,7 +152,7 @@
         <slot name="empty">
           <div class="flex flex-col items-center justify-center py-6 text-center">
             <p class="text-sm text-muted-foreground">
-              {{ emptyMessage || $t('No results found.') }}
+              {{ emptyMessage || $t('tables.no_results') }}
             </p>
           </div>
         </slot>

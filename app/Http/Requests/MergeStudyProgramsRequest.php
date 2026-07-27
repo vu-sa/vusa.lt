@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\StudyProgram;
+use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -24,9 +25,9 @@ class MergeStudyProgramsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'target_study_program_id' => 'required|exists:study_programs,id',
+            'target_study_program_id' => ['required', SoftDeleteRules::existsLive('study_programs')],
             'source_study_program_ids' => 'required|array|min:1',
-            'source_study_program_ids.*' => 'required|exists:study_programs,id|different:target_study_program_id',
+            'source_study_program_ids.*' => ['required', SoftDeleteRules::existsLive('study_programs'), 'different:target_study_program_id'],
         ];
     }
 

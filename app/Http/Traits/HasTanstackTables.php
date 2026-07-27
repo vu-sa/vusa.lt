@@ -2,10 +2,12 @@
 
 namespace App\Http\Traits;
 
+use App\Contracts\GuardsForceDelete;
 use App\Services\ModelAuthorizer;
 use App\Services\TanstackTableService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 trait HasTanstackTables
 {
@@ -72,6 +74,71 @@ trait HasTanstackTables
         }
 
         return $query;
+    }
+
+    /**
+     * Count the soft-deleted records reachable through an already-filtered query.
+     *
+     * Pass the query returned by {@see applyTanstackFilters()} so the badge shown
+     * on the "Show deleted" toggle matches exactly what the trashed view will list
+     * (same search, filters and tenant/permission scoping).
+     *
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     *
+     * Callers must pass the query *after* every scoping constraint they intend to
+     * count against — including any tenant scoping a controller applies itself. When
+     * the trash view is open the query already carries `onlyTrashed()`, so the count
+     * re-states that constraint; it is idempotent in effect and deliberately kept
+     * this way rather than counting from an earlier, less-scoped builder.
+     *
+     * @param  Builder<TModel>  $query  The filtered query builder
+     */
+    protected function getTrashedCount(Builder $query, ?TanstackTableService $tableService = null): int
+    {
+        return ($tableService ?? app(TanstackTableService::class))->getTrashedCount($query);
+    }
+
+    /**
+     * Prepare a trash view to explain why permanent deletion is refused for each row.
+     *
+     * Only applies while the trash view is open, because that is the only place the
+     * action is offered — and because {@see GuardsForceDelete} models
+     * would otherwise run a count query per relation per row on every index request.
+     *
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     *
+     * @param  Builder<TModel>  $query
+     * @param  list<string>  $relations  relations the model's reason builder counts
+     * @return Builder<TModel>
+     */
+    protected function withForceDeleteBlockers(Builder $query, Request $request, array $relations = []): Builder
+    {
+        if (! $request->boolean('showDeleted')) {
+            return $query;
+        }
+
+        return $relations === [] ? $query : $query->withCount($relations);
+    }
+
+    /**
+     * Serialize the refusal reason onto each row of a trash view.
+     *
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     *
+     * @param  Collection<int, TModel>  $rows
+     * @return Collection<int, TModel>
+     */
+    protected function appendForceDeleteBlockedReason(Collection $rows, Request $request): Collection
+    {
+        if (! $request->boolean('showDeleted')) {
+            return $rows;
+        }
+
+        return $rows->each(function ($row) {
+            if ($row instanceof GuardsForceDelete) {
+                $row->append('force_delete_blocked_reason');
+            }
+        });
     }
 
     /**

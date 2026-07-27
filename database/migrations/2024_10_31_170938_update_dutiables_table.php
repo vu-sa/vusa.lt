@@ -38,7 +38,10 @@ return new class extends Migration
             $extra_attributes = json_decode($dutiable->extra_attributes);
 
             if (isset($extra_attributes?->study_program)) {
-                $studyProgram = StudyProgram::where('name->lt', $extra_attributes->study_program)->first();
+                $studyProgram = StudyProgram::query()
+                    ->withoutGlobalScopes()
+                    ->where('name->lt', $extra_attributes->study_program)
+                    ->first();
 
                 echo $studyProgram.'\n';
                 echo $extra_attributes->study_program;

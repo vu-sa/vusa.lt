@@ -20,6 +20,48 @@ return [
     'duty' => [
         'model' => '{1} pareiga|[2,9] pareigos|[10,*] pareigų',
     ],
+    'user' => [
+        'model' => '{1} narys|[2,9] nariai|[10,*] narių',
+    ],
+    'news' => [
+        'model' => '{1} naujiena|[2,9] naujienos|[10,*] naujienų',
+    ],
+    'page' => [
+        'model' => '{1} puslapis|[2,9] puslapiai|[10,*] puslapių',
+    ],
+    'banner' => [
+        'model' => '{1} baneris|[2,9] baneriai|[10,*] banerių',
+    ],
+    'category' => [
+        'model' => '{1} kategorija|[2,9] kategorijos|[10,*] kategorijų',
+    ],
+    'tag' => [
+        'model' => '{1} žyma|[2,9] žymos|[10,*] žymų',
+    ],
+    'type' => [
+        'model' => '{1} turinio tipas|[2,9] turinio tipai|[10,*] turinio tipų',
+    ],
+    'relationship' => [
+        'model' => '{1} ryšys|[2,9] ryšiai|[10,*] ryšių',
+    ],
+    'calendar' => [
+        'model' => '{1} renginys|[2,9] renginiai|[10,*] renginių',
+    ],
+    'form' => [
+        'model' => '{1} forma|[2,9] formos|[10,*] formų',
+    ],
+    'role' => [
+        'model' => '{1} rolė|[2,9] rolės|[10,*] rolių',
+    ],
+    'permission' => [
+        'model' => '{1} teisė|[2,9] teisės|[10,*] teisių',
+    ],
+    'studyProgram' => [
+        'model' => '{1} studijų programa|[2,9] studijų programos|[10,*] studijų programų',
+    ],
+    'studySet' => [
+        'model' => '{1} individualių studijų komplektas|[2,9] individualių studijų komplektai|[10,*] individualių studijų komplektų',
+    ],
     'institution' => [
         'model' => '{1} institucija|[2,9] institucijos|[10,*] institucijų',
         'name' => 'pavadinimas',
@@ -51,7 +93,7 @@ return [
         'model' => '{1} išteklius|[2,9] ištekliai|[10,*] išteklių',
     ],
     'resource_category' => [
-        'model' => '{1} išteklių kategorija|[2,9] išteklių kategorijos|[10,19] išteklių kategorijų',
+        'model' => '{1} išteklių kategorija|[2,9] išteklių kategorijos|[10,*] išteklių kategorijų',
     ],
     'reservation_resource' => [
         'model' => '{1} rezervacijos išteklius|[2,9] rezervacijos ištekliai|[10,*] rezervacijos išteklių',
@@ -61,7 +103,7 @@ return [
         'help' => 'Kaip veikia :model?',
     ],
     'membership' => [
-        'model' => '{1} narystė|[2,9] narystės|[10,*] narystės',
+        'model' => '{1} narystė|[2,9] narystės|[10,*] narysčių',
     ],
     'problem' => [
         'model' => '{1} problema|[2,9] problemos|[10,*] problemų',

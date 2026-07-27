@@ -1,124 +1,141 @@
 <template>
-  <div>
-    <Popover v-if="hasAvailableActions">
-      <PopoverTrigger as-child>
-        <Button variant="ghost" size="icon" class="h-8 w-8 p-0">
-          <MoreHorizontalIcon class="h-4 w-4" />
-          <span class="sr-only">{{ $t('Open menu') }}</span>
+  <div class="flex items-center justify-start gap-0.5">
+    <TooltipProvider v-if="inlineActions.length > 0">
+      <Tooltip v-for="action in inlineActions" :key="action.key">
+        <TooltipTrigger as-child>
+          <Button
+            variant="ghost"
+            size="icon"
+            class="size-8"
+            :data-testid="`row-action-${action.key}`"
+            @click="action.run()"
+          >
+            <component :is="action.icon" class="size-4" />
+            <span class="sr-only">{{ action.label }}</span>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>{{ action.label }}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+
+    <!--
+      Only destructive actions live behind the overflow menu: a stray click on a
+      row must never delete anything. Everything reversible stays inline above.
+    -->
+    <DropdownMenu v-if="hasOverflowContent">
+      <DropdownMenuTrigger as-child>
+        <Button variant="ghost" size="icon" class="size-8" data-testid="row-actions-overflow">
+          <MoreHorizontalIcon class="size-4" />
+          <span class="sr-only">{{ $t('tables.open_menu') }}</span>
         </Button>
-      </PopoverTrigger>
-      <PopoverContent align="end" class="w-56 p-0">
-        <div class="space-y-1 p-1">
-          <!-- Standard actions -->
-          <Button
-            v-if="canView"
-            variant="ghost"
-            size="sm"
-            class="w-full justify-start"
-            :disabled="!!model.deleted_at"
-            :class="{ 'opacity-50 cursor-not-allowed': model.deleted_at }"
-            @click="!model.deleted_at && handleAction('view')"
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" class="w-64">
+        <slot name="custom-actions" :model :handle-action="handleCustomAction" />
+        <DropdownMenuSeparator v-if="$slots['custom-actions'] && hasDestructiveActions" />
+
+        <DropdownMenuItem
+          v-if="canDelete && !model.deleted_at"
+          variant="destructive"
+          data-testid="row-action-delete"
+          @select="handleDeleteClick()"
+        >
+          <Trash2Icon />
+          {{ $t('forms.delete') }}
+        </DropdownMenuItem>
+
+        <template v-if="canForceDelete && model.deleted_at">
+          <!--
+            When the server has told us why this record cannot be erased, show the
+            reason in place of the action. A disabled menu item swallows pointer
+            events, so a tooltip would never surface the explanation.
+          -->
+          <div
+            v-if="forceDeleteBlockedReason"
+            class="px-2 py-1.5 text-xs text-muted-foreground"
+            data-testid="row-action-force-delete-blocked"
           >
-            <EyeIcon class="mr-2 h-4 w-4" />
-            {{ $t('View') }}
-          </Button>
-
-          <Button
-            v-if="canEdit"
-            variant="ghost"
-            size="sm"
-            class="w-full justify-start"
-            :disabled="!!model.deleted_at"
-            :class="{ 'opacity-50 cursor-not-allowed': model.deleted_at }"
-            @click="!model.deleted_at && handleAction('edit')"
+            <span class="mb-1 flex items-center gap-2 font-medium text-foreground/70">
+              <ShredderIcon class="size-4" />
+              {{ $t('trash.permanently_delete') }}
+            </span>
+            {{ forceDeleteBlockedReason }}
+          </div>
+          <DropdownMenuItem
+            v-else
+            variant="destructive"
+            data-testid="row-action-force-delete"
+            @select="isForceDeleteDialogOpen = true"
           >
-            <PencilIcon class="mr-2 h-4 w-4" />
-            {{ $t('Edit') }}
-          </Button>
-
-          <Button
-            v-if="canDuplicate && !model.deleted_at"
-            variant="ghost"
-            size="sm"
-            class="w-full justify-start"
-            @click="handleAction('duplicate')"
-          >
-            <CopyIcon class="mr-2 h-4 w-4" />
-            {{ $t('Duplicate') }}
-          </Button>
-
-          <!-- Custom actions slot -->
-          <slot name="custom-actions" :model :handle-action="handleCustomAction" />
-
-          <!-- Danger zone with separator -->
-          <Separator v-if="(canDelete && !model.deleted_at) || (canRestore && model.deleted_at)" class="data-[orientation=horizontal]:my-0.5" />
-
-          <Button
-            v-if="canDelete && !model.deleted_at"
-            variant="ghost"
-            size="sm"
-            class="w-full justify-start text-destructive hover:text-destructive"
-            @click="handleDeleteClick()"
-          >
-            <Trash2Icon class="mr-2 h-4 w-4" />
-            {{ $t('Delete') }}
-          </Button>
-
-          <Button
-            v-if="canRestore && model.deleted_at"
-            variant="ghost"
-            size="sm"
-            class="w-full justify-start"
-            @click="handleAction('restore')"
-          >
-            <HistoryIcon class="mr-2 h-4 w-4" />
-            {{ $t('Restore') }}
-          </Button>
-        </div>
-      </PopoverContent>
-    </Popover>
+            <ShredderIcon />
+            {{ $t('trash.permanently_delete') }}
+          </DropdownMenuItem>
+        </template>
+      </DropdownMenuContent>
+    </DropdownMenu>
 
     <!-- Delete Confirmation Dialog -->
     <Dialog v-model:open="isConfirmDeleteDialogOpen">
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{{ deleteConfirmTitle || $t('Delete Item') }}</DialogTitle>
+          <DialogTitle>{{ deleteConfirmTitle || $t('tables.delete_confirm_title') }}</DialogTitle>
           <DialogDescription>
-            {{ deleteConfirmMessage || $t('Are you sure you want to delete this item? This action cannot be undone.') }}
+            {{ deleteConfirmMessage || $t('tables.delete_confirm_description') }}
+            <span v-if="deleteNote" class="mt-2 block">{{ deleteNote }}</span>
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <DialogClose as-child>
             <Button variant="outline">
-              {{ $t('Cancel') }}
+              {{ $t('forms.cancel') }}
             </Button>
           </DialogClose>
           <Button variant="destructive" @click="performDelete">
-            {{ $t('Delete') }}
+            {{ $t('forms.delete') }}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <ConfirmDangerousActionDialog
+      v-model:open="isForceDeleteDialogOpen"
+      :title="$t('trash.permanently_delete')"
+      :description="forceDeleteDescription"
+      :confirmation-text="forceDeleteConfirmationText"
+      :confirm-label="$t('trash.permanently_delete')"
+      @confirm="performForceDelete"
+    />
   </div>
 </template>
 
-<script setup lang="ts" generic="TModel extends { id: string | number, deleted_at?: string | null }">
-import { ref, computed } from 'vue';
+<script setup lang="ts" generic="TModel extends { id: string | number, deleted_at?: string | null, force_delete_blocked_reason?: string | null }">
+import { ref, computed, useSlots, type Component } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import {
   CopyIcon,
   EyeIcon,
   HistoryIcon,
   MoreHorizontalIcon,
   PencilIcon,
+  ShredderIcon,
   Trash2Icon,
 } from 'lucide-vue-next';
 
 // UI Components
 import { Button } from '@/Components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
-import { Separator } from '@/Components/ui/separator';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/Components/ui/dropdown-menu';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/Components/ui/tooltip';
 import {
   Dialog,
   DialogContent,
@@ -128,6 +145,7 @@ import {
   DialogTitle,
   DialogClose,
 } from '@/Components/ui/dialog';
+import ConfirmDangerousActionDialog from '@/Components/ui/data-table/ConfirmDangerousActionDialog.vue';
 
 // Props
 const props = defineProps<{
@@ -140,6 +158,7 @@ const props = defineProps<{
   duplicateRoute?: string;
   deleteRoute?: string;
   restoreRoute?: string;
+  forceDeleteRoute?: string;
 
   // Permissions
   canView?: boolean;
@@ -147,6 +166,7 @@ const props = defineProps<{
   canDuplicate?: boolean;
   canDelete?: boolean;
   canRestore?: boolean;
+  canForceDelete?: boolean;
 
   // Confirmation settings
   confirmDelete?: boolean;
@@ -162,21 +182,83 @@ const emit = defineEmits<{
   (e: 'duplicate', model: TModel): void;
   (e: 'delete', model: TModel): void;
   (e: 'restore', model: TModel): void;
+  (e: 'force-delete', model: TModel): void;
   (e: 'custom-action', action: string, model: TModel): void;
 }>();
 
 // Dialog state
 const isConfirmDeleteDialogOpen = ref(false);
+const isForceDeleteDialogOpen = ref(false);
 
-// Computed property to check if there are any available actions
-const hasAvailableActions = computed(() => {
-  // If model is soft-deleted, only restore action is available
-  if (props.model.deleted_at) {
-    return !!(props.canRestore);
+const page = usePage();
+const slots = useSlots();
+
+const isTrashed = computed(() => !!props.model.deleted_at);
+
+type InlineAction = {
+  key: string;
+  icon: Component;
+  label: string;
+  run: () => void;
+};
+
+/**
+ * Reversible actions, rendered directly in the cell. A trashed row can only be
+ * restored — viewing or editing it would resolve to a route that rejects
+ * trashed models.
+ */
+const inlineActions = computed<InlineAction[]>(() => {
+  if (isTrashed.value) {
+    return props.canRestore
+      ? [{ key: 'restore', icon: HistoryIcon, label: $t('trash.restore'), run: () => handleAction('restore') }]
+      : [];
   }
 
-  // If model is not soft-deleted, check for other actions
-  return !!(props.canView || props.canEdit || props.canDuplicate || props.canDelete);
+  const actions: InlineAction[] = [];
+
+  if (props.canView) {
+    actions.push({ key: 'view', icon: EyeIcon, label: $t('tables.view'), run: () => handleAction('view') });
+  }
+
+  if (props.canEdit) {
+    actions.push({ key: 'edit', icon: PencilIcon, label: $t('forms.edit'), run: () => handleAction('edit') });
+  }
+
+  if (props.canDuplicate) {
+    actions.push({ key: 'duplicate', icon: CopyIcon, label: $t('tables.duplicate'), run: () => handleAction('duplicate') });
+  }
+
+  return actions;
+});
+
+const hasDestructiveActions = computed(() => {
+  return isTrashed.value ? !!props.canForceDelete : !!props.canDelete;
+});
+
+const hasOverflowContent = computed(() => hasDestructiveActions.value || !!slots['custom-actions']);
+
+/** Translated explanation of why this record cannot be permanently deleted, supplied by the server. */
+const forceDeleteBlockedReason = computed(() => props.model.force_delete_blocked_reason ?? null);
+
+/**
+ * Optional per-model sentence spelling out what deletion actually costs — a duty is
+ * not a banner. Resolved by convention from `modelName`; `trans()` echoes the key back
+ * when there is no entry, which is the signal that this model needs no extra wording.
+ */
+const noteFor = (action: 'delete' | 'force_delete'): string | null => {
+  const key = `trash.notes.${props.modelName}.${action}`;
+  const translated = $t(key);
+
+  return translated === key ? null : translated;
+};
+
+const deleteNote = computed(() => noteFor('delete'));
+
+const forceDeleteDescription = computed(() => {
+  const note = noteFor('force_delete');
+  const base = $t('trash.permanently_delete_description');
+
+  return note ? `${base} ${note}` : base;
 });
 
 // Action handler for standard actions
@@ -209,11 +291,41 @@ const handleAction = (action: string) => {
 
     case 'restore':
       if (props.restoreRoute) {
-        router.patch(props.restoreRoute);
+        router.patch(props.restoreRoute, {}, {
+          preserveScroll: true,
+          preserveState: true,
+        });
       }
       break;
   }
 };
+
+const getLocalizedValue = (value: unknown): string | null => {
+  if (typeof value === 'string' || typeof value === 'number') {
+    return String(value);
+  }
+
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return null;
+  }
+
+  const translations = value as Record<string, unknown>;
+  const locale = String((page.props as any)?.app?.locale ?? 'lt');
+  const localizedValue = translations[locale] ?? translations.lt ?? Object.values(translations).find(item => typeof item === 'string' && item.trim() !== '');
+
+  return typeof localizedValue === 'string' || typeof localizedValue === 'number'
+    ? String(localizedValue)
+    : null;
+};
+
+const forceDeleteConfirmationText = computed(() => {
+  const modelRecord = props.model as Record<string, unknown>;
+
+  return getLocalizedValue(modelRecord.name)
+    ?? getLocalizedValue(modelRecord.title)
+    ?? getLocalizedValue(modelRecord.short_name)
+    ?? String(props.model.id);
+});
 
 // Handler for custom actions provided by parent
 const handleCustomAction = (action: string) => {
@@ -232,6 +344,16 @@ const performDelete = () => {
   emit('delete', props.model);
   // Ensure dialog is closed even if no route is provided but emit happens
   isConfirmDeleteDialogOpen.value = false;
+};
+
+const performForceDelete = () => {
+  if (props.forceDeleteRoute) {
+    router.delete(props.forceDeleteRoute, {
+      preserveScroll: true,
+    });
+  }
+
+  emit('force-delete', props.model);
 };
 
 // Handle delete button click: either show confirmation or delete directly

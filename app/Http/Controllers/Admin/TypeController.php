@@ -6,16 +6,18 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexTypeRequest;
 use App\Http\Requests\StoreTypeRequest;
 use App\Http\Requests\UpdateTypeRequest;
+use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Duty;
 use App\Models\Role;
 use App\Models\Type;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
+use Illuminate\Http\RedirectResponse;
 
 class TypeController extends AdminController
 {
-    use HasTanstackTables;
+    use HandlesSoftDeletes, HasTanstackTables;
 
     public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
 
@@ -44,8 +46,15 @@ class TypeController extends AdminController
         );
 
         // Paginate results
+        $deletedCount = $this->getTrashedCount($query);
+
+        // Trash view only: lets the table say why permanent deletion is refused.
+        $query = $this->withForceDeleteBlockers($query, $request, []);
+
         $types = $query->paginate($request->input('per_page', 20))
             ->withQueryString();
+
+        $this->appendForceDeleteBlockedReason($types->getCollection(), $request);
 
         // Get the sorting state using the custom method to ensure consistent parsing
         $sorting = $request->getSorting();
@@ -62,6 +71,8 @@ class TypeController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $sorting,
+            'showDeleted' => $request->boolean('showDeleted', false),
+            'deletedCount' => $deletedCount,
             'initialSorting' => $sorting,
         ]);
     }
@@ -169,12 +180,13 @@ class TypeController extends AdminController
             ->with('success', 'Turinio tipas ištrintas sėkmingai.');
     }
 
-    public function restore(Type $type)
+    public function restore(Type $type): RedirectResponse
     {
-        $this->handleAuthorization('restore', $type);
+        return $this->restoreModel($type, 'Tipas atkurtas!');
+    }
 
-        $type->restore();
-
-        return back()->with('success', 'Tipas atkurtas!');
+    public function forceDelete(Type $type): RedirectResponse
+    {
+        return $this->forceDeleteModel($type);
     }
 }

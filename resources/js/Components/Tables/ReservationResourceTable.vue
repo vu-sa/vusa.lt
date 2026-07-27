@@ -627,7 +627,7 @@ const columns = computed<ColumnDef<App.Entities.Resource>[]>(() => [
   },
   {
     id: 'actions',
-    header: () => $t('Veiksmai'),
+    header: () => $t('tables.actions'),
     size: 200,
     cell: ({ row }) => {
       const resource = row.original;

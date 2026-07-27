@@ -7,18 +7,26 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
-## v1.17 — Registracijos pasiekiamos iš šoninės juostos (2026-07-27) {#v1-17}
+## v1.17 — Ištrintų įrašų valdymas ir patogesni sąrašai (2026-07-27) {#v1-17}
 
-- 🔧 **Veikia greiti veiksmai šoninėje juostoje** — paspaudus „Naujas susitikimas“, „Nauja naujiena“ ar „Nauja rezervacija“ mygtukus nebemeta klaidos ir atidaromas atitinkamas puslapis
-
-- ⭐ **Narių ir studentų atstovų registracijos šoninėje juostoje ir formų sąraše** — abi registracijos formos pasiekiamos po „Svetainė“ punktu, o jas tvarkantys žmonės gali atidaryti ir bendrą formų sąrašą neturėdami formų redagavimo teisių.
-- ⭐ **Registracijų atsisiuntimas į Excel** — mygtukas registracijų lange vėl veikia, šalia matosi bendras registracijų skaičius ir paskutinės registracijos data
-- 🔧 **Studentų atstovų registracijos atskirtos pagal padalinį** — institucijų koordinatoriams rodomos tik jų padalinio institucijoms pateiktos registracijos ir jų skaičius.
-- ✨ **Nuoroda generuojama automatiškai** — kuriant registracijos formą nuoroda susikuria pagal pavadinimą (lietuviškai ir angliškai), matosi pilnas adresas su kopijavimo bei atidarymo mygtukais. Įrašius nuorodą ranka, automatinis generavimas nutrūksta, o keičiant esamos formos nuorodą įspėjama, kad sena nuoroda nustos veikti
-- ✨ **Institucijų veiklos statusai ir priminimai** — aiškesnės žymos parodo, kada veikla atnaujinta, kada artėja terminas pranešti ir kaip pateikiami susiję veiksmai; pranešimas apie neplanuojamą posėdį laikomas naujausiu veiklos atnaujinimu
-- ✨ **Padalinių institucijų būklės suvestinė ir nuoseklūs filtrai ViSAK** — administratoriai virš laiko juostos gali pasirinkti vieną ar kelis padalinius, matyti jų institucijų būklės skaičius ir peržiūrėti paieška bei puslapiavimu papildytą lentelę; asmeniniame bei viso ekrano vaizduose padalinių filtrai veikia taip pat, o bent vienas padalinys visada lieka pasirinktas
-- 🔧 **Formos laukelio aprašymas nebedingsta** — redaguojant formą, kuri jau turi registracijų, laukelių aprašymai būdavo perrašomi laukelio tipu
+- ⭐ **Ištrintus įrašus galima atkurti** — baneriai, kalendoriaus renginiai, greitosios nuorodos, navigacijos punktai, kategorijos, žymos, mokymai, studijų programos ir studijų rinkiniai nebeprarandami iškart
+- ⭐ **Ištrynimas visam laikui** — atskiroje ištrintų įrašų skiltyje, tik patvirtinus įrašo pavadinimą; veiksmui reikia atskiros teisės, kurią rolėse galima suteikti nekeičiant įprastos trynimo teisės
+- ⭐ **Narių ir studentų atstovų registracijos šoninėje juostoje** — abi formos pasiekiamos po „Svetainė“ punktu, o jas tvarkantys žmonės gali atidaryti formų sąrašą neturėdami formų redagavimo teisių
+- ⭐ **Registracijų atsisiuntimas į Excel** — mygtukas vėl veikia, šalia matosi bendras registracijų skaičius ir paskutinės registracijos data
+- ✨ **Perjungiklis tarp aktyvių ir ištrintų įrašų** — matosi, kurį vaizdą žiūri ir kiek įrašų ištrinta; lentelėje rodomas ir ištrynimo laikas
+- ✨ **Veiksmai matomi iškart sąrašuose** — peržiūra, redagavimas ir atkūrimas nebeslepiami po „⋯“ mygtuku; ištrynimas lieka atskirame meniu, kad nebūtų paspaustas netyčia
+- ✨ **Institucijų veiklos statusai ir priminimai** — aiškesnės žymos parodo, kada veikla atnaujinta ir kada artėja terminas pranešti; pranešimas apie neplanuojamą posėdį laikomas veiklos atnaujinimu
+- ✨ **Padalinių būklės suvestinė ViSAK** — virš laiko juostos galima pasirinkti kelis padalinius, matyti jų institucijų būklės skaičius ir naudotis paieška bei puslapiavimu
+- 🔧 **Negrįžtamas pareigybės ištrynimas nebemeta klaidos** — parodoma, kodėl pareigybės su narystės istorija ištrinti negalima; istorija išsaugoma
+- 🔧 **Studentų atstovų registracijos atskirtos pagal padalinį** — koordinatoriams rodomos tik jų padalinio institucijoms pateiktos registracijos
+- 🔧 **Formos laukelio aprašymas nebedingsta** — redaguojant formą su registracijomis aprašymai būdavo perrašomi laukelio tipu
+- 🔧 **Veikia greiti veiksmai šoninėje juostoje** — „Naujas susitikimas“, „Nauja naujiena“ ir „Nauja rezervacija“ nebemeta klaidos
 - 🔧 **Tikslesnis tuščias institucijos kontaktų vaizdas** — institucijoms be viešų kontaktų neberodomas klaidinantis pranešimas apie studentų atstovus
+- 🔧 **Ištrynimas nebepraranda susijusių duomenų** — atkūrus posėdį grįžta ir jo darbotvarkė su balsavimais, atkūrus žymą — jos naujienos, o ištrynus navigacijos punktą jo vidiniai punktai nebepasimeta
+- 🔧 **Ištrinti įrašai nebeblokuoja adresų, el. paštų ir turinio kalbos porų** — turinio kalbos pora atsilaisvina automatiškai, o dėl adreso ar el. pašto parodoma, kad juos naudoja ištrintas įrašas ir ką su tuo daryti
+- 🔧 **Negrįžtamas ištrynimas nebemeta klaidų** — kai įrašo ištrinti negalima dėl susietų duomenų, veiksmas iš karto neaktyvus ir parodoma, kas jį saugo
+- ✨ **Trynimo langai paaiškina pasekmes** — prie patvirtinimo parodoma, kas su įrašu nutiks, pvz. kad pareigybės narystės istorija išsaugoma
+- 🔧 **Failų naudojimo tikrinimas mato ištrintus įrašus** — failas, naudojamas tik ištrintame įraše, nebežymimas kaip saugus trinti
 
 ## v1.16 — Nauja svetainės lankomumo analitika (2026-07-26) {#v1-16}
 

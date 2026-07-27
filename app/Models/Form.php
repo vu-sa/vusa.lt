@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Contracts\GuardsForceDelete;
+use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasTranslations;
 use Database\Factories\FormFactory;
 use Illuminate\Database\Eloquent\Collection;
@@ -23,6 +25,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, FormField> $formFields
+ * @property-read string|null $force_delete_blocked_reason
  * @property-read array $translatable_columns_from
  * @property-read Collection<int, Registration> $registrations
  * @property-read Tenant $tenant
@@ -42,10 +45,10 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
-class Form extends Model
+class Form extends Model implements GuardsForceDelete
 {
     /** @use HasFactory<FormFactory> */
-    use HasFactory, HasTranslations, HasUlids, SoftDeletes;
+    use GuardsForceDeleteWhenReferenced, HasFactory, HasTranslations, HasUlids, SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -92,5 +95,17 @@ class Form extends Model
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
+    }
+
+    /**
+     * `registrations.form_id` cascades, so permanent deletion would silently destroy
+     * every submitted registration along with the form.
+     */
+    public function forceDeleteBlockedReason(): ?string
+    {
+        return $this->forceDeleteReasonFor([
+            'trash.blockers.registrations' => $this->countedRelation('registrations'),
+            'entities.training.model' => Training::query()->where('form_id', $this->id)->count(),
+        ]);
     }
 }

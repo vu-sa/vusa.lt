@@ -29,13 +29,12 @@ trait HasSharepointFiles
     }
 
     /**
-     * Get only available files (not deleted, not externally deleted).
+     * Get only available files (not externally deleted).
      */
     public function availableFiles(): MorphMany
     {
         return $this->fileableFiles()
-            ->whereNull('deleted_externally_at')
-            ->whereNull('deleted_at');
+            ->whereNull('deleted_externally_at');
     }
 
     /**

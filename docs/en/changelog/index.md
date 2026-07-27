@@ -7,18 +7,28 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
-## v1.17 — Registrations Reachable From the Sidebar (2026-07-27) {#v1-17}
+## v1.17 — Managing Deleted Records and Easier Lists (2026-07-27) {#v1-17}
 
-- 🔧 **Sidebar quick actions work again** — clicking "New meeting", "New news" or "New reservation" no longer throws an error and opens the correct page
-
-- ⭐ **Member and student rep registrations in the sidebar and forms list** — both registration forms are available under "Website", and the people handling them can open the shared forms list without form-editing permission.
-- ⭐ **Excel export for registrations** — the download button on the registrations page works again, alongside the total registration count and the date of the latest one
-- 🔧 **Student rep registrations are isolated by unit** — institution coordinators now see only registrations submitted for institutions in their own unit, including the scoped total.
-- ✨ **The form URL is generated automatically** — when creating a registration form the link is derived from its name (in both Lithuanian and English), with the full address shown plus copy and open buttons. Typing your own link stops the generation, and changing the link of an existing form now warns that the old one will stop working
-- ✨ **Institution activity statuses and reminders** — clearer labels show when activity is up to date, when reporting is approaching, and how the related actions are worded; a no-meeting report now counts as the latest activity update
-- ✨ **Unit institution status summary and consistent ViSAK filters** — administrators can select one or more units above the timeline, review status counts, and browse a searchable, paginated institution table; unit filters now behave the same in personal and fullscreen views, and at least one unit always remains selected
-- 🔧 **Form field descriptions no longer disappear** — editing a form that already had registrations overwrote every field's description with its type
+- ⭐ **Deleted records can be restored** — banners, calendar events, quick links, navigation items, categories, tags, trainings, study programmes and study sets are no longer lost immediately
+- ⭐ **Permanent deletion** — from the separate deleted-records view, confirmed by typing the record's name; it needs its own permission, grantable in roles without changing the normal delete permission
+- ⭐ **Member and student rep registrations in the sidebar** — both forms are available under "Website", and the people handling them can open the forms list without form-editing permission
+- ⭐ **Excel export for registrations** — the download button works again, alongside the total registration count and the date of the latest one
+- ✨ **Active/deleted view toggle** — it is clear which view you are in and how many records are deleted; the table also shows when each was deleted
+- ✨ **Actions are visible directly in lists** — view, edit and restore are no longer hidden behind the "⋯" button; deletion stays in a separate menu so it cannot be clicked by accident
+- ✨ **The form URL is generated automatically** — derived from the form's name; changing an existing form's link now warns that the old one will stop working
+- ✨ **Institution activity statuses and reminders** — clearer labels show when activity is up to date and when reporting is approaching; a no-meeting report now counts as an activity update
+- ✨ **Unit status summary in ViSAK** — select several units above the timeline, review their institution status counts, and use search and pagination
+- 🔧 **List messages are translated** — actions, search, column and pagination labels and empty states no longer appear in English in the Lithuanian admin
+- 🔧 **Permanently deleting a duty no longer errors** — you get an explanation of why a duty with membership history cannot be removed; the history is preserved
+- 🔧 **Student rep registrations are isolated by unit** — coordinators see only registrations submitted for institutions in their own unit
+- 🔧 **Form field descriptions no longer disappear** — editing a form that already had registrations overwrote every description with its field type
+- 🔧 **Sidebar quick actions work again** — "New meeting", "New news" and "New reservation" no longer throw an error
 - 🔧 **More accurate empty institution contacts state** — institutions without public contacts no longer show a misleading message about student representatives
+- 🔧 **Deleting no longer loses related data** — restoring a meeting brings back its agenda and votes, restoring a tag brings back its articles, and deleting a navigation item no longer strands its sub-items
+- 🔧 **Deleted records no longer block URLs, emails and language pairs** — the language pair is released automatically, and for a URL or email you are told that a deleted record holds it and what to do about it
+- 🔧 **Permanent deletion no longer throws errors** — when a record cannot be removed because of related data, the action is disabled up front and says what is holding it
+- ✨ **Delete dialogs explain the consequences** — the confirmation now says what will happen, e.g. that a duty's membership history is preserved
+- 🔧 **File usage checks see deleted records** — a file used only by a deleted record is no longer marked safe to delete
 
 ## v1.16 — New Website Analytics (2026-07-26) {#v1-16}
 

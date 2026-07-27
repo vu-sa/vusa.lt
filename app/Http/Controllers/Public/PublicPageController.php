@@ -270,8 +270,10 @@ class PublicPageController extends PublicController
         }
 
         // TODO: add alias in global settings instead
+        // The category is a grouping key here, not a publication gate: trashing the
+        // "freshmen-camps" category must not silently empty this public archive.
         $events = Calendar::query()->whereHas('category', function (Builder $query) {
-            $query->where('alias', '=', 'freshmen-camps');
+            $query->withTrashed()->where('alias', '=', 'freshmen-camps');
         })->with('tenant:id,alias,fullname')->whereYear('date', $year)
             ->with(['media']);
 
@@ -287,7 +289,7 @@ class PublicPageController extends PublicController
         }
 
         $yearsWhenEventsExist = Calendar::query()->whereHas('category', function (Builder $query) {
-            $query->where('alias', '=', 'freshmen-camps');
+            $query->withTrashed()->where('alias', '=', 'freshmen-camps');
         });
 
         // Filter by locale for years when events exist

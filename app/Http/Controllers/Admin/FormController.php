@@ -8,6 +8,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexFormRequest;
 use App\Http\Requests\StoreFormRequest;
 use App\Http\Requests\UpdateFormRequest;
+use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Form;
 use App\Models\FormField;
@@ -19,13 +20,14 @@ use App\Services\FormRegistrationVisibilityService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
 use App\Settings\FormSettings;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Response;
 
 class FormController extends AdminController
 {
-    use HasTanstackTables;
+    use HandlesSoftDeletes, HasTanstackTables;
 
     /**
      * Attributes accepted from the client for a form field.
@@ -82,8 +84,15 @@ class FormController extends AdminController
 
         $query = $this->formAccess->applyIndexVisibility($query, $request->user());
 
+        $deletedCount = $this->getTrashedCount($query);
+
+        // Trash view only: lets the table say why permanent deletion is refused.
+        $query = $this->withForceDeleteBlockers($query, $request, ['registrations']);
+
         $forms = $query->paginate($request->input('per_page', 15))
             ->withQueryString();
+
+        $this->appendForceDeleteBlockedReason($forms->getCollection(), $request);
 
         $sorting = $request->getSorting();
         $user = $request->user();
@@ -122,6 +131,8 @@ class FormController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $sorting,
+            'showDeleted' => $request->boolean('showDeleted', false),
+            'deletedCount' => $deletedCount,
             'can' => [
                 'create' => $user->can('create', Form::class),
             ],
@@ -338,5 +349,15 @@ class FormController extends AdminController
         $fileName = substr(Str::slug($form->getTranslation('name', app()->getLocale())), 0, 20).'-'.now()->format('Y-m-d-H-i-s');
 
         return (new FormRegistrationsExport($form))->download($fileName.'.xlsx');
+    }
+
+    public function restore(Form $form): RedirectResponse
+    {
+        return $this->restoreModel($form);
+    }
+
+    public function forceDelete(Form $form): RedirectResponse
+    {
+        return $this->forceDeleteModel($form);
     }
 }

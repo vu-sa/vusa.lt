@@ -33,6 +33,7 @@ export enum CRUDEnum {
   READ = "read",
   UPDATE = "update",
   DELETE = "delete",
+  FORCE_DELETE = "forceDelete",
 }
 export enum CommentKind {
   Comment = "comment",
@@ -65,6 +66,14 @@ export enum DutySelectionMethod {
   Elected = "elected",
   Delegated = "delegated",
   Appointed = "appointed",
+}
+export enum InstitutionActivityStatus {
+  NoActivity = "no_activity",
+  Healthy = "healthy",
+  Approaching = "approaching",
+  Overdue = "overdue",
+  CoveredByUpcomingMeeting = "covered_by_upcoming_meeting",
+  CoveredByCheckIn = "covered_by_check_in",
 }
 export enum LocaleEnum {
   LT = "lt",

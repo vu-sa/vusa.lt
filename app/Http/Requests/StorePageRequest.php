@@ -4,6 +4,8 @@ namespace App\Http\Requests;
 
 use App\Enums\ContentPartEnum;
 use App\Models\Page;
+use App\Rules\SoftDeleteRules;
+use App\Rules\UniqueAmongTrashed;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -34,9 +36,9 @@ class StorePageRequest extends FormRequest
             'content.parts.*.options' => 'nullable',
             'content.parts.*.order' => 'nullable|integer',
             'lang' => 'required|string|in:lt,en',
-            'permalink' => 'required|string|max:255|unique:pages',
-            'category_id' => 'nullable|exists:categories,id',
-            'other_lang_id' => 'nullable|exists:pages,id',
+            'permalink' => ['required', 'string', 'max:255', UniqueAmongTrashed::of('pages')],
+            'category_id' => ['nullable', SoftDeleteRules::existsLive('categories')],
+            'other_lang_id' => ['nullable', SoftDeleteRules::existsLive('pages')],
             'is_active' => 'required|boolean',
             'layout' => 'nullable|string|in:default,wide,focused',
         ];

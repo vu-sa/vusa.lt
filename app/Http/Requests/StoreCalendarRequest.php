@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Calendar;
+use App\Rules\SoftDeleteRules;
 
 class StoreCalendarRequest extends CalendarRequest
 {
@@ -20,7 +21,7 @@ class StoreCalendarRequest extends CalendarRequest
     public function rules(): array
     {
         return array_merge(parent::rules(), [
-            'category_id' => 'nullable|exists:categories,id',
+            'category_id' => ['nullable', SoftDeleteRules::existsLive('categories')],
         ]);
     }
 }

@@ -40,7 +40,6 @@ describe('destroyFileableFile', function () {
 
         $fileableFile->refresh();
         expect($fileableFile->deleted_externally_at)->not->toBeNull();
-        expect($fileableFile->deleted_at)->toBeNull(); // Not soft-deleted
     });
 
     test('returns 403 for unauthorized user', function () {
