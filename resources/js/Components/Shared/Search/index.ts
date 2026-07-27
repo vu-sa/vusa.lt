@@ -9,6 +9,7 @@ export { default as CheckboxFilter } from './CheckboxFilter.vue';
 export { default as YearFilter } from './YearFilter.vue';
 export { default as FilterAccordion } from './FilterAccordion.vue';
 export { default as FilterSidebar } from './FilterSidebar.vue';
+export { FACET_ICON_COLORS, getFacetIconColor } from './facetIconColors';
 
 // Results Components
 export { default as SearchResults } from './SearchResults.vue';

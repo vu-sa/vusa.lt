@@ -15,7 +15,7 @@
           'hover:bg-accent/50 hover:border-accent-foreground/20',
           option.isSelected
             ? 'bg-accent border-accent-foreground/20 shadow-sm'
-            : 'hover:shadow-sm',
+            : 'bg-background border-border hover:shadow-sm',
           option.count === 0 && !option.isSelected ? 'opacity-50' : '',
         ]"
       >
@@ -28,18 +28,13 @@
           <div class="flex items-center gap-2 min-w-0">
             <!-- Optional icon/image slot -->
             <slot name="option-prefix" :option />
-            <span
-              :class="[
-                'font-medium text-sm truncate',
-                option.isSelected ? 'text-foreground' : 'text-foreground',
-              ]"
-            >
+            <span class="font-medium text-sm text-foreground truncate">
               {{ option.label }}
             </span>
           </div>
           <Badge
             v-if="showCounts && option.count !== undefined"
-            :variant="option.count > 0 ? 'outline' : 'outline'"
+            variant="outline"
             class="text-xs font-medium shrink-0 ml-2"
           >
             {{ formatCount(option.count) }}

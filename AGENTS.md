@@ -41,6 +41,10 @@ All Laravel-related commands MUST run through Sail:
 
 Note: `npm run typecheck` (`vue-tsc --noEmit`) is available and runs in CI, but is currently **non-blocking** (advisory only).
 
+### Linting
+
+`npm run lint` runs ESLint across the entire `resources/js` directory — expect hundreds of pre-existing warnings and errors (`no-explicit-any`, `no-restricted-imports`, import-order, etc.). To check only the files you changed, use `npm run lint:file -- <path>` (e.g. `vendor/bin/sail npm run lint:file -- resources/js/Pages/Public/Search.vue`). This is the recommended way to verify your edits without drowning in legacy noise.
+
 ## Core Patterns
 
 | ✅ DO | ❌ DON'T |

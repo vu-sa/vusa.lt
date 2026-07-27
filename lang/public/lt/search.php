@@ -46,6 +46,7 @@ return [
 
     // Filters and sorting
     'search_in' => 'Ieškoti',
+    'search_in_description' => 'Pasirinkite, kokio turinio ieškoti',
     'select_all' => 'Pažymėti viską',
     'deselect_all' => 'Atžymėti viską',
     'sort_results_by' => 'Rūšiuoti rezultatus pagal',

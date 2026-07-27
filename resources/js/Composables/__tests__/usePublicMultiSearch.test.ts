@@ -4,6 +4,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
+import { ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
 import { createMockPage } from '@/tests/helpers/createMockPage';
@@ -12,10 +13,9 @@ import { trackEvent } from '@/Plugins/umami';
 vi.mock('@/Plugins/umami', () => ({ trackEvent: vi.fn() }));
 
 // Array-friendly localStorage mock (the default helper spreads objects, which breaks arrays).
+// Backed by a real `ref` so computeds that depend on it (e.g. `totalResultCount`) stay reactive.
 vi.mock('@vueuse/core', () => ({
-  useLocalStorage: vi.fn((_key: string, defaultValue: any) => ({
-    value: Array.isArray(defaultValue) ? [...defaultValue] : defaultValue,
-  })),
+  useLocalStorage: vi.fn((_key: string, defaultValue: any) => ref(Array.isArray(defaultValue) ? [...defaultValue] : defaultValue)),
 }));
 
 /**
@@ -155,32 +155,130 @@ describe('usePublicMultiSearch', () => {
     expect(controller.sections.documents.page).toBe(2);
   });
 
-  it('ignores queries shorter than the minimum length', async () => {
+  it('falls back to browsing everything for queries shorter than the minimum length', async () => {
     const { usePublicMultiSearch } = await import('../usePublicMultiSearch');
     const controller = usePublicMultiSearch();
 
     controller.search('a', true);
     await flushPromises();
 
-    expect(mockFetch).not.toHaveBeenCalled();
-    expect(controller.hasAnyResults.value).toBe(false);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+    expect(body.searches.every((s: { q: string }) => s.q === '*')).toBe(true);
+    expect(controller.hasAnyResults.value).toBe(true);
   });
 
-  it('excludes toggled-off collections from the request', async () => {
+  it('runs a wildcard browse search on demand, populating results and counts', async () => {
     const { usePublicMultiSearch } = await import('../usePublicMultiSearch');
     const controller = usePublicMultiSearch();
 
-    controller.toggleCollection('news');
-    controller.toggleCollection('pages');
+    controller.search(controller.browseQuery, true);
+    await flushPromises();
+
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+    expect(body.searches).toHaveLength(6);
+    expect(body.searches.every((s: { q: string }) => s.q === '*')).toBe(true);
+
+    expect(controller.hasSearched.value).toBe(true);
+    expect(controller.sections.documents.totalHits).toBe(5);
+    expect(controller.totalResultCount.value).toBeGreaterThan(0);
+  });
+
+  it('returns to browsing everything when the search box is cleared', async () => {
+    const { usePublicMultiSearch } = await import('../usePublicMultiSearch');
+    const controller = usePublicMultiSearch();
+
+    controller.search('studentai', true);
+    await flushPromises();
+    expect(controller.query.value).toBe('studentai');
+
+    controller.clearFilters();
+    await flushPromises();
+
+    expect(controller.query.value).toBe('*');
+    expect(controller.displayQuery.value).toBe('');
+    expect(controller.hasAnyResults.value).toBe(true);
+  });
+
+  it('shows every collection when none are selected (no filter)', async () => {
+    const { usePublicMultiSearch } = await import('../usePublicMultiSearch');
+    const controller = usePublicMultiSearch();
+
+    expect(controller.enabledCollections.value).toEqual([]);
+
     controller.search('studentai', true);
     await flushPromises();
 
-    const lastCall = mockFetch.mock.calls.at(-1)!;
-    const body = JSON.parse(lastCall[1].body);
+    // All six are still queried, and — with no filter selected — all are displayed.
+    expect(controller.totalResultCount.value).toBe(3 + 2 + 5 + 1 + 0 + 4);
+    expect(controller.orderedSections.value).toContain('news');
+  });
+
+  it('narrows results to the selected collections once at least one is checked', async () => {
+    const { usePublicMultiSearch } = await import('../usePublicMultiSearch');
+    const controller = usePublicMultiSearch();
+
+    controller.search('studentai', true);
+    await flushPromises();
+
+    controller.toggleCollection('news');
+    await flushPromises();
+
+    const body = JSON.parse(mockFetch.mock.calls.at(-1)![1].body);
     const collections = body.searches.map((s: { collection: string }) => s.collection);
-    expect(collections).not.toContain('news');
-    expect(collections).not.toContain('pages');
-    expect(collections).toContain('documents');
+    // Every collection is still queried, so counts stay accurate for the unchecked ones too.
+    expect(collections).toEqual([
+      'public_institutions',
+      'public_meetings',
+      'documents',
+      'news',
+      'pages',
+      'calendar',
+    ]);
+
+    // ...but only the checked collection is displayed.
+    expect(controller.sections.documents.totalHits).toBe(5);
+    expect(controller.orderedSections.value).toEqual(['news']);
+    expect(controller.totalResultCount.value).toBe(1);
+  });
+
+  it('fetches a larger page for visible collections once filtered, and a minimal one for hidden collections', async () => {
+    const { usePublicMultiSearch } = await import('../usePublicMultiSearch');
+    const controller = usePublicMultiSearch();
+
+    controller.search('studentai', true);
+    await flushPromises();
+    // No filter yet: every collection uses the browse/preview page size.
+    let body = JSON.parse(mockFetch.mock.calls[0][1].body);
+    expect(body.searches.find((s: { collection: string }) => s.collection === 'documents').per_page).toBe(6);
+
+    controller.toggleCollection('documents');
+    await flushPromises();
+
+    body = JSON.parse(mockFetch.mock.calls.at(-1)![1].body);
+    const perPageFor = (collection: string) =>
+      body.searches.find((s: { collection: string }) => s.collection === collection).per_page;
+    expect(perPageFor('documents')).toBe(12); // visible — real page size
+    expect(perPageFor('news')).toBe(1); // hidden — just enough for the count
+  });
+
+  it('resetCollections clears the filter back to "show everything" and refetches', async () => {
+    const { usePublicMultiSearch } = await import('../usePublicMultiSearch');
+    const controller = usePublicMultiSearch();
+
+    controller.search('studentai', true);
+    await flushPromises();
+
+    controller.toggleCollection('news');
+    await flushPromises();
+    expect(controller.totalResultCount.value).toBe(1);
+
+    controller.resetCollections();
+    await flushPromises();
+
+    expect(controller.enabledCollections.value).toEqual([]);
+    expect(controller.totalResultCount.value).toBe(3 + 2 + 5 + 1 + 0 + 4);
   });
 
   describe('search term analytics', () => {
@@ -240,18 +338,21 @@ describe('usePublicMultiSearch', () => {
       vi.useRealTimers();
     });
 
-    it('does not report the same term again when a collection is toggled', async () => {
+    it('refetches with new page sizes but does not re-report the same term when a collection is toggled', async () => {
       const { usePublicMultiSearch } = await import('../usePublicMultiSearch');
       const controller = usePublicMultiSearch();
 
       controller.search('studentai', true);
       await flushPromises();
       expect(trackEvent).toHaveBeenCalledTimes(1);
+      expect(mockFetch).toHaveBeenCalledTimes(1);
 
-      // Re-runs the identical search behind the scenes.
+      // Toggling narrows/widens which collections are visible, which changes their page size,
+      // so it must refetch — but it's still the same term, so analytics aren't re-reported.
       controller.toggleCollection('news');
       await flushPromises();
 
+      expect(mockFetch).toHaveBeenCalledTimes(2);
       expect(trackEvent).toHaveBeenCalledTimes(1);
     });
 

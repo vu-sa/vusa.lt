@@ -46,6 +46,7 @@ return [
 
     // Filters and sorting
     'search_in' => 'Search in',
+    'search_in_description' => 'Choose which content types to search',
     'select_all' => 'Select All',
     'deselect_all' => 'Deselect All',
     'sort_results_by' => 'Sort results by',

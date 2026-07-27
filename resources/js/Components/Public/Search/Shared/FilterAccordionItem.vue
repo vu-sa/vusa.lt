@@ -19,7 +19,7 @@
   <AccordionItem
     v-else
     :value
-    class="border border-border/60 rounded-xl bg-card/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200"
+    class="border border-border rounded-xl bg-card/50 backdrop-blur-sm transition-all duration-200"
   >
     <AccordionTrigger class="px-5 py-4 hover:no-underline group">
       <div class="flex items-center gap-3 flex-1">

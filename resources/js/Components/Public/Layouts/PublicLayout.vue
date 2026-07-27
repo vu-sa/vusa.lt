@@ -235,34 +235,27 @@ const contentWrapperClass = computed(() => {
   }
 });
 
-// Main content margin - uses responsive classes since SecondMenu is hidden on mobile (max-md:hidden)
-// Mobile (max-md): SecondMenu never shown, so use smaller margins
-// Desktop (md+): SecondMenu shown when tenant has links, needs larger margin
+/**
+ * Top margin for <main> — clears the fixed MainNavigation header only.
+ *
+ * Depends solely on navbar height: the SecondMenu adds a row on desktop (it is
+ * hidden on mobile via max-md:hidden, so the mobile margin is the same either
+ * way). It deliberately does NOT depend on page content such as breadcrumbs —
+ * that previously created a hidden coupling where calling usePageBreadcrumbs()
+ * implicitly shifted the entire page down. Breadcrumb spacing is now handled
+ * by the breadcrumb wrapper itself (see {@link breadcrumbWrapperClass}).
+ */
 const mainContentMarginClass = computed(() => {
-  const hasBreadcrumbs = breadcrumbState.breadcrumbs.value.length > 0;
-
-  if (hasBreadcrumbs) {
-    // With breadcrumbs: smaller margin since breadcrumb wrapper has its own padding
-    if (hasSecondMenu.value) {
-      // Mobile: no SecondMenu shown, Desktop: SecondMenu adds height
-      return 'mt-16 md:mt-24';
-    }
-    return 'mt-16';
-  }
-
-  // Without breadcrumbs: larger margin for content spacing
-  if (hasSecondMenu.value) {
-    // Mobile: no SecondMenu shown (mt-20), Desktop: SecondMenu adds height (mt-32)
-    return 'mt-20 md:mt-32';
-  }
-  return 'mt-20';
+  return hasSecondMenu.value
+    ? 'mt-20 md:mt-32'
+    : 'mt-20';
 });
 
 const breadcrumbWrapperClass = computed(() => {
-  // Reduced padding since main already has margin
+  // Consistent top padding gives the breadcrumb bar breathing room below the
+  // navbar. Breadcrumbs always use the standard wrapper width for consistency.
   const baseClasses = 'pt-4 md:pt-6 lg:pt-8';
 
-  // Breadcrumbs always use standard wrapper width for consistency
   return `wrapper ${baseClasses}`;
 });
 
