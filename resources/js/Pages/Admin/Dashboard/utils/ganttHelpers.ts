@@ -3,7 +3,7 @@
  * Used by UserTimelineSection, TenantTimelineSection, and FullscreenGanttModal.
  */
 import type {
-  AtstovavimosInstitution,
+  AtstovavimasInstitution,
   GanttDutyMember,
   InactivePeriod,
   GanttMeeting,
@@ -14,7 +14,7 @@ import type {
  * Extract duty members from institutions for Gantt display.
  * Processes all users (including historical) from institution duties.
  */
-export function extractDutyMembers(institutions: AtstovavimosInstitution[]): GanttDutyMember[] {
+export function extractDutyMembers(institutions: AtstovavimasInstitution[]): GanttDutyMember[] {
   const members: GanttDutyMember[] = [];
 
   for (const institution of institutions) {
@@ -50,7 +50,7 @@ export function extractDutyMembers(institutions: AtstovavimosInstitution[]): Gan
  * Finds gaps where no duty member was active.
  */
 export function calculateInactivePeriods(
-  institutions: AtstovavimosInstitution[],
+  institutions: AtstovavimasInstitution[],
   members: GanttDutyMember[],
 ): InactivePeriod[] {
   const periods: InactivePeriod[] = [];
@@ -101,7 +101,7 @@ export function calculateInactivePeriods(
  * Returns formatted GanttMeeting array.
  */
 export function extractMeetingsFromInstitutions(
-  institutions: AtstovavimosInstitution[],
+  institutions: AtstovavimasInstitution[],
 ): GanttMeeting[] {
   return institutions.flatMap(inst =>
     ((inst as any).meetings ?? []).map((m: any) => {
@@ -144,7 +144,7 @@ export function extractMeetingsFromInstitutions(
  * Format institutions for Gantt component display.
  */
 export function formatInstitutionsForGantt(
-  institutions: AtstovavimosInstitution[],
+  institutions: AtstovavimasInstitution[],
   isRelated = false,
 ): GanttInstitution[] {
   return institutions.map(i => ({
@@ -161,7 +161,7 @@ export function formatInstitutionsForGantt(
 /**
  * Get display name for an institution, handling various name formats.
  */
-export function getInstitutionDisplayName(institution: AtstovavimosInstitution | any): string {
+export function getInstitutionDisplayName(institution: AtstovavimasInstitution | any): string {
   return String(
     institution?.name?.lt
     ?? institution?.name?.en
@@ -175,7 +175,7 @@ export function getInstitutionDisplayName(institution: AtstovavimosInstitution |
  * Build institution names lookup map.
  */
 export function buildInstitutionNamesMap(
-  institutions: AtstovavimosInstitution[],
+  institutions: AtstovavimasInstitution[],
 ): Record<string, string> {
   const result: Record<string, string> = {};
   for (const inst of institutions) {
@@ -188,7 +188,7 @@ export function buildInstitutionNamesMap(
  * Build institution tenant ID lookup map.
  */
 export function buildInstitutionTenantMap(
-  institutions: AtstovavimosInstitution[],
+  institutions: AtstovavimasInstitution[],
 ): Record<string, string> {
   const result: Record<string, string> = {};
   for (const inst of institutions) {
@@ -201,7 +201,7 @@ export function buildInstitutionTenantMap(
  * Build institution has public meetings lookup map.
  */
 export function buildInstitutionPublicMeetingsMap(
-  institutions: AtstovavimosInstitution[],
+  institutions: AtstovavimasInstitution[],
 ): Record<string, boolean> {
   const result: Record<string, boolean> = {};
   for (const inst of institutions) {
@@ -214,7 +214,7 @@ export function buildInstitutionPublicMeetingsMap(
  * Build institution periodicity lookup map.
  */
 export function buildInstitutionPeriodicityMap(
-  institutions: AtstovavimosInstitution[],
+  institutions: AtstovavimasInstitution[],
 ): Record<string, number> {
   const result: Record<string, number> = {};
   for (const inst of institutions) {

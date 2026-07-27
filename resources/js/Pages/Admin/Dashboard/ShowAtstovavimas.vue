@@ -120,11 +120,14 @@
             :gaps="ganttData.tenantGaps.value" :institution-names="tenantInstitutionNames" :tenant-names
             :institution-tenant="tenantInstitutionTenant"
             :institution-has-public-meetings="tenantInstitutionHasPublicMeetings"
+            :institution-has-activity="ganttData.tenantInstitutionHasActivity.value"
             :institution-periodicity="tenantInstitutionPeriodicity" :duty-members="ganttData.tenantDutyMembers.value"
             :inactive-periods="ganttData.tenantInactivePeriods.value" :is-hidden="actions.showFullscreenGantt.value"
+            :loading-range="meetingsLoadingRange" :meetings-loading="meetingsLoadingVisible"
             :representative-activity="representativeActivityData" :show-tenant-selector="!isAdmin"
             @create-meeting="actions.onGapCreateMeeting" @create-check-in="actions.onGapCreateCheckIn"
-            @fullscreen="actions.onGanttFullscreen('tenant')" />
+            @fullscreen="actions.onGanttFullscreen('tenant')"
+            @range-changed="onTenantRangeChanged" />
         </template>
         <!-- Timeline loading skeleton -->
         <div v-else class="space-y-4">
@@ -155,10 +158,13 @@
       :tenant-institutions="ganttData.formattedTenantInstitutions.value"
       :tenant-meetings="ganttData.tenantMeetings.value" :tenant-gaps="ganttData.tenantGaps.value"
       :tenant-institution-names :tenant-institution-tenant :tenant-institution-has-public-meetings
+      :tenant-institution-has-activity="ganttData.tenantInstitutionHasActivity.value"
       :tenant-institution-periodicity :tenant-duty-members="ganttData.tenantDutyMembers.value"
       :tenant-inactive-periods="ganttData.tenantInactivePeriods.value" :tenant-names
+      :tenant-loading-range="meetingsLoadingRange" :tenant-meetings-loading="meetingsLoadingVisible"
       @update:is-open="actions.showFullscreenGantt.value = $event" @create-meeting="actions.onGapCreateMeeting"
-      @create-check-in="actions.onGapCreateCheckIn" />
+      @create-check-in="actions.onGapCreateCheckIn"
+      @range-changed="onTenantRangeChanged" />
 
     <!-- These modals can be opened from FullscreenGanttModal, so they must come after it in DOM order -->
     <NewMeetingDialog :show-modal="actions.showMeetingModal.value" :institution="actions.selectedInstitution.value"
@@ -220,16 +226,17 @@ import MeetingDataTable from './Components/MeetingDataTable.vue';
 import FullscreenGanttModal from './Components/FullscreenGanttModal.vue';
 
 // Composables
-import { useAtstovavimosData } from './Composables/useAtstovavimasData';
+import { useAtstovavimasData } from './Composables/useAtstovavimasData';
 import { provideTimelineFilters } from './Composables/useTimelineFilters';
-import { useAtstovavimosActions } from './Composables/useAtstovavimasActions';
+import { useAtstovavimasActions } from './Composables/useAtstovavimasActions';
 import { useGanttChartData } from './Composables/useGanttChartData';
 import { provideGanttSettings } from './Composables/useGanttSettings';
 import { useTenantTimelineData } from './Composables/useTenantTimelineData';
+import { useTenantMeetings } from './Composables/useTenantMeetings';
 import type {
-  AtstovavimosUser,
-  AtstovavimosTenant,
-  AtstovavimosInstitution,
+  AtstovavimasUser,
+  AtstovavimasTenant,
+  AtstovavimasInstitution,
   InstitutionStatusSummaryData,
 } from './types';
 
@@ -424,15 +431,15 @@ const institutionSummarySpotlight = useFeatureSpotlight('institution-status-summ
 const userTenantScopeSpotlight = useFeatureSpotlight('user-tenant-scope-v1');
 
 const props = defineProps<{
-  user: AtstovavimosUser;
+  user: AtstovavimasUser;
   userInstitutions: App.Entities.Institution[];
-  relatedInstitutions?: AtstovavimosInstitution[];
+  relatedInstitutions?: AtstovavimasInstitution[];
   mayHaveRelatedInstitutions?: boolean;
-  availableTenants: AtstovavimosTenant[];
+  availableTenants: AtstovavimasTenant[];
 }>();
 
 // Related institutions computed (for passing to UserTimelineSection)
-const relatedInstitutions = computed<AtstovavimosInstitution[]>(() => {
+const relatedInstitutions = computed<AtstovavimasInstitution[]>(() => {
   return (props.relatedInstitutions ?? []).map(inst => ({
     ...inst,
     id: String(inst.id),
@@ -498,16 +505,12 @@ const isAdmin = computed(() => {
 });
 
 // Initialize composables - pass getter to maintain reactivity on Inertia prop updates
-const atstovavimosData = useAtstovavimosData(() => props.user);
-const timelineFilters = provideTimelineFilters(atstovavimosData.institutions.value, props.availableTenants);
-const actions = useAtstovavimosActions(props.userInstitutions);
+const atstovavimasData = useAtstovavimasData(() => props.user);
+const timelineFilters = provideTimelineFilters(atstovavimasData.institutions.value, props.availableTenants);
+const actions = useAtstovavimasActions(props.userInstitutions);
 const tenantTimelineData = useTenantTimelineData();
+const tenantMeetings = useTenantMeetings(() => timelineFilters.selectedTenantForGantt.value);
 const tenantInstitutionsData = computed(() => tenantTimelineData.data.value?.institutions ?? []);
-const tenantRelatedInstitutionsData = computed(() => tenantTimelineData.data.value?.related_institutions ?? []);
-const tenantTimelineInstitutions = computed(() => [
-  ...tenantInstitutionsData.value,
-  ...tenantRelatedInstitutionsData.value,
-]);
 const institutionSummary = computed<InstitutionStatusSummaryData>(() =>
   tenantTimelineData.data.value?.institution_summary ?? {
     all: 0,
@@ -519,7 +522,30 @@ const institutionSummary = computed<InstitutionStatusSummaryData>(() =>
   },
 );
 const representativeActivityData = computed(() => tenantTimelineData.data.value?.representative_activity);
-const ganttData = useGanttChartData(tenantTimelineInstitutions, props.availableTenants);
+const ganttData = useGanttChartData(tenantInstitutionsData, props.availableTenants, tenantMeetings.meetings);
+
+// Date range whose meetings are currently being fetched (shown as a shimmer band in the Gantt)
+const meetingsLoadingRange = computed(() => {
+  const window = tenantMeetings.pendingWindow.value;
+  return window ? { from: new Date(window.from), until: new Date(window.until) } : null;
+});
+
+// Delayed loading indicator for the toolbar: only shown once fetching has been
+// ongoing for 300ms, so a fast cache hit never flashes it.
+const meetingsLoadingVisible = ref(false);
+let meetingsLoadingTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(tenantMeetings.isFetching, (loading) => {
+  if (meetingsLoadingTimeout) clearTimeout(meetingsLoadingTimeout);
+
+  if (loading) {
+    meetingsLoadingTimeout = setTimeout(() => {
+      meetingsLoadingVisible.value = true;
+    }, 300);
+  }
+  else {
+    meetingsLoadingVisible.value = false;
+  }
+});
 
 watch(tenantTimelineData.isFetching, (loading) => {
   timelineFilters.tenantInstitutionsLoading.value = loading;
@@ -532,7 +558,7 @@ watch(tenantTimelineData.loaded, (loaded) => {
 const userScopedInstitutions = computed(() => {
   const selectedTenantIds = new Set(timelineFilters.userTenantFilter.value);
 
-  return atstovavimosData.institutions.value.filter(institution =>
+  return atstovavimasData.institutions.value.filter(institution =>
     selectedTenantIds.has(String(institution.tenant?.id)),
   );
 });
@@ -542,31 +568,31 @@ const userScopedInstitutionIds = computed(() =>
 );
 
 const userScopedUpcomingMeetings = computed(() =>
-  atstovavimosData.upcomingMeetings.value.filter(meeting =>
+  atstovavimasData.upcomingMeetings.value.filter(meeting =>
     meetingBelongsToSelectedUserInstitutions(meeting),
   ),
 );
 
 const userScopedMeetings = computed(() =>
-  atstovavimosData.sortedMeetings.value.filter(meeting =>
+  atstovavimasData.sortedMeetings.value.filter(meeting =>
     meetingBelongsToSelectedUserInstitutions(meeting),
   ),
 );
 
 const userScopedGanttMeetings = computed(() =>
-  atstovavimosData.allUserMeetings.value.filter(meeting =>
+  atstovavimasData.allUserMeetings.value.filter(meeting =>
     userScopedInstitutionIds.value.has(String(meeting.institution_id)),
   ),
 );
 
 const userScopedGaps = computed(() =>
-  atstovavimosData.userGaps.value.filter(gap =>
+  atstovavimasData.userGaps.value.filter(gap =>
     userScopedInstitutionIds.value.has(String(gap.institution_id)),
   ),
 );
 
 const userScopedInsights = computed(() => ({
-  attention: atstovavimosData.institutionsInsights.value.attention.filter(institution =>
+  attention: atstovavimasData.institutionsInsights.value.attention.filter(institution =>
     userScopedInstitutionIds.value.has(String(institution.id)),
   ),
 }));
@@ -586,27 +612,51 @@ function meetingBelongsToSelectedUserInstitutions(
 // Provide Gantt settings to child components (eliminates prop drilling for dayWidthPx, etc.)
 provideGanttSettings();
 
-// Load tenant institutions when tenant tab is opened
+// Load tenant institutions + initial meeting window when tenant tab is opened
 watch(activeTab, (newTab) => {
   if (newTab === 'tenant' && props.availableTenants.length > 0) {
-    tenantTimelineData.load(timelineFilters.selectedTenantForGantt.value);
+    loadTenantTabData();
   }
 });
 
 // Reload tenant institutions when selected tenants change
-watch(() => timelineFilters.selectedTenantForGantt.value, (newTenants) => {
+watch(() => timelineFilters.selectedTenantForGantt.value, (newTenants, oldTenants) => {
   // Only reload if on tenant tab and we have tenants selected
   if (activeTab.value === 'tenant' && newTenants.length > 0) {
     tenantTimelineData.load(newTenants);
+    // Tenant set changed: drop meetings of the previous set and load the initial window again
+    if (newTenants.join(',') !== (oldTenants ?? []).join(',')) {
+      tenantMeetings.reset();
+      loadInitialMeetingWindow();
+    }
   }
 }, { deep: true });
 
 // Load on mount if already on tenant tab
 onMounted(() => {
   if (activeTab.value === 'tenant' && props.availableTenants.length > 0) {
-    tenantTimelineData.load(timelineFilters.selectedTenantForGantt.value);
+    loadTenantTabData();
   }
 });
+
+function loadTenantTabData(): void {
+  tenantTimelineData.load(timelineFilters.selectedTenantForGantt.value);
+  loadInitialMeetingWindow();
+}
+
+// Fetch meetings around today; further windows are fetched as the Gantt range extends
+function loadInitialMeetingWindow(): void {
+  const today = new Date();
+  tenantMeetings.ensureRange(
+    new Date(today.getFullYear(), today.getMonth() - 3, 1),
+    new Date(today.getFullYear(), today.getMonth() + 4, 0),
+  );
+}
+
+// The Gantt emits its timeline range when it extends (scroll, year navigation)
+function onTenantRangeChanged(min: Date, max: Date): void {
+  tenantMeetings.ensureRange(min, max);
+}
 
 // Helper functions for Gantt data formatting
 const userInstitutionNames = computed(() => {
@@ -637,7 +687,7 @@ const userInactivePeriods = computed(() => {
 const tenantNames = computed(() => {
   const names = { ...ganttData.getTenantNames() };
 
-  [...atstovavimosData.institutions.value, ...relatedInstitutions.value].forEach((institution) => {
+  [...atstovavimasData.institutions.value, ...relatedInstitutions.value].forEach((institution) => {
     if (institution.tenant?.id && institution.tenant.shortname) {
       names[String(institution.tenant.id)] = institution.tenant.shortname;
     }
@@ -679,7 +729,7 @@ const tenantInstitutionHasPublicMeetings = computed(() => {
 });
 
 const tenantInstitutionPeriodicity = computed(() => {
-  return ganttData.getInstitutionPeriodicity(ganttData.tenantInstitutions.value as unknown as AtstovavimosInstitution[]);
+  return ganttData.getInstitutionPeriodicity(ganttData.tenantInstitutions.value as unknown as AtstovavimasInstitution[]);
 });
 
 const checkInInstitutionName = computed(() => {
@@ -694,6 +744,7 @@ const checkInInstitutionName = computed(() => {
 function refreshTenantData(): void {
   if (activeTab.value === 'tenant') {
     tenantTimelineData.load(timelineFilters.selectedTenantForGantt.value, true);
+    void tenantMeetings.refresh();
   }
 }
 

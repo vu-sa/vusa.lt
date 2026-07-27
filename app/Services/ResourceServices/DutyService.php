@@ -212,6 +212,66 @@ class DutyService
     }
 
     /**
+     * Get institutions for specific tenant IDs, with a light eager-load set for the
+     * ViSAK tenant timeline API.
+     *
+     * Unlike {@see getInstitutionsForTenants()}, this skips agenda items, votes and
+     * file metadata: the timeline payload contains no meetings (those are loaded in
+     * windows via the meetings endpoint), and meetings are only needed for the
+     * server-side activity-status resolution.
+     *
+     * @param  Collection|array  $tenantIds  The tenant IDs to load institutions for
+     * @param  ModelAuthorizer  $authorizer  The authorizer to check access permissions
+     */
+    public static function getTimelineInstitutionsForTenants($tenantIds, ModelAuthorizer $authorizer)
+    {
+        $tenantIds = collect($tenantIds)->filter();
+
+        if ($tenantIds->isEmpty()) {
+            return collect();
+        }
+
+        $user = request()->user();
+        $atstovavimasSettings = app(AtstovavimasSettings::class);
+        $visibleTenantIds = $atstovavimasSettings->getVisibleTenantIds($user);
+
+        // Filter to only accessible tenants
+        $accessibleTenantIds = $tenantIds->intersect($visibleTenantIds);
+
+        if ($accessibleTenantIds->isEmpty()) {
+            return collect();
+        }
+
+        return Institution::select('id', 'name', 'alias', 'tenant_id', 'meeting_periodicity_days')
+            ->whereIn('tenant_id', $accessibleTenantIds)
+            ->whereHas('tenant', function ($query) {
+                $query->where('type', '!=', 'pkp');
+            })
+            ->with([
+                'tenant:id,shortname,type',
+                'types', // needed for has_public_meetings and meeting_periodicity_days
+                // Meetings only carry start_time: enough for activity-status resolution.
+                'meetings:id,start_time',
+                // Historical assignments are required for Gantt coverage periods.
+                'duties.users:id,name,profile_photo_path,last_action',
+                'checkIns',
+            ])
+            ->withCount([
+                'meetings as upcoming_meetings_count' => function ($query) {
+                    $query->where('start_time', '>', now());
+                },
+            ])
+            ->addSelect([
+                'last_meeting_date' => Meeting::select('start_time')
+                    ->join('institution_meeting', 'meetings.id', '=', 'institution_meeting.meeting_id')
+                    ->whereColumn('institution_meeting.institution_id', 'institutions.id')
+                    ->orderBy('start_time', 'desc')
+                    ->limit(1),
+            ])
+            ->get();
+    }
+
+    /**
      * Build the base query for dashboard institutions with all needed eager loading.
      */
     private static function buildInstitutionQuery()

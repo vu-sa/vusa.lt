@@ -5,7 +5,7 @@
 import { computed, type Ref, type ComputedRef } from 'vue';
 
 import type {
-  AtstovavimosInstitution,
+  AtstovavimasInstitution,
   GanttMeeting,
   GanttInstitution,
   GanttDutyMember,
@@ -25,11 +25,11 @@ import {
 
 interface UseUserTimelineDataOptions {
   /** User's direct institutions */
-  institutions: Ref<AtstovavimosInstitution[]> | ComputedRef<AtstovavimosInstitution[]>;
+  institutions: Ref<AtstovavimasInstitution[]> | ComputedRef<AtstovavimasInstitution[]>;
   /** User's direct meetings */
   meetings: Ref<GanttMeeting[]> | ComputedRef<GanttMeeting[]>;
   /** Related institutions (lazy-loaded) */
-  relatedInstitutions: Ref<AtstovavimosInstitution[]> | ComputedRef<AtstovavimosInstitution[]>;
+  relatedInstitutions: Ref<AtstovavimasInstitution[]> | ComputedRef<AtstovavimasInstitution[]>;
   /** Whether to show related institutions */
   showRelatedInstitutions: Ref<boolean>;
   /** Base duty members from user's institutions */

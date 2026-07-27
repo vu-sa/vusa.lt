@@ -1,7 +1,7 @@
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 
-export function useAtstovavimosActions(
+export function useAtstovavimasActions(
   accessibleInstitutions: App.Entities.Institution[],
 ) {
   // Modal state

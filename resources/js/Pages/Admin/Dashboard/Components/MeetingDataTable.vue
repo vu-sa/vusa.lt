@@ -28,7 +28,7 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 
-import type { AtstovavimosMeeting } from '../types';
+import type { AtstovavimasMeeting } from '../types';
 
 import SimpleDataTable from '@/Components/Tables/SimpleDataTable.vue';
 import {
@@ -43,7 +43,7 @@ import { formatStaticTime } from '@/Utils/IntlTime';
 import { cn } from '@/Utils/Shadcn/utils';
 
 interface Props {
-  meetings: AtstovavimosMeeting[];
+  meetings: AtstovavimasMeeting[];
   isOpen: boolean;
 }
 

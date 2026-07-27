@@ -208,6 +208,12 @@ const triggerLabel = computed(() => {
   return `${props.selectedTenants.length} ${$t('padaliniai')}`;
 });
 
+function isFinalSelectedTenant(tenantId: string): boolean {
+  return props.requireTenantSelection
+    && props.selectedTenants.length === 1
+    && props.selectedTenants.includes(tenantId);
+}
+
 // Toggle tenant selection
 function toggleTenant(tenantId: string, checked: boolean) {
   const newSelection = [...props.selectedTenants];
@@ -217,19 +223,13 @@ function toggleTenant(tenantId: string, checked: boolean) {
     }
   }
   else {
-    if (props.requireTenantSelection && props.selectedTenants.length === 1) {
+    if (isFinalSelectedTenant(tenantId)) {
       return;
     }
 
     const index = newSelection.indexOf(tenantId);
     if (index > -1) {
       newSelection.splice(index, 1);
-    }
-
-    function isFinalSelectedTenant(tenantId: string): boolean {
-      return props.requireTenantSelection
-        && props.selectedTenants.length === 1
-        && props.selectedTenants.includes(tenantId);
     }
   }
   emit('update:selectedTenants', newSelection);

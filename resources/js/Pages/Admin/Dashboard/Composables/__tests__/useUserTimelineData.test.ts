@@ -2,13 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { ref } from 'vue';
 
 import { useUserTimelineData } from '../useUserTimelineData';
-import type { AtstovavimosInstitution } from '../../types';
+import type { AtstovavimasInstitution } from '../../types';
 
 function institution(
   id: string,
   tenantId: string,
   sourceInstitutionId?: string,
-): AtstovavimosInstitution {
+): AtstovavimasInstitution {
   return {
     id,
     name: id,
@@ -18,7 +18,7 @@ function institution(
       shortname: `Tenant ${tenantId}`,
     },
     source_institution_id: sourceInstitutionId,
-  } as AtstovavimosInstitution;
+  } as AtstovavimasInstitution;
 }
 
 describe('useUserTimelineData', () => {

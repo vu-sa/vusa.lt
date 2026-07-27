@@ -1,38 +1,39 @@
 import { computed, type MaybeRefOrGetter, toValue } from 'vue';
 
 import type {
-  AtstovavimosUser,
-  AtstovavimosInstitution,
-  AtstovavimosMeeting,
+  AtstovavimasUser,
+  AtstovavimasInstitution,
+  AtstovavimasMeeting,
   InstitutionInsights,
   GanttMeeting,
-  AtstovavimosGap,
+  GanttAgendaItem,
+  AtstovavimasGap,
 } from '../types';
 
-export function useAtstovavimosData(
-  userGetter: MaybeRefOrGetter<AtstovavimosUser>,
+export function useAtstovavimasData(
+  userGetter: MaybeRefOrGetter<AtstovavimasUser>,
 ) {
   // User's direct institutions (from current_duties)
-  const institutions = computed<AtstovavimosInstitution[]>(() => {
+  const institutions = computed<AtstovavimasInstitution[]>(() => {
     const user = toValue(userGetter);
     return (user?.current_duties ?? [])
       .map(duty => duty.institution ?? null)
-      .filter((institution): institution is AtstovavimosInstitution => institution !== null)
-      .map((inst: AtstovavimosInstitution) => ({
+      .filter((institution): institution is AtstovavimasInstitution => institution !== null)
+      .map((inst: AtstovavimasInstitution) => ({
         ...inst,
         hasUpcomingMeetings: Array.isArray(inst?.meetings)
           ? inst.meetings.some(meeting => new Date(meeting.start_time) > new Date())
           : false,
       }))
       // unique by id
-      .filter((institution: AtstovavimosInstitution, index: number, self: AtstovavimosInstitution[]) =>
-        index === self.findIndex((t: AtstovavimosInstitution) => t && institution && t.id === institution.id),
+      .filter((institution: AtstovavimasInstitution, index: number, self: AtstovavimasInstitution[]) =>
+        index === self.findIndex((t: AtstovavimasInstitution) => t && institution && t.id === institution.id),
       );
   });
 
   // All meetings from user's institutions (internal computed for upcomingMeetings and sortedMeetings)
-  const meetings = computed<AtstovavimosMeeting[]>(() => {
-    return institutions.value.flatMap((institution: AtstovavimosInstitution) => {
+  const meetings = computed<AtstovavimasMeeting[]>(() => {
+    return institutions.value.flatMap((institution: AtstovavimasInstitution) => {
       return (institution?.meetings ?? []).map(meeting => ({
         ...meeting,
         institutions: [{
@@ -45,7 +46,7 @@ export function useAtstovavimosData(
 
   // All user meetings flattened with institution mapping for Gantt
   const allUserMeetings = computed<GanttMeeting[]>(() => {
-    return institutions.value.map((inst: AtstovavimosInstitution) => {
+    return institutions.value.map((inst: AtstovavimasInstitution) => {
       return (inst.meetings ?? []).map((m) => {
         // Extract agenda items for tooltip (limit to first 4)
         // Vote data comes from: main_vote relationship, or vote with is_main flag, or first vote
@@ -57,7 +58,7 @@ export function useAtstovavimosData(
           return {
             id: String(item.id),
             title: String(item.title ?? ''),
-            type: item.type ?? null,
+            type: (item.type ?? null) as GanttAgendaItem['type'],
             student_vote: mainVote?.student_vote ?? null,
             decision: mainVote?.decision ?? null,
           };
@@ -82,8 +83,8 @@ export function useAtstovavimosData(
   });
 
   // User gaps derived from all check-ins for each institution
-  const userGaps = computed<AtstovavimosGap[]>(() => {
-    return institutions.value.flatMap((inst: AtstovavimosInstitution) => {
+  const userGaps = computed<AtstovavimasGap[]>(() => {
+    return institutions.value.flatMap((inst: AtstovavimasInstitution) => {
       return (inst.check_ins ?? []).map(checkIn => ({
         institution_id: inst.id,
         from: new Date(checkIn.start_date),
@@ -95,7 +96,7 @@ export function useAtstovavimosData(
   });
 
   // Upcoming meetings (including all of today's meetings) sorted by date
-  const upcomingMeetings = computed<AtstovavimosMeeting[]>(() => {
+  const upcomingMeetings = computed<AtstovavimasMeeting[]>(() => {
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
 
@@ -105,7 +106,7 @@ export function useAtstovavimosData(
   });
 
   // Sort all meetings from newest to oldest for the table
-  const sortedMeetings = computed<AtstovavimosMeeting[]>(() => {
+  const sortedMeetings = computed<AtstovavimasMeeting[]>(() => {
     return [...meetings.value].sort((a, b) =>
       new Date(b.start_time).getTime() - new Date(a.start_time).getTime(),
     );

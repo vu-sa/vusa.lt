@@ -42,15 +42,27 @@
         <DropdownMenuContent align="end" class="w-72">
           <DropdownMenuLabel class="flex items-center justify-between gap-3">
             <span>{{ $t('Padaliniai') }}</span>
-            <Button
-              size="xs"
-              variant="ghost"
-              class="h-6 px-2 text-xs"
-              :disabled="selectedTenants.length === tenants.length"
-              @click.stop="selectAllTenants"
-            >
-              {{ $t('Visi') }}
-            </Button>
+            <div class="flex gap-1">
+              <Button
+                size="xs"
+                variant="ghost"
+                class="h-6 px-2 text-xs"
+                :disabled="selectedTenants.length === tenants.length"
+                @click.stop="selectAllTenants"
+              >
+                {{ $t('Visi') }}
+              </Button>
+              <Button
+                size="xs"
+                variant="ghost"
+                class="h-6 px-2 text-xs"
+                :disabled="selectedTenants.length <= 1"
+                :title="$t('visak.tenant_scope.keep_one_hint')"
+                @click.stop="keepOneTenant"
+              >
+                {{ $t('visak.tenant_scope.keep_one') }}
+              </Button>
+            </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <div class="max-h-64 overflow-y-auto">
@@ -76,7 +88,7 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Building2 } from 'lucide-vue-next';
 
-import type { AtstovavimosTenant } from '../types';
+import type { AtstovavimasTenant } from '../types';
 
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
@@ -90,7 +102,7 @@ import {
 } from '@/Components/ui/dropdown-menu';
 
 const props = defineProps<{
-  tenants: AtstovavimosTenant[];
+  tenants: AtstovavimasTenant[];
   selectedTenants: string[];
   title?: string;
   description?: string;
@@ -140,6 +152,17 @@ function toggleTenant(tenantId: string, checked: boolean): void {
 
 function selectAllTenants(): void {
   emit('update:selectedTenants', props.tenants.map(tenant => String(tenant.id)));
+  emit('engage');
+}
+
+/** Deselect all but the first currently-selected tenant (at least one must stay selected). */
+function keepOneTenant(): void {
+  const kept = props.selectedTenants[0] ?? props.tenants[0]?.id;
+  if (kept === undefined) {
+    return;
+  }
+
+  emit('update:selectedTenants', [String(kept)]);
   emit('engage');
 }
 

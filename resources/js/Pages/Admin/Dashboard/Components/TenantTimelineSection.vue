@@ -55,12 +55,15 @@
           :show-only-with-activity="filters.showOnlyWithActivityTenant.value"
           :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsTenant.value"
           :institution-names :tenant-names :institution-tenant :institution-has-public-meetings
+          :institution-has-activity
           :institution-periodicity
           :duty-members="enrichedDutyMembers" :inactive-periods :show-duty-members="filters.showDutyMembersTenant.value"
           :show-activity-status="filters.showActivityStatusTenant.value"
+          :loading-range :meetings-loading
           :empty-message="$t('Šiame padalinyje nėra institucijų')" @create-meeting="$emit('create-meeting', $event)"
           @create-check-in="$emit('create-check-in', $event)"
-          @fullscreen="$emit('fullscreen')" />
+          @fullscreen="$emit('fullscreen')"
+          @range-changed="(min: Date, max: Date) => $emit('range-changed', min, max)" />
       </div>
     </div>
   </section>
@@ -72,8 +75,8 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import type {
   GanttMeeting,
-  AtstovavimosGap,
-  AtstovavimosTenant,
+  AtstovavimasGap,
+  AtstovavimasTenant,
   GanttInstitution,
   GanttDutyMember,
   InactivePeriod,
@@ -88,14 +91,16 @@ import GanttFilterDropdown from './GanttFilterDropdown.vue';
 import RepresentativeActivitySection from './RepresentativeActivitySection.vue';
 
 interface Props {
-  availableTenants: AtstovavimosTenant[];
+  availableTenants: AtstovavimasTenant[];
   tenantInstitutions: GanttInstitution[];
   meetings: GanttMeeting[];
-  gaps: AtstovavimosGap[];
+  gaps: AtstovavimasGap[];
   institutionNames: Record<string, string>;
   tenantNames: Record<string, string>;
   institutionTenant: Record<string, string>;
   institutionHasPublicMeetings?: Record<string, boolean>;
+  // Server-derived "has any activity" flags for the activity filter
+  institutionHasActivity?: Record<string, boolean>;
   // Duty members display
   dutyMembers?: GanttDutyMember[];
   inactivePeriods?: InactivePeriod[];
@@ -103,6 +108,10 @@ interface Props {
   isHidden?: boolean;
   // Meeting periodicity per institution (days between expected meetings)
   institutionPeriodicity?: Record<string | number, number>;
+  // Date range currently being loaded (rendered as a shimmer band in the Gantt)
+  loadingRange?: { from: Date; until: Date } | null;
+  // Whether meetings are currently being fetched (delayed ~300ms by the caller)
+  meetingsLoading?: boolean;
   // Representative activity data for stats and user list
   representativeActivity?: RepresentativeActivityData;
   showTenantSelector?: boolean;
@@ -131,6 +140,7 @@ const emit = defineEmits<{
   'create-meeting': [payload: { institution_id: string | number; suggestedAt: Date; institutionName?: string }];
   'create-check-in': [payload: { institution_id: string | number; startDate: Date; endDate: Date }];
   'fullscreen': [];
+  'range-changed': [min: Date, max: Date];
 }>();
 
 // Format institutions for Gantt component

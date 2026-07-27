@@ -55,10 +55,22 @@ export function createGanttTooltip(
   let currentType: TooltipContentType = 'none';
   let currentPriority = 0;
 
+  // 'date' and 'gap' are both produced by the same background mousemove
+  // handler in renderHoverEffects.ts (the plain date tooltip becomes a gap
+  // tooltip when the cursor is over a check-in, and back again as it moves
+  // off). Priority exists to stop that ambient handler from overriding a
+  // higher-priority meeting/member tooltip shown by its own hover — it must
+  // not also stop the ambient handler from updating (including downgrading)
+  // its own previous content, or the tooltip gets stuck showing stale gap
+  // content until something else of equal-or-higher priority happens to fire.
+  const AMBIENT_TYPES: TooltipContentType[] = ['date', 'gap'];
+
   return {
     show(content: TooltipContent, x: number, y: number) {
+      const isAmbientSelfUpdate = AMBIENT_TYPES.includes(currentType) && AMBIENT_TYPES.includes(content.type);
+
       // Only show if higher or equal priority, or if not currently showing
-      if (currentType !== 'none' && content.priority < currentPriority) {
+      if (!isAmbientSelfUpdate && currentType !== 'none' && content.priority < currentPriority) {
         return;
       }
 

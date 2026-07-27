@@ -44,9 +44,9 @@ import { computed, ref, onMounted, watch, toRef } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import type {
-  AtstovavimosInstitution,
+  AtstovavimasInstitution,
   GanttMeeting,
-  AtstovavimosGap,
+  AtstovavimasGap,
   GanttDutyMember,
   InactivePeriod,
 } from '../types';
@@ -59,9 +59,9 @@ import TimelineGanttSkeleton from './TimelineGanttSkeleton.vue';
 import GanttFilterDropdown from './GanttFilterDropdown.vue';
 
 interface Props {
-  institutions: AtstovavimosInstitution[];
+  institutions: AtstovavimasInstitution[];
   meetings: GanttMeeting[];
-  gaps: AtstovavimosGap[];
+  gaps: AtstovavimasGap[];
   institutionNames: Record<string, string>;
   tenantNames: Record<string, string>;
   institutionTenant: Record<string, string>;
@@ -73,7 +73,7 @@ interface Props {
   // Meeting periodicity per institution (days between expected meetings)
   institutionPeriodicity?: Record<string | number, number>;
   // Related institutions
-  relatedInstitutions?: AtstovavimosInstitution[];
+  relatedInstitutions?: AtstovavimasInstitution[];
   // Flag to show related institutions filter even when data is lazy-loaded
   mayHaveRelatedInstitutions?: boolean;
 }

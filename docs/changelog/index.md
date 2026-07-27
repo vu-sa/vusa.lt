@@ -7,6 +7,16 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.19 — Greitesnė ViSAK padalinių laiko juosta (2026-07-27) {#v1-19}
+
+- ✨ **Padalinių laiko juosta kraunasi ženkliai greičiau** — posėdžiai laiko juostoje užkraunami tik matomam laikotarpiui ir dokraunami slenkant, todėl visų padalinių vaizdas atsiveria kelis kartus greičiau
+- ✨ **Sklandesnis laiko juostos slinkimas** — senesni ir būsimi posėdžiai dokraunami tyliai fone, o žymekliai išpišiami tik matomoje srityje
+- ✨ **Matomas posėdžių krovimosi indikatorius** — kraunamos eilutės laiko juostoje pažymimos ryškesniu mirksinčiu fonu, o įrankių juostoje rodomas kraunimosi ženkliukas
+- ✨ **Greitesnis slinkimas per daug padalinių** — laiko juosta piešia tik ekrane matomas eilutes, todėl slinkimas per dešimtis padalinių yra sklandesnis
+- ✨ **Galimybė greitai palikti tik vieną padalinį** — padalinių pasirinkime šalia „Visi“ atsirado mygtukas „Palikti vieną“
+- 🔧 **Padalinių laiko juostoje rodomos tik pasirinktų padalinių institucijos** — susietos institucijos iš kitų padalinių nebedublikuojamos, tad sąrašas sutampa su būklės suvestinės skaičiais
+- 🔧 **Ištaisytas posėdžių trūkumas padalinių laiko juostoje** — tuščias atsakymas nebebuvo kaupiamas podėlyje, todėl neseniai sukurti posėdžiai nebeatrodo lyg jų nėra
+
 ## v1.18 — Atnaujinti renginių ir stovyklų puslapiai (2026-07-27) {#v1-18}
 
 - ⭐ **Renginio vietos žemėlapis** — jei renginiui nurodyta vieta, šalia jos rodomas žemėlapis su žyma; nuoroda į Google Maps išlieka

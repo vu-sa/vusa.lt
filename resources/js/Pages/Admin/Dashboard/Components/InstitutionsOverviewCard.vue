@@ -56,7 +56,7 @@ import { computed, ref, reactive } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import type { AtstovavimosInstitution } from '../types';
+import type { AtstovavimasInstitution } from '../types';
 import { useInstitutionSubscription } from '../Composables/useInstitutionSubscription';
 
 import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue';
@@ -71,7 +71,7 @@ import {
 } from '@/Composables/useDashboardCardStyles';
 
 const props = defineProps<{
-  institutions: AtstovavimosInstitution[];
+  institutions: AtstovavimasInstitution[];
   isAdmin?: boolean;
   maxDisplayCount?: number;
   currentUserId?: string;

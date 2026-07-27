@@ -106,16 +106,19 @@
             :tenant-names
             :institution-tenant="tenantInstitutionTenant"
             :institution-has-public-meetings="tenantInstitutionHasPublicMeetings"
+            :institution-has-activity="tenantInstitutionHasActivity"
             :institution-periodicity="tenantInstitutionPeriodicity"
             :duty-members="tenantDutyMembers"
             :inactive-periods="tenantInactivePeriods"
             :show-duty-members="filters.showDutyMembersTenant.value"
             :show-activity-status="filters.showActivityStatusTenant.value"
+            :loading-range="tenantLoadingRange" :meetings-loading="tenantMeetingsLoading"
             :empty-message="$t('Šiame padalinyje nėra institucijų')"
             height="100%"
             hide-fullscreen-button
             @create-meeting="$emit('create-meeting', $event)"
             @create-check-in="$emit('create-check-in', $event)"
+            @range-changed="(min: Date, max: Date) => $emit('range-changed', min, max)"
           />
         </div>
 
@@ -139,11 +142,11 @@ import { useUserTimelineData } from '../Composables/useUserTimelineData';
 import type {
   GanttMeeting,
   GanttInstitution,
-  AtstovavimosGap,
-  AtstovavimosTenant,
+  AtstovavimasGap,
+  AtstovavimasTenant,
   GanttDutyMember,
   InactivePeriod,
-  AtstovavimosInstitution,
+  AtstovavimasInstitution,
 } from '../types';
 
 import TimelineGanttChart from './TimelineGanttChart.vue';
@@ -162,12 +165,12 @@ import {
 interface Props {
   isOpen: boolean;
   ganttType: 'user' | 'tenant';
-  availableTenants: AtstovavimosTenant[];
+  availableTenants: AtstovavimasTenant[];
 
   // User data (base data from user's direct institutions)
-  userInstitutions: AtstovavimosInstitution[];
+  userInstitutions: AtstovavimasInstitution[];
   userMeetings: GanttMeeting[];
-  userGaps: AtstovavimosGap[];
+  userGaps: AtstovavimasGap[];
   userInstitutionNames: Record<string, string>;
   userInstitutionTenant: Record<string, string>;
   userInstitutionHasPublicMeetings?: Record<string, boolean>;
@@ -175,20 +178,23 @@ interface Props {
   userDutyMembers?: GanttDutyMember[];
   userInactivePeriods?: InactivePeriod[];
   // Related institutions (lazy-loaded)
-  userRelatedInstitutions?: AtstovavimosInstitution[];
+  userRelatedInstitutions?: AtstovavimasInstitution[];
   // Flag to show related institutions filter even when data is lazy-loaded
   mayHaveRelatedInstitutions?: boolean;
 
   // Tenant data (already computed in parent)
   tenantInstitutions: GanttInstitution[];
   tenantMeetings: GanttMeeting[];
-  tenantGaps: AtstovavimosGap[];
+  tenantGaps: AtstovavimasGap[];
   tenantInstitutionNames: Record<string, string>;
   tenantInstitutionTenant: Record<string, string>;
   tenantInstitutionHasPublicMeetings?: Record<string, boolean>;
+  tenantInstitutionHasActivity?: Record<string, boolean>;
   tenantInstitutionPeriodicity?: Record<string | number, number>;
   tenantDutyMembers?: GanttDutyMember[];
   tenantInactivePeriods?: InactivePeriod[];
+  tenantLoadingRange?: { from: Date; until: Date } | null;
+  tenantMeetingsLoading?: boolean;
 
   // Shared
   tenantNames: Record<string, string>;
@@ -200,6 +206,7 @@ const emit = defineEmits<{
   'update:isOpen': [value: boolean];
   'create-meeting': [payload: { institution_id: string | number; suggestedAt: Date }];
   'create-check-in': [payload: { institution_id: string | number; startDate: Date; endDate: Date }];
+  'range-changed': [min: Date, max: Date];
 }>();
 
 // Get shared settings and filter state from providers

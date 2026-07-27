@@ -4,12 +4,12 @@ import { mount } from '@vue/test-utils';
 import type { ColumnDef } from '@tanstack/vue-table';
 
 import InstitutionStatusSummary from '../InstitutionStatusSummary.vue';
-import type { AtstovavimosInstitution, InstitutionStatusSummaryData } from '../../types';
+import type { AtstovavimasInstitution, InstitutionStatusSummaryData } from '../../types';
 
 import { commonStubs } from '@/tests/stubs';
 
-let capturedData: AtstovavimosInstitution[] = [];
-let capturedColumns: ColumnDef<AtstovavimosInstitution>[] = [];
+let capturedData: AtstovavimasInstitution[] = [];
+let capturedColumns: ColumnDef<AtstovavimasInstitution>[] = [];
 
 const SimpleDataTableStub = defineComponent({
   props: {
@@ -23,8 +23,8 @@ const SimpleDataTableStub = defineComponent({
     },
   },
   setup(props) {
-    capturedData = props.data as AtstovavimosInstitution[];
-    capturedColumns = props.columns as ColumnDef<AtstovavimosInstitution>[];
+    capturedData = props.data as AtstovavimasInstitution[];
+    capturedColumns = props.columns as ColumnDef<AtstovavimasInstitution>[];
 
     return () => h('div', { 'data-testid': 'summary-table' });
   },
@@ -32,10 +32,10 @@ const SimpleDataTableStub = defineComponent({
 
 function institution(
   id: string,
-  status: AtstovavimosInstitution['activity_status']['status'],
+  status: AtstovavimasInstitution['activity_status']['status'],
   priority: number,
   requiresAction: boolean,
-): AtstovavimosInstitution {
+): AtstovavimasInstitution {
   return {
     id,
     name: `Institution ${id}`,
@@ -78,7 +78,7 @@ describe('InstitutionStatusSummary', () => {
   }
 
   function createWrapper(
-    institutions: AtstovavimosInstitution[],
+    institutions: AtstovavimasInstitution[],
     statusSummary: InstitutionStatusSummaryData,
     loading = false,
   ) {

@@ -1,11 +1,11 @@
-import { computed, type Ref } from 'vue';
+import { computed, type ComputedRef, type Ref } from 'vue';
 
 import type {
-  AtstovavimosInstitution,
-  AtstovavimosGap,
+  AtstovavimasInstitution,
+  AtstovavimasGap,
   GanttMeeting,
   GanttInstitution,
-  AtstovavimosTenant,
+  AtstovavimasTenant,
   GanttDutyMember,
   InactivePeriod,
 } from '../types';
@@ -20,88 +20,40 @@ import {
 } from '../utils/ganttHelpers';
 
 export function useGanttChartData(
-  tenantInstitutionsRef: Ref<AtstovavimosInstitution[]>, // Lazy loaded tenant institutions
-  availableTenants: AtstovavimosTenant[],
+  tenantInstitutionsRef: Ref<AtstovavimasInstitution[]>, // Lazy loaded tenant institutions
+  availableTenants: AtstovavimasTenant[],
+  tenantMeetingsRef: ComputedRef<GanttMeeting[]>, // Windowed meetings from useTenantMeetings
 ) {
   // Use the lazy-loaded tenant institutions directly
   const tenantInstitutions = tenantInstitutionsRef;
 
-  // Get meetings from tenant institutions
-  const tenantMeetings = computed<GanttMeeting[]>(() => {
-    return tenantInstitutions.value.flatMap((institution: any) => {
-      return (institution.meetings ?? []).map((meeting: any) => {
-        // Extract agenda items for tooltip (limit to first 4)
-        const agendaItems = (meeting.agenda_items ?? []).slice(0, 4).map((item: any) => {
-          // Get main vote from: main_vote property, is_main flag in votes, or first vote
-          const mainVote = item.main_vote
-            ?? item.votes?.find((v: any) => v.is_main)
-            ?? item.votes?.[0]
-            ?? null;
-          return {
-            id: String(item.id),
-            title: String(item.title ?? ''),
-            type: item.type ?? null,
-            student_vote: mainVote?.student_vote ?? null,
-            decision: mainVote?.decision ?? null,
-          };
-        });
-        const totalAgendaCount = (meeting.agenda_items ?? []).length;
+  // Meetings come from the windowed meetings store (loaded by visible date range)
+  const tenantMeetings = tenantMeetingsRef;
+
+  // Tenant gaps derived from all check-ins for each institution
+  const tenantGaps = computed<AtstovavimasGap[]>(() => {
+    const institutions = tenantInstitutions.value ?? [];
+
+    return institutions.flatMap((institution) => {
+      // Get all check-ins for this institution
+      const checkIns = institution.check_ins ?? [];
+
+      // Transform each check-in to a gap
+      return checkIns.map((checkIn) => {
+        if (!checkIn?.start_date || !checkIn?.end_date) return null;
 
         return {
-          id: String(meeting.id),
-          start_time: new Date(meeting.start_time),
-          institution_id: String(institution.id),
-          institution: String(institution.name ?? ''),
-          completion_status: meeting.completion_status,
-          agenda_items: agendaItems,
-          agenda_items_count: totalAgendaCount,
-          has_report: meeting.has_report,
-          has_protocol: meeting.has_protocol,
-          // Extract meeting type for icon differentiation (in-person, remote, email)
-          type_slug: meeting.type ?? meeting.type_slug,
-        };
-      });
+          institution_id: institution.id,
+          from: new Date(checkIn.start_date),
+          until: new Date(checkIn.end_date),
+          mode: 'no_meetings', // All check-ins represent "no meetings"
+          note: checkIn.note || undefined,
+        } as AtstovavimasGap;
+      }).filter((gap): gap is AtstovavimasGap => gap !== null);
     });
   });
 
-  // Tenant gaps derived from all check-ins for each institution
-  const tenantGaps = computed<AtstovavimosGap[]>(() => {
-    const institutions = tenantInstitutions.value ?? [];
-
-    return institutions.flatMap((inst: any) => {
-      // Get all check-ins for this institution
-      const checkIns = inst?.check_ins ?? [];
-
-      // Transform each check-in to a gap
-      return checkIns.map((ci: any) => {
-        if (!ci?.start_date || !ci?.end_date) return null;
-
-        return {
-          institution_id: inst.id,
-          from: new Date(ci.start_date),
-          until: new Date(ci.end_date),
-          mode: 'no_meetings', // All check-ins represent "no meetings"
-          note: ci.note || undefined,
-        } as AtstovavimosGap;
-      }).filter(Boolean);
-    }) as AtstovavimosGap[];
-  });
-
-  // All tenant meetings for processing
-  const allTenantMeetings = computed(() => {
-    return tenantInstitutions.value.map((institution) => {
-      return (institution as any).meetings?.map((meeting: any) => {
-        return {
-          institution: String(institution.name ?? ''),
-          institution_id: institution.id,
-          start_time: new Date(meeting.start_time),
-          id: meeting.id,
-        } as any;
-      });
-    })?.flat() ?? [];
-  });
-
-  // Include relationship-linked institutions whose own tenant may not be selected.
+  // Institutions keyed by id for quick lookup (tenant names etc.)
   const cachedTenantNames = computed(() => {
     const names = Object.fromEntries((availableTenants ?? []).map(t => [String(t.id), t.shortname]));
 
@@ -115,7 +67,7 @@ export function useGanttChartData(
   });
 
   // Institution name mappings for Gantt charts - use shared helpers
-  const getInstitutionNames = (institutions: AtstovavimosInstitution[]) => {
+  const getInstitutionNames = (institutions: AtstovavimasInstitution[]) => {
     return buildInstitutionNamesMap(institutions);
   };
 
@@ -123,22 +75,22 @@ export function useGanttChartData(
     return cachedTenantNames.value;
   };
 
-  const getInstitutionTenant = (institutions: AtstovavimosInstitution[]) => {
+  const getInstitutionTenant = (institutions: AtstovavimasInstitution[]) => {
     return buildInstitutionTenantMap(institutions);
   };
 
   // Get public meetings lookup for institutions
-  const getInstitutionHasPublicMeetings = (institutions: AtstovavimosInstitution[]) => {
+  const getInstitutionHasPublicMeetings = (institutions: AtstovavimasInstitution[]) => {
     return buildInstitutionPublicMeetingsMap(institutions);
   };
 
   // Get meeting periodicity lookup for institutions (days between expected meetings)
-  const getInstitutionPeriodicity = (institutions: AtstovavimosInstitution[]) => {
+  const getInstitutionPeriodicity = (institutions: AtstovavimasInstitution[]) => {
     return buildInstitutionPeriodicityMap(institutions);
   };
 
   // Format institutions for Gantt component - use shared helper
-  const formatInstitutionsForGantt = (institutions: AtstovavimosInstitution[]): GanttInstitution[] => {
+  const formatInstitutionsForGantt = (institutions: AtstovavimasInstitution[]): GanttInstitution[] => {
     return formatInstitutionsForGanttHelper(institutions);
   };
 
@@ -148,89 +100,47 @@ export function useGanttChartData(
       id: i.id,
       name: String(i.name ?? ''),
       tenant_id: String(i.tenant_id ?? i.tenant?.id ?? ''),
-      is_related: i.is_related,
-      relationship_direction: i.relationship_direction,
-      relationship_type: i.relationship_type,
-      source_institution_id: i.source_institution_id,
-      authorized: i.authorized,
     }));
   });
 
-  // Calendar attributes for tenant meetings
-  const tenantCalendarAttributes = computed<any[]>(() => {
-    const attrs = allTenantMeetings.value?.map((meeting) => {
-      const calendarAttrObject = {
-        dates: [meeting?.start_time],
-        dot: 'red',
-        popover: {
-          label: String(meeting?.institution ?? ''),
-          isInteractive: true,
-        },
-        key: meeting?.id,
-      };
-      return calendarAttrObject;
-    }) as any[] | undefined;
-
-    attrs?.push({
-      dates: [new Date()],
-      highlight: { color: 'red', fillMode: 'outline' },
-      order: 1,
-    });
-
-    return attrs ?? [];
-  });
-
-  // Check types of each duty, and duties.current_users amount
-  interface DutyTypeCount { title: string; count: number; slug?: string | null | undefined }
-  const dutyTypesWithUserCounts = computed<DutyTypeCount[] | undefined>(() => {
-    return tenantInstitutions.value?.reduce((acc: DutyTypeCount[], institution: any) => {
-      institution.duties?.forEach((duty: any) => {
-        duty.types?.forEach((type: any) => {
-          if (!type?.title) {
-            return;
-          }
-
-          const existingType = acc.find(t => t.title === type.title);
-
-          if (existingType) {
-            existingType.count += duty.current_users?.length ?? 0;
-          }
-          else {
-            acc.push({
-              title: type.title,
-              count: duty.current_users?.length ?? 0,
-              slug: type.slug,
-            });
-          }
-        });
-      });
-
-      return acc;
-    }, [] as DutyTypeCount[])?.sort((a, b) => b.count - a.count)
-      .filter(type => type.count > 0 && type.slug !== 'kuratoriai')
-      .slice(0, 2);
+  /**
+   * Institutions that have ever had (or have planned) activity: used by the
+   * "show only with activity" filter. Derived from server-provided aggregates
+   * rather than the loaded meetings, so the filter is independent of which
+   * meeting windows happen to be fetched.
+   */
+  const tenantInstitutionHasActivity = computed<Record<string, boolean>>(() => {
+    const result: Record<string, boolean> = {};
+    for (const institution of tenantInstitutions.value) {
+      result[String(institution.id)] = Boolean(
+        institution.last_meeting_date
+        || (institution.upcoming_meetings_count ?? 0) > 0
+        || institution.active_check_in,
+      );
+    }
+    return result;
   });
 
   // Extract duty members from tenant institutions for Gantt display - use shared helper
   const tenantDutyMembers = computed<GanttDutyMember[]>(() => {
-    return extractDutyMembers(tenantInstitutions.value as unknown as AtstovavimosInstitution[]);
+    return extractDutyMembers(tenantInstitutions.value as unknown as AtstovavimasInstitution[]);
   });
 
   // Calculate inactive periods for tenant institutions - use shared helper
   const tenantInactivePeriods = computed<InactivePeriod[]>(() => {
     return calculateInactivePeriods(
-      tenantInstitutions.value as unknown as AtstovavimosInstitution[],
+      tenantInstitutions.value as unknown as AtstovavimasInstitution[],
       tenantDutyMembers.value,
     );
   });
 
   // Helper to extract duty members from user's institutions - use shared helper
-  const getDutyMembersFromInstitutions = (institutions: AtstovavimosInstitution[]): GanttDutyMember[] => {
+  const getDutyMembersFromInstitutions = (institutions: AtstovavimasInstitution[]): GanttDutyMember[] => {
     return extractDutyMembers(institutions);
   };
 
-  // Helper to calculate inactive periods from institutions - use shared helper
-  const getInactivePeriodsFromInstitutions = (institutions: AtstovavimosInstitution[]): InactivePeriod[] => {
+  // Helper to calculate inactive periods from user's institutions - use shared helper
+  const getInactivePeriodsFromInstitutions = (institutions: AtstovavimasInstitution[]): InactivePeriod[] => {
     const dutyMembers = extractDutyMembers(institutions);
     return calculateInactivePeriods(institutions, dutyMembers);
   };
@@ -240,18 +150,12 @@ export function useGanttChartData(
     tenantInstitutions,
     tenantMeetings,
     tenantGaps,
-    allTenantMeetings,
     formattedTenantInstitutions,
+    tenantInstitutionHasActivity,
 
     // Duty members data
     tenantDutyMembers,
     tenantInactivePeriods,
-
-    // Calendar
-    tenantCalendarAttributes,
-
-    // Statistics
-    dutyTypesWithUserCounts,
 
     // Helper functions
     getInstitutionNames,

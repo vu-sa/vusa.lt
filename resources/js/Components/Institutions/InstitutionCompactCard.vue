@@ -192,11 +192,11 @@ import { AlertTriangle, Bell, BellOff, CalendarCheck, CalendarClock, CalendarOff
 import { Button } from '@/Components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { formatStaticTime } from '@/Utils/IntlTime';
-import type { AtstovavimosInstitution } from '@/Pages/Admin/Dashboard/types';
+import type { AtstovavimasInstitution } from '@/Pages/Admin/Dashboard/types';
 import { MeetingIconFilled } from '@/Components/icons';
 
 const props = defineProps<{
-  institution: AtstovavimosInstitution;
+  institution: AtstovavimasInstitution;
   showActions?: boolean;
   showSubscriptionActions?: boolean;
   canScheduleMeeting?: boolean;

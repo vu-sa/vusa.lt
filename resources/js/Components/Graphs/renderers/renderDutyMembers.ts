@@ -73,6 +73,17 @@ export function renderDutyMembers(ctx: DutyMemberRenderContext): void {
   const avatarOffset = avatarSize / 2;
   const isDark = isDarkModeActive();
 
+  // One shared clipPath for all avatars this render (geometry only depends on
+  // avatarSize, which is constant per render) — avoids creating a fresh def
+  // and re-fetching the image for every avatar on every scroll tick.
+  const avatarClipId = `gantt-avatar-clip-${avatarSize}`;
+  defs.append('clipPath')
+    .attr('id', avatarClipId)
+    .append('circle')
+    .attr('cx', avatarSize / 2)
+    .attr('cy', avatarSize / 2)
+    .attr('r', avatarSize / 2 - 1);
+
   // Flatten grouped members for rendering
   const memberGroups = Array.from(groupedDutyMembers.entries()).map(([key, members]) => {
     const [instId] = key.split(':');
@@ -126,23 +137,15 @@ export function renderDutyMembers(ctx: DutyMemberRenderContext): void {
         .attr('stroke-width', strokeWidth);
 
       if (member.user.profile_photo_path) {
-        // Add clipPath for circular image
-        const clipId = `avatar-clip-${member.user.id}-${idx}-${Date.now()}`;
-        defs.append('clipPath')
-          .attr('id', clipId)
-          .append('circle')
-          .attr('cx', avatarSize / 2)
-          .attr('cy', avatarSize / 2)
-          .attr('r', avatarSize / 2 - 1);
-
         memberG.append('image')
           .attr('href', member.user.profile_photo_path)
           .attr('x', 0)
           .attr('y', 0)
           .attr('width', avatarSize)
           .attr('height', avatarSize)
-          .attr('clip-path', `url(#${clipId})`)
-          .attr('preserveAspectRatio', 'xMidYMid slice');
+          .attr('clip-path', `url(#${avatarClipId})`)
+          .attr('preserveAspectRatio', 'xMidYMid slice')
+          .attr('decoding', 'async');
       }
       else {
         // Show initials

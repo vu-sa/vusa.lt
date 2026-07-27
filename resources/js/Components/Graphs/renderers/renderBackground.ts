@@ -38,19 +38,26 @@ export interface BackgroundRenderContext {
   rowHeightFor: (key: string | number) => number;
   /** Pixels per day for zoom level detection */
   dayWidthPx?: number;
+  /**
+   * Absolute row index (in the full, uncalled row list) for zebra-stripe parity.
+   * Required when `layoutRows` is a vertically-culled subset — without it, the
+   * stripe parity would reset from the first visible row instead of staying
+   * anchored to each row's true position, flipping on every scroll.
+   */
+  rowIndex?: (key: string | number) => number;
 }
 
 /**
  * Render row backgrounds with zebra striping and hover effects
  */
 export function renderBackground(ctx: BackgroundRenderContext): void {
-  const { g, x, layoutRows, innerWidth, innerHeight, colors, minTime, maxTime, rowTop, rowHeightFor, dayWidthPx } = ctx;
+  const { g, x, layoutRows, innerWidth, innerHeight, colors, minTime, maxTime, rowTop, rowHeightFor, dayWidthPx, rowIndex } = ctx;
 
   // Zebra row backgrounds with hover
   g.append('g')
     .attr('class', 'row-backgrounds')
     .selectAll('rect')
-    .data(layoutRows.map((r, i) => ({ r, i })))
+    .data(layoutRows.map((r, i) => ({ r, i: rowIndex ? rowIndex(r.key) : i })))
     .enter()
     .append('rect')
     .attr('x', 0)

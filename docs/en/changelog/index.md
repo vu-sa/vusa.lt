@@ -7,6 +7,16 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.19 — Faster ViSAK Tenant Timeline (2026-07-27) {#v1-19}
+
+- ✨ **Tenant timeline loads several times faster** — meetings are loaded only for the visible period and fetched as you scroll, so the all-tenants view opens much quicker
+- ✨ **Smoother timeline scrolling** — older and upcoming meetings load silently in the background, and only the visible area is rendered
+- ✨ **Visible meetings-loading indicator** — rows currently loading show a pulsing skeleton, and the toolbar displays a loading badge
+- ✨ **Faster scrolling with many tenants** — the timeline only draws the rows currently on screen, making scrolling through dozens of tenants smoother
+- ✨ **Quick way to keep just one tenant** — the tenant picker now has a "Keep one" button next to "All"
+- 🔧 **Tenant timeline shows only the selected tenants' institutions** — related institutions from other tenants are no longer duplicated, so the list matches the summary counts
+- 🔧 **Fixed missing meetings on the tenant timeline** — an empty response was no longer cached, so newly created meetings stop looking like they don't exist
+
 ## v1.18 — Refreshed Event and Camp Pages (2026-07-27) {#v1-18}
 
 - ⭐ **Map of the event location** — when an event has a location, a map with a marker is shown next to it; the Google Maps link stays

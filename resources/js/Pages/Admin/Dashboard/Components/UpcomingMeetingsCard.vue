@@ -171,7 +171,7 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowRight, Globe, Plus } from 'lucide-vue-next';
 
-import type { AtstovavimosMeeting, InstitutionInsights } from '../types';
+import type { AtstovavimasMeeting, InstitutionInsights } from '../types';
 
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
@@ -181,13 +181,13 @@ import { dashboardCardClasses, dashboardCardFooterClasses, cardAccentColors } fr
 import { MeetingIconFilled } from '@/Components/icons';
 
 interface Props {
-  upcomingMeetings: AtstovavimosMeeting[];
+  upcomingMeetings: AtstovavimasMeeting[];
   institutionsInsights: InstitutionInsights;
 }
 
 const props = defineProps<Props>();
 
-const isMeetingToday = (meeting: AtstovavimosMeeting): boolean => {
+const isMeetingToday = (meeting: AtstovavimasMeeting): boolean => {
   const meetingDate = new Date(meeting.start_time);
   const now = new Date();
   return meetingDate.getFullYear() === now.getFullYear()

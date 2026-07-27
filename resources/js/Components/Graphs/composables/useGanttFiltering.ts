@@ -57,6 +57,12 @@ export interface GanttFilteringOptions {
   showOnlyWithPublicMeetings: () => boolean;
   /** Map of institution ID to public meetings flag (getter for reactivity) */
   institutionHasPublicMeetings: () => Record<string | number, boolean> | undefined;
+  /**
+   * Map of institution ID to "has any past/planned activity" flag (getter).
+   * When provided, the activity filter uses it instead of the loaded
+   * meetings/gaps, so the filter is independent of loaded date windows.
+   */
+  institutionHasActivity?: () => Record<string | number, boolean> | undefined;
   /** Custom institution order (getter for reactivity) */
   institutionsOrder: () => Array<string | number> | undefined;
   /** Whether to show duty members */
@@ -142,8 +148,15 @@ export function useGanttFiltering(
 
     // Filter only those with activity if requested
     if (showOnlyWithActivity) {
-      const act = activeInstitutionIds.value;
-      arr = arr.filter(id => act.has(id));
+      const hasActivityMap = options.institutionHasActivity?.();
+
+      if (hasActivityMap) {
+        arr = arr.filter(id => hasActivityMap[id as keyof typeof hasActivityMap] ?? hasActivityMap[String(id) as keyof typeof hasActivityMap]);
+      }
+      else {
+        const act = activeInstitutionIds.value;
+        arr = arr.filter(id => act.has(id));
+      }
     }
 
     // Filter only those with public meetings if requested
@@ -198,20 +211,6 @@ export function useGanttFiltering(
     return data.parsedInactivePeriods.value.filter(p => visibleIds.has(String(p.institution_id)));
   });
 
-  /**
-   * Duty members grouped by institution + day for avatar stacking
-   */
-  const groupedDutyMembers = computed(() => {
-    const groups = new Map<string, typeof filteredDutyMembers.value>();
-    for (const member of filteredDutyMembers.value) {
-      const dayKey = `${member.institution_id}:${member.startDate.toDateString()}`;
-      const arr = groups.get(dayKey) ?? [];
-      arr.push(member);
-      groups.set(dayKey, arr);
-    }
-    return groups;
-  });
-
   return {
     activeInstitutionIds,
     baseInstitutionIds,
@@ -220,6 +219,5 @@ export function useGanttFiltering(
     filteredGaps,
     filteredDutyMembers,
     filteredInactivePeriods,
-    groupedDutyMembers,
   };
 }

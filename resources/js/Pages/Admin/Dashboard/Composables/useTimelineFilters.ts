@@ -13,7 +13,7 @@
 import { ref, computed, provide, inject, watch, type Ref, type InjectionKey } from 'vue';
 import { router } from '@inertiajs/vue3';
 
-import type { AtstovavimosInstitution, AtstovavimosTenant } from '../types';
+import type { AtstovavimasInstitution, AtstovavimasTenant } from '../types';
 
 const STORAGE_KEY = 'atstovavimas-timeline-filters';
 
@@ -39,8 +39,8 @@ export interface TimelineFilters {
   scrollPosition: Ref<number>;
 
   // Computed
-  availableTenantsUser: Ref<AtstovavimosTenant[]>;
-  currentTenant: Ref<AtstovavimosTenant | undefined>;
+  availableTenantsUser: Ref<AtstovavimasTenant[]>;
+  currentTenant: Ref<AtstovavimasTenant | undefined>;
 
   // Actions
   setSelectedTenants: (tenantIds: string[]) => void;
@@ -68,7 +68,7 @@ const TIMELINE_FILTERS_KEY: InjectionKey<TimelineFilters> = Symbol('timeline-fil
 
 export function normalizeTenantSelection(
   tenantIds: string[],
-  availableTenants: AtstovavimosTenant[],
+  availableTenants: AtstovavimasTenant[],
   fallback: 'first' | 'all' = 'first',
 ): string[] {
   const selectedIds = new Set(tenantIds.map(String));
@@ -87,9 +87,9 @@ export function normalizeTenantSelection(
 }
 
 export function getInstitutionTenants(
-  institutions: AtstovavimosInstitution[],
-): AtstovavimosTenant[] {
-  const tenants = new Map<string, AtstovavimosTenant>();
+  institutions: AtstovavimasInstitution[],
+): AtstovavimasTenant[] {
+  const tenants = new Map<string, AtstovavimasTenant>();
 
   institutions.forEach((institution) => {
     const { tenant } = institution;
@@ -136,8 +136,8 @@ function saveStoredFilters(filters: StoredFilters) {
  * Call this once in the parent component (e.g., ShowAtstovavimas.vue).
  */
 export function provideTimelineFilters(
-  institutions: AtstovavimosInstitution[],
-  availableTenants: AtstovavimosTenant[],
+  institutions: AtstovavimasInstitution[],
+  availableTenants: AtstovavimasTenant[],
 ): TimelineFilters {
   const stored = loadStoredFilters();
 
@@ -280,8 +280,8 @@ export function provideTimelineFilters(
     // Shared state
     scrollPosition,
     // Computed
-    availableTenantsUser: availableTenantsUser as unknown as Ref<AtstovavimosTenant[]>,
-    currentTenant: currentTenant as unknown as Ref<AtstovavimosTenant | undefined>,
+    availableTenantsUser: availableTenantsUser as unknown as Ref<AtstovavimasTenant[]>,
+    currentTenant: currentTenant as unknown as Ref<AtstovavimasTenant | undefined>,
     // Actions
     setSelectedTenants,
     setUserTenantFilter,
