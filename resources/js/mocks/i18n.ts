@@ -8,10 +8,12 @@
 // Import actual generated translations using relative paths from this file
 import ltJson from '../../../lang/lt.json';
 import phpAdminLt from '../../../lang/php_admin_lt.json';
+import phpPublicLt from '../../../lang/php_public_lt.json';
 
 // Merge translations - admin overrides base
 const translations: Record<string, string> = {
   ...(ltJson as Record<string, string>),
+  ...(phpPublicLt as Record<string, string>),
   ...(phpAdminLt as Record<string, string>),
 };
 
@@ -43,6 +45,49 @@ export const wTrans = trans;
 export const $t = trans;
 
 /**
+ * Resolve a Laravel choice string against a count.
+ *
+ * Handles both the simple `singular|plural` form and the explicit-condition form
+ * (`{1} stovykla|[2,9] stovyklos|[10,*] stovyklų`) that Lithuanian needs, because its
+ * noun form depends on the last digits of the number rather than on one-versus-many.
+ */
+function resolveChoice(message: string, count: number): string {
+  const segments = message.split('|');
+  const plainSegments: string[] = [];
+
+  for (const segment of segments) {
+    const conditioned = segment.match(/^\s*(\{([^}]*)\}|\[([^\]]*)\])(.*)$/s);
+
+    if (!conditioned) {
+      plainSegments.push(segment);
+      continue;
+    }
+
+    const [, , exact, range, text] = conditioned;
+
+    if (exact !== undefined && Number(exact) === count) {
+      return text.trim();
+    }
+
+    if (range !== undefined) {
+      const [from, to] = range.split(',').map(part => part.trim());
+      const lower = Number(from);
+      const upper = to === '*' ? Infinity : Number(to);
+
+      if (count >= lower && count <= upper) {
+        return text.trim();
+      }
+    }
+  }
+
+  if (plainSegments.length === 0) {
+    return message;
+  }
+
+  return (count === 1 ? plainSegments[0] : plainSegments[1] ?? plainSegments[0]).trim();
+}
+
+/**
  * Plural translation function.
  * Supports Laravel's pipe-separated plural syntax: "one item|:count items"
  */
@@ -51,8 +96,7 @@ export function transChoice(key: string, count: number, replace: Record<string, 
 
   // Handle pipe-separated plurals (Laravel style)
   if (translation.includes('|')) {
-    const [singular, plural] = translation.split('|');
-    translation = count === 1 ? (singular ?? key) : (plural ?? singular ?? key);
+    translation = resolveChoice(translation, count);
   }
 
   // Always include count in replacements

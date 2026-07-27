@@ -71,7 +71,7 @@
         <!-- Date -->
         <div class="flex items-center gap-1">
           <IFluentCalendarLtr16Regular class="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-          <span class="break-words">{{ formatEventDateTime(event.date, event.end_date || undefined) }}</span>
+          <span class="break-words">{{ formatEventDateTime(event) }}</span>
         </div>
 
         <!-- Location -->
@@ -113,7 +113,7 @@ import { Link, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
 import Button from '@/Components/ui/button/Button.vue';
-import { formatStaticTime } from '@/Utils/IntlTime';
+import { formatEventDateSpan } from '@/Utils/IntlTime';
 
 const props = withDefaults(defineProps<{
   event: App.Entities.Calendar;
@@ -157,24 +157,13 @@ const getEventLocation = (event: App.Entities.Calendar): string => {
   return Array.isArray(event.location) ? event.location.join(' ') : (event.location || '');
 };
 
-// Format event date and time
-const formatEventDateTime = (startDate: string, endDate?: string): string => {
-  const start = new Date(startDate);
-  const { locale } = page.props.app;
+/** Multi-day events read as one collapsed span, e.g. "2026 m. rugpjūčio 25–27 d. · 10:00 → 18:00". */
+const formatEventDateTime = (event: App.Entities.Calendar): string => {
+  const span = formatEventDateSpan(event.date, event.end_date, {
+    allDay: event.is_all_day,
+    locale: page.props.app.locale,
+  });
 
-  if (endDate) {
-    const end = new Date(endDate);
-    // If same day, show "Jan 15, 10:00 - 15:00"
-    if (start.toDateString() === end.toDateString()) {
-      const dateStr = formatStaticTime(start, { dateStyle: 'medium' }, locale);
-      const startTime = formatStaticTime(start, { timeStyle: 'short' }, locale);
-      const endTime = formatStaticTime(end, { timeStyle: 'short' }, locale);
-      return `${dateStr}, ${startTime} - ${endTime}`;
-    }
-    // Different days: "Jan 15, 10:00 - Jan 16, 15:00"
-    return `${formatStaticTime(start, { dateStyle: 'medium', timeStyle: 'short' }, locale)} - ${formatStaticTime(end, { dateStyle: 'medium', timeStyle: 'short' }, locale)}`;
-  }
-
-  return formatStaticTime(start, { dateStyle: 'medium', timeStyle: 'short' }, locale);
+  return `${span.primary} · ${span.secondary}`;
 };
 </script>

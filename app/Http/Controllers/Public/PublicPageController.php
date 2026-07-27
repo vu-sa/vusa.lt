@@ -14,6 +14,7 @@ use App\Models\News;
 use App\Models\Page;
 use App\Models\Tenant;
 use App\Models\Type;
+use App\Services\LocationGeocoder;
 use App\Services\ResourceServices\InstitutionService;
 use App\Settings\FormSettings;
 use Illuminate\Database\Eloquent\Builder;
@@ -283,7 +284,12 @@ class PublicPageController extends PublicController
             $events->where('is_international', true);
         }
 
-        $events = $events->get()->sortBy('tenant.alias')->values();
+        // Grouped by faculty on the page, chronological within each faculty — a faculty
+        // may run more than one camp.
+        $events = $events->get()->sortBy([
+            ['tenant.alias', 'asc'],
+            ['date', 'asc'],
+        ])->values();
 
         if ($events->isEmpty() && $year != intval(date('Y'))) {
             return redirect()->route('pirmakursiuStovyklos', ['lang' => app()->getLocale(), 'year' => null]);
@@ -299,7 +305,13 @@ class PublicPageController extends PublicController
             $yearsWhenEventsExist->where('is_international', true);
         }
 
-        $yearsWhenEventsExist = $yearsWhenEventsExist->selectRaw('YEAR(date) as year')->distinct()->get()->pluck('year');
+        // Grouped in PHP rather than with a `YEAR()` expression, which is MySQL-specific.
+        $yearsWhenEventsExist = $yearsWhenEventsExist
+            ->orderByDesc('date')
+            ->pluck('date')
+            ->map(fn ($date) => Carbon::parse($date)->year)
+            ->unique()
+            ->values();
 
         // Global content - use main vusa tenant (null defaults to current tenant)
         $seo = $this->shareAndReturnSEOObject(
@@ -311,7 +323,9 @@ class PublicPageController extends PublicController
 
         return Inertia::render('Public/SummerCamps',
             [
-                'events' => $events->makeHidden(['description', 'location', 'category', 'url', 'user_id'])->values()->all(),
+                // `location` is shown on the camp cards; `description` stays hidden because
+                // the cards never render it and it is heavy rich text.
+                'events' => $events->makeHidden(['description', 'category', 'user_id'])->values()->all(),
                 'year' => $year,
                 'yearsWhenEventsExist' => $yearsWhenEventsExist,
             ])->withViewData([
@@ -438,12 +452,12 @@ class PublicPageController extends PublicController
         ]);
     }
 
-    public function calendarEvent(Calendar $calendar)
+    public function calendarEvent(Calendar $calendar, LocationGeocoder $geocoder)
     {
-        return $this->calendarEventMain('lt', $calendar);
+        return $this->calendarEventMain('lt', $calendar, $geocoder);
     }
 
-    public function calendarMain($lang, string $year, string $month, string $day, string $slug)
+    public function calendarMain($lang, string $year, string $month, string $day, string $slug, LocationGeocoder $geocoder)
     {
 
         // Find the calendar event by date and slug
@@ -463,7 +477,7 @@ class PublicPageController extends PublicController
             abort(404);
         }
 
-        return $this->calendarEventMain($lang, $returnableEvent);
+        return $this->calendarEventMain($lang, $returnableEvent, $geocoder);
     }
 
     public function calendarEventList()
@@ -705,13 +719,13 @@ class PublicPageController extends PublicController
         return ['title' => 'Event '.$calendar->id, 'locale' => $currentLocale];
     }
 
-    public function calendarEventMain($lang, Calendar $calendar)
+    public function calendarEventMain($lang, Calendar $calendar, LocationGeocoder $geocoder)
     {
         $this->getBanners();
         $this->getTenantLinks();
         $this->shareOtherLangURL('calendar.event', calendarId: $calendar->id);
 
-        $calendar->load('tenant:id,alias,fullname,shortname');
+        $calendar->load(['tenant:id,alias,fullname,shortname', 'category']);
 
         // Use the calendar event's tenant for proper canonical URL
         $seo = $this->shareAndReturnSEOObject(
@@ -758,6 +772,7 @@ class PublicPageController extends PublicController
             ],
             'calendar' => $relatedEvents,
             'googleLink' => $calendar->googleLink(),
+            'eventLocation' => $geocoder->coordinates($calendar->location),
         ])
             ->withViewData(
                 [

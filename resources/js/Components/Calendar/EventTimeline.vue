@@ -172,20 +172,11 @@
       :class="nextUpcomingEvents.length === 1 ? 'grid-cols-1 max-w-md mx-auto' : 'grid-cols-1 sm:grid-cols-2'"
     >
       <a
-        v-for="(event, index) in nextUpcomingEvents"
+        v-for="event in nextUpcomingEvents"
         :key="event.id"
         :href="route('calendar.event', { calendar: event.id, lang: locale })"
         class="group relative flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-sm hover:shadow-md hover:border-vusa-red/50 dark:hover:border-vusa-red/50 transition-all duration-300"
-        :class="index === 0 ? 'ring-2 ring-vusa-red/20 dark:ring-vusa-red/30' : ''"
       >
-        <!-- Priority indicator -->
-        <div
-          v-if="index === 0"
-          class="absolute -top-2 -right-2 px-2 py-0.5 bg-vusa-red text-white text-[10px] font-bold rounded-full shadow-md"
-        >
-          {{ $t('Artėja') }}
-        </div>
-
         <!-- Event image -->
         <div class="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden shadow-sm">
           <img

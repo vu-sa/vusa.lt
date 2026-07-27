@@ -7,6 +7,15 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.18 — Atnaujinti renginių ir stovyklų puslapiai (2026-07-27) {#v1-18}
+
+- ⭐ **Renginio vietos žemėlapis** — jei renginiui nurodyta vieta, šalia jos rodomas žemėlapis su žyma; nuoroda į Google Maps išlieka
+- ✨ **Pirmakursių stovyklų puslapis perdarytas** — stovyklos matomos iškart po trumpa įžanga, su datomis ir vietomis; jei padalinys organizuoja kelias stovyklas, matomos visos
+- ✨ **Renginio laikas rodomas sklandžiai** — kelias dienas trunkantys renginiai užrašomi vienu intervalu (pvz., „2026 m. rugpjūčio 25–27 d.“), o visą dieną trunkantys neberodo vidurnakčio
+- ✨ **Mažiau skubos ir pasikartojimų renginių puslapiuose** — panaikintos „Sekantis“, „Artėja“, „Netrukus“ žymos; likę tik faktai: „Vyksta dabar“ ir „Renginys įvyko“, o dalinimosi mygtukai nebedubliuojami
+- 🔧 **Renginio aprašymas vėl rodomas tvarkingai** — antraštės, sąrašai ir pastraipos nebeliejasi į vieną tekstą
+- 🔧 **Registracijos mygtukas veikia** — anksčiau nurodyta registracijos nuoroda renginio puslapyje nebuvo rodoma
+
 ## v1.17 — Ištrintų įrašų valdymas ir patogesni sąrašai (2026-07-27) {#v1-17}
 
 - ⭐ **Ištrintus įrašus galima atkurti** — baneriai, kalendoriaus renginiai, greitosios nuorodos, navigacijos punktai, kategorijos, žymos, mokymai, studijų programos ir studijų rinkiniai nebeprarandami iškart

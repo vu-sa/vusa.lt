@@ -170,6 +170,105 @@ export const formatDateRange = (
   }
 };
 
+export interface EventDateSpan {
+  /** The date part, e.g. "2026 m. rugpjūčio 25–27 d." */
+  primary: string;
+  /** The time part or duration hint, e.g. "10:00–18:00" or "3 dienos". */
+  secondary: string;
+}
+
+/**
+ * Render an event's start/end as a fluent, locale-correct span.
+ *
+ * Multi-day ranges go through `Intl.DateTimeFormat.formatRange`, which collapses
+ * shared components the way each locale expects ("2026 m. rugpjūčio 25–27 d.")
+ * instead of concatenating two full dates. Falls back to `formatDateRange` where
+ * `formatRange` is unavailable.
+ */
+export const formatEventDateSpan = (
+  start: number | Date | string,
+  end?: number | Date | string | null,
+  options: { allDay?: boolean; locale?: LocaleEnum } = {},
+): EventDateSpan => {
+  const { allDay = false, locale = LocaleEnum.LT } = options;
+
+  const startDate = new Date(start);
+  const endDate = end ? new Date(end) : null;
+
+  const dateOnly: Intl.DateTimeFormatOptions = { dateStyle: 'long' };
+  // Events happen in Lithuania, so times stay 24-hour even on the English site, where
+  // `en` would otherwise render "06:00 PM".
+  const timeOnly: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' };
+
+  // No end date, or an end that adds nothing — a single point in time.
+  if (!endDate || endDate.getTime() <= startDate.getTime()) {
+    return {
+      primary: formatStaticTime(startDate, dateOnly, locale),
+      secondary: allDay ? allDayLabel(locale) : formatStaticTime(startDate, timeOnly, locale),
+    };
+  }
+
+  if (isSameDay(startDate, endDate)) {
+    return {
+      primary: formatStaticTime(startDate, dateOnly, locale),
+      secondary: allDay
+        ? allDayLabel(locale)
+        : `${formatStaticTime(startDate, timeOnly, locale)}–${formatStaticTime(endDate, timeOnly, locale)}`,
+    };
+  }
+
+  return {
+    primary: formatRangeOrFallback(startDate, endDate, dateOnly, locale),
+    secondary: allDay
+      ? formatDayCount(startDate, endDate, locale)
+      : `${formatStaticTime(startDate, timeOnly, locale)} → ${formatStaticTime(endDate, timeOnly, locale)}`,
+  };
+};
+
+const allDayLabel = (locale: LocaleEnum): string =>
+  locale === LocaleEnum.LT ? 'Visą dieną' : 'All day';
+
+const formatRangeOrFallback = (
+  startDate: Date,
+  endDate: Date,
+  dateTimeOptions: Intl.DateTimeFormatOptions,
+  locale: LocaleEnum,
+): string => {
+  const formatter = new Intl.DateTimeFormat(locale, dateTimeOptions);
+
+  if (typeof formatter.formatRange === 'function') {
+    return formatter.formatRange(startDate, endDate);
+  }
+
+  return formatDateRange(startDate, endDate, locale);
+};
+
+/**
+ * Inclusive day count of a multi-day span, pluralised through `Intl.PluralRules`
+ * so Lithuanian's few/many/other forms come out right.
+ */
+const formatDayCount = (startDate: Date, endDate: Date, locale: LocaleEnum): string => {
+  const startOfDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const days = Math.round(
+    (startOfDay(endDate).getTime() - startOfDay(startDate).getTime()) / DAY_MILISECONDS,
+  ) + 1;
+
+  if (locale !== LocaleEnum.LT) {
+    return `${days} ${days === 1 ? 'day' : 'days'}`;
+  }
+
+  const forms: Record<string, string> = {
+    one: 'diena',
+    few: 'dienos',
+    many: 'dienos',
+    other: 'dienų',
+  };
+
+  const plural = new Intl.PluralRules(locale).select(days);
+
+  return `${days} ${forms[plural] ?? forms.other}`;
+};
+
 /** The Lithuanian academic year starts in September (month index 8). */
 const ACADEMIC_YEAR_START_MONTH = 8;
 

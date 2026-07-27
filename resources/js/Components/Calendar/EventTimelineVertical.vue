@@ -103,17 +103,8 @@
               group.isPast
                 ? 'bg-zinc-50/50 dark:bg-zinc-800/30 border-zinc-100 dark:border-zinc-800 opacity-70 hover:opacity-100'
                 : 'bg-white dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700 hover:border-vusa-red/40 hover:shadow-sm',
-              group.isNextUpcoming && event === group.events[0] ? 'ring-1 ring-vusa-red/20' : ''
             ]"
           >
-            <!-- Upcoming badge -->
-            <div
-              v-if="group.isNextUpcoming && event === group.events[0]"
-              class="absolute -top-2 right-3 px-2 py-0.5 bg-vusa-red text-white text-[10px] font-semibold rounded-full"
-            >
-              {{ $t('Artėja') }}
-            </div>
-
             <!-- Event thumbnail -->
             <div class="flex-shrink-0 w-11 h-11 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-700">
               <img
@@ -273,15 +264,6 @@ const dateRange = computed(() => {
 const canLoadPast = computed(() => daysPast.value < 90);
 const canLoadFuture = computed(() => daysFuture.value < 90);
 
-// Find upcoming events to determine "next upcoming"
-const nextUpcomingDate = computed(() => {
-  const upcomingEvents = props.events
-    .filter(e => !isBefore(new Date(e.date), today.value))
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-  return upcomingEvents[0] ? startOfDay(new Date(upcomingEvents[0].date)) : null;
-});
-
 // Group events by date
 const eventGroups = computed(() => {
   const groups: Array<{
@@ -290,7 +272,6 @@ const eventGroups = computed(() => {
     events: App.Entities.Calendar[];
     isPast: boolean;
     isToday: boolean;
-    isNextUpcoming: boolean;
   }> = [];
 
   // Filter events within date range
@@ -317,8 +298,6 @@ const eventGroups = computed(() => {
     const date = parseISO(dateKey);
     const isPast = isBefore(date, today.value);
     const isToday = isSameDay(date, today.value);
-    const isNextUpcoming = nextUpcomingDate.value ? isSameDay(date, nextUpcomingDate.value) : false;
-
     // Sort events by time
     events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
@@ -328,7 +307,6 @@ const eventGroups = computed(() => {
       events,
       isPast,
       isToday,
-      isNextUpcoming,
     });
   });
 

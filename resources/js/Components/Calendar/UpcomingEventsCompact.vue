@@ -17,18 +17,14 @@
     <!-- Events list -->
     <div class="space-y-2">
       <a
-        v-for="(event, index) in visibleEvents"
+        v-for="event in visibleEvents"
         :key="event.id"
         :href="route('calendar.event', { calendar: event.id, lang: locale })"
         class="group flex items-center gap-3 p-2.5 -mx-2.5 rounded-lg transition-all duration-200 hover:bg-zinc-100 dark:hover:bg-zinc-700/50"
-        :class="index === 0 ? 'bg-vusa-red/5 dark:bg-vusa-red/10' : ''"
       >
         <!-- Date badge -->
         <div
-          class="flex flex-col items-center justify-center rounded-lg px-2 py-1.5 text-center min-w-[44px]"
-          :class="index === 0
-            ? 'bg-vusa-red text-white'
-            : 'bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300'"
+          class="flex flex-col items-center justify-center rounded-lg px-2 py-1.5 text-center min-w-[44px] bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300"
         >
           <span class="text-[9px] font-medium uppercase leading-none">
             {{ formatMonth(event.date) }}
@@ -58,8 +54,7 @@
         <!-- Event info -->
         <div class="flex-1 min-w-0">
           <p
-            class="text-sm font-medium line-clamp-2 leading-tight transition-colors group-hover:text-vusa-red"
-            :class="index === 0 ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-700 dark:text-zinc-300'"
+            class="text-sm font-medium line-clamp-2 leading-tight text-zinc-700 transition-colors group-hover:text-vusa-red dark:text-zinc-300"
           >
             {{ getEventTitle(event) }}
           </p>
@@ -67,14 +62,6 @@
             <IFluentClock12Regular class="w-3 h-3" />
             {{ formatTime(event.date) }}
           </p>
-        </div>
-
-        <!-- Next badge for first event -->
-        <div
-          v-if="index === 0"
-          class="absolute -top-1 -right-1 px-1.5 py-0.5 bg-vusa-red text-white text-[8px] font-bold rounded-full shadow-sm"
-        >
-          {{ $t('Sekantis') }}
         </div>
       </a>
 

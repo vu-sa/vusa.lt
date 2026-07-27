@@ -46,7 +46,7 @@
         <div class="max-w-7xl mx-auto">
           <div class="max-w-4xl space-y-4">
             <!-- Category/Tenant badges -->
-            <div class="flex items-center gap-3">
+            <div class="flex flex-wrap items-center gap-3">
               <span
                 v-if="event.tenant"
                 class="px-3 py-1.5 text-xs font-medium rounded-full bg-vusa-red text-white"
@@ -59,23 +59,22 @@
               >
                 {{ event.category.name }}
               </span>
-            </div>
 
-            <!-- Status Badge -->
-            <div v-if="eventStatus">
+              <!-- Status: only the states that change what you can do -->
               <span
-                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-full backdrop-blur-md"
+                v-if="statusLabel"
+                class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-full backdrop-blur-md"
                 :class="statusBadgeClasses"
               >
-                <span class="relative flex h-2.5 w-2.5">
+                <span class="relative flex h-2 w-2">
                   <span
                     v-if="isLive"
                     class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
-                    :class="statusPingClasses"
+                    :class="statusDotClasses"
                   />
-                  <span class="relative inline-flex rounded-full h-2.5 w-2.5" :class="statusDotClasses" />
+                  <span class="relative inline-flex rounded-full h-2 w-2" :class="statusDotClasses" />
                 </span>
-                {{ eventStatus }}
+                {{ statusLabel }}
               </span>
             </div>
 
@@ -84,41 +83,18 @@
               {{ event.title }}
             </h1>
 
-            <!-- Metadata Row -->
-            <div class="flex flex-wrap items-center gap-x-6 gap-y-3 text-white">
-              <!-- Date -->
-              <div class="flex items-center gap-2.5 text-base">
-                <div class="flex items-center justify-center w-9 h-9 rounded-xl bg-white/20 backdrop-blur-md">
-                  <IFluentCalendarLtr20Regular class="w-5 h-5 text-white" />
-                </div>
-                <span class="font-medium drop-shadow-sm">{{ formattedDateTime }}</span>
-              </div>
-
-              <!-- Location -->
-              <a
-                v-if="event.location"
-                :href="`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(event.location))}`"
-                target="_blank"
-                class="flex items-center gap-2.5 text-base group"
-              >
-                <div class="flex items-center justify-center w-9 h-9 rounded-xl bg-white/20 backdrop-blur-md group-hover:bg-white/30 transition-colors">
-                  <IFluentLocation20Regular class="w-5 h-5 text-white" />
-                </div>
-                <span class="font-medium underline-offset-2 group-hover:underline drop-shadow-sm">{{ event.location }}</span>
-              </a>
-
-              <!-- Organizer -->
-              <div v-if="event.organizer" class="flex items-center gap-2.5 text-base">
-                <div class="flex items-center justify-center w-9 h-9 rounded-xl bg-white/20 backdrop-blur-md">
-                  <IFluentPeopleTeam20Regular class="w-5 h-5 text-white" />
-                </div>
-                <span class="font-medium drop-shadow-sm">{{ event.organizer }}</span>
-              </div>
+            <!-- Date -->
+            <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-white">
+              <span class="text-lg font-semibold drop-shadow-sm">{{ dateSpan.primary }}</span>
+              <span class="text-base text-white/80 drop-shadow-sm">{{ dateSpan.secondary }}</span>
+              <span v-if="relativeLabel" class="text-sm text-white/60 drop-shadow-sm">
+                · {{ relativeLabel }}
+              </span>
             </div>
 
             <!-- Action Buttons Slot -->
             <div v-if="$slots.actions" class="pt-2">
-              <slot name="actions" />
+              <slot name="actions" :on-image="true" />
             </div>
           </div>
         </div>
@@ -159,85 +135,59 @@
             </defs>
             <rect width="100%" height="100%" fill="url(#mobile-hero-grid)" />
           </svg>
-
-          <!-- Category/Tenant badges -->
-          <div class="absolute top-4 left-4 flex items-center gap-2">
-            <span
-              v-if="event.category"
-              class="px-2.5 py-1 text-xs font-semibold uppercase tracking-wide rounded-full bg-white/10 text-white/90 backdrop-blur-sm"
-            >
-              {{ event.category.name }}
-            </span>
-            <span
-              v-if="event.tenant"
-              class="px-2.5 py-1 text-xs font-medium rounded-full bg-vusa-red text-white"
-            >
-              {{ event.tenant.shortname }}
-            </span>
-          </div>
         </div>
       </div>
 
       <!-- Content section -->
       <div class="px-6 sm:px-8 -mt-4 relative z-10" :class="{ 'pt-4': !hasImage }">
-        <!-- Status Badge -->
-        <div v-if="eventStatus" class="mb-4">
+        <!-- Badges -->
+        <div class="flex flex-wrap items-center gap-2 mb-4">
           <span
-            class="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-full"
+            v-if="event.tenant"
+            class="px-2.5 py-1 text-xs font-medium rounded-full bg-vusa-red text-white"
+          >
+            {{ event.tenant.shortname }}
+          </span>
+          <span
+            v-if="event.category"
+            class="px-2.5 py-1 text-xs font-semibold uppercase tracking-wide rounded-full bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+          >
+            {{ event.category.name }}
+          </span>
+          <span
+            v-if="statusLabel"
+            class="inline-flex items-center gap-2 px-2.5 py-1 text-xs font-semibold rounded-full"
             :class="mobileStatusBadgeClasses"
           >
             <span class="relative flex h-2 w-2">
               <span
                 v-if="isLive"
                 class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
-                :class="mobileStatusPingClasses"
+                :class="mobileStatusDotClasses"
               />
               <span class="relative inline-flex rounded-full h-2 w-2" :class="mobileStatusDotClasses" />
             </span>
-            {{ eventStatus }}
+            {{ statusLabel }}
           </span>
         </div>
 
         <!-- Title -->
-        <h1 class="text-2xl sm:text-3xl font-extrabold leading-tight text-zinc-900 dark:text-zinc-100 mb-6">
+        <h1 class="text-2xl sm:text-3xl font-extrabold leading-tight text-zinc-900 dark:text-zinc-100 mb-3">
           {{ event.title }}
         </h1>
 
-        <!-- Metadata -->
-        <div class="space-y-4 text-sm mb-6">
-          <!-- Date -->
-          <div class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
-            <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-vusa-red/10 dark:bg-vusa-red/20">
-              <IFluentCalendarLtr20Regular class="w-5 h-5 text-vusa-red" />
-            </div>
-            <span class="font-medium">{{ formattedDateTime }}</span>
-          </div>
-
-          <!-- Location -->
-          <a
-            v-if="event.location"
-            :href="`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(event.location))}`"
-            target="_blank"
-            class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300 group"
-          >
-            <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-vusa-red/10 dark:bg-vusa-red/20 group-hover:bg-vusa-red/20 dark:group-hover:bg-vusa-red/30 transition-colors">
-              <IFluentLocation20Regular class="w-5 h-5 text-vusa-red" />
-            </div>
-            <span class="font-medium underline-offset-2 group-hover:underline">{{ event.location }}</span>
-          </a>
-
-          <!-- Organizer -->
-          <div v-if="event.organizer || event.tenant" class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
-            <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-vusa-red/10 dark:bg-vusa-red/20">
-              <IFluentPeopleTeam20Regular class="w-5 h-5 text-vusa-red" />
-            </div>
-            <span class="font-medium">{{ event.organizer || event.tenant?.shortname }}</span>
-          </div>
+        <!-- Date -->
+        <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1 mb-6">
+          <span class="font-semibold text-zinc-900 dark:text-zinc-100">{{ dateSpan.primary }}</span>
+          <span class="text-sm text-zinc-600 dark:text-zinc-400">{{ dateSpan.secondary }}</span>
+          <span v-if="relativeLabel" class="text-sm text-zinc-500 dark:text-zinc-500">
+            · {{ relativeLabel }}
+          </span>
         </div>
 
         <!-- Action Buttons Slot -->
-        <div v-if="$slots.actions" class="pt-4 pb-2">
-          <slot name="actions" />
+        <div v-if="$slots.actions" class="pb-2">
+          <slot name="actions" :on-image="false" />
         </div>
       </div>
     </div>
@@ -246,10 +196,11 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { trans as $t } from 'laravel-vue-i18n';
 import { usePage } from '@inertiajs/vue3';
 
-import { formatDateRange } from '@/Utils/IntlTime';
+import { formatEventDateSpan } from '@/Utils/IntlTime';
+import { useEventStatus } from '@/Composables/useEventStatus';
+import { LocaleEnum } from '@/Types/enums';
 
 interface Props {
   event: App.Entities.Calendar;
@@ -257,115 +208,46 @@ interface Props {
 
 const props = defineProps<Props>();
 const page = usePage();
-const locale = computed(() => page.props.app.locale);
+const locale = computed(() => (page.props.app.locale ?? LocaleEnum.LT) as LocaleEnum);
+
+const { isLive, statusLabel, relativeLabel } = useEventStatus(() => props.event);
 
 // Get hero image URL - uses main_image_url accessor with fallback
-const heroImageUrl = computed(() => {
-  return (props.event as any).main_image_url || null;
-});
+const heroImageUrl = computed(() => props.event.main_image_url || null);
 
-// Check if event has hero image
 const hasImage = computed(() => !!heroImageUrl.value);
 
 // Responsive height classes - taller hero for impact
-const heroContainerClasses = computed(() => {
-  if (hasImage.value) {
-    return 'min-h-[480px] lg:min-h-[560px] xl:min-h-[640px]';
-  }
-  else {
-    return 'min-h-[420px] lg:min-h-[500px] xl:min-h-[560px]';
-  }
-});
+const heroContainerClasses = computed(() =>
+  hasImage.value
+    ? 'min-h-[480px] lg:min-h-[560px] xl:min-h-[640px]'
+    : 'min-h-[420px] lg:min-h-[500px] xl:min-h-[560px]',
+);
 
-// Format event date and time
-const formattedDateTime = computed(() => {
-  const startDate = new Date(props.event.date);
-  const endDate = props.event.end_date ? new Date(props.event.end_date) : null;
+const dateSpan = computed(() =>
+  formatEventDateSpan(props.event.date, props.event.end_date, {
+    allDay: props.event.is_all_day,
+    locale: locale.value,
+  }),
+);
 
-  return formatDateRange(startDate, endDate || undefined, locale.value as any);
-});
+const statusBadgeClasses = computed(() =>
+  isLive.value
+    ? 'bg-emerald-500/30 text-emerald-100 border border-emerald-400/40'
+    : 'bg-zinc-500/30 text-zinc-200 border border-zinc-400/30',
+);
 
-// Event status computation
-const now = computed(() => new Date());
-const eventDate = computed(() => new Date(props.event.date));
-const endDate = computed(() => props.event.end_date ? new Date(props.event.end_date) : eventDate.value);
+const statusDotClasses = computed(() => (isLive.value ? 'bg-emerald-400' : 'bg-zinc-300'));
 
-const isPast = computed(() => endDate.value < now.value);
-const isLive = computed(() => eventDate.value <= now.value && endDate.value >= now.value);
-const isUpcoming = computed(() => eventDate.value > now.value);
+const mobileStatusBadgeClasses = computed(() =>
+  isLive.value
+    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'
+    : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400',
+);
 
-const eventStatus = computed(() => {
-  if (isPast.value) {
-    return $t('Renginys įvyko');
-  }
-  else if (isLive.value) {
-    return $t('Vyksta dabar');
-  }
-  else if (isUpcoming.value) {
-    const timeDiff = eventDate.value.getTime() - now.value.getTime();
-    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-
-    if (daysDiff === 0) {
-      return $t('Šiandien');
-    }
-    else if (daysDiff === 1) {
-      return $t('Rytoj');
-    }
-    else if (daysDiff <= 7) {
-      return $t('Šią savaitę');
-    }
-    return $t('Netrukus');
-  }
-  return null;
-});
-
-// Desktop status badge styling
-const statusBadgeClasses = computed(() => {
-  if (isPast.value) {
-    return 'bg-zinc-500/30 text-zinc-200 border border-zinc-500/30';
-  }
-  else if (isLive.value) {
-    return 'bg-emerald-500/30 text-emerald-200 border border-emerald-500/30';
-  }
-  else {
-    return 'bg-vusa-red/30 text-red-200 border border-vusa-red/30';
-  }
-});
-
-const statusDotClasses = computed(() => {
-  if (isPast.value) return 'bg-zinc-400';
-  if (isLive.value) return 'bg-emerald-400';
-  return 'bg-vusa-red';
-});
-
-const statusPingClasses = computed(() => {
-  if (isLive.value) return 'bg-emerald-400';
-  return 'bg-vusa-red';
-});
-
-// Mobile status badge styling
-const mobileStatusBadgeClasses = computed(() => {
-  if (isPast.value) {
-    return 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400';
-  }
-  else if (isLive.value) {
-    return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400';
-  }
-  else {
-    return 'bg-vusa-red/10 text-vusa-red dark:bg-vusa-red/20';
-  }
-});
-
-const mobileStatusDotClasses = computed(() => {
-  if (isPast.value) return 'bg-zinc-400 dark:bg-zinc-500';
-  if (isLive.value) return 'bg-emerald-500';
-  return 'bg-vusa-red';
-});
-
-const mobileStatusPingClasses = computed(() => {
-  if (isLive.value) return 'bg-emerald-500';
-  return 'bg-vusa-red';
-});
+const mobileStatusDotClasses = computed(() =>
+  isLive.value ? 'bg-emerald-500' : 'bg-zinc-400 dark:bg-zinc-500',
+);
 </script>
 
 <style scoped>

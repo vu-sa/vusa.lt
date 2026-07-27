@@ -7,6 +7,15 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.18 — Refreshed Event and Camp Pages (2026-07-27) {#v1-18}
+
+- ⭐ **Map of the event location** — when an event has a location, a map with a marker is shown next to it; the Google Maps link stays
+- ✨ **Freshmen camps page redesigned** — camps appear right after a short intro, with dates and locations; if a unit runs more than one camp, all of them are listed
+- ✨ **Event timing reads fluently** — multi-day events are written as a single range (e.g. "25–27 August 2026"), and all-day events no longer show midnight
+- ✨ **Less urgency and repetition on event pages** — the "Next", "Approaching" and "Soon" badges are gone, leaving only the facts: "Happening now" and "Event has passed"; share buttons are no longer duplicated
+- 🔧 **Event descriptions render properly again** — headings, lists and paragraphs no longer run together as one block of text
+- 🔧 **The registration button works** — a registration link set on an event was previously never shown
+
 ## v1.17 — Managing Deleted Records and Easier Lists (2026-07-27) {#v1-17}
 
 - ⭐ **Deleted records can be restored** — banners, calendar events, quick links, navigation items, categories, tags, trainings, study programmes and study sets are no longer lost immediately
