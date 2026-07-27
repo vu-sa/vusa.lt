@@ -117,7 +117,7 @@ class AtstovavimasDashboardService
         $institutions->each(function (Institution $institution) {
             $isAuthorized = $institution->getAttribute('authorized') !== false;
 
-            $institution->meetings?->each(function ($meeting) use ($isAuthorized) {
+            $institution->meetings->each(function ($meeting) use ($isAuthorized) {
                 $meeting->append($isAuthorized
                     ? ['completion_status', 'has_report', 'has_protocol']
                     : ['has_report', 'has_protocol']);
@@ -126,7 +126,7 @@ class AtstovavimasDashboardService
             $institution->setAttribute(
                 'active_check_in',
                 $institution->checkIns
-                    ?->where('end_date', '>=', now())
+                    ->where('end_date', '>=', now())
                     ->where('start_date', '<=', now())
                     ->first()
             );
@@ -136,8 +136,8 @@ class AtstovavimasDashboardService
                 $this->activityStatusService->resolve($institution)->toArray()
             );
 
-            $institution->duties?->each(function ($duty) {
-                $duty->users?->each(function (User $representative) {
+            $institution->duties->each(function ($duty) {
+                $duty->users->each(function (User $representative) {
                     $representative->makeVisible('last_action');
                     $representative->setAttribute(
                         'activity_category',
@@ -183,7 +183,7 @@ class AtstovavimasDashboardService
         $sevenDaysAgo = now()->subDays(7);
         $thirtyDaysAgo = now()->subDays(30);
 
-        $aggregate = (clone $query)
+        $aggregate = (clone $query)->toBase()
             ->selectRaw('COUNT(*) as total')
             ->selectRaw('SUM(CASE WHEN last_action >= ? THEN 1 ELSE 0 END) as active_today', [$today])
             ->selectRaw('SUM(CASE WHEN last_action >= ? THEN 1 ELSE 0 END) as active_last_7_days', [$sevenDaysAgo])
@@ -214,11 +214,11 @@ class AtstovavimasDashboardService
 
         return [
             'stats' => [
-                'total' => (int) ($aggregate?->total ?? 0),
-                'activeToday' => (int) ($aggregate?->active_today ?? 0),
-                'activeLast7Days' => (int) ($aggregate?->active_last_7_days ?? 0),
-                'activeLast30Days' => (int) ($aggregate?->active_last_30_days ?? 0),
-                'neverLoggedIn' => (int) ($aggregate?->never_logged_in ?? 0),
+                'total' => (int) data_get($aggregate, 'total', 0),
+                'activeToday' => (int) data_get($aggregate, 'active_today', 0),
+                'activeLast7Days' => (int) data_get($aggregate, 'active_last_7_days', 0),
+                'activeLast30Days' => (int) data_get($aggregate, 'active_last_30_days', 0),
+                'neverLoggedIn' => (int) data_get($aggregate, 'never_logged_in', 0),
             ],
             'preview_users' => $inactiveUsers
                 ->merge($activeUsers)

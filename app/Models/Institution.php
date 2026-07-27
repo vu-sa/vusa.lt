@@ -160,7 +160,10 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
         return $this->hasMany(Document::class);
     }
 
-    public function checkIns()
+    /**
+     * @return HasMany<InstitutionCheckIn, $this>
+     */
+    public function checkIns(): HasMany
     {
         return $this->hasMany(InstitutionCheckIn::class);
     }

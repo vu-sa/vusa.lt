@@ -49,7 +49,7 @@ trait HandlesSoftDeletes
         // double-submitted form does not surface a confusing failure.
         if (method_exists($model, 'trashed') && $model->trashed()) {
             try {
-                $model->restore();
+                $model->restore(); // @phpstan-ignore method.notFound
             } catch (QueryException $exception) {
                 report($exception);
 
@@ -79,7 +79,7 @@ trait HandlesSoftDeletes
 
         $this->authorize('forceDelete', $model);
 
-        abort_unless($model->trashed(), 403, __('trash.must_be_deleted_first'));
+        abort_unless($model->trashed(), 403, __('trash.must_be_deleted_first')); // @phpstan-ignore method.notFound
 
         if ($model instanceof GuardsForceDelete && ($reason = $model->forceDeleteBlockedReason()) !== null) {
             return back()->with('error', $reason);

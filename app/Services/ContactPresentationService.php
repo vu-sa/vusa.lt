@@ -148,8 +148,8 @@ class ContactPresentationService
             case 'tenant':
                 // The padalinys the member represents: the cross-tenant assignment
                 // (dutiables.tenant_id), or the duty's own tenant when null.
-                return $dutiable->tenant?->shortname
-                    ?? $duty?->loadMissing('institution.tenant')->institution?->tenant?->shortname
+                return $dutiable->tenant?->shortname // @phpstan-ignore nullsafe.neverNull
+                    ?? $duty?->loadMissing('institution.tenant')->institution?->tenant?->shortname // @phpstan-ignore nullsafe.neverNull
                     ?? $this->fallbackGroupName();
 
             default:

@@ -261,7 +261,7 @@ class TanstackTableService
             return $query;
         }
 
-        return $query->onlyTrashed();
+        return $query->onlyTrashed(); // @phpstan-ignore method.notFound
     }
 
     /**
@@ -280,7 +280,7 @@ class TanstackTableService
             return 0;
         }
 
-        return (clone $query)->onlyTrashed()->toBase()->getCountForPagination();
+        return (clone $query)->onlyTrashed()->toBase()->getCountForPagination(); // @phpstan-ignore method.notFound
     }
 
     /**
