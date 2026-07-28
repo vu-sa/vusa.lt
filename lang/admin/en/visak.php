@@ -36,6 +36,8 @@ return [
         'title' => 'Displayed units',
         'description' => 'This selection scopes the institution summary, representative activity, and timeline.',
         'selected_count' => 'Selected: :count',
+        'keep_one' => 'Keep one',
+        'keep_one_hint' => 'Keep only the first selected unit checked — at least one must stay selected',
     ],
     'user_tenant_scope' => [
         'title' => 'Your institutions by unit',
@@ -122,5 +124,11 @@ return [
             'periodicity_context' => 'Periodicity context',
             'reported_until' => 'Activity reported through :date',
         ],
+    ],
+
+    // Gantt chart loading state
+    'gantt' => [
+        'loading_meetings' => 'Loading meetings…',
+        'meetings_load_failed' => 'Failed to load meetings. Please try again.',
     ],
 ];

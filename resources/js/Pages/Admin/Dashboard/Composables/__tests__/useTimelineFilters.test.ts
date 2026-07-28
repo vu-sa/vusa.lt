@@ -8,9 +8,9 @@ import {
   provideTimelineFilters,
   type TimelineFilters,
 } from '../useTimelineFilters';
-import type { AtstovavimosTenant } from '../../types';
+import type { AtstovavimasTenant } from '../../types';
 
-const tenants: AtstovavimosTenant[] = [
+const tenants: AtstovavimasTenant[] = [
   { id: 3, shortname: 'VU SA CHGF', type: 'padalinys' },
   { id: 6, shortname: 'VU SA FsF', type: 'padalinys' },
 ];

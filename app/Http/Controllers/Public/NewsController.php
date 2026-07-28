@@ -87,8 +87,11 @@ class NewsController extends PublicController
         ];
 
         return Inertia::render('Public/NewsPage', [
+            // See PublicPageController::page() — a link-list of related articles is
+            // the most obvious use of the new dynamic block types inside a news body.
+            'resolvedParts' => (object) $this->resolveContentParts($news->content),
             'article' => [
-                ...$news->only('id', 'title', 'short', 'lang', 'other_lang_id', 'permalink', 'publish_time', 'category', 'content', 'image_author', 'important', 'main_points', 'read_more', 'layout', 'highlights'),
+                ...$news->only('id', 'title', 'short', 'lang', 'other_lang_id', 'permalink', 'publish_time', 'category', 'content', 'image_author', 'important', 'main_points', 'read_more', 'layout', 'show_breadcrumbs', 'highlights'),
                 'tags' => $news->tags->map(function ($tag) {
                     return [
                         'id' => $tag->id,

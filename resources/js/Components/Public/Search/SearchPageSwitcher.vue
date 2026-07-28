@@ -61,9 +61,11 @@ interface PageConfig {
 // Props
 interface Props {
   page: SearchPage;
+  /** Current search term, carried over into the target page's `q` param so it isn't lost when switching. */
+  query?: string;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 // Get current page props
 const inertiaPage = useInertiaPage();
@@ -109,15 +111,21 @@ const getPageUrl = (item: PageConfig): string => {
   const locale = inertiaPage.props.app?.locale || 'lt';
 
   // Use the route helper with appropriate subdomain
-  if (item.isGlobal) {
+  const base = item.isGlobal
     // Global routes are bound to the hardcoded `www.` domain group and have
     // no `{subdomain}` parameter — passing one would leak into the query string.
-    return route(item.routeName, { lang: locale });
-  }
-  else {
+    ? route(item.routeName, { lang: locale })
     // Tenant-specific routes preserve current subdomain
-    const subdomain = inertiaPage.props.app?.subdomain || 'www';
-    return route(item.routeName, { subdomain, lang: locale });
+    : route(item.routeName, { subdomain: inertiaPage.props.app?.subdomain || 'www', lang: locale });
+
+  const term = props.query?.trim();
+  if (!term) {
+    return base;
   }
+
+  // `base` is second so a relative URL (as Ziggy can return in some configs) still resolves.
+  const url = new URL(base, window.location.origin);
+  url.searchParams.set('q', term);
+  return url.toString();
 };
 </script>

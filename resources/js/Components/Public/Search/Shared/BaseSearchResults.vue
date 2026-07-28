@@ -10,7 +10,7 @@
 
     <!-- Results -->
     <div v-else-if="results.length > 0" :class="resultsContainerClass">
-      <TransitionGroup :name="transitionName" :tag="transitionTag" :class="transitionClass" appear>
+      <TransitionGroup :key="transitionName" :name="transitionName" :tag="transitionTag" :class="transitionClass" appear>
         <slot v-for="item in results" :key="getItemKey(item)" name="item" :item />
       </TransitionGroup>
 

@@ -21,14 +21,6 @@ class CalendarController extends ApiController
     private const TIMELINE_DEFAULT_DAYS_FUTURE = 21;
 
     /**
-     * Maximum range in days allowed for a single request.
-     * Set to 455 days (~15 months) to allow fetching a full year of past events
-     * plus a few months future in a single request. This covers seasonal events
-     * like freshmen camps (August) when viewing in winter months.
-     */
-    private const MAX_RANGE_DAYS = 455;
-
-    /**
      * Get calendar events for a tenant (public endpoint).
      *
      * Designed for the EventCalendarElement/EventTimeline component with date-based fetching.
@@ -58,8 +50,8 @@ class CalendarController extends ApiController
             : $today->copy()->addDays(self::TIMELINE_DEFAULT_DAYS_FUTURE)->endOfDay();
 
         // Enforce maximum range to prevent overly large queries
-        if ($dateFrom->diffInDays($dateTo) > self::MAX_RANGE_DAYS) {
-            $dateTo = $dateFrom->copy()->addDays(self::MAX_RANGE_DAYS)->endOfDay();
+        if ($dateFrom->diffInDays($dateTo) > Calendar::MAX_RANGE_DAYS) {
+            $dateTo = $dateFrom->copy()->addDays(Calendar::MAX_RANGE_DAYS)->endOfDay();
         }
 
         // Ensure date_from is before date_to
@@ -89,7 +81,7 @@ class CalendarController extends ApiController
         return $this->jsonSuccess($events, null, [
             'date_from' => $dateFrom->toDateString(),
             'date_to' => $dateTo->toDateString(),
-            'max_range_days' => self::MAX_RANGE_DAYS,
+            'max_range_days' => Calendar::MAX_RANGE_DAYS,
         ]);
     }
 }

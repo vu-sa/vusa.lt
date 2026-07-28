@@ -14,6 +14,7 @@
         :tenant-names
         :institution-tenant
         :institution-has-public-meetings
+        :institution-has-activity
         :institution-periodicity
         :tenant-filter
         :show-legend="true"
@@ -27,10 +28,12 @@
         :show-activity-status
         :height="effectiveHeight"
         :hide-fullscreen-button
+        :loading-range :meetings-loading
         @create-meeting="$emit('create-meeting', $event)"
         @create-check-in="$emit('create-check-in', $event)"
         @fullscreen="$emit('fullscreen')"
         @show-legend-modal="showLegendModal = true"
+        @range-changed="(min: Date, max: Date) => $emit('range-changed', min, max)"
       />
     </CardContent>
 
@@ -49,7 +52,7 @@ import { useGanttSettings } from '../Composables/useGanttSettings';
 import type {
   GanttMeeting,
   GanttInstitution,
-  AtstovavimosGap,
+  AtstovavimasGap,
   GanttDutyMember,
   InactivePeriod,
 } from '../types';
@@ -61,7 +64,7 @@ import { Card, CardContent } from '@/Components/ui/card';
 interface Props {
   institutions: GanttInstitution[];
   meetings: GanttMeeting[];
-  gaps: AtstovavimosGap[];
+  gaps: AtstovavimasGap[];
   tenantFilter: string[];
   showOnlyWithActivity: boolean;
   showOnlyWithPublicMeetings?: boolean;
@@ -69,6 +72,9 @@ interface Props {
   tenantNames: Record<string, string>;
   institutionTenant: Record<string, string>;
   institutionHasPublicMeetings?: Record<string, boolean>;
+  // Institutions with any past/planned activity (drives "show only with activity"
+  // independent of which meeting windows are loaded)
+  institutionHasActivity?: Record<string, boolean>;
   emptyMessage: string;
   height?: string;
   // Duty members display
@@ -79,6 +85,10 @@ interface Props {
   showActivityStatus?: boolean;
   // Meeting periodicity per institution (days between expected meetings)
   institutionPeriodicity?: Record<string | number, number>;
+  // Date range currently being loaded (rendered as a shimmer band in the Gantt)
+  loadingRange?: { from: Date; until: Date } | null;
+  // Whether meetings are currently being fetched (delayed ~300ms by the caller)
+  meetingsLoading?: boolean;
   // Hide fullscreen button (when already in fullscreen modal)
   hideFullscreenButton?: boolean;
 }
@@ -89,6 +99,7 @@ const emit = defineEmits<{
   'create-meeting': [payload: { institution_id: string | number; suggestedAt: Date; institutionName?: string }];
   'create-check-in': [payload: { institution_id: string | number; startDate: Date; endDate: Date }];
   'fullscreen': [];
+  'range-changed': [min: Date, max: Date];
 }>();
 
 // Legend modal state
@@ -109,19 +120,27 @@ const formattedInstitutions = computed(() => {
     authorized: i.authorized,
   }));
 
-  // Filter to show only institutions with meetings if showOnlyWithActivity is true
+  // Filter to show only institutions with activity if showOnlyWithActivity is true
   if (props.showOnlyWithActivity) {
-    const institutionsWithMeetings = new Set(
-      props.meetings.map(meeting => meeting.institution_id),
-    );
-
-    institutions = institutions.filter(institution =>
-      institutionsWithMeetings.has(institution.id),
-    );
+    institutions = institutions.filter(institution => hasActivity(institution.id));
   }
 
   return institutions;
 });
+
+/**
+ * Whether an institution has any past/planned activity. Prefers the
+ * server-derived map (independent of loaded meeting windows); falls back to
+ * the loaded meetings/gaps when no map was provided.
+ */
+function hasActivity(id: string | number): boolean {
+  if (props.institutionHasActivity) {
+    return Boolean(props.institutionHasActivity[id as string] ?? props.institutionHasActivity[String(id)]);
+  }
+
+  return props.meetings.some(meeting => String(meeting.institution_id) === String(id))
+    || props.gaps.some(gap => String(gap.institution_id) === String(id));
+}
 
 // Detailed row state (single expanded institution)
 const detailsExpanded = ref(false);
@@ -154,11 +173,7 @@ const effectiveHeight = computed(() => {
 
   // Apply showOnlyWithActivity if enabled
   if (props.showOnlyWithActivity) {
-    const active = new Set<string | number>([
-      ...props.meetings.map(m => m.institution_id),
-      ...props.gaps.map(g => g.institution_id),
-    ]);
-    idsArr = idsArr.filter(id => active.has(id));
+    idsArr = idsArr.filter(id => hasActivity(id));
   }
 
   // Apply showOnlyWithPublicMeetings if enabled

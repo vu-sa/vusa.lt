@@ -36,6 +36,8 @@ return [
         'title' => 'Rodomi padaliniai',
         'description' => 'Pasirinkimas taikomas institucijų suvestinei, atstovų aktyvumui ir laiko juostai.',
         'selected_count' => 'Pasirinkta: :count',
+        'keep_one' => 'Palikti vieną',
+        'keep_one_hint' => 'Pažymėti tik pirmą pasirinktą padalinį — bent vienas turi likti pasirinktas',
     ],
     'user_tenant_scope' => [
         'title' => 'Tavo institucijų padaliniai',
@@ -122,5 +124,11 @@ return [
             'periodicity_context' => 'Periodiškumo kontekstas',
             'reported_until' => 'Apie veiklą pranešta iki :date',
         ],
+    ],
+
+    // Gantt chart loading state
+    'gantt' => [
+        'loading_meetings' => 'Kraunami posėdžiai…',
+        'meetings_load_failed' => 'Nepavyko įkelti posėdžių. Bandykite dar kartą.',
     ],
 ];

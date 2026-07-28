@@ -291,4 +291,22 @@ describe('DuplicateNewsAction', function () {
 
         expect($duplicatedNews->publish_time)->toBeNull();
     });
+
+    test('clears other_lang_id to avoid unique constraint violation', function () {
+        $content = Content::factory()->create();
+
+        $otherNews = News::factory()->create([
+            'content_id' => $content->id,
+        ]);
+
+        $originalNews = News::factory()->create([
+            'content_id' => $content->id,
+            'other_lang_id' => $otherNews->id,
+        ]);
+
+        $duplicatedNews = DuplicateNewsAction::execute($originalNews);
+
+        expect($duplicatedNews->other_lang_id)->toBeNull()
+            ->and($duplicatedNews->id)->not()->toBe($originalNews->id);
+    });
 });

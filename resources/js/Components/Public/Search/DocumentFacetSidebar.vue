@@ -77,7 +77,7 @@
           :icon="Building2"
           :badge-count="filters.tenants.length"
           :is-loading
-          icon-container-class="bg-primary/10 text-primary group-hover:bg-primary/15"
+          :icon-container-class="getFacetIconColor('Building2')"
         >
           <TenantFilter
             :tenant-hierarchy="processedTenantHierarchy"
@@ -95,7 +95,7 @@
           :badge-count="filters.contentTypes.length"
           :is-loading
           :skeleton-count="4"
-          icon-container-class="bg-blue-500/10 text-blue-600 group-hover:bg-blue-500/15"
+          :icon-container-class="getFacetIconColor('FileText')"
         >
           <ContentTypeFilter
             :grouped-types="groupedContentTypes"
@@ -114,7 +114,7 @@
           :badge-count="filters.languages.length"
           :is-loading
           :skeleton-count="2"
-          icon-container-class="bg-emerald-500/10 text-emerald-600 group-hover:bg-emerald-500/15"
+          :icon-container-class="getFacetIconColor('Globe')"
         >
           <LanguageFilterList
             :languages="languageFacet?.values || []"
@@ -130,7 +130,7 @@
           :description="$t('search.document_creation_time')"
           :icon="Calendar"
           :badge-count="hasDateFilter ? 1 : 0"
-          icon-container-class="bg-amber-500/10 text-amber-600 group-hover:bg-amber-500/15"
+          :icon-container-class="getFacetIconColor('Calendar')"
         >
           <DateRangeFilter
             :date-range="filters.dateRange"
@@ -165,7 +165,7 @@ import DateRangeFilter from './DateRangeFilter.vue';
 import LanguageFilterList from './LanguageFilterList.vue';
 
 import { Accordion } from '@/Components/ui/accordion';
-import { FilterSidebar, FilterAccordion } from '@/Components/Shared/Search';
+import { FilterSidebar, FilterAccordion, getFacetIconColor } from '@/Components/Shared/Search';
 
 // Types
 import type { DocumentFacet, DocumentSearchFilters } from '@/Types/DocumentSearchTypes';

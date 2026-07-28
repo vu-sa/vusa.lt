@@ -21,7 +21,7 @@
       @action="handleAction"
       @custom-action="handleCustomAction"
     >
-      <template #custom-actions="{ model, handleAction }">
+      <template v-if="$slots['custom-actions']" #custom-actions="{ model, handleAction }">
         <slot name="custom-actions" :model :handle-action />
       </template>
     </DataTableActions>

@@ -3,7 +3,7 @@
     <!-- eslint-disable-next-line vue/no-v-html -->
     <div
       v-if="description"
-      class="prose prose-sm prose-zinc max-w-none text-muted-foreground dark:prose-invert"
+      class="text-sm text-muted-foreground max-w-none"
       v-html="description"
     />
 

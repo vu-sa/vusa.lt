@@ -1,7 +1,8 @@
 <template>
-  <template v-if="element.json_content.preset === 'VusaStructure'">
-    <VusaStructure />
-  </template>
+  <!-- Single root so RichContentParser's width/spacing :class has something to fall through to. -->
+  <div>
+    <VusaStructure v-if="element.json_content.preset === 'VusaStructure'" />
+  </div>
 </template>
 
 <script setup lang="ts">

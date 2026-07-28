@@ -53,6 +53,13 @@ export enum ContentPartEnum {
   CALENDAR = "calendar",
   CONTENT_GRID = "content-grid",
   TEXT_BOX = "text-box",
+  CAROUSEL_SLIDE_DECK = "carousel-slide-deck",
+  CARD_STACK = "card-stack",
+  PHOTO_GALLERY = "photo-gallery",
+  LINK_LIST = "link-list",
+  EVENT_LIST = "event-list",
+  PERSON_QUOTE = "person-quote",
+  SECTION = "section",
 }
 export enum DegreeEnum {
   BA = "BA",

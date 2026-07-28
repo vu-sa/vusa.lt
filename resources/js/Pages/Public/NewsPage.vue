@@ -1,61 +1,62 @@
 <template>
-  <div class="wrapper">
-    <!-- News article with dynamic layout based on article settings -->
-    <NewsArticleLayout
-      :article
-      :other-lang-u-r-l="$page.props.otherLangURL"
-      :locale="$page.props.app.locale"
-      :layout="(article.layout as 'modern' | 'classic' | 'immersive' | 'headline') || 'modern'"
-      class-name="mb-8 md:mb-16"
-    >
-      <RichContentParser :content="article.content?.parts ?? []" />
-    </NewsArticleLayout>
+  <!-- No wrapping `.wrapper` here — PublicLayout already wraps page content in one;
+       nesting a second grid doubled the gutters/padding for everything below. -->
 
-    <!-- Related Articles Section -->
-    <section v-if="relatedArticles && relatedArticles.length > 0" :class="['mt-8 mb-12', relatedArticlesContainerClass]">
-      <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-50 to-zinc-100 p-6 ring-1 ring-zinc-200/50 dark:from-zinc-900 dark:to-zinc-800 dark:ring-zinc-700/50">
-        <!-- Decorative blur elements -->
-        <div class="absolute -right-16 -top-16 size-48 rounded-full bg-vusa-red/5 blur-3xl" />
-        <div class="absolute -bottom-8 -left-8 size-32 rounded-full bg-vusa-yellow/5 blur-3xl" />
+  <!-- News article with dynamic layout based on article settings -->
+  <NewsArticleLayout
+    :article
+    :other-lang-u-r-l="$page.props.otherLangURL"
+    :locale="$page.props.app.locale"
+    :layout="(article.layout as 'modern' | 'classic' | 'immersive' | 'headline') || 'modern'"
+    class-name="mb-8 md:mb-16"
+  >
+    <RichContentParser :content="article.content?.parts ?? []" :resolved="resolvedParts" />
+  </NewsArticleLayout>
 
-        <div class="relative">
-          <h2 class="text-xl font-semibold mb-5 text-zinc-900 dark:text-zinc-50">
-            {{ $t('Skaityti daugiau') }}
-          </h2>
-          <ul class="space-y-3">
-            <li v-for="related in relatedArticles" :key="related.id" class="flex items-start gap-3">
-              <span class="mt-2 size-1.5 rounded-full bg-vusa-red/60 flex-shrink-0" />
-              <Link
-                :href="related.url"
-                class="group flex flex-1 items-baseline justify-between gap-4 hover:text-vusa-red transition-colors"
+  <!-- Related Articles Section -->
+  <section v-if="relatedArticles && relatedArticles.length > 0" :class="['mt-8 mb-12', relatedArticlesContainerClass]">
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-50 to-zinc-100 p-6 ring-1 ring-zinc-200/50 dark:from-zinc-900 dark:to-zinc-800 dark:ring-zinc-700/50">
+      <!-- Decorative blur elements -->
+      <div class="absolute -right-16 -top-16 size-48 rounded-full bg-vusa-red/5 blur-3xl" />
+      <div class="absolute -bottom-8 -left-8 size-32 rounded-full bg-vusa-yellow/5 blur-3xl" />
+
+      <div class="relative">
+        <h2 class="text-xl font-semibold mb-5 text-zinc-900 dark:text-zinc-50">
+          {{ $t('Skaityti daugiau') }}
+        </h2>
+        <ul class="space-y-3">
+          <li v-for="related in relatedArticles" :key="related.id" class="flex items-start gap-3">
+            <span class="mt-2 size-1.5 rounded-full bg-vusa-red/60 flex-shrink-0" />
+            <Link
+              :href="related.url"
+              class="group flex flex-1 items-baseline justify-between gap-4 hover:text-vusa-red transition-colors"
+            >
+              <span class="font-heading group-hover:underline text-zinc-800 dark:text-zinc-200">{{ related.title }}</span>
+              <time
+                :datetime="related.publish_time"
+                class="text-sm text-zinc-500 dark:text-zinc-400 whitespace-nowrap"
               >
-                <span class="font-heading group-hover:underline text-zinc-800 dark:text-zinc-200">{{ related.title }}</span>
-                <time
-                  :datetime="related.publish_time"
-                  class="text-sm text-zinc-500 dark:text-zinc-400 whitespace-nowrap"
-                >
-                  {{ formatDate(related.publish_time) }}
-                </time>
-              </Link>
-            </li>
-          </ul>
-        </div>
+                {{ formatDate(related.publish_time) }}
+              </time>
+            </Link>
+          </li>
+        </ul>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <FeedbackPopover />
-  </div>
+  <FeedbackPopover />
 </template>
 
 <script setup lang="ts">
 // No longer need computed, onMounted, onUnmounted - usePageBreadcrumbs handles this
-import { computed } from 'vue';
+import { computed, watchEffect } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import RichContentParser from '@/Components/RichContent/RichContentParser.vue';
 import FeedbackPopover from '@/Components/Public/FeedbackPopover.vue';
-import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
+import { usePageBreadcrumbs, useBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import NewsArticleLayout from '@/Components/Public/News/NewsArticleLayout.vue';
 import IFluentNews24Regular from '~icons/fluent/news-24-regular';
 
@@ -70,9 +71,15 @@ interface RelatedArticle {
 const props = defineProps<{
   article: App.Entities.News;
   relatedArticles?: RelatedArticle[];
+  /** Server-resolved dynamic blocks (link-list, event-list, …) keyed by content-part id. */
+  resolvedParts?: Record<number, unknown>;
 }>();
 
 const page = usePage();
+
+// An author can hide the breadcrumb trail on a news article (Advanced Settings in
+// NewsForm) — e.g. immersive/headline layouts that lead with a full-bleed title.
+const showBreadcrumbs = computed(() => props.article.show_breadcrumbs !== false);
 
 // Container class for related articles section - matches the article layout width
 const relatedArticlesContainerClass = computed(() => {
@@ -98,6 +105,9 @@ const formatDate = (dateString: string) => {
 
 // Set breadcrumbs for news article page
 usePageBreadcrumbs(() => {
+  // Author disabled breadcrumbs for this article — return nothing so the setter skips.
+  if (!showBreadcrumbs.value) return [];
+
   const items = [];
 
   // News archive link
@@ -120,5 +130,13 @@ usePageBreadcrumbs(() => {
   );
 
   return BreadcrumbHelpers.publicContent(items);
+});
+
+// usePageBreadcrumbs persists breadcrumbs across navigation and only sets when the
+// getter is non-empty, so a suppressed article would otherwise inherit the *previous*
+// page's trail. Explicitly clear the global state whenever breadcrumbs are off.
+const { clear: clearBreadcrumbs } = useBreadcrumbs();
+watchEffect(() => {
+  if (!showBreadcrumbs.value) clearBreadcrumbs();
 });
 </script>

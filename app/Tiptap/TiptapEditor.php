@@ -38,8 +38,16 @@ class TiptapEditor extends Editor
 
                 // Custom heading with ID support
                 new CustomHeading([
-                    'levels' => [2, 3],
+                    'levels' => [2, 3, 4],
                 ]),
+
+                // Class-based text alignment (heading + paragraph) — not the package's
+                // own TextAlign, which renders inline `style` and would be stripped by
+                // HtmlSanitizerService (see App\Tiptap\TextAlign's docblock).
+                new TextAlign,
+
+                // The MembershipPage-style dot-pill "tag" mark.
+                new RCTag,
 
                 // Image with responsive classes
                 new Image([

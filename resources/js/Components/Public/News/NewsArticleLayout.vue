@@ -80,8 +80,11 @@
       <!-- Highlights callout (integrated in flow) -->
       <HighlightsCallout v-if="article.highlights?.length" :highlights="article.highlights" class="mb-6" />
 
-      <!-- Article content -->
-      <div class="typography max-w-none text-base leading-7 text-foreground/90 md:text-lg md:leading-8">
+      <!-- Article content: nested canvas, not a `.wrapper` child, so its own gutter/wide
+           steps are zeroed out — width here is bounded by this <article>'s own max-width,
+           `.rc-canvas`'s `min(measure, 100%)` just fills it exactly as `max-w-none` did. -->
+      <div class="rc-canvas text-base leading-7 text-foreground/90 md:text-lg md:leading-8"
+        style="--rc-measure: 56rem; --rc-gutter: 0px; --rc-wide-step: 0px; --rc-content-step: 0px">
         <slot />
       </div>
     </template>
@@ -168,8 +171,12 @@
         <HighlightsCallout v-if="article.highlights?.length" :highlights="article.highlights" class="mb-6" />
       </div>
 
-      <!-- Article content -->
-      <div class="typography mx-auto max-w-3xl px-4 text-base leading-7 text-foreground/90 md:text-lg md:leading-8">
+      <!-- Article content: the outer <article> is unbounded (max-w-full) so the hero above
+           can bleed, but the canvas keeps the reading measure narrow and centered — and,
+           unlike the old fixed `mx-auto max-w-3xl`, individual blocks can now opt into
+           `rc-full`/`rc-wide` to bleed to the article's own edges (up to the page wrapper). -->
+      <div class="rc-canvas px-4 text-base leading-7 text-foreground/90 md:text-lg md:leading-8"
+        style="--rc-measure: 48rem; --rc-gutter: 0px; --rc-wide-step: 0px; --rc-content-step: 0px">
         <slot />
       </div>
     </template>
@@ -243,7 +250,8 @@
       <HighlightsCallout v-if="article.highlights?.length" :highlights="article.highlights" class="mb-6" />
 
       <!-- Article content -->
-      <div class="typography max-w-none text-base leading-7 text-foreground/90 md:text-lg md:leading-8">
+      <div class="rc-canvas text-base leading-7 text-foreground/90 md:text-lg md:leading-8"
+        style="--rc-measure: 48rem; --rc-gutter: 0px; --rc-wide-step: 0px; --rc-content-step: 0px">
         <slot />
       </div>
     </template>
@@ -317,7 +325,8 @@
       <HighlightsCallout v-if="article.highlights?.length" :highlights="article.highlights" class="mb-6" />
 
       <!-- Article content - optimized typography -->
-      <div class="typography max-w-none text-base leading-7 text-foreground/90 md:text-lg md:leading-8">
+      <div class="rc-canvas text-base leading-7 text-foreground/90 md:text-lg md:leading-8"
+        style="--rc-measure: 48rem; --rc-gutter: 0px; --rc-wide-step: 0px; --rc-content-step: 0px">
         <slot />
       </div>
     </template>

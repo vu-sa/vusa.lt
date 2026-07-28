@@ -2,9 +2,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ref, type Ref } from 'vue';
 
 import { useTenantTimelineData } from '../useTenantTimelineData';
-import type { AtstovavimosTenantTimelineData } from '../../types';
+import type { AtstovavimasTenantTimelineData } from '../../types';
 
-const data = ref<AtstovavimosTenantTimelineData | null>(null);
+const data = ref<AtstovavimasTenantTimelineData | null>(null);
 const isFetching = ref(false);
 const isSuccess = ref(false);
 const pendingRequests: Array<() => void> = [];

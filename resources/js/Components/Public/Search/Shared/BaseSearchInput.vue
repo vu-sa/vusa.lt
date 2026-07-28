@@ -4,7 +4,7 @@
       <!-- Search Container with Enhanced Background -->
       <div class=" relative p-3 sm:p-4
           bg-gradient-to-br from-primary/5 via-background to-secondary/5
-          border border-primary/20 rounded-lg shadow-sm backdrop-blur-sm
+          border border-primary/20 rounded-lg backdrop-blur-sm
         ">
         <div class="relative">
           <!-- Search Icon and Input -->

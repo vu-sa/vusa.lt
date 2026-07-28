@@ -100,7 +100,7 @@ import {
   TableProperties,
 } from 'lucide-vue-next';
 
-import type { AtstovavimosInstitution, InstitutionStatusSummaryData } from '../types';
+import type { AtstovavimasInstitution, InstitutionStatusSummaryData } from '../types';
 
 import SimpleDataTable from '@/Components/Tables/SimpleDataTable.vue';
 import { Badge } from '@/Components/ui/badge';
@@ -118,7 +118,7 @@ import type { InstitutionActivityStatusName } from '@/Types/InstitutionActivity'
 import { formatStaticTime } from '@/Utils/IntlTime';
 
 const props = defineProps<{
-  institutions: AtstovavimosInstitution[];
+  institutions: AtstovavimasInstitution[];
   summary: InstitutionStatusSummaryData;
   loading?: boolean;
 }>();
@@ -207,7 +207,7 @@ const counters = computed<Counter[]>(() => [
   },
 ]);
 
-const columns = computed<ColumnDef<AtstovavimosInstitution>[]>(() => [
+const columns = computed<ColumnDef<AtstovavimasInstitution>[]>(() => [
   {
     accessorKey: 'name',
     header: () => $t('Institucija'),
@@ -285,12 +285,12 @@ const columns = computed<ColumnDef<AtstovavimosInstitution>[]>(() => [
   },
 ]);
 
-function activityReferenceDate(institution: AtstovavimosInstitution): string {
+function activityReferenceDate(institution: AtstovavimasInstitution): string {
   const status = institution.activity_status;
   return status.next_meeting_at ?? status.active_check_in_until ?? status.last_activity_at ?? '';
 }
 
-function activityReference(institution: AtstovavimosInstitution): string {
+function activityReference(institution: AtstovavimasInstitution): string {
   const status = institution.activity_status;
 
   if (status.status === 'covered_by_upcoming_meeting' && status.next_meeting_at) {

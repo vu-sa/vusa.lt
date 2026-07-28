@@ -115,6 +115,9 @@ class PageController extends AdminController
             'lang' => $request->lang,
             'is_active' => $request->is_active,
             'layout' => $request->layout ?? 'default',
+            'show_table_of_contents' => $request->boolean('show_table_of_contents', true),
+            'show_title' => $request->boolean('show_title', true),
+            'show_breadcrumbs' => $request->boolean('show_breadcrumbs', true),
             'tenant_id' => $tenant_id,
         ]);
 
@@ -140,7 +143,7 @@ class PageController extends AdminController
 
         return $this->inertiaResponse('Admin/Content/EditPage', [
             'page' => [
-                ...$page->only('id', 'title', 'content', 'permalink', 'text', 'lang', 'category_id', 'tenant_id', 'is_active', 'aside', 'layout'),
+                ...$page->only('id', 'title', 'content', 'permalink', 'text', 'lang', 'category_id', 'tenant_id', 'is_active', 'aside', 'layout', 'show_table_of_contents', 'show_title', 'show_breadcrumbs'),
                 'tenant' => $page->tenant->only('id', 'alias', 'shortname'),
                 'other_lang_id' => $page->getOtherLanguage()?->only('id')['id'] ?? null,
             ],
@@ -156,7 +159,12 @@ class PageController extends AdminController
     {
         $this->handleAuthorization('update', $page);
 
-        $page->update($request->only('title', 'lang', 'category_id', 'is_active', 'layout'));
+        $page->update([
+            ...$request->only('title', 'lang', 'category_id', 'is_active', 'layout'),
+            'show_table_of_contents' => $request->boolean('show_table_of_contents', true),
+            'show_title' => $request->boolean('show_title', true),
+            'show_breadcrumbs' => $request->boolean('show_breadcrumbs', true),
+        ]);
 
         $content = Content::query()->find($page->content->id);
 

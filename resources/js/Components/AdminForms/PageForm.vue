@@ -101,7 +101,7 @@
       </template>
     </FormElement>
 
-    <RichContentFormElement v-model="form.content.parts" />
+    <RichContentFormElement v-model="form.content.parts" :tenant-id="page.tenant_id" />
 
     <!-- Section 3: Highlights -->
     <FormElement :section-number="3" :is-complete="form.highlights.length > 0">
@@ -166,6 +166,48 @@
               </div>
             </div>
 
+            <!-- Table of contents toggle — only meaningful for the `default` layout, which
+                 is the only one with a sidebar. -->
+            <div v-if="form.layout === 'default'" class="flex items-center gap-3">
+              <Switch v-model="form.show_table_of_contents" />
+              <span class="text-sm text-zinc-700 dark:text-zinc-300">
+                {{ $t('Rodyti turinio lentelę šoninėje juostoje') }}
+              </span>
+            </div>
+
+            <!-- Page header toggle — hides the plain <h1>/last-updated line, e.g. when
+                 the page opens directly on a hero block that already has its own title. -->
+            <div class="flex items-center gap-3">
+              <Switch v-model="form.show_title" />
+              <span class="text-sm text-zinc-700 dark:text-zinc-300">
+                {{ $t('Rodyti puslapio pavadinimą ir atnaujinimo laiką') }}
+              </span>
+            </div>
+
+            <!-- Breadcrumbs toggle — hide the breadcrumb trail, e.g. for landing pages
+                 that open on a hero/section block and don't need the nav path above. -->
+            <div class="flex items-center gap-3">
+              <Switch v-model="form.show_breadcrumbs" />
+              <span class="text-sm text-zinc-700 dark:text-zinc-300">
+                {{ $t('Rodyti puslapio kelią (breadcrumbs)') }}
+              </span>
+            </div>
+
+            <!-- A full/wide block can't reach its full width while the ToC sidebar is
+                 present — it gets clipped to the content column instead. Surface this
+                 rather than let an author discover it on the public page. -->
+            <Alert v-if="showTocOverlapWarning" class="border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+              <IFluentWarning24Regular />
+              <AlertTitle>{{ $t('Turinio lentelė gali persidengti su turiniu') }}</AlertTitle>
+              <AlertDescription>
+                <p>{{ $t('Šiame puslapyje yra platus arba per visą pločio blokas, kuris bus suspaustas iki turinio stulpelio pločio, kol rodoma turinio lentelė.') }}</p>
+                <Button type="button" variant="link" size="sm" class="h-auto p-0 text-amber-900 underline dark:text-amber-200"
+                  @click="form.show_table_of_contents = false">
+                  {{ $t('Išjungti turinio lentelę') }}
+                </Button>
+              </AlertDescription>
+            </Alert>
+
             <!-- Permalink -->
             <PermalinkField :permalink="form.permalink" :base-url="pageBaseUrl" :disabled="!isCreate"
               :view-url="!isCreate ? fullPageUrl : undefined"
@@ -211,6 +253,7 @@ import { useForm, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import RichContentFormElement from '../RichContent/RichContentFormElement.vue';
+import { getContentType, type BlockWidth } from '../RichContent/Types';
 
 import AdminForm from './AdminForm.vue';
 import FormElement from './FormElement.vue';
@@ -220,12 +263,14 @@ import PermalinkField from './PermalinkField.vue';
 import SEOPreview from './SEOPreview.vue';
 
 import { generateSlug } from '@/Utils/String';
+import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Button } from '@/Components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { OrderedListInput } from '@/Components/ui/ordered-list-input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Switch } from '@/Components/ui/switch';
 import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
@@ -233,6 +278,7 @@ import { Textarea } from '@/Components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
 import { DateTimePicker } from '@/Components/ui/date-picker';
 import { ImageUpload } from '@/Components/ui/upload';
+import IFluentWarning24Regular from '~icons/fluent/warning24-regular';
 
 const props = defineProps<{
   categories: App.Entities.Category[];
@@ -259,6 +305,9 @@ const advancedSettingsOpen = ref(false);
 const formData = {
   ...props.page,
   layout: props.page.layout || 'default',
+  show_table_of_contents: props.page.show_table_of_contents ?? true,
+  show_title: props.page.show_title ?? true,
+  show_breadcrumbs: props.page.show_breadcrumbs ?? true,
   highlights: props.page.highlights || [],
   meta_description: props.page.meta_description || '',
   featured_image: props.page.featured_image || '',
@@ -314,6 +363,22 @@ const statusLinks = computed(() => {
   if (!fullPageUrl.value) return [];
   return [{ url: fullPageUrl.value, label: 'Public' }];
 });
+
+// A full/wide content block can't reach its intended width while the `default`
+// layout's ToC sidebar is present — it gets clipped to the content column instead
+// (see .rc-shell in app.css). Surfaced as a warning rather than a silent layout quirk.
+const hasWideOrFullBlock = computed(() => {
+  const parts = (form.content?.parts ?? []) as { type: string; options?: Record<string, unknown> }[];
+  return parts.some((part) => {
+    const contentType = getContentType(part.type);
+    const width = (part.options?.width as BlockWidth | undefined) ?? contentType.defaultWidth;
+    return width === 'full' || width === 'wide';
+  });
+});
+
+const showTocOverlapWarning = computed(() =>
+  form.layout === 'default' && form.show_table_of_contents && hasWideOrFullBlock.value,
+);
 
 // Meta description styling based on length
 const metaDescriptionClass = computed(() => {

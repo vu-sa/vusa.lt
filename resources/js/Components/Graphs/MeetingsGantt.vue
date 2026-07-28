@@ -1,95 +1,20 @@
 <template>
-  <div ref="wrap" class="relative w-full max-w-full outline-none" tabindex="0" :class="{ 'h-full flex flex-col': props.height === '100%' }">
-    <!-- Header: Legend + Controls -->
-    <div class="flex items-center justify-between gap-3 mb-2">
-      <div class="flex items-center gap-4 min-w-0">
-        <!-- Legend toggle button -->
-        <button
-          v-if="showLegend"
-          type="button"
-          data-tour="gantt-legend"
-          class="flex items-center gap-1.5 text-[11px] text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
-          @click="$emit('show-legend-modal')"
-        >
-          <span class="inline-block w-2 h-2 rounded-full bg-foreground dark:bg-white" />
-          <span>{{ $t('Legenda') }}</span>
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 opacity-60" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-          </svg>
-        </button>
-        <!-- Institution count and active filters -->
-        <div class="flex items-center gap-2 text-[11px] text-zinc-600 dark:text-zinc-400 truncate">
-          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-600 bg-white/70 dark:bg-zinc-800/70">{{
-            $t('Institucijų') }}: {{ layoutRows.filter(r => r.type === 'institution').length }}</span>
-          <template v-if="tenantFilter?.length">
-            <span class="opacity-70">•</span>
-            <div class="flex items-center gap-1 truncate">
-              <span class="opacity-70 shrink-0">{{ $t('Filtras') }}:</span>
-              <div class="flex items-center gap-1 overflow-hidden">
-                <button v-for="tid in tenantFilter" :key="String(tid)"
-                  type="button"
-                  class="px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-600 truncate hover:bg-zinc-200 dark:hover:bg-zinc-600 cursor-pointer transition-colors"
-                  :title="$t('Slinkti į') + ' ' + (mergedTenantNames[tid] ?? tid)"
-                  @click="scrollToTenant(tid)">
-                  {{ mergedTenantNames[tid] ?? tid }}
-                </button>
-              </div>
-            </div>
-          </template>
-          <template v-if="showOnlyWithActivity">
-            <span class="opacity-70">•</span>
-            <span class="px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-600">{{ $t('Tik su veikla') }}</span>
-          </template>
-          <template v-if="showOnlyWithPublicMeetings">
-            <span class="opacity-70">•</span>
-            <span class="px-1.5 py-0.5 rounded bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-600">{{ $t('Viešos institucijos') }}</span>
-          </template>
-        </div>
-      </div>
-      <div class="flex items-center gap-2 ml-auto">
-        <!-- Details toggle - icon button with tooltip -->
-        <Tooltip>
-          <TooltipTrigger as-child>
-            <button type="button"
-              class="p-1.5 rounded border text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
-              :class="detailsExpanded ? 'bg-zinc-100 dark:bg-zinc-700 border-zinc-300 dark:border-zinc-500' : 'border-zinc-200 dark:border-zinc-600'"
-              @click="emit('update:detailsExpanded', !detailsExpanded)">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
-              </svg>
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>{{ $t('Išsamios eilutės') }}</TooltipContent>
-        </Tooltip>
-        <!-- Scale slider -->
-        <div data-tour="gantt-scale" class="w-40 flex items-center gap-2 text-[11px] text-zinc-600 dark:text-zinc-400">
-          <span class="shrink-0">{{ $t('Mastelis') }}</span>
-          <Slider :min="3" :max="36" :step="1" :model-value="[dayWidthPx || dayWidth]"
-            @update:model-value="onScaleChange" />
-        </div>
-        <!-- Fullscreen button - icon with tooltip -->
-        <Tooltip v-if="!hideFullscreenButton">
-          <TooltipTrigger as-child>
-            <button type="button" data-tour="gantt-fullscreen"
-              class="p-1.5 rounded border border-zinc-200 dark:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400 transition-colors"
-              @click="$emit('fullscreen', true)">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l2.293 2.293a1 1 0 11-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 1a1 1 0 010-2h4a1 1 0 011 1v4a1 1 0 01-2 0V6.414l-2.293 2.293a1 1 0 11-1.414-1.414L13.586 5H12zm-9 7a1 1 0 012 0v1.586l2.293-2.293a1 1 0 111.414 1.414L6.414 15H8a1 1 0 010 2H4a1 1 0 01-1-1v-4zm13-1a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 010-2h1.586l-2.293-2.293a1 1 0 111.414-1.414L15 13.586V12a1 1 0 011-1z" clip-rule="evenodd" />
-              </svg>
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>{{ $t('Visas ekranas') }}</TooltipContent>
-        </Tooltip>
-      </div>
-    </div>
+  <div ref="wrap" class="relative w-full max-w-full outline-none" tabindex="0"
+    :class="{ 'h-full flex flex-col': props.height === '100%' }">
+    <!-- Header: Legend + Controls (VDOM child — keeps reka-ui Slider/Tooltip out of the vapor tree) -->
+    <MeetingsGanttToolbar :show-legend :institution-count="layoutRows.filter(r => r.type === 'institution').length"
+      :tenant-filter :tenant-names="mergedTenantNames" :show-only-with-activity :show-only-with-public-meetings
+      :details-expanded :day-width="dayWidthPx || dayWidth" :hide-fullscreen-button :meetings-loading
+      @show-legend-modal="emit('show-legend-modal')" @scroll-to-tenant="scrollToTenant"
+      @update:details-expanded="emit('update:detailsExpanded', $event)" @update:day-width="onScaleChange([$event])"
+      @fullscreen="emit('fullscreen', true)" />
 
     <div class="flex w-full max-w-full border border-zinc-200 dark:border-zinc-700 rounded-md"
-      :style="containerHeight ? { height: containerHeight } : {}" :class="{ 'flex-1 min-h-0 h-full': props.height === '100%' }"
-      style="min-width: 0;">
+      :style="containerHeight ? { height: containerHeight } : {}"
+      :class="{ 'flex-1 min-h-0 h-full': props.height === '100%' }" style="min-width: 0;">
       <!-- Left: sticky labels -->
       <div ref="leftLabels" class="shrink-0 bg-white dark:bg-zinc-900 z-[35] overflow-hidden"
-        :style="{ width: `${labelWidthPx}px` }"
-        style="isolation: isolate;">
+        :style="{ width: `${labelWidthPx}px` }" style="isolation: isolate;">
         <div class="grid" :style="{ gridTemplateRows: `22px ${layoutRows.map(r => r.height + 'px').join(' ')}` }">
           <!-- header spacer (align with axis height) -->
           <div class="border-b border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 sticky top-0 z-20" />
@@ -98,34 +23,29 @@
               class="px-3 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 sticky top-[22px] z-[30]">
               {{ mergedTenantNames[row.tenantId!] ?? row.tenantId }}
             </div>
-            <div v-else
-              class="px-3 py-1 text-sm border-b flex items-start gap-2 truncate"
-              :class="[
-                idx % 2 === 0 ? 'bg-zinc-50/40 dark:bg-zinc-800/30' : '',
-                row.isRelated && row.authorized !== false
-                  ? 'text-zinc-500 dark:text-zinc-400 border-zinc-100 dark:border-zinc-800 border-dashed bg-blue-50/30 dark:bg-blue-900/10'
-                  : row.isRelated && row.authorized === false
-                    ? 'text-zinc-400 dark:text-zinc-500 border-zinc-100 dark:border-zinc-800 border-dashed bg-amber-50/30 dark:bg-amber-900/10'
-                    : 'text-zinc-700 dark:text-zinc-300 border-zinc-100 dark:border-zinc-800'
-              ]"
-              :title="labelFor(row.institutionId!)">
+            <div v-else class="px-3 py-1 text-sm border-b flex items-start gap-2 truncate" :class="[
+              idx % 2 === 0 ? 'bg-zinc-50/40 dark:bg-zinc-800/30' : '',
+              row.isRelated && row.authorized !== false
+                ? 'text-zinc-500 dark:text-zinc-400 border-zinc-100 dark:border-zinc-800 border-dashed bg-blue-50/30 dark:bg-blue-900/10'
+                : row.isRelated && row.authorized === false
+                  ? 'text-zinc-400 dark:text-zinc-500 border-zinc-100 dark:border-zinc-800 border-dashed bg-amber-50/30 dark:bg-amber-900/10'
+                  : 'text-zinc-700 dark:text-zinc-300 border-zinc-100 dark:border-zinc-800'
+            ]" :title="labelFor(row.institutionId!)">
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between gap-2">
                   <div class="flex items-center gap-1.5 min-w-0">
                     <!-- Related institution indicator - authorized (blue) or unauthorized (amber) -->
-                    <div v-if="row.isRelated"
-                      class="relative group shrink-0"
-                      :title="getRelationshipTooltip(row)">
+                    <div v-if="row.isRelated" class="relative group shrink-0" :title="getRelationshipTooltip(row)">
                       <svg
                         :class="['h-3 w-3', row.authorized !== false ? 'text-blue-500 dark:text-blue-400' : 'text-amber-500 dark:text-amber-400']"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round"
                         :aria-label="row.authorized !== false ? $t('Susijusi institucija') : $t('relationships.not_authorized')">
                         <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                         <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                       </svg>
                     </div>
-                    <button type="button"
-                      :data-tour="idx === 1 ? 'gantt-institution-row' : undefined"
+                    <button type="button" :data-tour="idx === 1 ? 'gantt-institution-row' : undefined"
                       class="truncate text-left hover:underline cursor-pointer focus:underline focus:outline-none"
                       :class="[row.isRelated ? 'opacity-80' : '']"
                       :aria-label="$t('Atidaryti instituciją') + ': ' + (labelFor(row.institutionId!) || row.institutionId)"
@@ -136,8 +56,8 @@
                     </button>
                     <!-- Public meetings indicator -->
                     <svg v-if="props.institutionHasPublicMeetings?.[row.institutionId!]"
-                      class="h-3 w-3 text-green-600 dark:text-green-500/70 shrink-0"
-                      viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                      class="h-3 w-3 text-green-600 dark:text-green-500/70 shrink-0" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                       :aria-label="$t('Vieši posėdžiai')">
                       <circle cx="12" cy="12" r="10" />
                       <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
@@ -146,12 +66,12 @@
                   </div>
                   <span v-if="lastMeetingByInstitution.get(row.institutionId!)"
                     class="text-[11px] text-zinc-500 dark:text-zinc-500 shrink-0">{{
-                    labelLast(lastMeetingByInstitution.get(row.institutionId!)!) }}</span>
+                      labelLast(lastMeetingByInstitution.get(row.institutionId!)!) }}</span>
                 </div>
                 <div v-if="detailsExpanded" class="mt-1 text-[11px] text-zinc-600 dark:text-zinc-500 leading-snug">
                   <div class="truncate">
                     <span class="opacity-70">{{ $t('Susitikimų') }}:</span>
-                    <span class="ml-1">{{ meetings.filter(m => m.institution_id === row.institutionId).length }}</span>
+                    <span class="ml-1">{{meetings.filter(m => m.institution_id === row.institutionId).length}}</span>
                   </div>
                 </div>
               </div>
@@ -163,17 +83,16 @@
       <!-- Resize handle for label column -->
       <div
         class="w-1 shrink-0 cursor-col-resize bg-transparent hover:bg-blue-500/30 active:bg-blue-500/50 transition-colors z-[40]"
-        :class="{ 'bg-blue-500/50': isResizing }"
-        role="separator"
-        :aria-label="$t('Keisti stulpelio plotį')"
-        aria-orientation="vertical"
-        @mousedown.prevent="startLabelResize"
-      />
+        :class="{ 'bg-blue-500/50': isResizing }" role="separator" :aria-label="$t('Keisti stulpelio plotį')"
+        aria-orientation="vertical" @mousedown.prevent="startLabelResize" />
 
       <!-- Right: scrollable timeline with sticky header -->
-      <div ref="rightScroll" class="flex-1 overflow-auto min-w-0 h-full bg-white dark:bg-zinc-900" style="width: 0; min-width: 0;">
+      <div ref="rightScroll" class="flex-1 overflow-auto min-w-0 h-full bg-white dark:bg-zinc-900"
+        style="width: 0; min-width: 0;">
         <!-- Sticky x-axis header - uses isolate to create new stacking context -->
-        <div ref="axisScroll" class="sticky top-0 z-30 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-700" style="isolation: isolate;">
+        <div ref="axisScroll"
+          class="sticky top-0 z-30 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-700"
+          style="isolation: isolate;">
           <svg ref="axisEl" role="img" aria-label="Timeline axis" class="block" style="height: 22px;" />
         </div>
         <!-- Chart content -->
@@ -190,6 +109,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import * as d3 from 'd3';
 
 import { getGanttColors, isDarkModeActive, type GanttColors } from './ganttColors';
+import MeetingsGanttToolbar from './MeetingsGanttToolbar.vue';
 import {
   useGanttInteractions,
   useGanttViewport,
@@ -199,12 +119,14 @@ import {
   useColumnResize,
   useDragSelection,
   type LayoutRow,
+  type ParsedDutyMember,
 } from './composables';
 import {
   setupDefs,
   renderBackground,
   renderAxis,
-  renderVacations,
+  renderVacationBackgrounds,
+  renderVacationOverlay,
   renderMeetings,
   renderGaps,
   renderDutyMembers,
@@ -219,8 +141,6 @@ import {
   type CenterLineManager,
 } from './renderers';
 
-import { Slider } from '@/Components/ui/slider';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/ui/tooltip';
 import { useVacationPeriods } from '@/Composables/useVacationPeriods';
 import { useGanttSettings } from '@/Pages/Admin/Dashboard/Composables/useGanttSettings';
 
@@ -247,6 +167,8 @@ const props = withDefaults(defineProps<{
   tenantNames?: Record<string | number, string>;
   // Public meetings indicator lookup
   institutionHasPublicMeetings?: Record<string | number, boolean>;
+  // "Has any past/planned activity" lookup for the activity filter (independent of loaded windows)
+  institutionHasActivity?: Record<string | number, boolean>;
   // UI toggles
   showLegend?: boolean;
   showTodayLine?: boolean;
@@ -270,6 +192,10 @@ const props = withDefaults(defineProps<{
   showActivityStatus?: boolean;
   // Meeting periodicity per institution (days between expected meetings)
   institutionPeriodicity?: Record<string | number, number>;
+  // Date range currently being loaded (rendered as a shimmer band)
+  loadingRange?: { from: Date; until: Date } | null;
+  // Whether meetings are currently being fetched (shown as a toolbar indicator)
+  meetingsLoading?: boolean;
   // Hide fullscreen button (when already in fullscreen modal)
   hideFullscreenButton?: boolean;
 }>(), {
@@ -329,6 +255,8 @@ const emit = defineEmits<{
   (e: 'fullscreen', payload: boolean): void;
   (e: 'update:detailsExpanded', payload: boolean): void;
   (e: 'show-legend-modal'): void;
+  /** Timeline range changed (scroll extension, year navigation) — consumers may lazy-load data for it */
+  (e: 'range-changed', min: Date, max: Date): void;
 }>();
 
 // Navigate to institution details (admin route helper if available)
@@ -367,6 +295,7 @@ const filtering = useGanttFiltering(
     showOnlyWithActivity: () => props.showOnlyWithActivity,
     showOnlyWithPublicMeetings: () => props.showOnlyWithPublicMeetings,
     institutionHasPublicMeetings: () => props.institutionHasPublicMeetings,
+    institutionHasActivity: () => props.institutionHasActivity,
     institutionsOrder: () => props.institutionsOrder,
     showDutyMembers: () => props.showDutyMembers,
   },
@@ -379,7 +308,7 @@ const filtering = useGanttFiltering(
     institutionNames: () => props.institutionNames,
   },
 );
-const { institutions, filteredMeetings, filteredGaps, filteredDutyMembers, filteredInactivePeriods, groupedDutyMembers } = filtering;
+const { institutions, filteredMeetings, filteredGaps, filteredDutyMembers, filteredInactivePeriods } = filtering;
 
 // Labels composable: name lookups, formatting, tooltips
 const labels = useGanttLabels(
@@ -472,13 +401,100 @@ watch([minTime, maxTime], ([min, max]) => {
   ensureVacationYears(min.getFullYear() - 1, max.getFullYear());
 }, { immediate: true });
 
-// Initialize viewport composable for horizontal culling (performance optimization)
-const viewport = useGanttViewport(rightScroll, curXRef, { bufferPx: 300 });
+// Initialize viewport composable for horizontal + vertical culling (performance optimization)
+// Viewport changes re-render through onViewportChange — the culled computeds must not
+// be watched directly, because render() reassigns curXRef and would loop.
+// Buffers are generous on both axes so normal scrolling stays within the
+// pre-rendered/pre-fetched zone and rarely reveals a skeleton.
+// verticalScrollThreshold is much coarser than the horizontal one: each
+// viewport change re-renders the whole SVG, which competes for main-thread
+// time with the labels column's scroll sync (see useGanttInteractions'
+// setupVerticalScrollSync) — triggering that on every ~50px of vertical
+// scroll made the labels visibly stutter/catch up during fast scrolling.
+// The large verticalBufferPx means content stays pre-rendered well past
+// this coarser trigger point regardless.
+const viewport = useGanttViewport(rightScroll, curXRef, {
+  bufferPx: 600,
+  verticalBufferPx: 900,
+  verticalScrollThreshold: 250,
+  onViewportChange: () => {
+    emitVisibleRange();
+    render();
+  },
+});
 
-// Create viewport-culled data for rendering
+// Create viewport-culled data for rendering (horizontal / date-based)
 const visibleMeetings = viewport.createVisibleMeetings(filteredMeetings);
 const visibleGaps = viewport.createVisibleGaps(filteredGaps);
 const visibleDutyMembers = viewport.createVisibleDutyMembers(filteredDutyMembers);
+
+// Vertically-culled rows: only these get drawn. Row count scales with the
+// number of institutions across all selected tenants, so this is what keeps
+// an all-units view cheap to render.
+const visibleLayoutRows = viewport.createVisibleRows(layoutRows);
+
+// Absolute index of each row in the *full* (uncalled) row list, so zebra
+// striping stays anchored to each row's true position instead of resetting
+// from the first row that happens to be in view.
+const rowIndexByKey = computed(() => {
+  const m = new Map<string | number, number>();
+  layoutRows.value.forEach((r, i) => m.set(r.key, i));
+  return m;
+});
+const rowIndex = (key: string | number) => rowIndexByKey.value.get(key) ?? 0;
+
+const visibleInstitutionIds = computed(() => {
+  const ids = new Set<string | number>();
+  for (const row of visibleLayoutRows.value) {
+    if (row.type === 'institution' && row.institutionId !== undefined) {
+      ids.add(String(row.institutionId));
+    }
+  }
+  return ids;
+});
+
+// Rows that exist in the layout but are currently culled (outside the
+// rendered viewport+buffer) — drawn as a plain pulsing placeholder so a fast
+// scroll or a jump-to-tenant reveals a skeleton instead of blank space before
+// the real content renders on the next viewport update.
+const culledLayoutRows = computed(() => {
+  const visibleKeys = new Set(visibleLayoutRows.value.map(r => r.key));
+  return layoutRows.value.filter(r => !visibleKeys.has(r.key));
+});
+
+// Meetings/gaps/duty members culled by BOTH date (viewport) and vertical
+// position (visibleLayoutRows) — an institution scrolled out of view has no
+// need for its meetings/avatars to be computed either.
+const rowCulledMeetings = computed(() =>
+  visibleMeetings.value.filter(m => visibleInstitutionIds.value.has(String(m.institution_id))));
+const rowCulledGaps = computed(() =>
+  visibleGaps.value.filter(g => visibleInstitutionIds.value.has(String(g.institution_id))));
+const rowCulledDutyMembers = computed(() =>
+  visibleDutyMembers.value.filter(m => visibleInstitutionIds.value.has(String(m.institution_id))));
+
+/**
+ * Emit the currently visible date range so consumers can lazy-load data for it.
+ * The visible range (not the whole timeline span) is what needs meetings —
+ * the timeline itself can extend years beyond the viewport via infinite scroll.
+ */
+function emitVisibleRange() {
+  const bounds = viewport.viewportBounds.value;
+  if (bounds) {
+    emit('range-changed', bounds.minDate, bounds.maxDate);
+  }
+}
+
+// Group viewport-culled duty members by institution + day for avatar stacking
+const groupedVisibleDutyMembers = computed<Map<string, ParsedDutyMember[]>>(() => {
+  const groups = new Map<string, ParsedDutyMember[]>();
+  for (const member of rowCulledDutyMembers.value) {
+    const dayKey = `${member.institution_id}:${member.startDate.toDateString()}`;
+    const arr = groups.get(dayKey) ?? [];
+    arr.push(member as ParsedDutyMember);
+    groups.set(dayKey, arr);
+  }
+  return groups;
+});
 
 // Initialize drag selection composable for Shift+drag check-in creation
 const dragSelection = useDragSelection(
@@ -594,10 +610,12 @@ const render = () => {
   // Variable-row layout handled manually via rowTop/rowHeightFor — no band scale
 
   // Render background (zebra rows, Monday grid, year markers, row separators)
+  // — only for vertically-visible rows; rowIndex keeps zebra parity anchored
+  // to each row's true position rather than the culled subset's local index.
   renderBackground({
     g,
     x,
-    layoutRows: layoutRows.value,
+    layoutRows: visibleLayoutRows.value,
     innerWidth,
     innerHeight: innerH,
     colors,
@@ -606,13 +624,37 @@ const render = () => {
     rowTop,
     rowHeightFor,
     dayWidthPx: dayWidthPx.value,
+    rowIndex,
   });
 
-  // Render vacation period bands using extracted renderer
-  renderVacations({
+  // Placeholder for rows outside the rendered viewport+buffer — a plain
+  // pulsing bar instead of nothing, so a fast scroll or jump-to-tenant reveals
+  // a skeleton rather than blank space until the next viewport update fills it in.
+  if (culledLayoutRows.value.length > 0) {
+    g.append('g')
+      .attr('class', 'gantt-row-skeletons')
+      .selectAll('rect')
+      .data(culledLayoutRows.value)
+      .enter()
+      .append('rect')
+      .attr('class', 'gantt-row-skeleton')
+      .attr('x', 0)
+      .attr('y', d => rowTop(d.key) + 4)
+      .attr('width', innerWidth)
+      .attr('height', d => rowHeightFor(d.key) - 8)
+      .attr('rx', 3)
+      .attr('ry', 3);
+  }
+
+  // Vacation period bands (Layer 1 only: opaque solid background covering the
+  // Sunday/zebra grid). Must render early so meetings/gaps/avatars, drawn
+  // later, still show through. The colored overlay (Layer 2-3) renders LAST
+  // — see renderVacationOverlay() below — so its tint reads consistently
+  // instead of blending with e.g. a meeting's green safety band.
+  renderVacationBackgrounds({
     g,
     x,
-    layoutRows: layoutRows.value,
+    layoutRows: visibleLayoutRows.value,
     innerWidth,
     minTime: minTime.value,
     maxTime: maxTime.value,
@@ -622,6 +664,35 @@ const render = () => {
     rowHeightFor,
   });
 
+  // Loading skeleton: a pulsing pill per visible institution row, clipped to
+  // the pending fetch range intersected with the horizontal viewport — a
+  // full-height wash was too faint to register as "loading" at all.
+  if (props.loadingRange) {
+    const bounds = viewport.viewportBounds.value;
+    const rangeX0 = Math.max(0, x(props.loadingRange.from));
+    const rangeX1 = Math.min(innerWidth, x(props.loadingRange.until));
+    const clipX0 = bounds ? Math.max(rangeX0, bounds.left) : rangeX0;
+    const clipX1 = bounds ? Math.min(rangeX1, bounds.right) : rangeX1;
+
+    if (clipX1 > clipX0) {
+      const skeletonRows = visibleLayoutRows.value.filter(r => r.type === 'institution');
+
+      g.append('g')
+        .attr('class', 'gantt-loading-rows')
+        .selectAll('rect')
+        .data(skeletonRows)
+        .enter()
+        .append('rect')
+        .attr('class', 'gantt-loading-range')
+        .attr('x', clipX0)
+        .attr('y', d => rowTop(d.key) + 5)
+        .attr('width', clipX1 - clipX0)
+        .attr('height', d => rowHeightFor(d.key) - 10)
+        .attr('rx', 4)
+        .attr('ry', 4);
+    }
+  }
+
   // Inactive periods (no active duty members) - render as diagonal striped rectangles
   if (props.showDutyMembers) {
     renderInactivePeriods({
@@ -629,12 +700,12 @@ const render = () => {
       x,
       innerWidth,
       inactivePeriods: filteredInactivePeriods.value,
-      dutyMembers: filteredDutyMembers.value,
+      dutyMembers: rowCulledDutyMembers.value,
       minTime: minTime.value,
       maxTime: maxTime.value,
       rowTop,
       rowHeightFor,
-      allInstitutionIds: institutions.value,
+      allInstitutionIds: Array.from(visibleInstitutionIds.value),
     });
   }
 
@@ -658,7 +729,7 @@ const render = () => {
   renderGaps({
     g,
     x,
-    gaps: filteredGaps.value,
+    gaps: rowCulledGaps.value,
     colors,
     rowCenter,
     rowTop,
@@ -675,7 +746,7 @@ const render = () => {
     g,
     container: container as HTMLElement,
     x,
-    meetings: filteredMeetings.value,
+    meetings: rowCulledMeetings.value,
     colors,
     rowCenter,
     rowTop,
@@ -693,7 +764,7 @@ const render = () => {
       defs,
       container: container as HTMLElement,
       x,
-      groupedDutyMembers: groupedDutyMembers.value,
+      groupedDutyMembers: groupedVisibleDutyMembers.value,
       innerWidth,
       detailsExpanded: props.detailsExpanded,
       colors,
@@ -703,6 +774,23 @@ const render = () => {
       showActivityStatus: props.showActivityStatus,
     });
   }
+
+  // Vacation overlay (Layers 2-3: colored tint + borders) — drawn LAST among
+  // content layers so the vacation hue reads consistently on top of meeting
+  // safety bands, gaps, and avatars rather than blending with them (`pointer-
+  // events: none`, so clicks still reach the elements underneath).
+  renderVacationOverlay({
+    g,
+    x,
+    layoutRows: visibleLayoutRows.value,
+    innerWidth,
+    minTime: minTime.value,
+    maxTime: maxTime.value,
+    vacationPeriods: vacationPeriods.value,
+    colors,
+    rowTop,
+    rowHeightFor,
+  });
 
   // Today line using extracted renderer
   renderTodayLine({
@@ -721,9 +809,9 @@ const render = () => {
     container: container as HTMLElement,
     x,
     innerHeight: innerH,
-    layoutRows: layoutRows.value,
-    meetings: filteredMeetings.value,
-    gaps: filteredGaps.value,
+    layoutRows: visibleLayoutRows.value,
+    meetings: rowCulledMeetings.value,
+    gaps: rowCulledGaps.value,
     colors,
     rowTop,
     rowHeightFor,
@@ -755,7 +843,7 @@ onMounted(() => {
 
   // Now render with correct extensions already applied
   render();
-  ro = new ResizeObserver(() => render());
+  ro = new ResizeObserver(() => viewport.forceUpdate());
   if (wrap.value) ro.observe(wrap.value);
 
   // Watch for dark mode changes via MutationObserver on document.documentElement
@@ -783,7 +871,7 @@ onMounted(() => {
   const cleanupKeyboard = attachKeyboardHandler(wrap.value);
 
   // Attach Shift+drag handler for check-in creation (interactive only)
-  const cleanupDragSelection = props.interactive ? dragSelection.attachDragHandler() : () => {};
+  const cleanupDragSelection = props.interactive ? dragSelection.attachDragHandler() : () => { };
 
   // Setup center line scroll handler with debounced center date saving
   let saveCenterDateTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -881,7 +969,10 @@ watch(() => dragSelection.state.value, (state) => {
   });
 }, { deep: true });
 
-watch([parsedMeetings, parsedGaps, parsedDutyMembers, parsedInactivePeriods, institutions, layoutRows, vacationPeriods, () => props.daysBefore, () => props.daysAfter, () => props.startDate, () => props.tenantFilter, () => props.showOnlyWithActivity, () => props.showOnlyWithPublicMeetings, () => props.showDutyMembers, () => props.showActivityStatus, () => props.detailsExpanded, extraBefore, extraAfter, dayWidthPx], () => render());
+// NOTE: the viewport-culled computeds (visibleMeetings etc.) are intentionally NOT
+// watched here — they depend on curXRef, which render() itself reassigns, so watching
+// them causes recursive updates. Viewport changes re-render via onViewportChange.
+watch([parsedMeetings, parsedGaps, parsedDutyMembers, parsedInactivePeriods, institutions, layoutRows, vacationPeriods, () => props.daysBefore, () => props.daysAfter, () => props.startDate, () => props.tenantFilter, () => props.showOnlyWithActivity, () => props.showOnlyWithPublicMeetings, () => props.showDutyMembers, () => props.showActivityStatus, () => props.detailsExpanded, () => props.loadingRange, extraBefore, extraAfter, dayWidthPx], () => render());
 </script>
 
 <style scoped>
@@ -900,5 +991,53 @@ svg :global(text) {
 
 :global(.dark) .row-hover:hover {
   background: rgba(255, 255, 255, 0.05);
+}
+
+/* Pulsing skeleton pill per row whose meetings are being fetched */
+svg :global(.gantt-loading-range) {
+  fill: rgb(113, 113, 122);
+  animation: gantt-loading-pulse 1.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+:global(.dark) svg :global(.gantt-loading-range) {
+  fill: rgb(161, 161, 170);
+}
+
+@keyframes gantt-loading-pulse {
+
+  0%,
+  100% {
+    opacity: 0.1;
+  }
+
+  50% {
+    opacity: 0.24;
+  }
+}
+
+/* Placeholder bar for rows outside the rendered viewport+buffer — subtler and
+   slower than the meetings-loading pulse, since it means "not rendered yet",
+   not "actively fetching". */
+svg :global(.gantt-row-skeleton) {
+  fill: rgb(113, 113, 122);
+  animation: gantt-row-skeleton-pulse 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+:global(.dark) svg :global(.gantt-row-skeleton) {
+  fill: rgb(161, 161, 170);
+}
+
+@keyframes gantt-row-skeleton-pulse {
+
+  0%,
+  100% {
+    opacity: 0.06;
+  }
+
+  50% {
+    opacity: 0.13;
+  }
 }
 </style>

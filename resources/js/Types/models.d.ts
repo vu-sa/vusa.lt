@@ -868,6 +868,7 @@ declare global {
       layout: string
       read_more?: string | null
       draft?: boolean | null
+      show_breadcrumbs: boolean
       created_at: string
       updated_at: string
       last_edited_at?: string | null
@@ -916,6 +917,9 @@ declare global {
       is_active: boolean
       highlights?: Array<unknown> | null
       layout: string
+      show_table_of_contents: boolean
+      show_title: boolean
+      show_breadcrumbs: boolean
       featured_image?: string | null
       meta_description?: string | null
       publish_time?: string | null

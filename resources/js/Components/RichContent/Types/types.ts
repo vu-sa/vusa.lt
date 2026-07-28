@@ -23,6 +23,7 @@ export type {
   NumberStatSection,
   Calendar,
   News,
+  Spacer,
 } from '@/Types/contentParts';
 
 /**

@@ -22,6 +22,7 @@ class AtstovavimasTenantRequest extends FormRequest
         return [
             'tenant_ids' => ['required', 'array', 'min:1', 'max:100'],
             'tenant_ids.*' => ['required', 'integer', 'distinct', 'exists:tenants,id'],
+            'refresh' => ['nullable', 'boolean'],
         ];
     }
 }

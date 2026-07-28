@@ -41,7 +41,7 @@ const props = defineProps<{
 
 const loading = ref(true);
 
-const { filesRaw, directoriesRaw, currentPath, loading: fetchLoading, fetch, back } = useFileListing('public/files');
+const { filesRaw, directoriesRaw, currentPath, loading: fetchLoading, fetch, back } = useFileListing('public/files', props.uploadExtensions);
 const files = filesRaw as any;
 const directories = directoriesRaw as any;
 const path = currentPath as any;

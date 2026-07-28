@@ -25,6 +25,9 @@ class DuplicateNewsAction
             $newNews->draft = 1;
             $newNews->publish_time = null;
 
+            // The language-pair link is unique; a duplicate is a standalone article.
+            $newNews->other_lang_id = null;
+
             // Create and save new content, disassociating it from the original news item
             $content = Content::create();
             $newNews->content_id = $content->id;

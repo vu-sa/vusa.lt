@@ -6,7 +6,7 @@
         :key="lang.value"
         :class="[
           'flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-200 hover:bg-accent/50 hover:border-accent-foreground/20',
-          selectedLanguages.includes(lang.value) ? 'bg-accent border-accent-foreground/20 shadow-sm' : 'hover:shadow-sm'
+          selectedLanguages.includes(lang.value) ? 'bg-accent border-accent-foreground/20 shadow-sm' : 'bg-background border-border hover:shadow-sm'
         ]"
       >
         <Checkbox

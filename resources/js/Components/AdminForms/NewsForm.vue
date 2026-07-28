@@ -115,7 +115,7 @@
       </template>
     </FormElement>
 
-    <RichContentFormElement v-model="form.content.parts" />
+    <RichContentFormElement v-model="form.content.parts" :tenant-id="news?.tenant_id" />
 
     <!-- Section 4: Highlights (Optional but prominent) -->
     <FormElement :section-number="4" :is-complete="form.highlights.length > 0">
@@ -189,6 +189,15 @@
               </div>
             </div>
 
+            <!-- Breadcrumbs toggle — hide the breadcrumb trail, e.g. for immersive /
+                 headline layouts that lead with a full-bleed title. -->
+            <div class="flex items-center gap-3">
+              <Switch v-model="form.show_breadcrumbs" />
+              <span class="text-sm text-zinc-700 dark:text-zinc-300">
+                {{ $t('Rodyti naujienos kelią (breadcrumbs)') }}
+              </span>
+            </div>
+
             <!-- Permalink -->
             <FormFieldWrapper id="permalink" :label="$t('Nuoroda')"
               :helper-text="$t('Atsargiai: pakeitus nuorodą, sena nuoroda nebeveiks!')" :error="form.errors.permalink"
@@ -225,6 +234,7 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { MultiSelect } from '@/Components/ui/multi-select';
 import { OrderedListInput } from '@/Components/ui/ordered-list-input';
+import { Switch } from '@/Components/ui/switch';
 import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
 import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
@@ -297,7 +307,7 @@ const isCreate = computed(() => props.rememberKey === 'CreateNews');
 // Advanced settings collapsed by default
 const advancedSettingsOpen = ref(false);
 
-const formData = { ...newsTemplate, ...props.news, layout: props.news?.layout || 'modern', highlights: props.news?.highlights || [] } as any;
+const formData = { ...newsTemplate, ...props.news, layout: props.news?.layout || 'modern', show_breadcrumbs: props.news?.show_breadcrumbs ?? true, highlights: props.news?.highlights || [] } as any;
 
 const form = props.rememberKey
   ? useForm(props.rememberKey, formData).withPrecognition(props.submitMethod, props.submitUrl)

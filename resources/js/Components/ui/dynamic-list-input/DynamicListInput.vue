@@ -17,10 +17,38 @@
     <template v-else>
       <TransitionGroup name="list" tag="div" class="space-y-3">
         <div v-for="(item, index) in items" :key="itemKeys[index]"
-          class="group relative rounded-lg border border-dashed border-zinc-200 bg-zinc-50/50 p-4 transition-all hover:border-solid hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800/30 dark:hover:border-zinc-600"
-          :class="{ 'border-primary bg-primary/5': draggedIndex === index }">
-          <!-- Header with drag handle and controls -->
-          <div class="mb-3 flex items-center gap-2">
+          class="group relative rounded-lg border border-dashed border-zinc-200 bg-zinc-50/50 transition-all hover:border-solid hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800/30 dark:hover:border-zinc-600"
+          :class="[
+            { 'border-primary bg-primary/5': draggedIndex === index },
+            compact ? 'py-3 pl-7 pr-8' : 'p-4',
+          ]">
+          <!-- Compact: hover-revealed drag rail on the left edge, instead of a full header
+               row above every item — reclaims the vertical space that cost when an editor
+               (accordion, card-stack, carousel) stacks many short items. -->
+          <div v-if="compact"
+            class="absolute inset-y-0 left-0 flex w-6 shrink-0 cursor-grab items-center justify-center rounded-l-lg text-zinc-300 opacity-0 transition-opacity hover:bg-zinc-100 hover:text-zinc-500 active:cursor-grabbing group-hover:opacity-100 dark:text-zinc-600 dark:hover:bg-zinc-800"
+            draggable="true"
+            @dragstart="handleDragStart(index, $event)"
+            @dragend="handleDragEnd"
+            @dragover.prevent="handleDragOver(index)"
+            @drop="handleDrop(index)">
+            <IFluentReOrderDotsVertical24Regular class="h-3.5 w-3.5" />
+          </div>
+
+          <!-- Compact: delete moves to a hover-revealed top-right icon -->
+          <Button v-if="compact"
+            type="button"
+            variant="ghost"
+            size="icon"
+            class="absolute right-1.5 top-1.5 h-6 w-6 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+            :class="items.length === 1 && !allowEmpty ? 'text-zinc-300 cursor-not-allowed dark:text-zinc-600' : 'text-zinc-400 hover:text-red-600 dark:hover:text-red-400'"
+            :disabled="items.length === 1 && !allowEmpty"
+            @click="removeItem(index)">
+            <IFluentDelete24Regular class="h-3.5 w-3.5" />
+          </Button>
+
+          <!-- Non-compact: the original full-width header row -->
+          <div v-if="!compact" class="mb-3 flex items-center gap-2">
             <!-- Drag handle -->
             <div
               class="flex h-7 w-7 shrink-0 cursor-grab items-center justify-center rounded bg-zinc-100 text-sm font-medium text-zinc-500 transition-colors hover:bg-zinc-200 active:cursor-grabbing dark:bg-zinc-800 dark:hover:bg-zinc-700"
@@ -93,38 +121,45 @@ const props = withDefaults(defineProps<{
   emptyIcon?: Component;
   /** Factory function to create new items */
   createItem: () => T;
+  /**
+   * Drop the full-width header row (drag handle + #N + delete) above every item in
+   * favor of a hover-revealed left rail + top-right delete icon — reclaims vertical
+   * space for editors that stack many short items (accordion entries, carousel slides).
+   */
+  compact?: boolean;
 }>(), {
   allowEmpty: false,
   emptyText: 'No items added yet',
   addFirstText: 'Add first item',
   addText: 'Add item',
+  compact: false,
 });
 
-const items = defineModel<T[]>({ required: true });
+const items = defineModel<T[]>({ default: () => [] });
 
 // Generate stable keys for list items
 const itemKeys = ref<number[]>([]);
 let keyCounter = 0;
 
-// Initialize keys
-watch(() => items.value?.length, (newLen, oldLen) => {
-  if (newLen === undefined) return;
-  oldLen = oldLen ?? 0;
-
-  if (newLen > oldLen) {
-    // Items added - add new keys
-    for (let i = oldLen; i < newLen; i++) {
+function resyncKeys(currentLength: number) {
+  if (itemKeys.value.length === currentLength) return;
+  if (itemKeys.value.length < currentLength) {
+    for (let i = itemKeys.value.length; i < currentLength; i++) {
       itemKeys.value.push(keyCounter++);
     }
   }
-}, { immediate: true });
-
-// Initialize keys on mount
-if (itemKeys.value.length === 0 && items.value?.length > 0) {
-  for (let i = 0; i < items.value.length; i++) {
-    itemKeys.value.push(keyCounter++);
+  else {
+    itemKeys.value.length = currentLength;
   }
 }
+
+// Keep keys in sync whenever the items array changes length — including a wholesale
+// replacement from outside this component (form load, undo/redo), which previously
+// left itemKeys stale since only additions were handled here.
+watch(() => items.value?.length, (newLen) => {
+  if (newLen === undefined) return;
+  resyncKeys(newLen);
+}, { immediate: true });
 
 // Drag state
 const draggedIndex = ref<number | null>(null);

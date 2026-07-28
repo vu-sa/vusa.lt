@@ -119,7 +119,7 @@ import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { router } from '@inertiajs/vue3';
 
-import type { AtstovavimosInstitution } from '../types';
+import type { AtstovavimasInstitution } from '../types';
 
 import RelatedInstitutionCard from './RelatedInstitutionCard.vue';
 
@@ -135,8 +135,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { InstitutionIconFilled } from '@/Components/icons';
 
 interface Props {
-  institutions: AtstovavimosInstitution[];
-  relatedInstitutions?: AtstovavimosInstitution[];
+  institutions: AtstovavimasInstitution[];
+  relatedInstitutions?: AtstovavimasInstitution[];
   isOpen: boolean;
   onScheduleMeeting: (institutionId: string) => void;
   onAddCheckIn: (institutionId: string) => void;

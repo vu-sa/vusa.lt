@@ -47,7 +47,7 @@
         <PopoverTrigger as-child>
           <Button
             size="icon"
-            variant="outline"
+            variant="secondary"
             class="h-10 w-10 rounded-full shadow-lg bg-background"
           >
             <UserCog class="h-5 w-5" />

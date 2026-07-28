@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { useAtstovavimosData } from '../useAtstovavimasData';
-import type { AtstovavimosInstitution, AtstovavimosUser } from '../../types';
+import { useAtstovavimasData } from '../useAtstovavimasData';
+import type { AtstovavimasInstitution, AtstovavimasUser } from '../../types';
 
 import type { InstitutionActivityStatusName } from '@/Types/InstitutionActivity';
 
@@ -9,7 +9,7 @@ const institution = (
   id: string,
   status: InstitutionActivityStatusName,
   priority: number,
-): AtstovavimosInstitution => ({
+): AtstovavimasInstitution => ({
   id,
   name: `Institution ${id}`,
   meetings: [],
@@ -28,7 +28,7 @@ const institution = (
   },
 });
 
-describe('useAtstovavimosData', () => {
+describe('useAtstovavimasData', () => {
   it('orders attention insights by backend priority', () => {
     const user = {
       current_duties: [
@@ -36,9 +36,9 @@ describe('useAtstovavimosData', () => {
         { institution: institution('2', 'healthy', 0) },
         { institution: institution('3', 'overdue', 50) },
       ],
-    } as AtstovavimosUser;
+    } as AtstovavimasUser;
 
-    const data = useAtstovavimosData(user);
+    const data = useAtstovavimasData(user);
 
     expect(data.institutionsInsights.value.attention.map(item => item.id)).toEqual(['3', '1']);
   });

@@ -66,7 +66,11 @@ interface CollectionDef {
 
 const MIN_QUERY_LENGTH = 2;
 const DEFAULT_PER_PAGE = 6;
+const DEFAULT_FILTERED_PER_PAGE = 12;
 const MAX_RECENT = 8;
+
+/** Typesense wildcard — powers the "browse everything" state on page load and after clearing. */
+const BROWSE_QUERY = '*';
 
 /**
  * How long typing must settle before a term is reported to analytics. `performSearch` runs
@@ -187,18 +191,29 @@ const createEmptySection = (): SectionState => ({
   topScore: 0,
 });
 
-export const usePublicMultiSearch = (options: { perPage?: number } = {}) => {
+export const usePublicMultiSearch = (options: { perPage?: number; filteredPerPage?: number } = {}) => {
+  // Small preview size when browsing across all six collections at once...
   const perPage = options.perPage ?? DEFAULT_PER_PAGE;
+  // ...but once the user filters down to specific types, they expect a real result list for
+  // those types rather than the same 3-item preview.
+  const filteredPerPage = options.filteredPerPage ?? DEFAULT_FILTERED_PER_PAGE;
   const page = usePage();
 
   const query = ref('');
+  /** What the search box should show — `''` while browsing, since `query` holds `'*'` then. */
+  const displayQuery = ref('');
   const isSearching = ref(false);
   const searchError = ref<string | null>(null);
+  const hasSearched = ref(false);
 
-  /** Which collections to include — persisted so the user's choice sticks. */
+  /**
+   * Collection type filter — an additive OR filter, same model as `DocumentSearchFilters.contentTypes`.
+   * Empty means "no filter, show everything"; checking one or more narrows the results down to just
+   * those types. Persisted so the user's choice sticks.
+   */
   const enabledCollections = useLocalStorage<SearchCollectionId[]>(
     'public-search-collections',
-    [...ALL_IDS],
+    [],
   );
 
   const recentSearches = useLocalStorage<string[]>('public-search-recent', []);
@@ -212,14 +227,32 @@ export const usePublicMultiSearch = (options: { perPage?: number } = {}) => {
   const config = (): TypesenseConfig | undefined => page.props.typesenseConfig as TypesenseConfig | undefined;
   const locale = (): string => (page.props.app as { locale?: string })?.locale || 'lt';
 
+  /** Whether the collection's checkbox is checked (not the same as whether it's currently shown). */
   const isEnabled = (id: SearchCollectionId): boolean => enabledCollections.value.includes(id);
 
+  const hasCollectionFilter = (): boolean => enabledCollections.value.length > 0;
+
+  /** Whether a collection's results should currently be displayed — everything, unless filtered. */
+  const isVisible = (id: SearchCollectionId): boolean => !hasCollectionFilter() || isEnabled(id);
+
   const collectionName = (def: CollectionDef): string => config()?.collections?.[def.configKey] || def.fallbackName;
+
+  /**
+   * Hidden collections (filtered out) only need enough hits to keep their `found` count for the
+   * sidebar badge accurate — visible ones get the real page size, larger once filtered down to
+   * fewer types so picking a type returns an actual result list instead of the browse preview.
+   */
+  const collectionPerPage = (id: SearchCollectionId): number => {
+    if (!isVisible(id)) {
+      return 1;
+    }
+    return hasCollectionFilter() ? filteredPerPage : perPage;
+  };
 
   const buildSearch = (def: CollectionDef, q: string, pageNum: number): Record<string, unknown> => ({
     collection: collectionName(def),
     q: q || '*',
-    per_page: perPage,
+    per_page: collectionPerPage(def.id),
     page: pageNum,
     ...def.buildParams(q, locale()),
   });
@@ -285,12 +318,6 @@ export const usePublicMultiSearch = (options: { perPage?: number } = {}) => {
     section.hasMore = section.hits.length < section.totalHits;
   };
 
-  const resetSections = (): void => {
-    for (const id of ALL_IDS) {
-      Object.assign(sections[id], createEmptySection());
-    }
-  };
-
   const addRecentSearch = (q: string): void => {
     const trimmed = q.trim();
     if (!trimmed || trimmed === '*') {
@@ -320,49 +347,41 @@ export const usePublicMultiSearch = (options: { perPage?: number } = {}) => {
   }, REPORT_SETTLE_MS);
 
   const performSearch = async (q: string): Promise<void> => {
-    if (abortController) {
-      abortController.abort();
+    const trimmed = q.trim();
+
+    // Below the minimum length (but not the browse wildcard itself), fall back to browsing
+    // everything rather than blanking the page — e.g. clearing the search box.
+    if (trimmed !== BROWSE_QUERY && trimmed.length < MIN_QUERY_LENGTH) {
+      lastReportedTerm = '';
+      await performSearch(BROWSE_QUERY);
+      return;
     }
 
-    const trimmed = q.trim();
-    if (trimmed.length < MIN_QUERY_LENGTH) {
-      resetSections();
-      isSearching.value = false;
-      searchError.value = null;
-      // Clearing the box starts a new search, so the same term may legitimately be reported again.
-      lastReportedTerm = '';
-      return;
+    if (abortController) {
+      abortController.abort();
     }
 
     abortController = new AbortController();
     const { signal } = abortController;
 
-    const enabled = COLLECTIONS.filter(def => isEnabled(def.id));
-    if (enabled.length === 0) {
-      resetSections();
-      isSearching.value = false;
-      return;
-    }
-
     isSearching.value = true;
     searchError.value = null;
 
     try {
-      const searches = enabled.map(def => buildSearch(def, trimmed, 1));
+      // Every collection is always queried (regardless of which are enabled) so the sidebar
+      // can keep showing accurate counts for collections the user has toggled off.
+      const searches = COLLECTIONS.map(def => buildSearch(def, trimmed, 1));
       const data = await runMultiSearch(searches, signal);
 
-      enabled.forEach((def, index) => {
+      COLLECTIONS.forEach((def, index) => {
         applyResult(def.id, data.results?.[index], false);
       });
 
-      // Clear any collections that are toggled off.
-      for (const def of COLLECTIONS) {
-        if (!isEnabled(def.id)) {
-          Object.assign(sections[def.id], createEmptySection());
-        }
-      }
+      hasSearched.value = true;
 
-      reportSearch(normalizeReportedTerm(trimmed), totalResultCount.value);
+      if (hasRealQuery(trimmed)) {
+        reportSearch(normalizeReportedTerm(trimmed), totalResultCount.value);
+      }
     }
     catch (error) {
       if (ErrorUtils.isAbortError(error)) {
@@ -380,6 +399,7 @@ export const usePublicMultiSearch = (options: { perPage?: number } = {}) => {
 
   const search = (q: string, immediate = false): void => {
     query.value = q;
+    displayQuery.value = q === BROWSE_QUERY ? '' : q;
 
     if (immediate) {
       addRecentSearch(q);
@@ -415,14 +435,20 @@ export const usePublicMultiSearch = (options: { perPage?: number } = {}) => {
     }
   };
 
+  // Selecting/deselecting changes each collection's page size (see `collectionPerPage`), so a
+  // refetch is needed — the previously-fetched hits aren't enough once a type becomes visible.
   const toggleCollection = (id: SearchCollectionId): void => {
     enabledCollections.value = isEnabled(id)
       ? enabledCollections.value.filter(c => c !== id)
       : [...enabledCollections.value, id];
 
-    if (query.value.trim().length >= MIN_QUERY_LENGTH) {
-      performSearch(query.value);
-    }
+    void performSearch(query.value);
+  };
+
+  /** Clears the collection filter back to "no filter, show everything". */
+  const resetCollections = (): void => {
+    enabledCollections.value = [];
+    void performSearch(query.value);
   };
 
   const cancelPendingSearch = (): void => {
@@ -444,7 +470,7 @@ export const usePublicMultiSearch = (options: { perPage?: number } = {}) => {
   /** Section ids that currently have results, ordered by relevance (top score), then priority. */
   const orderedSections = computed<SearchCollectionId[]>(() =>
     COLLECTIONS
-      .filter(def => isEnabled(def.id) && sections[def.id].totalHits > 0)
+      .filter(def => isVisible(def.id) && sections[def.id].totalHits > 0)
       .map(def => def.id)
       .sort((a, b) => {
         const scoreDiff = sections[b].topScore - sections[a].topScore;
@@ -456,7 +482,7 @@ export const usePublicMultiSearch = (options: { perPage?: number } = {}) => {
   );
 
   const totalResultCount = computed(() =>
-    ALL_IDS.reduce((sum, id) => (isEnabled(id) ? sum + sections[id].totalHits : sum), 0),
+    ALL_IDS.reduce((sum, id) => (isVisible(id) ? sum + sections[id].totalHits : sum), 0),
   );
 
   const hasAnyResults = computed(() => orderedSections.value.length > 0);
@@ -464,20 +490,21 @@ export const usePublicMultiSearch = (options: { perPage?: number } = {}) => {
   // Shape compatible with `useSearchInterface`'s `SearchInterfaceController`.
   const filters = computed(() => ({ query: query.value }));
   const searchState = computed(() => ({ query: query.value }));
+  // Clearing the search box returns to browsing everything rather than an empty page.
   const clearFilters = (): void => {
-    query.value = '';
-    resetSections();
-    lastReportedTerm = '';
+    search(BROWSE_QUERY, true);
   };
 
   return {
     // State
     query,
+    displayQuery,
     isSearching,
     searchError,
     sections,
     enabledCollections,
     recentSearches,
+    hasSearched,
 
     // Computed
     orderedSections,
@@ -488,7 +515,9 @@ export const usePublicMultiSearch = (options: { perPage?: number } = {}) => {
     search,
     loadMore,
     toggleCollection,
+    resetCollections,
     isEnabled,
+    isVisible,
 
     // SearchInterfaceController compatibility
     filters,
@@ -501,6 +530,7 @@ export const usePublicMultiSearch = (options: { perPage?: number } = {}) => {
     // Constants
     allCollectionIds: ALL_IDS,
     minQueryLength: MIN_QUERY_LENGTH,
+    browseQuery: BROWSE_QUERY,
   };
 };
 

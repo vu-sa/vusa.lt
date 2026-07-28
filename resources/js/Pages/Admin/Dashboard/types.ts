@@ -4,13 +4,13 @@ export interface InstitutionSubscription {
   is_duty_based: boolean;
 }
 
-export type AtstovavimosUser = Omit<App.Entities.User, 'current_duties'> & {
+export type AtstovavimasUser = Omit<App.Entities.User, 'current_duties'> & {
   current_duties?: Array<{
-    institution?: AtstovavimosInstitution;
+    institution?: AtstovavimasInstitution;
   }>;
 };
 
-export interface AtstovavimosInstitution {
+export interface AtstovavimasInstitution {
   id: string;
   name: string;
   tenant_id?: string | number;
@@ -19,13 +19,17 @@ export interface AtstovavimosInstitution {
     shortname: string;
     type?: string;
   };
-  meetings?: AtstovavimosMeeting[];
+  meetings?: AtstovavimasMeeting[];
   check_ins?: InstitutionCheckIn[];
   active_check_in?: InstitutionCheckIn | null;
   activity_status: InstitutionActivityStatus;
   hasUpcomingMeetings?: boolean;
   upcoming_meetings_count?: number;
+  last_meeting_date?: string | null;
   has_public_meetings?: boolean;
+  meeting_periodicity_days?: number;
+  // Duty members (Gantt coverage periods); tenant timeline only
+  duties?: AtstovavimasDuty[];
   // Subscription status for follow/mute UI
   subscription?: InstitutionSubscription;
   // Related institution metadata (only present for related institutions)
@@ -38,6 +42,23 @@ export interface AtstovavimosInstitution {
   authorized?: boolean;
 }
 
+export interface AtstovavimasDuty {
+  id: string;
+  users?: AtstovavimasDutyUser[];
+}
+
+export interface AtstovavimasDutyUser {
+  id: string;
+  name: string;
+  profile_photo_path?: string | null;
+  last_action?: string | null;
+  activity_category?: RepresentativeActivityCategory;
+  pivot?: {
+    start_date?: string | null;
+    end_date?: string | null;
+  };
+}
+
 export interface InstitutionCheckIn {
   id: string;
   institution_id: string;
@@ -47,7 +68,7 @@ export interface InstitutionCheckIn {
   note?: string;
 }
 
-export interface AtstovavimosMeeting {
+export interface AtstovavimasMeeting {
   id: string;
   start_time: string;
   institution_id?: string;
@@ -56,7 +77,7 @@ export interface AtstovavimosMeeting {
   has_protocol?: boolean;
   type?: string;
   type_slug?: string;
-  agenda_items?: AtstovavimosAgendaItem[];
+  agenda_items?: AtstovavimasAgendaItem[];
   institutions?: Array<{
     id: string;
     name: string;
@@ -69,21 +90,21 @@ export interface AtstovavimosMeeting {
   }>;
 }
 
-export interface AtstovavimosAgendaItem {
+export interface AtstovavimasAgendaItem {
   id: string | number;
   title?: string;
   type?: string | null;
-  main_vote?: AtstovavimosVote | null;
-  votes?: AtstovavimosVote[];
+  main_vote?: AtstovavimasVote | null;
+  votes?: AtstovavimasVote[];
 }
 
-export interface AtstovavimosVote {
+export interface AtstovavimasVote {
   is_main?: boolean;
   student_vote?: 'positive' | 'negative' | 'neutral' | null;
   decision?: 'positive' | 'negative' | 'neutral' | null;
 }
 
-export interface AtstovavimosGap {
+export interface AtstovavimasGap {
   institution_id: string;
   from: Date;
   until: Date;
@@ -91,7 +112,7 @@ export interface AtstovavimosGap {
   note?: string;
 }
 
-export interface AtstovavimosTenant {
+export interface AtstovavimasTenant {
   id: string | number;
   shortname: string;
   type: string;
@@ -105,6 +126,7 @@ export interface InstitutionInsights {
 export interface GanttAgendaItem {
   id: string;
   title: string;
+  type?: 'voting' | 'informational' | 'deferred' | null;
   student_vote?: 'positive' | 'negative' | 'neutral' | null;
   decision?: 'positive' | 'negative' | 'neutral' | null;
 }
@@ -114,6 +136,8 @@ export interface GanttMeeting {
   start_time: Date;
   institution_id: string;
   institution: string;
+  // Meeting title (tooltip heading; falls back to institution name)
+  title?: string;
   completion_status?: 'complete' | 'incomplete' | 'no_items';
   // Agenda items for tooltip display (limited to first 4)
   agenda_items?: GanttAgendaItem[];
@@ -215,12 +239,16 @@ export interface RepresentativePageData {
   pagination: RepresentativePagination;
 }
 
-export interface AtstovavimosTenantTimelineData {
-  institutions: AtstovavimosInstitution[];
-  related_institutions: AtstovavimosInstitution[];
+export interface AtstovavimasTenantTimelineData {
+  institutions: AtstovavimasInstitution[];
   institution_summary: InstitutionStatusSummaryData;
   representative_activity: RepresentativeActivityData;
 }
+
+// Slim meeting DTO from the windowed meetings endpoint (start_time as ISO string)
+export type AtstovavimasTenantMeeting = Omit<GanttMeeting, 'start_time'> & {
+  start_time: string;
+};
 import type {
   InstitutionActivityInsight,
   InstitutionActivityStatus,

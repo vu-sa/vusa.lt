@@ -13,7 +13,7 @@
       <div class="my-3 sm:my-4 lg:my-6 px-2 sm:px-3 lg:px-4">
         <div class="text-center max-w-2xl mx-auto">
           <div class="flex items-center justify-center gap-3 mb-3 sm:mb-4">
-            <SearchPageSwitcher :page />
+            <SearchPageSwitcher :page :query="pageSwitcherQuery" />
           </div>
           <h1 class="text-2xl sm:text-4xl font-bold text-foreground mb-2 sm:mb-3">
             {{ $t(titleKey) }}
@@ -112,6 +112,8 @@ import SearchPageSwitcher from '../SearchPageSwitcher.vue';
 interface Props {
   // Page identifier for SearchPageSwitcher
   page: 'search' | 'documents' | 'contacts' | 'meetings';
+  // Search term carried into the page-switcher links' `q` param, so switching pages doesn't lose it
+  pageSwitcherQuery?: string;
 
   // Translation keys
   titleKey: string;
@@ -142,6 +144,7 @@ interface Props {
 }
 
 withDefaults(defineProps<Props>(), {
+  pageSwitcherQuery: '',
   browsePromptMobileKey: '',
   resultShortLabel: '',
   showNewestFirst: false,

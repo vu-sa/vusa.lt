@@ -242,7 +242,7 @@
           </AccordionTrigger>
           <AccordionContent class="px-4 sm:px-6 pb-4 sm:pb-6 pt-2">
             <div
-              class="text-zinc-600 mt-3 dark:text-zinc-400 leading-relaxed text-sm sm:text-base prose-sm prose-zinc dark:prose-invert [&_a]:text-vusa-red [&_a]:decoration-vusa-red dark:[&_a]:text-red-400 dark:[&_a]:decoration-red-400 [&_a:hover]:text-red-700 dark:[&_a:hover]:text-red-300"
+              class="text-zinc-600 mt-3 dark:text-zinc-400 leading-relaxed text-sm sm:text-base [&_a]:text-vusa-red [&_a]:decoration-vusa-red dark:[&_a]:text-red-400 dark:[&_a]:decoration-red-400 [&_a:hover]:text-red-700 dark:[&_a:hover]:text-red-300"
               v-html="item.answer" />
           </AccordionContent>
         </AccordionItem>

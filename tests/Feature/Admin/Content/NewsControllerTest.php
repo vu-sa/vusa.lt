@@ -164,6 +164,65 @@ describe('auth: news manager', function () {
         ])->assertStatus(302)->assertRedirectToRoute('news.index');
     });
 
+    test('show_breadcrumbs round-trips through store and update', function () {
+        // Store with breadcrumbs disabled.
+        $permalink = 'news-no-breadcrumbs-'.time();
+
+        asUser($this->newsManager)->post(route('news.store'), [
+            'title' => 'News without breadcrumbs',
+            'permalink' => $permalink,
+            'content' => [
+                'parts' => [
+                    [
+                        'type' => 'tiptap',
+                        'json_content' => ['lt' => 'News content'],
+                        'options' => [],
+                        'order' => 1,
+                    ],
+                ],
+            ],
+            'lang' => 'lt',
+            'image' => 'image.jpg',
+            'publish_time' => now()->timestamp,
+            'short' => 'Short news',
+            'show_breadcrumbs' => false,
+        ])->assertStatus(302)->assertRedirectToRoute('news.index');
+
+        $this->assertDatabaseHas('news', [
+            'permalink' => $permalink,
+            'show_breadcrumbs' => false,
+        ]);
+
+        // Update it back to enabled — this news belongs to the manager's tenant, so
+        // the update policy passes (the factory-created $this->news may not).
+        $created = News::query()->where('permalink', $permalink)->first();
+
+        asUser($this->newsManager)->put(route('news.update', $created), [
+            'title' => $created->title,
+            'permalink' => $created->permalink,
+            'content' => [
+                'parts' => [
+                    [
+                        'type' => 'tiptap',
+                        'json_content' => ['lt' => 'News content'],
+                        'options' => [],
+                        'order' => 1,
+                    ],
+                ],
+            ],
+            'lang' => 'lt',
+            'image' => 'image.jpg',
+            'publish_time' => now()->timestamp,
+            'short' => 'Short news',
+            'show_breadcrumbs' => true,
+        ])->assertStatus(302);
+
+        $this->assertDatabaseHas('news', [
+            'id' => $created->id,
+            'show_breadcrumbs' => true,
+        ]);
+    });
+
     test('can access the news edit page', function () {
         $news = News::query()->first();
 
@@ -262,6 +321,29 @@ describe('auth: news manager', function () {
         expect($duplicatedNews->tags)->toHaveCount(2)
             ->and($duplicatedNews->tags->pluck('id')->sort()->values()->toArray())
             ->toBe($news->tags->pluck('id')->sort()->values()->toArray());
+    });
+
+    test('rejects an invalid content part options.width value', function () {
+        $response = asUser($this->newsManager)->post(route('news.store'), [
+            'title' => 'News with bad width',
+            'permalink' => 'news-bad-width',
+            'content' => [
+                'parts' => [
+                    [
+                        'type' => 'tiptap',
+                        'json_content' => ['lt' => 'News content'],
+                        'options' => ['width' => 'enormous'],
+                        'order' => 1,
+                    ],
+                ],
+            ],
+            'lang' => 'lt',
+            'image' => 'image.jpg',
+            'publish_time' => now()->timestamp,
+            'short' => 'Short news',
+        ]);
+
+        $response->assertStatus(302)->assertSessionHasErrors(['content.parts.0.options.width']);
     });
 
     test('storing news without resolvable tenant returns validation error', function () {

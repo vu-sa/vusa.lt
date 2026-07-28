@@ -21,6 +21,7 @@
     "storybook:build": "STORYBOOK=true storybook build",
     "typecheck": "vue-tsc --noEmit",
     "lint": "eslint resources/js",
+    "lint:file": "eslint",
     "lint:fix": "eslint resources/js --fix",
     "format": "eslint resources/js --fix",
     "check": "npm run typecheck && npm run lint",

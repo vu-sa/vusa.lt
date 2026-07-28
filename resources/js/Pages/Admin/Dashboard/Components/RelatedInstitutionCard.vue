@@ -87,7 +87,7 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Eye, EyeOff, Bell, BellOff, Building2, Loader2 } from 'lucide-vue-next';
 
-import type { AtstovavimosInstitution } from '../types';
+import type { AtstovavimasInstitution } from '../types';
 import { useInstitutionSubscription } from '../Composables/useInstitutionSubscription';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
@@ -95,7 +95,7 @@ import { Button } from '@/Components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 
 const props = defineProps<{
-  institution: AtstovavimosInstitution;
+  institution: AtstovavimasInstitution;
 }>();
 
 // Subscription state

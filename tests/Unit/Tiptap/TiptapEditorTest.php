@@ -450,6 +450,56 @@ describe('CustomHeading', function () {
         expect($html)->toContain('</h2>');
     });
 
+    it('renders h4 (levels 2-4)', function () {
+        $editor = new TiptapEditor;
+        $content = [
+            'type' => 'doc',
+            'content' => [
+                ['type' => 'heading', 'attrs' => ['level' => 4], 'content' => [['type' => 'text', 'text' => 'Sub point']]],
+            ],
+        ];
+
+        $html = $editor->setContent($content)->getHTML();
+
+        expect($html)->toContain('<h4 id="sub-point"');
+    });
+
+    it('renders size and accent as classes, never inline style', function () {
+        $editor = new TiptapEditor;
+        $content = [
+            'type' => 'doc',
+            'content' => [
+                ['type' => 'heading', 'attrs' => ['level' => 2, 'size' => 'md', 'accent' => 'yellow'], 'content' => [['type' => 'text', 'text' => 'Title']]],
+            ],
+        ];
+
+        $html = $editor->setContent($content)->getHTML();
+
+        expect($html)->toContain('rc-h-md');
+        expect($html)->toContain('rc-h-accent-yellow');
+        expect($html)->not->toContain('style=');
+    });
+
+    it('renders spacing as a class and leaves default unclassed', function () {
+        $editor = new TiptapEditor;
+
+        $tight = ['type' => 'doc', 'content' => [
+            ['type' => 'heading', 'attrs' => ['level' => 2, 'spacing' => 'tight'], 'content' => [['type' => 'text', 'text' => 'Title']]],
+        ]];
+        expect($editor->setContent($tight)->getHTML())
+            ->toContain('rc-h-spacing-tight')->not->toContain('style=');
+
+        $none = ['type' => 'doc', 'content' => [
+            ['type' => 'heading', 'attrs' => ['level' => 2, 'spacing' => 'none'], 'content' => [['type' => 'text', 'text' => 'Title']]],
+        ]];
+        expect($editor->setContent($none)->getHTML())->toContain('rc-h-spacing-none');
+
+        $default = ['type' => 'doc', 'content' => [
+            ['type' => 'heading', 'attrs' => ['level' => 2, 'spacing' => 'default'], 'content' => [['type' => 'text', 'text' => 'Title']]],
+        ]];
+        expect($editor->setContent($default)->getHTML())->not->toContain('rc-h-spacing');
+    });
+
     it('generates different IDs for both h2 and h3', function () {
         $editor = new TiptapEditor;
         $content = [
@@ -464,6 +514,77 @@ describe('CustomHeading', function () {
 
         expect($html)->toContain('id="section-one"');
         expect($html)->toContain('id="subsection-one"');
+    });
+});
+
+describe('TextAlign', function () {
+    it('renders center/end as a class, never inline style, and leaves start unclassed', function () {
+        $editor = new TiptapEditor;
+
+        $centered = ['type' => 'doc', 'content' => [
+            ['type' => 'paragraph', 'attrs' => ['align' => 'center'], 'content' => [['type' => 'text', 'text' => 'Text']]],
+        ]];
+        $html = $editor->setContent($centered)->getHTML();
+        expect($html)->toContain('rc-align-center');
+        expect($html)->not->toContain('style=');
+
+        $start = ['type' => 'doc', 'content' => [
+            ['type' => 'paragraph', 'attrs' => ['align' => 'start'], 'content' => [['type' => 'text', 'text' => 'Text']]],
+        ]];
+        $html = $editor->setContent($start)->getHTML();
+        expect($html)->not->toContain('rc-align');
+    });
+
+    it('applies to headings too', function () {
+        $editor = new TiptapEditor;
+        $content = ['type' => 'doc', 'content' => [
+            ['type' => 'heading', 'attrs' => ['level' => 2, 'align' => 'end'], 'content' => [['type' => 'text', 'text' => 'Title']]],
+        ]];
+
+        $html = $editor->setContent($content)->getHTML();
+
+        expect($html)->toContain('rc-align-end');
+    });
+});
+
+describe('RCTag', function () {
+    it('renders the dot-pill span with variant + color classes', function () {
+        $editor = new TiptapEditor;
+        $content = [
+            'type' => 'doc',
+            'content' => [
+                [
+                    'type' => 'paragraph',
+                    'content' => [
+                        ['type' => 'text', 'marks' => [['type' => 'rcTag', 'attrs' => ['variant' => 'filled', 'color' => 'yellow']]], 'text' => 'Maskotė'],
+                    ],
+                ],
+            ],
+        ];
+
+        $html = $editor->setContent($content)->getHTML();
+
+        expect($html)->toContain('<span class="rc-tag rc-tag-filled rc-tag-yellow">Maskotė</span>');
+    });
+
+    it('falls back to filled/yellow for an unrecognized variant or color', function () {
+        $editor = new TiptapEditor;
+        $content = [
+            'type' => 'doc',
+            'content' => [
+                [
+                    'type' => 'paragraph',
+                    'content' => [
+                        ['type' => 'text', 'marks' => [['type' => 'rcTag', 'attrs' => ['variant' => 'bogus', 'color' => 'bogus']]], 'text' => 'Text'],
+                    ],
+                ],
+            ],
+        ];
+
+        $html = $editor->setContent($content)->getHTML();
+
+        expect($html)->toContain('rc-tag-filled');
+        expect($html)->toContain('rc-tag-yellow');
     });
 });
 

@@ -52,6 +52,8 @@ export function useTenantTimelineData() {
 
       requestUrl.value = route('api.v1.admin.visak.timeline', {
         tenant_ids: idsToLoad,
+        // Forced reloads (e.g. after creating a meeting) bypass the server cache
+        ...(force ? { refresh: 1 } : {}),
       });
 
       await execute();

@@ -1,60 +1,134 @@
 <template>
-  <!-- Has title, subtitle, button with text and link, backgroundMedia and rightMedia -->
-  <!-- Also can be left or center aligned -->
-  <div class="@container/grid full-bleed">
-    <section class="relative grid @max-5xl/grid:grid-rows-[420px_300px] @5xl/grid:grid-cols-2 h-180 @5xl/grid:h-144"
-      :class="{ '-mt-48': isFirstElement }">
-      <div class="z-10 flex @max-5xl/grid:px-16 @5xl/grid:pl-32 flex-col @max-5xl/grid:items-center mt-auto mb-16">
-        <div class="text-5xl text-center @5xl/grid:text-left font-bold text-white mb-4"
-          v-html="element.json_content.title" />
-        <div class="text-lg text-zinc-200 mb-4" v-html="element.json_content.subtitle" />
-        <SmartLink v-if="element.json_content.buttonLink" :href="element.json_content.buttonLink" class="mt-4 w-fit">
-          <Button class="rounded-full text-lg h-12 px-6 font-bold" :style="{ backgroundColor: buttonColor }">
-            <span class="text-black">{{ element.json_content.buttonText }}</span>
-          </Button>
-        </SmartLink>
+  <!-- Width (prose/content/wide/full) is decided by the parser wrapper via options.width. -->
+
+  <!-- split (default): two-column text + image, the original hero layout. -->
+  <section v-if="variant === 'split'" :id="anchorElementId"
+    :class="['relative scroll-mt-32 overflow-hidden -mt-8 sm:-mt-6 md:-mt-4 2xl:mt-0', backgroundClass, splitPaddingClass, roundedClass]">
+    <div class="max-w-6xl mx-auto px-4 relative z-10">
+      <div class="grid 2xl:grid-cols-2 gap-6 sm:gap-8 md:gap-10 lg:gap-12 xl:gap-14 2xl:gap-16 items-center">
+        <div :class="['space-y-4 sm:space-y-5 md:space-y-6 2xl:space-y-8 2xl:pr-8', element.options?.textLeft ? 'order-first' : 'order-last 2xl:order-first']">
+          <div class="space-y-3 sm:space-y-4 md:space-y-5 2xl:space-y-6">
+            <p v-if="element.json_content.eyebrow" class="text-xs font-semibold uppercase tracking-wider text-vusa-red">
+              {{ element.json_content.eyebrow }}
+            </p>
+            <h1
+              class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-zinc-900 dark:text-zinc-100 leading-tight"
+              v-html="element.json_content.title"
+            />
+            <p class="text-sm sm:text-base md:text-lg lg:text-xl text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-lg">
+              {{ element.json_content.description }}
+            </p>
+          </div>
+
+          <HeroButtons :buttons="element.json_content.buttons" />
+        </div>
+
+        <div :class="['relative', element.options?.textLeft ? 'order-last' : 'order-first 2xl:order-last']">
+          <ImageWithDecorations
+            :src="element.json_content.imageSrc"
+            :alt="element.json_content.imageAlt"
+            height-class="h-[240px] sm:h-[280px] md:h-[320px] lg:h-[360px] xl:h-[400px] 2xl:h-[500px]"
+            :decorations="element.options?.imageDecorations"
+            :overlay-content="element.json_content.overlayContent"
+            :overlay-corner="element.json_content.overlayCorner"
+            :overlay-overhang="element.json_content.overlayOverhang"
+            :overlay-padding="element.json_content.overlayPadding"
+            :object-position="element.json_content.objectPosition"
+            loading="eager"
+          />
+        </div>
       </div>
-      <img :src="element.json_content.backgroundMedia" :class="[{ 'blur-[1px]': element.options?.backgroundBlur }]"
-        class="object-cover w-full h-full absolute inset-0 flex items-center justify-center 2xl:rounded-lg">
-      <div v-if="element.options?.backgroundBlur"
-        class="w-full h-full absolute inset-0 bg-black opacity-50 2xl:rounded-lg" />
-      <div class="z-10 flex items-center justify-center @max-5xl/grid:-order-1">
-        <img class="h-auto max-w-full object-contain" :src="element.json_content.rightMedia">
+    </div>
+  </section>
+
+  <!-- centered: no image, centred title/description/buttons — the CTA/slogan shape. -->
+  <section v-else-if="variant === 'centered'" :id="anchorElementId"
+    :class="['relative scroll-mt-32', backgroundClass, centeredPaddingClass, roundedClass]">
+    <div class="max-w-3xl mx-auto px-4 relative z-10 text-center">
+      <p v-if="element.json_content.eyebrow" class="text-xs font-semibold uppercase tracking-wider text-vusa-red">
+        {{ element.json_content.eyebrow }}
+      </p>
+      <h1
+        class="mt-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-zinc-900 dark:text-zinc-100 leading-tight"
+        v-html="element.json_content.title"
+      />
+      <p v-if="element.json_content.description" class="mt-4 text-sm sm:text-base md:text-lg text-zinc-600 dark:text-zinc-400 leading-relaxed">
+        {{ element.json_content.description }}
+      </p>
+      <HeroButtons :buttons="element.json_content.buttons" class="mt-6 justify-center" />
+    </div>
+  </section>
+
+  <!-- banner ("juosta"): compact full-width strip — a single row, title + one button. -->
+  <section v-else-if="variant === 'banner'" :id="anchorElementId"
+    :class="['relative scroll-mt-32', backgroundClass, bannerPaddingClass, roundedClass]">
+    <div class="max-w-6xl mx-auto px-4 relative z-10 flex flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left">
+      <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-zinc-900 dark:text-zinc-100" v-html="element.json_content.title" />
+      <HeroButtons :buttons="element.json_content.buttons?.slice(0, 1)" />
+    </div>
+  </section>
+
+  <!-- panel: the SummerCamps hero — a rounded gradient panel, blurred accent blobs and a
+       square thumbnail, kept short so page content below stays reachable without scrolling. -->
+  <section v-else :id="anchorElementId" class="relative scroll-mt-32">
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-50 to-zinc-100 p-5 sm:p-6 dark:from-zinc-900 dark:to-zinc-800">
+      <div class="absolute -right-20 -top-20 size-56 rounded-full bg-vusa-red/5 blur-3xl" />
+      <div class="absolute -bottom-24 -left-16 size-56 rounded-full bg-vusa-yellow/5 blur-3xl" />
+
+      <div class="relative flex flex-col gap-5 sm:flex-row sm:items-center">
+        <img
+          v-if="element.json_content.imageSrc"
+          :src="element.json_content.imageSrc"
+          :alt="element.json_content.imageAlt"
+          :style="element.json_content.objectPosition ? { objectPosition: element.json_content.objectPosition } : undefined"
+          class="hidden aspect-square w-32 shrink-0 rounded-2xl object-cover shadow-md ring-1 ring-zinc-900/5 sm:block lg:w-40 dark:ring-white/10"
+          loading="lazy"
+        >
+
+        <div class="min-w-0">
+          <p v-if="element.json_content.eyebrow" class="text-xs font-semibold uppercase tracking-wider text-vusa-red">
+            {{ element.json_content.eyebrow }}
+          </p>
+          <h1 class="mt-1 text-2xl font-bold text-zinc-900 sm:text-3xl dark:text-zinc-50" v-html="element.json_content.title" />
+          <p v-if="element.json_content.description" class="mt-2 max-w-prose text-sm leading-6 text-zinc-600 sm:text-base dark:text-zinc-400">
+            {{ element.json_content.description }}
+          </p>
+
+          <HeroButtons :buttons="element.json_content.buttons" class="mt-4" />
+        </div>
       </div>
-      <!-- <div class="absolute top-0 h-6 w-full bg-linear-to-b from-white to-transparent dark:from-zinc-900" />
-    <div class="absolute bottom-0 h-5 w-full bg-linear-to-b from-transparent to-white dark:to-zinc-900" /> -->
-      <!-- <div class="absolute inset-0 flex items-center justify-center">
-      <img :src="element.json_content.rightMedia" class="object-cover w-full h-full" />
-</div>-->
-    </section>
-  </div>
+    </div>
+  </section>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import SmartLink from '../../Public/SmartLink.vue';
-
+import ImageWithDecorations from '@/Components/ui/ImageWithDecorations.vue';
+import HeroButtons from './HeroButtons.vue';
 import type { Hero } from '@/Types/contentParts';
-import { Button } from '@/Components/ui/button';
+import { BACKGROUND_CLASS, PADDING_CLASS, ROUNDED_CLASS } from '../sectionClasses';
 
-const { element } = defineProps<{
+const props = defineProps<{
   element: Hero;
   isFirstElement: boolean;
+  anchorId?: number | null;
 }>();
 
-const buttonColor = computed(() => {
-  switch (element.options?.buttonColor) {
-    case 'red':
-      return '#bd2835';
-    case 'yellow':
-      return '#fbb01b';
-    case 'zinc':
-      return '#1f1f1f';
-    case 'white':
-      return '#ffffff';
-    default:
-      return '#bd2835';
-  }
-});
+const variant = computed(() => props.element.options?.variant ?? 'split');
+const anchorElementId = computed(() => (props.anchorId ? `rc-${props.anchorId}` : undefined));
+
+// `background`/`padding`/`rounded` are new, authorable options for the three variants
+// that used to hardcode their own chrome (`panel` keeps its own fixed gradient look).
+// `background: undefined` defaults to `'muted'` — the exact `bg-zinc-50 dark:bg-zinc-900`
+// every variant already rendered — so existing hero blocks look identical until an
+// author changes it.
+const backgroundClass = computed(() => BACKGROUND_CLASS[props.element.options?.background ?? 'muted']);
+const roundedClass = computed(() => ROUNDED_CLASS[props.element.options?.rounded ?? 'none']);
+
+// Padding defaults reproduce each variant's previous hardcoded value pixel-for-pixel;
+// only diverge from it once an author explicitly picks a padding option.
+const splitPaddingClass = computed(() => (props.element.options?.padding ? PADDING_CLASS[props.element.options.padding] : 'py-20'));
+const centeredPaddingClass = computed(() => (props.element.options?.padding ? PADDING_CLASS[props.element.options.padding] : 'py-16 md:py-20'));
+const bannerPaddingClass = computed(() => (props.element.options?.padding ? PADDING_CLASS[props.element.options.padding] : 'py-8'));
 </script>

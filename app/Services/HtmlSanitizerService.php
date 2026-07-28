@@ -78,8 +78,9 @@ class HtmlSanitizerService
     private function richContentConfig(): HtmlSanitizerConfig
     {
         $config = (new HtmlSanitizerConfig)
-            // Blocks (StarterKit, minus the disabled codeBlock)
-            ->allowElement('p')
+            // Blocks (StarterKit, minus the disabled codeBlock). `class` on `p` carries
+            // the `align` attribute (App\Tiptap\TextAlign).
+            ->allowElement('p', ['class'])
             ->allowElement('br')
             ->allowElement('hr')
             ->allowElement('blockquote')
@@ -87,9 +88,12 @@ class HtmlSanitizerService
             ->allowElement('ol')
             ->allowElement('li')
             ->allowElement('code')
-            // CustomHeading (levels 2-3); `id` is generated for anchor links
+            // CustomHeading (levels 2-4); `id` is generated for anchor links, `class`
+            // carries the size/accent/align attributes (App\Tiptap\CustomHeading,
+            // App\Tiptap\TextAlign) — never an inline `style`, which is stripped below.
             ->allowElement('h2', ['id', 'class'])
             ->allowElement('h3', ['id', 'class'])
+            ->allowElement('h4', ['id', 'class'])
             // Inline marks
             ->allowElement('strong')
             ->allowElement('b')

@@ -70,6 +70,9 @@ class Page extends Model implements Feedable, Sitemapable
             'publish_time' => 'datetime',
             'is_active' => 'boolean',
             'highlights' => 'array',
+            'show_table_of_contents' => 'boolean',
+            'show_title' => 'boolean',
+            'show_breadcrumbs' => 'boolean',
         ];
     }
 

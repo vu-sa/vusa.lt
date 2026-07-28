@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import InstitutionCompactCard from '../InstitutionCompactCard.vue';
 
 import { commonStubs } from '@/tests/stubs';
-import type { AtstovavimosInstitution } from '@/Pages/Admin/Dashboard/types';
+import type { AtstovavimasInstitution } from '@/Pages/Admin/Dashboard/types';
 
 const institution = {
   id: '1',
@@ -23,7 +23,7 @@ const institution = {
     next_meeting_at: null,
     active_check_in_until: null,
   },
-} satisfies AtstovavimosInstitution;
+} satisfies AtstovavimasInstitution;
 
 describe('InstitutionCompactCard', () => {
   it('renders the backend-provided activity status and effective days', () => {
@@ -52,7 +52,7 @@ describe('InstitutionCompactCard', () => {
         last_activity_type: 'check_in',
         last_activity_at: '2026-06-29T21:00:00.000Z',
       },
-    } satisfies AtstovavimosInstitution;
+    } satisfies AtstovavimasInstitution;
 
     const wrapper = mount(InstitutionCompactCard, {
       props: { institution: checkedInInstitution },

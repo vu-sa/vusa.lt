@@ -1,4 +1,7 @@
 <template>
+  <!-- Single root: with 4 sibling v-if/else-if/else branches, RichContentParser's
+       width/spacing :class had no single element to fall through to. -->
+  <div>
   <div v-if="loading" class="py-4 px-4 md:px-8 lg:px-12">
     <div class="w-full max-w-7xl mx-auto">
       <div class="grid gap-6 lg:gap-8 grid-cols-1 lg:grid-cols-[2fr_1fr]">
@@ -145,6 +148,7 @@
       {{ $t("Nėra naujienų") }}
     </div>
   </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -174,26 +178,34 @@ const FALLBACK_IMAGE = '/images/icons/naujienu_foto.png';
 // Helper to get image with fallback
 const getImageSrc = (image: string | null): string => image ?? FALLBACK_IMAGE;
 
-// Props - element is from content parts, prefetchedNews is from server-side rendering
+// Props - element is from content parts. `resolved` is the server-resolved payload
+// (ContentPartResolver, via RichContentParser's `resolved` prop); `prefetchedNews` is
+// the older homepage-only prop, kept as a fallback until HomePage moves onto the
+// resolver too (see RichContentParser.vue).
 const props = defineProps<{
   element: News;
+  resolved?: { type: string; items: NewsItem[] } | null;
+  /** @deprecated Superseded by `resolved` — only HomePage still supplies this directly. */
   prefetchedNews?: NewsItem[];
 }>();
 
 const page = usePage();
 
-// Use prefetched news if available (from home page), otherwise fall back to API fetch
-const hasPrefetchedNews = computed(() => props.prefetchedNews && props.prefetchedNews.length > 0);
+const serverNews = computed<NewsItem[] | undefined>(() => props.resolved?.items ?? props.prefetchedNews);
 
-// Only use API fetch if no prefetched news is available (prevents waterfall on home page)
+// Use server-provided news if available, otherwise fall back to a client fetch.
+const hasPrefetchedNews = computed(() => !!serverNews.value && serverNews.value.length > 0);
+
+// Only use API fetch if no server-provided news is available (prevents waterfall on
+// pages that already got it from ContentPartResolver or the homepage prefetch).
 const { news: apiFetchedNews, loading: apiLoading, error: apiError } = hasPrefetchedNews.value
   ? { news: ref([]), loading: ref(false), error: ref(null) }
   : useNewsFetch();
 
-// Combine sources: prefer prefetched data, fall back to API data
+// Combine sources: prefer server-provided data, fall back to API data
 const newsItems = computed<NewsItem[]>(() => {
   if (hasPrefetchedNews.value) {
-    return props.prefetchedNews as NewsItem[];
+    return serverNews.value as NewsItem[];
   }
   return apiFetchedNews.value as NewsItem[] ?? [];
 });

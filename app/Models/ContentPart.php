@@ -194,12 +194,72 @@ class ContentPart extends Model
             case 'hero':
                 // Extract text from hero section
                 $content = ($this->json_content['title'] ?? '').' '.
-                           ($this->json_content['subtitle'] ?? '').' '.
-                           ($this->json_content['buttonText'] ?? '');
+                           ($this->json_content['description'] ?? '');
+                foreach ($this->json_content['buttons'] ?? [] as $button) {
+                    $content .= ' '.($button['text'] ?? '');
+                }
                 break;
             case 'news':
             case 'calendar':
                 $content = $this->json_content['title'] ?? '';
+                break;
+            case 'carousel-slide-deck':
+                foreach ($this->json_content as $slide) {
+                    $content .= ($slide['title'] ?? '').' ';
+                    $content .= ($slide['badge'] ?? '').' ';
+                    $content .= $this->extractTextFromTiptap($slide['description'] ?? []).' ';
+                }
+                break;
+            case 'card-stack':
+                foreach ($this->json_content as $card) {
+                    $content .= ($card['title'] ?? '').' ';
+                    $content .= ($card['description'] ?? '').' ';
+                }
+                break;
+            case 'photo-gallery':
+                foreach ($this->json_content as $image) {
+                    $content .= ($image['alt'] ?? '').' ';
+                }
+                break;
+            case 'content-grid':
+                $content = ($this->options['title'] ?? '').' '.($this->options['subtitle'] ?? '').' ';
+                foreach ($this->json_content as $row) {
+                    foreach ($row['columns'] ?? [] as $column) {
+                        $columnContent = $column['content'] ?? [];
+                        if (($columnContent['type'] ?? null) === 'tiptap') {
+                            $content .= $this->extractTextFromTiptap($columnContent['value'] ?? []).' ';
+                        } elseif (($columnContent['type'] ?? null) === 'image') {
+                            $content .= ($columnContent['alt'] ?? '').' ';
+                        } elseif (($columnContent['type'] ?? null) === 'card') {
+                            $cardValue = $columnContent['value'] ?? [];
+                            $content .= ($cardValue['title'] ?? '').' '.($cardValue['description'] ?? '').' ';
+                        }
+                    }
+                }
+                break;
+            case 'link-list':
+                // Author-written text only — resolved news/pages titles are already
+                // indexed under their own News/Page documents and would go stale the
+                // moment the referenced record is renamed.
+                $content = ($this->options['title'] ?? '').' '.($this->options['subtitle'] ?? '');
+                foreach ($this->json_content['links'] ?? [] as $link) {
+                    $content .= ' '.($link['title'] ?? '');
+                }
+                break;
+            case 'event-list':
+                $content = ($this->options['title'] ?? '').' '.($this->options['subtitle'] ?? '').' '.
+                           ($this->options['emptyMessage'] ?? '');
+                break;
+            case 'person-quote':
+                $content = $this->extractTextFromTiptap($this->json_content['quote'] ?? []);
+                $snapshot = $this->json_content['snapshot'] ?? [];
+                $content .= ' '.($snapshot['name'] ?? '').' '.($snapshot['attribution'] ?? '');
+                break;
+            case 'section':
+                // A marker block with no content of its own (see RichContentParser.vue's
+                // groupedContent) — only its own title/subtitle are searchable text; the
+                // blocks it wraps are indexed independently as their own parts.
+                $content = ($this->options['title'] ?? '').' '.($this->options['subtitle'] ?? '');
                 break;
         }
 

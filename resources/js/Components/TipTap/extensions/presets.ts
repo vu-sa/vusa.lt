@@ -17,6 +17,8 @@ import { BubbleMenu } from '@tiptap/vue-3/menus';
 
 import { AccessibleImage } from '../AccessibleImage';
 import { CustomHeading } from '../CustomHeading';
+import { TextAlign } from '../TextAlign';
+import { RCTag } from '../RCTag';
 import { Video } from '../Video';
 
 export type EditorPreset = 'minimal' | 'compact' | 'full';
@@ -96,6 +98,16 @@ export function createCompactExtensions(options: PresetOptions = {}): AnyExtensi
     CustomHeading.configure({
       levels: [2],
     }),
+    // Without these, any existing content saved with a tag mark or an alignment
+    // attribute (e.g. a content-grid text column authored through the `full` preset
+    // elsewhere, or seeded directly) fails to load at all: ProseMirror's schema
+    // throws "There is no mark type rcTag in this schema" while building the doc from
+    // JSON, which crashed the whole compact editor instance — nothing rendered, not
+    // just the tag. `align` alone wouldn't have crashed (unknown node attributes are
+    // silently dropped, only unknown *marks* throw), but would have silently lost the
+    // author's alignment choice on the next save.
+    TextAlign,
+    RCTag,
     BubbleMenu,
     Image.configure({
       HTMLAttributes: {
@@ -128,8 +140,10 @@ export function createFullExtensions(options: PresetOptions = {}): AnyExtension[
   const extensions: AnyExtension[] = [
     createStarterKit(false),
     CustomHeading.configure({
-      levels: [2, 3],
+      levels: [2, 3, 4],
     }),
+    TextAlign,
+    RCTag,
     Subscript,
     Superscript,
     AccessibleImage.configure({
@@ -224,8 +238,10 @@ export function createRenderExtensions(): AnyExtension[] {
       },
     }),
     CustomHeading.configure({
-      levels: [2, 3],
+      levels: [2, 3, 4],
     }),
+    TextAlign,
+    RCTag,
     AccessibleImage.configure({
       HTMLAttributes: {
         class: 'w-full rounded-md',

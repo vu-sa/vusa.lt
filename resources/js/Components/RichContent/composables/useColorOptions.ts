@@ -29,6 +29,11 @@ export function useColorOptions() {
       value: 'yellow',
       swatch: 'bg-yellow-500',
     },
+    {
+      label: $t('rich-content.colors.green'),
+      value: 'green',
+      swatch: 'bg-green-500',
+    },
   ]);
 
   const buttonColorOptions = computed<ColorOption[]>(() => [

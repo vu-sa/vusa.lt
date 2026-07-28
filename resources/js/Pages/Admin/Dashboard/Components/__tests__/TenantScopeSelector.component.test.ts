@@ -78,4 +78,21 @@ describe('TenantScopeSelector', () => {
 
     expect(wrapper.emitted('update:selectedTenants')?.[0]).toEqual([['1', '2']]);
   });
+
+  it('keeps only the first selected tenant from the quick action', async () => {
+    wrapper = createWrapper(['2', '1']);
+
+    const keepOneButton = wrapper.findAll('button').find(button => button.text() === 'visak.tenant_scope.keep_one');
+    await keepOneButton?.trigger('click');
+
+    expect(wrapper.emitted('update:selectedTenants')?.[0]).toEqual([['2']]);
+    expect(wrapper.emitted('engage')).toHaveLength(1);
+  });
+
+  it('disables the keep-one action when only one tenant is selected', () => {
+    wrapper = createWrapper(['1']);
+
+    const keepOneButton = wrapper.findAll('button').find(button => button.text() === 'visak.tenant_scope.keep_one');
+    expect(keepOneButton?.attributes('disabled')).toBeDefined();
+  });
 });

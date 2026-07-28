@@ -8,7 +8,7 @@
 
 export { renderBackground, type BackgroundRenderContext } from './renderBackground';
 export { renderAxis, type AxisRenderContext } from './renderAxis';
-export { renderVacations, type VacationRenderContext } from './renderVacations';
+export { renderVacationBackgrounds, renderVacationOverlay, type VacationRenderContext } from './renderVacations';
 export { renderMeetings, type MeetingRenderContext } from './renderMeetings';
 export { renderGaps, type GapRenderContext } from './renderGaps';
 export { renderDutyMembers, type DutyMemberRenderContext } from './renderDutyMembers';

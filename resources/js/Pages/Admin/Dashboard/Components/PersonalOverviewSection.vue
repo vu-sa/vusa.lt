@@ -31,14 +31,14 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 
-import type { AtstovavimosInstitution, AtstovavimosMeeting, InstitutionInsights } from '../types';
+import type { AtstovavimasInstitution, AtstovavimasMeeting, InstitutionInsights } from '../types';
 
 import InstitutionsOverviewCard from './InstitutionsOverviewCard.vue';
 import UpcomingMeetingsCard from './UpcomingMeetingsCard.vue';
 
 interface Props {
-  institutions: AtstovavimosInstitution[];
-  upcomingMeetings: AtstovavimosMeeting[];
+  institutions: AtstovavimasInstitution[];
+  upcomingMeetings: AtstovavimasMeeting[];
   institutionsInsights: InstitutionInsights;
   isAdmin: boolean;
   currentUserId: number;

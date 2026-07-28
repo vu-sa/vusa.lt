@@ -40,6 +40,7 @@
         :value="facet.field"
         :label="facet.label"
         :icon="getFacetIcon(facet.icon)"
+        :icon-container-class="getFacetIconColor(facet.icon)"
         :badge-count="getSelectedCount(facet.field)"
         variant="desktop"
       >
@@ -92,6 +93,8 @@ import { markRaw } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
   Calendar,
+  CalendarCheck,
+  CalendarDays,
   CheckCircle,
   Vote,
   Building2,
@@ -100,6 +103,12 @@ import {
   Gavel,
   UserCheck,
   Globe,
+  FileText,
+  Briefcase,
+  Tag,
+  Scale,
+  Layers,
+  TrendingUp,
   Filter,
   RotateCcw,
 } from 'lucide-vue-next';
@@ -111,7 +120,7 @@ import FacetRadioGroup from './Facets/FacetRadioGroup.vue';
 
 import { Button } from '@/Components/ui/button';
 import { Accordion } from '@/Components/ui/accordion';
-import { CheckboxFilter, YearFilter, FilterAccordion } from '@/Components/Shared/Search';
+import { CheckboxFilter, YearFilter, FilterAccordion, getFacetIconColor } from '@/Components/Shared/Search';
 
 interface Props {
   facets: AdminFacet[];
@@ -137,6 +146,8 @@ defineEmits<Emits>();
 // Icon map - mark raw to avoid reactive proxy issues with functional components
 const iconMap: Record<string, typeof Calendar> = {
   Calendar: markRaw(Calendar),
+  CalendarCheck: markRaw(CalendarCheck),
+  CalendarDays: markRaw(CalendarDays),
   CheckCircle: markRaw(CheckCircle),
   Vote: markRaw(Vote),
   Building2: markRaw(Building2),
@@ -145,6 +156,12 @@ const iconMap: Record<string, typeof Calendar> = {
   Gavel: markRaw(Gavel),
   UserCheck: markRaw(UserCheck),
   Globe: markRaw(Globe),
+  FileText: markRaw(FileText),
+  Briefcase: markRaw(Briefcase),
+  Tag: markRaw(Tag),
+  Scale: markRaw(Scale),
+  Layers: markRaw(Layers),
+  TrendingUp: markRaw(TrendingUp),
   Filter: markRaw(Filter),
 };
 

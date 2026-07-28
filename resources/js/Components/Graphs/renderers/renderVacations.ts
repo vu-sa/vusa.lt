@@ -3,6 +3,17 @@
  *
  * Renders semi-transparent colored bands for vacation periods
  * (summer, winter, easter) to provide visual context.
+ *
+ * Split into two phases so callers can sandwich other content between them:
+ * - `renderVacationBackgrounds` (Layer 1): an opaque solid rect that must
+ *   render early, right after the row background, to properly cover the
+ *   Sunday/zebra grid underneath.
+ * - `renderVacationOverlay` (Layers 2-3): the translucent colored tint and
+ *   its border lines. These should render LAST — after meetings, gaps, and
+ *   duty avatars — so the vacation hue reads consistently on top instead of
+ *   blending with e.g. a meeting's green safety band that happens to fall
+ *   inside the period (previously: amber summer vacation could look
+ *   greenish wherever a safety band overlapped it).
  */
 import type * as d3 from 'd3';
 
@@ -39,48 +50,48 @@ export interface VacationRenderContext {
   rowHeightFor: (key: string | number) => number;
 }
 
-/**
- * Render vacation period bands
- *
- * Renders in layers:
- * 1. Solid background to cover weekend grid stripes
- * 2. Colored overlay for the vacation type
- * 3. Subtle left/right borders for definition
- */
-export function renderVacations(ctx: VacationRenderContext): void {
-  const { g, x, layoutRows, innerWidth, minTime, maxTime, colors, rowTop, rowHeightFor } = ctx;
+interface VacationBand {
+  period: VacationPeriod;
+  row: LayoutRow;
+}
+
+/** Shared setup: visible periods, institution rows, and the period × row cross product. */
+function computeVacationBands(ctx: VacationRenderContext): {
+  vacationPeriods: VacationPeriod[];
+  institutionRows: LayoutRow[];
+  vacationBands: VacationBand[];
+} {
+  const { layoutRows, minTime, maxTime } = ctx;
 
   const vacationPeriods = ctx.vacationPeriods.filter(
     period => period.start <= maxTime && period.end >= minTime,
   );
-
-  if (vacationPeriods.length === 0) return;
-
   const institutionRows = layoutRows.filter(r => r.type === 'institution');
 
-  // Create vacation band data for each period × institution row
-  const vacationBands: Array<{ period: VacationPeriod; row: LayoutRow }> = [];
+  const vacationBands: VacationBand[] = [];
   for (const period of vacationPeriods) {
     for (const row of institutionRows) {
       vacationBands.push({ period, row });
     }
   }
 
-  const vacationGroup = g.append('g').attr('class', 'vacation-bands');
+  return { vacationPeriods, institutionRows, vacationBands };
+}
 
-  // Helper to get stroke color for vacation type
-  const getStrokeColor = (type: VacationPeriod['type']) => {
-    switch (type) {
-      case 'summer': return colors.vacationSummerStroke ?? colors.vacationSummer;
-      case 'winter': return colors.vacationWinterStroke ?? colors.vacationWinter;
-      case 'easter': return colors.vacationEasterStroke ?? colors.vacationEaster;
-      default: return colors.vacationDefaultStroke ?? colors.vacationDefault;
-    }
-  };
+/**
+ * Layer 1 only: opaque solid background covering the Sunday/zebra grid.
+ * Must render early (right after the row background) so later content
+ * (meetings, gaps, avatars) still draws on top and stays visible.
+ */
+export function renderVacationBackgrounds(ctx: VacationRenderContext): void {
+  const { g, x, innerWidth, colors, rowTop, rowHeightFor } = ctx;
+  const { vacationBands } = computeVacationBands(ctx);
 
-  // Layer 1: Solid background rectangles to cover weekend stripes
-  vacationGroup
-    .selectAll('rect.vacation-solid-bg')
+  if (vacationBands.length === 0) return;
+
+  g.append('g')
+    .attr('class', 'vacation-solid-backgrounds')
+    .selectAll('rect')
     .data(vacationBands)
     .enter()
     .append('rect')
@@ -95,6 +106,30 @@ export function renderVacations(ctx: VacationRenderContext): void {
     .attr('height', d => rowHeightFor(d.row.key))
     .attr('fill', colors.vacationSolidBg ?? colors.axisBg)
     .attr('pointer-events', 'none');
+}
+
+/**
+ * Layers 2-3: translucent colored overlay + border lines. Render this LAST
+ * in the draw order (after meetings/gaps/avatars) so the vacation tint reads
+ * on top of anything that happens to fall inside the period.
+ */
+export function renderVacationOverlay(ctx: VacationRenderContext): void {
+  const { g, x, innerWidth, colors, rowTop, rowHeightFor } = ctx;
+  const { vacationPeriods, institutionRows, vacationBands } = computeVacationBands(ctx);
+
+  if (vacationBands.length === 0) return;
+
+  const vacationGroup = g.append('g').attr('class', 'vacation-overlays');
+
+  // Helper to get stroke color for vacation type
+  const getStrokeColor = (type: VacationPeriod['type']) => {
+    switch (type) {
+      case 'summer': return colors.vacationSummerStroke ?? colors.vacationSummer;
+      case 'winter': return colors.vacationWinterStroke ?? colors.vacationWinter;
+      case 'easter': return colors.vacationEasterStroke ?? colors.vacationEaster;
+      default: return colors.vacationDefaultStroke ?? colors.vacationDefault;
+    }
+  };
 
   // Layer 2: Colored overlay rectangles
   vacationGroup
@@ -131,10 +166,7 @@ export function renderVacations(ctx: VacationRenderContext): void {
     });
 
   // Layer 3: Left/right border lines for each vacation period (once per period, spanning all rows)
-  // Group by period to avoid drawing duplicate borders for each row
-  const uniquePeriods = vacationPeriods;
-
-  for (const period of uniquePeriods) {
+  for (const period of vacationPeriods) {
     const startX = Math.max(0, x(period.start));
     const endX = Math.min(innerWidth, x(period.end));
     const strokeColor = getStrokeColor(period.type);

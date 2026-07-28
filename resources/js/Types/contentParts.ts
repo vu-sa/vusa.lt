@@ -1,7 +1,37 @@
 // Type definitions for content parts used in the rich content editor
 // These types correspond to the ContentPartEnum in enums.ts
 
+/**
+ * Shared RCSection.vue chrome fields — mixed into the `options` of every type that
+ * renders through RCSection (see Editor/RCSectionOptions.vue, the one editor fieldset
+ * behind all of them).
+ */
+export interface SectionOptions {
+  title?: string;
+  subtitle?: string;
+  background?: 'none' | 'muted' | 'contrast' | 'gradient';
+  padding?: 'none' | 'sm' | 'md' | 'lg';
+  rounded?: 'none' | 'sm' | 'md' | 'lg';
+}
+
 // Implemented
+
+/**
+ * A marker block, not a container — see `RichContentParser.vue`'s `groupedContent`.
+ * It carries no content of its own; every part that follows it in the flat
+ * `content_parts` order becomes a child rendered inside its `<section>`, up to the
+ * next `section` marker (or the end of the content).
+ */
+export interface Section {
+  json_content: Record<string, never>;
+  options: SectionOptions & {
+    /** Inner content max-width for the section's own header/canvas — independent of the block's own canvas column. */
+    inner?: 'prose' | 'content' | 'wide' | 'full';
+    align?: 'center' | 'start';
+    /** `following` (default): wraps every part up to the next section marker. `none`: header-only, wraps nothing. */
+    wraps?: 'following' | 'none';
+  };
+}
 
 // Content Grid type - updated with the simplified structure
 export interface ContentGrid {
@@ -9,15 +39,31 @@ export interface ContentGrid {
     columns: {
       width: string; // e.g. "col-span-4", "col-span-6", etc.
       content: {
-        type: string; // Can be "tiptap", "image", etc.
-        value: any; // Content depends on the type
+        type: string; // 'tiptap' | 'image' | 'card'
+        value: any; // Content depends on the type — tiptap doc, image src, or card object
+        /** `type: 'image'` only. */
+        alt?: string;
+        title?: string;
+        /** `"x% y%"` CSS object-position, set via FocalPointPicker. */
+        objectPosition?: string;
+        overlayContent?: { title: string; subtitle: string };
+        /** Which image corner the overlay card sits in — see ImageWithDecorations.vue. */
+        overlayCorner?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+        /** `true` lets the card straddle the image edge; `false` (default) keeps it fully contained. */
+        overlayOverhang?: boolean;
+        overlayPadding?: 'sm' | 'md' | 'lg';
+        decorations?: DecorationConfig[];
       };
     }[];
   }[];
-  options: {
+  options: SectionOptions & {
     gap?: 'gap-2' | 'gap-4' | 'gap-6' | 'gap-8';
     mobileStacking?: boolean;
     equalHeight?: boolean;
+    /** Header alignment, forwarded to RCSection — grids default to centered like every other section block. */
+    align?: 'center' | 'start';
+    /** Vertical alignment of column content within each row — grid items stretch by default. */
+    verticalAlign?: 'stretch' | 'start' | 'center' | 'end';
   };
 }
 
@@ -25,6 +71,11 @@ export interface ImageGrid {
   json_content: {
     colspan: 'col-span-2' | 'col-span-3' | 'col-span-4' | 'col-span-full';
     image: string;
+    /** Optional so existing rows saved before this field existed still validate. */
+    alt?: string;
+    title?: string;
+    /** `"x% y%"` CSS object-position, set via FocalPointPicker. Optional — old rows crop from center. */
+    objectPosition?: string;
   }[];
   options: null;
 }
@@ -42,7 +93,7 @@ export interface ShadcnAccordion {
     label: string;
     content: Tiptap['json_content'];
   }[];
-  options: null;
+  options: SectionOptions | null;
 }
 
 export interface ShadcnCard {
@@ -52,6 +103,7 @@ export interface ShadcnCard {
     variant?: 'outline' | 'soft';
     title?: string;
     isTitleColored?: boolean;
+    /** @deprecated Cards no longer render an icon — ignored on display. Optional so old rows keep validating. */
     showIcon?: boolean;
   };
 }
@@ -59,17 +111,57 @@ export interface ShadcnCard {
 export interface Hero {
   json_content: {
     title: string;
-    subtitle: string;
-    backgroundMedia: string;
-    rightMedia?: string;
-    buttonText?: string;
-    buttonLink?: string;
+    description: string;
+    /** Small uppercase label above the title. Used by `centered`/`banner`/`panel`; optional on `split`. */
+    eyebrow?: string;
+    imageSrc: string;
+    imageAlt: string;
+    objectPosition?: string;
+    overlayContent?: {
+      title: string;
+      subtitle: string;
+    };
+    /** `split` only. Which image corner the overlay card sits in — see ImageWithDecorations.vue. */
+    overlayCorner?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+    /** `true` lets the card straddle the image edge; `false` (default) keeps it fully contained. */
+    overlayOverhang?: boolean;
+    overlayPadding?: 'sm' | 'md' | 'lg';
+    buttons?: {
+      text: string;
+      link: string;
+      variant?: 'default' | 'outline';
+      color?: 'red' | 'yellow' | 'zinc' | 'white';
+      /** CMS-stored icon name (see `cardIcons.ts`), rendered before the button text. Optional — most buttons have none. */
+      icon?: string;
+    }[];
   };
   options: {
-    backgroundBlur?: boolean;
-    is_active?: boolean;
-    buttonColor: 'red' | 'yellow' | 'zinc' | 'white';
+    textLeft?: boolean;
+    imageDecorations?: DecorationConfig[];
+    /**
+     * `split` (default): two-column text + image — the original hero.
+     * `centered`: no image, centred title/description/buttons — CTA/slogan sections.
+     * `banner`: a compact single-row strip, title + one button.
+     * `panel`: the SummerCamps-style rounded gradient panel with a square thumbnail.
+     */
+    variant?: 'split' | 'centered' | 'banner' | 'panel';
+    /**
+     * `split`/`centered`/`banner` only — `panel` keeps its own fixed gradient chrome.
+     * Defaults reproduce each variant's previous hardcoded look exactly (see HeroElement.vue).
+     */
+    background?: 'none' | 'muted' | 'contrast' | 'gradient';
+    padding?: 'none' | 'sm' | 'md' | 'lg';
+    rounded?: 'none' | 'sm' | 'md' | 'lg';
   };
+}
+
+export interface DecorationConfig {
+  type: 'circle' | 'line' | 'square';
+  position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  size: 'sm' | 'md' | 'lg';
+  color?: 'vusa-red' | 'vusa-yellow' | 'zinc';
+  opacity?: number;
+  rotation?: boolean;
 }
 
 export interface SpotifyEmbed {
@@ -103,10 +195,10 @@ export interface NumberStatSection {
   json_content: {
     endNumber: number;
     label: string;
+    showPlus?: boolean;
   }[];
-  options: {
+  options: SectionOptions & {
     color?: 'zinc' | 'red' | 'yellow';
-    title: string;
   };
 }
 
@@ -150,4 +242,195 @@ export interface NewsItem {
   publish_time: string;
   permalink: string | null;
   image: string;
+}
+
+export interface CarouselSlideDeck {
+  json_content: {
+    icon: string;
+    badge: string;
+    title: string;
+    description: string;
+    imageSrc: string;
+    imageAlt: string;
+    imageLeft: boolean;
+    decorations?: DecorationConfig[];
+    /** `"x% y%"` CSS object-position, set via FocalPointPicker. Optional — old rows crop from center. */
+    objectPosition?: string;
+  }[];
+  options: SectionOptions & {
+    autoplay?: boolean;
+    autoplayDelay?: number;
+    showNavigation?: boolean;
+    showThumbnails?: boolean;
+  };
+}
+
+export interface CardStack {
+  json_content: {
+    /** CMS-stored icon name (see cardIcons.ts) shown in a badge above the title. Optional — a card with no icon centers its text vertically instead (RCCardStack/CardStackDisplay.vue). */
+    icon?: string;
+    title: string;
+    description: string;
+  }[];
+  options: SectionOptions & {
+    autoplay?: boolean;
+    autoplayDelay?: number;
+    hintText?: string;
+  };
+}
+
+export interface PhotoGalleryGrid {
+  json_content: {
+    src: string;
+    alt: string;
+    title?: string;
+    heightClass?: string;
+    decorations?: DecorationConfig[];
+    /** `"x% y%"` CSS object-position, set via FocalPointPicker. Optional — old rows crop from center. */
+    objectPosition?: string;
+  }[];
+  options: SectionOptions & {
+    columns?: '2' | '3' | '4';
+    gap?: 'small' | 'medium' | 'large';
+    showLightbox?: boolean;
+  };
+}
+
+/**
+ * Server-resolved (see `App\Services\ContentResolution\Resolvers\LinkListResolver`)
+ * dynamic list of links to news, pages, or manually-typed URLs. Only `manual` links
+ * are stored author-side (`json_content.links`) — `news`/`pages` sources are resolved
+ * fresh on every request from `options`, so the editor never stores the actual titles
+ * or hrefs shown publicly.
+ */
+export interface LinkList {
+  json_content: {
+    /** `imageUrl` only renders in `style: 'photo'` — `compact` never shows it. */
+    links: { title: string; url: string; imageUrl?: string | null }[];
+    /**
+     * Editor-only bookkeeping so `CollectionSelectDialog` can re-open with the
+     * currently-pinned news/pages pre-checked (it needs a title to render a pinned
+     * row, which `options.newsIds`/`pageIds` alone don't carry). Never read by
+     * `LinkListResolver` — it re-fetches the live records by id on every request.
+     */
+    pinnedNews?: { id: number; title: string }[];
+    pinnedPages?: { id: number; title: string }[];
+  };
+  options: SectionOptions & {
+    source?: 'news' | 'pages' | 'manual';
+    mode?: 'latest' | 'specific';
+    categoryAlias?: string;
+    tenantScope?: 'current' | 'all' | number[];
+    newsIds?: number[];
+    pageIds?: number[];
+    limit?: number;
+    style?: 'photo' | 'compact';
+    emptyMessage?: string;
+  };
+}
+
+/** One resolved link-list item — shape emitted by `LinkListResolver::resolvePart()`. */
+export interface LinkListResolvedItem {
+  id: number | string | null;
+  title: string;
+  href: string;
+  imageUrl: string | null;
+  publishedAt: string | null;
+}
+
+export interface LinkListResolved {
+  type: 'link-list';
+  items: LinkListResolvedItem[];
+  meta: { total: number; truncated: boolean; droppedForLocale: number };
+}
+
+/**
+ * Server-resolved (see `EventListResolver`) filtered, optionally tenant-grouped list
+ * of Calendar events — the generalization of `PublicPageController::summerCamps()`.
+ * Entirely option-driven; there is no author-written `json_content`.
+ */
+export interface EventList {
+  json_content: Record<string, never>;
+  options: SectionOptions & {
+    mode?: 'upcoming' | 'range' | 'year';
+    year?: number;
+    dateFrom?: string;
+    dateTo?: string;
+    categoryAlias?: string;
+    tenantScope?: 'current' | 'all' | number[];
+    groupBy?: 'none' | 'tenant';
+    limit?: number;
+    style?: 'cards' | 'list';
+    /** e.g. `"VU "` — prefixed onto the tenant fullname when grouped, reproducing SummerCamps' faculty naming. `full` style only. */
+    tenantLabelPrefix?: string;
+    /**
+     * `full` (default): `tenantLabelPrefix` + the locative `fullname`.
+     * `faculty`: `"VU " + nominative faculty` derived from the fullname (e.g. "VU Filologijos fakultetas"
+     * from "...atstovybė Filologijos fakultete"); the central tenant falls back to its fullname.
+     * Mirrors the client-side `getFacultyName` util (see EventListResolver::facultyLabel).
+     */
+    tenantLabelStyle?: 'full' | 'faculty';
+    emptyMessage?: string;
+  };
+}
+
+/** One resolved event — shape emitted by `EventListResolver::mapEvent()`. */
+export interface EventListResolvedItem {
+  id: number;
+  title: string;
+  date: string | null;
+  endDate: string | null;
+  location: string | null;
+  isAllDay: boolean;
+  ctoUrl: string | null;
+  imageUrl: string | null;
+  href: string;
+}
+
+export interface EventListResolvedGroup {
+  key: string;
+  label: string;
+  items: EventListResolvedItem[];
+}
+
+export interface EventListResolved {
+  type: 'event-list';
+  groups: EventListResolvedGroup[];
+  items: EventListResolvedItem[];
+  meta: { total: number; truncated: boolean; style: 'cards' | 'list' };
+}
+
+/**
+ * Empty layout block whose only job is to insert a controlled vertical gap between
+ * its siblings. The canvas's own `--rc-flow` rhythm is fixed (~2.5rem) and applies
+ * uniformly to every sibling pair; this block — flagged `selfSpaced` so it picks up
+ * `.rc-flush` — replaces that rhythm with a height the author picks from `options.size`.
+ * No `json_content`, no resolver, no visible chrome.
+ */
+export interface Spacer {
+  json_content: Record<string, never>;
+  options: {
+    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  };
+}
+
+/**
+ * Static — no resolver. Stores an author-approved snapshot of a picked user rather
+ * than a live reference, so the quote never re-renders a departed person's current
+ * photo/duty (see `ContentPartResolver`'s docblock for why this type is excluded).
+ */
+export interface PersonQuote {
+  json_content: {
+    quote: Tiptap['json_content'];
+    snapshot: {
+      userId?: number;
+      name: string;
+      photoUrl?: string;
+      attribution?: string;
+    };
+  };
+  options: SectionOptions & {
+    align?: 'start' | 'center';
+    showAvatar?: boolean;
+  };
 }

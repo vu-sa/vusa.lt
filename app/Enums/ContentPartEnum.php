@@ -20,6 +20,14 @@ use Spatie\Enum\Laravel\Enum;
  * @method static self CALENDAR()
  * @method static self CONTENT_GRID()
  * @method static self TEXT_BOX()
+ * @method static self CAROUSEL_SLIDE_DECK()
+ * @method static self CARD_STACK()
+ * @method static self PHOTO_GALLERY()
+ * @method static self LINK_LIST()
+ * @method static self EVENT_LIST()
+ * @method static self PERSON_QUOTE()
+ * @method static self SECTION()
+ * @method static self SPACER()
  */
 final class ContentPartEnum extends Enum
 {
@@ -39,6 +47,14 @@ final class ContentPartEnum extends Enum
             'CALENDAR' => 'calendar',
             'CONTENT_GRID' => 'content-grid',
             'TEXT_BOX' => 'text-box',
+            'CAROUSEL_SLIDE_DECK' => 'carousel-slide-deck',
+            'CARD_STACK' => 'card-stack',
+            'PHOTO_GALLERY' => 'photo-gallery',
+            'LINK_LIST' => 'link-list',
+            'EVENT_LIST' => 'event-list',
+            'PERSON_QUOTE' => 'person-quote',
+            'SECTION' => 'section',
+            'SPACER' => 'spacer',
         ];
     }
 }

@@ -49,7 +49,7 @@
           :icon="Building2"
           :badge-count="filters.tenants.length"
           :is-loading
-          icon-container-class="bg-primary/10 text-primary group-hover:bg-primary/15"
+          :icon-container-class="getFacetIconColor('Building2')"
         >
           <TenantFilter
             :tenant-hierarchy="processedTenantHierarchy"
@@ -65,7 +65,7 @@
           :icon="Tag"
           :badge-count="filters.types.length"
           :is-loading
-          icon-container-class="bg-amber-500/10 text-amber-600 group-hover:bg-amber-500/15"
+          :icon-container-class="getFacetIconColor('Tag')"
         >
           <CheckboxFilter
             :options="typeOptions"
@@ -89,7 +89,7 @@ import { Building2, Tag } from 'lucide-vue-next';
 // Shared Search Components
 import TenantFilter from './TenantFilter.vue';
 
-import { FilterSidebar, FilterAccordion, CheckboxFilter } from '@/Components/Shared/Search';
+import { FilterSidebar, FilterAccordion, CheckboxFilter, getFacetIconColor } from '@/Components/Shared/Search';
 
 // ShadcnVue components
 import { Accordion } from '@/Components/ui/accordion';
