@@ -1,8 +1,12 @@
 <template>
-  <RCMixcloudEmbed v-if="isMixcloud" :element />
-  <div v-else class="w-full my-8">
-    <iframe class="block w-full h-[352px] rounded-xl" :src="embedUrl" frameborder="0" allowtransparency="true"
-      allow="encrypted-media" title="Spotify Embed" />
+  <!-- Single root — a multi-root/fragment component can't auto-inherit the width/spacing
+       class RichContentParser passes via :class (no single target to fall through to). -->
+  <div>
+    <RCMixcloudEmbed v-if="isMixcloud" :element />
+    <div v-else class="w-full my-8">
+      <iframe class="block w-full h-[352px] rounded-xl" :src="embedUrl" frameborder="0" allowtransparency="true"
+        allow="encrypted-media" title="Spotify Embed" />
+    </div>
   </div>
 </template>
 

@@ -41,6 +41,23 @@ class ContentService
 
             $id = $partData['id'] ?? null;
 
+            // Validate content type — must hold for updates too, not just new parts.
+            // Form Request validation already covers this on the store/update HTTP
+            // paths, but this method is also reachable directly (seeders, commands).
+            if (! in_array($partData['type'], ContentPartEnum::toArray())) {
+                Log::warning("Invalid content part type: {$partData['type']}");
+
+                // An existing part with a rejected update must still count as "handled",
+                // or it gets swept up by the deletion pass below for simply not having
+                // been touched — rejecting a bad edit should leave the part as-is, not
+                // delete it.
+                if ($id && isset($existingPartsById[$id])) {
+                    $handledIds[] = $id;
+                }
+
+                continue;
+            }
+
             // Check if we're updating an existing part or creating a new one
             if ($id && isset($existingPartsById[$id])) {
                 // Update existing part
@@ -54,13 +71,6 @@ class ContentService
 
                 $handledIds[] = $id;
             } else {
-                // Validate content type
-                if (! in_array($partData['type'], ContentPartEnum::toArray())) {
-                    Log::warning("Invalid content part type: {$partData['type']}");
-
-                    continue;
-                }
-
                 // Create new part
                 $content->parts()->create([
                     'type' => $partData['type'],

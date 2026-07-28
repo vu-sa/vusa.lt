@@ -7,6 +7,28 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.20 — Reworked Content Block Editor (2026-07-28) {#v1-20}
+
+- ⭐ **Three new content blocks** — a link list (news, pages, or manually-typed links), an event list (filterable, groupable by unit), and a person quote with photo and title
+- ⭐ **Table of contents toggle** — page settings now let you turn the sidebar table of contents on or off
+- ⭐ **Page title/last-updated toggle** — next to the table of contents setting, a new switch lets you hide the page's own header when the title is already shown inside the content
+- ✨ **Per-block width control** — every content block can be set to text, content, wide, or full width, depending on the block type
+- ✨ **New block picker dialog** — blocks are grouped by category, searchable by name, and show a live preview of the highlighted type; the hero block shows a preview for each of its variants
+- ✨ **Collapsible editor blocks** — large blocks no longer take over the whole screen, and dragging blocks to reorder them is much easier
+- ✨ **Redesigned card block** — the decorative icon is gone; color now shows as a subtle side accent instead of a tinted background
+- ✨ **Easier image grid and gallery editing** — images are managed directly on the grid, a focal point can be set per image, and alt text is only asked for once when picking an image
+- ✨ **New hero section variants** — alongside the classic two-column layout, there's now a centered, a banner, and a panel-style hero, now picked from a visual preview of each shape
+- ✨ **Hero buttons can carry an icon**
+- ✨ **Title, subtitle and background now available on every section-style block** — accordion, card stack, carousel, gallery and stats blocks
+- ✨ **Content grid images support a focal point, overlay content, and decorative accents**
+- ✨ **The content grid can now have a title, subtitle, and background** — including a subtle gradient and a plain white background, matching the other section-style blocks
+- ⭐ **Edit and preview side by side** — any block can now open a dialog showing live editing and a reactive preview together, with a width picker to check the block at any width without changing its actual saved width
+- 🔧 **The image picker no longer lists PDFs and other unsupported file types**
+- 🔧 **The content grid block no longer wipes its own content** every time it's reopened for editing
+- 🔧 **A content-grid card with no image no longer shows an empty placeholder box**
+- 🔧 **A hero's overlay content no longer shows when it's empty**
+- 🔧 **The "banner" hero variant no longer shows settings that don't apply to it** (eyebrow, description)
+
 ## v1.19 — Faster ViSAK Tenant Timeline (2026-07-27) {#v1-19}
 
 - ✨ **Tenant timeline loads several times faster** — meetings are loaded only for the visible period and fetched as you scroll, so the all-tenants view opens much quicker
@@ -16,6 +38,7 @@ Here you'll find all changes and improvements to the mano.vusa.lt platform.
 - ✨ **Quick way to keep just one tenant** — the tenant picker now has a "Keep one" button next to "All"
 - 🔧 **Tenant timeline shows only the selected tenants' institutions** — related institutions from other tenants are no longer duplicated, so the list matches the summary counts
 - 🔧 **Fixed missing meetings on the tenant timeline** — an empty response was no longer cached, so newly created meetings stop looking like they don't exist
+- 🔧 **Image dialog in the admin interface shows translated labels again** — alt text, title and selection-step translations were only bundled for the public site, so the admin dialog displayed raw translation keys
 
 ## v1.18 — Refreshed Event and Camp Pages (2026-07-27) {#v1-18}
 

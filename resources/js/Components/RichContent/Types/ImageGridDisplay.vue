@@ -8,6 +8,7 @@
           class="!size-full rounded-md shadow-xs object-cover"
           :alt="image.alt || image.title || `Image ${index + 1}`"
           :title="image.title || image.alt || `Image ${index + 1}`"
+          :style="image.objectPosition ? { objectPosition: image.objectPosition } : undefined"
         >
       </div>
     </div>

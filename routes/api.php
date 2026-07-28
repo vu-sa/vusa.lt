@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Admin\AtstovavimasApiController;
 use App\Http\Controllers\Api\Admin\CommentApiController;
 use App\Http\Controllers\Api\Admin\CommentPollVoteApiController;
 use App\Http\Controllers\Api\Admin\CommentReactionApiController;
+use App\Http\Controllers\Api\Admin\ContentPartPreviewApiController;
 use App\Http\Controllers\Api\Admin\FileApiController;
 use App\Http\Controllers\Api\Admin\ImpersonateApiController;
 use App\Http\Controllers\Api\Admin\InstitutionApiController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\Api\Admin\SharepointApiController;
 use App\Http\Controllers\Api\Admin\TaskApiController;
 use App\Http\Controllers\Api\Admin\TextBoxSubmissionApiController;
 use App\Http\Controllers\Api\Admin\TutorialApiController;
+use App\Http\Controllers\Api\Admin\UserAttributionApiController;
 use App\Http\Controllers\Api\Admin\UserPreferencesController;
 use App\Http\Controllers\Api\Admin\UserSearchApiController;
 use App\Http\Controllers\Api\CalendarController;
@@ -141,6 +143,12 @@ Route::prefix('v1')->name('v1.')->group(function () {
         Route::put('comments/{comment}/reactions', [CommentReactionApiController::class, 'toggle'])->name('comments.reactions.toggle');
         Route::put('comments/{comment}/poll/votes', [CommentPollVoteApiController::class, 'toggle'])->name('comments.poll.votes.toggle');
 
+        // Rich content — admin editor preview for unsaved dynamic blocks (link-list,
+        // event-list, …), batched so the "preview all" toggle fires one request.
+        Route::post('content-parts/preview', ContentPartPreviewApiController::class)
+            ->middleware('throttle:60,1')
+            ->name('contentParts.preview');
+
         // Files
         Route::get('files', [FileApiController::class, 'index'])->name('files.index');
         Route::get('files/allowed-types', [FileApiController::class, 'allowedTypes'])->name('files.allowedTypes');
@@ -180,6 +188,10 @@ Route::prefix('v1')->name('v1.')->group(function () {
 
         // User search for forms (e.g. responsible user in problems)
         Route::get('users/search', [UserSearchApiController::class, 'search'])->name('users.search');
+
+        // Attribution-line suggestions for the person-quote rich-content block —
+        // derives "Role, Tenant" labels from a user's current duties.
+        Route::get('users/{user}/attributions', [UserAttributionApiController::class, 'index'])->name('users.attributions');
 
         // Date-range resource availability for the reservation resource picker
         Route::post('resources/availability', [ResourceAvailabilityApiController::class, 'index'])->name('resources.availability');

@@ -1,74 +1,55 @@
 <template>
-  <!-- TODO: do it without :style -->
-  <Card :variant="element.options?.variant"
-    :style="`border-color: ${isDark ? cardColors.border.dark[props.element.options?.color] : cardColors.border.light[props.element.options?.color]}`">
-    <CardHeader>
-      <div class="flex items-center gap-2"
-        :style="`color: ${props.element.options?.isTitleColored ? cardColors.title[isDark ? 'dark' : 'light'][props.element.options?.color] : ''}`">
-        <component :is="iconToUse" v-if="element.options?.showIcon" class="size-5" />
-        <CardTitle class="mb-0 tracking-tight"
-          :style="`color: ${props.element.options?.isTitleColored ? cardColors.title[isDark ? 'dark' : 'light'][props.element.options?.color] : ''}`">
-          {{ element.options?.title }}
-        </CardTitle>
-      </div>
-    </CardHeader>
-    <CardContent class="tracking-normal">
+  <div :class="surfaceClass">
+    <div v-if="element.options?.title" data-slot="card-header" class="px-5 pt-5 pb-3">
+      <h3 data-slot="card-title" class="text-base font-bold leading-tight tracking-tight" :class="titleClass">
+        {{ element.options.title }}
+      </h3>
+    </div>
+    <div class="rc-prose tracking-normal px-5 pb-5" :class="{ 'pt-5': !element.options?.title }">
       <slot />
-    </CardContent>
-  </Card>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useDark } from '@vueuse/core';
-
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-
-import IconImportant from '~icons/fluent/important24-filled';
-import IconInfo from '~icons/fluent/info24-filled';
-import IconQuestion from '~icons/fluent/question-circle24-filled';
 
 const props = defineProps<{
   element: models.ContentPart;
 }>();
 
-const isDark = useDark();
+const color = computed(() => (props.element.options?.color as 'zinc' | 'red' | 'yellow' | undefined) ?? 'zinc');
+const variant = computed(() => (props.element.options?.variant as 'outline' | 'soft' | undefined) ?? 'outline');
 
-const iconToUse = computed(() => {
-  switch (props.element.options?.color) {
-    case 'red':
-      return IconImportant;
-    case 'yellow':
-      return IconQuestion;
-    default:
-      return IconInfo;
-  }
+// Static class maps (no inline :style, no useDark) — dark: variants handle theming.
+// `color` is an accent only now (a left rail on `outline`), never a tinted background —
+// red/yellow washes read as alerts, which most cards aren't.
+const SURFACE: Record<string, string> = {
+  outline: 'bg-gradient-to-br from-zinc-50 to-zinc-100/50 ring-1 ring-zinc-200/60 hover:shadow-lg hover:ring-zinc-300 dark:from-zinc-800/80 dark:to-zinc-900 dark:ring-zinc-700/50 dark:hover:ring-zinc-600',
+  soft: 'bg-gradient-to-br from-zinc-100 to-zinc-50 ring-0 shadow-sm hover:shadow-md dark:from-zinc-800 dark:to-zinc-900/60',
+};
+
+const ACCENT_RAIL: Record<string, string> = {
+  red: "before:absolute before:inset-y-0 before:left-0 before:w-1 before:rounded-l-2xl before:bg-vusa-red/70 before:content-['']",
+  yellow: "before:absolute before:inset-y-0 before:left-0 before:w-1 before:rounded-l-2xl before:bg-vusa-yellow/80 before:content-['']",
+};
+
+const TITLE_ACCENT: Record<string, string> = {
+  zinc: 'text-zinc-900 dark:text-zinc-100',
+  red: 'text-vusa-red dark:text-red-400',
+  yellow: 'text-yellow-700 dark:text-vusa-yellow',
+};
+
+const surfaceClass = computed(() => {
+  const surface = SURFACE[variant.value] ?? SURFACE.outline;
+  // The accent rail only makes sense on `outline` — `soft` already tints the whole
+  // surface, so a rail on top of that would be redundant.
+  const rail = variant.value === 'outline' ? (ACCENT_RAIL[color.value] ?? '') : '';
+  return `group relative flex flex-col overflow-hidden rounded-2xl transition-all duration-300 ${surface} ${rail}`;
 });
 
-const cardColors = {
-  border: {
-    light: {
-      zinc: 'rgb(220, 222, 224)',
-      red: 'rgba(189, 40, 53, 0.8)',
-      yellow: 'rgb(251, 176, 27)',
-    },
-    dark: {
-      zinc: 'rgba(255, 255, 255, 0.14)',
-      red: 'rgba(189, 40, 53, 0.8)',
-      yellow: 'rgba(251, 176, 27, 0.8)',
-    },
-  },
-  title: {
-    light: {
-      zinc: 'rgb(0, 0, 0)',
-      red: 'rgb(189, 40, 53)',
-      yellow: 'rgb(251, 176, 27)',
-    },
-    dark: {
-      zinc: 'rgb(255, 255, 255)',
-      red: 'rgb(189, 40, 53)',
-      yellow: 'rgb(251, 176, 27)',
-    },
-  },
-};
+const titleClass = computed(() => {
+  if (!props.element.options?.isTitleColored) return TITLE_ACCENT.zinc;
+  return TITLE_ACCENT[color.value] ?? TITLE_ACCENT.zinc;
+});
 </script>

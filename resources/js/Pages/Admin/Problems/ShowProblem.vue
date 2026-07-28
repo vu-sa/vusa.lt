@@ -110,7 +110,7 @@
           <Card>
             <CardContent class="pt-6">
               <!-- eslint-disable-next-line vue/no-v-html -->
-              <div class="prose dark:prose-invert max-w-none" v-html="localizedDescription" />
+              <div class="max-w-none" v-html="localizedDescription" />
             </CardContent>
           </Card>
         </section>
@@ -124,7 +124,7 @@
           <Card>
             <CardContent class="pt-6">
               <!-- eslint-disable-next-line vue/no-v-html -->
-              <div class="prose dark:prose-invert max-w-none" v-html="localizedStepsTaken" />
+              <div class="max-w-none" v-html="localizedStepsTaken" />
             </CardContent>
           </Card>
         </section>
@@ -139,7 +139,7 @@
           <Card v-if="hasSolution" class="border-green-200 dark:border-green-900/50 bg-green-50/30 dark:bg-green-900/10">
             <CardContent class="pt-6">
               <!-- eslint-disable-next-line vue/no-v-html -->
-              <div class="prose dark:prose-invert max-w-none" v-html="localizedSolution" />
+              <div class="max-w-none" v-html="localizedSolution" />
             </CardContent>
           </Card>
           <Card v-else class="border-dashed">

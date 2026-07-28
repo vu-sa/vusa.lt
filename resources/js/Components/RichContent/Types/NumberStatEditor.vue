@@ -1,29 +1,24 @@
 <template>
   <div class="flex flex-col gap-5">
-    <!-- Section options -->
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <Field>
-        <FieldLabel>{{ $t('rich-content.title') }}</FieldLabel>
-        <Input v-model="options.title" type="text" :placeholder="$t('rich-content.enter_section_title')" />
-      </Field>
+    <!-- Digit color -->
+    <Field>
+      <FieldLabel>{{ $t('rich-content.color') }}</FieldLabel>
+      <Select v-model="options.color">
+        <SelectTrigger>
+          <SelectValue :placeholder="$t('rich-content.select_color')" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem v-for="color in colorOptions" :key="color.value" :value="color.value">
+            <div class="flex items-center gap-2">
+              <div class="h-3 w-3 rounded-full" :class="color.swatch" />
+              {{ color.label }}
+            </div>
+          </SelectItem>
+        </SelectContent>
+      </Select>
+    </Field>
 
-      <Field>
-        <FieldLabel>{{ $t('rich-content.color') }}</FieldLabel>
-        <Select v-model="options.color">
-          <SelectTrigger>
-            <SelectValue :placeholder="$t('rich-content.select_color')" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem v-for="color in colorOptions" :key="color.value" :value="color.value">
-              <div class="flex items-center gap-2">
-                <div class="h-3 w-3 rounded-full" :class="color.swatch" />
-                {{ color.label }}
-              </div>
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </Field>
-    </div>
+    <RCSectionOptions v-model="options" />
 
     <!-- Stats list -->
     <DynamicListInput
@@ -61,6 +56,7 @@
 import { useColorOptions } from '../composables/useColorOptions';
 
 import type { NumberStatSection } from '@/Types/contentParts';
+import RCSectionOptions from '../Editor/RCSectionOptions.vue';
 import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';

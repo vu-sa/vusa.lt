@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\ContentPartEnum;
+use App\Http\Requests\Concerns\ValidatesContentParts;
 use App\Rules\SoftDeleteRules;
 use App\Rules\UniqueAmongTrashed;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -11,6 +11,8 @@ use Illuminate\Validation\Rule;
 
 class UpdatePageRequest extends FormRequest
 {
+    use ValidatesContentParts;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -27,13 +29,8 @@ class UpdatePageRequest extends FormRequest
     public function rules(): array
     {
         return [
+            ...$this->contentPartRules(),
             'title' => 'required|string|max:255',
-            'content.parts' => 'required|array',
-            'content.parts.*.id' => 'nullable|integer',
-            'content.parts.*.type' => ['required', 'string', Rule::in(ContentPartEnum::toArray())],
-            'content.parts.*.json_content' => 'present',
-            'content.parts.*.options' => 'nullable',
-            'content.parts.*.order' => 'nullable|integer',
             'lang' => 'required|string|in:lt,en',
             'permalink' => ['sometimes', 'required', 'string', 'max:255', UniqueAmongTrashed::of('pages')->ignore($this->page->id)],
             'category_id' => ['nullable', SoftDeleteRules::existsLive('categories')],
@@ -42,6 +39,9 @@ class UpdatePageRequest extends FormRequest
             'other_lang_id' => ['nullable', SoftDeleteRules::existsLive('pages'), Rule::notIn([$this->page->id])],
             'is_active' => 'required|boolean',
             'layout' => 'nullable|string|in:default,wide,focused',
+            'show_table_of_contents' => ['boolean'],
+            'show_title' => ['boolean'],
+            'show_breadcrumbs' => ['boolean'],
         ];
     }
 }

@@ -79,6 +79,7 @@ class News extends Model implements Feedable, Sitemapable
             // TODO: convert to datetime in database
             'publish_time' => 'datetime',
             'highlights' => 'array',
+            'show_breadcrumbs' => 'boolean',
         ];
     }
 

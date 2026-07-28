@@ -93,7 +93,7 @@
       <template v-if="preset !== 'minimal'">
         <ButtonGroup>
           <Suspense>
-            <TiptapImageButton @submit="attachImage" @submit:object="attachImage">
+            <TiptapImageButton as-child @submit:object="attachImage">
               <Button size="sm" variant="outline">
                 <IFluentImage24Regular />
               </Button>
@@ -226,7 +226,10 @@
     </div>
 
     <!-- Editor Content -->
-    <div class="tiptap-content rounded-md border dark:border-zinc-700 dark:bg-zinc-800 overflow-hidden">
+    <div
+      class="tiptap-content rounded-md border dark:border-zinc-700 dark:bg-zinc-800 overflow-hidden"
+      :class="{ 'tiptap-content--prose': proseStyle }"
+    >
       <EditorContent :editor />
     </div>
 
@@ -325,12 +328,20 @@ const props = withDefaults(defineProps<{
   showToolbarToggle?: boolean;
   /** Initial toolbar visibility (when showToolbarToggle is true) */
   toolbarVisible?: boolean;
+  /**
+   * Style the editing surface with `.rc-prose-editing` — the same flow/heading-scale
+   * rules as the published rich-content output (`.rc-prose`) — so what you type looks
+   * like what renders. Default false: comment/note/other non-rich-content callers keep
+   * `tiptap-base.css`'s more compact styling unless they opt in.
+   */
+  proseStyle?: boolean;
 }>(), {
   preset: 'full',
   html: false,
   disableTables: false,
   showToolbarToggle: false,
   toolbarVisible: true,
+  proseStyle: false,
 });
 
 const emit = defineEmits<{
@@ -366,7 +377,7 @@ const extensions = getExtensionsForPreset(props.preset, {
 const editor = useEditor({
   editorProps: {
     attributes: {
-      class: 'focus:outline-none px-3 py-2 w-full min-h-[80px]',
+      class: ['focus:outline-none px-3 py-2 w-full min-h-[80px]', props.proseStyle ? 'rc-prose-editing tracking-normal' : ''].filter(Boolean).join(' '),
     },
   },
   extensions,
@@ -507,6 +518,12 @@ onBeforeUnmount(() => {
   min-height: 80px;
   max-height: 400px;
   overflow-y: auto;
+}
+
+/* Rich-content blocks get more room — a keyhole editing viewport for a full article
+   discourages exactly the long-form writing this preset exists to support. */
+.tiptap-content--prose {
+  max-height: min(70vh, 40rem);
 }
 
 .tiptap-editor--full .tiptap-content {

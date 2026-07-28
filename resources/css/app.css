@@ -267,7 +267,243 @@ html.dark-mode-init {
   }
 }
 
-/* 
+/*
+  Prose styling for rendered rich-text HTML specifically (TipTap output).
+  Unlike `.typography` above, this is applied only where TipTap-generated
+  HTML actually lands (RichContentTiptapHTML, TiptapDisplay) — never at
+  page level — so it can't leak into cards, accordions, heroes or
+  galleries that happen to share a rich-content block with a text block.
+
+  Uses a single-direction `margin-block-start` flow instead of `.typography`'s
+  `p { not-first:mt-6 mt-4 mb-5 }`, which stacks a top AND bottom margin on
+  every paragraph and, worse, silently doubles up whenever an ancestor is a
+  flex/grid container (margins don't collapse there) — exactly what happened
+  around the old `flex flex-col gap-4` rich content wrappers.
+
+  `.rc-prose-editing` is the *editing* surface (TiptapEditor's ProseMirror root,
+  opted in via `<TiptapEditor prose-style>`) — sharing one declaration block with
+  `.rc-prose` means the WYSIWYG editor and the published output cannot drift in
+  flow/heading scale/link treatment the way they used to (editor: tiptap-base.css's
+  `margin: .4rem 0`, h2 1.5rem; display: this block's `1.25em` flow, h2 `2em`).
+*/
+.rc-prose,
+.rc-prose-editing {
+  >* {
+    margin-block: 0;
+  }
+
+  >*+* {
+    margin-block-start: 1.25em;
+  }
+
+  >h2 {
+    margin-block-start: 2em;
+  }
+
+  >h3 {
+    margin-block-start: 1.6em;
+  }
+
+  >h4,
+  >h5,
+  >h6 {
+    margin-block-start: 1.4em;
+  }
+
+  img {
+    @apply max-w-full h-auto;
+  }
+
+  /* break-words (not break-all) so ordinary link text doesn't shatter mid-word */
+  a {
+    @apply underline break-words;
+  }
+
+  h1 {
+    @apply text-4xl font-bold tracking-tight lg:text-5xl;
+  }
+
+  h2 {
+    @apply border-b border-zinc-200 dark:border-zinc-600 pb-2 text-3xl font-bold tracking-tight transition-colors;
+  }
+
+  h3 {
+    @apply text-2xl font-bold tracking-tight;
+  }
+
+  h4 {
+    @apply text-xl font-bold tracking-tight;
+  }
+
+  h5 {
+    @apply text-lg font-bold tracking-tight;
+  }
+
+  h6 {
+    @apply text-base font-bold tracking-tight;
+  }
+
+  table p {
+    @apply my-0
+  }
+
+  blockquote {
+    @apply border-l-2 pl-6 italic tracking-wide
+  }
+
+  ul,
+  ol {
+    @apply ml-4 [&>li]:mt-2;
+  }
+
+  ul {
+    @apply list-disc;
+  }
+
+  ol {
+    @apply list-decimal;
+  }
+}
+
+/* Anchor scroll offset is only meaningful on the rendered page (the ToC scrolls to
+   these ids) — the editing surface never needs a 32px dead zone above every heading
+   while typing, so this stays out of the shared block above. */
+.rc-prose :is(h1, h2, h3, h4, h5, h6) {
+  @apply scroll-mt-32;
+}
+
+/*
+  Rich content canvas — the grid RichContentParser lays its blocks into.
+
+  Replaces the old `.full-bleed` + parser-level `getSpacingClass()` table.
+  `.full-bleed` only works on a *direct child* of `.wrapper` (see the child
+  combinator on `.wrapper > *` below), which silently failed wherever the
+  parser was nested inside a `max-w-prose` / flex wrapper (ContentPage,
+  NewsArticleLayout). This grid is self-contained: it doesn't need to be a
+  `.wrapper` child to produce `full`-width blocks, so bleed behavior no
+  longer depends on how deeply a page happens to nest the parser.
+
+  Column model, gutter-to-gutter: full ⊃ wide ⊃ content ⊃ prose (default).
+  `--rc-measure` is in `rem`, not `ch` — `ch` resolves against the canvas's
+  own font and would silently narrow the measure relative to the public
+  font stack (Atkinson Hyperlegible).
+*/
+.rc-canvas {
+  --rc-gutter: 1rem;
+  --rc-wide-step: 0rem;
+  --rc-content-step: 0rem;
+  --rc-measure: 44rem;
+  --rc-flow: 2.5rem;
+
+  display: grid;
+  align-content: start;
+  /* wide/content steps are `minmax(0, …)`, not a bare length — a bare `var(--rc-wide-step)`
+     is a fixed track that cannot shrink, so pairing it with a narrower sibling (e.g. the
+     17rem ToC sidebar in `.rc-shell`) can demand more total width than the row has,
+     pushing the grid to overflow its column and run under the sidebar. `minmax(0, …)`
+     lets the steps collapse under pressure; the minimum canvas width becomes just
+     `2×gutter + prose`, which always fits. */
+  grid-template-columns:
+    [full-start] minmax(var(--rc-gutter), 1fr)
+    [wide-start] minmax(0, var(--rc-wide-step))
+    [content-start] minmax(0, var(--rc-content-step))
+    [prose-start] min(var(--rc-measure), 100% - var(--rc-gutter) * 2) [prose-end]
+    minmax(0, var(--rc-content-step))
+    [content-end] minmax(0, var(--rc-wide-step))
+    [wide-end] minmax(var(--rc-gutter), 1fr) [full-end];
+
+  @media (width >=768px) {
+    --rc-gutter: 2rem;
+    --rc-wide-step: 8rem;
+    --rc-content-step: 6rem;
+  }
+}
+
+/* Left-aligned measure (News `headline` layout) — the prose column hugs the start edge
+   instead of being centered between the wide/content steps. */
+.rc-canvas[data-align='start'] {
+  grid-template-columns:
+    [full-start] var(--rc-gutter)
+    [wide-start] minmax(0, var(--rc-wide-step))
+    [content-start] minmax(0, var(--rc-content-step))
+    [prose-start] min(var(--rc-measure), 100% - var(--rc-gutter) * 2) [prose-end]
+    minmax(0, 1fr)
+    [content-end wide-end] minmax(var(--rc-gutter), 1fr) [full-end];
+}
+
+/* Shorthand only: `grid-column-start: prose` alone would leave `grid-column-end`
+   at `auto` (span 1 track) instead of resolving to the matching `prose-end` line.
+   Always assign through the single-value ident shorthand, never split longhands. */
+.rc-canvas>* {
+  grid-column: prose;
+  min-width: 0;
+}
+
+.rc-canvas>.rc-content {
+  grid-column: content;
+}
+
+.rc-canvas>.rc-wide {
+  grid-column: wide;
+}
+
+.rc-canvas>.rc-full {
+  grid-column: full;
+}
+
+/* Vertical rhythm — replaces the old per-type getSpacingClass() lookup table.
+   Blocks that render their own full-bleed section (hero, accordion, galleries, …)
+   carry `.rc-flush` so the canvas doesn't add a second margin on top of their
+   internal `py-*`. */
+.rc-canvas>*+* {
+  margin-block-start: var(--rc-flow);
+}
+
+.rc-canvas>.rc-flush,
+.rc-canvas>.rc-flush+* {
+  margin-block-start: 0;
+}
+
+/* The canvas is self-contained (works with no `.wrapper` ancestor at all — e.g. in an
+   editor preview) but still wants the full page measure whenever it does happen to sit
+   inside one of the page wrapper grids, without every page having to remember to also
+   add `full-bleed` to the canvas's own wrapper element. `.rc-shell` (canvas + sticky
+   sidebar, e.g. the table-of-contents layout) opts in the same way, since in that case
+   `.rc-shell` — not `.rc-canvas` — is the direct wrapper child. */
+.wrapper>.rc-canvas,
+.wrapper-wide>.rc-canvas,
+.wrapper-full>.rc-canvas,
+.wrapper-content>.rc-canvas,
+.wrapper>.rc-shell,
+.wrapper-wide>.rc-shell,
+.wrapper-full>.rc-shell,
+.wrapper-content>.rc-shell {
+  grid-column: 1 / -1;
+  padding-inline: 0;
+}
+
+/* Pairs a canvas with a sticky sidebar (e.g. ContentPage's table-of-contents layout)
+   without the sidebar clipping `rc-full` blocks down to a second, narrower measure
+   on every page — only pages that actually have anchor links pay that cost. */
+.rc-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 3rem;
+}
+
+@media (width >=1024px) {
+  .rc-shell:has(>.rc-aside) {
+    grid-template-columns: minmax(0, 1fr) 17rem;
+  }
+}
+
+.rc-aside {
+  position: sticky;
+  top: 12rem;
+  align-self: start;
+}
+
+/*
   Only keeping essential global classes that represent layout patterns
   that would be cumbersome as inline utilities
 
@@ -321,14 +557,6 @@ html.dark-mode-init {
     grid-template-columns:
       minmax(2rem, 1fr) min(calc(100% - 4rem), 1600px) minmax(2rem, 1fr);
   }
-}
-
-.rich-content-wrapper>*:first-child {
-  margin-top: 0 !important;
-}
-
-.rich-content-wrapper>*:last-child {
-  margin-bottom: 0 !important;
 }
 
 .wrapper>*,

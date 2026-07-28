@@ -108,7 +108,7 @@
         <img v-if="form.extra_attributes.image" class="mr-4 size-20 object-cover" :src="form.extra_attributes.image"
           alt="image">
         <ButtonGroup>
-          <TiptapImageButton @submit="form.extra_attributes.image = $event">
+          <TiptapImageButton as-child @submit="form.extra_attributes.image = $event">
             <Button variant="outline" size="sm" type="button">
               Pasirinkti paveikslėlį
             </Button>

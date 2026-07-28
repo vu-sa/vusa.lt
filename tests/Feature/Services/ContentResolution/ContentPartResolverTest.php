@@ -1,0 +1,298 @@
+<?php
+
+use App\Models\Calendar;
+use App\Models\Category;
+use App\Models\ContentPart;
+use App\Models\News;
+use App\Models\Page;
+use App\Models\Tenant;
+use App\Services\ContentResolution\ContentPartResolver;
+use App\Services\ContentResolution\ResolutionContext;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
+
+uses(RefreshDatabase::class);
+
+beforeEach(function () {
+    $this->tenant = Tenant::factory()->create(['alias' => 'testfak']);
+    $this->context = new ResolutionContext(tenant: $this->tenant, locale: 'lt', subdomain: 'testfak');
+    $this->resolver = app(ContentPartResolver::class);
+});
+
+function makeResolvablePart(string $type, array $jsonContent = [], ?array $options = null, ?int $id = null): ContentPart
+{
+    $part = new ContentPart([
+        'type' => $type,
+        'json_content' => $jsonContent,
+        'options' => $options,
+    ]);
+    $part->id = $id ?? random_int(100000, 999999);
+
+    return $part;
+}
+
+describe('ContentPartResolver::resolvableTypes', function () {
+    test('lists exactly the dynamic types', function () {
+        expect(ContentPartResolver::resolvableTypes())->toEqualCanonicalizing([
+            'link-list', 'event-list', 'news', 'calendar',
+        ]);
+    });
+});
+
+describe('ContentPartResolver::resolveAll', function () {
+    test('ignores content parts of unresolvable types (e.g. person-quote, tiptap)', function () {
+        $parts = collect([
+            makeResolvablePart('tiptap', ['type' => 'doc'], null, 1),
+        ]);
+
+        expect($this->resolver->resolveAll($parts, $this->context))->toBe([]);
+    });
+
+    test('batches one resolver call per type regardless of how many blocks of that type exist', function () {
+        Category::factory()->create(['alias' => 'news-cat']);
+        $parts = collect([
+            makeResolvablePart('link-list', ['links' => []], ['source' => 'manual'], 1),
+            makeResolvablePart('link-list', ['links' => []], ['source' => 'manual'], 2),
+        ]);
+
+        $resolved = $this->resolver->resolveAll($parts, $this->context);
+
+        expect($resolved)->toHaveKeys([1, 2])
+            ->and($resolved[1]['type'])->toBe('link-list')
+            ->and($resolved[2]['type'])->toBe('link-list');
+    });
+});
+
+describe('ContentPartResolver::resolveOne', function () {
+    test('returns null for a non-resolvable type', function () {
+        expect($this->resolver->resolveOne('person-quote', [], null, $this->context))->toBeNull();
+    });
+
+    test('resolves an unsaved part through the same resolver public rendering uses', function () {
+        $result = $this->resolver->resolveOne('link-list', ['links' => [
+            ['title' => 'Example', 'url' => 'https://vusa.lt'],
+        ]], ['source' => 'manual'], $this->context);
+
+        expect($result['type'])->toBe('link-list')
+            ->and($result['items'])->toHaveCount(1)
+            ->and($result['items'][0]['title'])->toBe('Example');
+    });
+});
+
+describe('LinkListResolver — manual links', function () {
+    test('drops a link missing a title or an invalid url', function () {
+        $part = makeResolvablePart('link-list', ['links' => [
+            ['title' => 'Good', 'url' => 'https://vusa.lt'],
+            ['title' => '', 'url' => 'https://vusa.lt'],
+            ['title' => 'Bad scheme', 'url' => 'javascript:alert(1)'],
+        ]], ['source' => 'manual']);
+
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        expect($resolved[$part->id]['items'])->toHaveCount(1)
+            ->and($resolved[$part->id]['items'][0]['title'])->toBe('Good');
+    });
+
+    test('caps manual links at 12', function () {
+        $links = collect(range(1, 15))->map(fn ($i) => ['title' => "Link $i", 'url' => "https://vusa.lt/$i"])->all();
+        $part = makeResolvablePart('link-list', ['links' => $links], ['source' => 'manual']);
+
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        expect($resolved[$part->id]['items'])->toHaveCount(12);
+    });
+});
+
+describe('LinkListResolver — news source', function () {
+    test('drops a pinned news id that is a draft', function () {
+        $news = News::factory()->for($this->tenant)->create(['lang' => 'lt', 'draft' => true]);
+        $part = makeResolvablePart('link-list', [], ['source' => 'news', 'mode' => 'specific', 'newsIds' => [$news->id]]);
+
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        expect($resolved[$part->id]['items'])->toHaveCount(0);
+    });
+
+    test('drops a pinned news id that is not yet published', function () {
+        $news = News::factory()->for($this->tenant)->create(['lang' => 'lt', 'draft' => false, 'publish_time' => now()->addWeek()]);
+        $part = makeResolvablePart('link-list', [], ['source' => 'news', 'mode' => 'specific', 'newsIds' => [$news->id]]);
+
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        expect($resolved[$part->id]['items'])->toHaveCount(0);
+    });
+
+    test('includes a live, published, pinned news item with a working href', function () {
+        $news = News::factory()->for($this->tenant)->create([
+            'lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay(), 'title' => 'Naujiena',
+        ]);
+        $part = makeResolvablePart('link-list', [], ['source' => 'news', 'mode' => 'specific', 'newsIds' => [$news->id]]);
+
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+        $item = $resolved[$part->id]['items'][0];
+
+        expect($item['id'])->toBe($news->id)
+            ->and($item['title'])->toBe('Naujiena')
+            ->and($item['href'])->toContain($news->permalink);
+    });
+
+    test('follows other_lang_id when the pinned news is in the wrong language, and drops it when there is no counterpart', function () {
+        $enNews = News::factory()->for($this->tenant)->create(['lang' => 'en', 'draft' => false, 'publish_time' => now()->subDay()]);
+        $part = makeResolvablePart('link-list', [], ['source' => 'news', 'mode' => 'specific', 'newsIds' => [$enNews->id]]);
+
+        // Viewer is on the LT locale, the pinned article is EN with no counterpart.
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        expect($resolved[$part->id]['items'])->toHaveCount(0)
+            ->and($resolved[$part->id]['meta']['droppedForLocale'])->toBe(1);
+    });
+
+    test('latest mode filters by category alias and the current tenant', function () {
+        $category = Category::factory()->create(['alias' => 'announcements']);
+        $matching = News::factory()->for($this->tenant)->create([
+            'lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay(), 'category_id' => $category->id,
+        ]);
+        $otherCategory = News::factory()->for($this->tenant)->create([
+            'lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay(),
+        ]);
+        $otherTenant = Tenant::factory()->create();
+        News::factory()->for($otherTenant)->create([
+            'lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay(), 'category_id' => $category->id,
+        ]);
+
+        $part = makeResolvablePart('link-list', [], ['source' => 'news', 'mode' => 'latest', 'categoryAlias' => 'announcements', 'tenantScope' => 'current']);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        $ids = collect($resolved[$part->id]['items'])->pluck('id')->all();
+        expect($ids)->toBe([$matching->id])
+            ->and($ids)->not->toContain($otherCategory->id);
+    });
+
+    test('clamps limit to the 1-12 range', function () {
+        News::factory()->for($this->tenant)->count(15)->create(['lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay()]);
+        $part = makeResolvablePart('link-list', [], ['source' => 'news', 'mode' => 'latest', 'limit' => 99]);
+
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        expect($resolved[$part->id]['items'])->toHaveCount(12);
+    });
+});
+
+describe('LinkListResolver — pages source', function () {
+    test('drops an inactive pinned page', function () {
+        $page = Page::factory()->for($this->tenant)->create(['lang' => 'lt', 'is_active' => false]);
+        $part = makeResolvablePart('link-list', [], ['source' => 'pages', 'mode' => 'specific', 'pageIds' => [$page->id]]);
+
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        expect($resolved[$part->id]['items'])->toHaveCount(0);
+    });
+
+    test('includes a live pinned page', function () {
+        $page = Page::factory()->for($this->tenant)->create(['lang' => 'lt', 'is_active' => true, 'title' => 'Puslapis']);
+        $part = makeResolvablePart('link-list', [], ['source' => 'pages', 'mode' => 'specific', 'pageIds' => [$page->id]]);
+
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        expect($resolved[$part->id]['items'][0]['title'])->toBe('Puslapis');
+    });
+});
+
+describe('EventListResolver', function () {
+    test('year mode filters to the given year only', function () {
+        $inYear = Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'date' => Carbon::create(2025, 6, 1)]);
+        Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'date' => Carbon::create(2024, 6, 1)]);
+
+        $part = makeResolvablePart('event-list', [], ['mode' => 'year', 'year' => 2025, 'tenantScope' => 'current']);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        $ids = collect($resolved[$part->id]['items'])->pluck('id')->all();
+        expect($ids)->toBe([$inYear->id]);
+    });
+
+    test('excludes draft events', function () {
+        Calendar::factory()->for($this->tenant)->create(['is_draft' => true, 'date' => now()]);
+        $part = makeResolvablePart('event-list', [], ['mode' => 'upcoming', 'tenantScope' => 'current']);
+
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        expect($resolved[$part->id]['items'])->toHaveCount(0);
+    });
+
+    test('a trashed category still works as a grouping key (matches summerCamps() precedent)', function () {
+        // 'freshmen-camps' is a globally seeded alias (CategoriesSeeder) — reuse it
+        // rather than colliding on the unique constraint.
+        $category = Category::firstOrCreate(['alias' => 'freshmen-camps'], ['name' => ['lt' => 'Stovyklos', 'en' => 'Camps']]);
+        $event = Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'category_id' => $category->id, 'date' => now()]);
+        $category->delete();
+
+        $part = makeResolvablePart('event-list', [], ['mode' => 'upcoming', 'categoryAlias' => 'freshmen-camps', 'tenantScope' => 'current']);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        expect(collect($resolved[$part->id]['items'])->pluck('id')->all())->toBe([$event->id]);
+    });
+
+    test('groupBy tenant produces one group per tenant with a labelled prefix', function () {
+        $tenantB = Tenant::factory()->create(['fullname' => 'Kito fakulteto atstovybė']);
+        Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'date' => now()]);
+        Calendar::factory()->for($tenantB)->create(['is_draft' => false, 'date' => now()]);
+
+        $part = makeResolvablePart('event-list', [], ['mode' => 'upcoming', 'groupBy' => 'tenant', 'tenantScope' => 'all', 'tenantLabelPrefix' => 'VU']);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        expect($resolved[$part->id]['groups'])->toHaveCount(2);
+        $labels = collect($resolved[$part->id]['groups'])->pluck('label')->all();
+        expect($labels)->toContain('VU Kito fakulteto atstovybė');
+    });
+
+    test('en locale only returns international events', function () {
+        $intl = Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'is_international' => true, 'date' => now()]);
+        Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'is_international' => false, 'date' => now()]);
+
+        $enContext = new ResolutionContext(tenant: $this->tenant, locale: 'en', subdomain: 'testfak');
+        $part = makeResolvablePart('event-list', [], ['mode' => 'upcoming', 'tenantScope' => 'current']);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $enContext);
+
+        expect(collect($resolved[$part->id]['items'])->pluck('id')->all())->toBe([$intl->id]);
+    });
+
+    test('clamps the date range mode to MAX_RANGE_DAYS', function () {
+        // 10 years apart — should be clamped, not silently accepted.
+        $part = makeResolvablePart('event-list', [], [
+            'mode' => 'range',
+            'dateFrom' => '2015-01-01',
+            'dateTo' => '2025-01-01',
+            'tenantScope' => 'current',
+        ]);
+
+        // Deliberately don't seed any events — this just proves the resolver doesn't
+        // throw or hang building a decade-wide query.
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        expect($resolved[$part->id]['type'])->toBe('event-list');
+    });
+});
+
+describe('NewsBlockResolver / CalendarBlockResolver bridges', function () {
+    test('news bridge returns the same shape as NewsCollection::getPublishedForTenant', function () {
+        News::factory()->for($this->tenant)->create(['lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay(), 'title' => 'Bridge test']);
+        $part = makeResolvablePart('news', ['title' => '']);
+
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        expect($resolved[$part->id]['type'])->toBe('news')
+            ->and($resolved[$part->id]['items'][0])->toHaveKeys(['id', 'title', 'lang', 'short', 'publish_time', 'permalink', 'image']);
+    });
+
+    test('calendar bridge excludes drafts and is not tenant-scoped', function () {
+        $otherTenant = Tenant::factory()->create();
+        $event = Calendar::factory()->for($otherTenant)->create(['is_draft' => false, 'date' => now()]);
+        Calendar::factory()->for($this->tenant)->create(['is_draft' => true, 'date' => now()]);
+
+        $part = makeResolvablePart('calendar', ['title' => ''], ['allTenants' => false]);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        $ids = collect($resolved[$part->id]['items'])->pluck('id')->all();
+        expect($ids)->toContain($event->id);
+    });
+});

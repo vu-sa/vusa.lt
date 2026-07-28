@@ -1,5 +1,5 @@
 <template>
-  <div class="tracking-normal" v-html="generateHTMLfromTiptap(json_content)" />
+  <div class="rc-prose tracking-normal" v-html="generateHTMLfromTiptap(json_content)" />
 </template>
 
 <script setup lang="ts">

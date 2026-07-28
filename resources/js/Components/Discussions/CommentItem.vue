@@ -69,7 +69,7 @@
       <!-- Read mode -->
       <div
         v-else
-        class="prose prose-sm mt-0.5 max-w-none text-sm text-foreground dark:prose-invert [&_.comment-mention]:rounded [&_.comment-mention]:bg-vusa-red/10 [&_.comment-mention]:px-1 [&_.comment-mention]:font-medium [&_.comment-mention]:text-vusa-red"
+        class="mt-0.5 max-w-none text-sm text-foreground [&_.comment-mention]:rounded [&_.comment-mention]:bg-vusa-red/10 [&_.comment-mention]:px-1 [&_.comment-mention]:font-medium [&_.comment-mention]:text-vusa-red"
         v-html="comment.body"
       />
 

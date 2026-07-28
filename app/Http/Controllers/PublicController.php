@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\GetAliasSubdomainForPublic;
+use App\Http\Traits\ResolvesPublicContent;
 use App\Models\Navigation;
 use App\Models\QuickLink;
 use App\Models\Tenant;
@@ -19,6 +20,8 @@ use Spatie\SchemaOrg\Organization;
 
 class PublicController extends Controller
 {
+    use ResolvesPublicContent;
+
     protected Tenant $tenant;
 
     protected string $subdomain;

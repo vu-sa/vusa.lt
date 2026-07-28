@@ -5,19 +5,19 @@
       <Button :variant="activeTab === 'edit' ? 'default' : 'ghost'" size="sm" class="flex items-center gap-2"
         @click="activeTab = 'edit'">
         <IFluentEdit24Filled class="h-4 w-4" />
-        Redagavimas
+        {{ $t('rich-content.editing') }}
       </Button>
       <Button :variant="activeTab === 'preview' ? 'default' : 'ghost'" size="sm" class="flex items-center gap-2"
         @click="activeTab = 'preview'">
         <IFluentEye24Filled class="h-4 w-4" />
-        Peržiūra
+        {{ $t('rich-content.preview') }}
       </Button>
     </div>
 
     <!-- Tab Content -->
     <div v-show="activeTab === 'edit'">
       <Suspense>
-        <RichContentEditor v-model:contents="contentParts" />
+        <RichContentEditor v-model:contents="contentParts" :tenant-id="tenantId" />
         <template #fallback>
           <div class="space-y-6">
             <div class="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
@@ -39,7 +39,9 @@
     </div>
 
     <div v-show="activeTab === 'preview'" class="rounded-lg border bg-white p-6 dark:bg-zinc-900 dark:border-zinc-700">
-      <div class="typography max-w-none">
+      <!-- rc-canvas (not .typography) so the admin preview matches the public rendering,
+           including per-block width choices. -->
+      <div class="rc-canvas" style="--rc-measure: 44rem; --rc-gutter: 0px">
         <Suspense>
           <RichContentParser :content="contentParts" />
           <template #fallback>
@@ -60,15 +62,22 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
 
 import RichContentEditor from './RichContentEditor.vue';
 import RichContentParser from './RichContentParser.vue';
+import type { ContentPart } from './Types';
 
 import { Button } from '@/Components/ui/button';
 import { Skeleton } from '@/Components/ui/skeleton';
 import IFluentEdit24Filled from '~icons/fluent/edit24-filled';
 import IFluentEye24Filled from '~icons/fluent/eye24-filled';
 
-const contentParts = defineModel();
+const contentParts = defineModel<ContentPart[]>();
 const activeTab = ref<'edit' | 'preview'>('edit');
+
+defineProps<{
+  /** Tenant the page/news article being edited belongs to — for server-resolved (link-list, event-list, …) previews. */
+  tenantId?: number | null;
+}>();
 </script>

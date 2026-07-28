@@ -41,18 +41,6 @@
           <Checkbox v-model="options.isTitleColored" />
           <span class="text-zinc-700 dark:text-zinc-300">{{ $t('rich-content.color_title') }}</span>
         </label>
-        <label class="flex items-center gap-2 text-sm">
-          <Checkbox v-model="options.showIcon" />
-          <span class="text-zinc-700 dark:text-zinc-300">{{ $t('rich-content.show_icon') }}</span>
-          <InfoPopover>
-            <p>{{ $t('rich-content.icon_description') }}</p>
-            <ul class="mt-1 list-inside list-disc text-xs">
-              <li>{{ $t('rich-content.colors.red') }}: {{ $t('rich-content.icon_exclamation') }}</li>
-              <li>{{ $t('rich-content.colors.yellow') }}: {{ $t('rich-content.icon_question') }}</li>
-              <li>{{ $t('rich-content.colors.gray') }}: {{ $t('rich-content.icon_info') }}</li>
-            </ul>
-          </InfoPopover>
-        </label>
       </div>
     </div>
 
@@ -75,7 +63,6 @@ import { useColorOptions } from '../composables/useColorOptions';
 
 import type { ShadcnCard } from '@/Types/contentParts';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
-import InfoPopover from '@/Components/Buttons/InfoPopover.vue';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
 import { Checkbox } from '@/Components/ui/checkbox';

@@ -118,13 +118,18 @@ interface CalendarEvent {
 
 const props = defineProps<{
   element?: { json_content: Calendar['json_content']; options: Calendar['options'] };
+  /** Server-resolved payload (ContentPartResolver, via RichContentParser's `resolved` prop). */
+  resolved?: { type: string; items: CalendarEvent[] } | null;
+  /** @deprecated Superseded by `resolved` — only HomePage still supplies this directly. */
   prefetchedCalendar?: CalendarEvent[];
 }>();
 
 const showModal = ref(false);
 
-// Check if we have prefetched calendar data from server
-const hasPrefetchedCalendar = computed(() => props.prefetchedCalendar && props.prefetchedCalendar.length > 0);
+const serverCalendar = computed<CalendarEvent[] | undefined>(() => props.resolved?.items ?? props.prefetchedCalendar);
+
+// Check if we have server-provided calendar data (resolver or the older homepage prop)
+const hasPrefetchedCalendar = computed(() => !!serverCalendar.value && serverCalendar.value.length > 0);
 
 // Normalize allTenants to boolean (handles true, 1, "1", "true")
 const allTenants = computed(() => {
@@ -149,9 +154,9 @@ const {
   skipInitialFetch: hasPrefetchedCalendar.value,
 });
 
-// If we have prefetched data, initialize the calendar state with it
-if (hasPrefetchedCalendar.value && props.prefetchedCalendar) {
-  initializeWithData(props.prefetchedCalendar);
+// If we have server-provided data, initialize the calendar state with it
+if (hasPrefetchedCalendar.value && serverCalendar.value) {
+  initializeWithData(serverCalendar.value);
 }
 
 // Combine sources: prefer prefetched data for initial render, then use API data

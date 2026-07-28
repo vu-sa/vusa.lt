@@ -58,6 +58,18 @@ class FileApiController extends ApiController
             return $this->jsonError('Invalid path format', 400, code: 'INVALID_PATH');
         }
 
+        // Optional server-side extension filter (e.g. the image picker only wants
+        // jpg/png/webp/...). Validated against the same allowlist used for uploads so
+        // an unrecognised value can't silently match nothing or leak into a query.
+        $extensions = null;
+        if ($request->filled('extensions')) {
+            $requested = array_map(
+                fn (string $ext) => strtolower(trim($ext)),
+                explode(',', (string) $request->input('extensions'))
+            );
+            $extensions = array_values(array_intersect($requested, StoreFilesRequest::getAllowedExtensions()));
+        }
+
         // If normalization changed the path (e.g., traversal attempts), treat as invalid
         if ($requestedPath !== $path) {
             return $this->jsonError('Invalid path format', 400, code: 'INVALID_PATH');
@@ -70,7 +82,7 @@ class FileApiController extends ApiController
                 $allowedPath = 'public/files/padaliniai/vusa'.($this->authorizer->getTenants()->first()->alias ?? '');
 
                 if ($user->can('viewDirectory', [File::class, $allowedPath])) {
-                    [$files, $directories] = $this->getFilesFromStorage($allowedPath);
+                    [$files, $directories] = $this->getFilesFromStorage($allowedPath, $extensions);
 
                     return $this->jsonSuccess([
                         'files' => $files,
@@ -84,7 +96,7 @@ class FileApiController extends ApiController
             return $this->jsonError('Neturite teisių peržiūrėti šio aplanko.', 403, code: 'INSUFFICIENT_PERMISSIONS');
         }
 
-        [$files, $directories] = $this->getFilesFromStorage($path);
+        [$files, $directories] = $this->getFilesFromStorage($path, $extensions);
 
         return $this->jsonSuccess([
             'files' => $files,
@@ -113,9 +125,15 @@ class FileApiController extends ApiController
     /**
      * Get files and directories from storage.
      *
+     * @param  array<int, string>|null  $extensions  Lowercase extensions (no dot) to
+     *                                               restrict the file listing to, e.g.
+     *                                               the image picker asking for only
+     *                                               jpg/png/webp/... — directories are
+     *                                               never filtered, since users still
+     *                                               need to navigate through them.
      * @return array{0: array<int, array<string, mixed>>, 1: array<int, array<string, mixed>>}
      */
-    protected function getFilesFromStorage(string $path): array
+    protected function getFilesFromStorage(string $path, ?array $extensions = null): array
     {
         $directories = collect(Storage::directories($path))->map(function ($dir) {
             return [
@@ -125,19 +143,29 @@ class FileApiController extends ApiController
             ];
         })->toArray();
 
-        $files = collect(Storage::files($path))->map(function ($file) use ($path) {
-            $relativePath = str_replace('public/', '', $file);
+        $files = collect(Storage::files($path))
+            ->filter(function ($file) use ($extensions) {
+                if ($extensions === null) {
+                    return true;
+                }
 
-            return [
-                'path' => $file,
-                'name' => basename($file),
-                'type' => 'file',
-                'size' => Storage::size($file),
-                'modified' => Storage::lastModified($file),
-                'mimeType' => Storage::mimeType($file),
-                'url' => $path.'/'.$relativePath,
-            ];
-        })->toArray();
+                return in_array(strtolower(pathinfo($file, PATHINFO_EXTENSION)), $extensions, true);
+            })
+            ->map(function ($file) use ($path) {
+                $relativePath = str_replace('public/', '', $file);
+
+                return [
+                    'path' => $file,
+                    'name' => basename($file),
+                    'type' => 'file',
+                    'size' => Storage::size($file),
+                    'modified' => Storage::lastModified($file),
+                    'mimeType' => Storage::mimeType($file),
+                    'url' => $path.'/'.$relativePath,
+                ];
+            })
+            ->values()
+            ->toArray();
 
         return [$files, $directories];
     }

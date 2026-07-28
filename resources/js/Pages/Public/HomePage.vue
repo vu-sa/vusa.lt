@@ -3,7 +3,12 @@
   <Head v-if="firstNewsImageUrl">
     <link rel="preload" as="image" :href="firstNewsImageUrl" fetchpriority="high">
   </Head>
-  <RichContentParser class="max-w-full" :content="(content as ContentWithParts)?.parts ?? []" :news :calendar-events />
+  <!-- RichContentParser renders a v-for fragment (no single root), so its per-block
+       rc-content/rc-wide/rc-full/rc-flush classes only mean anything inside an
+       ancestor .rc-canvas grid — this provides that grid. -->
+  <div class="rc-canvas" style="--rc-measure: 44rem">
+    <RichContentParser :content="(content as ContentWithParts)?.parts ?? []" :resolved="resolvedParts" :news :calendar-events />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -20,6 +25,8 @@ interface ContentWithParts {
 
 defineProps<{
   content: ContentWithParts | null;
+  /** Server-resolved dynamic blocks (link-list, event-list, …) keyed by content-part id. */
+  resolvedParts?: Record<number, unknown>;
   news?: NewsItem[];
   calendarEvents?: Array<Record<string, unknown>>;
   firstNewsImageUrl?: string | null;

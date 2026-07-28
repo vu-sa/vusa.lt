@@ -24,6 +24,10 @@ Specialized guidance lives in sub-directory `CLAUDE.md` files:
 - Controllers: [app/Http/Controllers/CLAUDE.md](app/Http/Controllers/CLAUDE.md)
 - Composables: [resources/js/Composables/CLAUDE.md](resources/js/Composables/CLAUDE.md)
 
+## Testing
+
+Every change must come with a test. But a component behavior that depends on a real browser + CSS pipeline (e.g. whether Tailwind's `dark:` variant actually matches a `.dark` ancestor, or other visual rendering that jsdom can't model) is **intractable in a Vitest/jsdom component test** — assert the wiring instead (props, emitted events, class bindings, refs toggled) and skip the visual assertion. Leave a comment in the test explaining what is intentionally not covered and why, so the gap is documented rather than accidental.
+
 ## Development Commands
 
 All Laravel-related commands MUST run through Sail:

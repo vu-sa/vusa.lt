@@ -68,6 +68,14 @@ class Calendar extends Model implements HasMedia
 {
     use HasFactory, HasTranslations, InteractsWithMedia, Searchable, SoftDeletes;
 
+    /**
+     * Widest date range one calendar query may span — shared by
+     * `Api\CalendarController` (the public timeline) and `EventListResolver` (the
+     * `event-list` rich-content block's `range` mode), so the cap can't drift between
+     * the two query paths that both window on `date`.
+     */
+    public const MAX_RANGE_DAYS = 455;
+
     protected $table = 'calendar';
 
     protected $guarded = ['id', 'created_at', 'updated_at'];

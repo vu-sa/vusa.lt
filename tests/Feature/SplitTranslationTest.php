@@ -41,6 +41,13 @@ describe('Split Translation Loading', function () {
 
             expect($translation)->not()->toBe('pagination.next');
         });
+
+        it('loads accessibility translations from shared directory', function () {
+            // accessibility.php is in lang/shared/
+            $translation = __('accessibility.select_image', [], 'lt');
+
+            expect($translation)->not()->toBe('accessibility.select_image');
+        });
     });
 
     describe('admin translations', function () {
@@ -87,13 +94,6 @@ describe('Split Translation Loading', function () {
 
             expect($translation)->toBe('Dokumentai');
         });
-
-        it('loads accessibility translations from public directory', function () {
-            // accessibility.php is in lang/public/
-            $translation = __('accessibility.select_image', [], 'lt');
-
-            expect($translation)->not()->toBe('accessibility.select_image');
-        });
     });
 
     describe('translation fallback', function () {
@@ -132,6 +132,7 @@ describe('Split Translation Loading', function () {
             expect(file_exists($sharedLtPath.'/validation.php'))->toBeTrue();
             expect(file_exists($sharedLtPath.'/auth.php'))->toBeTrue();
             expect(file_exists($sharedLtPath.'/common.php'))->toBeTrue();
+            expect(file_exists($sharedLtPath.'/accessibility.php'))->toBeTrue();
         });
 
         it('has translation files in admin directory', function () {
@@ -147,7 +148,6 @@ describe('Split Translation Loading', function () {
             $publicLtPath = lang_path('public/lt');
 
             expect(file_exists($publicLtPath.'/search.php'))->toBeTrue();
-            expect(file_exists($publicLtPath.'/accessibility.php'))->toBeTrue();
         });
     });
 

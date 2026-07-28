@@ -5,7 +5,7 @@
   It provides a full-featured editor for content blocks.
 -->
 <template>
-  <TiptapEditor v-model="modelValue!" preset="full" />
+  <TiptapEditor v-model="modelValue!" preset="full" prose-style />
 </template>
 
 <script setup lang="ts">

@@ -18,7 +18,7 @@
     </div>
 
     <!-- Overlay content (like the overlapping text card in hero) -->
-    <div v-if="overlayContent" :class="[
+    <div v-if="hasOverlayContent" :class="[
       'absolute rounded-xl shadow-xl border border-zinc-100 dark:border-zinc-700',
       overlayPosition,
       overlaySize,
@@ -89,6 +89,11 @@ const props = withDefaults(defineProps<Props>(), {
   overlaySize: 'max-w-[200px] sm:max-w-xs',
   overlayStyle: 'default',
 });
+
+// `overlayContent` may be present as an object with empty strings (e.g. a hero
+// block's default json_content before an author fills it in) — render the overlay
+// card only when there's actually something to show in it.
+const hasOverlayContent = computed(() => !!(props.overlayContent?.title || props.overlayContent?.subtitle));
 
 const heightClass = computed(() => {
   if (props.heightClass) return props.heightClass;

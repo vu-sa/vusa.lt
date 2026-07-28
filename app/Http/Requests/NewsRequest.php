@@ -2,14 +2,15 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\ContentPartEnum;
+use App\Http\Requests\Concerns\ValidatesContentParts;
 use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class NewsRequest extends FormRequest
 {
+    use ValidatesContentParts;
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -18,6 +19,7 @@ class NewsRequest extends FormRequest
     public function rules(): array
     {
         return [
+            ...$this->contentPartRules(),
             'title' => 'required',
             'lang' => 'required',
             'other_lang_id' => ['nullable', 'integer', SoftDeleteRules::existsLive('news')],
@@ -25,15 +27,10 @@ class NewsRequest extends FormRequest
             'image_author' => 'nullable|string',
             'publish_time' => 'required',
             'layout' => 'nullable|string|in:modern,classic,immersive,headline',
+            'show_breadcrumbs' => ['boolean'],
             'highlights' => 'nullable|array|max:3',
             'highlights.*' => 'nullable|string|max:500',
             'content' => 'required|array',
-            'content.parts' => 'required|array',
-            'content.parts.*.id' => 'nullable|integer',
-            'content.parts.*.type' => ['required', 'string', Rule::in(ContentPartEnum::toArray())],
-            'content.parts.*.json_content' => 'present',
-            'content.parts.*.options' => 'nullable',
-            'content.parts.*.order' => 'nullable|integer',
             'tags' => 'nullable|array',
             'tags.*' => ['integer', SoftDeleteRules::existsLive('tags')],
         ];

@@ -103,6 +103,10 @@ class PublicPageController extends PublicController
 
         return Inertia::render('Public/HomePage', [
             'content' => $content,
+            // `news`/`calendarEvents` stay as-is (HomePage's LCP tuning is built on this
+            // exact prop shape); `resolvedParts` only carries the newer dynamic types
+            // (link-list, event-list) a homepage content block might use.
+            'resolvedParts' => (object) $this->resolveContentParts($content),
             'news' => $news,
             'calendarEvents' => $calendarEvents,
             'firstNewsImageUrl' => $firstNewsImageUrl,
@@ -210,8 +214,12 @@ class PublicPageController extends PublicController
 
         return Inertia::render('Public/ContentPage', [
             'navigationItemId' => $navigation_item?->id,
+            // Server-resolved dynamic blocks (link-list, event-list, the news/calendar
+            // bridge) — outside the page cache above, since resolution can be
+            // time-relative (`latest`/`upcoming` modes) while that cache is not.
+            'resolvedParts' => (object) $this->resolveContentParts($page->content),
             'page' => [
-                ...$page->only('id', 'title', 'lang', 'category', 'tenant', 'permalink', 'other_lang_id', 'layout', 'highlights', 'featured_image', 'meta_description', 'last_edited_at', 'updated_at'),
+                ...$page->only('id', 'title', 'lang', 'category', 'tenant', 'permalink', 'other_lang_id', 'layout', 'show_table_of_contents', 'show_title', 'show_breadcrumbs', 'highlights', 'featured_image', 'meta_description', 'last_edited_at', 'updated_at'),
                 'content' => $page->content,
                 /* 'content' => [ */
                 /*    ...$page->content->toArray(), */

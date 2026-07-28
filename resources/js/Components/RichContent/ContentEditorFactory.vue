@@ -1,19 +1,10 @@
 <template>
   <div>
-    <!-- Preview mode - show the display component with typography styling -->
-    <div v-if="previewMode" class="typography mx-auto max-w-3xl">
-      <Suspense>
-        <component
-          :is="displayComponent"
-          :element="content"
-          :html="false" />
-        <template #fallback>
-          <div class="flex items-center gap-2 text-sm text-zinc-500">
-            <div class="h-3 w-3 animate-spin rounded-full border-2 border-zinc-300 border-r-transparent" />
-            Loading preview...
-          </div>
-        </template>
-      </Suspense>
+    <!-- Preview mode - show the display component inside a canvas so width-aware
+         blocks (hero, accordion, …) render the same as they will on the public page,
+         and at the block's own options.width column rather than always the prose one. -->
+    <div v-if="previewMode" class="rc-canvas" style="--rc-measure: 44rem">
+      <BlockPreviewRenderer v-if="content" :element="content" :resolved="previewResolved" />
     </div>
 
     <!-- Edit mode - show the editor component -->
@@ -52,9 +43,12 @@
  *
  * Supports preview mode to show the display component instead of editor.
  */
-import { computed, defineAsyncComponent } from 'vue';
+import { computed } from 'vue';
 
 import { getContentType } from './Types';
+
+import BlockPreviewRenderer from './Editor/BlockPreviewRenderer.vue';
+import { useLiveBlockPreview } from './composables/useLiveBlockPreview';
 
 import { Skeleton } from '@/Components/ui/skeleton';
 
@@ -74,6 +68,8 @@ const props = defineProps<{
    * Whether to show preview mode (display component) instead of editor
    */
   previewMode?: boolean;
+  /** Tenant the page/news article being edited belongs to — needed to resolve server-side (link-list, event-list, …) previews. */
+  tenantId?: number | null;
 }>();
 
 /**
@@ -124,71 +120,13 @@ const contentOptions = computed({
   },
 });
 
-// Dynamic editor component mapping based on content type
-const editorComponent = computed(() => {
-  switch (content.value?.type) {
-    case 'tiptap':
-      return defineAsyncComponent(() => import('./Types/TiptapEditor.vue'));
-    case 'shadcn-accordion':
-      return defineAsyncComponent(() => import('./Types/AccordionEditor.vue'));
-    case 'shadcn-card':
-      return defineAsyncComponent(() => import('./Types/CardEditor.vue'));
-    case 'image-grid':
-      return defineAsyncComponent(() => import('./Types/ImageGridEditor.vue'));
-    case 'hero':
-      return defineAsyncComponent(() => import('./RCHeroSection/HeroForm.vue'));
-    case 'spotify-embed':
-      return defineAsyncComponent(() => import('./Types/SpotifyEmbedEditor.vue'));
-    case 'social-embed':
-      return defineAsyncComponent(() => import('./Types/SocialEmbedEditor.vue'));
-    case 'flow-graph':
-      return defineAsyncComponent(() => import('./Types/FlowGraphEditor.vue'));
-    case 'number-stat-section':
-      return defineAsyncComponent(() => import('./Types/NumberStatEditor.vue'));
-    case 'news':
-      return defineAsyncComponent(() => import('./Types/NewsEditor.vue'));
-    case 'calendar':
-      return defineAsyncComponent(() => import('./Types/CalendarEditor.vue'));
-    case 'content-grid':
-      return defineAsyncComponent(() => import('./Types/ContentGridEditor.vue'));
-    case 'text-box':
-      return defineAsyncComponent(() => import('./Types/TextBoxEditor.vue'));
-    default:
-      return defineAsyncComponent(() => import('./Types/TiptapEditor.vue'));
-  }
-});
+// Editor component comes straight from the registry (Types/index.ts) — adding a content
+// type no longer means adding a case here too. Preview mode's display component is
+// resolved inside BlockPreviewRenderer, shared with BlockPickerDialog.
+const editorComponent = computed(() => getContentType(content.value?.type ?? 'tiptap').editor);
 
-// Dynamic display component mapping for preview mode
-const displayComponent = computed(() => {
-  switch (content.value?.type) {
-    case 'tiptap':
-      return defineAsyncComponent(() => import('./Types/TiptapDisplay.vue'));
-    case 'shadcn-accordion':
-      return defineAsyncComponent(() => import('./RCAccordion.vue'));
-    case 'shadcn-card':
-      return defineAsyncComponent(() => import('./RichContentCard.vue'));
-    case 'image-grid':
-      return defineAsyncComponent(() => import('./Types/ImageGridDisplay.vue'));
-    case 'hero':
-      return defineAsyncComponent(() => import('./RCHeroSection/HeroElement.vue'));
-    case 'spotify-embed':
-      return defineAsyncComponent(() => import('./RCSpotifyEmbed.vue'));
-    case 'social-embed':
-      return defineAsyncComponent(() => import('./RCSocialEmbed.vue'));
-    case 'flow-graph':
-      return defineAsyncComponent(() => import('./RCFlowGraph.vue'));
-    case 'number-stat-section':
-      return defineAsyncComponent(() => import('./RCNumberStatSection/RCNumberSection.vue'));
-    case 'news':
-      return defineAsyncComponent(() => import('@/Components/Public/NewsElement.vue'));
-    case 'calendar':
-      return defineAsyncComponent(() => import('@/Components/Public/FullWidth/EventCalendarElement.vue'));
-    case 'content-grid':
-      return defineAsyncComponent(() => import('./Types/ContentGridDisplay.vue'));
-    case 'text-box':
-      return defineAsyncComponent(() => import('./Types/TextBoxDisplay.vue'));
-    default:
-      return defineAsyncComponent(() => import('./Types/TiptapDisplay.vue'));
-  }
-});
+// Server-resolved preview data (link-list, event-list, …) for this single block, kept
+// in sync with edits while `previewMode` is on. Fetches nothing for types that don't
+// declare `serverResolved` in the registry.
+const { previewResolved } = useLiveBlockPreview(content, () => props.tenantId, () => !!props.previewMode);
 </script>
