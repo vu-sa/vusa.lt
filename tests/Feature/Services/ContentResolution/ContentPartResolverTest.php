@@ -93,6 +93,19 @@ describe('LinkListResolver — manual links', function () {
             ->and($resolved[$part->id]['items'][0]['title'])->toBe('Good');
     });
 
+    test('passes through a manual link\'s imageUrl so the photo style has something to render', function () {
+        $part = makeResolvablePart('link-list', ['links' => [
+            ['title' => 'With image', 'url' => 'https://vusa.lt', 'imageUrl' => '/uploads/foto.png'],
+            ['title' => 'Without image', 'url' => 'https://vusa.lt/no-image'],
+        ]], ['source' => 'manual']);
+
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+        $items = collect($resolved[$part->id]['items']);
+
+        expect($items->firstWhere('title', 'With image')['imageUrl'])->toBe('/uploads/foto.png')
+            ->and($items->firstWhere('title', 'Without image')['imageUrl'])->toBeNull();
+    });
+
     test('caps manual links at 12', function () {
         $links = collect(range(1, 15))->map(fn ($i) => ['title' => "Link $i", 'url' => "https://vusa.lt/$i"])->all();
         $part = makeResolvablePart('link-list', ['links' => $links], ['source' => 'manual']);
@@ -149,11 +162,16 @@ describe('LinkListResolver — news source', function () {
 
     test('latest mode filters by category alias and the current tenant', function () {
         $category = Category::factory()->create(['alias' => 'announcements']);
+        // Explicit, distinct category — NewsFactory's default `category_id` is
+        // `Category::inRandomOrder()->first()->id`, which could otherwise coincidentally
+        // land on `$category` itself and make this test flaky depending on how many
+        // other categories happen to exist at the time.
+        $anotherCategory = Category::factory()->create(['alias' => 'not-announcements']);
         $matching = News::factory()->for($this->tenant)->create([
             'lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay(), 'category_id' => $category->id,
         ]);
         $otherCategory = News::factory()->for($this->tenant)->create([
-            'lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay(),
+            'lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay(), 'category_id' => $anotherCategory->id,
         ]);
         $otherTenant = Tenant::factory()->create();
         News::factory()->for($otherTenant)->create([
@@ -232,17 +250,58 @@ describe('EventListResolver', function () {
         expect(collect($resolved[$part->id]['items'])->pluck('id')->all())->toBe([$event->id]);
     });
 
-    test('groupBy tenant produces one group per tenant with a labelled prefix', function () {
+    test('groupBy tenant with the "full" label style prefixes the locative fullname', function () {
         $tenantB = Tenant::factory()->create(['fullname' => 'Kito fakulteto atstovybė']);
         Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'date' => now()]);
         Calendar::factory()->for($tenantB)->create(['is_draft' => false, 'date' => now()]);
 
-        $part = makeResolvablePart('event-list', [], ['mode' => 'upcoming', 'groupBy' => 'tenant', 'tenantScope' => 'all', 'tenantLabelPrefix' => 'VU']);
+        $part = makeResolvablePart('event-list', [], ['mode' => 'upcoming', 'groupBy' => 'tenant', 'tenantScope' => 'all', 'tenantLabelPrefix' => 'VU', 'tenantLabelStyle' => 'full']);
         $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
 
         expect($resolved[$part->id]['groups'])->toHaveCount(2);
         $labels = collect($resolved[$part->id]['groups'])->pluck('label')->all();
         expect($labels)->toContain('VU Kito fakulteto atstovybė');
+    });
+
+    test('groupBy tenant with the "faculty" label style renders "VU <nominative faculty>" derived from the locative fullname', function () {
+        // Port of getFacultyName (Utils/String.ts): "...Filologijos fakultete" → "VU Filologijos fakultetas".
+        $tenantB = Tenant::factory()->create(['fullname' => 'Vilniaus universiteto Studentų atstovybė Filologijos fakultete', 'shortname_vu' => 'VU FlF']);
+        Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'date' => now()]);
+        Calendar::factory()->for($tenantB)->create(['is_draft' => false, 'date' => now()]);
+
+        $part = makeResolvablePart('event-list', [], ['mode' => 'upcoming', 'groupBy' => 'tenant', 'tenantScope' => 'all', 'tenantLabelStyle' => 'faculty']);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        $labels = collect($resolved[$part->id]['groups'])->pluck('label')->all();
+        expect($labels)->toContain('VU Filologijos fakultetas')
+            ->and($labels)->not->toContain('VU FlF')
+            ->and($labels)->not->toContain('Vilniaus universiteto Studentų atstovybė Filologijos fakultete');
+    });
+
+    test('the "faculty" label style falls back to the fullname for the central tenant (no faculty part)', function () {
+        $central = Tenant::factory()->create(['fullname' => 'Vilniaus universiteto Studentų atstovybė']);
+        Calendar::factory()->for($central)->create(['is_draft' => false, 'date' => now()]);
+
+        $part = makeResolvablePart('event-list', [], ['mode' => 'upcoming', 'groupBy' => 'tenant', 'tenantScope' => 'all', 'tenantLabelStyle' => 'faculty']);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        $labels = collect($resolved[$part->id]['groups'])->pluck('label')->all();
+        expect($labels)->toContain('Vilniaus universiteto Studentų atstovybė');
+    });
+
+    test('groups are sorted alphabetically by label, not by which tenant has the earliest event', function () {
+        // Tenant Z has the earliest event, but its label ("VU Z...") should still sort last.
+        // Fullnames end in a non-locative suffix so faculty derivation leaves them unchanged.
+        $tenantZ = Tenant::factory()->create(['fullname' => 'Vilniaus universiteto Studentų atstovybė Z padalinys']);
+        $tenantA = Tenant::factory()->create(['fullname' => 'Vilniaus universiteto Studentų atstovybė A padalinys']);
+        Calendar::factory()->for($tenantZ)->create(['is_draft' => false, 'date' => now()]);
+        Calendar::factory()->for($tenantA)->create(['is_draft' => false, 'date' => now()->addDay()]);
+
+        $part = makeResolvablePart('event-list', [], ['mode' => 'upcoming', 'groupBy' => 'tenant', 'tenantScope' => 'all', 'tenantLabelStyle' => 'faculty']);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        $labels = collect($resolved[$part->id]['groups'])->pluck('label')->all();
+        expect($labels)->toBe(['VU A padalinys', 'VU Z padalinys']);
     });
 
     test('en locale only returns international events', function () {

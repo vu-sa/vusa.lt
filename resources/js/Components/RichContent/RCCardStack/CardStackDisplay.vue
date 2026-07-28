@@ -2,6 +2,7 @@
   <RCSection
     :title="element.options?.title" :subtitle="element.options?.subtitle"
     :background="element.options?.background ?? 'muted'" :padding="element.options?.padding ?? 'lg'"
+    :rounded="element.options?.rounded ?? 'none'"
     inner="wide" :id="anchorId ? `rc-${anchorId}` : undefined"
   >
     <div class="relative max-w-lg mx-auto">
@@ -14,13 +15,23 @@
           :style="getCardStyle(index)"
           @click="handleCardClick"
         >
-          <div class="h-full p-6 md:p-8 bg-gradient-to-br from-zinc-50 to-zinc-100/50 ring-1 ring-zinc-200/60 hover:ring-zinc-300 dark:from-zinc-800/80 dark:to-zinc-900 dark:ring-zinc-700/50 dark:hover:ring-zinc-600 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
-            <h3 class="text-xl sm:text-xl font-semibold mb-3 md:mb-4 text-zinc-900 dark:text-zinc-100">
-              {{ card.title }}
-            </h3>
-            <p class="text-[14.5px] sm:text-base text-zinc-600 dark:text-zinc-400 leading-relaxed">
-              {{ card.description }}
-            </p>
+          <!-- Fully opaque stops (no `/alpha`) — the previous `to-zinc-100/50` /
+               `dark:from-zinc-800/80` let the cards stacked underneath show through
+               the front card wherever they peek out past its edges. -->
+          <div class="flex h-full flex-col p-6 md:p-8 bg-gradient-to-br from-white to-zinc-50 ring-1 ring-zinc-200/60 hover:ring-zinc-300 dark:from-zinc-900 dark:to-zinc-950 dark:ring-zinc-700/50 dark:hover:ring-zinc-600 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+            <div v-if="card.icon" class="mb-4 flex size-12 shrink-0 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-700 md:mb-6">
+              <RCIcon :name="card.icon" class="size-6 text-zinc-600 dark:text-zinc-400" />
+            </div>
+            <!-- No icon: the text group fills the remaining height and centers within
+                 it instead of sitting bunched at the top of a tall, mostly-empty card. -->
+            <div :class="['flex flex-col', !card.icon && 'flex-1 justify-center']">
+              <h3 class="text-xl sm:text-xl font-semibold mb-3 md:mb-4 text-zinc-900 dark:text-zinc-100">
+                {{ card.title }}
+              </h3>
+              <p class="text-[14.5px] sm:text-base text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                {{ card.description }}
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -50,6 +61,7 @@
 import { onMounted, onUnmounted, ref } from 'vue';
 import type { CardStack } from '@/Types/contentParts';
 import RCSection from '../RCSection.vue';
+import RCIcon from '../RCIcon.vue';
 
 const { element } = defineProps<{
   element: CardStack;

@@ -47,6 +47,10 @@
         <NumberField :model-value="options.limit ?? 12" :min="1" :max="24"
           @update:model-value="options.limit = $event" />
       </Field>
+      <Field>
+        <FieldLabel>{{ $t('rich-content.empty_message') }}</FieldLabel>
+        <Input v-model="options.emptyMessage" type="text" placeholder="No events found..." />
+      </Field>
     </div>
 
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -66,10 +70,24 @@
       </Field>
     </div>
 
-    <Field v-if="options.groupBy === 'tenant'">
-      <FieldLabel>{{ $t('rich-content.tenant_label_prefix') }}</FieldLabel>
-      <Input v-model="options.tenantLabelPrefix" type="text" placeholder="VU " />
-    </Field>
+    <template v-if="options.groupBy === 'tenant'">
+      <Field>
+        <FieldLabel>{{ $t('rich-content.tenant_label_style') }}</FieldLabel>
+        <ToggleGroup :model-value="options.tenantLabelStyle ?? 'full'" type="single" class="justify-start"
+          @update:model-value="(value) => { if (value) options.tenantLabelStyle = value as 'full' | 'faculty'; }">
+          <ToggleGroupItem value="full">{{ $t('rich-content.tenant_label_style_full') }}</ToggleGroupItem>
+          <ToggleGroupItem value="faculty">{{ $t('rich-content.tenant_label_style_faculty') }}</ToggleGroupItem>
+        </ToggleGroup>
+        <p class="text-xs text-zinc-500 dark:text-zinc-400">
+          {{ $t('rich-content.tenant_label_style_hint') }}
+        </p>
+      </Field>
+
+      <Field v-if="(options.tenantLabelStyle ?? 'full') === 'full'">
+        <FieldLabel>{{ $t('rich-content.tenant_label_prefix') }}</FieldLabel>
+        <Input v-model="options.tenantLabelPrefix" type="text" placeholder="VU " />
+      </Field>
+    </template>
   </div>
 </template>
 

@@ -2,11 +2,12 @@
   <RCSection
     :title="element.options?.title" :subtitle="element.options?.subtitle"
     :background="element.options?.background ?? 'none'" :padding="element.options?.padding ?? 'lg'"
+    :rounded="element.options?.rounded ?? 'none'"
     inner="wide" :id="anchorId ? `rc-${anchorId}` : undefined"
   >
     <div v-if="!isEmpty">
       <!-- Photo style: a grid of RCFeatureCard, one per link. -->
-      <div v-if="style === 'photo'" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div v-if="style === 'photo'" class="grid gap-6" :class="smartGridCols(items.length)">
         <RCFeatureCard
           v-for="item in items" :key="item.id ?? item.href"
           :title="item.title" :cover-image="item.imageUrl" :cover-alt="item.title"
@@ -53,6 +54,7 @@ import RCSection from '../RCSection.vue';
 import RCFeatureCard from '../RCFeatureCard.vue';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { LocaleEnum } from '@/Types/enums';
+import { smartGridCols } from '../gridStacking';
 
 const props = defineProps<{
   element: models.ContentPart;

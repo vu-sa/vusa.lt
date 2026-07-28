@@ -21,19 +21,26 @@
           <ContentEditorFactory :content="content" :tenant-id="tenantId" @update:content="$emit('update:content', $event)" />
         </div>
 
-        <!-- Preview pane — reactive to every edit on the left, with a width picker that
-             only affects this preview (never the block's actually-saved width), so an
-             author can quickly check how a block reads at each width without committing
-             to one first. The dark-mode toggle drives the admin theme itself via useDark()
-             (see isDark) — a local `.dark` on this subtree can't work, because Tailwind's
-             `dark:` variant (`&:is(.dark *)`) matches any `.dark` ancestor: it can force the
-             preview dark but can never force it light when <html> is already dark. -->
+        <!-- Preview pane — reactive to every edit on the left. The width picker is
+             the same one the inline block card uses (same per-type `allowedWidths`
+             from the registry), and writes back to the block's saved `options.width`
+             through the usual `update:content` channel — what you see is what's saved.
+             The dark-mode toggle drives the admin theme itself via useDark() (see
+             isDark) — a local `.dark` on this subtree can't work, because Tailwind's
+             `dark:` variant (`&:is(.dark *)`) matches any `.dark` ancestor: it can
+             force the preview dark but can never force it light when <html> is already
+             dark. -->
         <div class="flex flex-col overflow-hidden">
           <div class="flex h-full flex-col overflow-hidden bg-zinc-50 dark:bg-zinc-900">
             <div class="flex items-center justify-between gap-2 border-b border-zinc-200 px-3 py-2 dark:border-zinc-800">
-              <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">{{ $t('rich-content.preview_width') }}</span>
+              <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">{{ $t('rich-content.block_width') }}</span>
               <div class="flex items-center gap-1">
-                <RCWidthPicker :model-value="previewWidth" :allowed-widths="ALL_WIDTHS" @update:model-value="previewWidth = $event" />
+                <RCWidthPicker
+                  v-if="allowedWidths.length > 1"
+                  :model-value="currentWidth"
+                  :allowed-widths="allowedWidths"
+                  @update:model-value="setWidth"
+                />
                 <button
                   type="button"
                   class="flex h-6 w-6 items-center justify-center rounded text-zinc-500 transition-colors hover:bg-zinc-200 dark:text-zinc-400 dark:hover:bg-zinc-700"
@@ -51,7 +58,7 @@
                   class="rc-canvas origin-top-left bg-zinc-50 dark:bg-zinc-900"
                   :style="{ width: `${PREVIEW_WIDTH}px`, transform: `scale(${PREVIEW_SCALE})`, '--rc-measure': '40rem' }"
                 >
-                  <BlockPreviewRenderer :element="previewElement" :resolved="previewResolved" />
+                  <BlockPreviewRenderer :element="content" :resolved="previewResolved" />
                 </div>
               </div>
             </div>
@@ -64,7 +71,7 @@
 
 <script setup lang="ts">
 import { useDark } from '@vueuse/core';
-import { computed, ref, toRef, watch } from 'vue';
+import { computed, toRef } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import ContentEditorFactory from '../ContentEditorFactory.vue';
@@ -82,7 +89,6 @@ import IFluentWeatherSunny24Regular from '~icons/fluent/weather-sunny24-regular'
 // values BlockPickerDialog uses, for the same reason.
 const PREVIEW_WIDTH = 1280;
 const PREVIEW_SCALE = 0.5;
-const ALL_WIDTHS: BlockWidth[] = ['prose', 'content', 'wide', 'full'];
 
 const props = defineProps<{
   open: boolean;
@@ -91,12 +97,25 @@ const props = defineProps<{
   tenantId?: number | null;
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'update:open', value: boolean): void;
   (e: 'update:content', value: ContentPart): void;
 }>();
 
 const contentType = computed(() => getContentType(props.content?.type));
+
+// Mirrors RCBlockCard: same per-type subset from the registry, same write-back path.
+// Section blocks (whose only allowed width is 'full') hide the picker via the
+// `allowedWidths.length > 1` v-if in the template, matching the inline card.
+const allowedWidths = computed<BlockWidth[]>(() => contentType.value.allowedWidths ?? [contentType.value.defaultWidth]);
+const currentWidth = computed<BlockWidth>(() => (props.content?.options?.width as BlockWidth | undefined) ?? contentType.value.defaultWidth);
+
+function setWidth(width: BlockWidth) {
+  emit('update:content', {
+    ...props.content,
+    options: { ...(props.content.options ?? {}), width },
+  });
+}
 
 // The preview's dark-mode toggle *is* the admin theme: useDark() writes the `.dark`
 // class to <html>, flipping the whole panel (preview included) in both directions.
@@ -104,19 +123,6 @@ const contentType = computed(() => getContentType(props.content?.type));
 // (`&:is(.dark *)`) matches any `.dark` ancestor, so it could force the preview dark but
 // never force it light when the admin theme is already dark.
 const isDark = useDark();
-
-// Local to this dialog — never writes back to the block's own options.width. Reset
-// to the block's actual current width each time the dialog opens.
-const previewWidth = ref<BlockWidth>(contentType.value.defaultWidth);
-watch(() => props.open, (isOpen) => {
-  if (!isOpen) return;
-  previewWidth.value = (props.content?.options?.width as BlockWidth | undefined) ?? contentType.value.defaultWidth;
-}, { immediate: true });
-
-const previewElement = computed<ContentPart | undefined>(() => {
-  if (!props.content) return undefined;
-  return { ...props.content, options: { ...(props.content.options ?? {}), width: previewWidth.value } };
-});
 
 // Gated on `open` too — this composable's watch lives for as long as the dialog
 // component instance does, which (per the `v-if="open"` above) is only while open,

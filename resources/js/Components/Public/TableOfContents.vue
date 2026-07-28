@@ -1,6 +1,8 @@
 <template>
-  <!-- Desktop: Styled sidebar card -->
-  <nav v-if="!mobileOnly" class="hidden lg:block" aria-label="Table of contents">
+  <!-- Desktop sidebar card. The mobile floating-button + Sheet variant was removed
+       entirely (see script docblock) — this is now desktop-only, matching its one
+       remaining caller (ContentPage.vue's `.rc-aside`, already `hidden lg:block`). -->
+  <nav class="hidden lg:block" aria-label="Table of contents">
     <div
       class="relative overflow-hidden rounded-xl bg-linear-to-br from-zinc-50 to-zinc-100/50 p-5 ring-1 ring-zinc-200/60 dark:from-zinc-900 dark:to-zinc-800/50 dark:ring-zinc-700/50">
       <!-- Subtle decorative element -->
@@ -61,62 +63,20 @@
       </div>
     </div>
   </nav>
-
-  <!-- Mobile: Floating button with Sheet -->
-  <div v-if="showMobileButton && links.length > 0" class="fixed bottom-20 right-4 z-50 lg:hidden">
-    <Sheet v-model:open="isSheetOpen">
-      <SheetTrigger as-child>
-        <Button variant="outline" size="icon"
-          class="size-12 rounded-full bg-background shadow-lg ring-1 ring-zinc-200/50 transition-all hover:shadow-xl hover:ring-zinc-300 dark:ring-zinc-700/50 dark:hover:ring-zinc-600">
-          <ListIcon class="size-5" />
-          <span class="sr-only">{{ $t('Turinys') }}</span>
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="bottom" class="max-h-[70vh] rounded-t-2xl">
-        <SheetHeader>
-          <SheetTitle class="flex items-center gap-2 text-base">
-            <ListIcon class="size-4" />
-            {{ $t('Turinys') }}
-          </SheetTitle>
-        </SheetHeader>
-        <nav class="mt-4 max-h-[50vh] space-y-1 overflow-y-auto pr-2" aria-label="Table of contents">
-          <template v-for="link in links" :key="link.href">
-            <a :href="link.href" class="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm transition-colors"
-              :class="[
-                activeId === link.href.slice(1)
-                  ? 'bg-vusa-red/10 font-medium text-vusa-red'
-                  : 'text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800'
-              ]" @click="handleMobileClick(link.href)">
-              <span class="size-1.5 rounded-full flex-shrink-0"
-                :class="activeId === link.href.slice(1) ? 'bg-vusa-red' : 'bg-zinc-400'" />
-              {{ link.title }}
-            </a>
-            <template v-for="child in link.children" :key="child.href">
-              <a :href="child.href" class="flex items-center gap-2 rounded-lg px-3 py-2 pl-7 text-sm transition-colors"
-                :class="[
-                  activeId === child.href.slice(1)
-                    ? 'bg-vusa-red/10 font-medium text-vusa-red'
-                    : 'text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-300'
-                ]" @click="handleMobileClick(child.href)">
-                <span class="size-1 rounded-full flex-shrink-0"
-                  :class="activeId === child.href.slice(1) ? 'bg-vusa-red/70' : 'bg-zinc-300 dark:bg-zinc-600'" />
-                {{ child.title }}
-              </a>
-            </template>
-          </template>
-        </nav>
-      </SheetContent>
-    </Sheet>
-  </div>
 </template>
 
 <script setup lang="ts">
+/**
+ * The mobile variant (a floating button opening a bottom Sheet) is gone: it
+ * duplicated `HighlightsFloatingButton`'s exact position (`fixed bottom-20 right-4
+ * z-50 lg:hidden`), the two stacked on top of each other on small screens, and a ToC
+ * is far less useful on a page you're mostly scrolling through top-to-bottom anyway.
+ * `ContentPage.vue` was this component's only caller and no longer renders it below
+ * `lg`.
+ */
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ListIcon } from 'lucide-vue-next';
-
-import { Button } from '@/Components/ui/button';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/Components/ui/sheet';
 
 interface AnchorLink {
   title: string;
@@ -127,16 +87,11 @@ interface AnchorLink {
 const props = withDefaults(defineProps<{
   links: AnchorLink[];
   offset?: number;
-  showMobileButton?: boolean;
-  mobileOnly?: boolean;
 }>(), {
   offset: 160,
-  showMobileButton: true,
-  mobileOnly: false,
 });
 
 const activeId = ref<string>('');
-const isSheetOpen = ref(false);
 
 // Flatten all links for active tracking
 const flatLinks = computed(() => {
@@ -159,11 +114,6 @@ const handleClick = (href: string) => {
     const top = element.getBoundingClientRect().top + window.scrollY - props.offset;
     window.scrollTo({ top, behavior: 'smooth' });
   }
-};
-
-const handleMobileClick = (href: string) => {
-  handleClick(href);
-  isSheetOpen.value = false;
 };
 
 const updateActiveId = () => {

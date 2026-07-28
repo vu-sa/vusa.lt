@@ -23,6 +23,8 @@ import GalleryIcon from '~icons/fluent/collections24-regular';
 import LinkListIcon from '~icons/fluent/link-multiple24-regular';
 import EventListIcon from '~icons/fluent/calendar-multiple24-regular';
 import PersonQuoteIcon from '~icons/fluent/text-quote24-regular';
+import SectionIcon from '~icons/fluent/text-header-1-24-regular';
+import SpacerIcon from '~icons/fluent/align-space-evenly-vertical-24-regular';
 
 /**
  * Canvas column a block resolves to (see `.rc-canvas` in app.css). `prose` is the
@@ -177,6 +179,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     value: 'hero',
     label: 'Hero',
     icon: HeroIcon,
+    isNew: true,
     description: 'Didelis turinio blokas su paveiksliuku',
     category: 'section',
     defaultWidth: 'full',
@@ -364,7 +367,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     label: 'Teksto laukas',
     icon: TextBoxIcon,
     description: 'Teksto įvedimo laukas su pateikimo mygtuku',
-    isNew: true,
+    isNew: false,
     category: 'embed',
     defaultWidth: 'prose',
     allowedWidths: ['prose', 'content'],
@@ -604,6 +607,32 @@ export const contentTypeRegistry: Record<string, ContentType> = {
       `,
     },
   },
+  'section': {
+    value: 'section',
+    label: 'Sekcija',
+    icon: SectionIcon,
+    description: 'Sekcijos antraštė, kuri apima sekančius blokus iki kitos sekcijos',
+    isNew: true,
+    category: 'section',
+    defaultWidth: 'full',
+    // Locked to full — a section marker is always full-bleed chrome around its
+    // children; a `content`/`wide` section would fight with its own nested canvas.
+    allowedWidths: ['full'],
+    selfSpaced: true,
+    defaultContent: () => ({}),
+    defaultOptions: () => ({ background: 'none', padding: 'lg', inner: 'full', wraps: 'following' }),
+    editor: defineAsyncComponent(() => import('./SectionEditor.vue')),
+    display: defineAsyncComponent(() => import('../RCSection/SectionDisplay.vue')),
+    skeleton: {
+      height: 'min-h-[120px]',
+      template: `
+        <div class="w-full py-12 px-4 flex flex-col items-center gap-3">
+          <Skeleton class="h-7 w-64 max-w-full" />
+          <Skeleton class="h-4 w-40" />
+        </div>
+      `,
+    },
+  },
   'person-quote': {
     value: 'person-quote',
     label: 'Asmens citata',
@@ -633,6 +662,24 @@ export const contentTypeRegistry: Record<string, ContentType> = {
         </div>
       `,
     },
+  },
+  'spacer': {
+    value: 'spacer',
+    label: 'Tarpas',
+    icon: SpacerIcon,
+    description: 'Vertikalus tarpas tarp blokų',
+    isNew: true,
+    category: 'section',
+    defaultWidth: 'prose',
+    // No visible chrome — width is a no-op on an empty block, so it's locked to the
+    // default prose column rather than offering a meaningless width picker.
+    selfSpaced: true,
+    defaultContent: () => ({}),
+    defaultOptions: () => ({ size: 'md' }),
+    editor: defineAsyncComponent(() => import('./SpacerEditor.vue')),
+    display: defineAsyncComponent(() => import('./SpacerDisplay.vue')),
+    // No skeleton — the block renders instantly (a single <div> with a height class),
+    // and the empty fallback would flash more than the real thing.
   },
 };
 

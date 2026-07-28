@@ -255,6 +255,12 @@ class ContentPart extends Model
                 $snapshot = $this->json_content['snapshot'] ?? [];
                 $content .= ' '.($snapshot['name'] ?? '').' '.($snapshot['attribution'] ?? '');
                 break;
+            case 'section':
+                // A marker block with no content of its own (see RichContentParser.vue's
+                // groupedContent) — only its own title/subtitle are searchable text; the
+                // blocks it wraps are indexed independently as their own parts.
+                $content = ($this->options['title'] ?? '').' '.($this->options['subtitle'] ?? '');
+                break;
         }
 
         return $content;

@@ -53,7 +53,9 @@ describe('RCSideBySideDialog', () => {
     expect(wrapper.find('.preview-stub').attributes('data-width')).toBe('content');
   });
 
-  it('changing the preview width updates the preview but never the original content object', async () => {
+  it('offers only the block\'s allowedWidths in the preview picker and saves the chosen width back to content', async () => {
+    // shadcn-card's registry allowedWidths = ['prose', 'content'] — 'full' must NOT
+    // appear (the picker used to show all four widths regardless of type).
     const content = makeContent();
     const wrapper = mount(RCSideBySideDialog, {
       props: { open: true, content },
@@ -62,13 +64,38 @@ describe('RCSideBySideDialog', () => {
       },
     });
 
-    const fullOption = wrapper.findAll('button').find(el => el.text().includes('rich-content.width_full'));
-    expect(fullOption, 'the "full" width option should be findable in the picker dropdown').toBeTruthy();
-    await fullOption!.trigger('click');
+    const buttons = wrapper.findAll('button');
+    const fullOption = buttons.find(el => el.text().includes('rich-content.width_full'));
+    const proseOption = buttons.find(el => el.text().includes('rich-content.width_prose'));
+    expect(fullOption, '"full" is not in shadcn-card\'s allowedWidths and must not be offered').toBeUndefined();
+    expect(proseOption, '"prose" is in shadcn-card\'s allowedWidths and should be offered').toBeTruthy();
 
-    expect(wrapper.find('.preview-stub').attributes('data-width')).toBe('full');
-    // The real content object must never be touched by the preview-only width picker.
-    expect(content.options.width).toBe('content');
+    // No update:content from merely rendering — the picker only emits on click.
+    expect(wrapper.emitted('update:content')).toBeUndefined();
+
+    await proseOption!.trigger('click');
+
+    // The width picker writes back through the same update:content channel the
+    // inline card uses — what's previewed is what's saved.
+    const emitted = wrapper.emitted('update:content');
+    const lastEmit = emitted?.[emitted.length - 1]?.[0] as { options?: { width?: string } } | undefined;
+    expect(lastEmit?.options?.width).toBe('prose');
+  });
+
+  it('hides the width picker entirely for blocks with a single allowed width (e.g. section)', () => {
+    const wrapper = mount(RCSideBySideDialog, {
+      props: {
+        open: true,
+        content: { id: 2, type: 'section', json_content: [], options: { width: 'full' } },
+      },
+      global: {
+        stubs: { ...commonStubs, ContentEditorFactory: ContentEditorFactoryStub, BlockPreviewRenderer: BlockPreviewRendererStub },
+      },
+    });
+
+    const buttons = wrapper.findAll('button');
+    const anyWidthOption = buttons.find(el => el.text().includes('rich-content.width_'));
+    expect(anyWidthOption, 'section only allows "full", so the picker should not render').toBeUndefined();
   });
 
   it('toggles dark mode through the global useDark() ref (no local .dark scoping)', async () => {

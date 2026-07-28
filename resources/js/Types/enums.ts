@@ -59,6 +59,7 @@ export enum ContentPartEnum {
   LINK_LIST = "link-list",
   EVENT_LIST = "event-list",
   PERSON_QUOTE = "person-quote",
+  SECTION = "section",
 }
 export enum DegreeEnum {
   BA = "BA",

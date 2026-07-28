@@ -360,6 +360,142 @@ describe('content part width validation', function () {
             ->assertStatus(302)
             ->assertSessionHasErrors(['content.parts.0.options']);
     });
+
+    test('accepts a valid options.rounded value, shared by every RCSection-chrome block', function () {
+        $data = getControllerTestData('Page')['valid'];
+        $data['tenant_id'] = $this->tenant->id;
+        $data['permalink'] = 'rounded-valid-'.time();
+        $data['content']['parts'][0]['options'] = ['rounded' => 'md'];
+
+        asUser($this->admin)
+            ->post(route('pages.store'), $data)
+            ->assertStatus(302)
+            ->assertSessionDoesntHaveErrors();
+    });
+
+    test('rejects an invalid options.rounded value', function () {
+        $data = getControllerTestData('Page')['valid'];
+        $data['tenant_id'] = $this->tenant->id;
+        $data['permalink'] = 'rounded-invalid-'.time();
+        $data['content']['parts'][0]['options'] = ['rounded' => 'huge'];
+
+        asUser($this->admin)
+            ->post(route('pages.store'), $data)
+            ->assertStatus(302)
+            ->assertSessionHasErrors(['content.parts.0.options.rounded']);
+    });
+
+    test('accepts a section block with wraps/inner options', function () {
+        $data = getControllerTestData('Page')['valid'];
+        $data['tenant_id'] = $this->tenant->id;
+        $data['permalink'] = 'section-valid-'.time();
+        $data['content']['parts'][] = [
+            'type' => 'section',
+            'json_content' => [],
+            'options' => ['title' => 'Skyrius', 'wraps' => 'following', 'inner' => 'wide'],
+        ];
+
+        asUser($this->admin)
+            ->post(route('pages.store'), $data)
+            ->assertStatus(302)
+            ->assertSessionDoesntHaveErrors();
+    });
+
+    test('rejects an invalid section wraps value', function () {
+        $data = getControllerTestData('Page')['valid'];
+        $data['tenant_id'] = $this->tenant->id;
+        $data['permalink'] = 'section-invalid-'.time();
+        $data['content']['parts'][] = [
+            'type' => 'section',
+            'json_content' => [],
+            'options' => ['wraps' => 'everything'],
+        ];
+
+        asUser($this->admin)
+            ->post(route('pages.store'), $data)
+            ->assertStatus(302)
+            ->assertSessionHasErrors(['content.parts.1.options.wraps']);
+    });
+
+    test('accepts a content-grid with verticalAlign', function () {
+        $data = getControllerTestData('Page')['valid'];
+        $data['tenant_id'] = $this->tenant->id;
+        $data['permalink'] = 'grid-align-valid-'.time();
+        $data['content']['parts'][] = [
+            'type' => 'content-grid',
+            'json_content' => [],
+            'options' => ['verticalAlign' => 'center'],
+        ];
+
+        asUser($this->admin)
+            ->post(route('pages.store'), $data)
+            ->assertStatus(302)
+            ->assertSessionDoesntHaveErrors();
+    });
+
+    test('rejects an invalid content-grid verticalAlign value', function () {
+        $data = getControllerTestData('Page')['valid'];
+        $data['tenant_id'] = $this->tenant->id;
+        $data['permalink'] = 'grid-align-invalid-'.time();
+        $data['content']['parts'][] = [
+            'type' => 'content-grid',
+            'json_content' => [],
+            'options' => ['verticalAlign' => 'top'],
+        ];
+
+        asUser($this->admin)
+            ->post(route('pages.store'), $data)
+            ->assertStatus(302)
+            ->assertSessionHasErrors(['content.parts.1.options.verticalAlign']);
+    });
+
+    test('accepts a manual link-list link with an imageUrl', function () {
+        $data = getControllerTestData('Page')['valid'];
+        $data['tenant_id'] = $this->tenant->id;
+        $data['permalink'] = 'link-image-valid-'.time();
+        $data['content']['parts'][] = [
+            'type' => 'link-list',
+            'json_content' => ['links' => [['title' => 'Nuoroda', 'url' => 'https://vusa.lt', 'imageUrl' => '/uploads/foto.png']]],
+            'options' => ['source' => 'manual', 'style' => 'photo'],
+        ];
+
+        asUser($this->admin)
+            ->post(route('pages.store'), $data)
+            ->assertStatus(302)
+            ->assertSessionDoesntHaveErrors();
+    });
+
+    test('accepts event-list tenantLabelStyle', function () {
+        $data = getControllerTestData('Page')['valid'];
+        $data['tenant_id'] = $this->tenant->id;
+        $data['permalink'] = 'event-label-style-valid-'.time();
+        $data['content']['parts'][] = [
+            'type' => 'event-list',
+            'json_content' => [],
+            'options' => ['groupBy' => 'tenant', 'tenantLabelStyle' => 'faculty'],
+        ];
+
+        asUser($this->admin)
+            ->post(route('pages.store'), $data)
+            ->assertStatus(302)
+            ->assertSessionDoesntHaveErrors();
+    });
+
+    test('rejects an invalid event-list tenantLabelStyle value', function () {
+        $data = getControllerTestData('Page')['valid'];
+        $data['tenant_id'] = $this->tenant->id;
+        $data['permalink'] = 'event-label-style-invalid-'.time();
+        $data['content']['parts'][] = [
+            'type' => 'event-list',
+            'json_content' => [],
+            'options' => ['tenantLabelStyle' => 'medium'],
+        ];
+
+        asUser($this->admin)
+            ->post(route('pages.store'), $data)
+            ->assertStatus(302)
+            ->assertSessionHasErrors(['content.parts.1.options.tenantLabelStyle']);
+    });
 });
 
 describe('tenant isolation', function () {

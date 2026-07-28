@@ -28,14 +28,30 @@ use Illuminate\Support\Facades\DB;
  *
  * Known gaps — things the static block system has no equivalent for, so the source
  * text/behaviour was adapted rather than copied verbatim:
- *  - MembershipPage's live "data updated N minutes ago" pill is computed client-side
- *    from a cache timestamp; number-stat-section only stores static numbers, so the
- *    ones below are a plausible snapshot, not the live-queried figures.
+ *  - MembershipPage's live "data updated N minutes ago" pill's *specific wording* is
+ *    computed client-side from a cache timestamp and re-renders on every visit; the
+ *    visual pattern itself (a plain dot-tag + italic caption) is now expressible
+ *    (`rcTag` mark, `plain`/`green`) and used below (part 3b) with static copy instead.
+ *  - number-stat-section only stores static numbers, so the figures below are a
+ *    plausible snapshot, not the live-queried figures.
  *  - SummerCamps' `isCurrentYear` copy switch and its live $tChoice camp/unit counts
  *    in the hero — the seeded hero always uses the "returning visitor" copy.
  *  - The FAQ (16 items) and photo gallery (16 images) are trimmed to a representative
  *    subset here — the accordion/gallery blocks handle either count identically, this
  *    is just about keeping the seeder itself readable.
+ *
+ * Now expressible (previously listed here as gaps, since fixed):
+ *  - The mascot section's "Maskotė" / "Aktyvi VU SA narė nuo 2003 m." dot-pills are
+ *    real `rcTag` marks (filled/plain, yellow), and its heading is a real `heading`
+ *    node with a `size`/`align` attribute (`rc-h-md`, left-aligned) — previously both
+ *    were just plain paragraphs, since the editor had no equivalent.
+ *  - The mascot section's rounded, contrast-background full-bleed wrapper is a real
+ *    `section` block (background: 'contrast', rounded: 'md'), not just the
+ *    content-grid's own chrome — demonstrating a block wrapping others.
+ *  - The overlay "Faktai / Fun Facts" card is contained within the image (not
+ *    overhanging its corner) via `overlayCorner`, matching the source exactly.
+ *  - SummerCamps' tenant group labels use `tenantLabelStyle: 'faculty'` (e.g.
+ *    "VU Filologijos fakultetas"), matching `SummerCampCard`'s naming.
  */
 class RichContentDemoPagesSeeder extends Seeder
 {
@@ -145,6 +161,55 @@ class RichContentDemoPagesSeeder extends Seeder
                 ]),
             ]],
         ];
+    }
+
+    /**
+     * A paragraph wrapping its whole text in the `rcTag` mark (App\Tiptap\RCTag) —
+     * the dot-pill "tag" seen throughout MembershipPage.vue, e.g. the "Maskotė" badge
+     * (filled/yellow) and "Aktyvi VU SA narė nuo 2003 m." (plain/yellow). Previously
+     * inexpressible in tiptap content; these were hand-coded page markup the block
+     * system had no equivalent for.
+     *
+     * @return array<string, mixed>
+     */
+    private function tiptapTagNode(string $text, string $variant, string $color, ?string $align = null): array
+    {
+        return [
+            'type' => 'paragraph',
+            'attrs' => $align ? ['align' => $align] : null,
+            'content' => [
+                ['type' => 'text', 'text' => $text, 'marks' => [['type' => 'rcTag', 'attrs' => ['variant' => $variant, 'color' => $color]]]],
+            ],
+        ];
+    }
+
+    /**
+     * A heading node with CustomHeading's `size`/`accent` attributes — reproduces the
+     * mascot section's `text-xl sm:text-2xl md:text-3xl` heading (`rc-h-md`) at a
+     * semantic h2, left-aligned to match the source's two-column (not centered)
+     * layout. Previously inexpressible: the editor only offered a plain h2/h3 toggle
+     * with no size/accent/alignment control.
+     *
+     * @return array<string, mixed>
+     */
+    private function tiptapHeadingNode(string $text, int $level = 2, ?string $size = null, ?string $accent = null, ?string $align = null): array
+    {
+        return [
+            'type' => 'heading',
+            'attrs' => array_filter([
+                'level' => $level,
+                'size' => $size,
+                'accent' => $accent,
+                'align' => $align,
+            ], fn ($value) => $value !== null),
+            'content' => [['type' => 'text', 'text' => $text]],
+        ];
+    }
+
+    /** A plain paragraph node (not a full `doc`) — for composing heterogeneous tiptap docs by hand. */
+    private function tiptapParagraphNode(string $text): array
+    {
+        return ['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => $text]]];
     }
 
     /**
@@ -267,27 +332,60 @@ class RichContentDemoPagesSeeder extends Seeder
                 'options' => ['color' => 'zinc', 'title' => $lt('VU SA skaičiais', 'VU SA in numbers'), 'background' => 'none', 'padding' => 'md'],
             ],
 
-            // 4. "Susipažink su Lijana!" — content-grid, 50/50 (matching the source's
-            // `lg:grid-cols-2`), text + a decorated, overlaid image. contrast (white)
-            // background matches the source's `bg-white dark:bg-zinc-950`.
+            // 3b. The small "data updated" caption directly under the stats
+            // (MembershipPage.vue:124-136) — a plain (no-background) green tag +
+            // italic text. The live page's *specific* wording ("atnaujinta prieš N
+            // minučių") stays a known gap (it's computed client-side from a cache
+            // timestamp on every render); this reproduces the visual pattern with
+            // static copy instead.
+            [
+                'type' => 'tiptap',
+                'json_content' => [
+                    'type' => 'doc',
+                    'content' => [
+                        $this->tiptapTagNode(
+                            $lt('Duomenys atnaujinami reguliariai', 'Data updated regularly'),
+                            'plain', 'green', 'center',
+                        ),
+                    ],
+                ],
+                'options' => ['width' => 'content'],
+            ],
+
+            // 4. "Susipažink su Lijana!" — wrapped in a `section` block (contrast
+            // background, rounded — matches the source's `2xl:rounded-lg bg-white
+            // dark:bg-zinc-950` full-bleed section, MembershipPage.vue:139), holding a
+            // content-grid, 50/50 (matching the source's `lg:grid-cols-2`), text +
+            // a decorated, overlaid image. `verticalAlign: 'center'` reproduces the
+            // source's `items-center` (the shorter text column no longer stretches to
+            // the taller image's height).
+            [
+                'type' => 'section',
+                'json_content' => [],
+                'options' => ['background' => 'contrast', 'rounded' => 'md'],
+            ],
             [
                 'type' => 'content-grid',
                 'json_content' => [[
                     'columns' => [
                         [
                             'width' => 'col-span-6',
-                            'content' => ['type' => 'tiptap', 'value' => $this->tiptapParagraphs([
-                                $lt('Maskotė', 'Mascot'),
-                                $lt(
-                                    'Mūsų vėžlė Lijana (vardą keičia beveik kasmet) yra ilgiausiai veikianti VU SA narė. Kaip ir jinai, mes tikime, kad nuoseklumas ir kantrybė lemia sėkmę – ne visada reikia skubėti, svarbiausia judėti teisinga kryptimi.',
-                                    'Our turtle Lijana (the name changes almost every year) is the longest-serving VU SA member. Like her, we believe that consistency and patience determine success – you don\'t always need to rush, the important thing is to move in the right direction.',
-                                ),
-                                $lt(
-                                    'Lijana simbolizuoja mūsų bendruomenės vieningumą – ilgalaikį įsipareigojimą studentų(-čių) gerovei. Užeik susipažinti su ja VU SA Centriniame biure Observatorijos kieme, Universiteto g. 3!',
-                                    'Lijana symbolizes our community\'s unity – long-term commitment to student welfare. Come visit her at the VU SA Central Office in the Observatory Yard, Universiteto st. 3!',
-                                ),
-                                $lt('Aktyvi VU SA narė nuo 2003 m.', 'Active VU SA member since 2003'),
-                            ])],
+                            'content' => ['type' => 'tiptap', 'value' => [
+                                'type' => 'doc',
+                                'content' => [
+                                    $this->tiptapTagNode($lt('Maskotė', 'Mascot'), 'filled', 'yellow', 'start'),
+                                    $this->tiptapHeadingNode($lt('Susipažink su Lijana!', 'Meet Lijana!'), level: 2, size: 'md', align: 'start'),
+                                    $this->tiptapParagraphNode($lt(
+                                        'Mūsų vėžlė Lijana (vardą keičia beveik kasmet) yra ilgiausiai veikianti VU SA narė. Kaip ir jinai, mes tikime, kad nuoseklumas ir kantrybė lemia sėkmę – ne visada reikia skubėti, svarbiausia judėti teisinga kryptimi.',
+                                        'Our turtle Lijana (the name changes almost every year) is the longest-serving VU SA member. Like her, we believe that consistency and patience determine success – you don\'t always need to rush, the important thing is to move in the right direction.',
+                                    )),
+                                    $this->tiptapParagraphNode($lt(
+                                        'Lijana simbolizuoja mūsų bendruomenės vieningumą – ilgalaikį įsipareigojimą studentų(-čių) gerovei. Užeik susipažinti su ja VU SA Centriniame biure Observatorijos kieme, Universiteto g. 3!',
+                                        'Lijana symbolizes our community\'s unity – long-term commitment to student welfare. Come visit her at the VU SA Central Office in the Observatory Yard, Universiteto st. 3!',
+                                    )),
+                                    $this->tiptapTagNode($lt('Aktyvi VU SA narė nuo 2003 m.', 'Active VU SA member since 2003'), 'plain', 'yellow', 'start'),
+                                ],
+                            ]],
                         ],
                         [
                             'width' => 'col-span-6',
@@ -297,19 +395,44 @@ class RichContentDemoPagesSeeder extends Seeder
                                 'alt' => 'VU SA turtle mascot Lijana',
                                 'objectPosition' => 'bottom right',
                                 'overlayContent' => ['title' => $lt('Faktai', 'Fun Facts'), 'subtitle' => $lt('Mėgsta salotų lapus ir studentų (-čių) renginius', 'Loves lettuce leaves and student events')],
+                                // Contained (not overhanging) — `overlayOverhang` defaults
+                                // false, so the card stays fully inside the image's
+                                // rounded corners rather than straddling the edge.
+                                'overlayCorner' => 'bottom-left',
                                 'decorations' => [['type' => 'line', 'position' => 'top-right', 'size' => 'lg', 'color' => 'vusa-yellow', 'opacity' => 60]],
                             ],
                         ],
                     ],
                 ]],
-                'options' => ['background' => 'contrast', 'padding' => 'lg', 'gap' => 'gap-8', 'mobileStacking' => true, 'equalHeight' => false],
+                // No 'padding'/'background' here — the wrapping `section` above already
+                // supplies both, and this content-grid used to *also* set padding:'lg',
+                // doubling the section's own py-16 into 128px of top+bottom whitespace.
+                'options' => ['padding' => 'none', 'gap' => 'gap-8', 'mobileStacking' => true, 'equalHeight' => false, 'verticalAlign' => 'center'],
             ],
 
-            // 5. Card stack — "VU SA strateginės veiklos kryptys"
+            // 4b. Terminates the mascot `section` above — `wraps: 'none'` means it
+            // absorbs nothing itself, which also means the *next* real section marker
+            // (there isn't one here) would otherwise keep absorbing everything to the
+            // end of the page. `padding`/`background: 'none'` (the defaults) make this
+            // a zero-height, zero-visual-impact marker — see RichContentParser.vue's
+            // `groupedContent` for the grouping rule this depends on.
+            [
+                'type' => 'section',
+                'json_content' => [],
+                'options' => ['wraps' => 'none', 'padding' => 'none', 'background' => 'none'],
+            ],
+
+            // 5. Card stack — "VU SA strateginės veiklos kryptys". Icons match the live
+            // page's `activityCards` (MembershipPage.vue: BookOpen/Palette/TrendingUp) —
+            // card-stack's icon support was previously ripped out mid-redesign (the type
+            // still had a `@deprecated` marker and the display/editor never rendered or
+            // exposed it, even though `cardIcons.ts`/`RCIcon.vue` were built for exactly
+            // this); restored here rather than left broken.
             [
                 'type' => 'card-stack',
                 'json_content' => [
                     [
+                        'icon' => 'book-open',
                         'title' => $lt('Kokybiškos studijos ir joms pritaikyta aplinka', 'Quality studies and adapted environment'),
                         'description' => $lt(
                             'Prisidėk prie personalizuotų studijų sąlygų kūrimo – studijų programų tobulinimo, dalykų pasirinkimo laisvės, tarpdiscipliniškumo ir tarptautinės patirties užtikrinimo.',
@@ -317,6 +440,7 @@ class RichContentDemoPagesSeeder extends Seeder
                         ),
                     ],
                     [
+                        'icon' => 'palette',
                         'title' => $lt('Stipri organizacija', 'Strong organization'),
                         'description' => $lt(
                             'Prisidėk prie efektyvių organizacijos procesų kūrimo – padėk užtikrinti, kad visi studentai (-ės) galėtų dalyvauti saviraiškos ir atstovavimo veiklose.',
@@ -324,6 +448,7 @@ class RichContentDemoPagesSeeder extends Seeder
                         ),
                     ],
                     [
+                        'icon' => 'trending-up',
                         'title' => $lt('Darni universitetinė bendruomenė', 'Sustainable university community'),
                         'description' => $lt(
                             'Prisidėk prie vieningos ir iniciatyvios bendruomenės kūrimo – stiprink tarpusavio ryšius, skatink lyderystę ir aktyvų dalyvavimą.',
@@ -488,7 +613,11 @@ class RichContentDemoPagesSeeder extends Seeder
                     'mode' => 'year', 'year' => $latestYear,
                     'categoryAlias' => 'freshmen-camps', 'tenantScope' => 'all',
                     'groupBy' => 'tenant', 'style' => 'cards', 'limit' => 24,
-                    'tenantLabelPrefix' => 'VU ',
+                    // 'faculty' derives "VU <nominative faculty>" (e.g.
+                    // "VU Filologijos fakultetas") from the locative tenant fullname —
+                    // see EventListResolver::facultyLabel. The previous 'short' style
+                    // showed the abbreviated shortname_vu ("VU EVAF").
+                    'tenantLabelStyle' => 'faculty',
                     'emptyMessage' => $lt('Šiais metais stovyklų informacija dar neskelbiama.', 'Camp information for this year has not been announced yet.'),
                     'background' => 'none', 'padding' => 'md',
                 ],

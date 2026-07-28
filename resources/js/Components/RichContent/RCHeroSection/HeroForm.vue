@@ -180,16 +180,101 @@
           <FieldLabel>{{ $t('rich-content.overlay_subtitle') }}</FieldLabel>
           <Input v-model="json_content.overlayContent.subtitle" type="text" :placeholder="$t('rich-content.enter_overlay_subtitle')" />
         </Field>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <Field>
+            <FieldLabel>{{ $t('rich-content.overlay_corner') }}</FieldLabel>
+            <Select :model-value="json_content.overlayCorner ?? 'bottom-left'" @update:model-value="json_content.overlayCorner = $event">
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="top-left">{{ $t('rich-content.overlay_corner_top_left') }}</SelectItem>
+                <SelectItem value="top-right">{{ $t('rich-content.overlay_corner_top_right') }}</SelectItem>
+                <SelectItem value="bottom-left">{{ $t('rich-content.overlay_corner_bottom_left') }}</SelectItem>
+                <SelectItem value="bottom-right">{{ $t('rich-content.overlay_corner_bottom_right') }}</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field>
+            <FieldLabel>{{ $t('rich-content.overlay_padding') }}</FieldLabel>
+            <Select :model-value="json_content.overlayPadding ?? 'md'" @update:model-value="json_content.overlayPadding = $event">
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="sm">{{ $t('rich-content.small') }}</SelectItem>
+                <SelectItem value="md">{{ $t('rich-content.medium') }}</SelectItem>
+                <SelectItem value="lg">{{ $t('rich-content.large') }}</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+          <div class="flex items-center gap-3 pt-6">
+            <Switch v-model="json_content.overlayOverhang" />
+            <span class="text-sm text-zinc-700 dark:text-zinc-300">
+              {{ $t('rich-content.overlay_overhang') }}
+            </span>
+          </div>
+        </div>
       </div>
     </Field>
 
     <!-- Image Decorations — split-only; panel's thumbnail is a plain image. -->
     <RCDecorationListEditor v-if="options.variant === 'split' || !options.variant" v-model="options.imageDecorations" />
+
+    <!-- Background appearance — split/centered/banner only; panel keeps its own fixed
+         gradient-panel chrome (no room for an alternate background there). -->
+    <Field v-if="options.variant !== 'panel'">
+      <FieldLabel>{{ $t('rich-content.section_options') }}</FieldLabel>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <Field>
+          <FieldLabel>{{ $t('rich-content.section_background') }}</FieldLabel>
+          <Select :model-value="options.background ?? 'muted'" @update:model-value="options.background = $event">
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">{{ $t('rich-content.section_background_none') }}</SelectItem>
+              <SelectItem value="muted">{{ $t('rich-content.section_background_muted') }}</SelectItem>
+              <SelectItem value="contrast">{{ $t('rich-content.section_background_contrast') }}</SelectItem>
+              <SelectItem value="gradient">{{ $t('rich-content.section_background_gradient') }}</SelectItem>
+            </SelectContent>
+          </Select>
+        </Field>
+        <Field>
+          <FieldLabel>{{ $t('rich-content.section_padding') }}</FieldLabel>
+          <Select :model-value="options.padding ?? ''" @update:model-value="options.padding = $event">
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">{{ $t('rich-content.section_padding_none') }}</SelectItem>
+              <SelectItem value="sm">{{ $t('rich-content.small') }}</SelectItem>
+              <SelectItem value="md">{{ $t('rich-content.medium') }}</SelectItem>
+              <SelectItem value="lg">{{ $t('rich-content.large') }}</SelectItem>
+            </SelectContent>
+          </Select>
+        </Field>
+        <Field>
+          <FieldLabel>{{ $t('rich-content.section_rounded') }}</FieldLabel>
+          <Select :model-value="options.rounded ?? 'none'" @update:model-value="options.rounded = $event">
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">{{ $t('rich-content.section_rounded_none') }}</SelectItem>
+              <SelectItem value="sm">{{ $t('rich-content.small') }}</SelectItem>
+              <SelectItem value="md">{{ $t('rich-content.medium') }}</SelectItem>
+              <SelectItem value="lg">{{ $t('rich-content.large') }}</SelectItem>
+            </SelectContent>
+          </Select>
+        </Field>
+      </div>
+    </Field>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, h, ref } from 'vue';
+import { computed, h, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import type { Hero } from '@/Types/contentParts';
@@ -210,6 +295,20 @@ const options = defineModel<Hero['options']>('options', { required: true });
 const json_content = defineModel<Hero['json_content']>({ required: true });
 
 const showFocalPoint = ref(false);
+
+// The split variant reveals the Overlay Content inputs, whose v-models reach into
+// `overlayContent.title`/`.subtitle`. A hero created or seeded without that key
+// (e.g. the demo seeder's panel heroes, later switched to split) would crash on the
+// first render of those inputs, so ensure the object exists whenever split is active.
+watch(
+  () => options.value?.variant ?? 'split',
+  (variant) => {
+    if ((variant === 'split' || !variant) && !json_content.value.overlayContent) {
+      json_content.value.overlayContent = { title: '', subtitle: '' };
+    }
+  },
+  { immediate: true },
+);
 
 // centered/banner render no image at all; split and panel both need one (split's
 // two-column layout, panel's square thumbnail) even though panel skips the

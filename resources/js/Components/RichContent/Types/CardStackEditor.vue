@@ -48,6 +48,10 @@
         <template #item="{ item, update }">
           <div class="flex flex-col gap-3">
             <Field>
+              <FieldLabel>{{ $t('rich-content.icon') }}</FieldLabel>
+              <RCIconSelect allow-none :model-value="item.icon" @update:model-value="update({ ...item, icon: $event })" />
+            </Field>
+            <Field>
               <FieldLabel>{{ $t('rich-content.title') }}</FieldLabel>
               <Input
                 :model-value="item.title"
@@ -76,6 +80,7 @@
 <script setup lang="ts">
 import type { CardStack } from '@/Types/contentParts';
 import RCSectionOptions from '../Editor/RCSectionOptions.vue';
+import RCIconSelect from '../RCIconSelect.vue';
 import { Switch } from '@/Components/ui/switch';
 import { Input } from '@/Components/ui/input';
 import { Field, FieldLabel } from '@/Components/ui/field';
@@ -86,6 +91,7 @@ const json_content = defineModel<CardStack['json_content']>({ default: () => [] 
 
 function createCard(): CardStack['json_content'][number] {
   return {
+    icon: '',
     title: '',
     description: '',
   };

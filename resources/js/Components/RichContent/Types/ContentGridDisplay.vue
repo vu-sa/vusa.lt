@@ -2,6 +2,7 @@
   <RCSection
     :title="processedOptions.title" :subtitle="processedOptions.subtitle"
     :background="processedOptions.background ?? 'none'" :padding="processedOptions.padding ?? 'none'"
+    :rounded="processedOptions.rounded ?? 'none'" :align="processedOptions.align ?? 'center'"
     inner="full" :id="anchorId ? `rc-${anchorId}` : undefined"
   >
     <div class="content-grid">
@@ -13,6 +14,7 @@
             processedOptions.gap || 'gap-4',
             'grid-cols-12',
             processedOptions.mobileStacking ? 'max-md:grid-cols-1' : '',
+            VERTICAL_ALIGN_CLASS[processedOptions.verticalAlign ?? 'stretch'],
           ]">
             <div v-for="(column, colIndex) in row.columns" :key="colIndex" :class="[
               column.width,
@@ -29,6 +31,9 @@
                   :height-class="processedOptions.equalHeight ? 'h-full' : 'aspect-video'"
                   :object-position="column.content.objectPosition"
                   :overlay-content="column.content.overlayContent"
+                  :overlay-corner="column.content.overlayCorner"
+                  :overlay-overhang="column.content.overlayOverhang"
+                  :overlay-padding="column.content.overlayPadding"
                   :decorations="column.content.decorations"
                 />
               </div>
@@ -60,6 +65,18 @@ import RichContentTiptapHTML from '../RichContentTiptapHTML.vue';
 import RCFeatureCard from '../RCFeatureCard.vue';
 import RCSection from '../RCSection.vue';
 import ImageWithDecorations from '@/Components/ui/ImageWithDecorations.vue';
+import type { SectionBackground, SectionPadding, SectionRounded } from '../sectionClasses';
+
+// The user's specific complaint was a short text column stretching to the row's
+// height with its content pinned to the top — `grid` items default to `stretch` with
+// nothing overriding it. `center` reproduces MembershipPage's `items-center` mascot
+// layout (a text column beside a taller decorated image).
+const VERTICAL_ALIGN_CLASS: Record<string, string> = {
+  stretch: '',
+  start: 'items-start',
+  center: 'items-center',
+  end: 'items-end',
+};
 
 const props = defineProps<{
   element: {
@@ -67,8 +84,13 @@ const props = defineProps<{
     options?: {
       title?: string;
       subtitle?: string;
-      background?: 'none' | 'muted' | 'contrast' | 'gradient';
-      padding?: 'none' | 'sm' | 'md' | 'lg';
+      background?: SectionBackground;
+      padding?: SectionPadding;
+      rounded?: SectionRounded;
+      /** Header alignment, forwarded to RCSection — grids default to centered like every other section block. */
+      align?: 'center' | 'start';
+      /** Vertical alignment of column content within each row. */
+      verticalAlign?: 'stretch' | 'start' | 'center' | 'end';
       gap?: string;
       mobileStacking?: boolean;
       equalHeight?: boolean;

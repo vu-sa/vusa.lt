@@ -163,6 +163,14 @@ export const contentSamples: Record<string, () => ContentSample> = {
       meta: { total: 2, truncated: false, style: 'cards' },
     },
   }),
+  'section': () => ({
+    json_content: {},
+    options: { title: 'VU SA skaičiais', subtitle: 'Sužinok daugiau apie mus', background: 'muted', padding: 'lg' },
+  }),
+  'spacer': () => ({
+    json_content: {},
+    options: { size: 'lg' },
+  }),
   'person-quote': () => ({
     json_content: {
       quote: tiptapDoc(['Narystė VU SA man atvėrė galimybę prisidėti prie realių pokyčių universitete.']),

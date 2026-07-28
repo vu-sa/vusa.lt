@@ -138,6 +138,7 @@ final class LinkListResolver implements ResolvesContentPart
         foreach (array_slice($links, 0, self::MAX_ITEMS) as $link) {
             $url = is_string($link['url'] ?? null) ? $link['url'] : null;
             $title = is_string($link['title'] ?? null) ? trim($link['title']) : null;
+            $imageUrl = is_string($link['imageUrl'] ?? null) && $link['imageUrl'] !== '' ? $link['imageUrl'] : null;
 
             // Never trust an author-typed URL without validating scheme+shape — an
             // href rendered straight from this array must not become `javascript:`.
@@ -148,7 +149,7 @@ final class LinkListResolver implements ResolvesContentPart
                 continue;
             }
 
-            $items[] = ['id' => null, 'title' => $title, 'href' => $url, 'imageUrl' => null, 'publishedAt' => null];
+            $items[] = ['id' => null, 'title' => $title, 'href' => $url, 'imageUrl' => $imageUrl, 'publishedAt' => null];
         }
 
         return $items;

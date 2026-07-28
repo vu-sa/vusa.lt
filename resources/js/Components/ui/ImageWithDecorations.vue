@@ -20,11 +20,11 @@
     <!-- Overlay content (like the overlapping text card in hero) -->
     <div v-if="hasOverlayContent" :class="[
       'absolute rounded-xl shadow-xl border border-zinc-100 dark:border-zinc-700',
-      overlayPosition,
+      overlayPositionClass,
       overlaySize,
       overlayStyle === 'backdrop'
-        ? 'bg-white/95 dark:bg-zinc-800/95 backdrop-blur-sm p-2.5'
-        : 'bg-white dark:bg-zinc-800 p-2 sm:p-3 md:p-4 2xl:p-6'
+        ? ['bg-white/95 dark:bg-zinc-800/95 backdrop-blur-sm', overlayPaddingClass]
+        : ['bg-white dark:bg-zinc-800', overlayPaddingClass]
     ]">
       <div class="flex items-center space-x-1 sm:space-x-2 md:space-x-3 mb-1 sm:mb-2">
         <div class="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 bg-vusa-yellow rounded-full" />
@@ -64,6 +64,8 @@ interface OverlayContent {
   subtitle: string;
 }
 
+type OverlayCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+
 interface Props {
   src: string;
   alt: string;
@@ -73,11 +75,26 @@ interface Props {
   decorations?: DecorationConfig[];
   icon?: any; // Vue component
   overlayContent?: OverlayContent;
+  /**
+   * Free-text position classes — kept for back-compat with existing authored content
+   * (e.g. MembershipPage.vue's `overlay-position="bottom-4 left-4"`). Ignored whenever
+   * `overlayCorner` is set; that's the authorable alternative (see below).
+   */
   overlayPosition?: string;
   overlaySize?: string;
   overlayStyle?: 'default' | 'backdrop';
   objectPosition?: string;
   hoverScale?: boolean;
+  /**
+   * Authorable corner + containment for the overlay card, superseding the raw
+   * `overlayPosition` string once set. `overlayOverhang: true` reproduces the old
+   * default (card straddles the image edge); `false` (the default) keeps the whole
+   * card inside the image, which is what most editors actually want — a card that
+   * "protrudes" past the rounded corner reads as a layout bug more often than a look.
+   */
+  overlayCorner?: OverlayCorner;
+  overlayOverhang?: boolean;
+  overlayPadding?: 'sm' | 'md' | 'lg';
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -88,12 +105,46 @@ const props = withDefaults(defineProps<Props>(), {
   overlayPosition: '-bottom-3 -left-3 sm:-bottom-4 sm:-left-4 md:-bottom-6 md:-left-6 2xl:-bottom-8 2xl:-left-8',
   overlaySize: 'max-w-[200px] sm:max-w-xs',
   overlayStyle: 'default',
+  overlayOverhang: false,
+  overlayPadding: 'md',
 });
 
 // `overlayContent` may be present as an object with empty strings (e.g. a hero
 // block's default json_content before an author fills it in) — render the overlay
 // card only when there's actually something to show in it.
 const hasOverlayContent = computed(() => !!(props.overlayContent?.title || props.overlayContent?.subtitle));
+
+const OVERHANG_POSITION_CLASS: Record<OverlayCorner, string> = {
+  'bottom-left': '-bottom-3 -left-3 sm:-bottom-4 sm:-left-4 md:-bottom-6 md:-left-6 2xl:-bottom-8 2xl:-left-8',
+  'bottom-right': '-bottom-3 -right-3 sm:-bottom-4 sm:-right-4 md:-bottom-6 md:-right-6 2xl:-bottom-8 2xl:-right-8',
+  'top-left': '-top-3 -left-3 sm:-top-4 sm:-left-4 md:-top-6 md:-left-6 2xl:-top-8 2xl:-left-8',
+  'top-right': '-top-3 -right-3 sm:-top-4 sm:-right-4 md:-top-6 md:-right-6 2xl:-top-8 2xl:-right-8',
+};
+
+// Positive insets — the card sits fully inside the image's own rounded corners,
+// instead of straddling them.
+const CONTAINED_POSITION_CLASS: Record<OverlayCorner, string> = {
+  'bottom-left': 'bottom-3 left-3 sm:bottom-4 sm:left-4',
+  'bottom-right': 'bottom-3 right-3 sm:bottom-4 sm:right-4',
+  'top-left': 'top-3 left-3 sm:top-4 sm:left-4',
+  'top-right': 'top-3 right-3 sm:top-4 sm:right-4',
+};
+
+const overlayPositionClass = computed(() => {
+  if (!props.overlayCorner) return props.overlayPosition;
+
+  return props.overlayOverhang
+    ? OVERHANG_POSITION_CLASS[props.overlayCorner]
+    : CONTAINED_POSITION_CLASS[props.overlayCorner];
+});
+
+const OVERLAY_PADDING_CLASS: Record<'sm' | 'md' | 'lg', string> = {
+  sm: 'p-2',
+  md: 'p-2.5 sm:p-3 md:p-4',
+  lg: 'p-3 sm:p-4 md:p-6 2xl:p-6',
+};
+
+const overlayPaddingClass = computed(() => OVERLAY_PADDING_CLASS[props.overlayPadding]);
 
 const heightClass = computed(() => {
   if (props.heightClass) return props.heightClass;

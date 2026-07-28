@@ -55,6 +55,29 @@ describe('card-stack', () => {
     await wrapper.find('button').trigger('click'); // an indicator dot
     expect(wrapper.exists()).toBe(true);
   });
+
+  it('renders an icon badge above the title when a card has one, and centers the text when it does not', () => {
+    const element = {
+      type: 'card-stack',
+      json_content: [
+        { icon: 'book-open', title: 'With icon', description: 'a' },
+        { title: 'Without icon', description: 'b' },
+      ],
+      options: { autoplay: false, autoplayDelay: 5000, hintText: '' },
+    };
+    const wrapper = mount(CardStackDisplay, { props: { element } });
+    const cards = wrapper.findAll('.absolute.inset-0');
+
+    // Card with an icon: a badge renders, and the text group isn't given the
+    // vertical-centering classes (it flows naturally below the badge).
+    expect(cards[0]!.find('svg').exists()).toBe(true);
+    expect(cards[0]!.find('h3').element.parentElement?.className).not.toContain('justify-center');
+
+    // Card with no icon: no badge, and the text group centers vertically instead of
+    // sitting bunched at the top of the card.
+    expect(cards[1]!.find('svg').exists()).toBe(false);
+    expect(cards[1]!.find('h3').element.parentElement?.className).toContain('justify-center');
+  });
 });
 
 describe('carousel-slide-deck', () => {

@@ -2,6 +2,7 @@
   <RCSection
     :title="element.options?.title" :subtitle="element.options?.subtitle"
     :background="element.options?.background ?? 'none'" :padding="element.options?.padding ?? 'md'"
+    :rounded="element.options?.rounded ?? 'none'"
     inner="wide" :id="anchorId ? `rc-${anchorId}` : undefined"
   >
     <div class="flex flex-wrap mx-auto font-bold text-xl leading-tight justify-center gap-6 md:gap-8">

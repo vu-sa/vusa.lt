@@ -37,6 +37,30 @@
             <span class="text-sm">Vienodo aukščio stulpeliai</span>
           </div>
         </FormFieldWrapper>
+        <FormFieldWrapper id="verticalAlign" :label="$t('rich-content.grid_vertical_align')">
+          <Select :model-value="options.verticalAlign ?? 'stretch'" @update:model-value="options.verticalAlign = $event">
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="stretch">{{ $t('rich-content.grid_vertical_align_stretch') }}</SelectItem>
+              <SelectItem value="start">{{ $t('rich-content.grid_vertical_align_start') }}</SelectItem>
+              <SelectItem value="center">{{ $t('rich-content.grid_vertical_align_center') }}</SelectItem>
+              <SelectItem value="end">{{ $t('rich-content.grid_vertical_align_end') }}</SelectItem>
+            </SelectContent>
+          </Select>
+        </FormFieldWrapper>
+        <FormFieldWrapper id="align" :label="$t('rich-content.grid_header_align')">
+          <Select :model-value="options.align ?? 'center'" @update:model-value="options.align = $event">
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="center">{{ $t('rich-content.grid_header_align_center') }}</SelectItem>
+              <SelectItem value="start">{{ $t('rich-content.grid_header_align_start') }}</SelectItem>
+            </SelectContent>
+          </Select>
+        </FormFieldWrapper>
       </div>
 
       <!-- Row management -->
@@ -148,6 +172,33 @@
                       <Input :model-value="column.content.overlayContent?.subtitle"
                         type="text" :placeholder="$t('rich-content.enter_overlay_subtitle')"
                         @update:model-value="setOverlayField(column, 'subtitle', $event as string)" />
+                    </div>
+                    <div class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                      <Select :model-value="column.content.overlayCorner ?? 'bottom-left'" @update:model-value="column.content.overlayCorner = $event">
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="top-left">{{ $t('rich-content.overlay_corner_top_left') }}</SelectItem>
+                          <SelectItem value="top-right">{{ $t('rich-content.overlay_corner_top_right') }}</SelectItem>
+                          <SelectItem value="bottom-left">{{ $t('rich-content.overlay_corner_bottom_left') }}</SelectItem>
+                          <SelectItem value="bottom-right">{{ $t('rich-content.overlay_corner_bottom_right') }}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Select :model-value="column.content.overlayPadding ?? 'md'" @update:model-value="column.content.overlayPadding = $event">
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="sm">{{ $t('rich-content.small') }}</SelectItem>
+                          <SelectItem value="md">{{ $t('rich-content.medium') }}</SelectItem>
+                          <SelectItem value="lg">{{ $t('rich-content.large') }}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <div class="flex items-center gap-2">
+                        <Switch :model-value="column.content.overlayOverhang" @update:model-value="val => column.content.overlayOverhang = val" />
+                        <span class="text-sm">{{ $t('rich-content.overlay_overhang') }}</span>
+                      </div>
                     </div>
                   </FormFieldWrapper>
                   <RCDecorationListEditor

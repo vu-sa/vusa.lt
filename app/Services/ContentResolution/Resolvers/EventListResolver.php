@@ -9,6 +9,7 @@ use App\Services\ContentResolution\ResolvesContentPart;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 /**
  * Resolves `event-list` blocks: a filtered, optionally tenant-grouped list of Calendar
@@ -44,8 +45,15 @@ final class EventListResolver implements ResolvesContentPart
         $groupByTenant = ($options['groupBy'] ?? 'none') === 'tenant';
         $style = in_array($options['style'] ?? null, ['cards', 'list'], true) ? $options['style'] : 'cards';
         $tenantLabelPrefix = is_string($options['tenantLabelPrefix'] ?? null) ? $options['tenantLabelPrefix'] : '';
+        // 'faculty' → "VU <nominative faculty>" (e.g. "VU Filologijos fakultetas"),
+        // derived from the locative `fullname` by stripping the common VU SA prefix and
+        // reversing the locative ending. Mirrors the client-side `getFacultyName`
+        // (Utils/String.ts) used by SummerCampCard; kept in sync so the two surfaces
+        // agree. The central VU SA tenant has no faculty part, so it falls back to its
+        // fullname.
+        $tenantLabelStyle = ($options['tenantLabelStyle'] ?? 'full') === 'faculty' ? 'faculty' : 'full';
 
-        $query = Calendar::query()->where('is_draft', false)->with(['media', 'tenant:id,alias,fullname']);
+        $query = Calendar::query()->where('is_draft', false)->with(['media', 'tenant:id,alias,fullname,shortname']);
 
         $alias = $options['categoryAlias'] ?? null;
         if (is_string($alias) && $alias !== '') {
@@ -82,15 +90,24 @@ final class EventListResolver implements ResolvesContentPart
         $events = $query->orderBy('date')->limit($rowCap)->get();
 
         if ($groupByTenant) {
-            $groups = $events->groupBy('tenant_id')->map(function (Collection $tenantEvents) use ($tenantLabelPrefix, $context) {
+            $groups = $events->groupBy('tenant_id')->map(function (Collection $tenantEvents) use ($tenantLabelPrefix, $tenantLabelStyle, $context) {
                 $tenant = $tenantEvents->first()->tenant;
+                $label = $tenantLabelStyle === 'faculty'
+                    ? $this->facultyLabel($tenant->fullname)
+                    : trim($tenantLabelPrefix.' '.$tenant->fullname);
 
                 return [
                     'key' => (string) $tenant->id,
-                    'label' => trim($tenantLabelPrefix.' '.$tenant->fullname),
+                    'label' => $label,
                     'items' => $tenantEvents->sortBy('date')->values()->map(fn (Calendar $e) => $this->mapEvent($e, $context))->all(),
                 ];
-            })->values()->all();
+            })
+                // Groups previously kept whichever order tenants first appeared in the
+                // date-sorted event list — "whoever has the earliest event first" —
+                // which reads as arbitrary in a grid of cards. Alphabetical by label is
+                // stable and predictable regardless of event dates.
+                ->sortBy('label')
+                ->values()->all();
 
             return [
                 'type' => 'event-list',
@@ -170,5 +187,32 @@ final class EventListResolver implements ResolvesContentPart
             // regardless of which subdomain it was reached through.
             'href' => route('calendar.event', ['calendar' => $event->id, 'lang' => $context->locale, 'subdomain' => 'www']),
         ];
+    }
+
+    /**
+     * Derives a "VU <nominative faculty>" label from the locative tenant fullname,
+     * e.g. "VU Filologijos fakultetas" from "... Studentų atstovybė Filologijos fakultete".
+     *
+     * Server-side port of the client-side `getFacultyName` util (resources/js/Utils/String.ts) —
+     * the two must stay in lockstep so SummerCampCard and this resolver render the same names.
+     * Tenants without a faculty part (the central VU SA tenant, clubs) fall back to
+     * their fullname rather than a malformed "VU " prefix.
+     */
+    private function facultyLabel(string $fullname): string
+    {
+        $after = trim(Str::after($fullname, 'Vilniaus universiteto Studentų atstovybė'));
+        if ($after === '') {
+            return $fullname;
+        }
+
+        foreach (['ete' => 'etas', 'tre' => 'tras', 'ykloje' => 'ykla', 'ute' => 'utas', 'joje' => 'ja'] as $from => $to) {
+            if (str_ends_with($after, $from)) {
+                $after = substr($after, 0, -strlen($from)).$to;
+
+                break;
+            }
+        }
+
+        return 'VU '.$after;
     }
 }

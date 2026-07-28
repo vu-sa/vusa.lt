@@ -11,9 +11,27 @@ export interface SectionOptions {
   subtitle?: string;
   background?: 'none' | 'muted' | 'contrast' | 'gradient';
   padding?: 'none' | 'sm' | 'md' | 'lg';
+  rounded?: 'none' | 'sm' | 'md' | 'lg';
 }
 
 // Implemented
+
+/**
+ * A marker block, not a container — see `RichContentParser.vue`'s `groupedContent`.
+ * It carries no content of its own; every part that follows it in the flat
+ * `content_parts` order becomes a child rendered inside its `<section>`, up to the
+ * next `section` marker (or the end of the content).
+ */
+export interface Section {
+  json_content: Record<string, never>;
+  options: SectionOptions & {
+    /** Inner content max-width for the section's own header/canvas — independent of the block's own canvas column. */
+    inner?: 'prose' | 'content' | 'wide' | 'full';
+    align?: 'center' | 'start';
+    /** `following` (default): wraps every part up to the next section marker. `none`: header-only, wraps nothing. */
+    wraps?: 'following' | 'none';
+  };
+}
 
 // Content Grid type - updated with the simplified structure
 export interface ContentGrid {
@@ -29,6 +47,11 @@ export interface ContentGrid {
         /** `"x% y%"` CSS object-position, set via FocalPointPicker. */
         objectPosition?: string;
         overlayContent?: { title: string; subtitle: string };
+        /** Which image corner the overlay card sits in — see ImageWithDecorations.vue. */
+        overlayCorner?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+        /** `true` lets the card straddle the image edge; `false` (default) keeps it fully contained. */
+        overlayOverhang?: boolean;
+        overlayPadding?: 'sm' | 'md' | 'lg';
         decorations?: DecorationConfig[];
       };
     }[];
@@ -37,6 +60,10 @@ export interface ContentGrid {
     gap?: 'gap-2' | 'gap-4' | 'gap-6' | 'gap-8';
     mobileStacking?: boolean;
     equalHeight?: boolean;
+    /** Header alignment, forwarded to RCSection — grids default to centered like every other section block. */
+    align?: 'center' | 'start';
+    /** Vertical alignment of column content within each row — grid items stretch by default. */
+    verticalAlign?: 'stretch' | 'start' | 'center' | 'end';
   };
 }
 
@@ -94,6 +121,11 @@ export interface Hero {
       title: string;
       subtitle: string;
     };
+    /** `split` only. Which image corner the overlay card sits in — see ImageWithDecorations.vue. */
+    overlayCorner?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+    /** `true` lets the card straddle the image edge; `false` (default) keeps it fully contained. */
+    overlayOverhang?: boolean;
+    overlayPadding?: 'sm' | 'md' | 'lg';
     buttons?: {
       text: string;
       link: string;
@@ -113,6 +145,13 @@ export interface Hero {
      * `panel`: the SummerCamps-style rounded gradient panel with a square thumbnail.
      */
     variant?: 'split' | 'centered' | 'banner' | 'panel';
+    /**
+     * `split`/`centered`/`banner` only — `panel` keeps its own fixed gradient chrome.
+     * Defaults reproduce each variant's previous hardcoded look exactly (see HeroElement.vue).
+     */
+    background?: 'none' | 'muted' | 'contrast' | 'gradient';
+    padding?: 'none' | 'sm' | 'md' | 'lg';
+    rounded?: 'none' | 'sm' | 'md' | 'lg';
   };
 }
 
@@ -228,7 +267,7 @@ export interface CarouselSlideDeck {
 
 export interface CardStack {
   json_content: {
-    /** @deprecated Cards no longer render an icon — kept optional so old rows still validate. */
+    /** CMS-stored icon name (see cardIcons.ts) shown in a badge above the title. Optional — a card with no icon centers its text vertically instead (RCCardStack/CardStackDisplay.vue). */
     icon?: string;
     title: string;
     description: string;
@@ -266,7 +305,8 @@ export interface PhotoGalleryGrid {
  */
 export interface LinkList {
   json_content: {
-    links: { title: string; url: string }[];
+    /** `imageUrl` only renders in `style: 'photo'` — `compact` never shows it. */
+    links: { title: string; url: string; imageUrl?: string | null }[];
     /**
      * Editor-only bookkeeping so `CollectionSelectDialog` can re-open with the
      * currently-pinned news/pages pre-checked (it needs a title to render a pinned
@@ -321,8 +361,15 @@ export interface EventList {
     groupBy?: 'none' | 'tenant';
     limit?: number;
     style?: 'cards' | 'list';
-    /** e.g. `"VU "` — prefixed onto the tenant fullname when grouped, reproducing SummerCamps' faculty naming. */
+    /** e.g. `"VU "` — prefixed onto the tenant fullname when grouped, reproducing SummerCamps' faculty naming. `full` style only. */
     tenantLabelPrefix?: string;
+    /**
+     * `full` (default): `tenantLabelPrefix` + the locative `fullname`.
+     * `faculty`: `"VU " + nominative faculty` derived from the fullname (e.g. "VU Filologijos fakultetas"
+     * from "...atstovybė Filologijos fakultete"); the central tenant falls back to its fullname.
+     * Mirrors the client-side `getFacultyName` util (see EventListResolver::facultyLabel).
+     */
+    tenantLabelStyle?: 'full' | 'faculty';
     emptyMessage?: string;
   };
 }
@@ -351,6 +398,20 @@ export interface EventListResolved {
   groups: EventListResolvedGroup[];
   items: EventListResolvedItem[];
   meta: { total: number; truncated: boolean; style: 'cards' | 'list' };
+}
+
+/**
+ * Empty layout block whose only job is to insert a controlled vertical gap between
+ * its siblings. The canvas's own `--rc-flow` rhythm is fixed (~2.5rem) and applies
+ * uniformly to every sibling pair; this block — flagged `selfSpaced` so it picks up
+ * `.rc-flush` — replaces that rhythm with a height the author picks from `options.size`.
+ * No `json_content`, no resolver, no visible chrome.
+ */
+export interface Spacer {
+  json_content: Record<string, never>;
+  options: {
+    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  };
 }
 
 /**

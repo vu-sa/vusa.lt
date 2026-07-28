@@ -7,6 +7,29 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.21 — Content Sections, Tags and Heading Styles (2026-07-28) {#v1-21}
+
+- ⭐ **New "Spacer" block** — lets you control the vertical gap between any two content blocks when the default spacing doesn't fit; five sizes from extra small to huge
+- ⭐ **New "Section" block** — groups every block that follows it into one section with a shared title, background, and rounded corners, up to the next section block
+- ⭐ **Headings can have a size, color accent, text alignment, and top spacing** — independent of their H2/H3/H4 level
+- ⭐ **New dot-style "tag" mark in the rich text editor** — filled or plain, in four colors, like the badges on the membership page
+- ✨ **Rounded corners are now available on every section-type block**, including the hero block
+- ✨ **The hero block (including the "banner" style) can now have a background, padding, and rounded corners**
+- ✨ **Content grid columns can be vertically aligned, and the header can be left-aligned** — shorter text no longer stretches to fill the row
+- ✨ **The link list's "photo" style now supports an image for manually-typed links**
+- ✨ **Link list and event list grids now adapt to the item count** — 1 or 2 items no longer stretch across a 3-column grid
+- ✨ **Overlay content on images can be pinned to a corner** instead of protruding past the image's edge
+- ✨ **The side-by-side preview's width picker now matches the block's allowed widths and saves them** — previously it showed all widths regardless of block type, and the change wasn't saved
+- 🔧 **The event list no longer crashes when previewed before saving**
+- 🔧 **Event list groups (by unit) are now sorted alphabetically** and can show a short unit name (e.g. "VU EVAF") instead of a doubled-up full name
+- 🔧 **The card stack's background is no longer see-through** when a card behind shows through the front one
+- 🔧 **Removed the redundant "Editing / Preview" toggle** from the content editor — only "Preview all" remains
+- 🔧 **The page's last-updated date moved to the bottom of the page**, with a clearer label and always a precise date (no more "3 days ago")
+- 🔧 **The table of contents no longer has a mobile variant** — it collided with another floating button on small screens
+- 🔧 **Fixed a layout bug that pushed page content to the right** on screens between 768 and 1024px wide
+- 🔧 **The hero block no longer crashes when switched to the "split" style** if it had no overlay content (e.g. the freshmen camps page)
+- ✨ **Slightly reduced the default top spacing of headings** — headings no longer separate so sharply from the preceding content, and the spacing can be increased, tightened, or removed entirely via the heading style picker
+
 ## v1.20 — Reworked Content Block Editor (2026-07-28) {#v1-20}
 
 - ⭐ **Three new content blocks** — a link list (news, pages, or manually-typed links), an event list (filterable, groupable by unit), and a person quote with photo and title

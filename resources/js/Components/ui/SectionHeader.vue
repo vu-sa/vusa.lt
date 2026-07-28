@@ -1,6 +1,6 @@
 <template>
   <div :class="['mb-12 md:mb-16', align === 'start' ? 'text-left' : 'text-center']">
-    <h2 class="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">
+    <h2 :id="id" class="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-4 scroll-mt-32">
       {{ title }}
     </h2>
     <p v-if="subtitle" :class="['text-base sm:text-lg text-zinc-600 dark:text-zinc-400 mb-6 max-w-3xl', align === 'start' ? '' : 'mx-auto']">
@@ -15,6 +15,8 @@ interface Props {
   title: string;
   subtitle?: string;
   align?: 'center' | 'start';
+  /** Sluggified anchor id for direct linking — see RCSection.vue's `headingId`. */
+  id?: string;
 }
 
 withDefaults(defineProps<Props>(), {

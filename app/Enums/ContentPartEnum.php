@@ -26,6 +26,8 @@ use Spatie\Enum\Laravel\Enum;
  * @method static self LINK_LIST()
  * @method static self EVENT_LIST()
  * @method static self PERSON_QUOTE()
+ * @method static self SECTION()
+ * @method static self SPACER()
  */
 final class ContentPartEnum extends Enum
 {
@@ -51,6 +53,8 @@ final class ContentPartEnum extends Enum
             'LINK_LIST' => 'link-list',
             'EVENT_LIST' => 'event-list',
             'PERSON_QUOTE' => 'person-quote',
+            'SECTION' => 'section',
+            'SPACER' => 'spacer',
         ];
     }
 }

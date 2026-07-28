@@ -297,17 +297,17 @@ html.dark-mode-init {
   }
 
   >h2 {
-    margin-block-start: 2em;
+    margin-block-start: 1.5em;
   }
 
   >h3 {
-    margin-block-start: 1.6em;
+    margin-block-start: 1.3em;
   }
 
   >h4,
   >h5,
   >h6 {
-    margin-block-start: 1.4em;
+    margin-block-start: 1.15em;
   }
 
   img {
@@ -372,6 +372,133 @@ html.dark-mode-init {
   @apply scroll-mt-32;
 }
 
+/* Authorable heading size/accent (App\Tiptap\CustomHeading, CustomHeading.ts) — a
+   heading's *size* is independent of its semantic level (h2/h3/h4), so a `rc-h-md`
+   heading can reproduce e.g. the "Susipažink su Lijana!" mascot heading
+   (`text-xl sm:text-2xl md:text-3xl`) regardless of which level it's marked up as
+   for document structure/ToC purposes. `!important` isn't needed: these rules come
+   after (and are more specific than) the plain `.rc-prose h2/h3/h4` rules above. */
+.rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-sm {
+  @apply text-lg sm:text-xl font-bold tracking-tight border-none pb-0;
+}
+
+.rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-md {
+  @apply text-xl sm:text-2xl md:text-3xl font-bold tracking-tight leading-tight border-none pb-0;
+}
+
+.rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-lg {
+  @apply text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight leading-tight border-none pb-0;
+}
+
+.rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-xl {
+  @apply text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-tight border-none pb-0;
+}
+
+.rc-h-accent-red {
+  @apply text-vusa-red;
+}
+
+.rc-h-accent-yellow {
+  @apply text-vusa-yellow-dark dark:text-vusa-yellow;
+}
+
+.rc-h-accent-zinc {
+  @apply text-zinc-500 dark:text-zinc-400;
+}
+
+/* Authorable heading top spacing (App\Tiptap\CustomHeading, CustomHeading.ts) —
+   overrides the level-based `margin-block-start` in the shared block above. These
+   rules' specificity (`.rc-prose :is(h*).rc-h-spacing-*` → 0,2,1) beats the plain
+   `.rc-prose > h2` (0,1,1), so no `!important` is needed. `default` is the absence
+   of a class and keeps the level-based margin. `none` collapses the top margin
+   entirely so a heading can sit flush against the preceding block. */
+.rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-spacing-tight {
+  margin-block-start: 0.75em;
+}
+
+.rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-spacing-loose {
+  margin-block-start: 2.5em;
+}
+
+.rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-spacing-none {
+  margin-block-start: 0;
+}
+
+/* Authorable text alignment (App\Tiptap\TextAlign, TextAlign.ts) — a class, never
+   inline `style`, so it survives HtmlSanitizerService (which strips `style`
+   everywhere). `start` is the default and has no class of its own. */
+.rc-align-center {
+  @apply text-center;
+}
+
+.rc-align-end {
+  @apply text-end;
+}
+
+/* The MembershipPage-style dot-pill "tag" mark (App\Tiptap\RCTag, RCTag.ts) — the dot
+   is a `::before`, not a real child element, so the mark survives sanitization as a
+   single `<span class="rc-tag rc-tag-{variant} rc-tag-{color}">`. */
+.rc-tag {
+  @apply inline-flex items-center gap-2 text-sm font-medium align-middle;
+}
+
+.rc-tag::before {
+  content: '';
+  @apply size-2 shrink-0 rounded-full;
+}
+
+.rc-tag-filled {
+  @apply rounded-full px-3 py-1;
+}
+
+.rc-tag-zinc.rc-tag-filled {
+  @apply bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300;
+}
+
+.rc-tag-zinc::before {
+  @apply bg-zinc-500;
+}
+
+.rc-tag-zinc.rc-tag-plain {
+  @apply text-zinc-500 dark:text-zinc-400;
+}
+
+.rc-tag-red.rc-tag-filled {
+  @apply bg-vusa-red/10 text-vusa-red dark:bg-vusa-red/20;
+}
+
+.rc-tag-red::before {
+  @apply bg-vusa-red;
+}
+
+.rc-tag-red.rc-tag-plain {
+  @apply text-vusa-red;
+}
+
+.rc-tag-yellow.rc-tag-filled {
+  @apply bg-vusa-yellow/10 text-vusa-yellow-dark dark:bg-vusa-yellow/20 dark:text-vusa-yellow;
+}
+
+.rc-tag-yellow::before {
+  @apply bg-vusa-yellow;
+}
+
+.rc-tag-yellow.rc-tag-plain {
+  @apply text-zinc-500 dark:text-zinc-400;
+}
+
+.rc-tag-green.rc-tag-filled {
+  @apply bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400;
+}
+
+.rc-tag-green::before {
+  @apply bg-green-500;
+}
+
+.rc-tag-green.rc-tag-plain {
+  @apply text-zinc-500 dark:text-zinc-400 italic;
+}
+
 /*
   Rich content canvas — the grid RichContentParser lays its blocks into.
 
@@ -419,16 +546,40 @@ html.dark-mode-init {
   }
 }
 
-/* Left-aligned measure (News `headline` layout) — the prose column hugs the start edge
-   instead of being centered between the wide/content steps. */
-.rc-canvas[data-align='start'] {
-  grid-template-columns:
-    [full-start] var(--rc-gutter)
-    [wide-start] minmax(0, var(--rc-wide-step))
-    [content-start] minmax(0, var(--rc-content-step))
-    [prose-start] min(var(--rc-measure), 100% - var(--rc-gutter) * 2) [prose-end]
-    minmax(0, 1fr)
-    [content-end wide-end] minmax(var(--rc-gutter), 1fr) [full-end];
+/* A `section` block (RCSection/SectionDisplay.vue) nests a second `.rc-canvas` inside
+   its own `<section>` so wrapped children keep independent per-block widths. Without
+   this, the nested canvas's own `.rc-canvas` rule above would re-declare
+   `--rc-measure: 44rem`, clobbering the page's actual measure (58rem on `wide` layout,
+   40rem on `focused`) for every block inside a section. `inherit` is a valid value for
+   any property, including custom properties, so this simply takes the ambient value
+   set by the page's outer canvas instead of resetting it. Must come after the plain
+   `.rc-canvas` rule above — same specificity, so source order decides the winner. */
+.rc-canvas-nested {
+  --rc-measure: inherit;
+}
+
+/* Left-aligned measure (News `headline` layout, and ContentPage's `default` layout
+   whenever a ToC sidebar is present) — the prose column hugs the start edge instead of
+   being centered between the wide/content steps.
+
+   Gated to ≥1024px on purpose: `.rc-aside` (the 17rem ToC sidebar this variant exists
+   for) is `hidden lg:block`, and `.rc-shell` only goes two-column at that same
+   ≥1024px breakpoint (see `.rc-shell:has(>.rc-aside)` below). Below 1024px there is no
+   sidebar consuming space, so this template's leading wide/content steps (8rem + 6rem
+   from 768px) grew unopposed while the trailing `1fr` track collapsed — pushing the
+   whole prose column ~150-200px right and reading as a large, asymmetric left margin
+   between 768 and 1023px. Falling back to the default centered template in that range
+   fixes it; the sidebar reclaims the space again at ≥1024px. */
+@media (width >=1024px) {
+  .rc-canvas[data-align='start'] {
+    grid-template-columns:
+      [full-start] var(--rc-gutter)
+      [wide-start] minmax(0, var(--rc-wide-step))
+      [content-start] minmax(0, var(--rc-content-step))
+      [prose-start] min(var(--rc-measure), 100% - var(--rc-gutter) * 2) [prose-end]
+      minmax(0, 1fr)
+      [content-end wide-end] minmax(var(--rc-gutter), 1fr) [full-end];
+  }
 }
 
 /* Shorthand only: `grid-column-start: prose` alone would leave `grid-column-end`
@@ -484,7 +635,18 @@ html.dark-mode-init {
 
 /* Pairs a canvas with a sticky sidebar (e.g. ContentPage's table-of-contents layout)
    without the sidebar clipping `rc-full` blocks down to a second, narrower measure
-   on every page — only pages that actually have anchor links pay that cost. */
+   on every page — only pages that actually have anchor links pay that cost.
+
+   `.rc-shell` is a `.wrapper > *` full-bleed child (see the rule above), so — unlike
+   `.rc-canvas`, which reserves its own `--rc-gutter` on both edges internally — it
+   spans the true viewport edge to true viewport edge with zero padding of its own.
+   The content column's *left* edge is already fine: the nested `.rc-canvas` inside it
+   reserves its own left-hand `--rc-gutter`. But `.rc-aside`'s fixed `17rem` track has
+   no such built-in margin, so at every width ≥1024px (not just some band of it — a
+   previous version of this fix only applied it 1024–1279px, leaving it flush against
+   the edge above 1280px) the ToC card sat flush against the browser edge. Reserving
+   the gutter on `.rc-shell` itself, matching `.rc-canvas`'s own 2rem desktop value,
+   fixes the right edge without touching the content column's already-correct left one. */
 .rc-shell {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -494,6 +656,7 @@ html.dark-mode-init {
 @media (width >=1024px) {
   .rc-shell:has(>.rc-aside) {
     grid-template-columns: minmax(0, 1fr) 17rem;
+    padding-inline-end: 2rem;
   }
 }
 

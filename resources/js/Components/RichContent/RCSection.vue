@@ -2,9 +2,9 @@
   <!-- scroll-mt-32 matches .rc-prose's heading offset — the ToC's scroll-to logic uses a
        160px JS offset (TableOfContents.vue) which already runs slightly ahead of the
        128px CSS one on tiptap headings; kept consistent with that existing behavior. -->
-  <section :class="['relative scroll-mt-32', PADDING_CLASS[padding], BACKGROUND_CLASS[background]]">
+  <section :class="['relative scroll-mt-32', PADDING_CLASS[padding], BACKGROUND_CLASS[background], ROUNDED_CLASS[rounded]]">
     <div :class="['container relative z-10 mx-auto px-4', INNER_CLASS[inner]]">
-      <SectionHeader v-if="title" :title :subtitle :align />
+      <SectionHeader v-if="title" :title :subtitle :align :id="headingId" />
       <slot />
     </div>
   </section>
@@ -19,43 +19,34 @@
  * which is why pages like MembershipPage had to supply `SectionHeader` separately
  * around the rich-content block instead of the block owning its own title/subtitle.
  */
-import SectionHeader from '@/Components/ui/SectionHeader.vue';
+import { computed } from 'vue';
 
-withDefaults(defineProps<{
+import SectionHeader from '@/Components/ui/SectionHeader.vue';
+import { latinizeId } from '@/Utils/String';
+import {
+  BACKGROUND_CLASS, INNER_CLASS, PADDING_CLASS, ROUNDED_CLASS,
+  type SectionBackground, type SectionInner, type SectionPadding, type SectionRounded,
+} from './sectionClasses';
+
+const props = withDefaults(defineProps<{
   title?: string;
   subtitle?: string;
-  background?: 'none' | 'muted' | 'contrast' | 'gradient';
-  padding?: 'none' | 'sm' | 'md' | 'lg';
+  background?: SectionBackground;
+  padding?: SectionPadding;
   /** Inner content max-width — independent of the canvas column the block itself sits in. */
-  inner?: 'prose' | 'content' | 'wide' | 'full';
+  inner?: SectionInner;
   align?: 'center' | 'start';
+  rounded?: SectionRounded;
 }>(), {
   background: 'none',
   padding: 'lg',
   inner: 'wide',
   align: 'center',
+  rounded: 'none',
 });
 
-const BACKGROUND_CLASS: Record<string, string> = {
-  none: '',
-  muted: 'bg-zinc-50 dark:bg-zinc-900',
-  contrast: 'bg-white dark:bg-zinc-950',
-  // Same subtle surface as RichContentCard / the hero panel variant — for a section
-  // that wants that card-like look rather than a flat fill.
-  gradient: 'bg-gradient-to-br from-zinc-50 to-zinc-100/50 dark:from-zinc-800/80 dark:to-zinc-900',
-};
-
-const PADDING_CLASS: Record<string, string> = {
-  none: '',
-  sm: 'py-8',
-  md: 'py-12',
-  lg: 'py-16',
-};
-
-const INNER_CLASS: Record<string, string> = {
-  prose: 'max-w-2xl',
-  content: 'max-w-4xl',
-  wide: 'max-w-6xl',
-  full: 'max-w-none',
-};
+// A second anchor target alongside the `#rc-{part.id}` id this section's root element
+// gets from attribute fallthrough (see tocAnchors.ts) — a human-readable, sluggified
+// heading id for direct linking/anchoring, matching tiptap's own heading ids.
+const headingId = computed(() => (props.title ? latinizeId(props.title) : undefined));
 </script>

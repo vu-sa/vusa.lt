@@ -7,6 +7,29 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.21 — Turinio sekcijos, žymės ir antraščių stiliai (2026-07-28) {#v1-21}
+
+- ⭐ **Naujas „Tarpas“ blokas** — leidžia valdyti vertikalų atstumą tarp bet kurių dviejų turinio blokų, kai įprastas tarpo dydis netinka; penki dydžiai nuo labai mažo iki didžiulio
+- ⭐ **Naujas „Sekcijos“ blokas** — sujungia po jo einančius blokus į vieną sekciją su bendra antrašte, fonu ir apvaliais kampais, iki kito sekcijos bloko
+- ⭐ **Antraštėms galima nustatyti dydį, spalvos akcentą, lygiuotę ir viršutinį tarpą** — nepriklausomai nuo H2/H3/H4 lygio
+- ⭐ **Naujas taškinis „žymės“ elementas teksto redaktoriuje** — su fonu arba be jo, keturių spalvų, kaip narystės puslapio ženkleliai
+- ✨ **Apvalūs kampai galimi visuose sekcijų tipo blokuose**, įskaitant antraštės bloką
+- ✨ **Antraštės blokui (įskaitant „juostos“ tipą) galima nustatyti foną, vidinius tarpus ir apvalius kampus**
+- ✨ **Turinio tinklelio stulpelių vertikali ir antraštės lygiuotė** — trumpesnis tekstas nebebūtinai ištemptas per visą aukštį
+- ✨ **Nuorodų sąrašo „su nuotraukomis“ stiliuje galima pridėti nuotrauką rankiniu būdu įvestoms nuorodoms**
+- ✨ **Nuorodų ir renginių sąrašų tinkleliai dabar prisitaiko prie elementų skaičiaus** — esant 1 ar 2 elementams, tinklelis nebeištemptas per visą plotį
+- ✨ **Antvivo turinį (kortelę virš nuotraukos) galima pritvirtinti prie nuotraukos kampo**, kad jis nebekyšotų už krašto
+- ✨ **Kartu esančios peržiūros pločio parinkiklis dabar atitinka bloko leistinus pločius ir juos išsaugo** — anksčiau rodė visus pločius nepaisant bloko tipo, o pakeitimas neišsisaugodavo
+- 🔧 **Renginių sąrašas nebekrenta peržiūrint prieš išsaugant**
+- 🔧 **Renginių sąrašas, grupuojamas pagal padalinį, dabar rikiuojamas abėcėlės tvarka** ir gali rodyti trumpus padalinio pavadinimus (pvz., „VU EVAF“) vietoje dubliuoto pilno pavadinimo
+- 🔧 **Kortelių krūvos fonas nebematomas kiaurai** žiūrint per viršutinę kortelę
+- 🔧 **Pašalintas perteklinis „Redagavimas / Peržiūra“ perjungiklis** turinio redaktoriuje — liko tik „Peržiūrėti viską“
+- 🔧 **Puslapio atnaujinimo data perkelta į puslapio apačią**, su aiškesniu paaiškinimu ir visada tikslia data (nebe „prieš X dienų“)
+- 🔧 **Turinio lentelė (šoninis meniu) nebeturi mobiliojo varianto** — jis dubliavosi su kitu plūduriuojančiu mygtuku
+- 🔧 **Ištaisytas maketo trūkumas, dėl kurio puslapio turinys buvo pastumtas į dešinę** ekranuose nuo 768 iki 1024 piks. pločio
+- 🔧 **Antraštės blokas nebeužstrigo perjungiant į „dviejų stulpelių“ tipą**, jei blokas neturėjo antvivo turinio (pvz., pirmakursių stovyklų puslapyje)
+- ✨ **Šiek tiek sumažinti numatytieji antraščių viršutiniai tarpai** — antraštės nebe taip smarkiai atskiriamos nuo ankstesnio turinio, o prireikus tarpą galima padidinti, sumažinti arba visiškai nuimti per antraštės stiliaus parinkiklį
+
 ## v1.20 — Perdarytas turinio blokų redaktorius (2026-07-28) {#v1-20}
 
 - ⭐ **Trys nauji turinio blokai** — nuorodų sąrašas (naujienos, puslapiai arba rankiniu būdu įvestos nuorodos), renginių sąrašas (filtruojamas, grupuojamas pagal padalinį) ir asmens citata su nuotrauka bei pareigomis

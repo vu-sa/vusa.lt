@@ -62,4 +62,38 @@ describe('HeroForm', () => {
 
     expect(item.options.imageDecorations?.length).toBe(before + 1);
   });
+
+  it('initializes overlayContent when switching a hero seeded without it to the split variant', async () => {
+    // Reproduces the RichContentDemoPagesSeeder SummerCamps hero: variant 'panel'
+    // with no `overlayContent` key, then switched to 'split' in the editor — which
+    // previously crashed the Overlay Content v-models on first render.
+    const item = makeItem();
+    item.options.variant = 'panel';
+    delete item.json_content.overlayContent;
+    expect(item.json_content.overlayContent).toBeUndefined();
+
+    const wrapper = mount(HeroForm, { props: { modelValue: item.json_content, options: item.options }, global: { stubs } });
+
+    const splitButton = wrapper.findAll('button').find(b => b.text().includes('rich-content.hero_variant_split'));
+    await splitButton!.trigger('click');
+
+    expect(item.options.variant).toBe('split');
+    expect(item.json_content.overlayContent).toEqual({ title: '', subtitle: '' });
+    // The overlay-title input renders without throwing — guarded by the watcher
+    // having initialized the object before the v-model resolves.
+    expect(wrapper.html()).toContain('rich-content.overlay_title');
+  });
+
+  it('leaves existing overlayContent untouched when switching to split', async () => {
+    const item = makeItem();
+    item.options.variant = 'panel';
+    item.json_content.overlayContent = { title: 'Faktai', subtitle: 'Likęs' };
+
+    const wrapper = mount(HeroForm, { props: { modelValue: item.json_content, options: item.options }, global: { stubs } });
+
+    const splitButton = wrapper.findAll('button').find(b => b.text().includes('rich-content.hero_variant_split'));
+    await splitButton!.trigger('click');
+
+    expect(item.json_content.overlayContent).toEqual({ title: 'Faktai', subtitle: 'Likęs' });
+  });
 });

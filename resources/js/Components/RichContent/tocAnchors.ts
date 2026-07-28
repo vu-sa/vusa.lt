@@ -7,7 +7,10 @@ export interface AnchorLink {
 interface HeadingNode {
   type: 'heading';
   attrs: {
-    level: 2 | 3;
+    // h4 (added alongside size/accent/align — see CustomHeading.ts) is deliberately
+    // NOT indexed below: it's a visual sub-level, not a new ToC tier, so extending the
+    // filter to include it would need a third nesting level this extractor doesn't have.
+    level: 2 | 3 | 4;
     id: string;
   };
   content: { text: string }[];
@@ -45,6 +48,7 @@ const SECTION_TITLED_TYPES = new Set([
   'event-list',
   'person-quote',
   'content-grid',
+  'section',
 ]);
 
 /**

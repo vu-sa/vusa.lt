@@ -254,7 +254,10 @@ const mainContentMarginClass = computed(() => {
 const breadcrumbWrapperClass = computed(() => {
   // Consistent top padding gives the breadcrumb bar breathing room below the
   // navbar. Breadcrumbs always use the standard wrapper width for consistency.
-  const baseClasses = 'pt-4 md:pt-6 lg:pt-8';
+  // Reduced from md:pt-6/lg:pt-8 — the gap above the trail read as too generous on
+  // non-mobile once compared against the rest of the page's vertical rhythm; mobile
+  // is unchanged.
+  const baseClasses = 'pt-4 md:pt-4 lg:pt-5';
 
   return `wrapper ${baseClasses}`;
 });

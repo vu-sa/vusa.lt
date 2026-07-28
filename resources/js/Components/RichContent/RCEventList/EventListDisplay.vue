@@ -2,13 +2,14 @@
   <RCSection
     :title="element.options?.title" :subtitle="element.options?.subtitle"
     :background="element.options?.background ?? 'none'" :padding="element.options?.padding ?? 'lg'"
+    :rounded="element.options?.rounded ?? 'none'"
     inner="wide" :id="anchorId ? `rc-${anchorId}` : undefined"
   >
     <!-- Grouped cards — one RCFeatureCard per group (tenant), events as a footer link
          list. This is the SummerCampCard shape, generalized. -->
-    <div v-if="hasGroups && style === 'cards'" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div v-if="hasGroups && style === 'cards'" class="grid gap-6" :class="smartGridCols(groups.length)">
       <RCFeatureCard
-        v-for="group in resolved!.groups" :key="group.key"
+        v-for="group in groups" :key="group.key"
         :title="group.label"
         :cover-image="coverImageFor(group.items)"
         :cover-alt="group.label"
@@ -44,9 +45,9 @@
     </div>
 
     <!-- Ungrouped cards -->
-    <div v-else-if="style === 'cards'" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div v-else-if="style === 'cards'" class="grid gap-6" :class="smartGridCols(items.length)">
       <RCFeatureCard
-        v-for="event in resolved!.items" :key="event.id"
+        v-for="event in items" :key="event.id"
         :title="event.title"
         :cover-image="event.imageUrl"
         :cover-alt="event.title"
@@ -65,7 +66,7 @@
 
     <!-- Flat chronological list -->
     <ul v-else class="divide-y divide-zinc-200/60 dark:divide-zinc-800">
-      <li v-for="event in resolved!.items" :key="event.id">
+      <li v-for="event in items" :key="event.id">
         <SmartLink :href="event.href" class="group flex items-center justify-between gap-4 py-3">
           <div class="min-w-0">
             <p class="truncate font-medium text-zinc-800 transition-colors group-hover:text-vusa-red dark:text-zinc-200">
@@ -109,6 +110,7 @@ import RCFeatureCard from '../RCFeatureCard.vue';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { formatEventDateSpan, formatMonthShort } from '@/Utils/IntlTime';
 import { LocaleEnum } from '@/Types/enums';
+import { smartGridCols } from '../gridStacking';
 
 const props = defineProps<{
   element: models.ContentPart;
@@ -121,7 +123,15 @@ const page = usePage();
 const locale = computed(() => (page.props.app.locale ?? LocaleEnum.LT) as LocaleEnum);
 
 const style = computed(() => props.element.options?.style ?? 'cards');
-const hasGroups = computed(() => (props.resolved?.groups?.length ?? 0) > 0);
+// `resolved` is `undefined` in every editor-preview surface until the debounced fetch
+// returns (see composables/useLiveBlockPreview.ts / useContentPartPreview.ts), and was
+// previously dereferenced with a `!` assertion here — reachable and previously crashed
+// with "can't access property 'items', $props.resolved is undefined" on the exact
+// preview paths that don't await resolution. Mirror LinkListDisplay.vue's safe-computed
+// pattern instead.
+const groups = computed(() => props.resolved?.groups ?? []);
+const items = computed(() => props.resolved?.items ?? []);
+const hasGroups = computed(() => groups.value.length > 0);
 const isEmpty = computed(() => (props.resolved?.meta?.total ?? 0) === 0);
 
 const dateSpan = (event: EventListResolvedItem) =>

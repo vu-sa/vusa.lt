@@ -42,6 +42,22 @@
             <Input :model-value="item.url" type="url" placeholder="https://…"
               @update:model-value="update({ ...item, url: $event })" />
           </Field>
+          <!-- Only rendered by the 'photo' style — compact never shows an image, so this
+               field would be dead input for that style. -->
+          <Field v-if="options.style === 'photo'" class="sm:col-span-2">
+            <FieldLabel>{{ $t('rich-content.link_image') }}</FieldLabel>
+            <TiptapImageButton
+              v-if="!item.imageUrl"
+              @submit:object="(img) => update({ ...item, imageUrl: img.src })">
+              {{ $t('rich-content.select_image') }}
+            </TiptapImageButton>
+            <div v-else class="flex items-center gap-3">
+              <img :src="item.imageUrl" class="aspect-video h-16 rounded-lg object-cover">
+              <Button variant="destructive" size="sm" @click="update({ ...item, imageUrl: '' })">
+                {{ $t('rich-content.delete_image') }}
+              </Button>
+            </div>
+          </Field>
         </div>
       </template>
     </DynamicListInput>
@@ -119,6 +135,7 @@ import RCSectionOptions from '../Editor/RCSectionOptions.vue';
 import CollectionSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/CollectionSelectDialog.vue';
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
+import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
 import { Button } from '@/Components/ui/button';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
@@ -136,7 +153,7 @@ const manualLinks = computed({
 });
 
 function createManualLink(): LinkList['json_content']['links'][number] {
-  return { title: '', url: '' };
+  return { title: '', url: '', imageUrl: '' };
 }
 
 const pinnedCollection = computed<'news' | 'pages'>(() => (options.value.source === 'pages' ? 'pages' : 'news'));

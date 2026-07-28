@@ -43,6 +43,14 @@ trait ValidatesContentParts
             'content.parts.*.options.subtitle' => 'nullable|string|max:255',
             'content.parts.*.options.background' => ['nullable', 'string', Rule::in(['none', 'muted', 'contrast', 'gradient'])],
             'content.parts.*.options.padding' => ['nullable', 'string', Rule::in(['none', 'sm', 'md', 'lg'])],
+            'content.parts.*.options.rounded' => ['nullable', 'string', Rule::in(['none', 'sm', 'md', 'lg'])],
+
+            // section
+            'content.parts.*.options.inner' => ['nullable', 'string', Rule::in(['prose', 'content', 'wide', 'full'])],
+            'content.parts.*.options.wraps' => ['nullable', 'string', Rule::in(['following', 'none'])],
+
+            // content-grid
+            'content.parts.*.options.verticalAlign' => ['nullable', 'string', Rule::in(['stretch', 'start', 'center', 'end'])],
 
             // link-list
             'content.parts.*.options.source' => ['nullable', 'string', Rule::in(['news', 'pages', 'manual'])],
@@ -59,6 +67,7 @@ trait ValidatesContentParts
             'content.parts.*.json_content.links' => 'nullable|array|max:12',
             'content.parts.*.json_content.links.*.title' => 'nullable|string|max:255',
             'content.parts.*.json_content.links.*.url' => 'nullable|url:http,https|max:2048',
+            'content.parts.*.json_content.links.*.imageUrl' => 'nullable|string|max:2048',
             // Editor-only bookkeeping so CollectionSelectDialog can re-open with the
             // currently-pinned items pre-checked (see LinkListEditor.vue); never read
             // by LinkListResolver, which re-fetches the live records by id.
@@ -75,6 +84,7 @@ trait ValidatesContentParts
             'content.parts.*.options.dateFrom' => 'nullable|date_format:Y-m-d',
             'content.parts.*.options.dateTo' => 'nullable|date_format:Y-m-d|after_or_equal:content.parts.*.options.dateFrom',
             'content.parts.*.options.tenantLabelPrefix' => 'nullable|string|max:32',
+            'content.parts.*.options.tenantLabelStyle' => ['nullable', 'string', Rule::in(['full', 'faculty'])],
 
             // person-quote
             'content.parts.*.options.align' => ['nullable', 'string', Rule::in(['start', 'center'])],
@@ -83,6 +93,9 @@ trait ValidatesContentParts
             'content.parts.*.json_content.snapshot.name' => 'nullable|string|max:255',
             'content.parts.*.json_content.snapshot.photoUrl' => 'nullable|string|max:2048',
             'content.parts.*.json_content.snapshot.attribution' => 'nullable|string|max:255',
+
+            // spacer
+            'content.parts.*.options.size' => ['nullable', 'string', Rule::in(['xs', 'sm', 'md', 'lg', 'xl', '2xl'])],
         ];
     }
 }

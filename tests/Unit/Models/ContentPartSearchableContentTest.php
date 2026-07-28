@@ -195,6 +195,17 @@ test('person-quote extracts quote text, snapshot name and attribution', function
         ->toContain('Koordinatorė, VU SA MIF');
 });
 
+test('section extracts only its own title/subtitle, not the blocks it wraps', function () {
+    // `section` has no `json_content` of its own — it's a marker RichContentParser
+    // groups following parts under (see RichContentParser.vue's groupedContent); the
+    // wrapped blocks are indexed separately, as their own ContentPart rows.
+    $part = makePart('section', [], ['title' => 'VU SA skaičiais', 'subtitle' => 'Sužinok daugiau apie mus']);
+
+    expect($part->getSearchableContent())
+        ->toContain('VU SA skaičiais')
+        ->toContain('Sužinok daugiau apie mus');
+});
+
 test('unhandled type returns an empty string rather than throwing', function () {
     $part = makePart('spotify-embed', ['url' => 'https://open.spotify.com/track/123']);
 

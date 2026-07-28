@@ -283,9 +283,15 @@ onUnmounted(() => {
 const quickAddTypes = computed(() => [
   getContentType('tiptap'),
   getContentType('shadcn-card'),
+  getContentType('content-grid'),
   getContentType('image-grid'),
+  getContentType('hero'),
+  getContentType('shadcn-accordion'),
   getContentType('social-embed'),
-  getContentType('text-box'),
+  getContentType('spotify-embed'),
+  getContentType('section'),
+  getContentType('person-quote'),
+  getContentType('spacer'),
 ]);
 
 // Check if max content blocks limit would be exceeded

@@ -3,7 +3,7 @@
 
   <!-- split (default): two-column text + image, the original hero layout. -->
   <section v-if="variant === 'split'" :id="anchorElementId"
-    class="relative scroll-mt-32 bg-zinc-50 dark:bg-zinc-900 overflow-hidden -mt-8 sm:-mt-6 md:-mt-4 2xl:mt-0 py-20">
+    :class="['relative scroll-mt-32 overflow-hidden -mt-8 sm:-mt-6 md:-mt-4 2xl:mt-0', backgroundClass, splitPaddingClass, roundedClass]">
     <div class="max-w-6xl mx-auto px-4 relative z-10">
       <div class="grid 2xl:grid-cols-2 gap-6 sm:gap-8 md:gap-10 lg:gap-12 xl:gap-14 2xl:gap-16 items-center">
         <div :class="['space-y-4 sm:space-y-5 md:space-y-6 2xl:space-y-8 2xl:pr-8', element.options?.textLeft ? 'order-first' : 'order-last 2xl:order-first']">
@@ -30,6 +30,9 @@
             height-class="h-[240px] sm:h-[280px] md:h-[320px] lg:h-[360px] xl:h-[400px] 2xl:h-[500px]"
             :decorations="element.options?.imageDecorations"
             :overlay-content="element.json_content.overlayContent"
+            :overlay-corner="element.json_content.overlayCorner"
+            :overlay-overhang="element.json_content.overlayOverhang"
+            :overlay-padding="element.json_content.overlayPadding"
             :object-position="element.json_content.objectPosition"
             loading="eager"
           />
@@ -39,7 +42,8 @@
   </section>
 
   <!-- centered: no image, centred title/description/buttons — the CTA/slogan shape. -->
-  <section v-else-if="variant === 'centered'" :id="anchorElementId" class="relative scroll-mt-32 bg-zinc-50 dark:bg-zinc-900 py-16 md:py-20">
+  <section v-else-if="variant === 'centered'" :id="anchorElementId"
+    :class="['relative scroll-mt-32', backgroundClass, centeredPaddingClass, roundedClass]">
     <div class="max-w-3xl mx-auto px-4 relative z-10 text-center">
       <p v-if="element.json_content.eyebrow" class="text-xs font-semibold uppercase tracking-wider text-vusa-red">
         {{ element.json_content.eyebrow }}
@@ -55,8 +59,9 @@
     </div>
   </section>
 
-  <!-- banner: compact full-width strip — a single row, title + one button. -->
-  <section v-else-if="variant === 'banner'" :id="anchorElementId" class="relative scroll-mt-32 bg-zinc-50 dark:bg-zinc-900 py-8">
+  <!-- banner ("juosta"): compact full-width strip — a single row, title + one button. -->
+  <section v-else-if="variant === 'banner'" :id="anchorElementId"
+    :class="['relative scroll-mt-32', backgroundClass, bannerPaddingClass, roundedClass]">
     <div class="max-w-6xl mx-auto px-4 relative z-10 flex flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left">
       <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-zinc-900 dark:text-zinc-100" v-html="element.json_content.title" />
       <HeroButtons :buttons="element.json_content.buttons?.slice(0, 1)" />
@@ -102,6 +107,7 @@ import { computed } from 'vue';
 import ImageWithDecorations from '@/Components/ui/ImageWithDecorations.vue';
 import HeroButtons from './HeroButtons.vue';
 import type { Hero } from '@/Types/contentParts';
+import { BACKGROUND_CLASS, PADDING_CLASS, ROUNDED_CLASS } from '../sectionClasses';
 
 const props = defineProps<{
   element: Hero;
@@ -111,4 +117,18 @@ const props = defineProps<{
 
 const variant = computed(() => props.element.options?.variant ?? 'split');
 const anchorElementId = computed(() => (props.anchorId ? `rc-${props.anchorId}` : undefined));
+
+// `background`/`padding`/`rounded` are new, authorable options for the three variants
+// that used to hardcode their own chrome (`panel` keeps its own fixed gradient look).
+// `background: undefined` defaults to `'muted'` — the exact `bg-zinc-50 dark:bg-zinc-900`
+// every variant already rendered — so existing hero blocks look identical until an
+// author changes it.
+const backgroundClass = computed(() => BACKGROUND_CLASS[props.element.options?.background ?? 'muted']);
+const roundedClass = computed(() => ROUNDED_CLASS[props.element.options?.rounded ?? 'none']);
+
+// Padding defaults reproduce each variant's previous hardcoded value pixel-for-pixel;
+// only diverge from it once an author explicitly picks a padding option.
+const splitPaddingClass = computed(() => (props.element.options?.padding ? PADDING_CLASS[props.element.options.padding] : 'py-20'));
+const centeredPaddingClass = computed(() => (props.element.options?.padding ? PADDING_CLASS[props.element.options.padding] : 'py-16 md:py-20'));
+const bannerPaddingClass = computed(() => (props.element.options?.padding ? PADDING_CLASS[props.element.options.padding] : 'py-8'));
 </script>
