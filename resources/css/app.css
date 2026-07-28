@@ -201,9 +201,11 @@ html.dark-mode-init {
     @apply max-w-full h-auto;
   }
 
-  /* Allow long URLs to wrap at any character */
+  /* break-words, not break-all: `break-all` wraps at *any* character, so ordinary
+     link text shattered mid-word. Long URLs still wrap, because `break-words` breaks
+     a token that cannot fit on its own line. */
   a {
-    @apply underline break-all;
+    @apply underline break-words;
   }
 
   /* Rich content typography with proper spacing and enhanced styling */
@@ -236,7 +238,7 @@ html.dark-mode-init {
   }
 
   blockquote {
-    @apply mt-6 border-l-2 pl-6 italic tracking-wide
+    @apply mt-6 border-l-2 pl-6 italic tracking-normal leading-normal
   }
 
   p {
@@ -310,13 +312,52 @@ html.dark-mode-init {
     margin-block-start: 1.15em;
   }
 
+  /* Reading defaults live here, not on the host page, because `.rc-prose` is dropped
+     into contexts that set no typography of their own — ContentPage's `default` and
+     `wide` layouts previously fell through to Tailwind preflight's `html` 1.5 at 16px
+     across a 44rem measure (~90 characters/line), which is the least comfortable
+     combination on the public site. Hosts that want something different (cards,
+     carousels) still override per-element; this only claims `p`/`li`/headings. */
+  overflow-wrap: break-word;
+  /* `pretty` prevents a single-word orphan on the last line. Headings opt into
+     `balance` instead, below — it applies to the whole block rather than the tail. */
+  text-wrap: pretty;
+
+  p,
+  li {
+    line-height: 1.7;
+  }
+
   img {
     @apply max-w-full h-auto;
   }
 
-  /* break-words (not break-all) so ordinary link text doesn't shatter mid-word */
+  /* break-words (not break-all) so ordinary link text doesn't shatter mid-word.
+     The underline is offset because Lithuanian's ogonek vowels (ą ę į ų) descend
+     below the baseline, and an underline in the default position strikes through
+     them on every second word.
+
+     Colour is set here rather than left to the class the Tiptap render preset bakes
+     into the HTML: stored content still carries the preset's old `text-blue-500`
+     (~3.6:1 on zinc-50, ~4.4:1 on zinc-900 — both under the 4.5:1 AA floor), and
+     this block is unlayered, so it outranks any Tailwind utility on the element and
+     corrects legacy content too. `vusa-red` itself only reaches ~3.0:1 on zinc-900,
+     hence the separate dark-mode token. */
   a {
-    @apply underline break-words;
+    @apply underline break-words underline-offset-2 decoration-1 font-medium;
+    @apply text-vusa-red;
+  }
+
+  a:hover {
+    @apply decoration-2;
+  }
+
+  code {
+    @apply rounded-sm bg-zinc-100 px-1 py-0.5 text-[0.875em] dark:bg-zinc-800;
+  }
+
+  :is(h1, h2, h3, h4, h5, h6) {
+    text-wrap: balance;
   }
 
   h1 {
@@ -343,17 +384,42 @@ html.dark-mode-init {
     @apply text-base font-bold tracking-tight;
   }
 
+  /* Not dead code, despite `.rc-prose` giving descendant `p` no margin of its own:
+     the editing surface also matches `.tiptap`, whose base stylesheet sets
+     `p { margin: .4rem 0 }`. Without this, table cells gain stray vertical padding
+     while typing that the published output doesn't have. */
   table p {
     @apply my-0
   }
 
+  /* The default border colour comes from the base layer's `*` rule, which is
+     `gray-200` with no dark-mode counterpart — so the quote bar reads as a glaring
+     light-grey line on a dark background unless it is set explicitly, the same way
+     `h2`'s bottom border already is.
+
+     No `leading-*` here on purpose: quotes are set at body size, so tightening them
+     relative to the surrounding 1.7 makes them read as a different (smaller) size
+     rather than as an emphasis. Large pull quotes set their own leading — see
+     PersonQuoteDisplay. */
   blockquote {
-    @apply border-l-2 pl-6 italic tracking-wide
+    @apply border-l-2 border-zinc-200 pl-6 italic tracking-normal dark:border-zinc-600
   }
 
+  /* Preflight zeroes every margin and the flow rules above only reach *direct*
+     children, so a multi-paragraph quote would otherwise collapse into one block. */
+  blockquote p+p {
+    @apply mt-4;
+  }
+
+  /* `pl-6`, not `ml-4`: padding keeps the markers hanging inside the measure instead
+     of out in the gutter, and matches the editor's own `padding-left: 1.5rem`. */
   ul,
   ol {
-    @apply ml-4 [&>li]:mt-2;
+    @apply pl-6 [&>li]:mt-2;
+  }
+
+  li> :is(ul, ol) {
+    @apply mt-2;
   }
 
   ul {
@@ -363,6 +429,35 @@ html.dark-mode-init {
   ol {
     @apply list-decimal;
   }
+
+  /* Depth cues — without these every nesting level repeats `disc`/`decimal`, so a
+     sub-point is indistinguishable from a sibling once the indent scrolls off. */
+  ul ul {
+    @apply list-[circle];
+  }
+
+  ul ul ul {
+    @apply list-[square];
+  }
+
+  ol ol {
+    @apply list-[lower-alpha];
+  }
+
+  ol ol ol {
+    @apply list-[lower-roman];
+  }
+}
+
+/* Dark-mode link colour, hoisted out of the shared block above rather than written as
+   `@apply … dark:text-vusa-red-on-dark` alongside the light value.
+   `@apply` with a variant compiles correctly at the top level (see `.rc-h-accent-yellow`,
+   which emits `:is(.dark *)`) but is silently dropped inside a *nested* rule — the
+   declaration simply vanishes from the build with no error, which is exactly the kind
+   of failure that reaches production unnoticed. Written out as a plain selector it
+   cannot be lost. */
+.dark :is(.rc-prose, .rc-prose-editing) a {
+  color: var(--color-vusa-red-on-dark);
 }
 
 /* Anchor scroll offset is only meaningful on the rendered page (the ToC scrolls to
@@ -879,6 +974,12 @@ html.dark-mode-init {
   --color-vusa-red-tertiary: oklch(0.5 0.2 25);
   --color-vusa-red-quaternary: oklch(0.6 0.18 25);
   --color-vusa-red-dark: oklch(0.3 0.15 25);
+  /* `vusa-red` is ~5.9:1 on the light background but only ~3.0:1 on zinc-900, so it
+     fails AA as a text colour in dark mode (it is fine as a *fill*). This is the
+     lightened counterpart for dark-mode text — ~6.5:1 on zinc-900 — mirroring the
+     `vusa-yellow` / `vusa-yellow-dark` pair, which already exists for the same
+     reason in the opposite direction. */
+  --color-vusa-red-on-dark: oklch(0.7 0.16 25);
   --color-vusa-yellow: oklch(0.82 0.17 75);
   --color-vusa-yellow-secondary: oklch(0.72 0.16 70);
   --color-vusa-yellow-tertiary: oklch(0.82 0.17 75);

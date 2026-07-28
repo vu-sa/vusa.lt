@@ -3,7 +3,10 @@
        `.rc-shell` keeps the sidebar from clipping full-width blocks down to a second,
        narrower measure — the canvas inside it still gets the full page width. -->
   <div v-if="pageLayout === 'default'" class="rc-shell pt-8 pb-16 md:pb-24">
-    <div class="rc-canvas" style="--rc-measure: 44rem" :data-align="hasToc ? 'start' : undefined">
+    <!-- `text-base md:text-lg` matches NewsArticleLayout. Without it this layout fell
+         through to the 16px browser default across a 44rem measure — ~90 characters
+         per line, well past the comfortable 60-75. Line-height comes from `.rc-prose`. -->
+    <div class="rc-canvas text-base md:text-lg" style="--rc-measure: 44rem" :data-align="hasToc ? 'start' : undefined">
       <header v-if="showTitle" class="mb-2">
         <h1 class="text-3xl font-bold md:text-4xl">
           <span class="text-gray-900 dark:text-white">{{ page.title }}</span>
@@ -18,7 +21,7 @@
   </div>
 
   <!-- Wide layout: full page width, great for pages with images/grids -->
-  <div v-else-if="pageLayout === 'wide'" class="rc-canvas pt-8 pb-16 md:pb-24" style="--rc-measure: 58rem">
+  <div v-else-if="pageLayout === 'wide'" class="rc-canvas pt-8 pb-16 text-base md:pb-24 md:text-lg" style="--rc-measure: 58rem">
     <header v-if="showTitle" class="mb-2">
       <h1 class="text-3xl font-bold text-gray-900 md:text-4xl lg:text-5xl dark:text-white">
         {{ page.title }}

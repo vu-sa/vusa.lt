@@ -231,9 +231,13 @@ export function createRenderExtensions(): AnyExtension[] {
     StarterKit.configure({
       heading: false,
       codeBlock: false,
+      // Colour/underline treatment lives in `.rc-prose a` (app.css), not here — that
+      // way stored HTML rendered through TiptapDisplay is styled by the same rule as
+      // freshly generated HTML, and neither drifts from the editing surface. Only
+      // `tracking-normal` stays, since it resets tracking inherited from a host.
       link: {
         HTMLAttributes: {
-          class: 'text-blue-500 underline tracking-normal',
+          class: 'tracking-normal',
         },
       },
     }),
