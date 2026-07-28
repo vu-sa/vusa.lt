@@ -7,61 +7,59 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
-## v1.21 — Content Sections, Tags and Heading Styles (2026-07-28) {#v1-21}
+## v1.19 — Faster ViSAK Timeline and New Content Blocks (2026-07-28) {#v1-19}
 
-- ⭐ **New "Spacer" block** — lets you control the vertical gap between any two content blocks when the default spacing doesn't fit; five sizes from extra small to huge
-- ⭐ **New "Section" block** — groups every block that follows it into one section with a shared title, background, and rounded corners, up to the next section block
-- ⭐ **Headings can have a size, color accent, text alignment, and top spacing** — independent of their H2/H3/H4 level
+### ViSAK tenant timeline
+
+- ✨ **The timeline loads several times faster** — meetings load only for the visible period and stream in as you scroll, and only the rows on screen are drawn, so scrolling through dozens of tenants stays smooth
+- ✨ **Visible meetings-loading indicator** — loading rows show a pulsing placeholder, and the toolbar displays a loading badge
+- ✨ **"Keep one" button** — next to "All" in the tenant picker, quickly narrows the view to a single tenant
+- 🔧 **Only the selected tenants' institutions are shown** — related institutions from other tenants are no longer duplicated, so the list matches the status summary counts
+- 🔧 **Fixed missing meetings** — an empty response was being cached, so newly created meetings no longer look like they don't exist
+
+### New content blocks and page settings
+
+- ⭐ **Three new content blocks** — a link list (news, pages, or manually entered links), an event list (filterable, groupable by unit), and a person quote with photo and title
+- ⭐ **"Spacer" block** — controls the vertical gap between any two blocks when the default spacing doesn't fit; five sizes from extra small to huge
+- ⭐ **"Section" block** — groups the blocks that follow it into one section with a shared title, background and rounded corners, up to the next section block
+- ⭐ **Table of contents (sidebar) toggle** in the page settings
+- ⭐ **Hide the page title and last-updated time** — when the heading is already shown inside the content
+
+### Easier editing
+
+- ⭐ **Edit and preview side by side** — any block can open a dialog with live editing and a reactive preview together; the preview width is picked from the block's allowed widths and is saved
+- ✨ **New block picker dialog** — blocks grouped by category, searchable by name, with a live preview of the highlighted type; the hero shows a preview for each variant
+- ✨ **Blocks can be collapsed** — large blocks no longer take over the screen, and dragging to reorder is much easier
+- ✨ **Per-block width control** — text, content, wide or full width, depending on the block type
+- ✨ **Easier image grid and gallery editing** — images are managed directly on the grid with a focal point, and alt text is asked only once when picking an image
+- 🔧 **The image picker no longer lists PDFs and other unsupported files**
+- 🔧 **Removed the redundant "Editing / Preview" toggle** — only "Preview all" remains
+
+### Block appearance and styles
+
+- ✨ **New hero variants** — alongside the classic two columns: centered, banner and panel styles, picked from schematic previews; hero buttons can carry an icon
+- ⭐ **Headings can have a size, color accent, alignment and top spacing** — independent of their H2/H3/H4 level
 - ⭐ **New dot-style "tag" mark in the rich text editor** — filled or plain, in four colors, like the badges on the membership page
-- ✨ **Rounded corners are now available on every section-type block**, including the hero block
-- ✨ **The hero block (including the "banner" style) can now have a background, padding, and rounded corners**
-- ✨ **Content grid columns can be vertically aligned, and the header can be left-aligned** — shorter text no longer stretches to fill the row
-- ✨ **The link list's "photo" style now supports an image for manually-typed links**
-- ✨ **Link list and event list grids now adapt to the item count** — 1 or 2 items no longer stretch across a 3-column grid
-- ✨ **Overlay content on images can be pinned to a corner** instead of protruding past the image's edge
-- ✨ **The side-by-side preview's width picker now matches the block's allowed widths and saves them** — previously it showed all widths regardless of block type, and the change wasn't saved
-- 🔧 **The event list no longer crashes when previewed before saving**
-- 🔧 **Event list groups (by unit) are now sorted alphabetically** and can show a short unit name (e.g. "VU EVAF") instead of a doubled-up full name
-- 🔧 **The card stack's background is no longer see-through** when a card behind shows through the front one
-- 🔧 **Removed the redundant "Editing / Preview" toggle** from the content editor — only "Preview all" remains
-- 🔧 **The page's last-updated date moved to the bottom of the page**, with a clearer label and always a precise date (no more "3 days ago")
-- 🔧 **The table of contents no longer has a mobile variant** — it collided with another floating button on small screens
-- 🔧 **Fixed a layout bug that pushed page content to the right** on screens between 768 and 1024px wide
-- 🔧 **The hero block no longer crashes when switched to the "split" style** if it had no overlay content (e.g. the freshmen camps page)
-- ✨ **Slightly reduced the default top spacing of headings** — headings no longer separate so sharply from the preceding content, and the spacing can be increased, tightened, or removed entirely via the heading style picker
+- ✨ **Title, subtitle and background on every section-type block** — accordion, card stack, carousel, gallery, stats and content grid (including a subtle gradient and plain white)
+- ✨ **Rounded corners, background and padding for the hero block too**, including the banner style
+- ✨ **Redesigned card block** — the decorative icon is gone, color shows as a subtle side accent, and the card title is slightly larger and spaced from the body
+- ✨ **Grid images support a focal point, overlay content and decorative accents**, and overlay content can be pinned to a corner of the image instead of protruding past its edge
+- ✨ **The link list's "with photos" style supports images for manually entered links**
+- ✨ **Link and event list grids adapt to the item count** — 1 or 2 items no longer stretch across the full width
+- ✨ **Content grid columns can be vertically aligned, and the header left-aligned** — shorter text no longer stretches to full height
+- ✨ **Reduced default top spacing of headings** — it can be increased, tightened or removed via the heading style picker
+- 🔧 **Heading size, color accent, and top spacing changes are now visible while editing** — previously they only appeared in preview mode
 
-## v1.20 — Reworked Content Block Editor (2026-07-28) {#v1-20}
+### Fixes
 
-- ⭐ **Three new content blocks** — a link list (news, pages, or manually-typed links), an event list (filterable, groupable by unit), and a person quote with photo and title
-- ⭐ **Table of contents toggle** — page settings now let you turn the sidebar table of contents on or off
-- ⭐ **Page title/last-updated toggle** — next to the table of contents setting, a new switch lets you hide the page's own header when the title is already shown inside the content
-- ✨ **Per-block width control** — every content block can be set to text, content, wide, or full width, depending on the block type
-- ✨ **New block picker dialog** — blocks are grouped by category, searchable by name, and show a live preview of the highlighted type; the hero block shows a preview for each of its variants
-- ✨ **Collapsible editor blocks** — large blocks no longer take over the whole screen, and dragging blocks to reorder them is much easier
-- ✨ **Redesigned card block** — the decorative icon is gone; color now shows as a subtle side accent instead of a tinted background
-- ✨ **Easier image grid and gallery editing** — images are managed directly on the grid, a focal point can be set per image, and alt text is only asked for once when picking an image
-- ✨ **New hero section variants** — alongside the classic two-column layout, there's now a centered, a banner, and a panel-style hero, now picked from a visual preview of each shape
-- ✨ **Hero buttons can carry an icon**
-- ✨ **Title, subtitle and background now available on every section-style block** — accordion, card stack, carousel, gallery and stats blocks
-- ✨ **Content grid images support a focal point, overlay content, and decorative accents**
-- ✨ **The content grid can now have a title, subtitle, and background** — including a subtle gradient and a plain white background, matching the other section-style blocks
-- ⭐ **Edit and preview side by side** — any block can now open a dialog showing live editing and a reactive preview together, with a width picker to check the block at any width without changing its actual saved width
-- 🔧 **The image picker no longer lists PDFs and other unsupported file types**
-- 🔧 **The content grid block no longer wipes its own content** every time it's reopened for editing
-- 🔧 **A content-grid card with no image no longer shows an empty placeholder box**
-- 🔧 **A hero's overlay content no longer shows when it's empty**
-- 🔧 **The "banner" hero variant no longer shows settings that don't apply to it** (eyebrow, description)
-
-## v1.19 — Faster ViSAK Tenant Timeline (2026-07-27) {#v1-19}
-
-- ✨ **Tenant timeline loads several times faster** — meetings are loaded only for the visible period and fetched as you scroll, so the all-tenants view opens much quicker
-- ✨ **Smoother timeline scrolling** — older and upcoming meetings load silently in the background, and only the visible area is rendered
-- ✨ **Visible meetings-loading indicator** — rows currently loading show a pulsing skeleton, and the toolbar displays a loading badge
-- ✨ **Faster scrolling with many tenants** — the timeline only draws the rows currently on screen, making scrolling through dozens of tenants smoother
-- ✨ **Quick way to keep just one tenant** — the tenant picker now has a "Keep one" button next to "All"
-- 🔧 **Tenant timeline shows only the selected tenants' institutions** — related institutions from other tenants are no longer duplicated, so the list matches the summary counts
-- 🔧 **Fixed missing meetings on the tenant timeline** — an empty response was no longer cached, so newly created meetings stop looking like they don't exist
-- 🔧 **Image dialog in the admin interface shows translated labels again** — alt text, title and selection-step translations were only bundled for the public site, so the admin dialog displayed raw translation keys
+- 🔧 **The content grid no longer wipes its content** every time it's reopened for editing, and a grid card without an image no longer shows an empty placeholder
+- 🔧 **The event list no longer crashes when previewed before saving**, and groups by unit are sorted alphabetically and can show short unit names (e.g. "VU EVAF")
+- 🔧 **The hero block no longer freezes when switched to the two-column style** when it has no overlay content; empty overlay content is no longer shown, and the banner style no longer shows settings that don't apply to it
+- 🔧 **The card stack's background is no longer see-through** behind the front card, and card block content no longer disappears when previewing all blocks
+- 🔧 **Fixed a layout bug that pushed page content to the right** on screens between 768 and 1024 px wide
+- 🔧 **The page's last-updated date moved to the bottom of the page** — with a clearer label and always a precise date (no more "3 days ago")
+- 🔧 **The table of contents no longer has a mobile variant** — it duplicated another floating button
+- 🔧 **The image dialog in the admin interface shows translated labels again** — alt text, title and selection-step translations were only bundled for the public site, so the admin dialog displayed raw translation keys
 
 ## v1.18 — Refreshed Event and Camp Pages (2026-07-27) {#v1-18}
 

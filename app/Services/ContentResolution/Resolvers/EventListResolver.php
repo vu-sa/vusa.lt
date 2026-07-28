@@ -3,6 +3,7 @@
 namespace App\Services\ContentResolution\Resolvers;
 
 use App\Models\Calendar;
+use App\Models\Category;
 use App\Models\ContentPart;
 use App\Services\ContentResolution\ResolutionContext;
 use App\Services\ContentResolution\ResolvesContentPart;
@@ -61,6 +62,7 @@ final class EventListResolver implements ResolvesContentPart
             // category (e.g. an old campaign) must still work as one. See the
             // identical rationale in PublicPageController::summerCamps().
             $query->whereHas('category', function (Builder $q) use ($alias) {
+                /** @var Builder<Category> $q */
                 $q->withTrashed()->where('alias', $alias);
             });
         }

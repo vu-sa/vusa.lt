@@ -377,20 +377,26 @@ html.dark-mode-init {
    heading can reproduce e.g. the "Susipažink su Lijana!" mascot heading
    (`text-xl sm:text-2xl md:text-3xl`) regardless of which level it's marked up as
    for document structure/ToC purposes. `!important` isn't needed: these rules come
-   after (and are more specific than) the plain `.rc-prose h2/h3/h4` rules above. */
-.rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-sm {
+   after (and are more specific than) the plain `.rc-prose h2/h3/h4` rules above.
+   Both `.rc-prose` and `.rc-prose-editing` are targeted so the WYSIWYG editing
+   surface renders the same heading treatment as the published output. */
+.rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-sm,
+.rc-prose-editing :is(h1, h2, h3, h4, h5, h6).rc-h-sm {
   @apply text-lg sm:text-xl font-bold tracking-tight border-none pb-0;
 }
 
-.rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-md {
+.rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-md,
+.rc-prose-editing :is(h1, h2, h3, h4, h5, h6).rc-h-md {
   @apply text-xl sm:text-2xl md:text-3xl font-bold tracking-tight leading-tight border-none pb-0;
 }
 
-.rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-lg {
+.rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-lg,
+.rc-prose-editing :is(h1, h2, h3, h4, h5, h6).rc-h-lg {
   @apply text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight leading-tight border-none pb-0;
 }
 
-.rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-xl {
+.rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-xl,
+.rc-prose-editing :is(h1, h2, h3, h4, h5, h6).rc-h-xl {
   @apply text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-tight border-none pb-0;
 }
 
@@ -411,16 +417,20 @@ html.dark-mode-init {
    rules' specificity (`.rc-prose :is(h*).rc-h-spacing-*` → 0,2,1) beats the plain
    `.rc-prose > h2` (0,1,1), so no `!important` is needed. `default` is the absence
    of a class and keeps the level-based margin. `none` collapses the top margin
-   entirely so a heading can sit flush against the preceding block. */
-.rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-spacing-tight {
+   entirely so a heading can sit flush against the preceding block. Both `.rc-prose`
+   and `.rc-prose-editing` are targeted so spacing changes are visible while editing. */
+.rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-spacing-tight,
+.rc-prose-editing :is(h1, h2, h3, h4, h5, h6).rc-h-spacing-tight {
   margin-block-start: 0.75em;
 }
 
-.rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-spacing-loose {
+.rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-spacing-loose,
+.rc-prose-editing :is(h1, h2, h3, h4, h5, h6).rc-h-spacing-loose {
   margin-block-start: 2.5em;
 }
 
-.rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-spacing-none {
+.rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-spacing-none,
+.rc-prose-editing :is(h1, h2, h3, h4, h5, h6).rc-h-spacing-none {
   margin-block-start: 0;
 }
 

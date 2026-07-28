@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
 import { deriveBlockSummary } from '../blockSummary';
-
 import type { ContentPart } from '../../Types';
 
-function part(type: string, json_content: any, options: any = {}): ContentPart {
+function part<TJson = unknown, TOptions = unknown>(
+  type: string,
+  json_content: TJson,
+  options: TOptions = {} as TOptions,
+): ContentPart<TJson, TOptions> {
   return { type, json_content, options };
 }
 
@@ -41,6 +44,10 @@ describe('deriveBlockSummary', () => {
 
   it('strips HTML from the hero title', () => {
     expect(deriveBlockSummary(part('hero', { title: '<p>Prisijunk <b>dabar</b></p>' }))).toBe('Prisijunk dabar');
+  });
+
+  it('decodes HTML entities while stripping tags', () => {
+    expect(deriveBlockSummary(part('hero', { title: '<p>&lt;Sveikas&gt; &amp; &quot;pasaulis&quot;</p>' }))).toBe('<Sveikas> & "pasaulis"');
   });
 
   it('reads a plain title for news/calendar', () => {

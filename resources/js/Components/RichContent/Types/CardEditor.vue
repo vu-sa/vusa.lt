@@ -53,7 +53,7 @@
     <!-- Content -->
     <Field>
       <FieldLabel>{{ $t('rich-content.content') }}</FieldLabel>
-      <TiptapEditor v-model="content" preset="full" />
+      <TiptapEditor v-model="content" preset="full" prose-style />
     </Field>
   </div>
 </template>

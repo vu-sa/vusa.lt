@@ -1,7 +1,7 @@
 <template>
   <div :class="surfaceClass">
     <div v-if="element.options?.title" data-slot="card-header" class="px-5 pt-5 pb-3">
-      <h3 data-slot="card-title" class="text-base font-bold leading-tight tracking-tight" :class="titleClass">
+      <h3 data-slot="card-title" class="text-lg font-bold leading-tight tracking-tight mb-1.5" :class="titleClass">
         {{ element.options.title }}
       </h3>
     </div>
@@ -30,8 +30,8 @@ const SURFACE: Record<string, string> = {
 };
 
 const ACCENT_RAIL: Record<string, string> = {
-  red: "before:absolute before:inset-y-0 before:left-0 before:w-1 before:rounded-l-2xl before:bg-vusa-red/70 before:content-['']",
-  yellow: "before:absolute before:inset-y-0 before:left-0 before:w-1 before:rounded-l-2xl before:bg-vusa-yellow/80 before:content-['']",
+  red: `before:absolute before:inset-y-0 before:left-0 before:w-1 before:rounded-l-2xl before:bg-vusa-red/70 before:content-['']`,
+  yellow: `before:absolute before:inset-y-0 before:left-0 before:w-1 before:rounded-l-2xl before:bg-vusa-yellow/80 before:content-['']`,
 };
 
 const TITLE_ACCENT: Record<string, string> = {

@@ -18,7 +18,11 @@ function firstTiptapText(json: unknown): string {
 }
 
 function stripHtml(html: string): string {
-  return html.replace(/[<>]/g, '').trim();
+  if (!html) return '';
+
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+
+  return (doc.body?.textContent ?? '').trim();
 }
 
 function truncate(text: string, max = 60): string {

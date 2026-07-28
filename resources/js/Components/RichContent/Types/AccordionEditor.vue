@@ -26,6 +26,7 @@
             <TiptapEditor
               :model-value="item.content"
               preset="full"
+              prose-style
               @update:model-value="update({ ...item, content: $event })"
             />
           </Field>
@@ -36,8 +37,9 @@
 </template>
 
 <script setup lang="ts">
-import type { ShadcnAccordion } from '@/Types/contentParts';
 import RCSectionOptions from '../Editor/RCSectionOptions.vue';
+
+import type { ShadcnAccordion } from '@/Types/contentParts';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
 import { Field, FieldLabel } from '@/Components/ui/field';

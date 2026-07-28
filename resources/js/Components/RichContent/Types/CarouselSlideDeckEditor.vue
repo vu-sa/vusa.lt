@@ -11,7 +11,9 @@
           </span>
         </div>
         <div v-if="options.autoplay" class="flex items-center gap-3">
-          <FieldLabel class="min-w-fit">{{ $t('rich-content.autoplay_delay') }}</FieldLabel>
+          <FieldLabel class="min-w-fit">
+            {{ $t('rich-content.autoplay_delay') }}
+          </FieldLabel>
           <Input
             v-model.number="options.autoplayDelay"
             type="number"
@@ -81,6 +83,7 @@
               <TiptapEditor
                 :model-value="item.description"
                 preset="full"
+                prose-style
                 @update:model-value="update({ ...item, description: $event })"
               />
             </Field>
@@ -93,7 +96,7 @@
                 {{ $t('rich-content.select_image') }}
               </TiptapImageButton>
               <div v-else class="flex items-center gap-3">
-                <img :src="item.imageSrc" class="aspect-video h-20 rounded-lg object-cover">
+                <img :src="item.imageSrc" :alt="item.imageAlt" class="aspect-video h-20 rounded-lg object-cover">
                 <Button variant="destructive" size="sm" @click="update({ ...item, imageSrc: '' })">
                   {{ $t('rich-content.delete_image') }}
                 </Button>
@@ -140,9 +143,15 @@
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="line">{{ $t('rich-content.line') }}</SelectItem>
-                            <SelectItem value="circle">{{ $t('rich-content.circle') }}</SelectItem>
-                            <SelectItem value="square">{{ $t('rich-content.square') }}</SelectItem>
+                            <SelectItem value="line">
+                              {{ $t('rich-content.line') }}
+                            </SelectItem>
+                            <SelectItem value="circle">
+                              {{ $t('rich-content.circle') }}
+                            </SelectItem>
+                            <SelectItem value="square">
+                              {{ $t('rich-content.square') }}
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </Field>
@@ -153,10 +162,18 @@
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="top-left">{{ $t('rich-content.top_left') }}</SelectItem>
-                            <SelectItem value="top-right">{{ $t('rich-content.top_right') }}</SelectItem>
-                            <SelectItem value="bottom-left">{{ $t('rich-content.bottom_left') }}</SelectItem>
-                            <SelectItem value="bottom-right">{{ $t('rich-content.bottom_right') }}</SelectItem>
+                            <SelectItem value="top-left">
+                              {{ $t('rich-content.top_left') }}
+                            </SelectItem>
+                            <SelectItem value="top-right">
+                              {{ $t('rich-content.top_right') }}
+                            </SelectItem>
+                            <SelectItem value="bottom-left">
+                              {{ $t('rich-content.bottom_left') }}
+                            </SelectItem>
+                            <SelectItem value="bottom-right">
+                              {{ $t('rich-content.bottom_right') }}
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </Field>
@@ -169,9 +186,15 @@
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="sm">{{ $t('rich-content.small') }}</SelectItem>
-                            <SelectItem value="md">{{ $t('rich-content.medium') }}</SelectItem>
-                            <SelectItem value="lg">{{ $t('rich-content.large') }}</SelectItem>
+                            <SelectItem value="sm">
+                              {{ $t('rich-content.small') }}
+                            </SelectItem>
+                            <SelectItem value="md">
+                              {{ $t('rich-content.medium') }}
+                            </SelectItem>
+                            <SelectItem value="lg">
+                              {{ $t('rich-content.large') }}
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </Field>
@@ -182,9 +205,15 @@
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="vusa-red">{{ $t('rich-content.vusa_red') }}</SelectItem>
-                            <SelectItem value="vusa-yellow">{{ $t('rich-content.vusa_yellow') }}</SelectItem>
-                            <SelectItem value="zinc">{{ $t('rich-content.zinc') }}</SelectItem>
+                            <SelectItem value="vusa-red">
+                              {{ $t('rich-content.vusa_red') }}
+                            </SelectItem>
+                            <SelectItem value="vusa-yellow">
+                              {{ $t('rich-content.vusa_yellow') }}
+                            </SelectItem>
+                            <SelectItem value="zinc">
+                              {{ $t('rich-content.zinc') }}
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </Field>
@@ -222,9 +251,10 @@
 </template>
 
 <script setup lang="ts">
-import type { CarouselSlideDeck } from '@/Types/contentParts';
 import RCIconSelect from '../RCIconSelect.vue';
 import RCSectionOptions from '../Editor/RCSectionOptions.vue';
+
+import type { CarouselSlideDeck } from '@/Types/contentParts';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
 import { Button } from '@/Components/ui/button';

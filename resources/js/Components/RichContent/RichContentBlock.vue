@@ -7,11 +7,19 @@
     <Suspense>
       <template #default>
         <component :is="displayComponent" :element :html
-          :is-first-element="isFirstElement"
+          :is-first-element
           :anchor-id="element.id"
-          :resolved="resolved"
+          :resolved
           :prefetched-news="element.type === 'news' ? news : undefined"
-          :prefetched-calendar="element.type === 'calendar' ? calendarEvents : undefined" />
+          :prefetched-calendar="element.type === 'calendar' ? calendarEvents : undefined">
+          <!-- shadcn-card renders its body through a default slot. This must be provided
+               for both public pages and the editor's global preview; otherwise the card
+               body appears empty even though json_content is present. -->
+          <template v-if="element.type === 'shadcn-card'">
+            <RichContentTiptapHTML v-if="!html" :json_content="element.json_content" />
+            <div v-else v-html="element.html" />
+          </template>
+        </component>
       </template>
       <template #fallback>
         <component :is="skeletonComponent" :class="skeleton.height" />
@@ -19,16 +27,14 @@
     </Suspense>
   </div>
 
-  <!-- Synchronous component rendering (tiptap only) -->
-  <component :is="displayComponent" v-else :element :html
-    :is-first-element="isFirstElement"
-    :class="blockClasses">
-    <!-- Default slot for components that need content -->
-    <template v-if="element.type === 'shadcn-card'">
-      <RichContentTiptapHTML v-if="!html" :json_content="element.json_content" />
-      <div v-else v-html="element.html" />
-    </template>
-  </component>
+  <!-- Synchronous component rendering (tiptap only). Prefer the server-rendered HTML
+       when it exists; fall back to live json_content so unsaved editor blocks still
+       preview instead of rendering blank. -->
+  <component :is="displayComponent" v-else-if="element.html !== undefined" :element :html
+    :is-first-element
+    :class="blockClasses" />
+  <component :is="RichContentTiptapHTML" v-else :json_content="element.json_content"
+    :class="blockClasses" />
 </template>
 
 <script setup lang="ts">
@@ -45,8 +51,9 @@ import { computed } from 'vue';
 import { blockLayoutClasses } from './blockLayout';
 import { getContentType, getSkeletonForType } from './Types';
 import { getSkeletonComponent } from './skeletonComponents';
-import type { NewsItem } from '@/Types/contentParts';
 import RichContentTiptapHTML from './RichContentTiptapHTML.vue';
+
+import type { NewsItem } from '@/Types/contentParts';
 
 const props = defineProps<{
   element: models.ContentPart;

@@ -7,61 +7,43 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
-## v1.21 — Turinio sekcijos, žymės ir antraščių stiliai (2026-07-28) {#v1-21}
+## v1.19 — Greitesnė ViSAK padalinių laiko juosta ir nauji turinio blokai (2026-07-28) {#v1-19}
 
-- ⭐ **Naujas „Tarpas“ blokas** — leidžia valdyti vertikalų atstumą tarp bet kurių dviejų turinio blokų, kai įprastas tarpo dydis netinka; penki dydžiai nuo labai mažo iki didžiulio
-- ⭐ **Naujas „Sekcijos“ blokas** — sujungia po jo einančius blokus į vieną sekciją su bendra antrašte, fonu ir apvaliais kampais, iki kito sekcijos bloko
-- ⭐ **Antraštėms galima nustatyti dydį, spalvos akcentą, lygiuotę ir viršutinį tarpą** — nepriklausomai nuo H2/H3/H4 lygio
-- ⭐ **Naujas taškinis „žymės“ elementas teksto redaktoriuje** — su fonu arba be jo, keturių spalvų, kaip narystės puslapio ženkleliai
-- ✨ **Apvalūs kampai galimi visuose sekcijų tipo blokuose**, įskaitant antraštės bloką
-- ✨ **Antraštės blokui (įskaitant „juostos“ tipą) galima nustatyti foną, vidinius tarpus ir apvalius kampus**
-- ✨ **Turinio tinklelio stulpelių vertikali ir antraštės lygiuotė** — trumpesnis tekstas nebebūtinai ištemptas per visą aukštį
-- ✨ **Nuorodų sąrašo „su nuotraukomis“ stiliuje galima pridėti nuotrauką rankiniu būdu įvestoms nuorodoms**
-- ✨ **Nuorodų ir renginių sąrašų tinkleliai dabar prisitaiko prie elementų skaičiaus** — esant 1 ar 2 elementams, tinklelis nebeištemptas per visą plotį
-- ✨ **Antvivo turinį (kortelę virš nuotraukos) galima pritvirtinti prie nuotraukos kampo**, kad jis nebekyšotų už krašto
-- ✨ **Kartu esančios peržiūros pločio parinkiklis dabar atitinka bloko leistinus pločius ir juos išsaugo** — anksčiau rodė visus pločius nepaisant bloko tipo, o pakeitimas neišsisaugodavo
-- 🔧 **Renginių sąrašas nebekrenta peržiūrint prieš išsaugant**
-- 🔧 **Renginių sąrašas, grupuojamas pagal padalinį, dabar rikiuojamas abėcėlės tvarka** ir gali rodyti trumpus padalinio pavadinimus (pvz., „VU EVAF“) vietoje dubliuoto pilno pavadinimo
-- 🔧 **Kortelių krūvos fonas nebematomas kiaurai** žiūrint per viršutinę kortelę
-- 🔧 **Pašalintas perteklinis „Redagavimas / Peržiūra“ perjungiklis** turinio redaktoriuje — liko tik „Peržiūrėti viską“
-- 🔧 **Puslapio atnaujinimo data perkelta į puslapio apačią**, su aiškesniu paaiškinimu ir visada tikslia data (nebe „prieš X dienų“)
-- 🔧 **Turinio lentelė (šoninis meniu) nebeturi mobiliojo varianto** — jis dubliavosi su kitu plūduriuojančiu mygtuku
-- 🔧 **Ištaisytas maketo trūkumas, dėl kurio puslapio turinys buvo pastumtas į dešinę** ekranuose nuo 768 iki 1024 piks. pločio
-- 🔧 **Antraštės blokas nebeužstrigo perjungiant į „dviejų stulpelių“ tipą**, jei blokas neturėjo antvivo turinio (pvz., pirmakursių stovyklų puslapyje)
-- ✨ **Šiek tiek sumažinti numatytieji antraščių viršutiniai tarpai** — antraštės nebe taip smarkiai atskiriamos nuo ankstesnio turinio, o prireikus tarpą galima padidinti, sumažinti arba visiškai nuimti per antraštės stiliaus parinkiklį
+### ViSAK padalinių laiko juosta
 
-## v1.20 — Perdarytas turinio blokų redaktorius (2026-07-28) {#v1-20}
+- ✨ **Laiko juosta kraunasi kelis kartus greičiau** — posėdžiai užkraunami tik matomam laikotarpiui ir slenkant
+
+### Nauji turinio blokai ir puslapio nustatymai
 
 - ⭐ **Trys nauji turinio blokai** — nuorodų sąrašas (naujienos, puslapiai arba rankiniu būdu įvestos nuorodos), renginių sąrašas (filtruojamas, grupuojamas pagal padalinį) ir asmens citata su nuotrauka bei pareigomis
-- ⭐ **Turinio lentelės (šoninio meniu) įjungimas ir išjungimas** — puslapio nustatymuose galima pasirinkti, ar rodyti šoninę turinio lentelę
-- ⭐ **Puslapio pavadinimo ir atnaujinimo laiko slėpimas** — šalia turinio lentelės nustatymo atsirado perjungiklis, leidžiantis nerodyti puslapio antraštės, kai ji jau pateikiama pačiame turinyje
-- ✨ **Kiekvienam turinio blokui galima pasirinkti plotį** — teksto, turinio, platus arba per visą pločio, priklausomai nuo bloko tipo
-- ✨ **Naujas turinio blokų pasirinkimo langas** — blokai suskirstyti kategorijomis, galima ieškoti pagal pavadinimą, o pasirinkus tipą iš karto matoma jo gyva peržiūra; antraštės sekcijai rodomos visų jos variantų peržiūros
-- ✨ **Redagavimo blokus galima suskleisti ir išskleisti** — dideli blokai nebeužima viso ekrano, o vilkti juos tvarkant tapo daug patogiau
-- ✨ **Perdaryta kortelės išvaizda** — nebeliko dekoratyvinės ikonos, spalva dabar žymima subtilia juostele šone, o ne visu tamsintu fonu
-- ✨ **Patogesnis nuotraukų tinklelio ir galerijos redagavimas** — nuotraukos tvarkomos tiesiai tinklelyje, galima nustatyti fokuso tašką, o alternatyvus tekstas paklausiamas tik vieną kartą pasirenkant nuotrauką
-- ✨ **Nauji antraštės sekcijos variantai** — be įprasto dviejų stulpelių varianto, atsirado centruotas, juostos ir panelės tipo antraštės; variantų pasirinkimas dabar rodomas su schematiška kiekvieno varianto peržiūra
-- ✨ **Antraštės mygtukai gali turėti ikoną**
-- ✨ **Pavadinimas, paantraštė ir fonas dabar galimi visuose sekcijų tipo blokuose** — akordeone, kortelių krūvoje, karuselėje, galerijoje ir statistikos bloke
-- ✨ **Tinklelio nuotraukoms galima nustatyti fokuso tašką, antvivo turinį ir dekoratyvinius elementus**
-- ✨ **Turinio tinklelis gali turėti pavadinimą, paantraštę ir foną** — įskaitant subtilų gradientą ir baltą foną, kaip ir kituose sekcijų tipo blokuose
-- ⭐ **Redagavimas ir peržiūra greta** — bet kuriam blokui galima atidaryti langą, kuriame redagavimas ir gyva peržiūra rodomi vienu metu, su galimybe peržiūrėti bloką bet kuriuo pločiu, jo nekeičiant
+- ⭐ **„Tarpas“ blokas** — leidžia valdyti vertikalų atstumą tarp bet kurių dviejų blokų, kai įprastas tarpo dydis netinka; penki dydžiai nuo labai mažo iki didžiulio
+- ⭐ **„Sekcijos“ blokas** — sujungia po jo einančius blokus į vieną sekciją su bendra antrašte, fonu ir apvaliais kampais, iki kito sekcijos bloko
+- ⭐ **Turinio lentelės (šoninio meniu) įjungimas ir išjungimas** puslapio nustatymuose
+- ⭐ **Puslapio pavadinimo ir atnaujinimo laiko slėpimas** — kai antraštė jau pateikiama pačiame turinyje
+
+### Patogesnis redagavimas
+
+- ⭐ **Redagavimas ir peržiūra greta** — bet kuriam blokui galima atidaryti langą, kuriame redagavimas ir gyva peržiūra rodomi vienu metu; peržiūros plotis parenkamas iš bloko leistinų pločių ir išsisaugo
+- ✨ **Naujas turinio blokų pasirinkimo langas** — blokai suskirstyti kategorijomis, galima ieškoti pagal pavadinimą, o pasirinkus tipą iš karto matoma jo gyva peržiūra; antraštės sekcijai rodomos visų variantų peržiūros
+- ✨ **Blokus galima suskleisti ir išskleisti** — dideli blokai nebeužima viso ekrano, o vilkti juos tvarkant daug patogiau
+- ✨ **Kiekvienam blokui galima pasirinkti plotį** — teksto, turinio, platus arba per visą pločio, priklausomai nuo bloko tipo
+- ✨ **Patogesnis nuotraukų tinklelio ir galerijos redagavimas** — nuotraukos tvarkomos tiesiai tinklelyje, galima nustatyti fokuso tašką
 - 🔧 **Nuotraukų pasirinkimo lange nebematyti PDF ir kitų netinkamų failų**
-- 🔧 **Turinio tinklelio blokas nebeištrina savo turinio** kiekvieną kartą jį atidarius redagavimui
-- 🔧 **Tinklelio kortelė be nuotraukos nebedaro tuščio paveikslėlio vietos**
-- 🔧 **Antraštės antvivo turinys nebematomas, kai jame nieko neįrašyta**
-- 🔧 **„Juosta“ tipo antraštėje nebematyti jai neaktualių nustatymų** (viršelinė žymė, aprašymas)
 
-## v1.19 — Greitesnė ViSAK padalinių laiko juosta (2026-07-27) {#v1-19}
+### Blokų išvaizda ir stiliai
 
-- ✨ **Padalinių laiko juosta kraunasi ženkliai greičiau** — posėdžiai laiko juostoje užkraunami tik matomam laikotarpiui ir dokraunami slenkant, todėl visų padalinių vaizdas atsiveria kelis kartus greičiau
-- ✨ **Sklandesnis laiko juostos slinkimas** — senesni ir būsimi posėdžiai dokraunami tyliai fone, o žymekliai išpišiami tik matomoje srityje
-- ✨ **Matomas posėdžių krovimosi indikatorius** — kraunamos eilutės laiko juostoje pažymimos ryškesniu mirksinčiu fonu, o įrankių juostoje rodomas kraunimosi ženkliukas
-- ✨ **Greitesnis slinkimas per daug padalinių** — laiko juosta piešia tik ekrane matomas eilutes, todėl slinkimas per dešimtis padalinių yra sklandesnis
-- ✨ **Galimybė greitai palikti tik vieną padalinį** — padalinių pasirinkime šalia „Visi“ atsirado mygtukas „Palikti vieną“
-- 🔧 **Padalinių laiko juostoje rodomos tik pasirinktų padalinių institucijos** — susietos institucijos iš kitų padalinių nebedublikuojamos, tad sąrašas sutampa su būklės suvestinės skaičiais
-- 🔧 **Ištaisytas posėdžių trūkumas padalinių laiko juostoje** — tuščias atsakymas nebebuvo kaupiamas podėlyje, todėl neseniai sukurti posėdžiai nebeatrodo lyg jų nėra
-- 🔧 **Paveikslėlių dialoge „Mano“ sistemoje vėl rodomi lietuviški tekstai** — alternatyvaus teksto ir pavadinimo laukų bei pasirinkimo žingsnių vertimai buvo iškeliami tik viešajai daliai, todėl administracinėje sąsajoje pasirodydavo kaip raktai
+- ✨ **Nauji antraštės sekcijos variantai** — be įprasto dviejų stulpelių atsirado centruotas, juostos ir panelės tipo, parenkami su schematiškomis peržiūromis; antraštės mygtukai gali turėti ikoną
+- ⭐ **Antraštėms galima nustatyti dydį, spalvos akcentą, lygiuotę ir viršutinį tarpą** — nepriklausomai nuo H2/H3/H4 lygio
+- ⭐ **Naujas taškinis „žymės“ elementas teksto redaktoriuje** — su fonu arba be jo, keturių spalvų, kaip narystės puslapio ženkleliai
+- ✨ **Pavadinimas, paantraštė ir fonas galimi visuose sekcijų tipo blokuose** — akordeone, kortelių krūvoje, karuselėje, galerijoje, statistikoje ir turinio tinklelyje (įskaitant subtilų gradientą ir baltą foną)
+- ✨ **Apvalūs kampai, fonas ir vidiniai tarpai — ir antraštės blokui**, įskaitant „juostos“ tipą
+- ✨ **Perdaryta kortelės išvaizda** — be dekoratyvinės ikonos, spalva žymima subtilia juostele šone, o kortelės antraštė padidinta ir atitraukta nuo turinio
+- ✨ **Tinklelio nuotraukoms galima nustatyti fokuso tašką, antvivo turinį ir dekoratyvius elementus**, o antvivo turinį — pritvirtinti prie nuotraukos kampo, kad nekyšotų už krašto
+- ✨ **Nuorodų sąrašo „su nuotraukomis“ stiliuje nuotrauką galima pridėti ir rankiniu būdu įvestoms nuorodoms**
+- ✨ **Nuorodų ir renginių sąrašų tinkleliai prisitaiko prie elementų skaičiaus** — esant 1 ar 2 elementams, tinklelis nebeištemptas per visą plotį
+- ✨ **Turinio tinklelio stulpelių vertikali ir antraštės lygiuotė** — trumpesnis tekstas nebeištemptas per visą aukštį
+- ✨ **Sumažinti numatytieji antraščių viršutiniai tarpai** — prireikus tarpą galima padidinti, sumažinti arba nuimti antraštės stiliaus parinkiklyje
+- 🔧 **Antraščių dydžio, spalvos akcento ir viršutinio tarpo pakeitimai matomi redaguojant** — anksčiau jie buvo matomi tik peržiūros režime
 
 ## v1.18 — Atnaujinti renginių ir stovyklų puslapiai (2026-07-27) {#v1-18}
 

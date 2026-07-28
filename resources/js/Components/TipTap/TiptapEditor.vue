@@ -187,11 +187,8 @@
         </Button>
       </template>
 
-      <Separator orientation="vertical" class="h-5" />
-
       <!-- Media buttons (compact and full) -->
       <template v-if="preset !== 'minimal'">
-        <ButtonGroup>
           <Suspense>
             <TiptapImageButton as-child @submit:object="attachImage">
               <Button size="sm" variant="outline">
@@ -204,7 +201,6 @@
               <IFluentVideoClip24Regular />
             </Button>
           </TiptapYoutubeButton>
-        </ButtonGroup>
       </template>
 
       <!-- Video button (full preset) -->
