@@ -22,6 +22,15 @@ class UpdatePageRequest extends FormRequest
     }
 
     /**
+     * Get the tenant the page belongs to, so permalink uniqueness is scoped
+     * to that tenant instead of checked globally.
+     */
+    protected function getTargetTenantId(): ?int
+    {
+        return $this->page->tenant_id;
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, ValidationRule|array<mixed>|string>
@@ -32,7 +41,7 @@ class UpdatePageRequest extends FormRequest
             ...$this->contentPartRules(),
             'title' => 'required|string|max:255',
             'lang' => 'required|string|in:lt,en',
-            'permalink' => ['sometimes', 'required', 'string', 'max:255', UniqueAmongTrashed::of('pages')->ignore($this->page->id)],
+            'permalink' => ['sometimes', 'required', 'string', 'max:255', UniqueAmongTrashed::of('pages')->ignore($this->page->id)->where('tenant_id', $this->getTargetTenantId())],
             'category_id' => ['nullable', SoftDeleteRules::existsLive('categories')],
             // `different:id` was inert — the payload has no `id` field — so a page
             // could be paired with itself. Compare against the route model instead.

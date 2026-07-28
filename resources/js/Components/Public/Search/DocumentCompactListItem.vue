@@ -2,6 +2,7 @@
   <div
     class="group transition-all duration-200 border border-border/50 rounded-md bg-card hover:shadow-lg hover:bg-accent/20 hover:border-primary/30">
     <a :href="documentUrl" target="_blank" rel="noopener noreferrer"
+      :title="isShortcut ? $t('search.document_link_hint') : undefined"
       class="block sm:flex sm:items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-ring rounded-md"
       @click="trackDocumentClick">
 
@@ -20,8 +21,9 @@
               {{ document.title }}
             </h3>
           </div>
-          <!-- External Link Icon -->
-          <ExternalLink class="w-3 h-3 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
+          <!-- External Link / Shortcut Icon -->
+          <component :is="isShortcut ? LinkIcon : ExternalLink"
+            class="w-3 h-3 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
         </div>
 
         <!-- Metadata Row - no margin, full width -->
@@ -42,6 +44,11 @@
           <span class="whitespace-nowrap flex-shrink-0 font-medium">
             {{ formatCompactDate() }}
           </span>
+
+          <!-- Unresolved shortcut warning -->
+          <AlertTriangle v-if="isUnresolvedShortcut"
+            class="w-3 h-3 text-amber-600 dark:text-amber-400 flex-shrink-0"
+            :title="$t('search.document_link_unresolved')" />
         </div>
       </div>
 
@@ -80,8 +87,14 @@
             {{ formatCompactDate() }}
           </span>
 
-          <!-- External Link Icon -->
-          <ExternalLink class="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
+          <!-- Unresolved shortcut warning -->
+          <AlertTriangle v-if="isUnresolvedShortcut"
+            class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0"
+            :title="$t('search.document_link_unresolved')" />
+
+          <!-- External Link / Shortcut Icon -->
+          <component :is="isShortcut ? LinkIcon : ExternalLink"
+            class="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
         </div>
       </div>
     </a>
@@ -92,14 +105,15 @@
 // ShadcnVue components
 
 // Icons
-import { ExternalLink } from 'lucide-vue-next';
+import { AlertTriangle, ExternalLink, Link as LinkIcon } from 'lucide-vue-next';
 import { Icon } from '@iconify/vue';
 import { computed } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
 
 import { Badge } from '@/Components/ui/badge';
 
 // Composables
-import { useDocumentDisplay, forceBrowserDocumentUrl, parseDocumentDate, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
+import { useDocumentDisplay, getDocumentTargetUrl, parseDocumentDate, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
 
 // Props
 interface Props {
@@ -115,12 +129,15 @@ const {
   getShortContentType,
   getContentTypeBadgeClasses,
   getTenantDisplayName,
+  isShortcut,
+  isUnresolvedShortcut,
   trackDocumentClick,
 } = useDocumentDisplay(props.document);
 
-// share_url goes through DocumentRedirectController which appends web=1 server-side.
-// Raw anonymous_url fallback needs web=1 added client-side.
-const documentUrl = computed(() => props.document.share_url || forceBrowserDocumentUrl(props.document.anonymous_url));
+// .url shortcuts link straight to their resolved target; otherwise share_url
+// goes through DocumentRedirectController which appends web=1 server-side,
+// falling back to the raw anonymous_url with web=1 added client-side.
+const documentUrl = computed(() => getDocumentTargetUrl(props.document));
 
 // Compact date formatting using the proper date parsing from useDocumentDisplay
 const formatCompactDate = () => {

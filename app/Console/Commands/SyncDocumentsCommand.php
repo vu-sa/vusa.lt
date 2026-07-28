@@ -19,6 +19,7 @@ class SyncDocumentsCommand extends Command
                             {--failed : Only sync documents with failed status}
                             {--force : Skip eTag matching and force full sync (useful for backfilling permission IDs)}
                             {--limit= : Maximum number of documents to sync (defaults to 50, ignored with --all)}
+                            {--shortcuts : Only sync documents that are .url internet shortcuts}
                             {--dry-run : Show what would be synced without actually syncing}';
 
     /**
@@ -77,6 +78,10 @@ class SyncDocumentsCommand extends Command
         $query = Document::query()
             ->where('sync_status', '!=', 'syncing')
             ->orderBy('checked_at', 'asc');
+
+        if ($this->option('shortcuts')) {
+            $query->where('name', 'like', '%.url');
+        }
 
         if ($this->option('limit')) {
             $query->limit((int) $this->option('limit'));

@@ -65,12 +65,63 @@ test('can open news archive', function () {
 });
 
 test('can open news', function () {
-    $news = News::factory()->create();
+    $mainTenant = Tenant::query()->where('alias', 'vusa')->firstOrFail();
+    $news = News::factory()->for($mainTenant)->create();
 
     $this->get(route('news', ['subdomain' => 'www', 'lang' => 'lt', 'news' => $news->permalink, 'newsString' => 'naujiena']))
         ->assertInertia(fn (Assert $page) => $page
             ->component('Public/NewsPage')
             ->has('article')
+        );
+});
+
+test('news route resolves the main tenant article when permalink is shared', function () {
+    $mainTenant = Tenant::query()->where('alias', 'vusa')->firstOrFail();
+    $otherTenant = Tenant::factory()->create([
+        'alias' => 'test-news-tenant',
+    ]);
+
+    $mainNews = News::factory()->for($mainTenant)->create([
+        'permalink' => 'shared-permalink',
+        'title' => 'Main tenant article',
+    ]);
+
+    News::factory()->for($otherTenant)->create([
+        'permalink' => 'shared-permalink',
+        'title' => 'Other tenant article',
+    ]);
+
+    $this->get(route('news', ['subdomain' => 'www', 'lang' => 'lt', 'news' => 'shared-permalink', 'newsString' => 'naujiena']), ['HTTP_HOST' => 'www.vusa.test'])
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Public/NewsPage')
+            ->has('article')
+            ->where('article.id', $mainNews->id)
+            ->where('article.title', $mainNews->title)
+        );
+});
+
+test('news route resolves the padalinys article when permalink is shared', function () {
+    $mainTenant = Tenant::query()->where('alias', 'vusa')->firstOrFail();
+    $otherTenant = Tenant::factory()->create([
+        'alias' => 'test-news-tenant',
+    ]);
+
+    News::factory()->for($mainTenant)->create([
+        'permalink' => 'shared-permalink',
+        'title' => 'Main tenant article',
+    ]);
+
+    $otherNews = News::factory()->for($otherTenant)->create([
+        'permalink' => 'shared-permalink',
+        'title' => 'Other tenant article',
+    ]);
+
+    $this->get(route('news', ['subdomain' => $otherTenant->alias, 'lang' => 'lt', 'news' => 'shared-permalink', 'newsString' => 'naujiena']), ['HTTP_HOST' => $otherTenant->alias.'.vusa.test'])
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Public/NewsPage')
+            ->has('article')
+            ->where('article.id', $otherNews->id)
+            ->where('article.title', $otherNews->title)
         );
 });
 

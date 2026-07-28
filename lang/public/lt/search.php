@@ -151,6 +151,11 @@ return [
     'language_english' => 'EN',
     'language_unknown' => 'Nenurodyta',
 
+    // Internet shortcut (.url) documents
+    'document_link_badge' => 'Nuoroda',
+    'document_link_hint' => 'Šis įrašas veda į išorinę svetainę',
+    'document_link_unresolved' => 'Šis įrašas yra nuoroda į išorinę svetainę, tačiau tikslus adresas dar nenustatytas – atsidarys „SharePoint" peržiūra.',
+
     // Search input specific
     'search_documents_placeholder' => 'Ieškoti dokumentų pagal pavadinimą...',
     'search_documents_placeholder_alt' => 'Ieškoti dokumentų...',

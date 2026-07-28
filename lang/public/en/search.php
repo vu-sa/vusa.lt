@@ -147,6 +147,11 @@ return [
     'language_english' => 'EN',
     'language_unknown' => 'Not specified',
 
+    // Internet shortcut (.url) documents
+    'document_link_badge' => 'Link',
+    'document_link_hint' => 'This entry points to an external website',
+    'document_link_unresolved' => 'This entry is a link to an external website, but its address has not been resolved yet — a SharePoint preview will open instead.',
+
     // Search input specific
     'search_documents_placeholder' => 'Search documents by title...',
     'search_documents_placeholder_alt' => 'Search documents...',

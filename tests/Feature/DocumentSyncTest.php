@@ -250,6 +250,22 @@ describe('Document Sync Command', function () {
             ->expectsOutputToContain('(limit: 25)')
             ->assertExitCode(0);
     });
+
+    test('--shortcuts option only targets .url internet shortcut documents', function () {
+        Document::factory()->count(2)->create([
+            'name' => 'ataskaita2023.vusa.lt.url',
+        ]);
+
+        Document::factory()->count(3)->create([
+            'name' => 'protokolas.pdf',
+        ]);
+
+        $this->artisan('sharepoint:sync-documents --all --shortcuts --dry-run')
+            ->expectsOutputToContain('Would sync 2 documents')
+            ->assertExitCode(0);
+
+        Queue::assertNothingPushed();
+    });
 });
 
 describe('Document Sync Status', function () {

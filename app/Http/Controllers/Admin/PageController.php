@@ -160,7 +160,7 @@ class PageController extends AdminController
         $this->handleAuthorization('update', $page);
 
         $page->update([
-            ...$request->only('title', 'lang', 'category_id', 'is_active', 'layout'),
+            ...$request->only('title', 'lang', 'category_id', 'is_active', 'layout', 'permalink'),
             'show_table_of_contents' => $request->boolean('show_table_of_contents', true),
             'show_title' => $request->boolean('show_title', true),
             'show_breadcrumbs' => $request->boolean('show_breadcrumbs', true),

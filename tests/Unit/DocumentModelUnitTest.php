@@ -50,3 +50,10 @@ test('document should be searchable only when it has anonymous url', function ()
     ]);
     expect($document->shouldBeSearchable())->toBeTrue();
 });
+
+test('isUrlShortcut detects .url files case-insensitively', function () {
+    expect((new Document(['name' => 'ataskaita2023.vusa.lt.url']))->isUrlShortcut())->toBeTrue();
+    expect((new Document(['name' => 'ataskaita2023.vusa.lt.URL']))->isUrlShortcut())->toBeTrue();
+    expect((new Document(['name' => 'protokolas.pdf']))->isUrlShortcut())->toBeFalse();
+    expect((new Document(['name' => null]))->isUrlShortcut())->toBeFalse();
+});

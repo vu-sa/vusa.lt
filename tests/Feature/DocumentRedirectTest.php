@@ -92,3 +92,82 @@ describe('Document short URL redirect', function () {
         $response->assertNotFound();
     });
 });
+
+describe('Internet shortcut (.url) document redirect', function () {
+    it('redirects straight to link_url, with no web=1 appended', function () {
+        $document = Document::factory()->create([
+            'name' => 'ataskaita2023.vusa.lt.url',
+            'anonymous_url' => 'https://sharepoint.example.com/shortcut/123',
+            'link_url' => 'https://ataskaita2023.vusa.lt',
+        ]);
+
+        $code = ShortUrlHelper::encode($document->id);
+
+        $response = $this->get("/d/{$code}");
+
+        $response->assertStatus(302);
+        expect($response->headers->get('Location'))->toBe('https://ataskaita2023.vusa.lt');
+    });
+
+    it('ignores the download query parameter for a resolved shortcut', function () {
+        $document = Document::factory()->create([
+            'name' => 'ataskaita2023.vusa.lt.url',
+            'anonymous_url' => 'https://sharepoint.example.com/shortcut/123',
+            'link_url' => 'https://ataskaita2023.vusa.lt',
+        ]);
+
+        $code = ShortUrlHelper::encode($document->id);
+
+        $response = $this->get("/d/{$code}?download=1");
+
+        $response->assertStatus(302);
+        expect($response->headers->get('Location'))->toBe('https://ataskaita2023.vusa.lt');
+    });
+
+    it('does not forward arbitrary query parameters for a resolved shortcut', function () {
+        $document = Document::factory()->create([
+            'name' => 'ataskaita2023.vusa.lt.url',
+            'anonymous_url' => 'https://sharepoint.example.com/shortcut/123',
+            'link_url' => 'https://ataskaita2023.vusa.lt',
+        ]);
+
+        $code = ShortUrlHelper::encode($document->id);
+
+        $response = $this->get("/d/{$code}?foo=bar");
+
+        $response->assertStatus(302);
+        expect($response->headers->get('Location'))->toBe('https://ataskaita2023.vusa.lt');
+    });
+
+    it('falls back to anonymous_url when link_url is null', function () {
+        $document = Document::factory()->create([
+            'name' => 'ataskaita2023.vusa.lt.url',
+            'anonymous_url' => 'https://sharepoint.example.com/shortcut/123',
+            'link_url' => null,
+        ]);
+
+        $code = ShortUrlHelper::encode($document->id);
+
+        $response = $this->get("/d/{$code}");
+
+        $response->assertStatus(302);
+        expect($response->headers->get('Location'))->toBe('https://sharepoint.example.com/shortcut/123?web=1');
+    });
+
+    it('falls back to anonymous_url when link_url has a disallowed scheme', function () {
+        $document = Document::factory()->create([
+            'name' => 'ataskaita2023.vusa.lt.url',
+            'anonymous_url' => 'https://sharepoint.example.com/shortcut/123',
+            'link_url' => 'javascript:alert(1)',
+        ]);
+
+        $code = ShortUrlHelper::encode($document->id);
+
+        $response = $this->get("/d/{$code}");
+
+        $response->assertStatus(302);
+        $location = $response->headers->get('Location');
+        expect($location)->toBe('https://sharepoint.example.com/shortcut/123?web=1');
+        expect($location)->not->toContain('javascript:');
+    });
+});

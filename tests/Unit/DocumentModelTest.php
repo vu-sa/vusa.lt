@@ -55,3 +55,13 @@ test('document date range bucket is calculated correctly', function () {
     $bucket = $document->toSearchableArray()['date_range_bucket'];
     expect($bucket)->toBeIn($validBuckets);
 });
+
+test('toSearchableArray includes link_url', function () {
+    $document = Document::factory()->create([
+        'name' => 'ataskaita2023.vusa.lt.url',
+        'anonymous_url' => 'https://sharepoint.example.com/document/123',
+        'link_url' => 'https://ataskaita2023.vusa.lt',
+    ]);
+
+    expect($document->toSearchableArray())->toHaveKey('link_url', 'https://ataskaita2023.vusa.lt');
+});

@@ -200,14 +200,21 @@
 
             <!-- Permalink -->
             <FormFieldWrapper id="permalink" :label="$t('Nuoroda')"
-              :helper-text="$t('Atsargiai: pakeitus nuorodą, sena nuoroda nebeveiks!')" :error="form.errors.permalink"
-              :valid="form.valid('permalink')" :invalid="form.invalid('permalink')">
+              :error="form.errors.permalink" :valid="form.valid('permalink')" :invalid="form.invalid('permalink')">
               <div class="flex items-center gap-2">
                 <IFluentLink24Regular class="h-4 w-4 shrink-0 text-muted-foreground" />
                 <Input id="permalink" v-model="form.permalink" type="text" :placeholder="$t('Sugeneruojama nuoroda')"
                   @change="form.validate('permalink')" />
               </div>
             </FormFieldWrapper>
+
+            <Alert class="border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+              <IFluentWarning24Regular />
+              <AlertTitle>{{ $t('Dėmesio') }}</AlertTitle>
+              <AlertDescription>
+                {{ $t('Atsargiai: pakeitus nuorodą, sena nuoroda nebeveiks!') }}
+              </AlertDescription>
+            </Alert>
           </div>
         </CollapsibleContent>
       </Collapsible>
@@ -228,10 +235,12 @@ import FormFieldWrapper from './FormFieldWrapper.vue';
 import FormStatusHeader from './FormStatusHeader.vue';
 
 import { generateSlug } from '@/Utils/String';
+import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Button } from '@/Components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
+import IFluentWarning24Regular from '~icons/fluent/warning24-regular';
 import { MultiSelect } from '@/Components/ui/multi-select';
 import { OrderedListInput } from '@/Components/ui/ordered-list-input';
 import { Switch } from '@/Components/ui/switch';

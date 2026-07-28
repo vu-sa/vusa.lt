@@ -380,4 +380,70 @@ describe('auth: news manager', function () {
         $response->assertSessionHasErrors(['tenant_id']);
         expect(News::count())->toBe($initialCount);
     });
+
+    test('news permalink must be unique within tenant', function () {
+        $managerTenant = $this->newsManager->duties()->first()->institution->tenant;
+
+        News::factory()->for($managerTenant)->create([
+            'permalink' => 'duplicate-news-permalink',
+        ]);
+
+        $response = asUser($this->newsManager)->post(route('news.store'), [
+            'title' => 'Duplicate News',
+            'permalink' => 'duplicate-news-permalink',
+            'content' => [
+                'parts' => [
+                    [
+                        'type' => 'tiptap',
+                        'json_content' => ['lt' => 'News content'],
+                        'options' => [],
+                        'order' => 1,
+                    ],
+                ],
+            ],
+            'lang' => 'lt',
+            'image' => 'image.jpg',
+            'publish_time' => now()->timestamp,
+            'short' => 'Short news',
+        ]);
+
+        $response->assertStatus(302)->assertSessionHasErrors(['permalink']);
+    });
+
+    test('news permalink can be reused across tenants', function () {
+        $managerTenant = $this->newsManager->duties()->first()->institution->tenant;
+        $otherTenant = Tenant::query()->where('id', '!=', $managerTenant->id)->firstOrFail();
+
+        News::factory()->for($otherTenant)->create([
+            'permalink' => 'shared-news-permalink',
+        ]);
+
+        $response = asUser($this->newsManager)->post(route('news.store'), [
+            'title' => 'Shared News',
+            'permalink' => 'shared-news-permalink',
+            'content' => [
+                'parts' => [
+                    [
+                        'type' => 'tiptap',
+                        'json_content' => ['lt' => 'News content'],
+                        'options' => [],
+                        'order' => 1,
+                    ],
+                ],
+            ],
+            'lang' => 'lt',
+            'image' => 'image.jpg',
+            'publish_time' => now()->timestamp,
+            'short' => 'Short news',
+        ]);
+
+        $response->assertStatus(302)
+            ->assertRedirectToRoute('news.index')
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('news', [
+            'permalink' => 'shared-news-permalink',
+            'tenant_id' => $managerTenant->id,
+        ]);
+    });
 });

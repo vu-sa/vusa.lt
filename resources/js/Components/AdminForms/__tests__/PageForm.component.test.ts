@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import PageForm from '@/Components/AdminForms/PageForm.vue';
+import PermalinkField from '@/Components/AdminForms/PermalinkField.vue';
 import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', async () => {
@@ -65,7 +66,15 @@ describe('PageForm.vue — show_breadcrumbs toggle', () => {
           FormFieldWrapper: {
             template: '<div><slot /></div>',
           },
-          PermalinkField: { template: '<div />' },
+          PermalinkField: {
+            props: ['permalink', 'baseUrl', 'disabled', 'viewUrl', 'explanation', 'warning'],
+            template: `
+              <div data-testid="permalink-field">
+                <span data-testid="permalink-disabled">{{ disabled }}</span>
+                <span data-testid="permalink-warning">{{ warning }}</span>
+              </div>
+            `,
+          },
           SEOPreview: { template: '<div />' },
           OrderedListInput: { template: '<div />' },
           Collapsible: { template: '<div><slot /></div>' },
@@ -144,5 +153,29 @@ describe('PageForm.vue — show_breadcrumbs toggle', () => {
 
     await toggle.trigger('click');
     expect(vm.form.show_breadcrumbs).toBe(true);
+  });
+
+  it('allows editing the permalink on an existing page with a warning', () => {
+    wrapper = createWrapper({
+      page: defaultPage,
+      submitMethod: 'patch',
+    });
+
+    const field = wrapper.findComponent(PermalinkField);
+    expect(field.exists()).toBe(true);
+    expect(field.props('disabled')).toBe(false);
+    expect(field.props('warning')).toBe('Atsargiai: pakeitus nuorodą, sena nuoroda nebeveiks!');
+  });
+
+  it('keeps the permalink editable and warns when editing on create mode too', () => {
+    wrapper = createWrapper({
+      page: defaultPage,
+      rememberKey: 'CreatePage',
+      submitMethod: 'post',
+    });
+
+    const field = wrapper.findComponent(PermalinkField);
+    expect(field.exists()).toBe(true);
+    expect(field.props('disabled')).toBe(false);
   });
 });

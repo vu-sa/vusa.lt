@@ -28,12 +28,21 @@ class UpdateNewsRequest extends NewsRequest
     }
 
     /**
+     * Get the tenant the news item belongs to, so permalink uniqueness is scoped
+     * to that tenant instead of checked globally.
+     */
+    protected function getTargetTenantId(): ?int
+    {
+        return $this->news->tenant_id;
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      */
     public function rules(): array
     {
         return array_merge(parent::rules(), [
-            'permalink' => ['required', 'string', UniqueAmongTrashed::of('news', 'permalink')->ignore($this->news->id)],
+            'permalink' => ['required', 'string', UniqueAmongTrashed::of('news', 'permalink')->ignore($this->news->id)->where('tenant_id', $this->getTargetTenantId())],
             'image' => 'nullable|string',
             'short' => 'nullable',
             'lang' => 'required|string',

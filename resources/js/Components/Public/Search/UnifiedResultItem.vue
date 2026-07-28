@@ -49,6 +49,7 @@ import { usePage } from '@inertiajs/vue3';
 import { ArrowRight, ArrowUpRight } from 'lucide-vue-next';
 
 import SmartLink from '@/Components/Public/SmartLink.vue';
+import { getDocumentTargetUrl, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
 import type { SearchCollectionId } from '@/Composables/usePublicMultiSearch';
 
 interface Props {
@@ -155,7 +156,7 @@ const href = computed(() => {
           ...(subdomain.value ? { subdomain: subdomain.value } : {}),
         });
       case 'documents':
-        return doc.anonymous_url || '#';
+        return getDocumentTargetUrl(doc as DocumentDisplayItem) || '#';
       case 'institutions':
         if (doc.alias) {
           return route('contacts.alias', { ...base, institution: doc.alias });

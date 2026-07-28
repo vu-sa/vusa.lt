@@ -298,6 +298,7 @@ return [
                         ['name' => 'is_in_effect', 'type' => 'bool', 'facet' => true, 'optional' => true],
                         ['name' => 'anonymous_url', 'type' => 'string'],
                         ['name' => 'share_url', 'type' => 'string', 'optional' => true],
+                        ['name' => 'link_url', 'type' => 'string', 'optional' => true],
                         ['name' => 'is_active', 'type' => 'bool', 'facet' => true],
                         // Enhanced faceting fields (produced by Document::toSearchableArray)
                         ['name' => 'content_type_category', 'type' => 'string', 'facet' => true, 'optional' => true],

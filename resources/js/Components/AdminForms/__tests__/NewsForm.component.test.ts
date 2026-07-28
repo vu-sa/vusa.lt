@@ -54,6 +54,11 @@ describe('NewsForm.vue — show_breadcrumbs toggle', () => {
             template: '<form @submit.prevent><slot name="status-header" /><slot /></form>',
             props: ['model'],
           },
+          Alert: {
+            template: '<div data-testid="alert"><slot /></div>',
+          },
+          AlertTitle: { template: '<strong><slot /></strong>' },
+          AlertDescription: { template: '<div data-testid="alert-description"><slot /></div>' },
           FormElement: {
             template: '<section><slot name="title" /><slot name="description" /><slot /></section>',
           },
@@ -75,6 +80,7 @@ describe('NewsForm.vue — show_breadcrumbs toggle', () => {
           ToggleGroupItem: { template: '<div />' },
           ImageUpload: { template: '<div />' },
           CollectionSelectDialog: { template: '<div />' },
+          IFluentWarning24Regular: { template: '<span class="icon-warning" />' },
           // Mirrors the real reka-ui Switch: binds modelValue, emits update:modelValue.
           Switch: {
             template: '<button type="button" role="switch" :aria-checked="modelValue" @click="$emit(\'update:modelValue\', !modelValue)" />',
@@ -117,5 +123,13 @@ describe('NewsForm.vue — show_breadcrumbs toggle', () => {
 
     await wrapper.find('[role="switch"]').trigger('click');
     expect(vm.form.show_breadcrumbs).toBe(true);
+  });
+
+  it('renders a serious warning below the permalink field', () => {
+    wrapper = createWrapper();
+
+    const alert = wrapper.find('[data-testid="alert"]');
+    expect(alert.exists()).toBe(true);
+    expect(alert.text()).toContain('Atsargiai: pakeitus nuorodą, sena nuoroda nebeveiks!');
   });
 });
