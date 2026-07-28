@@ -209,7 +209,7 @@
             </Alert>
 
             <!-- Permalink -->
-            <PermalinkField :permalink="form.permalink" :base-url="pageBaseUrl"
+            <PermalinkField :permalink="form.permalink" :base-url="pageBaseUrl" :disabled="false"
               :view-url="!isCreate ? fullPageUrl : undefined"
               :explanation="isCreate ? $t('Nuoroda generuojama automatiškai pagal pavadinimą') : undefined"
               :warning="!isCreate ? $t('Atsargiai: pakeitus nuorodą, sena nuoroda nebeveiks!') : undefined"

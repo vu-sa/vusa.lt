@@ -70,7 +70,10 @@ describe('PermalinkField.vue', () => {
 
     expect(wrapper.text()).toContain('Dėmesio');
     expect(wrapper.text()).toContain('Old link will break!');
-    expect(wrapper.find('.icon-warning').exists()).toBe(true);
+    // IFluentWarning24Regular is imported directly in <script setup>, so Vue compiles
+    // it to a direct binding rather than a resolveComponent() call — global.stubs can't
+    // intercept it, and it always renders as its real SVG. Assert on the real markup.
+    expect(wrapper.find('[role="alert"] svg').exists()).toBe(true);
   });
 
   it('does not render a warning alert when no warning prop is provided', () => {
