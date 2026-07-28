@@ -52,7 +52,7 @@
                     <TooltipContent side="bottom">{{ $t('download') }}</TooltipContent>
                   </Tooltip>
 
-                  <Tooltip v-if="document.share_url">
+                  <Tooltip v-if="document.link_url || document.share_url">
                     <TooltipTrigger as-child>
                       <Button
                         variant="outline"
@@ -89,6 +89,12 @@
 
             <!-- Secondary badges row -->
             <div class="flex items-center gap-1 flex-wrap">
+              <!-- Link (shortcut) -->
+              <Badge v-if="isShortcut" variant="secondary" class="text-xs px-1.5 py-0.5 flex-shrink-0">
+                <LinkIcon class="w-3 h-3 mr-1" />
+                {{ $t('search.document_link_badge') }}
+              </Badge>
+
               <!-- Content Type -->
               <Badge v-if="document.content_type" variant="outline" class="text-xs px-1.5 py-0.5 max-w-36">
                 <FileText class="w-3 h-3 mr-1 flex-shrink-0" />
@@ -119,6 +125,12 @@
               <span class="truncate">{{ getTenantDisplayName() }}</span>
             </Badge>
 
+            <!-- Link (shortcut) -->
+            <Badge v-if="isShortcut" variant="secondary" class="text-xs flex-shrink-0">
+              <LinkIcon class="w-3 h-3 mr-1" />
+              {{ $t('search.document_link_badge') }}
+            </Badge>
+
             <!-- Content Type -->
             <Badge v-if="document.content_type" variant="outline" class="text-xs max-w-52">
               <FileText class="w-3 h-3 mr-1 flex-shrink-0" />
@@ -145,6 +157,13 @@
             </Badge>
           </div>
 
+          <!-- Unresolved shortcut warning -->
+          <div v-if="isUnresolvedShortcut"
+            class="mt-2 flex items-start gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+            <AlertTriangle class="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+            <span>{{ $t('search.document_link_unresolved') }}</span>
+          </div>
+
           <!-- Summary -->
           <div v-if="document.summary" class="mt-2 sm:mt-3">
             <p class="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed">
@@ -162,6 +181,7 @@ import { computed } from 'vue';
 
 // ShadcnVue components
 import {
+  AlertTriangle,
   Building2,
   Calendar,
   Download,
@@ -184,7 +204,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Comp
 // Icons
 
 // Composables
-import { useDocumentDisplay, forceBrowserDocumentUrl, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
+import { useDocumentDisplay, getDocumentTargetUrl, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
 import { useToasts } from '@/Composables/useToasts';
 
 // Props
@@ -202,18 +222,23 @@ const {
   getDocumentIconClasses,
   getLanguageCode,
   getTenantDisplayName,
+  isShortcut,
+  isUnresolvedShortcut,
   trackDocumentClick,
 } = useDocumentDisplay(props.document);
 
 // For list view, use simple date format
 const formatDocumentDate = formatDocumentDateSimple;
 
-// share_url goes through DocumentRedirectController which appends web=1 server-side.
-// Raw anonymous_url fallback needs web=1 added client-side.
-const documentUrl = computed(() => props.document.share_url || forceBrowserDocumentUrl(props.document.anonymous_url));
+// .url shortcuts link straight to their resolved target; otherwise share_url
+// goes through DocumentRedirectController which appends web=1 server-side,
+// falling back to the raw anonymous_url with web=1 added client-side.
+const documentUrl = computed(() => getDocumentTargetUrl(props.document));
 
-// Download URL appends ?download=1 to the share/anonymous URL
+// Download URL appends ?download=1 to the share/anonymous URL.
+// A .url shortcut has nothing meaningful to download.
 const downloadUrl = computed(() => {
+  if (isShortcut.value) return undefined;
   const base = props.document.share_url || props.document.anonymous_url;
   if (!base) return undefined;
   const separator = base.includes('?') ? '&' : '?';
@@ -238,12 +263,13 @@ const downloadDocument = () => {
 
 // Copy share URL to clipboard
 const copyShareUrl = async () => {
-  if (!props.document.share_url) {
+  const url = props.document.link_url || props.document.share_url;
+  if (!url) {
     return;
   }
 
   try {
-    await navigator.clipboard.writeText(props.document.share_url);
+    await navigator.clipboard.writeText(url);
     toasts.success($t('copy_link_success'));
   }
   catch {

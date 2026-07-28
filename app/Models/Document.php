@@ -26,6 +26,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $language
  * @property string|null $summary
  * @property string|null $anonymous_url
+ * @property string|null $link_url
  * @property string|null $sharepoint_permission_id
  * @property bool $is_active
  * @property string $sharepoint_site_id
@@ -101,6 +102,7 @@ class Document extends Model
             'tenant_shortname' => $this->institution && $this->institution->tenant ? $this->institution->tenant->shortname : null,
             'anonymous_url' => $this->anonymous_url,
             'share_url' => $this->anonymous_url ? ShortUrlHelper::documentUrl($this->id) : null,
+            'link_url' => $this->link_url,
             'is_active' => $this->is_active,
             'sync_status' => $this->sync_status,
             'checked_at' => $this->checked_at ? $this->checked_at->timestamp : null,
@@ -202,6 +204,15 @@ class Document extends Model
         }
 
         return 'older';
+    }
+
+    /**
+     * Whether this document is a Windows `.url` internet shortcut stored in
+     * SharePoint rather than an actual document file.
+     */
+    public function isUrlShortcut(): bool
+    {
+        return str_ends_with(strtolower($this->name ?? ''), '.url');
     }
 
     /**

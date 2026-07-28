@@ -203,6 +203,55 @@ class SharepointGraphService
         }
     }
 
+    /**
+     * Download the raw content of a drive item.
+     *
+     * Intended for tiny files (e.g. `.url` shortcuts); reads at most
+     * $maxBytes so a mis-typed call can never pull a large document into
+     * memory.
+     *
+     * @return string|null Null when the item has no content or the request failed.
+     */
+    public function getDriveItemContent(string $driveItemId, int $maxBytes = 65536): ?string
+    {
+        try {
+            $stream = $this->graph->drives()
+                ->byDriveId($this->driveId)
+                ->items()
+                ->byDriveItemId($driveItemId)
+                ->content()
+                ->get()
+                ->wait();
+
+            if ($stream === null) {
+                return null;
+            }
+
+            $content = '';
+
+            while (! $stream->eof() && strlen($content) < $maxBytes) {
+                $chunk = $stream->read($maxBytes - strlen($content));
+
+                if ($chunk === '') {
+                    break;
+                }
+
+                $content .= $chunk;
+            }
+
+            $stream->close();
+
+            return $content === '' ? null : $content;
+        } catch (\Exception $e) {
+            Log::warning('Failed to download drive item content', [
+                'driveItemId' => $driveItemId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
     public function getDriveItemByListItem(string $siteId, string $listId, string $listItemId): DriveItem
     {
         $requestConfiguration = new DriveItemRequestBuilderGetRequestConfiguration;

@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
+use App\Helpers\InternetShortcutParser;
 use App\Models\Document;
 use App\Models\Institution;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
+use Microsoft\Graph\Generated\Models\DriveItem;
 
 class DocumentSharepointSyncService
 {
@@ -28,11 +30,7 @@ class DocumentSharepointSyncService
             $contentField = 'Turinys';
             $institutionField = 'Padalinys';
 
-            $graph = new SharepointGraphService(
-                siteId: $document->sharepoint_site_id,
-                driveId: config('filesystems.sharepoint.archive_drive_id'),
-                listId: $document->sharepoint_list_id
-            );
+            $graph = $this->makeGraphService($document);
 
             $additionalData = $graph->getListItem(
                 $document->sharepoint_site_id,
@@ -42,17 +40,21 @@ class DocumentSharepointSyncService
 
             $eTagMatches = $document->eTag === $additionalData['@odata.etag'];
             $hasInvalidUrl = str_contains($document->anonymous_url ?? '', ':f:');
+            // A `.url` shortcut whose real destination we never resolved still needs
+            // a full pass, even when SharePoint says nothing else has changed.
+            $needsShortcutTarget = $document->isUrlShortcut() && empty($document->link_url);
 
             Log::info('Document sync eTag check', [
                 'document_id' => $document->id,
                 'etag_matches' => $eTagMatches,
                 'url_masked' => $this->maskUrl($document->anonymous_url),
                 'has_folder_url' => $hasInvalidUrl,
+                'needs_shortcut_target' => $needsShortcutTarget,
                 'force' => $force,
-                'will_skip_permission_check' => ! $force && $eTagMatches && ! $hasInvalidUrl,
+                'will_skip_permission_check' => ! $force && $eTagMatches && ! $hasInvalidUrl && ! $needsShortcutTarget,
             ]);
 
-            if (! $force && $eTagMatches && ! $hasInvalidUrl) {
+            if (! $force && $eTagMatches && ! $hasInvalidUrl && ! $needsShortcutTarget) {
                 Log::info('SharePoint document was already up to date', ['document_id' => $document->id]);
                 $document->checked_at = Carbon::now();
                 $document->sync_status = 'success';
@@ -65,6 +67,12 @@ class DocumentSharepointSyncService
                 Log::warning('Document has folder URL - forcing full sync despite eTag match', [
                     'document_id' => $document->id,
                     'url_masked' => $this->maskUrl($document->anonymous_url),
+                ]);
+            }
+
+            if ($needsShortcutTarget) {
+                Log::info('Document is an unresolved .url shortcut - forcing full sync despite eTag match', [
+                    'document_id' => $document->id,
                 ]);
             }
 
@@ -110,6 +118,8 @@ class DocumentSharepointSyncService
                 ]);
                 throw new \Exception("SharePoint returned folder '{$driveItem->getName()}' instead of file for list item {$document->sharepoint_id}");
             }
+
+            $this->syncShortcutTarget($document, $graph, $driveItem);
 
             $anonymousPermission = $graph->getDriveItemPublicLink($driveItem->getId());
 
@@ -220,6 +230,60 @@ class DocumentSharepointSyncService
             $document->save();
 
             throw $e;
+        }
+    }
+
+    /**
+     * Build the Graph service for a document. Extracted so tests can stub it.
+     */
+    protected function makeGraphService(Document $document): SharepointGraphService
+    {
+        return new SharepointGraphService(
+            siteId: $document->sharepoint_site_id,
+            driveId: config('filesystems.sharepoint.archive_drive_id'),
+            listId: $document->sharepoint_list_id
+        );
+    }
+
+    /**
+     * Resolve the real destination of a SharePoint `.url` internet shortcut.
+     *
+     * Never throws: an unresolved shortcut simply degrades to the
+     * SharePoint viewer link, which is the pre-existing behavior. A
+     * permanently unparseable shortcut will re-attempt resolution on every
+     * sync cycle (link_url stays null), which is acceptable at the current
+     * scale of a handful of shortcut documents.
+     */
+    private function syncShortcutTarget(Document $document, SharepointGraphService $graph, DriveItem $driveItem): void
+    {
+        if (! $document->isUrlShortcut()) {
+            // The list item may have been replaced by a real document upstream.
+            $document->link_url = null;
+
+            return;
+        }
+
+        try {
+            $target = InternetShortcutParser::parse(
+                $graph->getDriveItemContent($driveItem->getId())
+            );
+
+            if ($target === null) {
+                Log::warning('Could not resolve .url shortcut target', [
+                    'document_id' => $document->id,
+                    'drive_item_id' => $driveItem->getId(),
+                ]);
+
+                // Keep a previously resolved target rather than dropping a working link.
+                return;
+            }
+
+            $document->link_url = $target;
+        } catch (\Throwable $e) {
+            Log::warning('Shortcut target resolution failed', [
+                'document_id' => $document->id,
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 

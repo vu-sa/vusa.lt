@@ -27,6 +27,7 @@ export interface DocumentDisplayItem {
   is_in_effect?: boolean | null;
   anonymous_url: string;
   share_url?: string;
+  link_url?: string | null;
   tenant_shortname?: string;
   tenant_name?: string;
   institution_name_lt?: string;
@@ -69,6 +70,26 @@ export function forceBrowserDocumentUrl(url: string | null | undefined): string 
   if (url.includes('web=1') || url.includes('download=1')) return url;
   const separator = url.includes('?') ? '&' : '?';
   return `${url}${separator}web=1`;
+}
+
+/**
+ * Whether a document is a Windows `.url` internet shortcut stored in
+ * SharePoint rather than an actual document file.
+ */
+export function isShortcutDocument(document: Pick<DocumentDisplayItem, 'name'>): boolean {
+  return !!document.name && document.name.toLowerCase().endsWith('.url');
+}
+
+/**
+ * The URL a document card should link to.
+ * `.url` shortcuts resolve to their real destination (`link_url`, set once
+ * the backend has parsed the shortcut's target); everything else goes
+ * through the short URL (which appends web=1 server-side), falling back to
+ * the raw SharePoint URL with web=1 added client-side.
+ */
+export function getDocumentTargetUrl(document: DocumentDisplayItem): string | undefined {
+  if (document.link_url) return document.link_url;
+  return document.share_url || forceBrowserDocumentUrl(document.anonymous_url);
 }
 
 /**
@@ -229,6 +250,11 @@ export const useDocumentDisplay = (document: DocumentDisplayItem) => {
       || document.institution_name_lt);
   });
 
+  // Shortcut (.url) utilities
+  const isShortcut = computed(() => isShortcutDocument(document));
+  const targetUrl = computed(() => getDocumentTargetUrl(document));
+  const isUnresolvedShortcut = computed(() => isShortcut.value && !document.link_url);
+
   // Analytics tracking
   const trackDocumentClick = () => {
     trackEvent('document_click', {
@@ -264,6 +290,11 @@ export const useDocumentDisplay = (document: DocumentDisplayItem) => {
 
     // Metadata functions
     hasAdditionalMetadata,
+
+    // Shortcut (.url) functions
+    isShortcut,
+    targetUrl,
+    isUnresolvedShortcut,
 
     // Analytics functions
     trackDocumentClick,

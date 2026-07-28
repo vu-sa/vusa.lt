@@ -45,6 +45,11 @@ lastUpdated: true
 - ✨ **Sumažinti numatytieji antraščių viršutiniai tarpai** — prireikus tarpą galima padidinti, sumažinti arba nuimti antraštės stiliaus parinkiklyje
 - 🔧 **Antraščių dydžio, spalvos akcento ir viršutinio tarpo pakeitimai matomi redaguojant** — anksčiau jie buvo matomi tik peržiūros režime
 
+### Dokumentų paieška
+
+- 🔧 **Dokumentai, kurie iš tikrųjų yra nuorodos į kitas svetaines (pvz., veiklos ataskaitos), atsidaro tiesiai toje svetainėje** — anksčiau atsidarydavo tuščia „SharePoint“ peržiūra
+- ✨ **Tokie įrašai pažymėti „Nuoroda“ ženkleliu**, mygtukas „Atsisiųsti“ jiems neberodomas, o kopijuojant nuorodą nukopijuojamas svetainės adresas
+
 ## v1.18 — Atnaujinti renginių ir stovyklų puslapiai (2026-07-27) {#v1-18}
 
 - ⭐ **Renginio vietos žemėlapis** — jei renginiui nurodyta vieta, šalia jos rodomas žemėlapis su žyma; nuoroda į Google Maps išlieka

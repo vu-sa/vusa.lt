@@ -1,7 +1,7 @@
 import { usePage, router } from '@inertiajs/vue3';
 import { format } from 'date-fns';
 
-import { forceBrowserDocumentUrl } from '@/Composables/useDocumentDisplay';
+import { getDocumentTargetUrl, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
 import { trackEvent } from '@/Plugins/umami';
 
 // Import icons for content types
@@ -27,6 +27,8 @@ export interface SearchItem {
   date?: string;
   permalink?: string;
   anonymous_url?: string;
+  share_url?: string;
+  link_url?: string | null;
   tenant_name?: string;
   lang?: string;
   name?: string;
@@ -60,7 +62,7 @@ export const useSearchUtils = () => {
         case 'calendar':
           return route('calendar.event', { ...baseParams, calendar: item.id });
         case 'documents':
-          return forceBrowserDocumentUrl(item.anonymous_url) || '#';
+          return getDocumentTargetUrl(item as DocumentDisplayItem) || '#';
         case 'publicInstitutions':
           // Use alias route if available, otherwise use id route
           if (item.alias) {
