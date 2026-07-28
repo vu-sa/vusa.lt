@@ -209,10 +209,13 @@
             </Alert>
 
             <!-- Permalink -->
-            <PermalinkField :permalink="form.permalink" :base-url="pageBaseUrl" :disabled="!isCreate"
+            <PermalinkField :permalink="form.permalink" :base-url="pageBaseUrl"
               :view-url="!isCreate ? fullPageUrl : undefined"
-              :explanation="isCreate ? $t('Nuoroda generuojama automatiškai pagal pavadinimą') : $t('Nuoroda negali būti keičiama esamam puslapiui')"
-              @update:permalink="form.permalink = $event" />
+              :explanation="isCreate ? $t('Nuoroda generuojama automatiškai pagal pavadinimą') : undefined"
+              :warning="!isCreate ? $t('Atsargiai: pakeitus nuorodą, sena nuoroda nebeveiks!') : undefined"
+              :validating="form.validating" :valid="form.valid('permalink')" :invalid="form.invalid('permalink')"
+              @update:permalink="form.permalink = $event"
+              @change="form.validate('permalink')" />
 
             <!-- SEO Section -->
             <div class="space-y-4 pt-2 border-t">

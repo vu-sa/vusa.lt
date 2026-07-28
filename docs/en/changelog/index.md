@@ -66,6 +66,10 @@ Here you'll find all changes and improvements to the mano.vusa.lt platform.
 - 🔧 **Documents that are really links to other websites (e.g. annual reports) now open that website directly** — previously they opened an empty SharePoint preview
 - ✨ **Such entries are marked with a "Link" badge**, the Download button is hidden for them, and copying the link copies the website address
 
+### Page and news permalink management
+
+- ⭐ **Page permalinks can now be edited after creation** — previously the permalink was generated once and could never be changed
+
 ## v1.18 — Refreshed Event and Camp Pages (2026-07-27) {#v1-18}
 
 - ⭐ **Map of the event location** — when an event has a location, a map with a marker is shown next to it; the Google Maps link stays

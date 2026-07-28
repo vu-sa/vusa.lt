@@ -4,8 +4,10 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\ValidatesContentParts;
 use App\Models\Page;
+use App\Models\Tenant;
 use App\Rules\SoftDeleteRules;
 use App\Rules\UniqueAmongTrashed;
+use App\Services\ModelAuthorizer;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -22,6 +24,24 @@ class StorePageRequest extends FormRequest
     }
 
     /**
+     * Get the tenant the new page will be created for.
+     *
+     * Mirrors the tenant resolution in PageController::store so the permalink
+     * uniqueness check is scoped to the same tenant the record will belong to.
+     */
+    protected function getTargetTenantId(): ?int
+    {
+        if ($this->user()->isSuperAdmin()) {
+            return Tenant::where('type', 'pagrindinis')->first()?->id;
+        }
+
+        $authorizer = app(ModelAuthorizer::class)->forUser($this->user());
+        $authorizer->check('pages.create.padalinys');
+
+        return $authorizer->getPermissableDuties()->first()?->getAttribute('tenants')->first()?->id;
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, ValidationRule|array<mixed>|string>
@@ -32,7 +52,7 @@ class StorePageRequest extends FormRequest
             ...$this->contentPartRules(),
             'title' => 'required|string|max:255',
             'lang' => 'required|string|in:lt,en',
-            'permalink' => ['required', 'string', 'max:255', UniqueAmongTrashed::of('pages')],
+            'permalink' => ['required', 'string', 'max:255', UniqueAmongTrashed::of('pages')->where('tenant_id', $this->getTargetTenantId())],
             'category_id' => ['nullable', SoftDeleteRules::existsLive('categories')],
             'other_lang_id' => ['nullable', SoftDeleteRules::existsLive('pages')],
             'is_active' => 'required|boolean',

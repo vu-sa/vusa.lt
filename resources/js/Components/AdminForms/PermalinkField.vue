@@ -14,8 +14,10 @@
           :model-value="permalink"
           :disabled
           class="rounded-l-none border-0 bg-transparent focus-visible:ring-0"
+          :class="inputValidationClass"
           :placeholder="$t('nuorodos-fragmentas')"
           @update:model-value="$emit('update:permalink', $event)"
+          @change="$emit('change', $event)"
         />
       </div>
 
@@ -47,18 +49,28 @@
       <IFluentInfo16Regular class="h-3.5 w-3.5 shrink-0" />
       {{ explanation }}
     </p>
+
+    <Alert v-if="warning" class="border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+      <IFluentWarning24Regular />
+      <AlertTitle>{{ $t('Dėmesio') }}</AlertTitle>
+      <AlertDescription>
+        {{ warning }}
+      </AlertDescription>
+    </Alert>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useClipboard } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
+import IFluentWarning24Regular from '~icons/fluent/warning24-regular';
 
 const props = defineProps<{
   permalink?: string;
@@ -68,12 +80,34 @@ const props = defineProps<{
   explanation?: string;
   /** Overrides the default "Nuoroda" label — useful when several fields sit side by side. */
   label?: string;
+  /** A serious warning shown below the field, e.g. when editing the permalink breaks the old URL. */
+  warning?: string;
+  /** Mirrors FormFieldWrapper validation wiring. */
+  validating?: boolean;
+  valid?: boolean;
+  invalid?: boolean;
 }>();
 
-defineEmits<(e: 'update:permalink', value: string) => void>();
+const emit = defineEmits<{
+  (e: 'update:permalink', value: string): void;
+  (e: 'change', value: unknown): void;
+}>();
 
 const copied = ref(false);
 const { copy } = useClipboard();
+
+const inputValidationClass = computed(() => {
+  if (props.validating) {
+    return '';
+  }
+  if (props.valid) {
+    return 'border-green-300 focus:border-green-500 dark:border-green-700';
+  }
+  if (props.invalid) {
+    return 'border-red-300 focus:border-red-500 dark:border-red-700';
+  }
+  return '';
+});
 
 const fullUrl = computed(() => {
   const slug = props.permalink || '';

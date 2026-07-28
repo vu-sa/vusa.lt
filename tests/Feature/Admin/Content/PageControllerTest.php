@@ -288,6 +288,45 @@ describe('edge cases and business logic', function () {
             ->assertSessionHasErrors(['permalink']);
     });
 
+    test('page permalink can be reused across tenants', function () {
+        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->firstOrFail();
+
+        Page::factory()->for($otherTenant)->create([
+            'permalink' => 'shared-cross-tenant-page',
+        ]);
+
+        $validData = getControllerTestData('Page')['valid'];
+        $validData['permalink'] = 'shared-cross-tenant-page';
+        $validData['tenant_id'] = $this->tenant->id;
+
+        asUser($this->admin)
+            ->post(route('pages.store'), $validData)
+            ->assertStatus(302)
+            ->assertRedirect(route('pages.index'))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('pages', [
+            'permalink' => 'shared-cross-tenant-page',
+            'tenant_id' => $this->tenant->id,
+        ]);
+    });
+
+    test('can update page permalink', function () {
+        $updateData = getControllerTestData('Page')['valid'];
+        $updateData['permalink'] = 'updated-permalink';
+        $updateData['tenant_id'] = $this->tenant->id;
+
+        asUser($this->admin)
+            ->patch(route('pages.update', $this->page), $updateData)
+            ->assertStatus(302)
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('pages', [
+            'id' => $this->page->id,
+            'permalink' => 'updated-permalink',
+        ]);
+    });
+
     test('page handles special characters in content', function () {
         $specialCharsData = getControllerTestData('Page')['valid'];
         $specialCharsData['title'] = 'Puslapis su šiaudiniais žodžiais';

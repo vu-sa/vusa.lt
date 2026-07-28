@@ -122,7 +122,7 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('kontaktai/kategorija/{type:slug}', [Public\ContactController::class, 'institutionCategory'])
             ->name('contacts.category');
 
-        Route::get('{newsString}/{news:permalink}', [Public\NewsController::class, 'news'])
+        Route::get('{newsString}/{news}', [Public\NewsController::class, 'news'])
             ->whereIn('newsString', ['naujiena', 'news'])
             ->name('news');
 

@@ -10,10 +10,15 @@ use Inertia\Inertia;
 
 class NewsController extends PublicController
 {
-    public function news($subdomain, $lang, $newsString, News $news)
+    public function news($subdomain, $lang, $newsString, $news)
     {
         $this->getBanners();
         $this->getTenantLinks();
+
+        $news = News::query()->where([
+            ['permalink', '=', $news],
+            ['tenant_id', '=', $this->tenant->id],
+        ])->firstOrFail();
 
         $other_lang_page = $news->other_language_news;
 
