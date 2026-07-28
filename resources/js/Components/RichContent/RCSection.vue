@@ -4,7 +4,7 @@
        128px CSS one on tiptap headings; kept consistent with that existing behavior. -->
   <section :class="['relative scroll-mt-32', PADDING_CLASS[padding], BACKGROUND_CLASS[background], ROUNDED_CLASS[rounded]]">
     <div :class="['container relative z-10 mx-auto px-4', INNER_CLASS[inner]]">
-      <SectionHeader v-if="title" :title :subtitle :align :id="headingId" />
+      <SectionHeader v-if="title" :title :subtitle :align :id="headingId" :level="headingLevel" :show-separator="showSeparator" />
       <slot />
     </div>
   </section>
@@ -25,7 +25,7 @@ import SectionHeader from '@/Components/ui/SectionHeader.vue';
 import { latinizeId } from '@/Utils/String';
 import {
   BACKGROUND_CLASS, INNER_CLASS, PADDING_CLASS, ROUNDED_CLASS,
-  type SectionBackground, type SectionInner, type SectionPadding, type SectionRounded,
+  type SectionBackground, type SectionHeadingLevel, type SectionInner, type SectionPadding, type SectionRounded,
 } from './sectionClasses';
 
 const props = withDefaults(defineProps<{
@@ -37,12 +37,18 @@ const props = withDefaults(defineProps<{
   inner?: SectionInner;
   align?: 'center' | 'start';
   rounded?: SectionRounded;
+  /** Semantic heading level for the title — forwarded to SectionHeader. */
+  headingLevel?: SectionHeadingLevel;
+  /** Whether to render the separator bar beneath the title. */
+  showSeparator?: boolean;
 }>(), {
   background: 'none',
   padding: 'lg',
   inner: 'wide',
   align: 'center',
   rounded: 'none',
+  headingLevel: 2,
+  showSeparator: true,
 });
 
 // A second anchor target alongside the `#rc-{part.id}` id this section's root element

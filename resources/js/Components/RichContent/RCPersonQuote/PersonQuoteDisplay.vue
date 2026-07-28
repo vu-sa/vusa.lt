@@ -3,7 +3,9 @@
     :title="element.options?.title" :subtitle="element.options?.subtitle"
     :background="element.options?.background ?? 'none'" :padding="element.options?.padding ?? 'md'"
     :rounded="element.options?.rounded ?? 'none'"
-    inner="content" :align="align" :id="anchorId ? `rc-${anchorId}` : undefined"
+    inner="content" :align="align"
+    :heading-level="element.options?.headingLevel" :show-separator="element.options?.showSeparator"
+    :id="anchorId ? `rc-${anchorId}` : undefined"
   >
     <figure :class="['flex flex-col gap-5', align === 'center' ? 'items-center text-center' : 'items-start text-left']">
       <span class="text-6xl font-serif leading-none text-vusa-red/15" aria-hidden="true">&ldquo;</span>

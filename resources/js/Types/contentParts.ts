@@ -12,6 +12,12 @@ export interface SectionOptions {
   background?: 'none' | 'muted' | 'contrast' | 'gradient';
   padding?: 'none' | 'sm' | 'md' | 'lg';
   rounded?: 'none' | 'sm' | 'md' | 'lg';
+  /** Semantic heading level for the section title (rendered by SectionHeader). Defaults to 2. */
+  headingLevel?: 2 | 3 | 4;
+  /** Title alignment, forwarded to SectionHeader. Defaults to 'center'. */
+  align?: 'center' | 'start';
+  /** Whether to render the separator bar beneath the title. Defaults to true. */
+  showSeparator?: boolean;
 }
 
 // Implemented
@@ -27,7 +33,6 @@ export interface Section {
   options: SectionOptions & {
     /** Inner content max-width for the section's own header/canvas — independent of the block's own canvas column. */
     inner?: 'prose' | 'content' | 'wide' | 'full';
-    align?: 'center' | 'start';
     /** `following` (default): wraps every part up to the next section marker. `none`: header-only, wraps nothing. */
     wraps?: 'following' | 'none';
   };
@@ -60,8 +65,6 @@ export interface ContentGrid {
     gap?: 'gap-2' | 'gap-4' | 'gap-6' | 'gap-8';
     mobileStacking?: boolean;
     equalHeight?: boolean;
-    /** Header alignment, forwarded to RCSection — grids default to centered like every other section block. */
-    align?: 'center' | 'start';
     /** Vertical alignment of column content within each row — grid items stretch by default. */
     verticalAlign?: 'stretch' | 'start' | 'center' | 'end';
   };
@@ -430,7 +433,6 @@ export interface PersonQuote {
     };
   };
   options: SectionOptions & {
-    align?: 'start' | 'center';
     showAvatar?: boolean;
   };
 }

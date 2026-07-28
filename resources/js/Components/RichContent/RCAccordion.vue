@@ -2,7 +2,8 @@
   <RCSection
     :title="element.options?.title" :subtitle="element.options?.subtitle"
     :background="element.options?.background ?? 'muted'" :padding="element.options?.padding ?? 'lg'"
-    :rounded="element.options?.rounded ?? 'none'"
+    :rounded="element.options?.rounded ?? 'none'" :align="element.options?.align ?? 'center'"
+    :heading-level="element.options?.headingLevel" :show-separator="element.options?.showSeparator"
     inner="content" :id="anchorId ? `rc-${anchorId}` : undefined"
   >
     <Accordion type="single" collapsible class="space-y-4">

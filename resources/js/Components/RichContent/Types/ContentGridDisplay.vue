@@ -3,6 +3,7 @@
     :title="processedOptions.title" :subtitle="processedOptions.subtitle"
     :background="processedOptions.background ?? 'none'" :padding="processedOptions.padding ?? 'none'"
     :rounded="processedOptions.rounded ?? 'none'" :align="processedOptions.align ?? 'center'"
+    :heading-level="processedOptions.headingLevel" :show-separator="processedOptions.showSeparator"
     inner="full" :id="anchorId ? `rc-${anchorId}` : undefined"
   >
     <div class="content-grid">
@@ -89,6 +90,10 @@ const props = defineProps<{
       rounded?: SectionRounded;
       /** Header alignment, forwarded to RCSection — grids default to centered like every other section block. */
       align?: 'center' | 'start';
+      /** Semantic heading level for the title, forwarded to RCSection. */
+      headingLevel?: 2 | 3 | 4;
+      /** Whether to render the separator bar beneath the title. */
+      showSeparator?: boolean;
       /** Vertical alignment of column content within each row. */
       verticalAlign?: 'stretch' | 'start' | 'center' | 'end';
       gap?: string;

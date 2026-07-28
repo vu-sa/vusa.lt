@@ -2,7 +2,8 @@
   <RCSection
     :title="element.options?.title" :subtitle="element.options?.subtitle"
     :background="element.options?.background ?? 'none'" :padding="element.options?.padding ?? 'md'"
-    :rounded="element.options?.rounded ?? 'none'"
+    :rounded="element.options?.rounded ?? 'none'" :align="element.options?.align ?? 'center'"
+    :heading-level="element.options?.headingLevel" :show-separator="element.options?.showSeparator"
     inner="wide" :id="anchorId ? `rc-${anchorId}` : undefined"
   >
       <Carousel ref="carouselRef" class="w-full max-w-5xl mx-auto" :opts="{

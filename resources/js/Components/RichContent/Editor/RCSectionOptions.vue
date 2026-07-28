@@ -3,65 +3,14 @@
        so keep every field flat and always visible rather than tucked behind a toggle. -->
   <Field v-if="!collapsible">
     <FieldLabel>{{ $t('rich-content.section_options') }}</FieldLabel>
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <Field>
-        <FieldLabel>{{ $t('rich-content.title') }}</FieldLabel>
-        <Input v-model="options.title" type="text" :placeholder="$t('rich-content.enter_section_title')" />
-      </Field>
-      <Field>
-        <FieldLabel>{{ $t('rich-content.subtitle') }}</FieldLabel>
-        <Input v-model="options.subtitle" type="text" :placeholder="$t('rich-content.enter_section_subtitle')" />
-      </Field>
-      <Field>
-        <FieldLabel>{{ $t('rich-content.section_background') }}</FieldLabel>
-        <Select v-model="options.background">
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">{{ $t('rich-content.section_background_none') }}</SelectItem>
-            <SelectItem value="muted">{{ $t('rich-content.section_background_muted') }}</SelectItem>
-            <SelectItem value="contrast">{{ $t('rich-content.section_background_contrast') }}</SelectItem>
-            <SelectItem value="gradient">{{ $t('rich-content.section_background_gradient') }}</SelectItem>
-          </SelectContent>
-        </Select>
-      </Field>
-      <Field>
-        <FieldLabel>{{ $t('rich-content.section_padding') }}</FieldLabel>
-        <Select v-model="options.padding">
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">{{ $t('rich-content.section_padding_none') }}</SelectItem>
-            <SelectItem value="sm">{{ $t('rich-content.small') }}</SelectItem>
-            <SelectItem value="md">{{ $t('rich-content.medium') }}</SelectItem>
-            <SelectItem value="lg">{{ $t('rich-content.large') }}</SelectItem>
-          </SelectContent>
-        </Select>
-      </Field>
-      <Field>
-        <FieldLabel>{{ $t('rich-content.section_rounded') }}</FieldLabel>
-        <Select v-model="options.rounded">
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">{{ $t('rich-content.section_rounded_none') }}</SelectItem>
-            <SelectItem value="sm">{{ $t('rich-content.small') }}</SelectItem>
-            <SelectItem value="md">{{ $t('rich-content.medium') }}</SelectItem>
-            <SelectItem value="lg">{{ $t('rich-content.large') }}</SelectItem>
-          </SelectContent>
-        </Select>
-      </Field>
-    </div>
+    <RCSectionOptionsFields v-model="options" />
   </Field>
 
   <!-- Every other section block: title/subtitle/background/padding/rounded are
-       secondary chrome around the block's own content, so collapse them behind a
-       trigger (closed by default) to keep the editor focused on the primary content.
-       Wrapped in a bordered panel so the collapsed state is clearly discoverable — a
-       bare text label here is easy to miss among the block's own editing controls. -->
+        secondary chrome around the block's own content, so collapse them behind a
+        trigger (closed by default) to keep the editor focused on the primary content.
+        Wrapped in a bordered panel so the collapsed state is clearly discoverable — a
+        bare text label here is easy to miss among the block's own editing controls. -->
   <Collapsible v-else v-model:open="open"
     class="overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50/60 dark:border-zinc-700/60 dark:bg-zinc-800/30">
     <CollapsibleTrigger as-child>
@@ -77,58 +26,8 @@
       </button>
     </CollapsibleTrigger>
     <CollapsibleContent>
-      <div
-        class="grid grid-cols-1 gap-4 border-t border-zinc-200 p-3 sm:grid-cols-2 dark:border-zinc-700/60">
-        <Field>
-          <FieldLabel>{{ $t('rich-content.title') }}</FieldLabel>
-          <Input v-model="options.title" type="text" :placeholder="$t('rich-content.enter_section_title')" />
-        </Field>
-        <Field>
-          <FieldLabel>{{ $t('rich-content.subtitle') }}</FieldLabel>
-          <Input v-model="options.subtitle" type="text" :placeholder="$t('rich-content.enter_section_subtitle')" />
-        </Field>
-        <Field>
-          <FieldLabel>{{ $t('rich-content.section_background') }}</FieldLabel>
-          <Select v-model="options.background">
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">{{ $t('rich-content.section_background_none') }}</SelectItem>
-              <SelectItem value="muted">{{ $t('rich-content.section_background_muted') }}</SelectItem>
-              <SelectItem value="contrast">{{ $t('rich-content.section_background_contrast') }}</SelectItem>
-              <SelectItem value="gradient">{{ $t('rich-content.section_background_gradient') }}</SelectItem>
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field>
-          <FieldLabel>{{ $t('rich-content.section_padding') }}</FieldLabel>
-          <Select v-model="options.padding">
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">{{ $t('rich-content.section_padding_none') }}</SelectItem>
-              <SelectItem value="sm">{{ $t('rich-content.small') }}</SelectItem>
-              <SelectItem value="md">{{ $t('rich-content.medium') }}</SelectItem>
-              <SelectItem value="lg">{{ $t('rich-content.large') }}</SelectItem>
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field>
-          <FieldLabel>{{ $t('rich-content.section_rounded') }}</FieldLabel>
-          <Select v-model="options.rounded">
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">{{ $t('rich-content.section_rounded_none') }}</SelectItem>
-              <SelectItem value="sm">{{ $t('rich-content.small') }}</SelectItem>
-              <SelectItem value="md">{{ $t('rich-content.medium') }}</SelectItem>
-              <SelectItem value="lg">{{ $t('rich-content.large') }}</SelectItem>
-            </SelectContent>
-          </Select>
-        </Field>
+      <div class="border-t border-zinc-200 p-3 dark:border-zinc-700/60">
+        <RCSectionOptionsFields v-model="options" />
       </div>
     </CollapsibleContent>
   </Collapsible>
@@ -139,6 +38,10 @@
  * Shared title/subtitle/background/padding/rounded fields for every content type that
  * renders through RCSection.vue — one implementation instead of six copy-pasted field
  * blocks, so the authoring UI can't drift between e.g. card-stack and photo-gallery.
+ *
+ * The field grid itself lives in RCSectionOptionsFields.vue so both render modes (flat
+ * and collapsible) share a single source for every field — including the newer
+ * heading-level / alignment / separator controls.
  *
  * Collapsed behind a trigger by default (`collapsible` prop): for most blocks these
  * are secondary looks, not content. The standalone `section` block opts out by passing
@@ -151,17 +54,10 @@ import { ChevronDown, SlidersHorizontal } from 'lucide-vue-next';
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
 import { Field, FieldLabel } from '@/Components/ui/field';
-import { Input } from '@/Components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import type { SectionBackground, SectionPadding, SectionRounded } from '../sectionClasses';
 
-export interface SectionOptions {
-  title?: string;
-  subtitle?: string;
-  background?: SectionBackground;
-  padding?: SectionPadding;
-  rounded?: SectionRounded;
-}
+import RCSectionOptionsFields from './RCSectionOptionsFields.vue';
+
+import type { SectionOptions } from '@/Types/contentParts';
 
 // Default-true is intentional: every editor using this wants collapse-by-default,
 // and only SectionEditor opts out via `:collapsible="false"`. Vue coerces an absent

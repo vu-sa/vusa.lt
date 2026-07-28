@@ -61,6 +61,13 @@ export interface ContentType {
    */
   selfSpaced?: boolean;
 
+  /**
+   * The display renders through RCSection.vue and exposes the shared section-chrome
+   * options (title/background/padding/…) via RCSectionOptions. RCBlockCard uses this to
+   * decide whether to show the "this block is a section" indicator chip.
+   */
+  usesSectionChrome?: boolean;
+
   defaultContent: () => any;
   defaultOptions?: () => Record<string, any>;
 
@@ -116,10 +123,12 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     defaultWidth: 'full',
     // Full-bleed is the default, not a lock — these render their own section chrome
     // (background/padding) regardless of width, so authors can still narrow them.
-    allowedWidths: ['content', 'wide', 'full'],
+    // `prose` is offered so an accordion can line up with a `prose` text block.
+    allowedWidths: ['prose', 'content', 'wide', 'full'],
     selfSpaced: true,
     defaultContent: () => ([]),
     defaultOptions: () => ({ background: 'muted', padding: 'lg' }),
+    usesSectionChrome: true,
     editor: defineAsyncComponent(() => import('./AccordionEditor.vue')),
     display: defineAsyncComponent(() => import('../RCAccordion.vue')),
     skeleton: {
@@ -342,10 +351,12 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     defaultWidth: 'full',
     // Full-bleed is the default, not a lock — these render their own section chrome
     // (background/padding) regardless of width, so authors can still narrow them.
-    allowedWidths: ['content', 'wide', 'full'],
+    // `prose` lets a number row align with a `prose` text block.
+    allowedWidths: ['prose', 'content', 'wide', 'full'],
     selfSpaced: true,
     defaultContent: () => ([]),
     defaultOptions: () => ({ title: '', color: 'zinc', background: 'none', padding: 'md' }),
+    usesSectionChrome: true,
     editor: defineAsyncComponent(() => import('./NumberStatEditor.vue')),
     display: defineAsyncComponent(() => import('../RCNumberStatSection/RCNumberSection.vue')),
     skeleton: {
@@ -428,6 +439,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
       mobileStacking: true,
       equalHeight: false,
     }),
+    usesSectionChrome: true,
     editor: defineAsyncComponent(() => import('./ContentGridEditor.vue')),
     display: defineAsyncComponent(() => import('./ContentGridDisplay.vue')),
   },
@@ -452,6 +464,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
       showNavigation: true,
       showThumbnails: true,
     }),
+    usesSectionChrome: true,
     editor: defineAsyncComponent(() => import('./CarouselSlideDeckEditor.vue')),
     display: defineAsyncComponent(() => import('../RCCarouselSlideDeck/CarouselSlideDeckDisplay.vue')),
     skeleton: {
@@ -480,7 +493,8 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     defaultWidth: 'full',
     // Full-bleed is the default, not a lock — these render their own section chrome
     // (background/padding) regardless of width, so authors can still narrow them.
-    allowedWidths: ['content', 'wide', 'full'],
+    // `prose` lets a card stack align with a `prose` text block.
+    allowedWidths: ['prose', 'content', 'wide', 'full'],
     selfSpaced: true,
     defaultContent: () => ([]),
     defaultOptions: () => ({
@@ -490,6 +504,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
       autoplayDelay: 5000,
       hintText: '',
     }),
+    usesSectionChrome: true,
     editor: defineAsyncComponent(() => import('./CardStackEditor.vue')),
     display: defineAsyncComponent(() => import('../RCCardStack/CardStackDisplay.vue')),
     skeleton: {
@@ -526,6 +541,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
       gap: 'medium',
       showLightbox: true,
     }),
+    usesSectionChrome: true,
     editor: defineAsyncComponent(() => import('./PhotoGalleryGridEditor.vue')),
     display: defineAsyncComponent(() => import('../RCPhotoGalleryGrid/PhotoGalleryGridDisplay.vue')),
     skeleton: {
@@ -547,7 +563,8 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     isNew: true,
     category: 'section',
     defaultWidth: 'full',
-    allowedWidths: ['content', 'wide', 'full'],
+    // `prose` lets a link list align with a `prose` text block.
+    allowedWidths: ['prose', 'content', 'wide', 'full'],
     selfSpaced: true,
     serverResolved: true,
     defaultContent: () => ({ links: [] }),
@@ -560,6 +577,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
       limit: 3,
       style: 'photo',
     }),
+    usesSectionChrome: true,
     editor: defineAsyncComponent(() => import('./LinkListEditor.vue')),
     display: defineAsyncComponent(() => import('../RCLinkList/LinkListDisplay.vue')),
     skeleton: {
@@ -594,6 +612,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
       limit: 12,
       style: 'cards',
     }),
+    usesSectionChrome: true,
     editor: defineAsyncComponent(() => import('./EventListEditor.vue')),
     display: defineAsyncComponent(() => import('../RCEventList/EventListDisplay.vue')),
     skeleton: {
@@ -621,6 +640,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     selfSpaced: true,
     defaultContent: () => ({}),
     defaultOptions: () => ({ background: 'none', padding: 'lg', inner: 'full', wraps: 'following' }),
+    usesSectionChrome: true,
     editor: defineAsyncComponent(() => import('./SectionEditor.vue')),
     display: defineAsyncComponent(() => import('../RCSection/SectionDisplay.vue')),
     skeleton: {
@@ -650,6 +670,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
       align: 'center',
       showAvatar: true,
     }),
+    usesSectionChrome: true,
     editor: defineAsyncComponent(() => import('./PersonQuoteEditor.vue')),
     display: defineAsyncComponent(() => import('../RCPersonQuote/PersonQuoteDisplay.vue')),
     skeleton: {

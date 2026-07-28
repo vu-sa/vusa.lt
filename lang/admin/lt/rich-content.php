@@ -174,6 +174,12 @@ return [
     'section_padding_none' => 'Be tarpų',
     'section_rounded' => 'Kampų apvalinimas',
     'section_rounded_none' => 'Be apvalinimo',
+    'section_heading_level' => 'Antraštės lygis',
+    'section_align' => 'Lygiuotė',
+    'section_align_center' => 'Centre',
+    'section_align_start' => 'Kairėje',
+    'section_show_separator' => 'Skirtukas po antrašte',
+    'section_indicator' => 'Šis blokas rodomas kaip sekcija su antrašte',
     // Hero variants
     'hero_variant' => 'Antraštės tipas',
     'hero_variant_split' => 'Dviejų stulpelių',

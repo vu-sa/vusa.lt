@@ -174,6 +174,12 @@ return [
     'section_padding_none' => 'None',
     'section_rounded' => 'Corner rounding',
     'section_rounded_none' => 'None',
+    'section_heading_level' => 'Heading level',
+    'section_align' => 'Alignment',
+    'section_align_center' => 'Center',
+    'section_align_start' => 'Left',
+    'section_show_separator' => 'Separator under heading',
+    'section_indicator' => 'This block renders as a section with a heading',
     // Hero variants
     'hero_variant' => 'Layout',
     'hero_variant_split' => 'Split (two columns)',

@@ -9,6 +9,20 @@ export type SectionPadding = 'none' | 'sm' | 'md' | 'lg';
 export type SectionInner = 'prose' | 'content' | 'wide' | 'full';
 export type SectionRounded = 'none' | 'sm' | 'md' | 'lg';
 
+/** Semantic heading level for a section title. Matches the levels offered in RCSectionOptions. */
+export type SectionHeadingLevel = 2 | 3 | 4;
+
+/**
+ * Size class per heading level — the same scale `.rc-prose` uses for h2/h3/h4
+ * (app.css), so a section title marked as a given level renders at the same size as
+ * an inline Tiptap heading of that level, rather than a one-off SectionHeader size.
+ */
+export const SECTION_HEADING_SIZE_CLASS: Record<SectionHeadingLevel, string> = {
+  2: 'text-3xl',
+  3: 'text-2xl',
+  4: 'text-xl',
+};
+
 export const BACKGROUND_CLASS: Record<SectionBackground, string> = {
   none: '',
   muted: 'bg-zinc-50 dark:bg-zinc-900',

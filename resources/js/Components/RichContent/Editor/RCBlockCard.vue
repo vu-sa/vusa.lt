@@ -24,6 +24,16 @@
         <span class="truncate text-xs text-zinc-400 dark:text-zinc-500">{{ summary }}</span>
       </button>
 
+      <Badge
+        v-if="sectionActive"
+        variant="outline"
+        size="tiny"
+        class="shrink-0 font-semibold text-zinc-500 dark:text-zinc-400"
+        :title="$t('rich-content.section_indicator')"
+      >
+        H{{ sectionLevel }}
+      </Badge>
+
       <span v-if="content?.id" class="shrink-0 text-[10px] text-zinc-400">#{{ content.id }}</span>
       <span v-else class="shrink-0 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">{{ $t('New') }}</span>
 
@@ -129,6 +139,7 @@ import ContentEditorFactory from '../ContentEditorFactory.vue';
 import { getContentType, type BlockWidth, type ContentPart } from '../Types';
 import TextBoxSubmissionsDialog from '../Types/TextBoxSubmissionsDialog.vue';
 
+import { Badge } from '@/Components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
 import IFluentReOrderDotsVertical24Regular from '~icons/fluent/re-order-dots-vertical24-regular';
 import IFluentChevronRight12Regular from '~icons/fluent/chevron-right12-regular';
@@ -167,6 +178,14 @@ const showSideBySide = ref(false);
 
 const allowedWidths = computed<BlockWidth[]>(() => contentType.value.allowedWidths ?? [contentType.value.defaultWidth]);
 const currentWidth = computed<BlockWidth>(() => (props.content?.options?.width as BlockWidth | undefined) ?? contentType.value.defaultWidth);
+
+// Section indicator: the chip represents the section *header*, so it only shows when
+// the block actually has a title to render (a background-only section has no heading).
+// The chip carries the resolved heading level as a quick read of the title's semantics.
+const sectionActive = computed(() =>
+  !!contentType.value.usesSectionChrome && !!props.content?.options?.title,
+);
+const sectionLevel = computed(() => props.content?.options?.headingLevel ?? 2);
 
 function setWidth(width: BlockWidth) {
   emit('update:content', {
