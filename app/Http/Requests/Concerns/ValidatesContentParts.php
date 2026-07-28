@@ -38,8 +38,14 @@ trait ValidatesContentParts
             'content.parts.*.options' => 'nullable|array',
             'content.parts.*.options.width' => ['nullable', 'string', Rule::in(['prose', 'content', 'wide', 'full'])],
             // Shared RCSection chrome (Editor/RCSectionOptions.vue) — any type that
-            // renders through RCSection may carry these.
-            'content.parts.*.options.title' => 'nullable|string|max:255',
+            // renders through RCSection may carry these. `title` is a plain string for
+            // most types but a translatable {lt, en} object for text-box
+            // (TextBoxEditor.vue), so accept both shapes: the parent rule lets either a
+            // string or an array through, and the .lt/.en rules only match when title is
+            // the translatable object. Resolver clamping remains the security boundary.
+            'content.parts.*.options.title' => ['nullable'],
+            'content.parts.*.options.title.lt' => ['nullable', 'string', 'max:255'],
+            'content.parts.*.options.title.en' => ['nullable', 'string', 'max:255'],
             'content.parts.*.options.subtitle' => 'nullable|string|max:255',
             'content.parts.*.options.background' => ['nullable', 'string', Rule::in(['none', 'muted', 'contrast', 'gradient'])],
             'content.parts.*.options.padding' => ['nullable', 'string', Rule::in(['none', 'sm', 'md', 'lg'])],
@@ -96,6 +102,14 @@ trait ValidatesContentParts
 
             // spacer
             'content.parts.*.options.size' => ['nullable', 'string', Rule::in(['xs', 'sm', 'md', 'lg', 'xl', '2xl'])],
+
+            // text-box — placeholder/closedMessage are translatable {lt, en} and title
+            // lives with the shared chrome rules above (TextBoxEditor.vue).
+            'content.parts.*.options.placeholder.lt' => ['nullable', 'string', 'max:512'],
+            'content.parts.*.options.placeholder.en' => ['nullable', 'string', 'max:512'],
+            'content.parts.*.options.closedMessage.lt' => ['nullable', 'string', 'max:1000'],
+            'content.parts.*.options.closedMessage.en' => ['nullable', 'string', 'max:1000'],
+            'content.parts.*.options.isClosed' => ['nullable', 'boolean'],
         ];
     }
 }

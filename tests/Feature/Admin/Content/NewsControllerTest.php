@@ -346,6 +346,34 @@ describe('auth: news manager', function () {
         $response->assertStatus(302)->assertSessionHasErrors(['content.parts.0.options.width']);
     });
 
+    test('accepts a text-box content part with a translatable title object', function () {
+        $response = asUser($this->newsManager)->post(route('news.store'), [
+            'title' => 'News with text-box',
+            'permalink' => 'news-text-box-title-'.time(),
+            'content' => [
+                'parts' => [
+                    [
+                        'type' => 'text-box',
+                        'json_content' => [],
+                        'options' => [
+                            'title' => ['lt' => 'Klausimas', 'en' => 'Question'],
+                            'placeholder' => ['lt' => 'Atsakykite...', 'en' => 'Answer...'],
+                            'isClosed' => false,
+                            'closedMessage' => ['lt' => 'Uždaryta', 'en' => 'Closed'],
+                        ],
+                        'order' => 1,
+                    ],
+                ],
+            ],
+            'lang' => 'lt',
+            'image' => 'image.jpg',
+            'publish_time' => now()->timestamp,
+            'short' => 'Short news',
+        ]);
+
+        $response->assertStatus(302)->assertSessionDoesntHaveErrors();
+    });
+
     test('storing news without resolvable tenant returns validation error', function () {
         // Create a manager whose duty institution has no tenant, so tenant_id cannot be resolved
         $orphanManager = User::factory()->create();

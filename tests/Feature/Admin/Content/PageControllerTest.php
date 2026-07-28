@@ -535,6 +535,39 @@ describe('content part width validation', function () {
             ->assertStatus(302)
             ->assertSessionHasErrors(['content.parts.1.options.tenantLabelStyle']);
     });
+
+    test('accepts a text-box with a translatable title object', function () {
+        $data = getControllerTestData('Page')['valid'];
+        $data['tenant_id'] = $this->tenant->id;
+        $data['permalink'] = 'textbox-title-valid-'.time();
+        $data['content']['parts'][] = [
+            'type' => 'text-box',
+            'json_content' => [],
+            'options' => [
+                'title' => ['lt' => 'Klausimas', 'en' => 'Question'],
+                'placeholder' => ['lt' => 'Atsakykite...', 'en' => 'Answer...'],
+                'isClosed' => true,
+                'closedMessage' => ['lt' => 'Uždaryta', 'en' => 'Closed'],
+            ],
+        ];
+
+        asUser($this->admin)
+            ->post(route('pages.store'), $data)
+            ->assertStatus(302)
+            ->assertSessionDoesntHaveErrors();
+    });
+
+    test('still accepts a plain string options.title for section chrome', function () {
+        $data = getControllerTestData('Page')['valid'];
+        $data['tenant_id'] = $this->tenant->id;
+        $data['permalink'] = 'textbox-string-title-valid-'.time();
+        $data['content']['parts'][0]['options'] = ['title' => 'Paprastas pavadinimas'];
+
+        asUser($this->admin)
+            ->post(route('pages.store'), $data)
+            ->assertStatus(302)
+            ->assertSessionDoesntHaveErrors();
+    });
 });
 
 describe('tenant isolation', function () {
