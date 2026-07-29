@@ -87,7 +87,19 @@
             </p>
           </div>
           <Suspense>
-            <ArchiveDocumentSelector v-if="showModal" @submit="addArchiveDocumentLink" />
+            <InlineCollectionSelect
+              v-if="showModal"
+              collection="documents"
+              :confirm-label="$t('Pridėti')"
+              :empty-message="$t('Dokumentų nerasta')"
+              :search-placeholder="$t('Ieškoti dokumento...')"
+              @confirm="onDocumentConfirm"
+            />
+            <template #fallback>
+              <div class="flex h-32 items-center justify-center">
+                <Spinner size="sm" />
+              </div>
+            </template>
           </Suspense>
         </TabsContent>
       </Tabs>
@@ -113,8 +125,10 @@ import { Label } from '@/Components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import FileSelector from '@/Features/Admin/FileManager/FileSelector.vue';
-import ArchiveDocumentSelector from '@/Features/Admin/ArchiveDocumentSelector.vue';
+import { InlineCollectionSelect } from '@/Features/Admin/AdminSearch/Components/Select';
+import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { Spinner } from '@/Components/ui/spinner';
+import { trans as $t } from 'laravel-vue-i18n';
 
 const props = defineProps<{
   editor?: any;
@@ -148,8 +162,13 @@ function handleOpenModal() {
     linkTextRef.value = props.editor?.state.doc.textBetween(from, to) || '';
   }
   else if (linkAttrs?.href) {
-    // Editing existing link - try to get the link text
-    linkTextRef.value = props.editor?.state.doc.textBetween(from, to) || '';
+    // Collapsed cursor inside a link — extend the selection to the link mark so
+    // we can read its text. This also leaves the link text selected, which makes
+    // the submit path treat it as an edit (extendMarkRange('link').setLink(...))
+    // rather than inserting a duplicate <a> node.
+    props.editor?.chain().focus().extendMarkRange('link').run();
+    const sel = props.editor?.state.selection;
+    linkTextRef.value = sel ? (props.editor?.state.doc.textBetween(sel.from, sel.to) || '') : '';
   }
   else {
     // No selection, clear text
@@ -180,8 +199,14 @@ function addFileLink(file: string) {
   showModal.value = false;
 }
 
-function addArchiveDocumentLink(url: string) {
-  const linkText = linkTextRef.value.trim() || url;
+function onDocumentConfirm(hits: NormalizedSearchHit[]) {
+  const hit = hits[0];
+  // The `documents` mapper normalizes the document's `anonymous_url` into
+  // `href`, and `title` is the document title — used as the default link text.
+  const url = hit?.href;
+  if (!url) return;
+
+  const linkText = linkTextRef.value.trim() || hit.title || url;
   emit('document:submit', url, linkText);
   showModal.value = false;
 }

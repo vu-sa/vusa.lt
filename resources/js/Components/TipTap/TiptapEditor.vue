@@ -10,7 +10,7 @@
       <template v-if="preset === 'full'">
         <Separator orientation="vertical" class="h-5 mx-1" />
         <TiptapLinkButton :editor @submit="handleLinkSubmit" @document:submit="handleDocumentLinkSubmit">
-          <Button variant="ghost" size="sm" class="h-8 w-8 p-0">
+          <Button size="sm" class="h-8 w-8 p-0" :variant="editor.isActive('link') ? 'default' : 'ghost'">
             <IFluentLink24Regular class="h-4 w-4" />
           </Button>
         </TiptapLinkButton>
@@ -30,7 +30,7 @@
       <!-- Link buttons -->
       <ButtonGroup>
         <TiptapLinkButton :editor @submit="handleLinkSubmit" @document:submit="handleDocumentLinkSubmit">
-          <Button size="sm" variant="outline">
+          <Button size="sm" :variant="editor.isActive('link') ? 'default' : 'outline'">
             <IFluentLink24Regular />
           </Button>
         </TiptapLinkButton>
