@@ -9,7 +9,9 @@ use App\Models\Tenant;
 use App\Services\ContentResolution\ContentPartResolver;
 use App\Services\ContentResolution\ResolutionContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
@@ -313,6 +315,17 @@ describe('EventListResolver', function () {
         $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $enContext);
 
         expect(collect($resolved[$part->id]['items'])->pluck('id')->all())->toBe([$intl->id]);
+    });
+
+    test('imageUrl falls back to the main_image collection when no gallery images exist', function () {
+        Storage::fake('spatieMediaLibrary');
+        $event = Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'date' => now()]);
+        $event->addMedia(UploadedFile::fake()->image('main.jpg'))->toMediaCollection('main_image');
+
+        $part = makeResolvablePart('event-list', [], ['mode' => 'upcoming', 'tenantScope' => 'current']);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        expect($resolved[$part->id]['items'][0]['imageUrl'])->not->toBeNull();
     });
 
     test('clamps the date range mode to MAX_RANGE_DAYS', function () {

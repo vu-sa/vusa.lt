@@ -183,7 +183,7 @@ final class EventListResolver implements ResolvesContentPart
             'location' => $event->location,
             'isAllDay' => (bool) $event->is_all_day,
             'ctoUrl' => $event->cto_url,
-            'imageUrl' => $event->getFirstMediaUrl('images') ?: null,
+            'imageUrl' => $event->main_image_url,
             // 'www' matches the existing SummerCampCard.vue precedent for this route —
             // it's a redirect route that resolves the event's real URL server-side
             // regardless of which subdomain it was reached through.
