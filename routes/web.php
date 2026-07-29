@@ -60,13 +60,13 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
         Route::get('kalendorius/renginys/{calendar}', [Public\PublicPageController::class, 'calendarEventRedirect'])->name('calendar.event');
 
-        Route::get('become-a-member', [Public\PublicPageController::class, 'membership'])->name('joinUs.en');
+        /* Route::get('become-a-member', [Public\PublicPageController::class, 'membership'])->name('joinUs.en'); */
 
         Route::get('kalendorius/{year}/{month}/{day}/{slug}', [Public\PublicPageController::class, 'calendarMain'])->name('calendar.event.2')->whereNumber('year')->whereNumber('month')->whereNumber('day');
 
         Route::get('kalendorius/renginiu-sarasas', [Public\PublicPageController::class, 'calendarEventList'])->name('calendar.list');
 
-        Route::get('pirmakursiu-stovyklos/{year?}', [Public\PublicPageController::class, 'summerCamps'])->name('pirmakursiuStovyklos')->whereNumber('year');
+        Route::get('pirmakursiu-stovyklos/{year}', [Public\PublicPageController::class, 'summerCamps'])->name('pirmakursiuStovyklos')->whereNumber('year');
 
         Route::get('programos-klubai-projektai', [Public\PublicPageController::class, 'pkp'])->name('pkp');
 
@@ -97,7 +97,7 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('{newsString}', [Public\NewsController::class, 'newsArchive'])->name('newsArchive')->whereIn('newsString', ['naujienos', 'news']);
         Route::redirect('/admin', '/mano', 301);
 
-        Route::get('tapk-nariu', [Public\PublicPageController::class, 'membership'])->name('joinUs');
+        /* Route::get('tapk-nariu', [Public\PublicPageController::class, 'membership'])->name('joinUs'); */
 
         Route::get('kontaktai/id/{institution}', [Public\ContactController::class, 'institutionContacts'])->name('contacts.institution');
 
