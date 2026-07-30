@@ -6,7 +6,9 @@
       :size="variant === 'sticky' ? 'lg' : 'lg'"
       :class="[
         'gap-2.5 font-semibold px-6 border-0',
-        variant === 'sticky' ? 'flex-1' : 'shadow-lg shadow-black/20',
+        variant === 'sticky'
+          ? 'flex-1'
+          : 'shadow-lg shadow-black/20 hidden lg:inline-flex',
         isLive ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : 'bg-vusa-red hover:bg-red-700 text-white',
       ]"
       as="a"

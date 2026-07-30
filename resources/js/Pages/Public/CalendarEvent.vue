@@ -55,7 +55,7 @@
           </main>
 
           <!-- Sidebar -->
-          <aside class="lg:col-span-4 space-y-8 -order-1 lg:order-none">
+          <aside class="lg:col-span-4 space-y-8 order-2 lg:order-none">
             <!-- top-28 clears the fixed main navigation (see MainNavigation.vue) -->
             <div class="lg:sticky lg:top-28 space-y-8">
               <EventDetailsCard
@@ -68,7 +68,7 @@
                 :events="calendar"
                 :locale="locale"
                 :exclude-event-id="event.id"
-                :max-visible="5"
+                :max-visible="3"
               />
             </div>
           </aside>
