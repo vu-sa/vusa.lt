@@ -3,11 +3,7 @@ import { mount } from '@vue/test-utils';
 
 import EventActions from '@/Components/Calendar/EventActions.vue';
 
-/**
- * The mobile layout uses a dedicated sticky bottom bar for the registration CTA.
- * To avoid a duplicate "Registruotis" button, the hero variant hides its
- * registration CTA on small screens while still showing Facebook and Share.
- */
+/** The registration CTA is rendered inline with Facebook and Share actions. */
 describe('Calendar/EventActions.vue', () => {
   function mountComponent(props: Record<string, unknown> = {}) {
     return mount(EventActions, {
@@ -20,23 +16,9 @@ describe('Calendar/EventActions.vue', () => {
     });
   }
 
-  it('hides the registration CTA on mobile hero to avoid duplication with the sticky bar', () => {
+  it('renders the registration CTA inline with the hero actions', () => {
     const wrapper = mountComponent({
       registrationUrl: 'https://forms.example.com/register',
-      variant: 'hero',
-    });
-
-    const cta = wrapper.find('a');
-    expect(cta.exists()).toBe(true);
-    expect(cta.text()).toContain('Registruotis');
-    expect(cta.classes()).toContain('hidden');
-    expect(cta.classes()).toContain('lg:inline-flex');
-  });
-
-  it('keeps the registration CTA visible in the sticky variant', () => {
-    const wrapper = mountComponent({
-      registrationUrl: 'https://forms.example.com/register',
-      variant: 'sticky',
     });
 
     const cta = wrapper.find('a');
@@ -64,7 +46,7 @@ describe('Calendar/EventActions.vue', () => {
     expect(wrapper.find('a').exists()).toBe(false);
   });
 
-  it('renders Facebook and Share actions in the hero variant', () => {
+  it('renders Facebook and Share actions', () => {
     const wrapper = mountComponent({
       registrationUrl: 'https://forms.example.com/register',
       facebookUrl: 'https://facebook.com/event',

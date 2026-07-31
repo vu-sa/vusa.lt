@@ -75,23 +75,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Mobile Sticky Action Bar - primary CTA only -->
-    <div
-      v-if="registrationUrl && !isPast"
-      class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/98 dark:bg-zinc-900/98 backdrop-blur-md border-t border-zinc-200/80 dark:border-zinc-700/60 p-4 pb-safe shadow-[0_-4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_-4px_20px_-4px_rgba(0,0,0,0.4)]"
-    >
-      <EventActions
-        variant="sticky"
-        :registration-url="registrationUrl"
-        :share-title="eventTitle"
-        :is-past="isPast"
-        :is-live="isLive"
-      />
-    </div>
-
-    <!-- Bottom spacer for mobile sticky bar -->
-    <div v-if="registrationUrl && !isPast" class="lg:hidden h-24" />
   </div>
 </template>
 
@@ -144,10 +127,3 @@ const normalizedImages = computed(() => {
   return [];
 });
 </script>
-
-<style scoped>
-/* Mobile safe area for devices with notches/home indicators */
-.pb-safe {
-  padding-bottom: max(1rem, env(safe-area-inset-bottom));
-}
-</style>

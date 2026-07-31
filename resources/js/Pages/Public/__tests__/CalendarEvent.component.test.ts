@@ -8,7 +8,6 @@ import { createMockPage } from '@/tests/helpers/createMockPage';
 const stubs = {
   EventActions: {
     props: {
-      variant: { type: String, default: 'hero' },
       registrationUrl: { type: String, default: null },
       facebookUrl: { type: String, default: null },
       shareTitle: { type: String, default: '' },
@@ -16,7 +15,7 @@ const stubs = {
       isLive: { type: Boolean },
       onImage: { type: Boolean },
     },
-    template: '<a class="event-actions-stub" :data-variant="variant" :data-registration-url="registrationUrl" :data-on-image="onImage"><slot /></a>',
+    template: '<a class="event-actions-stub" :data-registration-url="registrationUrl" :data-on-image="onImage"><slot /></a>',
   },
   EventDetailsCard: {
     template: '<div class="event-details-card-stub" />',
@@ -92,26 +91,8 @@ describe('Public/CalendarEvent.vue', () => {
     expect(upcoming.attributes('data-max-visible')).toBe('3');
   });
 
-  it('renders the sticky mobile action bar when the event has a registration URL and is upcoming', () => {
+  it('does not render a sticky mobile action bar', () => {
     const wrapper = mountPage();
-
-    const stickyBar = wrapper.find('.fixed.bottom-0');
-    expect(stickyBar.exists()).toBe(true);
-    expect(stickyBar.find('.event-actions-stub').attributes('data-variant')).toBe('sticky');
-  });
-
-  it('does not render the sticky mobile action bar for past events', () => {
-    const wrapper = mountPage({
-      event: makeEvent({ date: '2020-01-01T18:00:00+00:00' }),
-    });
-
-    expect(wrapper.find('.fixed.bottom-0').exists()).toBe(false);
-  });
-
-  it('does not render the sticky mobile action bar when there is no registration URL', () => {
-    const wrapper = mountPage({
-      event: makeEvent({ cto_url: null }),
-    });
 
     expect(wrapper.find('.fixed.bottom-0').exists()).toBe(false);
   });
@@ -121,8 +102,33 @@ describe('Public/CalendarEvent.vue', () => {
 
     const heroActions = wrapper.find('.event-hero-wrapper').find('.event-actions-stub');
     expect(heroActions.exists()).toBe(true);
-    expect(heroActions.attributes('data-variant')).toBe('hero');
     expect(heroActions.attributes('data-registration-url')).toBe('https://forms.example.com/register');
     expect(heroActions.attributes('data-on-image')).toBe('true');
+  });
+
+  it('passes upcoming state to hero actions for events with a registration URL', () => {
+    const wrapper = mountPage();
+
+    const heroActions = wrapper.find('.event-hero-wrapper').find('.event-actions-stub');
+    expect(heroActions.attributes('data-registration-url')).toBe('https://forms.example.com/register');
+  });
+
+  it('passes past state to hero actions for past events', () => {
+    const wrapper = mountPage({
+      event: makeEvent({ date: '2020-01-01T18:00:00+00:00' }),
+    });
+
+    const heroActions = wrapper.find('.event-hero-wrapper').find('.event-actions-stub');
+    expect(heroActions.exists()).toBe(true);
+  });
+
+  it('renders hero actions even when there is no registration URL', () => {
+    const wrapper = mountPage({
+      event: makeEvent({ cto_url: null }),
+    });
+
+    const heroActions = wrapper.find('.event-hero-wrapper').find('.event-actions-stub');
+    expect(heroActions.exists()).toBe(true);
+    expect(heroActions.attributes('data-registration-url')).toBeUndefined();
   });
 });

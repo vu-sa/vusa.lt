@@ -3,12 +3,9 @@
     <!-- Registration / participation CTA -->
     <Button
       v-if="registrationUrl && !isPast"
-      :size="variant === 'sticky' ? 'lg' : 'lg'"
+      size="lg"
       :class="[
-        'gap-2.5 font-semibold px-6 border-0',
-        variant === 'sticky'
-          ? 'flex-1'
-          : 'shadow-lg shadow-black/20 hidden lg:inline-flex',
+        'gap-2.5 font-semibold px-6 border-0 shadow-lg shadow-black/20 inline-flex',
         isLive ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : 'bg-vusa-red hover:bg-red-700 text-white',
       ]"
       as="a"
@@ -21,31 +18,29 @@
       {{ isLive ? $t('Dalyvauk dabar') : $t('Registruotis') }}
     </Button>
 
-    <template v-if="variant === 'hero'">
-      <Button
-        v-if="facebookUrl"
-        variant="outline"
-        size="lg"
-        :class="secondaryClasses"
-        as="a"
-        :href="facebookUrl"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <ISimpleIconsFacebook class="w-5 h-5" />
-        <span class="hidden sm:inline">Facebook</span>
-      </Button>
+    <Button
+      v-if="facebookUrl"
+      variant="outline"
+      size="lg"
+      :class="secondaryClasses"
+      as="a"
+      :href="facebookUrl"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <ISimpleIconsFacebook class="w-5 h-5" />
+      <span class="hidden sm:inline">Facebook</span>
+    </Button>
 
-      <Button
-        variant="outline"
-        size="lg"
-        :class="secondaryClasses"
-        @click="handleShare"
-      >
-        <IFluentShare20Regular class="w-5 h-5" />
-        <span class="hidden sm:inline">{{ $t('Dalinkis') }}</span>
-      </Button>
-    </template>
+    <Button
+      variant="outline"
+      size="lg"
+      :class="secondaryClasses"
+      @click="handleShare"
+    >
+      <IFluentShare20Regular class="w-5 h-5" />
+      <span class="hidden sm:inline">{{ $t('Dalinkis') }}</span>
+    </Button>
   </div>
 </template>
 
@@ -55,20 +50,15 @@ import { computed } from 'vue';
 
 import Button from '@/Components/ui/button/Button.vue';
 
-const props = withDefaults(defineProps<{
+const props = defineProps<{
   registrationUrl?: string | null;
   facebookUrl?: string | null;
   shareTitle: string;
   isPast: boolean;
   isLive: boolean;
-  /** `hero` renders the full action row over the hero image, `sticky` only the CTA. */
-  variant?: 'hero' | 'sticky';
   /** Secondary buttons sit on a dark image in the hero, on a light surface below it. */
   onImage?: boolean;
-}>(), {
-  variant: 'hero',
-  onImage: false,
-});
+}>();
 
 const secondaryClasses = computed(() =>
   props.onImage
