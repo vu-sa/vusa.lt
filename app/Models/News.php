@@ -38,6 +38,7 @@ use Spatie\Sitemap\Tags\Url;
  * @property string|null $main_points
  * @property array $highlights
  * @property string $layout
+ * @property bool $show_breadcrumbs
  * @property string|null $read_more
  * @property int|null $draft
  * @property Carbon $created_at

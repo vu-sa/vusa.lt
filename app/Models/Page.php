@@ -27,6 +27,9 @@ use Spatie\Sitemap\Tags\Url;
  * @property bool $is_active
  * @property array $highlights
  * @property string $layout
+ * @property bool $show_table_of_contents
+ * @property bool $show_title
+ * @property bool $show_breadcrumbs
  * @property string|null $featured_image
  * @property string|null $meta_description
  * @property Carbon|null $publish_time

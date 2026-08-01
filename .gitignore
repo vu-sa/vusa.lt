@@ -69,6 +69,7 @@ docs/.vitepress/cache
 
 # === TypeScript/Component output ===
 resources/js/Types/components.d.ts
+resources/js/Types/typescript-transformer-manifest.json
 
 # === Storybook ===
 *storybook.log

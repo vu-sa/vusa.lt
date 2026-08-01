@@ -150,7 +150,7 @@ declare global {
       // relations
       tenant?: Tenant
       category?: Category
-      media?: Medium[]
+      media?: Media[]
       // counts
       media_count: number
       // exists
@@ -312,6 +312,7 @@ declare global {
       language?: string | null
       summary?: string | null
       anonymous_url?: string | null
+      link_url?: string | null
       sharepoint_permission_id?: string | null
       is_active: boolean
       sharepoint_site_id?: string
@@ -866,9 +867,9 @@ declare global {
       main_points?: string | null
       highlights?: Array<unknown> | null
       layout: string
+      show_breadcrumbs: boolean
       read_more?: string | null
       draft?: boolean | null
-      show_breadcrumbs: boolean
       created_at: string
       updated_at: string
       last_edited_at?: string | null
@@ -1476,7 +1477,7 @@ declare global {
       active_reservations?: Reservation[]
       tenant?: Tenant
       category?: ResourceCategory
-      media?: Medium[]
+      media?: Media[]
       // counts
       reservations_count: number
       active_reservations_count: number
