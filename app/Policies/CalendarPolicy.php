@@ -18,6 +18,7 @@ class CalendarPolicy extends ModelPolicy
     /**
      * These models belong to a single tenant through a `tenant` relation.
      */
+    #[\Override]
     protected bool $hasManyTenants = false;
 
     /**
@@ -26,30 +27,33 @@ class CalendarPolicy extends ModelPolicy
     public function __construct(ModelAuthorizer $authorizer)
     {
         parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::CALENDAR()->label);
+        $this->pluralModelName = Str::plural(ModelEnum::CALENDAR->label());
     }
 
     /**
      * Determine whether the user can view the model.
      */
+    #[\Override]
     public function view(User $user, Model $calendar): bool
     {
-        return $this->commonChecker($user, $calendar, CRUDEnum::READ()->label, $this->pluralModelName, false);
+        return $this->commonChecker($user, $calendar, CRUDEnum::READ->label(), $this->pluralModelName, false);
     }
 
     /**
      * Determine whether the user can update the model.
      */
+    #[\Override]
     public function update(User $user, Model $calendar): bool
     {
-        return $this->commonChecker($user, $calendar, CRUDEnum::UPDATE()->label, $this->pluralModelName, false);
+        return $this->commonChecker($user, $calendar, CRUDEnum::UPDATE->label(), $this->pluralModelName, false);
     }
 
     /**
      * Determine whether the user can delete the model.
      */
+    #[\Override]
     public function delete(User $user, Model $calendar): bool
     {
-        return $this->commonChecker($user, $calendar, CRUDEnum::DELETE()->label, $this->pluralModelName, false);
+        return $this->commonChecker($user, $calendar, CRUDEnum::DELETE->label(), $this->pluralModelName, false);
     }
 }

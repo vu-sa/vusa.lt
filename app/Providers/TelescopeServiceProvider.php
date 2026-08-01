@@ -16,6 +16,7 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
      *
      * @return void
      */
+    #[\Override]
     public function register()
     {
         // Telescope::night();
@@ -72,10 +73,9 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
      *
      * @return void
      */
+    #[\Override]
     protected function gate()
     {
-        Gate::define('viewTelescope', function (User $user) {
-            return $user->isSuperAdmin();
-        });
+        Gate::define('viewTelescope', fn (User $user) => $user->isSuperAdmin());
     }
 }

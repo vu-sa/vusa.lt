@@ -13,9 +13,9 @@ use App\Settings\FormSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->centralTenant = Tenant::query()->first();
     $this->tenant = Tenant::query()
         ->whereKeyNot($this->centralTenant->id)
@@ -80,8 +80,8 @@ function createInstitutionRegistration(Form $form, FormField $field, Institution
     return $registration;
 }
 
-describe('member registration form access', function () {
-    test('the configured recipient role can view it through a duty', function () {
+describe('member registration form access', function (): void {
+    test('the configured recipient role can view it through a duty', function (): void {
         $user = makeUserWithDutyRole($this->tenant, $this->recipientRole);
 
         asUser($user)
@@ -89,7 +89,7 @@ describe('member registration form access', function () {
             ->assertStatus(200);
     });
 
-    test('the configured recipient role can view it when assigned directly', function () {
+    test('the configured recipient role can view it when assigned directly', function (): void {
         $user = makeUser($this->tenant);
         $user->assignRole($this->recipientRole->name);
 
@@ -98,7 +98,7 @@ describe('member registration form access', function () {
             ->assertStatus(200);
     });
 
-    test('a user who can read forms for a tenant can still view it', function () {
+    test('a user who can read forms for a tenant can still view it', function (): void {
         $user = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
 
         asUser($user)
@@ -106,7 +106,7 @@ describe('member registration form access', function () {
             ->assertStatus(200);
     });
 
-    test('a plain authenticated user is now forbidden', function () {
+    test('a plain authenticated user is now forbidden', function (): void {
         // Previously FormPolicy short-circuited to true for this form for anyone logged in.
         $user = makeUser($this->tenant);
 
@@ -115,7 +115,7 @@ describe('member registration form access', function () {
             ->assertStatus(403);
     });
 
-    test('the configured recipient can open the forms index without form permissions', function () {
+    test('the configured recipient can open the forms index without form permissions', function (): void {
         $user = makeUserWithDutyRole($this->tenant, $this->recipientRole);
         Form::factory()->for($this->centralTenant)->create();
         Form::factory()->for($this->tenant)->create();
@@ -135,7 +135,7 @@ describe('member registration form access', function () {
             );
     });
 
-    test('a tenant form reader sees tenant forms and the shared member form', function () {
+    test('a tenant form reader sees tenant forms and the shared member form', function (): void {
         $user = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
         $tenantForm = Form::factory()->for($this->tenant)->create();
         $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
@@ -157,8 +157,8 @@ describe('member registration form access', function () {
     });
 });
 
-describe('student rep registration form access', function () {
-    test('the configured institution manager role can view it', function () {
+describe('student rep registration form access', function (): void {
+    test('the configured institution manager role can view it', function (): void {
         $user = makeUserWithDutyRole($this->tenant, $this->managerRole);
 
         asUser($user)
@@ -166,7 +166,7 @@ describe('student rep registration form access', function () {
             ->assertStatus(200);
     });
 
-    test('a plain authenticated user is forbidden', function () {
+    test('a plain authenticated user is forbidden', function (): void {
         $user = makeUser($this->tenant);
 
         asUser($user)
@@ -174,7 +174,7 @@ describe('student rep registration form access', function () {
             ->assertStatus(403);
     });
 
-    test('the configured manager can open the forms index without form permissions', function () {
+    test('the configured manager can open the forms index without form permissions', function (): void {
         $user = makeUserWithDutyRole($this->tenant, $this->managerRole);
         Form::factory()->for($this->centralTenant)->create();
         Form::factory()->for($this->tenant)->create();
@@ -190,7 +190,7 @@ describe('student rep registration form access', function () {
             );
     });
 
-    test('shows registrations only for institutions in the managed tenant', function () {
+    test('shows registrations only for institutions in the managed tenant', function (): void {
         $user = makeUserWithDutyRole($this->tenant, $this->managerRole);
         $managedInstitution = $user->current_duties()->first()->institution;
         $sameTenantInstitution = Institution::factory()->for($this->tenant)->create();
@@ -244,7 +244,7 @@ describe('student rep registration form access', function () {
             );
     });
 
-    test('a directly assigned manager role is limited to the users tenants', function () {
+    test('a directly assigned manager role is limited to the users tenants', function (): void {
         $user = makeUser($this->tenant);
         $user->assignRole($this->managerRole->name);
         AtstovavimasSettings::clearManagerCache($user->id);
@@ -273,7 +273,7 @@ describe('student rep registration form access', function () {
             );
     });
 
-    test('fails closed when the student representative form has no institution field', function () {
+    test('fails closed when the student representative form has no institution field', function (): void {
         $user = makeUserWithDutyRole($this->tenant, $this->managerRole);
         $this->studentInstitutionField->delete();
 
@@ -282,7 +282,7 @@ describe('student rep registration form access', function () {
             ->assertForbidden();
     });
 
-    test('a super administrator still sees registrations from every tenant', function () {
+    test('a super administrator still sees registrations from every tenant', function (): void {
         $managedInstitution = Institution::factory()->for($this->tenant)->create();
         $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
         $otherInstitution = Institution::factory()->for($otherTenant)->create();
@@ -309,8 +309,8 @@ describe('student rep registration form access', function () {
     });
 });
 
-describe('shared registrationForms prop', function () {
-    test('carries only the ids the user may open', function () {
+describe('shared registrationForms prop', function (): void {
+    test('carries only the ids the user may open', function (): void {
         $user = makeUserWithDutyRole($this->tenant, $this->recipientRole);
 
         asUser($user)
@@ -321,7 +321,7 @@ describe('shared registrationForms prop', function () {
             );
     });
 
-    test('carries both ids for an institution manager who also handles member registrations', function () {
+    test('carries both ids for an institution manager who also handles member registrations', function (): void {
         $user = makeUserWithDutyRole($this->tenant, $this->recipientRole);
         $user->duties()->first()->assignRole($this->managerRole->name);
 
@@ -333,7 +333,7 @@ describe('shared registrationForms prop', function () {
             );
     });
 
-    test('is empty for a user with no relevant role', function () {
+    test('is empty for a user with no relevant role', function (): void {
         $user = makeUser($this->tenant);
 
         asUser($user)

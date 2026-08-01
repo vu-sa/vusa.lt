@@ -10,12 +10,12 @@ use App\States\ReservationResource\Cancelled;
 use App\States\ReservationResource\Created;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 use App\States\ReservationResource\Lent;
 use App\States\ReservationResource\Reserved;
 use Inertia\Testing\AssertableInertia as Assert;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
     $this->user = makeUser($this->tenant);
@@ -35,8 +35,8 @@ beforeEach(function () {
     $this->reservationManager = User::factory()->hasAttached($this->reservation)->create();
 });
 
-describe('index activeReservations', function () {
-    test('indexes and dedupes a reservation spanning multiple resources to a single entry', function () {
+describe('index activeReservations', function (): void {
+    test('indexes and dedupes a reservation spanning multiple resources to a single entry', function (): void {
         // $this->reservation is attached to 3 resources in beforeEach; the payload
         // must contain it exactly once (the refactor replaced PHP-side unique()).
         asUser($this->admin)->get(route('reservations.index'))
@@ -51,20 +51,20 @@ describe('index activeReservations', function () {
     });
 });
 
-describe('auth: simple user', function () {
-    beforeEach(function () {
+describe('auth: simple user', function (): void {
+    beforeEach(function (): void {
         asUser($this->user)->get(route('dashboard'));
     });
 
-    test('can\'t index reservations', function () {
+    test('can\'t index reservations', function (): void {
         asUser($this->user)->get(route('reservations.index'))->assertStatus(403);
     });
 
-    test('can access reservation create page', function () {
+    test('can access reservation create page', function (): void {
         asUser($this->user)->get(route('reservations.create'))->assertStatus(200);
     });
 
-    test('can store reservation', function () {
+    test('can store reservation', function (): void {
         asUser($this->user)->get(route('reservations.create'))->assertInertia(fn (Assert $page) => $page
             ->component('Admin/Reservations/CreateReservation')
             ->whereNot('resources', null)
@@ -89,13 +89,13 @@ describe('auth: simple user', function () {
             );
     });
 
-    test('can\'t access existing reservation', function () {
+    test('can\'t access existing reservation', function (): void {
 
         $response = asUser($this->user)->get(route('reservations.show', $this->reservation->id));
 
         $response->assertStatus(403);
     });
-    test('can access reservation after they are assigned to it', function () {
+    test('can access reservation after they are assigned to it', function (): void {
         $response = asUser($this->reservationManager)->put(route('reservations.add-users', $this->reservation->id), [
             'users' => [$this->user->id],
         ]);
@@ -117,7 +117,7 @@ describe('auth: simple user', function () {
         );
     });
 
-    test('can update reservation resource state from created to cancelled after they are assigned to it', function () {
+    test('can update reservation resource state from created to cancelled after they are assigned to it', function (): void {
         $reservation = Reservation::factory()->has(Resource::factory())->create();
 
         $resource = $reservation->resources->first();
@@ -140,30 +140,30 @@ describe('auth: simple user', function () {
         $resource = $reservation->load(['resources' => fn ($query) => $query->where('resources.id', $resource->id)])->resources->first();
 
         // assert that the resource is in canceled state
-        expect(get_class($resource->pivot->state))->toEqual(Cancelled::class);
+        expect($resource->pivot->state::class)->toEqual(Cancelled::class);
     });
 
-    test('can\'t delete reservation', function () {
+    test('can\'t delete reservation', function (): void {
         $reservation = Reservation::query()->first();
 
         asUser($this->user)->delete(route('reservations.destroy', $reservation))->assertStatus(403);
     });
 });
 
-describe('auth: reservation manager', function () {
-    beforeEach(function () {
+describe('auth: reservation manager', function (): void {
+    beforeEach(function (): void {
         asUser($this->reservationManager)->get(route('dashboard'))->assertStatus(200);
     });
 
-    test('can\'t index reservations', function () {
+    test('can\'t index reservations', function (): void {
         asUser($this->reservationManager)->get(route('reservations.index'))->assertStatus(403);
     });
 
-    test('can access reservation create page', function () {
+    test('can access reservation create page', function (): void {
         asUser($this->reservationManager)->get(route('reservations.create'))->assertStatus(200);
     });
 
-    test('can store reservation', function () {
+    test('can store reservation', function (): void {
         asUser($this->reservationManager)->get(route('reservations.create'))->assertInertia(fn (Assert $page) => $page
             ->component('Admin/Reservations/CreateReservation')
             ->whereNot('resources', null)
@@ -188,7 +188,7 @@ describe('auth: reservation manager', function () {
             );
     });
 
-    test('can access existing reservation', function () {
+    test('can access existing reservation', function (): void {
         $response = asUser($this->reservationManager)->get(route('reservations.show', $this->reservation->id));
 
         $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
@@ -198,7 +198,7 @@ describe('auth: reservation manager', function () {
         );
     });
 
-    test('can update reservation resource state from created to cancelled', function () {
+    test('can update reservation resource state from created to cancelled', function (): void {
         $resource = $this->reservation->resources->first();
 
         asUser($this->reservationManager)->get(route('reservations.show', $this->reservation->id))
@@ -217,14 +217,14 @@ describe('auth: reservation manager', function () {
         $resource = $this->reservation->load(['resources' => fn ($query) => $query->where('resources.id', $resource->id)])->resources->first();
 
         // assert that the resource is in canceled state
-        expect(get_class($resource->pivot->state))->toEqual(Cancelled::class);
+        expect($resource->pivot->state::class)->toEqual(Cancelled::class);
     });
 
-    test('can\'t update reservation resource state from created to reserved', function () {
+    test('can\'t update reservation resource state from created to reserved', function (): void {
         $resource = $this->reservation->resources->first();
 
         // assert that the resource is in created state
-        expect(get_class($resource->pivot->state))->toEqual(Created::class);
+        expect($resource->pivot->state::class)->toEqual(Created::class);
 
         asUser($this->reservationManager)->get(route('reservations.show', $this->reservation->id))
             ->assertStatus(200);
@@ -241,14 +241,14 @@ describe('auth: reservation manager', function () {
         $resource = $this->reservation->load(['resources' => fn ($query) => $query->where('resources.id', $resource->id)])->resources->first();
 
         // assert that the resource stays in created state
-        expect(get_class($resource->pivot->state))->toEqual(Created::class);
+        expect($resource->pivot->state::class)->toEqual(Created::class);
     });
 
-    test('can update reservation resource state from created to rejected', function () {
+    test('can update reservation resource state from created to rejected', function (): void {
         $resource = $this->reservation->resources->first();
 
         // assert that the resource is in created state
-        expect(get_class($resource->pivot->state))->toEqual(Created::class);
+        expect($resource->pivot->state::class)->toEqual(Created::class);
 
         asUser($this->reservationManager)->get(route('reservations.show', $this->reservation->id))
             ->assertStatus(200);
@@ -265,10 +265,10 @@ describe('auth: reservation manager', function () {
         $resource = $this->reservation->load(['resources' => fn ($query) => $query->where('resources.id', $resource->id)])->resources->first();
 
         // assert that the resource stays in created state
-        expect(get_class($resource->pivot->state))->toEqual(Created::class);
+        expect($resource->pivot->state::class)->toEqual(Created::class);
     });
 
-    test('can update reservation resource state from reserved to lent', function () {
+    test('can update reservation resource state from reserved to lent', function (): void {
         $resource = Resource::factory()->create(['tenant_id' => $this->tenant->id]);
 
         $this->reservation->resources()->attach($resource->id, ['quantity' => 1, 'state' => 'reserved']);
@@ -287,10 +287,10 @@ describe('auth: reservation manager', function () {
         $resource = $this->reservation->load(['resources' => fn ($query) => $query->where('resources.id', $resource->id)])->resources->first();
 
         // assert that the resource stays in reserved state
-        expect(get_class($resource->pivot->state))->toEqual(Reserved::class);
+        expect($resource->pivot->state::class)->toEqual(Reserved::class);
     });
 
-    test('can update reservation resource state from lent to returned', function () {
+    test('can update reservation resource state from lent to returned', function (): void {
         $resource = Resource::factory()->create(['tenant_id' => $this->tenant->id]);
 
         $this->reservation->resources()->attach($resource->id, ['quantity' => 1, 'state' => 'lent']);
@@ -309,10 +309,10 @@ describe('auth: reservation manager', function () {
         $resource = $this->reservation->load(['resources' => fn ($query) => $query->where('resources.id', $resource->id)])->resources->first();
 
         // assert that the resource stays in lent state
-        expect(get_class($resource->pivot->state))->toEqual(Lent::class);
+        expect($resource->pivot->state::class)->toEqual(Lent::class);
     });
 
-    test('cannot update reservation resource state that has already been cancelled', function () {
+    test('cannot update reservation resource state that has already been cancelled', function (): void {
         $resource = $this->reservation->resources->first();
 
         $resource->pivot->update([
@@ -331,10 +331,10 @@ describe('auth: reservation manager', function () {
         $response->assertRedirect(route('reservations.show', $this->reservation->id));
 
         // assert that the resource is still in cancelled state
-        expect(get_class($resource->pivot->state))->toEqual(Cancelled::class);
+        expect($resource->pivot->state::class)->toEqual(Cancelled::class);
     });
 
-    test('can\'t delete reservation', function () {
+    test('can\'t delete reservation', function (): void {
         asUser($this->reservationManager)->delete(route('reservations.destroy', $this->reservation))->assertRedirectToRoute('dashboard');
     });
 });

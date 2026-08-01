@@ -16,36 +16,25 @@ use Illuminate\Support\Str;
 class CommentPostedNotification extends BaseNotification
 {
     /**
-     * The comment text/content.
-     */
-    protected string $commentText;
-
-    /**
-     * The model that was commented on.
-     *
-     * @var array{modelClass: string, name: string, url: string, id?: string}
-     */
-    protected array $commentedObject;
-
-    /**
-     * The user who posted the comment.
-     *
-     * @var array{modelClass: string, name: string, image?: string}
-     */
-    protected array $commenter;
-
-    /**
      * Create a new notification instance.
      *
-     * @param  array{modelClass: string, name: string, url: string, id?: string}  $object
-     * @param  array{modelClass: string, name: string, image?: string}  $subject
+     * @param  array{modelClass: string, name: string, url: string, id?: string}  $commentedObject
+     * @param  array{modelClass: string, name: string, image?: string}  $commenter
      */
-    public function __construct(string $commentText, array $object, array $subject)
-    {
-        $this->commentText = $commentText;
-        $this->commentedObject = $object;
-        $this->commenter = $subject;
-    }
+    public function __construct(
+        /**
+         * The comment text/content.
+         */
+        protected string $commentText,
+        /**
+         * The model that was commented on.
+         */
+        protected array $commentedObject,
+        /**
+         * The user who posted the comment.
+         */
+        protected array $commenter
+    ) {}
 
     /**
      * Create from a comment model and related data.
@@ -55,7 +44,7 @@ class CommentPostedNotification extends BaseNotification
         $objectName = $commentable->name ?? $commentable->title ?? __('objektas');
 
         $object = [
-            'modelClass' => class_basename(get_class($commentable)),
+            'modelClass' => class_basename($commentable::class),
             'name' => $objectName,
             'url' => method_exists($commentable, 'getShowUrl') ? $commentable->getShowUrl() : '#',
             'id' => $commentable->getKey(),
@@ -119,6 +108,7 @@ class CommentPostedNotification extends BaseNotification
         return $this->commentedObject;
     }
 
+    #[\Override]
     public function actions(): array
     {
         return [
@@ -132,10 +122,11 @@ class CommentPostedNotification extends BaseNotification
     /**
      * Override via to also handle Duty notifiable (mail only).
      */
+    #[\Override]
     public function via(object $notifiable): array
     {
         // If notifiable is a Duty, only send mail
-        if (class_basename(get_class($notifiable)) === 'Duty') {
+        if (class_basename($notifiable::class) === 'Duty') {
             return ['mail'];
         }
 
@@ -145,6 +136,7 @@ class CommentPostedNotification extends BaseNotification
     /**
      * Custom mail for better formatting.
      */
+    #[\Override]
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)

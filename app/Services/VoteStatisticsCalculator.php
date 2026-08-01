@@ -37,19 +37,13 @@ class VoteStatisticsCalculator
             ];
         }
 
-        $completedVotes = $votes->filter(function ($vote) {
-            return ! empty($vote->student_vote)
-                && ! empty($vote->decision)
-                && ! empty($vote->student_benefit);
-        })->count();
+        $completedVotes = $votes->filter(fn ($vote) => ! empty($vote->student_vote)
+            && ! empty($vote->decision)
+            && ! empty($vote->student_benefit))->count();
 
-        $votesWithBoth = $votes->filter(function ($vote) {
-            return ! empty($vote->student_vote) && ! empty($vote->decision);
-        });
+        $votesWithBoth = $votes->filter(fn ($vote) => ! empty($vote->student_vote) && ! empty($vote->decision));
 
-        $voteMatches = $votesWithBoth->filter(function ($vote) {
-            return $vote->student_vote === $vote->decision;
-        })->count();
+        $voteMatches = $votesWithBoth->filter(fn ($vote) => $vote->student_vote === $vote->decision)->count();
 
         $voteMismatches = $votesWithBoth->count() - $voteMatches;
 

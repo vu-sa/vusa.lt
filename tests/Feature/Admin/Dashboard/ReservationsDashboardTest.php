@@ -6,9 +6,9 @@ use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->otherTenant = Tenant::factory()->create();
 
@@ -33,8 +33,8 @@ function attachResource(Reservation $reservation, Resource $resource, string $st
     ]);
 }
 
-describe('scoping', function () {
-    test('administered list only holds reservations touching resources the user manages', function () {
+describe('scoping', function (): void {
+    test('administered list only holds reservations touching resources the user manages', function (): void {
         $mine = Reservation::factory()->create(['name' => 'Uses my resource']);
         attachResource($mine, $this->myResource, 'created');
 
@@ -50,23 +50,23 @@ describe('scoping', function () {
             );
     });
 
-    test('approvable is true only for the pivots whose tenant the user manages', function () {
+    test('approvable is true only for the pivots whose tenant the user manages', function (): void {
         // A single reservation mixing both tenants' resources — the crux of the permission model.
         $mixed = Reservation::factory()->create();
         attachResource($mixed, $this->myResource, 'created');
         attachResource($mixed, $this->foreignResource, 'created');
 
         asUser($this->manager)->get(route('dashboard.reservations'))
-            ->assertInertia(function (Assert $page) {
+            ->assertInertia(function (Assert $page): void {
                 $resources = collect($page->toArray()['props']['administeredReservations'][0]['resources'])
                     ->keyBy('id');
 
-                expect($resources[$this->myResource->id]['pivot']['approvable'])->toBeTrue();
-                expect($resources[$this->foreignResource->id]['pivot']['approvable'])->toBeFalse();
+                expect($resources[$this->myResource->id]['pivot']['approvable'])->toBeTrue()
+                    ->and($resources[$this->foreignResource->id]['pivot']['approvable'])->toBeFalse();
             });
     });
 
-    test('my reservations lists only the user\'s own bookings', function () {
+    test('my reservations lists only the user\'s own bookings', function (): void {
         $own = Reservation::factory()->hasAttached($this->manager)->create();
         attachResource($own, $this->myResource, 'created');
 
@@ -82,7 +82,7 @@ describe('scoping', function () {
             );
     });
 
-    test('cancellable is false once an item has been lent out', function () {
+    test('cancellable is false once an item has been lent out', function (): void {
         $lent = Reservation::factory()->hasAttached($this->manager)->create();
         attachResource($lent, $this->myResource, 'lent');
 
@@ -93,7 +93,7 @@ describe('scoping', function () {
             );
     });
 
-    test('cancellable is true for the owner while the item is still pending', function () {
+    test('cancellable is true for the owner while the item is still pending', function (): void {
         $pending = Reservation::factory()->hasAttached($this->manager)->create();
         attachResource($pending, $this->myResource, 'created');
 
@@ -104,8 +104,8 @@ describe('scoping', function () {
     });
 });
 
-describe('fully resolving', function () {
-    test('drives a pending resource straight to returned in one request', function () {
+describe('fully resolving', function (): void {
+    test('drives a pending resource straight to returned in one request', function (): void {
         $reservation = Reservation::factory()->create();
         attachResource($reservation, $this->myResource, 'created');
 
@@ -119,14 +119,14 @@ describe('fully resolving', function () {
 
         $pivot->refresh();
 
-        expect($pivot->state->getValue())->toBe('returned');
-        expect($pivot->returned_at)->not->toBeNull();
+        expect($pivot->state->getValue())->toBe('returned')
+            ->and($pivot->returned_at)->not->toBeNull();
         // Fast-forwarding must not skip the audit trail: created→reserved→lent→returned.
         expect($pivot->approvals()->count())->toBe(3);
         expect($pivot->approvals()->first()->notes)->toBe('Never collected, closing out.');
     });
 
-    test('resolves a lent resource with the single remaining step', function () {
+    test('resolves a lent resource with the single remaining step', function (): void {
         $reservation = Reservation::factory()->create();
         attachResource($reservation, $this->myResource, 'lent');
 
@@ -139,11 +139,11 @@ describe('fully resolving', function () {
 
         $pivot->refresh();
 
-        expect($pivot->state->getValue())->toBe('returned');
-        expect($pivot->approvals()->count())->toBe(1);
+        expect($pivot->state->getValue())->toBe('returned')
+            ->and($pivot->approvals()->count())->toBe(1);
     });
 
-    test('refuses to resolve a resource belonging to a tenant the user does not manage', function () {
+    test('refuses to resolve a resource belonging to a tenant the user does not manage', function (): void {
         $reservation = Reservation::factory()->create();
         attachResource($reservation, $this->foreignResource, 'created');
 
@@ -156,11 +156,11 @@ describe('fully resolving', function () {
 
         $pivot->refresh();
 
-        expect($pivot->state->getValue())->toBe('created');
-        expect($pivot->approvals()->count())->toBe(0);
+        expect($pivot->state->getValue())->toBe('created')
+            ->and($pivot->approvals()->count())->toBe(0);
     });
 
-    test('leaves an already terminal resource untouched', function () {
+    test('leaves an already terminal resource untouched', function (): void {
         $reservation = Reservation::factory()->create();
         attachResource($reservation, $this->myResource, 'returned');
 
@@ -173,13 +173,13 @@ describe('fully resolving', function () {
 
         $pivot->refresh();
 
-        expect($pivot->state->getValue())->toBe('returned');
-        expect($pivot->approvals()->count())->toBe(0);
+        expect($pivot->state->getValue())->toBe('returned')
+            ->and($pivot->approvals()->count())->toBe(0);
     });
 });
 
-describe('auth', function () {
-    test('a user managing no resources sees an empty administered list', function () {
+describe('auth', function (): void {
+    test('a user managing no resources sees an empty administered list', function (): void {
         $plain = makeUser($this->tenant);
 
         $reservation = Reservation::factory()->create();
@@ -193,7 +193,7 @@ describe('auth', function () {
             );
     });
 
-    test('guests are redirected', function () {
+    test('guests are redirected', function (): void {
         $this->get(route('dashboard.reservations'))->assertRedirect();
     });
 });

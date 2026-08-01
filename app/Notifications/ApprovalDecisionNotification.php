@@ -14,21 +14,10 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ApprovalDecisionNotification extends BaseNotification
 {
-    protected Approval $approval;
-
-    protected Model $approvable;
-
-    protected User $decisionMaker;
-
     /**
      * @param  Model&Approvable  $approvable
      */
-    public function __construct(Approval $approval, Model $approvable, User $decisionMaker)
-    {
-        $this->approval = $approval;
-        $this->approvable = $approvable;
-        $this->decisionMaker = $decisionMaker;
-    }
+    public function __construct(protected Approval $approval, protected Model $approvable, protected User $decisionMaker) {}
 
     public function category(): NotificationCategory
     {
@@ -103,6 +92,7 @@ class ApprovalDecisionNotification extends BaseNotification
         ];
     }
 
+    #[\Override]
     public function actions(): array
     {
         return [

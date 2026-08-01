@@ -7,6 +7,7 @@ use App\Models\Institution;
 use App\Models\Membership;
 use App\Models\Tenant;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
 use Illuminate\Support\Carbon;
@@ -34,13 +35,12 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
+#[Table(name: 'trainables')]
 class Trainable extends MorphPivot
 {
     // NOTE: for some reason, if Searchable trait is used on this model, it will cause an error
     // in the update route. But only if the queue driver is set to sync.
     use HasRelationships;
-
-    protected $table = 'trainables';
 
     public function trainable()
     {

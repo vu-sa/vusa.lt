@@ -20,6 +20,8 @@ use App\States\ReservationResource\Rejected;
 use App\States\ReservationResource\ReservationResourceState;
 use App\States\ReservationResource\Reserved;
 use App\States\ReservationResource\Returned;
+use Illuminate\Database\Eloquent\Attributes\Appends;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Pivot;
@@ -52,6 +54,8 @@ use Illuminate\Support\Collection;
  *
  * @mixin \Eloquent
  */
+#[Appends(['state_properties'])]
+#[Table(name: 'reservation_resource', key: 'id')]
 class ReservationResource extends Pivot implements Approvable
 {
     use HasApprovals, HasComments;
@@ -60,28 +64,21 @@ class ReservationResource extends Pivot implements Approvable
      * Indicates if the IDs are auto-incrementing.
      * Required for Pivot models with custom id column.
      */
+    #[\Override]
     public $incrementing = true;
 
-    /**
-     * The primary key for the model.
-     */
-    protected $primaryKey = 'id';
-
-    /**
-     * The table associated with the model.
-     */
-    protected $table = 'reservation_resource';
-
+    #[\Override]
     protected $guarded = [];
 
+    #[\Override]
     protected $with = ['comments', 'approvals'];
 
-    protected $appends = ['state_properties'];
-
+    #[\Override]
     protected $dispatchesEvents = [
         'created' => ReservationResourceCreated::class,
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

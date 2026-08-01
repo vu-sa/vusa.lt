@@ -15,7 +15,7 @@ class IcalendarService
     /**
      * Cache TTL in seconds (1 hour)
      */
-    private const CACHE_TTL = 3600;
+    private const int CACHE_TTL = 3600;
 
     /**
      * @param  Collection<CalendarModel>  $calendars  Calendar events to parse

@@ -8,9 +8,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->regularUser = makeUser($this->tenant);
     $this->calendarManager = makeCalendarManager($this->tenant);
@@ -24,23 +24,23 @@ function makeCalendarManager($tenant): User
     return $user;
 }
 
-describe('unauthorized access', function () {
-    beforeEach(function () {
+describe('unauthorized access', function (): void {
+    beforeEach(function (): void {
         $response = asUser($this->regularUser)->get(route('dashboard'));
         expect($response->status())->toBe(200);
     });
 
-    test('cannot index calendar', function () {
+    test('cannot index calendar', function (): void {
         $response = asUser($this->regularUser)->get(route('calendar.index'));
         expect($response->status())->toBe(403);
     });
 
-    test('cannot access calendar event create page', function () {
+    test('cannot access calendar event create page', function (): void {
         $response = asUser($this->regularUser)->get(route('calendar.create'));
         expect($response->status())->toBe(403);
     });
 
-    test('cannot store calendar event', function () {
+    test('cannot store calendar event', function (): void {
         $response = asUser($this->regularUser)->post(route('calendar.store'), [
             'title' => 'Test event',
             'description' => 'Test event description',
@@ -51,14 +51,14 @@ describe('unauthorized access', function () {
         expect($response->status())->toBe(403);
     });
 
-    test('cannot access the calendar event edit page', function () {
+    test('cannot access the calendar event edit page', function (): void {
         $calendar = Calendar::factory()->create();
 
         $response = asUser($this->regularUser)->get(route('calendar.edit', $calendar));
         expect($response->status())->toBe(403);
     });
 
-    test('cannot update calendar', function () {
+    test('cannot update calendar', function (): void {
         $calendar = Calendar::factory()->create();
 
         $response = asUser($this->regularUser)->put(route('calendar.update', $calendar), [
@@ -71,14 +71,14 @@ describe('unauthorized access', function () {
         expect($response->status())->toBe(403);
     });
 
-    test('cannot delete calendar', function () {
+    test('cannot delete calendar', function (): void {
         $calendar = Calendar::factory()->create();
 
         $response = asUser($this->regularUser)->delete(route('calendar.destroy', $calendar));
         expect($response->status())->toBe(403);
     });
 
-    test('cannot duplicate calendar event', function () {
+    test('cannot duplicate calendar event', function (): void {
         $calendar = Calendar::factory()->create();
 
         $response = asUser($this->regularUser)->post(route('calendar.duplicate', $calendar));
@@ -86,8 +86,8 @@ describe('unauthorized access', function () {
     });
 });
 
-describe('authorized access', function () {
-    test('calendar manager can access index', function () {
+describe('authorized access', function (): void {
+    test('calendar manager can access index', function (): void {
         $response = asUser($this->calendarManager)->get(route('calendar.index'));
         $response->assertStatus(200)
             ->assertInertia(fn ($page) => $page
@@ -97,7 +97,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('calendar manager can access create page', function () {
+    test('calendar manager can access create page', function (): void {
         $response = asUser($this->calendarManager)->get(route('calendar.create'));
         $response->assertStatus(200)
             ->assertInertia(fn ($page) => $page
@@ -106,7 +106,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('calendar manager can store calendar event', function () {
+    test('calendar manager can store calendar event', function (): void {
         $calendarData = [
             'title' => ['lt' => 'Test renginys', 'en' => 'Test event'],
             'description' => ['lt' => 'Test aprašymas', 'en' => 'Test description'],
@@ -124,7 +124,7 @@ describe('authorized access', function () {
         ]);
     });
 
-    test('calendar manager can access edit page', function () {
+    test('calendar manager can access edit page', function (): void {
         $calendar = Calendar::factory()->create(['tenant_id' => $this->tenant->id]);
 
         $response = asUser($this->calendarManager)->get(route('calendar.edit', $calendar));
@@ -136,7 +136,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('calendar manager can update calendar event', function () {
+    test('calendar manager can update calendar event', function (): void {
         $calendar = Calendar::factory()->create(['tenant_id' => $this->tenant->id]);
 
         $updateData = [
@@ -151,11 +151,11 @@ describe('authorized access', function () {
         $response->assertRedirect();
 
         $calendar->refresh();
-        expect($calendar->getTranslation('title', 'lt'))->toBe('Atnaujintas renginys');
-        expect($calendar->getTranslation('title', 'en'))->toBe('Updated event');
+        expect($calendar->getTranslation('title', 'lt'))->toBe('Atnaujintas renginys')
+            ->and($calendar->getTranslation('title', 'en'))->toBe('Updated event');
     });
 
-    test('calendar manager can delete calendar event', function () {
+    test('calendar manager can delete calendar event', function (): void {
         $calendar = Calendar::factory()->create(['tenant_id' => $this->tenant->id]);
 
         $response = asUser($this->calendarManager)->delete(route('calendar.destroy', $calendar));
@@ -166,7 +166,7 @@ describe('authorized access', function () {
         ]);
     });
 
-    test('calendar manager can duplicate calendar event', function () {
+    test('calendar manager can duplicate calendar event', function (): void {
         $calendar = Calendar::factory()->create([
             'tenant_id' => $this->tenant->id,
             'title' => ['lt' => 'Test renginys', 'en' => 'Test event'],
@@ -192,13 +192,14 @@ describe('authorized access', function () {
             ->latest()
             ->first();
 
-        expect($duplicatedCalendar)->not()->toBeNull();
-        expect($duplicatedCalendar->title)->toContain('(kopija)');
-        expect($duplicatedCalendar->is_draft)->toBeTrue();
-        expect($duplicatedCalendar->id)->not()->toBe($calendar->id);
+        expect($duplicatedCalendar)->not()->toBeNull()
+            ->and($duplicatedCalendar->title)->toContain('(kopija)')
+            ->and($duplicatedCalendar->is_draft)->toBeTrue()
+            ->and($duplicatedCalendar->id)->not()
+            ->toBe($calendar->id);
     });
 
-    test('super admin can access all calendar functions', function () {
+    test('super admin can access all calendar functions', function (): void {
         $admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
         $calendar = Calendar::factory()->for($this->tenant)->create();
 
@@ -216,8 +217,8 @@ describe('authorized access', function () {
     });
 });
 
-describe('validation', function () {
-    test('requires title for store', function () {
+describe('validation', function (): void {
+    test('requires title for store', function (): void {
         $response = asUser($this->calendarManager)->post(route('calendar.store'), [
             'description' => ['lt' => 'Test aprašymas', 'en' => 'Test description'],
             'date' => now()->addDays(1)->format('Y-m-d'),
@@ -228,7 +229,7 @@ describe('validation', function () {
             ->assertSessionHasErrors('title.lt');
     });
 
-    test('requires date for store', function () {
+    test('requires date for store', function (): void {
         $response = asUser($this->calendarManager)->post(route('calendar.store'), [
             'title' => ['lt' => 'Test renginys', 'en' => 'Test event'],
             'description' => ['lt' => 'Test aprašymas', 'en' => 'Test description'],
@@ -239,7 +240,7 @@ describe('validation', function () {
             ->assertSessionHasErrors('date');
     });
 
-    test('requires tenant_id for store', function () {
+    test('requires tenant_id for store', function (): void {
         $response = asUser($this->calendarManager)->post(route('calendar.store'), [
             'title' => ['lt' => 'Test renginys', 'en' => 'Test event'],
             'description' => ['lt' => 'Test aprašymas', 'en' => 'Test description'],
@@ -250,7 +251,7 @@ describe('validation', function () {
             ->assertSessionHasErrors('tenant_id');
     });
 
-    test('requires valid date format for store', function () {
+    test('requires valid date format for store', function (): void {
         $response = asUser($this->calendarManager)->post(route('calendar.store'), [
             'title' => ['lt' => 'Test renginys', 'en' => 'Test event'],
             'description' => ['lt' => 'Test aprašymas', 'en' => 'Test description'],
@@ -262,7 +263,7 @@ describe('validation', function () {
             ->assertSessionHasErrors('date');
     });
 
-    test('saves images to calendar', function () {
+    test('saves images to calendar', function (): void {
         $image = UploadedFile::fake()->image('calendar-image.jpg', 800, 600);
 
         $calendarData = [
@@ -288,15 +289,15 @@ describe('validation', function () {
     });
 });
 
-describe('relationships', function () {
-    test('calendar belongs to category', function () {
+describe('relationships', function (): void {
+    test('calendar belongs to category', function (): void {
         $calendar = Calendar::factory()->create();
 
         // Check if calendar can have category relationship
         expect($calendar->category())->toBeInstanceOf(BelongsTo::class);
     });
 
-    test('can duplicate calendar with proper translations', function () {
+    test('can duplicate calendar with proper translations', function (): void {
         $calendar = Calendar::factory()->create([
             'tenant_id' => $this->tenant->id,
             'title' => ['lt' => 'Lietuviškas renginys', 'en' => 'English event'],
@@ -320,24 +321,25 @@ describe('relationships', function () {
 
         // Verify the duplicated calendar has proper translations
         expect($duplicatedCalendar)->not()->toBeNull();
-        expect($duplicatedCalendar->getTranslation('title', 'lt'))->toContain('(kopija)');
-        expect($duplicatedCalendar->getTranslation('title', 'lt'))->toContain('Lietuviškas renginys');
-        expect($duplicatedCalendar->getTranslation('title', 'en'))->toContain('(copy)');
-        expect($duplicatedCalendar->getTranslation('title', 'en'))->toContain('English event');
-        expect($duplicatedCalendar->is_draft)->toBeTrue();
-        expect($duplicatedCalendar->id)->not()->toBe($calendar->id);
+        expect($duplicatedCalendar->getTranslation('title', 'lt'))->toContain('(kopija)')
+            ->toContain('Lietuviškas renginys')
+            ->and($duplicatedCalendar->getTranslation('title', 'en'))->toContain('(copy)')
+            ->toContain('English event')
+            ->and($duplicatedCalendar->is_draft)->toBeTrue()
+            ->and($duplicatedCalendar->id)->not()
+            ->toBe($calendar->id);
     });
 
-    test('calendar has proper model structure', function () {
+    test('calendar has proper model structure', function (): void {
         $calendar = Calendar::factory()->create([
             'title' => ['lt' => 'Test renginys', 'en' => 'Test event'],
             'description' => ['lt' => 'Test aprašymas', 'en' => 'Test description'],
             'date' => now()->addDays(1)->format('Y-m-d'),
         ]);
 
-        expect($calendar->getTranslation('title', 'lt'))->toBe('Test renginys');
-        expect($calendar->getTranslation('title', 'en'))->toBe('Test event');
-        expect($calendar->getTranslation('description', 'lt'))->toBe('Test aprašymas');
-        expect($calendar->getTranslation('description', 'en'))->toBe('Test description');
+        expect($calendar->getTranslation('title', 'lt'))->toBe('Test renginys')
+            ->and($calendar->getTranslation('title', 'en'))->toBe('Test event')
+            ->and($calendar->getTranslation('description', 'lt'))->toBe('Test aprašymas')
+            ->and($calendar->getTranslation('description', 'en'))->toBe('Test description');
     });
 });

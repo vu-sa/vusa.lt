@@ -4,9 +4,9 @@ use App\Models\Role;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
     $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
@@ -20,7 +20,7 @@ beforeEach(function () {
     $this->admin->duties()->first()->assignRole('Communication Coordinator');
 });
 
-test('admin removing own last duty is warned and nothing persists', function () {
+test('admin removing own last duty is warned and nothing persists', function (): void {
     asUserWithInertia($this->admin)
         ->patch(route('users.update', $this->admin), [
             'name' => $this->admin->name,
@@ -32,7 +32,7 @@ test('admin removing own last duty is warned and nothing persists', function () 
     expect($this->admin->current_duties()->count())->toBeGreaterThan(0);
 });
 
-test('acknowledged removal persists and lands on the dashboard', function () {
+test('acknowledged removal persists and lands on the dashboard', function (): void {
     asUserWithInertia($this->admin)
         ->patch(route('users.update', $this->admin), [
             'name' => $this->admin->name,
@@ -46,7 +46,7 @@ test('acknowledged removal persists and lands on the dashboard', function () {
     expect($this->admin->current_duties()->count())->toBe(0);
 });
 
-test('editing another user is not guarded', function () {
+test('editing another user is not guarded', function (): void {
     $other = makeUser($this->tenant);
 
     asUserWithInertia($this->admin)
@@ -60,7 +60,7 @@ test('editing another user is not guarded', function () {
     expect($other->current_duties()->count())->toBe(0);
 });
 
-test('super admin removing own super admin role is warned', function () {
+test('super admin removing own super admin role is warned', function (): void {
     $superAdmin = makeUser($this->tenant);
     $superAdmin->assignRole(config('permission.super_admin_role_name'));
 
@@ -76,7 +76,7 @@ test('super admin removing own super admin role is warned', function () {
     expect($superAdmin->fresh()->isSuperAdmin())->toBeTrue();
 });
 
-test('super admin removing only a duty (not the super admin role) is not warned', function () {
+test('super admin removing only a duty (not the super admin role) is not warned', function (): void {
     $superAdmin = makeUser($this->tenant);
     $superAdmin->assignRole(config('permission.super_admin_role_name'));
     $superAdmin->duties()->first()->assignRole('Communication Coordinator');

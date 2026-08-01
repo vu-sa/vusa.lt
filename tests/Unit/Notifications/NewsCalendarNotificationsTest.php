@@ -15,7 +15,7 @@ use App\Notifications\NewsPublishedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 /*
 |--------------------------------------------------------------------------
@@ -23,15 +23,15 @@ uses(RefreshDatabase::class);
 |--------------------------------------------------------------------------
 */
 
-describe('NewsPublishedNotification', function () {
-    test('has correct category', function () {
+describe('NewsPublishedNotification', function (): void {
+    test('has correct category', function (): void {
         $news = News::factory()->create(['draft' => false, 'publish_time' => now()]);
         $notification = new NewsPublishedNotification($news);
 
         expect($notification->category())->toBe(NotificationCategory::News);
     });
 
-    test('returns correct title', function () {
+    test('returns correct title', function (): void {
         $news = News::factory()->create(['draft' => false, 'publish_time' => now()]);
         $user = User::factory()->create();
         $notification = new NewsPublishedNotification($news);
@@ -39,7 +39,7 @@ describe('NewsPublishedNotification', function () {
         expect($notification->title($user))->toBeString();
     });
 
-    test('returns body with news title and tenant', function () {
+    test('returns body with news title and tenant', function (): void {
         $news = News::factory()->create([
             'title' => 'Test News Title',
             'draft' => false,
@@ -52,7 +52,7 @@ describe('NewsPublishedNotification', function () {
         expect($body)->toBeString();
     });
 
-    test('returns correct url for Lithuanian news', function () {
+    test('returns correct url for Lithuanian news', function (): void {
         $news = News::factory()->create([
             'lang' => 'lt',
             'permalink' => 'test-news',
@@ -64,7 +64,7 @@ describe('NewsPublishedNotification', function () {
         expect($notification->url())->toContain('/naujiena/test-news');
     });
 
-    test('returns correct url for English news', function () {
+    test('returns correct url for English news', function (): void {
         $news = News::factory()->create([
             'lang' => 'en',
             'permalink' => 'test-news',
@@ -76,21 +76,21 @@ describe('NewsPublishedNotification', function () {
         expect($notification->url())->toContain('/news/test-news');
     });
 
-    test('returns NEWS as modelClass', function () {
+    test('returns NEWS as modelClass', function (): void {
         $news = News::factory()->create(['draft' => false, 'publish_time' => now()]);
         $notification = new NewsPublishedNotification($news);
 
         expect($notification->modelClass())->toBe('NEWS');
     });
 
-    test('does not support email digest', function () {
+    test('does not support email digest', function (): void {
         $news = News::factory()->create(['draft' => false, 'publish_time' => now()]);
         $notification = new NewsPublishedNotification($news);
 
         expect($notification->supportsEmailDigest())->toBeFalse();
     });
 
-    test('returns correct object structure', function () {
+    test('returns correct object structure', function (): void {
         $news = News::factory()->create([
             'title' => 'Test News',
             'draft' => false,
@@ -99,10 +99,8 @@ describe('NewsPublishedNotification', function () {
         $notification = new NewsPublishedNotification($news);
 
         $object = $notification->object();
-        expect($object)->toBeArray();
-        expect($object['modelClass'])->toBe('News');
-        expect($object['name'])->toBe('Test News');
-        expect($object['id'])->toBe($news->id);
+        expect($object)->toBeArray()
+            ->toMatchArray(['modelClass' => 'News', 'name' => 'Test News', 'id' => $news->id]);
     });
 });
 
@@ -112,15 +110,15 @@ describe('NewsPublishedNotification', function () {
 |--------------------------------------------------------------------------
 */
 
-describe('CalendarReminderNotification', function () {
-    test('has correct category', function () {
+describe('CalendarReminderNotification', function (): void {
+    test('has correct category', function (): void {
         $calendar = Calendar::factory()->create(['is_draft' => false]);
         $notification = new CalendarReminderNotification($calendar, 24);
 
         expect($notification->category())->toBe(NotificationCategory::Calendar);
     });
 
-    test('returns correct title for standard reminder', function () {
+    test('returns correct title for standard reminder', function (): void {
         $calendar = Calendar::factory()->create(['is_draft' => false]);
         $user = User::factory()->create();
         $notification = new CalendarReminderNotification($calendar, 24);
@@ -128,7 +126,7 @@ describe('CalendarReminderNotification', function () {
         expect($notification->title($user))->toBeString();
     });
 
-    test('returns correct title for soon reminder', function () {
+    test('returns correct title for soon reminder', function (): void {
         $calendar = Calendar::factory()->create(['is_draft' => false]);
         $user = User::factory()->create();
         $notification = new CalendarReminderNotification($calendar, 1);
@@ -136,7 +134,7 @@ describe('CalendarReminderNotification', function () {
         expect($notification->title($user))->toBeString();
     });
 
-    test('returns body for 24 hour reminder (tomorrow)', function () {
+    test('returns body for 24 hour reminder (tomorrow)', function (): void {
         $calendar = Calendar::factory()->create([
             'title' => json_encode(['lt' => 'Test Event']),
             'is_draft' => false,
@@ -148,7 +146,7 @@ describe('CalendarReminderNotification', function () {
         expect($body)->toBeString();
     });
 
-    test('returns body for 1 hour reminder', function () {
+    test('returns body for 1 hour reminder', function (): void {
         $calendar = Calendar::factory()->create([
             'title' => json_encode(['lt' => 'Test Event']),
             'is_draft' => false,
@@ -160,35 +158,35 @@ describe('CalendarReminderNotification', function () {
         expect($body)->toBeString();
     });
 
-    test('returns correct url', function () {
+    test('returns correct url', function (): void {
         $calendar = Calendar::factory()->create(['is_draft' => false]);
         $notification = new CalendarReminderNotification($calendar, 24);
 
         expect($notification->url())->toContain((string) $calendar->id);
     });
 
-    test('returns CALENDAR as modelClass', function () {
+    test('returns CALENDAR as modelClass', function (): void {
         $calendar = Calendar::factory()->create(['is_draft' => false]);
         $notification = new CalendarReminderNotification($calendar, 24);
 
         expect($notification->modelClass())->toBe('CALENDAR');
     });
 
-    test('does not support email digest', function () {
+    test('does not support email digest', function (): void {
         $calendar = Calendar::factory()->create(['is_draft' => false]);
         $notification = new CalendarReminderNotification($calendar, 24);
 
         expect($notification->supportsEmailDigest())->toBeFalse();
     });
 
-    test('returns clock icon for soon reminder', function () {
+    test('returns clock icon for soon reminder', function (): void {
         $calendar = Calendar::factory()->create(['is_draft' => false]);
         $notification = new CalendarReminderNotification($calendar, 1);
 
         expect($notification->icon())->toBe('⏰');
     });
 
-    test('returns calendar icon for standard reminder', function () {
+    test('returns calendar icon for standard reminder', function (): void {
         $calendar = Calendar::factory()->create(['is_draft' => false]);
         $notification = new CalendarReminderNotification($calendar, 24);
 
@@ -202,12 +200,12 @@ describe('CalendarReminderNotification', function () {
 |--------------------------------------------------------------------------
 */
 
-describe('SendNewsNotifications command', function () {
-    beforeEach(function () {
+describe('SendNewsNotifications command', function (): void {
+    beforeEach(function (): void {
         Notification::fake();
     });
 
-    test('sends notifications for recently published news to opted-in users', function () {
+    test('sends notifications for recently published news to opted-in users', function (): void {
         $tenant = Tenant::query()->first();
 
         // Create a user who has opted in
@@ -238,7 +236,7 @@ describe('SendNewsNotifications command', function () {
         Notification::assertSentTo($user, NewsPublishedNotification::class);
     });
 
-    test('does not send notifications to users who have not opted in', function () {
+    test('does not send notifications to users who have not opted in', function (): void {
         $tenant = Tenant::query()->first();
 
         // Create a user who has NOT opted in (default behavior - news disabled)
@@ -259,7 +257,7 @@ describe('SendNewsNotifications command', function () {
         Notification::assertNotSentTo($user, NewsPublishedNotification::class);
     });
 
-    test('does not send notifications for draft news', function () {
+    test('does not send notifications for draft news', function (): void {
         $tenant = Tenant::query()->first();
 
         $user = User::factory()->hasAttached(
@@ -289,7 +287,7 @@ describe('SendNewsNotifications command', function () {
         Notification::assertNotSentTo($user, NewsPublishedNotification::class);
     });
 
-    test('does not send notifications for old published news', function () {
+    test('does not send notifications for old published news', function (): void {
         $tenant = Tenant::query()->first();
 
         $user = User::factory()->hasAttached(
@@ -326,12 +324,12 @@ describe('SendNewsNotifications command', function () {
 |--------------------------------------------------------------------------
 */
 
-describe('SendCalendarReminders command', function () {
-    beforeEach(function () {
+describe('SendCalendarReminders command', function (): void {
+    beforeEach(function (): void {
         Notification::fake();
     });
 
-    test('sends reminders for events happening in 24 hours to opted-in users', function () {
+    test('sends reminders for events happening in 24 hours to opted-in users', function (): void {
         $tenant = Tenant::query()->first();
 
         // Create a user who has opted in with 24h reminder
@@ -365,7 +363,7 @@ describe('SendCalendarReminders command', function () {
         Notification::assertSentTo($user, CalendarReminderNotification::class);
     });
 
-    test('does not send reminders to users who have not opted in', function () {
+    test('does not send reminders to users who have not opted in', function (): void {
         $tenant = Tenant::query()->first();
 
         // Create a user who has NOT opted in (default behavior - calendar disabled)
@@ -386,7 +384,7 @@ describe('SendCalendarReminders command', function () {
         Notification::assertNotSentTo($user, CalendarReminderNotification::class);
     });
 
-    test('does not send reminders for draft events', function () {
+    test('does not send reminders for draft events', function (): void {
         $tenant = Tenant::query()->first();
 
         $user = User::factory()->hasAttached(
@@ -419,7 +417,7 @@ describe('SendCalendarReminders command', function () {
         Notification::assertNotSentTo($user, CalendarReminderNotification::class);
     });
 
-    test('respects user reminder hour preferences', function () {
+    test('respects user reminder hour preferences', function (): void {
         $tenant = Tenant::query()->first();
 
         // Create a user who only wants 1h reminders, not 24h
@@ -461,22 +459,22 @@ describe('SendCalendarReminders command', function () {
 |--------------------------------------------------------------------------
 */
 
-describe('News and Calendar preferences are disabled by default', function () {
-    test('news channel preferences are false by default', function () {
+describe('News and Calendar preferences are disabled by default', function (): void {
+    test('news channel preferences are false by default', function (): void {
         $user = User::factory()->create();
 
-        expect($user->shouldReceiveNotification(NotificationCategory::News, NotificationChannel::InApp))->toBeFalse();
-        expect($user->shouldReceiveNotification(NotificationCategory::News, NotificationChannel::Push))->toBeFalse();
+        expect($user->shouldReceiveNotification(NotificationCategory::News, NotificationChannel::InApp))->toBeFalse()
+            ->and($user->shouldReceiveNotification(NotificationCategory::News, NotificationChannel::Push))->toBeFalse();
     });
 
-    test('calendar channel preferences are false by default', function () {
+    test('calendar channel preferences are false by default', function (): void {
         $user = User::factory()->create();
 
-        expect($user->shouldReceiveNotification(NotificationCategory::Calendar, NotificationChannel::InApp))->toBeFalse();
-        expect($user->shouldReceiveNotification(NotificationCategory::Calendar, NotificationChannel::Push))->toBeFalse();
+        expect($user->shouldReceiveNotification(NotificationCategory::Calendar, NotificationChannel::InApp))->toBeFalse()
+            ->and($user->shouldReceiveNotification(NotificationCategory::Calendar, NotificationChannel::Push))->toBeFalse();
     });
 
-    test('calendar reminder hours default to 24', function () {
+    test('calendar reminder hours default to 24', function (): void {
         $user = User::factory()->create();
 
         expect($user->getCalendarReminderHours())->toBe([24]);

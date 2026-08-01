@@ -2,13 +2,13 @@
 
 use App\Helpers\InternetShortcutParser;
 
-test('parses the URL from a canonical CRLF .url file', function () {
+test('parses the URL from a canonical CRLF .url file', function (): void {
     $contents = "[InternetShortcut]\r\nURL=https://ataskaita2023.vusa.lt\r\n";
 
     expect(InternetShortcutParser::parse($contents))->toBe('https://ataskaita2023.vusa.lt');
 });
 
-test('ignores other InternetShortcut keys', function () {
+test('ignores other InternetShortcut keys', function (): void {
     $contents = "[InternetShortcut]\r\n"
         ."URL=https://ataskaita2023.vusa.lt\r\n"
         ."IconFile=https://sharepoint.example.com/icon.ico\r\n"
@@ -19,19 +19,19 @@ test('ignores other InternetShortcut keys', function () {
     expect(InternetShortcutParser::parse($contents))->toBe('https://ataskaita2023.vusa.lt');
 });
 
-test('strips a leading UTF-8 BOM', function () {
+test('strips a leading UTF-8 BOM', function (): void {
     $contents = "\xEF\xBB\xBF[InternetShortcut]\r\nURL=https://ataskaita2023.vusa.lt\r\n";
 
     expect(InternetShortcutParser::parse($contents))->toBe('https://ataskaita2023.vusa.lt');
 });
 
-test('accepts lowercase section header and key', function () {
+test('accepts lowercase section header and key', function (): void {
     $contents = "[internetshortcut]\nurl=https://ataskaita2023.vusa.lt\n";
 
     expect(InternetShortcutParser::parse($contents))->toBe('https://ataskaita2023.vusa.lt');
 });
 
-test('a trailing GUID shell-extension section does not clobber the result', function () {
+test('a trailing GUID shell-extension section does not clobber the result', function (): void {
     $contents = "[InternetShortcut]\r\n"
         ."URL=https://ataskaita2023.vusa.lt\r\n"
         ."[{000214A0-0000-0000-C000-000000000046}]\r\n"
@@ -40,19 +40,19 @@ test('a trailing GUID shell-extension section does not clobber the result', func
     expect(InternetShortcutParser::parse($contents))->toBe('https://ataskaita2023.vusa.lt');
 });
 
-test('preserves a query string containing multiple parameters', function () {
+test('preserves a query string containing multiple parameters', function (): void {
     $contents = "[InternetShortcut]\r\nURL=https://ataskaita2023.vusa.lt/report?a=1&b=2\r\n";
 
     expect(InternetShortcutParser::parse($contents))->toBe('https://ataskaita2023.vusa.lt/report?a=1&b=2');
 });
 
-test('a URL line outside the InternetShortcut section is ignored', function () {
+test('a URL line outside the InternetShortcut section is ignored', function (): void {
     $contents = "[SomeOtherSection]\r\nURL=https://ataskaita2023.vusa.lt\r\n";
 
     expect(InternetShortcutParser::parse($contents))->toBeNull();
 });
 
-test('rejects non-http(s) schemes', function (string $url) {
+test('rejects non-http(s) schemes', function (string $url): void {
     $contents = "[InternetShortcut]\r\nURL={$url}\r\n";
 
     expect(InternetShortcutParser::parse($contents))->toBeNull();
@@ -62,7 +62,7 @@ test('rejects non-http(s) schemes', function (string $url) {
     'ftp://example.com/file',
 ]);
 
-test('rejects garbage, empty, and whitespace-only content', function (?string $contents) {
+test('rejects garbage, empty, and whitespace-only content', function (?string $contents): void {
     expect(InternetShortcutParser::parse($contents))->toBeNull();
 })->with([
     'null' => [null],
@@ -72,7 +72,7 @@ test('rejects garbage, empty, and whitespace-only content', function (?string $c
     'non-URL value' => ["[InternetShortcut]\r\nURL=not a url\r\n"],
 ]);
 
-test('trims leading and trailing whitespace from the value', function () {
+test('trims leading and trailing whitespace from the value', function (): void {
     $contents = "[InternetShortcut]\r\nURL=  https://ataskaita2023.vusa.lt  \r\n";
 
     expect(InternetShortcutParser::parse($contents))->toBe('https://ataskaita2023.vusa.lt');

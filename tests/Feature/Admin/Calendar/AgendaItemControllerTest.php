@@ -11,9 +11,9 @@ use App\Models\Vote;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
     // Create an admin user with Communication Coordinator role
@@ -36,8 +36,8 @@ beforeEach(function () {
     $this->initialAgendaItemCount = AgendaItem::count();
 });
 
-describe('agenda items controller', function () {
-    test('admin can create agenda items', function () {
+describe('agenda items controller', function (): void {
+    test('admin can create agenda items', function (): void {
         $response = asUser($this->admin)
             ->post(route('agendaItems.store'), [
                 'meeting_id' => $this->meeting->id,
@@ -47,15 +47,15 @@ describe('agenda items controller', function () {
         $response->assertStatus(302);
         $response->assertSessionHas('success');
 
-        $this->assertEquals($this->initialAgendaItemCount + 2, AgendaItem::count());
-        $this->assertEquals(2, $this->meeting->agendaItems()->count());
+        expect(AgendaItem::count())->toEqual($this->initialAgendaItemCount + 2)
+            ->and($this->meeting->agendaItems()->count())->toEqual(2);
 
         $items = $this->meeting->agendaItems()->pluck('title')->toArray();
-        $this->assertContains('Test Item 1', $items);
-        $this->assertContains('Test Item 2', $items);
+        expect($items)->toContain('Test Item 1')
+            ->toContain('Test Item 2');
     });
 
-    test('cannot create agenda items with empty titles', function () {
+    test('cannot create agenda items with empty titles', function (): void {
         $response = asUser($this->admin)
             ->post(route('agendaItems.store'), [
                 'meeting_id' => $this->meeting->id,
@@ -65,10 +65,10 @@ describe('agenda items controller', function () {
         $response->assertStatus(302);
         $response->assertSessionHasErrors(['agendaItemTitles.0', 'agendaItemTitles.1']);
 
-        $this->assertEquals($this->initialAgendaItemCount, AgendaItem::count());
+        expect(AgendaItem::count())->toEqual($this->initialAgendaItemCount);
     });
 
-    test('agenda items require a meeting id', function () {
+    test('agenda items require a meeting id', function (): void {
         $response = asUser($this->admin)
             ->post(route('agendaItems.store'), [
                 'agendaItemTitles' => ['Test Item'],
@@ -77,10 +77,10 @@ describe('agenda items controller', function () {
         $response->assertStatus(302);
         $response->assertSessionHasErrors(['meeting_id']);
 
-        $this->assertEquals($this->initialAgendaItemCount, AgendaItem::count());
+        expect(AgendaItem::count())->toEqual($this->initialAgendaItemCount);
     });
 
-    test('agenda items creation does not trigger task creation', function () {
+    test('agenda items creation does not trigger task creation', function (): void {
         $initialTaskCount = $this->meeting->tasks()->count();
 
         $response = asUser($this->admin)
@@ -93,13 +93,13 @@ describe('agenda items controller', function () {
         $response->assertSessionHas('success');
 
         // Verify agenda item was created
-        $this->assertEquals($this->initialAgendaItemCount + 1, AgendaItem::count());
+        expect(AgendaItem::count())->toEqual($this->initialAgendaItemCount + 1);
 
         // Verify no tasks were created regardless of agenda item content
-        $this->assertEquals($initialTaskCount, $this->meeting->fresh()->tasks()->count());
+        expect($this->meeting->fresh()->tasks()->count())->toEqual($initialTaskCount);
     });
 
-    test('can update agenda item details with votes', function () {
+    test('can update agenda item details with votes', function (): void {
         // First create an agenda item
         asUser($this->admin)
             ->post(route('agendaItems.store'), [
@@ -128,19 +128,19 @@ describe('agenda items controller', function () {
         $response->assertSessionHas('success');
 
         $agendaItem->refresh();
-        $this->assertEquals('Updated Title', $agendaItem->title);
-        $this->assertEquals('New Description', $agendaItem->description);
+        expect($agendaItem->title)->toEqual('Updated Title')
+            ->and($agendaItem->description)->toEqual('New Description');
 
         // Check that the vote was created
         $vote = $agendaItem->votes()->first();
-        $this->assertNotNull($vote);
-        $this->assertTrue($vote->is_main);
-        $this->assertEquals('positive', $vote->decision);
-        $this->assertEquals('neutral', $vote->student_vote);
-        $this->assertEquals('negative', $vote->student_benefit);
+        expect($vote)->not->toBeNull()
+            ->and($vote->is_main)->toBeTrue()
+            ->and($vote->decision)->toEqual('positive')
+            ->and($vote->student_vote)->toEqual('neutral')
+            ->and($vote->student_benefit)->toEqual('negative');
     });
 
-    test('validates agenda item vote values', function () {
+    test('validates agenda item vote values', function (): void {
         // First create an agenda item
         asUser($this->admin)
             ->post(route('agendaItems.store'), [
@@ -164,11 +164,11 @@ describe('agenda items controller', function () {
         $response->assertSessionHasErrors(['votes.0.decision']);
 
         $agendaItem->refresh();
-        $this->assertEquals('Original Title', $agendaItem->title);
-        $this->assertEquals(0, $agendaItem->votes()->count());
+        expect($agendaItem->title)->toEqual('Original Title')
+            ->and($agendaItem->votes()->count())->toEqual(0);
     });
 
-    test('validates agenda item vote title length', function () {
+    test('validates agenda item vote title length', function (): void {
         asUser($this->admin)
             ->post(route('agendaItems.store'), [
                 'meeting_id' => $this->meeting->id,
@@ -195,31 +195,31 @@ describe('agenda items controller', function () {
         $response->assertSessionHasErrors(['votes.0.title']);
 
         $agendaItem->refresh();
-        $this->assertEquals(0, $agendaItem->votes()->count());
+        expect($agendaItem->votes()->count())->toEqual(0);
     });
 
     // Meetings are soft-deletable, so deletion has to be reversible. Agenda items are
     // not soft-deletable and votes cascade off them, so removing them here would make
     // restore return an empty meeting.
-    test('deleting a meeting keeps its agenda items so it can be restored', function () {
+    test('deleting a meeting keeps its agenda items so it can be restored', function (): void {
         asUser($this->admin)
             ->post(route('agendaItems.store'), [
                 'meeting_id' => $this->meeting->id,
                 'agendaItemTitles' => ['Item One', 'Item Two'],
             ]);
 
-        $this->assertEquals(2, $this->meeting->agendaItems()->count());
+        expect($this->meeting->agendaItems()->count())->toEqual(2);
 
         $this->meeting->delete();
 
-        $this->assertEquals(2, AgendaItem::where('meeting_id', $this->meeting->id)->count());
+        expect(AgendaItem::where('meeting_id', $this->meeting->id)->count())->toEqual(2);
 
         $this->meeting->restore();
 
-        $this->assertEquals(2, $this->meeting->fresh()->agendaItems()->count());
+        expect($this->meeting->fresh()->agendaItems()->count())->toEqual(2);
     });
 
-    test('permanently deleting a meeting also deletes its agenda items', function () {
+    test('permanently deleting a meeting also deletes its agenda items', function (): void {
         asUser($this->admin)
             ->post(route('agendaItems.store'), [
                 'meeting_id' => $this->meeting->id,
@@ -229,10 +229,10 @@ describe('agenda items controller', function () {
         $this->meeting->delete();
         $this->meeting->forceDelete();
 
-        $this->assertEquals(0, AgendaItem::where('meeting_id', $this->meeting->id)->count());
+        expect(AgendaItem::where('meeting_id', $this->meeting->id)->count())->toEqual(0);
     });
 
-    test('can delete an agenda item', function () {
+    test('can delete an agenda item', function (): void {
         // First create an agenda item
         asUser($this->admin)
             ->post(route('agendaItems.store'), [
@@ -240,7 +240,7 @@ describe('agenda items controller', function () {
                 'agendaItemTitles' => ['Item to Delete'],
             ]);
 
-        $this->assertEquals($this->initialAgendaItemCount + 1, AgendaItem::count());
+        expect(AgendaItem::count())->toEqual($this->initialAgendaItemCount + 1);
 
         $agendaItem = $this->meeting->agendaItems()->first();
 
@@ -250,10 +250,10 @@ describe('agenda items controller', function () {
         $response->assertStatus(302);
         $response->assertSessionHas('success');
 
-        $this->assertEquals($this->initialAgendaItemCount, AgendaItem::count());
+        expect(AgendaItem::count())->toEqual($this->initialAgendaItemCount);
     });
 
-    test('admin can open the agenda item edit page', function () {
+    test('admin can open the agenda item edit page', function (): void {
         $agendaItem = AgendaItem::factory()->create([
             'meeting_id' => $this->meeting->id,
         ]);
@@ -268,7 +268,7 @@ describe('agenda items controller', function () {
         );
     });
 
-    test('edit page returns ordered sibling agenda items for navigation', function () {
+    test('edit page returns ordered sibling agenda items for navigation', function (): void {
         $first = AgendaItem::factory()->create(['meeting_id' => $this->meeting->id, 'order' => 1, 'title' => 'First']);
         $second = AgendaItem::factory()->create(['meeting_id' => $this->meeting->id, 'order' => 2, 'title' => 'Second']);
         $third = AgendaItem::factory()->create(['meeting_id' => $this->meeting->id, 'order' => 3, 'title' => 'Third']);
@@ -287,7 +287,7 @@ describe('agenda items controller', function () {
         );
     });
 
-    test('unauthorized user cannot open the agenda item edit page', function () {
+    test('unauthorized user cannot open the agenda item edit page', function (): void {
         $agendaItem = AgendaItem::factory()->create([
             'meeting_id' => $this->meeting->id,
         ]);

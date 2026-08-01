@@ -31,8 +31,10 @@ class TrainingTask extends Model
 {
     use HasTranslations;
 
+    #[\Override]
     protected $guarded = [];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

@@ -7,10 +7,10 @@ use App\Models\News;
 use App\Models\Tag;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-describe('DuplicateNewsAction', function () {
-    test('duplicates news with basic properties', function () {
+describe('DuplicateNewsAction', function (): void {
+    test('duplicates news with basic properties', function (): void {
         $content = Content::factory()->create();
 
         $originalNews = News::factory()->create([
@@ -36,7 +36,7 @@ describe('DuplicateNewsAction', function () {
             ->and($duplicatedNews->exists)->toBeTrue();
     });
 
-    test('creates new content instance', function () {
+    test('creates new content instance', function (): void {
         $content = Content::factory()->create();
 
         $originalNews = News::factory()->create([
@@ -52,7 +52,7 @@ describe('DuplicateNewsAction', function () {
             ->and($duplicatedNews->content->id)->not()->toBe($originalNews->content->id);
     });
 
-    test('handles null title gracefully', function () {
+    test('handles null title gracefully', function (): void {
         // Test by creating a news object and manually setting title to null
         $content = Content::factory()->create();
 
@@ -70,7 +70,7 @@ describe('DuplicateNewsAction', function () {
             ->and($duplicatedNews->draft)->toBe(1);
     });
 
-    test('handles empty title gracefully', function () {
+    test('handles empty title gracefully', function (): void {
         $content = Content::factory()->create();
 
         $originalNews = News::factory()->create([
@@ -84,7 +84,7 @@ describe('DuplicateNewsAction', function () {
             ->and($duplicatedNews->draft)->toBe(1);
     });
 
-    test('handles null permalink gracefully', function () {
+    test('handles null permalink gracefully', function (): void {
         // Test by creating a news object and manually setting permalink to null
         $content = Content::factory()->create();
 
@@ -102,7 +102,7 @@ describe('DuplicateNewsAction', function () {
             ->and($duplicatedNews->draft)->toBe(1);
     });
 
-    test('handles empty permalink gracefully', function () {
+    test('handles empty permalink gracefully', function (): void {
         $content = Content::factory()->create();
 
         $originalNews = News::factory()->create([
@@ -116,7 +116,7 @@ describe('DuplicateNewsAction', function () {
             ->and($duplicatedNews->draft)->toBe(1);
     });
 
-    test('generates unique permalink with random suffix', function () {
+    test('generates unique permalink with random suffix', function (): void {
         $content = Content::factory()->create();
 
         $originalNews = News::factory()->create([
@@ -131,11 +131,11 @@ describe('DuplicateNewsAction', function () {
         expect($duplicatedNews1->permalink)->toStartWith('test-news-')
             ->and($duplicatedNews2->permalink)->toStartWith('test-news-')
             ->and($duplicatedNews1->permalink)->not()->toBe($duplicatedNews2->permalink)
-            ->and(strlen($duplicatedNews1->permalink))->toBe(strlen('test-news-') + 8)
-            ->and(strlen($duplicatedNews2->permalink))->toBe(strlen('test-news-') + 8);
+            ->and($duplicatedNews1->permalink)->toHaveLength(strlen('test-news-') + 8)
+            ->and($duplicatedNews2->permalink)->toHaveLength(strlen('test-news-') + 8);
     });
 
-    test('copies content parts when they exist', function () {
+    test('copies content parts when they exist', function (): void {
         $content = Content::factory()->create();
 
         // Create content parts for the original news
@@ -160,7 +160,7 @@ describe('DuplicateNewsAction', function () {
 
         expect($duplicatedNews->content->parts)->toHaveCount(3);
 
-        $duplicatedNews->content->parts->each(function ($duplicatedPart, $index) use ($contentParts, $duplicatedNews) {
+        $duplicatedNews->content->parts->each(function ($duplicatedPart, $index) use ($contentParts, $duplicatedNews): void {
             $originalPart = $contentParts[$index];
 
             expect($duplicatedPart->type)->toBe($originalPart->type)
@@ -172,7 +172,7 @@ describe('DuplicateNewsAction', function () {
         });
     });
 
-    test('handles news without content parts', function () {
+    test('handles news without content parts', function (): void {
         $content = Content::factory()->create();
 
         $originalNews = News::factory()->create([
@@ -181,11 +181,11 @@ describe('DuplicateNewsAction', function () {
 
         $duplicatedNews = DuplicateNewsAction::execute($originalNews);
 
-        expect($duplicatedNews->content->parts)->toHaveCount(0)
+        expect($duplicatedNews->content->parts)->toBeEmpty()
             ->and($duplicatedNews->exists)->toBeTrue();
     });
 
-    test('preserves all non-modified attributes', function () {
+    test('preserves all non-modified attributes', function (): void {
         $content = Content::factory()->create();
 
         $originalNews = News::factory()->create([
@@ -208,7 +208,7 @@ describe('DuplicateNewsAction', function () {
             ->and($duplicatedNews->publish_time)->toBeNull(); // Should always be null
     });
 
-    test('creates new database record', function () {
+    test('creates new database record', function (): void {
         $content = Content::factory()->create();
 
         $originalCount = News::count();
@@ -223,7 +223,7 @@ describe('DuplicateNewsAction', function () {
             ->and($duplicatedNews->wasRecentlyCreated)->toBeTrue();
     });
 
-    test('returns refreshed news instance', function () {
+    test('returns refreshed news instance', function (): void {
         $content = Content::factory()->create();
 
         $originalNews = News::factory()->create([
@@ -238,7 +238,7 @@ describe('DuplicateNewsAction', function () {
             ->and($result->content)->toBeInstanceOf(Content::class);
     });
 
-    test('copies tags relationship', function () {
+    test('copies tags relationship', function (): void {
         $content = Content::factory()->create();
 
         // Create tags and attach them to the original news
@@ -264,7 +264,7 @@ describe('DuplicateNewsAction', function () {
         expect($duplicatedTagIds->toArray())->toBe($originalTagIds->toArray());
     });
 
-    test('handles news without tags', function () {
+    test('handles news without tags', function (): void {
         $content = Content::factory()->create();
 
         $originalNews = News::factory()->create([
@@ -273,11 +273,11 @@ describe('DuplicateNewsAction', function () {
 
         $duplicatedNews = DuplicateNewsAction::execute($originalNews);
 
-        expect($duplicatedNews->tags)->toHaveCount(0)
+        expect($duplicatedNews->tags)->toBeEmpty()
             ->and($duplicatedNews->exists)->toBeTrue();
     });
 
-    test('duplicated news publish_time is set to null', function () {
+    test('duplicated news publish_time is set to null', function (): void {
         $content = Content::factory()->create();
 
         $originalNews = News::factory()->create([
@@ -292,7 +292,7 @@ describe('DuplicateNewsAction', function () {
         expect($duplicatedNews->publish_time)->toBeNull();
     });
 
-    test('clears other_lang_id to avoid unique constraint violation', function () {
+    test('clears other_lang_id to avoid unique constraint violation', function (): void {
         $content = Content::factory()->create();
 
         $otherNews = News::factory()->create([

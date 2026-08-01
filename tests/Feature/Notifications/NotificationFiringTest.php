@@ -20,16 +20,16 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\Feature\Notifications\NotificationTestHelpers;
 
-uses(RefreshDatabase::class, NotificationTestHelpers::class);
+pest()->use(RefreshDatabase::class, NotificationTestHelpers::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     Notification::fake();
     // Ensure queue runs synchronously for listeners
     config(['queue.default' => 'sync']);
 });
 
-describe('task notifications', function () {
-    test('TaskAssignedNotification fires on task creation event', function () {
+describe('task notifications', function (): void {
+    test('TaskAssignedNotification fires on task creation event', function (): void {
         $user = $this->createUserWithPreferences();
 
         $task = Task::factory()->create([
@@ -42,7 +42,7 @@ describe('task notifications', function () {
         Notification::assertSentTo($user, TaskAssignedNotification::class);
     });
 
-    test('TaskAssignedNotification is sent to all assigned users', function () {
+    test('TaskAssignedNotification is sent to all assigned users', function (): void {
         $user1 = $this->createUserWithPreferences();
         $user2 = $this->createUserWithPreferences();
 
@@ -57,7 +57,7 @@ describe('task notifications', function () {
         Notification::assertSentTo($user2, TaskAssignedNotification::class);
     });
 
-    test('only one TaskAssignedNotification per user per task creation', function () {
+    test('only one TaskAssignedNotification per user per task creation', function (): void {
         $user = $this->createUserWithPreferences();
 
         $task = Task::factory()->create([
@@ -70,7 +70,7 @@ describe('task notifications', function () {
         Notification::assertSentToTimes($user, TaskAssignedNotification::class, 1);
     });
 
-    test('no TaskAssignedNotification for tasks without users', function () {
+    test('no TaskAssignedNotification for tasks without users', function (): void {
         $task = Task::factory()->create([
             'due_date' => now()->addDays(7),
         ]);
@@ -81,7 +81,7 @@ describe('task notifications', function () {
         Notification::assertNothingSent();
     });
 
-    test('periodicity tasks send one specialized activity notification', function () {
+    test('periodicity tasks send one specialized activity notification', function (): void {
         $user = $this->createUserWithPreferences();
         $institution = Institution::factory()->create();
         $task = Task::factory()->create([
@@ -110,8 +110,8 @@ describe('task notifications', function () {
     });
 });
 
-describe('meeting reminder notifications', function () {
-    test('honors a configured reminder hour', function () {
+describe('meeting reminder notifications', function (): void {
+    test('honors a configured reminder hour', function (): void {
         $this->travelTo('2025-11-15 10:00:00');
 
         $tenant = Tenant::query()->first() ?? Tenant::factory()->create();
@@ -138,8 +138,8 @@ describe('meeting reminder notifications', function () {
     });
 });
 
-describe('comment notifications', function () {
-    test('CommentPostedNotification fires on new comment event', function () {
+describe('comment notifications', function (): void {
+    test('CommentPostedNotification fires on new comment event', function (): void {
         $user = $this->createUserWithPreferences();
         $commenter = $this->createUserWithPreferences();
 
@@ -161,8 +161,8 @@ describe('comment notifications', function () {
     // (see 2026_01_15_160000 migration). Comments are purely for discussion.
 });
 
-describe('reservation notifications', function () {
-    test('ReservationStatusChangedNotification fires on state transition', function () {
+describe('reservation notifications', function (): void {
+    test('ReservationStatusChangedNotification fires on state transition', function (): void {
         $user = $this->createUserWithPreferences();
 
         ['reservationResource' => $reservationResource, 'reservation' => $reservation] = $this->createReservationWithResource($user);
@@ -174,7 +174,7 @@ describe('reservation notifications', function () {
         Notification::assertSentTo($user, ReservationStatusChangedNotification::class);
     });
 
-    test('ReservationStatusChangedNotification contains correct state information', function () {
+    test('ReservationStatusChangedNotification contains correct state information', function (): void {
         $user = $this->createUserWithPreferences();
 
         ['reservationResource' => $reservationResource] = $this->createReservationWithResource($user);
@@ -193,7 +193,7 @@ describe('reservation notifications', function () {
         );
     });
 
-    test('ReservationStatusChangedNotification sends to all reservation users', function () {
+    test('ReservationStatusChangedNotification sends to all reservation users', function (): void {
         $user1 = $this->createUserWithPreferences();
         $user2 = $this->createUserWithPreferences();
 
@@ -208,8 +208,8 @@ describe('reservation notifications', function () {
     });
 });
 
-describe('notification not sent to commenter', function () {
-    test('comment author does not receive their own comment notification', function () {
+describe('notification not sent to commenter', function (): void {
+    test('comment author does not receive their own comment notification', function (): void {
         // The recipient resolver excludes the author from every group, so even
         // when the author is also part of the commentable's audience (here, the
         // reservation owner) they are never notified about their own comment.

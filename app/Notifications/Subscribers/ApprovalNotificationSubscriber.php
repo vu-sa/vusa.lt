@@ -31,12 +31,12 @@ class ApprovalNotificationSubscriber
     {
         $events->listen(
             ApprovalRequested::class,
-            [self::class, 'handleApprovalRequested']
+            self::handleApprovalRequested(...)
         );
 
         $events->listen(
             ApprovalDecisionMade::class,
-            [self::class, 'handleApprovalDecisionMade']
+            self::handleApprovalDecisionMade(...)
         );
     }
 

@@ -11,6 +11,6 @@ class PermissionPolicy extends ModelPolicy
     public function __construct(ModelAuthorizer $authorizer)
     {
         parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::PERMISSION()->label);
+        $this->pluralModelName = Str::plural(ModelEnum::PERMISSION->label());
     }
 }

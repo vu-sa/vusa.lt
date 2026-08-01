@@ -13,6 +13,8 @@ use App\Models\Traits\HasComments;
 use App\Models\Vote;
 use App\Services\VoteStatisticsCalculator;
 use Database\Factories\AgendaItemFactory;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Touches;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -60,14 +62,13 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
+#[Table(name: 'agenda_items')]
+#[Touches(['meeting'])]
 class AgendaItem extends Pivot implements Commentable
 {
     use HasComments, HasFactory, HasRelationships, HasUlids, LogsActivity, Searchable;
 
-    protected $table = 'agenda_items';
-
-    protected $touches = ['meeting'];
-
+    #[\Override]
     public $incrementing = true;
 
     protected static function newFactory(): Factory
@@ -75,8 +76,10 @@ class AgendaItem extends Pivot implements Commentable
         return AgendaItemFactory::new();
     }
 
+    #[\Override]
     protected $guarded = [];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

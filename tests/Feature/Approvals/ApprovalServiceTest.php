@@ -14,9 +14,9 @@ use App\Services\ApprovalService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
 
@@ -49,18 +49,16 @@ beforeEach(function () {
     $this->approvalService = app(ApprovalService::class);
 });
 
-describe('ApprovalService', function () {
-    test('can request approval for a reservation resource', function () {
+describe('ApprovalService', function (): void {
+    test('can request approval for a reservation resource', function (): void {
         Event::fake([ApprovalRequested::class]);
 
         $this->approvalService->requestApproval($this->reservationResource, 1);
 
-        Event::assertDispatched(ApprovalRequested::class, function ($event) {
-            return $event->approvable->id === $this->reservationResource->id;
-        });
+        Event::assertDispatched(ApprovalRequested::class, fn ($event) => $event->approvable->id === $this->reservationResource->id);
     });
 
-    test('can approve a reservation resource', function () {
+    test('can approve a reservation resource', function (): void {
         Event::fake([ApprovalDecisionMade::class, ApprovalFlowCompleted::class]);
 
         $approval = $this->approvalService->approve(
@@ -71,15 +69,15 @@ describe('ApprovalService', function () {
             1
         );
 
-        expect($approval)->not->toBeNull();
-        expect($approval->decision)->toBe(ApprovalDecision::Approved);
-        expect($approval->user_id)->toBe($this->resourceManager->id);
-        expect($approval->notes)->toBe('Approved for the event');
+        expect($approval)->not->toBeNull()
+            ->and($approval->decision)->toBe(ApprovalDecision::Approved)
+            ->and($approval->user_id)->toBe($this->resourceManager->id)
+            ->and($approval->notes)->toBe('Approved for the event');
 
         Event::assertDispatched(ApprovalDecisionMade::class);
     });
 
-    test('can reject a reservation resource', function () {
+    test('can reject a reservation resource', function (): void {
         Event::fake([ApprovalDecisionMade::class]);
 
         $approval = $this->approvalService->approve(
@@ -95,7 +93,7 @@ describe('ApprovalService', function () {
         Event::assertDispatched(ApprovalDecisionMade::class);
     });
 
-    test('can cancel a reservation resource', function () {
+    test('can cancel a reservation resource', function (): void {
         Event::fake([ApprovalDecisionMade::class]);
 
         $approval = $this->approvalService->approve(
@@ -109,7 +107,7 @@ describe('ApprovalService', function () {
         expect($approval->decision)->toBe(ApprovalDecision::Cancelled);
     });
 
-    test('can bulk approve multiple reservation resources', function () {
+    test('can bulk approve multiple reservation resources', function (): void {
         Event::fake([ApprovalDecisionMade::class]);
 
         // Create additional reservation resources
@@ -144,8 +142,8 @@ describe('ApprovalService', function () {
     });
 });
 
-describe('Task Auto-Completion', function () {
-    test('completing approval marks related task as complete', function () {
+describe('Task Auto-Completion', function (): void {
+    test('completing approval marks related task as complete', function (): void {
         // Create an approval task
         $task = Task::factory()->create([
             'taskable_type' => 'reservation_resource',
@@ -167,7 +165,7 @@ describe('Task Auto-Completion', function () {
         expect($task->completed_at)->not->toBeNull();
     });
 
-    test('rejecting approval also marks related task as complete', function () {
+    test('rejecting approval also marks related task as complete', function (): void {
         $task = Task::factory()->create([
             'taskable_type' => 'reservation_resource',
             'taskable_id' => $this->reservationResource->id,
@@ -188,8 +186,8 @@ describe('Task Auto-Completion', function () {
     });
 });
 
-describe('ReservationResource State Transitions', function () {
-    test('approving created reservation resource transitions to reserved', function () {
+describe('ReservationResource State Transitions', function (): void {
+    test('approving created reservation resource transitions to reserved', function (): void {
         expect($this->reservationResource->state->getValue())->toBe('created');
 
         $this->approvalService->approve(
@@ -204,7 +202,7 @@ describe('ReservationResource State Transitions', function () {
         expect($this->reservationResource->state->getValue())->toBe('reserved');
     });
 
-    test('approving reserved reservation resource transitions to lent', function () {
+    test('approving reserved reservation resource transitions to lent', function (): void {
         // First transition to reserved
         $this->reservationResource->state = 'reserved';
         $this->reservationResource->save();
@@ -221,7 +219,7 @@ describe('ReservationResource State Transitions', function () {
         expect($this->reservationResource->state->getValue())->toBe('lent');
     });
 
-    test('approving lent reservation resource transitions to returned', function () {
+    test('approving lent reservation resource transitions to returned', function (): void {
         $this->reservationResource->state = 'lent';
         $this->reservationResource->save();
 
@@ -237,7 +235,7 @@ describe('ReservationResource State Transitions', function () {
         expect($this->reservationResource->state->getValue())->toBe('returned');
     });
 
-    test('rejecting created reservation resource transitions to rejected', function () {
+    test('rejecting created reservation resource transitions to rejected', function (): void {
         $this->approvalService->approve(
             $this->reservationResource,
             $this->resourceManager,
@@ -250,7 +248,7 @@ describe('ReservationResource State Transitions', function () {
         expect($this->reservationResource->state->getValue())->toBe('rejected');
     });
 
-    test('cancelling reservation resource transitions to cancelled', function () {
+    test('cancelling reservation resource transitions to cancelled', function (): void {
         $this->approvalService->approve(
             $this->reservationResource,
             $this->resourceManager,

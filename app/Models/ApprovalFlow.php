@@ -44,8 +44,10 @@ class ApprovalFlow extends Model
 {
     use HasFactory, HasUlids;
 
+    #[\Override]
     protected $guarded = [];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

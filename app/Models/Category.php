@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Contracts\GuardsForceDelete;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasTranslations;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -41,17 +42,16 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
+#[Fillable([
+    'name',
+    'alias',
+    'description',
+])]
 class Category extends Model implements GuardsForceDelete
 {
     use GuardsForceDeleteWhenReferenced, HasFactory, HasTranslations, SoftDeletes;
 
     public $translatable = ['name', 'description'];
-
-    protected $fillable = [
-        'name',
-        'alias',
-        'description',
-    ];
 
     public function pages()
     {

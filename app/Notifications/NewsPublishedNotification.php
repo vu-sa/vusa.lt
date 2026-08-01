@@ -13,15 +13,10 @@ use NotificationChannels\WebPush\WebPushChannel;
  */
 class NewsPublishedNotification extends BaseNotification
 {
-    protected News $news;
-
     /**
      * Create a new notification instance.
      */
-    public function __construct(News $news)
-    {
-        $this->news = $news;
-    }
+    public function __construct(protected News $news) {}
 
     public function category(): NotificationCategory
     {
@@ -48,6 +43,7 @@ class NewsPublishedNotification extends BaseNotification
         return url($prefix.$this->news->permalink);
     }
 
+    #[\Override]
     public function icon(): string
     {
         return '📰';
@@ -71,6 +67,7 @@ class NewsPublishedNotification extends BaseNotification
     /**
      * Do not support email digest for now.
      */
+    #[\Override]
     public function supportsEmailDigest(): bool
     {
         return false;
@@ -82,6 +79,7 @@ class NewsPublishedNotification extends BaseNotification
      *
      * @return array<int, string>
      */
+    #[\Override]
     public function via(object $notifiable): array
     {
         // Check if notifications are globally muted for this user

@@ -26,16 +26,16 @@ arch('task handlers implement TaskHandler interface')
     ->expect('App\Tasks\Handlers')
     ->toImplement(TaskHandler::class)
     ->ignoring([
-        'App\Tasks\Handlers\BaseTaskHandler',
-        'App\Tasks\Handlers\TaskHandler',
+        BaseTaskHandler::class,
+        TaskHandler::class,
     ]);
 
 arch('task handlers extend BaseTaskHandler')
     ->expect('App\Tasks\Handlers')
     ->toExtend(BaseTaskHandler::class)
     ->ignoring([
-        'App\Tasks\Handlers\BaseTaskHandler',
-        'App\Tasks\Handlers\TaskHandler',
+        BaseTaskHandler::class,
+        TaskHandler::class,
     ]);
 
 arch('task handlers have Handler suffix')

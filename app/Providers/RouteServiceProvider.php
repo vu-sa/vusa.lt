@@ -26,6 +26,7 @@ class RouteServiceProvider extends ServiceProvider
      *
      * @var string|null
      */
+    #[\Override]
     protected $namespace = 'App\\Http\\Controllers';
 
     /**
@@ -33,11 +34,12 @@ class RouteServiceProvider extends ServiceProvider
      *
      * @return void
      */
+    #[\Override]
     public function boot()
     {
         $this->configureRateLimiting();
 
-        $this->routes(function () {
+        $this->routes(function (): void {
             Route::prefix('api')
                 ->middleware('api')
                 ->name('api.')
@@ -62,21 +64,15 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected function configureRateLimiting()
     {
-        RateLimiter::for('api', function (Request $request) {
-            return Limit::perMinute(60)->by(optional($request->user())->id ?: $request->ip());
-        });
+        RateLimiter::for('api', fn (Request $request) => Limit::perMinute(60)->by(optional($request->user())->id ?: $request->ip()));
 
-        RateLimiter::for('summerCamps', function (Request $request) {
-            return $request->user()
-                ? Limit::perMinute(100)->by($request->user()->id)
-                : Limit::perMinute(15)->by($request->ip());
-        });
+        RateLimiter::for('summerCamps', fn (Request $request) => $request->user()
+            ? Limit::perMinute(100)->by($request->user()->id)
+            : Limit::perMinute(15)->by($request->ip()));
 
-        RateLimiter::for('formRegistrations', function (Request $request) {
-            return $request->user()
-                ? Limit::perMinute(100)->by($request->user()->id)
-                : Limit::perHour(5)->by($request->ip());
-        });
+        RateLimiter::for('formRegistrations', fn (Request $request) => $request->user()
+            ? Limit::perMinute(100)->by($request->user()->id)
+            : Limit::perHour(5)->by($request->ip()));
 
         RateLimiter::for('login', function (Request $request) {
             $email = (string) $request->email;
@@ -84,10 +80,8 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(5)->by($email.$request->ip());
         });
 
-        RateLimiter::for('textBoxSubmissions', function (Request $request) {
-            return $request->user()
-                ? Limit::perMinute(10)->by($request->user()->id)
-                : Limit::perMinute(5)->by($request->ip());
-        });
+        RateLimiter::for('textBoxSubmissions', fn (Request $request) => $request->user()
+            ? Limit::perMinute(10)->by($request->user()->id)
+            : Limit::perMinute(5)->by($request->ip()));
     }
 }

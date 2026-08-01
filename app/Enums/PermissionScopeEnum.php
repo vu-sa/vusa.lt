@@ -2,23 +2,22 @@
 
 namespace App\Enums;
 
-use Spatie\Enum\Laravel\Enum;
+use App\Enums\Concerns\HasEnumHelpers;
 
-/**
- * @typescript
- *
- * @method static self OWN()
- * @method static self PADALINYS()
- * @method static self ALL()
- */
-class PermissionScopeEnum extends Enum
+enum PermissionScopeEnum: string
 {
-    protected static function labels(): array
+    use HasEnumHelpers;
+
+    case OWN = 'OWN';
+    case PADALINYS = 'PADALINYS';
+    case ALL = 'ALL';
+
+    public function label(): string
     {
-        return [
-            'OWN' => 'own',
-            'PADALINYS' => 'padalinys',
-            'ALL' => '*',
-        ];
+        return match ($this) {
+            self::OWN => 'own',
+            self::PADALINYS => 'padalinys',
+            self::ALL => '*',
+        };
     }
 }

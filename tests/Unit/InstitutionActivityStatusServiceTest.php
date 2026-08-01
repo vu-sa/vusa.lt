@@ -41,8 +41,8 @@ function institutionForActivityStatus(
     return $institution;
 }
 
-describe('InstitutionActivityStatusService', function () {
-    test('returns no activity when there are no meetings or coverage', function () {
+describe('InstitutionActivityStatusService', function (): void {
+    test('returns no activity when there are no meetings or coverage', function (): void {
         $status = app(InstitutionActivityStatusService::class)->resolve(
             institutionForActivityStatus(),
             CarbonImmutable::parse('2025-11-15 12:00:00'),
@@ -53,7 +53,7 @@ describe('InstitutionActivityStatusService', function () {
             ->and($status->status->requiresAction())->toBeTrue();
     });
 
-    test('uses effective days and excludes academic vacations', function () {
+    test('uses effective days and excludes academic vacations', function (): void {
         $status = app(InstitutionActivityStatusService::class)->resolve(
             institutionForActivityStatus(['2025-06-20 10:00:00']),
             CarbonImmutable::parse('2025-09-01 12:00:00'),
@@ -63,7 +63,7 @@ describe('InstitutionActivityStatusService', function () {
             ->and($status->effectiveDaysSinceActivity)->toBe(11);
     });
 
-    test('becomes approaching at eighty percent of periodicity', function () {
+    test('becomes approaching at eighty percent of periodicity', function (): void {
         $status = app(InstitutionActivityStatusService::class)->resolve(
             institutionForActivityStatus(['2025-10-22 10:00:00']),
             CarbonImmutable::parse('2025-11-15 12:00:00'),
@@ -74,7 +74,7 @@ describe('InstitutionActivityStatusService', function () {
             ->and($status->progressPercentage)->toBe(80);
     });
 
-    test('is not overdue until periodicity is exceeded', function () {
+    test('is not overdue until periodicity is exceeded', function (): void {
         $service = app(InstitutionActivityStatusService::class);
 
         $atThreshold = $service->resolve(
@@ -90,7 +90,7 @@ describe('InstitutionActivityStatusService', function () {
             ->and($pastThreshold->status)->toBe(InstitutionActivityStatus::Overdue);
     });
 
-    test('an upcoming meeting provides coverage and latest past meeting remains separate', function () {
+    test('an upcoming meeting provides coverage and latest past meeting remains separate', function (): void {
         $status = app(InstitutionActivityStatusService::class)->resolve(
             institutionForActivityStatus([
                 '2025-09-01 10:00:00',
@@ -106,7 +106,7 @@ describe('InstitutionActivityStatusService', function () {
             ->and($status->status->requiresAction())->toBeFalse();
     });
 
-    test('an active check-in provides coverage and a completed check-in becomes the activity reference', function () {
+    test('an active check-in provides coverage and a completed check-in becomes the activity reference', function (): void {
         $service = app(InstitutionActivityStatusService::class);
         $meetingDates = ['2025-10-01 10:00:00'];
         $at = CarbonImmutable::parse('2025-11-15 12:00:00');
@@ -128,7 +128,7 @@ describe('InstitutionActivityStatusService', function () {
             ->and($expired->effectiveDaysSinceActivity)->toBe(14);
     });
 
-    test('a check-in ending before summer vacation prevents a false approaching warning', function () {
+    test('a check-in ending before summer vacation prevents a false approaching warning', function (): void {
         $status = app(InstitutionActivityStatusService::class)->resolve(
             institutionForActivityStatus(
                 meetingDates: ['2026-06-02 15:00:00'],
@@ -144,7 +144,7 @@ describe('InstitutionActivityStatusService', function () {
             ->and($status->progressPercentage)->toBe(0);
     });
 
-    test('inherits periodicity from the institution type', function () {
+    test('inherits periodicity from the institution type', function (): void {
         $status = app(InstitutionActivityStatusService::class)->resolve(
             institutionForActivityStatus(
                 meetingDates: ['2025-11-01 10:00:00'],

@@ -4,14 +4,14 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-describe('User Settings', function () {
+describe('User Settings', function (): void {
     test('user can set own settings')->todo();
 });
 
-describe('User Password Management', function () {
-    test('user can update password with valid current password', function () {
+describe('User Password Management', function (): void {
+    test('user can update password with valid current password', function (): void {
         $user = makeTenantUser('Communication Coordinator');
         $user->password = bcrypt('old-password');
         $user->save();
@@ -30,7 +30,7 @@ describe('User Password Management', function () {
         expect(Hash::check('new-secure-password', $user->password))->toBeTrue();
     });
 
-    test('user cannot update password with incorrect current password', function () {
+    test('user cannot update password with incorrect current password', function (): void {
         $user = makeTenantUser('Communication Coordinator');
         $user->password = bcrypt('old-password');
         $user->save();
@@ -44,7 +44,7 @@ describe('User Password Management', function () {
         $response->assertSessionHasErrors('current_password');
     });
 
-    test('user cannot update password without confirmation', function () {
+    test('user cannot update password without confirmation', function (): void {
         $user = makeTenantUser('Communication Coordinator');
         $user->password = bcrypt('old-password');
         $user->save();
@@ -59,8 +59,8 @@ describe('User Password Management', function () {
     });
 });
 
-describe('User Password Attribute', function () {
-    test('has_password attribute returns true when password exists', function () {
+describe('User Password Attribute', function (): void {
+    test('has_password attribute returns true when password exists', function (): void {
         $user = User::factory()->create([
             'password' => bcrypt('test-password'),
         ]);
@@ -68,7 +68,7 @@ describe('User Password Attribute', function () {
         expect($user->has_password)->toBeTrue();
     });
 
-    test('has_password attribute returns false when password is null', function () {
+    test('has_password attribute returns false when password is null', function (): void {
         $user = User::factory()->create([
             'password' => null,
         ]);
@@ -76,14 +76,14 @@ describe('User Password Attribute', function () {
         expect($user->has_password)->toBeFalse();
     });
 
-    test('has_password attribute is included when explicitly appended', function () {
+    test('has_password attribute is included when explicitly appended', function (): void {
         $user = User::factory()->create([
             'password' => bcrypt('test-password'),
         ]);
 
         $array = $user->append('has_password')->toArray();
 
-        expect($array)->toHaveKey('has_password');
-        expect($array['has_password'])->toBeTrue();
+        expect($array)->toHaveKey('has_password')
+            ->and($array['has_password'])->toBeTrue();
     });
 });

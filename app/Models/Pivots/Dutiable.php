@@ -8,6 +8,7 @@ use App\Models\StudyProgram;
 use App\Models\Tenant;
 use App\Models\Traits\HasTranslations;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -59,23 +60,26 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
+#[Table(name: 'dutiables')]
 class Dutiable extends MorphPivot
 {
     // NOTE: for some reason, if Searchable trait is used on this model, it will cause an error
     // in the update route. But only if the queue driver is set to sync.
     use HasFactory, HasRelationships, HasTranslations, HasUlids;
 
-    protected $table = 'dutiables';
-
+    #[\Override]
     protected $guarded = [];
 
+    #[\Override]
     protected $with = ['study_program'];
 
+    #[\Override]
     protected $dispatchesEvents = [
         'saved' => DutiableChanged::class,
         'deleted' => DutiableChanged::class,
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

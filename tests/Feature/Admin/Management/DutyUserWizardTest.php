@@ -10,9 +10,9 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
     // Create role if it doesn't exist and sync permissions (replaces existing permissions)
@@ -39,18 +39,18 @@ beforeEach(function () {
     ]);
 });
 
-describe('wizard page access', function () {
-    test('unauthorized user cannot access wizard', function () {
+describe('wizard page access', function (): void {
+    test('unauthorized user cannot access wizard', function (): void {
         $response = asUser($this->regularUser)->get(route('duties.updateUsersWizard'));
         expect($response->status())->toBe(403);
     });
 
-    test('authorized user can access wizard', function () {
+    test('authorized user can access wizard', function (): void {
         $response = asUser($this->dutyManager)->get(route('duties.updateUsersWizard'));
         $response->assertStatus(200);
     });
 
-    test('wizard page returns correct data structure', function () {
+    test('wizard page returns correct data structure', function (): void {
         $response = asUser($this->dutyManager)->get(route('duties.updateUsersWizard'));
 
         $response->assertInertia(fn (Assert $page) => $page
@@ -66,7 +66,7 @@ describe('wizard page access', function () {
         );
     });
 
-    test('wizard lazy loads users and study programs when requested', function () {
+    test('wizard lazy loads users and study programs when requested', function (): void {
         // We can verify lazy loading works by making a request with partial reload
         // The framework handles this - we just verify the controller is set up correctly
         // by checking that the props are closures (optional) in the response
@@ -81,7 +81,7 @@ describe('wizard page access', function () {
         );
     });
 
-    test('wizard lazy loads duty types when requested', function () {
+    test('wizard lazy loads duty types when requested', function (): void {
         // Verify initial load doesn't have duty types
         $response = asUser($this->dutyManager)->get(route('duties.updateUsersWizard'));
 
@@ -91,7 +91,7 @@ describe('wizard page access', function () {
         );
     });
 
-    test('wizard includes institution types for creation', function () {
+    test('wizard includes institution types for creation', function (): void {
         // Create some institution types
         $type = Type::factory()->create([
             'model_type' => Institution::class,
@@ -110,8 +110,8 @@ describe('wizard page access', function () {
     });
 });
 
-describe('batch update users', function () {
-    test('unauthorized user cannot batch update', function () {
+describe('batch update users', function (): void {
+    test('unauthorized user cannot batch update', function (): void {
         $response = asUser($this->regularUser)->post(route('duties.batchUpdateUsers', $this->duty), [
             'user_changes' => [],
         ]);
@@ -119,7 +119,7 @@ describe('batch update users', function () {
         expect($response->status())->toBe(403);
     });
 
-    test('authorized user can add user to duty', function () {
+    test('authorized user can add user to duty', function (): void {
         $newUser = makeUser($this->tenant);
 
         $response = asUser($this->dutyManager)->post(route('duties.batchUpdateUsers', $this->duty), [
@@ -142,7 +142,7 @@ describe('batch update users', function () {
         ]);
     });
 
-    test('authorized user can remove user from duty sets end date', function () {
+    test('authorized user can remove user from duty sets end date', function (): void {
         $existingUser = makeUser($this->tenant);
         $endDate = now()->toDateString();
 
@@ -166,11 +166,11 @@ describe('batch update users', function () {
 
         // Removal sets end_date rather than detaching
         $pivot = $this->duty->fresh()->users()->where('users.id', $existingUser->id)->first();
-        expect($pivot)->not->toBeNull();
-        expect($pivot->pivot->end_date->toDateString())->toBe($endDate);
+        expect($pivot)->not->toBeNull()
+            ->and($pivot->pivot->end_date->toDateString())->toBe($endDate);
     });
 
-    test('can add multiple users in single batch', function () {
+    test('can add multiple users in single batch', function (): void {
         $user1 = makeUser($this->tenant);
         $user2 = makeUser($this->tenant);
 
@@ -194,7 +194,7 @@ describe('batch update users', function () {
         expect($this->duty->fresh()->users()->count())->toBe(2);
     });
 
-    test('batch update can include study program', function () {
+    test('batch update can include study program', function (): void {
         $newUser = makeUser($this->tenant);
         $studyProgram = StudyProgram::factory()->create(['tenant_id' => $this->tenant->id]);
 
@@ -218,7 +218,7 @@ describe('batch update users', function () {
         ]);
     });
 
-    test('can update places_to_occupy through batch update', function () {
+    test('can update places_to_occupy through batch update', function (): void {
         // First verify current value
         $this->duty->update(['places_to_occupy' => 3]);
         $newUser = makeUser($this->tenant);
@@ -241,15 +241,15 @@ describe('batch update users', function () {
     });
 });
 
-describe('validation', function () {
-    test('user_changes is required', function () {
+describe('validation', function (): void {
+    test('user_changes is required', function (): void {
         $response = asUser($this->dutyManager)->post(route('duties.batchUpdateUsers', $this->duty), []);
 
         $response->assertStatus(302)
             ->assertSessionHasErrors('user_changes');
     });
 
-    test('user_id is required in user_changes', function () {
+    test('user_id is required in user_changes', function (): void {
         $response = asUser($this->dutyManager)->post(route('duties.batchUpdateUsers', $this->duty), [
             'user_changes' => [
                 [
@@ -262,7 +262,7 @@ describe('validation', function () {
             ->assertSessionHasErrors('user_changes.0.user_id');
     });
 
-    test('action must be valid', function () {
+    test('action must be valid', function (): void {
         $newUser = makeUser($this->tenant);
 
         $response = asUser($this->dutyManager)->post(route('duties.batchUpdateUsers', $this->duty), [
@@ -278,7 +278,7 @@ describe('validation', function () {
             ->assertSessionHasErrors('user_changes.0.action');
     });
 
-    test('places_to_occupy must be a positive integer', function () {
+    test('places_to_occupy must be a positive integer', function (): void {
         $response = asUser($this->dutyManager)->post(route('duties.batchUpdateUsers', $this->duty), [
             'user_changes' => [],
             'places_to_occupy' => -1,
@@ -289,8 +289,8 @@ describe('validation', function () {
     });
 });
 
-describe('tenant isolation', function () {
-    test('cannot batch update duty from different tenant', function () {
+describe('tenant isolation', function (): void {
+    test('cannot batch update duty from different tenant', function (): void {
         $otherTenant = Tenant::factory()->create();
         $otherInstitution = Institution::factory()->create(['tenant_id' => $otherTenant->id]);
         $otherDuty = Duty::factory()->create(['institution_id' => $otherInstitution->id]);
@@ -309,8 +309,8 @@ describe('tenant isolation', function () {
     });
 });
 
-describe('new user creation', function () {
-    test('can create new users through batch update with temp_id', function () {
+describe('new user creation', function (): void {
+    test('can create new users through batch update with temp_id', function (): void {
         // Give the duty manager permission to create users
         $this->dutyManagerDuty->givePermissionTo('users.create.padalinys');
 
@@ -341,11 +341,11 @@ describe('new user creation', function () {
 
         // Verify user is attached to duty
         $newUser = User::where('email', 'newuser@test.com')->first();
-        expect($newUser)->not->toBeNull();
-        expect($this->duty->users()->where('dutiable_id', $newUser->id)->exists())->toBeTrue();
+        expect($newUser)->not->toBeNull()
+            ->and($this->duty->users()->where('dutiable_id', $newUser->id)->exists())->toBeTrue();
     });
 
-    test('new user creation requires temp_id', function () {
+    test('new user creation requires temp_id', function (): void {
         $this->dutyManagerDuty->givePermissionTo('users.create.padalinys');
 
         $response = asUser($this->dutyManager)->post(route('duties.batchUpdateUsers', $this->duty), [
@@ -368,7 +368,7 @@ describe('new user creation', function () {
             ->assertSessionHasErrors('new_users.0.temp_id');
     });
 
-    test('new user email must be unique', function () {
+    test('new user email must be unique', function (): void {
         $existingUser = makeUser($this->tenant);
         $this->dutyManagerDuty->givePermissionTo('users.create.padalinys');
 
@@ -387,7 +387,7 @@ describe('new user creation', function () {
             ->assertSessionHasErrors('new_users.0.email');
     });
 
-    test('cannot create new users without users.create.padalinys permission', function () {
+    test('cannot create new users without users.create.padalinys permission', function (): void {
         // Don't give the permission - dutyManager only has duty permissions by default
 
         $response = asUser($this->dutyManager)->post(route('duties.batchUpdateUsers', $this->duty), [
@@ -414,8 +414,8 @@ describe('new user creation', function () {
     });
 });
 
-describe('security validations', function () {
-    test('rejects invalid user_id that does not exist in database', function () {
+describe('security validations', function (): void {
+    test('rejects invalid user_id that does not exist in database', function (): void {
         $fakeUserId = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
 
         $response = asUser($this->dutyManager)->post(route('duties.batchUpdateUsers', $this->duty), [
@@ -431,7 +431,7 @@ describe('security validations', function () {
             ->assertSessionHasErrors('user_changes.0.user_id');
     });
 
-    test('accepts valid user_id that exists in database', function () {
+    test('accepts valid user_id that exists in database', function (): void {
         $validUser = makeUser($this->tenant);
 
         $response = asUser($this->dutyManager)->post(route('duties.batchUpdateUsers', $this->duty), [
@@ -448,7 +448,7 @@ describe('security validations', function () {
         expect($this->duty->users()->where('dutiable_id', $validUser->id)->exists())->toBeTrue();
     });
 
-    test('allows new- prefixed user_id for new user creation flow', function () {
+    test('allows new- prefixed user_id for new user creation flow', function (): void {
         $this->dutyManagerDuty->givePermissionTo('users.create.padalinys');
 
         $response = asUser($this->dutyManager)->post(route('duties.batchUpdateUsers', $this->duty), [

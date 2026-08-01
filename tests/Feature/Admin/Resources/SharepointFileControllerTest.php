@@ -7,9 +7,9 @@ use App\Models\SharepointFile;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->admin = makeUser($this->tenant);
     $this->admin->assignRole('Super Admin');
@@ -21,8 +21,8 @@ beforeEach(function () {
     $this->meeting->institutions()->attach($this->institution);
 });
 
-describe('destroyFileableFile', function () {
-    test('marks fileableFile as externally deleted when sharepoint api fails', function () {
+describe('destroyFileableFile', function (): void {
+    test('marks fileableFile as externally deleted when sharepoint api fails', function (): void {
         $fileableFile = FileableFile::factory()->create([
             'fileable_type' => Meeting::class,
             'fileable_id' => $this->meeting->id,
@@ -42,7 +42,7 @@ describe('destroyFileableFile', function () {
         expect($fileableFile->deleted_externally_at)->not->toBeNull();
     });
 
-    test('returns 403 for unauthorized user', function () {
+    test('returns 403 for unauthorized user', function (): void {
         $fileableFile = FileableFile::factory()->create([
             'fileable_type' => Meeting::class,
             'fileable_id' => $this->meeting->id,
@@ -58,8 +58,8 @@ describe('destroyFileableFile', function () {
     });
 });
 
-describe('destroy (legacy sharepointFile)', function () {
-    test('returns 403 for unauthorized user', function () {
+describe('destroy (legacy sharepointFile)', function (): void {
+    test('returns 403 for unauthorized user', function (): void {
         $sharepointFile = SharepointFile::factory()->create([
             'sharepoint_id' => 'legacy-sp-id',
         ]);

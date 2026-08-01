@@ -20,7 +20,7 @@ use Illuminate\Support\Collection;
  */
 final class CalendarBlockResolver implements ResolvesContentPart
 {
-    private const LIMIT = 100;
+    private const int LIMIT = 100;
 
     public function resolve(Collection $parts, ResolutionContext $context): array
     {

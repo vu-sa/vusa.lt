@@ -6,10 +6,10 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use Spatie\Permission\Models\Role;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-describe('Policy Debug', function () {
-    test('super admin should bypass form policies', function () {
+describe('Policy Debug', function (): void {
+    test('super admin should bypass form policies', function (): void {
         $tenant = Tenant::query()->first();
         $user = makeUser($tenant);
         $user->assignRole('Super Admin');
@@ -23,13 +23,13 @@ describe('Policy Debug', function () {
 
         // Check authorization using Gate
         expect(Gate::forUser($user)->allows('viewAny', Form::class))->toBeTrue();
-        expect(Gate::forUser($user)->allows('view', $form))->toBeTrue();
-        expect(Gate::forUser($user)->allows('create', Form::class))->toBeTrue();
-        expect(Gate::forUser($user)->allows('update', $form))->toBeTrue();
-        expect(Gate::forUser($user)->allows('delete', $form))->toBeTrue();
+        expect(Gate::forUser($user)->allows('view', $form))->toBeTrue()
+            ->and(Gate::forUser($user)->allows('create', Form::class))->toBeTrue()
+            ->and(Gate::forUser($user)->allows('update', $form))->toBeTrue()
+            ->and(Gate::forUser($user)->allows('delete', $form))->toBeTrue();
     });
 
-    test('super admin should access form index endpoint', function () {
+    test('super admin should access form index endpoint', function (): void {
         $tenant = Tenant::query()->first();
         $user = makeUser($tenant);
         $user->assignRole('Super Admin');
@@ -40,7 +40,7 @@ describe('Policy Debug', function () {
             ->assertStatus(200);
     });
 
-    test('super admin should bypass role policies', function () {
+    test('super admin should bypass role policies', function (): void {
         $tenant = Tenant::query()->first();
         $user = makeUser($tenant);
         $user->assignRole('Super Admin');
@@ -49,9 +49,9 @@ describe('Policy Debug', function () {
 
         // Check authorization using Gate
         expect(Gate::forUser($user)->allows('viewAny', Role::class))->toBeTrue();
-        expect(Gate::forUser($user)->allows('view', $role))->toBeTrue();
-        expect(Gate::forUser($user)->allows('create', Role::class))->toBeTrue();
-        expect(Gate::forUser($user)->allows('update', $role))->toBeTrue();
-        expect(Gate::forUser($user)->allows('delete', $role))->toBeTrue();
+        expect(Gate::forUser($user)->allows('view', $role))->toBeTrue()
+            ->and(Gate::forUser($user)->allows('create', Role::class))->toBeTrue()
+            ->and(Gate::forUser($user)->allows('update', $role))->toBeTrue()
+            ->and(Gate::forUser($user)->allows('delete', $role))->toBeTrue();
     });
 });

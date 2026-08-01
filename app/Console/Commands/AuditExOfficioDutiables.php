@@ -3,6 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -21,13 +23,11 @@ use Illuminate\Support\Facades\DB;
  * some will be legitimate manual assignments, and they grant real permissions, so
  * deciding which to remove is a human's job.
  */
+#[Description('Report active ex-officio duties whose granting source duty is no longer held')]
+#[Signature('duties:audit-ex-officio
+                            {--tenant= : Limit the report to a tenant id}')]
 class AuditExOfficioDutiables extends Command
 {
-    protected $signature = 'duties:audit-ex-officio
-                            {--tenant= : Limit the report to a tenant id}';
-
-    protected $description = 'Report active ex-officio duties whose granting source duty is no longer held';
-
     public function handle(): int
     {
         $this->info('🔍 Auditing ex-officio dutiables');
@@ -103,7 +103,7 @@ class AuditExOfficioDutiables extends Command
         $today = now()->toDateString();
 
         $query = DB::table('ex_officio_duties as eo')
-            ->join('dutiables as t', function ($join) {
+            ->join('dutiables as t', function ($join): void {
                 $join->on('t.duty_id', '=', 'eo.target_duty_id')
                     ->where('t.dutiable_type', '=', User::class)
                     ->whereNull('t.via_dutiable_id');
@@ -116,7 +116,7 @@ class AuditExOfficioDutiables extends Command
             ->whereNull('u.deleted_at')
             ->where(fn ($q) => $q->whereNull('t.end_date')->orWhere('t.end_date', '>=', $today))
             // The holder does not currently hold the source duty that grants this one.
-            ->whereNotExists(function ($sub) use ($today) {
+            ->whereNotExists(function ($sub) use ($today): void {
                 $sub->select(DB::raw('1'))
                     ->from('dutiables as s')
                     ->whereColumn('s.duty_id', 'eo.source_duty_id')

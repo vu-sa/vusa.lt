@@ -8,9 +8,9 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
     $this->user = makeUser($this->tenant);
@@ -26,20 +26,20 @@ beforeEach(function () {
     $communicationCoordinatorDuty->assignRole('Communication Coordinator');
 });
 
-describe('auth: simple user', function () {
-    beforeEach(function () {
+describe('auth: simple user', function (): void {
+    beforeEach(function (): void {
         asUser($this->user)->get(route('dashboard'))->assertStatus(200);
     });
 
-    test('can\'t index news', function () {
+    test('can\'t index news', function (): void {
         asUser($this->user)->get(route('news.index'))->assertStatus(403);
     });
 
-    test('can\'t access news create page', function () {
+    test('can\'t access news create page', function (): void {
         asUser($this->user)->get(route('news.create'))->assertStatus(403);
     });
 
-    test('can\'t store news', function () {
+    test('can\'t store news', function (): void {
         asUser($this->user)->post(route('news.store'), [
             'title' => 'News 1',
             'permalink' => 'news-1',
@@ -60,7 +60,7 @@ describe('auth: simple user', function () {
         ])->assertStatus(403);
     });
 
-    test('can\'t store news via inertia', function () {
+    test('can\'t store news via inertia', function (): void {
         $response = asUser($this->user)->post(route('news.store'), [
             'title' => 'News 1',
             'permalink' => 'news-1',
@@ -86,13 +86,13 @@ describe('auth: simple user', function () {
         $response->assertStatus(302)->assertSessionHas('error');
     });
 
-    test('can\' t access the news edit page', function () {
+    test('can\' t access the news edit page', function (): void {
         $news = News::query()->first();
 
         asUser($this->user)->get(route('news.edit', $news))->assertStatus(403);
     });
 
-    test('can\'t update news', function () {
+    test('can\'t update news', function (): void {
         $news = News::query()->first();
 
         asUser($this->user)->put(route('news.update', $news), [
@@ -115,23 +115,23 @@ describe('auth: simple user', function () {
         ])->assertStatus(403);
     });
 
-    test('can\'t delete news', function () {
+    test('can\'t delete news', function (): void {
         $news = News::query()->first();
 
         asUser($this->user)->delete(route('news.destroy', $news))->assertStatus(403);
     });
 });
 
-describe('auth: news manager', function () {
-    beforeEach(function () {
+describe('auth: news manager', function (): void {
+    beforeEach(function (): void {
         asUser($this->newsManager)->get(route('dashboard'))->assertStatus(200);
     });
 
-    test('can index news', function () {
+    test('can index news', function (): void {
         asUser($this->newsManager)->get(route('news.index'))->assertStatus(200);
     });
 
-    test('malicious filter key does not break the index query', function () {
+    test('malicious filter key does not break the index query', function (): void {
         $maliciousFilters = json_encode(['tenant.shortname) OR 1=1 -- ' => 'x']);
 
         asUser($this->newsManager)
@@ -139,11 +139,11 @@ describe('auth: news manager', function () {
             ->assertStatus(200);
     });
 
-    test('can access news create page', function () {
+    test('can access news create page', function (): void {
         asUser($this->newsManager)->get(route('news.create'))->assertStatus(200);
     });
 
-    test('can store news', function () {
+    test('can store news', function (): void {
         asUser($this->newsManager)->post(route('news.store'), [
             'title' => 'News 1',
             'permalink' => 'news-1',
@@ -164,7 +164,7 @@ describe('auth: news manager', function () {
         ])->assertStatus(302)->assertRedirectToRoute('news.index');
     });
 
-    test('show_breadcrumbs round-trips through store and update', function () {
+    test('show_breadcrumbs round-trips through store and update', function (): void {
         // Store with breadcrumbs disabled.
         $permalink = 'news-no-breadcrumbs-'.time();
 
@@ -223,13 +223,13 @@ describe('auth: news manager', function () {
         ]);
     });
 
-    test('can access the news edit page', function () {
+    test('can access the news edit page', function (): void {
         $news = News::query()->first();
 
         asUser($this->newsManager)->get(route('news.edit', $news))->assertStatus(200);
     })->todo();
 
-    test('can update news', function () {
+    test('can update news', function (): void {
         $news = News::query()->first();
 
         $response = asUser($this->newsManager)->get(route('news.edit', $news))->assertStatus(200);
@@ -255,13 +255,13 @@ describe('auth: news manager', function () {
             ])->assertStatus(302)->assertRedirectToRoute('news.index');
     })->todo();
 
-    test('can delete news', function () {
+    test('can delete news', function (): void {
         $news = News::query()->first();
 
         asUserWithInertia($this->newsManager)->delete(route('news.destroy', $news))->assertRedirect();
     });
 
-    test('can duplicate news', function () {
+    test('can duplicate news', function (): void {
         $news = News::query()->first();
         $initialCount = News::count();
 
@@ -291,7 +291,7 @@ describe('auth: news manager', function () {
             ->and($duplicatedNews->id)->not()->toBe($news->id);
     });
 
-    test('can duplicate news with tags', function () {
+    test('can duplicate news with tags', function (): void {
         $news = News::query()->first();
 
         // Add some tags to the original news
@@ -323,7 +323,7 @@ describe('auth: news manager', function () {
             ->toBe($news->tags->pluck('id')->sort()->values()->toArray());
     });
 
-    test('rejects an invalid content part options.width value', function () {
+    test('rejects an invalid content part options.width value', function (): void {
         $response = asUser($this->newsManager)->post(route('news.store'), [
             'title' => 'News with bad width',
             'permalink' => 'news-bad-width',
@@ -346,7 +346,7 @@ describe('auth: news manager', function () {
         $response->assertStatus(302)->assertSessionHasErrors(['content.parts.0.options.width']);
     });
 
-    test('accepts a text-box content part with a translatable title object', function () {
+    test('accepts a text-box content part with a translatable title object', function (): void {
         $response = asUser($this->newsManager)->post(route('news.store'), [
             'title' => 'News with text-box',
             'permalink' => 'news-text-box-title-'.time(),
@@ -374,7 +374,7 @@ describe('auth: news manager', function () {
         $response->assertStatus(302)->assertSessionDoesntHaveErrors();
     });
 
-    test('storing news without resolvable tenant returns validation error', function () {
+    test('storing news without resolvable tenant returns validation error', function (): void {
         // Create a manager whose duty institution has no tenant, so tenant_id cannot be resolved
         $orphanManager = User::factory()->create();
         $institution = Institution::factory()->create(['tenant_id' => null]);
@@ -409,7 +409,7 @@ describe('auth: news manager', function () {
         expect(News::count())->toBe($initialCount);
     });
 
-    test('news permalink must be unique within tenant', function () {
+    test('news permalink must be unique within tenant', function (): void {
         $managerTenant = $this->newsManager->duties()->first()->institution->tenant;
 
         News::factory()->for($managerTenant)->create([
@@ -438,7 +438,7 @@ describe('auth: news manager', function () {
         $response->assertStatus(302)->assertSessionHasErrors(['permalink']);
     });
 
-    test('news permalink can be reused across tenants', function () {
+    test('news permalink can be reused across tenants', function (): void {
         $managerTenant = $this->newsManager->duties()->first()->institution->tenant;
         $otherTenant = Tenant::query()->where('id', '!=', $managerTenant->id)->firstOrFail();
 

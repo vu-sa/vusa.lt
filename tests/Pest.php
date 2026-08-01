@@ -17,9 +17,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use Tests\TestCase;
 
-uses(
-    TestCase::class,
-)->in('Feature', 'Unit');
+pest()->extend(TestCase::class)->in('Feature', 'Unit');
 
 /*
 |--------------------------------------------------------------------------
@@ -33,30 +31,19 @@ uses(
 */
 
 // Authorization-specific expectations
-expect()->extend('toBeAuthorizedFor', function (string $action, mixed $model = null) {
-    return $this->toBeIn([200, 201, 302, 303]);
-});
+expect()->extend('toBeAuthorizedFor', fn (string $action, mixed $model = null) => $this->toBeIn([200, 201, 302, 303]));
 
-expect()->extend('toRequireAuth', function () {
-    return $this->toBeIn([302, 401, 403]);
-});
+expect()->extend('toRequireAuth', fn () => $this->toBeIn([302, 401, 403]));
 
-expect()->extend('toBeForbidden', function () {
-    return $this->toBe(403);
-});
+expect()->extend('toBeForbidden', fn () => $this->toBe(403));
 
-expect()->extend('toBeSecureResponse', function () {
-    return $this->toBeIn([200, 302, 403, 404, 422]);
-});
+expect()->extend('toBeSecureResponse', fn () => $this->toBeIn([200, 302, 403, 404, 422]));
 
-expect()->extend('toBeSecureApiResponse', function () {
-    return $this->toBeIn([200, 401, 403, 404]);
-});
+expect()->extend('toBeSecureApiResponse', fn () => $this->toBeIn([200, 401, 403, 404]));
 
 expect()->extend('toNotExposePassword', function () {
     $content = $this->value;
-    expect($content)->not->toContain('password');
-    expect($content)->not->toContain('remember_token');
+    expect($content)->not->toContain('password')->not->toContain('remember_token');
 
     return $this;
 });
@@ -117,7 +104,7 @@ function asUserWithInertia(User $user): TestCase
 
 function makeTenantUser(?string $role = null, ?Tenant $tenant = null): User
 {
-    $tenant = $tenant ?? Tenant::query()->first();
+    $tenant ??= Tenant::query()->first();
 
     if (! $tenant) {
         throw new RuntimeException('No tenants found in database. Ensure test database is properly seeded.');

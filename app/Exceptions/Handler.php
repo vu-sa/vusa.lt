@@ -14,6 +14,7 @@ class Handler extends ExceptionHandler
      *
      * @var array<int, class-string<Throwable>>
      */
+    #[\Override]
     protected $dontReport = [
         //
     ];
@@ -23,6 +24,7 @@ class Handler extends ExceptionHandler
      *
      * @var array<int, string>
      */
+    #[\Override]
     protected $dontFlash = [
         'password',
         'password_confirmation',
@@ -33,9 +35,10 @@ class Handler extends ExceptionHandler
      *
      * @return void
      */
+    #[\Override]
     public function register()
     {
-        $this->reportable(function (Throwable $e) {
+        $this->reportable(function (Throwable $e): void {
             //
         });
     }
@@ -45,6 +48,7 @@ class Handler extends ExceptionHandler
      *
      * @return Response
      */
+    #[\Override]
     public function render($request, Throwable $e)
     {
         if ($e instanceof HttpException && $this->isMaintenanceModeException($e) && ! $request->expectsJson()) {

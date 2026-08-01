@@ -25,8 +25,10 @@ class Content extends Model
 {
     use HasFactory;
 
+    #[\Override]
     protected $with = ['parts'];
 
+    #[\Override]
     protected $guarded = [];
 
     public function parts(): HasMany

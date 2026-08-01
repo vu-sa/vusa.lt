@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 
 class SystemStatusController extends AdminController
 {
-    public function __construct(private SystemMonitorService $monitor) {}
+    public function __construct(private readonly SystemMonitorService $monitor) {}
 
     public function index(Request $request)
     {

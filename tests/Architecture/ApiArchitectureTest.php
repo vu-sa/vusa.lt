@@ -11,6 +11,9 @@
 
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Controllers\Concerns\ApiResponses;
+use Illuminate\Http\JsonResponse;
+use Inertia\Inertia;
+use Inertia\Response;
 
 /*
 |--------------------------------------------------------------------------
@@ -86,11 +89,11 @@ arch('Public controllers do not extend ApiController')
 
 arch('API controllers do not use Inertia')
     ->expect('App\Http\Controllers\Api')
-    ->not->toUse(['Inertia\Inertia', 'Inertia\Response']);
+    ->not->toUse([Inertia::class, Response::class]);
 
 arch('API controllers return JsonResponse')
     ->expect('App\Http\Controllers\Api')
-    ->toUse(['Illuminate\Http\JsonResponse']);
+    ->toUse([JsonResponse::class]);
 
 /*
 |--------------------------------------------------------------------------

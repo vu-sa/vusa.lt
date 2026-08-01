@@ -71,12 +71,6 @@ class StagingBasicAuth
      */
     protected function shouldPassThrough(Request $request): bool
     {
-        foreach ($this->except as $except) {
-            if ($request->is($except)) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($this->except, fn ($except) => $request->is($except));
     }
 }

@@ -38,20 +38,23 @@ class QuickLink extends Model
 {
     use HasFactory, Searchable, SoftDeletes;
 
+    #[\Override]
     protected $guarded = [];
 
+    #[\Override]
     protected $casts = [
         'is_active' => 'boolean',
         'is_important' => 'boolean',
     ];
 
+    #[\Override]
     protected static function booted()
     {
-        static::saved(function ($quickLink) {
+        static::saved(function ($quickLink): void {
             Cache::tags(['quick_links', "tenant_{$quickLink->tenant_id}", "locale_{$quickLink->lang}"])->flush();
         });
 
-        static::deleted(function ($quickLink) {
+        static::deleted(function ($quickLink): void {
             Cache::tags(['quick_links', "tenant_{$quickLink->tenant_id}", "locale_{$quickLink->lang}"])->flush();
         });
     }

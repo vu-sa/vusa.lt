@@ -39,6 +39,7 @@ class NewsRequest extends FormRequest
     /**
      * Get custom error messages for validator errors.
      */
+    #[\Override]
     public function messages(): array
     {
         return [

@@ -5,9 +5,9 @@ use App\Models\Resource;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenantA = Tenant::query()->first();
     $this->tenantB = Tenant::factory()->create();
 
@@ -19,8 +19,8 @@ beforeEach(function () {
     ]);
 });
 
-describe('resource preview endpoint', function () {
-    test('simple user can preview a resource from another tenant', function () {
+describe('resource preview endpoint', function (): void {
+    test('simple user can preview a resource from another tenant', function (): void {
         $response = asUser($this->simpleUser)
             ->getJson(route('api.v1.admin.resources.preview', $this->resource));
 
@@ -35,12 +35,12 @@ describe('resource preview endpoint', function () {
             ]);
     });
 
-    test('unauthenticated user cannot preview a resource', function () {
+    test('unauthenticated user cannot preview a resource', function (): void {
         $this->getJson(route('api.v1.admin.resources.preview', $this->resource))
             ->assertUnauthorized();
     });
 
-    test('preview includes manager contact information', function () {
+    test('preview includes manager contact information', function (): void {
         $response = asUser($this->simpleUser)
             ->getJson(route('api.v1.admin.resources.preview', $this->resource));
 
@@ -50,19 +50,11 @@ describe('resource preview endpoint', function () {
         expect($managers)->toHaveCount(1);
 
         $manager = $managers[0];
-        expect($manager)->toHaveKey('id')
-            ->toHaveKey('name')
-            ->toHaveKey('email')
-            ->toHaveKey('phone')
-            ->toHaveKey('facebook_url')
-            ->toHaveKey('profile_photo_path');
-
-        expect($manager['email'])->toBe($this->manager->email);
-        expect($manager['phone'])->toBe($this->manager->phone);
-        expect($manager['facebook_url'])->toBe($this->manager->facebook_url);
+        expect($manager)->toHaveKeys(['id', 'name', 'email', 'phone', 'facebook_url', 'profile_photo_path'])
+            ->toMatchArray(['email' => $this->manager->email, 'phone' => $this->manager->phone, 'facebook_url' => $this->manager->facebook_url]);
     });
 
-    test('preview lists previous terminal reservations', function () {
+    test('preview lists previous terminal reservations', function (): void {
         $reservation = Reservation::factory()->create(['name' => 'Returned event']);
         $this->resource->reservations()->attach($reservation->id, [
             'quantity' => 1,
@@ -80,7 +72,7 @@ describe('resource preview endpoint', function () {
             ->assertJsonPath('data.previous_reservations.0.state', 'returned');
     });
 
-    test('preview limits previous reservations to three', function () {
+    test('preview limits previous reservations to three', function (): void {
         for ($i = 0; $i < 5; $i++) {
             $reservation = Reservation::factory()->create(['name' => "Past event {$i}"]);
             $this->resource->reservations()->attach($reservation->id, [
@@ -98,7 +90,7 @@ describe('resource preview endpoint', function () {
         expect($response->json('data.previous_reservations'))->toHaveCount(3);
     });
 
-    test('preview omits non-terminal past reservations from previous list', function () {
+    test('preview omits non-terminal past reservations from previous list', function (): void {
         $reservation = Reservation::factory()->create(['name' => 'Stale active event']);
         $this->resource->reservations()->attach($reservation->id, [
             'quantity' => 1,
@@ -114,7 +106,7 @@ describe('resource preview endpoint', function () {
             ->assertJsonPath('data.previous_reservations', []);
     });
 
-    test('preview includes time-ended active reservations in upcoming list', function () {
+    test('preview includes time-ended active reservations in upcoming list', function (): void {
         $reservation = Reservation::factory()->create(['name' => 'Stale active event']);
         $this->resource->reservations()->attach($reservation->id, [
             'quantity' => 1,

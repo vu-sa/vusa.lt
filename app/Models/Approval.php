@@ -42,8 +42,10 @@ class Approval extends Model
 {
     use HasFactory, HasUlids, LogsActivity;
 
+    #[\Override]
     protected $guarded = [];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

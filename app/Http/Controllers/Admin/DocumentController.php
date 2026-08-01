@@ -113,7 +113,7 @@ class DocumentController extends AdminController
             $allowedTenants = $this->authorizer->getTenants('documents.read.padalinys');
             if ($allowedTenants->isNotEmpty()) {
                 $allowedTenantIds = $allowedTenants->pluck('id')->toArray();
-                $baseQuery->whereHas('institution.tenant', function ($query) use ($allowedTenantIds) {
+                $baseQuery->whereHas('institution.tenant', function ($query) use ($allowedTenantIds): void {
                     $query->whereIn('id', $allowedTenantIds);
                 });
             }
@@ -134,7 +134,7 @@ class DocumentController extends AdminController
             ->values();
 
         return $this->inertiaResponse('Admin/Files/IndexDocument', [
-            'data' => (new Collection($results->items()))->load('institution.tenant'),
+            'data' => new Collection($results->items())->load('institution.tenant'),
             'meta' => [
                 'total' => $results->total(),
                 'per_page' => $results->perPage(),
@@ -204,7 +204,7 @@ class DocumentController extends AdminController
         $this->authorize('viewAny', Document::class);
 
         // Get all documents that need syncing (failed, pending, or outdated)
-        $documents = Document::where(function ($query) {
+        $documents = Document::where(function ($query): void {
             $query->where('sync_status', '!=', 'success')
                 ->orWhere('checked_at', '<', now()->subHours(24))
                 ->orWhereNull('checked_at');

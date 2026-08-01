@@ -21,6 +21,7 @@ class Kernel extends ConsoleKernel
      *
      * @var array
      */
+    #[\Override]
     protected $commands = [
         //
     ];
@@ -30,6 +31,7 @@ class Kernel extends ConsoleKernel
      *
      * @return void
      */
+    #[\Override]
     protected function schedule(Schedule $schedule)
     {
         // Daily SharePoint document sync - runs at 2 AM to avoid peak usage
@@ -55,7 +57,7 @@ class Kernel extends ConsoleKernel
             ->withoutOverlapping(10);
 
         // Task reminders - runs daily at 8 AM for tasks due in 7, 3, or 1 days
-        $schedule->call(function () {
+        $schedule->call(function (): void {
             // These reminder days are defaults; users can customize in preferences
             TaskNotifier::notifyDaysLeft(7);
             TaskNotifier::notifyDaysLeft(3);
@@ -126,6 +128,7 @@ class Kernel extends ConsoleKernel
      *
      * @return void
      */
+    #[\Override]
     protected function commands()
     {
         $this->load(__DIR__.'/Commands');

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Pivots\AgendaItem;
 use App\Services\HtmlSanitizerService;
 use Database\Factories\AgendaItemNoteFactory;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -32,20 +33,14 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
+#[Hidden(['yjs_state'])]
 class AgendaItemNote extends Model
 {
     /** @use HasFactory<AgendaItemNoteFactory> */
     use HasFactory, HasUlids;
 
+    #[\Override]
     protected $guarded = [];
-
-    /**
-     * The raw CRDT state is never serialized by default; it is only ever exposed
-     * through the dedicated admin API endpoint.
-     *
-     * @var list<string>
-     */
-    protected $hidden = ['yjs_state'];
 
     /**
      * The rendered snapshot is authored by any representative on the meeting and

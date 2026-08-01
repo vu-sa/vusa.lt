@@ -8,9 +8,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Spatie\Permission\PermissionRegistrar;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
 
@@ -41,8 +41,8 @@ function grantNewsPermission(string $permission): void
     cache()->flush();
 }
 
-describe('trashed index view', function () {
-    test('index hides soft-deleted records by default', function () {
+describe('trashed index view', function (): void {
+    test('index hides soft-deleted records by default', function (): void {
         $response = asUser($this->admin)->get(route('news.index'));
 
         $response->assertStatus(200)
@@ -58,7 +58,7 @@ describe('trashed index view', function () {
     });
 
     // Regression for the withTrashed()/method_exists() bug that made this toggle a no-op.
-    test('index returns only soft-deleted records when showDeleted is true', function () {
+    test('index returns only soft-deleted records when showDeleted is true', function (): void {
         $response = asUser($this->admin)->get(route('news.index', ['showDeleted' => 'true']));
 
         $response->assertStatus(200)
@@ -70,7 +70,7 @@ describe('trashed index view', function () {
             ->and($ids)->not->toContain($this->live->id);
     });
 
-    test('index exposes the deleted record count', function () {
+    test('index exposes the deleted record count', function (): void {
         asUser($this->admin)
             ->get(route('news.index'))
             ->assertStatus(200)
@@ -79,7 +79,7 @@ describe('trashed index view', function () {
 
     // The row actions decide whether to offer Restore / Delete permanently purely from
     // deleted_at, so it must survive serialization into the Inertia payload.
-    test('trashed rows carry deleted_at so the row actions can render', function () {
+    test('trashed rows carry deleted_at so the row actions can render', function (): void {
         $response = asUser($this->admin)->get(route('news.index', ['showDeleted' => 'true']));
 
         $rows = collect($response->viewData('page')['props']['news']['data']);
@@ -89,7 +89,7 @@ describe('trashed index view', function () {
             ->and($rows->first()['deleted_at'])->not->toBeNull();
     });
 
-    test('deleted count only counts records the user may see', function () {
+    test('deleted count only counts records the user may see', function (): void {
         $foreign = News::factory()->for($this->otherTenant)->create();
         $foreign->delete();
 
@@ -100,8 +100,8 @@ describe('trashed index view', function () {
     });
 });
 
-describe('restore', function () {
-    test('a user without delete permission cannot restore', function () {
+describe('restore', function (): void {
+    test('a user without delete permission cannot restore', function (): void {
         asUser($this->user)
             ->patch(route('news.restore', $this->trashed->id))
             ->assertStatus(403);
@@ -109,7 +109,7 @@ describe('restore', function () {
         expect($this->trashed->fresh()->trashed())->toBeTrue();
     });
 
-    test('the delete permission is enough to restore', function () {
+    test('the delete permission is enough to restore', function (): void {
         asUser($this->admin)
             ->patch(route('news.restore', $this->trashed->id))
             ->assertRedirect();
@@ -117,7 +117,7 @@ describe('restore', function () {
         expect($this->trashed->fresh()->trashed())->toBeFalse();
     });
 
-    test('cannot restore a record from another tenant', function () {
+    test('cannot restore a record from another tenant', function (): void {
         $foreign = News::factory()->for($this->otherTenant)->create();
         $foreign->delete();
 
@@ -129,8 +129,8 @@ describe('restore', function () {
     });
 });
 
-describe('force delete', function () {
-    test('the delete permission alone does not allow permanent deletion', function () {
+describe('force delete', function (): void {
+    test('the delete permission alone does not allow permanent deletion', function (): void {
         asUser($this->admin)
             ->delete(route('news.forceDelete', $this->trashed->id))
             ->assertStatus(403);
@@ -138,7 +138,7 @@ describe('force delete', function () {
         expect(News::withTrashed()->find($this->trashed->id))->not->toBeNull();
     });
 
-    test('the forceDelete permission allows permanent deletion', function () {
+    test('the forceDelete permission allows permanent deletion', function (): void {
         grantNewsPermission('news.forceDelete.padalinys');
 
         asUser($this->admin)
@@ -148,7 +148,7 @@ describe('force delete', function () {
         expect(News::withTrashed()->find($this->trashed->id))->toBeNull();
     });
 
-    test('a record that is not deleted yet cannot be permanently deleted', function () {
+    test('a record that is not deleted yet cannot be permanently deleted', function (): void {
         grantNewsPermission('news.forceDelete.padalinys');
 
         asUser($this->admin)
@@ -158,7 +158,7 @@ describe('force delete', function () {
         expect(News::find($this->live->id))->not->toBeNull();
     });
 
-    test('cannot permanently delete a record from another tenant', function () {
+    test('cannot permanently delete a record from another tenant', function (): void {
         grantNewsPermission('news.forceDelete.padalinys');
 
         $foreign = News::factory()->for($this->otherTenant)->create();
@@ -171,7 +171,7 @@ describe('force delete', function () {
         expect(News::withTrashed()->find($foreign->id))->not->toBeNull();
     });
 
-    test('a user with no permissions at all cannot permanently delete', function () {
+    test('a user with no permissions at all cannot permanently delete', function (): void {
         asUser($this->user)
             ->delete(route('news.forceDelete', $this->trashed->id))
             ->assertStatus(403);
@@ -180,8 +180,8 @@ describe('force delete', function () {
     });
 });
 
-describe('permission seeding', function () {
-    test('forceDelete permissions exist only for soft-deletable models', function () {
+describe('permission seeding', function (): void {
+    test('forceDelete permissions exist only for soft-deletable models', function (): void {
         $names = Permission::query()
             ->where('name', 'like', '%.forceDelete.%')
             ->pluck('name');
@@ -192,7 +192,7 @@ describe('permission seeding', function () {
             ->and($names)->not->toContain('tenants.forceDelete.*');
     });
 
-    test('forceDelete is never granted at the own scope', function () {
+    test('forceDelete is never granted at the own scope', function (): void {
         expect(
             Permission::query()->where('name', 'like', '%.forceDelete.own')->count()
         )->toBe(0);

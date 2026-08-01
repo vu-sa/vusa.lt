@@ -11,6 +11,7 @@ use App\Models\Pivots\Trainable;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTranslations;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -106,16 +107,16 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
+#[Fillable([
+    'name', 'description', 'email', 'phone', 'order', 'is_active', 'institution_id', 'contacts_grouping', 'places_to_occupy',
+    'selection_method', 'appointed_by', 'term_length', 'responsibilities',
+])]
 class Duty extends Model implements AuthorizableContract, GuardsForceDelete, SharepointFileableContract
 {
     use Authorizable, HasFactory, HasRelationships, HasRoles, HasSharepointFiles, HasTranslations, HasUlids, LogsActivity, Notifiable, Searchable, SoftDeletes;
 
+    #[\Override]
     protected $guarded = [];
-
-    protected $fillable = [
-        'name', 'description', 'email', 'phone', 'order', 'is_active', 'institution_id', 'contacts_grouping', 'places_to_occupy',
-        'selection_method', 'appointed_by', 'term_length', 'responsibilities',
-    ];
 
     // Note: types are NOT auto-loaded to prevent N+1 in collections.
     // Load explicitly where needed: ->with('duties.types') or ->load('types').
@@ -256,7 +257,7 @@ class Duty extends Model implements AuthorizableContract, GuardsForceDelete, Sha
     public function current_users(): MorphToMany
     {
         return $this->users()
-            ->where(function ($query) {
+            ->where(function ($query): void {
                 $query->whereNull('dutiables.end_date')
                     ->orWhere('dutiables.end_date', '>=', now());
             })
@@ -266,7 +267,7 @@ class Duty extends Model implements AuthorizableContract, GuardsForceDelete, Sha
     public function previous_users(): MorphToMany
     {
         return $this->users()
-            ->where(function ($query) {
+            ->where(function ($query): void {
                 $query->whereNotNull('dutiables.end_date')
                     ->where('dutiables.end_date', '<', now());
             })
@@ -344,9 +345,10 @@ class Duty extends Model implements AuthorizableContract, GuardsForceDelete, Sha
         return $this->belongsToMany(Tenant::class, 'duty_tenant')->withPivot(['quota'])->withTimestamps();
     }
 
+    #[\Override]
     protected static function booted()
     {
-        static::saving(function (Duty $duty) {
+        static::saving(function (Duty $duty): void {
             // Dispatch event when name is about to change - SharePoint must succeed first
             if ($duty->isDirty('name')) {
                 FileableNameUpdated::dispatch($duty);

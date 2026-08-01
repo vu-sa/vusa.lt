@@ -14,28 +14,10 @@ use Illuminate\Contracts\Mail\Mailable;
  */
 class StudentRepRegistrationNotification extends BaseNotification
 {
-    protected string $registrationId;
-
-    protected string $repName;
-
-    protected Institution $institution;
-
-    protected string $formId;
-
     /**
      * Create a new notification instance.
      */
-    public function __construct(
-        string $registrationId,
-        string $repName,
-        Institution $institution,
-        string $formId
-    ) {
-        $this->registrationId = $registrationId;
-        $this->repName = $repName;
-        $this->institution = $institution;
-        $this->formId = $formId;
-    }
+    public function __construct(protected string $registrationId, protected string $repName, protected Institution $institution, protected string $formId) {}
 
     public function category(): NotificationCategory
     {
@@ -75,6 +57,7 @@ class StudentRepRegistrationNotification extends BaseNotification
         ];
     }
 
+    #[\Override]
     public function actions(): array
     {
         return [
@@ -88,6 +71,7 @@ class StudentRepRegistrationNotification extends BaseNotification
     /**
      * Override via to use custom mail.
      */
+    #[\Override]
     public function via(object $notifiable): array
     {
         $channels = parent::via($notifiable);
@@ -103,13 +87,14 @@ class StudentRepRegistrationNotification extends BaseNotification
     /**
      * Use custom mailable for rich email content.
      */
+    #[\Override]
     public function toMail(object $notifiable): Mailable
     {
-        return (new InformManagerAboutStudentRepRegistration(
+        return new InformManagerAboutStudentRepRegistration(
             $this->registrationId,
             $this->repName,
             $this->institution,
             $this->formId
-        ))->to($notifiable->email);
+        )->to($notifiable->email);
     }
 }

@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Enums\VoteValue;
 use App\Models\Pivots\AgendaItem;
 use Database\Factories\VoteFactory;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Touches;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -52,16 +54,16 @@ use Spatie\Activitylog\Traits\LogsActivity;
  *
  * @mixin \Eloquent
  */
+#[Table(name: 'votes')]
+#[Touches(['agendaItem'])]
 class Vote extends Model
 {
     use HasFactory, HasUlids, LogsActivity;
 
-    protected $table = 'votes';
-
-    protected $touches = ['agendaItem'];
-
+    #[\Override]
     protected $guarded = [];
 
+    #[\Override]
     protected function casts(): array
     {
         return [
@@ -194,12 +196,13 @@ class Vote extends Model
     /**
      * Boot the model.
      */
+    #[\Override]
     protected static function boot()
     {
         parent::boot();
 
         // Set order on creation
-        static::creating(function (Vote $vote) {
+        static::creating(function (Vote $vote): void {
             $order = $vote->getAttribute('order');
 
             if ($order === 0 || $order === null) {

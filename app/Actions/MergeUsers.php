@@ -17,7 +17,7 @@ class MergeUsers
      */
     public static function execute(User $keptUser, User $mergedUser): void
     {
-        DB::transaction(function () use ($keptUser, $mergedUser) {
+        DB::transaction(function () use ($keptUser, $mergedUser): void {
             // Transfer duties (update pivot table)
             foreach ($mergedUser->duties as $duty) {
                 $mergedUser->duties()->updateExistingPivot($duty->id, ['dutiable_id' => $keptUser->id]);

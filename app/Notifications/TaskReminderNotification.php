@@ -10,18 +10,10 @@ use App\Models\Task;
  */
 class TaskReminderNotification extends BaseNotification
 {
-    protected Task $task;
-
-    protected int $daysLeft;
-
     /**
      * Create a new notification instance.
      */
-    public function __construct(Task $task, int $daysLeft)
-    {
-        $this->task = $task;
-        $this->daysLeft = $daysLeft;
-    }
+    public function __construct(protected Task $task, protected int $daysLeft) {}
 
     public function category(): NotificationCategory
     {
@@ -46,6 +38,7 @@ class TaskReminderNotification extends BaseNotification
         return route('userTasks');
     }
 
+    #[\Override]
     public function icon(): string
     {
         return $this->daysLeft <= 1 ? '⚠️' : '⏰';
@@ -66,6 +59,7 @@ class TaskReminderNotification extends BaseNotification
         ];
     }
 
+    #[\Override]
     public function actions(): array
     {
         return [
@@ -79,6 +73,7 @@ class TaskReminderNotification extends BaseNotification
     /**
      * Task reminders should not be batched - they are time-sensitive.
      */
+    #[\Override]
     public function supportsEmailDigest(): bool
     {
         return false;

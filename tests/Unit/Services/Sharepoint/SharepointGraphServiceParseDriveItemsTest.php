@@ -8,9 +8,9 @@ use App\Models\Tenant;
 use App\Services\SharepointGraphService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::factory()->create(['shortname' => 'test-tenant']);
     $this->institution = Institution::factory()->for($this->tenant)->create();
     $this->meeting = Meeting::factory()->create([
@@ -27,11 +27,10 @@ beforeEach(function () {
     );
 });
 
-describe('parseDriveItems', function () {
-    test('attaches sharepointFile records to matching drive items', function () {
+describe('parseDriveItems', function (): void {
+    test('attaches sharepointFile records to matching drive items', function (): void {
         $reflection = new ReflectionClass($this->service);
         $method = $reflection->getMethod('parseDriveItems');
-        $method->setAccessible(true);
 
         $sharepointFile = SharepointFile::factory()->create([
             'sharepoint_id' => 'drive-item-1',
@@ -71,16 +70,14 @@ describe('parseDriveItems', function () {
         $firstItem = $result->firstWhere('id', 'drive-item-1');
         $secondItem = $result->firstWhere('id', 'drive-item-2');
 
-        expect($firstItem['sharepointFile'])->not->toBeNull();
-        expect($firstItem['sharepointFile']->id)->toBe($sharepointFile->id);
-
-        expect($secondItem['sharepointFile'])->toBeNull();
+        expect($firstItem['sharepointFile'])->not->toBeNull()
+            ->and($firstItem['sharepointFile']->id)->toBe($sharepointFile->id)
+            ->and($secondItem['sharepointFile'])->toBeNull();
     });
 
-    test('does not include fileableFile key (that is handled by controller)', function () {
+    test('does not include fileableFile key (that is handled by controller)', function (): void {
         $reflection = new ReflectionClass($this->service);
         $method = $reflection->getMethod('parseDriveItems');
-        $method->setAccessible(true);
 
         FileableFile::factory()->create([
             'fileable_type' => Meeting::class,

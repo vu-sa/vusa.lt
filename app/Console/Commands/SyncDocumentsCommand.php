@@ -5,30 +5,20 @@ namespace App\Console\Commands;
 use App\Jobs\SyncDocumentFromSharePointJob;
 use App\Jobs\SyncStaleDocumentsJob;
 use App\Models\Document;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
-class SyncDocumentsCommand extends Command
-{
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'sharepoint:sync-documents
+#[Description('Sync documents from SharePoint with various options')]
+#[Signature('sharepoint:sync-documents
                             {--all : Sync all documents regardless of staleness}
                             {--failed : Only sync documents with failed status}
                             {--force : Skip eTag matching and force full sync (useful for backfilling permission IDs)}
                             {--limit= : Maximum number of documents to sync (defaults to 50, ignored with --all)}
                             {--shortcuts : Only sync documents that are .url internet shortcuts}
-                            {--dry-run : Show what would be synced without actually syncing}';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Sync documents from SharePoint with various options';
-
+                            {--dry-run : Show what would be synced without actually syncing}')]
+class SyncDocumentsCommand extends Command
+{
     /**
      * Execute the console command.
      */
@@ -55,7 +45,7 @@ class SyncDocumentsCommand extends Command
 
         if ($this->option('dry-run')) {
             $staleCount = Document::query()
-                ->where(function ($query) {
+                ->where(function ($query): void {
                     $query->whereNull('checked_at')
                         ->orWhere('checked_at', '<', now()->subDay());
                 })

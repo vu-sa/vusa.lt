@@ -6,9 +6,9 @@ use App\Models\Role;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
     $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
@@ -32,7 +32,7 @@ function dutyUpdatePayload(Duty $duty, array $overrides = []): array
     ], $overrides);
 }
 
-test('removing the role from your own duty is warned and rolled back', function () {
+test('removing the role from your own duty is warned and rolled back', function (): void {
     asUserWithInertia($this->admin)
         ->patch(route('duties.update', $this->adminDuty), dutyUpdatePayload($this->adminDuty, [
             'roles' => [],
@@ -43,7 +43,7 @@ test('removing the role from your own duty is warned and rolled back', function 
     expect($this->adminDuty->fresh()->roles()->count())->toBeGreaterThan(0);
 });
 
-test('editing a duty you do not hold is not guarded', function () {
+test('editing a duty you do not hold is not guarded', function (): void {
     $otherDuty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
     $otherDuty->assignRole('Communication Coordinator');
 

@@ -34,12 +34,12 @@ class NotifyUsersOfComment implements ShouldQueue
         $user = $comment->user;
 
         $subject = [
-            'modelClass' => class_basename(get_class($user)),
+            'modelClass' => class_basename($user::class),
             'name' => $user->name,
             'image' => $user->profile_photo_path,
         ];
 
-        $objectClassName = class_basename(get_class($commentable));
+        $objectClassName = class_basename($commentable::class);
         $objectName = $commentable->name ?? $commentable->title ?? null;
 
         // if class name is reservation_resource, then we need to get the name from the reservation

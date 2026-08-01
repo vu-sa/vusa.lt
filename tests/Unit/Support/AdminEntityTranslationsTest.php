@@ -34,13 +34,13 @@ dataset('admin index entity names', array_map(
     $entityNames,
 ));
 
-test('the entity name scan finds every admin index page', function () use ($entityNames) {
+test('the entity name scan finds every admin index page', function () use ($entityNames): void {
     // Guards the regex above: a rename that silently matches nothing would make
     // every dataset case vanish and the suite pass while covering nothing.
     expect($entityNames)->toHaveCount(24);
 });
 
-test('every admin index entity name has a Lithuanian model translation', function (string $entityName) {
+test('every admin index entity name has a Lithuanian model translation', function (string $entityName): void {
     $translations = require base_path('lang/admin/lt/entities.php');
 
     expect($translations)->toHaveKey($entityName)
@@ -48,7 +48,7 @@ test('every admin index entity name has a Lithuanian model translation', functio
         ->and($translations[$entityName]['model'])->not->toBe('');
 })->with('admin index entity names');
 
-test('every admin index entity name has an English model translation', function (string $entityName) {
+test('every admin index entity name has an English model translation', function (string $entityName): void {
     $translations = require base_path('lang/admin/en/entities.php');
 
     expect($translations)->toHaveKey($entityName)
@@ -56,7 +56,7 @@ test('every admin index entity name has an English model translation', function 
         ->and($translations[$entityName]['model'])->not->toBe('');
 })->with('admin index entity names');
 
-test('Lithuanian model translations declare the genitive plural form used by empty states', function (string $entityName) {
+test('Lithuanian model translations declare the genitive plural form used by empty states', function (string $entityName): void {
     $translations = require base_path('lang/admin/lt/entities.php');
 
     // "Nėra :models" needs the [10,*] form; a range capped below the wildcard leaves

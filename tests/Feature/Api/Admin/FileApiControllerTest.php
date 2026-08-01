@@ -9,9 +9,9 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     Storage::fake();
 
     $this->tenant = Tenant::factory()->create(['type' => 'padalinys', 'alias' => 'test-tenant']);
@@ -39,7 +39,7 @@ beforeEach(function () {
     Storage::put('public/files/padaliniai/vusa'.$this->tenant->alias.'/notes.txt', 'txt content');
 });
 
-test('without an extensions filter, every file type is listed', function () {
+test('without an extensions filter, every file type is listed', function (): void {
     $response = asUser($this->fileManager)
         ->getJson(route('api.v1.admin.files.index', ['path' => $this->allowedPath]));
 
@@ -48,7 +48,7 @@ test('without an extensions filter, every file type is listed', function () {
     expect($names)->toContain('photo.jpg', 'graphic.png', 'document.pdf', 'notes.txt');
 });
 
-test('an extensions filter excludes non-matching files (image picker no longer lists PDFs)', function () {
+test('an extensions filter excludes non-matching files (image picker no longer lists PDFs)', function (): void {
     $response = asUser($this->fileManager)
         ->getJson(route('api.v1.admin.files.index', ['path' => $this->allowedPath, 'extensions' => 'jpg,jpeg,png,gif,webp,svg']));
 
@@ -58,7 +58,7 @@ test('an extensions filter excludes non-matching files (image picker no longer l
         ->not->toContain('document.pdf', 'notes.txt');
 });
 
-test('extension matching is case-insensitive', function () {
+test('extension matching is case-insensitive', function (): void {
     Storage::put('public/files/padaliniai/vusa'.$this->tenant->alias.'/UPPER.JPG', 'jpg content');
 
     $response = asUser($this->fileManager)
@@ -68,7 +68,7 @@ test('extension matching is case-insensitive', function () {
     expect(collect($response->json('data.files'))->pluck('name'))->toContain('UPPER.JPG');
 });
 
-test('an extension not in the allowlist is silently dropped rather than matching nothing unexpectedly', function () {
+test('an extension not in the allowlist is silently dropped rather than matching nothing unexpectedly', function (): void {
     // "exe" isn't in StoreFilesRequest::getAllowedExtensions(), so it's stripped from the
     // filter entirely — the request should not error, and (since no valid extension remains)
     // no files should match.
@@ -79,7 +79,7 @@ test('an extension not in the allowlist is silently dropped rather than matching
     expect($response->json('data.files'))->toBeEmpty();
 });
 
-test('directories are never filtered out by an extensions filter', function () {
+test('directories are never filtered out by an extensions filter', function (): void {
     Storage::makeDirectory('public/files/padaliniai/vusa'.$this->tenant->alias.'/subfolder');
 
     $response = asUser($this->fileManager)
@@ -89,7 +89,7 @@ test('directories are never filtered out by an extensions filter', function () {
     expect(collect($response->json('data.directories'))->pluck('name'))->toContain('subfolder');
 });
 
-test('unauthenticated users cannot list files', function () {
+test('unauthenticated users cannot list files', function (): void {
     $this->getJson(route('api.v1.admin.files.index', ['path' => $this->allowedPath]))
         ->assertUnauthorized();
 });

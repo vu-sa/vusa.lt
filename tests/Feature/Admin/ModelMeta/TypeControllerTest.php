@@ -5,23 +5,24 @@ use App\Models\Institution;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\Type;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
     $this->user = makeUser($this->tenant);
     $this->admin = makeAdminUser($this->tenant);
 });
 
-describe('unauthorized access', function () {
-    test('a simple user cannot index types', function () {
+describe('unauthorized access', function (): void {
+    test('a simple user cannot index types', function (): void {
         asUser($this->user)->get(route('types.index'))->assertStatus(403);
     });
 
-    test('a simple user cannot store a type', function () {
+    test('a simple user cannot store a type', function (): void {
         asUser($this->user)->post(route('types.store'), [
             'title' => ['lt' => 'Tipas', 'en' => 'Type'],
             'model_type' => Duty::class,
@@ -29,13 +30,13 @@ describe('unauthorized access', function () {
     });
 });
 
-describe('model_type allowlist', function () {
+describe('model_type allowlist', function (): void {
     /**
      * `model_type` used to be turned into a method name and invoked on the model
      * (`$type->$modelType()->sync(...)`). Anything outside the allowlist must now
      * be a validation error — never a dynamic dispatch, and never a 500.
      */
-    test('rejects a model_type outside the allowlist when storing', function (string $modelType) {
+    test('rejects a model_type outside the allowlist when storing', function (string $modelType): void {
         asUser($this->admin)->post(route('types.store'), [
             'title' => ['lt' => 'Tipas', 'en' => 'Type'],
             'model_type' => $modelType,
@@ -43,14 +44,14 @@ describe('model_type allowlist', function () {
 
         expect(Type::query()->where('model_type', $modelType)->exists())->toBeFalse();
     })->with([
-        'roles relation' => ['App\Models\Role'],
+        'roles relation' => [Role::class],
         'a relation that would 500' => ['App\Models\Descendant'],
-        'an arbitrary class' => ['App\Models\User'],
+        'an arbitrary class' => [User::class],
         'not a class at all' => ['nonsense'],
         'empty string' => [''],
     ]);
 
-    test('rejects a model_type outside the allowlist when updating', function () {
+    test('rejects a model_type outside the allowlist when updating', function (): void {
         $type = Type::factory()->create(['model_type' => Duty::class]);
 
         asUser($this->admin)->patch(route('types.update', $type), [
@@ -61,7 +62,7 @@ describe('model_type allowlist', function () {
         expect($type->fresh()->model_type)->toBe(Duty::class);
     });
 
-    test('a bogus model_type cannot sync roles onto a type', function () {
+    test('a bogus model_type cannot sync roles onto a type', function (): void {
         $type = Type::factory()->create(['model_type' => Institution::class]);
         $role = Role::query()->first();
 
@@ -71,12 +72,12 @@ describe('model_type allowlist', function () {
             'roles' => [$role->id],
         ])->assertSessionHasErrors('model_type');
 
-        expect($type->fresh()->roles)->toHaveCount(0);
+        expect($type->fresh()->roles)->toBeEmpty();
     });
 });
 
-describe('allowed model types still work', function () {
-    test('can store an institution type', function () {
+describe('allowed model types still work', function (): void {
+    test('can store an institution type', function (): void {
         asUser($this->admin)->post(route('types.store'), [
             'title' => ['lt' => 'Padalinys', 'en' => 'Unit'],
             'model_type' => Institution::class,
@@ -85,7 +86,7 @@ describe('allowed model types still work', function () {
         expect(Type::query()->where('model_type', Institution::class)->exists())->toBeTrue();
     });
 
-    test('can sync institutions onto an institution type', function () {
+    test('can sync institutions onto an institution type', function (): void {
         $type = Type::factory()->create(['model_type' => Institution::class]);
         $institution = Institution::factory()->for($this->tenant)->create();
 
@@ -98,7 +99,7 @@ describe('allowed model types still work', function () {
         expect($type->fresh()->institutions->pluck('id'))->toContain($institution->id);
     });
 
-    test('can sync duties and roles onto a duty type', function () {
+    test('can sync duties and roles onto a duty type', function (): void {
         $type = Type::factory()->create(['model_type' => Duty::class]);
         $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
         $role = Role::query()->first();
@@ -110,7 +111,7 @@ describe('allowed model types still work', function () {
             'roles' => [$role->id],
         ])->assertRedirect();
 
-        expect($type->fresh()->duties->pluck('id'))->toContain($duty->id);
-        expect($type->fresh()->roles->pluck('id'))->toContain($role->id);
+        expect($type->fresh()->duties->pluck('id'))->toContain($duty->id)
+            ->and($type->fresh()->roles->pluck('id'))->toContain($role->id);
     });
 });

@@ -139,9 +139,7 @@ class ReservationCollection extends Collection
             $pivot = $reservation->pivot;
 
             return $pivot->state->value ?? (string) $pivot->state;
-        })->map(function ($group) {
-            return new ReservationCollection($group->all());
-        });
+        })->map(fn ($group) => new ReservationCollection($group->all()));
     }
 
     /**

@@ -5,25 +5,25 @@ use App\Models\Institution;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->normalUser = makeTenantUser();
     $this->admin = makeTenantUser('Communication Coordinator');
 });
 
-describe('Authentication Security', function () {
-    test('admin dashboard allows authenticated users', function () {
+describe('Authentication Security', function (): void {
+    test('admin dashboard allows authenticated users', function (): void {
         $response = asUser($this->normalUser)->get('/mano');
         expect($response->status())->toBeSecureResponse();
     });
 
-    test('requires authentication for protected routes', function () {
+    test('requires authentication for protected routes', function (): void {
         $response = $this->get('/mano');
         expect($response->status())->toRequireAuth();
     });
 
-    test('validates session management on login', function () {
+    test('validates session management on login', function (): void {
         $originalSessionId = session()->getId();
 
         $user = User::factory()->create(['password' => bcrypt('password')]);
@@ -38,15 +38,15 @@ describe('Authentication Security', function () {
     });
 });
 
-describe('Authorization Security', function () {
-    test('handles role access appropriately', function () {
+describe('Authorization Security', function (): void {
+    test('handles role access appropriately', function (): void {
         // Normal users may have access depending on permissions
         $response = asUser($this->normalUser)->get(route('roles.index'));
 
         expect($response->status())->toBeIn([200, 302, 403]);
     });
 
-    test('handles duty modifications appropriately', function () {
+    test('handles duty modifications appropriately', function (): void {
         $duty = Duty::factory()->create();
 
         $response = asUser($this->normalUser)->patch(route('duties.update', $duty), [
@@ -56,7 +56,7 @@ describe('Authorization Security', function () {
         expect($response->status())->toBeIn([200, 302, 403, 422]);
     });
 
-    test('validates expired duty permissions through pivot table', function () {
+    test('validates expired duty permissions through pivot table', function (): void {
         $institution = Institution::factory()->create();
         $duty = Duty::factory()->create(['institution_id' => $institution->id]);
 
@@ -73,8 +73,8 @@ describe('Authorization Security', function () {
     });
 });
 
-describe('Data Security', function () {
-    test('handles password exposure in user pages appropriately', function () {
+describe('Data Security', function (): void {
+    test('handles password exposure in user pages appropriately', function (): void {
         $response = asUser($this->admin)->get(route('users.show', $this->normalUser));
 
         if ($response->status() === 200) {
@@ -86,7 +86,7 @@ describe('Data Security', function () {
         expect($response->status())->toBeIn([200, 302, 403]);
     });
 
-    test('validates CSRF protection exists', function () {
+    test('validates CSRF protection exists', function (): void {
         // Test CSRF without removing middleware (which would be unrealistic)
         $response = $this->actingAs($this->admin)
             ->post(route('users.store'), [
@@ -98,7 +98,7 @@ describe('Data Security', function () {
         expect($response->status())->toBeIn([200, 201, 302, 403, 419, 422]);
     });
 
-    test('prevents SQL injection in search parameters', function () {
+    test('prevents SQL injection in search parameters', function (): void {
         $maliciousInput = "'; DROP TABLE users; --";
 
         $response = asUser($this->admin)
@@ -109,8 +109,8 @@ describe('Data Security', function () {
     });
 });
 
-describe('Session Security', function () {
-    test('handles password change appropriately', function () {
+describe('Session Security', function (): void {
+    test('handles password change appropriately', function (): void {
         $response = asUser($this->admin)->patch(route('users.update', $this->normalUser), [
             'name' => $this->normalUser->name,
             'email' => $this->normalUser->email,
@@ -121,7 +121,7 @@ describe('Session Security', function () {
         expect($response->status())->toBeIn([200, 302, 403, 422]);
     });
 
-    test('validates session handling consistency', function () {
+    test('validates session handling consistency', function (): void {
         $response = asUser($this->admin)->get('/mano');
         expect($response->status())->toBeIn([200, 302, 403]);
 
@@ -131,14 +131,14 @@ describe('Session Security', function () {
     });
 });
 
-describe('Input Validation Security', function () {
-    test('validates file upload endpoint exists', function () {
+describe('Input Validation Security', function (): void {
+    test('validates file upload endpoint exists', function (): void {
         $response = asUser($this->admin)->get(route('files.index'));
 
         expect($response->status())->toBeIn([200, 302, 403]);
     });
 
-    test('prevents XSS in form submissions', function () {
+    test('prevents XSS in form submissions', function (): void {
         $xssPayload = '<script>alert("xss")</script>';
 
         $response = asUser($this->admin)
@@ -152,8 +152,8 @@ describe('Input Validation Security', function () {
     });
 });
 
-describe('Rate Limiting Security', function () {
-    test('handles multiple login attempts gracefully', function () {
+describe('Rate Limiting Security', function (): void {
+    test('handles multiple login attempts gracefully', function (): void {
         $user = User::factory()->create(['password' => bcrypt('password')]);
 
         // Make a few failed login attempts
@@ -167,7 +167,7 @@ describe('Rate Limiting Security', function () {
         expect($response->status())->toBeIn([302, 422, 429]);
     });
 
-    test('validates password reset endpoint behavior', function () {
+    test('validates password reset endpoint behavior', function (): void {
         $user = User::factory()->create();
 
         // Test password reset request - may not exist or be configured
@@ -177,15 +177,15 @@ describe('Rate Limiting Security', function () {
     });
 });
 
-describe('API Security', function () {
-    test('validates API document endpoint behavior', function () {
+describe('API Security', function (): void {
+    test('validates API document endpoint behavior', function (): void {
         $response = $this->get('/api/v1/documents');
 
         // API may be public or require auth
         expect($response->status())->toBeIn([200, 401, 403, 404]);
     });
 
-    test('validates API rate limiting exists', function () {
+    test('validates API rate limiting exists', function (): void {
         for ($i = 0; $i < 3; $i++) {
             $response = asUser($this->admin)->get('/api/v1/documents');
 
@@ -199,7 +199,7 @@ describe('API Security', function () {
         expect(true)->toBeTrue(); // Test passed if no exceptions thrown
     });
 
-    test('validates admin access control', function () {
+    test('validates admin access control', function (): void {
         $response = asUser($this->normalUser)->get('/mano');
 
         // Users should have some level of access to admin dashboard when authenticated

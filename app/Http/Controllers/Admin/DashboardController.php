@@ -68,7 +68,7 @@ class DashboardController extends AdminController
         // Get upcoming tasks (due within 14 days or overdue)
         $upcomingTasks = $user->tasks()
             ->whereNull('completed_at')
-            ->where(function ($query) {
+            ->where(function ($query): void {
                 $query->where('due_date', '<=', now()->addDays(14))
                     ->orWhere('due_date', '<', now());
             })
@@ -206,15 +206,14 @@ class DashboardController extends AdminController
         // Filter out institutions with excluded types (e.g., padalinys, pkp - institutions that don't have formal meetings)
         $excludedTypeIds = app(MeetingSettings::class)->getExcludedInstitutionTypeIds();
         if ($excludedTypeIds->isNotEmpty()) {
-            $userInstitutions = $userInstitutions->filter(function ($institution) use ($excludedTypeIds) {
+            $userInstitutions = $userInstitutions->filter(
                 // Exclude institution if any of its types are in the excluded list
-                return $institution->types->pluck('id')->intersect($excludedTypeIds)->isEmpty();
-            })->values();
+                fn ($institution) => $institution->types->pluck('id')->intersect($excludedTypeIds)->isEmpty())->values();
         }
 
         // Helper function to append computed attributes to institutions
         $appendInstitutionAttributes = function ($institutions, $userInstitutionIds = null) use ($followedInstitutionIds, $mutedInstitutionIds) {
-            $institutions->each(function ($institution) use ($userInstitutionIds, $followedInstitutionIds, $mutedInstitutionIds) {
+            $institutions->each(function ($institution) use ($userInstitutionIds, $followedInstitutionIds, $mutedInstitutionIds): void {
                 $institution->meetings?->each->append(['completion_status', 'has_report', 'has_protocol']);
                 // Add active_check_in from already-loaded checkIns
                 $institution->active_check_in = $institution->checkIns
@@ -298,10 +297,10 @@ class DashboardController extends AdminController
 
                 // Append computed attributes to related institution meetings
                 // Note: For unauthorized institutions, we skip completion_status as it triggers N+1 agendaItems load
-                $relatedInstitutions->each(function ($institution) use ($userDutyInstitutionIds, $followedInstitutionIds, $mutedInstitutionIds) {
+                $relatedInstitutions->each(function ($institution) use ($userDutyInstitutionIds, $followedInstitutionIds, $mutedInstitutionIds): void {
                     /** @var Institution&object{authorized?: bool, subscription?: array<string, bool>} $institution */
                     $isAuthorized = ($institution->authorized ?? true) !== false;
-                    $institution->meetings->each(function ($meeting) use ($isAuthorized) {
+                    $institution->meetings->each(function ($meeting) use ($isAuthorized): void {
                         // Only append completion_status for authorized institutions (it lazy-loads agendaItems)
                         if ($isAuthorized) {
                             $meeting->append(['completion_status', 'has_report', 'has_protocol']);
@@ -339,9 +338,7 @@ class DashboardController extends AdminController
         $selectedTenant = request()->input('tenant_id');
 
         // Leave only tenants that are not 'pkp'
-        $tenants = collect(GetTenantsForUpserts::execute('pages.update.padalinys', $this->authorizer))->filter(function ($tenant) {
-            return $tenant['type'] !== 'pkp';
-        })->values();
+        $tenants = collect(GetTenantsForUpserts::execute('pages.update.padalinys', $this->authorizer))->filter(fn ($tenant) => $tenant['type'] !== 'pkp')->values();
 
         // Check if selected tenant is in the list of tenants
         if ($selectedTenant) {

@@ -14,41 +14,45 @@ class InstitutionPolicy extends ModelPolicy
     /**
      * These models belong to a single tenant through a `tenant` relation.
      */
+    #[\Override]
     protected bool $hasManyTenants = false;
 
     public function __construct(ModelAuthorizer $authorizer)
     {
         parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::INSTITUTION()->label);
+        $this->pluralModelName = Str::plural(ModelEnum::INSTITUTION->label());
     }
 
     /**
      * Determine whether the user can view the model.
      */
+    #[\Override]
     public function view(User $user, Model $institution): bool
     {
-        return $this->commonChecker($user, $institution, CRUDEnum::READ()->label, $this->pluralModelName, false);
+        return $this->commonChecker($user, $institution, CRUDEnum::READ->label(), $this->pluralModelName, false);
     }
 
     /**
      * Determine whether the user can update the model.
      */
+    #[\Override]
     public function update(User $user, Model $institution): bool
     {
         // For institutions, "own" scope only applies to read operations
         // Since institutions.update.own permission doesn't exist, commonChecker will only
         // check padalinys and * scopes automatically
-        return $this->commonChecker($user, $institution, CRUDEnum::UPDATE()->label, $this->pluralModelName, false);
+        return $this->commonChecker($user, $institution, CRUDEnum::UPDATE->label(), $this->pluralModelName, false);
     }
 
     /**
      * Determine whether the user can delete the model.
      */
+    #[\Override]
     public function delete(User $user, Model $institution): bool
     {
         // For institutions, "own" scope only applies to read operations
         // Since institutions.delete.own permission doesn't exist, commonChecker will only
         // check padalinys and * scopes automatically
-        return $this->commonChecker($user, $institution, CRUDEnum::DELETE()->label, $this->pluralModelName, false);
+        return $this->commonChecker($user, $institution, CRUDEnum::DELETE->label(), $this->pluralModelName, false);
     }
 }

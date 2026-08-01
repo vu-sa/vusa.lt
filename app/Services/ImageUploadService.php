@@ -186,7 +186,7 @@ class ImageUploadService
         $sizes = ['B', 'KB', 'MB', 'GB'];
         $i = (int) floor(log($bytes) / log($k));
 
-        return round($bytes / pow($k, $i), 1).' '.$sizes[$i];
+        return round($bytes / $k ** $i, 1).' '.$sizes[$i];
     }
 
     /**

@@ -159,9 +159,7 @@ trait HasNotificationPreferences
         $mutedThreads = $preferences['muted_threads'] ?? [];
 
         // Remove existing mute for this thread if any
-        $mutedThreads = array_filter($mutedThreads, function ($thread) use ($modelClass, $modelId) {
-            return ! ($thread['model_class'] === $modelClass && $thread['model_id'] === $modelId);
-        });
+        $mutedThreads = array_filter($mutedThreads, fn ($thread) => ! ($thread['model_class'] === $modelClass && $thread['model_id'] === $modelId));
 
         // Add new mute
         $mutedThreads[] = [
@@ -182,9 +180,7 @@ trait HasNotificationPreferences
         $preferences = $this->notification_preferences;
         $mutedThreads = $preferences['muted_threads'] ?? [];
 
-        $mutedThreads = array_filter($mutedThreads, function ($thread) use ($modelClass, $modelId) {
-            return ! ($thread['model_class'] === $modelClass && $thread['model_id'] === $modelId);
-        });
+        $mutedThreads = array_filter($mutedThreads, fn ($thread) => ! ($thread['model_class'] === $modelClass && $thread['model_id'] === $modelId));
 
         $preferences['muted_threads'] = array_values($mutedThreads);
         $this->update(['notification_preferences' => $preferences]);

@@ -64,7 +64,7 @@ class DutyController extends AdminController
             // included by default; the `show_external` table filter hides them.
             $includeExternal = ($request->getFilters()['show_external'] ?? true) !== false;
 
-            $query->where(function ($q) use ($adminTenantIds, $includeExternal) {
+            $query->where(function ($q) use ($adminTenantIds, $includeExternal): void {
                 $q->whereHas('institution.tenant', fn ($t) => $t->whereIn('id', $adminTenantIds));
 
                 if ($includeExternal) {
@@ -229,7 +229,7 @@ class DutyController extends AdminController
         $crossTenantRepsQuery = Dutiable::where('duty_id', $duty->id)
             ->where('dutiable_type', User::class)
             ->whereNotNull('tenant_id')
-            ->where(function ($query) {
+            ->where(function ($query): void {
                 $query->whereNull('end_date')
                     ->orWhere('end_date', '>=', now());
             });
@@ -266,14 +266,14 @@ class DutyController extends AdminController
 
         $actor = $request->user();
 
-        $mutation = fn () => DB::transaction(function () use ($request, $duty) {
+        $mutation = fn () => DB::transaction(function () use ($request, $duty): void {
             $duty->update($request->only('name', 'description', 'email', 'places_to_occupy', 'contacts_grouping', 'selection_method', 'appointed_by', 'term_length', 'responsibilities'));
 
             // Only manage owning-tenant reps (tenant_id IS NULL) via the TransferList.
             $owningTenantCurrentIds = Dutiable::where('duty_id', $duty->id)
                 ->where('dutiable_type', User::class)
                 ->whereNull('tenant_id')
-                ->where(function ($query) {
+                ->where(function ($query): void {
                     $query->whereNull('end_date')
                         ->orWhere('end_date', '>=', now());
                 })
@@ -314,7 +314,7 @@ class DutyController extends AdminController
 
             if ($addedTargetIds || $removedTargetIds) {
                 $dutyId = $duty->id;
-                dispatch(function () use ($dutyId, $addedTargetIds, $removedTargetIds) {
+                dispatch(function () use ($dutyId, $addedTargetIds, $removedTargetIds): void {
                     $duty = Duty::find($dutyId);
                     if ($duty) {
                         BackfillExOfficioTargetDuty::execute($duty, $addedTargetIds, $removedTargetIds);
@@ -334,7 +334,7 @@ class DutyController extends AdminController
                     ->where('duty_id', $duty->id)
                     ->where('dutiable_type', User::class)
                     ->where('tenant_id', $tenantId)
-                    ->where(function ($query) {
+                    ->where(function ($query): void {
                         $query->whereNull('end_date')
                             ->orWhere('end_date', '>=', now());
                     })
@@ -361,7 +361,7 @@ class DutyController extends AdminController
             && Dutiable::where('duty_id', $duty->id)
                 ->where('dutiable_type', User::class)
                 ->where('dutiable_id', $actor->id)
-                ->where(function ($query) {
+                ->where(function ($query): void {
                     $query->whereNull('end_date')->orWhere('end_date', '>=', now());
                 })
                 ->exists();
@@ -438,7 +438,7 @@ class DutyController extends AdminController
                 ->whereIn('dutiable_id', $removed->all())
                 ->where('dutiable_type', User::class)
                 ->whereNull('tenant_id')
-                ->where(function ($query) {
+                ->where(function ($query): void {
                     $query->whereNull('end_date')
                         ->orWhere('end_date', '>=', now());
                 })
@@ -468,7 +468,7 @@ class DutyController extends AdminController
         $currentUserIds = Dutiable::where('duty_id', $duty->id)
             ->where('dutiable_type', User::class)
             ->where('tenant_id', $tenantId)
-            ->where(function ($query) {
+            ->where(function ($query): void {
                 $query->whereNull('end_date')
                     ->orWhere('end_date', '>=', now());
             })
@@ -484,7 +484,7 @@ class DutyController extends AdminController
                 ->where('dutiable_type', User::class)
                 ->where('tenant_id', $tenantId)
                 ->whereIn('dutiable_id', $toRemove)
-                ->where(function ($query) {
+                ->where(function ($query): void {
                     $query->whereNull('end_date')
                         ->orWhere('end_date', '>=', now());
                 })
@@ -524,7 +524,7 @@ class DutyController extends AdminController
     {
         $this->handleAuthorization('viewAny', Duty::class);
 
-        $currentUsersLoad = ['current_users' => function ($q) {
+        $currentUsersLoad = ['current_users' => function ($q): void {
             $q->select('users.id', 'name', 'email', 'profile_photo_path')
                 ->withPivot('start_date', 'end_date');
         }];
@@ -532,7 +532,7 @@ class DutyController extends AdminController
         // Get institutions the user can access, with their duties and current users
         // Include pivot data (start_date) to detect long-staying users
         $institutions = DutyService::getInstitutionsForUpserts($this->authorizer)
-            ->load(['duties' => function ($query) use ($currentUsersLoad) {
+            ->load(['duties' => function ($query) use ($currentUsersLoad): void {
                 $query->with($currentUsersLoad);
             }, 'tenant:id,shortname']);
 
@@ -545,7 +545,7 @@ class DutyController extends AdminController
         if ($adminReadTenantIds->isNotEmpty()) {
             // For cross-tenant duties the acting tenant only assigns *into*, show
             // only the reps explicitly assigned for the acting tenant (by tenant_id column).
-            $tenantScopedCurrentUsers = ['current_users' => function ($q) use ($adminReadTenantIds) {
+            $tenantScopedCurrentUsers = ['current_users' => function ($q) use ($adminReadTenantIds): void {
                 $q->select('users.id', 'name', 'email', 'profile_photo_path')
                     ->wherePivotIn('tenant_id', $adminReadTenantIds->all())
                     ->withPivot('start_date', 'end_date', 'tenant_id');
@@ -556,7 +556,7 @@ class DutyController extends AdminController
                 ->whereNotIn('id', $institutions->pluck('id'))
                 ->with([
                     'tenant:id,shortname',
-                    'duties' => function ($query) use ($tenantScopedCurrentUsers, $adminReadTenantIds) {
+                    'duties' => function ($query) use ($tenantScopedCurrentUsers, $adminReadTenantIds): void {
                         $query->whereHas('assignableTenants', fn ($q) => $q->whereIn('tenants.id', $adminReadTenantIds))
                             ->with($tenantScopedCurrentUsers)
                             ->with(['assignableTenants' => fn ($q) => $q->whereIn('tenants.id', $adminReadTenantIds)]);
@@ -615,8 +615,8 @@ class DutyController extends AdminController
 
         $createdUsers = [];
 
-        $mutation = function () use ($validated, $duty, $actingTenantId, &$createdUsers) {
-            DB::transaction(function () use ($validated, $duty, $actingTenantId, &$createdUsers) {
+        $mutation = function () use ($validated, $duty, $actingTenantId, &$createdUsers): void {
+            DB::transaction(function () use ($validated, $duty, $actingTenantId, &$createdUsers): void {
                 if (! empty($validated['new_users'])) {
                     foreach ($validated['new_users'] as $newUserData) {
                         $user = User::create([
@@ -673,7 +673,7 @@ class DutyController extends AdminController
                         $removeQuery = Dutiable::where('duty_id', $duty->id)
                             ->where('dutiable_type', User::class)
                             ->where('dutiable_id', $userId)
-                            ->where(function ($query) {
+                            ->where(function ($query): void {
                                 $query->whereNull('end_date')
                                     ->orWhere('end_date', '>=', now());
                             });

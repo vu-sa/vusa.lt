@@ -3,9 +3,9 @@
 use App\Models\Document;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-test('document content type category is determined correctly', function () {
+test('document content type category is determined correctly', function (): void {
     $document = Document::factory()->create(['content_type' => 'VU SA P Nutarimas']);
     expect($document->toSearchableArray()['content_type_category'])->toBe('VU SA P');
 
@@ -19,7 +19,7 @@ test('document content type category is determined correctly', function () {
     expect($document->toSearchableArray()['content_type_category'])->toBe('Kita');
 });
 
-test('document language code is standardized', function () {
+test('document language code is standardized', function (): void {
     $document = Document::factory()->create(['language' => 'Lietuvių']);
     expect($document->toSearchableArray()['language_code'])->toBe('lt');
 
@@ -36,7 +36,7 @@ test('document language code is standardized', function () {
     expect($document->toSearchableArray()['language_code'])->toBe('unknown');
 });
 
-test('document date range bucket is calculated correctly', function () {
+test('document date range bucket is calculated correctly', function (): void {
     // Test the most important cases: null handling and that it returns valid strings
 
     // No date - should return 'unknown'
@@ -56,7 +56,7 @@ test('document date range bucket is calculated correctly', function () {
     expect($bucket)->toBeIn($validBuckets);
 });
 
-test('toSearchableArray includes link_url', function () {
+test('toSearchableArray includes link_url', function (): void {
     $document = Document::factory()->create([
         'name' => 'ataskaita2023.vusa.lt.url',
         'anonymous_url' => 'https://sharepoint.example.com/document/123',

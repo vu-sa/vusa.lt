@@ -4,6 +4,7 @@ namespace App\Models\Pivots;
 
 use App\Models\ProgrammeBlock;
 use App\Models\ProgrammeDay;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
@@ -27,10 +28,10 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
+#[Table(name: 'programme_day_elements')]
 class ProgrammeElement extends MorphPivot
 {
-    protected $table = 'programme_day_elements';
-
+    #[\Override]
     protected $guarded = [];
 
     public function elementable()

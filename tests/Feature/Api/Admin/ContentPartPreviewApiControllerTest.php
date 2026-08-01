@@ -4,9 +4,9 @@ use App\Models\News;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
     $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
     $this->user = makeUser($this->tenant);
@@ -26,12 +26,12 @@ function previewPayload(array $overrides = []): array
     ], $overrides);
 }
 
-test('unauthenticated request is rejected', function () {
+test('unauthenticated request is rejected', function (): void {
     $this->postJson(route('api.v1.admin.contentParts.preview'), previewPayload(['tenant_id' => $this->tenant->id]))
         ->assertStatus(401);
 });
 
-test('rejects a tenant_id the user cannot act for', function () {
+test('rejects a tenant_id the user cannot act for', function (): void {
     $otherTenant = Tenant::factory()->create();
 
     asUser($this->admin)
@@ -39,20 +39,20 @@ test('rejects a tenant_id the user cannot act for', function () {
         ->assertStatus(403);
 });
 
-test('rejects a user with no manageable tenants at all', function () {
+test('rejects a user with no manageable tenants at all', function (): void {
     asUser($this->user)
         ->postJson(route('api.v1.admin.contentParts.preview'), previewPayload(['tenant_id' => $this->tenant->id]))
         ->assertStatus(403);
 });
 
-test('rejects a missing tenant_id with a validation error, not a 403', function () {
+test('rejects a missing tenant_id with a validation error, not a 403', function (): void {
     asUser($this->admin)
         ->postJson(route('api.v1.admin.contentParts.preview'), previewPayload(['tenant_id' => null]))
         ->assertStatus(422)
         ->assertJsonValidationErrors('tenant_id');
 });
 
-test('returns null for a type with no registered resolver, without erroring the whole batch', function () {
+test('returns null for a type with no registered resolver, without erroring the whole batch', function (): void {
     asUser($this->admin)
         ->postJson(route('api.v1.admin.contentParts.preview'), previewPayload([
             'tenant_id' => $this->tenant->id,
@@ -64,7 +64,7 @@ test('returns null for a type with no registered resolver, without erroring the 
         ->assertJsonPath('data.resolved.text', null);
 });
 
-test('rejects an invalid content part type', function () {
+test('rejects an invalid content part type', function (): void {
     asUser($this->admin)
         ->postJson(route('api.v1.admin.contentParts.preview'), previewPayload([
             'tenant_id' => $this->tenant->id,
@@ -76,7 +76,7 @@ test('rejects an invalid content part type', function () {
         ->assertJsonValidationErrors('parts.0.type');
 });
 
-test('resolves a news block through the same resolver public rendering uses', function () {
+test('resolves a news block through the same resolver public rendering uses', function (): void {
     News::factory()->for($this->tenant)->create(['lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay(), 'title' => 'Preview news']);
 
     asUser($this->admin)
@@ -95,7 +95,7 @@ test('resolves a news block through the same resolver public rendering uses', fu
         );
 });
 
-test('batches multiple resolvable blocks in a single request', function () {
+test('batches multiple resolvable blocks in a single request', function (): void {
     News::factory()->for($this->tenant)->create(['lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay()]);
 
     asUser($this->admin)

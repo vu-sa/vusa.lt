@@ -4,26 +4,26 @@ use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
     $this->user->assignRole(config('permission.super_admin_role_name'));
 });
 
-describe('SystemStatus: Authentication & Authorization', function () {
-    test('requires authentication to access system status page', function () {
+describe('SystemStatus: Authentication & Authorization', function (): void {
+    test('requires authentication to access system status page', function (): void {
         $this->get('/mano/system-status')
             ->assertRedirect('/login');
     });
 
-    test('authenticated users can access system status page', function () {
+    test('authenticated users can access system status page', function (): void {
         asUser($this->user)->get('/mano/system-status')
             ->assertStatus(200);
     });
 
-    test('system status page returns Inertia response', function () {
+    test('system status page returns Inertia response', function (): void {
         // Set a consistent Inertia version to avoid 409 conflicts in tests
         config(['inertia.testing.ensure_pages_exist' => false]);
 
@@ -44,18 +44,18 @@ describe('SystemStatus: Authentication & Authorization', function () {
     });
 });
 
-describe('SystemStatus: Page Content', function () {
-    test('system status page includes required status data', function () {
+describe('SystemStatus: Page Content', function (): void {
+    test('system status page includes required status data', function (): void {
         $response = asUser($this->user)->get('/mano/system-status');
 
         $response->assertStatus(200);
         $props = $response->getOriginalContent()->getData()['page']['props'];
 
-        expect($props)->toHaveKeys(['status', 'lastUpdated']);
-        expect($props['status'])->toHaveKeys(['redis', 'database', 'cache', 'integrations', 'system']);
+        expect($props)->toHaveKeys(['status', 'lastUpdated'])
+            ->and($props['status'])->toHaveKeys(['redis', 'database', 'cache', 'integrations', 'system']);
     });
 
-    test('redis status includes essential information', function () {
+    test('redis status includes essential information', function (): void {
         $response = asUser($this->user)->get('/mano/system-status');
 
         $response->assertStatus(200);
@@ -71,7 +71,7 @@ describe('SystemStatus: Page Content', function () {
         }
     });
 
-    test('database status includes connection information', function () {
+    test('database status includes connection information', function (): void {
         $response = asUser($this->user)->get('/mano/system-status');
 
         $response->assertStatus(200);
@@ -87,18 +87,18 @@ describe('SystemStatus: Page Content', function () {
         }
     });
 
-    test('cache status reflects current cache driver', function () {
+    test('cache status reflects current cache driver', function (): void {
         $response = asUser($this->user)->get('/mano/system-status');
 
         $response->assertStatus(200);
         $props = $response->getOriginalContent()->getData()['page']['props'];
         $cache = $props['status']['cache'];
 
-        expect($cache)->toHaveKeys(['status', 'working', 'driver']);
-        expect($cache['working'])->toBeTrue();
+        expect($cache)->toHaveKeys(['status', 'working', 'driver'])
+            ->and($cache['working'])->toBeTrue();
     });
 
-    test('integrations status includes all configured integrations', function () {
+    test('integrations status includes all configured integrations', function (): void {
         $response = asUser($this->user)->get('/mano/system-status');
 
         $response->assertStatus(200);
@@ -112,7 +112,7 @@ describe('SystemStatus: Page Content', function () {
         }
     });
 
-    test('system information includes essential server details', function () {
+    test('system information includes essential server details', function (): void {
         $response = asUser($this->user)->get('/mano/system-status');
 
         $response->assertStatus(200);
@@ -129,8 +129,8 @@ describe('SystemStatus: Page Content', function () {
     });
 });
 
-describe('SystemStatus: Auto-refresh with Polling', function () {
-    test('status page includes auto-refresh data for polling', function () {
+describe('SystemStatus: Auto-refresh with Polling', function (): void {
+    test('status page includes auto-refresh data for polling', function (): void {
         $response = asUser($this->user)->get('/mano/system-status');
 
         $response->assertStatus(200);
@@ -141,7 +141,7 @@ describe('SystemStatus: Auto-refresh with Polling', function () {
         expect($props['lastUpdated'])->not()->toBeEmpty();
     });
 
-    test('cache management works independently of manual refresh', function () {
+    test('cache management works independently of manual refresh', function (): void {
         // Set a cache value to test cache functionality
         Cache::put('system_status_cache', ['test' => 'data'], 300);
 
@@ -154,7 +154,7 @@ describe('SystemStatus: Auto-refresh with Polling', function () {
         expect(Cache::has('system_status_cache'))->toBeFalse();
     });
 
-    test('status data structure remains consistent for polling updates', function () {
+    test('status data structure remains consistent for polling updates', function (): void {
         $response = asUser($this->user)->get('/mano/system-status');
 
         $response->assertStatus(200);
@@ -173,8 +173,8 @@ describe('SystemStatus: Auto-refresh with Polling', function () {
     });
 });
 
-describe('SystemStatus: Security', function () {
-    test('status data does not expose sensitive information', function () {
+describe('SystemStatus: Security', function (): void {
+    test('status data does not expose sensitive information', function (): void {
         $response = asUser($this->user)->get('/mano/system-status');
 
         $response->assertStatus(200);
@@ -182,13 +182,16 @@ describe('SystemStatus: Security', function () {
 
         // Check that status data doesn't contain raw sensitive information
         $statusData = json_encode($props['status']);
-        expect($statusData)->not()->toContain('DB_PASSWORD');
-        expect($statusData)->not()->toContain('REDIS_PASSWORD');
-        expect($statusData)->not()->toContain('SECRET_KEY');
-        expect($statusData)->not()->toContain('API_TOKEN');
+        expect($statusData)->not()->toContain('DB_PASSWORD')
+            ->not()
+            ->toContain('REDIS_PASSWORD')
+            ->not()
+            ->toContain('SECRET_KEY')
+            ->not()
+            ->toContain('API_TOKEN');
     });
 
-    test('does not expose database credentials in error messages', function () {
+    test('does not expose database credentials in error messages', function (): void {
         $response = asUser($this->user)->get('/mano/system-status');
 
         $response->assertStatus(200);
@@ -200,14 +203,16 @@ describe('SystemStatus: Security', function () {
         foreach ($statusSections as $section) {
             if (isset($props['status'][$section]['error'])) {
                 $errorMessage = $props['status'][$section]['error'];
-                expect($errorMessage)->not()->toContain('password');
-                expect($errorMessage)->not()->toContain('DB_PASSWORD');
-                expect($errorMessage)->not()->toContain('REDIS_PASSWORD');
+                expect($errorMessage)->not()->toContain('password')
+                    ->not()
+                    ->toContain('DB_PASSWORD')
+                    ->not()
+                    ->toContain('REDIS_PASSWORD');
             }
         }
     });
 
-    test('polling does not create excessive server load', function () {
+    test('polling does not create excessive server load', function (): void {
         $responses = [];
 
         // Make multiple rapid requests to simulate polling behavior
@@ -222,8 +227,8 @@ describe('SystemStatus: Security', function () {
     });
 });
 
-describe('SystemStatus: Performance', function () {
-    test('system status page loads efficiently', function () {
+describe('SystemStatus: Performance', function (): void {
+    test('system status page loads efficiently', function (): void {
         $response = asUser($this->user)->get('/mano/system-status');
 
         $response->assertStatus(200);
@@ -231,7 +236,7 @@ describe('SystemStatus: Performance', function () {
         expect($response->status())->toBe(200);
     });
 
-    test('system status returns consistent data structure', function () {
+    test('system status returns consistent data structure', function (): void {
         $response = asUser($this->user)->get('/mano/system-status');
 
         $response->assertStatus(200);
@@ -250,8 +255,8 @@ describe('SystemStatus: Performance', function () {
     });
 });
 
-describe('SystemStatus: Error Handling', function () {
-    test('handles redis connection failures gracefully', function () {
+describe('SystemStatus: Error Handling', function (): void {
+    test('handles redis connection failures gracefully', function (): void {
         // Mock Redis failure scenario by temporarily changing config
         config(['database.redis.default.host' => 'invalid-host']);
 
@@ -260,11 +265,11 @@ describe('SystemStatus: Error Handling', function () {
         $response->assertStatus(200);
         $props = $response->getOriginalContent()->getData()['page']['props'];
 
-        expect($props['status']['redis']['status'])->toBe('error');
-        expect($props['status']['redis'])->toHaveKey('error');
+        expect($props['status']['redis']['status'])->toBe('error')
+            ->and($props['status']['redis'])->toHaveKey('error');
     });
 
-    test('continues to show other services when one fails', function () {
+    test('continues to show other services when one fails', function (): void {
         // Even if Redis fails, other services should still be checked
         config(['database.redis.default.host' => 'invalid-host']);
 

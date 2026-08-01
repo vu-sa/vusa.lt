@@ -47,10 +47,10 @@ class GetInstitutionRepresentatives
 
         // Get users who are currently active in these duties
         return User::query()
-            ->whereHas('duties', function ($query) use ($dutyIds, $checkDate) {
+            ->whereHas('duties', function ($query) use ($dutyIds, $checkDate): void {
                 $query->whereIn('duties.id', $dutyIds)
                     ->where('dutiables.start_date', '<=', $checkDate)
-                    ->where(function ($q) use ($checkDate) {
+                    ->where(function ($q) use ($checkDate): void {
                         $q->whereNull('dutiables.end_date')
                             ->orWhere('dutiables.end_date', '>=', $checkDate);
                     });

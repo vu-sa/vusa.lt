@@ -144,7 +144,7 @@ trait HasApprovals
      */
     public function canBeApprovedBy(User $user, ?int $step = null, $decision = null): bool
     {
-        $step = $step ?? $this->currentApprovalStep();
+        $step ??= $this->currentApprovalStep();
 
         // Check if user has already approved this step
         if ($this->approvals()->forStep($step)->where('user_id', $user->id)->exists()) {
@@ -177,7 +177,7 @@ trait HasApprovals
     {
         // Try to find a flow attached to this specific model
         $flow = ApprovalFlow::query()
-            ->where('flowable_type', get_class($this))
+            ->where('flowable_type', $this::class)
             ->where('flowable_id', $this->id)
             ->first();
 
@@ -187,7 +187,7 @@ trait HasApprovals
 
         // Fall back to global flow for this model type
         return ApprovalFlow::query()
-            ->where('flowable_type', get_class($this))
+            ->where('flowable_type', $this::class)
             ->whereNull('flowable_id')
             ->first();
     }

@@ -23,7 +23,7 @@ use Illuminate\Http\Request;
 class AnalyticsApiController extends ApiController
 {
     /** @var array<string, int> Supported periods, in days back from today. */
-    private const PERIODS = [
+    private const array PERIODS = [
         '7d' => 7,
         '30d' => 30,
         '12m' => 365,

@@ -5,39 +5,39 @@ use App\Models\Institution;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->institution = Institution::factory()->for($this->tenant)->create();
 });
 
-describe('FileableFile model basic functionality', function () {
-    test('can create a FileableFile with required attributes', function () {
+describe('FileableFile model basic functionality', function (): void {
+    test('can create a FileableFile with required attributes', function (): void {
         $fileableFile = FileableFile::factory()->for($this->institution, 'fileable')->create();
 
-        expect($fileableFile)->toBeInstanceOf(FileableFile::class);
-        expect($fileableFile->fileable_type)->toBe(Institution::class);
-        expect($fileableFile->fileable_id)->toBe($this->institution->id);
-        expect($fileableFile->sharepoint_id)->toBeString();
-        expect($fileableFile->name)->toBeString();
+        expect($fileableFile)->toBeInstanceOf(FileableFile::class)
+            ->and($fileableFile->fileable_type)->toBe(Institution::class)
+            ->and($fileableFile->fileable_id)->toBe($this->institution->id)
+            ->and($fileableFile->sharepoint_id)->toBeString()
+            ->and($fileableFile->name)->toBeString();
     });
 
-    test('FileableFile uses ULID as primary key', function () {
+    test('FileableFile uses ULID as primary key', function (): void {
         $fileableFile = FileableFile::factory()->for($this->institution, 'fileable')->create();
 
         // ULIDs are 26 characters long
-        expect(strlen($fileableFile->id))->toBe(26);
+        expect($fileableFile->id)->toHaveLength(26);
     });
 
-    test('FileableFile belongs to a fileable model', function () {
+    test('FileableFile belongs to a fileable model', function (): void {
         $fileableFile = FileableFile::factory()->for($this->institution, 'fileable')->create();
 
-        expect($fileableFile->fileable)->toBeInstanceOf(Institution::class);
-        expect($fileableFile->fileable->id)->toBe($this->institution->id);
+        expect($fileableFile->fileable)->toBeInstanceOf(Institution::class)
+            ->and($fileableFile->fileable->id)->toBe($this->institution->id);
     });
 
-    test('institution can have multiple FileableFiles', function () {
+    test('institution can have multiple FileableFiles', function (): void {
         FileableFile::factory()->count(3)->for($this->institution, 'fileable')->create();
 
         $this->institution->refresh();
@@ -46,8 +46,8 @@ describe('FileableFile model basic functionality', function () {
     });
 });
 
-describe('FileableFile scopes', function () {
-    test('ofType scope filters by file type', function () {
+describe('FileableFile scopes', function (): void {
+    test('ofType scope filters by file type', function (): void {
         FileableFile::factory()->for($this->institution, 'fileable')->protocol()->create();
         FileableFile::factory()->for($this->institution, 'fileable')->report()->create();
         FileableFile::factory()->for($this->institution, 'fileable')->create(['file_type' => FileableFile::TYPE_OTHER]);
@@ -55,46 +55,46 @@ describe('FileableFile scopes', function () {
         $protocolFiles = FileableFile::ofType(FileableFile::TYPE_PROTOCOL)->get();
         $reportFiles = FileableFile::ofType(FileableFile::TYPE_REPORT)->get();
 
-        expect($protocolFiles)->toHaveCount(1);
-        expect($reportFiles)->toHaveCount(1);
+        expect($protocolFiles)->toHaveCount(1)
+            ->and($reportFiles)->toHaveCount(1);
     });
 
-    test('notDeletedExternally scope excludes externally deleted files', function () {
+    test('notDeletedExternally scope excludes externally deleted files', function (): void {
         FileableFile::factory()->for($this->institution, 'fileable')->create();
         FileableFile::factory()->for($this->institution, 'fileable')->deletedExternally()->create();
 
         $availableFiles = FileableFile::notDeletedExternally()->get();
 
-        expect($availableFiles)->toHaveCount(1);
-        expect($availableFiles->first()->deleted_externally_at)->toBeNull();
+        expect($availableFiles)->toHaveCount(1)
+            ->and($availableFiles->first()->deleted_externally_at)->toBeNull();
     });
 
-    test('available scope excludes externally deleted files', function () {
+    test('available scope excludes externally deleted files', function (): void {
         $normalFile = FileableFile::factory()->for($this->institution, 'fileable')->create();
         FileableFile::factory()->for($this->institution, 'fileable')->deletedExternally()->create();
 
         $availableFiles = FileableFile::available()->get();
 
-        expect($availableFiles)->toHaveCount(1);
-        expect($availableFiles->first()->id)->toBe($normalFile->id);
+        expect($availableFiles)->toHaveCount(1)
+            ->and($availableFiles->first()->id)->toBe($normalFile->id);
     });
 });
 
-describe('FileableFile trait methods on fileable models', function () {
-    test('hasFileOfType returns true when file exists', function () {
+describe('FileableFile trait methods on fileable models', function (): void {
+    test('hasFileOfType returns true when file exists', function (): void {
         FileableFile::factory()->for($this->institution, 'fileable')->protocol()->create();
 
-        expect($this->institution->hasFileOfType(FileableFile::TYPE_PROTOCOL))->toBeTrue();
-        expect($this->institution->hasFileOfType(FileableFile::TYPE_REPORT))->toBeFalse();
+        expect($this->institution->hasFileOfType(FileableFile::TYPE_PROTOCOL))->toBeTrue()
+            ->and($this->institution->hasFileOfType(FileableFile::TYPE_REPORT))->toBeFalse();
     });
 
-    test('hasFileOfType excludes externally deleted files', function () {
+    test('hasFileOfType excludes externally deleted files', function (): void {
         FileableFile::factory()->for($this->institution, 'fileable')->protocol()->deletedExternally()->create();
 
         expect($this->institution->hasFileOfType(FileableFile::TYPE_PROTOCOL))->toBeFalse();
     });
 
-    test('availableFiles relationship excludes deleted files', function () {
+    test('availableFiles relationship excludes deleted files', function (): void {
         FileableFile::factory()->for($this->institution, 'fileable')->create();
         FileableFile::factory()->for($this->institution, 'fileable')->deletedExternally()->create();
 
@@ -102,39 +102,39 @@ describe('FileableFile trait methods on fileable models', function () {
     });
 });
 
-describe('FileableFile attributes and accessors', function () {
-    test('formattedSize returns human-readable file size', function () {
+describe('FileableFile attributes and accessors', function (): void {
+    test('formattedSize returns human-readable file size', function (): void {
         $smallFile = FileableFile::factory()->for($this->institution, 'fileable')->create(['size_bytes' => 500]);
         $mediumFile = FileableFile::factory()->for($this->institution, 'fileable')->create(['size_bytes' => 1536]); // 1.5 KB
         $largeFile = FileableFile::factory()->for($this->institution, 'fileable')->create(['size_bytes' => 1572864]); // 1.5 MB
 
         expect($smallFile->formatted_size)->toBe('500 B');
-        expect($mediumFile->formatted_size)->toBe('1.5 KB');
-        expect($largeFile->formatted_size)->toBe('1.5 MB');
+        expect($mediumFile->formatted_size)->toBe('1.5 KB')
+            ->and($largeFile->formatted_size)->toBe('1.5 MB');
     });
 
-    test('formattedSize returns null when size_bytes is null', function () {
+    test('formattedSize returns null when size_bytes is null', function (): void {
         $file = FileableFile::factory()->for($this->institution, 'fileable')->create(['size_bytes' => null]);
 
         expect($file->formatted_size)->toBeNull();
     });
 
-    test('fileTypeLabel returns localized label', function () {
+    test('fileTypeLabel returns localized label', function (): void {
         $file = FileableFile::factory()->for($this->institution, 'fileable')->protocol()->create();
 
         // FileTypes are stored in Lithuanian (matching SharePoint metadata labels)
         expect($file->file_type_label)->toBe(FileableFile::TYPE_PROTOCOL);
     });
 
-    test('fileTypeLabel returns null when file_type is null', function () {
+    test('fileTypeLabel returns null when file_type is null', function (): void {
         $file = FileableFile::factory()->for($this->institution, 'fileable')->create(['file_type' => null]);
 
         expect($file->file_type_label)->toBeNull();
     });
 });
 
-describe('FileableFile external deletion tracking', function () {
-    test('markAsDeletedExternally sets the timestamp', function () {
+describe('FileableFile external deletion tracking', function (): void {
+    test('markAsDeletedExternally sets the timestamp', function (): void {
         $file = FileableFile::factory()->for($this->institution, 'fileable')->create();
 
         expect($file->deleted_externally_at)->toBeNull();
@@ -144,17 +144,17 @@ describe('FileableFile external deletion tracking', function () {
         expect($file->deleted_externally_at)->not()->toBeNull();
     });
 
-    test('isDeletedExternally returns correct boolean', function () {
+    test('isDeletedExternally returns correct boolean', function (): void {
         $normalFile = FileableFile::factory()->for($this->institution, 'fileable')->create();
         $deletedFile = FileableFile::factory()->for($this->institution, 'fileable')->deletedExternally()->create();
 
-        expect($normalFile->isDeletedExternally())->toBeFalse();
-        expect($deletedFile->isDeletedExternally())->toBeTrue();
+        expect($normalFile->isDeletedExternally())->toBeFalse()
+            ->and($deletedFile->isDeletedExternally())->toBeTrue();
     });
 });
 
-describe('FileableFile public link functionality', function () {
-    test('hasExpiredPublicLink returns false when no expiry set', function () {
+describe('FileableFile public link functionality', function (): void {
+    test('hasExpiredPublicLink returns false when no expiry set', function (): void {
         $file = FileableFile::factory()->for($this->institution, 'fileable')->create([
             'public_link_expires_at' => null,
         ]);
@@ -162,33 +162,33 @@ describe('FileableFile public link functionality', function () {
         expect($file->hasExpiredPublicLink())->toBeFalse();
     });
 
-    test('hasExpiredPublicLink returns true when link is expired', function () {
+    test('hasExpiredPublicLink returns true when link is expired', function (): void {
         $file = FileableFile::factory()->for($this->institution, 'fileable')->withExpiredPublicLink()->create();
 
         expect($file->hasExpiredPublicLink())->toBeTrue();
     });
 
-    test('hasExpiredPublicLink returns false when link is still valid', function () {
+    test('hasExpiredPublicLink returns false when link is still valid', function (): void {
         $file = FileableFile::factory()->for($this->institution, 'fileable')->withPublicLink()->create();
 
         expect($file->hasExpiredPublicLink())->toBeFalse();
     });
 });
 
-describe('FileableFile static helpers', function () {
-    test('fileTypes returns all available types with labels', function () {
+describe('FileableFile static helpers', function (): void {
+    test('fileTypes returns all available types with labels', function (): void {
         $types = FileableFile::fileTypes();
 
-        expect($types)->toHaveKey(FileableFile::TYPE_PROTOCOL);
-        expect($types)->toHaveKey(FileableFile::TYPE_REPORT);
-        expect($types)->toHaveKey(FileableFile::TYPE_AGENDA);
-        expect($types)->toHaveKey(FileableFile::TYPE_METHODOLOGY);
-        expect($types)->toHaveKey(FileableFile::TYPE_OTHER);
+        expect($types)->toHaveKey(FileableFile::TYPE_PROTOCOL)
+            ->toHaveKey(FileableFile::TYPE_REPORT)
+            ->toHaveKey(FileableFile::TYPE_AGENDA)
+            ->toHaveKey(FileableFile::TYPE_METHODOLOGY)
+            ->toHaveKey(FileableFile::TYPE_OTHER);
     });
 });
 
-describe('FileableFile deletion', function () {
-    test('deleted files are permanently removed', function () {
+describe('FileableFile deletion', function (): void {
+    test('deleted files are permanently removed', function (): void {
         $file = FileableFile::factory()->for($this->institution, 'fileable')->create();
         $file->delete();
 

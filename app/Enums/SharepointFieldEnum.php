@@ -2,33 +2,32 @@
 
 namespace App\Enums;
 
-use Spatie\Enum\Laravel\Enum;
+use App\Enums\Concerns\HasEnumHelpers;
 
-/**
- * @typescript
- *
- * @method static self PADALINYS()
- * @method static self TITLE()
- * @method static self DATE()
- * @method static self EFFECTIVE_DATE()
- * @method static self EXPIRATION_DATE()
- * @method static self LANGUAGE()
- * @method static self TURINYS()
- * @method static self SUMMARY()
- */
-final class SharepointFieldEnum extends Enum
+enum SharepointFieldEnum: string
 {
-    protected static function labels(): array
+    use HasEnumHelpers;
+
+    case PADALINYS = 'PADALINYS';
+    case TITLE = 'TITLE';
+    case DATE = 'DATE';
+    case EFFECTIVE_DATE = 'EFFECTIVE_DATE';
+    case EXPIRATION_DATE = 'EXPIRATION_DATE';
+    case LANGUAGE = 'LANGUAGE';
+    case TURINYS = 'TURINYS';
+    case SUMMARY = 'SUMMARY';
+
+    public function label(): string
     {
-        return [
-            'PADALINYS' => 'Padalinys',
-            'TITLE' => 'Title',
-            'DATE' => 'Date',
-            'EFFECTIVE_DATE' => 'Effective_x0020_Date',
-            'EXPIRATION_DATE' => 'Expiration_x0020_Date0',
-            'LANGUAGE' => 'Language',
-            'TURINYS' => 'Turinys',
-            'SUMMARY' => 'Summary',
-        ];
+        return match ($this) {
+            self::PADALINYS => 'Padalinys',
+            self::TITLE => 'Title',
+            self::DATE => 'Date',
+            self::EFFECTIVE_DATE => 'Effective_x0020_Date',
+            self::EXPIRATION_DATE => 'Expiration_x0020_Date0',
+            self::LANGUAGE => 'Language',
+            self::TURINYS => 'Turinys',
+            self::SUMMARY => 'Summary',
+        };
     }
 }

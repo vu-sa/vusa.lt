@@ -9,24 +9,24 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Route;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
 
     $this->admin = makeUser($this->tenant);
 });
 
-describe('email notification system', function () {
-    test('mail system is properly configured', function () {
+describe('email notification system', function (): void {
+    test('mail system is properly configured', function (): void {
         Mail::fake();
 
         // Test that mail facade is working
         expect(Mail::getFacadeRoot())->not->toBeNull();
     });
 
-    test('notification system can queue emails', function () {
+    test('notification system can queue emails', function (): void {
         Mail::fake();
         Notification::fake();
 
@@ -50,10 +50,10 @@ describe('email notification system', function () {
         $this->user->notify($testNotification);
 
         // Verify notification was sent
-        Notification::assertSentTo($this->user, get_class($testNotification));
+        Notification::assertSentTo($this->user, $testNotification::class);
     });
 
-    test('emails contain required structure', function () {
+    test('emails contain required structure', function (): void {
         $testNotification = new class extends Illuminate\Notifications\Notification
         {
             public function via($notifiable)
@@ -72,11 +72,11 @@ describe('email notification system', function () {
 
         $mailMessage = $testNotification->toMail($this->user);
 
-        expect($mailMessage->subject)->toBe('Test Email');
-        expect($mailMessage->greeting)->toBe('Hello!');
+        expect($mailMessage->subject)->toBe('Test Email')
+            ->and($mailMessage->greeting)->toBe('Hello!');
     });
 
-    test('failed emails are handled gracefully', function () {
+    test('failed emails are handled gracefully', function (): void {
         // This tests that the notification system doesn't crash on errors
         try {
             Mail::fake();
@@ -88,7 +88,7 @@ describe('email notification system', function () {
                     return ['mail'];
                 }
 
-                public function toMail($notifiable)
+                public function toMail($notifiable): never
                 {
                     throw new Exception('Simulated mail error');
                 }
@@ -102,8 +102,8 @@ describe('email notification system', function () {
     });
 });
 
-describe('route accessibility and authentication', function () {
-    test('all admin routes require authentication', function () {
+describe('route accessibility and authentication', function (): void {
+    test('all admin routes require authentication', function (): void {
         $adminRoutes = [
             'users.index',
             'news.index',
@@ -121,7 +121,7 @@ describe('route accessibility and authentication', function () {
         }
     });
 
-    test('public routes are accessible without authentication', function () {
+    test('public routes are accessible without authentication', function (): void {
         $publicRoutes = [
             '/lt',
             '/en',
@@ -134,10 +134,10 @@ describe('route accessibility and authentication', function () {
 
         // Root should redirect to a language version (either 301 or 302 is acceptable)
         $response = $this->get('/');
-        expect(in_array($response->status(), [301, 302]))->toBeTrue();
+        expect([301, 302])->toContain($response->status());
     });
 
-    test('authenticated users can access appropriate admin areas', function () {
+    test('authenticated users can access appropriate admin areas', function (): void {
         // Give admin proper permissions
         $this->admin->duties()->first()->assignRole('Communication Coordinator');
 
@@ -148,10 +148,10 @@ describe('route accessibility and authentication', function () {
         // Test that admin can access features they have permissions for
         // This might redirect if user doesn't have proper permissions, which is acceptable
         $response = asUser($this->admin)->get(route('news.index'));
-        expect(in_array($response->status(), [200, 302]))->toBeTrue();
+        expect([200, 302])->toContain($response->status());
     });
 
-    test('API routes have proper authentication', function () {
+    test('API routes have proper authentication', function (): void {
         // Use makeUser to ensure admin has proper tenant relationship
         $adminWithTenant = makeUser($this->tenant);
 
@@ -181,8 +181,8 @@ describe('route accessibility and authentication', function () {
     });
 });
 
-describe('Microsoft authentication integration', function () {
-    test('Microsoft auth routes exist', function () {
+describe('Microsoft authentication integration', function (): void {
+    test('Microsoft auth routes exist', function (): void {
         // Check if Microsoft auth routes are registered
         $routes = [
             'auth.microsoft',
@@ -198,7 +198,7 @@ describe('Microsoft authentication integration', function () {
         }
     });
 
-    test('Microsoft auth redirects properly', function () {
+    test('Microsoft auth redirects properly', function (): void {
         if (Route::has('auth.microsoft')) {
             $this->get(route('auth.microsoft'))
                 ->assertRedirect(); // Should redirect to Microsoft
@@ -207,15 +207,15 @@ describe('Microsoft authentication integration', function () {
         }
     });
 
-    test('Microsoft auth callback handles user creation', function () {
+    test('Microsoft auth callback handles user creation', function (): void {
         // This would need to mock the Microsoft OAuth response
         // and test that users are created/updated properly
         $this->markTestSkipped('Microsoft auth callback test needs OAuth mocking');
     });
 });
 
-describe('SharePoint API integration', function () {
-    test('SharePoint connection can be established with mocked API', function () {
+describe('SharePoint API integration', function (): void {
+    test('SharePoint connection can be established with mocked API', function (): void {
         // Mock SharePoint authentication
         Http::fake([
             'login.microsoftonline.com/*' => Http::response([
@@ -238,15 +238,15 @@ describe('SharePoint API integration', function () {
                 'grant_type' => 'client_credentials',
             ]);
 
-            expect($response->successful())->toBeTrue();
-            expect($response->json('access_token'))->toBe('fake-access-token');
-        } catch (Exception $e) {
+            expect($response->successful())->toBeTrue()
+                ->and($response->json('access_token'))->toBe('fake-access-token');
+        } catch (Exception) {
             // HTTP client might not be configured, which is fine for this test
             expect(true)->toBeTrue();
         }
     });
 
-    test('SharePoint file operations work with mocked responses', function () {
+    test('SharePoint file operations work with mocked responses', function (): void {
         // Mock comprehensive SharePoint API responses
         Http::fake([
             'login.microsoftonline.com/*' => Http::response([
@@ -305,7 +305,7 @@ describe('SharePoint API integration', function () {
         expect(true)->toBeTrue();
     });
 
-    test('SharePoint API error handling works correctly', function () {
+    test('SharePoint API error handling works correctly', function (): void {
         // Mock various error scenarios
         Http::fake([
             'login.microsoftonline.com/*/oauth2/v2.0/token' => Http::response([
@@ -331,25 +331,25 @@ describe('SharePoint API integration', function () {
         // Verify error responses are properly mocked
         try {
             $authResponse = Http::post('https://login.microsoftonline.com/fake-tenant/oauth2/v2.0/token');
-            expect($authResponse->status())->toBe(401);
-            expect($authResponse->json('error'))->toBe('invalid_client');
+            expect($authResponse->status())->toBe(401)
+                ->and($authResponse->json('error'))->toBe('invalid_client');
 
             $siteResponse = Http::get('https://graph.microsoft.com/v1.0/sites/fake-site');
-            expect($siteResponse->status())->toBe(403);
-            expect($siteResponse->json('error.code'))->toBe('Forbidden');
+            expect($siteResponse->status())->toBe(403)
+                ->and($siteResponse->json('error.code'))->toBe('Forbidden');
 
             $itemResponse = Http::get('https://graph.microsoft.com/v1.0/sites/fake-site/lists/fake-list/items/fake-item');
-            expect($itemResponse->status())->toBe(404);
-            expect($itemResponse->json('error.code'))->toBe('itemNotFound');
-        } catch (Exception $e) {
+            expect($itemResponse->status())->toBe(404)
+                ->and($itemResponse->json('error.code'))->toBe('itemNotFound');
+        } catch (Exception) {
             // HTTP facade might not be used, which is acceptable
             expect(true)->toBeTrue();
         }
     });
 });
 
-describe('comprehensive route testing', function () {
-    test('all registered routes return appropriate status codes', function () {
+describe('comprehensive route testing', function (): void {
+    test('all registered routes return appropriate status codes', function (): void {
         $router = app('router');
         $routes = $router->getRoutes();
 
@@ -379,8 +379,8 @@ describe('comprehensive route testing', function () {
             // but not 500 (server error)
             // Handle different response types (some might be file downloads)
             if (method_exists($response, 'status')) {
-                expect($response->status())->not->toBe(500);
-                expect($response->status())->toBeIn([200, 302, 404, 403, 401]);
+                expect($response->status())->not->toBe(500)
+                    ->toBeIn([200, 302, 404, 403, 401]);
             } else {
                 // For file responses, just check that no exception was thrown
                 expect(true)->toBeTrue();

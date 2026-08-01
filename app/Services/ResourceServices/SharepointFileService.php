@@ -39,7 +39,7 @@ class SharepointFileService
             abort(500, 'Model does not have HasSharepointFiles trait');
         }
 
-        $path = SharepointFolderEnum::GENERAL()->label;
+        $path = SharepointFolderEnum::GENERAL->label();
 
         if ($fileable instanceof Type) {
             $typeableType = Str::plural(class_basename($fileable->model_type));
@@ -56,7 +56,7 @@ class SharepointFileService
                 abort(500, 'Institution does not have a tenant. Tenant must be assigned.');
             }
 
-            $path .= '/'.SharepointFolderEnum::PADALINIAI()->label;
+            $path .= '/'.SharepointFolderEnum::PADALINIAI->label();
             $path .= '/'.$tenant->shortname;
             $path .= '/'.Str::plural(class_basename(Institution::class)).'/'.$fileable->getTranslation('name', 'lt');
         }
@@ -69,7 +69,7 @@ class SharepointFileService
                 abort(500, 'Meeting does not have an institution. Institution must be assigned.');
             }
 
-            $path .= '/'.SharepointFolderEnum::PADALINIAI()->label;
+            $path .= '/'.SharepointFolderEnum::PADALINIAI->label();
 
             $tenant = $institution->tenant;
 
@@ -95,7 +95,7 @@ class SharepointFileService
                 abort(500, 'Institution does not have a tenant. Tenant must be assigned.');
             }
 
-            $path .= '/'.SharepointFolderEnum::PADALINIAI()->label;
+            $path .= '/'.SharepointFolderEnum::PADALINIAI->label();
             $path .= '/'.$tenant->shortname;
             $path .= '/'.Str::plural(class_basename($institution)).'/'.$institution->name;
             $path .= '/'.Str::plural(class_basename($fileable)).'/'.$fileable->getTranslation('name', 'lt');

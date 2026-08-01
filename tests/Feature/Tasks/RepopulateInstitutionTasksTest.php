@@ -12,9 +12,9 @@ use App\Tasks\Enums\ActionType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     Notification::fake();
     config(['queue.default' => 'sync']);
 });
@@ -58,8 +58,8 @@ function periodicityGapTaskFor(Institution $institution): ?Task
         ->first();
 }
 
-describe('tasks:repopulate institution', function () {
-    test('creates a periodicity gap task when the institution is approaching its threshold', function () {
+describe('tasks:repopulate institution', function (): void {
+    test('creates a periodicity gap task when the institution is approaching its threshold', function (): void {
         // No vacation between the meeting and today: 26 calendar days of a 30-day periodicity.
         $this->travelTo('2025-11-15');
 
@@ -74,7 +74,7 @@ describe('tasks:repopulate institution', function () {
         expect(periodicityGapTaskFor($institution))->not->toBeNull();
     });
 
-    test('does not create a task when the gap is made up of vacation days', function () {
+    test('does not create a task when the gap is made up of vacation days', function (): void {
         // June 20 -> September 1 is 73 calendar days, but 62 of them are summer
         // vacation, leaving 11 effective days - well inside the 30-day periodicity.
         $this->travelTo('2025-09-01');
@@ -90,7 +90,7 @@ describe('tasks:repopulate institution', function () {
         expect(periodicityGapTaskFor($institution))->toBeNull();
     });
 
-    test('does not create a task while an upcoming meeting covers the institution', function () {
+    test('does not create a task while an upcoming meeting covers the institution', function (): void {
         $this->travelTo('2025-11-15');
 
         $institution = institutionWithRepresentative();
@@ -107,7 +107,7 @@ describe('tasks:repopulate institution', function () {
         expect(periodicityGapTaskFor($institution))->toBeNull();
     });
 
-    test('does not create a task while an active activity report covers the institution', function () {
+    test('does not create a task while an active activity report covers the institution', function (): void {
         $this->travelTo('2025-11-15');
 
         $institution = institutionWithRepresentative();
@@ -130,7 +130,7 @@ describe('tasks:repopulate institution', function () {
         expect(periodicityGapTaskFor($institution))->toBeNull();
     });
 
-    test('sets a due date that does not fall inside a vacation period', function () {
+    test('sets a due date that does not fall inside a vacation period', function (): void {
         // Threshold is reached during summer vacation, so the 7-day deadline
         // is pushed past August 31 instead of landing in July.
         $this->travelTo('2025-06-28');

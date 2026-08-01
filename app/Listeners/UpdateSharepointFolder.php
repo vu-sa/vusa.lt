@@ -88,7 +88,7 @@ class UpdateSharepointFolder
         } catch (HttpException $e) {
             Log::warning('Could not determine old SharePoint path', [
                 'error' => $e->getMessage(),
-                'fileable_type' => get_class($fileable),
+                'fileable_type' => $fileable::class,
                 'fileable_id' => $fileable->id ?? null,
             ]);
 
@@ -107,7 +107,7 @@ class UpdateSharepointFolder
         if ($existingFolder === null) {
             Log::info('SharePoint folder does not exist, skipping rename', [
                 'old_path' => $oldPath,
-                'fileable_type' => get_class($fileable),
+                'fileable_type' => $fileable::class,
                 'fileable_id' => $fileable->id ?? null,
             ]);
 
@@ -123,7 +123,7 @@ class UpdateSharepointFolder
                 'old_path' => $oldPath,
                 'old_name' => $oldName,
                 'new_name' => $newName,
-                'fileable_type' => get_class($fileable),
+                'fileable_type' => $fileable::class,
                 'fileable_id' => $fileable->id ?? null,
             ]);
 
@@ -131,7 +131,7 @@ class UpdateSharepointFolder
                 oldPath: $oldPath,
                 oldName: $oldName,
                 newName: $newName,
-                fileableType: get_class($fileable),
+                fileableType: $fileable::class,
                 fileableId: $fileable->id ?? null,
             );
         }
@@ -140,7 +140,7 @@ class UpdateSharepointFolder
             'old_path' => $oldPath,
             'old_name' => $oldName,
             'new_name' => $newName,
-            'fileable_type' => get_class($fileable),
+            'fileable_type' => $fileable::class,
             'fileable_id' => $fileable->id ?? null,
         ]);
     }

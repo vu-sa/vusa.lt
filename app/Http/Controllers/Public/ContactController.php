@@ -21,7 +21,7 @@ use Inertia\Response;
 
 class ContactController extends PublicController
 {
-    public function __construct(private ContactPresentationService $presentationService)
+    public function __construct(private readonly ContactPresentationService $presentationService)
     {
         parent::__construct();
     }
@@ -61,9 +61,7 @@ class ContactController extends PublicController
         // Load types for breadcrumb navigation
         $institution->load('types');
 
-        $duties = $institution->load('duties.current_users.current_duties')->duties->sortBy(function ($duty) {
-            return $duty->order;
-        });
+        $duties = $institution->load('duties.current_users.current_duties')->duties->sortBy(fn ($duty) => $duty->order);
 
         // Process duties in order and group/flatten as needed
         $allContacts = collect();
@@ -117,11 +115,9 @@ class ContactController extends PublicController
         $institution->load('types');
 
         // load duties whereHas types
-        $duties = $institution->load(['duties' => function ($query) use ($types) {
+        $duties = $institution->load(['duties' => function ($query) use ($types): void {
             $query->whereHas('types', fn (Builder $query) => $query->whereIn('id', $types->pluck('id')))->with('current_users.current_duties.types');
-        }])->duties->sortBy(function ($duty) {
-            return $duty->order;
-        });
+        }])->duties->sortBy(fn ($duty) => $duty->order);
 
         // Process duties in order and group/flatten as needed
         $hasGroupedDuties = false;
@@ -149,9 +145,7 @@ class ContactController extends PublicController
         // keep all contacts, but remove some duties from them, if they are not in the selected types
         $contacts = $contacts->map(function ($contact) use ($types) {
             // You can't overwrite the relations, so we need to use another name
-            $contact->filtered_current_duties = $contact->current_duties->filter(function ($duty) use ($types) {
-                return $duty->types->intersect($types)->count() > 0;
-            });
+            $contact->filtered_current_duties = $contact->current_duties->filter(fn ($duty) => $duty->types->intersect($types)->count() > 0);
 
             return $contact;
         });
@@ -171,7 +165,7 @@ class ContactController extends PublicController
         /** @var Collection<int, Type> $descendants */
         $descendants = $type->getDescendantsAndSelf();
 
-        $descendants->load(['institutions' => function ($query) {
+        $descendants->load(['institutions' => function ($query): void {
             $query
                 ->with('duties.current_users:id,name,email,phone,facebook_url,profile_photo_path,profile_photo_focal_point')
                 ->with('tenant:id,alias')
@@ -331,7 +325,7 @@ class ContactController extends PublicController
 
         // Load relationships
         $meeting->load([
-            'agendaItems' => function ($query) {
+            'agendaItems' => function ($query): void {
                 $query->orderBy('order');
             },
             'agendaItems.mainVote',
@@ -416,8 +410,8 @@ class ContactController extends PublicController
 
         // For padaliniai type, use the traditional ShowContactCategory view
         if ($type->slug === 'padaliniai') {
-            $institutions = $type->load(['institutions' => function ($query) {
-                $query->orderBy('name')->with(['tenant' => function ($query) {
+            $institutions = $type->load(['institutions' => function ($query): void {
+                $query->orderBy('name')->with(['tenant' => function ($query): void {
                     $query->where('type', 'padalinys');
                 }]);
             }])->institutions;
@@ -429,12 +423,10 @@ class ContactController extends PublicController
             );
 
             return Inertia::render('Public/Contacts/ShowContactCategory', [
-                'institutions' => $institutions->map(function ($institution) {
-                    return [
-                        ...$institution->toArray(),
-                        'description' => '',
-                    ];
-                }),
+                'institutions' => $institutions->map(fn ($institution) => [
+                    ...$institution->toArray(),
+                    'description' => '',
+                ]),
                 'type' => $type->unsetRelation('institutions'),
             ])->withViewData(
                 ['SEOData' => $seo]
@@ -449,7 +441,7 @@ class ContactController extends PublicController
         $isMainTenant = $this->tenant->type === 'pagrindinis';
         $showAllTenants = request()->has('all') ? request()->boolean('all') : $isMainTenant;
 
-        $descendants->load(['institutions' => function ($query) use ($showAllTenants) {
+        $descendants->load(['institutions' => function ($query) use ($showAllTenants): void {
             $query
                 ->with('duties.current_users:id,name,email,phone,facebook_url,profile_photo_path,profile_photo_focal_point')
                 ->with('tenant:id,alias,shortname,type')
@@ -529,7 +521,7 @@ class ContactController extends PublicController
         // Load all past meetings with necessary relationships
         return $institution->meetings()
             ->with([
-                'agendaItems' => function ($query) {
+                'agendaItems' => function ($query): void {
                     $query->orderBy('order');
                 },
                 'agendaItems.mainVote',
@@ -551,9 +543,7 @@ class ContactController extends PublicController
             return [];
         }
 
-        $grouped = $meetings->groupBy(function (Meeting $meeting) {
-            return $this->getAcademicYear($meeting->start_time);
-        });
+        $grouped = $meetings->groupBy(fn (Meeting $meeting) => $this->getAcademicYear($meeting->start_time));
 
         $currentAcademicYear = $this->getAcademicYear(now());
 

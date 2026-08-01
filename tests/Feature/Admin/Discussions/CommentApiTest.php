@@ -14,9 +14,9 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
     $this->coordinator = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
 
@@ -44,8 +44,8 @@ beforeEach(function () {
     $this->storeUrl = route('api.v1.admin.comments.store', ['commentableType' => 'agendaItem', 'commentableId' => $this->agendaItem->id]);
 });
 
-describe('index', function () {
-    test('returns root comments with nested replies', function () {
+describe('index', function (): void {
+    test('returns root comments with nested replies', function (): void {
         $this->actingAs($this->coordinator);
         $root = $this->agendaItem->comment('<p>Root</p>');
         $this->agendaItem->comment('<p>Reply</p>', $root->id);
@@ -60,7 +60,7 @@ describe('index', function () {
             ->assertJsonPath('data.0.replies.0.body', '<p>Reply</p>');
     });
 
-    test('filters by resolved state', function () {
+    test('filters by resolved state', function (): void {
         $this->actingAs($this->coordinator);
         $open = $this->agendaItem->comment('<p>Open</p>');
         $done = $this->agendaItem->comment('<p>Done</p>');
@@ -73,19 +73,19 @@ describe('index', function () {
             ->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $done->id);
     });
 
-    test('an outsider is forbidden (403)', function () {
+    test('an outsider is forbidden (403)', function (): void {
         asUser($this->outsider)->getJson($this->indexUrl)->assertStatus(403);
     });
 
-    test('an unknown commentable type 404s', function () {
+    test('an unknown commentable type 404s', function (): void {
         asUser($this->coordinator)
             ->getJson(route('api.v1.admin.comments.index', ['commentableType' => 'banana', 'commentableId' => $this->agendaItem->id]))
             ->assertStatus(404);
     });
 });
 
-describe('store', function () {
-    test('a view-only participant can post a comment and it broadcasts', function () {
+describe('store', function (): void {
+    test('a view-only participant can post a comment and it broadcasts', function (): void {
         Event::fake([CommentBroadcast::class]);
 
         asUser($this->viewer)->postJson($this->storeUrl, ['body' => '<p>Hello from viewer</p>'])
@@ -98,7 +98,7 @@ describe('store', function () {
             && $e->channelName === "comments.agendaItem.{$this->agendaItem->id}");
     });
 
-    test('a reply computes thread_root_id', function () {
+    test('a reply computes thread_root_id', function (): void {
         $this->actingAs($this->coordinator);
         $root = $this->agendaItem->comment('<p>Root</p>');
 
@@ -108,7 +108,7 @@ describe('store', function () {
             ->assertJsonPath('data.thread_root_id', $root->id);
     });
 
-    test('a poll is created with server-assigned option ids', function () {
+    test('a poll is created with server-assigned option ids', function (): void {
         $response = asUser($this->coordinator)->postJson($this->storeUrl, [
             'body' => '<p>Approve the budget?</p>',
             'kind' => 'poll',
@@ -124,7 +124,7 @@ describe('store', function () {
         expect($response->json('data.poll.options.0.id'))->toBeString()->not->toBe('Yes');
     });
 
-    test('a poll without at least two options is rejected (422)', function () {
+    test('a poll without at least two options is rejected (422)', function (): void {
         asUser($this->coordinator)->postJson($this->storeUrl, [
             'body' => '<p>x</p>',
             'kind' => 'poll',
@@ -132,7 +132,7 @@ describe('store', function () {
         ])->assertStatus(422)->assertJsonValidationErrors(['metadata.poll.options']);
     });
 
-    test('a reply cannot be a poll (422)', function () {
+    test('a reply cannot be a poll (422)', function (): void {
         $this->actingAs($this->coordinator);
         $root = $this->agendaItem->comment('<p>Root</p>');
 
@@ -144,14 +144,14 @@ describe('store', function () {
         ])->assertStatus(422)->assertJsonValidationErrors(['parent_id']);
     });
 
-    test('an outsider cannot post (403)', function () {
+    test('an outsider cannot post (403)', function (): void {
         asUser($this->outsider)->postJson($this->storeUrl, ['body' => '<p>x</p>'])->assertStatus(403);
         expect($this->agendaItem->comments()->count())->toBe(0);
     });
 });
 
-describe('update & delete', function () {
-    test('the author can edit, marking it edited', function () {
+describe('update & delete', function (): void {
+    test('the author can edit, marking it edited', function (): void {
         $this->actingAs($this->viewer);
         $comment = $this->agendaItem->comment('<p>Original</p>');
 
@@ -161,7 +161,7 @@ describe('update & delete', function () {
         expect($comment->fresh()->edited_at)->not->toBeNull();
     });
 
-    test('a non-author cannot edit (403)', function () {
+    test('a non-author cannot edit (403)', function (): void {
         $this->actingAs($this->viewer);
         $comment = $this->agendaItem->comment('<p>Mine</p>');
 
@@ -169,7 +169,7 @@ describe('update & delete', function () {
             ->assertStatus(403);
     });
 
-    test('a moderator (parent update) can delete another user comment', function () {
+    test('a moderator (parent update) can delete another user comment', function (): void {
         $this->actingAs($this->viewer);
         $comment = $this->agendaItem->comment('<p>From viewer</p>');
 
@@ -179,7 +179,7 @@ describe('update & delete', function () {
         expect($comment->fresh()->trashed())->toBeTrue();
     });
 
-    test('a non-author non-moderator cannot delete (403)', function () {
+    test('a non-author non-moderator cannot delete (403)', function (): void {
         $this->actingAs($this->coordinator);
         $comment = $this->agendaItem->comment('<p>From coordinator</p>');
 
@@ -188,8 +188,8 @@ describe('update & delete', function () {
     });
 });
 
-describe('resolve', function () {
-    test('a view-audience user can resolve and unresolve', function () {
+describe('resolve', function (): void {
+    test('a view-audience user can resolve and unresolve', function (): void {
         $this->actingAs($this->coordinator);
         $comment = $this->agendaItem->comment('<p>Question?</p>');
 
@@ -201,8 +201,8 @@ describe('resolve', function () {
     });
 });
 
-describe('reactions', function () {
-    test('toggling adds then removes a reaction', function () {
+describe('reactions', function (): void {
+    test('toggling adds then removes a reaction', function (): void {
         $this->actingAs($this->coordinator);
         $comment = $this->agendaItem->comment('<p>React</p>');
         $url = route('api.v1.admin.comments.reactions.toggle', $comment);
@@ -217,7 +217,7 @@ describe('reactions', function () {
         expect($comment->reactions()->count())->toBe(0);
     });
 
-    test('an invalid emoji is rejected', function () {
+    test('an invalid emoji is rejected', function (): void {
         $this->actingAs($this->coordinator);
         $comment = $this->agendaItem->comment('<p>React</p>');
 
@@ -226,8 +226,8 @@ describe('reactions', function () {
     });
 });
 
-describe('mentionables', function () {
-    test('returns users who can view the parent', function () {
+describe('mentionables', function (): void {
+    test('returns users who can view the parent', function (): void {
         $rep = User::factory()->create(['name' => 'Rep Person']);
         $rep->duties()->attach(
             Duty::factory()->for($this->institution)->create(),
@@ -241,22 +241,22 @@ describe('mentionables', function () {
     });
 });
 
-describe('resource serialization', function () {
-    test('a comment without loaded replies serializes cleanly (broadcast payload path)', function () {
+describe('resource serialization', function (): void {
+    test('a comment without loaded replies serializes cleanly (broadcast payload path)', function (): void {
         $this->actingAs($this->coordinator);
         $comment = $this->agendaItem->comment('<p>Root</p>')->load('reactions.user:id,name');
 
         // Mirrors how the broadcast payload is built (resolve() + json_encode),
         // which previously blew up on the unloaded `replies` relation.
-        $array = (new CommentResource($comment))->resolve(request());
+        $array = new CommentResource($comment)->resolve(request());
 
-        expect($array)->not->toHaveKey('replies');
-        expect(fn () => json_encode($array, JSON_THROW_ON_ERROR))->not->toThrow(Throwable::class);
+        expect($array)->not->toHaveKey('replies')
+            ->and(fn () => json_encode($array, JSON_THROW_ON_ERROR))->not->toThrow(Throwable::class);
     });
 });
 
-describe('feed', function () {
-    test('returns comments that mention the user', function () {
+describe('feed', function (): void {
+    test('returns comments that mention the user', function (): void {
         $this->actingAs($this->coordinator);
         $body = '<p>Ping <span data-id="'.$this->viewer->id.'">@viewer</span></p>';
         $this->agendaItem->comment($body);
@@ -268,8 +268,8 @@ describe('feed', function () {
     });
 });
 
-describe('reservation', function () {
-    beforeEach(function () {
+describe('reservation', function (): void {
+    beforeEach(function (): void {
         $this->reservation = Reservation::factory()->create();
         $this->reservationUser = User::factory()->hasAttached($this->reservation)->create();
         $this->reservationOutsider = makeUser($this->tenant);
@@ -278,7 +278,7 @@ describe('reservation', function () {
         $this->reservationStoreUrl = route('api.v1.admin.comments.store', ['commentableType' => 'reservation', 'commentableId' => $this->reservation->id]);
     });
 
-    test('returns root comments with nested replies', function () {
+    test('returns root comments with nested replies', function (): void {
         $this->actingAs($this->reservationUser);
         $root = $this->reservation->comment('<p>Root</p>');
         $this->reservation->comment('<p>Reply</p>', $root->id);
@@ -291,7 +291,7 @@ describe('reservation', function () {
             ->assertJsonPath('data.0.replies.0.body', '<p>Reply</p>');
     });
 
-    test('a reservation user can post a comment and it broadcasts', function () {
+    test('a reservation user can post a comment and it broadcasts', function (): void {
         Event::fake([CommentBroadcast::class]);
 
         asUser($this->reservationUser)->postJson($this->reservationStoreUrl, ['body' => '<p>Hello from reservation user</p>'])
@@ -304,12 +304,12 @@ describe('reservation', function () {
             && $e->channelName === "comments.reservation.{$this->reservation->id}");
     });
 
-    test('an outsider is forbidden (403)', function () {
+    test('an outsider is forbidden (403)', function (): void {
         asUser($this->reservationOutsider)->getJson($this->reservationIndexUrl)->assertStatus(403);
         asUser($this->reservationOutsider)->postJson($this->reservationStoreUrl, ['body' => '<p>x</p>'])->assertStatus(403);
     });
 
-    test('mentionables returns reservation users', function () {
+    test('mentionables returns reservation users', function (): void {
         $otherUser = User::factory()->hasAttached($this->reservation)->create(['name' => 'Reservation Member']);
 
         asUser($this->reservationUser)

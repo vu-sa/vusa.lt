@@ -9,7 +9,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 /**
  * `dutiables.duty_id` restricts deletes and membership rows are never removed
@@ -56,7 +56,7 @@ function makeTrashedDuty(Tenant $tenant): Duty
     return $duty;
 }
 
-test('a trashed duty with membership history refuses permanent deletion', function () {
+test('a trashed duty with membership history refuses permanent deletion', function (): void {
     $tenant = Tenant::query()->first();
     [$admin] = makeDutyAdmin($tenant);
     $duty = makeTrashedDuty($tenant);
@@ -73,7 +73,7 @@ test('a trashed duty with membership history refuses permanent deletion', functi
     $this->assertDatabaseHas('dutiables', ['id' => $dutiable->id]);
 });
 
-test('a trashed duty without membership history is permanently deleted', function () {
+test('a trashed duty without membership history is permanently deleted', function (): void {
     $tenant = Tenant::query()->first();
     [$admin] = makeDutyAdmin($tenant);
     $duty = makeTrashedDuty($tenant);
@@ -88,7 +88,7 @@ test('a trashed duty without membership history is permanently deleted', functio
     expect(Duty::withTrashed()->find($duty->id))->toBeNull();
 });
 
-test('a live duty cannot be permanently deleted even without membership history', function () {
+test('a live duty cannot be permanently deleted even without membership history', function (): void {
     $tenant = Tenant::query()->first();
     [$admin] = makeDutyAdmin($tenant);
     $duty = Duty::factory()->for(Institution::factory()->for($tenant))->create();
@@ -100,7 +100,7 @@ test('a live duty cannot be permanently deleted even without membership history'
     $this->assertNotSoftDeleted('duties', ['id' => $duty->id]);
 });
 
-test('restoring a duty flashes a translated message', function () {
+test('restoring a duty flashes a translated message', function (): void {
     $tenant = Tenant::query()->first();
     [$admin] = makeDutyAdmin($tenant);
     $duty = makeTrashedDuty($tenant);
@@ -113,14 +113,14 @@ test('restoring a duty flashes a translated message', function () {
     $this->assertNotSoftDeleted('duties', ['id' => $duty->id]);
 });
 
-describe('force delete blocked reason', function () {
-    test('is null for a duty nothing references', function () {
+describe('force delete blocked reason', function (): void {
+    test('is null for a duty nothing references', function (): void {
         $duty = Duty::factory()->create();
 
         expect($duty->forceDeleteBlockedReason())->toBeNull();
     });
 
-    test('counts the membership rows that block deletion', function () {
+    test('counts the membership rows that block deletion', function (): void {
         $duty = Duty::factory()->create();
         Dutiable::factory()->forDuty($duty)->count(2)->create();
 
@@ -128,7 +128,7 @@ describe('force delete blocked reason', function () {
             ->toBe(__('trash.blocked.duty_has_membership_history', ['count' => 2]));
     });
 
-    test('prefers an eager-loaded count over a fresh query', function () {
+    test('prefers an eager-loaded count over a fresh query', function (): void {
         $duty = Duty::factory()->create();
         Dutiable::factory()->forDuty($duty)->create();
 
@@ -139,7 +139,7 @@ describe('force delete blocked reason', function () {
             ->and($loaded->relationLoaded('dutiables'))->toBeFalse();
     });
 
-    test('is serialized on the admin index so the table can disable the action', function () {
+    test('is serialized on the admin index so the table can disable the action', function (): void {
         $tenant = Tenant::query()->first();
         [$admin] = makeDutyAdmin($tenant);
         $duty = makeTrashedDuty($tenant);

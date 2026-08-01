@@ -6,9 +6,9 @@ use Barryvdh\LaravelIdeHelper\Console\ModelsCommand;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->hook = new TranslatableModelIdeHelperHook;
     $this->mockCommand = $this->createMock(ModelsCommand::class);
 
@@ -35,13 +35,13 @@ beforeEach(function () {
     ]);
 });
 
-describe('TranslatableModelIdeHelperHook functionality', function () {
-    test('implements correct hook interface', function () {
-        expect($this->hook)->toBeInstanceOf(TranslatableModelIdeHelperHook::class);
-        expect(method_exists($this->hook, 'run'))->toBeTrue();
+describe('TranslatableModelIdeHelperHook functionality', function (): void {
+    test('implements correct hook interface', function (): void {
+        expect($this->hook)->toBeInstanceOf(TranslatableModelIdeHelperHook::class)
+            ->and(method_exists($this->hook, 'run'))->toBeTrue();
     });
 
-    test('modifies properties for translatable models', function () {
+    test('modifies properties for translatable models', function (): void {
         // Create a concrete class instance for testing
         $modelClass = new class extends Model
         {
@@ -64,12 +64,12 @@ describe('TranslatableModelIdeHelperHook functionality', function () {
         // Check that each translatable field was set to 'array|string|null'
         $calls = collect($this->setPropertyCalls);
 
-        expect($calls->where('attribute', 'name')->first()['type'])->toBe('array|string|null');
-        expect($calls->where('attribute', 'description')->first()['type'])->toBe('array|string|null');
-        expect($calls->where('attribute', 'title')->first()['type'])->toBe('array|string|null');
+        expect($calls->where('attribute', 'name')->first()['type'])->toBe('array|string|null')
+            ->and($calls->where('attribute', 'description')->first()['type'])->toBe('array|string|null')
+            ->and($calls->where('attribute', 'title')->first()['type'])->toBe('array|string|null');
     });
 
-    test('does not modify non-translatable model properties', function () {
+    test('does not modify non-translatable model properties', function (): void {
         // Mock a non-translatable model
         $mockModel = new class extends Model
         {
@@ -80,10 +80,10 @@ describe('TranslatableModelIdeHelperHook functionality', function () {
         $this->hook->run($this->mockCommand, $mockModel);
 
         // Verify no setProperty calls were made
-        expect($this->setPropertyCalls)->toHaveCount(0);
+        expect($this->setPropertyCalls)->toBeEmpty();
     });
 
-    test('handles models without getTranslatableAttributes method', function () {
+    test('handles models without getTranslatableAttributes method', function (): void {
         $mockModel = new class extends Model
         {
             // No getTranslatableAttributes method
@@ -94,10 +94,10 @@ describe('TranslatableModelIdeHelperHook functionality', function () {
             ->not->toThrow(Exception::class);
 
         // No setProperty calls should be made
-        expect($this->setPropertyCalls)->toHaveCount(0);
+        expect($this->setPropertyCalls)->toBeEmpty();
     });
 
-    test('sets correct type for all translatable fields', function () {
+    test('sets correct type for all translatable fields', function (): void {
         $modelClass = new class extends Model
         {
             use HasTranslations;
@@ -117,11 +117,11 @@ describe('TranslatableModelIdeHelperHook functionality', function () {
         expect($this->setPropertyCalls)->toHaveCount(2);
 
         $calls = collect($this->setPropertyCalls);
-        expect($calls->where('attribute', 'name')->first()['type'])->toBe('array|string|null');
-        expect($calls->where('attribute', 'description')->first()['type'])->toBe('array|string|null');
+        expect($calls->where('attribute', 'name')->first()['type'])->toBe('array|string|null')
+            ->and($calls->where('attribute', 'description')->first()['type'])->toBe('array|string|null');
     });
 
-    test('calls setProperty for each translatable attribute', function () {
+    test('calls setProperty for each translatable attribute', function (): void {
         $modelClass = new class extends Model
         {
             use HasTranslations;
@@ -139,11 +139,10 @@ describe('TranslatableModelIdeHelperHook functionality', function () {
 
         // Verify setProperty was called correctly
         expect($this->setPropertyCalls)->toHaveCount(1);
-        expect($this->setPropertyCalls[0]['attribute'])->toBe('name');
-        expect($this->setPropertyCalls[0]['type'])->toBe('array|string|null');
+        expect($this->setPropertyCalls[0])->toMatchArray(['attribute' => 'name', 'type' => 'array|string|null']);
     });
 
-    test('handles empty translatable attributes array', function () {
+    test('handles empty translatable attributes array', function (): void {
         $modelClass = new class extends Model
         {
             use HasTranslations;
@@ -161,10 +160,10 @@ describe('TranslatableModelIdeHelperHook functionality', function () {
             ->not->toThrow(Exception::class);
 
         // No setProperty calls should be made
-        expect($this->setPropertyCalls)->toHaveCount(0);
+        expect($this->setPropertyCalls)->toBeEmpty();
     });
 
-    test('processes all translatable attributes', function () {
+    test('processes all translatable attributes', function (): void {
         $modelClass = new class extends Model
         {
             use HasTranslations;
@@ -185,12 +184,12 @@ describe('TranslatableModelIdeHelperHook functionality', function () {
         expect($this->setPropertyCalls)->toHaveCount(3);
 
         $calls = collect($this->setPropertyCalls);
-        expect($calls->where('attribute', 'name')->first()['type'])->toBe('array|string|null');
-        expect($calls->where('attribute', 'description')->first()['type'])->toBe('array|string|null');
-        expect($calls->where('attribute', 'field1')->first()['type'])->toBe('array|string|null');
+        expect($calls->where('attribute', 'name')->first()['type'])->toBe('array|string|null')
+            ->and($calls->where('attribute', 'description')->first()['type'])->toBe('array|string|null')
+            ->and($calls->where('attribute', 'field1')->first()['type'])->toBe('array|string|null');
     });
 
-    test('handles models without HasTranslations trait', function () {
+    test('handles models without HasTranslations trait', function (): void {
         $modelClass = new class extends Model
         {
             // No HasTranslations trait
@@ -201,6 +200,6 @@ describe('TranslatableModelIdeHelperHook functionality', function () {
             ->not->toThrow(Exception::class);
 
         // No setProperty calls should be made
-        expect($this->setPropertyCalls)->toHaveCount(0);
+        expect($this->setPropertyCalls)->toBeEmpty();
     });
 });

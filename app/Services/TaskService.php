@@ -32,12 +32,12 @@ class TaskService
     /**
      * Create a task using the provided data.
      *
-     * @deprecated Use specific handlers or CreateTaskData for type-safe task creation
      *
      * @param  Model&object{id: int|string}  $model
      * @param  ActionType|string|null  $actionType  Optional action type for auto-completion
      * @param  array|null  $metadata  Optional metadata for progress tracking
      */
+    #[\Deprecated(message: 'Use specific handlers or CreateTaskData for type-safe task creation')]
     public static function storeTask(
         string $name,
         Model $model,

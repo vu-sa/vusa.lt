@@ -25,13 +25,13 @@ abstract class BaseTaskHandler implements TaskHandler
             'name' => $data->name,
             'description' => $data->description,
             'taskable_id' => $data->taskable->getKey(),
-            'taskable_type' => get_class($data->taskable),
+            'taskable_type' => $data->taskable::class,
             'due_date' => $data->dueDate,
             'action_type' => $data->actionType,
             'metadata' => $data->metadata,
         ]);
 
-        DB::transaction(function () use ($task, $data) {
+        DB::transaction(function () use ($task, $data): void {
             $task->save();
             $task->users()->sync($data->users->pluck('id'));
         });

@@ -38,8 +38,10 @@ class InstitutionCheckIn extends Model
 {
     use HasFactory, HasUlids, LogsActivity, Searchable;
 
+    #[\Override]
     protected $guarded = [];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

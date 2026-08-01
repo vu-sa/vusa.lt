@@ -8,30 +8,30 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::factory()->create();
 });
 
-describe('unauthorized access', function () {
-    beforeEach(function () {
+describe('unauthorized access', function (): void {
+    beforeEach(function (): void {
         $this->user = makeUser($this->tenant);
         $response = asUser($this->user)->get(route('dashboard'));
         expect($response->status())->toBeSecureResponse();
     });
 
-    test('cannot index users', function () {
+    test('cannot index users', function (): void {
         $response = asUser($this->user)->get(route('users.index'));
         expect($response->status())->toRequireAuth();
     });
 
-    test('cannot access user create page', function () {
+    test('cannot access user create page', function (): void {
         $response = asUser($this->user)->get(route('users.create'));
         expect($response->status())->toRequireAuth();
     });
 
-    test('cannot store user', function () {
+    test('cannot store user', function (): void {
         $response = asUser($this->user)->post(route('users.store'), [
             'name' => 'Test User',
             'email' => 'test@example.com',
@@ -39,13 +39,13 @@ describe('unauthorized access', function () {
         expect($response->status())->toRequireAuth();
     });
 
-    test('cannot access user edit page', function () {
+    test('cannot access user edit page', function (): void {
         $user = User::factory()->create();
         $response = asUser($this->user)->get(route('users.edit', $user));
         expect($response->status())->toRequireAuth();
     });
 
-    test('cannot update user', function () {
+    test('cannot update user', function (): void {
         $user = User::factory()->create();
         $response = asUser($this->user)->put(route('users.update', $user), [
             'name' => 'Test User Updated',
@@ -54,19 +54,19 @@ describe('unauthorized access', function () {
         expect($response->status())->toRequireAuth();
     });
 
-    test('cannot delete user', function () {
+    test('cannot delete user', function (): void {
         $user = User::factory()->create();
         $response = asUser($this->user)->delete(route('users.destroy', $user));
         expect($response->status())->toRequireAuth();
     });
 });
 
-describe('authorized access', function () {
-    beforeEach(function () {
+describe('authorized access', function (): void {
+    beforeEach(function (): void {
         $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
     });
 
-    test('can index users', function () {
+    test('can index users', function (): void {
         User::factory()->count(3)->create();
 
         $response = asUser($this->admin)->get(route('users.index'));
@@ -78,7 +78,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('can access user create page', function () {
+    test('can access user create page', function (): void {
         $response = asUser($this->admin)->get(route('users.create'));
 
         $response->assertStatus(200)
@@ -87,7 +87,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('can store user', function () {
+    test('can store user', function (): void {
         $duty = Duty::factory()->create();
 
         $userData = [
@@ -107,7 +107,7 @@ describe('authorized access', function () {
         ]);
     });
 
-    test('can access user edit page', function () {
+    test('can access user edit page', function (): void {
         $user = makeUser($this->tenant);
 
         $response = asUser($this->admin)->get(route('users.edit', $user));
@@ -120,7 +120,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('can update user', function () {
+    test('can update user', function (): void {
         $user = makeUser($this->tenant);
 
         $updateData = [
@@ -140,7 +140,7 @@ describe('authorized access', function () {
         ]);
     });
 
-    test('can delete user', function () {
+    test('can delete user', function (): void {
         $user = makeUser($this->tenant);
 
         $response = asUser($this->admin)->delete(route('users.destroy', $user));
@@ -153,12 +153,12 @@ describe('authorized access', function () {
     });
 });
 
-describe('validation', function () {
-    beforeEach(function () {
+describe('validation', function (): void {
+    beforeEach(function (): void {
         $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
     });
 
-    test('requires name for store', function () {
+    test('requires name for store', function (): void {
         $response = asUser($this->admin)->post(route('users.store'), [
             'email' => 'test@example.com',
         ]);
@@ -167,7 +167,7 @@ describe('validation', function () {
             ->assertSessionHasErrors('name');
     });
 
-    test('requires email for store', function () {
+    test('requires email for store', function (): void {
         $response = asUser($this->admin)->post(route('users.store'), [
             'name' => 'Test User',
         ]);
@@ -176,7 +176,7 @@ describe('validation', function () {
             ->assertSessionHasErrors('email');
     });
 
-    test('requires valid email format for store', function () {
+    test('requires valid email format for store', function (): void {
         $response = asUser($this->admin)->post(route('users.store'), [
             'name' => 'Test User',
             'email' => 'invalid-email',
@@ -186,7 +186,7 @@ describe('validation', function () {
             ->assertSessionHasErrors('email');
     });
 
-    test('requires unique email for store', function () {
+    test('requires unique email for store', function (): void {
         User::factory()->create(['email' => 'existing@example.com']);
 
         $response = asUser($this->admin)->post(route('users.store'), [
@@ -198,7 +198,7 @@ describe('validation', function () {
             ->assertSessionHasErrors('email');
     });
 
-    test('requires name for update', function () {
+    test('requires name for update', function (): void {
         $user = makeUser($this->tenant);
 
         $response = asUser($this->admin)->put(route('users.update', $user), [
@@ -209,7 +209,7 @@ describe('validation', function () {
             ->assertSessionHasErrors('name');
     });
 
-    test('requires unique email for update', function () {
+    test('requires unique email for update', function (): void {
         $existingUser = makeUser($this->tenant);
         $existingUser->update(['email' => 'existing@example.com']);
         $user = makeUser($this->tenant);
@@ -225,33 +225,33 @@ describe('validation', function () {
     });
 });
 
-describe('relationships', function () {
-    beforeEach(function () {
+describe('relationships', function (): void {
+    beforeEach(function (): void {
         $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
     });
 
-    test('user has proper model structure', function () {
+    test('user has proper model structure', function (): void {
         $user = User::factory()->create([
             'name' => 'John Doe',
             'email' => 'john@example.com',
             'phone' => '+370 123 4567',
         ]);
 
-        expect($user->name)->toBe('John Doe');
-        expect($user->email)->toBe('john@example.com');
-        expect($user->phone)->toBe('+370 123 4567');
+        expect($user->name)->toBe('John Doe')
+            ->and($user->email)->toBe('john@example.com')
+            ->and($user->phone)->toBe('+370 123 4567');
     });
 
-    test('can retrieve user by email', function () {
+    test('can retrieve user by email', function (): void {
         $user = User::factory()->create(['email' => 'unique@example.com']);
 
         $foundUser = User::where('email', 'unique@example.com')->first();
 
-        expect($foundUser)->not->toBeNull();
-        expect($foundUser->id)->toBe($user->id);
+        expect($foundUser)->not->toBeNull()
+            ->and($foundUser->id)->toBe($user->id);
     });
 
-    test('user can have duties', function () {
+    test('user can have duties', function (): void {
         $user = User::factory()->create();
 
         // Check if user can have duties (relationship exists)
@@ -259,13 +259,13 @@ describe('relationships', function () {
     });
 });
 
-describe('duty removal', function () {
-    beforeEach(function () {
+describe('duty removal', function (): void {
+    beforeEach(function (): void {
         $this->admin = makeUser($this->tenant);
         $this->admin->assignRole(config('permission.super_admin_role_name'));
     });
 
-    test('removing a duty held across multiple dutiable rows ends the active row', function () {
+    test('removing a duty held across multiple dutiable rows ends the active row', function (): void {
         $target = User::factory()->create();
         $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
 

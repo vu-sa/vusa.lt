@@ -3,15 +3,15 @@
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 
-describe('typescript:transform command', function () {
-    test('runs successfully and is configured', function () {
+describe('typescript:transform command', function (): void {
+    test('runs successfully and is configured', function (): void {
         $exitCode = Artisan::call('typescript:transform');
 
         expect($exitCode)->toBe(0)
             ->and(Artisan::output())->not->toContain('TypeScript Transformer is not configured');
     });
 
-    test('exports every declared enum class, including spatie/laravel-enum ones', function () {
+    test('exports every declared enum class, including spatie/laravel-enum ones', function (): void {
         Artisan::call('typescript:transform');
 
         $output = File::get(resource_path('js/Types/enums.ts'));

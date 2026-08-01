@@ -8,7 +8,7 @@ use App\Models\Tag;
 use App\Models\Vote;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 /**
  * `Meeting` and `Tag` both cascaded their children away in an unguarded `deleting`
@@ -16,8 +16,8 @@ uses(RefreshDatabase::class);
  * pin down the distinction the guards introduce: soft delete preserves everything,
  * force delete clears exactly what the restricting foreign keys require.
  */
-describe('meeting', function () {
-    test('soft delete preserves the agenda, its votes and its notes', function () {
+describe('meeting', function (): void {
+    test('soft delete preserves the agenda, its votes and its notes', function (): void {
         $meeting = Meeting::factory()->create();
         $agendaItem = AgendaItem::factory()->for($meeting)->create();
         $vote = Vote::factory()->for($agendaItem, 'agendaItem')->create();
@@ -29,7 +29,7 @@ describe('meeting', function () {
         $this->assertDatabaseHas('votes', ['id' => $vote->id]);
     });
 
-    test('restore returns the agenda intact', function () {
+    test('restore returns the agenda intact', function (): void {
         $meeting = Meeting::factory()->create();
         AgendaItem::factory()->for($meeting)->count(3)->create();
 
@@ -39,7 +39,7 @@ describe('meeting', function () {
         expect($meeting->fresh()->agendaItems)->toHaveCount(3);
     });
 
-    test('force delete removes the agenda and its cascaded votes', function () {
+    test('force delete removes the agenda and its cascaded votes', function (): void {
         $meeting = Meeting::factory()->create();
         $agendaItem = AgendaItem::factory()->for($meeting)->create();
         $vote = Vote::factory()->for($agendaItem, 'agendaItem')->create();
@@ -52,7 +52,7 @@ describe('meeting', function () {
         $this->assertDatabaseMissing('votes', ['id' => $vote->id]);
     });
 
-    test('force delete succeeds for a meeting that has institutions', function () {
+    test('force delete succeeds for a meeting that has institutions', function (): void {
         // institution_meeting.meeting_id is RESTRICT, so before the hook detached them
         // this failed for every meeting that had one — which is nearly all of them.
         $meeting = Meeting::factory()->create();
@@ -66,8 +66,8 @@ describe('meeting', function () {
     });
 });
 
-describe('tag', function () {
-    test('soft delete keeps the tag attached to its news', function () {
+describe('tag', function (): void {
+    test('soft delete keeps the tag attached to its news', function (): void {
         $tag = Tag::factory()->create();
         $news = News::factory()->create();
         $tag->news()->attach($news);
@@ -78,7 +78,7 @@ describe('tag', function () {
         $this->assertDatabaseHas('posts_tags', ['tag_id' => $tag->id, 'news_id' => $news->id]);
     });
 
-    test('restore returns the news links', function () {
+    test('restore returns the news links', function (): void {
         $tag = Tag::factory()->create();
         $tag->news()->attach(News::factory()->count(2)->create());
 
@@ -88,7 +88,7 @@ describe('tag', function () {
         expect($tag->fresh()->news)->toHaveCount(2);
     });
 
-    test('force delete detaches the news so the restricting key does not block it', function () {
+    test('force delete detaches the news so the restricting key does not block it', function (): void {
         $tag = Tag::factory()->create();
         $news = News::factory()->create();
         $tag->news()->attach($news);

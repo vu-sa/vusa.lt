@@ -43,7 +43,7 @@ class ApprovalService
         ?string $notes = null,
         ?int $step = null
     ): Approval {
-        $step = $step ?? $approvable->currentApprovalStep();
+        $step ??= $approvable->currentApprovalStep();
 
         // Validate user can approve at this step with this decision
         if (! $approvable->canBeApprovedBy($user, $step, $decision)) {
@@ -57,7 +57,7 @@ class ApprovalService
 
         $approval = DB::transaction(function () use ($approvable, $user, $decision, $notes, $step) {
             $approval = Approval::create([
-                'approvable_type' => get_class($approvable),
+                'approvable_type' => $approvable::class,
                 'approvable_id' => $approvable->getKey(),
                 'user_id' => $user->id,
                 'decision' => $decision,

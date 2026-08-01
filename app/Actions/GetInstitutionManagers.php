@@ -28,9 +28,9 @@ class GetInstitutionManagers
             return collect();
         }
 
-        $institutionManagers = Duty::whereHas('institution.tenant', function (Builder $query) use ($institution) {
+        $institutionManagers = Duty::whereHas('institution.tenant', function (Builder $query) use ($institution): void {
             $query->where('id', $institution->tenant_id);
-        })->whereHas('roles', function (Builder $query) use ($managerRoleId) {
+        })->whereHas('roles', function (Builder $query) use ($managerRoleId): void {
             $query->where('id', $managerRoleId);
         })->with('current_users')->get()->pluck('current_users')->flatten()->unique('id')->values();
 

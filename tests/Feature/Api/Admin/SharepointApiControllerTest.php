@@ -7,9 +7,9 @@ use App\Models\Meeting;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->admin = makeUser($this->tenant);
     $this->admin->assignRole('Super Admin');
@@ -20,11 +20,10 @@ beforeEach(function () {
     $this->meeting->institutions()->attach($this->institution);
 });
 
-describe('attachFileableFilesToDriveItems', function () {
-    test('returns drive items unchanged when no fileable context provided', function () {
+describe('attachFileableFilesToDriveItems', function (): void {
+    test('returns drive items unchanged when no fileable context provided', function (): void {
         $controller = new SharepointApiController;
         $reflection = new ReflectionMethod($controller, 'attachFileableFilesToDriveItems');
-        $reflection->setAccessible(true);
 
         $driveItems = collect([
             ['id' => 'drive-item-1', 'name' => 'File 1'],
@@ -33,14 +32,13 @@ describe('attachFileableFilesToDriveItems', function () {
 
         $result = $reflection->invoke($controller, $driveItems, null, null);
 
-        expect($result)->toHaveCount(2);
-        expect($result->first()['fileableFile'] ?? null)->toBeNull();
+        expect($result)->toHaveCount(2)
+            ->and($result->first()['fileableFile'] ?? null)->toBeNull();
     });
 
-    test('attaches fileableFile when fileable context is provided and records exist', function () {
+    test('attaches fileableFile when fileable context is provided and records exist', function (): void {
         $controller = new SharepointApiController;
         $reflection = new ReflectionMethod($controller, 'attachFileableFilesToDriveItems');
-        $reflection->setAccessible(true);
 
         $fileableFile = FileableFile::factory()->create([
             'fileable_type' => Meeting::class,
@@ -61,16 +59,14 @@ describe('attachFileableFilesToDriveItems', function () {
         $firstItem = $result->firstWhere('id', 'drive-item-1');
         $secondItem = $result->firstWhere('id', 'drive-item-2');
 
-        expect($firstItem['fileableFile'])->not->toBeNull();
-        expect($firstItem['fileableFile']->id)->toBe($fileableFile->id);
-
-        expect($secondItem['fileableFile'])->toBeNull();
+        expect($firstItem['fileableFile'])->not->toBeNull()
+            ->and($firstItem['fileableFile']->id)->toBe($fileableFile->id)
+            ->and($secondItem['fileableFile'])->toBeNull();
     });
 
-    test('ignores invalid fileable_type', function () {
+    test('ignores invalid fileable_type', function (): void {
         $controller = new SharepointApiController;
         $reflection = new ReflectionMethod($controller, 'attachFileableFilesToDriveItems');
-        $reflection->setAccessible(true);
 
         $driveItems = collect([
             ['id' => 'drive-item-1', 'name' => 'File 1'],
@@ -81,10 +77,9 @@ describe('attachFileableFilesToDriveItems', function () {
         expect($result->first()['fileableFile'] ?? null)->toBeNull();
     });
 
-    test('does not attach externally deleted fileableFiles', function () {
+    test('does not attach externally deleted fileableFiles', function (): void {
         $controller = new SharepointApiController;
         $reflection = new ReflectionMethod($controller, 'attachFileableFilesToDriveItems');
-        $reflection->setAccessible(true);
 
         FileableFile::factory()->create([
             'fileable_type' => Meeting::class,
@@ -103,10 +98,9 @@ describe('attachFileableFilesToDriveItems', function () {
         expect($result->first()['fileableFile'])->toBeNull();
     });
 
-    test('returns empty collection when drive items have no ids', function () {
+    test('returns empty collection when drive items have no ids', function (): void {
         $controller = new SharepointApiController;
         $reflection = new ReflectionMethod($controller, 'attachFileableFilesToDriveItems');
-        $reflection->setAccessible(true);
 
         $driveItems = collect([
             ['name' => 'File without id'],
@@ -114,13 +108,13 @@ describe('attachFileableFilesToDriveItems', function () {
 
         $result = $reflection->invoke($controller, $driveItems, 'Meeting', $this->meeting->id);
 
-        expect($result)->toHaveCount(1);
-        expect($result->first()['fileableFile'] ?? null)->toBeNull();
+        expect($result)->toHaveCount(1)
+            ->and($result->first()['fileableFile'] ?? null)->toBeNull();
     });
 });
 
-describe('fileableFiles endpoint', function () {
-    test('returns FileableFile records for a fileable', function () {
+describe('fileableFiles endpoint', function (): void {
+    test('returns FileableFile records for a fileable', function (): void {
         FileableFile::factory()->count(3)->create([
             'fileable_type' => Meeting::class,
             'fileable_id' => $this->meeting->id,
@@ -135,7 +129,7 @@ describe('fileableFiles endpoint', function () {
         expect($data)->toHaveCount(3);
     });
 
-    test('rejects invalid fileable type', function () {
+    test('rejects invalid fileable type', function (): void {
         $response = asUser($this->admin)->getJson(
             route('api.v1.admin.fileables.files', ['type' => 'InvalidType', 'id' => 'some-id'])
         );

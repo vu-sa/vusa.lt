@@ -6,6 +6,7 @@ use App\Contracts\BelongsToProgramme;
 use App\Models\Pivots\ProgrammeElement;
 use App\Models\Traits\HasTranslations;
 use Database\Factories\ProgrammeSectionFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -35,12 +36,11 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
+#[Fillable(['title'])]
 class ProgrammeSection extends Model implements BelongsToProgramme
 {
     /** @use HasFactory<ProgrammeSectionFactory> */
     use HasFactory, HasTranslations;
-
-    protected $fillable = ['title'];
 
     public $translatable = ['title'];
 

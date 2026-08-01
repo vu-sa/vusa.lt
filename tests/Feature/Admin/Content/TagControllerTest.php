@@ -5,11 +5,11 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 use App\Models\News;
 use Inertia\Testing\AssertableInertia as Assert;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
     $this->admin = makeTagAdmin($this->tenant);
@@ -29,24 +29,24 @@ function makeTagAdmin($tenant): User
     return $user;
 }
 
-describe('auth: simple user without permissions', function () {
-    beforeEach(function () {
+describe('auth: simple user without permissions', function (): void {
+    beforeEach(function (): void {
         asUser($this->user)->get(route('dashboard'))->assertStatus(200);
     });
 
-    test('cannot index tags', function () {
+    test('cannot index tags', function (): void {
         asUser($this->user)
             ->get(route('tags.index'))
             ->assertStatus(403);
     });
 
-    test('cannot access tag create page', function () {
+    test('cannot access tag create page', function (): void {
         asUser($this->user)
             ->get(route('tags.create'))
             ->assertStatus(403);
     });
 
-    test('cannot store new tag', function () {
+    test('cannot store new tag', function (): void {
         $tagData = [
             'name' => ['lt' => 'Nauja žyma', 'en' => 'New tag'],
             'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
@@ -58,13 +58,13 @@ describe('auth: simple user without permissions', function () {
             ->assertStatus(403);
     });
 
-    test('cannot edit existing tag', function () {
+    test('cannot edit existing tag', function (): void {
         asUser($this->user)
             ->get(route('tags.edit', $this->tag))
             ->assertStatus(403);
     });
 
-    test('cannot update existing tag', function () {
+    test('cannot update existing tag', function (): void {
         $updateData = [
             'name' => ['lt' => 'Atnaujinta žyma', 'en' => 'Updated tag'],
             'description' => ['lt' => 'Atnaujintas aprašymas', 'en' => 'Updated description'],
@@ -76,19 +76,19 @@ describe('auth: simple user without permissions', function () {
             ->assertStatus(403);
     });
 
-    test('cannot delete tag', function () {
+    test('cannot delete tag', function (): void {
         asUser($this->user)
             ->delete(route('tags.destroy', $this->tag))
             ->assertStatus(403);
     });
 });
 
-describe('auth: admin user with permissions', function () {
-    beforeEach(function () {
+describe('auth: admin user with permissions', function (): void {
+    beforeEach(function (): void {
         asUser($this->admin)->get(route('dashboard'))->assertStatus(200);
     });
 
-    test('can index tags', function () {
+    test('can index tags', function (): void {
         asUser($this->admin)
             ->get(route('tags.index'))
             ->assertStatus(200)
@@ -99,7 +99,7 @@ describe('auth: admin user with permissions', function () {
             );
     });
 
-    test('can access tag create page', function () {
+    test('can access tag create page', function (): void {
         asUser($this->admin)
             ->get(route('tags.create'))
             ->assertStatus(200)
@@ -108,7 +108,7 @@ describe('auth: admin user with permissions', function () {
             );
     });
 
-    test('can store new tag', function () {
+    test('can store new tag', function (): void {
         $tagData = [
             'name' => ['lt' => 'Nauja žyma', 'en' => 'New tag'],
             'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
@@ -120,13 +120,13 @@ describe('auth: admin user with permissions', function () {
             ->assertStatus(302);
 
         $tag = Tag::where('alias', 'new-tag')->first();
-        expect($tag)->not->toBeNull();
-        expect($tag->getTranslations('name'))->toBe(['lt' => 'Nauja žyma', 'en' => 'New tag']);
-        expect($tag->getTranslations('description'))->toBe(['lt' => 'Aprašymas', 'en' => 'Description']);
-        expect($tag->alias)->toBe('new-tag');
+        expect($tag)->not->toBeNull()
+            ->and($tag->getTranslations('name'))->toBe(['lt' => 'Nauja žyma', 'en' => 'New tag'])
+            ->and($tag->getTranslations('description'))->toBe(['lt' => 'Aprašymas', 'en' => 'Description'])
+            ->and($tag->alias)->toBe('new-tag');
     });
 
-    test('can edit existing tag', function () {
+    test('can edit existing tag', function (): void {
         asUser($this->admin)
             ->get(route('tags.edit', $this->tag))
             ->assertStatus(200)
@@ -138,7 +138,7 @@ describe('auth: admin user with permissions', function () {
             );
     });
 
-    test('can update existing tag', function () {
+    test('can update existing tag', function (): void {
         $updateData = [
             'name' => ['lt' => 'Atnaujinta žyma', 'en' => 'Updated tag'],
             'description' => ['lt' => 'Atnaujintas aprašymas', 'en' => 'Updated description'],
@@ -150,14 +150,14 @@ describe('auth: admin user with permissions', function () {
             ->assertStatus(302);
 
         $this->tag->refresh();
-        expect($this->tag->getTranslation('name', 'lt'))->toBe('Atnaujinta žyma');
-        expect($this->tag->getTranslation('name', 'en'))->toBe('Updated tag');
-        expect($this->tag->getTranslation('description', 'lt'))->toBe('Atnaujintas aprašymas');
-        expect($this->tag->getTranslation('description', 'en'))->toBe('Updated description');
-        expect($this->tag->alias)->toBe('updated-tag');
+        expect($this->tag->getTranslation('name', 'lt'))->toBe('Atnaujinta žyma')
+            ->and($this->tag->getTranslation('name', 'en'))->toBe('Updated tag')
+            ->and($this->tag->getTranslation('description', 'lt'))->toBe('Atnaujintas aprašymas')
+            ->and($this->tag->getTranslation('description', 'en'))->toBe('Updated description')
+            ->and($this->tag->alias)->toBe('updated-tag');
     });
 
-    test('can delete tag', function () {
+    test('can delete tag', function (): void {
         $tagId = $this->tag->id;
 
         asUser($this->admin)
@@ -169,8 +169,8 @@ describe('auth: admin user with permissions', function () {
     });
 });
 
-describe('validation', function () {
-    test('name is required for both languages', function () {
+describe('validation', function (): void {
+    test('name is required for both languages', function (): void {
         $invalidData = [
             'name' => ['lt' => '', 'en' => ''],
             'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
@@ -182,7 +182,7 @@ describe('validation', function () {
             ->assertSessionHasErrors(['name.lt', 'name.en']);
     });
 
-    test('alias must be unique', function () {
+    test('alias must be unique', function (): void {
         $existingTag = Tag::factory()->create(['alias' => 'unique-alias']);
 
         $invalidData = [
@@ -196,7 +196,7 @@ describe('validation', function () {
             ->assertSessionHasErrors(['alias']);
     });
 
-    test('can update tag with same alias', function () {
+    test('can update tag with same alias', function (): void {
         $updateData = [
             'name' => ['lt' => 'Atnaujinta žyma', 'en' => 'Updated tag'],
             'alias' => $this->tag->alias, // Same alias
@@ -209,52 +209,51 @@ describe('validation', function () {
     });
 });
 
-describe('model functionality', function () {
-    test('tag factory creates valid tag', function () {
+describe('model functionality', function (): void {
+    test('tag factory creates valid tag', function (): void {
         $tag = Tag::factory()->create();
 
-        expect($tag->getTranslations('name'))->toBeArray();
-        expect($tag->getTranslations('description'))->toBeArray();
-        expect($tag->getTranslation('name', 'lt'))->toBeString();
-        expect($tag->getTranslation('name', 'en'))->toBeString();
+        expect($tag->getTranslations('name'))->toBeArray()
+            ->and($tag->getTranslations('description'))->toBeArray()
+            ->and($tag->getTranslation('name', 'lt'))->toBeString()
+            ->and($tag->getTranslation('name', 'en'))->toBeString();
     });
 
-    test('tag can be associated with news', function () {
+    test('tag can be associated with news', function (): void {
         $news = News::factory()->create();
         $tag = Tag::factory()->create();
 
         $news->tags()->attach($tag);
 
-        expect($news->tags)->toHaveCount(1);
-        expect($news->tags->first()->id)->toBe($tag->id);
-        expect($tag->news)->toHaveCount(1);
-        expect($tag->news->first()->id)->toBe($news->id);
+        expect($news->tags)->toHaveCount(1)
+            ->and($news->tags->first()->id)->toBe($tag->id)
+            ->and($tag->news)->toHaveCount(1)
+            ->and($tag->news->first()->id)->toBe($news->id);
     });
 
-    test('tag translations work correctly', function () {
+    test('tag translations work correctly', function (): void {
         $tag = Tag::factory()->create([
             'name' => ['lt' => 'Lietuviškas pavadinimas', 'en' => 'English name'],
             'description' => ['lt' => 'Lietuviškas aprašymas', 'en' => 'English description'],
         ]);
 
-        expect($tag->getTranslation('name', 'lt'))->toBe('Lietuviškas pavadinimas');
-        expect($tag->getTranslation('name', 'en'))->toBe('English name');
-        expect($tag->getTranslation('description', 'lt'))->toBe('Lietuviškas aprašymas');
-        expect($tag->getTranslation('description', 'en'))->toBe('English description');
+        expect($tag->getTranslation('name', 'lt'))->toBe('Lietuviškas pavadinimas')
+            ->and($tag->getTranslation('name', 'en'))->toBe('English name')
+            ->and($tag->getTranslation('description', 'lt'))->toBe('Lietuviškas aprašymas')
+            ->and($tag->getTranslation('description', 'en'))->toBe('English description');
 
         // Test toFullArray returns translation objects
         $fullArray = $tag->toFullArray();
-        expect($fullArray['name'])->toBe(['lt' => 'Lietuviškas pavadinimas', 'en' => 'English name']);
-        expect($fullArray['description'])->toBe(['lt' => 'Lietuviškas aprašymas', 'en' => 'English description']);
+        expect($fullArray)->toMatchArray(['name' => ['lt' => 'Lietuviškas pavadinimas', 'en' => 'English name'], 'description' => ['lt' => 'Lietuviškas aprašymas', 'en' => 'English description']]);
     });
 });
 
-describe('tag merging', function () {
-    beforeEach(function () {
+describe('tag merging', function (): void {
+    beforeEach(function (): void {
         asUser($this->admin)->get(route('dashboard'))->assertStatus(200);
     });
 
-    test('admin can access merge tags page', function () {
+    test('admin can access merge tags page', function (): void {
         asUser($this->admin)
             ->get(route('tags.merge'))
             ->assertStatus(200)
@@ -264,7 +263,7 @@ describe('tag merging', function () {
             );
     });
 
-    test('admin can merge tags successfully', function () {
+    test('admin can merge tags successfully', function (): void {
         // Create additional tags
         $targetTag = Tag::factory()->create([
             'name' => ['lt' => 'Tikslinė žyma', 'en' => 'Target tag'],
@@ -301,19 +300,19 @@ describe('tag merging', function () {
         // Verify source tags are soft-deleted and hidden from normal queries
         $this->assertSoftDeleted('tags', ['id' => $sourceTag1->id]);
         $this->assertSoftDeleted('tags', ['id' => $sourceTag2->id]);
-        expect(Tag::find($sourceTag1->id))->toBeNull();
-        expect(Tag::find($sourceTag2->id))->toBeNull();
+        expect(Tag::find($sourceTag1->id))->toBeNull()
+            ->and(Tag::find($sourceTag2->id))->toBeNull();
 
         // Verify target tag still exists
         expect(Tag::find($targetTag->id))->not->toBeNull();
 
         // Verify news are now attached to target tag
         $targetTag->refresh();
-        expect($targetTag->news)->toHaveCount(2);
-        expect($targetTag->news->pluck('id')->toArray())->toContain($news1->id, $news2->id);
+        expect($targetTag->news)->toHaveCount(2)
+            ->and($targetTag->news->pluck('id')->toArray())->toContain($news1->id, $news2->id);
     });
 
-    test('merging a news already on the target does not create a duplicate', function () {
+    test('merging a news already on the target does not create a duplicate', function (): void {
         $targetTag = Tag::factory()->create(['alias' => 'target-dedup']);
         $sourceTag = Tag::factory()->create(['alias' => 'source-dedup']);
 
@@ -337,7 +336,7 @@ describe('tag merging', function () {
         expect(Tag::find($sourceTag->id))->toBeNull();
     });
 
-    test('cannot merge tag into itself', function () {
+    test('cannot merge tag into itself', function (): void {
         $tag = Tag::factory()->create();
 
         $mergeData = [
@@ -351,13 +350,13 @@ describe('tag merging', function () {
             ->assertSessionHasErrors(['source_tag_ids']);
     });
 
-    test('simple user cannot access merge tags page', function () {
+    test('simple user cannot access merge tags page', function (): void {
         asUser($this->user)
             ->get(route('tags.merge'))
             ->assertStatus(403);
     });
 
-    test('simple user cannot process tag merge', function () {
+    test('simple user cannot process tag merge', function (): void {
         $mergeData = [
             'target_tag_id' => $this->tag->id,
             'source_tag_ids' => [Tag::factory()->create()->id],

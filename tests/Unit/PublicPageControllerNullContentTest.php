@@ -9,16 +9,16 @@ use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tiptap\Editor;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::factory()->create([
         'alias' => 'test',
         'shortname' => 'Test Tenant',
     ]);
 });
 
-test('ContentHelper safely handles null content', function () {
+test('ContentHelper safely handles null content', function (): void {
     $page = new Page;
     $page->content = null;
 
@@ -29,7 +29,7 @@ test('ContentHelper safely handles null content', function () {
     expect($description)->toBeNull();
 });
 
-test('ContentHelper finds tiptap content when it exists', function () {
+test('ContentHelper finds tiptap content when it exists', function (): void {
     $content = Content::factory()->create();
     $part = ContentPart::factory()->create([
         'content_id' => $content->id,
@@ -41,14 +41,14 @@ test('ContentHelper finds tiptap content when it exists', function () {
     $page->content = $content;
 
     $result = ContentHelper::getFirstTiptapElement($page->content);
-    expect($result)->not->toBeNull();
-    expect($result->type)->toBe('tiptap');
+    expect($result)->not->toBeNull()
+        ->and($result->type)->toBe('tiptap');
 
     $description = ContentHelper::getDescriptionForSeo($page);
     expect($description)->toContain('Test content for SEO');
 });
 
-test('ContentHelper prioritizes news short field over tiptap content', function () {
+test('ContentHelper prioritizes news short field over tiptap content', function (): void {
     $content = Content::factory()->create();
     ContentPart::factory()->create([
         'content_id' => $content->id,
@@ -63,11 +63,10 @@ test('ContentHelper prioritizes news short field over tiptap content', function 
     ]);
 
     $description = ContentHelper::getDescriptionForSeo($news);
-    expect($description)->toContain('This is the short description');
-    expect($description)->not->toContain('Tiptap content');
+    expect($description)->toContain('This is the short description')->not->toContain('Tiptap content');
 });
 
-test('ContentHelper falls back to tiptap when news short is empty', function () {
+test('ContentHelper falls back to tiptap when news short is empty', function (): void {
     $content = Content::factory()->create();
     ContentPart::factory()->create([
         'content_id' => $content->id,

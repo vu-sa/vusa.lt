@@ -69,8 +69,10 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
 {
     use HasComments, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasUlids, LogsActivity, Searchable, SoftDeletes;
 
+    #[\Override]
     protected $guarded = [];
 
+    #[\Override]
     protected function casts(): array
     {
         return [
@@ -307,24 +309,25 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
         return app(MeetingCompletionService::class)->calculate($this);
     }
 
+    #[\Override]
     protected static function booted()
     {
-        static::saving(function (Meeting $meeting) {
+        static::saving(function (Meeting $meeting): void {
             // Dispatch event when start_time is about to change - SharePoint must succeed first
             if ($meeting->isDirty('start_time')) {
                 FileableNameUpdated::dispatch($meeting);
             }
         });
 
-        static::deleted(function (Meeting $meeting) {
+        static::deleted(function (Meeting $meeting): void {
             $meeting->publicSearchModel()->unsearchable();
         });
 
-        static::forceDeleted(function (Meeting $meeting) {
+        static::forceDeleted(function (Meeting $meeting): void {
             $meeting->publicSearchModel()->unsearchable();
         });
 
-        static::restored(function (Meeting $meeting) {
+        static::restored(function (Meeting $meeting): void {
             $publicMeeting = PublicMeeting::query()->find($meeting->getKey());
 
             if ($publicMeeting?->shouldBeSearchable()) {
@@ -332,7 +335,7 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
             }
         });
 
-        static::deleting(function (Meeting $meeting) {
+        static::deleting(function (Meeting $meeting): void {
             // A soft delete has to stay reversible. Agenda items are not soft-deletable
             // and votes + agenda_item_notes CASCADE off them, so removing them here would
             // destroy the substance of the meeting — restore would return an empty shell.

@@ -2,59 +2,58 @@
 
 namespace App\Enums;
 
-use Spatie\Enum\Laravel\Enum;
+use App\Enums\Concerns\HasEnumHelpers;
 
-/**
- * @typescript
- *
- * @method static self IMAGE_GRID()
- * @method static self SHADCN_ACCORDION()
- * @method static self SHADCN_CARD()
- * @method static self TIPTAP()
- * @method static self HERO()
- * @method static self SPOTIFY_EMBED()
- * @method static self SOCIAL_EMBED()
- * @method static self FLOW_GRAPH()
- * @method static self NUMBER_STAT_SECTION()
- * @method static self NEWS()
- * @method static self CALENDAR()
- * @method static self CONTENT_GRID()
- * @method static self TEXT_BOX()
- * @method static self CAROUSEL_SLIDE_DECK()
- * @method static self CARD_STACK()
- * @method static self PHOTO_GALLERY()
- * @method static self LINK_LIST()
- * @method static self EVENT_LIST()
- * @method static self PERSON_QUOTE()
- * @method static self SECTION()
- * @method static self SPACER()
- */
-final class ContentPartEnum extends Enum
+enum ContentPartEnum: string
 {
-    protected static function labels(): array
+    use HasEnumHelpers;
+
+    case IMAGE_GRID = 'IMAGE_GRID';
+    case SHADCN_ACCORDION = 'SHADCN_ACCORDION';
+    case SHADCN_CARD = 'SHADCN_CARD';
+    case TIPTAP = 'TIPTAP';
+    case HERO = 'HERO';
+    case SPOTIFY_EMBED = 'SPOTIFY_EMBED';
+    case SOCIAL_EMBED = 'SOCIAL_EMBED';
+    case FLOW_GRAPH = 'FLOW_GRAPH';
+    case NUMBER_STAT_SECTION = 'NUMBER_STAT_SECTION';
+    case NEWS = 'NEWS';
+    case CALENDAR = 'CALENDAR';
+    case CONTENT_GRID = 'CONTENT_GRID';
+    case TEXT_BOX = 'TEXT_BOX';
+    case CAROUSEL_SLIDE_DECK = 'CAROUSEL_SLIDE_DECK';
+    case CARD_STACK = 'CARD_STACK';
+    case PHOTO_GALLERY = 'PHOTO_GALLERY';
+    case LINK_LIST = 'LINK_LIST';
+    case EVENT_LIST = 'EVENT_LIST';
+    case PERSON_QUOTE = 'PERSON_QUOTE';
+    case SECTION = 'SECTION';
+    case SPACER = 'SPACER';
+
+    public function label(): string
     {
-        return [
-            'IMAGE_GRID' => 'image-grid',
-            'SHADCN_ACCORDION' => 'shadcn-accordion',
-            'SHADCN_CARD' => 'shadcn-card',
-            'TIPTAP' => 'tiptap',
-            'HERO' => 'hero',
-            'SPOTIFY_EMBED' => 'spotify-embed',
-            'SOCIAL_EMBED' => 'social-embed',
-            'FLOW_GRAPH' => 'flow-graph',
-            'NUMBER_STAT_SECTION' => 'number-stat-section',
-            'NEWS' => 'news',
-            'CALENDAR' => 'calendar',
-            'CONTENT_GRID' => 'content-grid',
-            'TEXT_BOX' => 'text-box',
-            'CAROUSEL_SLIDE_DECK' => 'carousel-slide-deck',
-            'CARD_STACK' => 'card-stack',
-            'PHOTO_GALLERY' => 'photo-gallery',
-            'LINK_LIST' => 'link-list',
-            'EVENT_LIST' => 'event-list',
-            'PERSON_QUOTE' => 'person-quote',
-            'SECTION' => 'section',
-            'SPACER' => 'spacer',
-        ];
+        return match ($this) {
+            self::IMAGE_GRID => 'image-grid',
+            self::SHADCN_ACCORDION => 'shadcn-accordion',
+            self::SHADCN_CARD => 'shadcn-card',
+            self::TIPTAP => 'tiptap',
+            self::HERO => 'hero',
+            self::SPOTIFY_EMBED => 'spotify-embed',
+            self::SOCIAL_EMBED => 'social-embed',
+            self::FLOW_GRAPH => 'flow-graph',
+            self::NUMBER_STAT_SECTION => 'number-stat-section',
+            self::NEWS => 'news',
+            self::CALENDAR => 'calendar',
+            self::CONTENT_GRID => 'content-grid',
+            self::TEXT_BOX => 'text-box',
+            self::CAROUSEL_SLIDE_DECK => 'carousel-slide-deck',
+            self::CARD_STACK => 'card-stack',
+            self::PHOTO_GALLERY => 'photo-gallery',
+            self::LINK_LIST => 'link-list',
+            self::EVENT_LIST => 'event-list',
+            self::PERSON_QUOTE => 'person-quote',
+            self::SECTION => 'section',
+            self::SPACER => 'spacer',
+        };
     }
 }

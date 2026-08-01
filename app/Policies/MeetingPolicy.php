@@ -16,16 +16,13 @@ use Illuminate\Support\Str;
  */
 class MeetingPolicy extends ModelPolicy
 {
-    protected InstitutionAccessService $institutionAccessService;
-
     /**
      * Initialize policy with model name
      */
-    public function __construct(ModelAuthorizer $authorizer, InstitutionAccessService $institutionAccessService)
+    public function __construct(ModelAuthorizer $authorizer, protected InstitutionAccessService $institutionAccessService)
     {
         parent::__construct($authorizer);
-        $this->institutionAccessService = $institutionAccessService;
-        $this->pluralModelName = Str::plural(ModelEnum::MEETING()->label);
+        $this->pluralModelName = Str::plural(ModelEnum::MEETING->label());
     }
 
     /**
@@ -33,6 +30,7 @@ class MeetingPolicy extends ModelPolicy
      *
      * @param  Meeting  $meeting
      */
+    #[\Override]
     public function view(User $user, Model $meeting): bool
     {
         // Check if user is a participant in the meeting
@@ -46,7 +44,7 @@ class MeetingPolicy extends ModelPolicy
             return true;
         }
 
-        return $this->commonChecker($user, $meeting, CRUDEnum::READ()->label);
+        return $this->commonChecker($user, $meeting, CRUDEnum::READ->label());
     }
 
     /**
@@ -54,6 +52,7 @@ class MeetingPolicy extends ModelPolicy
      *
      * @param  Meeting  $meeting
      */
+    #[\Override]
     public function update(User $user, Model $meeting): bool
     {
         // Note: Meeting model doesn't have organizer_id field
@@ -62,7 +61,7 @@ class MeetingPolicy extends ModelPolicy
             return true;
         }
 
-        return $this->commonChecker($user, $meeting, CRUDEnum::UPDATE()->label);
+        return $this->commonChecker($user, $meeting, CRUDEnum::UPDATE->label());
     }
 
     /**
@@ -78,6 +77,6 @@ class MeetingPolicy extends ModelPolicy
             return true;
         }
 
-        return $this->commonChecker($user, $meeting, CRUDEnum::UPDATE()->label);
+        return $this->commonChecker($user, $meeting, CRUDEnum::UPDATE->label());
     }
 }

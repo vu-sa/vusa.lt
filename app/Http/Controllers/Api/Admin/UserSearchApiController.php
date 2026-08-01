@@ -17,7 +17,7 @@ use Illuminate\Http\Request;
 class UserSearchApiController extends ApiController
 {
     public function __construct(
-        private Authorizer $authorizer
+        private readonly Authorizer $authorizer
     ) {}
 
     /**
@@ -56,8 +56,8 @@ class UserSearchApiController extends ApiController
                 ->values()
                 ->toArray();
 
-            $query->whereHas('duties', function ($q) use ($tenantIds) {
-                $q->whereHas('institution', function ($q2) use ($tenantIds) {
+            $query->whereHas('duties', function ($q) use ($tenantIds): void {
+                $q->whereHas('institution', function ($q2) use ($tenantIds): void {
                     $q2->whereIn('tenant_id', $tenantIds);
                 });
             });

@@ -12,6 +12,7 @@ class TrustProxies extends Middleware
      *
      * @var array<int, string>|string|null
      */
+    #[\Override]
     protected $proxies = [
         '172.16.0.0/12',
     ];
@@ -21,5 +22,6 @@ class TrustProxies extends Middleware
      *
      * @var int
      */
+    #[\Override]
     protected $headers = Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_HOST | Request::HEADER_X_FORWARDED_PORT | Request::HEADER_X_FORWARDED_PROTO | Request::HEADER_X_FORWARDED_AWS_ELB;
 }

@@ -11,6 +11,7 @@ class AtstovavimasRepresentativesRequest extends AtstovavimasTenantRequest
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
+    #[\Override]
     public function rules(): array
     {
         return [

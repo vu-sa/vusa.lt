@@ -55,12 +55,10 @@ class ContactPresentationService
                     ];
                 }
             } else {
-                $contacts = $duty->current_users->map(function ($user) use ($duty) {
-                    return [
-                        'user' => $user,
-                        'duty' => $duty,
-                    ];
-                })->toArray();
+                $contacts = $duty->current_users->map(fn ($user) => [
+                    'user' => $user,
+                    'duty' => $duty,
+                ])->toArray();
 
                 if (! empty($contacts)) {
                     $result[] = [
@@ -86,11 +84,11 @@ class ContactPresentationService
         $groups = [];
 
         $users = $duty->current_users->load([
-            'dutiables' => function ($query) use ($duty) {
+            'dutiables' => function ($query) use ($duty): void {
                 // Only active rows drive grouping, mirroring current_users semantics —
                 // otherwise a member's ended row could win over their current one.
                 $query->where('duty_id', $duty->id)
-                    ->where(function ($q) {
+                    ->where(function ($q): void {
                         $q->whereNull('end_date')->orWhere('end_date', '>=', now());
                     })
                     ->with(['study_program.tenant', 'tenant']);
@@ -139,22 +137,17 @@ class ContactPresentationService
      */
     public function getGroupKey(Dutiable $dutiable, string $groupingType, ?Duty $duty = null): string
     {
-        switch ($groupingType) {
-            case 'study_program':
-                return $dutiable->study_program
-                    ? $dutiable->study_program->name
-                    : $this->fallbackGroupName();
-
-            case 'tenant':
-                // The padalinys the member represents: the cross-tenant assignment
-                // (dutiables.tenant_id), or the duty's own tenant when null.
-                return $dutiable->tenant?->shortname // @phpstan-ignore nullsafe.neverNull
-                    ?? $duty?->loadMissing('institution.tenant')->institution?->tenant?->shortname // @phpstan-ignore nullsafe.neverNull
-                    ?? $this->fallbackGroupName();
-
-            default:
-                return $this->fallbackGroupName();
-        }
+        return match ($groupingType) {
+            'study_program' => $dutiable->study_program
+                ? $dutiable->study_program->name
+                : $this->fallbackGroupName(),
+            // The padalinys the member represents: the cross-tenant assignment
+            // (dutiables.tenant_id), or the duty's own tenant when null.
+            'tenant' => $dutiable->tenant?->shortname // @phpstan-ignore nullsafe.neverNull
+                ?? $duty?->loadMissing('institution.tenant')->institution?->tenant?->shortname // @phpstan-ignore nullsafe.neverNull
+                ?? $this->fallbackGroupName(),
+            default => $this->fallbackGroupName(),
+        };
     }
 
     /**

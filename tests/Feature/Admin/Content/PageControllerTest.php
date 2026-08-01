@@ -5,9 +5,9 @@ use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
     $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
@@ -19,20 +19,20 @@ beforeEach(function () {
     ]);
 });
 
-describe('unauthorized access', function () {
-    test('cannot access index page', function () {
+describe('unauthorized access', function (): void {
+    test('cannot access index page', function (): void {
         asUser($this->user)
             ->get(route('pages.index'))
             ->assertStatus(403);
     });
 
-    test('cannot access create page', function () {
+    test('cannot access create page', function (): void {
         asUser($this->user)
             ->get(route('pages.create'))
             ->assertStatus(403);
     });
 
-    test('cannot store page', function () {
+    test('cannot store page', function (): void {
         $validData = getControllerTestData('Page')['valid'];
         $validData['tenant_id'] = $this->tenant->id;
 
@@ -41,13 +41,13 @@ describe('unauthorized access', function () {
             ->assertStatus(403);
     });
 
-    test('cannot access edit page', function () {
+    test('cannot access edit page', function (): void {
         asUser($this->user)
             ->get(route('pages.edit', $this->page))
             ->assertStatus(403);
     });
 
-    test('cannot update page', function () {
+    test('cannot update page', function (): void {
         $updateData = getControllerTestData('Page')['valid'];
         $updateData['tenant_id'] = $this->tenant->id;
 
@@ -56,15 +56,15 @@ describe('unauthorized access', function () {
             ->assertStatus(403);
     });
 
-    test('cannot delete page', function () {
+    test('cannot delete page', function (): void {
         asUser($this->user)
             ->delete(route('pages.destroy', $this->page))
             ->assertStatus(403);
     });
 });
 
-describe('authorized access', function () {
-    test('can access index page', function () {
+describe('authorized access', function (): void {
+    test('can access index page', function (): void {
         asUser($this->admin)
             ->get(route('pages.index'))
             ->assertStatus(200)
@@ -75,7 +75,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('can access create page', function () {
+    test('can access create page', function (): void {
         asUser($this->admin)
             ->get(route('pages.create'))
             ->assertStatus(200)
@@ -85,7 +85,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('can store page with valid data', function () {
+    test('can store page with valid data', function (): void {
         $validData = getControllerTestData('Page')['valid'];
         $validData['tenant_id'] = $this->tenant->id;
         $uniqueSuffix = time();
@@ -106,7 +106,7 @@ describe('authorized access', function () {
         ]);
     });
 
-    test('cannot store page with invalid data', function () {
+    test('cannot store page with invalid data', function (): void {
         $invalidData = getControllerTestData('Page')['invalid'];
         $invalidData['tenant_id'] = $this->tenant->id;
 
@@ -116,7 +116,7 @@ describe('authorized access', function () {
             ->assertSessionHasErrors(getControllerValidationErrors('Page'));
     });
 
-    test('can access edit page', function () {
+    test('can access edit page', function (): void {
         asUser($this->admin)
             ->get(route('pages.edit', $this->page))
             ->assertStatus(200)
@@ -128,7 +128,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('can update page with valid data', function () {
+    test('can update page with valid data', function (): void {
         $updateData = getControllerTestData('Page')['valid'];
         $updateData['title'] = 'Atnaujintas puslapis';
         $updateData['tenant_id'] = $this->tenant->id;
@@ -144,7 +144,7 @@ describe('authorized access', function () {
         ]);
     });
 
-    test('show_table_of_contents round-trips through store and update', function () {
+    test('show_table_of_contents round-trips through store and update', function (): void {
         $validData = getControllerTestData('Page')['valid'];
         $validData['tenant_id'] = $this->tenant->id;
         $validData['permalink'] = 'test-page-toc-'.time();
@@ -176,7 +176,7 @@ describe('authorized access', function () {
         ]);
     });
 
-    test('show_breadcrumbs round-trips through store and update', function () {
+    test('show_breadcrumbs round-trips through store and update', function (): void {
         $validData = getControllerTestData('Page')['valid'];
         $validData['tenant_id'] = $this->tenant->id;
         $validData['permalink'] = 'test-page-breadcrumbs-'.time();
@@ -208,7 +208,7 @@ describe('authorized access', function () {
         ]);
     });
 
-    test('cannot update page with invalid data', function () {
+    test('cannot update page with invalid data', function (): void {
         $invalidData = getControllerTestData('Page')['invalid'];
         $invalidData['tenant_id'] = $this->tenant->id;
 
@@ -224,7 +224,7 @@ describe('authorized access', function () {
         ]);
     });
 
-    test('can delete page', function () {
+    test('can delete page', function (): void {
         asUser($this->admin)
             ->delete(route('pages.destroy', $this->page))
             ->assertStatus(302)
@@ -237,8 +237,8 @@ describe('authorized access', function () {
     });
 });
 
-describe('filtering and search', function () {
-    beforeEach(function () {
+describe('filtering and search', function (): void {
+    beforeEach(function (): void {
         // Create additional pages for testing
         Page::factory()->for($this->tenant)->create([
             'title' => 'Another page',
@@ -247,37 +247,31 @@ describe('filtering and search', function () {
         ]);
     });
 
-    test('can filter pages by search term', function () {
+    test('can filter pages by search term', function (): void {
         asUser($this->admin)
             ->get(route('pages.index', ['search' => 'Test']))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Content/IndexPages')
                 ->has('pages.data')
-                ->where('pages.data', function ($data) {
-                    return collect($data)->contains(function ($page) {
-                        return str_contains($page['title'], 'Test');
-                    });
-                })
+                ->where('pages.data', fn ($data) => collect($data)->contains(fn ($page) => str_contains($page['title'], 'Test')))
             );
     });
 
-    test('can filter pages by language', function () {
+    test('can filter pages by language', function (): void {
         asUser($this->admin)
             ->get(route('pages.index', ['filters' => json_encode(['lang' => ['en']])]))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Content/IndexPages')
                 ->has('pages.data')
-                ->where('pages.data', function ($data) {
-                    return collect($data)->every(fn ($page) => $page['lang'] === 'en');
-                })
+                ->where('pages.data', fn ($data) => collect($data)->every(fn ($page) => $page['lang'] === 'en'))
             );
     });
 });
 
-describe('edge cases and business logic', function () {
-    test('page permalink must be unique within tenant', function () {
+describe('edge cases and business logic', function (): void {
+    test('page permalink must be unique within tenant', function (): void {
         $duplicateData = getControllerTestData('Page')['valid'];
         $duplicateData['permalink'] = $this->page->permalink; // Same permalink
         $duplicateData['tenant_id'] = $this->tenant->id;
@@ -288,7 +282,7 @@ describe('edge cases and business logic', function () {
             ->assertSessionHasErrors(['permalink']);
     });
 
-    test('page permalink can be reused across tenants', function () {
+    test('page permalink can be reused across tenants', function (): void {
         $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->firstOrFail();
 
         Page::factory()->for($otherTenant)->create([
@@ -311,7 +305,7 @@ describe('edge cases and business logic', function () {
         ]);
     });
 
-    test('can update page permalink', function () {
+    test('can update page permalink', function (): void {
         $updateData = getControllerTestData('Page')['valid'];
         $updateData['permalink'] = 'updated-permalink';
         $updateData['tenant_id'] = $this->tenant->id;
@@ -327,7 +321,7 @@ describe('edge cases and business logic', function () {
         ]);
     });
 
-    test('page handles special characters in content', function () {
+    test('page handles special characters in content', function (): void {
         $specialCharsData = getControllerTestData('Page')['valid'];
         $specialCharsData['title'] = 'Puslapis su šiaudiniais žodžiais';
         $specialCharsData['content'] = [
@@ -363,8 +357,8 @@ describe('edge cases and business logic', function () {
     });
 });
 
-describe('content part width validation', function () {
-    test('accepts a valid options.width value', function () {
+describe('content part width validation', function (): void {
+    test('accepts a valid options.width value', function (): void {
         $data = getControllerTestData('Page')['valid'];
         $data['tenant_id'] = $this->tenant->id;
         $data['permalink'] = 'width-valid-'.time();
@@ -376,7 +370,7 @@ describe('content part width validation', function () {
             ->assertSessionDoesntHaveErrors();
     });
 
-    test('rejects an invalid options.width value', function () {
+    test('rejects an invalid options.width value', function (): void {
         $data = getControllerTestData('Page')['valid'];
         $data['tenant_id'] = $this->tenant->id;
         $data['permalink'] = 'width-invalid-'.time();
@@ -388,7 +382,7 @@ describe('content part width validation', function () {
             ->assertSessionHasErrors(['content.parts.0.options.width']);
     });
 
-    test('rejects a non-array options value', function () {
+    test('rejects a non-array options value', function (): void {
         $data = getControllerTestData('Page')['valid'];
         $data['tenant_id'] = $this->tenant->id;
         $data['permalink'] = 'width-scalar-'.time();
@@ -400,7 +394,7 @@ describe('content part width validation', function () {
             ->assertSessionHasErrors(['content.parts.0.options']);
     });
 
-    test('accepts a valid options.rounded value, shared by every RCSection-chrome block', function () {
+    test('accepts a valid options.rounded value, shared by every RCSection-chrome block', function (): void {
         $data = getControllerTestData('Page')['valid'];
         $data['tenant_id'] = $this->tenant->id;
         $data['permalink'] = 'rounded-valid-'.time();
@@ -412,7 +406,7 @@ describe('content part width validation', function () {
             ->assertSessionDoesntHaveErrors();
     });
 
-    test('rejects an invalid options.rounded value', function () {
+    test('rejects an invalid options.rounded value', function (): void {
         $data = getControllerTestData('Page')['valid'];
         $data['tenant_id'] = $this->tenant->id;
         $data['permalink'] = 'rounded-invalid-'.time();
@@ -424,7 +418,7 @@ describe('content part width validation', function () {
             ->assertSessionHasErrors(['content.parts.0.options.rounded']);
     });
 
-    test('accepts a section block with wraps/inner options', function () {
+    test('accepts a section block with wraps/inner options', function (): void {
         $data = getControllerTestData('Page')['valid'];
         $data['tenant_id'] = $this->tenant->id;
         $data['permalink'] = 'section-valid-'.time();
@@ -440,7 +434,7 @@ describe('content part width validation', function () {
             ->assertSessionDoesntHaveErrors();
     });
 
-    test('rejects an invalid section wraps value', function () {
+    test('rejects an invalid section wraps value', function (): void {
         $data = getControllerTestData('Page')['valid'];
         $data['tenant_id'] = $this->tenant->id;
         $data['permalink'] = 'section-invalid-'.time();
@@ -456,7 +450,7 @@ describe('content part width validation', function () {
             ->assertSessionHasErrors(['content.parts.1.options.wraps']);
     });
 
-    test('accepts a content-grid with verticalAlign', function () {
+    test('accepts a content-grid with verticalAlign', function (): void {
         $data = getControllerTestData('Page')['valid'];
         $data['tenant_id'] = $this->tenant->id;
         $data['permalink'] = 'grid-align-valid-'.time();
@@ -472,7 +466,7 @@ describe('content part width validation', function () {
             ->assertSessionDoesntHaveErrors();
     });
 
-    test('rejects an invalid content-grid verticalAlign value', function () {
+    test('rejects an invalid content-grid verticalAlign value', function (): void {
         $data = getControllerTestData('Page')['valid'];
         $data['tenant_id'] = $this->tenant->id;
         $data['permalink'] = 'grid-align-invalid-'.time();
@@ -488,7 +482,7 @@ describe('content part width validation', function () {
             ->assertSessionHasErrors(['content.parts.1.options.verticalAlign']);
     });
 
-    test('accepts a manual link-list link with an imageUrl', function () {
+    test('accepts a manual link-list link with an imageUrl', function (): void {
         $data = getControllerTestData('Page')['valid'];
         $data['tenant_id'] = $this->tenant->id;
         $data['permalink'] = 'link-image-valid-'.time();
@@ -504,7 +498,7 @@ describe('content part width validation', function () {
             ->assertSessionDoesntHaveErrors();
     });
 
-    test('accepts event-list tenantLabelStyle', function () {
+    test('accepts event-list tenantLabelStyle', function (): void {
         $data = getControllerTestData('Page')['valid'];
         $data['tenant_id'] = $this->tenant->id;
         $data['permalink'] = 'event-label-style-valid-'.time();
@@ -520,7 +514,7 @@ describe('content part width validation', function () {
             ->assertSessionDoesntHaveErrors();
     });
 
-    test('rejects an invalid event-list tenantLabelStyle value', function () {
+    test('rejects an invalid event-list tenantLabelStyle value', function (): void {
         $data = getControllerTestData('Page')['valid'];
         $data['tenant_id'] = $this->tenant->id;
         $data['permalink'] = 'event-label-style-invalid-'.time();
@@ -536,7 +530,7 @@ describe('content part width validation', function () {
             ->assertSessionHasErrors(['content.parts.1.options.tenantLabelStyle']);
     });
 
-    test('accepts a text-box with a translatable title object', function () {
+    test('accepts a text-box with a translatable title object', function (): void {
         $data = getControllerTestData('Page')['valid'];
         $data['tenant_id'] = $this->tenant->id;
         $data['permalink'] = 'textbox-title-valid-'.time();
@@ -557,7 +551,7 @@ describe('content part width validation', function () {
             ->assertSessionDoesntHaveErrors();
     });
 
-    test('still accepts a plain string options.title for section chrome', function () {
+    test('still accepts a plain string options.title for section chrome', function (): void {
         $data = getControllerTestData('Page')['valid'];
         $data['tenant_id'] = $this->tenant->id;
         $data['permalink'] = 'textbox-string-title-valid-'.time();
@@ -570,33 +564,31 @@ describe('content part width validation', function () {
     });
 });
 
-describe('tenant isolation', function () {
-    beforeEach(function () {
+describe('tenant isolation', function (): void {
+    beforeEach(function (): void {
         $this->otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $this->otherPage = Page::factory()->for($this->otherTenant)->create();
         $this->otherAdmin = makeTenantUserWithRole('Communication Coordinator', $this->otherTenant);
     });
 
-    test('user only sees pages from their tenant', function () {
+    test('user only sees pages from their tenant', function (): void {
         asUser($this->admin)
             ->get(route('pages.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Content/IndexPages')
                 ->has('pages.data')
-                ->where('pages.data', function ($data) {
-                    return collect($data)->every(fn ($page) => $page['tenant_id'] === $this->tenant->id);
-                })
+                ->where('pages.data', fn ($data) => collect($data)->every(fn ($page) => $page['tenant_id'] === $this->tenant->id))
             );
     });
 
-    test('cannot access other tenant page', function () {
+    test('cannot access other tenant page', function (): void {
         asUser($this->admin)
             ->get(route('pages.edit', $this->otherPage))
             ->assertStatus(403); // Authorization failure - cannot access other tenant's page
     });
 
-    test('cannot update other tenant page', function () {
+    test('cannot update other tenant page', function (): void {
         $updateData = getControllerTestData('Page')['valid'];
         $updateData['tenant_id'] = $this->tenant->id;
 

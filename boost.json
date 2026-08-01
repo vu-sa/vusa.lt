@@ -2,7 +2,6 @@
     "agents": [
         "claude_code",
         "copilot",
-        "gemini",
         "codex",
         "opencode"
     ],
@@ -14,7 +13,8 @@
         "spatie/laravel-medialibrary",
         "spatie/laravel-permission",
         "spatie/laravel-translatable",
-        "fruitcake/laravel-debugbar"
+        "pestphp/pest-plugin-agent",
+        "barryvdh/laravel-debugbar"
     ],
     "sail": true,
     "skills": [
@@ -28,6 +28,7 @@
         "medialibrary-development",
         "laravel-permission-development",
         "translatable-development",
-        "debug-using-debugbar"
+        "debug-using-debugbar",
+        "pest-plugin-agent"
     ]
 }

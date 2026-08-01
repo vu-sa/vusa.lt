@@ -8,32 +8,32 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->institution = Institution::factory()->for($this->tenant)->create();
     $this->file = FileableFile::factory()->for($this->institution, 'fileable')->create();
 });
 
-describe('FileableFilePolicy', function () {
-    describe('viewAny permission', function () {
-        test('any authenticated user can view files list', function () {
+describe('FileableFilePolicy', function (): void {
+    describe('viewAny permission', function (): void {
+        test('any authenticated user can view files list', function (): void {
             $user = makeUser($this->tenant);
 
             expect(Gate::forUser($user)->allows('viewAny', FileableFile::class))->toBeTrue();
         });
     });
 
-    describe('view permission', function () {
-        test('user can view file if they can view the parent fileable', function () {
+    describe('view permission', function (): void {
+        test('user can view file if they can view the parent fileable', function (): void {
             $user = makeUser($this->tenant);
             $user->assignRole('Super Admin');
 
             expect(Gate::forUser($user)->allows('view', $this->file))->toBeTrue();
         });
 
-        test('user cannot view file if they cannot view the parent fileable', function () {
+        test('user cannot view file if they cannot view the parent fileable', function (): void {
             // Create a file for an institution the user doesn't have access to
             $otherTenant = Tenant::factory()->create();
             $otherInstitution = Institution::factory()->for($otherTenant)->create();
@@ -47,7 +47,7 @@ describe('FileableFilePolicy', function () {
             expect(Gate::forUser($user)->allows('view', $file))->toBeFalse();
         });
 
-        test('returns false if fileable is null', function () {
+        test('returns false if fileable is null', function (): void {
             $orphanFile = FileableFile::factory()->create([
                 'fileable_type' => Institution::class,
                 'fileable_id' => 'nonexistent-id',
@@ -59,15 +59,15 @@ describe('FileableFilePolicy', function () {
         });
     });
 
-    describe('update permission', function () {
-        test('super admin can update any file', function () {
+    describe('update permission', function (): void {
+        test('super admin can update any file', function (): void {
             $user = makeUser($this->tenant);
             $user->assignRole('Super Admin');
 
             expect(Gate::forUser($user)->allows('update', $this->file))->toBeTrue();
         });
 
-        test('user can update file if they can update the parent fileable', function () {
+        test('user can update file if they can update the parent fileable', function (): void {
             $user = makeUser($this->tenant);
             $user->assignRole('Super Admin');
 
@@ -75,22 +75,22 @@ describe('FileableFilePolicy', function () {
         });
     });
 
-    describe('delete permission', function () {
-        test('super admin can delete any file', function () {
+    describe('delete permission', function (): void {
+        test('super admin can delete any file', function (): void {
             $user = makeUser($this->tenant);
             $user->assignRole('Super Admin');
 
             expect(Gate::forUser($user)->allows('delete', $this->file))->toBeTrue();
         });
 
-        test('user can delete file if they can update the parent fileable', function () {
+        test('user can delete file if they can update the parent fileable', function (): void {
             $user = makeUser($this->tenant);
             $user->assignRole('Super Admin');
 
             expect(Gate::forUser($user)->allows('delete', $this->file))->toBeTrue();
         });
 
-        test('returns false if fileable is null for regular user', function () {
+        test('returns false if fileable is null for regular user', function (): void {
             $orphanFile = FileableFile::factory()->create([
                 'fileable_type' => Institution::class,
                 'fileable_id' => 'nonexistent-id',
@@ -103,8 +103,8 @@ describe('FileableFilePolicy', function () {
         });
     });
 
-    describe('restore and forceDelete permissions', function () {
-        test('restore delegates to delete permission', function () {
+    describe('restore and forceDelete permissions', function (): void {
+        test('restore delegates to delete permission', function (): void {
             $user = makeUser($this->tenant);
             $user->assignRole('Super Admin');
 
@@ -113,7 +113,7 @@ describe('FileableFilePolicy', function () {
             expect(Gate::forUser($user)->allows('restore', $this->file))->toBeTrue();
         });
 
-        test('forceDelete delegates to delete permission', function () {
+        test('forceDelete delegates to delete permission', function (): void {
             $user = makeUser($this->tenant);
             $user->assignRole('Super Admin');
 
@@ -122,8 +122,8 @@ describe('FileableFilePolicy', function () {
     });
 });
 
-describe('FileableFile with different fileable types', function () {
-    test('policy works with Meeting as fileable', function () {
+describe('FileableFile with different fileable types', function (): void {
+    test('policy works with Meeting as fileable', function (): void {
         $meeting = Meeting::factory()->create();
         $file = FileableFile::factory()->create([
             'fileable_type' => Meeting::class,
@@ -133,8 +133,8 @@ describe('FileableFile with different fileable types', function () {
         $user = makeUser($this->tenant);
         $user->assignRole('Super Admin');
 
-        expect(Gate::forUser($user)->allows('view', $file))->toBeTrue();
-        expect(Gate::forUser($user)->allows('update', $file))->toBeTrue();
-        expect(Gate::forUser($user)->allows('delete', $file))->toBeTrue();
+        expect(Gate::forUser($user)->allows('view', $file))->toBeTrue()
+            ->and(Gate::forUser($user)->allows('update', $file))->toBeTrue()
+            ->and(Gate::forUser($user)->allows('delete', $file))->toBeTrue();
     });
 });

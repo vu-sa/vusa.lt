@@ -5,6 +5,8 @@ namespace App\Console\Commands;
 use App\Mail\NotificationDigest;
 use App\Models\NotificationDigestQueue;
 use App\Models\User;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -16,12 +18,10 @@ use Illuminate\Support\Facades\Mail;
  * This command runs hourly and checks each user's digest frequency setting
  * to determine if it's time to send their digest.
  */
+#[Description('Process and send notification email digests based on user preferences')]
+#[Signature('notifications:send-digests')]
 class ProcessNotificationDigests extends Command
 {
-    protected $signature = 'notifications:send-digests';
-
-    protected $description = 'Process and send notification email digests based on user preferences';
-
     public function handle(): int
     {
         $usersWithPendingDigests = NotificationDigestQueue::query()

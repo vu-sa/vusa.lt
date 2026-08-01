@@ -7,16 +7,16 @@ use App\Services\NotificationRouter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Notifications\Notification;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->service = new NotificationRouter;
     $this->tenant = Tenant::query()->first();
 });
 
-describe('NotificationRouter', function () {
-    describe('routeForMail', function () {
-        test('returns user email when no duties exist', function () {
+describe('NotificationRouter', function (): void {
+    describe('routeForMail', function (): void {
+        test('returns user email when no duties exist', function (): void {
             $user = User::factory()->create(['email' => 'user@example.com']);
 
             $result = $this->service->routeForMail($user, new Notification);
@@ -24,7 +24,7 @@ describe('NotificationRouter', function () {
             expect($result)->toBe('user@example.com');
         });
 
-        test('returns duty email when it ends with vusa.lt', function () {
+        test('returns duty email when it ends with vusa.lt', function (): void {
             $user = User::factory()->create(['email' => 'user@example.com']);
             $duty = Duty::factory()->create([
                 'email' => 'duty@vusa.lt',
@@ -36,7 +36,7 @@ describe('NotificationRouter', function () {
             expect($result)->toBe('duty@vusa.lt');
         });
 
-        test('falls back to user email when duty email does not end with vusa.lt', function () {
+        test('falls back to user email when duty email does not end with vusa.lt', function (): void {
             $user = User::factory()->create(['email' => 'user@example.com']);
             $duty = Duty::factory()->create([
                 'email' => 'duty@example.com',
@@ -48,7 +48,7 @@ describe('NotificationRouter', function () {
             expect($result)->toBe('user@example.com');
         });
 
-        test('prefers first vusa.lt duty email when multiple duties exist', function () {
+        test('prefers first vusa.lt duty email when multiple duties exist', function (): void {
             $user = User::factory()->create(['email' => 'user@example.com']);
             $duty1 = Duty::factory()->create([
                 'email' => 'first@vusa.lt',

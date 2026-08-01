@@ -58,6 +58,7 @@ class InstitutionActivityNotification extends BaseNotification
         ];
     }
 
+    #[\Override]
     public function actions(): array
     {
         return [

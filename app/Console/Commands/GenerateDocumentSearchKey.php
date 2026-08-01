@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Typesense\Client;
 
@@ -11,19 +13,11 @@ use Typesense\Client;
  * This key is intended for external integrations or services that need
  * long-term access to search documents without key rotation.
  */
+#[Description('Generate a non-expiring search-only API key for the documents collection')]
+#[Signature('documents:generate-key
+                            {--description= : Custom description for the key}')]
 class GenerateDocumentSearchKey extends Command
 {
-    /**
-     * The name and signature of the console command.
-     */
-    protected $signature = 'documents:generate-key
-                            {--description= : Custom description for the key}';
-
-    /**
-     * The console command description.
-     */
-    protected $description = 'Generate a non-expiring search-only API key for the documents collection';
-
     /**
      * Execute the console command.
      */

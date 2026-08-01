@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-use Spatie\Enum\Laravel\Enum;
+use App\Enums\Concerns\HasEnumHelpers;
 
 /**
  * SharePoint technical configuration constants.
@@ -12,25 +12,25 @@ use Spatie\Enum\Laravel\Enum;
  *
  * For user-configurable business settings (like permission expiry days), these are
  * now hardcoded as constants in the SharepointGraphService class.
- *
- * @typescript
- *
- * @method static self API_BASE_URL()
- * @method static self DEFAULT_TIMEOUT()
- * @method static self MAX_RETRIES()
- * @method static self RETRY_DELAY_MS()
- * @method static self DEFAULT_BATCH_SIZE()
  */
-final class SharepointConfigEnum extends Enum
+enum SharepointConfigEnum: string
 {
-    protected static function labels(): array
+    use HasEnumHelpers;
+
+    case API_BASE_URL = 'API_BASE_URL';
+    case DEFAULT_TIMEOUT = 'DEFAULT_TIMEOUT';
+    case MAX_RETRIES = 'MAX_RETRIES';
+    case RETRY_DELAY_MS = 'RETRY_DELAY_MS';
+    case DEFAULT_BATCH_SIZE = 'DEFAULT_BATCH_SIZE';
+
+    public function label(): string
     {
-        return [
-            'API_BASE_URL' => 'https://graph.microsoft.com/v1.0/',
-            'DEFAULT_TIMEOUT' => '30',
-            'MAX_RETRIES' => '3',
-            'RETRY_DELAY_MS' => '1000',
-            'DEFAULT_BATCH_SIZE' => '20',
-        ];
+        return match ($this) {
+            self::API_BASE_URL => 'https://graph.microsoft.com/v1.0/',
+            self::DEFAULT_TIMEOUT => '30',
+            self::MAX_RETRIES => '3',
+            self::RETRY_DELAY_MS => '1000',
+            self::DEFAULT_BATCH_SIZE => '20',
+        };
     }
 }

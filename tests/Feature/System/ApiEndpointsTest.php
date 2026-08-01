@@ -4,9 +4,9 @@ use App\Models\News;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::factory()->create([
         'type' => 'padalinys',
         'alias' => 'test-tenant',
@@ -14,8 +14,8 @@ beforeEach(function () {
     $this->apiUser = makeUser($this->tenant);
 });
 
-describe('unauthenticated API access', function () {
-    test('public endpoints are accessible without authentication', function () {
+describe('unauthenticated API access', function (): void {
+    test('public endpoints are accessible without authentication', function (): void {
         $news = News::factory()->create([
             'tenant_id' => $this->tenant->id,
             'draft' => false,
@@ -29,19 +29,19 @@ describe('unauthenticated API access', function () {
         expect($responseData)->toBeArray();
     });
 
-    test('protected endpoints require authentication', function () {
+    test('protected endpoints require authentication', function (): void {
         $this->getJson("/api/v1/tenants/{$this->tenant->alias}/news")
             ->assertStatus(200); // Public API, should be accessible
     });
 });
 
-describe('authenticated API access', function () {
-    test('can access protected endpoints when authenticated', function () {
+describe('authenticated API access', function (): void {
+    test('can access protected endpoints when authenticated', function (): void {
         asUser($this->apiUser)->getJson("/api/v1/tenants/{$this->tenant->alias}/news")
             ->assertStatus(200);
     });
 
-    test('cannot access resources from other tenants', function () {
+    test('cannot access resources from other tenants', function (): void {
         $otherTenant = Tenant::factory()->create();
         $otherNews = News::factory()->create([
             'tenant_id' => $otherTenant->id,
@@ -52,15 +52,15 @@ describe('authenticated API access', function () {
     });
 });
 
-describe('API validation and error handling', function () {
-    test('handles not found resources gracefully', function () {
+describe('API validation and error handling', function (): void {
+    test('handles not found resources gracefully', function (): void {
         asUser($this->apiUser)->getJson('/api/v1/tenants/nonexistent-tenant/news')
             ->assertStatus(404);
     });
 });
 
-describe('API pagination and filtering', function () {
-    test('API responses are properly paginated', function () {
+describe('API pagination and filtering', function (): void {
+    test('API responses are properly paginated', function (): void {
         News::factory()->count(25)->create([
             'tenant_id' => $this->tenant->id,
         ]);
@@ -73,7 +73,7 @@ describe('API pagination and filtering', function () {
         expect($responseData)->toBeArray();
     });
 
-    test('API supports filtering by parameters', function () {
+    test('API supports filtering by parameters', function (): void {
         $publishedNews = News::factory()->create([
             'tenant_id' => $this->tenant->id,
             'draft' => false,
@@ -95,7 +95,7 @@ describe('API pagination and filtering', function () {
         }
     });
 
-    test('API supports search functionality', function () {
+    test('API supports search functionality', function (): void {
         $searchableNews = News::factory()->create([
             'tenant_id' => $this->tenant->id,
             'title' => 'Unique search term',

@@ -53,7 +53,7 @@ class SharepointGraphService
     /**
      * Default number of days for SharePoint permission expiry
      */
-    private const DEFAULT_PERMISSION_EXPIRY_DAYS = 365;
+    private const int DEFAULT_PERMISSION_EXPIRY_DAYS = 365;
 
     /**
      * SharePoint Graph API Service
@@ -78,7 +78,7 @@ class SharepointGraphService
             );
 
             $this->graph = new GraphServiceClient($tokenRequestContext);
-            $this->graphApiBaseUrl = SharepointConfigEnum::API_BASE_URL()->label;
+            $this->graphApiBaseUrl = SharepointConfigEnum::API_BASE_URL->label();
 
             $this->siteId = $siteId ?? config('filesystems.sharepoint.site_id');
             $this->driveId = $driveId ?? $this->getDrive()->getId();
@@ -120,7 +120,7 @@ class SharepointGraphService
 
             $drive = $this->graph->drives()->byDriveId($this->driveId)->withUrl($sharepointPathFinal)->get()->wait();
 
-        } catch (ODataError $e) {
+        } catch (ODataError) {
             return collect([]);
         }
 
@@ -146,14 +146,7 @@ class SharepointGraphService
                 ->wait();
 
             return $driveItem;
-        } catch (ODataError $e) {
-            Log::warning('Failed to get drive item by path', [
-                'path' => $path,
-                'error' => $e->getMessage(),
-            ]);
-
-            return null;
-        } catch (\Exception $e) {
+        } catch (ODataError|\Exception $e) {
             Log::warning('Failed to get drive item by path', [
                 'path' => $path,
                 'error' => $e->getMessage(),
@@ -380,10 +373,9 @@ class SharepointGraphService
 
             // flatten driveItemCollection
             return $driveItemCollection;
-        })->reject(fn ($value) => $value === false)->flatten()->map(function (DriveItem $driveItem) {
+        })->reject(fn ($value) => $value === false)->flatten()->map(
             // turn to simple array
-            return $driveItem->getBackingStore()->enumerate();
-        });
+            fn (DriveItem $driveItem) => $driveItem->getBackingStore()->enumerate());
 
         return $this->parseDriveItems($driveItems);
     }
@@ -451,12 +443,12 @@ class SharepointGraphService
         $driveItem = $this->validateItemIsFile($driveItemId);
 
         return $this->executeWithRetry(function () use ($siteId, $driveItemId, $datetime, $driveItem) {
-            $siteId = $siteId ?? $this->siteId;
-            $datetime = $datetime ?? Carbon::now()->addDays(self::DEFAULT_PERMISSION_EXPIRY_DAYS);
+            $siteId ??= $this->siteId;
+            $datetime ??= Carbon::now()->addDays(self::DEFAULT_PERMISSION_EXPIRY_DAYS);
 
             $requestBody = new CreateLinkPostRequestBody;
-            $requestBody->setType(SharepointPermissionTypeEnum::VIEW()->label);
-            $requestBody->setScope(SharepointScopeEnum::ANONYMOUS()->label);
+            $requestBody->setType(SharepointPermissionTypeEnum::VIEW->label());
+            $requestBody->setScope(SharepointScopeEnum::ANONYMOUS->label());
 
             if ($datetime !== false) {
                 $requestBody->setExpirationDateTime($datetime);
@@ -593,41 +585,33 @@ class SharepointGraphService
     private function parseDriveItems(Collection $driveItems)
     {
         // get all driveitem ids
-        $driveItemIds = $driveItems->map(function ($driveItem) {
-            return $driveItem['id'];
-        })->toArray();
+        $driveItemIds = $driveItems->map(fn ($driveItem) => $driveItem['id'])->toArray();
 
         // load all sharepointFile models wherein sharepointfile.sharepoint_id
         // is in $driveItemIds
         $sharepointFiles = SharepointFile::whereIn('sharepoint_id', $driveItemIds)->with('fileables.fileable', 'comments')->get();
 
-        $parsedDriveItems = $driveItems->map(function (array $driveItem) use ($sharepointFiles) {
-            return [
-                'id' => $driveItem['id'],
-                'sharepointFile' => $sharepointFiles->filter(function ($sharepointFile) use ($driveItem) {
-                    return $sharepointFile->sharepoint_id == $driveItem['id'];
-                })->first(),
-                'name' => $driveItem['name'],
-                'file' => $driveItem['file'] ?? null,
-                // if driveitem is a file, get content
-                'folder' => $driveItem['folder'] ?? null,
-                'size' => $driveItem['size'],
-                'createdDateTime' => $driveItem['createdDateTime'],
-                'lastModifiedDateTime' => $driveItem['lastModifiedDateTime'],
-                'webUrl' => $driveItem['webUrl'],
-                'listItem' => [
-                    'fields' => $driveItem['listItem']['fields'] ?? null,
+        $parsedDriveItems = $driveItems->map(fn (array $driveItem) => [
+            'id' => $driveItem['id'],
+            'sharepointFile' => $sharepointFiles->filter(fn ($sharepointFile) => $sharepointFile->sharepoint_id == $driveItem['id'])->first(),
+            'name' => $driveItem['name'],
+            'file' => $driveItem['file'] ?? null,
+            // if driveitem is a file, get content
+            'folder' => $driveItem['folder'] ?? null,
+            'size' => $driveItem['size'],
+            'createdDateTime' => $driveItem['createdDateTime'],
+            'lastModifiedDateTime' => $driveItem['lastModifiedDateTime'],
+            'webUrl' => $driveItem['webUrl'],
+            'listItem' => [
+                'fields' => $driveItem['listItem']['fields'] ?? null,
+            ],
+            'permissions' => $driveItem['permissions'] ?? null,
+            'thumbnails' => collect($driveItem['thumbnails'] ?? [])->map(fn ($thumbnail) => [
+                'large' => [
+                    'url' => $thumbnail['large']['url'],
                 ],
-                'permissions' => $driveItem['permissions'] ?? null,
-                'thumbnails' => collect($driveItem['thumbnails'] ?? [])->map(function ($thumbnail) {
-                    return [
-                        'large' => [
-                            'url' => $thumbnail['large']['url'],
-                        ],
-                    ];
-                }),
-            ];
-        });
+            ]),
+        ]);
 
         return $parsedDriveItems;
     }
@@ -641,9 +625,7 @@ class SharepointGraphService
     {
 
         // filter by documents that don't exist
-        $documentColection = $documentCollection->filter(function (Document $document): bool {
-            return Document::query()->where('sharepoint_id', $document->sharepoint_id)->doesntExist();
-        });
+        $documentColection = $documentCollection->filter(fn (Document $document): bool => Document::query()->where('sharepoint_id', $document->sharepoint_id)->doesntExist());
 
         // If no documents to process, return
         if ($documentColection->isEmpty()) {
@@ -692,10 +674,8 @@ class SharepointGraphService
         }
 
         // Get drive items that don't have a valid anonymous permission yet
-        $driveItemsWithoutAnonymousUrl = $driveItemCollections->filter(function ($driveItem) {
-            return ! collect($driveItem['permissions'])
-                ->contains(fn ($permission) => $this->isValidAnonymousPermission($permission));
-        });
+        $driveItemsWithoutAnonymousUrl = $driveItemCollections->filter(fn ($driveItem) => ! collect($driveItem['permissions'])
+            ->contains(fn ($permission) => $this->isValidAnonymousPermission($permission)));
 
         // Add anonymous url to drive items without it
         if ($driveItemsWithoutAnonymousUrl->isNotEmpty()) {
@@ -704,8 +684,8 @@ class SharepointGraphService
 
                     $requestBody = new CreateLinkPostRequestBody;
 
-                    $requestBody->setType(SharepointPermissionTypeEnum::VIEW()->label);
-                    $requestBody->setScope(SharepointScopeEnum::ANONYMOUS()->label);
+                    $requestBody->setType(SharepointPermissionTypeEnum::VIEW->label());
+                    $requestBody->setScope(SharepointScopeEnum::ANONYMOUS->label());
 
                     $sharepointPathFinal = "{$this->graphApiBaseUrl}sites/{$this->siteId}/drive/items/{$driveItem['id']}/createLink";
 
@@ -731,7 +711,7 @@ class SharepointGraphService
             $permissionCollection = collect([]);
         }
 
-        $driveItemCollections->each(function ($driveItem, string $key) use ($permissionCollection, $driveItemCollections) {
+        $driveItemCollections->each(function ($driveItem, string $key) use ($permissionCollection, $driveItemCollections): void {
             // Only merge permission if this item was in the createLink batch
             $permission = $permissionCollection->get($key);
 
@@ -759,16 +739,16 @@ class SharepointGraphService
             }
 
             $document->name = $driveItem['name'];
-            $document->title = isset($driveItem['listItem']['fields'][SharepointFieldEnum::TITLE()->label]) ? $driveItem['listItem']['fields'][SharepointFieldEnum::TITLE()->label] : $driveItem['name'];
+            $document->title = $driveItem['listItem']['fields'][SharepointFieldEnum::TITLE->label()] ?? $driveItem['name'];
             $document->eTag = $driveItem['listItem']['eTag'];
-            $document->document_date = isset($driveItem['listItem']['fields'][SharepointFieldEnum::DATE()->label]) ? Carbon::parseFromLocale(time: $driveItem['listItem']['fields'][SharepointFieldEnum::DATE()->label], timezone: 'UTC')->setTimezone('Europe/Vilnius') : null;
-            $document->effective_date = isset($driveItem['listItem']['fields'][SharepointFieldEnum::EFFECTIVE_DATE()->label]) ? Carbon::parseFromLocale(time: $driveItem['listItem']['fields'][SharepointFieldEnum::EFFECTIVE_DATE()->label], timezone: 'UTC')->setTimezone('Europe/Vilnius') : null;
-            $document->expiration_date = isset($driveItem['listItem']['fields'][SharepointFieldEnum::EXPIRATION_DATE()->label]) ? Carbon::parseFromLocale(time: $driveItem['listItem']['fields'][SharepointFieldEnum::EXPIRATION_DATE()->label], timezone: 'UTC')->setTimezone('Europe/Vilnius') : null;
+            $document->document_date = isset($driveItem['listItem']['fields'][SharepointFieldEnum::DATE->label()]) ? Carbon::parseFromLocale(time: $driveItem['listItem']['fields'][SharepointFieldEnum::DATE->label()], timezone: 'UTC')->setTimezone('Europe/Vilnius') : null;
+            $document->effective_date = isset($driveItem['listItem']['fields'][SharepointFieldEnum::EFFECTIVE_DATE->label()]) ? Carbon::parseFromLocale(time: $driveItem['listItem']['fields'][SharepointFieldEnum::EFFECTIVE_DATE->label()], timezone: 'UTC')->setTimezone('Europe/Vilnius') : null;
+            $document->expiration_date = isset($driveItem['listItem']['fields'][SharepointFieldEnum::EXPIRATION_DATE->label()]) ? Carbon::parseFromLocale(time: $driveItem['listItem']['fields'][SharepointFieldEnum::EXPIRATION_DATE->label()], timezone: 'UTC')->setTimezone('Europe/Vilnius') : null;
 
-            $document->language = isset($driveItem['listItem']['fields'][SharepointFieldEnum::LANGUAGE()->label]) ? $driveItem['listItem']['fields'][SharepointFieldEnum::LANGUAGE()->label] : null;
-            $document->content_type = isset($driveItem['listItem']['fields'][SharepointFieldEnum::TURINYS()->label]['Label']) ? $driveItem['listItem']['fields'][SharepointFieldEnum::TURINYS()->label]['Label'] : null;
+            $document->language = $driveItem['listItem']['fields'][SharepointFieldEnum::LANGUAGE->label()] ?? null;
+            $document->content_type = $driveItem['listItem']['fields'][SharepointFieldEnum::TURINYS->label()]['Label'] ?? null;
 
-            $document->summary = $driveItem['listItem']['fields'][SharepointFieldEnum::SUMMARY()->label] ?? null;
+            $document->summary = $driveItem['listItem']['fields'][SharepointFieldEnum::SUMMARY->label()] ?? null;
             /* $document->thumbnail_url = $driveItem['thumbnails'][0]['large']['url']; */
 
             $anonymousPermission = collect($driveItem['permissions'])
@@ -792,7 +772,7 @@ class SharepointGraphService
             $document->checked_at = Carbon::now();
             $document->sync_status = 'imported';
 
-            $institutionFieldName = SharepointFieldEnum::PADALINYS()->label;
+            $institutionFieldName = SharepointFieldEnum::PADALINYS->label();
 
             if (isset($driveItem['listItem']['fields'][$institutionFieldName]['Label'])) {
                 $document->institution()->associate(Institution::query()->where('name->lt', $driveItem['listItem']['fields'][$institutionFieldName]['Label'])->orWhere('short_name->lt', $driveItem['listItem']['fields'][$institutionFieldName]['Label'])->first());
@@ -857,7 +837,7 @@ class SharepointGraphService
      */
     private function executeWithRetry(callable $operation, string $operationName, ?int $maxRetries = null): mixed
     {
-        $maxRetries = $maxRetries ?? (int) SharepointConfigEnum::MAX_RETRIES()->label;
+        $maxRetries ??= (int) SharepointConfigEnum::MAX_RETRIES->label();
         $attempt = 1;
 
         while ($attempt <= $maxRetries + 1) {
@@ -893,7 +873,7 @@ class SharepointGraphService
                 }
 
                 // Log the exception class for debugging
-                $errorDetails['exception_class'] = get_class($e);
+                $errorDetails['exception_class'] = $e::class;
 
                 if ($attempt > $maxRetries) {
                     $this->logError('Operation failed after all retries', [
@@ -913,7 +893,7 @@ class SharepointGraphService
                 ]);
 
                 // Exponential backoff
-                $delay = (int) SharepointConfigEnum::RETRY_DELAY_MS()->label * pow(2, $attempt - 1);
+                $delay = (int) SharepointConfigEnum::RETRY_DELAY_MS->label() * 2 ** ($attempt - 1);
                 Sleep::for($delay)->milliseconds();
 
                 $attempt++;
@@ -985,7 +965,7 @@ class SharepointGraphService
      */
     private function isValidAnonymousPermission(array $permission): bool
     {
-        $isAnonymous = ($permission['link']['scope'] ?? null) === SharepointScopeEnum::ANONYMOUS()->label;
+        $isAnonymous = ($permission['link']['scope'] ?? null) === SharepointScopeEnum::ANONYMOUS->label();
         if (! $isAnonymous) {
             return false;
         }

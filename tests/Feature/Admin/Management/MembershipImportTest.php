@@ -9,9 +9,9 @@ use PhpOffice\PhpSpreadsheet\Shared\Date;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as XlsxWriter;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
     $this->admin = makeAdminUser();
@@ -31,12 +31,12 @@ function makeMembershipImportXlsx(array $userRows): UploadedFile
     $sheet->fromArray($rows, null, 'A1');
 
     $tmp = tempnam(sys_get_temp_dir(), 'membership_import_').'.xlsx';
-    (new XlsxWriter($spreadsheet))->save($tmp);
+    new XlsxWriter($spreadsheet)->save($tmp);
 
     return new UploadedFile($tmp, 'import.xlsx', null, null, true);
 }
 
-it('rejects unauthorized membership import', function () {
+it('rejects unauthorized membership import', function (): void {
     $file = makeMembershipImportXlsx([
         ['Jonas Jonaitis', 'jonas@vu.lt', 'tel-1', Date::PHPToExcel(now()), Date::PHPToExcel(now()->addYear())],
     ]);
@@ -48,7 +48,7 @@ it('rejects unauthorized membership import', function () {
     expect(User::where('email', 'jonas@vu.lt')->exists())->toBeFalse();
 });
 
-it('imports new users into a membership from an xlsx file', function () {
+it('imports new users into a membership from an xlsx file', function (): void {
     $start = now()->startOfDay();
     $end = now()->addYear()->startOfDay();
 
@@ -64,19 +64,18 @@ it('imports new users into a membership from an xlsx file', function () {
     $jonas = User::where('email', 'jonas@vu.lt')->first();
     $petras = User::where('email', 'petras@vu.lt')->first();
 
-    expect($jonas)->not->toBeNull();
-    expect($jonas->name)->toBe('Jonas Jonaitis');
-    expect($petras)->not->toBeNull();
-
-    expect($jonas->memberships()->where('memberships.id', $this->membership->id)->exists())->toBeTrue();
-    expect($petras->memberships()->where('memberships.id', $this->membership->id)->exists())->toBeTrue();
+    expect($jonas)->not->toBeNull()
+        ->and($jonas->name)->toBe('Jonas Jonaitis')
+        ->and($petras)->not->toBeNull()
+        ->and($jonas->memberships()->where('memberships.id', $this->membership->id)->exists())->toBeTrue()
+        ->and($petras->memberships()->where('memberships.id', $this->membership->id)->exists())->toBeTrue();
 
     $pivot = $jonas->memberships()->where('memberships.id', $this->membership->id)->first()->pivot;
-    expect((string) $pivot->start_date)->toBe($start->toDateTimeString());
-    expect((string) $pivot->end_date)->toBe($end->toDateTimeString());
+    expect((string) $pivot->start_date)->toBe($start->toDateTimeString())
+        ->and((string) $pivot->end_date)->toBe($end->toDateTimeString());
 });
 
-it('merges membership periods when the user already belongs to the membership', function () {
+it('merges membership periods when the user already belongs to the membership', function (): void {
     $existingUser = User::factory()->create(['email' => 'jonas@vu.lt', 'name' => 'Existing Jonas']);
     $existingUser->memberships()->attach($this->membership->id, [
         'start_date' => now()->subMonth()->startOfDay(),
@@ -98,6 +97,6 @@ it('merges membership periods when the user already belongs to the membership', 
     expect(User::where('email', 'jonas@vu.lt')->count())->toBe(1);
 
     $pivot = $existingUser->memberships()->where('memberships.id', $this->membership->id)->first()->pivot;
-    expect((string) $pivot->start_date)->toBe($earlierStart->toDateTimeString());
-    expect((string) $pivot->end_date)->toBe($laterEnd->toDateTimeString());
+    expect((string) $pivot->start_date)->toBe($earlierStart->toDateTimeString())
+        ->and((string) $pivot->end_date)->toBe($laterEnd->toDateTimeString());
 });

@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Collection;
 
 class AtstovavimasDashboardService
 {
-    private const REPRESENTATIVE_PREVIEW_LIMIT = 4;
+    private const int REPRESENTATIVE_PREVIEW_LIMIT = 4;
 
     public function __construct(
         private readonly InstitutionActivityStatusService $activityStatusService,
@@ -127,10 +127,10 @@ class AtstovavimasDashboardService
         $query = $this->representativeQuery($tenantIds);
 
         if (filled($search)) {
-            $query->where(function (Builder $query) use ($search) {
+            $query->where(function (Builder $query) use ($search): void {
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhereHas('current_duties', function (Builder $dutyQuery) use ($search) {
+                    ->orWhereHas('current_duties', function (Builder $dutyQuery) use ($search): void {
                         $dutyQuery->where('name', 'like', "%{$search}%")
                             ->orWhereHas('institution', fn (Builder $institutionQuery) => $institutionQuery
                                 ->where('name', 'like', "%{$search}%"));
@@ -176,7 +176,7 @@ class AtstovavimasDashboardService
      */
     private function decorateInstitutions(Collection $institutions): void
     {
-        $institutions->each(function (Institution $institution) {
+        $institutions->each(function (Institution $institution): void {
             $institution->setAttribute(
                 'active_check_in',
                 $institution->checkIns
@@ -190,8 +190,8 @@ class AtstovavimasDashboardService
                 $this->activityStatusService->resolve($institution)->toArray()
             );
 
-            $institution->duties->each(function ($duty) {
-                $duty->users->each(function (User $representative) {
+            $institution->duties->each(function ($duty): void {
+                $duty->users->each(function (User $representative): void {
                     $representative->makeVisible('last_action');
                     $representative->setAttribute(
                         'activity_category',
@@ -402,8 +402,8 @@ class AtstovavimasDashboardService
         $excludedTypeIds = $this->meetingSettings->getExcludedInstitutionTypeIds();
 
         return User::query()
-            ->whereHas('current_duties', function (Builder $query) use ($tenantIds, $excludedTypeIds) {
-                $query->whereHas('institution', function (Builder $institutionQuery) use ($tenantIds, $excludedTypeIds) {
+            ->whereHas('current_duties', function (Builder $query) use ($tenantIds, $excludedTypeIds): void {
+                $query->whereHas('institution', function (Builder $institutionQuery) use ($tenantIds, $excludedTypeIds): void {
                     $institutionQuery->whereIn('tenant_id', $tenantIds);
 
                     if ($excludedTypeIds->isNotEmpty()) {
@@ -425,9 +425,9 @@ class AtstovavimasDashboardService
         $excludedTypeIds = $this->meetingSettings->getExcludedInstitutionTypeIds();
 
         return [
-            'current_duties' => function ($query) use ($tenantIds, $excludedTypeIds) {
+            'current_duties' => function ($query) use ($tenantIds, $excludedTypeIds): void {
                 $query->select('duties.id', 'duties.name', 'duties.institution_id')
-                    ->whereHas('institution', function (Builder $institutionQuery) use ($tenantIds, $excludedTypeIds) {
+                    ->whereHas('institution', function (Builder $institutionQuery) use ($tenantIds, $excludedTypeIds): void {
                         $institutionQuery->whereIn('tenant_id', $tenantIds);
 
                         if ($excludedTypeIds->isNotEmpty()) {

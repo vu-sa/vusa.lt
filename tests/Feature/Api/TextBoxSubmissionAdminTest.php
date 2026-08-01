@@ -6,7 +6,7 @@ use App\Models\Tenant;
 use App\Models\TextBoxSubmission;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 /**
  * Create a text-box content part owned by a Page in the given tenant, so
@@ -23,14 +23,14 @@ function makeTextBoxPart(?Tenant $tenant = null): ContentPart
     ]);
 }
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
     $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
 });
 
-describe('destroy', function () {
-    test('requires auth to delete a submission', function () {
+describe('destroy', function (): void {
+    test('requires auth to delete a submission', function (): void {
         $contentPart = makeTextBoxPart($this->tenant);
         $submission = TextBoxSubmission::factory()->create(['content_part_id' => $contentPart->id]);
 
@@ -40,7 +40,7 @@ describe('destroy', function () {
         $this->assertDatabaseHas('text_box_submissions', ['id' => $submission->id]);
     });
 
-    test('forbids a user without page permission from deleting a submission', function () {
+    test('forbids a user without page permission from deleting a submission', function (): void {
         $contentPart = makeTextBoxPart($this->tenant);
         $submission = TextBoxSubmission::factory()->create(['content_part_id' => $contentPart->id]);
 
@@ -51,7 +51,7 @@ describe('destroy', function () {
         $this->assertDatabaseHas('text_box_submissions', ['id' => $submission->id]);
     });
 
-    test('can delete a single submission when authorized', function () {
+    test('can delete a single submission when authorized', function (): void {
         $contentPart = makeTextBoxPart($this->tenant);
         $submission = TextBoxSubmission::factory()->create(['content_part_id' => $contentPart->id]);
 
@@ -67,8 +67,8 @@ describe('destroy', function () {
     });
 });
 
-describe('destroyAll', function () {
-    test('requires auth to delete all submissions', function () {
+describe('destroyAll', function (): void {
+    test('requires auth to delete all submissions', function (): void {
         $contentPart = makeTextBoxPart($this->tenant);
         TextBoxSubmission::factory()->count(3)->create(['content_part_id' => $contentPart->id]);
 
@@ -80,7 +80,7 @@ describe('destroyAll', function () {
         $this->assertDatabaseCount('text_box_submissions', 3);
     });
 
-    test('forbids a user without page permission from deleting all submissions', function () {
+    test('forbids a user without page permission from deleting all submissions', function (): void {
         $contentPart = makeTextBoxPart($this->tenant);
         TextBoxSubmission::factory()->count(3)->create(['content_part_id' => $contentPart->id]);
 
@@ -93,14 +93,14 @@ describe('destroyAll', function () {
         $this->assertDatabaseCount('text_box_submissions', 3);
     });
 
-    test('validates content_part_id is required', function () {
+    test('validates content_part_id is required', function (): void {
         asUser($this->admin)
             ->deleteJson(route('api.v1.admin.text-box-submissions.destroyAll'))
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['content_part_id']);
     });
 
-    test('can delete all submissions for a content part when authorized', function () {
+    test('can delete all submissions for a content part when authorized', function (): void {
         $contentPart = makeTextBoxPart($this->tenant);
         $otherContentPart = makeTextBoxPart($this->tenant);
 
@@ -122,8 +122,8 @@ describe('destroyAll', function () {
     });
 });
 
-describe('index', function () {
-    test('forbids a user without page permission from listing submissions', function () {
+describe('index', function (): void {
+    test('forbids a user without page permission from listing submissions', function (): void {
         $contentPart = makeTextBoxPart($this->tenant);
         TextBoxSubmission::factory()->count(2)->create(['content_part_id' => $contentPart->id]);
 
@@ -132,7 +132,7 @@ describe('index', function () {
             ->assertStatus(403);
     });
 
-    test('lists submissions when authorized', function () {
+    test('lists submissions when authorized', function (): void {
         $contentPart = makeTextBoxPart($this->tenant);
         TextBoxSubmission::factory()->count(2)->create(['content_part_id' => $contentPart->id]);
 

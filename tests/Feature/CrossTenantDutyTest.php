@@ -8,9 +8,9 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     config(['queue.default' => 'sync']);
 
     // Owning tenant & duty.
@@ -50,7 +50,7 @@ beforeEach(function () {
     $this->outsideUser = User::factory()->create();
 });
 
-test('owning-tenant admin can update their own duty', function () {
+test('owning-tenant admin can update their own duty', function (): void {
     $response = asUser($this->owningAdmin)->patch(route('duties.update', $this->duty), [
         'name' => ['lt' => 'Atnaujinta', 'en' => 'Updated'],
         'institution_id' => $this->duty->institution_id,
@@ -62,7 +62,7 @@ test('owning-tenant admin can update their own duty', function () {
     expect($this->duty->fresh()->getTranslation('name', 'lt'))->toBe('Atnaujinta');
 });
 
-test('cross-tenant admin cannot update the duty itself', function () {
+test('cross-tenant admin cannot update the duty itself', function (): void {
     $response = asUser($this->crossAdmin)->patch(route('duties.update', $this->duty), [
         'name' => ['lt' => 'Bandymas', 'en' => 'Attempt'],
         'institution_id' => $this->duty->institution_id,
@@ -73,7 +73,7 @@ test('cross-tenant admin cannot update the duty itself', function () {
     expect($response->status())->toBe(403);
 });
 
-test('cross-tenant admin can add their own tenant user via batch-update', function () {
+test('cross-tenant admin can add their own tenant user via batch-update', function (): void {
     $response = asUser($this->crossAdmin)->post(route('duties.batchUpdateUsers', $this->duty), [
         'user_changes' => [
             [
@@ -93,7 +93,7 @@ test('cross-tenant admin can add their own tenant user via batch-update', functi
     expect($exists)->toBeTrue();
 });
 
-test('cross-tenant admin can add a user who has no prior tenant membership', function () {
+test('cross-tenant admin can add a user who has no prior tenant membership', function (): void {
     // Users have no direct tenant assignment — membership is through duties.
     // Any user (even without existing duties) may be assigned to a cross-tenant duty.
     $response = asUser($this->crossAdmin)->post(route('duties.batchUpdateUsers', $this->duty), [
@@ -116,7 +116,7 @@ test('cross-tenant admin can add a user who has no prior tenant membership', fun
     expect($exists)->toBeTrue();
 });
 
-test('completely unauthorized user cannot batch-update duty users', function () {
+test('completely unauthorized user cannot batch-update duty users', function (): void {
     $stranger = User::factory()->create();
 
     $response = asUser($stranger)->post(route('duties.batchUpdateUsers', $this->duty), [
@@ -128,7 +128,7 @@ test('completely unauthorized user cannot batch-update duty users', function () 
     expect($response->status())->toBe(403);
 });
 
-test('cross-tenant admin can swap users within their quota', function () {
+test('cross-tenant admin can swap users within their quota', function (): void {
     // Fill quota (2 slots).
     $user1 = makeUser($this->assignableTenant);
     $user2 = makeUser($this->assignableTenant);
@@ -171,17 +171,13 @@ test('cross-tenant admin can swap users within their quota', function () {
             ->where('dutiable_id', $user3->id)
             ->whereNull('end_date')
             ->exists()
-    )->toBeTrue();
-
-    expect(
-        Dutiable::where('duty_id', $this->duty->id)
+    )->toBeTrue()
+        ->and(Dutiable::where('duty_id', $this->duty->id)
             ->where('dutiable_id', $user4->id)
-            ->whereNull('end_date')
-            ->exists()
-    )->toBeTrue();
+            ->whereNull('end_date')->exists())->toBeTrue();
 });
 
-test('cross-tenant admin cannot exceed their quota', function () {
+test('cross-tenant admin cannot exceed their quota', function (): void {
     // Fill quota (2 slots).
     $user1 = makeUser($this->assignableTenant);
     $user2 = makeUser($this->assignableTenant);
@@ -222,7 +218,7 @@ test('cross-tenant admin cannot exceed their quota', function () {
     expect($exists)->toBeFalse();
 });
 
-test('dutiable can be edited by cross-tenant admin when user belongs to their tenant', function () {
+test('dutiable can be edited by cross-tenant admin when user belongs to their tenant', function (): void {
     $dutiable = Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $this->tenantUser->id,
@@ -239,7 +235,7 @@ test('dutiable can be edited by cross-tenant admin when user belongs to their te
     expect($dutiable->fresh()->additional_email)->toBe('cross@example.com');
 });
 
-test('cross-tenant admin cannot edit dutiable of user from another tenant', function () {
+test('cross-tenant admin cannot edit dutiable of user from another tenant', function (): void {
     $dutiable = Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $this->outsideUser->id,
@@ -255,7 +251,7 @@ test('cross-tenant admin cannot edit dutiable of user from another tenant', func
     expect($response->status())->toBe(403);
 });
 
-test('cross-tenant admin can open the duty edit page (read-only mode)', function () {
+test('cross-tenant admin can open the duty edit page (read-only mode)', function (): void {
     $response = asUser($this->crossAdmin)->get(route('duties.edit', $this->duty));
 
     $response->assertOk()
@@ -264,7 +260,7 @@ test('cross-tenant admin can open the duty edit page (read-only mode)', function
             ->where('canEditDuty', false));
 });
 
-test('owning-tenant admin gets full edit access on the duty edit page', function () {
+test('owning-tenant admin gets full edit access on the duty edit page', function (): void {
     $response = asUser($this->owningAdmin)->get(route('duties.edit', $this->duty));
 
     $response->assertOk()
@@ -273,13 +269,13 @@ test('owning-tenant admin gets full edit access on the duty edit page', function
             ->where('canEditDuty', true));
 });
 
-test('unrelated user cannot open the duty edit page', function () {
+test('unrelated user cannot open the duty edit page', function (): void {
     $stranger = User::factory()->create();
 
     expect(asUser($stranger)->get(route('duties.edit', $this->duty))->status())->toBe(403);
 });
 
-test('edit page exposes assignableTenantUsers map for cross-tenant admin', function () {
+test('edit page exposes assignableTenantUsers map for cross-tenant admin', function (): void {
     $tenantUser = makeUser($this->assignableTenant);
     Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
@@ -297,7 +293,7 @@ test('edit page exposes assignableTenantUsers map for cross-tenant admin', funct
         );
 });
 
-test('edit page assignableTenantUsers excludes users end-dated today', function () {
+test('edit page assignableTenantUsers excludes users end-dated today', function (): void {
     $tenantUser = makeUser($this->assignableTenant);
     Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
@@ -315,7 +311,7 @@ test('edit page assignableTenantUsers excludes users end-dated today', function 
         );
 });
 
-test('edit page assignableTenantUsers excludes users end-dated yesterday', function () {
+test('edit page assignableTenantUsers excludes users end-dated yesterday', function (): void {
     $tenantUser = makeUser($this->assignableTenant);
     Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
@@ -333,7 +329,7 @@ test('edit page assignableTenantUsers excludes users end-dated yesterday', funct
         );
 });
 
-test('edit page assignableTenantUsers includes users end-dated tomorrow', function () {
+test('edit page assignableTenantUsers includes users end-dated tomorrow', function (): void {
     $tenantUser = makeUser($this->assignableTenant);
     Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
@@ -351,7 +347,7 @@ test('edit page assignableTenantUsers includes users end-dated tomorrow', functi
         );
 });
 
-test('edit page assignableTenantUsers includes users with null end_date', function () {
+test('edit page assignableTenantUsers includes users with null end_date', function (): void {
     $tenantUser = makeUser($this->assignableTenant);
     Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
@@ -369,7 +365,7 @@ test('edit page assignableTenantUsers includes users with null end_date', functi
         );
 });
 
-test('batch update quota allows adding user after end-dating one today', function () {
+test('batch update quota allows adding user after end-dating one today', function (): void {
     // Fill quota (2 slots).
     $user1 = makeUser($this->assignableTenant);
     $user2 = makeUser($this->assignableTenant);
@@ -420,7 +416,7 @@ test('batch update quota allows adding user after end-dating one today', functio
     )->toBeTrue();
 });
 
-test('batch update quota still blocks when net count exceeds quota after swaps', function () {
+test('batch update quota still blocks when net count exceeds quota after swaps', function (): void {
     // Fill quota (2 slots).
     $user1 = makeUser($this->assignableTenant);
     $user2 = makeUser($this->assignableTenant);
@@ -462,7 +458,7 @@ test('batch update quota still blocks when net count exceeds quota after swaps',
     )->toBeFalse();
 });
 
-test('batch update quota counts user end-dated yesterday as already removed', function () {
+test('batch update quota counts user end-dated yesterday as already removed', function (): void {
     $user1 = makeUser($this->assignableTenant);
     $user2 = makeUser($this->assignableTenant);
     $user3 = makeUser($this->assignableTenant);
@@ -496,7 +492,7 @@ test('batch update quota counts user end-dated yesterday as already removed', fu
     $response->assertSessionHasNoErrors();
 });
 
-test('owning admin update with user_ids creates cross-tenant dutiables with tenant_id', function () {
+test('owning admin update with user_ids creates cross-tenant dutiables with tenant_id', function (): void {
     $crossUser = makeUser($this->assignableTenant);
 
     asUser($this->owningAdmin)->patch(route('duties.update', $this->duty), [
@@ -517,7 +513,7 @@ test('owning admin update with user_ids creates cross-tenant dutiables with tena
         ->and($dutiable->tenant_id)->toBe($this->assignableTenant->id);
 });
 
-test('removing a tenant from assignable_tenants end-dates their active reps', function () {
+test('removing a tenant from assignable_tenants end-dates their active reps', function (): void {
     $crossUser = makeUser($this->assignableTenant);
     $dutiable = Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
@@ -540,7 +536,7 @@ test('removing a tenant from assignable_tenants end-dates their active reps', fu
     expect($dutiable->fresh()->end_date)->not->toBeNull();
 });
 
-test('owning-tenant TransferList update does not touch cross-tenant reps', function () {
+test('owning-tenant TransferList update does not touch cross-tenant reps', function (): void {
     $ownUser = makeUser($this->owningTenant);
     $crossUser = makeUser($this->assignableTenant);
 
@@ -583,7 +579,7 @@ test('owning-tenant TransferList update does not touch cross-tenant reps', funct
     expect($crossDutiable->end_date)->toBeNull();
 });
 
-test('batchUpdateUsers can remove user with future end_date', function () {
+test('batchUpdateUsers can remove user with future end_date', function (): void {
     $crossUser = makeUser($this->assignableTenant);
 
     // Simulate a wizard-added user with a future end_date.
@@ -613,7 +609,7 @@ test('batchUpdateUsers can remove user with future end_date', function () {
     expect($dutiable->end_date)->not->toBeNull();
 });
 
-test('batchUpdateUsers quota allows swap when removing future-end-dated user', function () {
+test('batchUpdateUsers quota allows swap when removing future-end-dated user', function (): void {
     $user1 = makeUser($this->assignableTenant);
     $user2 = makeUser($this->assignableTenant);
     $user3 = makeUser($this->assignableTenant);
@@ -655,7 +651,7 @@ test('batchUpdateUsers quota allows swap when removing future-end-dated user', f
     )->toBeTrue();
 });
 
-test('owning admin can remove wizard-added cross-tenant user via duties.update', function () {
+test('owning admin can remove wizard-added cross-tenant user via duties.update', function (): void {
     $crossUser = makeUser($this->assignableTenant);
 
     // Wizard adds user with a future end_date.
@@ -687,7 +683,7 @@ test('owning admin can remove wizard-added cross-tenant user via duties.update',
     expect($dutiable->end_date)->not->toBeNull();
 });
 
-test('removing assignable tenant end-dates all active reps including future end_dated ones', function () {
+test('removing assignable tenant end-dates all active reps including future end_dated ones', function (): void {
     $crossUser = makeUser($this->assignableTenant);
 
     Dutiable::factory()->create([

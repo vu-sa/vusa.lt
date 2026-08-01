@@ -153,7 +153,7 @@ class CalendarController extends AdminController
      */
     public function update(UpdateCalendarRequest $request, Calendar $calendar)
     {
-        DB::transaction(function () use ($request, $calendar) {
+        DB::transaction(function () use ($request, $calendar): void {
             // Exclude file fields from fill
             $calendar->fill($request->safe()->except(['images', 'main_image']));
             $calendar->category_id = $request->input('category_id');

@@ -14,6 +14,7 @@ class UpdateNewsRequest extends NewsRequest
         return $this->user()->can('update', $this->news);
     }
 
+    #[\Override]
     protected function prepareForValidation()
     {
         $publishTime = $this->input('publish_time');
@@ -39,6 +40,7 @@ class UpdateNewsRequest extends NewsRequest
     /**
      * Get the validation rules that apply to the request.
      */
+    #[\Override]
     public function rules(): array
     {
         return array_merge(parent::rules(), [

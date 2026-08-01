@@ -9,9 +9,9 @@ use App\Models\User;
 use App\Services\ModelAuthorizer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
     $this->institution = Institution::factory()->create([
@@ -46,18 +46,18 @@ beforeEach(function () {
     $this->authorizer = new ModelAuthorizer;
 });
 
-describe('request-level memoization', function () {
-    test('repeated permission check returns cached result', function () {
+describe('request-level memoization', function (): void {
+    test('repeated permission check returns cached result', function (): void {
         $this->authorizer->forUser($this->superAdmin);
 
         $result1 = $this->authorizer->checkAllRoleables('news.read.padalinys');
         $result2 = $this->authorizer->checkAllRoleables('news.read.padalinys');
 
-        expect($result1)->toBe($result2);
-        expect($result1)->toBeTrue();
+        expect($result1)->toBe($result2)
+            ->toBeTrue();
     });
 
-    test('different permissions are cached independently', function () {
+    test('different permissions are cached independently', function (): void {
         $this->authorizer->forUser($this->normalUser);
 
         $readResult = $this->authorizer->checkAllRoleables('news.read.padalinys');
@@ -68,16 +68,16 @@ describe('request-level memoization', function () {
         expect($updateResult)->toBeFalse();
     });
 
-    test('super admin returns true for all permission checks', function () {
+    test('super admin returns true for all permission checks', function (): void {
         $this->authorizer->forUser($this->superAdmin);
 
-        expect($this->authorizer->checkAllRoleables('news.read.padalinys'))->toBeTrue();
-        expect($this->authorizer->checkAllRoleables('news.create.padalinys'))->toBeTrue();
-        expect($this->authorizer->checkAllRoleables('news.update.padalinys'))->toBeTrue();
-        expect($this->authorizer->checkAllRoleables('nonexistent.permission.scope'))->toBeTrue();
+        expect($this->authorizer->checkAllRoleables('news.read.padalinys'))->toBeTrue()
+            ->and($this->authorizer->checkAllRoleables('news.create.padalinys'))->toBeTrue()
+            ->and($this->authorizer->checkAllRoleables('news.update.padalinys'))->toBeTrue()
+            ->and($this->authorizer->checkAllRoleables('nonexistent.permission.scope'))->toBeTrue();
     });
 
-    test('switching users clears the memoization cache', function () {
+    test('switching users clears the memoization cache', function (): void {
         $this->authorizer->forUser($this->superAdmin);
 
         // Super admin has all permissions
@@ -91,7 +91,7 @@ describe('request-level memoization', function () {
         expect($normalResult)->toBeFalse();
     });
 
-    test('same user does not clear cache', function () {
+    test('same user does not clear cache', function (): void {
         $this->authorizer->forUser($this->superAdmin);
         $this->authorizer->checkAllRoleables('news.read.padalinys');
 
@@ -103,7 +103,7 @@ describe('request-level memoization', function () {
         expect($result)->toBeTrue();
     });
 
-    test('user with duty role gets correct memoized results', function () {
+    test('user with duty role gets correct memoized results', function (): void {
         $userWithRole = makeUser($this->tenant);
         $duty = $userWithRole->duties()->first();
         $duty->assignRole($this->role);
@@ -124,8 +124,8 @@ describe('request-level memoization', function () {
     });
 });
 
-describe('check alias method', function () {
-    test('check method delegates to checkAllRoleables with memoization', function () {
+describe('check alias method', function (): void {
+    test('check method delegates to checkAllRoleables with memoization', function (): void {
         $this->authorizer->forUser($this->superAdmin);
 
         $result1 = $this->authorizer->check('news.read.padalinys');

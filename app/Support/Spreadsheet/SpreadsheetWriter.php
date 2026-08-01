@@ -27,7 +27,7 @@ class SpreadsheetWriter
             'Pragma' => 'public',
         ];
 
-        return new StreamedResponse(function () use ($writer) {
+        return new StreamedResponse(function () use ($writer): void {
             $writer->save('php://output');
         }, 200, $headers);
     }

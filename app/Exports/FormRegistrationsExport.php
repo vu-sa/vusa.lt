@@ -24,16 +24,14 @@ class FormRegistrationsExport
 
         $finalArray = [];
 
-        $formFieldLabelArray = $this->form->formFields->map(function ($formField) {
-            return $formField->getTranslation('label', app()->getLocale());
-        })->toArray();
+        $formFieldLabelArray = $this->form->formFields->map(fn ($formField) => $formField->getTranslation('label', app()->getLocale()))->toArray();
 
         $finalArray[] = array_merge(['Registracijos ID'], $formFieldLabelArray);
 
-        $this->form->registrations->each(function ($registration) use (&$finalArray) {
+        $this->form->registrations->each(function ($registration) use (&$finalArray): void {
             $registrationArray = [$registration->id];
 
-            $this->form->formFields->each(function ($formField) use (&$registrationArray, $registration) {
+            $this->form->formFields->each(function ($formField) use (&$registrationArray, $registration): void {
                 $fieldResponse = $registration->fieldResponses->firstWhere('form_field_id', $formField->id);
 
                 $responseValue = $fieldResponse?->getValue();

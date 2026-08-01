@@ -21,9 +21,9 @@ use App\Services\RelationshipService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
     $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
@@ -34,8 +34,8 @@ beforeEach(function () {
     $this->quickLink = QuickLink::factory()->for($this->tenant)->create();
     $this->resource = Resource::factory()->for($this->tenant)->create();
 });
-describe('dashboard access', function () {
-    test('any authenticated user can access dashboard', function () {
+describe('dashboard access', function (): void {
+    test('any authenticated user can access dashboard', function (): void {
         // Dashboard is accessible to any authenticated user
         asUser($this->user)
             ->get(route('dashboard'))
@@ -53,7 +53,7 @@ describe('dashboard access', function () {
             );
     });
 
-    test('admin can access dashboard', function () {
+    test('admin can access dashboard', function (): void {
         asUser($this->admin)
             ->get(route('dashboard'))
             ->assertStatus(200)
@@ -73,29 +73,27 @@ describe('dashboard access', function () {
             );
     });
 
-    test('unauthenticated user cannot access dashboard', function () {
+    test('unauthenticated user cannot access dashboard', function (): void {
         $this->get(route('dashboard'))
             ->assertRedirect(route('login'));
     });
 });
 
-describe('dashboard data structure', function () {
-    test('task statistics are correctly structured', function () {
+describe('dashboard data structure', function (): void {
+    test('task statistics are correctly structured', function (): void {
         asUser($this->admin)
             ->get(route('dashboard'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ShowAdminHome')
                 ->has('taskStats')
-                ->where('taskStats', function ($taskStats) {
-                    return isset($taskStats['total'])
-                        && isset($taskStats['overdue'])
-                        && isset($taskStats['dueSoon']);
-                })
+                ->where('taskStats', fn ($taskStats) => isset($taskStats['total'])
+                    && isset($taskStats['overdue'])
+                    && isset($taskStats['dueSoon']))
             );
     });
 
-    test('notification data is correctly structured', function () {
+    test('notification data is correctly structured', function (): void {
         asUser($this->admin)
             ->get(route('dashboard'))
             ->assertStatus(200)
@@ -103,16 +101,12 @@ describe('dashboard data structure', function () {
                 ->component('Admin/ShowAdminHome')
                 ->has('unreadNotificationsCount')
                 ->has('hasNotifications')
-                ->where('unreadNotificationsCount', function ($count) {
-                    return is_numeric($count) && $count >= 0;
-                })
-                ->where('hasNotifications', function ($hasNotifications) {
-                    return is_bool($hasNotifications);
-                })
+                ->where('unreadNotificationsCount', fn ($count) => is_numeric($count) && $count >= 0)
+                ->where('hasNotifications', fn ($hasNotifications) => is_bool($hasNotifications))
             );
     });
 
-    test('upcoming data is included', function () {
+    test('upcoming data is included', function (): void {
         asUser($this->admin)
             ->get(route('dashboard'))
             ->assertStatus(200)
@@ -125,15 +119,15 @@ describe('dashboard data structure', function () {
     });
 });
 
-describe('dashboard performance', function () {
-    test('dashboard loads without database errors', function () {
+describe('dashboard performance', function (): void {
+    test('dashboard loads without database errors', function (): void {
         // Test that the dashboard doesn't cause N+1 queries or database errors
         asUser($this->admin)
             ->get(route('dashboard'))
             ->assertStatus(200);
     });
 
-    test('dashboard task statistics work with no tasks', function () {
+    test('dashboard task statistics work with no tasks', function (): void {
         // Test when user has no tasks
         asUser($this->admin)
             ->get(route('dashboard'))
@@ -147,8 +141,8 @@ describe('dashboard performance', function () {
     });
 });
 
-describe('dashboard tasks with due dates', function () {
-    test('tasks with due dates are properly formatted', function () {
+describe('dashboard tasks with due dates', function (): void {
+    test('tasks with due dates are properly formatted', function (): void {
         // Create a task with a due date for the admin user
         $task = Task::factory()->create([
             'name' => 'Test Task',
@@ -169,7 +163,7 @@ describe('dashboard tasks with due dates', function () {
             );
     });
 
-    test('overdue tasks are correctly identified', function () {
+    test('overdue tasks are correctly identified', function (): void {
         // Create an overdue task
         $task = Task::factory()->create([
             'name' => 'Overdue Task',
@@ -187,7 +181,7 @@ describe('dashboard tasks with due dates', function () {
             );
     });
 
-    test('completed tasks are not included in statistics', function () {
+    test('completed tasks are not included in statistics', function (): void {
         // Create a completed task
         $task = Task::factory()->create([
             'name' => 'Completed Task',
@@ -205,7 +199,7 @@ describe('dashboard tasks with due dates', function () {
             );
     });
 
-    test('tasks due within 7 days are counted as dueSoon', function () {
+    test('tasks due within 7 days are counted as dueSoon', function (): void {
         // Create a task due in 5 days
         $task = Task::factory()->create([
             'name' => 'Due Soon Task',
@@ -224,8 +218,8 @@ describe('dashboard tasks with due dates', function () {
     });
 });
 
-describe('dashboard calendar and news', function () {
-    test('upcoming calendar events are included', function () {
+describe('dashboard calendar and news', function (): void {
+    test('upcoming calendar events are included', function (): void {
         // Create upcoming calendar events
         Calendar::factory()->for($this->tenant)->create([
             'title' => ['lt' => 'Test Event LT', 'en' => 'Test Event EN'],
@@ -242,7 +236,7 @@ describe('dashboard calendar and news', function () {
             );
     });
 
-    test('draft calendar events are not included', function () {
+    test('draft calendar events are not included', function (): void {
         // Clear existing calendar events
         Calendar::query()->delete();
 
@@ -262,7 +256,7 @@ describe('dashboard calendar and news', function () {
             );
     });
 
-    test('past calendar events are not included', function () {
+    test('past calendar events are not included', function (): void {
         // Clear existing calendar events
         Calendar::query()->delete();
 
@@ -282,7 +276,7 @@ describe('dashboard calendar and news', function () {
             );
     });
 
-    test('latest news items are included', function () {
+    test('latest news items are included', function (): void {
         // Create published news
         News::factory()->for($this->tenant)->create([
             'title' => 'Latest News',
@@ -300,7 +294,7 @@ describe('dashboard calendar and news', function () {
             );
     });
 
-    test('draft news items are not included', function () {
+    test('draft news items are not included', function (): void {
         // Delete any existing news first
         News::query()->delete();
 
@@ -321,7 +315,7 @@ describe('dashboard calendar and news', function () {
             );
     });
 
-    test('future news items are not included', function () {
+    test('future news items are not included', function (): void {
         // Delete any existing news first
         News::query()->delete();
 
@@ -342,7 +336,7 @@ describe('dashboard calendar and news', function () {
             );
     });
 
-    test('news without image returns fallback image', function () {
+    test('news without image returns fallback image', function (): void {
         // Delete any existing news first
         News::query()->delete();
 
@@ -365,7 +359,7 @@ describe('dashboard calendar and news', function () {
             );
     });
 
-    test('news with external image returns actual image URL', function () {
+    test('news with external image returns actual image URL', function (): void {
         // Delete any existing news first
         News::query()->delete();
 
@@ -389,8 +383,8 @@ describe('dashboard calendar and news', function () {
     });
 });
 
-describe('atstovavimas dashboard', function () {
-    test('admin can access atstovavimas dashboard', function () {
+describe('atstovavimas dashboard', function (): void {
+    test('admin can access atstovavimas dashboard', function (): void {
         asUser($this->admin)
             ->get(route('dashboard.atstovavimas'))
             ->assertStatus(200)
@@ -404,7 +398,7 @@ describe('atstovavimas dashboard', function () {
             );
     });
 
-    test('regular user can access atstovavimas dashboard', function () {
+    test('regular user can access atstovavimas dashboard', function (): void {
         asUser($this->user)
             ->get(route('dashboard.atstovavimas'))
             ->assertStatus(200)
@@ -416,19 +410,17 @@ describe('atstovavimas dashboard', function () {
             );
     });
 
-    test('atstovavimas filters PKP tenants', function () {
+    test('atstovavimas filters PKP tenants', function (): void {
         asUser($this->admin)
             ->get(route('dashboard.atstovavimas'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->where('availableTenants', function ($tenants) {
-                    return collect($tenants)->every(fn ($tenant) => $tenant['type'] !== 'pkp');
-                })
+                ->where('availableTenants', fn ($tenants) => collect($tenants)->every(fn ($tenant) => $tenant['type'] !== 'pkp'))
             );
     });
 
-    test('atstovavimas provides accessible institutions and available tenants', function () {
+    test('atstovavimas provides accessible institutions and available tenants', function (): void {
         // Give the admin the institutions.read.padalinys permission so they can see tenant data
         $permission = Permission::firstOrCreate(['name' => 'institutions.read.padalinys', 'guard_name' => 'web']);
         $duty = $this->admin->current_duties->first();
@@ -457,8 +449,8 @@ describe('atstovavimas dashboard', function () {
     });
 });
 
-describe('atstovavimas dashboard authorization', function () {
-    test('regular user only sees their assigned institutions', function () {
+describe('atstovavimas dashboard authorization', function (): void {
+    test('regular user only sees their assigned institutions', function (): void {
         // Regular user without coordinator role should only see their own institution
         $userInstitutionId = $this->user->current_duties->first()->institution_id;
 
@@ -481,7 +473,7 @@ describe('atstovavimas dashboard authorization', function () {
             );
     });
 
-    test('regular user has no available tenants for tenant tab', function () {
+    test('regular user has no available tenants for tenant tab', function (): void {
         // Regular user without coordinator role should not see the tenant tab
         asUser($this->user)
             ->get(route('dashboard.atstovavimas'))
@@ -497,7 +489,7 @@ describe('atstovavimas dashboard authorization', function () {
             );
     });
 
-    test('user with global read permission sees all tenants', function () {
+    test('user with global read permission sees all tenants', function (): void {
         $mainTenant = Tenant::factory()->create(['type' => 'pagrindinis']);
         $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
 
@@ -525,7 +517,7 @@ describe('atstovavimas dashboard authorization', function () {
             );
     });
 
-    test('user with padalinys read permission sees their tenants', function () {
+    test('user with padalinys read permission sees their tenants', function (): void {
         // Give the admin the institutions.read.padalinys permission
         $permission = Permission::firstOrCreate(['name' => 'institutions.read.padalinys', 'guard_name' => 'web']);
         $duty = $this->admin->current_duties->first();
@@ -551,7 +543,7 @@ describe('atstovavimas dashboard authorization', function () {
             );
     });
 
-    test('super admin sees all institutions across tenants via tenant tab', function () {
+    test('super admin sees all institutions across tenants via tenant tab', function (): void {
         $superAdmin = makeAdminUser($this->tenant);
 
         // Create an institution in a different tenant
@@ -576,8 +568,8 @@ describe('atstovavimas dashboard authorization', function () {
     });
 });
 
-describe('atstovavimas dashboard periodicity', function () {
-    test('user institutions include meeting_periodicity_days', function () {
+describe('atstovavimas dashboard periodicity', function (): void {
+    test('user institutions include meeting_periodicity_days', function (): void {
         // Create a non-PKP tenant to ensure institution is not filtered out
         $nonPkpTenant = Tenant::factory()->create(['type' => 'padalinys']);
 
@@ -627,7 +619,7 @@ describe('atstovavimas dashboard periodicity', function () {
             );
     });
 
-    test('user institutions use type periodicity when no override', function () {
+    test('user institutions use type periodicity when no override', function (): void {
         // Create a type with custom periodicity
         $institutionType = Type::factory()->create([
             'model_type' => Institution::class,
@@ -675,7 +667,7 @@ describe('atstovavimas dashboard periodicity', function () {
     });
 });
 
-describe('institutions needing attention', function () {
+describe('institutions needing attention', function (): void {
     /**
      * Create an institution with a 30-day periodicity, a representative and one past meeting.
      */
@@ -709,7 +701,7 @@ describe('institutions needing attention', function () {
         return [$user, $institution];
     }
 
-    test('flags an institution whose meeting gap exceeds its periodicity', function () {
+    test('flags an institution whose meeting gap exceeds its periodicity', function (): void {
         $this->travelTo('2025-11-15');
 
         [$user, $institution] = institutionForUserWithMeeting('2025-10-01 10:00:00');
@@ -729,7 +721,7 @@ describe('institutions needing attention', function () {
             );
     });
 
-    test('does not flag an institution whose gap is made up of vacation days', function () {
+    test('does not flag an institution whose gap is made up of vacation days', function (): void {
         // June 20 -> September 1: 73 calendar days, but only 11 outside summer vacation.
         $this->travelTo('2025-09-01');
 
@@ -739,15 +731,13 @@ describe('institutions needing attention', function () {
             ->get(route('dashboard'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->where('institutionsNeedingAttention', function ($institutions) use ($institution) {
-                    return collect($institutions)->firstWhere('id', $institution->id) === null;
-                })
+                ->where('institutionsNeedingAttention', fn ($institutions) => collect($institutions)->firstWhere('id', $institution->id) === null)
             );
     });
 });
 
-describe('svetaine dashboard', function () {
-    test('admin can access svetaine dashboard', function () {
+describe('svetaine dashboard', function (): void {
+    test('admin can access svetaine dashboard', function (): void {
         asUser($this->admin)
             ->get(route('dashboard.svetaine'))
             ->assertStatus(200)
@@ -758,13 +748,13 @@ describe('svetaine dashboard', function () {
             );
     });
 
-    test('regular user cannot access svetaine dashboard', function () {
+    test('regular user cannot access svetaine dashboard', function (): void {
         asUser($this->user)
             ->get(route('dashboard.svetaine'))
             ->assertStatus(403);
     });
 
-    test('svetaine dashboard includes tenant data', function () {
+    test('svetaine dashboard includes tenant data', function (): void {
         asUser($this->admin)
             ->get(route('dashboard.svetaine', ['tenant_id' => $this->tenant->id]))
             ->assertStatus(200)
@@ -782,7 +772,7 @@ describe('svetaine dashboard', function () {
      * loading every page, news item, quick link and a year of calendar entries on each
      * dashboard view for nothing.
      */
-    test('svetaine dashboard does not ship unused content collections', function () {
+    test('svetaine dashboard does not ship unused content collections', function (): void {
         asUser($this->admin)
             ->get(route('dashboard.svetaine', ['tenant_id' => $this->tenant->id]))
             ->assertStatus(200)
@@ -796,8 +786,8 @@ describe('svetaine dashboard', function () {
     });
 });
 
-describe('reservations dashboard', function () {
-    test('admin can access reservations dashboard', function () {
+describe('reservations dashboard', function (): void {
+    test('admin can access reservations dashboard', function (): void {
         asUser($this->admin)
             ->get(route('dashboard.reservations'))
             ->assertStatus(200)
@@ -809,7 +799,7 @@ describe('reservations dashboard', function () {
             );
     });
 
-    test('reservations dashboard grants no resource managership to a role that lacks it', function () {
+    test('reservations dashboard grants no resource managership to a role that lacks it', function (): void {
         // A Communication Coordinator holds a duty in the tenant but no resources.update.padalinys,
         // so they administer nothing here. See ReservationsDashboardTest for the manager's view.
         asUser($this->admin)
@@ -823,8 +813,8 @@ describe('reservations dashboard', function () {
     });
 });
 
-describe('user settings', function () {
-    test('authenticated user can access user settings', function () {
+describe('user settings', function (): void {
+    test('authenticated user can access user settings', function (): void {
         asUser($this->admin)
             ->get(route('profile'))
             ->assertStatus(200)
@@ -835,7 +825,7 @@ describe('user settings', function () {
             );
     });
 
-    test('user settings include role and permission data', function () {
+    test('user settings include role and permission data', function (): void {
         asUser($this->admin)
             ->get(route('profile'))
             ->assertStatus(200)
@@ -846,12 +836,12 @@ describe('user settings', function () {
             );
     });
 
-    test('unauthenticated user cannot access user settings', function () {
+    test('unauthenticated user cannot access user settings', function (): void {
         $this->get(route('profile'))
             ->assertRedirect(route('login'));
     });
 
-    test('user can update settings', function () {
+    test('user can update settings', function (): void {
         $validData = [
             'phone' => '+37060000000',
             'profile_photo_path' => '/path/to/photo.jpg',
@@ -870,7 +860,7 @@ describe('user settings', function () {
         ]);
     });
 
-    test('user cannot change email or password via the profile endpoint', function () {
+    test('user cannot change email or password via the profile endpoint', function (): void {
         $originalEmail = $this->admin->email;
         $originalPassword = $this->admin->password;
 
@@ -891,7 +881,7 @@ describe('user settings', function () {
         expect($this->admin->phone)->toBe('+37061111111');
     });
 
-    test('user cannot change name after it was previously changed', function () {
+    test('user cannot change name after it was previously changed', function (): void {
         // Set name_was_changed to true
         $this->admin->name_was_changed = true;
         $this->admin->save();
@@ -919,7 +909,7 @@ describe('user settings', function () {
         ]);
     });
 
-    test('user can update password', function () {
+    test('user can update password', function (): void {
         $passwordData = [
             'current_password' => 'password', // Default password from factory
             'password' => 'newpassword123',
@@ -933,8 +923,8 @@ describe('user settings', function () {
     });
 });
 
-describe('user tasks', function () {
-    test('authenticated user can access user tasks', function () {
+describe('user tasks', function (): void {
+    test('authenticated user can access user tasks', function (): void {
         asUser($this->admin)
             ->get(route('userTasks'))
             ->assertStatus(200)
@@ -944,14 +934,14 @@ describe('user tasks', function () {
             );
     });
 
-    test('unauthenticated user cannot access user tasks', function () {
+    test('unauthenticated user cannot access user tasks', function (): void {
         $this->get(route('userTasks'))
             ->assertRedirect(route('login'));
     });
 });
 
-describe('institution graph', function () {
-    test('authenticated user can access institution graph', function () {
+describe('institution graph', function (): void {
+    test('authenticated user can access institution graph', function (): void {
         asUser($this->admin)
             ->get(route('institutionGraph'))
             ->assertStatus(200)
@@ -962,23 +952,19 @@ describe('institution graph', function () {
             );
     });
 
-    test('institution graph includes user counts', function () {
+    test('institution graph includes user counts', function (): void {
         asUser($this->admin)
             ->get(route('institutionGraph'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ShowInstitutionGraph')
-                ->where('institutions', function ($institutions) {
-                    return collect($institutions)->every(function ($institution) {
-                        return isset($institution['users_count']) && is_numeric($institution['users_count']);
-                    });
-                })
+                ->where('institutions', fn ($institutions) => collect($institutions)->every(fn ($institution) => isset($institution['users_count']) && is_numeric($institution['users_count'])))
             );
     });
 });
 
-describe('feedback functionality', function () {
-    test('user can send feedback', function () {
+describe('feedback functionality', function (): void {
+    test('user can send feedback', function (): void {
         $feedbackData = [
             'feedback' => 'This is test feedback',
             'anonymous' => false,
@@ -992,7 +978,7 @@ describe('feedback functionality', function () {
             ->assertSessionHas('success');
     });
 
-    test('user can send anonymous feedback', function () {
+    test('user can send anonymous feedback', function (): void {
         $feedbackData = [
             'feedback' => 'This is anonymous feedback',
             'anonymous' => true,
@@ -1006,7 +992,7 @@ describe('feedback functionality', function () {
             ->assertSessionHas('success');
     });
 
-    test('unauthenticated user cannot send feedback', function () {
+    test('unauthenticated user cannot send feedback', function (): void {
         $feedbackData = [
             'feedback' => 'Test feedback',
             'anonymous' => false,
@@ -1021,8 +1007,8 @@ describe('feedback functionality', function () {
 
 // Removed: atstovavimas summary feature and component were deprecated.
 
-describe('tenant isolation', function () {
-    beforeEach(function () {
+describe('tenant isolation', function (): void {
+    beforeEach(function (): void {
         $this->otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $this->otherAdmin = makeTenantUserWithRole('Communication Coordinator', $this->otherTenant);
 
@@ -1035,7 +1021,7 @@ describe('tenant isolation', function () {
         }
     });
 
-    test('user sees institutions and tenants based on their permissions', function () {
+    test('user sees institutions and tenants based on their permissions', function (): void {
         asUser($this->admin)
             ->get(route('dashboard.atstovavimas'))
             ->assertStatus(200)
@@ -1043,31 +1029,27 @@ describe('tenant isolation', function () {
                 ->component('Admin/Dashboard/ShowAtstovavimas')
                 ->has('userInstitutions')
                 ->has('availableTenants')
-                ->where('availableTenants', function ($tenants) {
+                ->where('availableTenants',
                     // User should see tenants they have permissions for
-                    return collect($tenants)->count() > 0;
-                })
+                    fn ($tenants) => collect($tenants)->count() > 0)
             );
     });
 
-    test('user cannot access other tenant svetaine data directly', function () {
+    test('user cannot access other tenant svetaine data directly', function (): void {
         asUser($this->admin)
             ->get(route('dashboard.svetaine', ['tenant_id' => $this->otherTenant->id]))
             ->assertStatus(200) // They can access but should see filtered data
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowSvetaine')
-                ->where('tenants', function ($tenants) {
+                ->where('tenants',
                     // Should not contain unauthorized tenants
-                    return collect($tenants)->every(function ($tenant) {
-                        return $tenant['id'] === $this->tenant->id || $tenant['type'] === 'pagrindinis';
-                    });
-                })
+                    fn ($tenants) => collect($tenants)->every(fn ($tenant) => $tenant['id'] === $this->tenant->id || $tenant['type'] === 'pagrindinis'))
             );
     });
 });
 
-describe('atstovavimas related institutions', function () {
-    beforeEach(function () {
+describe('atstovavimas related institutions', function (): void {
+    beforeEach(function (): void {
         // Create a relationship type
         $this->relationship = new Relationship([
             'name' => 'Test Relationship',
@@ -1085,7 +1067,7 @@ describe('atstovavimas related institutions', function () {
         ]);
     });
 
-    test('atstovavimas returns mayHaveRelatedInstitutions flag', function () {
+    test('atstovavimas returns mayHaveRelatedInstitutions flag', function (): void {
         asUser($this->user)
             ->get(route('dashboard.atstovavimas'))
             ->assertStatus(200)
@@ -1095,7 +1077,7 @@ describe('atstovavimas related institutions', function () {
             );
     });
 
-    test('relatedInstitutions lazy load returns institutions with outgoing relationship', function () {
+    test('relatedInstitutions lazy load returns institutions with outgoing relationship', function (): void {
         // Create outgoing relationship (user's institution -> related)
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
@@ -1139,7 +1121,7 @@ describe('atstovavimas related institutions', function () {
             );
     });
 
-    test('relatedInstitutions returns incoming relationships with authorized = false when not bidirectional', function () {
+    test('relatedInstitutions returns incoming relationships with authorized = false when not bidirectional', function (): void {
         // Create incoming relationship (related -> user's institution, NOT bidirectional)
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
@@ -1183,7 +1165,7 @@ describe('atstovavimas related institutions', function () {
             );
     });
 
-    test('relatedInstitutions returns incoming relationships with authorized = true when bidirectional', function () {
+    test('relatedInstitutions returns incoming relationships with authorized = true when bidirectional', function (): void {
         // Create incoming relationship (related -> user's institution, IS bidirectional)
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
@@ -1227,7 +1209,7 @@ describe('atstovavimas related institutions', function () {
             );
     });
 
-    test('authorized related institutions include meetings with agenda items', function () {
+    test('authorized related institutions include meetings with agenda items', function (): void {
         // Create outgoing relationship (authorized)
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
@@ -1280,7 +1262,7 @@ describe('atstovavimas related institutions', function () {
             );
     });
 
-    test('unauthorized related institutions include meetings but no agenda items', function () {
+    test('unauthorized related institutions include meetings but no agenda items', function (): void {
         // Create incoming relationship (NOT authorized because NOT bidirectional)
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,

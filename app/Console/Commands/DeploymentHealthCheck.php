@@ -2,18 +2,18 @@
 
 namespace App\Console\Commands;
 
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 
-class DeploymentHealthCheck extends Command
-{
-    protected $signature = 'deployment:health-check 
+#[Description('Perform health check after deployment')]
+#[Signature('deployment:health-check 
                             {--url= : The URL to check (defaults to APP_URL)}
                             {--timeout=30 : Request timeout in seconds}
-                            {--retries=3 : Number of retry attempts}';
-
-    protected $description = 'Perform health check after deployment';
-
+                            {--retries=3 : Number of retry attempts}')]
+class DeploymentHealthCheck extends Command
+{
     public function handle(): int
     {
         $url = $this->option('url') ?: config('app.url');

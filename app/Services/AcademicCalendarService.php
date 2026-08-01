@@ -65,13 +65,7 @@ class AcademicCalendarService
             }
         }
 
-        foreach ($this->vacationPeriodsForYear($day->year) as $period) {
-            if ($day->betweenIncluded($period['start'], $period['end'])) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($this->vacationPeriodsForYear($day->year), fn ($period) => $day->betweenIncluded($period['start'], $period['end']));
     }
 
     /**

@@ -12,13 +12,13 @@ use App\Models\User;
  * the roles carried by their current (non-ended) duties — read straight from the
  * Eloquent relations so an uncommitted mutation is reflected.
  */
-final class CapabilitySnapshot
+final readonly class CapabilitySnapshot
 {
     /**
      * @param  array<string, string>  $roles  Role id => display name
      */
     public function __construct(
-        public readonly array $roles,
+        public array $roles,
     ) {}
 
     /**

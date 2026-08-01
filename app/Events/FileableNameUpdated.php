@@ -9,15 +9,10 @@ class FileableNameUpdated
 {
     use Dispatchable, InteractsWithSockets;
 
-    public $fileable;
-
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($fileable)
-    {
-        $this->fileable = $fileable;
-    }
+    public function __construct(public $fileable) {}
 }

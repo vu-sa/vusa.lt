@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Traits\HasTranslations;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -37,24 +38,24 @@ use Illuminate\Support\Str;
  *
  * @mixin \Eloquent
  */
+#[Fillable([
+    'name',
+    'description',
+    'alias',
+])]
 class Tag extends Model
 {
     use HasFactory, HasTranslations, SoftDeletes;
 
     public $translatable = ['name', 'description'];
 
-    protected $fillable = [
-        'name',
-        'description',
-        'alias',
-    ];
-
+    #[\Override]
     protected static function boot()
     {
         parent::boot();
 
         // Auto-generate alias if not provided
-        static::saving(function ($tag) {
+        static::saving(function ($tag): void {
             if (empty($tag->alias)) {
                 $tag->alias = $tag->generateAlias();
             }
@@ -63,7 +64,7 @@ class Tag extends Model
         // posts_tags.tag_id restricts deletes, so detaching is what makes permanent
         // deletion possible — but on a soft delete it would strip the tag from every
         // article with no way to put it back, leaving restore to return an empty tag.
-        static::deleting(function (Tag $tag) {
+        static::deleting(function (Tag $tag): void {
             if (! $tag->isForceDeleting()) {
                 return;
             }

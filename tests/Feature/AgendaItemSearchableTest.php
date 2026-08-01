@@ -4,9 +4,9 @@ use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-test('agenda item whose meeting is soft-deleted still emits the required tenant and institution fields', function () {
+test('agenda item whose meeting is soft-deleted still emits the required tenant and institution fields', function (): void {
     // A soft-deleted meeting makes the `meeting` relation resolve to null. The searchable
     // array must not drop the schema-required fields, otherwise the Typesense import fails
     // with "field declared in the schema, but not found in the document".

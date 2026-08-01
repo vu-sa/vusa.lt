@@ -150,10 +150,10 @@ class InstitutionController extends AdminController
 
         // TODO: only show current_users
         $institution->load('tenant', 'types', 'duties.current_users', 'checkIns')->load([
-            'tasks' => function ($query) {
+            'tasks' => function ($query): void {
                 $query->with('users:id,name,email,profile_photo_path', 'taskable');
             },
-            'meetings' => function ($query) {
+            'meetings' => function ($query): void {
                 $query->withCount('agendaItems')
                     ->with([
                         'tasks' => fn ($q) => $q->with('users:id,name,email,profile_photo_path', 'taskable'),
@@ -172,7 +172,7 @@ class InstitutionController extends AdminController
             'activity_status',
             $this->activityStatusService->resolve($institution)->toArray()
         );
-        $institution->meetings->each(function (Meeting $meeting) {
+        $institution->meetings->each(function (Meeting $meeting): void {
             $meeting->append(['is_public', 'has_report', 'has_protocol']);
 
             // Compute vote stats from loaded agendaItems.votes
@@ -295,7 +295,7 @@ class InstitutionController extends AdminController
     {
         $this->handleAuthorization('update', $institution);
 
-        $institution->load('types')->load(['duties' => function ($query) {
+        $institution->load('types')->load(['duties' => function ($query): void {
             $query->with([
                 'current_users',
                 // Load the most recent previous user for duties without current users

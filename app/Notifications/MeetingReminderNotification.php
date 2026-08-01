@@ -10,18 +10,10 @@ use App\Models\Meeting;
  */
 class MeetingReminderNotification extends BaseNotification
 {
-    protected Meeting $meeting;
-
-    protected int $hoursUntil;
-
     /**
      * Create a new notification instance.
      */
-    public function __construct(Meeting $meeting, int $hoursUntil)
-    {
-        $this->meeting = $meeting;
-        $this->hoursUntil = $hoursUntil;
-    }
+    public function __construct(protected Meeting $meeting, protected int $hoursUntil) {}
 
     public function category(): NotificationCategory
     {
@@ -58,6 +50,7 @@ class MeetingReminderNotification extends BaseNotification
         return route('meetings.show', $this->meeting->id);
     }
 
+    #[\Override]
     public function icon(): string
     {
         return $this->hoursUntil <= 2 ? '⏰' : '🗓️';
@@ -78,6 +71,7 @@ class MeetingReminderNotification extends BaseNotification
         ];
     }
 
+    #[\Override]
     public function actions(): array
     {
         return [
@@ -91,6 +85,7 @@ class MeetingReminderNotification extends BaseNotification
     /**
      * Meeting reminders are time-sensitive and should not be digested.
      */
+    #[\Override]
     public function supportsEmailDigest(): bool
     {
         return false;

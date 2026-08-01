@@ -19,7 +19,7 @@ use Illuminate\Support\Collection;
  */
 final class NewsBlockResolver implements ResolvesContentPart
 {
-    private const LIMIT = 5;
+    private const int LIMIT = 5;
 
     public function resolve(Collection $parts, ResolutionContext $context): array
     {

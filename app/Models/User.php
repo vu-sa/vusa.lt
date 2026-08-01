@@ -12,6 +12,8 @@ use App\Models\Traits\HasNotificationPreferences;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\HasUIPreferences;
 use App\Services\NotificationRouter;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -102,42 +104,31 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
+#[Fillable([
+    'name', 'email', 'facebook_url', 'password', 'phone', 'profile_photo_path', 'profile_photo_focal_point', 'pronouns', 'show_pronouns',
+    'notification_preferences',
+    'ui_preferences',
+])]
+#[Hidden([
+    'password',
+    'remember_token',
+    'email_verified_at',
+    'tutorial_progress',
+    'notification_preferences',
+    'ui_preferences',
+    'last_action',
+    'microsoft_token',
+    'name_was_changed',
+])]
 class User extends Authenticatable implements GuardsForceDelete
 {
     use GuardsForceDeleteWhenReferenced, HasFactory, HasNotificationPreferences, HasPushSubscriptions, HasRelationships, HasRoles, HasTranslations, HasUIPreferences, HasUlids, LogsActivity, Notifiable, Searchable, SoftDeletes;
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
-    protected $fillable = [
-        'name', 'email', 'facebook_url', 'password', 'phone', 'profile_photo_path', 'profile_photo_focal_point', 'pronouns', 'show_pronouns',
-        'notification_preferences',
-        'ui_preferences',
-    ];
 
     public $translatable = [
         'pronouns',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-        'email_verified_at',
-        'tutorial_progress',
-        'notification_preferences',
-        'ui_preferences',
-        'last_action',
-        'microsoft_token',
-        'name_was_changed',
-    ];
-
+    #[\Override]
     protected function casts(): array
     {
         return [
@@ -233,7 +224,7 @@ class User extends Authenticatable implements GuardsForceDelete
     public function previous_duties(): MorphToMany
     {
         return $this->duties()
-            ->where(function ($query) {
+            ->where(function ($query): void {
                 $query->whereNotNull('dutiables.end_date')
                     ->where('dutiables.end_date', '<', now());
             })
@@ -248,7 +239,7 @@ class User extends Authenticatable implements GuardsForceDelete
     public function current_duties(): MorphToMany
     {
         return $this->duties()
-            ->where(function ($query) {
+            ->where(function ($query): void {
                 $query->whereNull('dutiables.end_date')
                     ->orWhere('dutiables.end_date', '>=', now());
             })
@@ -364,19 +355,13 @@ class User extends Authenticatable implements GuardsForceDelete
      */
     public function allAvailableTrainings()
     {
-        $avThDuty = $this->load('current_duties.availableTrainings')->current_duties->map(function ($duty) {
-            return $duty->availableTrainings;
-        })->flatten();
+        $avThDuty = $this->load('current_duties.availableTrainings')->current_duties->map(fn ($duty) => $duty->availableTrainings)->flatten();
 
         $avThUser = $this->availableTrainingsThroughUser()->get();
 
-        $avThInstitution = $this->load('institutions.availableTrainings')->institutions->map(function ($institution) {
-            return $institution->availableTrainings;
-        })->flatten();
+        $avThInstitution = $this->load('institutions.availableTrainings')->institutions->map(fn ($institution) => $institution->availableTrainings)->flatten();
 
-        $avThMembership = $this->load('memberships.availableTrainings')->memberships->map(function ($membership) {
-            return $membership->availableTrainings;
-        })->flatten();
+        $avThMembership = $this->load('memberships.availableTrainings')->memberships->map(fn ($membership) => $membership->availableTrainings)->flatten();
 
         return $avThDuty->merge($avThUser)->merge($avThInstitution)->merge($avThMembership)->unique('id');
     }

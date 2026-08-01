@@ -19,15 +19,15 @@ use App\Tasks\Subscribers\InstitutionCheckInTaskSubscriber;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     Notification::fake();
     config(['queue.default' => 'sync']);
 });
 
-describe('InstitutionCheckInTaskSubscriber', function () {
-    test('completes periodicity gap task when check-in is created', function () {
+describe('InstitutionCheckInTaskSubscriber', function (): void {
+    test('completes periodicity gap task when check-in is created', function (): void {
         $tenant = Tenant::query()->first()
             ?? Tenant::factory()->create();
 
@@ -73,7 +73,7 @@ describe('InstitutionCheckInTaskSubscriber', function () {
         expect($task->completed_at)->not->toBeNull();
     });
 
-    test('does not fail when no periodicity gap task exists', function () {
+    test('does not fail when no periodicity gap task exists', function (): void {
         $tenant = Tenant::query()->first()
             ?? Tenant::factory()->create();
 
@@ -92,7 +92,7 @@ describe('InstitutionCheckInTaskSubscriber', function () {
         expect($checkIn)->not->toBeNull();
     });
 
-    test('only completes tasks for the specific institution', function () {
+    test('only completes tasks for the specific institution', function (): void {
         $tenant = Tenant::query()->first()
             ?? Tenant::factory()->create();
 
@@ -131,8 +131,8 @@ describe('InstitutionCheckInTaskSubscriber', function () {
             dueDate: now()->addDays(7),
         );
 
-        expect($task1->completed_at)->toBeNull();
-        expect($task2->completed_at)->toBeNull();
+        expect($task1->completed_at)->toBeNull()
+            ->and($task2->completed_at)->toBeNull();
 
         // Create check-in only for institution1
         $user = $institution1->duties()->first()->current_users()->first();

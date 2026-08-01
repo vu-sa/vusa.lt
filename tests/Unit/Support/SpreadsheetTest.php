@@ -7,8 +7,8 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as XlsxWriter;
 
-describe('SpreadsheetWriter', function () {
-    test('downloadXlsx streams an xlsx file with the expected headers and content', function () {
+describe('SpreadsheetWriter', function (): void {
+    test('downloadXlsx streams an xlsx file with the expected headers and content', function (): void {
         $rows = [
             ['ID', 'Name', 'Email'],
             [1, 'Alice', 'alice@example.com'],
@@ -18,9 +18,8 @@ describe('SpreadsheetWriter', function () {
         $response = SpreadsheetWriter::downloadXlsx($rows, 'people.xlsx');
 
         expect($response->headers->get('Content-Type'))
-            ->toBe('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        expect($response->headers->get('Content-Disposition'))
-            ->toContain('attachment')
+            ->toBe('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            ->and($response->headers->get('Content-Disposition'))->toContain('attachment')
             ->toContain('people.xlsx');
 
         ob_start();
@@ -41,8 +40,8 @@ describe('SpreadsheetWriter', function () {
     });
 });
 
-describe('SpreadsheetReader', function () {
-    test('readSheetAsCollection keys rows by snake_cased headings', function () {
+describe('SpreadsheetReader', function (): void {
+    test('readSheetAsCollection keys rows by snake_cased headings', function (): void {
         $tmp = createXlsxFixture('IMPORT', [
             ['Vardas ir pavardė', 'Studentinis el. paštas', 'Tel. nr.', 'Narystės pradžia', 'Narystės pabaiga'],
             ['Jonas Jonaitis', 'jonas@vu.lt', 'tel-here', 45000, 45365],
@@ -52,19 +51,19 @@ describe('SpreadsheetReader', function () {
 
         $rows = SpreadsheetReader::readSheetAsCollection($upload, 'IMPORT');
 
-        expect($rows)->toHaveCount(1);
-        expect($rows->first())->toMatchArray([
-            'vardas_ir_pavarde' => 'Jonas Jonaitis',
-            'studentinis_el_pastas' => 'jonas@vu.lt',
-            'tel_nr' => 'tel-here',
-            'narystes_pradzia' => 45000,
-            'narystes_pabaiga' => 45365,
-        ]);
+        expect($rows)->toHaveCount(1)
+            ->and($rows->first())->toMatchArray([
+                'vardas_ir_pavarde' => 'Jonas Jonaitis',
+                'studentinis_el_pastas' => 'jonas@vu.lt',
+                'tel_nr' => 'tel-here',
+                'narystes_pradzia' => 45000,
+                'narystes_pabaiga' => 45365,
+            ]);
 
         unlink($tmp);
     });
 
-    test('readSheetAsCollection returns empty collection when sheet is missing', function () {
+    test('readSheetAsCollection returns empty collection when sheet is missing', function (): void {
         $tmp = createXlsxFixture('OTHER', [['a', 'b'], [1, 2]]);
         $upload = new UploadedFile($tmp, 'import.xlsx', null, null, true);
 
@@ -82,7 +81,7 @@ function createXlsxFixture(string $sheetName, array $rows): string
     $sheet->fromArray($rows, null, 'A1');
 
     $tmp = tempnam(sys_get_temp_dir(), 'fixture_').'.xlsx';
-    (new XlsxWriter($spreadsheet))->save($tmp);
+    new XlsxWriter($spreadsheet)->save($tmp);
 
     return $tmp;
 }

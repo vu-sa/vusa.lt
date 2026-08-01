@@ -31,7 +31,7 @@ class AddressivizeHelper
         }
 
         $words = explode(' ', $name);
-        $addressivizedWords = array_map([self::class, 'addressivize'], $words);
+        $addressivizedWords = array_map(self::addressivize(...), $words);
 
         return implode(' ', $addressivizedWords);
     }

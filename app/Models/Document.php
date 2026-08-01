@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Helpers\ShortUrlHelper;
 use App\Services\DocumentSharepointSyncService;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -51,14 +52,15 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
+#[Hidden(['sharepoint_id', 'eTag', 'public_url_created_at', 'sharepoint_site_id', 'sharepoint_list_id', 'sharepoint_permission_id', 'created_at', 'updated_at'])]
 class Document extends Model
 {
     use HasFactory, HasRelationships, Searchable;
 
+    #[\Override]
     protected $guarded = [];
 
-    protected $hidden = ['sharepoint_id', 'eTag', 'public_url_created_at', 'sharepoint_site_id', 'sharepoint_list_id', 'sharepoint_permission_id', 'created_at', 'updated_at'];
-
+    #[\Override]
     protected function casts(): array
     {
         return [
@@ -71,13 +73,14 @@ class Document extends Model
         ];
     }
 
+    #[\Override]
     protected static function booted()
     {
-        static::saved(function ($document) {
+        static::saved(function ($document): void {
             Cache::tags(['documents'])->flush();
         });
 
-        static::deleted(function ($document) {
+        static::deleted(function ($document): void {
             Cache::tags(['documents'])->flush();
         });
     }

@@ -45,11 +45,9 @@ class MeetingCompletionService
                     && ! empty($mainVote->student_benefit);
             }
 
-            return $item->votes->contains(function ($vote) {
-                return ! empty($vote->student_vote)
-                    && ! empty($vote->decision)
-                    && ! empty($vote->student_benefit);
-            });
+            return $item->votes->contains(fn ($vote) => ! empty($vote->student_vote)
+                && ! empty($vote->decision)
+                && ! empty($vote->student_benefit));
         });
 
         return $allComplete ? 'complete' : 'incomplete';

@@ -9,18 +9,18 @@ use App\Models\Type;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::factory()->create();
 });
 
-describe('reorderDuties', function () {
-    beforeEach(function () {
+describe('reorderDuties', function (): void {
+    beforeEach(function (): void {
         $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
     });
 
-    test('persists the new order for each duty in a single batch', function () {
+    test('persists the new order for each duty in a single batch', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
         $dutyA = Duty::factory()->create(['institution_id' => $institution->id, 'order' => 1]);
         $dutyB = Duty::factory()->create(['institution_id' => $institution->id, 'order' => 2]);
@@ -32,11 +32,11 @@ describe('reorderDuties', function () {
             ],
         ])->assertRedirect();
 
-        expect($dutyA->fresh()->order)->toBe(5);
-        expect($dutyB->fresh()->order)->toBe(3);
+        expect($dutyA->fresh()->order)->toBe(5)
+            ->and($dutyB->fresh()->order)->toBe(3);
     });
 
-    test('a user without institution update permission cannot reorder duties', function () {
+    test('a user without institution update permission cannot reorder duties', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
         $duty = Duty::factory()->create(['institution_id' => $institution->id, 'order' => 1]);
 
@@ -49,7 +49,7 @@ describe('reorderDuties', function () {
         expect($duty->fresh()->order)->toBe(1);
     });
 
-    test('cannot reorder duties of an institution in another tenant', function () {
+    test('cannot reorder duties of an institution in another tenant', function (): void {
         $otherTenant = Tenant::factory()->create();
         $otherInstitution = Institution::factory()->create(['tenant_id' => $otherTenant->id]);
         $otherDuty = Duty::factory()->create(['institution_id' => $otherInstitution->id, 'order' => 1]);
@@ -62,21 +62,21 @@ describe('reorderDuties', function () {
     });
 });
 
-describe('unauthorized access', function () {
-    beforeEach(function () {
+describe('unauthorized access', function (): void {
+    beforeEach(function (): void {
         $this->user = makeUser($this->tenant);
         asUser($this->user)->get(route('dashboard'))->assertStatus(200);
     });
 
-    test('cannot index institutions', function () {
+    test('cannot index institutions', function (): void {
         asUser($this->user)->get(route('institutions.index'))->assertStatus(403);
     });
 
-    test('cannot access institution create page', function () {
+    test('cannot access institution create page', function (): void {
         asUser($this->user)->get(route('institutions.create'))->assertStatus(403);
     });
 
-    test('cannot store institution', function () {
+    test('cannot store institution', function (): void {
         asUser($this->user)->post(route('institutions.store'), [
             'name' => ['lt' => 'Test Institution'],
             'short_name' => ['lt' => 'test'],
@@ -85,13 +85,13 @@ describe('unauthorized access', function () {
         ])->assertStatus(403);
     });
 
-    test('cannot access the institution edit page', function () {
+    test('cannot access the institution edit page', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
         asUser($this->user)->get(route('institutions.edit', $institution))->assertStatus(403);
     });
 
-    test('cannot update institution', function () {
+    test('cannot update institution', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
         asUser($this->user)->put(route('institutions.update', $institution), [
@@ -102,19 +102,19 @@ describe('unauthorized access', function () {
         ])->assertStatus(403);
     });
 
-    test('cannot delete institution', function () {
+    test('cannot delete institution', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
         asUser($this->user)->delete(route('institutions.destroy', $institution))->assertStatus(403);
     });
 });
 
-describe('authorized access', function () {
-    beforeEach(function () {
+describe('authorized access', function (): void {
+    beforeEach(function (): void {
         $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
     });
 
-    test('can show institution with tasks', function () {
+    test('can show institution with tasks', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
         // Create a task associated with the institution
@@ -135,7 +135,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('can show institution with meeting tasks including subject', function () {
+    test('can show institution with meeting tasks including subject', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
         // Create a meeting with a task
@@ -161,7 +161,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('exposes institution type and recent comments for the overview', function () {
+    test('exposes institution type and recent comments for the overview', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
         $type = Type::factory()->create(['model_type' => Institution::class]);
@@ -185,14 +185,14 @@ describe('authorized access', function () {
             );
     });
 
-    test('can index institutions', function () {
+    test('can index institutions', function (): void {
         $response = asUser($this->admin)->get(route('institutions.index'));
 
         $response->assertOk();
         $response->assertInertia(fn ($page) => $page->component('Admin/People/IndexInstitution'));
     });
 
-    test('can access institution create page', function () {
+    test('can access institution create page', function (): void {
         $response = asUser($this->admin)->get(route('institutions.create'));
 
         $response->assertStatus(200)
@@ -201,7 +201,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('can store institution', function () {
+    test('can store institution', function (): void {
         $institutionData = [
             'name' => ['lt' => 'Test Institution', 'en' => 'Test Institution EN'],
             'short_name' => ['lt' => 'TI', 'en' => 'TI'],
@@ -219,7 +219,7 @@ describe('authorized access', function () {
         ]);
     });
 
-    test('can access institution edit page', function () {
+    test('can access institution edit page', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
         $response = asUser($this->admin)->get(route('institutions.edit', $institution));
@@ -231,7 +231,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('can update institution', function () {
+    test('can update institution', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
         $updateData = [
@@ -251,7 +251,7 @@ describe('authorized access', function () {
         ]);
     });
 
-    test('can delete institution', function () {
+    test('can delete institution', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
         $response = asUser($this->admin)->delete(route('institutions.destroy', $institution));
@@ -264,12 +264,12 @@ describe('authorized access', function () {
     });
 });
 
-describe('validation', function () {
-    beforeEach(function () {
+describe('validation', function (): void {
+    beforeEach(function (): void {
         $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
     });
 
-    test('requires name for store', function () {
+    test('requires name for store', function (): void {
         $response = asUser($this->admin)->post(route('institutions.store'), [
             'short_name' => ['lt' => 'TI'],
             'tenant_id' => $this->tenant->id,
@@ -280,7 +280,7 @@ describe('validation', function () {
             ->assertSessionHasErrors('name.lt');
     });
 
-    test('requires short_name for store', function () {
+    test('requires short_name for store', function (): void {
         $response = asUser($this->admin)->post(route('institutions.store'), [
             'name' => ['lt' => 'Test Institution'],
             'tenant_id' => $this->tenant->id,
@@ -300,7 +300,7 @@ describe('validation', function () {
         }
     });
 
-    test('requires alias for store', function () {
+    test('requires alias for store', function (): void {
         $response = asUser($this->admin)->post(route('institutions.store'), [
             'name' => ['lt' => 'Test Institution'],
             'short_name' => ['lt' => 'TI'],
@@ -311,14 +311,14 @@ describe('validation', function () {
         // Debug what actually happens
         if ($response->status() === 302 && ! $response->getSession()->get('errors')) {
             // Institution was created successfully, alias is not required
-            expect(true)->toBe(true); // Pass the test
+            expect(true)->toBeTrue(); // Pass the test
         } else {
             $response->assertStatus(302)
                 ->assertSessionHasErrors('alias');
         }
     });
 
-    test('requires unique alias for store', function () {
+    test('requires unique alias for store', function (): void {
         Institution::factory()->create(['alias' => 'existing-alias']);
 
         $response = asUser($this->admin)->post(route('institutions.store'), [
@@ -332,7 +332,7 @@ describe('validation', function () {
             ->assertSessionHasErrors('alias');
     });
 
-    test('requires name for update', function () {
+    test('requires name for update', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
         $response = asUser($this->admin)->put(route('institutions.update', $institution), [
@@ -346,26 +346,26 @@ describe('validation', function () {
     });
 });
 
-describe('relationships', function () {
-    beforeEach(function () {
+describe('relationships', function (): void {
+    beforeEach(function (): void {
         $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
     });
 
-    test('institution belongs to tenant', function () {
+    test('institution belongs to tenant', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
-        expect($institution->tenant)->toBeInstanceOf(Tenant::class);
-        expect($institution->tenant->id)->toBe($this->tenant->id);
+        expect($institution->tenant)->toBeInstanceOf(Tenant::class)
+            ->and($institution->tenant->id)->toBe($this->tenant->id);
     });
 
-    test('can only access institutions from own tenant', function () {
+    test('can only access institutions from own tenant', function (): void {
         $response = asUser($this->admin)->get(route('institutions.index'));
 
         $response->assertOk();
         $response->assertInertia(fn ($page) => $page->component('Admin/People/IndexInstitution'));
     });
 
-    test('cannot edit institution from different tenant', function () {
+    test('cannot edit institution from different tenant', function (): void {
         // Test that a regular tenant user cannot edit an institution from a different tenant
         $otherTenant = Tenant::factory()->create();
         $otherInstitution = Institution::factory()->create(['tenant_id' => $otherTenant->id]);
@@ -378,12 +378,12 @@ describe('relationships', function () {
     });
 });
 
-describe('meeting_periodicity_days', function () {
-    beforeEach(function () {
+describe('meeting_periodicity_days', function (): void {
+    beforeEach(function (): void {
         $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
     });
 
-    test('can store institution with meeting_periodicity_days', function () {
+    test('can store institution with meeting_periodicity_days', function (): void {
         $institutionData = [
             'name' => ['lt' => 'Test Institution', 'en' => 'Test Institution EN'],
             'short_name' => ['lt' => 'TI', 'en' => 'TI'],
@@ -402,7 +402,7 @@ describe('meeting_periodicity_days', function () {
         ]);
     });
 
-    test('can update institution meeting_periodicity_days', function () {
+    test('can update institution meeting_periodicity_days', function (): void {
         // Use a unique alias to avoid conflicts with seeded data
         $uniqueAlias = 'test-periodicity-update-'.uniqid();
 
@@ -429,7 +429,7 @@ describe('meeting_periodicity_days', function () {
         expect($institution->getRawOriginal('meeting_periodicity_days'))->toBe(60);
     });
 
-    test('can set meeting_periodicity_days to null to revert to type inheritance', function () {
+    test('can set meeting_periodicity_days to null to revert to type inheritance', function (): void {
         // Use a unique alias to avoid conflicts with seeded data
         $uniqueAlias = 'test-periodicity-null-'.uniqid();
 
@@ -456,7 +456,7 @@ describe('meeting_periodicity_days', function () {
         expect($institution->getRawOriginal('meeting_periodicity_days'))->toBeNull();
     });
 
-    test('accessor returns institution override when set', function () {
+    test('accessor returns institution override when set', function (): void {
         $institution = Institution::factory()->create([
             'tenant_id' => $this->tenant->id,
             'meeting_periodicity_days' => 90,
@@ -465,7 +465,7 @@ describe('meeting_periodicity_days', function () {
         expect($institution->meeting_periodicity_days)->toBe(90);
     });
 
-    test('accessor returns type periodicity when institution override is null', function () {
+    test('accessor returns type periodicity when institution override is null', function (): void {
         $type = Type::factory()->create([
             'model_type' => Institution::class,
             'extra_attributes' => ['meeting_periodicity_days' => 14],
@@ -480,7 +480,7 @@ describe('meeting_periodicity_days', function () {
         expect($institution->meeting_periodicity_days)->toBe(14);
     });
 
-    test('accessor returns minimum type periodicity when multiple types', function () {
+    test('accessor returns minimum type periodicity when multiple types', function (): void {
         $type1 = Type::factory()->create([
             'model_type' => Institution::class,
             'extra_attributes' => ['meeting_periodicity_days' => 30],
@@ -500,7 +500,7 @@ describe('meeting_periodicity_days', function () {
         expect($institution->meeting_periodicity_days)->toBe(14);
     });
 
-    test('accessor returns default 30 when no override and no type periodicity', function () {
+    test('accessor returns default 30 when no override and no type periodicity', function (): void {
         $type = Type::factory()->create([
             'model_type' => Institution::class,
             'extra_attributes' => [], // No periodicity set
@@ -515,7 +515,7 @@ describe('meeting_periodicity_days', function () {
         expect($institution->meeting_periodicity_days)->toBe(30);
     });
 
-    test('accessor returns default 30 when no types attached', function () {
+    test('accessor returns default 30 when no types attached', function (): void {
         $institution = Institution::factory()->create([
             'tenant_id' => $this->tenant->id,
             'meeting_periodicity_days' => null,
@@ -524,7 +524,7 @@ describe('meeting_periodicity_days', function () {
         expect($institution->meeting_periodicity_days)->toBe(30);
     });
 
-    test('show endpoint includes meeting_periodicity_days in response', function () {
+    test('show endpoint includes meeting_periodicity_days in response', function (): void {
         $institution = Institution::factory()->create([
             'tenant_id' => $this->tenant->id,
             'meeting_periodicity_days' => 21,
@@ -539,7 +539,7 @@ describe('meeting_periodicity_days', function () {
             );
     });
 
-    test('show endpoint returns computed periodicity when override is null', function () {
+    test('show endpoint returns computed periodicity when override is null', function (): void {
         $type = Type::factory()->create([
             'model_type' => Institution::class,
             'extra_attributes' => ['meeting_periodicity_days' => 7],
@@ -560,7 +560,7 @@ describe('meeting_periodicity_days', function () {
             );
     });
 
-    test('validates meeting_periodicity_days is positive integer', function () {
+    test('validates meeting_periodicity_days is positive integer', function (): void {
         $response = asUser($this->admin)->post(route('institutions.store'), [
             'name' => ['lt' => 'Test Institution'],
             'tenant_id' => $this->tenant->id,
@@ -570,7 +570,7 @@ describe('meeting_periodicity_days', function () {
         $response->assertSessionHasErrors('meeting_periodicity_days');
     });
 
-    test('validates meeting_periodicity_days max is 365', function () {
+    test('validates meeting_periodicity_days max is 365', function (): void {
         $response = asUser($this->admin)->post(route('institutions.store'), [
             'name' => ['lt' => 'Test Institution'],
             'tenant_id' => $this->tenant->id,
@@ -581,8 +581,8 @@ describe('meeting_periodicity_days', function () {
     });
 });
 
-describe('institution search indexing', function () {
-    test('searchable array exposes duty names and current member names', function () {
+describe('institution search indexing', function (): void {
+    test('searchable array exposes duty names and current member names', function (): void {
         $institution = Institution::factory()->for($this->tenant)->create([
             'name' => ['lt' => 'Testinė institucija', 'en' => 'Test Institution'],
         ]);
@@ -594,8 +594,8 @@ describe('institution search indexing', function () {
 
         $searchable = $institution->fresh()->toSearchableArray();
 
-        expect($searchable)->toHaveKeys(['name_lt', 'duty_names', 'current_user_names']);
-        expect($searchable['duty_names'])->toContain('Pirmininkas');
-        expect($searchable['current_user_names'])->toContain('Jonas Jonaitis');
+        expect($searchable)->toHaveKeys(['name_lt', 'duty_names', 'current_user_names'])
+            ->and($searchable['duty_names'])->toContain('Pirmininkas')
+            ->and($searchable['current_user_names'])->toContain('Jonas Jonaitis');
     });
 });

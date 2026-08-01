@@ -12,9 +12,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-test('home page gets default public props', function () {
+test('home page gets default public props', function (): void {
     $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']))
         ->assertInertia(fn (Assert $page) => $page
             ->component('Public/HomePage')
@@ -38,7 +38,7 @@ test('home page gets default public props', function () {
         );
 });
 
-test('no auth without authentication', function () {
+test('no auth without authentication', function (): void {
     $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']))
         ->assertInertia(fn (Assert $page) => $page
             ->component('Public/HomePage')
@@ -46,14 +46,14 @@ test('no auth without authentication', function () {
         );
 });
 
-test('can open the home page', function () {
+test('can open the home page', function (): void {
     $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']))
         ->assertInertia(fn (Assert $page) => $page
             ->component('Public/HomePage')
         );
 });
 
-test('can open news archive', function () {
+test('can open news archive', function (): void {
     $this->get(route('newsArchive', ['subdomain' => 'www', 'lang' => 'lt', 'newsString' => 'naujienos']))
         ->assertInertia(fn (Assert $page) => $page
             ->component('Public/NewsArchive')
@@ -64,7 +64,7 @@ test('can open news archive', function () {
         );
 });
 
-test('can open news', function () {
+test('can open news', function (): void {
     $mainTenant = Tenant::query()->where('alias', 'vusa')->firstOrFail();
     $news = News::factory()->for($mainTenant)->create();
 
@@ -75,7 +75,7 @@ test('can open news', function () {
         );
 });
 
-test('news route resolves the main tenant article when permalink is shared', function () {
+test('news route resolves the main tenant article when permalink is shared', function (): void {
     $mainTenant = Tenant::query()->where('alias', 'vusa')->firstOrFail();
     $otherTenant = Tenant::factory()->create([
         'alias' => 'test-news-tenant',
@@ -100,7 +100,7 @@ test('news route resolves the main tenant article when permalink is shared', fun
         );
 });
 
-test('news route resolves the padalinys article when permalink is shared', function () {
+test('news route resolves the padalinys article when permalink is shared', function (): void {
     $mainTenant = Tenant::query()->where('alias', 'vusa')->firstOrFail();
     $otherTenant = Tenant::factory()->create([
         'alias' => 'test-news-tenant',
@@ -125,7 +125,7 @@ test('news route resolves the padalinys article when permalink is shared', funct
         );
 });
 
-test('can open student representative page', function () {
+test('can open student representative page', function (): void {
     $this->get(route('contacts.studentRepresentatives', ['subdomain' => 'www', 'lang' => 'lt']))
         ->assertInertia(fn (Assert $page) => $page
             ->component('Public/Contacts/ShowStudentReps')
@@ -133,7 +133,7 @@ test('can open student representative page', function () {
         );
 });
 
-test('can open institution page', function () {
+test('can open institution page', function (): void {
     $institution = Institution::factory()->create();
 
     $this->get(route('contacts.institution', ['subdomain' => 'www', 'lang' => 'lt', 'institution' => $institution->id]))
@@ -144,7 +144,7 @@ test('can open institution page', function () {
         );
 });
 
-test('can open representation padaliniai category', function () {
+test('can open representation padaliniai category', function (): void {
     $this->get(route('contacts.category', ['subdomain' => 'www', 'lang' => 'lt', 'type' => 'padaliniai']))
         ->assertInertia(fn (Assert $page) => $page
             ->component('Public/Contacts/ShowContactCategory')
@@ -152,7 +152,7 @@ test('can open representation padaliniai category', function () {
         );
 });
 
-test('can open student representative organ category', function () {
+test('can open student representative organ category', function (): void {
     $this->get(route('contacts.category', ['subdomain' => 'www', 'lang' => 'lt', 'type' => 'studentu-atstovu-organas']))
         ->assertInertia(fn (Assert $page) => $page
             ->component('Public/Contacts/ShowStudentReps')
@@ -162,7 +162,7 @@ test('can open student representative organ category', function () {
 });
 
 // Contact grouping tests
-test('institution page with no grouping shows flat contacts', function () {
+test('institution page with no grouping shows flat contacts', function (): void {
     $institution = Institution::factory()->create();
 
     // Create duties with no grouping (default)
@@ -195,7 +195,7 @@ test('institution page with no grouping shows flat contacts', function () {
         );
 });
 
-test('institution page with study program grouping shows grouped sections', function () {
+test('institution page with study program grouping shows grouped sections', function (): void {
     $institution = Institution::factory()->create();
     $tenant = Tenant::factory()->create();
 
@@ -244,7 +244,7 @@ test('institution page with study program grouping shows grouped sections', func
         );
 });
 
-test('institution page with tenant grouping shows grouped sections', function () {
+test('institution page with tenant grouping shows grouped sections', function (): void {
     $owningTenant = Tenant::where('shortname', 'VU SA')->firstOrFail();
     $institution = Institution::factory()->create(['tenant_id' => $owningTenant->id]);
 
@@ -290,7 +290,7 @@ test('institution page with tenant grouping shows grouped sections', function ()
         );
 });
 
-test('grouped duty without groupable data renders as flat section', function () {
+test('grouped duty without groupable data renders as flat section', function (): void {
     $institution = Institution::factory()->create();
 
     // Duty wants study program grouping, but members have no study programs attached
@@ -318,7 +318,7 @@ test('grouped duty without groupable data renders as flat section', function () 
         );
 });
 
-test('institution page with mixed grouping shows both flat and grouped duties', function () {
+test('institution page with mixed grouping shows both flat and grouped duties', function (): void {
     $institution = Institution::factory()->create();
     $tenant = Tenant::factory()->create();
 
@@ -375,7 +375,7 @@ test('institution page with mixed grouping shows both flat and grouped duties', 
         );
 });
 
-test('duty grouping respects duty order within institution', function () {
+test('duty grouping respects duty order within institution', function (): void {
     $institution = Institution::factory()->create();
     $tenant = Tenant::factory()->create();
 
@@ -421,7 +421,7 @@ test('duty grouping respects duty order within institution', function () {
         );
 });
 
-test('can leave feedback', function () {
+test('can leave feedback', function (): void {
 
     Mail::fake();
 
@@ -438,7 +438,7 @@ test('can leave feedback', function () {
     Mail::assertQueued(FeedbackMail::class);
 });
 
-test('duty type contacts page with grouping shows grouped sections', function () {
+test('duty type contacts page with grouping shows grouped sections', function (): void {
     // Find or create the central institution that's used by duty type contacts
     $institution = Institution::where('alias', 'centrinis-biuras')->first();
     if (! $institution) {
@@ -453,7 +453,7 @@ test('duty type contacts page with grouping shows grouped sections', function ()
         $type = Type::factory()->create([
             'slug' => 'koordinatoriai',
             'title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators'],
-            'model_type' => 'App\\Models\\Duty',
+            'model_type' => Duty::class,
         ]);
     }
 
@@ -498,7 +498,7 @@ test('duty type contacts page with grouping shows grouped sections', function ()
         );
 });
 
-test('duty type contacts page handles both grouped and flat duties correctly', function () {
+test('duty type contacts page handles both grouped and flat duties correctly', function (): void {
     // Find or create the central institution that's used by duty type contacts
     $institution = Institution::where('alias', 'centrinis-biuras')->first();
     if (! $institution) {
@@ -511,7 +511,7 @@ test('duty type contacts page handles both grouped and flat duties correctly', f
         $type = Type::factory()->create([
             'slug' => 'koordinatoriai',
             'title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators'],
-            'model_type' => 'App\\Models\\Duty',
+            'model_type' => Duty::class,
         ]);
     }
 

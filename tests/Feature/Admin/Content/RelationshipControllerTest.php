@@ -8,9 +8,9 @@ use App\Models\Type;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
     // Relationships require system-wide permissions, use super admin
@@ -43,38 +43,38 @@ beforeEach(function () {
     ]);
 });
 
-describe('unauthorized access', function () {
-    test('cannot access index page', function () {
+describe('unauthorized access', function (): void {
+    test('cannot access index page', function (): void {
         asUser($this->user)->get(route('relationships.index'))->assertStatus(403);
     });
 
-    test('cannot access create page', function () {
+    test('cannot access create page', function (): void {
         asUser($this->user)->get(route('relationships.create'))->assertStatus(403);
     });
 
-    test('cannot store relationship', function () {
+    test('cannot store relationship', function (): void {
         $data = getControllerTestData('Relationship')['valid'];
         asUser($this->user)->post(route('relationships.store'), $data)->assertStatus(403);
     });
 
-    test('cannot view relationship', function () {
+    test('cannot view relationship', function (): void {
         asUser($this->user)->get(route('relationships.show', $this->relationship))->assertStatus(403);
     });
 
-    test('cannot access edit page', function () {
+    test('cannot access edit page', function (): void {
         asUser($this->user)->get(route('relationships.edit', $this->relationship))->assertStatus(403);
     });
 
-    test('cannot update relationship', function () {
+    test('cannot update relationship', function (): void {
         $data = getControllerTestData('Relationship')['valid'];
         asUser($this->user)->put(route('relationships.update', $this->relationship), $data)->assertStatus(403);
     });
 
-    test('cannot delete relationship', function () {
+    test('cannot delete relationship', function (): void {
         asUser($this->user)->delete(route('relationships.destroy', $this->relationship))->assertStatus(403);
     });
 
-    test('cannot store model relationship', function () {
+    test('cannot store model relationship', function (): void {
         $data = [
             'model_id' => $this->institution->id,
             'model_type' => Institution::class,
@@ -85,8 +85,8 @@ describe('unauthorized access', function () {
     });
 });
 
-describe('authorized access', function () {
-    test('can access index page', function () {
+describe('authorized access', function (): void {
+    test('can access index page', function (): void {
         asUser($this->admin)->get(route('relationships.index'))->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ModelMeta/IndexRelationships')
@@ -94,19 +94,19 @@ describe('authorized access', function () {
             );
     });
 
-    test('can access create page', function () {
+    test('can access create page', function (): void {
         asUser($this->admin)->get(route('relationships.create'))->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ModelMeta/CreateRelationship')
             );
     });
 
-    test('can view relationship', function () {
+    test('can view relationship', function (): void {
         // Note: ShowRelationship component doesn't exist, so we just test the response
         asUser($this->admin)->get(route('relationships.show', $this->relationship))->assertStatus(200);
     });
 
-    test('can access edit page', function () {
+    test('can access edit page', function (): void {
         asUser($this->admin)->get(route('relationships.edit', $this->relationship))->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ModelMeta/EditRelationship')
@@ -115,7 +115,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('can access edit page with model type parameter', function () {
+    test('can access edit page with model type parameter', function (): void {
         asUser($this->admin)->get(route('relationships.edit', $this->relationship).'?modelType='.urlencode(Institution::class))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -126,8 +126,8 @@ describe('authorized access', function () {
     });
 });
 
-describe('relationship CRUD operations', function () {
-    test('can store valid relationship', function () {
+describe('relationship CRUD operations', function (): void {
+    test('can store valid relationship', function (): void {
         $data = getControllerTestData('Relationship')['valid'];
 
         asUser($this->admin)->post(route('relationships.store'), $data)
@@ -141,14 +141,14 @@ describe('relationship CRUD operations', function () {
         ]);
     });
 
-    test('cannot store invalid relationship', function () {
+    test('cannot store invalid relationship', function (): void {
         $data = getControllerTestData('Relationship')['invalid'];
 
         asUser($this->admin)->post(route('relationships.store'), $data)
             ->assertSessionHasErrors(getControllerValidationErrors('Relationship'));
     });
 
-    test('cannot store relationship with duplicate slug', function () {
+    test('cannot store relationship with duplicate slug', function (): void {
         $data = [
             'name' => 'Different Name',
             'slug' => $this->relationship->slug, // Duplicate slug
@@ -159,7 +159,7 @@ describe('relationship CRUD operations', function () {
             ->assertSessionHasErrors(['slug']);
     });
 
-    test('can update relationship with valid data', function () {
+    test('can update relationship with valid data', function (): void {
         $data = [
             'name' => 'Updated Relationship Name',
             'slug' => 'updated-relationship-slug',
@@ -178,14 +178,14 @@ describe('relationship CRUD operations', function () {
         ]);
     });
 
-    test('cannot update relationship with invalid data', function () {
+    test('cannot update relationship with invalid data', function (): void {
         $data = getControllerTestData('Relationship')['invalid'];
 
         asUser($this->admin)->put(route('relationships.update', $this->relationship), $data)
             ->assertSessionHasErrors(getControllerValidationErrors('Relationship'));
     });
 
-    test('cannot update relationship with duplicate slug', function () {
+    test('cannot update relationship with duplicate slug', function (): void {
         $data = [
             'name' => 'Updated Name',
             'slug' => $this->otherRelationship->slug, // Duplicate slug
@@ -196,7 +196,7 @@ describe('relationship CRUD operations', function () {
             ->assertSessionHasErrors(['slug']);
     });
 
-    test('can update relationship with same slug', function () {
+    test('can update relationship with same slug', function (): void {
         $data = [
             'name' => 'Updated Name',
             'slug' => $this->relationship->slug, // Same slug should be allowed
@@ -208,7 +208,7 @@ describe('relationship CRUD operations', function () {
             ->assertSessionHas('success');
     });
 
-    test('can delete relationship', function () {
+    test('can delete relationship', function (): void {
         asUser($this->admin)->delete(route('relationships.destroy', $this->relationship))
             ->assertRedirect()
             ->assertSessionHas('success', 'Ryšio tipas tarp modelių ištrintas');
@@ -218,7 +218,7 @@ describe('relationship CRUD operations', function () {
         ]);
     });
 
-    test('deletion attempts to cascade to relationshipables', function () {
+    test('deletion attempts to cascade to relationshipables', function (): void {
         // Note: Controller has a bug where relationshipables deletion isn't executed properly
         // This test demonstrates the current behavior rather than the expected behavior
 
@@ -238,8 +238,8 @@ describe('relationship CRUD operations', function () {
     });
 });
 
-describe('model relationship operations', function () {
-    test('can store model relationship', function () {
+describe('model relationship operations', function (): void {
+    test('can store model relationship', function (): void {
         $data = [
             'model_id' => $this->institution->id,
             'model_type' => Institution::class,
@@ -258,7 +258,7 @@ describe('model relationship operations', function () {
         ]);
     });
 
-    test('can store type relationship with scope', function () {
+    test('can store type relationship with scope', function (): void {
         $data = [
             'model_id' => $this->type->id,
             'model_type' => Type::class,
@@ -278,7 +278,7 @@ describe('model relationship operations', function () {
         ]);
     });
 
-    test('scope defaults to within-tenant for type relationships', function () {
+    test('scope defaults to within-tenant for type relationships', function (): void {
         $data = [
             'model_id' => $this->type->id,
             'model_type' => Type::class,
@@ -297,7 +297,7 @@ describe('model relationship operations', function () {
         ]);
     });
 
-    test('can store model relationship with bidirectional = true', function () {
+    test('can store model relationship with bidirectional = true', function (): void {
         $data = [
             'model_id' => $this->institution->id,
             'model_type' => Institution::class,
@@ -317,7 +317,7 @@ describe('model relationship operations', function () {
         ]);
     });
 
-    test('can store model relationship with bidirectional = false', function () {
+    test('can store model relationship with bidirectional = false', function (): void {
         $data = [
             'model_id' => $this->institution->id,
             'model_type' => Institution::class,
@@ -337,7 +337,7 @@ describe('model relationship operations', function () {
         ]);
     });
 
-    test('bidirectional defaults to false when not provided', function () {
+    test('bidirectional defaults to false when not provided', function (): void {
         $data = [
             'model_id' => $this->institution->id,
             'model_type' => Institution::class,
@@ -357,7 +357,7 @@ describe('model relationship operations', function () {
         ]);
     });
 
-    test('cannot store model relationship with invalid scope', function () {
+    test('cannot store model relationship with invalid scope', function (): void {
         $data = [
             'model_id' => $this->type->id,
             'model_type' => Type::class,
@@ -369,7 +369,7 @@ describe('model relationship operations', function () {
             ->assertSessionHasErrors(['scope']);
     });
 
-    test('cannot store model relationship with invalid data', function () {
+    test('cannot store model relationship with invalid data', function (): void {
         $data = [
             'model_id' => '',
             'model_type' => '',
@@ -380,7 +380,7 @@ describe('model relationship operations', function () {
             ->assertSessionHasErrors(['model_id', 'model_type', 'related_model_id']);
     });
 
-    test('relationshipable model can be deleted', function () {
+    test('relationshipable model can be deleted', function (): void {
         // Test the basic model deletion functionality
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
@@ -405,7 +405,7 @@ describe('model relationship operations', function () {
         ]);
     });
 
-    test('relationshipable model can be updated', function () {
+    test('relationshipable model can be updated', function (): void {
         // Create a relationshipable first
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
@@ -427,7 +427,7 @@ describe('model relationship operations', function () {
         ]);
     });
 
-    test('relationshipable scope can be updated for type-based relationships', function () {
+    test('relationshipable scope can be updated for type-based relationships', function (): void {
         // Create a type-based relationshipable
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
@@ -453,8 +453,8 @@ describe('model relationship operations', function () {
     });
 });
 
-describe('relationship data handling', function () {
-    test('index page loads relationships with pagination', function () {
+describe('relationship data handling', function (): void {
+    test('index page loads relationships with pagination', function (): void {
         // Create additional relationships to test pagination
         for ($i = 0; $i < 25; $i++) {
             $relationship = new Relationship([
@@ -473,12 +473,12 @@ describe('relationship data handling', function () {
         );
     });
 
-    test('show page displays relationship correctly', function () {
+    test('show page displays relationship correctly', function (): void {
         // Note: ShowRelationship component doesn't exist, so we just test the response
         asUser($this->admin)->get(route('relationships.show', $this->relationship))->assertStatus(200);
     });
 
-    test('edit page loads relationship with related models', function () {
+    test('edit page loads relationship with related models', function (): void {
         $response = asUser($this->admin)->get(route('relationships.edit', $this->relationship))->assertStatus(200);
 
         $response->assertInertia(fn (Assert $page) => $page
@@ -489,7 +489,7 @@ describe('relationship data handling', function () {
         );
     });
 
-    test('edit page with model type loads specific models', function () {
+    test('edit page with model type loads specific models', function (): void {
         $modelType = urlencode(Institution::class);
 
         $response = asUser($this->admin)->get(route('relationships.edit', $this->relationship)."?modelType={$modelType}")
@@ -502,7 +502,7 @@ describe('relationship data handling', function () {
         );
     });
 
-    test('edit page handles invalid model type gracefully', function () {
+    test('edit page handles invalid model type gracefully', function (): void {
         $invalidModelType = urlencode('NonExistentClass');
 
         $response = asUser($this->admin)->get(route('relationships.edit', $this->relationship)."?modelType={$invalidModelType}")
@@ -516,8 +516,8 @@ describe('relationship data handling', function () {
     });
 });
 
-describe('relationship eager loading', function () {
-    test('edit page loads relationship with all necessary relations', function () {
+describe('relationship eager loading', function (): void {
+    test('edit page loads relationship with all necessary relations', function (): void {
         // Create relationshipables for the relationship
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
@@ -538,8 +538,8 @@ describe('relationship eager loading', function () {
     });
 });
 
-describe('validation edge cases', function () {
-    test('slug validation handles special characters', function () {
+describe('validation edge cases', function (): void {
+    test('slug validation handles special characters', function (): void {
         $data = [
             'name' => 'Test Relationship',
             'slug' => 'test-relationship-with-special!@#$%characters',
@@ -552,7 +552,7 @@ describe('validation edge cases', function () {
         expect($response->status())->toBeIn([200, 302]); // Either success or redirect
     });
 
-    test('handles very long names and descriptions', function () {
+    test('handles very long names and descriptions', function (): void {
         $longString = str_repeat('a', 1000);
 
         $data = [
@@ -567,7 +567,7 @@ describe('validation edge cases', function () {
         expect($response->status())->toBeIn([200, 302, 422]);
     });
 
-    test('handles null description correctly', function () {
+    test('handles null description correctly', function (): void {
         $data = [
             'name' => 'Test Relationship',
             'slug' => 'test-relationship-null-desc',
@@ -586,15 +586,15 @@ describe('validation edge cases', function () {
     });
 });
 
-describe('security and authorization', function () {
-    test('relationship routes require authentication', function () {
+describe('security and authorization', function (): void {
+    test('relationship routes require authentication', function (): void {
         $this->get(route('relationships.index'))->assertRedirect();
         $this->get(route('relationships.create'))->assertRedirect();
         $this->get(route('relationships.show', $this->relationship))->assertRedirect();
         $this->get(route('relationships.edit', $this->relationship))->assertRedirect();
     });
 
-    test('store operations require authentication', function () {
+    test('store operations require authentication', function (): void {
         $data = getControllerTestData('Relationship')['valid'];
 
         $this->post(route('relationships.store'), $data)->assertRedirect();
@@ -602,7 +602,7 @@ describe('security and authorization', function () {
         $this->delete(route('relationships.destroy', $this->relationship))->assertRedirect();
     });
 
-    test('model relationship operations require authentication', function () {
+    test('model relationship operations require authentication', function (): void {
         $data = [
             'model_id' => $this->institution->id,
             'model_type' => Institution::class,

@@ -17,6 +17,7 @@ class UpdateInstitutionRequest extends InstitutionRequest
     /**
      * Get the validation rules that apply to the request.
      */
+    #[\Override]
     public function rules(): array
     {
         return array_merge(parent::rules(), [

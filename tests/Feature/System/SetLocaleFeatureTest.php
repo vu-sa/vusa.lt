@@ -2,9 +2,9 @@
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-test('handles malicious lang parameter in real request', function () {
+test('handles malicious lang parameter in real request', function (): void {
     $maliciousInput = "'nvOpzp; AND 1=1 OR (<'\">iKO)),";
 
     $response = $this->get('/news/test?lang='.urlencode($maliciousInput));
@@ -17,15 +17,15 @@ test('handles malicious lang parameter in real request', function () {
     expect(session()->get('lang'))->toBeNull();
 });
 
-test('sets valid locale from parameter', function () {
+test('sets valid locale from parameter', function (): void {
     $response = $this->get('/news/test?lang=en');
 
     $response->assertRedirect('/en/news/test');
-    expect(app()->getLocale())->toBe('en');
-    expect(session()->get('lang'))->toBe('en');
+    expect(app()->getLocale())->toBe('en')
+        ->and(session()->get('lang'))->toBe('en');
 });
 
-test('preserves query parameters during redirect', function () {
+test('preserves query parameters during redirect', function (): void {
     $response = $this->get('/news/test?lang=en&page=2&search=query');
 
     // Should redirect and preserve other parameters
@@ -33,7 +33,7 @@ test('preserves query parameters during redirect', function () {
     expect($response->headers->get('Location'))->toContain('/en/news/test');
 });
 
-test('handles multiple injection attempts', function () {
+test('handles multiple injection attempts', function (): void {
     $injectionAttempts = [
         "'; DROP TABLE users; --",
         "<script>alert('xss')</script>",
@@ -57,7 +57,7 @@ test('handles multiple injection attempts', function () {
     }
 });
 
-test('bypasses middleware for admin routes', function () {
+test('bypasses middleware for admin routes', function (): void {
     // Assuming there's a route that would normally cause a redirect
     // but should be bypassed for admin routes
     $adminRoutes = [
@@ -77,7 +77,7 @@ test('bypasses middleware for admin routes', function () {
     }
 });
 
-test('handles edge cases gracefully', function () {
+test('handles edge cases gracefully', function (): void {
     $edgeCases = [
         '/news/test?lang=',  // Empty string
         '/news/test?lang[]',  // Array parameter

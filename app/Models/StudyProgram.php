@@ -6,6 +6,7 @@ use App\Contracts\GuardsForceDelete;
 use App\Models\Pivots\Dutiable;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasTranslations;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -43,17 +44,16 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
+#[Fillable([
+    'name',
+    'degree',
+    'tenant_id',
+])]
 class StudyProgram extends Model implements GuardsForceDelete
 {
     use GuardsForceDeleteWhenReferenced, HasFactory, HasTranslations, HasUlids, SoftDeletes;
 
     public $translatable = ['name'];
-
-    protected $fillable = [
-        'name',
-        'degree',
-        'tenant_id',
-    ];
 
     public function tenant(): BelongsTo
     {

@@ -13,7 +13,7 @@ class FilePolicy extends ModelPolicy
     public function __construct(ModelAuthorizer $authorizer)
     {
         parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::FILE()->label);
+        $this->pluralModelName = Str::plural(ModelEnum::FILE->label());
     }
 
     /**

@@ -10,15 +10,10 @@ use App\Models\Meeting;
  */
 class MeetingCreatedNotification extends BaseNotification
 {
-    protected Meeting $meeting;
-
     /**
      * Create a new notification instance.
      */
-    public function __construct(Meeting $meeting)
-    {
-        $this->meeting = $meeting;
-    }
+    public function __construct(protected Meeting $meeting) {}
 
     public function category(): NotificationCategory
     {
@@ -46,6 +41,7 @@ class MeetingCreatedNotification extends BaseNotification
         return route('meetings.show', $this->meeting->id);
     }
 
+    #[\Override]
     public function icon(): string
     {
         return '🗓️';
@@ -66,6 +62,7 @@ class MeetingCreatedNotification extends BaseNotification
         ];
     }
 
+    #[\Override]
     public function actions(): array
     {
         return [

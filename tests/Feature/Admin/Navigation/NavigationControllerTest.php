@@ -5,9 +5,9 @@ use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
     $this->admin = makeTenantUserWithRole('Global Communication Coordinator', $this->tenant);
@@ -19,8 +19,8 @@ beforeEach(function () {
     ]);
 });
 
-describe('cache functionality', function () {
-    test('navigation cache is cleared when column is updated', function () {
+describe('cache functionality', function (): void {
+    test('navigation cache is cleared when column is updated', function (): void {
         asUser($this->admin)
             ->post(route('navigation.updateColumn'), [
                 'id' => $this->navigation->id,
@@ -33,7 +33,7 @@ describe('cache functionality', function () {
         expect($this->navigation->extra_attributes['column'])->toBe(2);
     });
 
-    test('navigation cache is cleared when navigation is saved', function () {
+    test('navigation cache is cleared when navigation is saved', function (): void {
         $updateData = getControllerTestData('Navigation')['valid'];
         $updateData['name'] = 'Updated for cache test';
 
@@ -48,7 +48,7 @@ describe('cache functionality', function () {
         ]);
     });
 
-    test('navigation cache is cleared when navigation is created', function () {
+    test('navigation cache is cleared when navigation is created', function (): void {
         $validData = getControllerTestData('Navigation')['valid'];
         $validData['name'] = 'Cache test navigation';
 
@@ -63,7 +63,7 @@ describe('cache functionality', function () {
     });
 });
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->navigation = Navigation::factory()->create([
         'name' => 'Test Navigation',
         'url' => '/test-nav',
@@ -73,20 +73,20 @@ beforeEach(function () {
     ]);
 });
 
-describe('unauthorized access', function () {
-    test('cannot access index page', function () {
+describe('unauthorized access', function (): void {
+    test('cannot access index page', function (): void {
         asUser($this->user)
             ->get(route('navigation.index'))
             ->assertStatus(403);
     });
 
-    test('cannot access create page', function () {
+    test('cannot access create page', function (): void {
         asUser($this->user)
             ->get(route('navigation.create'))
             ->assertStatus(403);
     });
 
-    test('cannot store navigation', function () {
+    test('cannot store navigation', function (): void {
         $validData = getControllerTestData('Navigation')['valid'];
 
         asUser($this->user)
@@ -94,13 +94,13 @@ describe('unauthorized access', function () {
             ->assertStatus(403);
     });
 
-    test('cannot access edit page', function () {
+    test('cannot access edit page', function (): void {
         asUser($this->user)
             ->get(route('navigation.edit', $this->navigation))
             ->assertStatus(403);
     });
 
-    test('cannot update navigation', function () {
+    test('cannot update navigation', function (): void {
         $updateData = getControllerTestData('Navigation')['valid'];
 
         asUser($this->user)
@@ -108,13 +108,13 @@ describe('unauthorized access', function () {
             ->assertStatus(403);
     });
 
-    test('cannot delete navigation', function () {
+    test('cannot delete navigation', function (): void {
         asUser($this->user)
             ->delete(route('navigation.destroy', $this->navigation))
             ->assertStatus(403);
     });
 
-    test('cannot update navigation column', function () {
+    test('cannot update navigation column', function (): void {
         asUser($this->user)
             ->post(route('navigation.updateColumn'), [
                 'id' => $this->navigation->id,
@@ -123,7 +123,7 @@ describe('unauthorized access', function () {
             ->assertStatus(403);
     });
 
-    test('cannot update navigation order', function () {
+    test('cannot update navigation order', function (): void {
         asUser($this->user)
             ->post(route('navigation.updateOrder'), [
                 'navigation' => [
@@ -134,8 +134,8 @@ describe('unauthorized access', function () {
     });
 });
 
-describe('authorized access', function () {
-    test('can access index page', function () {
+describe('authorized access', function (): void {
+    test('can access index page', function (): void {
         asUser($this->admin)
             ->get(route('navigation.index'))
             ->assertStatus(200)
@@ -146,7 +146,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('can access create page', function () {
+    test('can access create page', function (): void {
         asUser($this->admin)
             ->get(route('navigation.create'))
             ->assertStatus(200)
@@ -158,7 +158,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('can access create page with parent_id', function () {
+    test('can access create page with parent_id', function (): void {
         asUser($this->admin)
             ->get(route('navigation.create', ['parent_id' => $this->navigation->id]))
             ->assertStatus(200)
@@ -170,7 +170,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('can store navigation with valid data', function () {
+    test('can store navigation with valid data', function (): void {
         $validData = getControllerTestData('Navigation')['valid'];
         $uniqueSuffix = time();
         $validData['name'] = 'New Navigation '.$uniqueSuffix;
@@ -190,7 +190,7 @@ describe('authorized access', function () {
         ]);
     });
 
-    test('navigation is created with correct order', function () {
+    test('navigation is created with correct order', function (): void {
         // Create another navigation with the same parent
         Navigation::factory()->create([
             'parent_id' => 0,
@@ -209,7 +209,7 @@ describe('authorized access', function () {
         expect($navigation->order)->toBe(6); // Should be max(5) + 1
     });
 
-    test('child navigation inherits parent language', function () {
+    test('child navigation inherits parent language', function (): void {
         $parentNav = Navigation::factory()->create([
             'lang' => 'en',
             'parent_id' => 0,
@@ -230,7 +230,7 @@ describe('authorized access', function () {
         ]);
     });
 
-    test('can access edit page', function () {
+    test('can access edit page', function (): void {
         asUser($this->admin)
             ->get(route('navigation.edit', $this->navigation))
             ->assertStatus(200)
@@ -242,7 +242,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('can update navigation with valid data', function () {
+    test('can update navigation with valid data', function (): void {
         $updateData = getControllerTestData('Navigation')['valid'];
         $updateData['name'] = 'Updated Navigation';
         $updateData['url'] = '/updated-nav';
@@ -259,7 +259,7 @@ describe('authorized access', function () {
         ]);
     });
 
-    test('can delete navigation', function () {
+    test('can delete navigation', function (): void {
         asUser($this->admin)
             ->delete(route('navigation.destroy', $this->navigation))
             ->assertStatus(302)
@@ -271,7 +271,7 @@ describe('authorized access', function () {
         ]);
     });
 
-    test('show deleted index returns only trashed navigation records', function () {
+    test('show deleted index returns only trashed navigation records', function (): void {
         $trashedChild = Navigation::factory()->create([
             'name' => 'Deleted Child Navigation',
             'url' => '/deleted-child',
@@ -298,7 +298,7 @@ describe('authorized access', function () {
             ->and($ids)->not->toContain($this->navigation->id);
     });
 
-    test('deleted count only includes records for the current language', function () {
+    test('deleted count only includes records for the current language', function (): void {
         $deletedLithuanianNavigation = Navigation::factory()->create(['lang' => 'lt']);
         $deletedLithuanianNavigation->delete();
 
@@ -311,7 +311,7 @@ describe('authorized access', function () {
             ->assertInertia(fn (Assert $page) => $page->where('deletedCount', 1));
     });
 
-    test('can store divider navigation without name', function () {
+    test('can store divider navigation without name', function (): void {
         asUser($this->admin)
             ->post(route('navigation.store'), [
                 'name' => null,
@@ -329,7 +329,7 @@ describe('authorized access', function () {
         ]);
     });
 
-    test('null parent_id is coerced to zero', function () {
+    test('null parent_id is coerced to zero', function (): void {
         asUser($this->admin)
             ->post(route('navigation.store'), [
                 'name' => 'Root from null parent',
@@ -348,7 +348,7 @@ describe('authorized access', function () {
         ]);
     });
 
-    test('non-divider navigation requires name', function () {
+    test('non-divider navigation requires name', function (): void {
         asUser($this->admin)
             ->post(route('navigation.store'), [
                 'name' => '',
@@ -362,8 +362,8 @@ describe('authorized access', function () {
     });
 });
 
-describe('navigation ordering functionality', function () {
-    beforeEach(function () {
+describe('navigation ordering functionality', function (): void {
+    beforeEach(function (): void {
         // Create a navigation structure for testing
         $this->parentNav = Navigation::factory()->create([
             'name' => 'Parent Navigation',
@@ -384,7 +384,7 @@ describe('navigation ordering functionality', function () {
         ]);
     });
 
-    test('can update navigation order', function () {
+    test('can update navigation order', function (): void {
         $orderData = [
             'navigation' => [
                 [
@@ -410,7 +410,7 @@ describe('navigation ordering functionality', function () {
         expect($child2->order)->toBeLessThan($child1->order);
     });
 
-    test('can update navigation column', function () {
+    test('can update navigation column', function (): void {
         // Set initial column attribute
         $this->navigation->extra_attributes = ['column' => 2];
         $this->navigation->save();
@@ -439,7 +439,7 @@ describe('navigation ordering functionality', function () {
         expect($this->navigation->extra_attributes['column'])->toBe(2);
     });
 
-    test('navigation column is constrained between 1 and 3', function () {
+    test('navigation column is constrained between 1 and 3', function (): void {
         // Test lower bound
         $this->navigation->extra_attributes = ['column' => 1];
         $this->navigation->save();
@@ -469,7 +469,7 @@ describe('navigation ordering functionality', function () {
         expect($this->navigation->extra_attributes['column'])->toBe(3); // Should stay at 3
     });
 
-    test('navigation without column defaults to 1', function () {
+    test('navigation without column defaults to 1', function (): void {
         // Navigation without extra_attributes
         $navWithoutColumn = Navigation::factory()->create([
             'extra_attributes' => [],

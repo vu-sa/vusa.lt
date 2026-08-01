@@ -1,3 +1,5 @@
+import { camelCase } from 'lodash-es';
+
 import { ModelEnum } from './Types/enums';
 
 import { pluralizeModels } from '@/Utils/String';
@@ -80,5 +82,5 @@ const uiModels: (keyof typeof ModelEnum)[] = [
 export default uiModels.map(modelKey => ({
   title: modelTitles[modelKey],
   icon: getModelIcon(modelKey), // Uses regular variant by default
-  key: pluralizeModels(ModelEnum[modelKey]),
+  key: pluralizeModels(camelCase(ModelEnum[modelKey])),
 }));

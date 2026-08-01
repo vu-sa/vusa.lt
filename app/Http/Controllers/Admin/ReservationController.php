@@ -73,7 +73,7 @@ class ReservationController extends AdminController
             'sorting' => $request->getSorting(),
             'showDeleted' => $request->boolean('showDeleted', false),
             'deletedCount' => $deletedCount,
-            'activeReservations' => Reservation::whereHas('resources', function ($query) use ($allowedTenantIds) {
+            'activeReservations' => Reservation::whereHas('resources', function ($query) use ($allowedTenantIds): void {
                 $query->whereIn('resources.tenant_id', $allowedTenantIds);
             })->with(['resources.tenant', 'users'])->get(),
         ]);

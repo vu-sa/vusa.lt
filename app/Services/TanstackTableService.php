@@ -139,7 +139,7 @@ class TanstackTableService
             return $query;
         }
 
-        return $query->where(function (Builder $q) use ($searchText, $searchableColumns) {
+        return $query->where(function (Builder $q) use ($searchText, $searchableColumns): void {
             foreach ($searchableColumns as $column) {
                 if (Str::contains($column, '.')) {
                     // Handle relationship columns
@@ -147,7 +147,7 @@ class TanstackTableService
                     $relation = $parts[0];
                     $relatedColumn = $parts[1];
 
-                    $q->orWhereHas($relation, function (Builder $subQ) use ($relatedColumn, $searchText) {
+                    $q->orWhereHas($relation, function (Builder $subQ) use ($relatedColumn, $searchText): void {
                         $this->applyColumnSearch($subQ, $relatedColumn, $searchText);
                     });
                 } else {
@@ -168,7 +168,7 @@ class TanstackTableService
         // Check if this is a translatable field
         if (method_exists($model, 'isTranslatableAttribute') && $model->isTranslatableAttribute($column)) {
             // Handle translatable (JSON) columns - search both lt and en
-            $query->where(function (Builder $q) use ($column, $searchText) {
+            $query->where(function (Builder $q) use ($column, $searchText): void {
                 $this->applyJsonSearch($q, $column, $searchText, 'lt');
                 $this->applyJsonSearch($q, $column, $searchText, 'en', 'or');
             }, null, null, $boolean);
@@ -218,7 +218,7 @@ class TanstackTableService
             return $query;
         }
 
-        return $query->whereHas($tenantRelation, function (Builder $q) use ($tenantRelation, $permission, $authorizer) {
+        return $query->whereHas($tenantRelation, function (Builder $q) use ($tenantRelation, $permission, $authorizer): void {
             $columnName = $tenantRelation === 'tenants' ? 'tenants.id' : 'id';
             $q->whereIn($columnName, $authorizer->getTenants($permission)->pluck('id'));
         });
@@ -302,7 +302,7 @@ class TanstackTableService
     ): Builder {
         // Only apply if not all scope and not super admin
         if (! $authorizer->isAllScope && ! auth()->user()?->isSuperAdmin()) {
-            return $query->whereHas($tenantRelation, function (Builder $q) use ($tenantRelation, $permission, $authorizer) {
+            return $query->whereHas($tenantRelation, function (Builder $q) use ($tenantRelation, $permission, $authorizer): void {
                 $columnName = $tenantRelation === 'tenants' ? 'tenants.id' : 'id';
                 $q->whereIn($columnName, $authorizer->getTenants($permission)->pluck('id'));
             });
@@ -332,7 +332,7 @@ class TanstackTableService
                 return;
             }
 
-            $query->whereHas($relation, function (Builder $q) use ($column, $value) {
+            $query->whereHas($relation, function (Builder $q) use ($column, $value): void {
                 if (is_array($value)) {
                     $q->whereIn($column, $value);
                 } elseif (is_string($value)) {

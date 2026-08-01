@@ -9,14 +9,14 @@ use App\Models\Type;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-describe('UpdateSharepointFolder Listener', function () {
-    beforeEach(function () {
+describe('UpdateSharepointFolder Listener', function (): void {
+    beforeEach(function (): void {
         $this->tenant = Tenant::factory()->create(['shortname' => 'test-tenant']);
     });
 
-    test('event is dispatched when existing Institution name changes', function () {
+    test('event is dispatched when existing Institution name changes', function (): void {
         // Create institution first (without faking events for creation)
         $institution = Institution::factory()->for($this->tenant)->create([
             'name' => ['lt' => 'Original Name', 'en' => 'Original Name EN'],
@@ -28,12 +28,10 @@ describe('UpdateSharepointFolder Listener', function () {
         $institution->name = ['lt' => 'New Name', 'en' => 'New Name EN'];
         $institution->save();
 
-        Event::assertDispatched(FileableNameUpdated::class, function ($event) use ($institution) {
-            return $event->fileable->is($institution);
-        });
+        Event::assertDispatched(FileableNameUpdated::class, fn ($event) => $event->fileable->is($institution));
     });
 
-    test('event is NOT dispatched when Institution name does not change', function () {
+    test('event is NOT dispatched when Institution name does not change', function (): void {
         // Create institution first (without faking events for creation)
         $institution = Institution::factory()->for($this->tenant)->create([
             'name' => ['lt' => 'Original Name', 'en' => 'Original Name EN'],
@@ -50,7 +48,7 @@ describe('UpdateSharepointFolder Listener', function () {
         Event::assertNotDispatched(FileableNameUpdated::class);
     });
 
-    test('listener skips new models that do not exist yet', function () {
+    test('listener skips new models that do not exist yet', function (): void {
         // Create a model but don't save it - simulates brand new creation
         $institution = Institution::factory()->for($this->tenant)->make([
             'name' => ['lt' => 'New Name', 'en' => 'New Name EN'],
@@ -68,7 +66,7 @@ describe('UpdateSharepointFolder Listener', function () {
         expect(true)->toBeTrue();
     });
 
-    test('listener skips processing in testing environment', function () {
+    test('listener skips processing in testing environment', function (): void {
         $institution = Institution::factory()->for($this->tenant)->create([
             'name' => ['lt' => 'Original Name', 'en' => 'Original Name EN'],
         ]);
@@ -85,7 +83,7 @@ describe('UpdateSharepointFolder Listener', function () {
         expect(true)->toBeTrue();
     });
 
-    test('listener skips when old and new names are the same', function () {
+    test('listener skips when old and new names are the same', function (): void {
         $institution = Institution::factory()->for($this->tenant)->create([
             'name' => ['lt' => 'Same Name', 'en' => 'Same Name EN'],
         ]);
@@ -102,7 +100,7 @@ describe('UpdateSharepointFolder Listener', function () {
         expect(true)->toBeTrue();
     });
 
-    test('event is dispatched during saving hook before database commit', function () {
+    test('event is dispatched during saving hook before database commit', function (): void {
         // Create institution first
         $institution = Institution::factory()->for($this->tenant)->create([
             'name' => ['lt' => 'Original Name', 'en' => 'Original Name EN'],
@@ -110,7 +108,7 @@ describe('UpdateSharepointFolder Listener', function () {
 
         $eventFiredBeforeCommit = false;
 
-        Event::listen(FileableNameUpdated::class, function ($event) use (&$eventFiredBeforeCommit) {
+        Event::listen(FileableNameUpdated::class, function ($event) use (&$eventFiredBeforeCommit): void {
             // At this point, the model should be dirty (saving hook fires before commit)
             $eventFiredBeforeCommit = $event->fileable->isDirty('name');
         });
@@ -122,8 +120,8 @@ describe('UpdateSharepointFolder Listener', function () {
     });
 });
 
-describe('Type SharePoint folder renaming', function () {
-    test('event is dispatched when existing Type title changes', function () {
+describe('Type SharePoint folder renaming', function (): void {
+    test('event is dispatched when existing Type title changes', function (): void {
         // Create type first (without faking events for creation)
         $type = Type::factory()->create([
             'title' => ['lt' => 'Originalus Pavadinimas', 'en' => 'Original Title'],
@@ -136,12 +134,10 @@ describe('Type SharePoint folder renaming', function () {
         $type->title = ['lt' => 'Naujas Pavadinimas', 'en' => 'New Title'];
         $type->save();
 
-        Event::assertDispatched(FileableNameUpdated::class, function ($event) use ($type) {
-            return $event->fileable->is($type);
-        });
+        Event::assertDispatched(FileableNameUpdated::class, fn ($event) => $event->fileable->is($type));
     });
 
-    test('event is NOT dispatched when Type title does not change', function () {
+    test('event is NOT dispatched when Type title does not change', function (): void {
         // Create type first (without faking events for creation)
         $type = Type::factory()->create([
             'title' => ['lt' => 'Originalus Pavadinimas', 'en' => 'Original Title'],
@@ -158,7 +154,7 @@ describe('Type SharePoint folder renaming', function () {
         Event::assertNotDispatched(FileableNameUpdated::class);
     });
 
-    test('listener skips when Type old and new titles are the same', function () {
+    test('listener skips when Type old and new titles are the same', function (): void {
         $type = Type::factory()->create([
             'title' => ['lt' => 'Same Title', 'en' => 'Same Title EN'],
             'model_type' => Institution::class,
@@ -177,13 +173,13 @@ describe('Type SharePoint folder renaming', function () {
     });
 });
 
-describe('Meeting SharePoint folder renaming', function () {
-    beforeEach(function () {
+describe('Meeting SharePoint folder renaming', function (): void {
+    beforeEach(function (): void {
         $this->tenant = Tenant::factory()->create(['shortname' => 'test-tenant']);
         $this->institution = Institution::factory()->for($this->tenant)->create();
     });
 
-    test('event is dispatched when existing Meeting start_time changes', function () {
+    test('event is dispatched when existing Meeting start_time changes', function (): void {
         // Create meeting first (without faking events for creation)
         $meeting = Meeting::factory()->create([
             'start_time' => '2025-10-27 15:00:00',
@@ -196,12 +192,10 @@ describe('Meeting SharePoint folder renaming', function () {
         $meeting->start_time = '2025-10-27 13:00:00';
         $meeting->save();
 
-        Event::assertDispatched(FileableNameUpdated::class, function ($event) use ($meeting) {
-            return $event->fileable->is($meeting);
-        });
+        Event::assertDispatched(FileableNameUpdated::class, fn ($event) => $event->fileable->is($meeting));
     });
 
-    test('event is NOT dispatched when Meeting start_time does not change', function () {
+    test('event is NOT dispatched when Meeting start_time does not change', function (): void {
         // Create meeting first (without faking events for creation)
         $meeting = Meeting::factory()->create([
             'start_time' => '2025-10-27 15:00:00',
@@ -218,7 +212,7 @@ describe('Meeting SharePoint folder renaming', function () {
         Event::assertNotDispatched(FileableNameUpdated::class);
     });
 
-    test('listener correctly formats Meeting folder name from datetime', function () {
+    test('listener correctly formats Meeting folder name from datetime', function (): void {
         $meeting = Meeting::factory()->create([
             'start_time' => '2025-10-27 15:00:00',
         ]);

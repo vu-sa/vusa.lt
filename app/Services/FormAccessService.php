@@ -12,9 +12,9 @@ use Illuminate\Support\Collection;
 class FormAccessService
 {
     public function __construct(
-        private ModelAuthorizer $authorizer,
-        private FormSettings $formSettings,
-        private AtstovavimasSettings $atstovavimasSettings,
+        private readonly ModelAuthorizer $authorizer,
+        private readonly FormSettings $formSettings,
+        private readonly AtstovavimasSettings $atstovavimasSettings,
     ) {}
 
     public function canViewAny(User $user): bool
@@ -81,7 +81,7 @@ class FormAccessService
         $tenantIds = $this->visibleTenantIds($user);
         $specialFormIds = $this->viewableSpecialFormIds($user);
 
-        return $query->where(function (Builder $visibleQuery) use ($tenantIds, $specialFormIds) {
+        return $query->where(function (Builder $visibleQuery) use ($tenantIds, $specialFormIds): void {
             if ($tenantIds->isNotEmpty()) {
                 $visibleQuery->whereIn('tenant_id', $tenantIds);
             }

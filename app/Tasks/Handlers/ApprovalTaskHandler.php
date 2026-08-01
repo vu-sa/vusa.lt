@@ -19,6 +19,7 @@ class ApprovalTaskHandler extends BaseTaskHandler
     /**
      * Create an approval task.
      */
+    #[\Override]
     public function create(CreateTaskData $data): Task
     {
         // Ensure action type is set to Approval
@@ -51,11 +52,11 @@ class ApprovalTaskHandler extends BaseTaskHandler
             ->with('users')
             ->where('action_type', ActionType::Approval)
             ->whereNull('completed_at')
-            ->where(function ($query) use ($model, $morphClass, $snakeCaseClass) {
-                $query->where(function ($q) use ($model, $morphClass) {
+            ->where(function ($query) use ($model, $morphClass, $snakeCaseClass): void {
+                $query->where(function ($q) use ($model, $morphClass): void {
                     $q->where('taskable_type', $morphClass)
                         ->where('taskable_id', $model->getKey());
-                })->orWhere(function ($q) use ($model, $snakeCaseClass) {
+                })->orWhere(function ($q) use ($model, $snakeCaseClass): void {
                     $q->where('taskable_type', $snakeCaseClass)
                         ->where('taskable_id', $model->getKey());
                 });

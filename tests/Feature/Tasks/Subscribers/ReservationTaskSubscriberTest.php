@@ -22,16 +22,16 @@ use App\Tasks\Subscribers\ReservationTaskSubscriber;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     Notification::fake();
     config(['queue.default' => 'sync']);
 });
 
-describe('ReservationTaskSubscriber', function () {
-    describe('pickup task creation', function () {
-        test('creates pickup task when resource transitions to Reserved state', function () {
+describe('ReservationTaskSubscriber', function (): void {
+    describe('pickup task creation', function (): void {
+        test('creates pickup task when resource transitions to Reserved state', function (): void {
             $tenant = Tenant::query()->first()
                 ?? Tenant::factory()->create();
 
@@ -73,7 +73,7 @@ describe('ReservationTaskSubscriber', function () {
                 ->and($pickupTask->completed_at)->toBeNull();
         });
 
-        test('does not create duplicate pickup task for same reservation', function () {
+        test('does not create duplicate pickup task for same reservation', function (): void {
             $tenant = Tenant::query()->first()
                 ?? Tenant::factory()->create();
 
@@ -134,8 +134,8 @@ describe('ReservationTaskSubscriber', function () {
         });
     });
 
-    describe('pickup task progress', function () {
-        test('auto-completes pickup task when resource transitions to Lent', function () {
+    describe('pickup task progress', function (): void {
+        test('auto-completes pickup task when resource transitions to Lent', function (): void {
             $tenant = Tenant::query()->first()
                 ?? Tenant::factory()->create();
 
@@ -186,8 +186,8 @@ describe('ReservationTaskSubscriber', function () {
         });
     });
 
-    describe('return task creation', function () {
-        test('creates return task when resource transitions to Lent state', function () {
+    describe('return task creation', function (): void {
+        test('creates return task when resource transitions to Lent state', function (): void {
             $tenant = Tenant::query()->first()
                 ?? Tenant::factory()->create();
 
@@ -229,8 +229,8 @@ describe('ReservationTaskSubscriber', function () {
         });
     });
 
-    describe('return task progress', function () {
-        test('auto-completes return task when resource transitions through full flow', function () {
+    describe('return task progress', function (): void {
+        test('auto-completes return task when resource transitions through full flow', function (): void {
             $tenant = Tenant::query()->first()
                 ?? Tenant::factory()->create();
 

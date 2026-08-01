@@ -6,6 +6,7 @@ use App\Contracts\GuardsForceDelete;
 use App\Models\Pivots\Trainable;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasTranslations;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -60,26 +61,27 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
+#[Fillable([
+    'name',
+    'description',
+    'institution_id',
+    'start_time',
+    'address',
+    'end_time',
+    'meeting_url',
+    'image',
+    'max_participants',
+])]
 class Training extends Model implements GuardsForceDelete
 {
     use GuardsForceDeleteWhenReferenced, HasFactory, HasRelationships, HasTranslations, HasUlids, LogsActivity, Searchable, SoftDeletes;
 
+    #[\Override]
     public $table = 'trainings';
-
-    protected $fillable = [
-        'name',
-        'description',
-        'institution_id',
-        'start_time',
-        'address',
-        'end_time',
-        'meeting_url',
-        'image',
-        'max_participants',
-    ];
 
     public $translatable = ['name', 'description'];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

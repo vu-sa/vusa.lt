@@ -36,15 +36,15 @@ class StudyProgramFactory extends Factory
         ];
 
         // Use DegreeEnum for consistent degree values
-        $degree = $this->faker->randomElement(DegreeEnum::toValues());
+        $degree = $this->faker->randomElement(DegreeEnum::values());
 
         $degreeTranslations = [
-            DegreeEnum::BA()->value => 'bakalauras',
-            DegreeEnum::MA()->value => 'magistras',
-            DegreeEnum::PHD()->value => 'daktaras',
-            DegreeEnum::INTEGRATED_STUDIES()->value => 'vientisųjų studijų',
-            DegreeEnum::PROFESSIONAL_PEDAGOGY()->value => 'profesinės pedagogikos',
-            DegreeEnum::OTHER()->value => 'kitas',
+            DegreeEnum::BA->value => 'bakalauras',
+            DegreeEnum::MA->value => 'magistras',
+            DegreeEnum::PHD->value => 'daktaras',
+            DegreeEnum::INTEGRATED_STUDIES->value => 'vientisųjų studijų',
+            DegreeEnum::PROFESSIONAL_PEDAGOGY->value => 'profesinės pedagogikos',
+            DegreeEnum::OTHER->value => 'kitas',
         ];
 
         $programName = $this->faker->randomElement($programNames);
@@ -63,12 +63,12 @@ class StudyProgramFactory extends Factory
     public function withDegree(string $degree)
     {
         $degreeTranslations = [
-            DegreeEnum::BA()->value => 'bakalauras',
-            DegreeEnum::MA()->value => 'magistras',
-            DegreeEnum::PHD()->value => 'daktaras',
-            DegreeEnum::INTEGRATED_STUDIES()->value => 'vientisųjų studijų',
-            DegreeEnum::PROFESSIONAL_PEDAGOGY()->value => 'profesinės pedagogikos',
-            DegreeEnum::OTHER()->value => 'kitas',
+            DegreeEnum::BA->value => 'bakalauras',
+            DegreeEnum::MA->value => 'magistras',
+            DegreeEnum::PHD->value => 'daktaras',
+            DegreeEnum::INTEGRATED_STUDIES->value => 'vientisųjų studijų',
+            DegreeEnum::PROFESSIONAL_PEDAGOGY->value => 'profesinės pedagogikos',
+            DegreeEnum::OTHER->value => 'kitas',
         ];
 
         return $this->state(function (array $attributes) use ($degree, $degreeTranslations) {

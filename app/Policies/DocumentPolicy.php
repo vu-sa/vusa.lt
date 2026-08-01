@@ -18,6 +18,7 @@ class DocumentPolicy extends ModelPolicy
     /**
      * These models belong to a single tenant through a `tenant` relation.
      */
+    #[\Override]
     protected bool $hasManyTenants = false;
 
     /**
@@ -26,7 +27,7 @@ class DocumentPolicy extends ModelPolicy
     public function __construct(ModelAuthorizer $authorizer)
     {
         parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::DOCUMENT()->label);
+        $this->pluralModelName = Str::plural(ModelEnum::DOCUMENT->label());
     }
 
     /**
@@ -37,9 +38,10 @@ class DocumentPolicy extends ModelPolicy
      * @param  Model  $model  The model being accessed
      * @return bool Whether access is permitted
      */
+    #[\Override]
     public function view(User $user, Model $model): bool
     {
-        return $this->commonChecker($user, $model, CRUDEnum::READ()->label, $this->pluralModelName, false);
+        return $this->commonChecker($user, $model, CRUDEnum::READ->label(), $this->pluralModelName, false);
     }
 
     /**
@@ -50,9 +52,10 @@ class DocumentPolicy extends ModelPolicy
      * @param  Model  $model  The model being updated
      * @return bool Whether update is permitted
      */
+    #[\Override]
     public function update(User $user, Model $model): bool
     {
-        return $this->commonChecker($user, $model, CRUDEnum::UPDATE()->label, $this->pluralModelName, false);
+        return $this->commonChecker($user, $model, CRUDEnum::UPDATE->label(), $this->pluralModelName, false);
     }
 
     /**
@@ -63,8 +66,9 @@ class DocumentPolicy extends ModelPolicy
      * @param  Model  $model  The model being deleted
      * @return bool Whether deletion is permitted
      */
+    #[\Override]
     public function delete(User $user, Model $model): bool
     {
-        return $this->commonChecker($user, $model, CRUDEnum::DELETE()->label, $this->pluralModelName, false);
+        return $this->commonChecker($user, $model, CRUDEnum::DELETE->label(), $this->pluralModelName, false);
     }
 }

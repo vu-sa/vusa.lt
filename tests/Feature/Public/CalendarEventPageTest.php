@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::firstOrCreate(
         ['alias' => 'vusa'],
         [
@@ -34,7 +34,7 @@ function calendarEventUrl(Calendar $calendar): string
     ]);
 }
 
-test('the page passes geocoded coordinates for the event location', function () {
+test('the page passes geocoded coordinates for the event location', function (): void {
     Http::fake([
         'nominatim.openstreetmap.org/*' => Http::response([
             ['lat' => '54.6871', 'lon' => '25.2797', 'display_name' => 'Vilnius'],
@@ -57,7 +57,7 @@ test('the page passes geocoded coordinates for the event location', function () 
         );
 });
 
-test('eventLocation is null when the location cannot be geocoded', function () {
+test('eventLocation is null when the location cannot be geocoded', function (): void {
     Http::fake(['nominatim.openstreetmap.org/*' => Http::response([])]);
 
     $event = Calendar::factory()->create([
@@ -70,7 +70,7 @@ test('eventLocation is null when the location cannot be geocoded', function () {
         ->assertInertia(fn (Assert $page) => $page->where('eventLocation', null));
 });
 
-test('the category is eager loaded so the hero can label the event', function () {
+test('the category is eager loaded so the hero can label the event', function (): void {
     Http::fake(['nominatim.openstreetmap.org/*' => Http::response([])]);
 
     $category = Category::factory()->create([
@@ -88,7 +88,7 @@ test('the category is eager loaded so the hero can label the event', function ()
         ->assertInertia(fn (Assert $page) => $page->where('event.category.name', 'Konferencija'));
 });
 
-test('the registration URL reaches the page as cto_url', function () {
+test('the registration URL reaches the page as cto_url', function (): void {
     Http::fake(['nominatim.openstreetmap.org/*' => Http::response([])]);
 
     $event = Calendar::factory()->create([

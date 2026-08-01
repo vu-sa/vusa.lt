@@ -14,36 +14,40 @@ class StudySetPolicy extends ModelPolicy
     /**
      * These models belong to a single tenant through a `tenant` relation.
      */
+    #[\Override]
     protected bool $hasManyTenants = false;
 
     public function __construct(ModelAuthorizer $authorizer)
     {
         parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::STUDY_SET()->label);
+        $this->pluralModelName = Str::plural(ModelEnum::STUDY_SET->label());
     }
 
     /**
      * Determine whether the user can view the model.
      * Study sets belong to a single tenant, so we use hasManyTenants=false
      */
+    #[\Override]
     public function view(User $user, Model $studySet): bool
     {
-        return $this->commonChecker($user, $studySet, CRUDEnum::READ()->label, null, false);
+        return $this->commonChecker($user, $studySet, CRUDEnum::READ->label(), null, false);
     }
 
     /**
      * Determine whether the user can update the model.
      */
+    #[\Override]
     public function update(User $user, Model $studySet): bool
     {
-        return $this->commonChecker($user, $studySet, CRUDEnum::UPDATE()->label, null, false);
+        return $this->commonChecker($user, $studySet, CRUDEnum::UPDATE->label(), null, false);
     }
 
     /**
      * Determine whether the user can delete the model.
      */
+    #[\Override]
     public function delete(User $user, Model $studySet): bool
     {
-        return $this->commonChecker($user, $studySet, CRUDEnum::DELETE()->label, null, false);
+        return $this->commonChecker($user, $studySet, CRUDEnum::DELETE->label(), null, false);
     }
 }

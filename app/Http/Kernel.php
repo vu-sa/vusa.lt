@@ -44,6 +44,7 @@ class Kernel extends HttpKernel
      *
      * @var array<int, string>
      */
+    #[\Override]
     protected $middleware = [
         StagingBasicAuth::class,
         BlockRobotsOnStagingDomains::class,
@@ -63,6 +64,7 @@ class Kernel extends HttpKernel
      *
      * @var string[]
      */
+    #[\Override]
     protected $middlewarePriority = [
         SetLocale::class,
         // getting navigation
@@ -74,6 +76,7 @@ class Kernel extends HttpKernel
      *
      * @var array<string, array<int, string>>
      */
+    #[\Override]
     protected $middlewareGroups = [
         'web' => [
             EncryptCookies::class,
@@ -109,6 +112,7 @@ class Kernel extends HttpKernel
      *
      * @var array<string, string>
      */
+    #[\Override]
     protected $middlewareAliases = [
         'auth' => Authenticate::class,
         'auth.basic' => AuthenticateWithBasicAuth::class,

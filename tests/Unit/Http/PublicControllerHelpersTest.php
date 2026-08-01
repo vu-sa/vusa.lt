@@ -4,9 +4,9 @@ use App\Http\Controllers\PublicController;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     // Create main tenant (vusa -> www subdomain)
     $this->mainTenant = Tenant::firstOrCreate(
         ['alias' => 'vusa'],
@@ -61,8 +61,8 @@ beforeEach(function () {
     };
 });
 
-describe('getSubdomainForTenant', function () {
-    it('returns www for vusa tenant', function () {
+describe('getSubdomainForTenant', function (): void {
+    it('returns www for vusa tenant', function (): void {
         $this->controller->setTenant($this->mainTenant);
 
         $subdomain = $this->controller->publicGetSubdomainForTenant($this->mainTenant);
@@ -70,7 +70,7 @@ describe('getSubdomainForTenant', function () {
         expect($subdomain)->toBe('www');
     });
 
-    it('returns alias for non-vusa tenant', function () {
+    it('returns alias for non-vusa tenant', function (): void {
         $this->controller->setTenant($this->mainTenant);
 
         $subdomain = $this->controller->publicGetSubdomainForTenant($this->mifTenant);
@@ -78,7 +78,7 @@ describe('getSubdomainForTenant', function () {
         expect($subdomain)->toBe('mif');
     });
 
-    it('uses current tenant when no tenant provided', function () {
+    it('uses current tenant when no tenant provided', function (): void {
         $this->controller->setTenant($this->mifTenant);
 
         $subdomain = $this->controller->publicGetSubdomainForTenant(null);
@@ -86,7 +86,7 @@ describe('getSubdomainForTenant', function () {
         expect($subdomain)->toBe('mif');
     });
 
-    it('returns www when current tenant is vusa and no tenant provided', function () {
+    it('returns www when current tenant is vusa and no tenant provided', function (): void {
         $this->controller->setTenant($this->mainTenant);
 
         $subdomain = $this->controller->publicGetSubdomainForTenant(null);
@@ -95,26 +95,26 @@ describe('getSubdomainForTenant', function () {
     });
 });
 
-describe('tenantRoute', function () {
-    it('generates route URL with www subdomain for vusa tenant', function () {
+describe('tenantRoute', function (): void {
+    it('generates route URL with www subdomain for vusa tenant', function (): void {
         $this->controller->setTenant($this->mainTenant);
 
         $url = $this->controller->publicTenantRoute('home', ['lang' => 'lt'], $this->mainTenant);
 
-        expect($url)->toContain('www.');
-        expect($url)->toContain('/lt');
+        expect($url)->toContain('www.')
+            ->toContain('/lt');
     });
 
-    it('generates route URL with alias subdomain for padalinys tenant', function () {
+    it('generates route URL with alias subdomain for padalinys tenant', function (): void {
         $this->controller->setTenant($this->mainTenant);
 
         $url = $this->controller->publicTenantRoute('home', ['lang' => 'lt'], $this->mifTenant);
 
-        expect($url)->toContain('mif.');
-        expect($url)->toContain('/lt');
+        expect($url)->toContain('mif.')
+            ->toContain('/lt');
     });
 
-    it('adds extra parameters as query string', function () {
+    it('adds extra parameters as query string', function (): void {
         $this->controller->setTenant($this->mainTenant);
 
         $url = $this->controller->publicTenantRoute('newsArchive', [
@@ -126,7 +126,7 @@ describe('tenantRoute', function () {
         expect($url)->toContain('page=2');
     });
 
-    it('uses current tenant when no tenant provided', function () {
+    it('uses current tenant when no tenant provided', function (): void {
         $this->controller->setTenant($this->mifTenant);
 
         $url = $this->controller->publicTenantRoute('home', ['lang' => 'lt']);
@@ -135,41 +135,39 @@ describe('tenantRoute', function () {
     });
 });
 
-describe('replaceSubdomainInUrl', function () {
-    it('replaces www subdomain with tenant alias', function () {
+describe('replaceSubdomainInUrl', function (): void {
+    it('replaces www subdomain with tenant alias', function (): void {
         $this->controller->setTenant($this->mainTenant);
 
         $originalUrl = 'https://www.vusa.lt/lt/naujienos';
         $newUrl = $this->controller->publicReplaceSubdomainInUrl($originalUrl, $this->mifTenant);
 
-        expect($newUrl)->toContain('mif.');
-        expect($newUrl)->not->toContain('www.');
-        expect($newUrl)->toContain('/lt/naujienos');
+        expect($newUrl)->toContain('mif.')->not->toContain('www.')
+            ->toContain('/lt/naujienos');
     });
 
-    it('replaces tenant alias with www for vusa tenant', function () {
+    it('replaces tenant alias with www for vusa tenant', function (): void {
         $this->controller->setTenant($this->mainTenant);
 
         $originalUrl = 'https://mif.vusa.lt/lt/naujienos';
         $newUrl = $this->controller->publicReplaceSubdomainInUrl($originalUrl, $this->mainTenant);
 
-        expect($newUrl)->toContain('www.');
-        expect($newUrl)->not->toContain('mif.');
-        expect($newUrl)->toContain('/lt/naujienos');
+        expect($newUrl)->toContain('www.')->not->toContain('mif.')
+            ->toContain('/lt/naujienos');
     });
 
-    it('preserves query string when replacing subdomain', function () {
+    it('preserves query string when replacing subdomain', function (): void {
         $this->controller->setTenant($this->mainTenant);
 
         $originalUrl = 'https://www.vusa.lt/lt/naujienos?page=2&tag=test';
         $newUrl = $this->controller->publicReplaceSubdomainInUrl($originalUrl, $this->mifTenant);
 
-        expect($newUrl)->toContain('mif.');
-        expect($newUrl)->toContain('page=2');
-        expect($newUrl)->toContain('tag=test');
+        expect($newUrl)->toContain('mif.')
+            ->toContain('page=2')
+            ->toContain('tag=test');
     });
 
-    it('preserves path when replacing subdomain', function () {
+    it('preserves path when replacing subdomain', function (): void {
         $this->controller->setTenant($this->mainTenant);
 
         $originalUrl = 'https://www.vusa.lt/lt/kontaktai/id/123';
@@ -178,19 +176,19 @@ describe('replaceSubdomainInUrl', function () {
         expect($newUrl)->toContain('/lt/kontaktai/id/123');
     });
 
-    it('preserves port when replacing subdomain', function () {
+    it('preserves port when replacing subdomain', function (): void {
         $this->controller->setTenant($this->mainTenant);
 
         $originalUrl = 'https://www.vusa.lt:8080/lt/naujienos?page=2';
         $newUrl = $this->controller->publicReplaceSubdomainInUrl($originalUrl, $this->mifTenant);
 
-        expect($newUrl)->toContain('mif.');
-        expect($newUrl)->toContain(':8080');
-        expect($newUrl)->toContain('/lt/naujienos');
-        expect($newUrl)->toContain('page=2');
+        expect($newUrl)->toContain('mif.')
+            ->toContain(':8080')
+            ->toContain('/lt/naujienos')
+            ->toContain('page=2');
     });
 
-    it('returns original URL if parsing fails', function () {
+    it('returns original URL if parsing fails', function (): void {
         $this->controller->setTenant($this->mainTenant);
 
         $originalUrl = 'not-a-valid-url';
@@ -199,7 +197,7 @@ describe('replaceSubdomainInUrl', function () {
         expect($newUrl)->toBe($originalUrl);
     });
 
-    it('uses current tenant when no tenant provided', function () {
+    it('uses current tenant when no tenant provided', function (): void {
         $this->controller->setTenant($this->mifTenant);
 
         $originalUrl = 'https://www.vusa.lt/lt/naujienos';
@@ -209,8 +207,8 @@ describe('replaceSubdomainInUrl', function () {
     });
 });
 
-describe('subdomain consistency', function () {
-    it('maps vusa alias to www subdomain consistently', function () {
+describe('subdomain consistency', function (): void {
+    it('maps vusa alias to www subdomain consistently', function (): void {
         $this->controller->setTenant($this->mainTenant);
 
         // Test via getSubdomainForTenant
@@ -224,7 +222,7 @@ describe('subdomain consistency', function () {
         expect($url)->toMatch('/^https?:\/\/www\./');
     });
 
-    it('preserves non-vusa aliases as subdomains', function () {
+    it('preserves non-vusa aliases as subdomains', function (): void {
         $this->controller->setTenant($this->mainTenant);
 
         $ifTenant = Tenant::firstOrCreate(

@@ -17,7 +17,7 @@ class ShortUrlHelper
     /**
      * Minimum length for encoded strings
      */
-    private const MIN_LENGTH = 6;
+    private const int MIN_LENGTH = 6;
 
     /**
      * Get the Hashids instance with app-specific salt

@@ -14,21 +14,16 @@ use Illuminate\Support\Collection;
 class TaskOverdueNotification extends BaseNotification
 {
     /**
-     * The collection of overdue tasks.
-     *
-     * @var Collection<Task>
-     */
-    protected Collection $tasks;
-
-    /**
      * Create a new notification instance.
      *
      * @param  Collection<Task>  $tasks
      */
-    public function __construct(Collection $tasks)
-    {
-        $this->tasks = $tasks;
-    }
+    public function __construct(
+        /**
+         * The collection of overdue tasks.
+         */
+        protected Collection $tasks
+    ) {}
 
     public function category(): NotificationCategory
     {
@@ -59,6 +54,7 @@ class TaskOverdueNotification extends BaseNotification
         return route('userTasks');
     }
 
+    #[\Override]
     public function icon(): string
     {
         return '⚠️';
@@ -78,6 +74,7 @@ class TaskOverdueNotification extends BaseNotification
         ];
     }
 
+    #[\Override]
     public function actions(): array
     {
         return [
@@ -91,6 +88,7 @@ class TaskOverdueNotification extends BaseNotification
     /**
      * Overdue notifications are important and should not be digested.
      */
+    #[\Override]
     public function supportsEmailDigest(): bool
     {
         return false;

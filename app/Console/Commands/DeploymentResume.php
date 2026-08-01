@@ -2,17 +2,17 @@
 
 namespace App\Console\Commands;
 
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 
+#[Description('Resume deployment from the last failed step')]
+#[Signature('deployment:resume 
+                           {--from= : Resume from specific step (overrides auto-detection)}
+                           {--show-state : Show current deployment state}')]
 class DeploymentResume extends Command
 {
-    protected $signature = 'deployment:resume 
-                           {--from= : Resume from specific step (overrides auto-detection)}
-                           {--show-state : Show current deployment state}';
-
-    protected $description = 'Resume deployment from the last failed step';
-
     public function handle(): int
     {
         if ($this->option('show-state')) {

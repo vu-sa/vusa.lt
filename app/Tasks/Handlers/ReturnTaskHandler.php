@@ -93,7 +93,7 @@ class ReturnTaskHandler extends BaseTaskHandler
     {
         return Task::query()
             ->with('users')
-            ->where('taskable_type', get_class($model))
+            ->where('taskable_type', $model::class)
             ->where('taskable_id', $model->getKey())
             ->where('action_type', ActionType::Return)
             ->whereNull('completed_at')

@@ -24,19 +24,19 @@ class SystemMonitorService
      * load would hammer the mailbox, and repeated failed auth is itself a way to
      * get an account locked out.
      */
-    private const MAIL_CHECK_TTL = 300;
+    private const int MAIL_CHECK_TTL = 300;
 
     /**
      * Seconds to wait on the SMTP socket before giving up on the probe.
      */
-    private const MAIL_PROBE_TIMEOUT = 5;
+    private const int MAIL_PROBE_TIMEOUT = 5;
 
     /**
      * The scheduler runs every minute, so anything beyond a few minutes is suspect.
      */
-    private const SCHEDULER_HEALTHY_SECONDS = 300;
+    private const int SCHEDULER_HEALTHY_SECONDS = 300;
 
-    private const SCHEDULER_WARNING_SECONDS = 3600;
+    private const int SCHEDULER_WARNING_SECONDS = 3600;
 
     /**
      * Get a complete snapshot of system health.
@@ -330,7 +330,7 @@ class SystemMonitorService
                 'connected' => false,
                 'config_warning' => $configWarning,
                 'error' => $e->getMessage(),
-                'error_type' => get_class($e),
+                'error_type' => $e::class,
                 'configuration' => [
                     'driver' => 'Models use searchableUsing() method',
                     'global_scout_driver' => config('scout.driver'),

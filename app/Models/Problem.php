@@ -61,10 +61,12 @@ class Problem extends Model
         HasTranslations::setTranslation as baseSetTranslation;
     }
 
+    #[\Override]
     protected $guarded = [];
 
     public $translatable = ['title', 'description', 'solution', 'steps_taken'];
 
+    #[\Override]
     protected $casts = [
         'occurred_at' => 'date',
         'resolved_at' => 'date',
@@ -78,7 +80,7 @@ class Problem extends Model
      *
      * @var list<string>
      */
-    private const SANITIZED_HTML_FIELDS = ['description', 'solution', 'steps_taken'];
+    private const array SANITIZED_HTML_FIELDS = ['description', 'solution', 'steps_taken'];
 
     /**
      * Sanitize on write. Spatie funnels every write path — mass assignment,

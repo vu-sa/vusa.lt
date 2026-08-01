@@ -61,7 +61,7 @@ class SyncStaleDocumentsJob implements ShouldQueue
         $skippedCount = 0;
 
         // Process documents in batches to avoid overwhelming SharePoint API
-        $documentsToRefresh->chunk(10)->each(function ($batch) use (&$successCount, &$skippedCount) {
+        $documentsToRefresh->chunk(10)->each(function ($batch) use (&$successCount, &$skippedCount): void {
             foreach ($batch as $document) {
                 // Skip documents that have failed too many times recently
                 if ($this->shouldSkipDocument($document)) {
@@ -110,7 +110,7 @@ class SyncStaleDocumentsJob implements ShouldQueue
 
         // Priority 1: Documents older than 14 days (critical refresh needed)
         $criticalDocs = Document::query()
-            ->where(function ($query) {
+            ->where(function ($query): void {
                 $query->whereNull('checked_at')
                     ->orWhere('checked_at', '<', now()->subDays(14));
             })

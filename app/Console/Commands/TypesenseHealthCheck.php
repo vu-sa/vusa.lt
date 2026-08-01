@@ -5,25 +5,19 @@ namespace App\Console\Commands;
 use App\Services\Typesense\TypesenseCollectionConfig;
 use App\Services\Typesense\TypesenseStopWords;
 use App\Services\Typesense\TypesenseSynonyms;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
 use Typesense\Client;
 
-class TypesenseHealthCheck extends Command
-{
-    /**
-     * The name and signature of the console command.
-     */
-    protected $signature = 'typesense:health 
+#[Description('Check Typesense health, collections, and configuration status')]
+#[Signature('typesense:health 
                             {--detailed : Show detailed collection statistics}
                             {--check-synonyms : Check configured synonyms}
-                            {--check-stopwords : Check configured stop words}';
-
-    /**
-     * The console command description.
-     */
-    protected $description = 'Check Typesense health, collections, and configuration status';
-
+                            {--check-stopwords : Check configured stop words}')]
+class TypesenseHealthCheck extends Command
+{
     public function __construct(protected Client $client)
     {
         parent::__construct();

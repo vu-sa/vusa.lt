@@ -157,7 +157,7 @@ Route::resource('meetings', MeetingController::class)->except(['create']);
 Route::get('meetings-search', [MeetingController::class, 'search'])->name('meetings.search');
 
 // Faceted search pages (uses scoped Typesense API keys for authorization)
-Route::prefix('search')->name('search.')->group(function () {
+Route::prefix('search')->name('search.')->group(function (): void {
     Route::get('/', [SearchController::class, 'index'])->name('index');
     Route::get('meetings', [SearchController::class, 'meetings'])->name('meetings');
     Route::get('agenda-items', [SearchController::class, 'agendaItems'])->name('agendaItems');

@@ -13,26 +13,12 @@ class FeedbackMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    public string $feedback;
-
-    public $user;
-
-    public string $href;
-
-    public ?string $selectedText;
-
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct(string $feedback, $user, ?string $href = null, ?string $selectedText = null)
-    {
-        $this->feedback = $feedback;
-        $this->user = $user;
-        $this->href = $href;
-        $this->selectedText = $selectedText;
-    }
+    public function __construct(public string $feedback, public $user, public ?string $href = null, public ?string $selectedText = null) {}
 
     /**
      * Get the message envelope.

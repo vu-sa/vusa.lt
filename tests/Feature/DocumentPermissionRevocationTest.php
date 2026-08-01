@@ -7,15 +7,15 @@ use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 });
 
-describe('observer dispatches revocation on delete', function () {
-    test('dispatches job when document with permission ID is deleted', function () {
+describe('observer dispatches revocation on delete', function (): void {
+    test('dispatches job when document with permission ID is deleted', function (): void {
         Queue::fake();
 
         $document = Document::factory()->create([
@@ -26,14 +26,12 @@ describe('observer dispatches revocation on delete', function () {
 
         $document->delete();
 
-        Queue::assertPushed(RevokeSharepointPermissionJob::class, function ($job) use ($document) {
-            return $job->sharepointPermissionId === 'perm-123'
-                && $job->documentId === $document->id
-                && $job->sharepointId === $document->sharepoint_id;
-        });
+        Queue::assertPushed(RevokeSharepointPermissionJob::class, fn ($job) => $job->sharepointPermissionId === 'perm-123'
+            && $job->documentId === $document->id
+            && $job->sharepointId === $document->sharepoint_id);
     });
 
-    test('does not dispatch job when document has no permission ID', function () {
+    test('does not dispatch job when document has no permission ID', function (): void {
         Queue::fake();
 
         $document = Document::factory()->create([
@@ -47,7 +45,7 @@ describe('observer dispatches revocation on delete', function () {
         Queue::assertNotPushed(RevokeSharepointPermissionJob::class);
     });
 
-    test('does not dispatch job when document has no anonymous URL', function () {
+    test('does not dispatch job when document has no anonymous URL', function (): void {
         Queue::fake();
 
         $document = Document::factory()->create([
@@ -61,7 +59,7 @@ describe('observer dispatches revocation on delete', function () {
         Queue::assertNotPushed(RevokeSharepointPermissionJob::class);
     });
 
-    test('does not dispatch job in local environment', function () {
+    test('does not dispatch job in local environment', function (): void {
         Queue::fake();
 
         $document = Document::factory()->create([
@@ -83,8 +81,8 @@ describe('observer dispatches revocation on delete', function () {
     });
 });
 
-describe('observer dispatches revocation on deactivation', function () {
-    test('dispatches job and clears URL when is_active changes to false', function () {
+describe('observer dispatches revocation on deactivation', function (): void {
+    test('dispatches job and clears URL when is_active changes to false', function (): void {
         Queue::fake();
 
         $document = Document::factory()->create([
@@ -97,17 +95,15 @@ describe('observer dispatches revocation on deactivation', function () {
         $document->is_active = false;
         $document->save();
 
-        Queue::assertPushed(RevokeSharepointPermissionJob::class, function ($job) use ($document) {
-            return $job->sharepointPermissionId === 'perm-456'
-                && $job->documentId === $document->id;
-        });
+        Queue::assertPushed(RevokeSharepointPermissionJob::class, fn ($job) => $job->sharepointPermissionId === 'perm-456'
+            && $job->documentId === $document->id);
 
         $document->refresh();
-        expect($document->anonymous_url)->toBeNull();
-        expect($document->sharepoint_permission_id)->toBeNull();
+        expect($document->anonymous_url)->toBeNull()
+            ->and($document->sharepoint_permission_id)->toBeNull();
     });
 
-    test('does not dispatch job when is_active changes to true', function () {
+    test('does not dispatch job when is_active changes to true', function (): void {
         Queue::fake();
 
         $document = Document::factory()->create([
@@ -123,7 +119,7 @@ describe('observer dispatches revocation on deactivation', function () {
         Queue::assertNotPushed(RevokeSharepointPermissionJob::class);
     });
 
-    test('does not dispatch job when is_active is not changing', function () {
+    test('does not dispatch job when is_active is not changing', function (): void {
         Queue::fake();
 
         $document = Document::factory()->create([
@@ -140,7 +136,7 @@ describe('observer dispatches revocation on deactivation', function () {
         Queue::assertNotPushed(RevokeSharepointPermissionJob::class);
     });
 
-    test('does not dispatch job on deactivation when no permission ID', function () {
+    test('does not dispatch job on deactivation when no permission ID', function (): void {
         Queue::fake();
 
         $document = Document::factory()->create([
@@ -161,8 +157,8 @@ describe('observer dispatches revocation on deactivation', function () {
     });
 });
 
-describe('public API', function () {
-    test('only returns active documents with anonymous URLs', function () {
+describe('public API', function (): void {
+    test('only returns active documents with anonymous URLs', function (): void {
         $uniquePrefix = 'REVOC_TEST_'.uniqid();
 
         // Active with URL - should be returned
@@ -195,11 +191,11 @@ describe('public API', function () {
 
         $data = $response->json('data');
 
-        expect(collect($data))->toHaveCount(1);
-        expect($data[0]['title'])->toContain('Active with URL');
+        expect(collect($data))->toHaveCount(1)
+            ->and($data[0]['title'])->toContain('Active with URL');
     });
 
-    test('search respects active and URL filters', function () {
+    test('search respects active and URL filters', function (): void {
         Document::factory()->create([
             'institution_id' => $this->institution->id,
             'is_active' => true,
@@ -219,7 +215,7 @@ describe('public API', function () {
         $response->assertSuccessful();
 
         $data = $response->json('data');
-        expect(collect($data)->where('title', 'Searchable Document')->count())->toBe(1);
-        expect(collect($data)->where('title', 'Searchable Hidden')->count())->toBe(0);
+        expect(collect($data)->where('title', 'Searchable Document')->count())->toBe(1)
+            ->and(collect($data)->where('title', 'Searchable Hidden')->count())->toBe(0);
     });
 });

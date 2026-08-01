@@ -20,6 +20,7 @@ class UpdateNavigationRequest extends FormRequest
     /**
      * Prepare the data for validation.
      */
+    #[\Override]
     protected function prepareForValidation(): void
     {
         $extraAttributes = $this->input('extra_attributes') ?? [];
@@ -63,6 +64,7 @@ class UpdateNavigationRequest extends FormRequest
      *
      * @return array<string, string>
      */
+    #[\Override]
     public function messages(): array
     {
         return [

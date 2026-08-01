@@ -34,7 +34,7 @@ class FormController extends AdminController
      *
      * @var array<int, string>
      */
-    private const FORM_FIELD_ATTRIBUTES = [
+    private const array FORM_FIELD_ATTRIBUTES = [
         'label',
         'description',
         'type',
@@ -194,7 +194,7 @@ class FormController extends AdminController
         }
 
         // Then, update or create the remaining form fields
-        collect($request->only('form_fields')['form_fields'] ?? [])->each(function ($formField) use ($form) {
+        collect($request->only('form_fields')['form_fields'] ?? [])->each(function ($formField) use ($form): void {
             $form->formFields()->create(collect($formField)->only(self::FORM_FIELD_ATTRIBUTES)->all());
         });
 
@@ -220,15 +220,11 @@ class FormController extends AdminController
         $institutions = collect();
         if (app(FormSettings::class)->student_rep_registration_form_id === $form->id) {
             // Get all institutions that are referenced in the registrations
-            $institutionField = $form->formFields->first(function ($field) {
-                return $field->use_model_options && $field->options_model === Institution::class;
-            });
+            $institutionField = $form->formFields->first(fn ($field) => $field->use_model_options && $field->options_model === Institution::class);
 
             if ($institutionField) {
                 $institutionIds = $registrations->flatMap(function ($registration) use ($institutionField) {
-                    $response = $registration->fieldResponses->first(function ($fieldResponse) use ($institutionField) {
-                        return $fieldResponse->formField->id === $institutionField->id;
-                    });
+                    $response = $registration->fieldResponses->first(fn ($fieldResponse) => $fieldResponse->formField->id === $institutionField->id);
 
                     return $response?->response['value'] ? [$response->response['value']] : [];
                 })->unique();
@@ -308,7 +304,7 @@ class FormController extends AdminController
         // First, compare which form fields were removed
         $form->formFields->whereNotIn('id', collect($request->form_fields)->pluck('id'))->each->delete();
 
-        collect($request->only('form_fields')['form_fields'] ?? [])->each(function ($formField) use ($form) {
+        collect($request->only('form_fields')['form_fields'] ?? [])->each(function ($formField) use ($form): void {
             $attributes = collect($formField)->only(self::FORM_FIELD_ATTRIBUTES)->all();
 
             // The frontend prefixes ids of not-yet-persisted fields with 'new-'.
@@ -348,7 +344,7 @@ class FormController extends AdminController
         // slugify the form name up to 16 char, and add datetime
         $fileName = substr(Str::slug($form->getTranslation('name', app()->getLocale())), 0, 20).'-'.now()->format('Y-m-d-H-i-s');
 
-        return (new FormRegistrationsExport($form))->download($fileName.'.xlsx');
+        return new FormRegistrationsExport($form)->download($fileName.'.xlsx');
     }
 
     public function restore(Form $form): RedirectResponse

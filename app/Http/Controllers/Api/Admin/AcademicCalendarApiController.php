@@ -14,14 +14,14 @@ class AcademicCalendarApiController extends ApiController
      * Bump when the vacation rules in AcademicCalendarService change, so cached
      * responses from the previous rules are not served.
      */
-    private const CACHE_VERSION = 'v1';
+    private const string CACHE_VERSION = 'v1';
 
-    private const CACHE_TTL_DAYS = 30;
+    private const int CACHE_TTL_DAYS = 30;
 
     /**
      * Largest span of years a single request may ask for.
      */
-    private const MAX_YEAR_SPAN = 20;
+    private const int MAX_YEAR_SPAN = 20;
 
     /**
      * Academic vacation periods, used by the meetings Gantt chart to shade breaks.

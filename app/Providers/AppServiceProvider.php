@@ -21,16 +21,13 @@ class AppServiceProvider extends ServiceProvider
      *
      * @return void
      */
+    #[\Override]
     public function register()
     {
-        $this->app->singleton(ModelAuthorizer::class, function ($app) {
-            return new ModelAuthorizer;
-        });
+        $this->app->singleton(ModelAuthorizer::class, fn ($app) => new ModelAuthorizer);
 
         // Register our new permission service
-        $this->app->singleton('permission.service', function ($app) {
-            return new PermissionService($app->make(ModelAuthorizer::class));
-        });
+        $this->app->singleton('permission.service', fn ($app) => new PermissionService($app->make(ModelAuthorizer::class)));
     }
 
     /**
@@ -47,9 +44,7 @@ class AppServiceProvider extends ServiceProvider
         $this->loadSplitTranslations();
 
         // Needed for json_content in Content model
-        TrimStrings::skipWhen(function (Request $request) {
-            return $request->is('mano/*');
-        });
+        TrimStrings::skipWhen(fn (Request $request) => $request->is('mano/*'));
 
         Translatable::fallback(
             fallbackLocale: 'lt'

@@ -10,9 +10,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tiptap\Editor;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     // Create or find the main tenant that the controller expects
     $this->tenant = Tenant::firstOrCreate(
         ['alias' => 'vusa'],
@@ -25,7 +25,7 @@ beforeEach(function () {
     );
 });
 
-test('page renders successfully with content', function () {
+test('page renders successfully with content', function (): void {
     $content = Content::factory()->create();
     ContentPart::factory()->create([
         'content_id' => $content->id,
@@ -52,7 +52,7 @@ test('page renders successfully with content', function () {
     );
 });
 
-test('page renders successfully without content', function () {
+test('page renders successfully without content', function (): void {
     $content = Content::factory()->create();
     // Don't create any content parts - this simulates "no content"
 
@@ -75,7 +75,7 @@ test('page renders successfully without content', function () {
     );
 });
 
-test('page renders successfully with content but no parts', function () {
+test('page renders successfully with content but no parts', function (): void {
     $content = Content::factory()->create();
     // Don't create any content parts
 
@@ -98,7 +98,7 @@ test('page renders successfully with content but no parts', function () {
     );
 });
 
-test('page renders successfully with content but no tiptap parts', function () {
+test('page renders successfully with content but no tiptap parts', function (): void {
     $content = Content::factory()->create();
     ContentPart::factory()->create([
         'content_id' => $content->id,
@@ -125,7 +125,7 @@ test('page renders successfully with content but no tiptap parts', function () {
     );
 });
 
-test('page with multiple content parts including tiptap renders successfully', function () {
+test('page with multiple content parts including tiptap renders successfully', function (): void {
     $content = Content::factory()->create();
 
     // Create a hero part
@@ -163,13 +163,13 @@ test('page with multiple content parts including tiptap renders successfully', f
     );
 });
 
-test('page returns 404 when page does not exist', function () {
+test('page returns 404 when page does not exist', function (): void {
     $response = $this->get('/lt/non-existent-page');
 
     $response->assertStatus(404);
 });
 
-test('page with navigation item renders successfully', function () {
+test('page with navigation item renders successfully', function (): void {
     $content = Content::factory()->create();
     ContentPart::factory()->create([
         'content_id' => $content->id,
@@ -201,7 +201,7 @@ test('page with navigation item renders successfully', function () {
     );
 });
 
-test('page with category renders successfully', function () {
+test('page with category renders successfully', function (): void {
     $category = Category::factory()->create([
         'name' => 'Test Category',
         'alias' => 'test-category',
@@ -234,7 +234,7 @@ test('page with category renders successfully', function () {
     );
 });
 
-test('seo description is extracted from first tiptap content', function () {
+test('seo description is extracted from first tiptap content', function (): void {
     $content = Content::factory()->create();
     ContentPart::factory()->create([
         'content_id' => $content->id,
@@ -257,7 +257,7 @@ test('seo description is extracted from first tiptap content', function () {
     // But the important thing is that it doesn't error out
 });
 
-test('seo description is null when no tiptap content exists', function () {
+test('seo description is null when no tiptap content exists', function (): void {
     $content = Content::factory()->create();
     // Don't create any content parts
 
@@ -275,7 +275,7 @@ test('seo description is null when no tiptap content exists', function () {
     // The important thing is that it doesn't error out when content is null
 });
 
-test('homepage falls back to main tenant content when tenant has empty content parts', function () {
+test('homepage falls back to main tenant content when tenant has empty content parts', function (): void {
     // Update main tenant (already created in beforeEach) with content
     $mainContent = Content::factory()->create();
     ContentPart::factory()->create([
@@ -308,7 +308,7 @@ test('homepage falls back to main tenant content when tenant has empty content p
     );
 });
 
-test('homepage uses tenant content when it has content parts', function () {
+test('homepage uses tenant content when it has content parts', function (): void {
     // Update main tenant (already created in beforeEach) with content
     $mainContent = Content::factory()->create();
     ContentPart::factory()->create([

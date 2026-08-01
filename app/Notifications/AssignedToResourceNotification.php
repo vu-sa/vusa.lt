@@ -16,30 +16,21 @@ use Illuminate\Support\Str;
 class AssignedToResourceNotification extends BaseNotification
 {
     /**
-     * The user who made the assignment.
-     *
-     * @var array{modelClass: string, name: string, image?: string}
-     */
-    protected array $assigner;
-
-    /**
-     * The resource the user was assigned to.
-     *
-     * @var array{modelClass: string, name: string, url: string, id?: string}
-     */
-    protected array $resource;
-
-    /**
      * Create a new notification instance.
      *
      * @param  array{modelClass: string, name: string, image?: string}  $assigner
      * @param  array{modelClass: string, name: string, url: string, id?: string}  $resource
      */
-    public function __construct(array $assigner, array $resource)
-    {
-        $this->assigner = $assigner;
-        $this->resource = $resource;
-    }
+    public function __construct(
+        /**
+         * The user who made the assignment.
+         */
+        protected array $assigner,
+        /**
+         * The resource the user was assigned to.
+         */
+        protected array $resource
+    ) {}
 
     /**
      * Create from model and user.
@@ -48,7 +39,7 @@ class AssignedToResourceNotification extends BaseNotification
     {
         $objectName = $model->name ?? $model->title ?? __('resursas');
 
-        $modelClass = class_basename(get_class($model));
+        $modelClass = class_basename($model::class);
         $routeName = Str::of($modelClass)->lcfirst()->plural().'.show';
 
         $resource = [
@@ -98,6 +89,7 @@ class AssignedToResourceNotification extends BaseNotification
         return $this->resource['url'];
     }
 
+    #[\Override]
     public function icon(): string
     {
         return '🔗';
@@ -125,6 +117,7 @@ class AssignedToResourceNotification extends BaseNotification
         return $this->resource;
     }
 
+    #[\Override]
     public function actions(): array
     {
         return [
@@ -138,6 +131,7 @@ class AssignedToResourceNotification extends BaseNotification
     /**
      * Custom mail for better formatting.
      */
+    #[\Override]
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)

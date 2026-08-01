@@ -12,41 +12,41 @@ function runTranslatableRule(mixed $value, array $locales = ['lt', 'en'], bool $
 {
     $messages = [];
 
-    (new TranslatableField($locales, $requireAll))->validate('name', $value, function (string $message) use (&$messages) {
+    new TranslatableField($locales, $requireAll)->validate('name', $value, function (string $message) use (&$messages): void {
         $messages[] = $message;
     });
 
     return $messages;
 }
 
-describe('TranslatableField (any locale)', function () {
-    it('passes when at least one required locale is present', function () {
+describe('TranslatableField (any locale)', function (): void {
+    it('passes when at least one required locale is present', function (): void {
         expect(runTranslatableRule(['lt' => 'Pavadinimas']))->toBeEmpty();
     });
 
-    it('passes when all locales are present', function () {
+    it('passes when all locales are present', function (): void {
         expect(runTranslatableRule(['lt' => 'Pavadinimas', 'en' => 'Title']))->toBeEmpty();
     });
 
-    it('fails when the value is not an array', function () {
+    it('fails when the value is not an array', function (): void {
         expect(runTranslatableRule('Pavadinimas'))->toHaveCount(1);
     });
 
-    it('fails when no locale has a value', function () {
+    it('fails when no locale has a value', function (): void {
         expect(runTranslatableRule([]))->toHaveCount(1);
     });
 
-    it('treats blank/whitespace-only locales as missing', function () {
+    it('treats blank/whitespace-only locales as missing', function (): void {
         expect(runTranslatableRule(['lt' => '   ', 'en' => '']))->toHaveCount(1);
     });
 });
 
-describe('TranslatableField (all locales required)', function () {
-    it('passes only when every required locale has a value', function () {
+describe('TranslatableField (all locales required)', function (): void {
+    it('passes only when every required locale has a value', function (): void {
         expect(runTranslatableRule(['lt' => 'Pavadinimas', 'en' => 'Title'], ['lt', 'en'], requireAll: true))->toBeEmpty();
     });
 
-    it('fails when a required locale is missing', function () {
+    it('fails when a required locale is missing', function (): void {
         expect(runTranslatableRule(['lt' => 'Pavadinimas'], ['lt', 'en'], requireAll: true))->toHaveCount(1);
     });
 });

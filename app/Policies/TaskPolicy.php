@@ -26,13 +26,14 @@ class TaskPolicy extends ModelPolicy
     public function __construct(ModelAuthorizer $authorizer)
     {
         parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::TASK()->label);
+        $this->pluralModelName = Str::plural(ModelEnum::TASK->label());
     }
 
     /**
      * Determine whether the user can view any tasks (for summary page).
      * Requires tasks.read.padalinys permission.
      */
+    #[\Override]
     public function viewAny(User $user): bool
     {
         return $this->authorizer->forUser($user)->check('tasks.read.padalinys');
@@ -44,6 +45,7 @@ class TaskPolicy extends ModelPolicy
      *
      * @param  Task  $task
      */
+    #[\Override]
     public function view(User $user, Model $task): bool
     {
         // If user is assigned to the task, they can always view it
@@ -72,13 +74,14 @@ class TaskPolicy extends ModelPolicy
      *
      * @param  Task  $task
      */
+    #[\Override]
     public function update(User $user, Model $task): bool
     {
         if ($task->users->contains($user)) {
             return true;
         }
 
-        return $this->commonChecker($user, $task, CRUDEnum::UPDATE()->label);
+        return $this->commonChecker($user, $task, CRUDEnum::UPDATE->label());
     }
 
     /**
@@ -87,7 +90,7 @@ class TaskPolicy extends ModelPolicy
      */
     protected function checkTaskablePermission(User $user, Model $taskable): bool
     {
-        $taskableClass = get_class($taskable);
+        $taskableClass = $taskable::class;
         $resourceName = $this->taskablePermissionMap[$taskableClass] ?? null;
 
         if (! $resourceName) {

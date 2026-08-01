@@ -11,9 +11,9 @@ use App\Models\User;
 use App\Models\Vote;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->admin = makeAdminUser(Tenant::query()->first());
     $this->tenant = Tenant::factory()->create(['type' => 'padalinys']);
     $this->institution = Institution::factory()->for($this->tenant)->create([
@@ -21,13 +21,13 @@ beforeEach(function () {
     ]);
 });
 
-test('timeline requires an authenticated user', function () {
+test('timeline requires an authenticated user', function (): void {
     $this->getJson(route('api.v1.admin.visak.timeline', [
         'tenant_ids' => [$this->tenant->id],
     ]))->assertUnauthorized();
 });
 
-test('timeline rejects tenants outside the visible scope', function () {
+test('timeline rejects tenants outside the visible scope', function (): void {
     $user = makeUser(Tenant::factory()->create(['type' => 'padalinys']));
 
     asUser($user)
@@ -37,7 +37,7 @@ test('timeline rejects tenants outside the visible scope', function () {
         ->assertForbidden();
 });
 
-test('timeline returns direct institutions with summaries but no meetings or relations', function () {
+test('timeline returns direct institutions with summaries but no meetings or relations', function (): void {
     $relatedTenant = Tenant::factory()->create(['type' => 'padalinys']);
     $relatedInstitution = Institution::factory()->for($relatedTenant)->create([
         'name' => ['lt' => 'Susijusi institucija', 'en' => 'Related institution'],
@@ -73,15 +73,15 @@ test('timeline returns direct institutions with summaries but no meetings or rel
 
     // Meetings are served by the windowed meetings endpoint, not the timeline
     $institution = $data['institutions'][0];
-    expect($institution)->not->toHaveKey('meetings');
-    expect($institution)->toHaveKeys(['activity_status', 'check_ins', 'duties', 'tenant']);
+    expect($institution)->not->toHaveKey('meetings')
+        ->toHaveKeys(['activity_status', 'check_ins', 'duties', 'tenant']);
 
     // Summaries remain fully populated
     expect($data['institution_summary'])->toHaveKeys(['all', 'needs_attention', 'overdue', 'approaching', 'no_activity', 'current']);
     expect($data['representative_activity']['stats'])->toHaveKeys(['total', 'activeToday', 'activeLast7Days', 'activeLast30Days', 'neverLoggedIn']);
 });
 
-test('meetings requires an authenticated user', function () {
+test('meetings requires an authenticated user', function (): void {
     $this->getJson(route('api.v1.admin.visak.meetings', [
         'tenant_ids' => [$this->tenant->id],
         'from' => now()->subMonth()->toDateString(),
@@ -89,7 +89,7 @@ test('meetings requires an authenticated user', function () {
     ]))->assertUnauthorized();
 });
 
-test('meetings rejects tenants outside the visible scope', function () {
+test('meetings rejects tenants outside the visible scope', function (): void {
     $user = makeUser(Tenant::factory()->create(['type' => 'padalinys']));
 
     asUser($user)
@@ -101,7 +101,7 @@ test('meetings rejects tenants outside the visible scope', function () {
         ->assertForbidden();
 });
 
-test('meetings validates the date window', function () {
+test('meetings validates the date window', function (): void {
     asUser($this->admin)
         ->getJson(route('api.v1.admin.visak.meetings', [
             'tenant_ids' => [$this->tenant->id],
@@ -119,7 +119,7 @@ test('meetings validates the date window', function () {
         ->assertUnprocessable();
 });
 
-test('meetings returns only in-window meetings of the requested tenants, trimmed for the Gantt', function () {
+test('meetings returns only in-window meetings of the requested tenants, trimmed for the Gantt', function (): void {
     $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
     $otherInstitution = Institution::factory()->for($otherTenant)->create();
 
@@ -151,24 +151,18 @@ test('meetings returns only in-window meetings of the requested tenants, trimmed
         ->assertJsonCount(1, 'data');
 
     $meeting = $response->json('data.0');
-
-    expect($meeting['id'])->toBe((string) $inWindow->id);
-    expect($meeting['institution_id'])->toBe((string) $this->institution->id);
-    expect($meeting['title'])->toBe('In window');
-    expect($meeting)->toHaveKeys(['start_time', 'type_slug', 'completion_status', 'has_report', 'has_protocol', 'agenda_items', 'agenda_items_count']);
-    expect($meeting['agenda_items_count'])->toBe(5);
-    expect($meeting['agenda_items'])->toHaveCount(4);
+    expect($meeting)->toMatchArray(['id' => (string) $inWindow->id, 'institution_id' => (string) $this->institution->id, 'title' => 'In window'])
+        ->toHaveKeys(['start_time', 'type_slug', 'completion_status', 'has_report', 'has_protocol', 'agenda_items', 'agenda_items_count'])
+        ->and($meeting['agenda_items_count'])->toBe(5)
+        ->and($meeting['agenda_items'])->toHaveCount(4);
 
     // Agenda items carry only the main-vote fields the Gantt tooltip renders
     $item = $meeting['agenda_items'][0];
-    expect($item)->toHaveKeys(['id', 'title', 'type', 'student_vote', 'decision']);
-    expect($item)->not->toHaveKey('student_benefit');
-    expect($item)->not->toHaveKey('votes');
-    expect($item['student_vote'])->toBe('positive');
-    expect($item['decision'])->toBe('positive');
+    expect($item)->toHaveKeys(['id', 'title', 'type', 'student_vote', 'decision'])->not->toHaveKey('student_benefit')->not->toHaveKey('votes')
+        ->toMatchArray(['student_vote' => 'positive', 'decision' => 'positive']);
 });
 
-test('meetings are cached per window and refresh bypasses the cache', function () {
+test('meetings are cached per window and refresh bypasses the cache', function (): void {
     $first = Meeting::factory()->create(['title' => 'First', 'start_time' => now()->subDays(5)]);
     $first->institutions()->attach($this->institution->id);
 
@@ -195,14 +189,14 @@ test('meetings are cached per window and refresh bypasses the cache', function (
         ->assertJsonCount(2, 'data');
 });
 
-test('representatives are searched and paginated without loading the full list', function () {
+test('representatives are searched and paginated without loading the full list', function (): void {
     $duty = Duty::factory()->for($this->institution)->create();
 
     collect([
         ['name' => 'First Representative', 'email' => 'first-representative@example.test'],
         ['name' => 'Second Representative', 'email' => 'second-representative@example.test'],
         ['name' => 'Third Representative', 'email' => 'third-representative@example.test'],
-    ])->each(function (array $attributes) use ($duty) {
+    ])->each(function (array $attributes) use ($duty): void {
         $representative = User::factory()->create($attributes);
         $representative->duties()->attach($duty, [
             'start_date' => now()->subMonth(),

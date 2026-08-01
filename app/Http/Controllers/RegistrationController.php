@@ -120,9 +120,7 @@ class RegistrationController extends Controller
         }
 
         // Find the institution field in the form
-        $institutionField = $form->formFields->first(function ($field) {
-            return $field->use_model_options && $field->options_model === Institution::class;
-        });
+        $institutionField = $form->formFields->first(fn ($field) => $field->use_model_options && $field->options_model === Institution::class);
 
         if (! $institutionField) {
             Log::warning('Student rep registration form missing institution field', [
@@ -133,9 +131,7 @@ class RegistrationController extends Controller
         }
 
         // Find the institution from field responses
-        $institutionResponse = $fieldResponses->first(function (FieldResponse $fieldResponse) use ($institutionField) {
-            return $fieldResponse->formField->id === $institutionField->id;
-        });
+        $institutionResponse = $fieldResponses->first(fn (FieldResponse $fieldResponse) => $fieldResponse->formField->id === $institutionField->id);
 
         if (! $institutionResponse) {
             Log::warning('Student rep registration missing institution response', [

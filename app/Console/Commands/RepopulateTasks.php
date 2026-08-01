@@ -19,6 +19,8 @@ use App\Tasks\Handlers\PeriodicityGapTaskHandler;
 use App\Tasks\Handlers\PickupTaskHandler;
 use App\Tasks\Handlers\ReturnTaskHandler;
 use Carbon\Carbon;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
 /**
@@ -32,16 +34,14 @@ use Illuminate\Console\Command;
  * - reservation: Pickup and Return tasks
  * - meeting: AgendaCreation and AgendaCompletion tasks
  */
-class RepopulateTasks extends Command
-{
-    protected $signature = 'tasks:repopulate
+#[Description('Repopulate autotasks for a model type or all types. Idempotent - skips existing tasks. Use --include-past for historical meetings.')]
+#[Signature('tasks:repopulate
                             {model? : Model type to repopulate (institution, reservation, meeting)}
                             {--force : Force repopulation without confirmation (required for production)}
                             {--dry-run : Show what would be done without creating tasks}
-                            {--include-past : Include past meetings (useful for historical data entry)}';
-
-    protected $description = 'Repopulate autotasks for a model type or all types. Idempotent - skips existing tasks. Use --include-past for historical meetings.';
-
+                            {--include-past : Include past meetings (useful for historical data entry)}')]
+class RepopulateTasks extends Command
+{
     /**
      * Model alias mapping to handler methods.
      */
@@ -227,7 +227,7 @@ class RepopulateTasks extends Command
             ->get()
             ->groupBy('reservation_id');
 
-        foreach ($reservationResources as $reservationId => $resources) {
+        foreach ($reservationResources as $resources) {
             $reservation = $resources->first()?->reservation;
 
             if (! $reservation) {

@@ -12,18 +12,18 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\Feature\Notifications\NotificationTestHelpers;
 
-uses(RefreshDatabase::class, NotificationTestHelpers::class);
+pest()->use(RefreshDatabase::class, NotificationTestHelpers::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     Notification::fake();
 });
 
-describe('reservation flow duplicate prevention', function () {
+describe('reservation flow duplicate prevention', function (): void {
     // Note: Decision handling has been moved to the Approvals system (2026_01_15 migration).
     // Comments on reservations are now purely informational, not status-change related.
     // Status changes are handled by state transitions, not decision comments.
 
-    test('state change without comment sends exactly 1 notification', function () {
+    test('state change without comment sends exactly 1 notification', function (): void {
         $user = $this->createUserWithPreferences();
         $admin = $this->createUserWithPreferences();
 
@@ -39,7 +39,7 @@ describe('reservation flow duplicate prevention', function () {
         Notification::assertNotSentTo($user, CommentPostedNotification::class);
     });
 
-    test('regular comment without state change sends exactly 1 notification', function () {
+    test('regular comment without state change sends exactly 1 notification', function (): void {
         $user = $this->createUserWithPreferences();
         $commenter = $this->createUserWithPreferences();
 
@@ -61,8 +61,8 @@ describe('reservation flow duplicate prevention', function () {
     });
 });
 
-describe('notification count limits', function () {
-    test('single reservation state change does not exceed 1 notification per user', function () {
+describe('notification count limits', function (): void {
+    test('single reservation state change does not exceed 1 notification per user', function (): void {
         $user1 = $this->createUserWithPreferences();
         $user2 = $this->createUserWithPreferences();
 
@@ -76,7 +76,7 @@ describe('notification count limits', function () {
         Notification::assertSentToTimes($user2, ReservationStatusChangedNotification::class, 1);
     });
 
-    test('multiple comments on same resource send individual notifications', function () {
+    test('multiple comments on same resource send individual notifications', function (): void {
         $user = $this->createUserWithPreferences();
         $commenter = $this->createUserWithPreferences();
 
@@ -105,8 +105,8 @@ describe('notification count limits', function () {
     });
 });
 
-describe('notification deduplication edge cases', function () {
-    test('notification is not sent twice if user is in multiple relationships', function () {
+describe('notification deduplication edge cases', function (): void {
+    test('notification is not sent twice if user is in multiple relationships', function (): void {
         // This tests the ->unique() call in NotifyUsersOfComment
         $user = $this->createUserWithPreferences();
 
@@ -130,8 +130,8 @@ describe('notification deduplication edge cases', function () {
     });
 });
 
-describe('reservation state change triggers both status and task notifications', function () {
-    test('reservation state change to Reserved sends exactly 2 notifications: status + task', function () {
+describe('reservation state change triggers both status and task notifications', function (): void {
+    test('reservation state change to Reserved sends exactly 2 notifications: status + task', function (): void {
         $user = $this->createUserWithPreferences();
         $admin = $this->createUserWithPreferences();
 
@@ -153,7 +153,7 @@ describe('reservation state change triggers both status and task notifications',
         Notification::assertSentToTimes($user, TaskAssignedNotification::class, 1);
     });
 
-    test('reservation state change creates task for picking up resource', function () {
+    test('reservation state change creates task for picking up resource', function (): void {
         $user = $this->createUserWithPreferences();
         $admin = $this->createUserWithPreferences();
 
@@ -173,7 +173,7 @@ describe('reservation state change triggers both status and task notifications',
         ]);
     });
 
-    test('multiple users on reservation all receive both notifications', function () {
+    test('multiple users on reservation all receive both notifications', function (): void {
         $user1 = $this->createUserWithPreferences();
         $user2 = $this->createUserWithPreferences();
         $admin = $this->createUserWithPreferences();
@@ -192,7 +192,7 @@ describe('reservation state change triggers both status and task notifications',
         }
     });
 
-    test('admin making the state change does not receive notifications', function () {
+    test('admin making the state change does not receive notifications', function (): void {
         $user = $this->createUserWithPreferences();
         $admin = $this->createUserWithPreferences();
 

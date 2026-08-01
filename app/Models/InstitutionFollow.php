@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,16 +27,13 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
+#[Table(name: 'institution_follows', keyType: 'string')]
+#[WithoutIncrementing]
 class InstitutionFollow extends Pivot
 {
     use HasFactory, HasUlids;
 
-    protected $table = 'institution_follows';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
-
+    #[\Override]
     protected $guarded = [];
 
     public function user(): BelongsTo

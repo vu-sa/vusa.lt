@@ -7,9 +7,9 @@ use App\Models\Type;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
     $this->institution = Institution::factory()->create([
@@ -33,12 +33,12 @@ beforeEach(function () {
     $this->duty->users()->attach($this->user->id, ['start_date' => now()->subDay()]);
 });
 
-describe('contact eager loading with types', function () {
-    test('eager loading current_users.current_duties.types loads all relations without N+1', function () {
+describe('contact eager loading with types', function (): void {
+    test('eager loading current_users.current_duties.types loads all relations without N+1', function (): void {
         $types = collect([$this->type]);
 
         // This is the pattern used by ContactController::institutionDutyTypeContacts
-        $duties = $this->institution->load(['duties' => function ($query) use ($types) {
+        $duties = $this->institution->load(['duties' => function ($query) use ($types): void {
             $query->whereHas('types', fn (Builder $query) => $query->whereIn('id', $types->pluck('id')))
                 ->with('current_users.current_duties.types');
         }])->duties;
@@ -61,10 +61,10 @@ describe('contact eager loading with types', function () {
         }
     });
 
-    test('types are available for filtering without additional queries', function () {
+    test('types are available for filtering without additional queries', function (): void {
         $types = collect([$this->type]);
 
-        $duties = $this->institution->load(['duties' => function ($query) use ($types) {
+        $duties = $this->institution->load(['duties' => function ($query) use ($types): void {
             $query->whereHas('types', fn (Builder $query) => $query->whereIn('id', $types->pluck('id')))
                 ->with('current_users.current_duties.types');
         }])->duties;
@@ -74,9 +74,7 @@ describe('contact eager loading with types', function () {
         // Filter duties by types - this should NOT trigger additional queries
         // because types are already eager loaded
         $contacts = $contacts->map(function ($contact) use ($types) {
-            $contact->filtered_current_duties = $contact->current_duties->filter(function ($duty) use ($types) {
-                return $duty->types->intersect($types)->count() > 0;
-            });
+            $contact->filtered_current_duties = $contact->current_duties->filter(fn ($duty) => $duty->types->intersect($types)->count() > 0);
 
             return $contact;
         });

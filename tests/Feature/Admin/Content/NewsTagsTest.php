@@ -8,9 +8,9 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
 
@@ -22,20 +22,20 @@ beforeEach(function () {
     $communicationCoordinatorDuty->assignRole('Communication Coordinator');
 });
 
-describe('News Tag Functionality', function () {
+describe('News Tag Functionality', function (): void {
 
-    test('news can have tags attached', function () {
+    test('news can have tags attached', function (): void {
         $news = News::factory()->create();
         $tag1 = Tag::factory()->create(['name' => ['lt' => 'Testas 1', 'en' => 'Test 1']]);
         $tag2 = Tag::factory()->create(['name' => ['lt' => 'Testas 2', 'en' => 'Test 2']]);
 
         $news->tags()->sync([$tag1->id, $tag2->id]);
 
-        expect($news->tags)->toHaveCount(2);
-        expect($news->tags->pluck('id')->toArray())->toEqual([$tag1->id, $tag2->id]);
+        expect($news->tags)->toHaveCount(2)
+            ->and($news->tags->pluck('id')->toArray())->toEqual([$tag1->id, $tag2->id]);
     });
 
-    test('tags can be updated on news', function () {
+    test('tags can be updated on news', function (): void {
         $news = News::factory()->create();
         $tag1 = Tag::factory()->create(['name' => ['lt' => 'Testas 1', 'en' => 'Test 1']]);
         $tag2 = Tag::factory()->create(['name' => ['lt' => 'Testas 2', 'en' => 'Test 2']]);
@@ -52,7 +52,7 @@ describe('News Tag Functionality', function () {
         expect($news->tags->pluck('id')->sort()->values()->toArray())->toEqual(collect([$tag2->id, $tag3->id])->sort()->values()->toArray());
     });
 
-    test('all tags can be removed from news', function () {
+    test('all tags can be removed from news', function (): void {
         $news = News::factory()->create();
         $tag1 = Tag::factory()->create(['name' => ['lt' => 'Testas 1', 'en' => 'Test 1']]);
 
@@ -61,10 +61,10 @@ describe('News Tag Functionality', function () {
 
         $news->tags()->sync([]);
         $news->refresh(); // Refresh to get updated relationships
-        expect($news->tags)->toHaveCount(0);
+        expect($news->tags)->toBeEmpty();
     });
 
-    test('news can be created with tags via controller', function () {
+    test('news can be created with tags via controller', function (): void {
         $tag1 = Tag::factory()->create(['name' => ['lt' => 'Testas 1', 'en' => 'Test 1']]);
         $tag2 = Tag::factory()->create(['name' => ['lt' => 'Testas 2', 'en' => 'Test 2']]);
 
@@ -99,12 +99,12 @@ describe('News Tag Functionality', function () {
             ->assertSessionHas('success');
 
         $news = News::where('title', 'Test News')->first();
-        expect($news)->not->toBeNull();
-        expect($news->tags)->toHaveCount(2);
-        expect($news->tags->pluck('id')->toArray())->toEqual([$tag1->id, $tag2->id]);
+        expect($news)->not->toBeNull()
+            ->and($news->tags)->toHaveCount(2)
+            ->and($news->tags->pluck('id')->toArray())->toEqual([$tag1->id, $tag2->id]);
     });
 
-    test('news tags can be updated via controller', function () {
+    test('news tags can be updated via controller', function (): void {
         $news = News::factory()->state(['tenant_id' => $this->tenant->id])->create(); // Ensure news belongs to same tenant
         $tag1 = Tag::factory()->create(['name' => ['lt' => 'Testas 1', 'en' => 'Test 1']]);
         $tag2 = Tag::factory()->create(['name' => ['lt' => 'Testas 2', 'en' => 'Test 2']]);
@@ -143,7 +143,7 @@ describe('News Tag Functionality', function () {
             ->assertSessionHas('success');
 
         $news->refresh();
-        expect($news->tags)->toHaveCount(2);
-        expect($news->tags->pluck('id')->sort()->values()->toArray())->toEqual(collect([$tag2->id, $tag3->id])->sort()->values()->toArray());
+        expect($news->tags)->toHaveCount(2)
+            ->and($news->tags->pluck('id')->sort()->values()->toArray())->toEqual(collect([$tag2->id, $tag3->id])->sort()->values()->toArray());
     });
 });

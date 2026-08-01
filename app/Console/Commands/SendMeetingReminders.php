@@ -6,6 +6,8 @@ use App\Models\Duty;
 use App\Models\Meeting;
 use App\Models\User;
 use App\Notifications\MeetingReminderNotification;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -17,12 +19,10 @@ use Illuminate\Support\Facades\Notification;
  * Default reminder hours: 24 and 1 hour before meeting.
  * Users can customize their reminder hours in notification preferences.
  */
+#[Description('Send meeting reminder notifications to participants')]
+#[Signature('notifications:meeting-reminders')]
 class SendMeetingReminders extends Command
 {
-    protected $signature = 'notifications:meeting-reminders';
-
-    protected $description = 'Send meeting reminder notifications to participants';
-
     public function handle(): int
     {
         $checkHours = $this->getConfiguredReminderHours();

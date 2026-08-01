@@ -54,7 +54,7 @@ class FileApiController extends ApiController
         try {
             $requestedPath = $request->input('path', 'public/files');
             $path = $this->validateAndNormalizePath($requestedPath);
-        } catch (\InvalidArgumentException $e) {
+        } catch (\InvalidArgumentException) {
             return $this->jsonError('Invalid path format', 400, code: 'INVALID_PATH');
         }
 
@@ -135,13 +135,11 @@ class FileApiController extends ApiController
      */
     protected function getFilesFromStorage(string $path, ?array $extensions = null): array
     {
-        $directories = collect(Storage::directories($path))->map(function ($dir) {
-            return [
-                'path' => $dir,
-                'name' => basename($dir),
-                'type' => 'directory',
-            ];
-        })->toArray();
+        $directories = collect(Storage::directories($path))->map(fn ($dir) => [
+            'path' => $dir,
+            'name' => basename($dir),
+            'type' => 'directory',
+        ])->toArray();
 
         $files = collect(Storage::files($path))
             ->filter(function ($file) use ($extensions) {

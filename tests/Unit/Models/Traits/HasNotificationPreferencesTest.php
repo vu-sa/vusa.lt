@@ -2,23 +2,20 @@
 
 use App\Enums\NotificationCategory;
 use App\Enums\NotificationChannel;
+use App\Models\Task;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Feature\Notifications\NotificationTestHelpers;
 
-uses(RefreshDatabase::class, NotificationTestHelpers::class);
+pest()->use(RefreshDatabase::class, NotificationTestHelpers::class);
 
-describe('default preferences', function () {
-    test('defaults are applied when preferences are null', function () {
+describe('default preferences', function (): void {
+    test('defaults are applied when preferences are null', function (): void {
         $user = User::factory()->create(['notification_preferences' => null]);
 
         $prefs = $user->notification_preferences;
 
-        expect($prefs)->toHaveKey('channels');
-        expect($prefs)->toHaveKey('digest_frequency_hours');
-        expect($prefs)->toHaveKey('muted_until');
-        expect($prefs)->toHaveKey('muted_threads');
-        expect($prefs)->toHaveKey('reminder_settings');
+        expect($prefs)->toHaveKeys(['channels', 'digest_frequency_hours', 'muted_until', 'muted_threads', 'reminder_settings']);
 
         // Categories that are disabled by default (opt-in)
         $disabledByDefault = [
@@ -34,12 +31,12 @@ describe('default preferences', function () {
             }
         }
 
-        expect($prefs['digest_frequency_hours'])->toBe(4);
-        expect($prefs['muted_until'])->toBeNull();
-        expect($prefs['muted_threads'])->toBeEmpty();
+        expect($prefs['digest_frequency_hours'])->toBe(4)
+            ->and($prefs['muted_until'])->toBeNull()
+            ->and($prefs['muted_threads'])->toBeEmpty();
     });
 
-    test('partial preferences are merged with defaults', function () {
+    test('partial preferences are merged with defaults', function (): void {
         $user = User::factory()->create([
             'notification_preferences' => [
                 'digest_frequency_hours' => 12,
@@ -55,14 +52,14 @@ describe('default preferences', function () {
     });
 });
 
-describe('global muting', function () {
-    test('isGloballyMuted returns true when muted_until is in future', function () {
+describe('global muting', function (): void {
+    test('isGloballyMuted returns true when muted_until is in future', function (): void {
         $user = $this->createMutedUser(now()->addHour());
 
         expect($user->isGloballyMuted())->toBeTrue();
     });
 
-    test('isGloballyMuted returns false when muted_until is in past', function () {
+    test('isGloballyMuted returns false when muted_until is in past', function (): void {
         $user = User::factory()->create([
             'notification_preferences' => [
                 'muted_until' => now()->subHour()->toIso8601String(),
@@ -72,13 +69,13 @@ describe('global muting', function () {
         expect($user->isGloballyMuted())->toBeFalse();
     });
 
-    test('isGloballyMuted returns false when muted_until is null', function () {
+    test('isGloballyMuted returns false when muted_until is null', function (): void {
         $user = $this->createUserWithPreferences();
 
         expect($user->isGloballyMuted())->toBeFalse();
     });
 
-    test('muteNotificationsUntil sets mute timestamp', function () {
+    test('muteNotificationsUntil sets mute timestamp', function (): void {
         $user = $this->createUserWithPreferences();
         $muteUntil = now()->addHours(2);
 
@@ -88,7 +85,7 @@ describe('global muting', function () {
         expect($user->isGloballyMuted())->toBeTrue();
     });
 
-    test('unmuteNotifications clears mute', function () {
+    test('unmuteNotifications clears mute', function (): void {
         $user = $this->createMutedUser();
 
         expect($user->isGloballyMuted())->toBeTrue();
@@ -99,7 +96,7 @@ describe('global muting', function () {
         expect($user->isGloballyMuted())->toBeFalse();
     });
 
-    test('global mute expires correctly with time travel', function () {
+    test('global mute expires correctly with time travel', function (): void {
         $user = $this->createMutedUser(now()->addMinutes(30));
 
         expect($user->isGloballyMuted())->toBeTrue();
@@ -110,25 +107,24 @@ describe('global muting', function () {
     });
 });
 
-describe('thread muting', function () {
-    test('muteThread adds to muted_threads array', function () {
+describe('thread muting', function (): void {
+    test('muteThread adds to muted_threads array', function (): void {
         $user = $this->createUserWithPreferences();
 
-        $user->muteThread('App\\Models\\Task', '123');
+        $user->muteThread(Task::class, '123');
 
         $user->refresh();
         $mutedThreads = $user->notification_preferences['muted_threads'];
 
-        expect($mutedThreads)->toHaveCount(1);
-        expect($mutedThreads[0]['model_class'])->toBe('App\\Models\\Task');
-        expect($mutedThreads[0]['model_id'])->toBe('123');
+        expect($mutedThreads)->toHaveCount(1)
+            ->and($mutedThreads[0])->toMatchArray(['model_class' => Task::class, 'model_id' => '123']);
     });
 
-    test('muteThread with expiry sets until timestamp', function () {
+    test('muteThread with expiry sets until timestamp', function (): void {
         $user = $this->createUserWithPreferences();
         $until = now()->addDay();
 
-        $user->muteThread('App\\Models\\Task', '123', $until);
+        $user->muteThread(Task::class, '123', $until);
 
         $user->refresh();
         $mutedThreads = $user->notification_preferences['muted_threads'];
@@ -136,28 +132,28 @@ describe('thread muting', function () {
         expect($mutedThreads[0]['until'])->not->toBeNull();
     });
 
-    test('unmuteThread removes from muted_threads array', function () {
+    test('unmuteThread removes from muted_threads array', function (): void {
         $user = $this->createUserWithPreferences();
 
-        $user->muteThread('App\\Models\\Task', '123');
-        $user->muteThread('App\\Models\\Task', '456');
+        $user->muteThread(Task::class, '123');
+        $user->muteThread(Task::class, '456');
 
         $user->refresh();
         expect($user->notification_preferences['muted_threads'])->toHaveCount(2);
 
-        $user->unmuteThread('App\\Models\\Task', '123');
+        $user->unmuteThread(Task::class, '123');
         $user->refresh();
 
         $mutedThreads = $user->notification_preferences['muted_threads'];
-        expect($mutedThreads)->toHaveCount(1);
-        expect($mutedThreads[0]['model_id'])->toBe('456');
+        expect($mutedThreads)->toHaveCount(1)
+            ->and($mutedThreads[0]['model_id'])->toBe('456');
     });
 
-    test('muteThread replaces existing mute for same thread', function () {
+    test('muteThread replaces existing mute for same thread', function (): void {
         $user = $this->createUserWithPreferences();
 
-        $user->muteThread('App\\Models\\Task', '123', now()->addHour());
-        $user->muteThread('App\\Models\\Task', '123', now()->addDays(7));
+        $user->muteThread(Task::class, '123', now()->addHour());
+        $user->muteThread(Task::class, '123', now()->addDays(7));
 
         $user->refresh();
         $mutedThreads = $user->notification_preferences['muted_threads'];
@@ -166,8 +162,8 @@ describe('thread muting', function () {
     });
 });
 
-describe('channel preferences', function () {
-    test('shouldReceiveNotification returns true for enabled channel', function () {
+describe('channel preferences', function (): void {
+    test('shouldReceiveNotification returns true for enabled channel', function (): void {
         $user = $this->createUserWithPreferences();
 
         expect($user->shouldReceiveNotification(
@@ -176,7 +172,7 @@ describe('channel preferences', function () {
         ))->toBeTrue();
     });
 
-    test('shouldReceiveNotification returns false for disabled channel', function () {
+    test('shouldReceiveNotification returns false for disabled channel', function (): void {
         $user = $this->createUserWithDisabledChannel(
             NotificationCategory::Task,
             NotificationChannel::Push
@@ -194,7 +190,7 @@ describe('channel preferences', function () {
         ))->toBeTrue();
     });
 
-    test('setNotificationPreference updates specific channel', function () {
+    test('setNotificationPreference updates specific channel', function (): void {
         $user = $this->createUserWithPreferences();
 
         $user->setNotificationPreference(
@@ -218,20 +214,20 @@ describe('channel preferences', function () {
     });
 });
 
-describe('digest settings', function () {
-    test('getDigestFrequencyHours returns default when not set', function () {
+describe('digest settings', function (): void {
+    test('getDigestFrequencyHours returns default when not set', function (): void {
         $user = $this->createUserWithPreferences();
 
         expect($user->getDigestFrequencyHours())->toBe(4);
     });
 
-    test('getDigestFrequencyHours returns custom value', function () {
+    test('getDigestFrequencyHours returns custom value', function (): void {
         $user = $this->createUserWithDigestEnabled(12);
 
         expect($user->getDigestFrequencyHours())->toBe(12);
     });
 
-    test('setDigestFrequencyHours validates allowed values', function () {
+    test('setDigestFrequencyHours validates allowed values', function (): void {
         $user = $this->createUserWithPreferences();
 
         // Valid values
@@ -248,14 +244,14 @@ describe('digest settings', function () {
     });
 });
 
-describe('reminder settings', function () {
-    test('getTaskReminderDays returns default values', function () {
+describe('reminder settings', function (): void {
+    test('getTaskReminderDays returns default values', function (): void {
         $user = $this->createUserWithPreferences();
 
         expect($user->getTaskReminderDays())->toBe([7, 3, 1]);
     });
 
-    test('setTaskReminderDays updates values', function () {
+    test('setTaskReminderDays updates values', function (): void {
         $user = $this->createUserWithPreferences();
 
         $user->setTaskReminderDays([14, 7, 1]);
@@ -264,7 +260,7 @@ describe('reminder settings', function () {
         expect($user->getTaskReminderDays())->toBe([14, 7, 1]);
     });
 
-    test('setTaskReminderDays filters invalid values', function () {
+    test('setTaskReminderDays filters invalid values', function (): void {
         $user = $this->createUserWithPreferences();
 
         // Note: Due to array_replace_recursive behavior, filtered values [7, 3]
@@ -278,17 +274,16 @@ describe('reminder settings', function () {
         expect($days)->not->toContain(0);
         expect($days)->not->toContain(-1);
         // The actual stored filtered values are 7 and 3
-        expect($days[0])->toBe(7);
-        expect($days[1])->toBe(3);
+        expect($days)->toMatchArray([0 => 7, 1 => 3]);
     });
 
-    test('getMeetingReminderHours returns default values', function () {
+    test('getMeetingReminderHours returns default values', function (): void {
         $user = $this->createUserWithPreferences();
 
         expect($user->getMeetingReminderHours())->toBe([24, 1]);
     });
 
-    test('setMeetingReminderHours updates values', function () {
+    test('setMeetingReminderHours updates values', function (): void {
         $user = $this->createUserWithPreferences();
 
         $user->setMeetingReminderHours([48, 24, 2]);

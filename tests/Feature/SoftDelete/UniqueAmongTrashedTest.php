@@ -7,7 +7,7 @@ use App\Rules\UniqueAmongTrashed;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Validator;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 /**
  * Where a database UNIQUE index sits on a soft-deletable table, a trashed row genuinely
@@ -26,7 +26,7 @@ function expectedMessage(string $key, string $attribute = 'email'): string
     return __($key, ['attribute' => __("validation.attributes.{$attribute}")]);
 }
 
-test('a value held by a live record is rejected with the standard message', function () {
+test('a value held by a live record is rejected with the standard message', function (): void {
     $existing = User::factory()->create(['email' => 'taken@vusa.lt']);
 
     $validator = validateWith(UniqueAmongTrashed::of('users', 'email'), $existing->email);
@@ -35,7 +35,7 @@ test('a value held by a live record is rejected with the standard message', func
         ->and($validator->errors()->first('email'))->toBe(expectedMessage('validation.unique'));
 });
 
-test('a value held by a trashed record explains where the record is', function () {
+test('a value held by a trashed record explains where the record is', function (): void {
     $trashed = User::factory()->create(['email' => 'gone@vusa.lt']);
     $trashed->delete();
 
@@ -48,13 +48,13 @@ test('a value held by a trashed record explains where the record is', function (
         ->not->toBe(expectedMessage('validation.unique'));
 });
 
-test('an unused value passes', function () {
+test('an unused value passes', function (): void {
     $validator = validateWith(UniqueAmongTrashed::of('users', 'email'), 'fresh@vusa.lt');
 
     expect($validator->passes())->toBeTrue();
 });
 
-test('a record may keep its own value on update', function () {
+test('a record may keep its own value on update', function (): void {
     $user = User::factory()->create(['email' => 'mine@vusa.lt']);
 
     $validator = validateWith(
@@ -65,7 +65,7 @@ test('a record may keep its own value on update', function () {
     expect($validator->passes())->toBeTrue();
 });
 
-test('nested attribute names are checked, not silently skipped', function () {
+test('nested attribute names are checked, not silently skipped', function (): void {
     // A dotted attribute like `new_users.0.email` gets read as array access by a nested
     // validator, which finds nothing and passes the check vacuously.
     User::factory()->create(['email' => 'dup@vusa.lt']);
@@ -79,7 +79,7 @@ test('nested attribute names are checked, not silently skipped', function () {
         ->and($validator->errors()->has('new_users.0.email'))->toBeTrue();
 });
 
-test('scoping narrows the check to the columns of a composite index', function () {
+test('scoping narrows the check to the columns of a composite index', function (): void {
     $category = Category::factory()->create(['alias' => 'shared-alias']);
 
     $unscoped = validateWith(UniqueAmongTrashed::of('categories', 'alias'), 'shared-alias', 'alias');
@@ -93,8 +93,8 @@ test('scoping narrows the check to the columns of a composite index', function (
         ->and($scopedElsewhere->passes())->toBeTrue();
 });
 
-describe('through the HTTP layer', function () {
-    test('creating a user with a trashed user\'s email is refused with the explanatory message', function () {
+describe('through the HTTP layer', function (): void {
+    test('creating a user with a trashed user\'s email is refused with the explanatory message', function (): void {
         $tenant = Tenant::query()->first();
         $admin = makeAdminUser($tenant);
 

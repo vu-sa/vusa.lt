@@ -52,7 +52,7 @@ class BatchUpdateDutyUsersRequest extends FormRequest
             'user_changes.*.user_id' => [
                 'required',
                 'string',
-                function ($attribute, $value, $fail) {
+                function ($attribute, $value, $fail): void {
                     if (str_starts_with($value, 'new-')) {
                         return;
                     }
@@ -77,7 +77,7 @@ class BatchUpdateDutyUsersRequest extends FormRequest
 
     public function withValidator(Validator $validator): void
     {
-        $validator->after(function (Validator $v) {
+        $validator->after(function (Validator $v): void {
             /** @var Duty $duty */
             $duty = $this->route('duty');
             $isOwningAdmin = $this->user()->can('update', $duty);
@@ -112,7 +112,7 @@ class BatchUpdateDutyUsersRequest extends FormRequest
                         ->where('dutiable_type', User::class)
                         ->whereIn('dutiable_id', $removeUserIds)
                         ->where('tenant_id', $tenant->id)
-                        ->where(function ($query) {
+                        ->where(function ($query): void {
                             $query->whereNull('end_date')
                                 ->orWhere('end_date', '>=', now());
                         })
@@ -125,7 +125,7 @@ class BatchUpdateDutyUsersRequest extends FormRequest
                 $currentCount = Dutiable::where('duty_id', $duty->id)
                     ->where('dutiable_type', User::class)
                     ->where('tenant_id', $tenant->id)
-                    ->where(function ($query) {
+                    ->where(function ($query): void {
                         $query->whereNull('end_date')
                             ->orWhere('end_date', '>=', now());
                     })

@@ -29,6 +29,7 @@ class TestPushNotification extends BaseNotification
         return route('profile');
     }
 
+    #[\Override]
     public function icon(): string
     {
         return '🔔';
@@ -37,6 +38,7 @@ class TestPushNotification extends BaseNotification
     /**
      * Test notifications should not be queued for digest.
      */
+    #[\Override]
     public function supportsEmailDigest(): bool
     {
         return false;

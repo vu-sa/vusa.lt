@@ -8,12 +8,13 @@ use App\Enums\ModelEnum;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Concerns\ApiResponses;
 use App\Models\Approval;
+use App\Models\Pivots\ReservationResource;
 use App\Models\Traits\HasApprovals;
 use App\Services\ApprovalService;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Spatie\Enum\Laravel\Rules\EnumRule;
+use Illuminate\Validation\Rules\Enum;
 
 class ApprovalController extends AdminController
 {
@@ -30,7 +31,7 @@ class ApprovalController extends AdminController
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'approvable_type' => ['required', new EnumRule(ModelEnum::class)],
+            'approvable_type' => ['required', new Enum(ModelEnum::class)],
             'approvable_id' => 'required|string',
             'decision' => 'required|string|in:approved,rejected,cancelled',
             'notes' => 'nullable|string|max:1000',
@@ -82,7 +83,7 @@ class ApprovalController extends AdminController
     public function bulkStore(Request $request)
     {
         $validated = $request->validate([
-            'approvable_type' => ['required', new EnumRule(ModelEnum::class)],
+            'approvable_type' => ['required', new Enum(ModelEnum::class)],
             'approvable_ids' => 'required|array|min:1',
             'approvable_ids.*' => 'required|string',
             'decision' => 'required|string|in:approved,rejected,cancelled',
@@ -135,7 +136,7 @@ class ApprovalController extends AdminController
     public function resolve(Request $request)
     {
         $validated = $request->validate([
-            'approvable_type' => ['required', new EnumRule(ModelEnum::class)],
+            'approvable_type' => ['required', new Enum(ModelEnum::class)],
             'approvable_ids' => 'required|array|min:1',
             'approvable_ids.*' => 'required|string',
             'notes' => 'nullable|string|max:1000',
@@ -184,7 +185,7 @@ class ApprovalController extends AdminController
         $formatted = Str::ucfirst(Str::camel($type));
 
         if ($formatted === 'ReservationResource') {
-            $modelClass = 'App\\Models\\Pivots\\ReservationResource';
+            $modelClass = ReservationResource::class;
         } else {
             $modelClass = 'App\\Models\\'.$formatted;
         }
@@ -219,7 +220,7 @@ class ApprovalController extends AdminController
     public function history(Request $request)
     {
         $validated = $request->validate([
-            'approvable_type' => ['required', new EnumRule(ModelEnum::class)],
+            'approvable_type' => ['required', new Enum(ModelEnum::class)],
             'approvable_id' => 'required|string',
         ]);
 

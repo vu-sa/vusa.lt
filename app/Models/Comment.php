@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\CommentKind;
 use App\Services\HtmlSanitizerService;
+use Illuminate\Database\Eloquent\Attributes\Touches;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
@@ -60,6 +61,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  *
  * @mixin \Eloquent
  */
+#[Touches(['commentable'])]
 class Comment extends Model
 {
     use HasFactory, HasUlids, LogsActivity, SoftDeletes;
@@ -69,6 +71,7 @@ class Comment extends Model
      */
     public const ALLOWED_REACTIONS = ['👍', '❤️', '✅', '🎉', '👀', '🙏'];
 
+    #[\Override]
     protected $guarded = [];
 
     /**
@@ -77,14 +80,15 @@ class Comment extends Model
      *
      * @var array<string, mixed>
      */
+    #[\Override]
     protected $attributes = [
         'kind' => 'comment',
     ];
 
-    protected $touches = ['commentable'];
-
+    #[\Override]
     protected $with = ['user:id,name,profile_photo_path'];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

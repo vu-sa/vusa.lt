@@ -8,9 +8,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->regularUser = makeUser($this->tenant);
     $this->documentManager = makeUser($this->tenant);
@@ -18,13 +18,13 @@ beforeEach(function () {
     $this->institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 });
 
-describe('unauthorized access', function () {
-    test('cannot access documents index', function () {
+describe('unauthorized access', function (): void {
+    test('cannot access documents index', function (): void {
         $response = asUser($this->regularUser)->get(route('documents.index'));
         expect($response->status())->toBe(403);
     });
 
-    test('cannot store sharepoint documents', function () {
+    test('cannot store sharepoint documents', function (): void {
         $response = asUser($this->regularUser)->post(route('documents.store'), [
             'documents' => [
                 [
@@ -38,14 +38,14 @@ describe('unauthorized access', function () {
         expect($response->status())->toBe(403);
     });
 
-    test('cannot refresh documents', function () {
+    test('cannot refresh documents', function (): void {
         $document = Document::factory()->create(['institution_id' => $this->institution->id]);
 
         $response = asUser($this->regularUser)->post(route('documents.refresh', $document));
         expect($response->status())->toBe(403);
     });
 
-    test('cannot delete documents', function () {
+    test('cannot delete documents', function (): void {
         $document = Document::factory()->create(['institution_id' => $this->institution->id]);
 
         $response = asUser($this->regularUser)->delete(route('documents.destroy', $document));
@@ -53,8 +53,8 @@ describe('unauthorized access', function () {
     });
 });
 
-describe('authorized access', function () {
-    test('document manager can access documents index', function () {
+describe('authorized access', function (): void {
+    test('document manager can access documents index', function (): void {
         // Create 3 documents for this institution
         Document::factory()->count(3)->create(['institution_id' => $this->institution->id]);
 
@@ -63,15 +63,14 @@ describe('authorized access', function () {
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/Files/IndexDocument')
                 ->has('data')
-                ->where('data', function ($data) {
+                ->where('data',
                     // Should have at least 3 documents (the ones we created)
                     // but may have more from seeding
-                    return count($data) >= 3;
-                })
+                    fn ($data) => count($data) >= 3)
             );
     });
 
-    test('admin can access documents index', function () {
+    test('admin can access documents index', function (): void {
         $admin = makeTenantUserWithRole('Resource Manager', $this->tenant);
         Document::factory()->count(2)->create(['institution_id' => $this->institution->id]);
 
@@ -83,7 +82,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('document manager can store sharepoint documents with mocked API', function () {
+    test('document manager can store sharepoint documents with mocked API', function (): void {
         // Mock SharePoint HTTP requests
         Http::fake([
             'login.microsoftonline.com/*' => Http::response([
@@ -117,17 +116,15 @@ describe('authorized access', function () {
 
         // If SharePoint service is implemented, verify HTTP calls were made
         try {
-            Http::assertSent(function ($request) {
-                return str_contains($request->url(), 'sharepoint.com') ||
-                       str_contains($request->url(), 'microsoftonline.com');
-            });
-        } catch (Exception $e) {
+            Http::assertSent(fn ($request) => str_contains($request->url(), 'sharepoint.com') ||
+                   str_contains($request->url(), 'microsoftonline.com'));
+        } catch (Exception) {
             // HTTP facade might not be used in current implementation
             expect(true)->toBeTrue();
         }
     });
 
-    test('document manager can refresh document from sharepoint with mocked API', function () {
+    test('document manager can refresh document from sharepoint with mocked API', function (): void {
         $document = Document::factory()->create([
             'institution_id' => $this->institution->id,
             'sharepoint_id' => 'existing-doc-id',
@@ -153,7 +150,7 @@ describe('authorized access', function () {
         expect($response->getStatusCode())->toBeIn([200, 302, 422, 500]);
     });
 
-    test('document manager can delete documents', function () {
+    test('document manager can delete documents', function (): void {
         Queue::fake();
 
         $document = Document::factory()->create([
@@ -167,13 +164,11 @@ describe('authorized access', function () {
 
         $this->assertDatabaseMissing('documents', ['id' => $document->id]);
 
-        Queue::assertPushed(RevokeSharepointPermissionJob::class, function ($job) use ($document) {
-            return $job->sharepointPermissionId === 'perm-to-revoke'
-                && $job->documentId === $document->id;
-        });
+        Queue::assertPushed(RevokeSharepointPermissionJob::class, fn ($job) => $job->sharepointPermissionId === 'perm-to-revoke'
+            && $job->documentId === $document->id);
     });
 
-    test('super admin can delete documents from any tenant', function () {
+    test('super admin can delete documents from any tenant', function (): void {
         $superAdmin = makeAdminUser();
         $otherTenant = Tenant::factory()->create();
         $otherInstitution = Institution::factory()->create(['tenant_id' => $otherTenant->id]);
@@ -185,7 +180,7 @@ describe('authorized access', function () {
         $this->assertDatabaseMissing('documents', ['id' => $otherDocument->id]);
     });
 
-    test('cannot manage documents from other tenants as document manager', function () {
+    test('cannot manage documents from other tenants as document manager', function (): void {
         $otherTenant = Tenant::factory()->create();
         $otherInstitution = Institution::factory()->create(['tenant_id' => $otherTenant->id]);
         $otherDocument = Document::factory()->create(['institution_id' => $otherInstitution->id]);
@@ -207,7 +202,7 @@ describe('authorized access', function () {
         expect($response->status())->toBe(403);
     });
 
-    test('can filter documents by institution', function () {
+    test('can filter documents by institution', function (): void {
         $anotherInstitution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
         Document::factory()->count(2)->create(['institution_id' => $this->institution->id]);
@@ -221,7 +216,7 @@ describe('authorized access', function () {
         $response->assertStatus(200);
     });
 
-    test('admin table search works for document management', function () {
+    test('admin table search works for document management', function (): void {
         Document::factory()->create([
             'institution_id' => $this->institution->id,
             'name' => 'Special Report.pdf',
@@ -239,8 +234,8 @@ describe('authorized access', function () {
     });
 });
 
-describe('validation', function () {
-    test('handles sharepoint API errors gracefully', function () {
+describe('validation', function (): void {
+    test('handles sharepoint API errors gracefully', function (): void {
         // Mock SharePoint API error responses
         Http::fake([
             'login.microsoftonline.com/*' => Http::response([
@@ -271,13 +266,13 @@ describe('validation', function () {
         expect($response->getStatusCode())->toBeIn([302, 401, 404, 422, 500]);
     });
 
-    test('requires documents array for store', function () {
+    test('requires documents array for store', function (): void {
         $response = asUser($this->documentManager)->post(route('documents.store'), []);
 
         expect($response->status())->toBeIn([302, 422]);
     });
 
-    test('requires valid sharepoint metadata for documents', function () {
+    test('requires valid sharepoint metadata for documents', function (): void {
         $response = asUser($this->documentManager)->post(route('documents.store'), [
             'documents' => [
                 [
@@ -291,8 +286,8 @@ describe('validation', function () {
     });
 });
 
-describe('relationships', function () {
-    test('documents are scoped to tenant through institution', function () {
+describe('relationships', function (): void {
+    test('documents are scoped to tenant through institution', function (): void {
         $otherTenant = Tenant::factory()->create();
         $otherInstitution = Institution::factory()->create(['tenant_id' => $otherTenant->id]);
 
@@ -321,33 +316,33 @@ describe('relationships', function () {
             );
     });
 
-    test('document factory creates valid sharepoint document', function () {
+    test('document factory creates valid sharepoint document', function (): void {
         $document = Document::factory()->create([
             'institution_id' => $this->institution->id,
             'is_active' => true,
         ]);
 
-        expect($document->name)->toBeString();
-        expect($document->title)->toBeString();
-        expect($document->sharepoint_id)->toBeString();
-        expect($document->sharepoint_site_id)->toBeString();
-        expect($document->sharepoint_list_id)->toBeString();
-        expect($document->institution_id)->toBe($this->institution->id);
-        expect($document->is_active)->toBeTrue();
+        expect($document->name)->toBeString()
+            ->and($document->title)->toBeString()
+            ->and($document->sharepoint_id)->toBeString()
+            ->and($document->sharepoint_site_id)->toBeString()
+            ->and($document->sharepoint_list_id)->toBeString()
+            ->and($document->institution_id)->toBe($this->institution->id)
+            ->and($document->is_active)->toBeTrue();
     });
 
-    test('document has tenant relationship through institution', function () {
+    test('document has tenant relationship through institution', function (): void {
         $document = Document::factory()->create(['institution_id' => $this->institution->id]);
 
-        expect($document->institution)->not->toBeNull();
-        expect($document->institution->tenant_id)->toBe($this->tenant->id);
+        expect($document->institution)->not->toBeNull()
+            ->and($document->institution->tenant_id)->toBe($this->tenant->id);
 
         // Test the tenant relationship method
         $tenant = $document->tenant()->first();
         expect($tenant->id)->toBe($this->tenant->id);
     });
 
-    test('document has required sharepoint metadata', function () {
+    test('document has required sharepoint metadata', function (): void {
         $document = Document::factory()->create([
             'institution_id' => $this->institution->id,
             'sharepoint_id' => 'test-sharepoint-id',
@@ -355,8 +350,8 @@ describe('relationships', function () {
             'sharepoint_list_id' => 'test-list-id',
         ]);
 
-        expect($document->sharepoint_id)->toBe('test-sharepoint-id');
-        expect($document->sharepoint_site_id)->toBe('test-site-id');
-        expect($document->sharepoint_list_id)->toBe('test-list-id');
+        expect($document->sharepoint_id)->toBe('test-sharepoint-id')
+            ->and($document->sharepoint_site_id)->toBe('test-site-id')
+            ->and($document->sharepoint_list_id)->toBe('test-list-id');
     });
 });

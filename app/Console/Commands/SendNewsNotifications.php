@@ -7,6 +7,8 @@ use App\Enums\NotificationChannel;
 use App\Models\News;
 use App\Models\User;
 use App\Notifications\NewsPublishedNotification;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -18,12 +20,10 @@ use Illuminate\Support\Collection;
  * publish_time has passed) within the last run window and notifies
  * users who have opted in to news notifications.
  */
+#[Description('Send notifications for recently published news articles')]
+#[Signature('notifications:send-news')]
 class SendNewsNotifications extends Command
 {
-    protected $signature = 'notifications:send-news';
-
-    protected $description = 'Send notifications for recently published news articles';
-
     public function handle(): int
     {
         $sentCount = 0;
@@ -80,10 +80,9 @@ class SendNewsNotifications extends Command
      */
     protected function getUsersOptedInForNews(): Collection
     {
-        return User::all()->filter(function (User $user) {
+        return User::all()->filter(
             // Check if user has enabled at least one channel for news
-            return $user->shouldReceiveNotification(NotificationCategory::News, NotificationChannel::InApp)
-                || $user->shouldReceiveNotification(NotificationCategory::News, NotificationChannel::Push);
-        });
+            fn (User $user) => $user->shouldReceiveNotification(NotificationCategory::News, NotificationChannel::InApp)
+            || $user->shouldReceiveNotification(NotificationCategory::News, NotificationChannel::Push));
     }
 }

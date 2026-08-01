@@ -16,6 +16,7 @@ class UpdateFormRequest extends FormRequest
         return $this->user()->can('update', $this->form);
     }
 
+    #[\Override]
     protected function prepareForValidation()
     {
         $publishTime = $this->input('publish_time');

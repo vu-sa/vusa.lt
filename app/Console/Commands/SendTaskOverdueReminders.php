@@ -5,6 +5,8 @@ namespace App\Console\Commands;
 use App\Models\Task;
 use App\Models\User;
 use App\Notifications\TaskOverdueNotification;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 
@@ -14,12 +16,10 @@ use Illuminate\Support\Carbon;
  * This command runs once per week (e.g., Monday morning) and notifies
  * users who have tasks that are past their due date and not completed.
  */
+#[Description('Send weekly reminders to users with overdue tasks')]
+#[Signature('notifications:task-overdue-reminders')]
 class SendTaskOverdueReminders extends Command
 {
-    protected $signature = 'notifications:task-overdue-reminders';
-
-    protected $description = 'Send weekly reminders to users with overdue tasks';
-
     public function handle(): int
     {
         // Get all overdue tasks grouped by user

@@ -15,13 +15,15 @@ use Tiptap\Core\Extension;
  */
 class TextAlign extends Extension
 {
+    #[\Override]
     public static $name = 'textAlign';
 
-    private const ALIGN_CLASS = [
+    private const array ALIGN_CLASS = [
         'center' => 'rc-align-center',
         'end' => 'rc-align-end',
     ];
 
+    #[\Override]
     public function addOptions()
     {
         return [
@@ -29,6 +31,7 @@ class TextAlign extends Extension
         ];
     }
 
+    #[\Override]
     public function addGlobalAttributes()
     {
         return [

@@ -73,10 +73,12 @@ class Type extends Model implements GuardsForceDelete, SharepointFileableContrac
 {
     use GuardsForceDeleteWhenReferenced, HasContentRelationships, HasFactory, HasSharepointFiles, HasTranslations, LogsActivity, SoftDeletes;
 
+    #[\Override]
     protected $guarded = [];
 
     protected $translatable = ['title', 'description'];
 
+    #[\Override]
     protected function casts(): array
     {
         return [
@@ -91,9 +93,10 @@ class Type extends Model implements GuardsForceDelete, SharepointFileableContrac
         return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
+    #[\Override]
     protected static function booted()
     {
-        static::saving(function (Type $type) {
+        static::saving(function (Type $type): void {
             // Dispatch event when title is about to change - SharePoint must succeed first
             if ($type->isDirty('title')) {
                 FileableNameUpdated::dispatch($type);

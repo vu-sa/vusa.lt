@@ -19,13 +19,11 @@ class GetTenantsForUpserts
 
         if ($authorizer->isAllScope) {
             return Tenant::query()->orderBy('shortname_vu')->get(['id', 'shortname', 'type'])->map(
-                function ($tenant) {
-                    return [
-                        'id' => $tenant->id,
-                        'shortname' => __($tenant->shortname),
-                        'type' => $tenant->type,
-                    ];
-                }
+                fn ($tenant) => [
+                    'id' => $tenant->id,
+                    'shortname' => __($tenant->shortname),
+                    'type' => $tenant->type,
+                ]
             );
         }
 
@@ -34,13 +32,11 @@ class GetTenantsForUpserts
         $tenants = $duties->load('institution.tenant')->pluck('institution.tenant');
 
         return $tenants->unique('id')->map(
-            function ($tenant) {
-                return [
-                    'id' => $tenant->id,
-                    'shortname' => __($tenant->shortname),
-                    'type' => $tenant->type,
-                ];
-            }
+            fn ($tenant) => [
+                'id' => $tenant->id,
+                'shortname' => __($tenant->shortname),
+                'type' => $tenant->type,
+            ]
         );
     }
 }

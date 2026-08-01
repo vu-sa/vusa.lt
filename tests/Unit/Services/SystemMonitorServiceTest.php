@@ -6,21 +6,21 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 
-describe('SystemMonitorService', function () {
-    beforeEach(function () {
+describe('SystemMonitorService', function (): void {
+    beforeEach(function (): void {
         $this->service = new SystemMonitorService;
     });
 
-    describe('getAllStatus', function () {
-        test('returns all required status sections', function () {
+    describe('getAllStatus', function (): void {
+        test('returns all required status sections', function (): void {
             $status = $this->service->getAllStatus();
 
             expect($status)->toHaveKeys(['redis', 'database', 'cache', 'typesense', 'integrations', 'system']);
         });
     });
 
-    describe('getRedisStatus', function () {
-        test('returns healthy status when Redis responds', function () {
+    describe('getRedisStatus', function (): void {
+        test('returns healthy status when Redis responds', function (): void {
             Redis::shouldReceive('info')->once()->andReturn([
                 'used_memory' => 1024 * 1024,
                 'used_memory_rss' => 2 * 1024 * 1024,
@@ -45,7 +45,7 @@ describe('SystemMonitorService', function () {
                 ->and($status)->toHaveKey('last_check');
         });
 
-        test('returns error status when Redis throws', function () {
+        test('returns error status when Redis throws', function (): void {
             Redis::shouldReceive('info')->once()->andThrow(new Exception('Connection refused'));
 
             $status = $this->service->getRedisStatus();
@@ -57,8 +57,8 @@ describe('SystemMonitorService', function () {
         });
     });
 
-    describe('getDatabaseStatus', function () {
-        test('returns healthy status when database connects', function () {
+    describe('getDatabaseStatus', function (): void {
+        test('returns healthy status when database connects', function (): void {
             $pdo = Mockery::mock(PDO::class);
             $connection = Mockery::mock(Connection::class);
             $connection->shouldReceive('getPdo')->once()->andReturn($pdo);
@@ -82,7 +82,7 @@ describe('SystemMonitorService', function () {
                 ->and($status)->toHaveKey('connection_time');
         });
 
-        test('returns error status when database connection fails', function () {
+        test('returns error status when database connection fails', function (): void {
             DB::shouldReceive('connection')->once()->andThrow(new Exception('SQLSTATE[HY000]'));
 
             $status = $this->service->getDatabaseStatus();
@@ -94,8 +94,8 @@ describe('SystemMonitorService', function () {
         });
     });
 
-    describe('getCacheStatus', function () {
-        test('returns healthy status when cache read/write works', function () {
+    describe('getCacheStatus', function (): void {
+        test('returns healthy status when cache read/write works', function (): void {
             Cache::shouldReceive('put')->once()->andReturnTrue();
             Cache::shouldReceive('get')->once()->andReturn('test_value');
             Cache::shouldReceive('forget')->once()->andReturnTrue();
@@ -108,7 +108,7 @@ describe('SystemMonitorService', function () {
                 ->test_result->toBe('passed');
         });
 
-        test('returns warning when cache read/write mismatches', function () {
+        test('returns warning when cache read/write mismatches', function (): void {
             Cache::shouldReceive('put')->once()->andReturnTrue();
             Cache::shouldReceive('get')->once()->andReturn('wrong_value');
             Cache::shouldReceive('forget')->once()->andReturnTrue();
@@ -121,7 +121,7 @@ describe('SystemMonitorService', function () {
                 ->test_result->toBe('failed');
         });
 
-        test('returns error status when cache throws', function () {
+        test('returns error status when cache throws', function (): void {
             Cache::shouldReceive('put')->once()->andThrow(new Exception('Cache store unavailable'));
 
             $status = $this->service->getCacheStatus();
@@ -133,8 +133,8 @@ describe('SystemMonitorService', function () {
         });
     });
 
-    describe('getIntegrationsStatus', function () {
-        test('returns correct structure for all integrations', function () {
+    describe('getIntegrationsStatus', function (): void {
+        test('returns correct structure for all integrations', function (): void {
             config([
                 'services.microsoft.client_id' => 'ms-client',
                 'services.microsoft.client_secret' => 'ms-secret',
@@ -156,31 +156,43 @@ describe('SystemMonitorService', function () {
 
             expect($status)->toHaveKeys(['microsoft', 'sharepoint', 'mail', 'scout']);
 
-            expect($status['microsoft'])
-                ->configured->toBeTrue()
-                ->client_id_set->toBeTrue()
-                ->client_secret_set->toBeTrue()
-                ->redirect_uri->toBe('https://example.com/callback')
-                ->status->toBe('configured');
+            // NOTE: each nested assertion below uses an explicit `toMatchArray()` call
+            // rather than chaining `->key->toBe()` across separate `expect($status[...])`
+            // statements. Pest Rector's `UseToMatchArrayRector` walks past intermediate
+            // property/assertion nodes to find the outermost `expect()` root and only the
+            // *last* assertion in the chain; when several consecutive `expect($status[...])`
+            // statements share the same base `$status` variable it collapses them into one
+            // bogus `expect($status)->toMatchArray([...])`, using only each chain's final
+            // value and silently discarding every earlier assertion. Writing the intended
+            // `toMatchArray()` ourselves keeps `--rector` a no-op here (the rule only
+            // rewrites `toBe`/`toEqual` chains, so it leaves this form untouched).
+            expect($status['microsoft'])->toMatchArray([
+                'configured' => true,
+                'client_id_set' => true,
+                'client_secret_set' => true,
+                'redirect_uri' => 'https://example.com/callback',
+                'status' => 'configured',
+            ]);
 
-            expect($status['sharepoint'])
-                ->configured->toBeFalse()
-                ->status->toBe('missing');
-
-            expect($status['mail'])
-                ->configured->toBeTrue()
-                ->host->toBe('smtp.example.com')
-                ->status->toBe('configured');
-
-            expect($status['scout'])
-                ->configured->toBeTrue()
-                ->driver->toBe('database')
-                ->queue_enabled->toBeTrue()
-                ->chunk_size->toBe(500)
-                ->status->toBe('configured');
+            expect($status['sharepoint'])->toMatchArray([
+                'configured' => false,
+                'status' => 'missing',
+            ])
+                ->and($status['mail'])->toMatchArray([
+                    'configured' => true,
+                    'host' => 'smtp.example.com',
+                    'status' => 'configured',
+                ])
+                ->and($status['scout'])->toMatchArray([
+                    'configured' => true,
+                    'driver' => 'database',
+                    'queue_enabled' => true,
+                    'chunk_size' => 500,
+                    'status' => 'configured',
+                ]);
         });
 
-        test('reflects missing configuration correctly', function () {
+        test('reflects missing configuration correctly', function (): void {
             config([
                 'services.microsoft.client_id' => null,
                 'services.microsoft.client_secret' => null,
@@ -192,14 +204,14 @@ describe('SystemMonitorService', function () {
 
             $status = $this->service->getIntegrationsStatus();
 
-            expect($status['microsoft']['status'])->toBe('missing');
-            expect($status['mail']['status'])->toBe('missing');
-            expect($status['scout']['status'])->toBe('disabled');
+            expect($status['microsoft']['status'])->toBe('missing')
+                ->and($status['mail']['status'])->toBe('missing')
+                ->and($status['scout']['status'])->toBe('disabled');
         });
     });
 
-    describe('getSystemStatus', function () {
-        test('returns expected system information', function () {
+    describe('getSystemStatus', function (): void {
+        test('returns expected system information', function (): void {
             config([
                 'app.env' => 'testing',
                 'app.debug' => true,
@@ -222,8 +234,8 @@ describe('SystemMonitorService', function () {
         });
     });
 
-    describe('getTypesenseStatus', function () {
-        test('returns unconfigured when Typesense API key is missing', function () {
+    describe('getTypesenseStatus', function (): void {
+        test('returns unconfigured when Typesense API key is missing', function (): void {
             config(['scout.typesense.client-settings.api_key' => null]);
 
             $status = $this->service->getTypesenseStatus();
@@ -234,7 +246,7 @@ describe('SystemMonitorService', function () {
                 ->enabled->toBeFalse();
         });
 
-        test('returns disabled when configured but no collections', function () {
+        test('returns disabled when configured but no collections', function (): void {
             config(['scout.typesense.client-settings.api_key' => 'test-key']);
             config(['scout.typesense.model-settings' => []]);
 

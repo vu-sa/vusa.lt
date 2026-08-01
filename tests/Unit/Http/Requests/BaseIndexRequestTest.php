@@ -3,9 +3,9 @@
 use App\Http\Requests\IndexUserRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-test('getFilters includes standalone search parameter', function () {
+test('getFilters includes standalone search parameter', function (): void {
     $request = new IndexUserRequest([
         'search' => 'john',
         'filters' => json_encode(['tenant' => 'vusa']),
@@ -17,7 +17,7 @@ test('getFilters includes standalone search parameter', function () {
         ->toHaveKey('tenant', 'vusa');
 });
 
-test('getFilters returns only search when no filters provided', function () {
+test('getFilters returns only search when no filters provided', function (): void {
     $request = new IndexUserRequest([
         'search' => 'doe',
     ]);
@@ -27,15 +27,15 @@ test('getFilters returns only search when no filters provided', function () {
     expect($filters)->toHaveKey('search', 'doe');
 });
 
-test('getFilters returns empty array when nothing provided', function () {
+test('getFilters returns empty array when nothing provided', function (): void {
     $request = new IndexUserRequest([]);
 
     $filters = $request->getFilters();
 
-    expect($filters)->toBe([]);
+    expect($filters)->toBeEmpty();
 });
 
-test('getFilters ignores empty search string', function () {
+test('getFilters ignores empty search string', function (): void {
     $request = new IndexUserRequest([
         'search' => '',
     ]);

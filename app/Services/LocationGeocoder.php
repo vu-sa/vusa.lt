@@ -24,9 +24,9 @@ use Illuminate\Support\Facades\Log;
  */
 class LocationGeocoder
 {
-    private const ENDPOINT = 'https://nominatim.openstreetmap.org/search';
+    private const string ENDPOINT = 'https://nominatim.openstreetmap.org/search';
 
-    private const TIMEOUT = 3;
+    private const int TIMEOUT = 3;
 
     /** Places do not move; a successful lookup is good for a long time. */
     private const HIT_TTL = 60 * 60 * 24 * 30;

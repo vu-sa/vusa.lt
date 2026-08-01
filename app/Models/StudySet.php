@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Traits\HasTranslations;
 use Database\Factories\StudySetFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -44,6 +45,13 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
+#[Fillable([
+    'name',
+    'description',
+    'order',
+    'is_visible',
+    'tenant_id',
+])]
 class StudySet extends Model
 {
     /** @use HasFactory<StudySetFactory> */
@@ -51,14 +59,7 @@ class StudySet extends Model
 
     public $translatable = ['name', 'description'];
 
-    protected $fillable = [
-        'name',
-        'description',
-        'order',
-        'is_visible',
-        'tenant_id',
-    ];
-
+    #[\Override]
     protected function casts(): array
     {
         return [

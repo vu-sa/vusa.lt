@@ -13,9 +13,9 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
 
@@ -34,8 +34,8 @@ beforeEach(function () {
     ]);
 });
 
-describe('agenda item notes API', function () {
-    test('authorized user gets a note, auto-creating an empty one', function () {
+describe('agenda item notes API', function (): void {
+    test('authorized user gets a note, auto-creating an empty one', function (): void {
         expect($this->agendaItem->note()->exists())->toBeFalse();
 
         $response = asUser($this->admin)
@@ -48,7 +48,7 @@ describe('agenda item notes API', function () {
         expect($this->agendaItem->note()->exists())->toBeTrue();
     });
 
-    test('authorized user can persist the Y.js snapshot and HTML', function () {
+    test('authorized user can persist the Y.js snapshot and HTML', function (): void {
         $response = asUser($this->admin)
             ->putJson(route('api.v1.admin.agendaItems.note.update', $this->agendaItem->id), [
                 'yjs_state' => base64_encode('binary-yjs-update'),
@@ -58,12 +58,12 @@ describe('agenda item notes API', function () {
         $response->assertOk()->assertJsonPath('success', true);
 
         $note = $this->agendaItem->note()->first();
-        expect($note->yjs_state)->toBe(base64_encode('binary-yjs-update'));
-        expect($note->notes_html)->toBe('<p>Bendros pastabos</p>');
-        expect($note->updated_by)->toBe($this->admin->id);
+        expect($note->yjs_state)->toBe(base64_encode('binary-yjs-update'))
+            ->and($note->notes_html)->toBe('<p>Bendros pastabos</p>')
+            ->and($note->updated_by)->toBe($this->admin->id);
     });
 
-    test('update requires a yjs_state', function () {
+    test('update requires a yjs_state', function (): void {
         asUser($this->admin)
             ->putJson(route('api.v1.admin.agendaItems.note.update', $this->agendaItem->id), [
                 'notes_html' => '<p>No state</p>',
@@ -72,7 +72,7 @@ describe('agenda item notes API', function () {
             ->assertJsonValidationErrors(['yjs_state']);
     });
 
-    test('unauthorized user cannot read notes (403)', function () {
+    test('unauthorized user cannot read notes (403)', function (): void {
         $outsider = makeUser(Tenant::query()->where('id', '!=', $this->tenant->id)->first() ?? $this->tenant);
 
         asUser($outsider)
@@ -80,7 +80,7 @@ describe('agenda item notes API', function () {
             ->assertStatus(403);
     });
 
-    test('unauthorized user cannot persist notes (403)', function () {
+    test('unauthorized user cannot persist notes (403)', function (): void {
         $outsider = makeUser(Tenant::query()->where('id', '!=', $this->tenant->id)->first() ?? $this->tenant);
 
         asUser($outsider)
@@ -92,7 +92,7 @@ describe('agenda item notes API', function () {
         expect($this->agendaItem->note()->exists())->toBeFalse();
     });
 
-    test('show returns the meeting active student representatives for @mentions', function () {
+    test('show returns the meeting active student representatives for @mentions', function (): void {
         $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
             ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => Duty::class]);
 
@@ -115,7 +115,7 @@ describe('agenda item notes API', function () {
             ->assertJsonPath('data.representatives.0.name', 'Atstovė Ona');
     });
 
-    test('raw yjs_state is never exposed via default model serialization', function () {
+    test('raw yjs_state is never exposed via default model serialization', function (): void {
         $note = AgendaItemNote::factory()->create([
             'agenda_item_id' => $this->agendaItem->id,
             'yjs_state' => base64_encode('secret-state'),
@@ -125,29 +125,29 @@ describe('agenda item notes API', function () {
     });
 });
 
-describe('agenda item notes presence channel auth', function () {
+describe('agenda item notes presence channel auth', function (): void {
     // The presence channel (agenda-item-notes.{id}) gates membership entirely on the
     // AgendaItem "update" ability, so asserting the Gate documents the realtime
     // security contract directly (the /broadcasting/auth HTTP path is unreliable
     // under the test broadcaster).
-    test('authorized user passes the update gate that guards the channel', function () {
+    test('authorized user passes the update gate that guards the channel', function (): void {
         expect(Gate::forUser($this->admin)->allows('update', $this->agendaItem))->toBeTrue();
     });
 
-    test('unauthorized user fails the update gate that guards the channel', function () {
+    test('unauthorized user fails the update gate that guards the channel', function (): void {
         $outsider = makeUser(Tenant::query()->where('id', '!=', $this->tenant->id)->first() ?? $this->tenant);
 
         expect(Gate::forUser($outsider)->allows('update', $this->agendaItem))->toBeFalse();
     });
 });
 
-describe('html sanitization', function () {
+describe('html sanitization', function (): void {
     /**
      * Notes are authored by any representative on the meeting and re-served to
      * every other participant through `v-html`, so the rendered snapshot is
      * sanitized on write. `yjs_state` stays the untouched source of truth.
      */
-    test('strips script from the rendered snapshot', function () {
+    test('strips script from the rendered snapshot', function (): void {
         asUser($this->admin)
             ->putJson(route('api.v1.admin.agendaItems.note.update', $this->agendaItem->id), [
                 'yjs_state' => base64_encode('state'),
@@ -163,7 +163,7 @@ describe('html sanitization', function () {
             ->not->toContain('onerror');
     });
 
-    test('keeps legitimate formatting', function () {
+    test('keeps legitimate formatting', function (): void {
         asUser($this->admin)
             ->putJson(route('api.v1.admin.agendaItems.note.update', $this->agendaItem->id), [
                 'yjs_state' => base64_encode('state'),
@@ -178,7 +178,7 @@ describe('html sanitization', function () {
             ->toContain('<strong>Punktas</strong>');
     });
 
-    test('a null snapshot stays null', function () {
+    test('a null snapshot stays null', function (): void {
         asUser($this->admin)
             ->putJson(route('api.v1.admin.agendaItems.note.update', $this->agendaItem->id), [
                 'yjs_state' => base64_encode('state'),

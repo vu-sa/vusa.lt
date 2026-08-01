@@ -130,7 +130,7 @@ class MembershipController extends AdminController
     {
         $this->handleAuthorization('update', $membership);
 
-        (new MembershipUsersImport($membership))->import(request()->file('file'));
+        new MembershipUsersImport($membership)->import(request()->file('file'));
 
         return $this->jsonSuccess(message: __('Users imported.'));
     }

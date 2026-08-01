@@ -18,6 +18,7 @@ class StoreNewsRequest extends NewsRequest
         return $this->user()->can('create', News::class);
     }
 
+    #[\Override]
     protected function prepareForValidation()
     {
         $publishTime = $this->input('publish_time');
@@ -52,6 +53,7 @@ class StoreNewsRequest extends NewsRequest
     /**
      * Get the validation rules that apply to the request.
      */
+    #[\Override]
     public function rules(): array
     {
         return array_merge(parent::rules(), [

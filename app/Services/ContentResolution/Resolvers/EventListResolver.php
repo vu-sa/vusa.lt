@@ -20,9 +20,9 @@ use Illuminate\Support\Str;
  */
 final class EventListResolver implements ResolvesContentPart
 {
-    private const MAX_ITEMS = 24;
+    private const int MAX_ITEMS = 24;
 
-    private const MAX_TENANT_IDS = 20;
+    private const int MAX_TENANT_IDS = 20;
 
     public function resolve(Collection $parts, ResolutionContext $context): array
     {
@@ -61,7 +61,7 @@ final class EventListResolver implements ResolvesContentPart
             // The category is a grouping key, not a publication gate — a trashed
             // category (e.g. an old campaign) must still work as one. See the
             // identical rationale in PublicPageController::summerCamps().
-            $query->whereHas('category', function (Builder $q) use ($alias) {
+            $query->whereHas('category', function (Builder $q) use ($alias): void {
                 /** @var Builder<Category> $q */
                 $q->withTrashed()->where('alias', $alias);
             });
@@ -75,7 +75,7 @@ final class EventListResolver implements ResolvesContentPart
         if ($tenantScope === 'current') {
             $query->where('tenant_id', $context->tenant->id);
         } elseif (is_array($tenantScope)) {
-            $ids = array_slice(array_map('intval', array_filter($tenantScope, 'is_numeric')), 0, self::MAX_TENANT_IDS);
+            $ids = array_slice(array_map(intval(...), array_filter($tenantScope, is_numeric(...))), 0, self::MAX_TENANT_IDS);
             if ($ids !== []) {
                 $query->whereIn('tenant_id', $ids);
             }

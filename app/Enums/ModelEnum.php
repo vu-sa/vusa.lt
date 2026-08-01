@@ -2,55 +2,55 @@
 
 namespace App\Enums;
 
+use App\Enums\Concerns\HasEnumHelpers;
 use App\Enums\Traits\HasCamelCaseLabels;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
-use Spatie\Enum\Laravel\Enum;
 
 /**
- * @typescript
- *
- * @method static self AGENDA_ITEM()
- * @method static self BANNER()
- * @method static self CALENDAR()
- * @method static self CATEGORY()
- * @method static self COMMENT()
- * @method static self DOCUMENT()
- * @method static self DUTIABLE()
- * @method static self DUTY()
- *                            File is not a model, but it's used for generating file permissions
- * @method static self FILE()
- * @method static self FORM()
- * @method static self INSTITUTION()
- * @method static self MEETING()
- * @method static self MEMBERSHIP()
- * @method static self NAVIGATION()
- * @method static self NEWS()
- * @method static self QUICK_LINK()
- * @method static self PAGE()
- * @method static self PERMISSION()
- * @method static self PROBLEM()
- * @method static self RELATIONSHIP()
- * @method static self RELATIONSHIPABLE()
- * @method static self RESERVATION()
- * @method static self RESERVATION_RESOURCE()
- * @method static self RESOURCE()
- * @method static self ROLE()
- * @method static self SHAREPOINT_FILE()
- * @method static self SHAREPOINT_FILEABLE()
- * @method static self STUDY_PROGRAM()
- * @method static self STUDY_SET()
- * @method static self TAG()
- * @method static self TASK()
- * @method static self TENANT()
- * @method static self TRAINING()
- * @method static self TYPE()
- * @method static self USER()
+ * File is not a model, but it's used for generating file permissions.
  */
-final class ModelEnum extends Enum
+enum ModelEnum: string
 {
     use HasCamelCaseLabels;
+    use HasEnumHelpers;
+
+    case AGENDA_ITEM = 'agenda_item';
+    case BANNER = 'banner';
+    case CALENDAR = 'calendar';
+    case CATEGORY = 'category';
+    case COMMENT = 'comment';
+    case DOCUMENT = 'document';
+    case DUTIABLE = 'dutiable';
+    case DUTY = 'duty';
+    case FILE = 'file';
+    case FORM = 'form';
+    case INSTITUTION = 'institution';
+    case MEETING = 'meeting';
+    case MEMBERSHIP = 'membership';
+    case NAVIGATION = 'navigation';
+    case NEWS = 'news';
+    case QUICK_LINK = 'quick_link';
+    case PAGE = 'page';
+    case PERMISSION = 'permission';
+    case PROBLEM = 'problem';
+    case RELATIONSHIP = 'relationship';
+    case RELATIONSHIPABLE = 'relationshipable';
+    case RESERVATION = 'reservation';
+    case RESERVATION_RESOURCE = 'reservation_resource';
+    case RESOURCE = 'resource';
+    case ROLE = 'role';
+    case SHAREPOINT_FILE = 'sharepoint_file';
+    case SHAREPOINT_FILEABLE = 'sharepoint_fileable';
+    case STUDY_PROGRAM = 'study_program';
+    case STUDY_SET = 'study_set';
+    case TAG = 'tag';
+    case TASK = 'task';
+    case TENANT = 'tenant';
+    case TRAINING = 'training';
+    case TYPE = 'type';
+    case USER = 'user';
 
     /**
      * Resolve the Eloquent model class for a pluralized permission resource name.

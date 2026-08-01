@@ -137,7 +137,7 @@ class PageController extends AdminController
 
         $page->load('tenant:id,alias,shortname');
 
-        $other_lang_pages = Page::with('tenant:id,shortname')->when(! request()->user()->isSuperAdmin(), function ($query) use ($page) {
+        $other_lang_pages = Page::with('tenant:id,shortname')->when(! request()->user()->isSuperAdmin(), function ($query) use ($page): void {
             $query->where('tenant_id', $page->tenant_id);
         })->where('lang', '!=', $page->lang)->select('id', 'title', 'tenant_id')->get();
 

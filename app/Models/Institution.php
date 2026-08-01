@@ -107,6 +107,7 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
 {
     use GuardsForceDeleteWhenReferenced, HasComments, HasContentRelationships, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsActivity, Searchable, SoftDeletes;
 
+    #[\Override]
     protected $guarded = [];
 
     // Note: types are NOT auto-loaded to prevent N+1 in collections.
@@ -303,16 +304,17 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
         ];
     }
 
+    #[\Override]
     protected static function booted()
     {
-        static::saving(function (Institution $institution) {
+        static::saving(function (Institution $institution): void {
             // Dispatch event when name is about to change - SharePoint must succeed first
             if ($institution->isDirty('name')) {
                 FileableNameUpdated::dispatch($institution);
             }
         });
 
-        static::deleted(function (Institution $institution) {
+        static::deleted(function (Institution $institution): void {
             $institution->publicSearchModel()->unsearchable();
         });
 
@@ -321,11 +323,11 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
         static::deleted(fn (Institution $institution) => $institution->reindexDuties());
         static::restored(fn (Institution $institution) => $institution->reindexDuties());
 
-        static::forceDeleted(function (Institution $institution) {
+        static::forceDeleted(function (Institution $institution): void {
             $institution->publicSearchModel()->unsearchable();
         });
 
-        static::restored(function (Institution $institution) {
+        static::restored(function (Institution $institution): void {
             $publicInstitution = PublicInstitution::query()->find($institution->getKey());
 
             if ($publicInstitution?->shouldBeSearchable()) {

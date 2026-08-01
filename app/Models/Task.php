@@ -44,8 +44,10 @@ class Task extends Model
 {
     use HasFactory, HasRelationships, HasUlids;
 
+    #[\Override]
     protected $guarded = [];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

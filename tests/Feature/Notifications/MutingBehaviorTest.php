@@ -15,14 +15,14 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\Feature\Notifications\NotificationTestHelpers;
 
-uses(RefreshDatabase::class, NotificationTestHelpers::class);
+pest()->use(RefreshDatabase::class, NotificationTestHelpers::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     Notification::fake();
 });
 
-describe('global muting', function () {
-    test('via method returns empty array when user is globally muted', function () {
+describe('global muting', function (): void {
+    test('via method returns empty array when user is globally muted', function (): void {
         $user = $this->createMutedUser(now()->addHours(2));
 
         // Create a notification and test via() directly
@@ -35,7 +35,7 @@ describe('global muting', function () {
         expect($channels)->toBeEmpty();
     });
 
-    test('muted user via() returns empty for all notification types', function () {
+    test('muted user via() returns empty for all notification types', function (): void {
         $user = $this->createMutedUser(now()->addHours(2));
 
         // Test with different notification types
@@ -52,7 +52,7 @@ describe('global muting', function () {
         expect($commentNotification->via($user))->toBeEmpty();
     });
 
-    test('notifications resume after mute expires', function () {
+    test('notifications resume after mute expires', function (): void {
         $user = $this->createMutedUser(now()->addMinutes(30));
 
         // Initially muted
@@ -76,7 +76,7 @@ describe('global muting', function () {
         });
     });
 
-    test('globally muted user via() returns empty for reservation notifications', function () {
+    test('globally muted user via() returns empty for reservation notifications', function (): void {
         $user = $this->createMutedUser(now()->addHours(2));
 
         ['reservationResource' => $reservationResource] = $this->createReservationWithResource($user);
@@ -92,7 +92,7 @@ describe('global muting', function () {
         expect($notification->via($user))->toBeEmpty();
     });
 
-    test('globally muted user via() returns empty for comment notifications', function () {
+    test('globally muted user via() returns empty for comment notifications', function (): void {
         $user = $this->createMutedUser(now()->addHours(2));
 
         $notification = new CommentPostedNotification(
@@ -105,8 +105,8 @@ describe('global muting', function () {
     });
 });
 
-describe('thread muting', function () {
-    test('muted thread does not receive notification channels', function () {
+describe('thread muting', function (): void {
+    test('muted thread does not receive notification channels', function (): void {
         $user = $this->createUserWithPreferences();
         $commenter = $this->createUserWithPreferences();
 
@@ -133,7 +133,7 @@ describe('thread muting', function () {
         expect($user->notification_preferences['muted_threads'])->not->toBeEmpty();
     });
 
-    test('other threads still receive notifications when one is muted', function () {
+    test('other threads still receive notifications when one is muted', function (): void {
         $user = $this->createUserWithPreferences();
         $commenter = $this->createUserWithPreferences();
 
@@ -161,7 +161,7 @@ describe('thread muting', function () {
         });
     });
 
-    test('thread mute expires correctly with time travel', function () {
+    test('thread mute expires correctly with time travel', function (): void {
         $user = $this->createUserWithPreferences();
 
         ['reservationResource' => $reservationResource] = $this->createReservationWithResource($user);
@@ -196,8 +196,8 @@ describe('thread muting', function () {
     });
 });
 
-describe('channel preferences', function () {
-    test('disabled push channel means no webpush in via array', function () {
+describe('channel preferences', function (): void {
+    test('disabled push channel means no webpush in via array', function (): void {
         $user = $this->createUserWithDisabledChannel(
             NotificationCategory::Task,
             NotificationChannel::Push
@@ -221,7 +221,7 @@ describe('channel preferences', function () {
         ))->toBeTrue();
     });
 
-    test('disabled in_app channel preference is respected', function () {
+    test('disabled in_app channel preference is respected', function (): void {
         $user = $this->createUserWithDisabledChannel(
             NotificationCategory::Comment,
             NotificationChannel::InApp
@@ -239,7 +239,7 @@ describe('channel preferences', function () {
         ))->toBeTrue();
     });
 
-    test('category-specific preferences only affect that category', function () {
+    test('category-specific preferences only affect that category', function (): void {
         $user = $this->createUserWithPreferences();
 
         // Disable email digest only for comments
@@ -271,12 +271,12 @@ describe('channel preferences', function () {
     });
 });
 
-describe('muting edge cases', function () {
-    test('notification without object does not crash thread mute check', function () {
+describe('muting edge cases', function (): void {
+    test('notification without object does not crash thread mute check', function (): void {
         $user = $this->createUserWithPreferences();
 
         // Mute a thread
-        $user->muteThread('App\\Models\\Task', '999');
+        $user->muteThread(Task::class, '999');
 
         // Create notification without object() returning data
         $notification = new class extends BaseNotification

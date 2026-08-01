@@ -28,7 +28,7 @@ class ProgrammeController extends AdminController
     {
         $validatedData = $request->validated();
 
-        DB::transaction(function () use ($validatedData, $programme) {
+        DB::transaction(function () use ($validatedData, $programme): void {
             foreach ($validatedData['days'] as $dayIndex => $dayData) {
                 $day = ProgrammeDay::query()->findOrNew($dayData['id']);
                 $this->assertBelongsToProgramme($programme, $day);

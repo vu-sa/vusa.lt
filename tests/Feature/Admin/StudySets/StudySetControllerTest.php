@@ -8,9 +8,9 @@ use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
     $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
@@ -32,20 +32,20 @@ beforeEach(function () {
     ]);
 });
 
-describe('unauthorized access', function () {
-    test('cannot access index', function () {
+describe('unauthorized access', function (): void {
+    test('cannot access index', function (): void {
         asUser($this->user)
             ->get(route('studySets.index'))
             ->assertStatus(403);
     });
 
-    test('cannot access create page', function () {
+    test('cannot access create page', function (): void {
         asUser($this->user)
             ->get(route('studySets.create'))
             ->assertStatus(403);
     });
 
-    test('cannot store study set', function () {
+    test('cannot store study set', function (): void {
         asUser($this->user)
             ->post(route('studySets.store'), [
                 'name' => ['lt' => 'Naujas', 'en' => 'New'],
@@ -55,13 +55,13 @@ describe('unauthorized access', function () {
             ->assertStatus(403);
     });
 
-    test('cannot access edit page', function () {
+    test('cannot access edit page', function (): void {
         asUser($this->user)
             ->get(route('studySets.edit', $this->studySet))
             ->assertStatus(403);
     });
 
-    test('cannot update study set', function () {
+    test('cannot update study set', function (): void {
         asUser($this->user)
             ->patch(route('studySets.update', $this->studySet), [
                 'name' => ['lt' => 'Pakeistas', 'en' => 'Changed'],
@@ -71,15 +71,15 @@ describe('unauthorized access', function () {
             ->assertStatus(403);
     });
 
-    test('cannot delete study set', function () {
+    test('cannot delete study set', function (): void {
         asUser($this->user)
             ->delete(route('studySets.destroy', $this->studySet))
             ->assertStatus(403);
     });
 });
 
-describe('authorized access', function () {
-    test('can access index', function () {
+describe('authorized access', function (): void {
+    test('can access index', function (): void {
         asUser($this->admin)
             ->get(route('studySets.index'))
             ->assertStatus(200)
@@ -92,7 +92,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('can access create page', function () {
+    test('can access create page', function (): void {
         asUser($this->admin)
             ->get(route('studySets.create'))
             ->assertStatus(200)
@@ -102,7 +102,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('can store study set with courses and reviews', function () {
+    test('can store study set with courses and reviews', function (): void {
         $response = asUser($this->admin)
             ->post(route('studySets.store'), [
                 'name' => ['lt' => 'Naujas komplektas', 'en' => 'New Set'],
@@ -138,7 +138,7 @@ describe('authorized access', function () {
         ]);
     });
 
-    test('cannot store study set without required fields', function () {
+    test('cannot store study set without required fields', function (): void {
         asUser($this->admin)
             ->post(route('studySets.store'), [
                 'name' => ['lt' => '', 'en' => ''],
@@ -149,7 +149,7 @@ describe('authorized access', function () {
             ->assertSessionHasErrors(['name.lt']);
     });
 
-    test('can access edit page with loaded relations', function () {
+    test('can access edit page with loaded relations', function (): void {
         $course = StudySetCourse::factory()->for($this->studySet)->create();
         LecturerReview::factory()->create(['study_set_course_id' => $course->id]);
 
@@ -165,7 +165,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('can update study set and sync courses', function () {
+    test('can update study set and sync courses', function (): void {
         $course = StudySetCourse::factory()->for($this->studySet)->create([
             'name' => ['lt' => 'Senas kursas', 'en' => 'Old Course'],
             'semester' => 'autumn',
@@ -221,7 +221,7 @@ describe('authorized access', function () {
         ]);
     });
 
-    test('can delete course during update', function () {
+    test('can delete course during update', function (): void {
         $course1 = StudySetCourse::factory()->for($this->studySet)->create();
         $course2 = StudySetCourse::factory()->for($this->studySet)->create();
 
@@ -248,7 +248,7 @@ describe('authorized access', function () {
         $this->assertDatabaseMissing('study_set_courses', ['id' => $course2->id]);
     });
 
-    test('can delete study set', function () {
+    test('can delete study set', function (): void {
         asUser($this->admin)
             ->delete(route('studySets.destroy', $this->studySet))
             ->assertStatus(302)
@@ -260,32 +260,30 @@ describe('authorized access', function () {
     });
 });
 
-describe('tenant isolation', function () {
-    beforeEach(function () {
+describe('tenant isolation', function (): void {
+    beforeEach(function (): void {
         $this->otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $this->otherStudySet = StudySet::factory()->for($this->otherTenant)->create();
     });
 
-    test('index filters by tenant', function () {
+    test('index filters by tenant', function (): void {
         asUser($this->admin)
             ->get(route('studySets.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/StudySets/IndexStudySet')
                 ->has('studySets.data')
-                ->where('studySets.data', function ($data) {
-                    return collect($data)->every(fn ($item) => $item['tenant_id'] === $this->tenant->id);
-                })
+                ->where('studySets.data', fn ($data) => collect($data)->every(fn ($item) => $item['tenant_id'] === $this->tenant->id))
             );
     });
 
-    test('cannot edit other tenant study set', function () {
+    test('cannot edit other tenant study set', function (): void {
         asUser($this->admin)
             ->get(route('studySets.edit', $this->otherStudySet))
             ->assertStatus(403);
     });
 
-    test('cannot update other tenant study set', function () {
+    test('cannot update other tenant study set', function (): void {
         asUser($this->admin)
             ->patch(route('studySets.update', $this->otherStudySet), [
                 'name' => ['lt' => 'Hacked', 'en' => 'Hacked'],

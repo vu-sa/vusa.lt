@@ -8,9 +8,9 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     config(['queue.default' => 'sync']);
 
     $this->tenant = Tenant::query()->first();
@@ -23,7 +23,7 @@ beforeEach(function () {
     $this->user = User::factory()->create();
 });
 
-test('reports a target duty held without its source duty', function () {
+test('reports a target duty held without its source duty', function (): void {
     // The shape the nullOnDelete FK leaves behind: a target-duty row with no link
     // back to the source, and no source duty held.
     Dutiable::factory()->create([
@@ -40,7 +40,7 @@ test('reports a target duty held without its source duty', function () {
     expect(Artisan::output())->toContain($this->user->name);
 });
 
-test('does not report a target duty when the source duty is still held', function () {
+test('does not report a target duty when the source duty is still held', function (): void {
     Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
@@ -57,7 +57,7 @@ test('does not report a target duty when the source duty is still held', functio
     expect(Artisan::output())->toContain('No orphaned ex-officio duties found');
 });
 
-test('ignores expired target duties', function () {
+test('ignores expired target duties', function (): void {
     Dutiable::factory()->create([
         'duty_id' => $this->targetDuty->id,
         'dutiable_id' => $this->user->id,

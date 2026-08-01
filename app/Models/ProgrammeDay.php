@@ -6,6 +6,7 @@ use App\Contracts\BelongsToProgramme;
 use App\Models\Pivots\ProgrammeElement;
 use App\Models\Traits\HasTranslations;
 use Database\Factories\ProgrammeDayFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -39,15 +40,15 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
+#[Fillable(['title', 'date', 'start_time'])]
 class ProgrammeDay extends Model implements BelongsToProgramme
 {
     /** @use HasFactory<ProgrammeDayFactory> */
     use HasFactory, HasTranslations;
 
-    protected $fillable = ['title', 'date', 'start_time'];
-
     public $translatable = ['title', 'description'];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

@@ -13,7 +13,7 @@ class DutyPolicy extends ModelPolicy
     public function __construct(ModelAuthorizer $authorizer)
     {
         parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::DUTY()->label);
+        $this->pluralModelName = Str::plural(ModelEnum::DUTY->label());
     }
 
     /**

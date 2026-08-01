@@ -43,7 +43,7 @@ class GetInstitutionFollowersToNotify
     public static function getFollowersForInstitution(Institution $institution): Collection
     {
         return $institution->followers()
-            ->whereDoesntHave('mutedInstitutions', function ($query) use ($institution) {
+            ->whereDoesntHave('mutedInstitutions', function ($query) use ($institution): void {
                 $query->where('institution_id', $institution->id);
             })
             ->get();

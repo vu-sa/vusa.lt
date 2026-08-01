@@ -79,11 +79,11 @@ class MeetingController extends AdminController
                 : [$filters['completion_status']];
 
             // Filter by completion status (calculated from agenda items)
-            $query->where(function ($q) use ($completionStatuses) {
+            $query->where(function ($q) use ($completionStatuses): void {
                 foreach ($completionStatuses as $status) {
                     if ($status === 'complete') {
                         // All agenda items have all three fields filled
-                        $q->orWhereHas('agendaItems', function ($subQ) {
+                        $q->orWhereHas('agendaItems', function ($subQ): void {
                             $subQ->whereNotNull('student_vote')
                                 ->whereNotNull('decision')
                                 ->whereNotNull('student_benefit');
@@ -91,10 +91,10 @@ class MeetingController extends AdminController
                             ->whereHas('agendaItems'); // Must have at least one
                     } elseif ($status === 'incomplete') {
                         // Has agenda items but not all are complete
-                        $q->orWhere(function ($innerQ) {
+                        $q->orWhere(function ($innerQ): void {
                             $innerQ->whereHas('agendaItems')
-                                ->whereHas('agendaItems', function ($subQ) {
-                                    $subQ->where(function ($itemQ) {
+                                ->whereHas('agendaItems', function ($subQ): void {
+                                    $subQ->where(function ($itemQ): void {
                                         $itemQ->whereNull('student_vote')
                                             ->orWhereNull('decision')
                                             ->orWhereNull('student_benefit');
@@ -223,10 +223,10 @@ class MeetingController extends AdminController
         $this->handleAuthorization('view', $meeting);
 
         $meeting->load('institutions.types', 'activities.causer', 'fileableFiles', 'comments')->load([
-            'tasks' => function ($query) {
+            'tasks' => function ($query): void {
                 $query->with('users:id,name,email,profile_photo_path', 'taskable');
             },
-            'agendaItems' => function ($query) {
+            'agendaItems' => function ($query): void {
                 $query->with('votes')->withCount('comments')->withExists('note as has_notes')->orderBy('order');
             },
         ])->loadCount('comments');

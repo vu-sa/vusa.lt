@@ -9,9 +9,9 @@ use App\Models\User;
 use App\Services\Typesense\TypesenseManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-test('typesense configuration is available', function () {
+test('typesense configuration is available', function (): void {
     // Configure Typesense settings for this test
     config([
         'scout.typesense.client-settings.api_key' => 'test-api-key-123',
@@ -33,7 +33,7 @@ test('typesense configuration is available', function () {
         ->and($config['apiKey'])->toBe('test-search-key');
 });
 
-test('typesense manager detects proper configuration', function () {
+test('typesense manager detects proper configuration', function (): void {
     // With proper API key, should be configured
     config(['scout.typesense.client-settings.api_key' => 'test-api-key-123']);
     expect(TypesenseManager::isConfigured())->toBeTrue();
@@ -47,7 +47,7 @@ test('typesense manager detects proper configuration', function () {
     expect(TypesenseManager::isConfigured())->toBeFalse();
 });
 
-test('searchable models have proper configuration', function () {
+test('searchable models have proper configuration', function (): void {
     // Test News model searchability logic
     $news = News::factory()->create([
         'draft' => false,
@@ -72,7 +72,7 @@ test('searchable models have proper configuration', function () {
         ->and($calendar->toSearchableArray())->toBeArray();
 });
 
-test('search arrays contain required fields', function () {
+test('search arrays contain required fields', function (): void {
     $news = News::factory()->create([
         'draft' => false,
         'publish_time' => now()->subHour(),
@@ -93,7 +93,7 @@ test('search arrays contain required fields', function () {
         ->and($docSearchArray)->toHaveKey('tenant_shortname');
 });
 
-test('draft models are not searchable', function () {
+test('draft models are not searchable', function (): void {
     // Test that draft news is not searchable
     $draftNews = News::factory()->create(['draft' => true]);
     expect($draftNews->shouldBeSearchable())->toBeFalse();
@@ -121,7 +121,7 @@ test('draft models are not searchable', function () {
     expect($draftCalendar->shouldBeSearchable())->toBeFalse();
 });
 
-test('duty search array carries index-aligned member ids for current and previous members', function () {
+test('duty search array carries index-aligned member ids for current and previous members', function (): void {
     $duty = Duty::factory()->create();
 
     $current = User::factory()->create(['name' => 'Current Member']);
@@ -139,11 +139,11 @@ test('duty search array carries index-aligned member ids for current and previou
         ->and($array['current_user_names'])->toContain('Current Member')
         ->and($array['current_user_ids'])->toContain((string) $current->id)
         // Names and ids share the same index so the detail pane can zip them into links.
-        ->and(count($array['current_user_ids']))->toBe(count($array['current_user_names']))
+        ->and($array['current_user_ids'])->toHaveSameSize($array['current_user_names'])
         ->and($array['previous_user_ids'])->toContain((string) $previous->id);
 });
 
-test('user search array carries current and previous duties with aligned ids', function () {
+test('user search array carries current and previous duties with aligned ids', function (): void {
     $user = User::factory()->create();
 
     $currentDuty = Duty::factory()->create();
@@ -159,7 +159,7 @@ test('user search array carries current and previous duties with aligned ids', f
         ->and($array)->toHaveKey('previous_duty_names')
         ->and($array)->toHaveKey('previous_duty_ids')
         ->and($array['current_duty_ids'])->toContain((string) $currentDuty->id)
-        ->and(count($array['current_duty_ids']))->toBe(count($array['current_duty_names']))
+        ->and($array['current_duty_ids'])->toHaveSameSize($array['current_duty_names'])
         ->and($array['previous_duty_ids'])->toContain((string) $previousDuty->id)
         // The current duty must not leak into the previous-duty buckets.
         ->and($array['previous_duty_ids'])->not->toContain((string) $currentDuty->id);

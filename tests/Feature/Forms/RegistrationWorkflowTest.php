@@ -6,15 +6,15 @@ use App\Models\Registration;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
 });
 
-describe('registration workflow', function () {
-    test('user can submit registration to published form', function () {
+describe('registration workflow', function (): void {
+    test('user can submit registration to published form', function (): void {
         $form = Form::factory()->published()->create([
             'tenant_id' => $this->tenant->id,
         ]);
@@ -69,7 +69,7 @@ describe('registration workflow', function () {
         ]);
     });
 
-    test('cannot submit registration to unpublished form', function () {
+    test('cannot submit registration to unpublished form', function (): void {
         $form = Form::factory()->create([
             'tenant_id' => $this->tenant->id,
             'publish_time' => now()->addHour(), // Future publish time
@@ -89,14 +89,14 @@ describe('registration workflow', function () {
     });
 });
 
-describe('form field validation', function () {
-    beforeEach(function () {
+describe('form field validation', function (): void {
+    beforeEach(function (): void {
         $this->form = Form::factory()->published()->create([
             'tenant_id' => $this->tenant->id,
         ]);
     });
 
-    test('required fields are validated on submission', function () {
+    test('required fields are validated on submission', function (): void {
         $requiredField = FormField::factory()->create([
             'form_id' => $this->form->id,
             'type' => 'text',
@@ -110,7 +110,7 @@ describe('form field validation', function () {
         ])->assertSessionHasErrors();
     });
 
-    test('email fields validate email format', function () {
+    test('email fields validate email format', function (): void {
         $emailField = FormField::factory()->create([
             'form_id' => $this->form->id,
             'type' => 'email',
@@ -124,7 +124,7 @@ describe('form field validation', function () {
         ])->assertSessionHasErrors();
     });
 
-    test('select fields validate against available options', function () {
+    test('select fields validate against available options', function (): void {
         $selectField = FormField::factory()->create([
             'form_id' => $this->form->id,
             'type' => 'select',
@@ -138,7 +138,7 @@ describe('form field validation', function () {
         ])->assertSessionHasErrors();
     });
 
-    test('number fields validate numeric input', function () {
+    test('number fields validate numeric input', function (): void {
         $numberField = FormField::factory()->create([
             'form_id' => $this->form->id,
             'type' => 'number',
@@ -151,7 +151,7 @@ describe('form field validation', function () {
         ])->assertSessionHasErrors();
     });
 
-    test('accepts valid data for all field types', function () {
+    test('accepts valid data for all field types', function (): void {
         $textField = FormField::factory()->create([
             'form_id' => $this->form->id,
             'type' => 'text',

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Actions\PairTranslatedRecord;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -61,16 +62,17 @@ use Spatie\Sitemap\Tags\Url;
  *
  * @mixin \Eloquent
  */
+#[Table(name: 'news')]
 class News extends Model implements Feedable, Sitemapable
 {
     use HasFactory, Searchable, SoftDeletes;
 
-    protected $table = 'news';
-
+    #[\Override]
     protected $guarded = [];
 
     public $fallback_image = '/images/icons/naujienu_foto.png';
 
+    #[\Override]
     protected function casts(): array
     {
         return [
@@ -89,9 +91,10 @@ class News extends Model implements Feedable, Sitemapable
      */
     public const LAYOUTS = ['modern', 'classic', 'immersive', 'headline'];
 
+    #[\Override]
     protected static function booted()
     {
-        static::saving(function ($news) {
+        static::saving(function ($news): void {
             // Ensure highlights is limited to 3 items
             if (is_array($news->highlights) && count($news->highlights) > 3) {
                 $news->highlights = array_slice($news->highlights, 0, 3);
@@ -103,17 +106,17 @@ class News extends Model implements Feedable, Sitemapable
             }
         });
 
-        static::saved(function ($news) {
+        static::saved(function ($news): void {
             // Clear sitemap cache when news is updated
             Cache::tags(['sitemap', 'news', "tenant_{$news->tenant_id}"])->flush();
         });
 
-        static::deleted(function ($news) {
+        static::deleted(function ($news): void {
             // Clear sitemap cache when news is deleted
             Cache::tags(['sitemap', 'news', "tenant_{$news->tenant_id}"])->flush();
         });
 
-        static::deleting(function (News $news) {
+        static::deleting(function (News $news): void {
             // Drop the surviving counterpart's back-reference so its language switcher
             // stops linking to an article that is no longer public. This article keeps
             // its own pointer, so the pairing can be re-established on restore.
@@ -125,7 +128,7 @@ class News extends Model implements Feedable, Sitemapable
             }
         });
 
-        static::restored(function (News $news) {
+        static::restored(function (News $news): void {
             PairTranslatedRecord::repair($news);
         });
     }
@@ -221,7 +224,7 @@ class News extends Model implements Feedable, Sitemapable
         $schema = new NewsArticle;
 
         // Fix image URL construction
-        $imageUrl = substr($this->image, 0, 4) === 'http' ? $this->image : url($this->getImageUrl());
+        $imageUrl = str_starts_with($this->image, 'http') ? $this->image : url($this->getImageUrl());
         $schema = $schema->image($imageUrl);
 
         $schema = $schema->datePublished($this->publish_time);
@@ -315,7 +318,7 @@ class News extends Model implements Feedable, Sitemapable
 
         // Add image if available
         if ($this->image) {
-            $imageUrl = substr($this->image, 0, 4) === 'http' ? $this->image : url($this->getImageUrl());
+            $imageUrl = str_starts_with($this->image, 'http') ? $this->image : url($this->getImageUrl());
             $sitemapUrl->addImage($imageUrl, $this->title);
         }
 

@@ -37,8 +37,10 @@ class Banner extends Model
 {
     use HasFactory, Searchable, SoftDeletes;
 
+    #[\Override]
     protected $guarded = [];
 
+    #[\Override]
     protected static function booted()
     {
         static::creating(function (self $banner): void {
@@ -65,11 +67,11 @@ class Banner extends Model
             }
         });
 
-        static::saved(function ($banner) {
+        static::saved(function ($banner): void {
             Cache::tags(['banners', "tenant_{$banner->tenant_id}"])->flush();
         });
 
-        static::deleted(function ($banner) {
+        static::deleted(function ($banner): void {
             Cache::tags(['banners', "tenant_{$banner->tenant_id}"])->flush();
         });
     }

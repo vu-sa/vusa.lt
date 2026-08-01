@@ -8,7 +8,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 function makeTextBoxContentPart(?Tenant $tenant = null): ContentPart
 {
@@ -46,7 +46,7 @@ function makeSubmissionsManager(): User
 
 // Public store endpoint
 
-it('can submit to a text-box content part', function () {
+it('can submit to a text-box content part', function (): void {
     $contentPart = makeTextBoxContentPart();
 
     $response = $this->postJson(route('api.v1.text-box-submissions.store'), [
@@ -57,11 +57,11 @@ it('can submit to a text-box content part', function () {
     $response->assertCreated();
     $response->assertJson(['success' => true]);
 
-    expect(TextBoxSubmission::count())->toBe(1);
-    expect(TextBoxSubmission::first()->text)->toBe('This is my feedback.');
+    expect(TextBoxSubmission::count())->toBe(1)
+        ->and(TextBoxSubmission::first()->text)->toBe('This is my feedback.');
 });
 
-it('rejects submission to a non-text-box content part', function () {
+it('rejects submission to a non-text-box content part', function (): void {
     $contentPart = makeTiptapContentPart();
 
     $response = $this->postJson(route('api.v1.text-box-submissions.store'), [
@@ -73,7 +73,7 @@ it('rejects submission to a non-text-box content part', function () {
     expect(TextBoxSubmission::count())->toBe(0);
 });
 
-it('requires the text field', function () {
+it('requires the text field', function (): void {
     $contentPart = makeTextBoxContentPart();
 
     $response = $this->postJson(route('api.v1.text-box-submissions.store'), [
@@ -84,7 +84,7 @@ it('requires the text field', function () {
     $response->assertJsonValidationErrors(['text']);
 });
 
-it('rejects text shorter than 10 characters', function () {
+it('rejects text shorter than 10 characters', function (): void {
     $contentPart = makeTextBoxContentPart();
 
     $response = $this->postJson(route('api.v1.text-box-submissions.store'), [
@@ -97,7 +97,7 @@ it('rejects text shorter than 10 characters', function () {
     expect(TextBoxSubmission::count())->toBe(0);
 });
 
-it('silently succeeds when the honeypot field is filled', function () {
+it('silently succeeds when the honeypot field is filled', function (): void {
     $contentPart = makeTextBoxContentPart();
 
     $response = $this->postJson(route('api.v1.text-box-submissions.store'), [
@@ -112,7 +112,7 @@ it('silently succeeds when the honeypot field is filled', function () {
     expect(TextBoxSubmission::count())->toBe(0);
 });
 
-it('requires a valid content_part_id', function () {
+it('requires a valid content_part_id', function (): void {
     $response = $this->postJson(route('api.v1.text-box-submissions.store'), [
         'content_part_id' => 99999,
         'text' => 'Some text.',
@@ -122,7 +122,7 @@ it('requires a valid content_part_id', function () {
     $response->assertJsonValidationErrors(['content_part_id']);
 });
 
-it('associates the submission with the logged-in user', function () {
+it('associates the submission with the logged-in user', function (): void {
     $user = User::factory()->create();
     $contentPart = makeTextBoxContentPart();
 
@@ -135,7 +135,7 @@ it('associates the submission with the logged-in user', function () {
     expect($submission->user_id)->toBe($user->id);
 });
 
-it('stores a null user_id for guests', function () {
+it('stores a null user_id for guests', function (): void {
     $contentPart = makeTextBoxContentPart();
 
     $this->postJson(route('api.v1.text-box-submissions.store'), [
@@ -149,7 +149,7 @@ it('stores a null user_id for guests', function () {
 
 // Admin index endpoint
 
-it('requires auth for the admin submissions endpoint', function () {
+it('requires auth for the admin submissions endpoint', function (): void {
     $contentPart = makeTextBoxContentPart();
 
     $response = $this->getJson(route('api.v1.admin.text-box-submissions.index', [
@@ -159,7 +159,7 @@ it('requires auth for the admin submissions endpoint', function () {
     $response->assertUnauthorized();
 });
 
-it('returns submissions for a content part', function () {
+it('returns submissions for a content part', function (): void {
     $user = makeSubmissionsManager();
     $contentPart = makeTextBoxContentPart();
 
@@ -176,7 +176,7 @@ it('returns submissions for a content part', function () {
     expect($response->json('data'))->toHaveCount(3);
 });
 
-it('returns submissions ordered by newest first', function () {
+it('returns submissions ordered by newest first', function (): void {
     $user = makeSubmissionsManager();
     $contentPart = makeTextBoxContentPart();
 
@@ -197,13 +197,13 @@ it('returns submissions ordered by newest first', function () {
     ]));
 
     $data = $response->json('data');
-    expect($data[0]['text'])->toBe('second');
-    expect($data[1]['text'])->toBe('first');
+    expect($data[0]['text'])->toBe('second')
+        ->and($data[1]['text'])->toBe('first');
 });
 
 // Admin export endpoint
 
-it('exports submissions as an xlsx file', function () {
+it('exports submissions as an xlsx file', function (): void {
     $user = makeSubmissionsManager();
     $contentPart = makeTextBoxContentPart();
 
@@ -233,13 +233,13 @@ it('exports submissions as an xlsx file', function () {
     $rows = $loaded->getActiveSheet()->toArray(null, true, true, false);
     unlink($tmp);
 
-    expect($rows[0])->toBe(['Response', 'Submitted by', 'Submitted at']);
-    expect($rows)->toHaveCount(3);
+    expect($rows[0])->toBe(['Response', 'Submitted by', 'Submitted at'])
+        ->and($rows)->toHaveCount(3);
     $textColumn = array_column(array_slice($rows, 1), 0);
     expect($textColumn)->toContain('First answer here.', 'Anonymous answer.');
 });
 
-it('shows Anonymous for submissions without a user', function () {
+it('shows Anonymous for submissions without a user', function (): void {
     $user = makeSubmissionsManager();
     $contentPart = makeTextBoxContentPart();
 

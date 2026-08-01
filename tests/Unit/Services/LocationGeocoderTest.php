@@ -4,12 +4,12 @@ use App\Services\LocationGeocoder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
-beforeEach(function () {
+beforeEach(function (): void {
     Cache::flush();
     $this->geocoder = new LocationGeocoder;
 });
 
-test('resolves a location to coordinates', function () {
+test('resolves a location to coordinates', function (): void {
     Http::fake([
         'nominatim.openstreetmap.org/*' => Http::response([
             [
@@ -27,7 +27,7 @@ test('resolves a location to coordinates', function () {
     ]);
 });
 
-test('returns null for an empty location without calling the API', function ($location) {
+test('returns null for an empty location without calling the API', function ($location): void {
     Http::fake();
 
     expect($this->geocoder->coordinates($location))->toBeNull();
@@ -35,19 +35,19 @@ test('returns null for an empty location without calling the API', function ($lo
     Http::assertNothingSent();
 })->with([null, '', '   ']);
 
-test('returns null when the location cannot be resolved', function () {
+test('returns null when the location cannot be resolved', function (): void {
     Http::fake(['nominatim.openstreetmap.org/*' => Http::response([])]);
 
     expect($this->geocoder->coordinates('Neegzistuojanti vietovė'))->toBeNull();
 });
 
-test('returns null when the geocoding service fails', function () {
+test('returns null when the geocoding service fails', function (): void {
     Http::fake(['nominatim.openstreetmap.org/*' => Http::response(null, 503)]);
 
     expect($this->geocoder->coordinates('Vilnius'))->toBeNull();
 });
 
-test('returns null when the response is missing coordinates', function () {
+test('returns null when the response is missing coordinates', function (): void {
     Http::fake([
         'nominatim.openstreetmap.org/*' => Http::response([['display_name' => 'Vilnius']]),
     ]);
@@ -55,7 +55,7 @@ test('returns null when the response is missing coordinates', function () {
     expect($this->geocoder->coordinates('Vilnius'))->toBeNull();
 });
 
-test('caches a successful lookup', function () {
+test('caches a successful lookup', function (): void {
     Http::fake([
         'nominatim.openstreetmap.org/*' => Http::response([
             ['lat' => '54.6872', 'lon' => '25.2797', 'display_name' => 'Vilnius'],
@@ -70,7 +70,7 @@ test('caches a successful lookup', function () {
     Http::assertSentCount(1);
 });
 
-test('caches a failed lookup so a bad location is not retried on every view', function () {
+test('caches a failed lookup so a bad location is not retried on every view', function (): void {
     Http::fake(['nominatim.openstreetmap.org/*' => Http::response([])]);
 
     $this->geocoder->coordinates('Neegzistuojanti vietovė');
@@ -79,7 +79,7 @@ test('caches a failed lookup so a bad location is not retried on every view', fu
     Http::assertSentCount(1);
 });
 
-test('identifies itself to Nominatim as its usage policy requires', function () {
+test('identifies itself to Nominatim as its usage policy requires', function (): void {
     Http::fake(['nominatim.openstreetmap.org/*' => Http::response([])]);
 
     $this->geocoder->coordinates('Vilnius');

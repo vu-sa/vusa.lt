@@ -7,6 +7,8 @@
  * They ensure proper separation between Inertia and API controllers.
  */
 
+use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\PushSubscriptionController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Controller;
 
@@ -44,8 +46,8 @@ arch('admin controllers extend AdminController')
     ->classes()
     ->toExtend(AdminController::class)
     ->ignoring([
-        'App\Http\Controllers\Admin\PushSubscriptionController',
-        'App\Http\Controllers\Admin\AuthController',
+        PushSubscriptionController::class,
+        AuthController::class,
     ]);
 
 arch('admin controllers are in Admin namespace')

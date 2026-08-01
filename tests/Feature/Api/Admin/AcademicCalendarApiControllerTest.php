@@ -3,15 +3,15 @@
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-describe('academic calendar API', function () {
-    test('requires authentication', function () {
+describe('academic calendar API', function (): void {
+    test('requires authentication', function (): void {
         $this->getJson(route('api.v1.admin.academicCalendar.vacations'))
             ->assertStatus(401);
     });
 
-    test('returns vacation periods for the requested years', function () {
+    test('returns vacation periods for the requested years', function (): void {
         $response = $this->actingAs(User::factory()->create())->getJson(
             route('api.v1.admin.academicCalendar.vacations', ['from_year' => 2025, 'to_year' => 2025])
         );
@@ -31,7 +31,7 @@ describe('academic calendar API', function () {
             ->and($periods->pluck('start')->every(fn ($start) => str_starts_with($start, '2025')))->toBeTrue();
     });
 
-    test('defaults to the years around today', function () {
+    test('defaults to the years around today', function (): void {
         $this->travelTo('2026-03-01');
 
         $response = $this->actingAs(User::factory()->create())->getJson(
@@ -47,7 +47,7 @@ describe('academic calendar API', function () {
         expect($years->all())->toBe([2025, 2026, 2027]);
     });
 
-    test('clamps an excessive year span', function () {
+    test('clamps an excessive year span', function (): void {
         $response = $this->actingAs(User::factory()->create())->getJson(
             route('api.v1.admin.academicCalendar.vacations', ['from_year' => 2020, 'to_year' => 2090])
         );
@@ -59,7 +59,7 @@ describe('academic calendar API', function () {
         expect($years->max())->toBe(2040);
     });
 
-    test('rejects an invalid year', function () {
+    test('rejects an invalid year', function (): void {
         $this->actingAs(User::factory()->create())
             ->getJson(route('api.v1.admin.academicCalendar.vacations', ['from_year' => 'not-a-year']))
             ->assertStatus(422);

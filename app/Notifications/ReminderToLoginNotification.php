@@ -30,18 +30,12 @@ class ReminderToLoginNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $institutions = $notifiable->current_duties->map(function ($duty) {
-            return $duty->institution;
-        });
+        $institutions = $notifiable->current_duties->map(fn ($duty) => $duty->institution);
 
         return (new MailMessage)->markdown('mail.reminder-to-login-notification', [
             'addressivizedName' => $notifiable->addressivizedName(),
-            'institutionLtNames' => $institutions->map(function ($institution) {
-                return $institution?->getTranslation('name', 'lt');
-            })->filter()->values(),
-            'institutionEnNames' => $institutions->map(function ($institution) {
-                return $institution?->getTranslation('name', 'en');
-            })->filter()->values(),
+            'institutionLtNames' => $institutions->map(fn ($institution) => $institution?->getTranslation('name', 'lt'))->filter()->values(),
+            'institutionEnNames' => $institutions->map(fn ($institution) => $institution?->getTranslation('name', 'en'))->filter()->values(),
         ])->replyTo('it@vusa.lt')->subject('📢 Primename apie atstovavimo procesą | Reminding about the representation process');
     }
 

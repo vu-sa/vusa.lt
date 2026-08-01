@@ -9,8 +9,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Sleep;
 use Microsoft\Graph\GraphServiceClient;
 
-describe('SharePoint Service Robustness', function () {
-    beforeEach(function () {
+describe('SharePoint Service Robustness', function (): void {
+    beforeEach(function (): void {
         // Mock Laravel Sleep to prevent actual delays in tests
         Sleep::fake();
 
@@ -21,15 +21,14 @@ describe('SharePoint Service Robustness', function () {
         );
     });
 
-    afterEach(function () {
+    afterEach(function (): void {
         Mockery::close();
     });
 
-    describe('retry logic', function () {
-        test('retry mechanism uses exponential backoff', function () {
+    describe('retry logic', function (): void {
+        test('retry mechanism uses exponential backoff', function (): void {
             $reflection = new ReflectionClass($this->service);
             $method = $reflection->getMethod('executeWithRetry');
-            $method->setAccessible(true);
 
             $attempts = 0;
 
@@ -46,37 +45,34 @@ describe('SharePoint Service Robustness', function () {
 
             $result = $method->invoke($this->service, $operation, 'test-exponential-backoff');
 
-            expect($result)->toBe('success');
-            expect($attempts)->toBe(4);
+            expect($result)->toBe('success')
+                ->and($attempts)->toBe(4);
 
             // Test that the operation eventually succeeds after retries
             // (We can't easily mock usleep in this context)
         });
 
-        test('gives up after maximum retries', function () {
+        test('gives up after maximum retries', function (): void {
             $reflection = new ReflectionClass($this->service);
             $method = $reflection->getMethod('executeWithRetry');
-            $method->setAccessible(true);
 
             $attempts = 0;
-            $operation = function () use (&$attempts) {
+            $operation = function () use (&$attempts): void {
                 $attempts++;
                 throw new Exception('Always fails');
             };
 
-            Log::shouldReceive('info')->times((int) SharepointConfigEnum::MAX_RETRIES()->label);
+            Log::shouldReceive('info')->times((int) SharepointConfigEnum::MAX_RETRIES->label());
             Log::shouldReceive('error')->once();
 
             expect(fn () => $method->invoke($this->service, $operation, 'test-max-retries'))
-                ->toThrow(Exception::class, 'Always fails');
-
-            expect($attempts)->toBe((int) SharepointConfigEnum::MAX_RETRIES()->label + 1);
+                ->toThrow(Exception::class, 'Always fails')
+                ->and($attempts)->toBe((int) SharepointConfigEnum::MAX_RETRIES->label() + 1);
         });
 
-        test('succeeds immediately when no retry needed', function () {
+        test('succeeds immediately when no retry needed', function (): void {
             $reflection = new ReflectionClass($this->service);
             $method = $reflection->getMethod('executeWithRetry');
-            $method->setAccessible(true);
 
             $attempts = 0;
             $operation = function () use (&$attempts) {
@@ -90,14 +86,13 @@ describe('SharePoint Service Robustness', function () {
 
             $result = $method->invoke($this->service, $operation, 'test-immediate-success');
 
-            expect($result)->toBe('immediate-success');
-            expect($attempts)->toBe(1);
+            expect($result)->toBe('immediate-success')
+                ->and($attempts)->toBe(1);
         });
 
-        test('handles different exception types appropriately', function () {
+        test('handles different exception types appropriately', function (): void {
             $reflection = new ReflectionClass($this->service);
             $method = $reflection->getMethod('executeWithRetry');
-            $method->setAccessible(true);
 
             $exceptionTypes = [
                 new RuntimeException('Runtime error'),
@@ -108,21 +103,20 @@ describe('SharePoint Service Robustness', function () {
             foreach ($exceptionTypes as $exception) {
                 $operation = fn () => throw $exception;
 
-                Log::shouldReceive('info')->times((int) SharepointConfigEnum::MAX_RETRIES()->label);
+                Log::shouldReceive('info')->times((int) SharepointConfigEnum::MAX_RETRIES->label());
                 Log::shouldReceive('error')->once();
 
                 expect(fn () => $method->invoke($this->service, $operation, 'test-exception-types'))
-                    ->toThrow(get_class($exception));
+                    ->toThrow($exception::class);
             }
         });
 
-        test('custom retry count is respected', function () {
+        test('custom retry count is respected', function (): void {
             $reflection = new ReflectionClass($this->service);
             $method = $reflection->getMethod('executeWithRetry');
-            $method->setAccessible(true);
 
             $attempts = 0;
-            $operation = function () use (&$attempts) {
+            $operation = function () use (&$attempts): void {
                 $attempts++;
                 throw new Exception('Custom retry test');
             };
@@ -133,17 +127,15 @@ describe('SharePoint Service Robustness', function () {
             Log::shouldReceive('error')->once();
 
             expect(fn () => $method->invoke($this->service, $operation, 'test-custom-retries', $customMaxRetries))
-                ->toThrow(Exception::class);
-
-            expect($attempts)->toBe($customMaxRetries + 1);
+                ->toThrow(Exception::class)
+                ->and($attempts)->toBe($customMaxRetries + 1);
         });
     });
 
-    describe('input validation', function () {
-        test('validates required string parameters', function () {
+    describe('input validation', function (): void {
+        test('validates required string parameters', function (): void {
             $reflection = new ReflectionClass($this->service);
             $method = $reflection->getMethod('validateNotEmpty');
-            $method->setAccessible(true);
 
             // Test cases that should throw exceptions
             $invalidCases = [
@@ -175,10 +167,9 @@ describe('SharePoint Service Robustness', function () {
             // so they would trigger validation errors, which is the expected behavior
         });
 
-        test('validates multiple parameters simultaneously', function () {
+        test('validates multiple parameters simultaneously', function (): void {
             $reflection = new ReflectionClass($this->service);
             $method = $reflection->getMethod('validateNotEmpty');
-            $method->setAccessible(true);
 
             // All valid - should not throw
             $method->invoke($this->service, [
@@ -195,24 +186,22 @@ describe('SharePoint Service Robustness', function () {
             ]))->toThrow(InvalidArgumentException::class, "Parameter 'param2' cannot be empty");
         });
 
-        test('validation error messages are informative', function () {
+        test('validation error messages are informative', function (): void {
             $reflection = new ReflectionClass($this->service);
             $method = $reflection->getMethod('validateNotEmpty');
-            $method->setAccessible(true);
 
             try {
                 $method->invoke($this->service, ['important_parameter' => null]);
                 expect(false)->toBeTrue(); // Should not reach here
             } catch (InvalidArgumentException $e) {
-                expect($e->getMessage())->toContain('important_parameter');
-                expect($e->getMessage())->toContain('cannot be empty');
+                expect($e->getMessage())->toContain('important_parameter')
+                    ->toContain('cannot be empty');
             }
         });
 
-        test('handles array parameters correctly', function () {
+        test('handles array parameters correctly', function (): void {
             $reflection = new ReflectionClass($this->service);
             $method = $reflection->getMethod('validateNotEmpty');
-            $method->setAccessible(true);
 
             // Empty array should be considered empty
             expect(fn () => $method->invoke($this->service, ['array_param' => []]))
@@ -224,25 +213,23 @@ describe('SharePoint Service Robustness', function () {
         });
     });
 
-    describe('error handling scenarios', function () {
-        test('handles network timeout gracefully', function () {
+    describe('error handling scenarios', function (): void {
+        test('handles network timeout gracefully', function (): void {
             $reflection = new ReflectionClass($this->service);
             $method = $reflection->getMethod('executeWithRetry');
-            $method->setAccessible(true);
 
             $operation = fn () => throw new Exception('Request timeout');
 
-            Log::shouldReceive('info')->times((int) SharepointConfigEnum::MAX_RETRIES()->label);
+            Log::shouldReceive('info')->times((int) SharepointConfigEnum::MAX_RETRIES->label());
             Log::shouldReceive('error')->once();
 
             expect(fn () => $method->invoke($this->service, $operation, 'timeout-test'))
                 ->toThrow(Exception::class, 'Request timeout');
         });
 
-        test('handles API rate limiting', function () {
+        test('handles API rate limiting', function (): void {
             $reflection = new ReflectionClass($this->service);
             $method = $reflection->getMethod('executeWithRetry');
-            $method->setAccessible(true);
 
             $attempts = 0;
             $operation = function () use (&$attempts) {
@@ -258,28 +245,26 @@ describe('SharePoint Service Robustness', function () {
 
             $result = $method->invoke($this->service, $operation, 'rate-limit-test');
 
-            expect($result)->toBe('success-after-rate-limit');
-            expect($attempts)->toBe(3);
+            expect($result)->toBe('success-after-rate-limit')
+                ->and($attempts)->toBe(3);
         });
 
-        test('handles authentication failures', function () {
+        test('handles authentication failures', function (): void {
             $reflection = new ReflectionClass($this->service);
             $method = $reflection->getMethod('executeWithRetry');
-            $method->setAccessible(true);
 
             $operation = fn () => throw new Exception('Authentication failed (401)');
 
-            Log::shouldReceive('info')->times((int) SharepointConfigEnum::MAX_RETRIES()->label);
+            Log::shouldReceive('info')->times((int) SharepointConfigEnum::MAX_RETRIES->label());
             Log::shouldReceive('error')->once();
 
             expect(fn () => $method->invoke($this->service, $operation, 'auth-failure-test'))
                 ->toThrow(Exception::class, 'Authentication failed (401)');
         });
 
-        test('handles service unavailable errors', function () {
+        test('handles service unavailable errors', function (): void {
             $reflection = new ReflectionClass($this->service);
             $method = $reflection->getMethod('executeWithRetry');
-            $method->setAccessible(true);
 
             $attempts = 0;
             $operation = function () use (&$attempts) {
@@ -298,14 +283,13 @@ describe('SharePoint Service Robustness', function () {
             expect($result)->toBe('service-restored');
         });
 
-        test('handles malformed API responses', function () {
+        test('handles malformed API responses', function (): void {
             $reflection = new ReflectionClass($this->service);
             $method = $reflection->getMethod('executeWithRetry');
-            $method->setAccessible(true);
 
             $operation = fn () => throw new Exception('Invalid JSON response');
 
-            Log::shouldReceive('info')->times((int) SharepointConfigEnum::MAX_RETRIES()->label);
+            Log::shouldReceive('info')->times((int) SharepointConfigEnum::MAX_RETRIES->label());
             Log::shouldReceive('error')->once();
 
             expect(fn () => $method->invoke($this->service, $operation, 'malformed-response-test'))
@@ -313,11 +297,10 @@ describe('SharePoint Service Robustness', function () {
         });
     });
 
-    describe('performance characteristics', function () {
-        test('retry delays increase appropriately', function () {
+    describe('performance characteristics', function (): void {
+        test('retry delays increase appropriately', function (): void {
             $reflection = new ReflectionClass($this->service);
             $method = $reflection->getMethod('executeWithRetry');
-            $method->setAccessible(true);
 
             $attempts = 0;
 
@@ -339,20 +322,19 @@ describe('SharePoint Service Robustness', function () {
             expect($attempts)->toBe(4); // 3 failures + 1 success
         });
 
-        test('total retry time is bounded', function () {
+        test('total retry time is bounded', function (): void {
             $reflection = new ReflectionClass($this->service);
             $method = $reflection->getMethod('executeWithRetry');
-            $method->setAccessible(true);
 
             $operation = fn () => throw new Exception('Bounded time test');
 
-            Log::shouldReceive('info')->times((int) SharepointConfigEnum::MAX_RETRIES()->label);
+            Log::shouldReceive('info')->times((int) SharepointConfigEnum::MAX_RETRIES->label());
             Log::shouldReceive('error')->once();
 
             // Calculate maximum possible retry time
             $maxRetryTime = 0;
-            for ($i = 1; $i <= (int) SharepointConfigEnum::MAX_RETRIES()->label; $i++) {
-                $maxRetryTime += (int) SharepointConfigEnum::RETRY_DELAY_MS()->label * pow(2, $i - 1);
+            for ($i = 1; $i <= (int) SharepointConfigEnum::MAX_RETRIES->label(); $i++) {
+                $maxRetryTime += (int) SharepointConfigEnum::RETRY_DELAY_MS->label() * 2 ** ($i - 1);
             }
 
             // Should be reasonable (less than 30 seconds)
@@ -362,10 +344,9 @@ describe('SharePoint Service Robustness', function () {
                 ->toThrow(Exception::class);
         });
 
-        test('does not add unnecessary delay on immediate success', function () {
+        test('does not add unnecessary delay on immediate success', function (): void {
             $reflection = new ReflectionClass($this->service);
             $method = $reflection->getMethod('executeWithRetry');
-            $method->setAccessible(true);
 
             $operation = fn () => 'immediate-success';
 
@@ -378,11 +359,10 @@ describe('SharePoint Service Robustness', function () {
         });
     });
 
-    describe('logging behavior', function () {
-        test('logs retry attempts with context', function () {
+    describe('logging behavior', function (): void {
+        test('logs retry attempts with context', function (): void {
             $reflection = new ReflectionClass($this->service);
             $method = $reflection->getMethod('executeWithRetry');
-            $method->setAccessible(true);
 
             $attempts = 0;
             $operation = function () use (&$attempts) {
@@ -395,11 +375,9 @@ describe('SharePoint Service Robustness', function () {
             };
 
             Log::shouldReceive('info')
-                ->with('Operation failed, retrying', Mockery::on(function ($context) {
-                    return isset($context['operation']) &&
-                           isset($context['attempt']) &&
-                           isset($context['error']);
-                }))->twice();
+                ->with('Operation failed, retrying', Mockery::on(fn ($context) => isset($context['operation']) &&
+                       isset($context['attempt']) &&
+                       isset($context['error'])))->twice();
 
             Log::shouldReceive('info')
                 ->with('Operation succeeded after retry', Mockery::type('array'))
@@ -408,57 +386,48 @@ describe('SharePoint Service Robustness', function () {
             $method->invoke($this->service, $operation, 'retry-logging-test');
         });
 
-        test('logs final failure with all context', function () {
+        test('logs final failure with all context', function (): void {
             $reflection = new ReflectionClass($this->service);
             $method = $reflection->getMethod('executeWithRetry');
-            $method->setAccessible(true);
 
             $operation = fn () => throw new Exception('Final failure test');
 
-            Log::shouldReceive('info')->times((int) SharepointConfigEnum::MAX_RETRIES()->label);
+            Log::shouldReceive('info')->times((int) SharepointConfigEnum::MAX_RETRIES->label());
 
             Log::shouldReceive('error')
-                ->with('Operation failed after all retries', Mockery::on(function ($context) {
-                    return $context['operation'] === 'final-failure-test' &&
-                           $context['attempts'] === (int) SharepointConfigEnum::MAX_RETRIES()->label + 1 &&
-                           $context['error'] === 'Final failure test';
-                }));
+                ->with('Operation failed after all retries', Mockery::on(fn ($context) => $context['operation'] === 'final-failure-test' &&
+                       $context['attempts'] === (int) SharepointConfigEnum::MAX_RETRIES->label() + 1 &&
+                       $context['error'] === 'Final failure test'));
 
             expect(fn () => $method->invoke($this->service, $operation, 'final-failure-test'))
                 ->toThrow(Exception::class);
         });
 
-        test('includes operation name in all log entries', function () {
+        test('includes operation name in all log entries', function (): void {
             $reflection = new ReflectionClass($this->service);
             $method = $reflection->getMethod('executeWithRetry');
-            $method->setAccessible(true);
 
             $operationName = 'test-operation-logging';
             $operation = fn () => throw new Exception('Test');
 
             Log::shouldReceive('info')
-                ->withArgs(function ($message, $context) use ($operationName) {
-                    return $context['operation'] === $operationName;
-                })->times((int) SharepointConfigEnum::MAX_RETRIES()->label);
+                ->withArgs(fn ($message, $context) => $context['operation'] === $operationName)->times((int) SharepointConfigEnum::MAX_RETRIES->label());
 
             Log::shouldReceive('error')
-                ->withArgs(function ($message, $context) use ($operationName) {
-                    return $context['operation'] === $operationName;
-                })->once();
+                ->withArgs(fn ($message, $context) => $context['operation'] === $operationName)->once();
 
             expect(fn () => $method->invoke($this->service, $operation, $operationName))
                 ->toThrow(Exception::class);
         });
     });
 
-    describe('edge cases and boundary conditions', function () {
-        test('handles zero retry configuration gracefully', function () {
+    describe('edge cases and boundary conditions', function (): void {
+        test('handles zero retry configuration gracefully', function (): void {
             $reflection = new ReflectionClass($this->service);
             $method = $reflection->getMethod('executeWithRetry');
-            $method->setAccessible(true);
 
             $attempts = 0;
-            $operation = function () use (&$attempts) {
+            $operation = function () use (&$attempts): void {
                 $attempts++;
                 throw new Exception('Zero retry test');
             };
@@ -466,15 +435,13 @@ describe('SharePoint Service Robustness', function () {
             Log::shouldReceive('error')->once();
 
             expect(fn () => $method->invoke($this->service, $operation, 'zero-retry-test', 0))
-                ->toThrow(Exception::class);
-
-            expect($attempts)->toBe(1); // Only initial attempt
+                ->toThrow(Exception::class)
+                ->and($attempts)->toBe(1); // Only initial attempt
         });
 
-        test('handles very large retry counts', function () {
+        test('handles very large retry counts', function (): void {
             $reflection = new ReflectionClass($this->service);
             $method = $reflection->getMethod('executeWithRetry');
-            $method->setAccessible(true);
 
             $attempts = 0;
             $operation = function () use (&$attempts) {
@@ -489,25 +456,24 @@ describe('SharePoint Service Robustness', function () {
 
             $result = $method->invoke($this->service, $operation, 'large-retry-test', 1000);
 
-            expect($result)->toBe('success-on-second-attempt');
-            expect($attempts)->toBe(2);
+            expect($result)->toBe('success-on-second-attempt')
+                ->and($attempts)->toBe(2);
         });
 
-        test('handles operations that return false or null', function () {
+        test('handles operations that return false or null', function (): void {
             $reflection = new ReflectionClass($this->service);
             $method = $reflection->getMethod('executeWithRetry');
-            $method->setAccessible(true);
 
             $falseOperation = fn () => false;
             $nullOperation = fn () => null;
 
-            expect($method->invoke($this->service, $falseOperation, 'false-test'))->toBe(false);
-            expect($method->invoke($this->service, $nullOperation, 'null-test'))->toBe(null);
+            expect($method->invoke($this->service, $falseOperation, 'false-test'))->toBeFalse()
+                ->and($method->invoke($this->service, $nullOperation, 'null-test'))->toBeNull();
         });
     });
 
-    describe('service method coverage', function () {
-        test('createPublicPermission validates required parameters', function () {
+    describe('service method coverage', function (): void {
+        test('createPublicPermission validates required parameters', function (): void {
             // Test parameter validation for createPublicPermission
             expect(fn () => $this->service->createPublicPermission(null, ''))
                 ->toThrow(InvalidArgumentException::class, "Parameter 'driveItemId' cannot be empty");
@@ -516,7 +482,7 @@ describe('SharePoint Service Robustness', function () {
                 ->toThrow(TypeError::class);
         });
 
-        test('createPublicPermission handles different datetime scenarios', function () {
+        test('createPublicPermission handles different datetime scenarios', function (): void {
             // Mock the GraphServiceClient behavior
             $mockGraphClient = Mockery::mock(GraphServiceClient::class);
             $mockDriveBuilder = Mockery::mock();
@@ -534,20 +500,19 @@ describe('SharePoint Service Robustness', function () {
             // These are unit tests for the logic, not integration tests
         });
 
-        test('batchProcessDocuments handles empty collections', function () {
+        test('batchProcessDocuments handles empty collections', function (): void {
             $emptyCollection = new Collection([]);
 
             // Should return empty collection when no documents to process
             $result = $this->service->batchProcessDocuments($emptyCollection);
 
-            expect($result)->toBeInstanceOf(Collection::class);
-            expect($result->isEmpty())->toBeTrue();
+            expect($result)->toBeInstanceOf(Collection::class)
+                ->and($result->isEmpty())->toBeTrue();
         });
 
-        test('parseDriveItems processes item data correctly', function () {
+        test('parseDriveItems processes item data correctly', function (): void {
             $reflection = new ReflectionClass($this->service);
             $method = $reflection->getMethod('parseDriveItems');
-            $method->setAccessible(true);
 
             $mockDriveItems = collect([
                 [
@@ -584,7 +549,7 @@ describe('SharePoint Service Robustness', function () {
             try {
                 SharepointFile::whereIn('id', [])->get();
                 expect(true)->toBeTrue(); // If this works, the method exists
-            } catch (Exception $e) {
+            } catch (Exception) {
                 expect(false)->toBeTrue('SharepointFile::whereIn method is not available');
             }
 
@@ -592,14 +557,11 @@ describe('SharePoint Service Robustness', function () {
 
             expect($result)->toHaveCount(1);
             $item = $result->first();
-            expect($item['id'])->toBe('test-drive-item-1');
-            expect($item['name'])->toBe('Test File.pdf');
-            expect($item['size'])->toBe(1024);
-            expect($item['webUrl'])->toBe('https://sharepoint.test/file.pdf');
-            expect($item['thumbnails'])->toHaveCount(1);
+            expect($item)->toMatchArray(['id' => 'test-drive-item-1', 'name' => 'Test File.pdf', 'size' => 1024, 'webUrl' => 'https://sharepoint.test/file.pdf'])
+                ->and($item['thumbnails'])->toHaveCount(1);
         });
 
-        test('getDriveItemByPath handles encoding correctly', function () {
+        test('getDriveItemByPath handles encoding correctly', function (): void {
             // Test URL encoding for paths with special characters
             $testPaths = [
                 'Simple Path',
@@ -617,38 +579,38 @@ describe('SharePoint Service Robustness', function () {
             }
         });
 
-        test('updateDriveItemByPath validates input parameters', function () {
+        test('updateDriveItemByPath validates input parameters', function (): void {
             // Test that the method exists and has proper structure
             expect(method_exists($this->service, 'updateDriveItemByPath'))->toBeTrue();
 
             $reflection = new ReflectionMethod($this->service, 'updateDriveItemByPath');
             $parameters = $reflection->getParameters();
 
-            expect($parameters)->toHaveCount(2);
-            expect($parameters[0]->getName())->toBe('path');
-            expect($parameters[1]->getName())->toBe('fields');
+            expect($parameters)->toHaveCount(2)
+                ->and($parameters[0]->getName())->toBe('path')
+                ->and($parameters[1]->getName())->toBe('fields');
         });
 
-        test('uploadDriveItem handles file upload structure', function () {
+        test('uploadDriveItem handles file upload structure', function (): void {
             // Test method signature and basic validation
             expect(method_exists($this->service, 'uploadDriveItem'))->toBeTrue();
 
             $reflection = new ReflectionMethod($this->service, 'uploadDriveItem');
             $parameters = $reflection->getParameters();
 
-            expect($parameters)->toHaveCount(2);
-            expect($parameters[0]->getName())->toBe('filePath');
-            expect($parameters[1]->getName())->toBe('file');
+            expect($parameters)->toHaveCount(2)
+                ->and($parameters[0]->getName())->toBe('filePath')
+                ->and($parameters[1]->getName())->toBe('file');
         });
 
-        test('deleteDriveItem method exists with correct signature', function () {
+        test('deleteDriveItem method exists with correct signature', function (): void {
             expect(method_exists($this->service, 'deleteDriveItem'))->toBeTrue();
 
             $reflection = new ReflectionMethod($this->service, 'deleteDriveItem');
             expect($reflection->getNumberOfRequiredParameters())->toBe(1);
         });
 
-        test('getDriveItemsChildrenByPaths handles batch operations', function () {
+        test('getDriveItemsChildrenByPaths handles batch operations', function (): void {
             // Test that the method can handle multiple paths
             expect(method_exists($this->service, 'getDriveItemsChildrenByPaths'))->toBeTrue();
 
@@ -658,12 +620,12 @@ describe('SharePoint Service Robustness', function () {
             // Test with empty array
             // Can't test the actual call without extensive mocking, but can verify structure
             $emptyPaths = [];
-            expect(is_array($emptyPaths))->toBeTrue();
+            expect($emptyPaths)->toBeArray();
         });
 
-        test('getListItem and updateListItem methods exist', function () {
-            expect(method_exists($this->service, 'getListItem'))->toBeTrue();
-            expect(method_exists($this->service, 'updateListItem'))->toBeTrue();
+        test('getListItem and updateListItem methods exist', function (): void {
+            expect(method_exists($this->service, 'getListItem'))->toBeTrue()
+                ->and(method_exists($this->service, 'updateListItem'))->toBeTrue();
 
             $getListItemMethod = new ReflectionMethod($this->service, 'getListItem');
             expect($getListItemMethod->getNumberOfRequiredParameters())->toBe(3);
@@ -672,14 +634,12 @@ describe('SharePoint Service Robustness', function () {
             expect($updateListItemMethod->getNumberOfRequiredParameters())->toBe(3);
         });
 
-        test('logging methods work correctly', function () {
+        test('logging methods work correctly', function (): void {
             $reflection = new ReflectionClass($this->service);
 
             $logInfoMethod = $reflection->getMethod('logInfo');
-            $logInfoMethod->setAccessible(true);
 
             $logErrorMethod = $reflection->getMethod('logError');
-            $logErrorMethod->setAccessible(true);
 
             Log::shouldReceive('info')->with('Test info message', [])->once();
             Log::shouldReceive('error')->with('Test error message', ['error' => 'context'])->once();
@@ -688,7 +648,7 @@ describe('SharePoint Service Robustness', function () {
             $logErrorMethod->invoke($this->service, 'Test error message', ['error' => 'context']);
         });
 
-        test('service initialization handles different parameter combinations', function () {
+        test('service initialization handles different parameter combinations', function (): void {
             // Test various initialization scenarios
             $scenarios = [
                 [null, null, null],  // All defaults
@@ -706,13 +666,13 @@ describe('SharePoint Service Robustness', function () {
                 expect($constructor->getNumberOfParameters())->toBe(3);
 
                 $params = $constructor->getParameters();
-                expect($params[0]->getName())->toBe('siteId');
-                expect($params[1]->getName())->toBe('driveId');
-                expect($params[2]->getName())->toBe('listId');
+                expect($params[0]->getName())->toBe('siteId')
+                    ->and($params[1]->getName())->toBe('driveId')
+                    ->and($params[2]->getName())->toBe('listId');
             }
         });
 
-        test('permission handling methods work correctly', function () {
+        test('permission handling methods work correctly', function (): void {
             // Test getDriveItemPermissions and getDriveItemPublicLink method existence
             expect(method_exists($this->service, 'getDriveItemPublicLink'))->toBeTrue();
 
@@ -722,16 +682,16 @@ describe('SharePoint Service Robustness', function () {
             expect($reflection->hasMethod('getDriveItemPermissions'))->toBeTrue();
 
             $permMethod = $reflection->getMethod('getDriveItemPermissions');
-            expect($permMethod->isProtected())->toBeTrue();
-            expect($permMethod->getNumberOfRequiredParameters())->toBe(1);
+            expect($permMethod->isProtected())->toBeTrue()
+                ->and($permMethod->getNumberOfRequiredParameters())->toBe(1);
 
             $publicLinkMethod = $reflection->getMethod('getDriveItemPublicLink');
             expect($publicLinkMethod->getNumberOfRequiredParameters())->toBe(1);
         });
     });
 
-    describe('error handling edge cases', function () {
-        test('handles Microsoft Graph OData errors gracefully', function () {
+    describe('error handling edge cases', function (): void {
+        test('handles Microsoft Graph OData errors gracefully', function (): void {
             // Test that OData errors are properly handled in getDriveItemByPath
             // This is important for the actual service usage
             expect(method_exists($this->service, 'getDriveItemByPath'))->toBeTrue();
@@ -740,7 +700,7 @@ describe('SharePoint Service Robustness', function () {
             // This is tested implicitly in the actual implementation
         });
 
-        test('handles invalid SharePoint field values', function () {
+        test('handles invalid SharePoint field values', function (): void {
             // Test various SharePoint field scenarios that might cause issues
             $problematicValues = [
                 null,
@@ -755,7 +715,7 @@ describe('SharePoint Service Robustness', function () {
             expect(method_exists($this->service, 'batchProcessDocuments'))->toBeTrue();
         });
 
-        test('handles SharePoint API response variations', function () {
+        test('handles SharePoint API response variations', function (): void {
             // Test different response formats that SharePoint might return
             $responseVariations = [
                 // Missing optional fields
@@ -772,7 +732,7 @@ describe('SharePoint Service Robustness', function () {
             }
         });
 
-        test('validates SharePoint configuration before operations', function () {
+        test('validates SharePoint configuration before operations', function (): void {
             // Test that the service validates required configuration
             $requiredConfigs = [
                 'filesystems.sharepoint.tenant_id',
@@ -788,8 +748,8 @@ describe('SharePoint Service Robustness', function () {
         });
     });
 
-    describe('integration points', function () {
-        test('integrates with Document model correctly', function () {
+    describe('integration points', function (): void {
+        test('integrates with Document model correctly', function (): void {
             // Test that batchProcessDocuments works with Document model structure
             $documentFields = [
                 'name', 'title', 'eTag', 'document_date', 'effective_date',
@@ -803,7 +763,7 @@ describe('SharePoint Service Robustness', function () {
             }
         });
 
-        test('handles Carbon date parsing correctly', function () {
+        test('handles Carbon date parsing correctly', function (): void {
             // Test different date formats that SharePoint might return
             $dateFormats = [
                 '2024-01-15T10:00:00Z',
@@ -817,7 +777,7 @@ describe('SharePoint Service Robustness', function () {
                     try {
                         Carbon::parseFromLocale($dateString, null, 'UTC');
                         expect(true)->toBeTrue(); // If no exception, parsing succeeded
-                    } catch (Exception $e) {
+                    } catch (Exception) {
                         expect(false)->toBeTrue("Failed to parse date: {$dateString}"); // This will fail the test
                     }
                 }

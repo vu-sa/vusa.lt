@@ -24,16 +24,16 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\Feature\Tasks\MeetingTaskTestHelpers;
 
-uses(RefreshDatabase::class, MeetingTaskTestHelpers::class);
+pest()->use(RefreshDatabase::class, MeetingTaskTestHelpers::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     Notification::fake();
     config(['queue.default' => 'sync']);
 });
 
-describe('MeetingTaskSubscriber', function () {
-    describe('agenda creation task', function () {
-        test('creates agenda creation task when meeting is created with student reps', function () {
+describe('MeetingTaskSubscriber', function (): void {
+    describe('agenda creation task', function (): void {
+        test('creates agenda creation task when meeting is created with student reps', function (): void {
             $tenant = Tenant::query()->first()
                 ?? Tenant::factory()->create();
 
@@ -81,7 +81,7 @@ describe('MeetingTaskSubscriber', function () {
                 ->and($creationTask->completed_at)->toBeNull();
         });
 
-        test('completes creation task when first agenda item is added', function () {
+        test('completes creation task when first agenda item is added', function (): void {
             [$meeting, $creationTask] = $this->createMeetingWithCreationTask();
 
             expect($creationTask->completed_at)->toBeNull();
@@ -95,7 +95,7 @@ describe('MeetingTaskSubscriber', function () {
             expect($creationTask->completed_at)->not->toBeNull();
         });
 
-        test('creates completion task when first agenda item is added', function () {
+        test('creates completion task when first agenda item is added', function (): void {
             [$meeting, $creationTask] = $this->createMeetingWithCreationTask();
 
             // Add first agenda item (without votes, so naturally incomplete)
@@ -114,7 +114,7 @@ describe('MeetingTaskSubscriber', function () {
                 ->and($completionTask->metadata['items_completed'])->toBe(0);
         });
 
-        test('does not create any task when no student reps exist', function () {
+        test('does not create any task when no student reps exist', function (): void {
             $tenant = Tenant::query()->first()
                 ?? Tenant::factory()->create();
 
@@ -135,8 +135,8 @@ describe('MeetingTaskSubscriber', function () {
         });
     });
 
-    describe('agenda completion task progress', function () {
-        test('updates progress when agenda item is completed', function () {
+    describe('agenda completion task progress', function (): void {
+        test('updates progress when agenda item is completed', function (): void {
             // Set up meeting with completion task
             [$meeting, $completionTask] = $this->createMeetingWithCompletionTask();
 
@@ -163,7 +163,7 @@ describe('MeetingTaskSubscriber', function () {
                 ->and($completionTask->completed_at)->toBeNull();
         });
 
-        test('auto-completes task when all agenda items are completed', function () {
+        test('auto-completes task when all agenda items are completed', function (): void {
             [$meeting, $completionTask] = $this->createMeetingWithCompletionTask(agendaItemCount: 2);
 
             // Complete all agenda items by setting type and adding votes
@@ -188,7 +188,7 @@ describe('MeetingTaskSubscriber', function () {
                 ->and($completionTask->metadata['items_completed'])->toBe(2);
         });
 
-        test('updates total items when agenda item is added', function () {
+        test('updates total items when agenda item is added', function (): void {
             [$meeting, $completionTask] = $this->createMeetingWithCompletionTask(agendaItemCount: 2);
 
             expect($completionTask->metadata['items_total'])->toBe(2);
@@ -205,7 +205,7 @@ describe('MeetingTaskSubscriber', function () {
             expect($completionTask->metadata['items_total'])->toBe(3);
         });
 
-        test('updates total items when agenda item is deleted', function () {
+        test('updates total items when agenda item is deleted', function (): void {
             [$meeting, $completionTask] = $this->createMeetingWithCompletionTask(agendaItemCount: 3);
 
             expect($completionTask->metadata['items_total'])->toBe(3);
@@ -219,8 +219,8 @@ describe('MeetingTaskSubscriber', function () {
         });
     });
 
-    describe('notifications', function () {
-        test('notifies administrators when meeting is created', function () {
+    describe('notifications', function (): void {
+        test('notifies administrators when meeting is created', function (): void {
             $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
                 ?? Tenant::factory()->create(['type' => 'padalinys']);
 
@@ -253,7 +253,7 @@ describe('MeetingTaskSubscriber', function () {
             Notification::assertSentTo($admin, MeetingCreatedNotification::class);
         });
 
-        test('notifies administrators when all agenda items are completed', function () {
+        test('notifies administrators when all agenda items are completed', function (): void {
             $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
                 ?? Tenant::factory()->create(['type' => 'padalinys']);
 
@@ -319,7 +319,7 @@ describe('MeetingTaskSubscriber', function () {
             Notification::assertSentTo($coordinator, MeetingAgendaCompletedNotification::class);
         });
 
-        test('does not send duplicate notifications to same user with multiple roles', function () {
+        test('does not send duplicate notifications to same user with multiple roles', function (): void {
             $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
                 ?? Tenant::factory()->create(['type' => 'padalinys']);
 
@@ -358,7 +358,7 @@ describe('MeetingTaskSubscriber', function () {
             Notification::assertSentToTimes($admin, MeetingCreatedNotification::class, 1);
         });
 
-        test('notifies followers when meeting is created', function () {
+        test('notifies followers when meeting is created', function (): void {
             $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
                 ?? Tenant::factory()->create(['type' => 'padalinys']);
 
@@ -379,7 +379,7 @@ describe('MeetingTaskSubscriber', function () {
             Notification::assertSentTo($follower, MeetingCreatedNotification::class);
         });
 
-        test('does not notify followers who have muted the institution', function () {
+        test('does not notify followers who have muted the institution', function (): void {
             $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
                 ?? Tenant::factory()->create(['type' => 'padalinys']);
 
@@ -401,7 +401,7 @@ describe('MeetingTaskSubscriber', function () {
             Notification::assertNotSentTo($mutedFollower, MeetingCreatedNotification::class);
         });
 
-        test('follower only receives one notification even if they follow multiple meeting institutions', function () {
+        test('follower only receives one notification even if they follow multiple meeting institutions', function (): void {
             $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
                 ?? Tenant::factory()->create(['type' => 'padalinys']);
 
@@ -423,7 +423,7 @@ describe('MeetingTaskSubscriber', function () {
             Notification::assertSentToTimes($follower, MeetingCreatedNotification::class, 1);
         });
 
-        test('user who is both institution manager and follower only receives one notification', function () {
+        test('user who is both institution manager and follower only receives one notification', function (): void {
             $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
                 ?? Tenant::factory()->create(['type' => 'padalinys']);
 
@@ -462,8 +462,8 @@ describe('MeetingTaskSubscriber', function () {
         });
     });
 
-    describe('GetInstitutionFollowersToNotify', function () {
-        test('returns followers who have not muted the institution', function () {
+    describe('GetInstitutionFollowersToNotify', function (): void {
+        test('returns followers who have not muted the institution', function (): void {
             $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
                 ?? Tenant::factory()->create(['type' => 'padalinys']);
 
@@ -488,7 +488,7 @@ describe('MeetingTaskSubscriber', function () {
                 ->and($followers->first()->id)->toBe($follower->id);
         });
 
-        test('returns unique followers across multiple institutions', function () {
+        test('returns unique followers across multiple institutions', function (): void {
             $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
                 ?? Tenant::factory()->create(['type' => 'padalinys']);
 
@@ -511,8 +511,8 @@ describe('MeetingTaskSubscriber', function () {
         });
     });
 
-    describe('GetMeetingAdministrators', function () {
-        test('returns unique administrators from institution managers', function () {
+    describe('GetMeetingAdministrators', function (): void {
+        test('returns unique administrators from institution managers', function (): void {
             $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
                 ?? Tenant::factory()->create(['type' => 'padalinys']);
 
@@ -555,8 +555,8 @@ describe('MeetingTaskSubscriber', function () {
         });
     });
 
-    describe('AgendaCompletionTaskHandler', function () {
-        test('findOrCreate returns existing task if one exists', function () {
+    describe('AgendaCompletionTaskHandler', function (): void {
+        test('findOrCreate returns existing task if one exists', function (): void {
             [$meeting, $completionTask] = $this->createMeetingWithCompletionTask();
 
             $handler = app(AgendaCompletionTaskHandler::class);
@@ -566,7 +566,7 @@ describe('MeetingTaskSubscriber', function () {
                 ->and($foundTask->id)->toBe($completionTask->id);
         });
 
-        test('handles meeting with no agenda items gracefully', function () {
+        test('handles meeting with no agenda items gracefully', function (): void {
             $tenant = Tenant::query()->first()
                 ?? Tenant::factory()->create();
 
@@ -586,8 +586,8 @@ describe('MeetingTaskSubscriber', function () {
         });
     });
 
-    describe('AgendaCreationTaskHandler', function () {
-        test('findExistingTask returns the creation task', function () {
+    describe('AgendaCreationTaskHandler', function (): void {
+        test('findExistingTask returns the creation task', function (): void {
             [$meeting, $creationTask] = $this->createMeetingWithCreationTask();
 
             $handler = app(AgendaCreationTaskHandler::class);
@@ -597,7 +597,7 @@ describe('MeetingTaskSubscriber', function () {
                 ->and($foundTask->id)->toBe($creationTask->id);
         });
 
-        test('completeForMeeting marks creation task as completed', function () {
+        test('completeForMeeting marks creation task as completed', function (): void {
             [$meeting, $creationTask] = $this->createMeetingWithCreationTask();
 
             expect($creationTask->completed_at)->toBeNull();
@@ -611,8 +611,8 @@ describe('MeetingTaskSubscriber', function () {
         });
     });
 
-    describe('agenda item type completion rules', function () {
-        test('informational agenda items are counted as complete without votes', function () {
+    describe('agenda item type completion rules', function (): void {
+        test('informational agenda items are counted as complete without votes', function (): void {
             [$meeting, $completionTask] = $this->createMeetingWithCompletionTask(agendaItemCount: 0);
 
             // Delete all default agenda items and add informational items
@@ -648,7 +648,7 @@ describe('MeetingTaskSubscriber', function () {
                 ->and($completionTask->completed_at)->not->toBeNull();
         });
 
-        test('deferred agenda items are counted as complete without votes', function () {
+        test('deferred agenda items are counted as complete without votes', function (): void {
             [$meeting, $completionTask] = $this->createMeetingWithCompletionTask(agendaItemCount: 0);
 
             // Delete all default agenda items and add deferred items
@@ -684,7 +684,7 @@ describe('MeetingTaskSubscriber', function () {
                 ->and($completionTask->completed_at)->not->toBeNull();
         });
 
-        test('voting agenda items without main vote are counted as incomplete', function () {
+        test('voting agenda items without main vote are counted as incomplete', function (): void {
             [$meeting, $completionTask] = $this->createMeetingWithCompletionTask(agendaItemCount: 0);
 
             // Delete all default agenda items and add a voting item without vote
@@ -718,7 +718,7 @@ describe('MeetingTaskSubscriber', function () {
                 ->and($completionTask->completed_at)->toBeNull();
         });
 
-        test('voting agenda items with incomplete main vote are counted as incomplete', function () {
+        test('voting agenda items with incomplete main vote are counted as incomplete', function (): void {
             [$meeting, $completionTask] = $this->createMeetingWithCompletionTask(agendaItemCount: 0);
 
             // Delete all default agenda items and add a voting item with partial vote
@@ -761,7 +761,7 @@ describe('MeetingTaskSubscriber', function () {
                 ->and($completionTask->completed_at)->toBeNull();
         });
 
-        test('voting agenda items with complete main vote are counted as complete', function () {
+        test('voting agenda items with complete main vote are counted as complete', function (): void {
             [$meeting, $completionTask] = $this->createMeetingWithCompletionTask(agendaItemCount: 0);
 
             // Delete all default agenda items and add a voting item with complete vote
@@ -808,7 +808,7 @@ describe('MeetingTaskSubscriber', function () {
                 ->and($completionTask->completed_at)->not->toBeNull();
         });
 
-        test('mixed agenda items complete when each type meets its requirements', function () {
+        test('mixed agenda items complete when each type meets its requirements', function (): void {
             [$meeting, $completionTask] = $this->createMeetingWithCompletionTask(agendaItemCount: 0);
 
             // Delete all default agenda items
@@ -863,7 +863,7 @@ describe('MeetingTaskSubscriber', function () {
                 ->and($completionTask->completed_at)->not->toBeNull();
         });
 
-        test('agenda items with null type are counted as incomplete', function () {
+        test('agenda items with null type are counted as incomplete', function (): void {
             [$meeting, $completionTask] = $this->createMeetingWithCompletionTask(agendaItemCount: 0);
 
             // Delete all default agenda items

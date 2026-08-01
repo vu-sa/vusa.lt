@@ -14,35 +14,39 @@ class PagePolicy extends ModelPolicy
     /**
      * These models belong to a single tenant through a `tenant` relation.
      */
+    #[\Override]
     protected bool $hasManyTenants = false;
 
     public function __construct(ModelAuthorizer $authorizer)
     {
         parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::PAGE()->label);
+        $this->pluralModelName = Str::plural(ModelEnum::PAGE->label());
     }
 
     /**
      * Determine whether the user can view the model.
      */
+    #[\Override]
     public function view(User $user, Model $page): bool
     {
-        return $this->commonChecker($user, $page, CRUDEnum::READ()->label, $this->pluralModelName, false);
+        return $this->commonChecker($user, $page, CRUDEnum::READ->label(), $this->pluralModelName, false);
     }
 
     /**
      * Determine whether the user can update the model.
      */
+    #[\Override]
     public function update(User $user, Model $page): bool
     {
-        return $this->commonChecker($user, $page, CRUDEnum::UPDATE()->label, $this->pluralModelName, false);
+        return $this->commonChecker($user, $page, CRUDEnum::UPDATE->label(), $this->pluralModelName, false);
     }
 
     /**
      * Determine whether the user can delete the model.
      */
+    #[\Override]
     public function delete(User $user, Model $page): bool
     {
-        return $this->commonChecker($user, $page, CRUDEnum::DELETE()->label, $this->pluralModelName, false);
+        return $this->commonChecker($user, $page, CRUDEnum::DELETE->label(), $this->pluralModelName, false);
     }
 }

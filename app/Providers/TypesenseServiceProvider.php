@@ -10,12 +10,11 @@ class TypesenseServiceProvider extends ServiceProvider
     /**
      * Register any application services.
      */
+    #[\Override]
     public function register(): void
     {
         // Register the Typesense client as a singleton
-        $this->app->singleton(Client::class, function ($app) {
-            return new Client(config('scout.typesense.client-settings'));
-        });
+        $this->app->singleton(Client::class, fn ($app) => new Client(config('scout.typesense.client-settings')));
     }
 
     /**

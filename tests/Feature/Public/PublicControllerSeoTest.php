@@ -9,9 +9,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tiptap\Editor;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     // Create main tenant (vusa -> www subdomain)
     $this->mainTenant = Tenant::firstOrCreate(
         ['alias' => 'vusa'],
@@ -35,8 +35,8 @@ beforeEach(function () {
     );
 });
 
-describe('Canonical URL generation', function () {
-    it('generates canonical URL for home page with correct subdomain', function () {
+describe('Canonical URL generation', function (): void {
+    it('generates canonical URL for home page with correct subdomain', function (): void {
         $response = $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']));
 
         $response->assertStatus(200);
@@ -50,7 +50,7 @@ describe('Canonical URL generation', function () {
         expect($html)->toContain('rel="canonical"');
     });
 
-    it('generates canonical URL for padalinys home page with correct subdomain', function () {
+    it('generates canonical URL for padalinys home page with correct subdomain', function (): void {
         $response = $this->get(route('home', ['subdomain' => 'mif', 'lang' => 'lt']));
 
         $response->assertStatus(200);
@@ -59,7 +59,7 @@ describe('Canonical URL generation', function () {
         );
     });
 
-    it('includes canonical URL in SEO data for news article', function () {
+    it('includes canonical URL in SEO data for news article', function (): void {
         $news = News::factory()->create([
             'tenant_id' => $this->mifTenant->id,
             'title' => 'Test MIF News',
@@ -89,7 +89,7 @@ describe('Canonical URL generation', function () {
         expect($html)->toContain('rel="canonical"');
     });
 
-    it('includes canonical URL in SEO data for page', function () {
+    it('includes canonical URL in SEO data for page', function (): void {
         $content = Content::factory()->create();
         ContentPart::factory()->create([
             'content_id' => $content->id,
@@ -119,8 +119,8 @@ describe('Canonical URL generation', function () {
     });
 });
 
-describe('Hreflang tags', function () {
-    it('shares hreflang tags for bilingual content', function () {
+describe('Hreflang tags', function (): void {
+    it('shares hreflang tags for bilingual content', function (): void {
         $response = $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']));
 
         $response->assertStatus(200);
@@ -130,7 +130,7 @@ describe('Hreflang tags', function () {
         );
     });
 
-    it('includes x-default hreflang for Lithuanian content', function () {
+    it('includes x-default hreflang for Lithuanian content', function (): void {
         $response = $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']));
 
         $response->assertStatus(200);
@@ -141,7 +141,7 @@ describe('Hreflang tags', function () {
         );
     });
 
-    it('includes lt and en hreflang tags', function () {
+    it('includes lt and en hreflang tags', function (): void {
         $response = $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']));
 
         $response->assertStatus(200);
@@ -153,8 +153,8 @@ describe('Hreflang tags', function () {
     });
 });
 
-describe('Pagination SEO metadata', function () {
-    it('shares pagination SEO data for news archive', function () {
+describe('Pagination SEO metadata', function (): void {
+    it('shares pagination SEO data for news archive', function (): void {
         // Create enough news to trigger pagination
         News::factory()->count(20)->create([
             'tenant_id' => $this->mainTenant->id,
@@ -178,7 +178,7 @@ describe('Pagination SEO metadata', function () {
         );
     });
 
-    it('generates correct next page URL for paginated content', function () {
+    it('generates correct next page URL for paginated content', function (): void {
         // Create enough news to have at least 2 pages
         News::factory()->count(20)->create([
             'tenant_id' => $this->mainTenant->id,
@@ -201,7 +201,7 @@ describe('Pagination SEO metadata', function () {
         );
     });
 
-    it('generates correct prev page URL when on page 2', function () {
+    it('generates correct prev page URL when on page 2', function (): void {
         // Create enough news to have at least 2 pages
         News::factory()->count(20)->create([
             'tenant_id' => $this->mainTenant->id,
@@ -226,8 +226,8 @@ describe('Pagination SEO metadata', function () {
     });
 });
 
-describe('OtherLangURL sharing', function () {
-    it('shares otherLangURL for home page', function () {
+describe('OtherLangURL sharing', function (): void {
+    it('shares otherLangURL for home page', function (): void {
         $response = $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']));
 
         $response->assertStatus(200);
@@ -237,7 +237,7 @@ describe('OtherLangURL sharing', function () {
         );
     });
 
-    it('shares null otherLangURL when no translation exists', function () {
+    it('shares null otherLangURL when no translation exists', function (): void {
         $news = News::factory()->create([
             'tenant_id' => $this->mainTenant->id,
             'title' => 'News Without Translation',
@@ -262,7 +262,7 @@ describe('OtherLangURL sharing', function () {
         );
     });
 
-    it('shares correct otherLangURL when translation exists', function () {
+    it('shares correct otherLangURL when translation exists', function (): void {
         $newsEn = News::factory()->create([
             'tenant_id' => $this->mainTenant->id,
             'title' => 'English News',
@@ -301,8 +301,8 @@ describe('OtherLangURL sharing', function () {
     });
 });
 
-describe('Tenant subdomain handling', function () {
-    it('uses www subdomain for vusa (main) tenant', function () {
+describe('Tenant subdomain handling', function (): void {
+    it('uses www subdomain for vusa (main) tenant', function (): void {
         $response = $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']));
 
         $response->assertStatus(200);
@@ -312,7 +312,7 @@ describe('Tenant subdomain handling', function () {
         );
     });
 
-    it('uses alias as subdomain for padalinys tenant', function () {
+    it('uses alias as subdomain for padalinys tenant', function (): void {
         $response = $this->get(route('home', ['subdomain' => 'mif', 'lang' => 'lt']));
 
         $response->assertStatus(200);
@@ -323,8 +323,8 @@ describe('Tenant subdomain handling', function () {
     });
 });
 
-describe('SEO structured data', function () {
-    it('shares organization schema', function () {
+describe('SEO structured data', function (): void {
+    it('shares organization schema', function (): void {
         $response = $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']));
 
         $response->assertStatus(200);

@@ -189,13 +189,11 @@ class ModelAuthorizer
         if ($this->duties->isEmpty()) {
             $cacheKey = "auth:duties:{$this->user->id}";
 
-            $this->duties = Cache::remember($cacheKey, static::CACHE_TTL, function () {
-                return $this->user->load([
-                    'current_duties:id,name,institution_id',
-                    'current_duties.institution:id',
-                    'current_duties.roles.permissions',
-                ])->current_duties;
-            });
+            $this->duties = Cache::remember($cacheKey, static::CACHE_TTL, fn () => $this->user->load([
+                'current_duties:id,name,institution_id',
+                'current_duties.institution:id',
+                'current_duties.roles.permissions',
+            ])->current_duties);
         }
 
         return $this->duties;

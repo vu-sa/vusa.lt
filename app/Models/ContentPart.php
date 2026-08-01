@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\ContentPartEnum;
 use App\Tiptap\TiptapEditor;
+use Illuminate\Database\Eloquent\Attributes\Appends;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\ArrayObject;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Collection;
@@ -34,6 +36,13 @@ use Illuminate\Support\Facades\Cache;
  *
  * @mixin \Eloquent
  */
+#[Appends(['html'])]
+#[Fillable([
+    'type',
+    'json_content',
+    'options',
+    'order',
+])]
 class ContentPart extends Model
 {
     use HasFactory;
@@ -47,6 +56,7 @@ class ContentPart extends Model
      *
      * @return array<string, string>
      */
+    #[\Override]
     protected function casts(): array
     {
         return [
@@ -54,16 +64,6 @@ class ContentPart extends Model
             'options' => AsArrayObject::class,
         ];
     }
-
-    protected $fillable = [
-        'type',
-        'json_content',
-        'options',
-        'order',
-    ];
-
-    // Append pre-rendered HTML to JSON serialization
-    protected $appends = ['html'];
 
     public function content(): BelongsTo
     {
@@ -89,9 +89,7 @@ class ContentPart extends Model
         // Use updated_at timestamp in cache key for automatic invalidation on edit
         $cacheKey = "content_part_html_{$this->id}_{$this->updated_at->timestamp}";
 
-        return Cache::remember($cacheKey, 86400, function () {
-            return $this->renderTiptapHtml();
-        });
+        return Cache::remember($cacheKey, 86400, fn () => $this->renderTiptapHtml());
     }
 
     /**
@@ -133,7 +131,7 @@ class ContentPart extends Model
             ContentPartEnum::from($this->type);
 
             return true;
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             return false;
         }
     }

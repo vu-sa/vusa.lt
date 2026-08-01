@@ -14,17 +14,17 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::factory()->create(['shortname' => 'test-tenant']);
     $this->user = makeUser($this->tenant);
     $this->institution = Institution::factory()->for($this->tenant)->create();
 });
 
-describe('SharepointService Integration', function () {
-    describe('service initialization', function () {
-        test('service can be initialized with custom site ID', function () {
+describe('SharepointService Integration', function (): void {
+    describe('service initialization', function (): void {
+        test('service can be initialized with custom site ID', function (): void {
             // Skip if SharePoint credentials are not configured for testing
             if (empty(config('sharepoint.client_id')) || empty(config('sharepoint.client_secret'))) {
                 $this->markTestSkipped('SharePoint integration requires proper credentials configuration');
@@ -34,11 +34,11 @@ describe('SharepointService Integration', function () {
                 siteId: 'test-site'
             );
 
-            expect($service)->toBeInstanceOf(SharepointGraphService::class);
-            expect($service->siteId)->toBe('test-site');
+            expect($service)->toBeInstanceOf(SharepointGraphService::class)
+                ->and($service->siteId)->toBe('test-site');
         });
 
-        test('service uses application settings by default', function () {
+        test('service uses application settings by default', function (): void {
             // Skip if SharePoint credentials are not configured for testing
             if (empty(config('sharepoint.client_id')) || empty(config('sharepoint.client_secret'))) {
                 $this->markTestSkipped('SharePoint integration requires proper credentials configuration');
@@ -49,7 +49,7 @@ describe('SharepointService Integration', function () {
             expect($service)->toBeInstanceOf(SharepointGraphService::class);
         });
 
-        test('service initialization is logged', function () {
+        test('service initialization is logged', function (): void {
             // Skip if SharePoint credentials are not configured for testing
             if (empty(config('sharepoint.client_id')) || empty(config('sharepoint.client_secret'))) {
                 $this->markTestSkipped('SharePoint integration requires proper credentials configuration');
@@ -63,14 +63,14 @@ describe('SharepointService Integration', function () {
         });
     });
 
-    describe('enum usage in API calls', function () {
-        test('service uses correct enum values for SharePoint fields', function () {
-            expect(SharepointFieldEnum::TITLE()->label)->toBe('Title');
-            expect(SharepointFieldEnum::PADALINYS()->label)->toBe('Padalinys');
-            expect(SharepointScopeEnum::ANONYMOUS()->label)->toBe('anonymous');
+    describe('enum usage in API calls', function (): void {
+        test('service uses correct enum values for SharePoint fields', function (): void {
+            expect(SharepointFieldEnum::TITLE->label())->toBe('Title')
+                ->and(SharepointFieldEnum::PADALINYS->label())->toBe('Padalinys')
+                ->and(SharepointScopeEnum::ANONYMOUS->label())->toBe('anonymous');
         });
 
-        test('enum values match expected SharePoint API values', function () {
+        test('enum values match expected SharePoint API values', function (): void {
             // Mock API response with SharePoint field structure
             Http::fake([
                 '*.sharepoint.com/*' => Http::response([
@@ -80,15 +80,15 @@ describe('SharepointService Integration', function () {
                             'name' => 'Test Document.pdf',
                             'listItem' => [
                                 'fields' => [
-                                    SharepointFieldEnum::TITLE()->label => 'Document Title',
-                                    SharepointFieldEnum::PADALINYS()->label => ['Label' => 'Test Institution'],
-                                    SharepointFieldEnum::SUMMARY()->label => 'Document summary',
+                                    SharepointFieldEnum::TITLE->label() => 'Document Title',
+                                    SharepointFieldEnum::PADALINYS->label() => ['Label' => 'Test Institution'],
+                                    SharepointFieldEnum::SUMMARY->label() => 'Document summary',
                                 ],
                             ],
                             'permissions' => [
                                 [
                                     'link' => [
-                                        'scope' => SharepointScopeEnum::ANONYMOUS()->label,
+                                        'scope' => SharepointScopeEnum::ANONYMOUS->label(),
                                         'webUrl' => 'https://example.sharepoint.com/document.pdf',
                                     ],
                                 ],
@@ -103,18 +103,18 @@ describe('SharepointService Integration', function () {
         });
     });
 
-    describe('file path generation', function () {
-        test('generates human-readable paths', function () {
+    describe('file path generation', function (): void {
+        test('generates human-readable paths', function (): void {
             $institution = Institution::factory()->for($this->tenant)->create(['name' => 'Test Institution']);
 
             $path = SharepointFileService::pathForFileableDriveItem($institution);
 
-            expect($path)->toStartWith('General/Padaliniai');
-            expect($path)->toContain('Institutions');
-            expect($path)->toContain('Test Institution');
+            expect($path)->toStartWith('General/Padaliniai')
+                ->toContain('Institutions')
+                ->toContain('Test Institution');
         });
 
-        test('path handles special characters', function () {
+        test('path handles special characters', function (): void {
             $institution = Institution::factory()->for($this->tenant)->create([
                 'name' => 'Institution & Partners (2023)',
             ]);
@@ -124,8 +124,8 @@ describe('SharepointService Integration', function () {
         });
     });
 
-    describe('error handling integration', function () {
-        test('service handles API authentication errors gracefully', function () {
+    describe('error handling integration', function (): void {
+        test('service handles API authentication errors gracefully', function (): void {
             Http::fake([
                 'login.microsoftonline.com/*' => Http::response([
                     'error' => 'invalid_client',
@@ -137,7 +137,7 @@ describe('SharepointService Integration', function () {
             expect(true)->toBeTrue(); // Actual implementation would need Graph API mocking
         });
 
-        test('service retries on transient failures', function () {
+        test('service retries on transient failures', function (): void {
             // Mock initial failure, then success
             Http::fake([
                 '*.sharepoint.com/*' => Http::sequence()
@@ -150,15 +150,15 @@ describe('SharepointService Integration', function () {
             expect(true)->toBeTrue(); // Would need actual retry testing with service
         });
 
-        test('service respects retry configuration from constants', function () {
-            expect((int) SharepointConfigEnum::MAX_RETRIES()->label)->toBe(3);
-            expect((int) SharepointConfigEnum::RETRY_DELAY_MS()->label)->toBe(1000);
-            expect((int) SharepointConfigEnum::DEFAULT_TIMEOUT()->label)->toBe(30);
+        test('service respects retry configuration from constants', function (): void {
+            expect((int) SharepointConfigEnum::MAX_RETRIES->label())->toBe(3)
+                ->and((int) SharepointConfigEnum::RETRY_DELAY_MS->label())->toBe(1000)
+                ->and((int) SharepointConfigEnum::DEFAULT_TIMEOUT->label())->toBe(30);
         });
     });
 
-    describe('logging integration', function () {
-        test('service logs important operations', function () {
+    describe('logging integration', function (): void {
+        test('service logs important operations', function (): void {
             // Skip if SharePoint credentials are not configured for testing
             if (empty(config('sharepoint.client_id')) || empty(config('sharepoint.client_secret'))) {
                 $this->markTestSkipped('SharePoint integration requires proper credentials configuration');
@@ -171,14 +171,14 @@ describe('SharepointService Integration', function () {
             new SharepointGraphService(siteId: 'test');
         });
 
-        test('service logs errors appropriately', function () {
+        test('service logs errors appropriately', function (): void {
             // This would test that service operations are properly logged
             expect(true)->toBeTrue(); // Placeholder for actual logging tests
         });
     });
 
-    describe('batch processing integration', function () {
-        test('can process multiple documents efficiently', function () {
+    describe('batch processing integration', function (): void {
+        test('can process multiple documents efficiently', function (): void {
             $documents = collect([
                 Document::factory()->make(['sharepoint_id' => 'doc1']),
                 Document::factory()->make(['sharepoint_id' => 'doc2']),
@@ -200,19 +200,19 @@ describe('SharepointService Integration', function () {
             expect($documents)->toHaveCount(3);
         });
 
-        test('batch processing respects size limits', function () {
-            expect((int) SharepointConfigEnum::DEFAULT_BATCH_SIZE()->label)->toBe(20);
-            expect((int) SharepointConfigEnum::DEFAULT_BATCH_SIZE()->label)->toBeLessThan(100);
+        test('batch processing respects size limits', function (): void {
+            expect((int) SharepointConfigEnum::DEFAULT_BATCH_SIZE->label())->toBe(20)
+                ->toBeLessThan(100);
         });
     });
 
-    describe('permission management integration', function () {
-        test('creates permissions with correct scope and type', function () {
+    describe('permission management integration', function (): void {
+        test('creates permissions with correct scope and type', function (): void {
             Http::fake([
                 '*.sharepoint.com/*' => Http::response([
                     'id' => 'permission-id',
                     'link' => [
-                        'scope' => SharepointScopeEnum::ANONYMOUS()->label,
+                        'scope' => SharepointScopeEnum::ANONYMOUS->label(),
                         'type' => 'view',
                         'webUrl' => 'https://example.sharepoint.com/document.pdf',
                     ],
@@ -220,70 +220,68 @@ describe('SharepointService Integration', function () {
             ]);
 
             // Permission creation should use enum values
-            expect(SharepointScopeEnum::ANONYMOUS()->label)->toBe('anonymous');
+            expect(SharepointScopeEnum::ANONYMOUS->label())->toBe('anonymous');
         });
 
-        test('permission expiry uses default value', function () {
+        test('permission expiry uses default value', function (): void {
             // Permission expiry should use the hardcoded default of 365 days
             // This tests that the default constant is working
             expect(true)->toBeTrue(); // Placeholder since we can't easily test private constants
         });
     });
 
-    describe('model trait integration', function () {
-        test('models with HasSharepointFiles trait work correctly', function () {
-            expect(in_array(HasSharepointFiles::class, class_uses($this->institution)))->toBeTrue();
-            expect($this->institution->fileableFiles())->toBeInstanceOf(MorphMany::class);
+    describe('model trait integration', function (): void {
+        test('models with HasSharepointFiles trait work correctly', function (): void {
+            expect(class_uses($this->institution))->toContain(HasSharepointFiles::class)
+                ->and($this->institution->fileableFiles())->toBeInstanceOf(MorphMany::class);
         });
 
-        test('path generation works with trait models', function () {
+        test('path generation works with trait models', function (): void {
             $institution = Institution::factory()->for($this->tenant)->create();
 
-            expect(in_array(HasSharepointFiles::class, class_uses($institution)))->toBeTrue();
+            expect(class_uses($institution))->toContain(HasSharepointFiles::class);
 
             $path = SharepointFileService::pathForFileableDriveItem($institution);
-            expect($path)->toBeString();
-            expect($path)->not()->toBeEmpty();
+            expect($path)->toBeString()
+                ->not()
+                ->toBeEmpty();
         });
     });
 
-    describe('configuration validation', function () {
-        test('required SharePoint configuration is present', function () {
+    describe('configuration validation', function (): void {
+        test('required SharePoint configuration is present', function (): void {
             $config = config('filesystems.sharepoint');
 
-            expect($config)->toHaveKey('tenant_id');
-            expect($config)->toHaveKey('client_id');
-            expect($config)->toHaveKey('client_secret');
-            expect($config)->toHaveKey('site_id');
+            expect($config)->toHaveKeys(['tenant_id', 'client_id', 'client_secret', 'site_id']);
         });
 
-        test('constants have reasonable values', function () {
-            expect(SharepointConfigEnum::API_BASE_URL()->label)->toStartWith('https://');
-            expect((int) SharepointConfigEnum::DEFAULT_TIMEOUT()->label)->toBeGreaterThan(0);
-            expect((int) SharepointConfigEnum::MAX_RETRIES()->label)->toBeGreaterThan(0);
-            expect((int) SharepointConfigEnum::RETRY_DELAY_MS()->label)->toBeGreaterThan(0);
+        test('constants have reasonable values', function (): void {
+            expect(SharepointConfigEnum::API_BASE_URL->label())->toStartWith('https://')
+                ->and((int) SharepointConfigEnum::DEFAULT_TIMEOUT->label())->toBeGreaterThan(0)
+                ->and((int) SharepointConfigEnum::MAX_RETRIES->label())->toBeGreaterThan(0)
+                ->and((int) SharepointConfigEnum::RETRY_DELAY_MS->label())->toBeGreaterThan(0);
         });
     });
 
-    describe('real-world scenarios', function () {
-        test('handles document metadata extraction correctly', function () {
+    describe('real-world scenarios', function (): void {
+        test('handles document metadata extraction correctly', function (): void {
             // Simulate SharePoint document with real metadata structure
             $mockDocument = [
                 'id' => 'real-doc-id',
                 'name' => 'Important Document.pdf',
                 'listItem' => [
                     'fields' => [
-                        SharepointFieldEnum::TITLE()->label => 'Important Document',
-                        SharepointFieldEnum::PADALINYS()->label => ['Label' => 'Test Institution'],
-                        SharepointFieldEnum::SUMMARY()->label => 'This is an important document',
-                        SharepointFieldEnum::LANGUAGE()->label => 'lt',
-                        SharepointFieldEnum::DATE()->label => '2023-06-15T10:30:00Z',
+                        SharepointFieldEnum::TITLE->label() => 'Important Document',
+                        SharepointFieldEnum::PADALINYS->label() => ['Label' => 'Test Institution'],
+                        SharepointFieldEnum::SUMMARY->label() => 'This is an important document',
+                        SharepointFieldEnum::LANGUAGE->label() => 'lt',
+                        SharepointFieldEnum::DATE->label() => '2023-06-15T10:30:00Z',
                     ],
                 ],
                 'permissions' => [
                     [
                         'link' => [
-                            'scope' => SharepointScopeEnum::ANONYMOUS()->label,
+                            'scope' => SharepointScopeEnum::ANONYMOUS->label(),
                             'webUrl' => 'https://vusa.sharepoint.com/document.pdf',
                         ],
                     ],
@@ -291,11 +289,11 @@ describe('SharepointService Integration', function () {
             ];
 
             // Verify the structure matches what we expect
-            expect($mockDocument['listItem']['fields'])->toHaveKey(SharepointFieldEnum::TITLE()->label);
-            expect($mockDocument['permissions'][0]['link']['scope'])->toBe(SharepointScopeEnum::ANONYMOUS()->label);
+            expect($mockDocument['listItem']['fields'])->toHaveKey(SharepointFieldEnum::TITLE->label());
+            expect($mockDocument['permissions'][0]['link']['scope'])->toBe(SharepointScopeEnum::ANONYMOUS->label());
         });
 
-        test('path handles multilingual content correctly', function () {
+        test('path handles multilingual content correctly', function (): void {
             $institution = Institution::factory()->for($this->tenant)->create([
                 'name' => 'Daugiakalbė institucija ąčęėįšųūž',
             ]);
@@ -304,15 +302,15 @@ describe('SharepointService Integration', function () {
             expect($path)->toContain('Daugiakalbė institucija ąčęėįšųūž');
         });
 
-        test('handles edge cases in document processing', function () {
+        test('handles edge cases in document processing', function (): void {
             // Test with empty/null values that might come from SharePoint
             $mockDocument = [
                 'id' => 'edge-case-doc',
                 'name' => '',  // Empty name
                 'listItem' => [
                     'fields' => [
-                        SharepointFieldEnum::TITLE()->label => null,  // Null title
-                        SharepointFieldEnum::SUMMARY()->label => '',  // Empty summary
+                        SharepointFieldEnum::TITLE->label() => null,  // Null title
+                        SharepointFieldEnum::SUMMARY->label() => '',  // Empty summary
                     ],
                 ],
             ];

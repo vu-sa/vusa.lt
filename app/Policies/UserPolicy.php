@@ -17,7 +17,7 @@ class UserPolicy extends ModelPolicy
     {
         parent::__construct($authorizer);
 
-        $this->pluralModelName = Str::plural(ModelEnum::USER()->label);
+        $this->pluralModelName = Str::plural(ModelEnum::USER->label());
     }
 
     /**

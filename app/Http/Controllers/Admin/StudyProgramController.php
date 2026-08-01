@@ -183,7 +183,7 @@ class StudyProgramController extends AdminController
         $targetId = $request->validated()['target_study_program_id'];
         $sourceIds = $request->validated()['source_study_program_ids'];
 
-        DB::transaction(function () use ($targetId, $sourceIds) {
+        DB::transaction(function () use ($targetId, $sourceIds): void {
             $targetStudyProgram = StudyProgram::findOrFail($targetId);
             $sourceStudyPrograms = StudyProgram::whereIn('id', $sourceIds)->get();
 

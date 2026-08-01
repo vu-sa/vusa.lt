@@ -14,38 +14,42 @@ class StudyProgramPolicy extends ModelPolicy
     /**
      * These models belong to a single tenant through a `tenant` relation.
      */
+    #[\Override]
     protected bool $hasManyTenants = false;
 
     public function __construct(ModelAuthorizer $authorizer)
     {
         parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::STUDY_PROGRAM()->label);
+        $this->pluralModelName = Str::plural(ModelEnum::STUDY_PROGRAM->label());
     }
 
     /**
      * Determine whether the user can view the model.
      * Study programs belong to a single tenant, so we use hasManyTenants=false
      */
+    #[\Override]
     public function view(User $user, Model $studyProgram): bool
     {
-        return $this->commonChecker($user, $studyProgram, CRUDEnum::READ()->label, null, false);
+        return $this->commonChecker($user, $studyProgram, CRUDEnum::READ->label(), null, false);
     }
 
     /**
      * Determine whether the user can update the model.
      * Study programs belong to a single tenant, so we use hasManyTenants=false
      */
+    #[\Override]
     public function update(User $user, Model $studyProgram): bool
     {
-        return $this->commonChecker($user, $studyProgram, CRUDEnum::UPDATE()->label, null, false);
+        return $this->commonChecker($user, $studyProgram, CRUDEnum::UPDATE->label(), null, false);
     }
 
     /**
      * Determine whether the user can delete the model.
      * Study programs belong to a single tenant, so we use hasManyTenants=false
      */
+    #[\Override]
     public function delete(User $user, Model $studyProgram): bool
     {
-        return $this->commonChecker($user, $studyProgram, CRUDEnum::DELETE()->label, null, false);
+        return $this->commonChecker($user, $studyProgram, CRUDEnum::DELETE->label(), null, false);
     }
 }

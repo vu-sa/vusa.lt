@@ -10,7 +10,7 @@ use App\Models\Tenant;
 use App\Models\Training;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 /**
  * Programmes carry no permissions of their own — every mutation is authorized
@@ -29,7 +29,7 @@ function makeProgrammeForTenant(Tenant $tenant): Programme
     return $programme;
 }
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
     $this->user = makeUser($this->tenant);
@@ -66,14 +66,14 @@ function programmePayload(ProgrammeDay $day, ?ProgrammePart $part = null): array
     ];
 }
 
-describe('auth: simple user', function () {
-    test('cannot update a programme', function () {
+describe('auth: simple user', function (): void {
+    test('cannot update a programme', function (): void {
         asUser($this->user)
             ->put(route('programmes.update', $this->programme), programmePayload($this->day))
             ->assertStatus(403);
     });
 
-    test('cannot destroy a programme day', function () {
+    test('cannot destroy a programme day', function (): void {
         asUser($this->user)
             ->delete(route('programmeDays.destroy', $this->day))
             ->assertStatus(403);
@@ -81,7 +81,7 @@ describe('auth: simple user', function () {
         expect(ProgrammeDay::query()->find($this->day->id))->not->toBeNull();
     });
 
-    test('cannot destroy a programme section', function () {
+    test('cannot destroy a programme section', function (): void {
         $section = ProgrammeSection::factory()->create(['duration' => 30]);
         $this->day->sections()->attach($section, ['order' => 0]);
 
@@ -92,7 +92,7 @@ describe('auth: simple user', function () {
         expect(ProgrammeSection::query()->find($section->id))->not->toBeNull();
     });
 
-    test('cannot destroy a programme block', function () {
+    test('cannot destroy a programme block', function (): void {
         $section = ProgrammeSection::factory()->create(['duration' => 30]);
         $this->day->sections()->attach($section, ['order' => 0]);
         $block = ProgrammeBlock::factory()->create(['programme_section_id' => $section->id]);
@@ -104,7 +104,7 @@ describe('auth: simple user', function () {
         expect(ProgrammeBlock::query()->find($block->id))->not->toBeNull();
     });
 
-    test('cannot destroy a programme part', function () {
+    test('cannot destroy a programme part', function (): void {
         $part = ProgrammePart::factory()->create();
         $this->day->parts()->attach($part, ['order' => 0]);
 
@@ -115,7 +115,7 @@ describe('auth: simple user', function () {
         expect(ProgrammePart::query()->find($part->id))->not->toBeNull();
     });
 
-    test('cannot attach a section to a day', function () {
+    test('cannot attach a section to a day', function (): void {
         $section = ProgrammeSection::factory()->create(['duration' => 30]);
 
         asUser($this->user)
@@ -128,7 +128,7 @@ describe('auth: simple user', function () {
         expect($section->programmeDays()->count())->toBe(0);
     });
 
-    test('cannot detach a part from a day', function () {
+    test('cannot detach a part from a day', function (): void {
         $part = ProgrammePart::factory()->create();
         $this->day->parts()->attach($part, ['order' => 0]);
 
@@ -140,8 +140,8 @@ describe('auth: simple user', function () {
     });
 });
 
-describe('auth: user who can update the owning training', function () {
-    test('can update the programme', function () {
+describe('auth: user who can update the owning training', function (): void {
+    test('can update the programme', function (): void {
         asUser($this->trainingManager)
             ->put(route('programmes.update', $this->programme), programmePayload($this->day))
             ->assertRedirect();
@@ -149,7 +149,7 @@ describe('auth: user who can update the owning training', function () {
         expect($this->day->fresh()->getTranslation('title', 'lt'))->toBe('Diena');
     });
 
-    test('can destroy a programme day', function () {
+    test('can destroy a programme day', function (): void {
         asUser($this->trainingManager)
             ->delete(route('programmeDays.destroy', $this->day))
             ->assertRedirect();
@@ -157,7 +157,7 @@ describe('auth: user who can update the owning training', function () {
         expect(ProgrammeDay::query()->find($this->day->id))->toBeNull();
     });
 
-    test('can attach a section to a day', function () {
+    test('can attach a section to a day', function (): void {
         $section = ProgrammeSection::factory()->create(['duration' => 30]);
 
         asUser($this->trainingManager)
@@ -171,8 +171,8 @@ describe('auth: user who can update the owning training', function () {
     });
 });
 
-describe('cross-programme isolation', function () {
-    test('cannot pull another programmes day into a programme it may edit', function () {
+describe('cross-programme isolation', function (): void {
+    test('cannot pull another programmes day into a programme it may edit', function (): void {
         $foreignProgramme = makeProgrammeForTenant($this->tenant);
         $foreignDay = ProgrammeDay::factory()->create(['programme_id' => $foreignProgramme->id]);
 
@@ -183,7 +183,7 @@ describe('cross-programme isolation', function () {
         expect($foreignDay->fresh()->programme_id)->toBe($foreignProgramme->id);
     });
 
-    test('cannot destroy a day belonging to a training in another tenant', function () {
+    test('cannot destroy a day belonging to a training in another tenant', function (): void {
         $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $foreignProgramme = makeProgrammeForTenant($otherTenant);
         $foreignDay = ProgrammeDay::factory()->create(['programme_id' => $foreignProgramme->id]);
@@ -195,7 +195,7 @@ describe('cross-programme isolation', function () {
         expect(ProgrammeDay::query()->find($foreignDay->id))->not->toBeNull();
     });
 
-    test('a programme with no owning training cannot be mutated at all', function () {
+    test('a programme with no owning training cannot be mutated at all', function (): void {
         $orphan = Programme::factory()->create();
         $orphanDay = ProgrammeDay::factory()->create(['programme_id' => $orphan->id]);
 

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Traits\HasTranslations;
 use Database\Factories\FormFieldFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
@@ -41,6 +42,20 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
+#[Fillable([
+    'label',
+    'description',
+    'type',
+    'subtype',
+    'options',
+    'is_required',
+    'default_value',
+    'placeholder',
+    'order',
+    'use_model_options',
+    'options_model',
+    'options_model_field',
+])]
 class FormField extends Model
 {
     /** @use HasFactory<FormFieldFactory> */
@@ -53,21 +68,7 @@ class FormField extends Model
         'placeholder',
     ];
 
-    protected $fillable = [
-        'label',
-        'description',
-        'type',
-        'subtype',
-        'options',
-        'is_required',
-        'default_value',
-        'placeholder',
-        'order',
-        'use_model_options',
-        'options_model',
-        'options_model_field',
-    ];
-
+    #[\Override]
     protected function casts(): array
     {
         return [

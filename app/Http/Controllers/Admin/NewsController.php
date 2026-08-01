@@ -156,7 +156,7 @@ class NewsController extends AdminController
     {
         $this->handleAuthorization('update', $news);
 
-        $other_lang_pages = News::with('tenant:id,shortname')->when(! request()->user()->isSuperAdmin(), function ($query) use ($news) {
+        $other_lang_pages = News::with('tenant:id,shortname')->when(! request()->user()->isSuperAdmin(), function ($query) use ($news): void {
             $query->where('tenant_id', $news->tenant_id);
         })->where('lang', '!=', $news->lang)->select('id', 'title', 'tenant_id')->get();
 

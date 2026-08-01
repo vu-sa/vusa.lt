@@ -14,7 +14,7 @@ use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Spatie\Enum\Laravel\Rules\EnumRule;
+use Illuminate\Validation\Rules\Enum;
 
 class CommentController extends AdminController
 {
@@ -26,7 +26,7 @@ class CommentController extends AdminController
      *
      * @var array<string, class-string>
      */
-    private const ALLOWED_COMMENTABLE_TYPES = [
+    private const array ALLOWED_COMMENTABLE_TYPES = [
         'reservation' => Reservation::class,
         'reservation-resource' => ReservationResource::class,
         'institution' => Institution::class,
@@ -40,7 +40,7 @@ class CommentController extends AdminController
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'commentable_type' => [new EnumRule(ModelEnum::class), 'required'],
+            'commentable_type' => [new Enum(ModelEnum::class), 'required'],
             'commentable_id' => 'required',
             'comment' => 'required|string',
             'route' => 'nullable|string',

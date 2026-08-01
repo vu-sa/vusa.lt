@@ -38,11 +38,11 @@ class DutyService
         }
 
         return Institution::select('id', 'name', 'alias', 'tenant_id')
-            ->when(! $hasGlobalAccess, function ($query) use ($tenantIds) {
+            ->when(! $hasGlobalAccess, function ($query) use ($tenantIds): void {
                 // Only show institutions from tenants where user has permission
                 $query->whereIn('tenant_id', $tenantIds);
             })
-            ->whereHas('tenant', function ($query) {
+            ->whereHas('tenant', function ($query): void {
                 $query->where('type', '!=', 'pkp');
             })
             ->with('tenant:id,shortname')
@@ -110,18 +110,18 @@ class DutyService
             ->unique();
 
         return Institution::select('id', 'name', 'alias', 'tenant_id')
-            ->when($visibleTenantIds->isNotEmpty(), function ($query) use ($visibleTenantIds, $userInstitutionIds) {
-                $query->where(function ($q) use ($visibleTenantIds, $userInstitutionIds) {
+            ->when($visibleTenantIds->isNotEmpty(), function ($query) use ($visibleTenantIds, $userInstitutionIds): void {
+                $query->where(function ($q) use ($visibleTenantIds, $userInstitutionIds): void {
                     $q->whereIn('tenant_id', $visibleTenantIds);
 
                     if ($userInstitutionIds->isNotEmpty()) {
                         $q->orWhereIn('id', $userInstitutionIds);
                     }
                 });
-            }, function ($query) use ($userInstitutionIds) {
+            }, function ($query) use ($userInstitutionIds): void {
                 $query->whereIn('id', $userInstitutionIds);
             })
-            ->whereHas('tenant', function ($query) {
+            ->whereHas('tenant', function ($query): void {
                 $query->where('type', '!=', 'pkp');
             })
             ->with([
@@ -136,7 +136,7 @@ class DutyService
                 'checkIns',
             ])
             ->withCount([
-                'meetings as upcoming_meetings_count' => function ($query) {
+                'meetings as upcoming_meetings_count' => function ($query): void {
                     $query->where('start_time', '>', now());
                 },
             ])
@@ -244,7 +244,7 @@ class DutyService
 
         return Institution::select('id', 'name', 'alias', 'tenant_id', 'meeting_periodicity_days')
             ->whereIn('tenant_id', $accessibleTenantIds)
-            ->whereHas('tenant', function ($query) {
+            ->whereHas('tenant', function ($query): void {
                 $query->where('type', '!=', 'pkp');
             })
             ->with([
@@ -257,7 +257,7 @@ class DutyService
                 'checkIns',
             ])
             ->withCount([
-                'meetings as upcoming_meetings_count' => function ($query) {
+                'meetings as upcoming_meetings_count' => function ($query): void {
                     $query->where('start_time', '>', now());
                 },
             ])
@@ -277,7 +277,7 @@ class DutyService
     private static function buildInstitutionQuery()
     {
         return Institution::select('id', 'name', 'alias', 'tenant_id', 'meeting_periodicity_days')
-            ->whereHas('tenant', function ($query) {
+            ->whereHas('tenant', function ($query): void {
                 $query->where('type', '!=', 'pkp');
             })
             ->with([
@@ -294,7 +294,7 @@ class DutyService
                 'checkIns',
             ])
             ->withCount([
-                'meetings as upcoming_meetings_count' => function ($query) {
+                'meetings as upcoming_meetings_count' => function ($query): void {
                     $query->where('start_time', '>', now());
                 },
             ])
