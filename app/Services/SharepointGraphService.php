@@ -663,18 +663,10 @@ class SharepointGraphService
             // keyBy list item id
         })->keyBy(fn ($value) => $value['listItem']['uniqueId']);
 
-        // Filter out folders - only process files
-        $folderItems = $driveItemCollections->filter(fn ($item) => isset($item['folder']));
-        if ($folderItems->isNotEmpty()) {
-            Log::warning('Batch processing encountered folders instead of files', [
-                'folder_count' => $folderItems->count(),
-                'folder_ids' => $folderItems->keys()->toArray(),
-            ]);
-            $driveItemCollections = $driveItemCollections->reject(fn ($item) => isset($item['folder']));
-        }
+        $driveItemCollections = $this->filterProcessableDriveItems($driveItemCollections);
 
         // Get drive items that don't have a valid anonymous permission yet
-        $driveItemsWithoutAnonymousUrl = $driveItemCollections->filter(fn ($driveItem) => ! collect($driveItem['permissions'])
+        $driveItemsWithoutAnonymousUrl = $driveItemCollections->filter(fn ($driveItem) => ! collect($driveItem['permissions'] ?? [])
             ->contains(fn ($permission) => $this->isValidAnonymousPermission($permission)));
 
         // Add anonymous url to drive items without it
@@ -725,14 +717,14 @@ class SharepointGraphService
         $documentColection->each(function (Document $document) use ($driveItemCollections): void {
             $driveItem = $driveItemCollections->get($document->sharepoint_id);
 
-            // Handle filtered folders - mark as failed
+            // Handle filtered folders and failed batch sub-requests - mark as failed
             if ($driveItem === null) {
-                Log::warning('Document references a folder, skipping', [
+                Log::warning('Document drive item unavailable, skipping', [
                     'sharepoint_id' => $document->sharepoint_id,
                     'title' => $document->title,
                 ]);
                 $document->sync_status = 'failed';
-                $document->sync_error_message = 'Document references a folder (folders not supported)';
+                $document->sync_error_message = 'Document could not be retrieved from SharePoint (references a folder, or the request failed)';
                 $document->save();
 
                 return;
@@ -751,7 +743,7 @@ class SharepointGraphService
             $document->summary = $driveItem['listItem']['fields'][SharepointFieldEnum::SUMMARY->label()] ?? null;
             /* $document->thumbnail_url = $driveItem['thumbnails'][0]['large']['url']; */
 
-            $anonymousPermission = collect($driveItem['permissions'])
+            $anonymousPermission = collect($driveItem['permissions'] ?? [])
                 ->filter(fn ($permission) => $this->isValidAnonymousPermission($permission))
                 ->first();
 
@@ -783,6 +775,41 @@ class SharepointGraphService
 
         return $documentColection;
 
+    }
+
+    /**
+     * Reject drive items that must not be processed as normal files: folders, and
+     * items whose batch sub-request failed (e.g. transient Graph API error,
+     * throttling, or the item not yet readable right after being picked). Failed
+     * sub-requests come back as an error body without the usual drive item fields
+     * (no 'id', no 'permissions'), so they must be filtered out before the caller
+     * touches those fields.
+     *
+     * @param  Collection<string, array<string, mixed>>  $driveItemCollections
+     * @return Collection<string, array<string, mixed>>
+     */
+    protected function filterProcessableDriveItems(Collection $driveItemCollections): Collection
+    {
+        $folderItems = $driveItemCollections->filter(fn ($item) => isset($item['folder']));
+        if ($folderItems->isNotEmpty()) {
+            Log::warning('Batch processing encountered folders instead of files', [
+                'folder_count' => $folderItems->count(),
+                'folder_ids' => $folderItems->keys()->toArray(),
+            ]);
+            $driveItemCollections = $driveItemCollections->reject(fn ($item) => isset($item['folder']));
+        }
+
+        $failedItems = $driveItemCollections->filter(fn ($item) => ! isset($item['id']));
+        if ($failedItems->isNotEmpty()) {
+            Log::warning('Batch processing encountered failed drive item requests', [
+                'failed_count' => $failedItems->count(),
+                'failed_ids' => $failedItems->keys()->toArray(),
+                'errors' => $failedItems->map(fn ($item) => $item['error'] ?? null)->toArray(),
+            ]);
+            $driveItemCollections = $driveItemCollections->reject(fn ($item) => ! isset($item['id']));
+        }
+
+        return $driveItemCollections;
     }
 
     /**

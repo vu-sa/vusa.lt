@@ -510,6 +510,45 @@ describe('SharePoint Service Robustness', function (): void {
                 ->and($result->isEmpty())->toBeTrue();
         });
 
+        test('filterProcessableDriveItems rejects folders and failed batch sub-requests', function (): void {
+            $reflection = new ReflectionClass($this->service);
+            $method = $reflection->getMethod('filterProcessableDriveItems');
+
+            $driveItemCollections = collect([
+                'good-item' => ['id' => 'drive-item-1', 'permissions' => []],
+                'folder-item' => ['id' => 'drive-item-2', 'folder' => ['childCount' => 3]],
+                'failed-item' => ['error' => ['code' => 'itemNotFound', 'message' => 'Item not found']],
+            ]);
+
+            Log::shouldReceive('warning')
+                ->with('Batch processing encountered folders instead of files', Mockery::on(fn ($context) => $context['folder_count'] === 1 && $context['folder_ids'] === ['folder-item']))
+                ->once();
+
+            Log::shouldReceive('warning')
+                ->with('Batch processing encountered failed drive item requests', Mockery::on(fn ($context) => $context['failed_count'] === 1 && $context['failed_ids'] === ['failed-item']))
+                ->once();
+
+            $result = $method->invoke($this->service, $driveItemCollections);
+
+            expect($result->keys()->all())->toBe(['good-item']);
+        });
+
+        test('filterProcessableDriveItems returns items unchanged when all are processable', function (): void {
+            $reflection = new ReflectionClass($this->service);
+            $method = $reflection->getMethod('filterProcessableDriveItems');
+
+            $driveItemCollections = collect([
+                'good-item-1' => ['id' => 'drive-item-1', 'permissions' => []],
+                'good-item-2' => ['id' => 'drive-item-2', 'permissions' => []],
+            ]);
+
+            Log::shouldReceive('warning')->never();
+
+            $result = $method->invoke($this->service, $driveItemCollections);
+
+            expect($result->keys()->all())->toBe(['good-item-1', 'good-item-2']);
+        });
+
         test('parseDriveItems processes item data correctly', function (): void {
             $reflection = new ReflectionClass($this->service);
             $method = $reflection->getMethod('parseDriveItems');
