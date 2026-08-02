@@ -65,7 +65,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @mixin \Eloquent
  */
 #[Fillable([
-    'name', 'description', 'location', 'capacity', 'is_reservable',
+    'name', 'description', 'identifier', 'location', 'capacity', 'is_reservable',
     'tenant_id', 'resource_category_id', 'media',
 ])]
 class Resource extends Model implements GuardsForceDelete, HasMedia
@@ -106,7 +106,7 @@ class Resource extends Model implements GuardsForceDelete, HasMedia
     {
         $this
             ->addMediaCollection('images')
-            ->acceptsMimeTypes(['image/jpeg', 'image/jpg', 'image/png'])
+            ->acceptsMimeTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/webp'])
             ->useDisk('spatieMediaLibrary');
     }
 

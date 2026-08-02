@@ -34,6 +34,9 @@ class UpdateResourceRequest extends FormRequest
             'is_reservable' => 'required|boolean',
             'resource_category_id' => 'nullable|integer|exists:resource_categories,id',
             'media' => 'array|nullable',
+            'media.*.id' => 'nullable|integer',
+            'media.*.status' => 'nullable|string|in:pending,finished',
+            'media.*.file' => 'file|mimes:jpg,jpeg,png,webp|max:10240',
         ];
     }
 }

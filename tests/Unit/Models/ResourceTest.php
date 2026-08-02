@@ -62,7 +62,7 @@ describe('Resource model basic functionality', function (): void {
 
     test('resource model has correct fillable attributes', function (): void {
         $fillable = [
-            'name', 'description', 'location', 'capacity', 'is_reservable',
+            'name', 'description', 'identifier', 'location', 'capacity', 'is_reservable',
             'tenant_id', 'resource_category_id', 'media',
         ];
 
