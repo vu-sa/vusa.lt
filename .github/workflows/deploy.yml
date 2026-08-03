@@ -95,10 +95,31 @@ jobs:
           fi
 
       # Run deployment process
+      #
+      # Order matters here. `php artisan down --render` is called FIRST, against the
+      # still-matching old app code + old vendor/, so it boots cleanly and prerenders the
+      # maintenance page — which public/index.php then serves without loading Composer at
+      # all. Only once the site is safely behind that static page do we `git pull` and
+      # swap vendor/ in via plain shell (not via an artisan-driven step): any `php artisan
+      # ...` call boots the full framework, including service providers that reference app
+      # classes, before the command itself runs. If a deploy adds/changes a Composer
+      # dependency and vendor/ isn't swapped yet, that boot fatals with a missing-class
+      # error — and doing the swap from inside deployment:run's own asset step is too late,
+      # since deployment:run itself is the first artisan call after the pull. Swapping via
+      # shell here, before any artisan command touches the new code, avoids both the
+      # chicken-and-egg boot crash and a live-traffic window with a missing vendor/.
       - name: Deploy to production
         run: |
           ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && \
+          /opt/php85/bin/php artisan down --retry=60 --render=errors::maintenance --refresh=15 && \
           git pull && \
+          rm -rf vendor.new && \
+          mkdir vendor.new && \
+          tar -xzf vendor.tar.gz -C vendor.new && \
+          rm -rf vendor.old && \
+          mv vendor vendor.old && \
+          mv vendor.new/vendor vendor && \
+          rm -rf vendor.new vendor.tar.gz && \
           /opt/php85/bin/php artisan deployment:run"
 
       # Resume deployment if failed (optional recovery step)

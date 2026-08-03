@@ -6,10 +6,20 @@ use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
-#[Description('Deploy build assets and vendor files atomically')]
+#[Description('Deploy build assets atomically')]
 #[Signature('deployment:deploy-assets')]
 class DeploymentDeployAssets extends Command
 {
+    /**
+     * vendor/ is intentionally NOT swapped here. Every artisan invocation boots the
+     * full framework — including service providers that reference app classes — before
+     * a command's handle() ever runs. If a deploy adds/changes a Composer dependency,
+     * new app code would then boot against the still-old vendor/ and fatal with a
+     * missing-class error on the very first artisan call (deployment:run itself),
+     * before this step ever got a chance to fix it. So vendor.tar.gz is extracted via
+     * plain shell in the deploy workflow, after maintenance mode is entered but BEFORE
+     * git pull's new app code is ever booted by artisan — see deploy.yml.
+     */
     public function handle(): int
     {
         try {
@@ -27,7 +37,6 @@ class DeploymentDeployAssets extends Command
 
             // Extract build artifacts to temporary directory
             $this->deployBuildAssets($tempDir);
-            $this->deployVendorFiles($tempDir);
             $this->deployDocumentation($tempDir);
 
             // Clean up temporary directory and archives
@@ -89,50 +98,6 @@ class DeploymentDeployAssets extends Command
         }
     }
 
-    private function deployVendorFiles(string $tempDir): void
-    {
-        $vendorArchive = base_path('vendor.tar.gz');
-
-        if (! file_exists($vendorArchive)) {
-            $this->warn('Vendor archive not found, skipping vendor files');
-
-            return;
-        }
-
-        $this->info('Deploying vendor files...');
-
-        // Extract to temporary directory
-        $output = [];
-        $returnCode = 0;
-        exec("tar -xzf {$vendorArchive} -C {$tempDir} 2>&1", $output, $returnCode);
-
-        if ($returnCode !== 0) {
-            throw new \Exception('Failed to extract vendor files: '.implode("\n", $output));
-        }
-
-        // Atomic replacement of vendor directory
-        $vendorDir = base_path('vendor');
-        $tempVendorDir = $tempDir.'/vendor';
-
-        if (is_dir($tempVendorDir)) {
-            // Backup existing vendor directory
-            if (is_dir($vendorDir)) {
-                $vendorOldDir = base_path('vendor.old');
-                if (is_dir($vendorOldDir)) {
-                    $this->removeDirectory($vendorOldDir);
-                }
-                rename($vendorDir, $vendorOldDir);
-            }
-
-            // Move new vendor directory into place
-            if (! rename($tempVendorDir, $vendorDir)) {
-                throw new \Exception('Failed to move vendor files into place');
-            }
-
-            $this->info('Vendor files deployed successfully');
-        }
-    }
-
     private function deployDocumentation(string $tempDir): void
     {
         $docsArchive = base_path('docs.tar.gz');
@@ -170,8 +135,9 @@ class DeploymentDeployAssets extends Command
             $this->removeDirectory($tempDir);
         }
 
-        // Remove uploaded archives
-        $archives = ['build.tar.gz', 'vendor.tar.gz', 'docs.tar.gz'];
+        // Remove uploaded archives (vendor.tar.gz is already swapped in and deleted
+        // by the deploy workflow before artisan ever boots — see deploy.yml)
+        $archives = ['build.tar.gz', 'docs.tar.gz'];
         foreach ($archives as $archive) {
             $archivePath = base_path($archive);
             if (file_exists($archivePath)) {

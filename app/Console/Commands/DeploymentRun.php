@@ -22,9 +22,11 @@ class DeploymentRun extends Command
         'maintenance' => [
             'name' => 'Enter maintenance mode',
             'command' => 'down',
-            // --render prerenders the view into storage/framework/maintenance.php, which
-            // public/index.php serves before loading Composer. Without it, the vendor/ swap
-            // in deployment:deploy-assets leaves a window where the app cannot boot at all.
+            // The deploy workflow already calls `down --render` before git pull / the
+            // vendor/ swap, so by the time this step runs the site is already behind the
+            // prerendered maintenance page. This is a harmless idempotent refresh of the
+            // retry/refresh timers, kept so `deployment:run`/`deployment:resume` still work
+            // correctly when invoked standalone (e.g. manual recovery over SSH).
             'args' => ['--retry' => 60, '--render' => 'errors::maintenance', '--refresh' => 15],
             'critical' => true,
         ],
