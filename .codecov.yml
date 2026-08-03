@@ -99,7 +99,10 @@ flags:
   backend:
     paths:
       - "app/"
-    carryforward: false
+    # PR runs use Pest TIA and execute only the affected tests, so the uploaded clover report is
+    # partial by design. Carry the rest forward from the last full run so the PR comment doesn't
+    # show a phantom coverage cliff. Patch status still grades changed lines, which TIA always reruns.
+    carryforward: true
   frontend:
     paths:
       - "resources/js/"

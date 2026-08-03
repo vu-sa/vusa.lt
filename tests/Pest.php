@@ -25,8 +25,8 @@ pest()->extend(TestCase::class)->in('Feature', 'Unit');
 |--------------------------------------------------------------------------
 |
 | Tia reruns only the tests affected by your changes and replays cached results for the rest.
-| It is enabled for local runs only — CI always executes the full suite (see `--ci` in ci.yml),
-| with the sole exception of the tia-baseline.yml workflow that records the shared baseline.
+| `locally()` enables it for local runs; ci.yml opts pull requests in explicitly with `--ci --tia`.
+| Pushes to main stay a full run, and tia-baseline.yml records the shared baseline from there.
 |
 | Escape hatches: `--no-tia` (one full run), `--fresh` (discard the graph and re-record).
 |

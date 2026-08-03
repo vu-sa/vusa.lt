@@ -49,9 +49,20 @@ Note: `npm run typecheck` (`vue-tsc --noEmit`) is available and runs in CI, but 
 
 `sail artisan test` reruns only tests affected by your changes and replays cached results for the
 rest — enabled by default for local/Sail runs via `pest()->tia()->locally()` in `tests/Pest.php`.
-CI always runs the full suite (`--ci` disables TIA); the sole exception is
-`.github/workflows/tia-baseline.yml`, which records a shared baseline on every push to `main` so a
-fresh clone doesn't pay the record cost.
+
+Where TIA applies:
+
+| Context | Behaviour |
+|---|---|
+| Local / Sail | TIA on, against the baseline fetched from `main`. |
+| Pull requests | TIA on (`--ci --tia` in `ci.yml`), against the same baseline. |
+| Pushes to `main` | **Full run.** The safety net for anything a stale graph missed on a PR. |
+
+`.github/workflows/tia-baseline.yml` records the shared baseline on every push to `main` (plus
+nightly) and uploads it as the `pest-tia-baseline` artifact, so neither a fresh clone nor a PR pays
+the record cost. Baseline fetching shells out to `gh`, which is why the `php-tests` job needs
+`actions: read`, a `GH_TOKEN`, and `fetch-depth: 0` — without any of those TIA silently degrades to a
+full run, or hard-fails on a 403/404.
 
 | Command | When |
 |---|---|

@@ -69,7 +69,14 @@ jobs:
           TYPESENSE_PORT: 8108
           TYPESENSE_API_KEY: xyz
           TYPESENSE_PROTOCOL: http
-        run: ./vendor/bin/pest --parallel --tia --coverage --fresh
+        # Must match how CI and local runs invoke the suite: `artisan test --parallel` injects
+        # `--runner=\Illuminate\Testing\ParallelRunner`, which sets up the per-worker test databases.
+        # Calling `vendor/bin/pest --parallel` directly bypasses that. `--coverage` is not needed to
+        # record the graph — Tia's Recorder drives pcov itself (see Recorder::driverAvailable()).
+        #
+        # Flag order is load-bearing: `--tia`/`--fresh` MUST precede `--parallel`, otherwise
+        # ParaTest's option validation rejects them with `The "--tia" option does not exist.`
+        run: php artisan test --tia --fresh --parallel
 
       - name: Resolve TIA baseline path
         id: baseline
