@@ -1,0 +1,85 @@
+name: TIA Baseline
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: tia-baseline
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    name: Record TIA Baseline
+    steps:
+      # fetch-depth: 0 — TIA anchors the graph to a commit and resolves changes with
+      # `git merge-base --is-ancestor` / `git diff <sha>..HEAD`; a shallow clone breaks reachability.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP with PCOV
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.5
+          extensions: dom, curl, libxml, mbstring, zip, fileinfo
+          coverage: pcov
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Build assets
+        run: |
+          npm ci
+          npm run build
+
+      - name: Start Typesense
+        run: |
+          docker run -d --name typesense \
+            -p 8108:8108 \
+            -v /tmp/typesense-data:/data \
+            typesense/typesense:30.2 \
+            --data-dir /data \
+            --api-key=xyz \
+            --enable-cors
+          # Wait for Typesense to be ready
+          until curl -s http://localhost:8108/health | grep -q '"ok"'; do sleep 1; done
+
+      - name: Create .env
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+
+      - name: Record baseline
+        env:
+          SCOUT_DRIVER: database
+          TYPESENSE_HOST: localhost
+          TYPESENSE_PORT: 8108
+          TYPESENSE_API_KEY: xyz
+          TYPESENSE_PROTOCOL: http
+        run: ./vendor/bin/pest --parallel --tia --coverage --fresh
+
+      - name: Resolve TIA baseline path
+        id: baseline
+        run: echo "path=$(./vendor/bin/pest --baseline)" >> "$GITHUB_OUTPUT"
+
+      # include-hidden-files is required — the baseline lives under a dot-prefixed directory.
+      - name: Upload TIA baseline
+        uses: actions/upload-artifact@v7
+        with:
+          name: pest-tia-baseline
+          path: ${{ steps.baseline.outputs.path }}
+          include-hidden-files: true
+          retention-days: 30

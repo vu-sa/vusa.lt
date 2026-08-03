@@ -177,7 +177,7 @@ jobs:
         TYPESENSE_PORT: 8108
         TYPESENSE_API_KEY: xyz
         TYPESENSE_PROTOCOL: http
-      run: php artisan test --parallel --coverage --coverage-clover ./coverage.xml --log-junit ./test-results.xml
+      run: php artisan test --ci --parallel --coverage --coverage-clover ./coverage.xml --log-junit ./test-results.xml
 
     - name: Upload test results to Codecov
       if: always()

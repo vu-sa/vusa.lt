@@ -4,7 +4,7 @@ For test commands, environment setup, the directory tree, and authorization-stat
 
 ## Frameworks
 
-- **PHP**: Pest 4 + Laravel Sail. SQLite in-memory. Database driver for Scout.
+- **PHP**: Pest 5 + Laravel Sail. SQLite in-memory. Database driver for Scout.
 - **JavaScript**: Vitest + `@vue/test-utils`. Mocks live in `resources/js/mocks/`:
   - `inertia.mock.ts` — `usePage`, `router`, `useForm`
   - `i18n.ts` — `trans`, `wTrans`, `$t` (uses real generated translations)
@@ -156,7 +156,11 @@ Frontend conventions (stubs, mock forms, fake timers) are documented in [resourc
 
 ## Notes
 
-- Run the smallest filter possible: `./vendor/bin/sail artisan test --compact --filter=testName`.
+- Prefer running the full suite: `./vendor/bin/sail artisan test --compact`. Test Impact Analysis
+  (Tia) is enabled by default for local/Sail runs (`tests/Pest.php`) — it reruns only tests affected
+  by your change and replays cached results for the rest, so a full run is nearly as cheap as a
+  filtered one and actually verifies impact beyond what you thought to name. Use
+  `--filter=testName` when iterating on one failing test, not as the default.
 - Don't delete tests without approval — they're part of the application contract.
 
 ## Test performance patterns

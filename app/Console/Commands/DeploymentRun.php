@@ -22,11 +22,13 @@ class DeploymentRun extends Command
         'maintenance' => [
             'name' => 'Enter maintenance mode',
             'command' => 'down',
-            // The deploy workflow already calls `down --render` before git pull / the
-            // vendor/ swap, so by the time this step runs the site is already behind the
-            // prerendered maintenance page. This is a harmless idempotent refresh of the
-            // retry/refresh timers, kept so `deployment:run`/`deployment:resume` still work
-            // correctly when invoked standalone (e.g. manual recovery over SSH).
+            // By the time this step runs, the deploy workflow has already put the site behind
+            // a scp'd static fallback (storage/framework/maintenance.php, see deploy.yml) —
+            // no artisan boot needed for that. This step upgrades it to the real thing:
+            // --render bakes this Blade view into storage/framework/maintenance.php (replacing
+            // the static fallback), which public/index.php serves before loading Composer.
+            // `artisan up` (the `online` step) removes both storage/framework/maintenance.php
+            // and storage/framework/down once the deploy finishes.
             'args' => ['--retry' => 60, '--render' => 'errors::maintenance', '--refresh' => 15],
             'critical' => true,
         ],
