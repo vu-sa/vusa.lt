@@ -32,8 +32,18 @@ jobs:
           extensions: dom, curl, libxml, mbstring, zip, fileinfo
           coverage: pcov
 
+      # Step order mirrors setup.yml: .env must exist before anything boots Laravel.
+      # `composer install` without --no-scripts runs post-autoload-dump -> `package:discover`, and
+      # `npm run build` shells out to `artisan ziggy:generate` via vite-plugin-ziggy. Booting without
+      # an .env leaves REVERB_APP_KEY null, and routes/channels.php then fails resolving the reverb
+      # broadcaster ("Pusher::__construct(): Argument #1 ($auth_key) must be of type string").
       - name: Install Composer dependencies
-        run: composer install --no-interaction --prefer-dist --no-progress
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+      - name: Create .env
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
 
       - uses: actions/setup-node@v6
         with:
@@ -56,11 +66,6 @@ jobs:
             --enable-cors
           # Wait for Typesense to be ready
           until curl -s http://localhost:8108/health | grep -q '"ok"'; do sleep 1; done
-
-      - name: Create .env
-        run: |
-          cp .env.example .env
-          php artisan key:generate --force
 
       - name: Record baseline
         env:
