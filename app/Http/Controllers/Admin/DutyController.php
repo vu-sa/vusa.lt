@@ -156,7 +156,7 @@ class DutyController extends AdminController
     {
         $this->handleAuthorization('view', $duty);
 
-        $duty->load('institution.tenant', 'users', 'activities.causer', 'types');
+        $duty->load('institution.tenant', 'users', 'types');
 
         // Sibling duties for the sidebar (queried separately to keep the payload lean).
         $otherDuties = $duty->institution
@@ -449,7 +449,7 @@ class DutyController extends AdminController
             $attachData = $new->mapWithKeys(fn ($userId) => [
                 $userId => ['start_date' => now()->subDay(), 'tenant_id' => null],
             ])->all();
-            $duty->users()->attach($attachData);
+            $duty->attachAudited('users', $attachData);
         }
     }
 
@@ -492,7 +492,8 @@ class DutyController extends AdminController
         }
 
         if ($toAdd) {
-            $duty->users()->attach(
+            $duty->attachAudited(
+                'users',
                 collect($toAdd)->mapWithKeys(fn ($userId) => [
                     $userId => ['start_date' => now()->subDay(), 'tenant_id' => $tenantId],
                 ])->all()
@@ -633,7 +634,7 @@ class DutyController extends AdminController
 
                     if (str_starts_with($userId, 'new-')) {
                         if (isset($createdUsers[$userId])) {
-                            $duty->users()->attach($createdUsers[$userId]->id, [
+                            $duty->attachAudited('users', $createdUsers[$userId]->id, [
                                 'start_date' => $change['start_date'] ?? now(),
                                 'end_date' => $change['end_date'] ?? null,
                                 'study_program_id' => $change['study_program_id'] ?? null,
@@ -661,7 +662,7 @@ class DutyController extends AdminController
                                 'study_program_id' => $change['study_program_id'] ?? null,
                             ]);
                         } else {
-                            $duty->users()->attach($userId, [
+                            $duty->attachAudited('users', $userId, [
                                 'start_date' => $change['start_date'] ?? now(),
                                 'end_date' => $change['end_date'] ?? null,
                                 'study_program_id' => $change['study_program_id'] ?? null,

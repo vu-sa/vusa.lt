@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\VoteValue;
 use App\Models\Pivots\AgendaItem;
+use App\Models\Traits\LogsModelActivity;
 use Database\Factories\VoteFactory;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Attributes\Touches;
@@ -14,9 +15,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Models\Activity;
-use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * Vote model - represents a single vote outcome within an agenda item.
@@ -36,7 +34,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $order
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read Collection<int, Activity> $activities
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read AgendaItem $agendaItem
  * @property-read string|null $decision_label
  * @property-read bool $is_complete
@@ -58,7 +56,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 #[Touches(['agendaItem'])]
 class Vote extends Model
 {
-    use HasFactory, HasUlids, LogsActivity;
+    use HasFactory, HasUlids, LogsModelActivity;
 
     #[\Override]
     protected $guarded = [];
@@ -76,11 +74,6 @@ class Vote extends Model
     protected static function newFactory(): Factory
     {
         return VoteFactory::new();
-    }
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
     /**

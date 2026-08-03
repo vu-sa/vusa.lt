@@ -26,7 +26,7 @@
         </div>
       </template>
       <template #actions>
-        <ActivityLogButton :activities="problem.activities ?? []" />
+        <ActivityLogSheet subject-type="problem" :subject-id="problem.id" />
         <Button v-if="canUpdate" variant="outline" size="icon" class="h-9 w-9" as-child>
           <Link :href="route('problems.edit', problem.id)">
             <Edit class="h-4 w-4" />
@@ -317,11 +317,11 @@ import {
 
 // Custom Components
 import ShowPageHero from '@/Components/Hero/ShowPageHero.vue';
-import ActivityLogButton from '@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue';
+import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import { ProblemIcon } from '@/Components/icons';
 
 const props = defineProps<{
-  problem: App.Entities.Problem & { activities: any[] };
+  problem: App.Entities.Problem;
   canUpdate: boolean;
   canDelete: boolean;
 }>();

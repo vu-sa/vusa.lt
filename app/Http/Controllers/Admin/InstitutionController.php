@@ -124,7 +124,7 @@ class InstitutionController extends AdminController
 
         $institution->fill($request->safe()->except('types'))->save();
 
-        $institution->types()->sync($request->types);
+        $institution->syncAudited('types', $request->types);
 
         // Load relationships needed for the response
         $institution->load('tenant:id,shortname', 'types');
@@ -163,7 +163,7 @@ class InstitutionController extends AdminController
                         'agendaItems.votes',
                     ])->orderBy('start_time', 'asc');
             },
-        ])->load('activities.causer')->loadCount('comments');
+        ])->loadCount('comments');
 
         // Append public visibility flags now that types are loaded (avoids N+1)
         $institution->append('has_public_meetings');
@@ -330,7 +330,7 @@ class InstitutionController extends AdminController
         $institution->save();
 
         // get only types id
-        $institution->types()->sync($request->types);
+        $institution->syncAudited('types', $request->types);
 
         return back()->with('success', 'Institucija sėkmingai atnaujinta!');
     }

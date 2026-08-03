@@ -57,6 +57,7 @@ arch('ApiResponses has required methods')
         'jsonSuccess',
         'jsonError',
         'jsonPaginated',
+        'jsonCursorPaginated',
         'jsonNotFound',
         'jsonForbidden',
         'jsonUnauthorized',

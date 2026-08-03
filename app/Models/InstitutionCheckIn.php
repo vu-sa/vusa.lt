@@ -3,14 +3,10 @@
 namespace App\Models;
 
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Laravel\Scout\Searchable;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Models\Activity;
-use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * @property string $id
@@ -22,7 +18,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $note
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read Collection<int, Activity> $activities
  * @property-read Institution|null $institution
  * @property-read Tenant|null $tenant
  * @property-read User|null $user
@@ -36,7 +31,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class InstitutionCheckIn extends Model
 {
-    use HasFactory, HasUlids, LogsActivity, Searchable;
+    use HasFactory, HasUlids, Searchable;
 
     #[\Override]
     protected $guarded = [];
@@ -48,11 +43,6 @@ class InstitutionCheckIn extends Model
             'start_date' => 'date',
             'end_date' => 'date',
         ];
-    }
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
     public function institution(): BelongsTo

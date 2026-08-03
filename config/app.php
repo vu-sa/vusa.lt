@@ -1,5 +1,6 @@
 <?php
 
+use App\Providers\ActivityLogServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\EventServiceProvider;
 use App\Providers\RouteServiceProvider;
@@ -227,6 +228,7 @@ return [
         /*
          * Application Service Providers...
          */
+        ActivityLogServiceProvider::class,
         AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
         App\Providers\BroadcastServiceProvider::class,

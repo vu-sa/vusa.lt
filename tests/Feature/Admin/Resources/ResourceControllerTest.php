@@ -102,7 +102,7 @@ describe('update', function (): void {
             'media' => [],
         ])->assertRedirect();
 
-        expect($this->resource->fresh()->getMedia('images'))->toHaveCount(0);
+        expect($this->resource->fresh()->getMedia('images'))->toBeEmpty();
     });
 });
 

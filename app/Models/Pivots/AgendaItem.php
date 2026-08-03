@@ -4,12 +4,14 @@ namespace App\Models\Pivots;
 
 use App\Contracts\Commentable;
 use App\Enums\AgendaItemType;
+use App\Models\Activity;
 use App\Models\AgendaItemNote;
 use App\Models\Comment;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Tenant;
 use App\Models\Traits\HasComments;
+use App\Models\Traits\LogsModelActivity;
 use App\Models\Vote;
 use App\Services\VoteStatisticsCalculator;
 use Database\Factories\AgendaItemFactory;
@@ -26,9 +28,6 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Models\Activity;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
@@ -44,7 +43,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $student_position
  * @property string|null $description
  * @property string|null $start_time
- * @property-read Collection<int, Activity> $activities
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, Vote> $additionalVotes
  * @property-read Collection<int, Comment> $comments
  * @property-read Collection<int, Institution> $institutions
@@ -66,7 +65,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 #[Touches(['meeting'])]
 class AgendaItem extends Pivot implements Commentable
 {
-    use HasComments, HasFactory, HasRelationships, HasUlids, LogsActivity, Searchable;
+    use HasComments, HasFactory, HasRelationships, HasUlids, LogsModelActivity, Searchable;
 
     #[\Override]
     public $incrementing = true;
@@ -86,11 +85,6 @@ class AgendaItem extends Pivot implements Commentable
             'type' => AgendaItemType::class,
             'brought_by_students' => 'boolean',
         ];
-    }
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
     public function meeting(): BelongsTo

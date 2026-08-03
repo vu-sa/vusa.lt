@@ -2,14 +2,17 @@
 
 namespace App\Models;
 
+use App\Models\Traits\LogsModelActivity;
 use App\Services\NavigationService;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Spatie\Activitylog\Support\LogOptions;
 
 /**
  * @property int $id
@@ -24,6 +27,7 @@ use Illuminate\Support\Facades\Cache;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read User|null $user
  *
  * @method static \Database\Factories\NavigationFactory factory($count = null, $state = [])
@@ -40,7 +44,7 @@ use Illuminate\Support\Facades\Cache;
 #[Table(name: 'navigation')]
 class Navigation extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, LogsModelActivity, SoftDeletes;
 
     #[\Override]
     protected $guarded = [];
@@ -51,6 +55,15 @@ class Navigation extends Model
         return [
             'extra_attributes' => 'array',
         ];
+    }
+
+    /**
+     * Drag-to-reorder writes `order` on every sibling row in the tree, which
+     * would otherwise drown the log in reshuffles unrelated to the edited item.
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return $this->defaultActivitylogOptions()->logExcept(['order']);
     }
 
     #[\Override]

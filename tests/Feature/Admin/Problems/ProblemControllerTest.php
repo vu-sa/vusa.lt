@@ -41,6 +41,21 @@ describe('authorized access', function (): void {
             );
     });
 
+    test('can access show page without exposing activitiesAsSubject via Inertia props', function (): void {
+        // Activity history is now served on demand through the paginated
+        // admin API (see ActivityLogApiControllerTest), not eager-loaded into
+        // the show page -- assert it stays out of the Inertia payload.
+        $this->problem->update(['status' => 'resolved']);
+
+        asUser($this->coordinator)
+            ->get(route('problems.show', $this->problem))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Problems/ShowProblem')
+                ->missing('problem.activities_as_subject')
+            );
+    });
+
     test('can filter problems by tenant', function (): void {
         asUser($this->admin)
             ->get(route('problems.index', ['filters' => json_encode(['tenant.id' => [$this->tenant->id]])]))

@@ -3,6 +3,9 @@
     <template #header>
       {{ news.title }}
     </template>
+    <template #aside-header>
+      <ActivityLogSheet subject-type="news" :subject-id="news.id" />
+    </template>
     <ContentAnalyticsCard
       type="news"
       :id="news.id"
@@ -32,6 +35,7 @@ import { router } from '@inertiajs/vue3';
 
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import ContentAnalyticsCard from '@/Components/Analytics/ContentAnalyticsCard.vue';
+import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import NewsForm from '@/Components/AdminForms/NewsForm.vue';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';

@@ -654,14 +654,15 @@ class SharepointGraphService
 
         $batchResponse = $batchRequestBuilder->postAsync($batch)->wait();
 
-        $driveItemCollections = collect($batch->getRequests())->map(function (BatchRequestItem $request) use ($batchResponse) {
+        $driveItemCollections = collect($batch->getRequests())->map(function (BatchRequestItem $request) use ($batchResponse): array {
+            /** @var array<string, mixed> $additionalData */
             $additionalData = $batchResponse->getResponseBody($request->getId(), Models\DriveItemCollectionResponse::class)->getAdditionalData();
 
             $additionalData['listItem']['uniqueId'] = $request->getId();
 
             return $additionalData;
             // keyBy list item id
-        })->keyBy(fn ($value) => $value['listItem']['uniqueId']);
+        })->keyBy(fn (array $value): string => (string) $value['listItem']['uniqueId']);
 
         $driveItemCollections = $this->filterProcessableDriveItems($driveItemCollections);
 
@@ -785,11 +786,13 @@ class SharepointGraphService
      * (no 'id', no 'permissions'), so they must be filtered out before the caller
      * touches those fields.
      *
-     * @param  Collection<string, array<string, mixed>>  $driveItemCollections
+     * @param  iterable<string, array<string, mixed>>  $driveItemCollections
      * @return Collection<string, array<string, mixed>>
      */
-    protected function filterProcessableDriveItems(Collection $driveItemCollections): Collection
+    protected function filterProcessableDriveItems(iterable $driveItemCollections): Collection
     {
+        $driveItemCollections = collect($driveItemCollections);
+
         $folderItems = $driveItemCollections->filter(fn ($item) => isset($item['folder']));
         if ($folderItems->isNotEmpty()) {
             Log::warning('Batch processing encountered folders instead of files', [

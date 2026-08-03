@@ -97,5 +97,58 @@ return [
         'status' => 'status',
         'responsible_user' => 'responsible person',
         'categories' => 'categories',
+        'status_options' => [
+            'open' => 'Open',
+            'in_progress' => 'In progress',
+            'resolved' => 'Resolved',
+        ],
+    ],
+
+    'contentPart' => [
+        'content_summary' => 'content',
+        'type' => 'block type',
+        'options' => 'settings',
+    ],
+
+    // Fallback field labels shared across the activity log for any model
+    // without a more specific entry above -- see App\Services\ActivityChangeFormatter.
+    'common' => [
+        'name' => 'name',
+        'title' => 'title',
+        'short_name' => 'short name',
+        'description' => 'description',
+        'order' => 'order',
+        'is_active' => 'active?',
+        'start_time' => 'start time',
+        'end_time' => 'end time',
+        'address' => 'address',
+        'email' => 'email',
+        'phone' => 'phone',
+        'url' => 'URL',
+        'image_url' => 'image URL',
+        'link_url' => 'link URL',
+        'lang' => 'language',
+        'status' => 'status',
+        'note' => 'note',
+        'notes_html' => 'notes',
+        'permalink' => 'permalink',
+        'publish_time' => 'publish time',
+        'main_image' => 'main image',
+        'location' => 'location',
+        'organizer' => 'organizer',
+        'video_url' => 'video URL',
+        'facebook_url' => 'Facebook URL',
+        'max_participants' => 'participant limit',
+        'tenant' => 'unit',
+        'institution' => 'institution',
+        'category' => 'category',
+        'meeting' => 'meeting',
+        'agenda_item' => 'agenda item',
+        // Relation names, for relation_updated activities (see
+        // App\Support\AuditedRelations / LogsRelationshipChanges).
+        'users' => 'members',
+        'types' => 'types',
+        'institutions' => 'institutions',
+        'resources' => 'resources',
     ],
 ];

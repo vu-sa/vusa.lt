@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Actions\PairTranslatedRecord;
+use App\Models\Traits\LogsModelActivity;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -38,6 +40,7 @@ use Spatie\Sitemap\Tags\Url;
  * @property Carbon $updated_at
  * @property Carbon|null $last_edited_at
  * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Category|null $category
  * @property-read Content $content
  * @property-read Page|null $otherLanguagePage
@@ -55,7 +58,7 @@ use Spatie\Sitemap\Tags\Url;
  */
 class Page extends Model implements Feedable, Sitemapable
 {
-    use HasFactory, Searchable, SoftDeletes;
+    use HasFactory, LogsModelActivity, Searchable, SoftDeletes;
 
     #[\Override]
     protected $guarded = [];

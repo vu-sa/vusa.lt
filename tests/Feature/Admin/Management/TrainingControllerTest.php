@@ -95,6 +95,21 @@ describe('authorized access', function (): void {
             );
     });
 
+    test('can access show page without exposing activitiesAsSubject via Inertia props', function (): void {
+        // Activity history is now served on demand through the paginated
+        // admin API (see ActivityLogApiControllerTest), not eager-loaded into
+        // the show page -- assert it stays out of the Inertia payload.
+        $this->training->update(['address' => 'Updated Address']);
+
+        asUser($this->admin)
+            ->get(route('trainings.show', $this->training))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/People/ShowTraining')
+                ->missing('training.activities_as_subject')
+            );
+    });
+
     test('can store training with valid data', function (): void {
         $institution = Institution::factory()->for($this->tenant)->create();
         $validData = getControllerTestData('Training')['valid'];

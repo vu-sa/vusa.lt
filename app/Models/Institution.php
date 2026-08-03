@@ -15,6 +15,8 @@ use App\Models\Traits\HasContentRelationships;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTasks;
 use App\Models\Traits\HasTranslations;
+use App\Models\Traits\LogsModelActivity;
+use App\Models\Traits\LogsRelationshipChanges;
 use App\Services\RelationshipService;
 use App\Settings\MeetingSettings;
 use Illuminate\Database\Eloquent\Collection;
@@ -28,9 +30,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Models\Activity;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
@@ -57,7 +56,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
- * @property-read Collection<int, Activity> $activities
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Relationshipable|InstitutionFollow|Trainable|null $pivot
  * @property-read Collection<int, Training> $availableTrainings
@@ -105,7 +104,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  */
 class Institution extends Model implements Commentable, GuardsForceDelete, SharepointFileableContract
 {
-    use GuardsForceDeleteWhenReferenced, HasComments, HasContentRelationships, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsActivity, Searchable, SoftDeletes;
+    use GuardsForceDeleteWhenReferenced, HasComments, HasContentRelationships, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable, SoftDeletes;
 
     #[\Override]
     protected $guarded = [];
@@ -119,11 +118,6 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
     // Append it explicitly where needed: $institution->append('has_public_meetings')
 
     public $translatable = ['name', 'short_name', 'description', 'address', 'appointed_by', 'term_length'];
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
-    }
 
     /**
      * @return HasMany<Duty, $this>

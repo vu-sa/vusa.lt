@@ -178,7 +178,7 @@ class MeetingController extends AdminController
                 'type' => $meetingType,
             ]);
 
-            $meeting->institutions()->attach($validatedData['institution_id']);
+            $meeting->attachAudited('institutions', $validatedData['institution_id']);
 
             // Adjust any overlapping check-ins for this institution
             $institution = Institution::find($validatedData['institution_id']);
@@ -222,7 +222,7 @@ class MeetingController extends AdminController
     {
         $this->handleAuthorization('view', $meeting);
 
-        $meeting->load('institutions.types', 'activities.causer', 'fileableFiles', 'comments')->load([
+        $meeting->load('institutions.types', 'fileableFiles', 'comments')->load([
             'tasks' => function ($query): void {
                 $query->with('users:id,name,email,profile_photo_path', 'taskable');
             },
@@ -380,7 +380,7 @@ class MeetingController extends AdminController
             ],
         ]);
 
-        $meeting->institutions()->attach($validated['institution_id']);
+        $meeting->attachAudited('institutions', $validated['institution_id']);
 
         $institution = Institution::find($validated['institution_id']);
         if ($institution) {
@@ -401,7 +401,7 @@ class MeetingController extends AdminController
             return back()->with('error', __('messages.meeting.institution_required'));
         }
 
-        $meeting->institutions()->detach($institution->id);
+        $meeting->detachAudited('institutions', $institution->id);
 
         return back()->with('success', __('messages.meeting.institution_detached'));
     }

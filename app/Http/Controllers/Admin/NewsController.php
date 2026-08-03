@@ -123,8 +123,6 @@ class NewsController extends AdminController
 
         $content->save();
 
-        $content->parts()->createMany($request->content['parts']);
-
         $news = News::create([
             'title' => $request->title,
             'permalink' => $request->permalink,
@@ -140,6 +138,11 @@ class NewsController extends AdminController
             'highlights' => $request->highlights ?? [],
             'tenant_id' => $tenant_id,
         ]);
+
+        // Created after the News so the parts' first activity-log entries can
+        // already resolve their root up to the News (see App\Support\ActivityRoots)
+        // instead of self-rooting to the not-yet-owned Content.
+        $content->parts()->createMany($request->content['parts']);
 
         // Sync tags if provided
         if ($request->has('tags') && is_array($request->tags)) {

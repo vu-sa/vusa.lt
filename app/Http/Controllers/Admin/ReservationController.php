@@ -144,7 +144,8 @@ class ReservationController extends AdminController
         $reservation->fresh();
 
         foreach ($request->validated('resources') as $resource) {
-            $reservation->resources()->attach(
+            $reservation->attachAudited(
+                'resources',
                 $resource['id'], [
                     'quantity' => $resource['quantity'],
                     'start_time' => $reservation->start_time,
@@ -154,7 +155,7 @@ class ReservationController extends AdminController
             );
         }
 
-        $reservation->users()->attach(auth()->id());
+        $reservation->attachAudited('users', auth()->id());
 
         return redirect()->route('reservations.show', $reservation->id)->with('success', trans_choice('messages.created', 0, ['model' => trans_choice('entities.reservation.model', 1)]));
     }
@@ -175,7 +176,7 @@ class ReservationController extends AdminController
 
         return $this->inertiaResponse('Admin/Reservations/ShowReservation', [
             'reservation' => [
-                ...$reservation->load('activities.causer', 'users')->toArray(),
+                ...$reservation->load('users')->toArray(),
                 'resources' => $reservation->load('resources.media', 'resources.pivot.approvals.user', 'resources.tenant')->resources->map(function ($resource) use ($reservation) {
 
                     // This is used to update the left capacity of resources already attached to the reservation
@@ -237,7 +238,7 @@ class ReservationController extends AdminController
 
         $old_users = $reservation->users;
 
-        $reservation->users()->syncWithoutDetaching($request->input('users'));
+        $reservation->auditRelationChange('users', fn () => $reservation->users()->syncWithoutDetaching($request->input('users')));
 
         Notification::send($reservation->refresh()->users->diff($old_users), AssignedToResourceNotification::fromModel($reservation, auth()->user()));
 

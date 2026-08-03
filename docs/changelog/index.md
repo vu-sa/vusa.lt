@@ -7,6 +7,15 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.20 — Patobulinta pakeitimų istorija (2026-08-02) {#v1-20}
+
+- ⭐ **Nauja pakeitimų istorijos skiltis** - posėdžių, institucijų, pareigų, problemų, rezervacijų, mokymų ir kito turinio puslapiuose dabar galima peržiūrėti visą pakeitimų istoriją, įskaitant susijusių įrašų pakeitimus (pvz., posėdžio istorijoje matomi ir jo darbotvarkės klausimų bei balsavimų pakeitimai)
+- ✨ **Teksto pakeitimai rodomi kaip skirtumas** - naujienų, puslapių turinio blokų ir problemų aprašymo pakeitimai istorijoje dabar rodo, kurie žodžiai buvo pakeisti, o ne du identiškai atrodančius nutrauktus tekstus
+- 🔧 **Kai kurie pakeitimai anksčiau nebuvo fiksuojami** - dabar visų palaikomų modelių pakeitimai patikimai įrašomi į istoriją
+- ✨ **Aiškesnis pakeitimų atvaizdavimas** - datos, būsenos ir susiję įrašai (pvz., atsakingas asmuo) rodomi suprantamais pavadinimais, o ne neapdorotais duomenimis
+- 🔧 **Pataisytas resursų valdymas ir redagavimas** - galima įkelti nuotraukas, redaguoti kitus laukelius, ištrinti resursus.
+- 🔧 **Pabandyta pataisyti su dokumentų įkėlimu susietas problemas**
+
 ## v1.19 — Greitesnė ViSAK padalinių laiko juosta ir nauji turinio blokai (2026-07-28) {#v1-19}
 
 ### ViSAK padalinių laiko juosta

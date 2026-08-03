@@ -14,7 +14,6 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
-use Spatie\Activitylog\Models\Activity;
 
 /**
  * PublicInstitution - Extends Institution for public display and search indexing
@@ -44,7 +43,7 @@ use Spatie\Activitylog\Models\Activity;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
- * @property-read Collection<int, Activity> $activities
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Relationshipable|InstitutionFollow|Trainable|null $pivot
  * @property-read Collection<int, Training> $availableTrainings

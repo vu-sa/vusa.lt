@@ -116,5 +116,58 @@ return [
         'status' => 'būsena',
         'responsible_user' => 'atsakingas asmuo',
         'categories' => 'kategorijos',
+        'status_options' => [
+            'open' => 'Atvira',
+            'in_progress' => 'Vykdoma',
+            'resolved' => 'Išspręsta',
+        ],
+    ],
+
+    'contentPart' => [
+        'content_summary' => 'turinys',
+        'type' => 'bloko tipas',
+        'options' => 'nustatymai',
+    ],
+
+    // Fallback field labels shared across the activity log for any model
+    // without a more specific entry above -- see App\Services\ActivityChangeFormatter.
+    'common' => [
+        'name' => 'pavadinimas',
+        'title' => 'pavadinimas',
+        'short_name' => 'trumpas pavadinimas',
+        'description' => 'aprašymas',
+        'order' => 'eiliškumas',
+        'is_active' => 'aktyvus?',
+        'start_time' => 'pradžia',
+        'end_time' => 'pabaiga',
+        'address' => 'adresas',
+        'email' => 'el. paštas',
+        'phone' => 'telefonas',
+        'url' => 'nuoroda',
+        'image_url' => 'paveikslėlio nuoroda',
+        'link_url' => 'nuoroda',
+        'lang' => 'kalba',
+        'status' => 'būsena',
+        'note' => 'pastaba',
+        'notes_html' => 'pastabos',
+        'permalink' => 'nuolatinė nuoroda',
+        'publish_time' => 'publikavimo laikas',
+        'main_image' => 'pagrindinis paveikslėlis',
+        'location' => 'vieta',
+        'organizer' => 'organizatorius',
+        'video_url' => 'vaizdo įrašo nuoroda',
+        'facebook_url' => 'Facebook nuoroda',
+        'max_participants' => 'dalyvių limitas',
+        'tenant' => 'padalinys',
+        'institution' => 'institucija',
+        'category' => 'kategorija',
+        'meeting' => 'susitikimas',
+        'agenda_item' => 'darbotvarkės klausimas',
+        // Relation names, for relation_updated activities (see
+        // App\Support\AuditedRelations / LogsRelationshipChanges).
+        'users' => 'nariai',
+        'types' => 'tipai',
+        'institutions' => 'institucijos',
+        'resources' => 'ištekliai',
     ],
 ];

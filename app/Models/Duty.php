@@ -10,6 +10,8 @@ use App\Models\Pivots\Dutiable;
 use App\Models\Pivots\Trainable;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTranslations;
+use App\Models\Traits\LogsModelActivity;
+use App\Models\Traits\LogsRelationshipChanges;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
@@ -27,9 +29,6 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Models\Activity;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
 use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
@@ -50,7 +49,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
- * @property-read Collection<int, Activity> $activities
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, AgendaItem> $agendaItems
  * @property-read Collection<int, Tenant> $assignableTenants
  * @property-read Collection<int, FileableFile> $availableFiles
@@ -113,7 +112,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 ])]
 class Duty extends Model implements AuthorizableContract, GuardsForceDelete, SharepointFileableContract
 {
-    use Authorizable, HasFactory, HasRelationships, HasRoles, HasSharepointFiles, HasTranslations, HasUlids, LogsActivity, Notifiable, Searchable, SoftDeletes;
+    use Authorizable, HasFactory, HasRelationships, HasRoles, HasSharepointFiles, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Notifiable, Searchable, SoftDeletes;
 
     #[\Override]
     protected $guarded = [];
@@ -205,11 +204,6 @@ class Duty extends Model implements AuthorizableContract, GuardsForceDelete, Sha
             'previous_user_ids' => $previousUsers->pluck('id')->map(fn ($id) => (string) $id)->values()->all(),
             'created_at' => $this->created_at->timestamp,
         ];
-    }
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
     public function dutiables(): HasMany

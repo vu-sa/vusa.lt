@@ -8,7 +8,7 @@
     </template>
     <template #aside-header>
       <div class="inline-flex gap-2">
-        <ActivityLogButton :activities="model.activities" />
+        <ActivityLogSheet v-if="auditSubjectType" :subject-type="auditSubjectType" :subject-id="model.id" />
         <slot name="more-options" />
       </div>
     </template>
@@ -41,7 +41,7 @@ import type { Component } from 'vue';
 
 import AdminContentPage from '../AdminContentPage.vue';
 
-import ActivityLogButton from '@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue';
+import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
 import RelatedModelButton from '@/Components/Buttons/RelatedModelButton.vue';
 
@@ -50,6 +50,12 @@ const emit = defineEmits<(e: 'change:tab', name: string) => void>();
 const props = defineProps<{
   currentTab?: string;
   model: Record<string, any>;
+  /**
+   * The App\Support\Auditables alias for `model` (e.g. "duty"). Omit for
+   * models that aren't logged (e.g. Form) -- the activity trigger simply
+   * doesn't render.
+   */
+  auditSubjectType?: string;
   relatedModels?: {
     name: string;
     icon?: Component;

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Actions\PairTranslatedRecord;
+use App\Models\Traits\LogsModelActivity;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -46,6 +47,7 @@ use Spatie\Sitemap\Tags\Url;
  * @property Carbon $updated_at
  * @property Carbon|null $last_edited_at
  * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Content $content
  * @property-read News|null $other_language_news
  * @property-read Collection<int, Tag> $tags
@@ -65,7 +67,7 @@ use Spatie\Sitemap\Tags\Url;
 #[Table(name: 'news')]
 class News extends Model implements Feedable, Sitemapable
 {
-    use HasFactory, Searchable, SoftDeletes;
+    use HasFactory, LogsModelActivity, Searchable, SoftDeletes;
 
     #[\Override]
     protected $guarded = [];

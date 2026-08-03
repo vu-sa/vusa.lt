@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use App\Models\Traits\HasTranslations;
+use App\Models\Traits\LogsModelActivity;
 use App\Services\IcalendarService;
 use Datetime;
 use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Guarded;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -45,6 +47,7 @@ use Spatie\SchemaOrg\Place;
  * @property Carbon $updated_at
  * @property int|null $registration_form_id
  * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Category|null $category
  * @property-read string|null $main_image_url
  * @property-read array $translatable_columns_from
@@ -72,7 +75,7 @@ use Spatie\SchemaOrg\Place;
 #[Table(name: 'calendar')]
 class Calendar extends Model implements HasMedia
 {
-    use HasFactory, HasTranslations, InteractsWithMedia, Searchable, SoftDeletes;
+    use HasFactory, HasTranslations, InteractsWithMedia, LogsModelActivity, Searchable, SoftDeletes;
 
     /**
      * Widest date range one calendar query may span — shared by

@@ -11,9 +11,6 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ApprovalRequestedNotification extends BaseNotification
 {
-    /**
-     * @param  Model&Approvable  $approvable
-     */
     public function __construct(protected Model $approvable, protected int $step = 1) {}
 
     public function category(): NotificationCategory

@@ -6,6 +6,8 @@ use App\Contracts\Commentable;
 use App\Models\Pivots\ReservationResource;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasTasks;
+use App\Models\Traits\LogsModelActivity;
+use App\Models\Traits\LogsRelationshipChanges;
 use App\States\ReservationResource\Returned;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -14,9 +16,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\Searchable;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Models\Activity;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
@@ -29,7 +28,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
- * @property-read Collection<int, Activity> $activities
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, Comment> $comments
  * @property-read mixed $is_completed
  * @property-read ReservationResource|null $pivot
@@ -51,7 +50,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  */
 class Reservation extends Model implements Commentable
 {
-    use HasComments, HasFactory, HasRelationships, HasTasks, HasUlids, LogsActivity, Searchable, SoftDeletes;
+    use HasComments, HasFactory, HasRelationships, HasTasks, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable, SoftDeletes;
 
     #[\Override]
     protected $guarded = [];
@@ -63,11 +62,6 @@ class Reservation extends Model implements Commentable
             'start_time' => 'datetime',
             'end_time' => 'datetime',
         ];
-    }
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
     public function toSearchableArray(): array

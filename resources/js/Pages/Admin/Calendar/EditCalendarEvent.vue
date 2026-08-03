@@ -1,5 +1,8 @@
 <template>
   <PageContent :title="calendar.title.lt" :back-url="route('calendar.index')" :heading-icon="CalendarIcon">
+    <template #aside-header>
+      <ActivityLogSheet subject-type="calendar" :subject-id="calendar.id" />
+    </template>
     <UpsertModelLayout>
       <CalendarForm
         enable-delete
@@ -19,6 +22,7 @@
 import { router, type InertiaForm } from '@inertiajs/vue3';
 
 import CalendarForm from '@/Components/AdminForms/CalendarForm.vue';
+import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 import { CalendarIcon } from '@/Components/icons';

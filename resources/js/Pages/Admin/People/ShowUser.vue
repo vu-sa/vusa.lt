@@ -45,6 +45,7 @@
         </div>
       </template>
       <template #actions>
+        <ActivityLogSheet subject-type="user" :subject-id="user.id" />
         <Button v-if="canEdit" variant="outline" size="sm" class="gap-2" @click="handleEdit">
           <Pencil class="h-4 w-4" />
           {{ $t('Redaguoti') }}
@@ -251,6 +252,7 @@ import {
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import ShowPageHero from '@/Components/Hero/ShowPageHero.vue';
 import MoreOptionsButton from '@/Components/Buttons/MoreOptionsButton.vue';
+import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 import { DutySummaryCard } from '@/Components/Duties';
 

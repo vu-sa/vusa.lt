@@ -2,6 +2,30 @@ export {}
 declare global {
   export namespace models {
 
+    export interface Activity {
+      // columns
+      id: number
+      log_name?: string | null
+      description: string
+      subject_type?: string | null
+      event?: string | null
+      subject_id?: string | null
+      root_subject_type?: string | null
+      root_subject_id?: string | null
+      causer_type?: string | null
+      causer_id?: string | null
+      attribute_changes?: Record<string, unknown> | null
+      properties?: Record<string, unknown> | null
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      root_subject?: Activity
+      subject?: Activity
+      causer?: Activity
+      // counts
+      // exists
+    }
+
     export interface AgendaItem {
       // columns
       id: string
@@ -24,13 +48,13 @@ declare global {
       note?: AgendaItemNote
       comments?: Comment[]
       root_comments?: Comment[]
-      activities?: Activity[]
+      activities_as_subject?: Activity[]
       // counts
       votes_count: number
       additional_votes_count: number
       comments_count: number
       root_comments_count: number
-      activities_count: number
+      activities_as_subject_count: number
       // exists
       meeting_exists: boolean
       votes_exists: boolean
@@ -39,7 +63,7 @@ declare global {
       note_exists: boolean
       comments_exists: boolean
       root_comments_exists: boolean
-      activities_exists: boolean
+      activities_as_subject_exists: boolean
     }
 
     export interface AgendaItemNote {
@@ -54,10 +78,13 @@ declare global {
       // relations
       agenda_item?: AgendaItem
       editor?: User
+      activities_as_subject?: Activity[]
       // counts
+      activities_as_subject_count: number
       // exists
       agenda_item_exists: boolean
       editor_exists: boolean
+      activities_as_subject_exists: boolean
     }
 
     export interface Approval {
@@ -74,12 +101,12 @@ declare global {
       // relations
       approvable?: Approval
       user?: User
-      activities?: Activity[]
+      activities_as_subject?: Activity[]
       // counts
-      activities_count: number
+      activities_as_subject_count: number
       // exists
       user_exists: boolean
-      activities_exists: boolean
+      activities_as_subject_exists: boolean
     }
 
     export interface ApprovalFlow {
@@ -116,9 +143,12 @@ declare global {
       deleted_at?: string | null
       // relations
       tenant?: Tenant
+      activities_as_subject?: Activity[]
       // counts
+      activities_as_subject_count: number
       // exists
       tenant_exists: boolean
+      activities_as_subject_exists: boolean
     }
 
     export interface Calendar {
@@ -151,12 +181,15 @@ declare global {
       tenant?: Tenant
       category?: Category
       media?: Media[]
+      activities_as_subject?: Activity[]
       // counts
       media_count: number
+      activities_as_subject_count: number
       // exists
       tenant_exists: boolean
       category_exists: boolean
       media_exists: boolean
+      activities_as_subject_exists: boolean
     }
 
     export interface Category {
@@ -213,12 +246,10 @@ declare global {
       reactions?: CommentReaction[]
       poll_votes?: CommentPollVote[]
       resolver?: User
-      activities?: Activity[]
       // counts
       replies_count: number
       reactions_count: number
       poll_votes_count: number
-      activities_count: number
       // exists
       user_exists: boolean
       parent_exists: boolean
@@ -227,7 +258,6 @@ declare global {
       reactions_exists: boolean
       poll_votes_exists: boolean
       resolver_exists: boolean
-      activities_exists: boolean
     }
 
     export interface CommentPollVote {
@@ -271,10 +301,16 @@ declare global {
       updated_at: string
       // relations
       parts?: ContentPart[]
+      news?: News
+      page?: Page
+      tenant?: Tenant
       // counts
       parts_count: number
       // exists
       parts_exists: boolean
+      news_exists: boolean
+      page_exists: boolean
+      tenant_exists: boolean
     }
 
     export interface ContentPart {
@@ -288,15 +324,19 @@ declare global {
       created_at: string
       updated_at: string
       // mutators
+      content_summary: string
       html: string
       // relations
       content?: Content
       text_box_submissions?: TextBoxSubmission[]
+      activities_as_subject?: Activity[]
       // counts
       text_box_submissions_count: number
+      activities_as_subject_count: number
       // exists
       content_exists: boolean
       text_box_submissions_exists: boolean
+      activities_as_subject_exists: boolean
     }
 
     export interface Document {
@@ -330,9 +370,12 @@ declare global {
       is_in_effect: boolean
       // relations
       institution?: Institution
+      activities_as_subject?: Activity[]
       // counts
+      activities_as_subject_count: number
       // exists
       institution_exists: boolean
+      activities_as_subject_exists: boolean
     }
 
     export interface Dutiable {
@@ -421,7 +464,7 @@ declare global {
       permissions?: Permission[]
       fileable_files?: FileableFile[]
       available_files?: FileableFile[]
-      activities?: Activity[]
+      activities_as_subject?: Activity[]
       notifications?: DatabaseNotification[]
       // counts
       dutiables_count: number
@@ -438,7 +481,7 @@ declare global {
       permissions_count: number
       fileable_files_count: number
       available_files_count: number
-      activities_count: number
+      activities_as_subject_count: number
       notifications_count: number
       // exists
       dutiables_exists: boolean
@@ -457,7 +500,7 @@ declare global {
       permissions_exists: boolean
       fileable_files_exists: boolean
       available_files_exists: boolean
-      activities_exists: boolean
+      activities_as_subject_exists: boolean
       notifications_exists: boolean
     }
 
@@ -620,7 +663,7 @@ declare global {
       fileable_files?: FileableFile[]
       available_files?: FileableFile[]
       tasks?: Task[]
-      activities?: Activity[]
+      activities_as_subject?: Activity[]
       // counts
       duties_count: number
       types_count: number
@@ -637,7 +680,7 @@ declare global {
       fileable_files_count: number
       available_files_count: number
       tasks_count: number
-      activities_count: number
+      activities_as_subject_count: number
       // exists
       duties_exists: boolean
       types_exists: boolean
@@ -655,7 +698,7 @@ declare global {
       fileable_files_exists: boolean
       available_files_exists: boolean
       tasks_exists: boolean
-      activities_exists: boolean
+      activities_as_subject_exists: boolean
     }
 
     export interface InstitutionCheckIn {
@@ -673,14 +716,11 @@ declare global {
       institution?: Institution
       user?: User
       tenant?: Tenant
-      activities?: Activity[]
       // counts
-      activities_count: number
       // exists
       institution_exists: boolean
       user_exists: boolean
       tenant_exists: boolean
-      activities_exists: boolean
     }
 
     export interface InstitutionFollow {
@@ -762,7 +802,7 @@ declare global {
       fileable_files?: FileableFile[]
       available_files?: FileableFile[]
       tasks?: Task[]
-      activities?: Activity[]
+      activities_as_subject?: Activity[]
       // counts
       agenda_items_count: number
       institutions_count: number
@@ -771,7 +811,7 @@ declare global {
       fileable_files_count: number
       available_files_count: number
       tasks_count: number
-      activities_count: number
+      activities_as_subject_count: number
       // exists
       agenda_items_exists: boolean
       institutions_exists: boolean
@@ -780,7 +820,7 @@ declare global {
       fileable_files_exists: boolean
       available_files_exists: boolean
       tasks_exists: boolean
-      activities_exists: boolean
+      activities_as_subject_exists: boolean
     }
 
     export interface Membership {
@@ -844,9 +884,12 @@ declare global {
       deleted_at?: string | null
       // relations
       user?: User
+      activities_as_subject?: Activity[]
       // counts
+      activities_as_subject_count: number
       // exists
       user_exists: boolean
+      activities_as_subject_exists: boolean
     }
 
     export interface News {
@@ -880,14 +923,17 @@ declare global {
       other_language_news?: News
       tags?: Tag[]
       content?: Content
+      activities_as_subject?: Activity[]
       // counts
       tags_count: number
+      activities_as_subject_count: number
       // exists
       user_exists: boolean
       tenant_exists: boolean
       other_language_news_exists: boolean
       tags_exists: boolean
       content_exists: boolean
+      activities_as_subject_exists: boolean
     }
 
     export interface NotificationDigestQueue {
@@ -934,12 +980,15 @@ declare global {
       other_language_page?: Page
       category?: Category
       content?: Content
+      activities_as_subject?: Activity[]
       // counts
+      activities_as_subject_count: number
       // exists
       tenant_exists: boolean
       other_language_page_exists: boolean
       category_exists: boolean
       content_exists: boolean
+      activities_as_subject_exists: boolean
     }
 
     export interface Permission {
@@ -991,18 +1040,18 @@ declare global {
       responsible_user?: User
       categories?: ProblemCategory[]
       institutions?: Institution[]
-      activities?: Activity[]
+      activities_as_subject?: Activity[]
       // counts
       categories_count: number
       institutions_count: number
-      activities_count: number
+      activities_as_subject_count: number
       // exists
       tenant_exists: boolean
       created_by_exists: boolean
       responsible_user_exists: boolean
       categories_exists: boolean
       institutions_exists: boolean
-      activities_exists: boolean
+      activities_as_subject_exists: boolean
     }
 
     export interface ProblemCategory {
@@ -1214,7 +1263,7 @@ declare global {
       fileable_files?: FileableFile[]
       available_files?: FileableFile[]
       tasks?: Task[]
-      activities?: Activity[]
+      activities_as_subject?: Activity[]
       // counts
       types_count: number
       duties_count: number
@@ -1231,7 +1280,7 @@ declare global {
       fileable_files_count: number
       available_files_count: number
       tasks_count: number
-      activities_count: number
+      activities_as_subject_count: number
       // exists
       types_exists: boolean
       duties_exists: boolean
@@ -1249,7 +1298,7 @@ declare global {
       fileable_files_exists: boolean
       available_files_exists: boolean
       tasks_exists: boolean
-      activities_exists: boolean
+      activities_as_subject_exists: boolean
     }
 
     export interface PublicMeeting {
@@ -1280,7 +1329,7 @@ declare global {
       fileable_files?: FileableFile[]
       available_files?: FileableFile[]
       tasks?: Task[]
-      activities?: Activity[]
+      activities_as_subject?: Activity[]
       // counts
       institutions_count: number
       types_count: number
@@ -1290,7 +1339,7 @@ declare global {
       fileable_files_count: number
       available_files_count: number
       tasks_count: number
-      activities_count: number
+      activities_as_subject_count: number
       // exists
       institutions_exists: boolean
       types_exists: boolean
@@ -1300,7 +1349,7 @@ declare global {
       fileable_files_exists: boolean
       available_files_exists: boolean
       tasks_exists: boolean
-      activities_exists: boolean
+      activities_as_subject_exists: boolean
     }
 
     export interface QuickLink {
@@ -1403,21 +1452,21 @@ declare global {
       comments?: Comment[]
       root_comments?: Comment[]
       tasks?: Task[]
-      activities?: Activity[]
+      activities_as_subject?: Activity[]
       // counts
       resources_count: number
       users_count: number
       comments_count: number
       root_comments_count: number
       tasks_count: number
-      activities_count: number
+      activities_as_subject_count: number
       // exists
       resources_exists: boolean
       users_exists: boolean
       comments_exists: boolean
       root_comments_exists: boolean
       tasks_exists: boolean
-      activities_exists: boolean
+      activities_as_subject_exists: boolean
     }
 
     export interface ReservationResource {
@@ -1846,13 +1895,13 @@ declare global {
       form?: Form
       tasks?: TrainingTask[]
       programmes?: Programme[]
-      activities?: Activity[]
+      activities_as_subject?: Activity[]
       // counts
       trainables_count: number
       users_count: number
       tasks_count: number
       programmes_count: number
-      activities_count: number
+      activities_as_subject_count: number
       // exists
       trainables_exists: boolean
       organizer_exists: boolean
@@ -1861,7 +1910,7 @@ declare global {
       form_exists: boolean
       tasks_exists: boolean
       programmes_exists: boolean
-      activities_exists: boolean
+      activities_as_subject_exists: boolean
     }
 
     export interface TrainingTask {
@@ -1912,7 +1961,7 @@ declare global {
       incoming_relationships?: Relationship[]
       fileable_files?: FileableFile[]
       available_files?: FileableFile[]
-      activities?: Activity[]
+      activities_as_subject?: Activity[]
       // counts
       institutions_count: number
       duties_count: number
@@ -1922,7 +1971,7 @@ declare global {
       incoming_relationships_count: number
       fileable_files_count: number
       available_files_count: number
-      activities_count: number
+      activities_as_subject_count: number
       // exists
       institutions_exists: boolean
       duties_exists: boolean
@@ -1934,7 +1983,7 @@ declare global {
       incoming_relationships_exists: boolean
       fileable_files_exists: boolean
       available_files_exists: boolean
-      activities_exists: boolean
+      activities_as_subject_exists: boolean
     }
 
     export interface Typeable {
@@ -1995,7 +2044,7 @@ declare global {
       roles?: Role[]
       teams?: Permission[]
       permissions?: Permission[]
-      activities?: Activity[]
+      activities_as_subject?: Activity[]
       notifications?: DatabaseNotification[]
       // counts
       duties_count: number
@@ -2013,7 +2062,7 @@ declare global {
       roles_count: number
       teams_count: number
       permissions_count: number
-      activities_count: number
+      activities_as_subject_count: number
       notifications_count: number
       // exists
       duties_exists: boolean
@@ -2031,7 +2080,7 @@ declare global {
       roles_exists: boolean
       teams_exists: boolean
       permissions_exists: boolean
-      activities_exists: boolean
+      activities_as_subject_exists: boolean
       notifications_exists: boolean
     }
 
@@ -2058,12 +2107,12 @@ declare global {
       student_benefit_label: string
       // relations
       agenda_item?: AgendaItem
-      activities?: Activity[]
+      activities_as_subject?: Activity[]
       // counts
-      activities_count: number
+      activities_as_subject_count: number
       // exists
       agenda_item_exists: boolean
-      activities_exists: boolean
+      activities_as_subject_exists: boolean
     }
 
     const AgendaItemType = {

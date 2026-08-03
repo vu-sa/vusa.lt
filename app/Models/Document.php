@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Helpers\ShortUrlHelper;
+use App\Models\Traits\LogsModelActivity;
 use App\Services\DocumentSharepointSyncService;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Collection;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Context;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
+use Spatie\Activitylog\Support\LogOptions;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
@@ -41,6 +43,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $updated_at
  * @property Carbon|null $effective_date
  * @property Carbon|null $expiration_date
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read bool|null $is_in_effect
  * @property-read Institution|null $institution
  * @property-read Collection<int, Tenant> $tenant
@@ -55,7 +58,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 #[Hidden(['sharepoint_id', 'eTag', 'public_url_created_at', 'sharepoint_site_id', 'sharepoint_list_id', 'sharepoint_permission_id', 'created_at', 'updated_at'])]
 class Document extends Model
 {
-    use HasFactory, HasRelationships, Searchable;
+    use HasFactory, HasRelationships, LogsModelActivity, Searchable;
 
     #[\Override]
     protected $guarded = [];
@@ -71,6 +74,17 @@ class Document extends Model
             'checked_at' => 'datetime',
             'last_sync_attempt_at' => 'datetime',
         ];
+    }
+
+    /**
+     * eTag/checked_at/sync_* churn on every scheduled SharePoint sync run
+     * (see DocumentSharepointSyncService) — that's a robot, not a person, so
+     * exclude it from the human-facing change log.
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return $this->defaultActivitylogOptions()
+            ->logExcept(['eTag', 'checked_at', 'sync_status', 'sync_error_message', 'sync_attempts', 'last_sync_attempt_at']);
     }
 
     #[\Override]

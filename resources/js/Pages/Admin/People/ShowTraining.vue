@@ -21,22 +21,25 @@
               </span>
             </div>
           </div>
-          <Badge v-if="training.form === null" variant="warning">
-            <IFluentSubtractCircle12Regular class="mr-1" />
-            Registracija nevykdoma
-          </Badge>
-          <Badge v-else-if="!userCanRegister" variant="secondary">
-            <IFluentCircleOff16Regular class="mr-1" />
-            Negalite registruotis
-          </Badge>
-          <Badge v-else-if="!userIsRegistered" variant="warning">
-            <IFluentCircle24Regular class="mr-1" />
-            Registracija vyksta
-          </Badge>
-          <Badge v-else-if="userIsRegistered" variant="success">
-            <IFluentCheckmarkCircle24Filled class="mr-1" />
-            Uzsiregistruota
-          </Badge>
+          <div class="flex items-center gap-2">
+            <ActivityLogSheet subject-type="training" :subject-id="training.id" />
+            <Badge v-if="training.form === null" variant="warning">
+              <IFluentSubtractCircle12Regular class="mr-1" />
+              Registracija nevykdoma
+            </Badge>
+            <Badge v-else-if="!userCanRegister" variant="secondary">
+              <IFluentCircleOff16Regular class="mr-1" />
+              Negalite registruotis
+            </Badge>
+            <Badge v-else-if="!userIsRegistered" variant="warning">
+              <IFluentCircle24Regular class="mr-1" />
+              Registracija vyksta
+            </Badge>
+            <Badge v-else-if="userIsRegistered" variant="success">
+              <IFluentCheckmarkCircle24Filled class="mr-1" />
+              Uzsiregistruota
+            </Badge>
+          </div>
         </div>
         <div class="text-zinc-900 mt-2">
           <div v-html="training.description" />
@@ -117,6 +120,7 @@ import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
 import { Card, CardContent, CardFooter, CardHeader } from '@/Components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import ProgrammePlanner from '@/Features/Admin/ProgrammePlanner/ProgrammePlanner.vue';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import Sparkle20Filled from '~icons/fluent/sparkle20-filled';

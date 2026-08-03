@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\AcademicCalendarApiController;
+use App\Http\Controllers\Api\Admin\ActivityLogApiController;
 use App\Http\Controllers\Api\Admin\AgendaItemNoteController;
 use App\Http\Controllers\Api\Admin\AnalyticsApiController;
 use App\Http\Controllers\Api\Admin\AtstovavimasApiController;
@@ -126,6 +127,11 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         // Agenda item collaborative notes ("Atstovų pastabos")
         Route::get('agenda-items/{agendaItem}/note', [AgendaItemNoteController::class, 'show'])->name('agendaItems.note.show');
         Route::put('agenda-items/{agendaItem}/note', [AgendaItemNoteController::class, 'update'])->name('agendaItems.note.update');
+
+        // Activity log feed for a subject's whole tree (see App\Support\ActivityRoots).
+        // {subjectType} is resolved through the App\Support\Auditables allowlist;
+        // read follows the subject's own `view` ability, same as discussions below.
+        Route::get('activity-log/{subjectType}/{subjectId}', [ActivityLogApiController::class, 'index'])->name('activityLog.index');
 
         // Discussions (polymorphic comment threads). Read/write follow the
         // parent's `view` ability. {commentableType} is resolved through the

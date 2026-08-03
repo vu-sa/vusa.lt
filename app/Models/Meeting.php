@@ -10,6 +10,8 @@ use App\Models\Pivots\AgendaItem;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTasks;
+use App\Models\Traits\LogsModelActivity;
+use App\Models\Traits\LogsRelationshipChanges;
 use App\Services\MeetingCompletionService;
 use App\Services\MeetingRepresentativeResolver;
 use App\Services\VoteStatisticsCalculator;
@@ -22,9 +24,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Models\Activity;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
@@ -37,7 +36,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
- * @property-read Collection<int, Activity> $activities
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, AgendaItem> $agendaItems
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Collection<int, Comment> $comments
@@ -67,7 +66,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  */
 class Meeting extends Model implements Commentable, SharepointFileableContract
 {
-    use HasComments, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasUlids, LogsActivity, Searchable, SoftDeletes;
+    use HasComments, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable, SoftDeletes;
 
     #[\Override]
     protected $guarded = [];
@@ -244,11 +243,6 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
             'created_at' => $this->created_at->timestamp,
             'updated_at' => $this->updated_at->timestamp,
         ];
-    }
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
     /** @return HasMany<AgendaItem, $this> */

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Concerns;
 
+use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -96,6 +97,34 @@ trait ApiResponses
             data: $paginator->items(),
             message: $message,
             meta: $meta
+        );
+    }
+
+    /**
+     * Return a cursor-paginated JSON response. Prefer this over jsonPaginated()
+     * for feeds rendered as infinite scroll -- keyset pagination is index-only
+     * (no COUNT(*) on every request) and stable under concurrent inserts,
+     * unlike page-number pagination.
+     *
+     * @param  CursorPaginator<int, mixed>  $paginator
+     * @param  array<string, mixed>  $additionalMeta
+     */
+    protected function jsonCursorPaginated(CursorPaginator $paginator, mixed $data = null, ?string $message = null, array $additionalMeta = []): JsonResponse
+    {
+        $meta = [
+            'cursor' => [
+                'next' => $paginator->nextCursor()?->encode(),
+                'prev' => $paginator->previousCursor()?->encode(),
+                'per_page' => $paginator->perPage(),
+                'has_more' => $paginator->hasMorePages(),
+            ],
+            ...$additionalMeta,
+        ];
+
+        return $this->jsonSuccess(
+            data: $data ?? $paginator->items(),
+            message: $message,
+            meta: $meta,
         );
     }
 

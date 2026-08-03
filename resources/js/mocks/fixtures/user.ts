@@ -38,7 +38,7 @@ export function createMockUser(
     push_subscriptions_count: 0,
     roles_count: 0,
     permissions_count: 0,
-    activities_count: 0,
+    activities_as_subject_count: 0,
     notifications_count: 0,
     // Exists
     duties_exists: true,
@@ -55,7 +55,7 @@ export function createMockUser(
     push_subscriptions_exists: false,
     roles_exists: false,
     permissions_exists: false,
-    activities_exists: false,
+    activities_as_subject_exists: false,
     notifications_exists: false,
     ...overrides,
   } as App.Entities.User;

@@ -125,7 +125,7 @@ class TrainingController extends AdminController
      */
     public function show(Training $training)
     {
-        $training->load('activities', 'form', 'tenant', 'organizer', 'trainables', 'tasks', 'institution');
+        $training->load('form', 'tenant', 'organizer', 'trainables', 'tasks', 'institution');
 
         $training->load('programmes.days.elements');
 

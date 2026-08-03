@@ -65,6 +65,7 @@
 
             <!-- Actions -->
             <div class="flex items-center gap-2">
+              <slot name="extra-actions" />
               <Button variant="outline" size="sm" class="h-9 gap-1.5" @click="$emit('add-user')">
                 <IFluentPersonAdd24Regular class="size-4 shrink-0" />
                 <span class="hidden sm:inline">{{ $t('Pridėti valdytoją') }}</span>

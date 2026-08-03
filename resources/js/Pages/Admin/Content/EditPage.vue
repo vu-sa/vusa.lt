@@ -3,6 +3,9 @@
     <template #header>
       {{ page.title }}
     </template>
+    <template #aside-header>
+      <ActivityLogSheet subject-type="page" :subject-id="page.id" />
+    </template>
     <ContentAnalyticsCard
       type="page"
       :id="page.id"
@@ -30,6 +33,7 @@
 import { router } from '@inertiajs/vue3';
 
 import ContentAnalyticsCard from '@/Components/Analytics/ContentAnalyticsCard.vue';
+import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import PageForm from '@/Components/AdminForms/PageForm.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';

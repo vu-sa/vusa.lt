@@ -11,6 +11,7 @@ use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasNotificationPreferences;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\HasUIPreferences;
+use App\Models\Traits\LogsModelActivity;
 use App\Services\NotificationRouter;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -30,9 +31,7 @@ use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use NotificationChannels\WebPush\HasPushSubscriptions;
 use NotificationChannels\WebPush\PushSubscription;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Models\Activity;
-use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 use Spatie\Permission\Traits\HasRoles;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
@@ -59,7 +58,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $profile_photo_focal_point
  * @property Carbon|null $deleted_at
  * @property bool $name_was_changed
- * @property-read Collection<int, Activity> $activities
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read InstitutionNotificationMute|MembershipUser|InstitutionFollow|Dutiable|Trainable|null $pivot
  * @property-read Collection<int, Training> $availableTrainingsThroughUser
  * @property-read Collection<int, Duty> $current_duties
@@ -122,7 +121,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 ])]
 class User extends Authenticatable implements GuardsForceDelete
 {
-    use GuardsForceDeleteWhenReferenced, HasFactory, HasNotificationPreferences, HasPushSubscriptions, HasRelationships, HasRoles, HasTranslations, HasUIPreferences, HasUlids, LogsActivity, Notifiable, Searchable, SoftDeletes;
+    use GuardsForceDeleteWhenReferenced, HasFactory, HasNotificationPreferences, HasPushSubscriptions, HasRelationships, HasRoles, HasTranslations, HasUIPreferences, HasUlids, LogsModelActivity, Notifiable, Searchable, SoftDeletes;
 
     public $translatable = [
         'pronouns',
@@ -141,9 +140,15 @@ class User extends Authenticatable implements GuardsForceDelete
         ];
     }
 
+    /**
+     * notification_preferences and ui_preferences are large JSON blobs that
+     * churn on every settings tweak; password is already covered by the
+     * global default_except_attributes exclusion.
+     */
     public function getActivitylogOptions(): LogOptions
     {
-        return LogOptions::defaults()->logFillable()->logOnlyDirty();
+        return $this->defaultActivitylogOptions()
+            ->logExcept(['notification_preferences', 'ui_preferences']);
     }
 
     /**

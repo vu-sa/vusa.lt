@@ -16,9 +16,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Models\Activity;
-use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * @property string $id
@@ -37,7 +34,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
- * @property-read Collection<int, Activity> $activities
  * @property-read Model|\Eloquent $commentable
  * @property-read Comment|null $parent
  * @property-read Collection<int, CommentPollVote> $pollVotes
@@ -64,7 +60,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 #[Touches(['commentable'])]
 class Comment extends Model
 {
-    use HasFactory, HasUlids, LogsActivity, SoftDeletes;
+    use HasFactory, HasUlids, SoftDeletes;
 
     /**
      * The emoji a user may react to a comment with.
@@ -98,11 +94,6 @@ class Comment extends Model
             'resolved_at' => 'datetime',
             'edited_at' => 'datetime',
         ];
-    }
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
     /**

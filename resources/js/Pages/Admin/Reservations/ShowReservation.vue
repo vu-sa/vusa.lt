@@ -3,7 +3,11 @@
     <div class="min-w-0 w-full space-y-6">
       <!-- Hero Section -->
       <ReservationHero :reservation @add-resource="handleAddResource" @add-user="handleAddUser"
-        @show-help="showReservationHelpModal = true" />
+        @show-help="showReservationHelpModal = true">
+        <template #extra-actions>
+          <ActivityLogSheet subject-type="reservation" :subject-id="reservation.id" />
+        </template>
+      </ReservationHero>
 
       <!-- Main Content with Tabs -->
       <Tabs v-model="currentTab" class="space-y-4">
@@ -187,6 +191,8 @@ import { router, useForm } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';
 
 import ReservationHero from './Partials/ReservationHero.vue';
+
+import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
