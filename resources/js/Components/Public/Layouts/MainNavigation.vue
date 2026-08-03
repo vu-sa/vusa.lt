@@ -15,11 +15,15 @@
             'max-md:shadow-lg': hasScrolledDown,
             'max-md:shadow-md max-md:ease-in': !hasScrolledDown,
           }">
-          <div class="flex flex-row items-center space-x-4">
+          <div class="flex flex-row items-center gap-2">
             <SmartLink prefetch title="Grįžti į pagrindinį puslapį" class="leading-3 w-32 h-12 md:w-36 md:h-14 p-1 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
               :href="`${$page.props.app.url}/${$page.props.app.locale}`" target="_self">
               <AppLogo :is-theme-dark class="w-full h-full" />
             </SmartLink>
+            <span v-if="$page.props.tenant?.alias && $page.props.tenant.alias !== 'vusa'"
+              class="lg:hidden max-w-20 truncate text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+              {{ $t($page.props.tenant?.shortname ?? '') }}
+            </span>
           </div>
 
           <div class="flex w-full items-center gap-x-2 md:gap-x-4">
@@ -28,34 +32,15 @@
                 <PadalinysSelector :size="smallerThanSm ? 'tiny' : 'small'" />
               </template>
             </MainMenu>
-            <div class="hidden max-lg:flex items-center">
-              <PadalinysSelector :size="smallerThanSm ? 'tiny' : 'small'" />
-            </div>
           </div>
           <div class="my-auto justify-self-end">
             <div class="hidden gap-2 lg:flex items-center">
               <LocaleButton :locale="$page.props.app.locale" size="sm" />
               <DarkModeSwitch size="icon" />
             </div>
-            <div class="ml-auto lg:hidden flex items-center gap-2">
-              <!-- Hide LocaleButton on very small screens (smaller than sm breakpoint) -->
-              <LocaleButton v-if="!smallerThanSm" :locale="$page.props.app.locale" size="default" />
-              <Drawer v-model:open="drawerOpen" direction="left">
-                <DrawerTrigger>
-                  <Button variant="outline" :size="smallerThanSm ? 'sm' : 'default'" class="gap-2">
-                    <LineHorizontal320Filled class="h-4 w-4" />
-                    <span class="sr-only lg:not-sr-only">{{ $t('Menu') }}</span>
-                  </Button>
-                </DrawerTrigger>
-                <DrawerContent class="p-6">
-                  <Suspense>
-                    <MainMenuMobile class="pb-4" />
-                    <template #fallback>
-                      <div class="animate-pulse h-32 bg-gray-200 rounded dark:bg-gray-700" />
-                    </template>
-                  </Suspense>
-                </DrawerContent>
-              </Drawer>
+            <div class="ml-auto lg:hidden flex items-center gap-1">
+              <SearchButton class="shrink-0" />
+              <MobileNavigation />
             </div>
           </div>
         </nav>
@@ -70,26 +55,21 @@
   </header>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core';
-import { computed, defineAsyncComponent, ref, watch } from 'vue';
-import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import LocaleButton from '../Nav/LocaleButton.vue';
 import MainMenu from '../Nav/MainMenu.vue';
+import MobileNavigation from '../Nav/Mobile/MobileNavigation.vue';
 import PadalinysSelector from '../Nav/PadalinysSelector.vue';
+import SearchButton from '../Nav/SearchButton.vue';
 import SecondMenu from '../Nav/SecondMenu.vue';
 import SmartLink from '../SmartLink.vue';
 
 import DarkModeSwitch from '@/Components/Buttons/DarkModeButton.vue';
 import AppLogo from '@/Components/AppLogo.vue';
 import { useSecondMenu } from '@/Composables/useSecondMenu';
-import LineHorizontal320Filled from '~icons/fluent/line-horizontal-3-20-filled';
-import { Drawer, DrawerContent, DrawerTrigger } from '@/Components/ui/drawer';
-import { Button } from '@/Components/ui/button';
-
-const MainMenuMobile = defineAsyncComponent(() => import('../Nav/MainMenuMobile.vue'));
 
 defineProps<{
   isThemeDark: boolean;
@@ -100,13 +80,4 @@ const smallerThanSm = breakpoints.smaller('sm');
 
 // Use shared composable for second menu visibility logic
 const { hasSecondMenu, hasScrolledDown } = useSecondMenu();
-
-const currentPath = computed(() => usePage().props.app.path);
-const drawerOpen = ref(false);
-
-// When the route changes, close the drawer
-watch(
-  () => currentPath.value,
-  () => { drawerOpen.value = false; },
-);
 </script>

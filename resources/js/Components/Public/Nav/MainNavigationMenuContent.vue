@@ -71,34 +71,18 @@ import { Icon } from '@iconify/vue';
 
 import SmartLink from '../SmartLink.vue';
 
+import type { NavItem, NavLink, NavLinkType } from './types';
+
 import {
   NavigationMenuContent,
   NavigationMenuLink,
 } from '@/Components/ui/navigation-menu';
 import { Badge } from '@/Components/ui/badge';
 
-interface Link {
-  name: string;
-  url?: string;
-  icon?: string;
-  image?: string;
-  description?: string;
-  type?: 'link' | 'block-link' | 'category-link' | 'full-height-background-link' | 'divider';
-  small_text?: string;
-}
-
-type LinkType = Exclude<Link['type'], 'divider' | undefined>;
-
-interface Item {
-  id: string;
-  cols?: number;
-  links: Link[][];
-}
-
 const { isUsedWithoutRoot, areLinksDisabled, item } = defineProps<{
   isUsedWithoutRoot?: boolean;
   areLinksDisabled?: boolean;
-  item: Item;
+  item: NavItem;
   showEditIcons?: boolean;
 }>();
 
@@ -129,13 +113,13 @@ const ulClasses = computed(() => `grid max-lg:max-h-[calc(100dvh-20rem)] lg:max-
 
 const linkComponent = computed(() => areLinksDisabled ? 'div' : SmartLink);
 
-const linkClasses = (link: Link) => {
-  const linkType = (link?.type && link.type !== 'divider' ? link.type : 'block-link') as LinkType;
+const linkClasses = (link: NavLink) => {
+  const linkType = (link?.type && link.type !== 'divider' ? link.type : 'block-link') as NavLinkType;
   return linkTypes[linkType]?.blockClass;
 };
 
-const textClasses = (link: Link) => {
-  const linkType = (link?.type && link.type !== 'divider' ? link.type : 'block-link') as LinkType;
+const textClasses = (link: NavLink) => {
+  const linkType = (link?.type && link.type !== 'divider' ? link.type : 'block-link') as NavLinkType;
   return linkTypes[linkType]?.textClass;
 };
 
