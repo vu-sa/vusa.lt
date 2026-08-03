@@ -5,9 +5,9 @@ use App\Services\IcalendarService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     // Create published calendar events
     Calendar::factory()->count(3)->create([
         'is_draft' => false,
@@ -20,8 +20,8 @@ beforeEach(function () {
     ]);
 });
 
-describe('IcalendarService caching', function () {
-    test('get returns cached result on second call', function () {
+describe('IcalendarService caching', function (): void {
+    test('get returns cached result on second call', function (): void {
         IcalendarService::clearCache();
 
         $service = new IcalendarService;
@@ -32,12 +32,10 @@ describe('IcalendarService caching', function () {
         $result1 = $service->get();
         $result2 = $service->get();
 
-        expect($result1)->toEqual($result2);
-        expect($result1)->toBeString();
-        expect($result1)->toContain('BEGIN:VCALENDAR');
+        expect($result1)->toBeString()->toEqual($result2)->toContain('BEGIN:VCALENDAR');
     });
 
-    test('cache is keyed by language', function () {
+    test('cache is keyed by language', function (): void {
         IcalendarService::clearCache();
 
         $service = new IcalendarService;
@@ -61,7 +59,7 @@ describe('IcalendarService caching', function () {
         expect($ltEventCount)->toBeGreaterThanOrEqual($enEventCount);
     });
 
-    test('clearCache clears all language caches', function () {
+    test('clearCache clears all language caches', function (): void {
         IcalendarService::clearCache();
 
         $service = new IcalendarService;
@@ -73,16 +71,16 @@ describe('IcalendarService caching', function () {
         request()->merge(['lang' => 'en']);
         $service->get();
 
-        expect(Cache::has('ical:calendar:lt'))->toBeTrue();
-        expect(Cache::has('ical:calendar:en'))->toBeTrue();
+        expect(Cache::has('ical:calendar:lt'))->toBeTrue()
+            ->and(Cache::has('ical:calendar:en'))->toBeTrue();
 
         IcalendarService::clearCache();
 
-        expect(Cache::has('ical:calendar:lt'))->toBeFalse();
-        expect(Cache::has('ical:calendar:en'))->toBeFalse();
+        expect(Cache::has('ical:calendar:lt'))->toBeFalse()
+            ->and(Cache::has('ical:calendar:en'))->toBeFalse();
     });
 
-    test('cache is invalidated when calendar event is saved', function () {
+    test('cache is invalidated when calendar event is saved', function (): void {
         IcalendarService::clearCache();
 
         $service = new IcalendarService;
@@ -102,7 +100,7 @@ describe('IcalendarService caching', function () {
         expect(Cache::has('ical:calendar:lt'))->toBeFalse();
     });
 
-    test('cache is invalidated when calendar event is deleted', function () {
+    test('cache is invalidated when calendar event is deleted', function (): void {
         IcalendarService::clearCache();
 
         $service = new IcalendarService;
@@ -120,8 +118,8 @@ describe('IcalendarService caching', function () {
     });
 });
 
-describe('IcalendarService output', function () {
-    test('generates valid iCal format', function () {
+describe('IcalendarService output', function (): void {
+    test('generates valid iCal format', function (): void {
         IcalendarService::clearCache();
 
         $service = new IcalendarService;
@@ -129,12 +127,12 @@ describe('IcalendarService output', function () {
 
         $result = $service->get();
 
-        expect($result)->toContain('BEGIN:VCALENDAR');
-        expect($result)->toContain('END:VCALENDAR');
-        expect($result)->toContain('BEGIN:VEVENT');
+        expect($result)->toContain('BEGIN:VCALENDAR')
+            ->toContain('END:VCALENDAR')
+            ->toContain('BEGIN:VEVENT');
     });
 
-    test('defaults to lt language when no lang specified', function () {
+    test('defaults to lt language when no lang specified', function (): void {
         IcalendarService::clearCache();
 
         $service = new IcalendarService;
@@ -149,7 +147,7 @@ describe('IcalendarService output', function () {
         expect($result)->toContain('Studentiškas kalendorius');
     });
 
-    test('en language filters to international events only', function () {
+    test('en language filters to international events only', function (): void {
         IcalendarService::clearCache();
 
         $service = new IcalendarService;

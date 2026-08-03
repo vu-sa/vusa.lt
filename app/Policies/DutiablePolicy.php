@@ -13,7 +13,7 @@ class DutiablePolicy extends ModelPolicy
     public function __construct(ModelAuthorizer $authorizer)
     {
         parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::DUTIABLE()->label);
+        $this->pluralModelName = Str::plural(ModelEnum::DUTIABLE->label());
     }
 
     /**

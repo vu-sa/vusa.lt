@@ -4,14 +4,14 @@ use App\Models\News;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 });
 
-describe('news API image fallback', function () {
-    test('returns fallback image when news has no image', function () {
+describe('news API image fallback', function (): void {
+    test('returns fallback image when news has no image', function (): void {
         News::query()->where('tenant_id', $this->tenant->id)->delete();
 
         // Create news without an image
@@ -29,7 +29,7 @@ describe('news API image fallback', function () {
             ->assertJsonPath('data.0.image', '/images/icons/naujienu_foto.png');
     });
 
-    test('returns actual image when news has valid image', function () {
+    test('returns actual image when news has valid image', function (): void {
         News::query()->where('tenant_id', $this->tenant->id)->delete();
 
         // Create news with an external image URL
@@ -47,7 +47,7 @@ describe('news API image fallback', function () {
             ->assertJsonPath('data.0.image', 'https://example.com/image.jpg');
     });
 
-    test('returns correct news fields', function () {
+    test('returns correct news fields', function (): void {
         News::query()->where('tenant_id', $this->tenant->id)->delete();
 
         News::factory()->for($this->tenant)->create([

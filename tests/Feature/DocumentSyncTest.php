@@ -7,9 +7,9 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     Queue::fake();
     // Completely disable Scout indexing for tests to avoid extra job queuing
     config(['scout.driver' => null]);
@@ -17,19 +17,19 @@ beforeEach(function () {
     config(['scout.after_commit' => false]);
 });
 
-describe('Document Sync Jobs', function () {
-    test('individual sync job can be created and has correct properties', function () {
+describe('Document Sync Jobs', function (): void {
+    test('individual sync job can be created and has correct properties', function (): void {
         $document = Document::factory()->create();
 
         $job = new SyncDocumentFromSharePointJob($document);
 
-        expect($job->document->id)->toBe($document->id);
-        expect($job->tries)->toBe(3);
-        expect($job->timeout)->toBe(120);
-        expect($job->queue)->toBe('sharepoint-sync');
+        expect($job->document->id)->toBe($document->id)
+            ->and($job->tries)->toBe(3)
+            ->and($job->timeout)->toBe(120)
+            ->and($job->queue)->toBe('sharepoint-sync');
     });
 
-    test('rolling refresh job identifies documents for 14-day cycle correctly', function () {
+    test('rolling refresh job identifies documents for 14-day cycle correctly', function (): void {
         // Create critical documents (older than 14 days, should have priority)
         $criticalDocument1 = Document::factory()->create([
             'checked_at' => now()->subDays(15), // Critical - older than 14 days
@@ -62,21 +62,17 @@ describe('Document Sync Jobs', function () {
 
         // With 4 total documents, the dynamic quota should be at least 1 (4/14 = 0.28, ceil = 1)
         // Critical documents should be prioritized
-        Queue::assertPushed(SyncDocumentFromSharePointJob::class, function ($job) use ($criticalDocument1, $criticalDocument2) {
-            return in_array($job->document->id, [$criticalDocument1->id, $criticalDocument2->id]);
-        });
+        Queue::assertPushed(SyncDocumentFromSharePointJob::class, fn ($job) => in_array($job->document->id, [$criticalDocument1->id, $criticalDocument2->id]));
 
         // Fresh document should not be selected
-        Queue::assertNotPushed(SyncDocumentFromSharePointJob::class, function ($job) use ($freshDocument) {
-            return $job->document->id === $freshDocument->id;
-        });
+        Queue::assertNotPushed(SyncDocumentFromSharePointJob::class, fn ($job) => $job->document->id === $freshDocument->id);
 
         // Verify at least one job was pushed (quota-based, so exact count varies)
         $pushedCount = collect(Queue::pushed(SyncDocumentFromSharePointJob::class))->count();
         expect($pushedCount)->toBeGreaterThan(0);
     });
 
-    test('rolling refresh job skips documents with excessive failures', function () {
+    test('rolling refresh job skips documents with excessive failures', function (): void {
         // Create document that has failed too many times (over the limit of 5)
         Document::factory()->create([
             'checked_at' => now()->subDays(15), // Old enough to be critical
@@ -92,7 +88,7 @@ describe('Document Sync Jobs', function () {
         Queue::assertNothingPushed();
     });
 
-    test('rolling refresh job skips recently failed documents', function () {
+    test('rolling refresh job skips recently failed documents', function (): void {
         // Create document that failed recently with multiple attempts
         Document::factory()->create([
             'checked_at' => now()->subDays(15), // Old enough to be critical
@@ -108,7 +104,7 @@ describe('Document Sync Jobs', function () {
         Queue::assertNothingPushed();
     });
 
-    test('rolling refresh job uses dynamic quota calculation', function () {
+    test('rolling refresh job uses dynamic quota calculation', function (): void {
         // Create exactly 14 documents (one per day in cycle)
         Document::factory()->count(14)->create([
             'checked_at' => now()->subDays(15), // All critical
@@ -121,11 +117,11 @@ describe('Document Sync Jobs', function () {
         // With 14 documents, quota should be around 14/14 = 1 per day (with randomization ±10%)
         // So we should get at least 1 job dispatched
         $pushedCount = collect(Queue::pushed(SyncDocumentFromSharePointJob::class))->count();
-        expect($pushedCount)->toBeGreaterThanOrEqual(1);
-        expect($pushedCount)->toBeLessThanOrEqual(3); // With randomization, max should be reasonable
+        expect($pushedCount)->toBeGreaterThanOrEqual(1)
+            ->toBeLessThanOrEqual(3); // With randomization, max should be reasonable
     });
 
-    test('rolling refresh job prioritizes active and public documents', function () {
+    test('rolling refresh job prioritizes active and public documents', function (): void {
         // Create documents with different priorities (all critical age)
         $highPriority = Document::factory()->create([
             'checked_at' => now()->subDays(15),
@@ -162,8 +158,8 @@ describe('Document Sync Jobs', function () {
     });
 });
 
-describe('Document Sync Controller', function () {
-    test('refresh endpoint dispatches sync job for authorized users', function () {
+describe('Document Sync Controller', function (): void {
+    test('refresh endpoint dispatches sync job for authorized users', function (): void {
         $user = User::factory()->create();
         $user->assignRole(config('permission.super_admin_role_name'));
 
@@ -172,14 +168,12 @@ describe('Document Sync Controller', function () {
         $response = $this->actingAs($user)
             ->post(route('documents.refresh', $document));
 
-        Queue::assertPushed(SyncDocumentFromSharePointJob::class, function ($job) use ($document) {
-            return $job->document->id === $document->id;
-        });
+        Queue::assertPushed(SyncDocumentFromSharePointJob::class, fn ($job) => $job->document->id === $document->id);
 
         $response->assertSessionHas('success', 'Document refresh has been queued. It will be updated shortly.');
     });
 
-    test('refresh endpoint requires authorization', function () {
+    test('refresh endpoint requires authorization', function (): void {
         $user = User::factory()->create(); // User without admin role
         $document = Document::factory()->create();
 
@@ -194,8 +188,8 @@ describe('Document Sync Controller', function () {
     });
 });
 
-describe('Document Sync Command', function () {
-    test('sync command shows document count for rolling refresh in dry run', function () {
+describe('Document Sync Command', function (): void {
+    test('sync command shows document count for rolling refresh in dry run', function (): void {
         // Create critical documents (older than 14 days)
         Document::factory()->count(2)->create([
             'checked_at' => now()->subDays(15), // Critical
@@ -218,7 +212,7 @@ describe('Document Sync Command', function () {
         Queue::assertNothingPushed();
     });
 
-    test('sync command identifies failed documents for retry', function () {
+    test('sync command identifies failed documents for retry', function (): void {
         // Create failed documents with different attempt counts
         Document::factory()->create([
             'sync_status' => 'failed',
@@ -241,7 +235,7 @@ describe('Document Sync Command', function () {
         Queue::assertNothingPushed();
     });
 
-    test('sync command respects limit parameter', function () {
+    test('sync command respects limit parameter', function (): void {
         Document::factory()->count(30)->create([
             'checked_at' => now()->subDays(2),
         ]);
@@ -251,7 +245,7 @@ describe('Document Sync Command', function () {
             ->assertExitCode(0);
     });
 
-    test('--shortcuts option only targets .url internet shortcut documents', function () {
+    test('--shortcuts option only targets .url internet shortcut documents', function (): void {
         Document::factory()->count(2)->create([
             'name' => 'ataskaita2023.vusa.lt.url',
         ]);
@@ -268,16 +262,16 @@ describe('Document Sync Command', function () {
     });
 });
 
-describe('Document Sync Status', function () {
-    test('documents have correct default sync status', function () {
+describe('Document Sync Status', function (): void {
+    test('documents have correct default sync status', function (): void {
         $document = Document::factory()->create();
 
-        expect($document->sync_status)->toBe('pending');
-        expect($document->sync_attempts)->toBe(0);
-        expect($document->last_sync_attempt_at)->toBeNull();
+        expect($document->sync_status)->toBe('pending')
+            ->and($document->sync_attempts)->toBe(0)
+            ->and($document->last_sync_attempt_at)->toBeNull();
     });
 
-    test('sync status is included in admin table display', function () {
+    test('sync status is included in admin table display', function (): void {
         $user = User::factory()->create();
         $user->assignRole(config('permission.super_admin_role_name'));
 

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Traits\LogsModelActivity;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -21,6 +23,7 @@ use Laravel\Scout\Searchable;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Tenant $tenant
  *
  * @method static \Database\Factories\BannerFactory factory($count = null, $state = [])
@@ -35,10 +38,12 @@ use Laravel\Scout\Searchable;
  */
 class Banner extends Model
 {
-    use HasFactory, Searchable, SoftDeletes;
+    use HasFactory, LogsModelActivity, Searchable, SoftDeletes;
 
+    #[\Override]
     protected $guarded = [];
 
+    #[\Override]
     protected static function booted()
     {
         static::creating(function (self $banner): void {
@@ -65,11 +70,11 @@ class Banner extends Model
             }
         });
 
-        static::saved(function ($banner) {
+        static::saved(function ($banner): void {
             Cache::tags(['banners', "tenant_{$banner->tenant_id}"])->flush();
         });
 
-        static::deleted(function ($banner) {
+        static::deleted(function ($banner): void {
             Cache::tags(['banners', "tenant_{$banner->tenant_id}"])->flush();
         });
     }

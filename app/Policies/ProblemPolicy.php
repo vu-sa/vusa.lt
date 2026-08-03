@@ -17,6 +17,7 @@ class ProblemPolicy extends ModelPolicy
     /**
      * These models belong to a single tenant through a `tenant` relation.
      */
+    #[\Override]
     protected bool $hasManyTenants = false;
 
     /**
@@ -25,7 +26,7 @@ class ProblemPolicy extends ModelPolicy
     public function __construct(ModelAuthorizer $authorizer)
     {
         parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::PROBLEM()->label);
+        $this->pluralModelName = Str::plural(ModelEnum::PROBLEM->label());
     }
 
     /**
@@ -33,6 +34,7 @@ class ProblemPolicy extends ModelPolicy
      *
      * All authenticated users can view problems (admin routes already require auth).
      */
+    #[\Override]
     public function view(User $user, Model $problem): bool
     {
         return true;
@@ -41,24 +43,27 @@ class ProblemPolicy extends ModelPolicy
     /**
      * Override update method to ensure proper type hinting
      */
+    #[\Override]
     public function update(User $user, Model $problem): bool
     {
-        return $this->commonChecker($user, $problem, CRUDEnum::UPDATE()->label, $this->pluralModelName, false);
+        return $this->commonChecker($user, $problem, CRUDEnum::UPDATE->label(), $this->pluralModelName, false);
     }
 
     /**
      * Override delete method to ensure proper type hinting
      */
+    #[\Override]
     public function delete(User $user, Model $problem): bool
     {
-        return $this->commonChecker($user, $problem, CRUDEnum::DELETE()->label, $this->pluralModelName, false);
+        return $this->commonChecker($user, $problem, CRUDEnum::DELETE->label(), $this->pluralModelName, false);
     }
 
     /**
      * Override restore method to ensure proper type hinting and single tenant handling
      */
+    #[\Override]
     public function restore(User $user, Model $problem): bool
     {
-        return $this->commonChecker($user, $problem, CRUDEnum::DELETE()->label, $this->pluralModelName, false);
+        return $this->commonChecker($user, $problem, CRUDEnum::DELETE->label(), $this->pluralModelName, false);
     }
 }

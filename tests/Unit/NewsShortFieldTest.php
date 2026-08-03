@@ -8,9 +8,9 @@ use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tiptap\Editor;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-test('news uses short field for SEO when available', function () {
+test('news uses short field for SEO when available', function (): void {
     $tenant = Tenant::factory()->create();
 
     // Create news with both short field and tiptap content
@@ -31,12 +31,10 @@ test('news uses short field for SEO when available', function () {
 
     // Should use the short field content (stripped of HTML)
     expect($description)->toContain('This is the priority short description');
-    expect($description)->toContain('with HTML formatting');
-    expect($description)->not->toContain('This should not be used in SEO');
-    expect($description)->not->toContain('<p>')->not->toContain('<strong>');
+    expect($description)->toContain('with HTML formatting')->not->toContain('This should not be used in SEO')->not->toContain('<p>')->not->toContain('<strong>');
 });
 
-test('news strips HTML tags from short field', function () {
+test('news strips HTML tags from short field', function (): void {
     $tenant = Tenant::factory()->create();
     $content = Content::factory()->create();
 
@@ -51,7 +49,7 @@ test('news strips HTML tags from short field', function () {
     expect($description)->toBe('Simple bold and italic text with link.');
 });
 
-test('news respects character limit', function () {
+test('news respects character limit', function (): void {
     $tenant = Tenant::factory()->create();
     $content = Content::factory()->create();
 

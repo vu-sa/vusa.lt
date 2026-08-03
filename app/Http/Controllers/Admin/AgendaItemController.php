@@ -75,7 +75,7 @@ class AgendaItemController extends AdminController
 
         $canUpdate = Gate::allows('update', $agendaItem);
 
-        $agendaItem->load(['votes', 'note', 'meeting.institutions', 'meeting.agendaItems' => function ($query) {
+        $agendaItem->load(['votes', 'note', 'meeting.institutions', 'meeting.agendaItems' => function ($query): void {
             $query->orderBy('order')->with('mainVote')->withCount('comments')->withExists('note as has_notes');
         }]);
 
@@ -109,7 +109,7 @@ class AgendaItemController extends AdminController
      */
     public function update(UpdateAgendaItemRequest $request, AgendaItem $agendaItem)
     {
-        DB::transaction(function () use ($request, $agendaItem) {
+        DB::transaction(function () use ($request, $agendaItem): void {
             // Update agenda item fields (excluding votes)
             $agendaItem->fill($request->safe()->except('votes'));
             $agendaItem->save();
@@ -196,7 +196,7 @@ class AgendaItemController extends AdminController
             'agenda_items.*.order' => 'required|integer|min:1',
         ]);
 
-        DB::transaction(function () use ($request) {
+        DB::transaction(function () use ($request): void {
             foreach ($request->agenda_items as $item) {
                 AgendaItem::where('id', $item['id'])
                     ->where('meeting_id', $request->meeting_id)

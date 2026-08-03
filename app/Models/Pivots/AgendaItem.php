@@ -4,15 +4,19 @@ namespace App\Models\Pivots;
 
 use App\Contracts\Commentable;
 use App\Enums\AgendaItemType;
+use App\Models\Activity;
 use App\Models\AgendaItemNote;
 use App\Models\Comment;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Tenant;
 use App\Models\Traits\HasComments;
+use App\Models\Traits\LogsModelActivity;
 use App\Models\Vote;
 use App\Services\VoteStatisticsCalculator;
 use Database\Factories\AgendaItemFactory;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Touches;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -24,9 +28,6 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Models\Activity;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
@@ -42,7 +43,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $student_position
  * @property string|null $description
  * @property string|null $start_time
- * @property-read Collection<int, Activity> $activities
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, Vote> $additionalVotes
  * @property-read Collection<int, Comment> $comments
  * @property-read Collection<int, Institution> $institutions
@@ -60,14 +61,13 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
+#[Table(name: 'agenda_items')]
+#[Touches(['meeting'])]
 class AgendaItem extends Pivot implements Commentable
 {
-    use HasComments, HasFactory, HasRelationships, HasUlids, LogsActivity, Searchable;
+    use HasComments, HasFactory, HasRelationships, HasUlids, LogsModelActivity, Searchable;
 
-    protected $table = 'agenda_items';
-
-    protected $touches = ['meeting'];
-
+    #[\Override]
     public $incrementing = true;
 
     protected static function newFactory(): Factory
@@ -75,19 +75,16 @@ class AgendaItem extends Pivot implements Commentable
         return AgendaItemFactory::new();
     }
 
+    #[\Override]
     protected $guarded = [];
 
+    #[\Override]
     protected function casts(): array
     {
         return [
             'type' => AgendaItemType::class,
             'brought_by_students' => 'boolean',
         ];
-    }
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
     public function meeting(): BelongsTo

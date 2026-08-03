@@ -6,9 +6,9 @@ use App\Models\Registration;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
     $this->form = Form::factory()->published()->create([
@@ -23,8 +23,8 @@ beforeEach(function () {
     ]);
 });
 
-describe('user attribution', function () {
-    test('a guest cannot attribute a registration to another user', function () {
+describe('user attribution', function (): void {
+    test('a guest cannot attribute a registration to another user', function (): void {
         $victim = makeUser($this->tenant);
 
         $this->post(route('registrations.store', $this->form), [
@@ -39,7 +39,7 @@ describe('user attribution', function () {
         expect($registration->user_id)->toBeNull();
     });
 
-    test('an authenticated submitter cannot impersonate another user', function () {
+    test('an authenticated submitter cannot impersonate another user', function (): void {
         $submitter = makeUser($this->tenant);
         $victim = makeUser($this->tenant);
 
@@ -55,7 +55,7 @@ describe('user attribution', function () {
         expect($registration->user_id)->toBe($submitter->id);
     });
 
-    test('the registration is still attributed to the logged in user', function () {
+    test('the registration is still attributed to the logged in user', function (): void {
         $submitter = makeUser($this->tenant);
 
         asUser($submitter)->post(route('registrations.store', $this->form), [
@@ -71,8 +71,8 @@ describe('user attribution', function () {
     });
 });
 
-describe('rate limiting', function () {
-    test('submissions are throttled', function () {
+describe('rate limiting', function (): void {
+    test('submissions are throttled', function (): void {
         $payload = [
             'data' => [
                 $this->field->id => ['value' => 'Jonas Jonaitis'],

@@ -49,7 +49,7 @@ class StoreRegistrationRequest extends FormRequest
      */
     public function withValidator(Validator $validator): void
     {
-        $validator->after(function (Validator $validator) {
+        $validator->after(function (Validator $validator): void {
             $form = $this->route('form');
             if (! $form instanceof Form) {
                 return;

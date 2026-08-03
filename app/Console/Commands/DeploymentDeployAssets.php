@@ -2,14 +2,14 @@
 
 namespace App\Console\Commands;
 
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
+#[Description('Deploy build assets and vendor files atomically')]
+#[Signature('deployment:deploy-assets')]
 class DeploymentDeployAssets extends Command
 {
-    protected $signature = 'deployment:deploy-assets';
-
-    protected $description = 'Deploy build assets and vendor files atomically';
-
     public function handle(): int
     {
         try {

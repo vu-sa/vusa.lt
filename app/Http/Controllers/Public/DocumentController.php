@@ -26,8 +26,9 @@ class DocumentController extends PublicController
         // Since the frontend now handles search via Typesense directly,
         // we only need to provide static data for page initialization
         $staticData = Cache::tags(['documents'])
-            ->remember('documents_static_data', 7200, function () { // 2 hours TTL
-                return [
+            ->remember('documents_static_data', 7200,
+                // 2 hours TTL
+                fn () => [
                     'contentTypes' => Document::query()
                         ->select('content_type')
                         ->whereNotNull('content_type')
@@ -35,8 +36,7 @@ class DocumentController extends PublicController
                         ->pluck('content_type')
                         ->sort()
                         ->values(),
-                ];
-            });
+                ]);
 
         return Inertia::render('Public/ShowDocuments', [
             'allContentTypes' => $staticData['contentTypes'],

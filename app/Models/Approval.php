@@ -3,15 +3,13 @@
 namespace App\Models;
 
 use App\Enums\ApprovalDecision;
+use App\Models\Traits\LogsModelActivity;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Models\Activity;
-use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * @property string $id
@@ -23,7 +21,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $notes
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read Collection<int, Activity> $activities
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $approvable
  * @property-read User|null $user
  *
@@ -40,21 +38,18 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Approval extends Model
 {
-    use HasFactory, HasUlids, LogsActivity;
+    use HasFactory, HasUlids, LogsModelActivity;
 
+    #[\Override]
     protected $guarded = [];
 
+    #[\Override]
     protected function casts(): array
     {
         return [
             'decision' => ApprovalDecision::class,
             'step' => 'integer',
         ];
-    }
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
     /**

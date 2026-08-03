@@ -3,6 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Models\NotificationDigestQueue;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
 /**
@@ -13,15 +15,13 @@ use Illuminate\Console\Command;
  * the queue grows without bound and users would eventually receive a digest of
  * long-obsolete notifications. This command drops items past a cutoff.
  */
-class PruneNotificationDigests extends Command
-{
-    protected $signature = 'notifications:prune-digests
+#[Description('Prune stale items from the notification digest queue')]
+#[Signature('notifications:prune-digests
                             {--older-than=7 : Prune items older than this many days}
                             {--dry-run : Show what would be pruned without deleting anything}
-                            {--force : Skip confirmation (required for production)}';
-
-    protected $description = 'Prune stale items from the notification digest queue';
-
+                            {--force : Skip confirmation (required for production)}')]
+class PruneNotificationDigests extends Command
+{
     public function handle(): int
     {
         $days = (int) $this->option('older-than');

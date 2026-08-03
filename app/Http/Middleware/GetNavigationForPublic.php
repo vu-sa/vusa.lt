@@ -23,9 +23,7 @@ class GetNavigationForPublic
         // Check if method is get
         if ($request->isMethod('get')) {
 
-            $mainNavigation = fn () => Cache::remember('mainNavigation-'.app()->getLocale(), 3600, function () {
-                return ServicesNavigationService::getNavigationForPublic();
-            });
+            $mainNavigation = fn () => Cache::remember('mainNavigation-'.app()->getLocale(), 3600, fn () => ServicesNavigationService::getNavigationForPublic());
 
             Inertia::share('mainNavigation', $mainNavigation);
         }

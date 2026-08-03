@@ -2,14 +2,14 @@
 
 namespace App\Console\Commands;
 
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
+#[Description('Create a timestamped MySQL backup before deployment')]
+#[Signature('deployment:backup')]
 class DeploymentBackup extends Command
 {
-    protected $signature = 'deployment:backup';
-
-    protected $description = 'Create a timestamped MySQL backup before deployment';
-
     public function handle(): int
     {
         try {

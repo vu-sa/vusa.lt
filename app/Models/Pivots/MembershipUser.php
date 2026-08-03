@@ -27,8 +27,10 @@ use Illuminate\Support\Carbon;
  */
 class MembershipUser extends Pivot
 {
+    #[\Override]
     protected $guarded = [];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

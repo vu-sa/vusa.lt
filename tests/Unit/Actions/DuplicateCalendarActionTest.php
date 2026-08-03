@@ -4,10 +4,10 @@ use App\Actions\DuplicateCalendarAction;
 use App\Models\Calendar;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-describe('DuplicateCalendarAction', function () {
-    test('duplicates calendar with basic properties', function () {
+describe('DuplicateCalendarAction', function (): void {
+    test('duplicates calendar with basic properties', function (): void {
         $originalCalendar = Calendar::factory()->create([
             'title' => ['lt' => 'Originalus renginys', 'en' => 'Original event'],
             'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
@@ -25,7 +25,7 @@ describe('DuplicateCalendarAction', function () {
             ->and($duplicatedCalendar->exists)->toBeTrue();
     });
 
-    test('handles null title gracefully', function () {
+    test('handles null title gracefully', function (): void {
         $originalCalendar = Calendar::factory()->create([
             'title' => null,
             'is_draft' => false,
@@ -37,7 +37,7 @@ describe('DuplicateCalendarAction', function () {
             ->and($duplicatedCalendar->is_draft)->toBeTrue();
     });
 
-    test('handles empty title gracefully', function () {
+    test('handles empty title gracefully', function (): void {
         $originalCalendar = Calendar::factory()->create([
             'title' => '',
             'is_draft' => false,
@@ -49,7 +49,7 @@ describe('DuplicateCalendarAction', function () {
             ->and($duplicatedCalendar->is_draft)->toBeTrue();
     });
 
-    test('preserves all non-modified attributes', function () {
+    test('preserves all non-modified attributes', function (): void {
         $originalCalendar = Calendar::factory()->create([
             'title' => ['lt' => 'Test renginys', 'en' => 'Test event'],
             'description' => ['lt' => 'Test aprašymas', 'en' => 'Test description'],
@@ -76,7 +76,7 @@ describe('DuplicateCalendarAction', function () {
             ->and($duplicatedCalendar->is_draft)->toBeTrue(); // Should be true regardless of original
     });
 
-    test('creates new database record', function () {
+    test('creates new database record', function (): void {
         $originalCount = Calendar::count();
 
         $originalCalendar = Calendar::factory()->create([
@@ -89,7 +89,7 @@ describe('DuplicateCalendarAction', function () {
             ->and($duplicatedCalendar->wasRecentlyCreated)->toBeTrue();
     });
 
-    test('returns the created calendar instance', function () {
+    test('returns the created calendar instance', function (): void {
         $originalCalendar = Calendar::factory()->create([
             'title' => ['lt' => 'Test renginys', 'en' => 'Test event'],
         ]);
@@ -101,7 +101,7 @@ describe('DuplicateCalendarAction', function () {
             ->and($result->id)->toBeGreaterThan(0);
     });
 
-    test('handles media files correctly in duplication process', function () {
+    test('handles media files correctly in duplication process', function (): void {
         $originalCalendar = Calendar::factory()->create([
             'title' => ['lt' => 'Test renginys', 'en' => 'Test event'],
         ]);
@@ -114,7 +114,7 @@ describe('DuplicateCalendarAction', function () {
             ->and($duplicatedCalendar->id)->not()->toBe($originalCalendar->id);
     });
 
-    test('handles calendar without media files', function () {
+    test('handles calendar without media files', function (): void {
         $originalCalendar = Calendar::factory()->create([
             'title' => ['lt' => 'Test renginys', 'en' => 'Test event'],
         ]);
@@ -125,7 +125,7 @@ describe('DuplicateCalendarAction', function () {
             ->and($duplicatedCalendar->exists)->toBeTrue();
     });
 
-    test('handles translatable title arrays correctly', function () {
+    test('handles translatable title arrays correctly', function (): void {
         $originalCalendar = Calendar::factory()->create([
             'title' => ['lt' => 'Lietuviškas pavadinimas', 'en' => 'English title'],
             'is_draft' => false,

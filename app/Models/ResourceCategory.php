@@ -37,6 +37,7 @@ class ResourceCategory extends Model
 {
     use HasFactory, HasRelationships, HasTranslations, Searchable;
 
+    #[\Override]
     protected $guarded = [];
 
     public $translatable = ['name', 'description'];

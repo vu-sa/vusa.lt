@@ -17,6 +17,7 @@ class NewsPolicy extends ModelPolicy
     /**
      * These models belong to a single tenant through a `tenant` relation.
      */
+    #[\Override]
     protected bool $hasManyTenants = false;
 
     /**
@@ -25,7 +26,7 @@ class NewsPolicy extends ModelPolicy
     public function __construct(ModelAuthorizer $authorizer)
     {
         parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::NEWS()->label);
+        $this->pluralModelName = Str::plural(ModelEnum::NEWS->label());
     }
 
     /**
@@ -33,25 +34,28 @@ class NewsPolicy extends ModelPolicy
      *
      * Override with specific parameter - setting hasManyTenants to false
      */
+    #[\Override]
     public function view(User $user, Model $news): bool
     {
         // News belongs to a single tenant, so we use hasManyTenants=false
-        return $this->commonChecker($user, $news, CRUDEnum::READ()->label, $this->pluralModelName, false);
+        return $this->commonChecker($user, $news, CRUDEnum::READ->label(), $this->pluralModelName, false);
     }
 
     /**
      * Override update method to ensure proper type hinting
      */
+    #[\Override]
     public function update(User $user, Model $news): bool
     {
-        return $this->commonChecker($user, $news, CRUDEnum::UPDATE()->label, $this->pluralModelName, false);
+        return $this->commonChecker($user, $news, CRUDEnum::UPDATE->label(), $this->pluralModelName, false);
     }
 
     /**
      * Override delete method to ensure proper type hinting
      */
+    #[\Override]
     public function delete(User $user, Model $news): bool
     {
-        return $this->commonChecker($user, $news, CRUDEnum::DELETE()->label, $this->pluralModelName, false);
+        return $this->commonChecker($user, $news, CRUDEnum::DELETE->label(), $this->pluralModelName, false);
     }
 }

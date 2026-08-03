@@ -6,6 +6,7 @@ use App\Contracts\GuardsForceDelete;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasTranslations;
 use Database\Factories\FormFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -45,17 +46,16 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
+#[Fillable([
+    'name',
+    'description',
+    'path',
+    'publish_time',
+])]
 class Form extends Model implements GuardsForceDelete
 {
     /** @use HasFactory<FormFactory> */
     use GuardsForceDeleteWhenReferenced, HasFactory, HasTranslations, HasUlids, SoftDeletes;
-
-    protected $fillable = [
-        'name',
-        'description',
-        'path',
-        'publish_time',
-    ];
 
     public $translatable = [
         'name',
@@ -66,6 +66,7 @@ class Form extends Model implements GuardsForceDelete
     /**
      * @return array<string, string>
      */
+    #[\Override]
     protected function casts(): array
     {
         return [

@@ -6,6 +6,7 @@ use App\Enums\MeetingType;
 use App\Models\Pivots\AgendaItem;
 use App\Services\VoteStatisticsCalculator;
 use App\Settings\MeetingSettings;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -14,7 +15,6 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
-use Spatie\Activitylog\Models\Activity;
 
 /**
  * PublicMeeting - Extends Meeting for public display and search indexing
@@ -32,7 +32,7 @@ use Spatie\Activitylog\Models\Activity;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
- * @property-read Collection<int, Activity> $activities
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, AgendaItem> $agendaItems
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Collection<int, Comment> $comments
@@ -60,22 +60,16 @@ use Spatie\Activitylog\Models\Activity;
  *
  * @mixin \Eloquent
  */
+#[Table(name: 'meetings')]
 class PublicMeeting extends Meeting
 {
     use Searchable;
 
     /**
-     * The table associated with the model.
-     * Uses parent Meeting table since PublicMeeting is a filtered view.
-     *
-     * @var string
-     */
-    protected $table = 'meetings';
-
-    /**
      * Override institutions relationship to use correct pivot table
      * Laravel would default to 'institution_public_meeting' based on model name
      */
+    #[\Override]
     public function institutions(): BelongsToMany
     {
         return $this->belongsToMany(Institution::class, 'institution_meeting', 'meeting_id', 'institution_id');
@@ -96,6 +90,7 @@ class PublicMeeting extends Meeting
      *
      * @return HasMany<AgendaItem, $this>
      */
+    #[\Override]
     public function agendaItems(): HasMany
     {
         return $this->hasMany(AgendaItem::class, 'meeting_id', 'id');
@@ -104,6 +99,7 @@ class PublicMeeting extends Meeting
     /**
      * Determine if meeting should be indexed for public search
      */
+    #[\Override]
     public function shouldBeSearchable(): bool
     {
         if ($this->trashed()) {
@@ -128,6 +124,7 @@ class PublicMeeting extends Meeting
     /**
      * Get searchable array for Typesense indexing
      */
+    #[\Override]
     public function toSearchableArray(): array
     {
         // Load required relationships
@@ -183,6 +180,7 @@ class PublicMeeting extends Meeting
      * Calculate vote statistics from agenda items' votes.
      * Delegates to VoteStatisticsCalculator.
      */
+    #[\Override]
     protected function calculateVoteStatistics(): array
     {
         $allVotes = $this->agendaItems->flatMap(fn ($item) => $item->votes);
@@ -196,6 +194,7 @@ class PublicMeeting extends Meeting
      *
      * @return string 'all_match' (green), 'mixed' (amber), 'all_mismatch' (red), 'neutral' (grey)
      */
+    #[\Override]
     protected function calculateVoteAlignmentStatus(array $voteStats): string
     {
         return app(VoteStatisticsCalculator::class)->alignmentStatusFromCounts(
@@ -207,6 +206,7 @@ class PublicMeeting extends Meeting
     /**
      * Get the index name for the model
      */
+    #[\Override]
     public function searchableAs(): string
     {
         return config('scout.prefix').'public_meetings';
@@ -215,6 +215,7 @@ class PublicMeeting extends Meeting
     /**
      * Get the engine used to index the model
      */
+    #[\Override]
     public function searchableUsing()
     {
         return app(EngineManager::class)->engine('typesense');

@@ -17,6 +17,7 @@ class UpdateDutiableRequest extends FormRequest
         return $this->user()->can('manageDutiable', $this->route('dutiable'));
     }
 
+    #[\Override]
     protected function prepareForValidation(): void
     {
         $data = [];

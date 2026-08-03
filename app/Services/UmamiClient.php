@@ -27,14 +27,14 @@ use Illuminate\Support\Facades\Log;
  */
 class UmamiClient
 {
-    private const TOKEN_CACHE_KEY = 'umami.api_token';
+    private const string TOKEN_CACHE_KEY = 'umami.api_token';
 
     /** Well under Umami's own token lifetime, so a cached token is not served past expiry. */
     private const TOKEN_TTL = 60 * 60 * 6;
 
     private const RESULT_TTL = 60 * 10;
 
-    private const TIMEOUT = 5;
+    private const int TIMEOUT = 5;
 
     /**
      * Whether the API is configured at all. Staging and CI leave it empty.

@@ -6,9 +6,9 @@ use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     Tenant::firstOrCreate(
         ['alias' => 'vusa'],
         [
@@ -44,7 +44,7 @@ function summerCampsUrl(?int $year = null): string
     ]));
 }
 
-test('camp cards receive the location, which the page shows', function () {
+test('camp cards receive the location, which the page shows', function (): void {
     Calendar::factory()->create([
         'category_id' => $this->campCategory->id,
         'tenant_id' => $this->faculty->id,
@@ -62,7 +62,7 @@ test('camp cards receive the location, which the page shows', function () {
         );
 })->skip('Changed how the main summer camp page is rendered, applicable for other tests');
 
-test('a faculty running two camps gets both of them, in chronological order', function () {
+test('a faculty running two camps gets both of them, in chronological order', function (): void {
     $later = Calendar::factory()->create([
         'category_id' => $this->campCategory->id,
         'tenant_id' => $this->faculty->id,
@@ -87,7 +87,7 @@ test('a faculty running two camps gets both of them, in chronological order', fu
         );
 })->skip();
 
-test('camps are grouped so that every event carries its tenant', function () {
+test('camps are grouped so that every event carries its tenant', function (): void {
     Calendar::factory()->create([
         'category_id' => $this->campCategory->id,
         'tenant_id' => $this->faculty->id,
@@ -103,7 +103,7 @@ test('camps are grouped so that every event carries its tenant', function () {
         );
 })->skip();
 
-test('camp and unit counts are declined by the number, as Lithuanian requires', function ($count, $camps, $units) {
+test('camp and unit counts are declined by the number, as Lithuanian requires', function ($count, $camps, $units): void {
     app()->setLocale('lt');
 
     expect(trans_choice('summerCamps.camp_count', $count))->toBe($camps)
@@ -120,7 +120,7 @@ test('camp and unit counts are declined by the number, as Lithuanian requires', 
     [30, 'stovyklų', 'padalinių'],
 ]);
 
-test('camp and unit counts are pluralised in English', function () {
+test('camp and unit counts are pluralised in English', function (): void {
     app()->setLocale('en');
 
     expect(trans_choice('summerCamps.camp_count', 1))->toBe('camp')
@@ -129,7 +129,7 @@ test('camp and unit counts are pluralised in English', function () {
         ->and(trans_choice('summerCamps.unit_count', 5))->toBe('units');
 });
 
-test('the heavy description is not shipped to the camp cards', function () {
+test('the heavy description is not shipped to the camp cards', function (): void {
     Calendar::factory()->create([
         'category_id' => $this->campCategory->id,
         'tenant_id' => $this->faculty->id,

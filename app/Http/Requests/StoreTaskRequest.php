@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Task;
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreTaskRequest extends FormRequest
@@ -17,11 +18,12 @@ class StoreTaskRequest extends FormRequest
         return $this->user()->can('create', Task::class);
     }
 
+    #[\Override]
     protected function prepareForValidation()
     {
         $this->merge([
             'taskable_id' => $this->input('taskable_id') ?? auth()->id(),
-            'taskable_type' => $this->input('taskable_type') ?? 'App\\Models\\User',
+            'taskable_type' => $this->input('taskable_type') ?? User::class,
             'due_date' => date('Y-m-d', $this->input('due_date') / 1000),
         ]);
     }

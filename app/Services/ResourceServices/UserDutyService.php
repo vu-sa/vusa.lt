@@ -56,7 +56,7 @@ class UserDutyService
             Dutiable::where('duty_id', $duty->id)
                 ->where('dutiable_type', User::class)
                 ->where('dutiable_id', $user->id)
-                ->where(function ($query) {
+                ->where(function ($query): void {
                     $query->whereNull('end_date')
                         ->orWhere('end_date', '>=', now());
                 })

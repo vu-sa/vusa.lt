@@ -39,6 +39,7 @@ class StoreAgendaItemsRequest extends FormRequest
      *
      * @return array<string, string>
      */
+    #[\Override]
     public function messages()
     {
         return [

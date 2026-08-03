@@ -6,15 +6,14 @@ use App\Contracts\GuardsForceDelete;
 use App\Models\Pivots\Trainable;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasTranslations;
+use App\Models\Traits\LogsModelActivity;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\Searchable;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Models\Activity;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
@@ -34,7 +33,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
- * @property-read Collection<int, Activity> $activities
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Form|null $form
  * @property-read string|null $force_delete_blocked_reason
  * @property-read array $translatable_columns_from
@@ -60,37 +59,33 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
+#[Fillable([
+    'name',
+    'description',
+    'institution_id',
+    'start_time',
+    'address',
+    'end_time',
+    'meeting_url',
+    'image',
+    'max_participants',
+])]
 class Training extends Model implements GuardsForceDelete
 {
-    use GuardsForceDeleteWhenReferenced, HasFactory, HasRelationships, HasTranslations, HasUlids, LogsActivity, Searchable, SoftDeletes;
+    use GuardsForceDeleteWhenReferenced, HasFactory, HasRelationships, HasTranslations, HasUlids, LogsModelActivity, Searchable, SoftDeletes;
 
+    #[\Override]
     public $table = 'trainings';
-
-    protected $fillable = [
-        'name',
-        'description',
-        'institution_id',
-        'start_time',
-        'address',
-        'end_time',
-        'meeting_url',
-        'image',
-        'max_participants',
-    ];
 
     public $translatable = ['name', 'description'];
 
+    #[\Override]
     protected function casts(): array
     {
         return [
             'start_time' => 'datetime',
             'end_time' => 'datetime',
         ];
-    }
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
     public function toSearchableArray(): array

@@ -43,7 +43,7 @@ class MeetingSettings extends Settings
      */
     public function setPublicMeetingInstitutionTypeIds(array $ids): void
     {
-        $this->public_meeting_institution_type_ids = array_map('intval', array_filter($ids));
+        $this->public_meeting_institution_type_ids = array_map(intval(...), array_filter($ids));
     }
 
     /**
@@ -61,6 +61,6 @@ class MeetingSettings extends Settings
      */
     public function setExcludedInstitutionTypeIds(array $ids): void
     {
-        $this->excluded_institution_type_ids = array_map('intval', array_filter($ids));
+        $this->excluded_institution_type_ids = array_map(intval(...), array_filter($ids));
     }
 }

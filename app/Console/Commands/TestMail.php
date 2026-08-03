@@ -5,6 +5,8 @@ namespace App\Console\Commands;
 use App\Mail\NotificationDigest;
 use App\Models\User;
 use App\Notifications\TestPushNotification;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -19,14 +21,12 @@ use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
  * Sending is done with sendNow() so that transport errors (bad credentials,
  * unreachable host, TLS failures) surface here instead of inside a queue worker.
  */
+#[Description('Send a test email through the configured mailer and report transport errors')]
+#[Signature('mail:test
+                            {email? : Recipient address (defaults to MAIL_FROM_ADDRESS)}
+                            {--digest : Send the notification digest template instead of a plain message}')]
 class TestMail extends Command
 {
-    protected $signature = 'mail:test
-                            {email? : Recipient address (defaults to MAIL_FROM_ADDRESS)}
-                            {--digest : Send the notification digest template instead of a plain message}';
-
-    protected $description = 'Send a test email through the configured mailer and report transport errors';
-
     public function handle(): int
     {
         $this->info('📧 Mail Configuration');

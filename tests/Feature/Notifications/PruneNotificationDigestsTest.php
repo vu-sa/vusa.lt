@@ -3,13 +3,14 @@
 use App\Enums\NotificationCategory;
 use App\Models\NotificationDigestQueue;
 use App\Models\User;
+use App\Notifications\TaskAssignedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Feature\Notifications\NotificationTestHelpers;
 
-uses(RefreshDatabase::class, NotificationTestHelpers::class);
+pest()->use(RefreshDatabase::class, NotificationTestHelpers::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->clearDigestQueue();
 });
 
@@ -20,7 +21,7 @@ function makeDigestItem(User $user, int $daysOld): NotificationDigestQueue
 {
     $item = NotificationDigestQueue::create([
         'user_id' => $user->id,
-        'notification_class' => 'App\\Notifications\\TaskAssignedNotification',
+        'notification_class' => TaskAssignedNotification::class,
         'category' => NotificationCategory::Task->value,
         'data' => ['title' => 'Test', 'body' => 'Test', 'url' => '/test', 'icon' => '📌'],
     ]);
@@ -31,8 +32,8 @@ function makeDigestItem(User $user, int $daysOld): NotificationDigestQueue
     return $item->refresh();
 }
 
-describe('notifications:prune-digests', function () {
-    test('prunes items older than the cutoff and keeps newer ones', function () {
+describe('notifications:prune-digests', function (): void {
+    test('prunes items older than the cutoff and keeps newer ones', function (): void {
         $user = $this->createUserWithDigestEnabled();
 
         $stale = makeDigestItem($user, 30);
@@ -44,7 +45,7 @@ describe('notifications:prune-digests', function () {
             ->and(NotificationDigestQueue::find($fresh->id))->not->toBeNull();
     });
 
-    test('dry run deletes nothing', function () {
+    test('dry run deletes nothing', function (): void {
         $user = $this->createUserWithDigestEnabled();
 
         makeDigestItem($user, 30);
@@ -59,7 +60,7 @@ describe('notifications:prune-digests', function () {
         expect($this->getDigestQueueCountForUser($user))->toBe(2);
     });
 
-    test('the cutoff is configurable', function () {
+    test('the cutoff is configurable', function (): void {
         $user = $this->createUserWithDigestEnabled();
 
         makeDigestItem($user, 10);
@@ -71,13 +72,13 @@ describe('notifications:prune-digests', function () {
         expect($this->getDigestQueueCountForUser($user))->toBe(0);
     });
 
-    test('rejects a cutoff below one day', function () {
+    test('rejects a cutoff below one day', function (): void {
         $exitCode = Artisan::call('notifications:prune-digests', ['--older-than' => 0, '--force' => true]);
 
         expect($exitCode)->toBe(1);
     });
 
-    test('leaves an empty queue alone', function () {
+    test('leaves an empty queue alone', function (): void {
         $exitCode = Artisan::call('notifications:prune-digests', ['--force' => true]);
 
         expect($exitCode)->toBe(0)

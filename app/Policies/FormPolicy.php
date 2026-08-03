@@ -16,16 +16,18 @@ class FormPolicy extends ModelPolicy
     /**
      * These models belong to a single tenant through a `tenant` relation.
      */
+    #[\Override]
     protected bool $hasManyTenants = false;
 
     public function __construct(
         ModelAuthorizer $authorizer,
-        private FormAccessService $formAccess,
+        private readonly FormAccessService $formAccess,
     ) {
         parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::FORM()->label);
+        $this->pluralModelName = Str::plural(ModelEnum::FORM->label());
     }
 
+    #[\Override]
     public function viewAny(User $user): bool
     {
         return $this->formAccess->canViewAny($user);
@@ -36,9 +38,10 @@ class FormPolicy extends ModelPolicy
      *
      * @param  Form  $form
      */
+    #[\Override]
     public function view(User $user, Model $form): bool
     {
-        if ($this->commonChecker($user, $form, CRUDEnum::READ()->label, $this->pluralModelName, false)) {
+        if ($this->commonChecker($user, $form, CRUDEnum::READ->label(), $this->pluralModelName, false)) {
             return true;
         }
 
@@ -63,9 +66,10 @@ class FormPolicy extends ModelPolicy
      *
      * @param  Form  $form
      */
+    #[\Override]
     public function update(User $user, Model $form): bool
     {
-        return $this->commonChecker($user, $form, CRUDEnum::UPDATE()->label, $this->pluralModelName, false);
+        return $this->commonChecker($user, $form, CRUDEnum::UPDATE->label(), $this->pluralModelName, false);
     }
 
     /**
@@ -73,8 +77,9 @@ class FormPolicy extends ModelPolicy
      *
      * @param  Form  $form
      */
+    #[\Override]
     public function delete(User $user, Model $form): bool
     {
-        return $this->commonChecker($user, $form, CRUDEnum::DELETE()->label, $this->pluralModelName, false);
+        return $this->commonChecker($user, $form, CRUDEnum::DELETE->label(), $this->pluralModelName, false);
     }
 }

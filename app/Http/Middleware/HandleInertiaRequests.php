@@ -23,6 +23,7 @@ class HandleInertiaRequests extends Middleware
      *
      * @var string
      */
+    #[\Override]
     protected $rootView = 'app';
 
     /**
@@ -32,6 +33,7 @@ class HandleInertiaRequests extends Middleware
      *
      * @return string|null
      */
+    #[\Override]
     public function version(Request $request)
     {
         return parent::version($request);
@@ -44,6 +46,7 @@ class HandleInertiaRequests extends Middleware
      *
      * @return array<string, mixed>
      */
+    #[\Override]
     public function share(Request $request)
     {
         $user = $this->getLoggedInUserForInertia();
@@ -54,7 +57,7 @@ class HandleInertiaRequests extends Middleware
             'app' => [
                 'env' => fn () => config('app.env'),
                 'locale' => fn () => app()->getLocale(),
-                'path' => fn () => $request->path(),
+                'path' => $request->path(...),
                 'url' => fn () => config('app.url'),
             ],
             'auth' => is_null($user) ? null : [
@@ -76,7 +79,7 @@ class HandleInertiaRequests extends Middleware
                 'impersonating' => fn () => $this->getImpersonationState($request),
                 'registrationForms' => fn () => $this->getViewableRegistrationForms($user),
             ],
-            'csrf_token' => fn () => csrf_token(),
+            'csrf_token' => csrf_token(...),
             // 'flash' is used in the admin navigation to show only the allowed pages
             'flash' => [
                 'data' => fn () => $request->session()->get('data'),
@@ -93,8 +96,8 @@ class HandleInertiaRequests extends Middleware
             'search' => fn () => $request->session()->get('search'),
             // 'tenants' property is shared in public pages from \App\Http\Controllers\PublicController.php
             // 'tenant.banners' property is shared in public pages from \App\Http\Controllers\PublicController.php
-            'tenants' => fn () => $this->getTenantsForInertia(),
-            'typesenseConfig' => fn () => TypesenseManager::getFrontendConfig(),
+            'tenants' => $this->getTenantsForInertia(...),
+            'typesenseConfig' => TypesenseManager::getFrontendConfig(...),
             'pwa' => [
                 'vapidPublicKey' => fn () => config('webpush.vapid.public_key'),
                 'hasPushSubscription' => fn () => $user?->pushSubscriptions()->exists() ?? false,
@@ -108,7 +111,7 @@ class HandleInertiaRequests extends Middleware
     private function getLoggedInUserForInertia(): ?User
     {
         $user = User::query()
-            ->withCount(['tasks' => function ($query) {
+            ->withCount(['tasks' => function ($query): void {
                 $query->whereNull('completed_at');
             }])
             ->with('roles', 'current_duties:id,name,institution_id', 'current_duties.roles', 'current_duties.institution:id,name')

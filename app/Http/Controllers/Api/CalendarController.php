@@ -13,12 +13,12 @@ class CalendarController extends ApiController
     /**
      * Default days in the past for the event timeline component.
      */
-    private const TIMELINE_DEFAULT_DAYS_PAST = 7;
+    private const int TIMELINE_DEFAULT_DAYS_PAST = 7;
 
     /**
      * Default days in the future for the event timeline component.
      */
-    private const TIMELINE_DEFAULT_DAYS_FUTURE = 21;
+    private const int TIMELINE_DEFAULT_DAYS_FUTURE = 21;
 
     /**
      * Get calendar events for a tenant (public endpoint).

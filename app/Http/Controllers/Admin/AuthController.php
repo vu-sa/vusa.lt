@@ -61,7 +61,7 @@ class AuthController extends Controller
 
         try {
             $microsoftUser = Socialite::driver('microsoft')->user();
-        } catch (InvalidStateException $e) {
+        } catch (InvalidStateException) {
             // Log the error for debugging
             \Log::warning('Microsoft OAuth InvalidStateException, retrying with stateless', [
                 'user_ip' => $request->ip(),

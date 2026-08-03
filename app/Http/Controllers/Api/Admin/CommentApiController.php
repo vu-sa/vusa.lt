@@ -165,7 +165,7 @@ class CommentApiController extends ApiController
         $user = $this->requireAuth($request);
 
         $comments = Comment::query()
-            ->where(function ($q) use ($user) {
+            ->where(function ($q) use ($user): void {
                 $q->whereJsonContains('mentioned_user_ids', $user->id)
                     ->orWhere('user_id', $user->id);
             })
@@ -261,7 +261,7 @@ class CommentApiController extends ApiController
     {
         // resolve() (not toArray()) filters out MissingValue/when() artifacts and
         // fully resolves nested resources, yielding a clean json-encodable array.
-        return (new CommentResource($comment))->resolve($request);
+        return new CommentResource($comment)->resolve($request);
     }
 
     /**

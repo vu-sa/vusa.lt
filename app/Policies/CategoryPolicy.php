@@ -20,33 +20,38 @@ class CategoryPolicy extends ModelPolicy
     public function __construct(ModelAuthorizer $authorizer)
     {
         parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::CATEGORY()->label);
+        $this->pluralModelName = Str::plural(ModelEnum::CATEGORY->label());
     }
 
     /**
      * Categories are global entities that don't belong to specific tenants
      * Users with the appropriate global permission can manage all categories
      */
+    #[\Override]
     public function viewAny(User $user): bool
     {
         return $this->authorizer->forUser($user)->checkAllRoleables('categories.read.*');
     }
 
+    #[\Override]
     public function create(User $user): bool
     {
         return $this->authorizer->forUser($user)->checkAllRoleables('categories.create.*');
     }
 
+    #[\Override]
     public function view(User $user, Model $category): bool
     {
         return $this->authorizer->forUser($user)->checkAllRoleables('categories.read.*');
     }
 
+    #[\Override]
     public function update(User $user, Model $category): bool
     {
         return $this->authorizer->forUser($user)->checkAllRoleables('categories.update.*');
     }
 
+    #[\Override]
     public function delete(User $user, Model $category): bool
     {
         return $this->authorizer->forUser($user)->checkAllRoleables('categories.delete.*');

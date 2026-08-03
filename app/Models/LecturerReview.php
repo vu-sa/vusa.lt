@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Traits\HasTranslations;
 use Database\Factories\LecturerReviewFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -32,6 +33,12 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
+#[Fillable([
+    'study_set_course_id',
+    'lecturer',
+    'comment',
+    'is_visible',
+])]
 class LecturerReview extends Model
 {
     /** @use HasFactory<LecturerReviewFactory> */
@@ -39,13 +46,7 @@ class LecturerReview extends Model
 
     public $translatable = ['lecturer', 'comment'];
 
-    protected $fillable = [
-        'study_set_course_id',
-        'lecturer',
-        'comment',
-        'is_visible',
-    ];
-
+    #[\Override]
     protected function casts(): array
     {
         return [

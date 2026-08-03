@@ -20,7 +20,7 @@ class ModelPermissionSeeder extends Seeder
         $permissionsToCreate = [];
         $permissionsToDelete = [];
 
-        foreach (ModelEnum::toLabels() as $model) {
+        foreach (ModelEnum::labels() as $model) {
             $pluralizedModel = Str::plural($model);
 
             // if model is reservationResource, skip
@@ -31,8 +31,8 @@ class ModelPermissionSeeder extends Seeder
             // Get allowed scopes for this model
             $allowedScopes = ModelEnum::getAllowedScopes($pluralizedModel);
 
-            foreach (CRUDEnum::toLabels() as $crud) {
-                $isForceDelete = $crud === CRUDEnum::FORCE_DELETE()->label;
+            foreach (CRUDEnum::labels() as $crud) {
+                $isForceDelete = $crud === CRUDEnum::FORCE_DELETE->label();
 
                 // Permanent deletion only exists for soft-deletable models, and is
                 // never granted at the "own" scope — it is a tenant/global action.

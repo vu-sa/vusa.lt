@@ -18,16 +18,16 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
     $this->institution = Institution::factory()->for($this->tenant)->create();
 });
 
-describe('StudentRepRegistrationCreated event dispatch', function () {
-    test('event is dispatched when student rep form is submitted', function () {
+describe('StudentRepRegistrationCreated event dispatch', function (): void {
+    test('event is dispatched when student rep form is submitted', function (): void {
         Event::fake([StudentRepRegistrationCreated::class]);
 
         $form = createStudentRepForm($this->tenant, $this->institution);
@@ -53,12 +53,10 @@ describe('StudentRepRegistrationCreated event dispatch', function () {
 
         $response->assertRedirect();
 
-        Event::assertDispatched(StudentRepRegistrationCreated::class, function ($event) {
-            return $event->institution->id === $this->institution->id;
-        });
+        Event::assertDispatched(StudentRepRegistrationCreated::class, fn ($event) => $event->institution->id === $this->institution->id);
     });
 
-    test('event is not dispatched for non-student-rep forms', function () {
+    test('event is not dispatched for non-student-rep forms', function (): void {
         Event::fake([StudentRepRegistrationCreated::class]);
 
         // Create a regular form (not set as student rep form in settings)
@@ -81,8 +79,8 @@ describe('StudentRepRegistrationCreated event dispatch', function () {
     });
 });
 
-describe('SendStudentRepRegistrationNotification listener', function () {
-    test('confirmation email is sent to registrant', function () {
+describe('SendStudentRepRegistrationNotification listener', function (): void {
+    test('confirmation email is sent to registrant', function (): void {
         Mail::fake();
         Notification::fake();
 
@@ -108,12 +106,10 @@ describe('SendStudentRepRegistrationNotification listener', function () {
             ],
         ]);
 
-        Mail::assertSent(ConfirmStudentRepRegistration::class, function ($mail) {
-            return $mail->hasTo('jonas@example.com');
-        });
+        Mail::assertSent(ConfirmStudentRepRegistration::class, fn ($mail) => $mail->hasTo('jonas@example.com'));
     });
 
-    test('notification is sent to institution managers', function () {
+    test('notification is sent to institution managers', function (): void {
         Mail::fake();
         Notification::fake();
 
@@ -142,8 +138,8 @@ describe('SendStudentRepRegistrationNotification listener', function () {
     });
 });
 
-describe('registration is stored correctly', function () {
-    test('registration and field responses are saved', function () {
+describe('registration is stored correctly', function (): void {
+    test('registration and field responses are saved', function (): void {
         Event::fake([StudentRepRegistrationCreated::class]);
 
         $form = createStudentRepForm($this->tenant, $this->institution);
@@ -184,8 +180,8 @@ describe('registration is stored correctly', function () {
     });
 });
 
-describe('FormSettings for student rep registration', function () {
-    test('student rep form ID can be set and retrieved', function () {
+describe('FormSettings for student rep registration', function (): void {
+    test('student rep form ID can be set and retrieved', function (): void {
         $form = Form::factory()->published()->create(['tenant_id' => $this->tenant->id]);
 
         $settings = app(FormSettings::class);
@@ -197,7 +193,7 @@ describe('FormSettings for student rep registration', function () {
         expect($freshSettings->student_rep_registration_form_id)->toBe($form->id);
     });
 
-    test('student rep institution type IDs can be set and retrieved', function () {
+    test('student rep institution type IDs can be set and retrieved', function (): void {
         $settings = app(FormSettings::class);
         $settings->setStudentRepInstitutionTypeIds([1, 2, 3]);
         $settings->save();

@@ -8,14 +8,14 @@ use Tiptap\Utils\HTML;
 
 class CustomHeading extends Heading
 {
-    private const SIZE_CLASS = [
+    private const array SIZE_CLASS = [
         'sm' => 'rc-h-sm',
         'md' => 'rc-h-md',
         'lg' => 'rc-h-lg',
         'xl' => 'rc-h-xl',
     ];
 
-    private const ACCENT_CLASS = [
+    private const array ACCENT_CLASS = [
         'red' => 'rc-h-accent-red',
         'yellow' => 'rc-h-accent-yellow',
         'zinc' => 'rc-h-accent-zinc',
@@ -23,37 +23,37 @@ class CustomHeading extends Heading
 
     // `default` has no class of its own — it falls through to the level-based
     // margin-block-start rules in app.css. Only the non-default densities render a class.
-    private const SPACING_CLASS = [
+    private const array SPACING_CLASS = [
         'tight' => 'rc-h-spacing-tight',
         'loose' => 'rc-h-spacing-loose',
         'none' => 'rc-h-spacing-none',
     ];
 
+    #[\Override]
     public function parseHTML()
     {
-        return array_map(function ($level) {
-            return [
-                'tag' => "h{$level}",
-                'attrs' => [
-                    'level' => $level,
-                ],
-                'getAttrs' => function ($DOMNode) {
-                    $classes = explode(' ', $DOMNode->getAttribute('class') ?? '');
-                    $size = collect(self::SIZE_CLASS)->search(fn ($class) => in_array($class, $classes, true)) ?: null;
-                    $accent = collect(self::ACCENT_CLASS)->search(fn ($class) => in_array($class, $classes, true)) ?: null;
-                    $spacing = collect(self::SPACING_CLASS)->search(fn ($class) => in_array($class, $classes, true)) ?: null;
+        return array_map(fn ($level) => [
+            'tag' => "h{$level}",
+            'attrs' => [
+                'level' => $level,
+            ],
+            'getAttrs' => function ($DOMNode) {
+                $classes = explode(' ', $DOMNode->getAttribute('class') ?? '');
+                $size = collect(self::SIZE_CLASS)->search(fn ($class) => in_array($class, $classes, true)) ?: null;
+                $accent = collect(self::ACCENT_CLASS)->search(fn ($class) => in_array($class, $classes, true)) ?: null;
+                $spacing = collect(self::SPACING_CLASS)->search(fn ($class) => in_array($class, $classes, true)) ?: null;
 
-                    return [
-                        'id' => $DOMNode->getAttribute('id'),
-                        'size' => $size,
-                        'accent' => $accent,
-                        'spacing' => $spacing,
-                    ];
-                },
-            ];
-        }, $this->options['levels']);
+                return [
+                    'id' => $DOMNode->getAttribute('id'),
+                    'size' => $size,
+                    'accent' => $accent,
+                    'spacing' => $spacing,
+                ];
+            },
+        ], $this->options['levels']);
     }
 
+    #[\Override]
     public function renderHTML($node, $HTMLAttributes = [])
     {
         $hasLevel = in_array($node->attrs->level, $this->options['levels']);

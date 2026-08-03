@@ -51,6 +51,7 @@ class CalendarRequest extends FormRequest
     /**
      * Get custom messages for validator errors.
      */
+    #[\Override]
     public function messages(): array
     {
         return $this->imageValidationMessages();

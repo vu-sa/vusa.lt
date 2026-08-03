@@ -3,15 +3,15 @@
 namespace App\Console\Commands;
 
 use App\Models\Tenant;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 
+#[Description('Warm up the cache for public routes')]
+#[Signature('cache:warm')]
 class WarmCache extends Command
 {
-    protected $signature = 'cache:warm';
-
-    protected $description = 'Warm up the cache for public routes';
-
     public function handle()
     {
         $this->info('Starting cache warming...');

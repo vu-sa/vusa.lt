@@ -3,7 +3,7 @@
 use App\Models\Navigation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 /**
  * `navigation.parent_id` has no foreign key and no cascade, so deleting a parent on
@@ -19,7 +19,7 @@ function makeNavItem(int $parentId = 0, string $lang = 'lt'): Navigation
     ]);
 }
 
-test('deleting a parent takes its children with it', function () {
+test('deleting a parent takes its children with it', function (): void {
     $parent = makeNavItem();
     $child = makeNavItem($parent->id);
 
@@ -29,7 +29,7 @@ test('deleting a parent takes its children with it', function () {
     $this->assertSoftDeleted('navigation', ['id' => $child->id]);
 });
 
-test('the whole subtree goes down, not just the first level', function () {
+test('the whole subtree goes down, not just the first level', function (): void {
     $parent = makeNavItem();
     $child = makeNavItem($parent->id);
     $grandchild = makeNavItem($child->id);
@@ -39,7 +39,7 @@ test('the whole subtree goes down, not just the first level', function () {
     $this->assertSoftDeleted('navigation', ['id' => $grandchild->id]);
 });
 
-test('restoring a parent brings back the children that went down with it', function () {
+test('restoring a parent brings back the children that went down with it', function (): void {
     $parent = makeNavItem();
     $child = makeNavItem($parent->id);
     $grandchild = makeNavItem($child->id);
@@ -55,7 +55,7 @@ test('restoring a parent brings back the children that went down with it', funct
 // Documented trade-off: the branch moves as one unit in both directions. Telling a
 // separately-deleted child apart would need a per-deletion marker, since `deleted_at`
 // is second-precision and sibling deletions share a timestamp.
-test('restoring a parent brings the whole branch back, including an earlier separate deletion', function () {
+test('restoring a parent brings the whole branch back, including an earlier separate deletion', function (): void {
     $parent = makeNavItem();
     $deletedEarlier = makeNavItem($parent->id);
     $deletedWithParent = makeNavItem($parent->id);
@@ -68,7 +68,7 @@ test('restoring a parent brings the whole branch back, including an earlier sepa
     $this->assertNotSoftDeleted('navigation', ['id' => $deletedEarlier->id]);
 });
 
-test('no item is left unreachable by both the live list and the trash view', function () {
+test('no item is left unreachable by both the live list and the trash view', function (): void {
     $parent = makeNavItem();
     $child = makeNavItem($parent->id);
 
@@ -81,7 +81,7 @@ test('no item is left unreachable by both the live list and the trash view', fun
         ->and($trashed->contains($child->id))->toBeTrue();
 });
 
-test('permanently deleting a parent does not leave orphans behind', function () {
+test('permanently deleting a parent does not leave orphans behind', function (): void {
     $parent = makeNavItem();
     $child = makeNavItem($parent->id);
 
@@ -92,7 +92,7 @@ test('permanently deleting a parent does not leave orphans behind', function () 
     $this->assertDatabaseMissing('navigation', ['id' => $child->id]);
 });
 
-test('creating a sibling does not reuse a trashed order slot', function () {
+test('creating a sibling does not reuse a trashed order slot', function (): void {
     $first = makeNavItem();
     $first->delete();
 

@@ -5,16 +5,16 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->admin = makeTenantUserWithRole('Student Representative Coordinator', $this->tenant);
     $this->targetUser = makeUser($this->tenant);
 });
 
-describe('user update authorization with singleton authorizer', function () {
-    test('coordinator can view edit page for user in same tenant', function () {
+describe('user update authorization with singleton authorizer', function (): void {
+    test('coordinator can view edit page for user in same tenant', function (): void {
         asUser($this->admin)
             ->get(route('users.edit', $this->targetUser))
             ->assertStatus(200)
@@ -23,7 +23,7 @@ describe('user update authorization with singleton authorizer', function () {
             );
     });
 
-    test('coordinator can update user in same tenant', function () {
+    test('coordinator can update user in same tenant', function (): void {
         $response = asUser($this->admin)
             ->patch(route('users.update', $this->targetUser), [
                 'name' => 'Updated Name',
@@ -35,7 +35,7 @@ describe('user update authorization with singleton authorizer', function () {
         expect($this->targetUser->fresh()->name)->toBe('Updated Name');
     });
 
-    test('edit then update in same session succeeds with cached authorizer', function () {
+    test('edit then update in same session succeeds with cached authorizer', function (): void {
         $admin = asUser($this->admin);
 
         // First request — edit page (policy check caches permissions)
@@ -53,7 +53,7 @@ describe('user update authorization with singleton authorizer', function () {
         expect($this->targetUser->fresh()->name)->toBe('Updated Via Sequential Requests');
     });
 
-    test('coordinator cannot update user in different tenant', function () {
+    test('coordinator cannot update user in different tenant', function (): void {
         $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
         $otherUser = makeUser($otherTenant);
 
@@ -66,7 +66,7 @@ describe('user update authorization with singleton authorizer', function () {
             ->assertStatus(403);
     });
 
-    test('normal user cannot update any user', function () {
+    test('normal user cannot update any user', function (): void {
         $normalUser = makeUser($this->tenant);
 
         asUser($normalUser)
@@ -78,7 +78,7 @@ describe('user update authorization with singleton authorizer', function () {
             ->assertStatus(403);
     });
 
-    test('multiple edit-update cycles succeed with same session', function () {
+    test('multiple edit-update cycles succeed with same session', function (): void {
         $admin = asUser($this->admin);
         $secondUser = makeUser($this->tenant);
 
@@ -98,7 +98,7 @@ describe('user update authorization with singleton authorizer', function () {
             'current_duties' => [],
         ])->assertRedirect();
 
-        expect($this->targetUser->fresh()->name)->toBe('First Update');
-        expect($secondUser->fresh()->name)->toBe('Second Update');
+        expect($this->targetUser->fresh()->name)->toBe('First Update')
+            ->and($secondUser->fresh()->name)->toBe('Second Update');
     });
 });

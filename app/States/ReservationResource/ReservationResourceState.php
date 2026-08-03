@@ -18,6 +18,7 @@ abstract class ReservationResourceState extends State
     abstract public function handleCancel(): void;
 
     // transition events are handled in the listener
+    #[\Override]
     public static function config(): StateConfig
     {
         return parent::config()

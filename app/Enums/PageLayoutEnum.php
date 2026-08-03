@@ -2,23 +2,22 @@
 
 namespace App\Enums;
 
-use Spatie\Enum\Laravel\Enum;
+use App\Enums\Concerns\HasEnumHelpers;
 
-/**
- * @typescript
- *
- * @method static self DEFAULT()
- * @method static self WIDE()
- * @method static self FOCUSED()
- */
-final class PageLayoutEnum extends Enum
+enum PageLayoutEnum: string
 {
-    protected static function labels(): array
+    use HasEnumHelpers;
+
+    case DEFAULT = 'DEFAULT';
+    case WIDE = 'WIDE';
+    case FOCUSED = 'FOCUSED';
+
+    public function label(): string
     {
-        return [
-            'DEFAULT' => 'default',
-            'WIDE' => 'wide',
-            'FOCUSED' => 'focused',
-        ];
+        return match ($this) {
+            self::DEFAULT => 'default',
+            self::WIDE => 'wide',
+            self::FOCUSED => 'focused',
+        };
     }
 }

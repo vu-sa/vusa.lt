@@ -10,7 +10,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 /**
  * Build a reservation owned by $owner holding one $resource. Reservations are
@@ -36,7 +36,7 @@ function makeReservationResource(Resource $resource, User $owner): ReservationRe
         ->sole();
 }
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
 
@@ -51,13 +51,13 @@ beforeEach(function () {
     ]);
 });
 
-describe('auth: simple user', function () {
-    test('can view available resources for reservation', function () {
+describe('auth: simple user', function (): void {
+    test('can view available resources for reservation', function (): void {
         asUser($this->user)->get(route('resources.index'))
             ->assertRedirect(route('search.index', ['tab' => 'resources']));
     });
 
-    test('can create reservation for available resource', function () {
+    test('can create reservation for available resource', function (): void {
         asUser($this->user)->post(route('reservations.store'), [
             'name' => 'Team Meeting',
             'description' => 'Weekly team meeting',
@@ -77,7 +77,7 @@ describe('auth: simple user', function () {
         expect($reservation->users->contains($this->user))->toBeTrue();
     });
 
-    test('cannot create overlapping reservations', function () {
+    test('cannot create overlapping reservations', function (): void {
         // Create first reservation
         $existingReservation = Reservation::factory()->create([
             'start_time' => now()->addDays(1),
@@ -107,7 +107,7 @@ describe('auth: simple user', function () {
      * exist. Every mutation goes through the reservationResources pivot, which
      * authorizes against the parent reservation.
      */
-    test('can update resources on own reservations', function () {
+    test('can update resources on own reservations', function (): void {
         $reservationResource = makeReservationResource($this->resource, $this->user);
 
         asUser($this->user)->put(route('reservationResources.update', $reservationResource), [
@@ -120,7 +120,7 @@ describe('auth: simple user', function () {
         expect($reservationResource->fresh()->quantity)->toBe(2);
     });
 
-    test('cannot update resources on other users reservations', function () {
+    test('cannot update resources on other users reservations', function (): void {
         $otherUser = User::factory()->create();
         $reservationResource = makeReservationResource($this->resource, $otherUser);
 
@@ -134,7 +134,7 @@ describe('auth: simple user', function () {
         expect($reservationResource->fresh()->quantity)->not->toBe(99);
     });
 
-    test('can delete own reservations', function () {
+    test('can delete own reservations', function (): void {
         $reservation = Reservation::factory()->create();
         $reservation->users()->attach($this->user->id);
 
@@ -145,8 +145,8 @@ describe('auth: simple user', function () {
     });
 });
 
-describe('auth: resource manager', function () {
-    test('can create new resources', function () {
+describe('auth: resource manager', function (): void {
+    test('can create new resources', function (): void {
         $resourceCount = Resource::count();
 
         asUser($this->resourceManager)->post(route('resources.store'), [
@@ -174,13 +174,13 @@ describe('auth: resource manager', function () {
             ->where('location', 'Building A, Floor 2')
             ->first();
 
-        expect($createdResource)->not->toBeNull();
-        expect($createdResource->getTranslation('name', 'lt'))->toBe('Conference Room A');
-        expect($createdResource->capacity)->toBe(20);
-        expect($createdResource->tenant_id)->toBe($this->tenant->id);
+        expect($createdResource)->not->toBeNull()
+            ->and($createdResource->getTranslation('name', 'lt'))->toBe('Conference Room A')
+            ->and($createdResource->capacity)->toBe(20)
+            ->and($createdResource->tenant_id)->toBe($this->tenant->id);
     });
 
-    test('can update resources', function () {
+    test('can update resources', function (): void {
         $originalName = $this->resource->getTranslation('name', 'lt');
 
         asUser($this->resourceManager)->put(route('resources.update', $this->resource), [
@@ -201,13 +201,12 @@ describe('auth: resource manager', function () {
         ])->assertRedirect();
 
         $this->resource->refresh();
-        expect($this->resource->getTranslation('name', 'lt'))->toBe('Updated Resource Name');
-        expect($this->resource->getTranslation('name', 'lt'))->not->toBe($originalName);
-        expect($this->resource->capacity)->toBe(30);
-        expect((bool) $this->resource->is_reservable)->toBeFalse(); // Cast to boolean for comparison
+        expect($this->resource->getTranslation('name', 'lt'))->toBe('Updated Resource Name')->not->toBe($originalName)
+            ->and($this->resource->capacity)->toBe(30)
+            ->and($this->resource->is_reservable)->toBeFalsy(); // Cast to boolean for comparison
     });
 
-    test('can view all reservations', function () {
+    test('can view all reservations', function (): void {
         // Create reservations from different users
         $reservations = Reservation::factory()->count(3)->create();
         foreach ($reservations as $reservation) {
@@ -224,7 +223,7 @@ describe('auth: resource manager', function () {
             );
     });
 
-    test('can manage all reservations in tenant', function () {
+    test('can manage all reservations in tenant', function (): void {
         $otherUser = User::factory()->create();
         // For this test, let's create the user within the same tenant structure
         $duty = Duty::factory()->create([
@@ -246,7 +245,7 @@ describe('auth: resource manager', function () {
         expect($reservationResource->fresh()->quantity)->toBe(3);
     })->todo('Resource managers should be able to manage reservations for resources in their tenant');
 
-    test('cannot manage reservations from other tenants', function () {
+    test('cannot manage reservations from other tenants', function (): void {
         // Create a user from completely different tenant structure
         $otherTenant = Tenant::factory()->create();
         $otherInstitution = Institution::factory()->create(['tenant_id' => $otherTenant->id]);
@@ -270,8 +269,8 @@ describe('auth: resource manager', function () {
     })->todo('Cross-tenant authorization for reservation resource updates');
 });
 
-describe('resource availability logic', function () {
-    test('resource shows as unavailable during existing reservations', function () {
+describe('resource availability logic', function (): void {
+    test('resource shows as unavailable during existing reservations', function (): void {
         $reservation = Reservation::factory()->create([
             'start_time' => now()->addDays(1),
             'end_time' => now()->addDays(1)->addHours(2),
@@ -290,7 +289,7 @@ describe('resource availability logic', function () {
         $response->assertRedirect(route('search.index', ['tab' => 'resources']));
     });
 
-    test('can check resource availability for specific time period', function () {
+    test('can check resource availability for specific time period', function (): void {
         // TODO: Resource show method is not implemented yet
         // This test should be implemented when availability checking is added
         $this->markTestSkipped('Resource availability checking not yet implemented');

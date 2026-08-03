@@ -10,6 +10,7 @@ use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasContentRelationships;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTranslations;
+use App\Models\Traits\LogsModelActivity;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -20,9 +21,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Models\Activity;
-use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * @property int $id
@@ -35,7 +33,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
- * @property-read Collection<int, Activity> $activities
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Collection<int, Type> $descendants
  * @property-read Collection<int, Duty> $duties
@@ -71,12 +69,14 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Type extends Model implements GuardsForceDelete, SharepointFileableContract
 {
-    use GuardsForceDeleteWhenReferenced, HasContentRelationships, HasFactory, HasSharepointFiles, HasTranslations, LogsActivity, SoftDeletes;
+    use GuardsForceDeleteWhenReferenced, HasContentRelationships, HasFactory, HasSharepointFiles, HasTranslations, LogsModelActivity, SoftDeletes;
 
+    #[\Override]
     protected $guarded = [];
 
     protected $translatable = ['title', 'description'];
 
+    #[\Override]
     protected function casts(): array
     {
         return [
@@ -86,14 +86,10 @@ class Type extends Model implements GuardsForceDelete, SharepointFileableContrac
         ];
     }
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
-    }
-
+    #[\Override]
     protected static function booted()
     {
-        static::saving(function (Type $type) {
+        static::saving(function (Type $type): void {
             // Dispatch event when title is about to change - SharePoint must succeed first
             if ($type->isDirty('title')) {
                 FileableNameUpdated::dispatch($type);

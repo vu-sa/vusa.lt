@@ -59,7 +59,7 @@ class ResourceController extends AdminController
             $resource->addMedia($image['file'])->toMediaCollection('images');
         }
 
-        return redirect()->route('resources.index')->with('success', trans_choice('messages.created', 1, ['model' => trans_choice('entities.resource.model', 1)]));
+        return redirect()->route('search.index', ['tab' => 'resources'])->with('success', trans_choice('messages.created', 1, ['model' => trans_choice('entities.resource.model', 1)]));
     }
 
     /**
@@ -127,7 +127,7 @@ class ResourceController extends AdminController
 
         $resource->delete();
 
-        return redirect()->route('resources.index')
+        return redirect()->route('search.index', ['tab' => 'resources'])
             ->with('info', trans_choice('messages.deleted', 1, ['model' => trans_choice('entities.resource.model', 1)]));
     }
 

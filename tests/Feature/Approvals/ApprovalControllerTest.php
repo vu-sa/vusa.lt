@@ -9,9 +9,9 @@ use App\Models\ResourceCategory;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
 
@@ -42,8 +42,8 @@ beforeEach(function () {
         ->first();
 });
 
-describe('ApprovalController@store', function () {
-    test('resource manager can approve a reservation resource', function () {
+describe('ApprovalController@store', function (): void {
+    test('resource manager can approve a reservation resource', function (): void {
         asUser($this->resourceManager)
             ->post(route('approvals.store'), [
                 'approvable_type' => 'reservation_resource',
@@ -61,7 +61,7 @@ describe('ApprovalController@store', function () {
         ]);
     });
 
-    test('resource manager can reject a reservation resource', function () {
+    test('resource manager can reject a reservation resource', function (): void {
         asUser($this->resourceManager)
             ->post(route('approvals.store'), [
                 'approvable_type' => 'reservation_resource',
@@ -78,7 +78,7 @@ describe('ApprovalController@store', function () {
         ]);
     });
 
-    test('regular user cannot approve a reservation resource', function () {
+    test('regular user cannot approve a reservation resource', function (): void {
         asUser($this->user)
             ->post(route('approvals.store'), [
                 'approvable_type' => 'reservation_resource',
@@ -89,7 +89,7 @@ describe('ApprovalController@store', function () {
             ->assertSessionHas('error');
     });
 
-    test('validation fails for invalid approvable type', function () {
+    test('validation fails for invalid approvable type', function (): void {
         asUser($this->resourceManager)
             ->post(route('approvals.store'), [
                 'approvable_type' => 'invalid_type',
@@ -100,7 +100,7 @@ describe('ApprovalController@store', function () {
             ->assertSessionHasErrors('approvable_type');
     });
 
-    test('validation fails for invalid decision', function () {
+    test('validation fails for invalid decision', function (): void {
         asUser($this->resourceManager)
             ->post(route('approvals.store'), [
                 'approvable_type' => 'reservation_resource',
@@ -112,8 +112,8 @@ describe('ApprovalController@store', function () {
     });
 });
 
-describe('ApprovalController@bulkStore', function () {
-    test('resource manager can bulk approve multiple reservation resources', function () {
+describe('ApprovalController@bulkStore', function (): void {
+    test('resource manager can bulk approve multiple reservation resources', function (): void {
         // Create a second reservation resource
         $reservation2 = Reservation::factory()->create([
             'start_time' => now()->addDays(2),
@@ -147,7 +147,7 @@ describe('ApprovalController@bulkStore', function () {
         expect(Approval::where('decision', ApprovalDecision::Approved)->count())->toBe(2);
     });
 
-    test('bulk approve skips resources user cannot approve', function () {
+    test('bulk approve skips resources user cannot approve', function (): void {
         // Create a resource in a different tenant
         $otherTenant = Tenant::factory()->create();
         $otherResource = Resource::factory()->create([

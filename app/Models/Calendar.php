@@ -3,8 +3,13 @@
 namespace App\Models;
 
 use App\Models\Traits\HasTranslations;
+use App\Models\Traits\LogsModelActivity;
 use App\Services\IcalendarService;
 use Datetime;
+use Illuminate\Database\Eloquent\Attributes\Appends;
+use Illuminate\Database\Eloquent\Attributes\Guarded;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -42,6 +47,7 @@ use Spatie\SchemaOrg\Place;
  * @property Carbon $updated_at
  * @property int|null $registration_form_id
  * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Category|null $category
  * @property-read string|null $main_image_url
  * @property-read array $translatable_columns_from
@@ -64,9 +70,12 @@ use Spatie\SchemaOrg\Place;
  *
  * @mixin \Eloquent
  */
+#[Appends(['main_image_url'])]
+#[Guarded(['id', 'created_at', 'updated_at'])]
+#[Table(name: 'calendar')]
 class Calendar extends Model implements HasMedia
 {
-    use HasFactory, HasTranslations, InteractsWithMedia, Searchable, SoftDeletes;
+    use HasFactory, HasTranslations, InteractsWithMedia, LogsModelActivity, Searchable, SoftDeletes;
 
     /**
      * Widest date range one calendar query may span — shared by
@@ -76,10 +85,7 @@ class Calendar extends Model implements HasMedia
      */
     public const MAX_RANGE_DAYS = 455;
 
-    protected $table = 'calendar';
-
-    protected $guarded = ['id', 'created_at', 'updated_at'];
-
+    #[\Override]
     protected function casts(): array
     {
         return [
@@ -111,8 +117,6 @@ class Calendar extends Model implements HasMedia
         'cto_url',
     ];
 
-    protected $appends = ['main_image_url'];
-
     /**
      * Get the main image URL from Spatie Media collection with fallback to legacy URL field.
      */
@@ -135,16 +139,17 @@ class Calendar extends Model implements HasMedia
         return $firstMedia?->getUrl();
     }
 
+    #[\Override]
     protected static function booted()
     {
-        static::saved(function ($calendar) {
+        static::saved(function ($calendar): void {
             // Flush calendar cache for all locales since calendar events can be international
             Cache::tags(['calendar', 'locale_lt', 'locale_en'])->flush();
             // Also clear the specific iCal cache keys used by IcalendarService
             IcalendarService::clearCache();
         });
 
-        static::deleted(function ($calendar) {
+        static::deleted(function ($calendar): void {
             // Flush calendar cache for all locales since calendar events can be international
             Cache::tags(['calendar', 'locale_lt', 'locale_en'])->flush();
             // Also clear the specific iCal cache keys used by IcalendarService

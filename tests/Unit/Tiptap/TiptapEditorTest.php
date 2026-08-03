@@ -2,8 +2,8 @@
 
 use App\Tiptap\TiptapEditor;
 
-describe('TiptapEditor', function () {
-    it('renders simple paragraph correctly', function () {
+describe('TiptapEditor', function (): void {
+    it('renders simple paragraph correctly', function (): void {
         $content = [
             'type' => 'doc',
             'content' => [
@@ -17,7 +17,7 @@ describe('TiptapEditor', function () {
         expect($html)->toBe('<p>Hello World</p>');
     });
 
-    it('renders headings without doubled closing tags', function () {
+    it('renders headings without doubled closing tags', function (): void {
         $content = [
             'type' => 'doc',
             'content' => [
@@ -31,14 +31,14 @@ describe('TiptapEditor', function () {
 
         // Ensure no doubled closing tags like </h2></h2> or </h3></h3>
         expect($html)->not->toContain('</h2></h2>');
-        expect($html)->not->toContain('</h3></h3>');
-        expect($html)->toContain('id="test-h2"');
-        expect($html)->toContain('id="test-h3"');
-        expect($html)->toContain('>Test H2</h2>');
-        expect($html)->toContain('>Test H3</h3>');
+        expect($html)->not->toContain('</h3></h3>')
+            ->toContain('id="test-h2"')
+            ->toContain('id="test-h3"')
+            ->toContain('>Test H2</h2>')
+            ->toContain('>Test H3</h3>');
     });
 
-    it('renders list items without doubled closing tags', function () {
+    it('renders list items without doubled closing tags', function (): void {
         $content = [
             'type' => 'doc',
             'content' => [
@@ -57,12 +57,12 @@ describe('TiptapEditor', function () {
 
         // Ensure no doubled closing tags
         expect($html)->not->toContain('</li></li>');
-        expect($html)->not->toContain('</p></p>');
-        expect($html)->toContain('<li><p>Item 1</p></li>');
-        expect($html)->toContain('<li><p>Item 2</p></li>');
+        expect($html)->not->toContain('</p></p>')
+            ->toContain('<li><p>Item 1</p></li>')
+            ->toContain('<li><p>Item 2</p></li>');
     });
 
-    it('renders images with correct attributes', function () {
+    it('renders images with correct attributes', function (): void {
         $content = [
             'type' => 'doc',
             'content' => [
@@ -73,13 +73,13 @@ describe('TiptapEditor', function () {
         $editor = new TiptapEditor;
         $html = $editor->setContent($content)->getHTML();
 
-        expect($html)->toContain('src="/images/test.jpg"');
-        expect($html)->toContain('alt="Test image"');
-        expect($html)->toContain('class="w-full rounded-md"');
-        expect($html)->toContain('loading="lazy"');
+        expect($html)->toContain('src="/images/test.jpg"')
+            ->toContain('alt="Test image"')
+            ->toContain('class="w-full rounded-md"')
+            ->toContain('loading="lazy"');
     });
 
-    it('renders tables with Tailwind classes', function () {
+    it('renders tables with Tailwind classes', function (): void {
         $content = [
             'type' => 'doc',
             'content' => [
@@ -106,13 +106,13 @@ describe('TiptapEditor', function () {
         $editor = new TiptapEditor;
         $html = $editor->setContent($content)->getHTML();
 
-        expect($html)->toContain('<table');
-        expect($html)->toContain('border-collapse');
-        expect($html)->toContain('<th');
-        expect($html)->toContain('<td');
+        expect($html)->toContain('<table')
+            ->toContain('border-collapse')
+            ->toContain('<th')
+            ->toContain('<td');
     });
 
-    it('renders links with styling', function () {
+    it('renders links with styling', function (): void {
         $content = [
             'type' => 'doc',
             'content' => [
@@ -132,12 +132,12 @@ describe('TiptapEditor', function () {
         $editor = new TiptapEditor;
         $html = $editor->setContent($content)->getHTML();
 
-        expect($html)->toContain('href="https://example.com"');
-        expect($html)->toContain('text-vusa-red');
-        expect($html)->toContain('>Click here</a>');
+        expect($html)->toContain('href="https://example.com"')
+            ->toContain('text-vusa-red')
+            ->toContain('>Click here</a>');
     });
 
-    it('renders text marks correctly', function () {
+    it('renders text marks correctly', function (): void {
         $content = [
             'type' => 'doc',
             'content' => [
@@ -157,14 +157,14 @@ describe('TiptapEditor', function () {
         $editor = new TiptapEditor;
         $html = $editor->setContent($content)->getHTML();
 
-        expect($html)->toContain('<strong>bold</strong>');
-        expect($html)->toContain('<em>italic</em>');
-        expect($html)->toContain('<u>underline</u>');
-        expect($html)->toContain('<sub>sub</sub>');
-        expect($html)->toContain('<sup>sup</sup>');
+        expect($html)->toContain('<strong>bold</strong>')
+            ->toContain('<em>italic</em>')
+            ->toContain('<u>underline</u>')
+            ->toContain('<sub>sub</sub>')
+            ->toContain('<sup>sup</sup>');
     });
 
-    it('handles empty content gracefully', function () {
+    it('handles empty content gracefully', function (): void {
         $content = [
             'type' => 'doc',
             'content' => [],
@@ -173,12 +173,12 @@ describe('TiptapEditor', function () {
         $editor = new TiptapEditor;
         $html = $editor->setContent($content)->getHTML();
 
-        expect($html)->toBe('');
+        expect($html)->toBeEmpty();
     });
 });
 
-describe('Youtube node', function () {
-    it('renders YouTube embed with youtube-nocookie domain', function () {
+describe('Youtube node', function (): void {
+    it('renders YouTube embed with youtube-nocookie domain', function (): void {
         $content = [
             'type' => 'doc',
             'content' => [
@@ -189,12 +189,12 @@ describe('Youtube node', function () {
         $editor = new TiptapEditor;
         $html = $editor->setContent($content)->getHTML();
 
-        expect($html)->toContain('youtube-nocookie.com/embed/dQw4w9WgXcQ');
-        expect($html)->toContain('allowfullscreen');
-        expect($html)->toContain('class="aspect-video');
+        expect($html)->toContain('youtube-nocookie.com/embed/dQw4w9WgXcQ')
+            ->toContain('allowfullscreen')
+            ->toContain('class="aspect-video');
     });
 
-    it('appends start time query param when present', function () {
+    it('appends start time query param when present', function (): void {
         $content = [
             'type' => 'doc',
             'content' => [
@@ -208,7 +208,7 @@ describe('Youtube node', function () {
         expect($html)->toContain('youtube-nocookie.com/embed/dQw4w9WgXcQ?start=42');
     });
 
-    it('omits start time query param when zero or missing', function () {
+    it('omits start time query param when zero or missing', function (): void {
         $content = [
             'type' => 'doc',
             'content' => [
@@ -219,11 +219,10 @@ describe('Youtube node', function () {
         $editor = new TiptapEditor;
         $html = $editor->setContent($content)->getHTML();
 
-        expect($html)->toContain('youtube-nocookie.com/embed/dQw4w9WgXcQ');
-        expect($html)->not->toContain('start=');
+        expect($html)->toContain('youtube-nocookie.com/embed/dQw4w9WgXcQ')->not->toContain('start=');
     });
 
-    it('extracts video ID from youtu.be short URL', function () {
+    it('extracts video ID from youtu.be short URL', function (): void {
         $content = [
             'type' => 'doc',
             'content' => [
@@ -237,7 +236,7 @@ describe('Youtube node', function () {
         expect($html)->toContain('embed/abc123XYZ');
     });
 
-    it('extracts video ID from embed URL', function () {
+    it('extracts video ID from embed URL', function (): void {
         $content = [
             'type' => 'doc',
             'content' => [
@@ -251,7 +250,7 @@ describe('Youtube node', function () {
         expect($html)->toContain('embed/testVideoId');
     });
 
-    it('handles invalid YouTube URL gracefully', function () {
+    it('handles invalid YouTube URL gracefully', function (): void {
         $content = [
             'type' => 'doc',
             'content' => [
@@ -265,7 +264,7 @@ describe('Youtube node', function () {
         expect($html)->toContain('<div class="youtube-error"></div>');
     });
 
-    it('handles missing src attribute', function () {
+    it('handles missing src attribute', function (): void {
         $content = [
             'type' => 'doc',
             'content' => [
@@ -280,8 +279,8 @@ describe('Youtube node', function () {
     });
 });
 
-describe('Video node', function () {
-    it('renders HTML5 video with controls', function () {
+describe('Video node', function (): void {
+    it('renders HTML5 video with controls', function (): void {
         $content = [
             'type' => 'doc',
             'content' => [
@@ -292,13 +291,13 @@ describe('Video node', function () {
         $editor = new TiptapEditor;
         $html = $editor->setContent($content)->getHTML();
 
-        expect($html)->toContain('<video');
-        expect($html)->toContain('src="/videos/test.mp4"');
-        expect($html)->toContain('controls');
-        expect($html)->toContain('class="aspect-video');
+        expect($html)->toContain('<video')
+            ->toContain('src="/videos/test.mp4"')
+            ->toContain('controls')
+            ->toContain('class="aspect-video');
     });
 
-    it('includes optional width and height attributes', function () {
+    it('includes optional width and height attributes', function (): void {
         $content = [
             'type' => 'doc',
             'content' => [
@@ -309,11 +308,11 @@ describe('Video node', function () {
         $editor = new TiptapEditor;
         $html = $editor->setContent($content)->getHTML();
 
-        expect($html)->toContain('width="640"');
-        expect($html)->toContain('height="480"');
+        expect($html)->toContain('width="640"')
+            ->toContain('height="480"');
     });
 
-    it('includes poster attribute when provided', function () {
+    it('includes poster attribute when provided', function (): void {
         $content = [
             'type' => 'doc',
             'content' => [
@@ -327,7 +326,7 @@ describe('Video node', function () {
         expect($html)->toContain('poster="/images/poster.jpg"');
     });
 
-    it('handles missing src attribute', function () {
+    it('handles missing src attribute', function (): void {
         $content = [
             'type' => 'doc',
             'content' => [
@@ -342,8 +341,8 @@ describe('Video node', function () {
     });
 });
 
-describe('CustomHeading', function () {
-    it('only renders configured heading levels', function () {
+describe('CustomHeading', function (): void {
+    it('only renders configured heading levels', function (): void {
         $editor = new TiptapEditor;
 
         // Level 2 should work
@@ -354,8 +353,8 @@ describe('CustomHeading', function () {
             ],
         ];
         $html = $editor->setContent($h2Content)->getHTML();
-        expect($html)->toContain('<h2');
-        expect($html)->toContain('id="h2"');
+        expect($html)->toContain('<h2')
+            ->toContain('id="h2"');
 
         // Level 3 should work
         $h3Content = [
@@ -365,11 +364,11 @@ describe('CustomHeading', function () {
             ],
         ];
         $html = $editor->setContent($h3Content)->getHTML();
-        expect($html)->toContain('<h3');
-        expect($html)->toContain('id="h3"');
+        expect($html)->toContain('<h3')
+            ->toContain('id="h3"');
     });
 
-    it('generates ID from heading text', function () {
+    it('generates ID from heading text', function (): void {
         $editor = new TiptapEditor;
         $content = [
             'type' => 'doc',
@@ -380,11 +379,11 @@ describe('CustomHeading', function () {
 
         $html = $editor->setContent($content)->getHTML();
 
-        expect($html)->toContain('id="my-test-heading"');
-        expect($html)->toContain('<h2 id="my-test-heading">My Test Heading</h2>');
+        expect($html)->toContain('id="my-test-heading"')
+            ->toContain('<h2 id="my-test-heading">My Test Heading</h2>');
     });
 
-    it('generates ID from Lithuanian text', function () {
+    it('generates ID from Lithuanian text', function (): void {
         $editor = new TiptapEditor;
         $content = [
             'type' => 'doc',
@@ -398,7 +397,7 @@ describe('CustomHeading', function () {
         expect($html)->toContain('id="ivadas-i-programavima"');
     });
 
-    it('handles special characters in heading text', function () {
+    it('handles special characters in heading text', function (): void {
         $editor = new TiptapEditor;
         $content = [
             'type' => 'doc',
@@ -412,7 +411,7 @@ describe('CustomHeading', function () {
         expect($html)->toContain('id="what-is-this-important"');
     });
 
-    it('handles headings with multiple text nodes', function () {
+    it('handles headings with multiple text nodes', function (): void {
         $editor = new TiptapEditor;
         $content = [
             'type' => 'doc',
@@ -434,7 +433,7 @@ describe('CustomHeading', function () {
         expect($html)->toContain('id="bold-and-italic"');
     });
 
-    it('handles empty heading text', function () {
+    it('handles empty heading text', function (): void {
         $editor = new TiptapEditor;
         $content = [
             'type' => 'doc',
@@ -450,7 +449,7 @@ describe('CustomHeading', function () {
         expect($html)->toContain('</h2>');
     });
 
-    it('renders h4 (levels 2-4)', function () {
+    it('renders h4 (levels 2-4)', function (): void {
         $editor = new TiptapEditor;
         $content = [
             'type' => 'doc',
@@ -464,7 +463,7 @@ describe('CustomHeading', function () {
         expect($html)->toContain('<h4 id="sub-point"');
     });
 
-    it('renders size and accent as classes, never inline style', function () {
+    it('renders size and accent as classes, never inline style', function (): void {
         $editor = new TiptapEditor;
         $content = [
             'type' => 'doc',
@@ -475,12 +474,11 @@ describe('CustomHeading', function () {
 
         $html = $editor->setContent($content)->getHTML();
 
-        expect($html)->toContain('rc-h-md');
-        expect($html)->toContain('rc-h-accent-yellow');
-        expect($html)->not->toContain('style=');
+        expect($html)->toContain('rc-h-md')
+            ->toContain('rc-h-accent-yellow')->not->toContain('style=');
     });
 
-    it('renders spacing as a class and leaves default unclassed', function () {
+    it('renders spacing as a class and leaves default unclassed', function (): void {
         $editor = new TiptapEditor;
 
         $tight = ['type' => 'doc', 'content' => [
@@ -500,7 +498,7 @@ describe('CustomHeading', function () {
         expect($editor->setContent($default)->getHTML())->not->toContain('rc-h-spacing');
     });
 
-    it('generates different IDs for both h2 and h3', function () {
+    it('generates different IDs for both h2 and h3', function (): void {
         $editor = new TiptapEditor;
         $content = [
             'type' => 'doc',
@@ -512,21 +510,20 @@ describe('CustomHeading', function () {
 
         $html = $editor->setContent($content)->getHTML();
 
-        expect($html)->toContain('id="section-one"');
-        expect($html)->toContain('id="subsection-one"');
+        expect($html)->toContain('id="section-one"')
+            ->toContain('id="subsection-one"');
     });
 });
 
-describe('TextAlign', function () {
-    it('renders center/end as a class, never inline style, and leaves start unclassed', function () {
+describe('TextAlign', function (): void {
+    it('renders center/end as a class, never inline style, and leaves start unclassed', function (): void {
         $editor = new TiptapEditor;
 
         $centered = ['type' => 'doc', 'content' => [
             ['type' => 'paragraph', 'attrs' => ['align' => 'center'], 'content' => [['type' => 'text', 'text' => 'Text']]],
         ]];
         $html = $editor->setContent($centered)->getHTML();
-        expect($html)->toContain('rc-align-center');
-        expect($html)->not->toContain('style=');
+        expect($html)->toContain('rc-align-center')->not->toContain('style=');
 
         $start = ['type' => 'doc', 'content' => [
             ['type' => 'paragraph', 'attrs' => ['align' => 'start'], 'content' => [['type' => 'text', 'text' => 'Text']]],
@@ -535,7 +532,7 @@ describe('TextAlign', function () {
         expect($html)->not->toContain('rc-align');
     });
 
-    it('applies to headings too', function () {
+    it('applies to headings too', function (): void {
         $editor = new TiptapEditor;
         $content = ['type' => 'doc', 'content' => [
             ['type' => 'heading', 'attrs' => ['level' => 2, 'align' => 'end'], 'content' => [['type' => 'text', 'text' => 'Title']]],
@@ -547,8 +544,8 @@ describe('TextAlign', function () {
     });
 });
 
-describe('RCTag', function () {
-    it('renders the dot-pill span with variant + color classes', function () {
+describe('RCTag', function (): void {
+    it('renders the dot-pill span with variant + color classes', function (): void {
         $editor = new TiptapEditor;
         $content = [
             'type' => 'doc',
@@ -567,7 +564,7 @@ describe('RCTag', function () {
         expect($html)->toContain('<span class="rc-tag rc-tag-filled rc-tag-yellow">Maskotė</span>');
     });
 
-    it('falls back to filled/yellow for an unrecognized variant or color', function () {
+    it('falls back to filled/yellow for an unrecognized variant or color', function (): void {
         $editor = new TiptapEditor;
         $content = [
             'type' => 'doc',
@@ -583,13 +580,13 @@ describe('RCTag', function () {
 
         $html = $editor->setContent($content)->getHTML();
 
-        expect($html)->toContain('rc-tag-filled');
-        expect($html)->toContain('rc-tag-yellow');
+        expect($html)->toContain('rc-tag-filled')
+            ->toContain('rc-tag-yellow');
     });
 });
 
-describe('TipTapListItem', function () {
-    it('renders without wrapper duplication', function () {
+describe('TipTapListItem', function (): void {
+    it('renders without wrapper duplication', function (): void {
         $content = [
             'type' => 'doc',
             'content' => [

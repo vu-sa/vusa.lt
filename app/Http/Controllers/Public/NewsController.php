@@ -97,13 +97,11 @@ class NewsController extends PublicController
             'resolvedParts' => (object) $this->resolveContentParts($news->content),
             'article' => [
                 ...$news->only('id', 'title', 'short', 'lang', 'other_lang_id', 'permalink', 'publish_time', 'category', 'content', 'image_author', 'important', 'main_points', 'read_more', 'layout', 'show_breadcrumbs', 'highlights'),
-                'tags' => $news->tags->map(function ($tag) {
-                    return [
-                        'id' => $tag->id,
-                        'name' => $tag->name,
-                        'alias' => $tag->alias,
-                    ];
-                }),
+                'tags' => $news->tags->map(fn ($tag) => [
+                    'id' => $tag->id,
+                    'name' => $tag->name,
+                    'alias' => $tag->alias,
+                ]),
                 'content' => $news->content,
                 /* 'content' => [ */
                 /*    ...$news->content->toArray(), */
@@ -140,11 +138,11 @@ class NewsController extends PublicController
 
         // Filter by tag if provided
         if (request('tag')) {
-            $query->whereHas('tags', function ($q) {
+            $query->whereHas('tags', function ($q): void {
                 $tagParam = request('tag');
                 // Try to find by alias first, fallback to ID if it's numeric
                 $q->where('alias', $tagParam)
-                    ->orWhere(function ($query) use ($tagParam) {
+                    ->orWhere(function ($query) use ($tagParam): void {
                         if (is_numeric($tagParam)) {
                             $query->where('id', $tagParam);
                         }
@@ -162,7 +160,7 @@ class NewsController extends PublicController
             $tagParam = request('tag');
             // Try to find by alias first, fallback to ID if it's numeric
             $currentTag = Tag::where('alias', $tagParam)
-                ->orWhere(function ($query) use ($tagParam) {
+                ->orWhere(function ($query) use ($tagParam): void {
                     if (is_numeric($tagParam)) {
                         $query->where('id', $tagParam);
                     }

@@ -3,6 +3,7 @@
 namespace App\Models\Pivots;
 
 use App\Models\Relationship;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
@@ -29,6 +30,7 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
+#[Table(name: 'relationshipables', key: 'id')]
 class Relationshipable extends MorphPivot
 {
     // Scope constants for relationship resolution
@@ -38,19 +40,19 @@ class Relationshipable extends MorphPivot
 
     public const SCOPE_CROSS_TENANT = 'cross-tenant';
 
-    protected $table = 'relationshipables';
-
-    protected $primaryKey = 'id';
-
+    #[\Override]
     public $incrementing = true;
 
+    #[\Override]
     protected $guarded = [];
 
+    #[\Override]
     protected $attributes = [
         'scope' => self::SCOPE_WITHIN_TENANT,
         'bidirectional' => false,
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

@@ -3,21 +3,15 @@
 namespace App\Console\Commands;
 
 use App\Services\Typesense\TypesenseCollectionConfig;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Typesense\Client;
 
+#[Description('Generate a search-only API key for admin collections (used for scoped key generation)')]
+#[Signature('typesense:generate-admin-search-key')]
 class GenerateTypesenseAdminSearchKey extends Command
 {
-    /**
-     * The name and signature of the console command.
-     */
-    protected $signature = 'typesense:generate-admin-search-key';
-
-    /**
-     * The console command description.
-     */
-    protected $description = 'Generate a search-only API key for admin collections (used for scoped key generation)';
-
     /**
      * Execute the console command.
      */

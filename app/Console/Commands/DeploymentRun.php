@@ -2,17 +2,17 @@
 
 namespace App\Console\Commands;
 
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 
+#[Description('Run full deployment process')]
+#[Signature('deployment:run 
+                           {--dry-run : Show deployment steps without executing}
+                           {--from= : Start from specific step}')]
 class DeploymentRun extends Command
 {
-    protected $signature = 'deployment:run 
-                           {--dry-run : Show deployment steps without executing}
-                           {--from= : Start from specific step}';
-
-    protected $description = 'Run full deployment process';
-
     private array $deploymentSteps = [
         'backup' => [
             'name' => 'Create database backup',

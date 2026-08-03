@@ -9,11 +9,11 @@ use Spatie\LaravelSettings\Settings;
 
 class FormSettings extends Settings
 {
-    public ?string $member_registration_form_id;
+    public ?string $member_registration_form_id = null;
 
-    public ?string $member_registration_notification_recipient_role_id;
+    public ?string $member_registration_notification_recipient_role_id = null;
 
-    public ?string $student_rep_registration_form_id;
+    public ?string $student_rep_registration_form_id = null;
 
     /**
      * Institution type IDs that should show student representative registration.
@@ -21,7 +21,7 @@ class FormSettings extends Settings
      *
      * @var array<int>
      */
-    public ?array $student_rep_institution_type_ids;
+    public ?array $student_rep_institution_type_ids = null;
 
     public static function group(): string
     {

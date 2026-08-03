@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,18 +32,16 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
+#[Table(name: 'institution_notification_mutes', keyType: 'string')]
+#[WithoutIncrementing]
 class InstitutionNotificationMute extends Pivot
 {
     use HasFactory, HasUlids;
 
-    protected $table = 'institution_notification_mutes';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
-
+    #[\Override]
     protected $guarded = [];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

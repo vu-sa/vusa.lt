@@ -54,12 +54,12 @@ class RelationshipService
             $targetType = Type::find($relationshipable->related_model_id);
 
             if ($sourceType) {
-                $sourceType->institutions()->pluck('id')->each(function ($id) {
+                $sourceType->institutions()->pluck('id')->each(function ($id): void {
                     self::clearRelatedInstitutionsCache($id);
                 });
             }
             if ($targetType) {
-                $targetType->institutions()->pluck('id')->each(function ($id) {
+                $targetType->institutions()->pluck('id')->each(function ($id): void {
                     self::clearRelatedInstitutionsCache($id);
                 });
             }
@@ -486,7 +486,7 @@ class RelationshipService
 
         // Merge back the metadata
         $metaMap = $allRelated->keyBy('id');
-        $loadedInstitutions->each(function ($inst) use ($metaMap) {
+        $loadedInstitutions->each(function ($inst) use ($metaMap): void {
             $meta = $metaMap->get($inst->getKey());
             if ($meta) {
                 $inst->is_related = $meta->is_related;
@@ -524,7 +524,7 @@ class RelationshipService
         // get $modelClass delimited by backslash last element
         $modelClassName = Str::upper(array_slice(explode('\\', $modelClass), -1)[0]);
 
-        if (! in_array($modelClassName, AllowedRelationshipablesEnum::toValues())) {
+        if (! in_array($modelClassName, AllowedRelationshipablesEnum::values())) {
             return [];
         }
 
@@ -544,13 +544,9 @@ class RelationshipService
         $incomingDirect = $institution->load('incomingRelationships.pivot.relationshipable.meetings')->incomingRelationships; // this gets relationshipables which may be figured out
 
         // now by type - load all institutions, scope filtering is applied in the calling code
-        $outgoingDirectByType = $institution->load(['types.outgoingRelationships.pivot.related_model.institutions.tenant'])->types->map(function ($type) {
-            return $type->outgoingRelationships;
-        })->flatten(1);
+        $outgoingDirectByType = $institution->load(['types.outgoingRelationships.pivot.related_model.institutions.tenant'])->types->map(fn ($type) => $type->outgoingRelationships)->flatten(1);
 
-        $incomingDirectByType = $institution->load(['types.incomingRelationships.pivot.relationshipable.institutions.tenant'])->types->map(function ($type) {
-            return $type->incomingRelationships;
-        })->flatten(1);
+        $incomingDirectByType = $institution->load(['types.incomingRelationships.pivot.relationshipable.institutions.tenant'])->types->map(fn ($type) => $type->incomingRelationships)->flatten(1);
 
         // dd($outgoingDirect, $incomingDirect->pluck('pivot.relationshipable'), $outgoingDirectByType, $incomingDirectByType->pluck('pivot.relationshipable.institutions'));
 
@@ -590,9 +586,7 @@ class RelationshipService
         $institutionRelationshipables = collect(Relationshipable::where('relationshipable_type', Institution::class)->get(['relationshipable_id', 'related_model_id'])->toArray()); // OK
 
         // we need to get all institutions which are related to the institution
-        $typeRelationshipables = Relationshipable::where('relationshipable_type', Type::class)->get()->map(function ($relationshipable) {
-            return self::getGivenModelsFromModelType(Institution::class, $relationshipable);
-        })->flatten(1);
+        $typeRelationshipables = Relationshipable::where('relationshipable_type', Type::class)->get()->map(fn ($relationshipable) => self::getGivenModelsFromModelType(Institution::class, $relationshipable))->flatten(1);
 
         // Within-type sibling relationships (institutions with same type + same tenant)
         $withinTypeRelationships = self::getWithinTypeSiblingRelationships();
@@ -736,7 +730,7 @@ class RelationshipService
             // Group institutions by tenant
             $institutionsByTenant = $type->institutions->groupBy('tenant_id');
 
-            foreach ($institutionsByTenant as $tenantId => $institutions) {
+            foreach ($institutionsByTenant as $institutions) {
                 // Create relationships between all pairs within the same tenant
                 $institutionIds = $institutions->pluck('id')->values();
                 $count = $institutionIds->count();
@@ -792,13 +786,13 @@ class RelationshipService
 
         // get all giver models. You only need givers to get all relationships, as receivers will duplicate all given relationships
         // but through the other side
-        $givers = $model_type::whereHas('types', function ($query) use ($relationshipable) {
+        $givers = $model_type::whereHas('types', function ($query) use ($relationshipable): void {
             $query->where('types.id', $relationshipable->relationshipable_id);
         })->with('tenant')->get();
 
         // now, for all the givers, find candidates for possible receivers
-        $givers->map(function ($giver) use (&$relationships, $model_type, $relationshipable, $scope, $meta) {
-            $query = $model_type::whereHas('types', function ($query) use ($relationshipable) {
+        $givers->map(function ($giver) use (&$relationships, $model_type, $relationshipable, $scope, $meta): void {
+            $query = $model_type::whereHas('types', function ($query) use ($relationshipable): void {
                 $query->where('types.id', $relationshipable->related_model_id);
             })->with('tenant');
 
@@ -810,12 +804,12 @@ class RelationshipService
                 $giverTenant = $giver->tenant;
                 if ($giverTenant?->type === 'pagrindinis') {
                     // Giver is in pagrindinis, find receivers in padalinys-type tenants
-                    $query->whereHas('tenant', function ($q) {
+                    $query->whereHas('tenant', function ($q): void {
                         $q->where('type', 'padalinys');
                     });
                 } elseif ($giverTenant?->type === 'padalinys') {
                     // Giver is in padalinys, find receivers in pagrindinis tenant
-                    $query->whereHas('tenant', function ($q) {
+                    $query->whereHas('tenant', function ($q): void {
                         $q->where('type', 'pagrindinis');
                     });
                 } else {
@@ -824,7 +818,7 @@ class RelationshipService
                 }
             }
 
-            $query->get()->each(function ($receiver) use ($giver, &$relationships, $meta) {
+            $query->get()->each(function ($receiver) use ($giver, &$relationships, $meta): void {
                 $relationships[] = array_merge([
                     'relationshipable_id' => (string) $giver->getKey(),
                     'related_model_id' => (string) $receiver->getKey(),

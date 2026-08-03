@@ -5,10 +5,10 @@ use App\Notifications\WelcomeNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-describe('tutorial API', function () {
-    test('marking first tutorial sends welcome notification', function () {
+describe('tutorial API', function (): void {
+    test('marking first tutorial sends welcome notification', function (): void {
         Notification::fake();
 
         $user = User::factory()->create([
@@ -25,7 +25,7 @@ describe('tutorial API', function () {
         Notification::assertSentTo($user, WelcomeNotification::class);
     });
 
-    test('marking second tutorial does not send welcome notification', function () {
+    test('marking second tutorial does not send welcome notification', function (): void {
         Notification::fake();
 
         $user = User::factory()->create([
@@ -44,7 +44,7 @@ describe('tutorial API', function () {
         Notification::assertNotSentTo($user, WelcomeNotification::class);
     });
 
-    test('marking same tutorial again does not send notification', function () {
+    test('marking same tutorial again does not send notification', function (): void {
         Notification::fake();
 
         $user = User::factory()->create([
@@ -63,7 +63,7 @@ describe('tutorial API', function () {
         Notification::assertNotSentTo($user, WelcomeNotification::class);
     });
 
-    test('tutorial completion saves progress', function () {
+    test('tutorial completion saves progress', function (): void {
         Notification::fake();
 
         $user = User::factory()->create([

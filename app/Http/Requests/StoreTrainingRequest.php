@@ -19,6 +19,7 @@ class StoreTrainingRequest extends FormRequest
         return $this->user()->can('create', Training::class);
     }
 
+    #[\Override]
     protected function prepareForValidation()
     {
         $data = [];

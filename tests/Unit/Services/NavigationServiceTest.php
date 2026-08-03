@@ -5,9 +5,9 @@ use App\Services\NavigationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     // Create a basic navigation structure
     $this->rootNav = Navigation::factory()->create([
         'name' => 'Root Nav',
@@ -28,8 +28,8 @@ beforeEach(function () {
     ]);
 });
 
-describe('NavigationService caching', function () {
-    test('getNavigationForPublic returns cached result on second call', function () {
+describe('NavigationService caching', function (): void {
+    test('getNavigationForPublic returns cached result on second call', function (): void {
         // Clear any existing cache
         NavigationService::clearCache();
 
@@ -39,12 +39,10 @@ describe('NavigationService caching', function () {
         // Second call should use cache - verify by checking the result is identical
         $result2 = NavigationService::getNavigationForPublic();
 
-        expect($result1)->toEqual($result2);
-        expect($result1)->toBeArray();
-        expect($result1)->not->toBeEmpty();
+        expect($result1)->toBeArray()->toEqual($result2)->not->toBeEmpty();
     });
 
-    test('cache is keyed by locale', function () {
+    test('cache is keyed by locale', function (): void {
         NavigationService::clearCache();
 
         // Create English navigation
@@ -68,7 +66,7 @@ describe('NavigationService caching', function () {
         expect($ltResult)->not->toEqual($enResult);
     });
 
-    test('clearCache clears all locale caches', function () {
+    test('clearCache clears all locale caches', function (): void {
         NavigationService::clearCache();
 
         // Populate caches
@@ -90,7 +88,7 @@ describe('NavigationService caching', function () {
         expect(Cache::has('navigation:public:en'))->toBeFalse();
     });
 
-    test('cache is invalidated when navigation is saved', function () {
+    test('cache is invalidated when navigation is saved', function (): void {
         NavigationService::clearCache();
 
         // Populate cache
@@ -109,7 +107,7 @@ describe('NavigationService caching', function () {
         expect($rootNames)->toContain('Updated Root Nav');
     });
 
-    test('cache is invalidated when navigation is deleted', function () {
+    test('cache is invalidated when navigation is deleted', function (): void {
         NavigationService::clearCache();
 
         // Create an extra root item
@@ -136,24 +134,21 @@ describe('NavigationService caching', function () {
     });
 });
 
-describe('NavigationService output structure', function () {
-    test('returns correct structure with links and columns', function () {
+describe('NavigationService output structure', function (): void {
+    test('returns correct structure with links and columns', function (): void {
         NavigationService::clearCache();
         app()->setLocale('lt');
 
         $result = NavigationService::getNavigationForPublic();
 
-        expect($result)->toBeArray();
-        expect($result)->not->toBeEmpty();
+        expect($result)->toBeArray()->not->toBeEmpty();
 
         // Root element should have 'links' and 'cols' keys
         $rootElement = $result[0];
-        expect($rootElement)->toHaveKey('name');
-        expect($rootElement)->toHaveKey('links');
-        expect($rootElement)->toHaveKey('cols');
+        expect($rootElement)->toHaveKeys(['name', 'links', 'cols']);
     });
 
-    test('children are organized into correct columns', function () {
+    test('children are organized into correct columns', function (): void {
         // Create second child in column 2
         Navigation::factory()->create([
             'name' => 'Column 2 Child',

@@ -7,29 +7,29 @@ use App\Models\Institution;
 use App\Models\NotificationDigestQueue;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Notifications\TaskAssignedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = User::factory()->create([
         'email' => 'user@example.com',
     ]);
 });
 
-describe('getAvailableDigestEmails', function () {
-    test('returns user email when user has no duties', function () {
+describe('getAvailableDigestEmails', function (): void {
+    test('returns user email when user has no duties', function (): void {
         $emails = $this->user->getAvailableDigestEmails();
 
-        expect($emails)->toHaveCount(1);
-        expect($emails[0]['email'])->toBe('user@example.com');
-        expect($emails[0]['type'])->toBe('user');
+        expect($emails)->toHaveCount(1)
+            ->and($emails[0])->toMatchArray(['email' => 'user@example.com', 'type' => 'user']);
     });
 
-    test('returns user email and duty emails when user has active duties', function () {
+    test('returns user email and duty emails when user has active duties', function (): void {
         // Create institution and duty with email
         $institution = Institution::factory()->for($this->tenant)->create();
         $duty = Duty::factory()->for($institution)->create([
@@ -44,12 +44,12 @@ describe('getAvailableDigestEmails', function () {
 
         $emails = $this->user->getAvailableDigestEmails();
 
-        expect($emails)->toHaveCount(2);
-        expect(collect($emails)->pluck('email')->toArray())->toContain('user@example.com');
-        expect(collect($emails)->pluck('email')->toArray())->toContain('duty@vusa.lt');
+        expect($emails)->toHaveCount(2)
+            ->and(collect($emails)->pluck('email')->toArray())->toContain('user@example.com')
+            ->toContain('duty@vusa.lt');
     });
 
-    test('returns all duty emails when user has multiple active duties', function () {
+    test('returns all duty emails when user has multiple active duties', function (): void {
         $institution1 = Institution::factory()->for($this->tenant)->create();
         $institution2 = Institution::factory()->for($this->tenant)->create();
 
@@ -73,11 +73,11 @@ describe('getAvailableDigestEmails', function () {
 
         expect($emails)->toHaveCount(3); // user email + 2 duty emails
         expect(collect($emails)->pluck('email')->toArray())->toContain('user@example.com');
-        expect(collect($emails)->pluck('email')->toArray())->toContain('duty1@vusa.lt');
-        expect(collect($emails)->pluck('email')->toArray())->toContain('duty2@vusa.lt');
+        expect(collect($emails)->pluck('email')->toArray())->toContain('duty1@vusa.lt')
+            ->toContain('duty2@vusa.lt');
     });
 
-    test('does not include emails from ended duties', function () {
+    test('does not include emails from ended duties', function (): void {
         $institution = Institution::factory()->for($this->tenant)->create();
         $duty = Duty::factory()->for($institution)->create([
             'email' => 'ended-duty@vusa.lt',
@@ -91,13 +91,13 @@ describe('getAvailableDigestEmails', function () {
 
         $emails = $this->user->getAvailableDigestEmails();
 
-        expect($emails)->toHaveCount(1);
-        expect($emails[0]['email'])->toBe('user@example.com');
+        expect($emails)->toHaveCount(1)
+            ->and($emails[0]['email'])->toBe('user@example.com');
     });
 });
 
-describe('getDigestEmails', function () {
-    test('returns duty email by default when user has @vusa.lt duty email', function () {
+describe('getDigestEmails', function (): void {
+    test('returns duty email by default when user has @vusa.lt duty email', function (): void {
         $institution = Institution::factory()->for($this->tenant)->create();
         $duty = Duty::factory()->for($institution)->create([
             'email' => 'duty@vusa.lt',
@@ -113,7 +113,7 @@ describe('getDigestEmails', function () {
         expect($emails)->toBe(['duty@vusa.lt']);
     });
 
-    test('returns first @vusa.lt duty email by default when user has multiple duties', function () {
+    test('returns first @vusa.lt duty email by default when user has multiple duties', function (): void {
         $institution1 = Institution::factory()->for($this->tenant)->create();
         $institution2 = Institution::factory()->for($this->tenant)->create();
 
@@ -140,7 +140,7 @@ describe('getDigestEmails', function () {
         expect($emails[0])->toEndWith('@vusa.lt');
     });
 
-    test('user can configure multiple duty emails when they have multiple duties', function () {
+    test('user can configure multiple duty emails when they have multiple duties', function (): void {
         $institution1 = Institution::factory()->for($this->tenant)->create();
         $institution2 = Institution::factory()->for($this->tenant)->create();
 
@@ -165,18 +165,18 @@ describe('getDigestEmails', function () {
 
         $emails = $this->user->getDigestEmails();
 
-        expect($emails)->toHaveCount(2);
-        expect($emails)->toContain('duty1@vusa.lt');
-        expect($emails)->toContain('duty2@vusa.lt');
+        expect($emails)->toHaveCount(2)
+            ->toContain('duty1@vusa.lt')
+            ->toContain('duty2@vusa.lt');
     });
 
-    test('returns user email by default when no duty email exists', function () {
+    test('returns user email by default when no duty email exists', function (): void {
         $emails = $this->user->getDigestEmails();
 
         expect($emails)->toBe(['user@example.com']);
     });
 
-    test('returns configured emails when user has set preferences', function () {
+    test('returns configured emails when user has set preferences', function (): void {
         $institution = Institution::factory()->for($this->tenant)->create();
         $duty = Duty::factory()->for($institution)->create([
             'email' => 'duty@vusa.lt',
@@ -195,7 +195,7 @@ describe('getDigestEmails', function () {
         expect($emails)->toBe(['user@example.com']);
     });
 
-    test('returns multiple emails when configured', function () {
+    test('returns multiple emails when configured', function (): void {
         $institution = Institution::factory()->for($this->tenant)->create();
         $duty = Duty::factory()->for($institution)->create([
             'email' => 'duty@vusa.lt',
@@ -211,12 +211,12 @@ describe('getDigestEmails', function () {
 
         $emails = $this->user->getDigestEmails();
 
-        expect($emails)->toHaveCount(2);
-        expect($emails)->toContain('user@example.com');
-        expect($emails)->toContain('duty@vusa.lt');
+        expect($emails)->toHaveCount(2)
+            ->toContain('user@example.com')
+            ->toContain('duty@vusa.lt');
     });
 
-    test('lazy cleanup removes invalid emails and falls back to user email', function () {
+    test('lazy cleanup removes invalid emails and falls back to user email', function (): void {
         $institution = Institution::factory()->for($this->tenant)->create();
         $duty = Duty::factory()->for($institution)->create([
             'email' => 'duty@vusa.lt',
@@ -245,7 +245,7 @@ describe('getDigestEmails', function () {
         expect($emails)->toBe(['user@example.com']);
     });
 
-    test('lazy cleanup keeps valid emails and removes invalid ones', function () {
+    test('lazy cleanup keeps valid emails and removes invalid ones', function (): void {
         $institution = Institution::factory()->for($this->tenant)->create();
         $duty = Duty::factory()->for($institution)->create([
             'email' => 'duty@vusa.lt',
@@ -273,8 +273,8 @@ describe('getDigestEmails', function () {
     });
 });
 
-describe('setDigestEmails', function () {
-    test('only stores valid emails', function () {
+describe('setDigestEmails', function (): void {
+    test('only stores valid emails', function (): void {
         // Try to set an email that is not available
         $this->user->setDigestEmails(['invalid@notavailable.com']);
 
@@ -283,7 +283,7 @@ describe('setDigestEmails', function () {
         expect($preferences['digest_emails'])->toBe([]);
     });
 
-    test('stores valid emails', function () {
+    test('stores valid emails', function (): void {
         $this->user->setDigestEmails(['user@example.com']);
 
         $preferences = $this->user->notification_preferences;
@@ -292,8 +292,8 @@ describe('setDigestEmails', function () {
     });
 });
 
-describe('updateNotificationPreferences endpoint', function () {
-    test('user can update digest emails through API', function () {
+describe('updateNotificationPreferences endpoint', function (): void {
+    test('user can update digest emails through API', function (): void {
         asUser($this->user)
             ->patch(route('profile.updateNotificationPreferences'), [
                 'digest_emails' => ['user@example.com'],
@@ -305,7 +305,7 @@ describe('updateNotificationPreferences endpoint', function () {
         expect($this->user->notification_preferences['digest_emails'])->toBe(['user@example.com']);
     });
 
-    test('API rejects invalid emails', function () {
+    test('API rejects invalid emails', function (): void {
         asUser($this->user)
             ->patch(route('profile.updateNotificationPreferences'), [
                 'digest_emails' => ['not-an-email'],
@@ -313,7 +313,7 @@ describe('updateNotificationPreferences endpoint', function () {
             ->assertSessionHasErrors('digest_emails.0');
     });
 
-    test('API only stores available emails', function () {
+    test('API only stores available emails', function (): void {
         asUser($this->user)
             ->patch(route('profile.updateNotificationPreferences'), [
                 'digest_emails' => ['user@example.com', 'notavailable@other.com'],
@@ -326,8 +326,8 @@ describe('updateNotificationPreferences endpoint', function () {
     });
 });
 
-describe('userSettings page', function () {
-    test('includes availableDigestEmails in props', function () {
+describe('userSettings page', function (): void {
+    test('includes availableDigestEmails in props', function (): void {
         asUser($this->user)
             ->get(route('profile'))
             ->assertStatus(200)
@@ -339,7 +339,7 @@ describe('userSettings page', function () {
             );
     });
 
-    test('includes digest_emails in notification preferences', function () {
+    test('includes digest_emails in notification preferences', function (): void {
         $this->user->setDigestEmails(['user@example.com']);
 
         asUser($this->user)
@@ -353,8 +353,8 @@ describe('userSettings page', function () {
     });
 });
 
-describe('ProcessNotificationDigests command', function () {
-    test('sends digest to configured email addresses', function () {
+describe('ProcessNotificationDigests command', function (): void {
+    test('sends digest to configured email addresses', function (): void {
         Mail::fake();
 
         $institution = Institution::factory()->for($this->tenant)->create();
@@ -374,7 +374,7 @@ describe('ProcessNotificationDigests command', function () {
         // Create a digest queue item and manually set created_at (not fillable)
         $item = NotificationDigestQueue::create([
             'user_id' => $this->user->id,
-            'notification_class' => 'App\\Notifications\\TaskAssignedNotification',
+            'notification_class' => TaskAssignedNotification::class,
             'category' => 'task',
             'data' => [
                 'title' => 'Test Notification',
@@ -389,12 +389,10 @@ describe('ProcessNotificationDigests command', function () {
         $this->artisan(ProcessNotificationDigests::class)
             ->assertSuccessful();
 
-        Mail::assertSent(NotificationDigest::class, function ($mail) {
-            return $mail->hasTo('user@example.com');
-        });
+        Mail::assertSent(NotificationDigest::class, fn ($mail) => $mail->hasTo('user@example.com'));
     });
 
-    test('sends digest to default duty email when no preference set', function () {
+    test('sends digest to default duty email when no preference set', function (): void {
         Mail::fake();
 
         $institution = Institution::factory()->for($this->tenant)->create();
@@ -411,7 +409,7 @@ describe('ProcessNotificationDigests command', function () {
 
         $item = NotificationDigestQueue::create([
             'user_id' => $this->user->id,
-            'notification_class' => 'App\\Notifications\\TaskAssignedNotification',
+            'notification_class' => TaskAssignedNotification::class,
             'category' => 'task',
             'data' => [
                 'title' => 'Test Notification',
@@ -425,12 +423,10 @@ describe('ProcessNotificationDigests command', function () {
         $this->artisan(ProcessNotificationDigests::class)
             ->assertSuccessful();
 
-        Mail::assertSent(NotificationDigest::class, function ($mail) {
-            return $mail->hasTo('duty@vusa.lt');
-        });
+        Mail::assertSent(NotificationDigest::class, fn ($mail) => $mail->hasTo('duty@vusa.lt'));
     });
 
-    test('sends digest to multiple configured emails', function () {
+    test('sends digest to multiple configured emails', function (): void {
         Mail::fake();
 
         $institution = Institution::factory()->for($this->tenant)->create();
@@ -449,7 +445,7 @@ describe('ProcessNotificationDigests command', function () {
 
         $item = NotificationDigestQueue::create([
             'user_id' => $this->user->id,
-            'notification_class' => 'App\\Notifications\\TaskAssignedNotification',
+            'notification_class' => TaskAssignedNotification::class,
             'category' => 'task',
             'data' => [
                 'title' => 'Test Notification',
@@ -463,8 +459,6 @@ describe('ProcessNotificationDigests command', function () {
         $this->artisan(ProcessNotificationDigests::class)
             ->assertSuccessful();
 
-        Mail::assertSent(NotificationDigest::class, function ($mail) {
-            return $mail->hasTo('user@example.com') && $mail->hasTo('duty@vusa.lt');
-        });
+        Mail::assertSent(NotificationDigest::class, fn ($mail) => $mail->hasTo('user@example.com') && $mail->hasTo('duty@vusa.lt'));
     });
 });

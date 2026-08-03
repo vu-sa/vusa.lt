@@ -30,9 +30,7 @@ class GetAttachableTypesForDuty
         }
 
         // filter types where model_type is App\Models\Duty
-        $types = $types->filter(function ($type) {
-            return $type->model_type === Duty::class;
-        });
+        $types = $types->filter(fn ($type) => $type->model_type === Duty::class);
 
         // support collection to eloquent collection
         $types = Collection::make($types);

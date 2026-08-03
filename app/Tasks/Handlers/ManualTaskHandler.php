@@ -17,6 +17,7 @@ class ManualTaskHandler extends BaseTaskHandler
     /**
      * Create a manual task.
      */
+    #[\Override]
     public function create(CreateTaskData $data): Task
     {
         // Ensure action type is set to Manual (or null for legacy compatibility)

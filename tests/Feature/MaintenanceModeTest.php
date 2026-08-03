@@ -6,17 +6,17 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 /**
  * Always leave maintenance mode, even when an expectation above fails — a leftover
  * storage/framework/down file would break every subsequent test and local dev.
  */
-afterEach(function () {
+afterEach(function (): void {
     Artisan::call('up');
 });
 
-it('shows the maintenance page instead of a bare 503 while the site is down', function () {
+it('shows the maintenance page instead of a bare 503 while the site is down', function (): void {
     Artisan::call('down');
 
     $this->get('/')
@@ -26,7 +26,7 @@ it('shows the maintenance page instead of a bare 503 while the site is down', fu
         ->assertDontSee('503');
 });
 
-it('shows the English copy alongside the Lithuanian one', function () {
+it('shows the English copy alongside the Lithuanian one', function (): void {
     Artisan::call('down');
 
     $this->get('/')
@@ -34,13 +34,13 @@ it('shows the English copy alongside the Lithuanian one', function () {
         ->assertSee('We are performing scheduled maintenance and will be back shortly.');
 });
 
-it('keeps the Retry-After header on the maintenance page', function () {
+it('keeps the Retry-After header on the maintenance page', function (): void {
     Artisan::call('down', ['--retry' => 60]);
 
     $this->get('/')->assertHeader('Retry-After', '60');
 });
 
-it('still answers API clients with JSON while the site is down', function () {
+it('still answers API clients with JSON while the site is down', function (): void {
     Artisan::call('down');
 
     $response = $this->getJson('/');
@@ -49,7 +49,7 @@ it('still answers API clients with JSON while the site is down', function () {
     expect($response->headers->get('Content-Type'))->toContain('json');
 });
 
-it('renders standalone, without a Vite stylesheet that would 404 mid-deploy', function () {
+it('renders standalone, without a Vite stylesheet that would 404 mid-deploy', function (): void {
     // `down --render` bakes this view into storage/framework/maintenance.php, which is served
     // while deployment:deploy-assets swaps public/build — so it must not link a hashed asset.
     $html = view('errors.maintenance')->render();
@@ -60,7 +60,7 @@ it('renders standalone, without a Vite stylesheet that would 404 mid-deploy', fu
         ->and($html)->toContain('Site under maintenance');
 });
 
-it('leaves a genuine 503 on the standard error page', function () {
+it('leaves a genuine 503 on the standard error page', function (): void {
     // Rendered through the handler directly: a public catch-all permalink route would
     // swallow any ad-hoc test route before it could throw.
     $response = app(Handler::class)->render(
@@ -74,7 +74,7 @@ it('leaves a genuine 503 on the standard error page', function () {
         ->and($response->getContent())->not->toContain('Tinklalapis atnaujinamas');
 });
 
-it('leaves other error pages untouched', function () {
+it('leaves other error pages untouched', function (): void {
     $this->get('/lt/this-page-does-not-exist')
         ->assertStatus(404)
         ->assertSee('404')

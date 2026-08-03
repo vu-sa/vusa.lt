@@ -8,15 +8,15 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
 });
 
-describe('notifications index', function () {
-    test('user can view notifications page', function () {
+describe('notifications index', function (): void {
+    test('user can view notifications page', function (): void {
         asUser($this->user)
             ->get(route('notifications.index'))
             ->assertStatus(200)
@@ -26,7 +26,7 @@ describe('notifications index', function () {
             );
     });
 
-    test('notifications page shows user notifications', function () {
+    test('notifications page shows user notifications', function (): void {
         // Create some notifications for the user
         $this->user->notify(new WelcomeNotification);
         $this->user->notify(new TestPushNotification);
@@ -41,8 +41,8 @@ describe('notifications index', function () {
     });
 });
 
-describe('mark as read', function () {
-    test('user can mark a notification as read', function () {
+describe('mark as read', function (): void {
+    test('user can mark a notification as read', function (): void {
         $this->user->notify(new WelcomeNotification);
         $notification = $this->user->unreadNotifications()->first();
 
@@ -56,7 +56,7 @@ describe('mark as read', function () {
         expect($notification->read_at)->not->toBeNull();
     });
 
-    test('user can mark all notifications as read', function () {
+    test('user can mark all notifications as read', function (): void {
         $this->user->notify(new WelcomeNotification);
         $this->user->notify(new TestPushNotification);
 
@@ -71,8 +71,8 @@ describe('mark as read', function () {
     });
 });
 
-describe('delete single notification', function () {
-    test('user can delete a single notification', function () {
+describe('delete single notification', function (): void {
+    test('user can delete a single notification', function (): void {
         $this->user->notify(new WelcomeNotification);
         $this->user->notify(new TestPushNotification);
 
@@ -86,11 +86,11 @@ describe('delete single notification', function () {
             ->assertRedirect();
 
         $this->user->refresh();
-        expect($this->user->notifications()->count())->toBe(1);
-        expect($this->user->notifications()->where('id', $notificationId)->exists())->toBeFalse();
+        expect($this->user->notifications()->count())->toBe(1)
+            ->and($this->user->notifications()->where('id', $notificationId)->exists())->toBeFalse();
     });
 
-    test('deleting one notification does not delete others', function () {
+    test('deleting one notification does not delete others', function (): void {
         $this->user->notify(new WelcomeNotification);
         $this->user->notify(new TestPushNotification);
         $this->user->notify(new WelcomeNotification);
@@ -112,8 +112,8 @@ describe('delete single notification', function () {
     });
 });
 
-describe('delete read notifications', function () {
-    test('user can delete only read notifications', function () {
+describe('delete read notifications', function (): void {
+    test('user can delete only read notifications', function (): void {
         // Create 3 notifications - 2 unread, 1 read
         $this->user->notify(new WelcomeNotification);
         $this->user->notify(new TestPushNotification);
@@ -124,8 +124,8 @@ describe('delete read notifications', function () {
         $notifications->first()->update(['read_at' => now()]);
 
         $this->user->refresh();
-        expect($this->user->readNotifications()->count())->toBe(1);
-        expect($this->user->unreadNotifications()->count())->toBe(2);
+        expect($this->user->readNotifications()->count())->toBe(1)
+            ->and($this->user->unreadNotifications()->count())->toBe(2);
 
         // Delete only read notifications
         asUser($this->user)
@@ -135,11 +135,11 @@ describe('delete read notifications', function () {
         $this->user->refresh();
         // Unread should remain
         expect($this->user->notifications()->count())->toBe(2);
-        expect($this->user->readNotifications()->count())->toBe(0);
-        expect($this->user->unreadNotifications()->count())->toBe(2);
+        expect($this->user->readNotifications()->count())->toBe(0)
+            ->and($this->user->unreadNotifications()->count())->toBe(2);
     });
 
-    test('deleting read notifications does not affect unread', function () {
+    test('deleting read notifications does not affect unread', function (): void {
         // Create notifications
         $this->user->notify(new WelcomeNotification);
         $this->user->notify(new TestPushNotification);
@@ -163,8 +163,8 @@ describe('delete read notifications', function () {
     });
 });
 
-describe('delete all notifications', function () {
-    test('user can delete all notifications', function () {
+describe('delete all notifications', function (): void {
+    test('user can delete all notifications', function (): void {
         $this->user->notify(new WelcomeNotification);
         $this->user->notify(new TestPushNotification);
         $this->user->notify(new WelcomeNotification);
@@ -182,28 +182,28 @@ describe('delete all notifications', function () {
         expect($this->user->notifications()->count())->toBe(0);
     });
 
-    test('delete all removes both read and unread notifications', function () {
+    test('delete all removes both read and unread notifications', function (): void {
         $this->user->notify(new WelcomeNotification);
         $this->user->notify(new TestPushNotification);
 
         // Mark one as read
         $this->user->notifications()->first()->update(['read_at' => now()]);
 
-        expect($this->user->readNotifications()->count())->toBe(1);
-        expect($this->user->unreadNotifications()->count())->toBe(1);
+        expect($this->user->readNotifications()->count())->toBe(1)
+            ->and($this->user->unreadNotifications()->count())->toBe(1);
 
         asUser($this->user)
             ->delete(route('notifications.destroy-all'))
             ->assertRedirect();
 
         $this->user->refresh();
-        expect($this->user->readNotifications()->count())->toBe(0);
-        expect($this->user->unreadNotifications()->count())->toBe(0);
+        expect($this->user->readNotifications()->count())->toBe(0)
+            ->and($this->user->unreadNotifications()->count())->toBe(0);
     });
 });
 
-describe('authorization', function () {
-    test('user cannot delete another user notification', function () {
+describe('authorization', function (): void {
+    test('user cannot delete another user notification', function (): void {
         $otherUser = makeUser($this->tenant);
         $otherUser->notify(new WelcomeNotification);
 
@@ -218,7 +218,7 @@ describe('authorization', function () {
         expect($otherUser->notifications()->where('id', $notification->id)->exists())->toBeTrue();
     });
 
-    test('user cannot mark another user notification as read', function () {
+    test('user cannot mark another user notification as read', function (): void {
         $otherUser = makeUser($this->tenant);
         $otherUser->notify(new WelcomeNotification);
 

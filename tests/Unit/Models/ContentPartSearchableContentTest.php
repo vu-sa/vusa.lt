@@ -17,7 +17,7 @@ function makePart(string $type, array $jsonContent, ?array $options = null): Con
     ]);
 }
 
-test('hero extracts title, description and button text (current shape)', function () {
+test('hero extracts title, description and button text (current shape)', function (): void {
     $part = makePart('hero', [
         'title' => 'Prisijunk prie VU SA',
         'description' => 'Atrask naujas galimybes',
@@ -36,13 +36,13 @@ test('hero extracts title, description and button text (current shape)', functio
         ->toContain('Sužinok daugiau');
 });
 
-test('hero tolerates missing buttons/description', function () {
+test('hero tolerates missing buttons/description', function (): void {
     $part = makePart('hero', ['title' => 'Only a title']);
 
     expect($part->getSearchableContent())->toBe('Only a title ');
 });
 
-test('carousel-slide-deck extracts title, badge and tiptap description', function () {
+test('carousel-slide-deck extracts title, badge and tiptap description', function (): void {
     $part = makePart('carousel-slide-deck', [
         [
             'title' => 'Bendruomenė',
@@ -64,7 +64,7 @@ test('carousel-slide-deck extracts title, badge and tiptap description', functio
         ->toContain('Rask bendraminčių');
 });
 
-test('card-stack extracts card titles and descriptions', function () {
+test('card-stack extracts card titles and descriptions', function (): void {
     $part = makePart('card-stack', [
         ['icon' => 'users', 'title' => 'Studijos', 'description' => 'Kokybiškos studijos'],
         ['icon' => 'star', 'title' => 'Bendruomenė', 'description' => 'Stipri organizacija'],
@@ -79,7 +79,7 @@ test('card-stack extracts card titles and descriptions', function () {
         ->toContain('Stipri organizacija');
 });
 
-test('photo-gallery extracts image alt text', function () {
+test('photo-gallery extracts image alt text', function (): void {
     $part = makePart('photo-gallery', [
         ['src' => '/a.webp', 'alt' => 'Studentai renginyje'],
         ['src' => '/b.webp', 'alt' => 'Diplomų įteikimas'],
@@ -92,7 +92,7 @@ test('photo-gallery extracts image alt text', function () {
         ->toContain('Diplomų įteikimas');
 });
 
-test('content-grid extracts tiptap and image column content', function () {
+test('content-grid extracts tiptap and image column content', function (): void {
     $part = makePart('content-grid', [
         [
             'columns' => [
@@ -127,7 +127,7 @@ test('content-grid extracts tiptap and image column content', function () {
         ->toContain('Dešinės skilties nuotrauka');
 });
 
-test('content-grid extracts card cell title and description', function () {
+test('content-grid extracts card cell title and description', function (): void {
     $part = makePart('content-grid', [
         [
             'columns' => [
@@ -149,7 +149,7 @@ test('content-grid extracts card cell title and description', function () {
         ->toContain('Kortelės aprašymas');
 });
 
-test('link-list extracts section title and manual link titles, not resolved records', function () {
+test('link-list extracts section title and manual link titles, not resolved records', function (): void {
     $part = makePart('link-list', [
         'links' => [
             ['title' => 'Metinis pranešimas', 'url' => 'https://vusa.lt/a'],
@@ -163,7 +163,7 @@ test('link-list extracts section title and manual link titles, not resolved reco
         ->toContain('Metinis pranešimas');
 });
 
-test('event-list extracts only author-written option text', function () {
+test('event-list extracts only author-written option text', function (): void {
     $part = makePart('event-list', [], [
         'title' => 'Pirmakursių stovyklos',
         'emptyMessage' => 'Stovyklų dar nėra',
@@ -176,7 +176,7 @@ test('event-list extracts only author-written option text', function () {
         ->toContain('Stovyklų dar nėra');
 });
 
-test('person-quote extracts quote text, snapshot name and attribution', function () {
+test('person-quote extracts quote text, snapshot name and attribution', function (): void {
     $part = makePart('person-quote', [
         'quote' => [
             'type' => 'doc',
@@ -195,7 +195,7 @@ test('person-quote extracts quote text, snapshot name and attribution', function
         ->toContain('Koordinatorė, VU SA MIF');
 });
 
-test('section extracts only its own title/subtitle, not the blocks it wraps', function () {
+test('section extracts only its own title/subtitle, not the blocks it wraps', function (): void {
     // `section` has no `json_content` of its own — it's a marker RichContentParser
     // groups following parts under (see RichContentParser.vue's groupedContent); the
     // wrapped blocks are indexed separately, as their own ContentPart rows.
@@ -206,8 +206,8 @@ test('section extracts only its own title/subtitle, not the blocks it wraps', fu
         ->toContain('Sužinok daugiau apie mus');
 });
 
-test('unhandled type returns an empty string rather than throwing', function () {
+test('unhandled type returns an empty string rather than throwing', function (): void {
     $part = makePart('spotify-embed', ['url' => 'https://open.spotify.com/track/123']);
 
-    expect($part->getSearchableContent())->toBe('');
+    expect($part->getSearchableContent())->toBeEmpty();
 });

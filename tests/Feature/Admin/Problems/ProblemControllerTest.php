@@ -5,9 +5,9 @@ use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     [$this->tenant, $this->otherTenant] = Tenant::query()->inRandomOrder()->take(2)->get();
 
     $this->user = makeUser($this->tenant);
@@ -24,14 +24,14 @@ beforeEach(function () {
     ]);
 });
 
-describe('unauthorized access', function () {
-    test('cannot access problem index', function () {
+describe('unauthorized access', function (): void {
+    test('cannot access problem index', function (): void {
         asUser($this->user)->get(route('problems.index'))->assertStatus(403);
     });
 });
 
-describe('authorized access', function () {
-    test('can access problem index', function () {
+describe('authorized access', function (): void {
+    test('can access problem index', function (): void {
         asUser($this->coordinator)->get(route('problems.index'))->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Problems/IndexProblem')
@@ -41,64 +41,71 @@ describe('authorized access', function () {
             );
     });
 
-    test('can filter problems by tenant', function () {
+    test('can access show page without exposing activitiesAsSubject via Inertia props', function (): void {
+        // Activity history is now served on demand through the paginated
+        // admin API (see ActivityLogApiControllerTest), not eager-loaded into
+        // the show page -- assert it stays out of the Inertia payload.
+        $this->problem->update(['status' => 'resolved']);
+
+        asUser($this->coordinator)
+            ->get(route('problems.show', $this->problem))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Problems/ShowProblem')
+                ->missing('problem.activities_as_subject')
+            );
+    });
+
+    test('can filter problems by tenant', function (): void {
         asUser($this->admin)
             ->get(route('problems.index', ['filters' => json_encode(['tenant.id' => [$this->tenant->id]])]))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Problems/IndexProblem')
-                ->where('data', function ($data) {
-                    return collect($data)->isNotEmpty()
-                        && collect($data)->every(fn ($problem) => $problem['tenant_id'] === $this->tenant->id);
-                })
+                ->where('data', fn ($data) => collect($data)->isNotEmpty()
+                    && collect($data)->every(fn ($problem) => $problem['tenant_id'] === $this->tenant->id))
             );
     });
 
-    test('can filter problems by creator', function () {
+    test('can filter problems by creator', function (): void {
         asUser($this->admin)
             ->get(route('problems.index', ['filters' => json_encode(['created_by' => [$this->coordinator->id]])]))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Problems/IndexProblem')
-                ->where('data', function ($data) {
-                    return collect($data)->isNotEmpty()
-                        && collect($data)->every(fn ($problem) => $problem['created_by']['id'] === $this->coordinator->id);
-                })
+                ->where('data', fn ($data) => collect($data)->isNotEmpty()
+                    && collect($data)->every(fn ($problem) => $problem['created_by']['id'] === $this->coordinator->id))
             );
     });
 });
 
-describe('tenant isolation', function () {
-    test('tenant-scoped user only sees own tenant problems', function () {
+describe('tenant isolation', function (): void {
+    test('tenant-scoped user only sees own tenant problems', function (): void {
         asUser($this->coordinator)->get(route('problems.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->where('data', function ($data) {
-                    return collect($data)->isNotEmpty()
-                        && collect($data)->every(fn ($problem) => $problem['tenant_id'] === $this->tenant->id);
-                })
+                ->where('data', fn ($data) => collect($data)->isNotEmpty()
+                    && collect($data)->every(fn ($problem) => $problem['tenant_id'] === $this->tenant->id))
             );
     });
 
-    test('tenant-scoped user cannot see other tenant problems even when filtering for them', function () {
+    test('tenant-scoped user cannot see other tenant problems even when filtering for them', function (): void {
         asUser($this->coordinator)
             ->get(route('problems.index', ['filters' => json_encode(['tenant.id' => [$this->otherTenant->id]])]))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->where('data', function ($data) {
-                    return collect($data)->every(fn ($problem) => $problem['tenant_id'] === $this->tenant->id);
-                })
+                ->where('data', fn ($data) => collect($data)->every(fn ($problem) => $problem['tenant_id'] === $this->tenant->id))
             );
     });
 });
 
-describe('html sanitization', function () {
+describe('html sanitization', function (): void {
     /**
      * Problems are readable by every authenticated user while only tenant staff
      * may write them, and ShowProblem renders these fields with `v-html`. Script
      * stored here would otherwise execute in a super admin's browser.
      */
-    test('strips script from tiptap fields when storing', function () {
+    test('strips script from tiptap fields when storing', function (): void {
         asUser($this->coordinator)->post(route('problems.store'), [
             'title' => ['lt' => 'Problema', 'en' => 'Problem'],
             'description' => [
@@ -116,17 +123,13 @@ describe('html sanitization', function () {
 
         expect($problem->getTranslation('description', 'lt'))
             ->toContain('Geras tekstas')
-            ->not->toContain('<script');
-
-        expect($problem->getTranslation('description', 'en'))
-            ->toContain('Good text')
-            ->not->toContain('onerror');
-
-        expect($problem->getTranslation('steps_taken', 'lt'))->not->toContain('<script');
-        expect($problem->getTranslation('solution', 'lt'))->not->toContain('javascript:');
+            ->not->toContain('<script')
+            ->and($problem->getTranslation('description', 'en'))->toContain('Good text')->not->toContain('onerror')
+            ->and($problem->getTranslation('steps_taken', 'lt'))->not->toContain('<script')
+            ->and($problem->getTranslation('solution', 'lt'))->not->toContain('javascript:');
     });
 
-    test('sanitizes on every write path, not just the controller', function () {
+    test('sanitizes on every write path, not just the controller', function (): void {
         $problem = Problem::factory()->create([
             'tenant_id' => $this->tenant->id,
             'description' => ['lt' => '<p>ok</p><script>alert(1)</script>'],
@@ -139,7 +142,7 @@ describe('html sanitization', function () {
         expect($problem->fresh()->getTranslation('description', 'lt'))->not->toContain('onerror');
     });
 
-    test('keeps legitimate rich formatting', function () {
+    test('keeps legitimate rich formatting', function (): void {
         $problem = Problem::factory()->create([
             'tenant_id' => $this->tenant->id,
             'description' => ['lt' => '<h2 id="a">Antraštė</h2><p><strong>Svarbu</strong></p><img src="/uploads/a.png" alt="A">'],

@@ -4,6 +4,7 @@ use App\Enums\SharepointFolderEnum;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Meeting;
+use App\Models\News;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Services\ResourceServices\SharepointFileService;
@@ -12,16 +13,16 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-describe('SharepointFileService', function () {
-    beforeEach(function () {
+describe('SharepointFileService', function (): void {
+    beforeEach(function (): void {
         $this->service = new SharepointFileService;
         $this->tenant = Tenant::factory()->create(['shortname' => 'test-tenant']);
     });
 
-    describe('generateUniqueFolderName', function () {
-        test('generates folder name with last 4 characters of ID', function () {
+    describe('generateUniqueFolderName', function (): void {
+        test('generates folder name with last 4 characters of ID', function (): void {
             $fileableId = '12345678901234567890abcd';
             $fileableName = 'Test Document';
 
@@ -30,7 +31,7 @@ describe('SharepointFileService', function () {
             expect($result)->toBe('Test Document-abcd');
         });
 
-        test('handles short IDs gracefully', function () {
+        test('handles short IDs gracefully', function (): void {
             $fileableId = 'abc';
             $fileableName = 'Test';
 
@@ -39,7 +40,7 @@ describe('SharepointFileService', function () {
             expect($result)->toBe('Test-abc');
         });
 
-        test('handles empty name', function () {
+        test('handles empty name', function (): void {
             $fileableId = '1234567890abcdef';
             $fileableName = '';
 
@@ -49,18 +50,18 @@ describe('SharepointFileService', function () {
         });
     });
 
-    describe('pathForFileableDriveItem (human-readable paths)', function () {
-        test('throws exception for models without HasSharepointFiles trait', function () {
+    describe('pathForFileableDriveItem (human-readable paths)', function (): void {
+        test('throws exception for models without HasSharepointFiles trait', function (): void {
             $modelWithoutTrait = new class extends Model {};
 
             expect(fn () => SharepointFileService::pathForFileableDriveItem($modelWithoutTrait))
                 ->toThrow(Exception::class, 'Model does not have HasSharepointFiles trait');
         });
 
-        test('generates correct path for Type model', function () {
+        test('generates correct path for Type model', function (): void {
             $type = Type::factory()->create([
                 'title' => 'Test Type',
-                'model_type' => 'App\\Models\\News',
+                'model_type' => News::class,
             ]);
 
             $path = SharepointFileService::pathForFileableDriveItem($type);
@@ -68,7 +69,7 @@ describe('SharepointFileService', function () {
             expect($path)->toBe('General/Types/News/Test Type');
         });
 
-        test('generates correct path for Institution model', function () {
+        test('generates correct path for Institution model', function (): void {
             $institution = Institution::factory()->for($this->tenant)->create([
                 'name' => 'Test Institution',
             ]);
@@ -78,14 +79,14 @@ describe('SharepointFileService', function () {
             expect($path)->toBe('General/Padaliniai/test-tenant/Institutions/Test Institution');
         });
 
-        test('throws exception for Institution without tenant', function () {
+        test('throws exception for Institution without tenant', function (): void {
             $institution = Institution::factory()->make(['name' => 'Test', 'tenant_id' => null]);
 
             expect(fn () => SharepointFileService::pathForFileableDriveItem($institution))
                 ->toThrow(Exception::class, 'Institution does not have a tenant. Tenant must be assigned.');
         });
 
-        test('generates correct path for Meeting model', function () {
+        test('generates correct path for Meeting model', function (): void {
             $institution = Institution::factory()->for($this->tenant)->create([
                 'name' => 'Test Institution',
             ]);
@@ -103,7 +104,7 @@ describe('SharepointFileService', function () {
             expect($path)->toBe('General/Padaliniai/test-tenant/Institutions/Test Institution/Meetings/2023-06-15 14.30');
         });
 
-        test('generates correct path for Meeting with empty title', function () {
+        test('generates correct path for Meeting with empty title', function (): void {
             $institution = Institution::factory()->for($this->tenant)->create([
                 'name' => 'Test Institution',
             ]);
@@ -121,7 +122,7 @@ describe('SharepointFileService', function () {
             expect($path)->toBe('General/Padaliniai/test-tenant/Institutions/Test Institution/Meetings/2023-06-15 14.30');
         });
 
-        test('throws exception for Meeting without institution', function () {
+        test('throws exception for Meeting without institution', function (): void {
             $meeting = Meeting::factory()->make(['title' => 'Test Meeting']);
             $meeting->setRelation('institutions', collect([]));
 
@@ -129,7 +130,7 @@ describe('SharepointFileService', function () {
                 ->toThrow(Exception::class, 'Meeting does not have an institution. Institution must be assigned.');
         });
 
-        test('throws exception for Meeting institution without tenant', function () {
+        test('throws exception for Meeting institution without tenant', function (): void {
             $institutionWithoutTenant = Institution::factory()->create(['name' => 'Test', 'tenant_id' => null]);
             $meeting = Meeting::factory()->create(['title' => 'Test Meeting']);
 
@@ -139,7 +140,7 @@ describe('SharepointFileService', function () {
                 ->toThrow(Exception::class, 'Institution does not have a tenant. Tenant must be assigned.');
         });
 
-        test('generates correct path for Duty model', function () {
+        test('generates correct path for Duty model', function (): void {
             $institution = Institution::factory()->for($this->tenant)->create([
                 'name' => 'Test Institution',
             ]);
@@ -157,30 +158,30 @@ describe('SharepointFileService', function () {
         // so the exception path cannot be tested directly. The validation happens
         // at the service level when the institution relationship returns null.
 
-        test('uses SharepointFolderEnum constants', function () {
+        test('uses SharepointFolderEnum constants', function (): void {
             $type = Type::factory()->create([
                 'title' => 'Test Type',
-                'model_type' => 'App\\Models\\News',
+                'model_type' => News::class,
             ]);
 
             $path = SharepointFileService::pathForFileableDriveItem($type);
 
-            expect($path)->toStartWith(SharepointFolderEnum::GENERAL()->label);
+            expect($path)->toStartWith(SharepointFolderEnum::GENERAL->label());
         });
 
-        test('handles different model types correctly', function () {
+        test('handles different model types correctly', function (): void {
             $institution = Institution::factory()->for($this->tenant)->create([
                 'name' => 'Test Institution',
             ]);
 
             $path = SharepointFileService::pathForFileableDriveItem($institution);
 
-            expect($path)->toContain(SharepointFolderEnum::GENERAL()->label);
-            expect($path)->toContain(SharepointFolderEnum::PADALINIAI()->label);
-            expect($path)->toContain($this->tenant->shortname);
+            expect($path)->toContain(SharepointFolderEnum::GENERAL->label())
+                ->toContain(SharepointFolderEnum::PADALINIAI->label())
+                ->toContain($this->tenant->shortname);
         });
 
-        test('formats meeting datetime correctly', function () {
+        test('formats meeting datetime correctly', function (): void {
             $institution = Institution::factory()->for($this->tenant)->create();
 
             $meeting = Meeting::factory()->create([
@@ -195,7 +196,7 @@ describe('SharepointFileService', function () {
             expect($path)->toContain('2023-12-25 09.15');
         });
 
-        test('handles special characters in names', function () {
+        test('handles special characters in names', function (): void {
             $institution = Institution::factory()->for($this->tenant)->create([
                 'name' => 'Institution & Partners (Ltd.)',
             ]);
@@ -205,7 +206,7 @@ describe('SharepointFileService', function () {
             expect($path)->toContain('Institution & Partners (Ltd.)');
         });
 
-        test('handles unicode characters in names', function () {
+        test('handles unicode characters in names', function (): void {
             $institution = Institution::factory()->for($this->tenant)->create([
                 'name' => 'Institucija ąčęėįšųūž',
             ]);
@@ -216,8 +217,8 @@ describe('SharepointFileService', function () {
         });
     });
 
-    describe('uploadFile', function () {
-        test('validates fileable has HasSharepointFiles trait', function () {
+    describe('uploadFile', function (): void {
+        test('validates fileable has HasSharepointFiles trait', function (): void {
             $modelWithoutTrait = new class extends Model {};
             $file = UploadedFile::fake()->create('test.pdf');
 
@@ -234,8 +235,8 @@ describe('SharepointFileService', function () {
         // in integration tests with proper mocking setup.
     });
 
-    describe('path generation edge cases', function () {
-        test('handles empty institution name gracefully', function () {
+    describe('path generation edge cases', function (): void {
+        test('handles empty institution name gracefully', function (): void {
             $institution = Institution::factory()->for($this->tenant)->create([
                 'name' => '',
             ]);
@@ -245,7 +246,7 @@ describe('SharepointFileService', function () {
             expect($path)->toContain('Institutions/');
         });
 
-        test('path includes proper folder structure', function () {
+        test('path includes proper folder structure', function (): void {
             $institution1 = Institution::factory()->for($this->tenant)->create(['name' => 'Test 1']);
             $institution2 = Institution::factory()->for($this->tenant)->create(['name' => 'Test 2']);
 
@@ -261,19 +262,19 @@ describe('SharepointFileService', function () {
         });
     });
 
-    describe('enum integration', function () {
-        test('uses correct folder enum values', function () {
-            expect(SharepointFolderEnum::GENERAL()->label)->toBe('General');
-            expect(SharepointFolderEnum::PADALINIAI()->label)->toBe('Padaliniai');
+    describe('enum integration', function (): void {
+        test('uses correct folder enum values', function (): void {
+            expect(SharepointFolderEnum::GENERAL->label())->toBe('General')
+                ->and(SharepointFolderEnum::PADALINIAI->label())->toBe('Padaliniai');
         });
 
-        test('folder enums are used in paths', function () {
+        test('folder enums are used in paths', function (): void {
             $institution = Institution::factory()->for($this->tenant)->create(['name' => 'Test Institution']);
             $path = SharepointFileService::pathForFileableDriveItem($institution);
 
-            expect($path)->toContain(SharepointFolderEnum::GENERAL()->label);
-            expect($path)->toContain(SharepointFolderEnum::PADALINIAI()->label);
-            expect($path)->toContain($this->tenant->shortname);
+            expect($path)->toContain(SharepointFolderEnum::GENERAL->label())
+                ->toContain(SharepointFolderEnum::PADALINIAI->label())
+                ->toContain($this->tenant->shortname);
         });
     });
 });

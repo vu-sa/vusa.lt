@@ -16,9 +16,9 @@ use Illuminate\Support\Collection;
  */
 final class LinkListResolver implements ResolvesContentPart
 {
-    private const MAX_ITEMS = 12;
+    private const int MAX_ITEMS = 12;
 
-    private const MAX_PINNED_IDS = 12;
+    private const int MAX_PINNED_IDS = 12;
 
     public function resolve(Collection $parts, ResolutionContext $context): array
     {
@@ -248,6 +248,6 @@ final class LinkListResolver implements ResolvesContentPart
             return [];
         }
 
-        return array_values(array_slice(array_map('intval', array_filter($value, 'is_numeric')), 0, self::MAX_PINNED_IDS));
+        return array_values(array_slice(array_map(intval(...), array_filter($value, is_numeric(...))), 0, self::MAX_PINNED_IDS));
     }
 }

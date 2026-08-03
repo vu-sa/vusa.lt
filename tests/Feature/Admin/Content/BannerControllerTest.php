@@ -5,9 +5,9 @@ use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
     $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
@@ -21,20 +21,20 @@ beforeEach(function () {
     ]);
 });
 
-describe('unauthorized access', function () {
-    test('cannot access index page', function () {
+describe('unauthorized access', function (): void {
+    test('cannot access index page', function (): void {
         asUser($this->user)
             ->get(route('banners.index'))
             ->assertStatus(403);
     });
 
-    test('cannot access create page', function () {
+    test('cannot access create page', function (): void {
         asUser($this->user)
             ->get(route('banners.create'))
             ->assertStatus(403);
     });
 
-    test('cannot store banner', function () {
+    test('cannot store banner', function (): void {
         $validData = getControllerTestData('Banner')['valid'];
 
         asUser($this->user)
@@ -42,13 +42,13 @@ describe('unauthorized access', function () {
             ->assertStatus(403);
     });
 
-    test('cannot access edit page', function () {
+    test('cannot access edit page', function (): void {
         asUser($this->user)
             ->get(route('banners.edit', $this->banner))
             ->assertStatus(403);
     });
 
-    test('cannot update banner', function () {
+    test('cannot update banner', function (): void {
         $updateData = getControllerTestData('Banner')['valid'];
 
         asUser($this->user)
@@ -56,15 +56,15 @@ describe('unauthorized access', function () {
             ->assertStatus(403);
     });
 
-    test('cannot delete banner', function () {
+    test('cannot delete banner', function (): void {
         asUser($this->user)
             ->delete(route('banners.destroy', $this->banner))
             ->assertStatus(403);
     });
 });
 
-describe('authorized access', function () {
-    test('can access index page', function () {
+describe('authorized access', function (): void {
+    test('can access index page', function (): void {
         asUser($this->admin)
             ->get(route('banners.index'))
             ->assertStatus(200)
@@ -74,7 +74,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('can access create page', function () {
+    test('can access create page', function (): void {
         asUser($this->admin)
             ->get(route('banners.create'))
             ->assertStatus(200)
@@ -83,7 +83,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('can store banner with valid data', function () {
+    test('can store banner with valid data', function (): void {
         $validData = getControllerTestData('Banner')['valid'];
         $uniqueSuffix = time();
         $validData['title'] = 'Naujas baneris '.$uniqueSuffix;
@@ -104,7 +104,7 @@ describe('authorized access', function () {
         ]);
     });
 
-    test('cannot store banner with invalid data', function () {
+    test('cannot store banner with invalid data', function (): void {
         $invalidData = getControllerTestData('Banner')['invalid'];
 
         asUser($this->admin)
@@ -113,7 +113,7 @@ describe('authorized access', function () {
             ->assertSessionHasErrors(getControllerValidationErrors('Banner'));
     });
 
-    test('can access edit page', function () {
+    test('can access edit page', function (): void {
         asUser($this->admin)
             ->get(route('banners.edit', $this->banner))
             ->assertStatus(200)
@@ -124,7 +124,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('can update banner with valid data', function () {
+    test('can update banner with valid data', function (): void {
         $updateData = getControllerTestData('Banner')['valid'];
         $updateData['title'] = 'Atnaujintas baneris';
         $updateData['image_url'] = 'https://example.com/updated.jpg';
@@ -141,7 +141,7 @@ describe('authorized access', function () {
         ]);
     });
 
-    test('cannot update banner with invalid data - missing title', function () {
+    test('cannot update banner with invalid data - missing title', function (): void {
         $invalidData = ['title' => '', 'image_url' => 'https://example.com/test.jpg'];
 
         asUser($this->admin)
@@ -156,7 +156,7 @@ describe('authorized access', function () {
         ]);
     });
 
-    test('cannot update banner with invalid data - missing image_url', function () {
+    test('cannot update banner with invalid data - missing image_url', function (): void {
         $invalidData = ['title' => 'Valid title', 'image_url' => ''];
 
         asUser($this->admin)
@@ -171,7 +171,7 @@ describe('authorized access', function () {
         ]);
     });
 
-    test('can delete banner', function () {
+    test('can delete banner', function (): void {
         asUser($this->admin)
             ->delete(route('banners.destroy', $this->banner))
             ->assertStatus(302)
@@ -184,11 +184,11 @@ describe('authorized access', function () {
     });
 });
 
-describe('banner functionality', function () {
+describe('banner functionality', function (): void {
     // Order used to be `rand(1, 10)`, which could collide with the
     // banners_order_padalinys_id_unique index. The model now appends to the end of the
     // tenant's existing banners, counting trashed ones since they still hold their slot.
-    test('banner is created at the end of its tenant order', function () {
+    test('banner is created at the end of its tenant order', function (): void {
         $validData = getControllerTestData('Banner')['valid'];
         $validData['title'] = 'Banner with order';
 
@@ -205,7 +205,7 @@ describe('banner functionality', function () {
         expect($banner->order)->toBe($highestOtherOrder + 1);
     });
 
-    test('a trashed banner keeps its order slot so the unique index is not violated', function () {
+    test('a trashed banner keeps its order slot so the unique index is not violated', function (): void {
         $trashed = Banner::factory()->for($this->tenant)->create(['order' => 500]);
         $trashed->delete();
 
@@ -219,7 +219,7 @@ describe('banner functionality', function () {
         expect(Banner::where('title', 'Banner after trashed')->first()->order)->toBe(501);
     });
 
-    test('banner defaults is_active to false when not provided', function () {
+    test('banner defaults is_active to false when not provided', function (): void {
         $validData = getControllerTestData('Banner')['valid'];
         unset($validData['is_active']);
         $validData['title'] = 'Inactive banner test';
@@ -234,7 +234,7 @@ describe('banner functionality', function () {
         ]);
     });
 
-    test('banner can have empty link_url', function () {
+    test('banner can have empty link_url', function (): void {
         $validData = getControllerTestData('Banner')['valid'];
         $validData['link_url'] = '';
         $validData['title'] = 'Banner without link';
@@ -250,8 +250,8 @@ describe('banner functionality', function () {
     });
 });
 
-describe('filtering and search', function () {
-    beforeEach(function () {
+describe('filtering and search', function (): void {
+    beforeEach(function (): void {
         // Create additional banners for testing
         Banner::factory()->for($this->tenant)->create([
             'title' => 'Another banner',
@@ -260,7 +260,7 @@ describe('filtering and search', function () {
         ]);
     });
 
-    test('can filter banners by search term', function () {
+    test('can filter banners by search term', function (): void {
         asUser($this->admin)
             ->get(route('banners.index', ['search' => 'Test']))
             ->assertStatus(200)
@@ -270,7 +270,7 @@ describe('filtering and search', function () {
             );
     });
 
-    test('pagination works correctly', function () {
+    test('pagination works correctly', function (): void {
         // Create more banners to test pagination
         Banner::factory()->count(25)->for($this->tenant)->create();
 
@@ -284,14 +284,14 @@ describe('filtering and search', function () {
     });
 });
 
-describe('tenant isolation', function () {
-    beforeEach(function () {
+describe('tenant isolation', function (): void {
+    beforeEach(function (): void {
         $this->otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $this->otherBanner = Banner::factory()->for($this->otherTenant)->create();
         $this->otherAdmin = makeTenantUserWithRole('Communication Coordinator', $this->otherTenant);
     });
 
-    test('user only sees banners from their tenant', function () {
+    test('user only sees banners from their tenant', function (): void {
         asUser($this->admin)
             ->get(route('banners.index'))
             ->assertStatus(200)
@@ -301,13 +301,13 @@ describe('tenant isolation', function () {
             );
     });
 
-    test('cannot access other tenant banner', function () {
+    test('cannot access other tenant banner', function (): void {
         asUser($this->admin)
             ->get(route('banners.edit', $this->otherBanner))
             ->assertStatus(403); // Authorization failure
     });
 
-    test('cannot update other tenant banner', function () {
+    test('cannot update other tenant banner', function (): void {
         $updateData = getControllerTestData('Banner')['valid'];
 
         asUser($this->admin)
@@ -316,8 +316,8 @@ describe('tenant isolation', function () {
     });
 });
 
-describe('cache functionality', function () {
-    test('banner cache is cleared when banner is saved', function () {
+describe('cache functionality', function (): void {
+    test('banner cache is cleared when banner is saved', function (): void {
         // This test verifies that the cache clearing mechanism works
         // The Banner model has event listeners that should clear cache
 
@@ -335,7 +335,7 @@ describe('cache functionality', function () {
         ]);
     });
 
-    test('banner cache is cleared when banner is deleted', function () {
+    test('banner cache is cleared when banner is deleted', function (): void {
         asUser($this->admin)
             ->delete(route('banners.destroy', $this->banner))
             ->assertStatus(302);

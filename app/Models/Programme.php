@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Traits\HasTranslations;
 use Database\Factories\ProgrammeFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -33,12 +34,11 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
+#[Fillable(['title', 'description'])]
 class Programme extends Model
 {
     /** @use HasFactory<ProgrammeFactory> */
     use HasFactory, HasTranslations;
-
-    protected $fillable = ['title', 'description'];
 
     public $translatable = ['title', 'description'];
 

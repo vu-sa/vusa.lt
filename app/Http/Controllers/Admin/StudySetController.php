@@ -90,7 +90,7 @@ class StudySetController extends AdminController
     {
         $this->handleAuthorization('create', StudySet::class);
 
-        DB::transaction(function () use ($request) {
+        DB::transaction(function () use ($request): void {
             $studySet = StudySet::create([
                 'name' => $request->input('name'),
                 'description' => $request->input('description'),
@@ -137,7 +137,7 @@ class StudySetController extends AdminController
     {
         $this->handleAuthorization('update', $studySet);
 
-        DB::transaction(function () use ($request, $studySet) {
+        DB::transaction(function () use ($request, $studySet): void {
             $studySet->update([
                 'name' => $request->input('name'),
                 'description' => $request->input('description'),

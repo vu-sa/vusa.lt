@@ -2,15 +2,15 @@
 
 namespace App\Console\Commands;
 
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Redis;
 
+#[Description('Display Redis cache statistics')]
+#[Signature('cache:stats')]
 class CacheStats extends Command
 {
-    protected $signature = 'cache:stats';
-
-    protected $description = 'Display Redis cache statistics';
-
     public function handle()
     {
         try {

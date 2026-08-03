@@ -8,9 +8,9 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
     $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
@@ -35,7 +35,7 @@ beforeEach(function () {
     ]);
 });
 
-test('cannot update dutiable without permission', function () {
+test('cannot update dutiable without permission', function (): void {
     $unauthorizedUser = User::factory()->create();
     $plainDuty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
     $dutiableRecord = Dutiable::factory()->create([
@@ -51,11 +51,11 @@ test('cannot update dutiable without permission', function () {
     ]);
 
     $dutiableRecord->refresh();
-    expect($response->status())->toBe(403);
-    expect($dutiableRecord->additional_email)->toBeNull();
+    expect($response->status())->toBe(403)
+        ->and($dutiableRecord->additional_email)->toBeNull();
 });
 
-test('duty manager can update dutiable additional_email', function () {
+test('duty manager can update dutiable additional_email', function (): void {
     $response = asUser($this->dutyManager)->patch(route('dutiables.update', $this->dutiable), [
         'additional_email' => 'kontaktas@example.com',
     ]);
@@ -66,7 +66,7 @@ test('duty manager can update dutiable additional_email', function () {
     expect($this->dutiable->additional_email)->toBe('kontaktas@example.com');
 });
 
-test('returns json response for api requests', function () {
+test('returns json response for api requests', function (): void {
     $response = asUser($this->dutyManager)
         ->withHeader('Accept', 'application/json')
         ->patch(route('dutiables.update', $this->dutiable), [
@@ -83,7 +83,7 @@ test('returns json response for api requests', function () {
     expect($this->dutiable->additional_email)->toBe('api@example.com');
 });
 
-test('can clear additional_email by sending null', function () {
+test('can clear additional_email by sending null', function (): void {
     $this->dutiable->update(['additional_email' => 'existing@example.com']);
 
     $response = asUser($this->dutyManager)->patch(route('dutiables.update', $this->dutiable), [
@@ -96,7 +96,7 @@ test('can clear additional_email by sending null', function () {
     expect($this->dutiable->additional_email)->toBeNull();
 });
 
-test('cannot update dutiable without additional_email field', function () {
+test('cannot update dutiable without additional_email field', function (): void {
     $response = asUser($this->dutyManager)->patch(route('dutiables.update', $this->dutiable), [
         'start_date' => now()->format('Y-m-d'),
     ]);
@@ -107,7 +107,7 @@ test('cannot update dutiable without additional_email field', function () {
     expect($this->dutiable->additional_email)->toBeNull();
 });
 
-test('update request authorizes using dutiable duty relation', function () {
+test('update request authorizes using dutiable duty relation', function (): void {
     $response = asUser($this->dutyManager)
         ->withHeader('Accept', 'application/json')
         ->patch(route('dutiables.update', $this->dutiable), [

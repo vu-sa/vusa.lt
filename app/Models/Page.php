@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Actions\PairTranslatedRecord;
+use App\Models\Traits\LogsModelActivity;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -27,6 +29,9 @@ use Spatie\Sitemap\Tags\Url;
  * @property bool $is_active
  * @property array $highlights
  * @property string $layout
+ * @property bool $show_table_of_contents
+ * @property bool $show_title
+ * @property bool $show_breadcrumbs
  * @property string|null $featured_image
  * @property string|null $meta_description
  * @property Carbon|null $publish_time
@@ -35,6 +40,7 @@ use Spatie\Sitemap\Tags\Url;
  * @property Carbon $updated_at
  * @property Carbon|null $last_edited_at
  * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Category|null $category
  * @property-read Content $content
  * @property-read Page|null $otherLanguagePage
@@ -52,8 +58,9 @@ use Spatie\Sitemap\Tags\Url;
  */
 class Page extends Model implements Feedable, Sitemapable
 {
-    use HasFactory, Searchable, SoftDeletes;
+    use HasFactory, LogsModelActivity, Searchable, SoftDeletes;
 
+    #[\Override]
     protected $guarded = [];
 
     /**
@@ -61,6 +68,7 @@ class Page extends Model implements Feedable, Sitemapable
      */
     public const LAYOUTS = ['default', 'wide', 'focused'];
 
+    #[\Override]
     protected function casts(): array
     {
         return [
@@ -76,9 +84,10 @@ class Page extends Model implements Feedable, Sitemapable
         ];
     }
 
+    #[\Override]
     protected static function booted()
     {
-        static::saving(function ($page) {
+        static::saving(function ($page): void {
             // Ensure highlights is limited to 3 items
             if (is_array($page->highlights) && count($page->highlights) > 3) {
                 $page->highlights = array_slice($page->highlights, 0, 3);
@@ -90,22 +99,22 @@ class Page extends Model implements Feedable, Sitemapable
             }
         });
 
-        static::saved(function ($page) {
+        static::saved(function ($page): void {
             Cache::tags(['sitemap', 'pages', "tenant_{$page->tenant_id}", "locale_{$page->lang}"])->flush();
         });
 
-        static::deleted(function ($page) {
+        static::deleted(function ($page): void {
             Cache::tags(['sitemap', 'pages', "tenant_{$page->tenant_id}", "locale_{$page->lang}"])->flush();
         });
 
-        static::deleting(function (Page $page) {
+        static::deleting(function (Page $page): void {
             // Drop the surviving counterpart's back-reference so its language switcher
             // stops linking to a page that is no longer public. This page keeps its own
             // pointer, which is what lets the pairing be re-established on restore.
             PairTranslatedRecord::releaseCounterpart($page);
         });
 
-        static::restored(function (Page $page) {
+        static::restored(function (Page $page): void {
             PairTranslatedRecord::repair($page);
         });
     }

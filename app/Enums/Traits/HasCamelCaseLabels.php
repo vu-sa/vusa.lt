@@ -2,23 +2,17 @@
 
 namespace App\Enums\Traits;
 
-use Closure;
-
+/**
+ * Provides a `label()` instance method that camelCases the enum case's name.
+ *
+ * e.g. RESERVATION_RESOURCE -> reservationResource.
+ */
 trait HasCamelCaseLabels
 {
-    //
-    protected static function labels(): Closure
+    public function label(): string
     {
-        return function (string $name) {
-            // transform values from SNAKE_CASE to camelCase
+        $name = strtolower($this->name);
 
-            $name = strtolower($name);
-
-            $name = preg_replace_callback('/_([a-z])/', function ($matches) {
-                return strtoupper($matches[1]);
-            }, $name);
-
-            return $name;
-        };
+        return preg_replace_callback('/_([a-z])/', fn (array $matches) => strtoupper($matches[1]), $name);
     }
 }

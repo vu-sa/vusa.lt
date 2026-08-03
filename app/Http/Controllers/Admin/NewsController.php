@@ -123,8 +123,6 @@ class NewsController extends AdminController
 
         $content->save();
 
-        $content->parts()->createMany($request->content['parts']);
-
         $news = News::create([
             'title' => $request->title,
             'permalink' => $request->permalink,
@@ -141,6 +139,11 @@ class NewsController extends AdminController
             'tenant_id' => $tenant_id,
         ]);
 
+        // Created after the News so the parts' first activity-log entries can
+        // already resolve their root up to the News (see App\Support\ActivityRoots)
+        // instead of self-rooting to the not-yet-owned Content.
+        $content->parts()->createMany($request->content['parts']);
+
         // Sync tags if provided
         if ($request->has('tags') && is_array($request->tags)) {
             $news->tags()->sync($request->tags);
@@ -156,7 +159,7 @@ class NewsController extends AdminController
     {
         $this->handleAuthorization('update', $news);
 
-        $other_lang_pages = News::with('tenant:id,shortname')->when(! request()->user()->isSuperAdmin(), function ($query) use ($news) {
+        $other_lang_pages = News::with('tenant:id,shortname')->when(! request()->user()->isSuperAdmin(), function ($query) use ($news): void {
             $query->where('tenant_id', $news->tenant_id);
         })->where('lang', '!=', $news->lang)->select('id', 'title', 'tenant_id')->get();
 

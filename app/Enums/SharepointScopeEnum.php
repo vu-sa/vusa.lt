@@ -2,23 +2,22 @@
 
 namespace App\Enums;
 
-use Spatie\Enum\Laravel\Enum;
+use App\Enums\Concerns\HasEnumHelpers;
 
-/**
- * @typescript
- *
- * @method static self ANONYMOUS()
- * @method static self ORGANIZATION()
- * @method static self USERS()
- */
-final class SharepointScopeEnum extends Enum
+enum SharepointScopeEnum: string
 {
-    protected static function labels(): array
+    use HasEnumHelpers;
+
+    case ANONYMOUS = 'ANONYMOUS';
+    case ORGANIZATION = 'ORGANIZATION';
+    case USERS = 'USERS';
+
+    public function label(): string
     {
-        return [
-            'ANONYMOUS' => 'anonymous',
-            'ORGANIZATION' => 'organization',
-            'USERS' => 'users',
-        ];
+        return match ($this) {
+            self::ANONYMOUS => 'anonymous',
+            self::ORGANIZATION => 'organization',
+            self::USERS => 'users',
+        };
     }
 }

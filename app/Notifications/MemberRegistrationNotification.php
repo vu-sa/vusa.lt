@@ -14,32 +14,10 @@ use Illuminate\Contracts\Mail\Mailable;
  */
 class MemberRegistrationNotification extends BaseNotification
 {
-    protected int $registrationId;
-
-    protected string $memberName;
-
-    protected Institution $institution;
-
-    protected string $email;
-
-    protected string $formId;
-
     /**
      * Create a new notification instance.
      */
-    public function __construct(
-        int $registrationId,
-        string $memberName,
-        Institution $institution,
-        string $email,
-        string $formId
-    ) {
-        $this->registrationId = $registrationId;
-        $this->memberName = $memberName;
-        $this->institution = $institution;
-        $this->email = $email;
-        $this->formId = $formId;
-    }
+    public function __construct(protected int $registrationId, protected string $memberName, protected Institution $institution, protected string $email, protected string $formId) {}
 
     public function category(): NotificationCategory
     {
@@ -79,6 +57,7 @@ class MemberRegistrationNotification extends BaseNotification
         ];
     }
 
+    #[\Override]
     public function actions(): array
     {
         return [
@@ -92,6 +71,7 @@ class MemberRegistrationNotification extends BaseNotification
     /**
      * Override via to use custom mail.
      */
+    #[\Override]
     public function via(object $notifiable): array
     {
         $channels = parent::via($notifiable);
@@ -107,13 +87,14 @@ class MemberRegistrationNotification extends BaseNotification
     /**
      * Use custom mailable for rich email content.
      */
+    #[\Override]
     public function toMail(object $notifiable): Mailable
     {
-        return (new InformChairAboutMemberRegistration(
+        return new InformChairAboutMemberRegistration(
             (string) $this->registrationId,
             $this->memberName,
             $this->institution,
             $this->formId
-        ))->to($this->email);
+        )->to($this->email);
     }
 }

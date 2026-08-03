@@ -7,9 +7,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     config()->set('services.umami.api_url', 'http://umami.test');
     config()->set('services.umami.website_id', 'test-website-id');
     config()->set('services.umami.username', 'api-user');
@@ -40,14 +40,14 @@ function fakeUmami(array $overrides = []): void
     ], $overrides));
 }
 
-test('requires authentication', function () {
+test('requires authentication', function (): void {
     $tenant = Tenant::query()->first();
 
     $this->getJson(route('api.v1.admin.analytics.overview', ['tenant_id' => $tenant->id]))
         ->assertStatus(401);
 });
 
-test('returns tenant-scoped totals, series and top pages', function () {
+test('returns tenant-scoped totals, series and top pages', function (): void {
     fakeUmami();
 
     $tenant = Tenant::query()->first();
@@ -70,7 +70,7 @@ test('returns tenant-scoped totals, series and top pages', function () {
         ->assertJsonPath('data.topPages.0.views', 80);
 });
 
-test('scopes the upstream request to the tenant hostname', function () {
+test('scopes the upstream request to the tenant hostname', function (): void {
     fakeUmami();
 
     $tenant = Tenant::query()->first();
@@ -81,13 +81,11 @@ test('scopes the upstream request to the tenant hostname', function () {
 
     // v3 spelling: `hostname=`. v2's `host=` is silently ignored and would return
     // unfiltered, cross-tenant totals.
-    Http::assertSent(function ($request) use ($tenant) {
-        return str_contains($request->url(), '/stats')
-            && $request['hostname'] === $tenant->publicHostname();
-    });
+    Http::assertSent(fn ($request) => str_contains($request->url(), '/stats')
+        && $request['hostname'] === $tenant->publicHostname());
 });
 
-test('forbids reading a tenant the user does not manage', function () {
+test('forbids reading a tenant the user does not manage', function (): void {
     fakeUmami();
 
     $ownTenant = Tenant::query()->first();
@@ -100,7 +98,7 @@ test('forbids reading a tenant the user does not manage', function () {
     )->assertStatus(403);
 });
 
-test('reports unavailable instead of failing when umami is down', function () {
+test('reports unavailable instead of failing when umami is down', function (): void {
     fakeUmami([
         'http://umami.test/api/websites/*/stats*' => Http::response(null, 500),
     ]);
@@ -115,7 +113,7 @@ test('reports unavailable instead of failing when umami is down', function () {
         ->assertJsonPath('data.series', []);
 });
 
-test('reports unavailable when the api is not configured', function () {
+test('reports unavailable when the api is not configured', function (): void {
     config()->set('services.umami.api_url', null);
 
     $tenant = Tenant::query()->first();
@@ -128,7 +126,7 @@ test('reports unavailable when the api is not configured', function () {
     Http::assertNothingSent();
 });
 
-test('re-authenticates once when the cached token has expired', function () {
+test('re-authenticates once when the cached token has expired', function (): void {
     $statsCalls = 0;
 
     Http::fake([
@@ -156,7 +154,7 @@ test('re-authenticates once when the cached token has expired', function () {
     expect($statsCalls)->toBe(2);
 });
 
-test('rejects an unknown period', function () {
+test('rejects an unknown period', function (): void {
     $tenant = Tenant::query()->first();
     $user = makeTenantUser('Communication Coordinator', $tenant);
 
@@ -165,8 +163,8 @@ test('rejects an unknown period', function () {
     )->assertStatus(422);
 });
 
-describe('content analytics', function () {
-    test('returns lifetime views for a news article', function () {
+describe('content analytics', function (): void {
+    test('returns lifetime views for a news article', function (): void {
         fakeUmami();
 
         $tenant = Tenant::query()->first();
@@ -186,7 +184,7 @@ describe('content analytics', function () {
             ->assertJsonPath('data.dataSince', '2026-07-26');
     });
 
-    test('uses the english url segment for english news', function () {
+    test('uses the english url segment for english news', function (): void {
         fakeUmami();
 
         $tenant = Tenant::query()->first();
@@ -201,7 +199,7 @@ describe('content analytics', function () {
         )->assertJsonPath('data.path', '/en/news/a-news-item');
     });
 
-    test('builds the page path without a news segment', function () {
+    test('builds the page path without a news segment', function (): void {
         fakeUmami();
 
         $tenant = Tenant::query()->first();
@@ -216,7 +214,7 @@ describe('content analytics', function () {
         )->assertJsonPath('data.path', '/lt/apie-mus/kontaktai');
     });
 
-    test('scopes the upstream query to that single path', function () {
+    test('scopes the upstream query to that single path', function (): void {
         fakeUmami();
 
         $tenant = Tenant::query()->first();
@@ -230,14 +228,12 @@ describe('content analytics', function () {
             route('api.v1.admin.analytics.content', ['type' => 'news', 'id' => $news->id])
         )->assertSuccessful();
 
-        Http::assertSent(function ($request) use ($tenant) {
-            return str_contains($request->url(), '/stats')
-                && $request['path'] === '/lt/naujiena/testine-naujiena'
-                && $request['hostname'] === $tenant->publicHostname();
-        });
+        Http::assertSent(fn ($request) => str_contains($request->url(), '/stats')
+            && $request['path'] === '/lt/naujiena/testine-naujiena'
+            && $request['hostname'] === $tenant->publicHostname());
     });
 
-    test('forbids reading content the user cannot edit', function () {
+    test('forbids reading content the user cannot edit', function (): void {
         fakeUmami();
 
         $tenant = Tenant::query()->first();
@@ -249,7 +245,7 @@ describe('content analytics', function () {
         )->assertStatus(403);
     });
 
-    test('rejects an arbitrary model type', function () {
+    test('rejects an arbitrary model type', function (): void {
         $tenant = Tenant::query()->first();
 
         asUser(makeAdminUser($tenant))->getJson(
@@ -257,7 +253,7 @@ describe('content analytics', function () {
         )->assertStatus(422);
     });
 
-    test('reports unavailable for content without a permalink', function () {
+    test('reports unavailable for content without a permalink', function (): void {
         fakeUmami();
 
         $tenant = Tenant::query()->first();

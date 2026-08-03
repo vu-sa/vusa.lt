@@ -2,17 +2,17 @@
 
 use App\Services\HtmlSanitizerService;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->sanitizer = new HtmlSanitizerService;
 });
 
-describe('rich content: legitimate editor output survives', function () {
+describe('rich content: legitimate editor output survives', function (): void {
     /**
      * The allowlist mirrors Tiptap's `full` preset. If any of these are dropped,
      * saving a problem or an agenda note silently deletes the author's content —
      * which is a worse outcome than the XSS we are guarding against.
      */
-    test('keeps every node the full preset can produce', function (string $html, string $expected) {
+    test('keeps every node the full preset can produce', function (string $html, string $expected): void {
         expect($this->sanitizer->sanitizeRichContent($html))->toContain($expected);
     })->with([
         'paragraph' => ['<p>Tekstas</p>', '<p>Tekstas</p>'],
@@ -53,7 +53,7 @@ describe('rich content: legitimate editor output survives', function () {
         'table header' => ['<table><thead><tr><th>Antraštė</th></tr></thead></table>', '<th>Antraštė</th>'],
     ]);
 
-    test('keeps a full document intact', function () {
+    test('keeps a full document intact', function (): void {
         $html = '<h2 id="t">Problema</h2><p>Aprašymas su <strong>bold</strong> ir '
             .'<a href="https://vusa.lt">nuoroda</a>.</p>'
             .'<img src="/uploads/a.png" alt="A">'
@@ -70,8 +70,8 @@ describe('rich content: legitimate editor output survives', function () {
     });
 });
 
-describe('rich content: hostile markup is removed', function () {
-    test('strips dangerous constructs', function (string $html, string $forbidden) {
+describe('rich content: hostile markup is removed', function (): void {
+    test('strips dangerous constructs', function (string $html, string $forbidden): void {
         expect($this->sanitizer->sanitizeRichContent($html))->not->toContain($forbidden);
     })->with([
         'script tag' => ['<p>hi</p><script>alert(1)</script>', '<script'],
@@ -87,12 +87,12 @@ describe('rich content: hostile markup is removed', function () {
         'object' => ['<object data="evil.swf"></object>', '<object'],
     ]);
 
-    test('an anchor is forced to rel=noopener', function () {
+    test('an anchor is forced to rel=noopener', function (): void {
         expect($this->sanitizer->sanitizeRichContent('<a href="https://x.lt">x</a>'))
             ->toContain('rel="noopener noreferrer nofollow"');
     });
 
-    test('a data: URI cannot smuggle a script through an iframe', function () {
+    test('a data: URI cannot smuggle a script through an iframe', function (): void {
         $clean = $this->sanitizer->sanitizeRichContent(
             '<iframe src="data:text/html,<script>alert(1)</script>"></iframe>'
         );
@@ -101,13 +101,13 @@ describe('rich content: hostile markup is removed', function () {
     });
 });
 
-describe('comment profile is unchanged', function () {
-    test('still strips script from a comment body', function () {
+describe('comment profile is unchanged', function (): void {
+    test('still strips script from a comment body', function (): void {
         expect($this->sanitizer->sanitizeCommentBody('<p>hi</p><script>alert(1)</script>'))
             ->toBe('<p>hi</p>');
     });
 
-    test('does not gain rich-content elements', function () {
+    test('does not gain rich-content elements', function (): void {
         expect($this->sanitizer->sanitizeCommentBody('<h2>Big</h2><img src="/a.png">'))
             ->not->toContain('<h2>')
             ->not->toContain('<img');

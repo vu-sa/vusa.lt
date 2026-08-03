@@ -6,9 +6,9 @@ use App\Services\Typesense\TypesenseManager;
 use App\Services\Typesense\TypesenseScopedKeyService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     config([
         'scout.typesense.client-settings.api_key' => 'admin-key',
         'scout.typesense.client-settings.search_only_key' => 'search-only-key',
@@ -24,8 +24,8 @@ beforeEach(function () {
     ]);
 });
 
-describe('browser nodes', function () {
-    test('public search gets the public node, not the internal one', function () {
+describe('browser nodes', function (): void {
+    test('public search gets the public node, not the internal one', function (): void {
         $node = TypesenseManager::getFrontendConfig()['nodes'][0];
 
         // The server indexes against 127.0.0.1; the browser must never be told that.
@@ -34,13 +34,13 @@ describe('browser nodes', function () {
             ->and($node['protocol'])->toBe('https');
     });
 
-    test('admin search gets the public node too', function () {
+    test('admin search gets the public node too', function (): void {
         // /mano/search runs in the browser just like public search does, but it is served
         // by a separate config method that used to build its nodes independently.
         // The user is only handed to the (mocked) key service, so it need not be persisted.
         $user = User::factory()->make();
 
-        $this->mock(TypesenseScopedKeyService::class, function ($mock) {
+        $this->mock(TypesenseScopedKeyService::class, function ($mock): void {
             $mock->shouldReceive('generateScopedKeysForUser')->andReturn([
                 'collections' => [],
                 'header_key' => 'scoped-key',
@@ -56,7 +56,7 @@ describe('browser nodes', function () {
             ->and($node['protocol'])->toBe('https');
     });
 
-    test('falls back to the client node when no public node is set', function () {
+    test('falls back to the client node when no public node is set', function (): void {
         config(['scout.typesense.public-node' => ['host' => null, 'port' => null, 'protocol' => null]]);
 
         $node = TypesenseManager::getFrontendConfig()['nodes'][0];
@@ -65,7 +65,7 @@ describe('browser nodes', function () {
             ->and($node['port'])->toBe(8108);
     });
 
-    test('the docker service name is never handed to the browser', function () {
+    test('the docker service name is never handed to the browser', function (): void {
         config([
             'scout.typesense.public-node' => ['host' => null, 'port' => null, 'protocol' => null],
             'scout.typesense.client-settings.nodes' => [
@@ -76,7 +76,7 @@ describe('browser nodes', function () {
         expect(TypesenseManager::getFrontendConfig()['nodes'][0]['host'])->toBe('localhost');
     });
 
-    test('the admin api key is never exposed to the browser', function () {
+    test('the admin api key is never exposed to the browser', function (): void {
         $config = TypesenseManager::getFrontendConfig();
 
         expect($config['apiKey'])->toBe('search-only-key')
@@ -84,8 +84,8 @@ describe('browser nodes', function () {
     });
 });
 
-describe('collection names', function () {
-    test('shared collections are not listed twice', function () {
+describe('collection names', function (): void {
+    test('shared collections are not listed twice', function (): void {
         $names = TypesenseCollectionConfig::getAllCollectionNames();
 
         // news, pages, calendar and documents are configured as both public and admin
@@ -93,7 +93,7 @@ describe('collection names', function () {
         expect($names)->toBe(array_values(array_unique($names)));
     });
 
-    test('still contains both public and admin collections', function () {
+    test('still contains both public and admin collections', function (): void {
         $names = TypesenseCollectionConfig::getAllCollectionNames();
 
         expect($names)->toContain(...TypesenseCollectionConfig::getPublicCollectionNames())

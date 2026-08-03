@@ -19,7 +19,7 @@ use Illuminate\Support\Collection;
 use Inertia\Testing\AssertableInertia as Assert;
 use Spatie\Permission\PermissionRegistrar;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 /**
  * @return array<string, array<string, mixed>>
@@ -230,8 +230,8 @@ function softDeleteIndexAdmin(Tenant $tenant, array $resource): User
     return makeSoftDeleteResourceAdmin($tenant, $resource)[0];
 }
 
-describe('soft deletable admin resources', function () {
-    test('destroy soft-deletes instead of removing the row', function (array $resource) {
+describe('soft deletable admin resources', function (): void {
+    test('destroy soft-deletes instead of removing the row', function (array $resource): void {
         $tenant = Tenant::query()->first();
         [$admin] = makeSoftDeleteResourceAdmin($tenant, $resource);
         $record = createSoftDeleteResource($resource, $tenant);
@@ -244,7 +244,7 @@ describe('soft deletable admin resources', function () {
         expect($resource['model']::withTrashed()->find($record->getKey()))->not->toBeNull();
     })->with('soft deletable admin resources');
 
-    test('default index hides soft-deleted records', function (array $resource) {
+    test('default index hides soft-deleted records', function (array $resource): void {
         $tenant = Tenant::query()->first();
         $admin = softDeleteIndexAdmin($tenant, $resource);
         $live = createSoftDeleteResource($resource, $tenant);
@@ -262,7 +262,7 @@ describe('soft deletable admin resources', function () {
             ->and($ids->contains($trashed->getKey()))->toBeFalse();
     })->with('soft deletable admin resources');
 
-    test('trashed index returns only soft-deleted records', function (array $resource) {
+    test('trashed index returns only soft-deleted records', function (array $resource): void {
         $tenant = Tenant::query()->first();
         $admin = softDeleteIndexAdmin($tenant, $resource);
         $live = createSoftDeleteResource($resource, $tenant);
@@ -280,7 +280,7 @@ describe('soft deletable admin resources', function () {
             ->and($ids->contains($live->getKey()))->toBeFalse();
     })->with('soft deletable admin resources');
 
-    test('index exposes deleted count', function (array $resource) {
+    test('index exposes deleted count', function (array $resource): void {
         $tenant = Tenant::query()->first();
         $admin = softDeleteIndexAdmin($tenant, $resource);
         $trashed = createSoftDeleteResource($resource, $tenant);
@@ -292,7 +292,7 @@ describe('soft deletable admin resources', function () {
             ->assertInertia(fn (Assert $page) => $page->where('deletedCount', 1));
     })->with('soft deletable admin resources');
 
-    test('delete permission restores a soft-deleted record', function (array $resource) {
+    test('delete permission restores a soft-deleted record', function (array $resource): void {
         $tenant = Tenant::query()->first();
         [$admin] = makeSoftDeleteResourceAdmin($tenant, $resource);
         $trashed = createSoftDeleteResource($resource, $tenant);
@@ -305,7 +305,7 @@ describe('soft deletable admin resources', function () {
         $this->assertNotSoftDeleted($resource['table'], ['id' => $trashed->getKey()]);
     })->with('soft deletable admin resources');
 
-    test('delete permission alone cannot permanently delete', function (array $resource) {
+    test('delete permission alone cannot permanently delete', function (array $resource): void {
         $tenant = Tenant::query()->first();
         [$admin] = makeSoftDeleteResourceAdmin($tenant, $resource);
         $trashed = createSoftDeleteResource($resource, $tenant);
@@ -318,7 +318,7 @@ describe('soft deletable admin resources', function () {
         expect($resource['model']::withTrashed()->find($trashed->getKey()))->not->toBeNull();
     })->with('soft deletable admin resources');
 
-    test('forceDelete permission permanently deletes trashed records', function (array $resource) {
+    test('forceDelete permission permanently deletes trashed records', function (array $resource): void {
         $tenant = Tenant::query()->first();
         [$admin, $role] = makeSoftDeleteResourceAdmin($tenant, $resource);
         $trashed = createSoftDeleteResource($resource, $tenant);
@@ -332,7 +332,7 @@ describe('soft deletable admin resources', function () {
         expect($resource['model']::withTrashed()->find($trashed->getKey()))->toBeNull();
     })->with('soft deletable admin resources');
 
-    test('live records cannot be permanently deleted', function (array $resource) {
+    test('live records cannot be permanently deleted', function (array $resource): void {
         $tenant = Tenant::query()->first();
         [$admin, $role] = makeSoftDeleteResourceAdmin($tenant, $resource);
         $live = createSoftDeleteResource($resource, $tenant);

@@ -2,43 +2,42 @@
 
 namespace App\Enums;
 
+use App\Enums\Concerns\HasEnumHelpers;
 use App\Services\Typesense\TypesenseCollectionConfig;
-use Spatie\Enum\Laravel\Enum;
 
-/**
- * @typescript
- *
- * @method static self NEWS()
- * @method static self PAGE()
- * @method static self DOCUMENT()
- * @method static self CALENDAR()
- * @method static self PUBLIC_INSTITUTION()
- * @method static self PUBLIC_MEETING()
- * @method static self MEETING()
- * @method static self AGENDA_ITEM()
- * @method static self RESOURCE()
- * @method static self INSTITUTION()
- * @method static self USER()
- * @method static self DUTY()
- */
-final class SearchableModelEnum extends Enum
+enum SearchableModelEnum: string
 {
-    protected static function labels(): array
+    use HasEnumHelpers;
+
+    case NEWS = 'NEWS';
+    case PAGE = 'PAGE';
+    case DOCUMENT = 'DOCUMENT';
+    case CALENDAR = 'CALENDAR';
+    case PUBLIC_INSTITUTION = 'PUBLIC_INSTITUTION';
+    case PUBLIC_MEETING = 'PUBLIC_MEETING';
+    case MEETING = 'MEETING';
+    case AGENDA_ITEM = 'AGENDA_ITEM';
+    case RESOURCE = 'RESOURCE';
+    case INSTITUTION = 'INSTITUTION';
+    case USER = 'USER';
+    case DUTY = 'DUTY';
+
+    public function label(): string
     {
-        return [
-            'NEWS' => 'news',
-            'PAGE' => 'page',
-            'DOCUMENT' => 'document',
-            'CALENDAR' => 'calendar',
-            'PUBLIC_INSTITUTION' => 'public_institution',
-            'PUBLIC_MEETING' => 'public_meeting',
-            'MEETING' => 'meeting',
-            'AGENDA_ITEM' => 'agenda_item',
-            'RESOURCE' => 'resource',
-            'INSTITUTION' => 'institution',
-            'USER' => 'user',
-            'DUTY' => 'duty',
-        ];
+        return match ($this) {
+            self::NEWS => 'news',
+            self::PAGE => 'page',
+            self::DOCUMENT => 'document',
+            self::CALENDAR => 'calendar',
+            self::PUBLIC_INSTITUTION => 'public_institution',
+            self::PUBLIC_MEETING => 'public_meeting',
+            self::MEETING => 'meeting',
+            self::AGENDA_ITEM => 'agenda_item',
+            self::RESOURCE => 'resource',
+            self::INSTITUTION => 'institution',
+            self::USER => 'user',
+            self::DUTY => 'duty',
+        };
     }
 
     /**

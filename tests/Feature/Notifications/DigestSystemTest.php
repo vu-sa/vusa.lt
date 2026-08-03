@@ -16,17 +16,18 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
+use NotificationChannels\WebPush\WebPushChannel;
 use Symfony\Component\Mailer\Exception\TransportException;
 use Tests\Feature\Notifications\NotificationTestHelpers;
 
-uses(RefreshDatabase::class, NotificationTestHelpers::class);
+pest()->use(RefreshDatabase::class, NotificationTestHelpers::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->clearDigestQueue();
 });
 
-describe('digest queuing via QueueNotificationForDigest listener', function () {
-    test('QueueNotificationForDigest queues eligible notifications', function () {
+describe('digest queuing via QueueNotificationForDigest listener', function (): void {
+    test('QueueNotificationForDigest queues eligible notifications', function (): void {
         $user = $this->createUserWithPreferences();
 
         // Ensure email digest is enabled for comments
@@ -50,7 +51,7 @@ describe('digest queuing via QueueNotificationForDigest listener', function () {
         expect($this->getDigestQueueCountForUser($user))->toBe(1);
     });
 
-    test('time-sensitive notifications are not queued for digest', function () {
+    test('time-sensitive notifications are not queued for digest', function (): void {
         $user = $this->createUserWithPreferences();
 
         $task = Task::factory()->create(['due_date' => now()->addDays(3)]);
@@ -67,7 +68,7 @@ describe('digest queuing via QueueNotificationForDigest listener', function () {
         expect($this->getDigestQueueCountForUser($user))->toBe(0);
     });
 
-    test('notifications are not queued when email digest is disabled for category', function () {
+    test('notifications are not queued when email digest is disabled for category', function (): void {
         $user = $this->createUserWithPreferences();
 
         // Disable email digest for comments
@@ -91,7 +92,7 @@ describe('digest queuing via QueueNotificationForDigest listener', function () {
         expect($this->getDigestQueueCountForUser($user))->toBe(0);
     });
 
-    test('notifications are not queued when user is globally muted', function () {
+    test('notifications are not queued when user is globally muted', function (): void {
         $user = $this->createMutedUser(now()->addHours(2));
 
         $notification = new CommentPostedNotification(
@@ -108,7 +109,7 @@ describe('digest queuing via QueueNotificationForDigest listener', function () {
         expect($this->getDigestQueueCountForUser($user))->toBe(0);
     });
 
-    test('digest items store correct category and data', function () {
+    test('digest items store correct category and data', function (): void {
         $user = $this->createUserWithPreferences();
 
         $notification = new CommentPostedNotification(
@@ -123,17 +124,14 @@ describe('digest queuing via QueueNotificationForDigest listener', function () {
 
         $item = $this->getDigestQueueItemsForUser($user)->first();
 
-        expect($item->category)->toBe('comment');
-        expect($item->notification_class)->toBe(CommentPostedNotification::class);
-        expect($item->data)->toHaveKey('title');
-        expect($item->data)->toHaveKey('body');
-        expect($item->data)->toHaveKey('url');
-        expect($item->data)->toHaveKey('icon');
+        expect($item->category)->toBe('comment')
+            ->and($item->notification_class)->toBe(CommentPostedNotification::class)
+            ->and($item->data)->toHaveKeys(['title', 'body', 'url', 'icon']);
     });
 });
 
-describe('digest grouping', function () {
-    test('multiple notifications are grouped by category in queue', function () {
+describe('digest grouping', function (): void {
+    test('multiple notifications are grouped by category in queue', function (): void {
         $user = $this->createUserWithPreferences();
 
         // Queue multiple comment notifications
@@ -159,13 +157,13 @@ describe('digest grouping', function () {
         expect($items)->toHaveCount(4);
 
         $groupedByCategory = $items->groupBy('category');
-        expect($groupedByCategory->get('comment'))->toHaveCount(3);
-        expect($groupedByCategory->get('task'))->toHaveCount(1);
+        expect($groupedByCategory->get('comment'))->toHaveCount(3)
+            ->and($groupedByCategory->get('task'))->toHaveCount(1);
     });
 });
 
-describe('digest processing command', function () {
-    test('command respects user digest frequency setting', function () {
+describe('digest processing command', function (): void {
+    test('command respects user digest frequency setting', function (): void {
         Mail::fake();
 
         $user = $this->createUserWithPreferences();
@@ -189,7 +187,7 @@ describe('digest processing command', function () {
         expect($this->getDigestQueueCountForUser($user))->toBe(1);
     });
 
-    test('command sends digest when enough time has passed', function () {
+    test('command sends digest when enough time has passed', function (): void {
         Mail::fake();
 
         $user = $this->createUserWithPreferences();
@@ -207,15 +205,13 @@ describe('digest processing command', function () {
         Artisan::call('notifications:send-digests');
 
         // Digest SHOULD be queued (NotificationDigest implements ShouldQueue)
-        Mail::assertSent(NotificationDigest::class, function ($mail) use ($user) {
-            return $mail->hasTo($user->email);
-        });
+        Mail::assertSent(NotificationDigest::class, fn ($mail) => $mail->hasTo($user->email));
 
         // Item should be deleted from queue
         expect($this->getDigestQueueCountForUser($user))->toBe(0);
     });
 
-    test('processed items are deleted from queue after sending', function () {
+    test('processed items are deleted from queue after sending', function (): void {
         Mail::fake();
 
         $user = $this->createUserWithPreferences();
@@ -240,7 +236,7 @@ describe('digest processing command', function () {
         expect($this->getDigestQueueCountForUser($user))->toBe(0);
     });
 
-    test('orphaned items for deleted users are cleaned up', function () {
+    test('orphaned items for deleted users are cleaned up', function (): void {
         // Note: With the foreign key constraint and ON DELETE CASCADE,
         // orphaned items are automatically deleted by the database when a user is deleted.
         // This test verifies the command handles the case gracefully when it encounters
@@ -277,7 +273,7 @@ describe('digest processing command', function () {
         Mail::assertNothingSent();
     });
 
-    test('command handles no pending digests gracefully', function () {
+    test('command handles no pending digests gracefully', function (): void {
         Mail::fake();
 
         // No items in queue
@@ -289,7 +285,7 @@ describe('digest processing command', function () {
         Mail::assertNothingSent();
     });
 
-    test('digest email contains all grouped notifications', function () {
+    test('digest email contains all grouped notifications', function (): void {
         Mail::fake();
 
         $user = $this->createUserWithPreferences();
@@ -324,15 +320,14 @@ describe('digest processing command', function () {
 
         Artisan::call('notifications:send-digests');
 
-        Mail::assertSent(NotificationDigest::class, function ($mail) use ($user) {
+        Mail::assertSent(NotificationDigest::class,
             // The mail should be queued to the correct user
-            return $mail->hasTo($user->email);
-        });
+            fn ($mail) => $mail->hasTo($user->email));
     });
 });
 
-describe('digest frequency settings', function () {
-    test('user with 1 hour frequency receives digest faster', function () {
+describe('digest frequency settings', function (): void {
+    test('user with 1 hour frequency receives digest faster', function (): void {
         Mail::fake();
 
         $user = $this->createUserWithPreferences();
@@ -351,7 +346,7 @@ describe('digest frequency settings', function () {
         Mail::assertSent(NotificationDigest::class);
     });
 
-    test('user with 24 hour frequency waits full day', function () {
+    test('user with 24 hour frequency waits full day', function (): void {
         Mail::fake();
 
         $user = $this->createUserWithPreferences();
@@ -379,7 +374,7 @@ describe('digest frequency settings', function () {
         Mail::assertSent(NotificationDigest::class);
     });
 
-    test('digest items survive a mail transport failure', function () {
+    test('digest items survive a mail transport failure', function (): void {
         $user = $this->createUserWithPreferences();
 
         $item = NotificationDigestQueue::create([
@@ -406,8 +401,8 @@ describe('digest frequency settings', function () {
     });
 });
 
-describe('triplicate prevention', function () {
-    test('QueueNotificationForDigest only queues once per notification, not per channel', function () {
+describe('triplicate prevention', function (): void {
+    test('QueueNotificationForDigest only queues once per notification, not per channel', function (): void {
         $user = $this->createUserWithPreferences();
         $user->setNotificationPreference(
             NotificationCategory::Comment,
@@ -424,7 +419,7 @@ describe('triplicate prevention', function () {
         $listener = app(QueueNotificationForDigest::class);
 
         // Simulate all 3 channels firing NotificationSending
-        foreach (['database', 'broadcast', 'NotificationChannels\\WebPush\\WebPushChannel'] as $channel) {
+        foreach (['database', 'broadcast', WebPushChannel::class] as $channel) {
             $event = new NotificationSending($user, $notification, $channel);
             $listener->handle($event);
         }
@@ -433,7 +428,7 @@ describe('triplicate prevention', function () {
         expect($this->getDigestQueueCountForUser($user))->toBe(1);
     });
 
-    test('non-database channels are skipped by digest listener', function () {
+    test('non-database channels are skipped by digest listener', function (): void {
         $user = $this->createUserWithPreferences();
         $user->setNotificationPreference(
             NotificationCategory::Comment,
@@ -457,8 +452,8 @@ describe('triplicate prevention', function () {
     });
 });
 
-describe('pluralization', function () {
-    test('TaskOverdueNotification title uses proper pluralization', function () {
+describe('pluralization', function (): void {
+    test('TaskOverdueNotification title uses proper pluralization', function (): void {
         $tasks = Task::factory()->count(5)->create(['due_date' => now()->subDay()]);
         $notification = new TaskOverdueNotification($tasks);
 
@@ -468,14 +463,13 @@ describe('pluralization', function () {
 
         // Should NOT contain raw pluralization pipe syntax
         expect($title)->not->toContain('|');
-        expect($title)->not->toContain('{1}');
-        expect($title)->not->toContain('[2,9]');
+        expect($title)->not->toContain('{1}')->not->toContain('[2,9]');
 
         // Should contain the actual count
         expect($title)->toContain('5');
     });
 
-    test('TaskOverdueNotification title works for single task', function () {
+    test('TaskOverdueNotification title works for single task', function (): void {
         $tasks = Task::factory()->count(1)->create(['due_date' => now()->subDay()]);
         $notification = new TaskOverdueNotification($tasks);
 
@@ -483,13 +477,13 @@ describe('pluralization', function () {
 
         $title = $notification->title($user);
 
-        expect($title)->not->toContain('|');
-        expect($title)->toContain('1');
+        expect($title)->not->toContain('|')
+            ->toContain('1');
     });
 });
 
-describe('digest queue cleanup on read', function () {
-    test('marking all notifications as read clears digest queue', function () {
+describe('digest queue cleanup on read', function (): void {
+    test('marking all notifications as read clears digest queue', function (): void {
         Notification::fake();
 
         $user = $this->createUserWithPreferences();
@@ -515,7 +509,7 @@ describe('digest queue cleanup on read', function () {
         expect($this->getDigestQueueCountForUser($user))->toBe(0);
     });
 
-    test('marking single notification as read removes matching digest entry', function () {
+    test('marking single notification as read removes matching digest entry', function (): void {
         $user = $this->createUserWithPreferences();
 
         // Create a database notification directly
@@ -560,7 +554,7 @@ describe('digest queue cleanup on read', function () {
         expect($remaining->data['title'])->toBe('Different notification');
     });
 
-    test('marking as read only removes one digest entry when same title and url but different body', function () {
+    test('marking as read only removes one digest entry when same title and url but different body', function (): void {
         $user = $this->createUserWithPreferences();
 
         // Create two notifications with same title and URL but different bodies
@@ -618,7 +612,7 @@ describe('digest queue cleanup on read', function () {
         expect($remaining->data['body'])->toContain('Task B');
     });
 
-    test('deleting notification removes matching digest entry', function () {
+    test('deleting notification removes matching digest entry', function (): void {
         $user = $this->createUserWithPreferences();
 
         $user->notifications()->create([

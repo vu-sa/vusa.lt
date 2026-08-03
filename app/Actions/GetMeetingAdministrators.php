@@ -68,10 +68,10 @@ class GetMeetingAdministrators
         // Get users who have current duties with tenant visibility roles
         // in institutions that belong to the meeting's tenants
         return User::query()
-            ->whereHas('current_duties', function (Builder $query) use ($tenantIds, $tenantRoleIds) {
-                $query->whereHas('institution', function (Builder $q) use ($tenantIds) {
+            ->whereHas('current_duties', function (Builder $query) use ($tenantIds, $tenantRoleIds): void {
+                $query->whereHas('institution', function (Builder $q) use ($tenantIds): void {
                     $q->whereIn('tenant_id', $tenantIds);
-                })->whereHas('roles', function (Builder $q) use ($tenantRoleIds) {
+                })->whereHas('roles', function (Builder $q) use ($tenantRoleIds): void {
                     $q->whereIn('id', $tenantRoleIds);
                 });
             })
@@ -93,14 +93,14 @@ class GetMeetingAdministrators
 
         // Get users who have global visibility roles either directly or through duties
         $usersWithDirectRoles = User::query()
-            ->whereHas('roles', function (Builder $query) use ($globalRoleIds) {
+            ->whereHas('roles', function (Builder $query) use ($globalRoleIds): void {
                 $query->whereIn('id', $globalRoleIds);
             })
             ->get();
 
         $usersWithDutyRoles = User::query()
-            ->whereHas('current_duties', function (Builder $query) use ($globalRoleIds) {
-                $query->whereHas('roles', function (Builder $q) use ($globalRoleIds) {
+            ->whereHas('current_duties', function (Builder $query) use ($globalRoleIds): void {
+                $query->whereHas('roles', function (Builder $q) use ($globalRoleIds): void {
                     $q->whereIn('id', $globalRoleIds);
                 });
             })

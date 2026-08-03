@@ -11,18 +11,10 @@ use App\Models\User;
  */
 class TaskCompletedNotification extends BaseNotification
 {
-    protected Task $task;
-
-    protected User $completedBy;
-
     /**
      * Create a new notification instance.
      */
-    public function __construct(Task $task, User $completedBy)
-    {
-        $this->task = $task;
-        $this->completedBy = $completedBy;
-    }
+    public function __construct(protected Task $task, protected User $completedBy) {}
 
     public function category(): NotificationCategory
     {
@@ -47,6 +39,7 @@ class TaskCompletedNotification extends BaseNotification
         return route('userTasks');
     }
 
+    #[\Override]
     public function icon(): string
     {
         return '✅';
@@ -76,6 +69,7 @@ class TaskCompletedNotification extends BaseNotification
         ];
     }
 
+    #[\Override]
     public function actions(): array
     {
         return [

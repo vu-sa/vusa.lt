@@ -21,7 +21,7 @@ class TypeableObserver
             RelationshipService::clearRelatedInstitutionsCache($typeable->getAttribute('typeable_id'));
         }
 
-        if ($typeable->getAttribute('typeable_type') === 'App\Models\Duty') {
+        if ($typeable->getAttribute('typeable_type') === Duty::class) {
             $attachable_types = GetAttachableTypesForDuty::execute();
 
             if ($attachable_types->contains($typeable->getAttribute('type_id'))) {
@@ -45,7 +45,7 @@ class TypeableObserver
             RelationshipService::clearRelatedInstitutionsCache($typeable->getAttribute('typeable_id'));
         }
 
-        if (get_class($typeable->pivotParent) === 'App\Models\Duty') {
+        if ($typeable->pivotParent::class === Duty::class) {
             $typeRoles = $typeable->type->roles;
 
             // remove each role from the duty

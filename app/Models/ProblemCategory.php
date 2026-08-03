@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Traits\HasTranslations;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -29,13 +30,12 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
+#[Fillable(['name', 'slug', 'description'])]
 class ProblemCategory extends Model
 {
     use HasFactory, HasTranslations;
 
     public array $translatable = ['name', 'description'];
-
-    protected $fillable = ['name', 'slug', 'description'];
 
     public function problems(): BelongsToMany
     {

@@ -18,6 +18,7 @@ class StoreFormRequest extends FormRequest
         return $this->user()->can('create', Form::class);
     }
 
+    #[\Override]
     protected function prepareForValidation()
     {
         $publishTime = $this->input('publish_time');

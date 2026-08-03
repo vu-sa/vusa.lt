@@ -14,9 +14,9 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
     // Create a basic user for authorization tests
@@ -37,13 +37,13 @@ beforeEach(function () {
 });
 
 // Authorization tests from MeetingTest.php
-describe('authorization tests', function () {
-    describe('regular user', function () {
-        beforeEach(function () {
+describe('authorization tests', function (): void {
+    describe('regular user', function (): void {
+        beforeEach(function (): void {
             asUser($this->user)->get(route('dashboard'))->assertStatus(200);
         });
 
-        test('cannot create a meeting without permission', function () {
+        test('cannot create a meeting without permission', function (): void {
             $startTime = Carbon::now()->addDays(1)->format('Y-m-d H:i:s');
 
             asUser($this->user)
@@ -54,29 +54,29 @@ describe('authorization tests', function () {
                 ])
                 ->assertStatus(403);
 
-            $this->assertEquals($this->initialMeetingCount, Meeting::count());
+            expect(Meeting::count())->toEqual($this->initialMeetingCount);
         });
 
-        test('cannot view meetings index without permission', function () {
+        test('cannot view meetings index without permission', function (): void {
             asUser($this->user)
                 ->get(route('meetings.index'))
                 ->assertStatus(403);
         });
     });
 
-    describe('admin user', function () {
-        beforeEach(function () {
+    describe('admin user', function (): void {
+        beforeEach(function (): void {
             asUser($this->admin)->get(route('dashboard'))->assertStatus(200);
         });
 
-        test('can access meetings index with permission', function () {
+        test('can access meetings index with permission', function (): void {
             asUser($this->admin)
                 ->get(route('meetings.index'))
                 ->assertOk()
                 ->assertInertia(fn ($page) => $page->component('Admin/Representation/IndexMeeting'));
         });
 
-        test('can create a meeting with permission', function () {
+        test('can create a meeting with permission', function (): void {
             $startTime = Carbon::now()->addDays(1)->format('Y-m-d H:i:s');
 
             $response = asUser($this->admin)
@@ -89,15 +89,15 @@ describe('authorization tests', function () {
             $response->assertStatus(302);
             $response->assertSessionHas('success', 'Posėdis sukurtas sėkmingai!');
 
-            $this->assertEquals($this->initialMeetingCount + 1, Meeting::count());
+            expect(Meeting::count())->toEqual($this->initialMeetingCount + 1);
 
             $meeting = Meeting::latest('id')->first();
-            $this->assertNotNull($meeting);
-            $this->assertEquals(1, $meeting->institutions()->count());
-            $this->assertEquals($this->institution->id, $meeting->institutions->first()->id);
+            expect($meeting)->not->toBeNull()
+                ->and($meeting->institutions()->count())->toEqual(1)
+                ->and($meeting->institutions->first()->id)->toEqual($this->institution->id);
         });
 
-        test('cannot create a meeting with invalid data', function () {
+        test('cannot create a meeting with invalid data', function (): void {
             $priorCount = Meeting::count();
 
             $response = asUser($this->admin)
@@ -109,10 +109,10 @@ describe('authorization tests', function () {
             $response->assertStatus(302);
             $response->assertSessionHasErrors(['start_time']);
 
-            $this->assertEquals($priorCount, Meeting::count());
+            expect(Meeting::count())->toEqual($priorCount);
         });
 
-        test('meeting title is automatically generated', function () {
+        test('meeting title is automatically generated', function (): void {
             $futureDate = Carbon::now()->addDays(1);
             $startTime = $futureDate->format('Y-m-d H:i:s');
 
@@ -126,14 +126,14 @@ describe('authorization tests', function () {
             $meeting = Meeting::latest('id')->first();
 
             // Get the expected format but don't check exact equality since test locale might differ
-            $this->assertStringContainsString($futureDate->format('Y'), $meeting->title);
-            $this->assertStringContainsString('posėdis', $meeting->title);
+            expect($meeting->title)->toContain($futureDate->format('Y'));
+            expect($meeting->title)->toContain('posėdis');
         });
     });
 });
 
-describe('refactored meeting creation', function () {
-    test('requires at least one agenda item', function () {
+describe('refactored meeting creation', function (): void {
+    test('requires at least one agenda item', function (): void {
         // Create a meeting first
         $startTime = Carbon::now()->addDays(1)->format('Y-m-d H:i:s');
 
@@ -156,7 +156,7 @@ describe('refactored meeting creation', function () {
             ]);
 
         $response->assertSessionHasErrors(['agendaItemTitles']);
-        $this->assertEquals($initialCount, AgendaItem::count());
+        expect(AgendaItem::count())->toEqual($initialCount);
 
         // Now submit with valid agenda items
         $response = asUser($this->admin)
@@ -166,10 +166,10 @@ describe('refactored meeting creation', function () {
             ]);
 
         $response->assertSessionHas('success');
-        $this->assertEquals($initialCount + 1, AgendaItem::count());
+        expect(AgendaItem::count())->toEqual($initialCount + 1);
     });
 
-    test('cannot submit empty strings as agenda items', function () {
+    test('cannot submit empty strings as agenda items', function (): void {
         // Create a meeting first
         $startTime = Carbon::now()->addDays(1)->format('Y-m-d H:i:s');
 
@@ -192,10 +192,10 @@ describe('refactored meeting creation', function () {
             ]);
 
         $response->assertSessionHasErrors();
-        $this->assertEquals($initialCount, AgendaItem::count());
+        expect(AgendaItem::count())->toEqual($initialCount);
     });
 
-    test('can submit multiple agenda items at once', function () {
+    test('can submit multiple agenda items at once', function (): void {
         // Create a meeting first
         $startTime = Carbon::now()->addDays(1)->format('Y-m-d H:i:s');
 
@@ -222,15 +222,15 @@ describe('refactored meeting creation', function () {
             ]);
 
         $response->assertSessionHas('success');
-        $this->assertEquals($initialCount + 3, AgendaItem::count());
+        expect(AgendaItem::count())->toEqual($initialCount + 3);
 
         $agendaItems = $meeting->agendaItems()->pluck('title')->toArray();
-        $this->assertContains('First agenda item', $agendaItems);
-        $this->assertContains('Second agenda item', $agendaItems);
-        $this->assertContains('Third agenda item', $agendaItems);
+        expect($agendaItems)->toContain('First agenda item')
+            ->toContain('Second agenda item')
+            ->toContain('Third agenda item');
     });
 
-    test('placeholder tasks are no longer created for placeholder agenda items', function () {
+    test('placeholder tasks are no longer created for placeholder agenda items', function (): void {
         // Create a meeting
         $startTime = Carbon::now()->addDays(1)->format('Y-m-d H:i:s');
 
@@ -255,7 +255,7 @@ describe('refactored meeting creation', function () {
         $response->assertSessionHas('success');
 
         // Verify no tasks were created
-        $this->assertEquals($initialTaskCount, $meeting->fresh()->tasks()->count());
+        expect($meeting->fresh()->tasks()->count())->toEqual($initialTaskCount);
 
         // Clear existing items
         $meeting->agendaItems()->delete();
@@ -271,12 +271,12 @@ describe('refactored meeting creation', function () {
         $response->assertSessionHas('success');
 
         // Verify still no tasks created
-        $this->assertEquals($initialTaskCount, $meeting->fresh()->tasks()->count());
+        expect($meeting->fresh()->tasks()->count())->toEqual($initialTaskCount);
     });
 });
 
-describe('end-to-end refactored meeting flow', function () {
-    test('creating and managing a full meeting', function () {
+describe('end-to-end refactored meeting flow', function (): void {
+    test('creating and managing a full meeting', function (): void {
         $initialMeetingCount = Meeting::count();
         $initialAgendaItemCount = AgendaItem::count();
 
@@ -291,7 +291,7 @@ describe('end-to-end refactored meeting flow', function () {
             ]);
 
         $meeting = Meeting::latest('id')->first();
-        $this->assertNotNull($meeting);
+        expect($meeting)->not->toBeNull();
 
         // 2. Add agenda items - make sure to clear any existing items first
         $meeting->agendaItems()->delete(); // Ensure we start with 0 items
@@ -303,7 +303,7 @@ describe('end-to-end refactored meeting flow', function () {
             ]);
 
         $response->assertSessionHas('success');
-        $this->assertEquals(3, $meeting->fresh()->agendaItems()->count());
+        expect($meeting->fresh()->agendaItems()->count())->toEqual(3);
 
         // 3. Update an agenda item with votes
         $agendaItem = $meeting->agendaItems()->first();
@@ -326,13 +326,13 @@ describe('end-to-end refactored meeting flow', function () {
         $response->assertSessionHas('success');
 
         $agendaItem->refresh();
-        $this->assertEquals('Updated discussion', $agendaItem->title);
-        $this->assertEquals('This is an important discussion', $agendaItem->description);
+        expect($agendaItem->title)->toEqual('Updated discussion')
+            ->and($agendaItem->description)->toEqual('This is an important discussion');
 
         // Check the vote was created
         $vote = $agendaItem->votes()->first();
-        $this->assertNotNull($vote);
-        $this->assertEquals('positive', $vote->decision);
+        expect($vote)->not->toBeNull()
+            ->and($vote->decision)->toEqual('positive');
 
         // 4. Delete an agenda item
         $agendaItemToDelete = $meeting->agendaItems()->skip(1)->first();
@@ -341,7 +341,7 @@ describe('end-to-end refactored meeting flow', function () {
             ->delete(route('agendaItems.destroy', $agendaItemToDelete->id));
 
         $response->assertSessionHas('success');
-        $this->assertEquals(2, $meeting->fresh()->agendaItems()->count());
+        expect($meeting->fresh()->agendaItems()->count())->toEqual(2);
 
         // 5. Add more agenda items later
         $response = asUser($this->admin)
@@ -351,7 +351,7 @@ describe('end-to-end refactored meeting flow', function () {
             ]);
 
         $response->assertSessionHas('success');
-        $this->assertEquals(3, $meeting->fresh()->agendaItems()->count());
+        expect($meeting->fresh()->agendaItems()->count())->toEqual(3);
 
         // 6. View the complete meeting
         $response = asUser($this->admin)
@@ -362,33 +362,33 @@ describe('end-to-end refactored meeting flow', function () {
         // 7. Clean up. Deleting is reversible, so the agenda survives until the meeting
         // is permanently deleted.
         $meeting->delete();
-        $this->assertEquals($initialMeetingCount, Meeting::count());
-        $this->assertEquals($initialAgendaItemCount + 3, AgendaItem::count());
+        expect(Meeting::count())->toEqual($initialMeetingCount)
+            ->and(AgendaItem::count())->toEqual($initialAgendaItemCount + 3);
 
         $meeting->forceDelete();
-        $this->assertEquals($initialAgendaItemCount, AgendaItem::count());
+        expect(AgendaItem::count())->toEqual($initialAgendaItemCount);
     });
 });
 
-describe('joint meeting institution management', function () {
-    beforeEach(function () {
+describe('joint meeting institution management', function (): void {
+    beforeEach(function (): void {
         $this->meeting = Meeting::factory()->create(['start_time' => Carbon::now()->addDays(1)]);
         $this->meeting->institutions()->attach($this->institution->id);
         $this->secondInstitution = Institution::factory()->for($this->tenant)->create();
     });
 
-    test('is_joint returns false for single institution', function () {
+    test('is_joint returns false for single institution', function (): void {
         expect($this->meeting->is_joint)->toBeFalse();
     });
 
-    test('is_joint returns true for multiple institutions', function () {
+    test('is_joint returns true for multiple institutions', function (): void {
         $this->meeting->institutions()->attach($this->secondInstitution->id);
         $this->meeting->unsetRelation('institutions');
 
         expect($this->meeting->is_joint)->toBeTrue();
     });
 
-    test('admin can attach an additional institution', function () {
+    test('admin can attach an additional institution', function (): void {
         asUser($this->admin)
             ->post(route('meetings.institutions.attach', $this->meeting), [
                 'institution_id' => $this->secondInstitution->id,
@@ -399,7 +399,7 @@ describe('joint meeting institution management', function () {
         expect($this->meeting->fresh()->institutions()->count())->toBe(2);
     });
 
-    test('cannot attach an already-attached institution', function () {
+    test('cannot attach an already-attached institution', function (): void {
         asUser($this->admin)
             ->post(route('meetings.institutions.attach', $this->meeting), [
                 'institution_id' => $this->institution->id,
@@ -409,7 +409,7 @@ describe('joint meeting institution management', function () {
         expect($this->meeting->fresh()->institutions()->count())->toBe(1);
     });
 
-    test('unauthorized user cannot attach institution', function () {
+    test('unauthorized user cannot attach institution', function (): void {
         asUser($this->user)
             ->post(route('meetings.institutions.attach', $this->meeting), [
                 'institution_id' => $this->secondInstitution->id,
@@ -419,7 +419,7 @@ describe('joint meeting institution management', function () {
         expect($this->meeting->fresh()->institutions()->count())->toBe(1);
     });
 
-    test('admin can detach an institution when multiple exist', function () {
+    test('admin can detach an institution when multiple exist', function (): void {
         $this->meeting->institutions()->attach($this->secondInstitution->id);
 
         asUser($this->admin)
@@ -430,7 +430,7 @@ describe('joint meeting institution management', function () {
         expect($this->meeting->fresh()->institutions()->count())->toBe(1);
     });
 
-    test('cannot detach the last institution', function () {
+    test('cannot detach the last institution', function (): void {
         asUser($this->admin)
             ->delete(route('meetings.institutions.detach', [$this->meeting, $this->institution]))
             ->assertStatus(302)
@@ -440,8 +440,8 @@ describe('joint meeting institution management', function () {
     });
 });
 
-describe('relationship-based meeting access', function () {
-    test('user can view meeting via authorized institution relationship', function () {
+describe('relationship-based meeting access', function (): void {
+    test('user can view meeting via authorized institution relationship', function (): void {
         // Create two institutions
         $sourceInstitution = Institution::factory()->for($this->tenant)->create();
         $targetInstitution = Institution::factory()->for($this->tenant)->create();
@@ -453,7 +453,7 @@ describe('relationship-based meeting access', function () {
         ]);
         Relationshipable::create([
             'relationship_id' => $relationship->id,
-            'relationshipable_type' => 'App\\Models\\Institution',
+            'relationshipable_type' => Institution::class,
             'relationshipable_id' => $sourceInstitution->id,
             'related_model_id' => $targetInstitution->id,
             'scope' => 'within-tenant',
@@ -480,7 +480,7 @@ describe('relationship-based meeting access', function () {
         $response->assertStatus(200);
     });
 
-    test('user cannot view meeting via non-bidirectional incoming relationship', function () {
+    test('user cannot view meeting via non-bidirectional incoming relationship', function (): void {
         // Create two institutions
         $sourceInstitution = Institution::factory()->for($this->tenant)->create();
         $targetInstitution = Institution::factory()->for($this->tenant)->create();
@@ -493,7 +493,7 @@ describe('relationship-based meeting access', function () {
         ]);
         Relationshipable::create([
             'relationship_id' => $relationship->id,
-            'relationshipable_type' => 'App\\Models\\Institution',
+            'relationshipable_type' => Institution::class,
             'relationshipable_id' => $sourceInstitution->id,
             'related_model_id' => $targetInstitution->id,
             'scope' => 'within-tenant',
@@ -520,7 +520,7 @@ describe('relationship-based meeting access', function () {
         $response->assertStatus(403);
     });
 
-    test('user can view meeting via bidirectional incoming relationship', function () {
+    test('user can view meeting via bidirectional incoming relationship', function (): void {
         // Create two institutions
         $sourceInstitution = Institution::factory()->for($this->tenant)->create();
         $targetInstitution = Institution::factory()->for($this->tenant)->create();
@@ -532,7 +532,7 @@ describe('relationship-based meeting access', function () {
         ]);
         Relationshipable::create([
             'relationship_id' => $relationship->id,
-            'relationshipable_type' => 'App\\Models\\Institution',
+            'relationshipable_type' => Institution::class,
             'relationshipable_id' => $sourceInstitution->id,
             'related_model_id' => $targetInstitution->id,
             'scope' => 'within-tenant',
@@ -560,8 +560,8 @@ describe('relationship-based meeting access', function () {
     });
 });
 
-describe('meeting search indexing', function () {
-    test('searchable array exposes representative user names', function () {
+describe('meeting search indexing', function (): void {
+    test('searchable array exposes representative user names', function (): void {
         $meeting = Meeting::factory()->create([
             'start_time' => Carbon::now()->addDays(1),
         ]);
@@ -575,7 +575,7 @@ describe('meeting search indexing', function () {
 
         $searchable = $meeting->fresh()->toSearchableArray();
 
-        expect($searchable)->toHaveKey('user_names');
-        expect($searchable['user_names'])->toContain('Jonas Jonaitis');
+        expect($searchable)->toHaveKey('user_names')
+            ->and($searchable['user_names'])->toContain('Jonas Jonaitis');
     });
 });

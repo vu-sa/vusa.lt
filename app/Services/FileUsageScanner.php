@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Banner;
 use App\Models\Calendar;
+use App\Models\Content;
 use App\Models\ContentPart;
 use App\Models\Duty;
 use App\Models\Form;
@@ -271,10 +272,9 @@ class FileUsageScanner
     private function tryExactMatches(string $modelClass, string $field, array $variants): Collection
     {
         // For simple image URL fields, try exact matches
-        $exactVariants = array_filter($variants, function ($variant) {
+        $exactVariants = array_filter($variants,
             // Skip variants with wildcards or complex patterns
-            return ! str_contains($variant, '%') && ! str_contains($variant, '\\') && strlen($variant) > 3;
-        });
+            fn ($variant) => ! str_contains($variant, '%') && ! str_contains($variant, '\\') && strlen($variant) > 3);
 
         if (empty($exactVariants)) {
             return new Collection;
@@ -350,7 +350,7 @@ class FileUsageScanner
     private function buildSearchVariants(string $originalPath, string $normalizedUrl): array
     {
         $variants = [];
-        $push = function ($value) use (&$variants) {
+        $push = function ($value) use (&$variants): void {
             if ($value !== null && $value !== '' && ! in_array($value, $variants, true)) {
                 $variants[] = $value;
             }
@@ -398,17 +398,13 @@ class FileUsageScanner
         $progressive = [];
 
         // First pass: Most specific patterns (full paths)
-        $specificVariants = array_filter($allVariants, function ($variant) {
-            return str_contains($variant, '/') && ! str_contains($variant, '\\');
-        });
+        $specificVariants = array_filter($allVariants, fn ($variant) => str_contains($variant, '/') && ! str_contains($variant, '\\'));
         if (! empty($specificVariants)) {
             $progressive[] = $specificVariants;
         }
 
         // Second pass: Filename patterns with escaping
-        $escapedVariants = array_filter($allVariants, function ($variant) {
-            return str_contains($variant, '\\');
-        });
+        $escapedVariants = array_filter($allVariants, fn ($variant) => str_contains($variant, '\\'));
         if (! empty($escapedVariants)) {
             $progressive[] = $escapedVariants;
         }
@@ -783,9 +779,7 @@ class FileUsageScanner
     private function trySelectiveUnicodeFallback(array $originalVariants, array $optimizedVariants): Collection
     {
         // Only run expensive fallback if we have Unicode escape sequences
-        $needsEscapedCheck = collect($originalVariants)->contains(function ($v) {
-            return str_contains($v, '\\u') || str_contains($v, '\\/');
-        });
+        $needsEscapedCheck = collect($originalVariants)->contains(fn ($v) => str_contains($v, '\\u') || str_contains($v, '\\/'));
 
         if (! $needsEscapedCheck) {
             return new Collection;
@@ -806,7 +800,7 @@ class FileUsageScanner
             // Only check top 2 most promising variants
             foreach (array_slice($optimizedVariants, 0, 2) as $v) {
                 $withEscapedSlashes = str_replace('/', '\\/', $v);
-                if (strpos($content, $v) !== false || strpos($content, $withEscapedSlashes) !== false) {
+                if (str_contains($content, $v) || str_contains($content, $withEscapedSlashes)) {
                     return true;
                 }
             }
@@ -925,7 +919,7 @@ class FileUsageScanner
                     $ownerModelType = $owner ? strtolower(class_basename($owner)) : 'content';
                     $usageDetails[] = [
                         'model_type' => $ownerModelType,
-                        'model_class' => $owner ? get_class($owner) : 'App\\Models\\Content',
+                        'model_class' => $owner ? $owner::class : Content::class,
                         'id' => $owner->id ?? $contentId,
                         'title' => $owner ? $this->getModelTitle($owner) : ('Content #'.$contentId),
                         'url' => $owner ? $this->getModelAdminUrl($owner) : null,
@@ -946,7 +940,7 @@ class FileUsageScanner
             foreach ($results as $result) {
                 $usageDetails[] = [
                     'model_type' => $modelType,
-                    'model_class' => get_class($result),
+                    'model_class' => $result::class,
                     'id' => $result->id,
                     'title' => $this->getModelTitle($result),
                     'url' => $this->getModelAdminUrl($result),
@@ -1065,7 +1059,7 @@ class FileUsageScanner
             }
 
             return null;
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return null;
         }
     }
@@ -1096,7 +1090,7 @@ class FileUsageScanner
             }
 
             return null;
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return null;
         }
     }

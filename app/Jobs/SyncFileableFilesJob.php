@@ -31,23 +31,18 @@ class SyncFileableFilesJob implements ShouldQueue
     public int $backoff = 60;
 
     /**
-     * Optional: only sync files for a specific fileable type.
-     */
-    protected ?string $fileableType;
-
-    /**
-     * Optional: batch size for processing.
-     */
-    protected int $batchSize;
-
-    /**
      * Create a new job instance.
      */
-    public function __construct(?string $fileableType = null, int $batchSize = 50)
-    {
-        $this->fileableType = $fileableType;
-        $this->batchSize = $batchSize;
-    }
+    public function __construct(
+        /**
+         * Optional: only sync files for a specific fileable type.
+         */
+        protected ?string $fileableType = null,
+        /**
+         * Optional: batch size for processing.
+         */
+        protected int $batchSize = 50
+    ) {}
 
     /**
      * Execute the job.
@@ -69,7 +64,7 @@ class SyncFileableFilesJob implements ShouldQueue
         $deletedCount = 0;
         $errorCount = 0;
 
-        $query->chunkById($this->batchSize, function ($files) use ($sharepointService, &$syncedCount, &$deletedCount, &$errorCount) {
+        $query->chunkById($this->batchSize, function ($files) use ($sharepointService, &$syncedCount, &$deletedCount, &$errorCount): void {
             foreach ($files as $file) {
                 try {
                     $this->syncFile($file, $sharepointService, $syncedCount, $deletedCount);

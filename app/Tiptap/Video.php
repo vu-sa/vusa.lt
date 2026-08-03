@@ -10,8 +10,10 @@ use Tiptap\Core\Node;
  */
 class Video extends Node
 {
+    #[\Override]
     public static $name = 'video';
 
+    #[\Override]
     public function addOptions(): array
     {
         return [
@@ -21,6 +23,7 @@ class Video extends Node
         ];
     }
 
+    #[\Override]
     public function parseHTML(): array
     {
         return [

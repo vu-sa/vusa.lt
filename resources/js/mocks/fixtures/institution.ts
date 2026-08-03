@@ -42,7 +42,7 @@ export function createMockInstitution(
     fileable_files_count: 0,
     available_files_count: 0,
     tasks_count: 0,
-    activities_count: 0,
+    activities_as_subject_count: 0,
     // Exists
     duties_exists: true,
     types_exists: true,
@@ -61,7 +61,7 @@ export function createMockInstitution(
     fileable_files_exists: false,
     available_files_exists: false,
     tasks_exists: false,
-    activities_exists: false,
+    activities_as_subject_exists: false,
     ...overrides,
   } as App.Entities.Institution;
 }

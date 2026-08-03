@@ -1,8 +1,10 @@
 <?php
 
 use App\Support\TranslatableModelIdeHelperHook;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Session\Store;
 use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasOneDeep;
 
@@ -189,8 +191,8 @@ return [
     */
 
     'extra' => [
-        'Eloquent' => ['Illuminate\Database\Eloquent\Builder', 'Illuminate\Database\Query\Builder'],
-        'Session' => ['Illuminate\Session\Store'],
+        'Eloquent' => [Builder::class, Illuminate\Database\Query\Builder::class],
+        'Session' => [Store::class],
     ],
 
     'magic' => [],

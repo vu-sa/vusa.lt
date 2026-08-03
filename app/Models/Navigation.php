@@ -2,12 +2,17 @@
 
 namespace App\Models;
 
+use App\Models\Traits\LogsModelActivity;
 use App\Services\NavigationService;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Spatie\Activitylog\Support\LogOptions;
 
 /**
  * @property int $id
@@ -22,6 +27,7 @@ use Illuminate\Support\Facades\Cache;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read User|null $user
  *
  * @method static \Database\Factories\NavigationFactory factory($count = null, $state = [])
@@ -34,16 +40,16 @@ use Illuminate\Support\Facades\Cache;
  *
  * @mixin \Eloquent
  */
+#[Hidden(['created_at', 'updated_at'])]
+#[Table(name: 'navigation')]
 class Navigation extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, LogsModelActivity, SoftDeletes;
 
-    protected $table = 'navigation';
-
+    #[\Override]
     protected $guarded = [];
 
-    protected $hidden = ['created_at', 'updated_at'];
-
+    #[\Override]
     protected function casts(): array
     {
         return [
@@ -51,15 +57,25 @@ class Navigation extends Model
         ];
     }
 
+    /**
+     * Drag-to-reorder writes `order` on every sibling row in the tree, which
+     * would otherwise drown the log in reshuffles unrelated to the edited item.
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return $this->defaultActivitylogOptions()->logExcept(['order']);
+    }
+
+    #[\Override]
     protected static function booted()
     {
-        static::saved(function ($navigation) {
+        static::saved(function ($navigation): void {
             Cache::tags(['navigation', "locale_{$navigation->lang}"])->flush();
             // Also clear the specific navigation cache keys used by NavigationService
             NavigationService::clearCache();
         });
 
-        static::deleted(function ($navigation) {
+        static::deleted(function ($navigation): void {
             Cache::tags(['navigation', "locale_{$navigation->lang}"])->flush();
             // Also clear the specific navigation cache keys used by NavigationService
             NavigationService::clearCache();
@@ -75,7 +91,7 @@ class Navigation extends Model
         // `deleted_at` is second-precision, so sibling deletions share a timestamp — and
         // over-restoring a menu item is a great deal easier to notice and undo than
         // silently stranding one.
-        static::deleted(function (Navigation $navigation) {
+        static::deleted(function (Navigation $navigation): void {
             $descendantIds = $navigation->descendantIds();
 
             if ($descendantIds === []) {
@@ -93,7 +109,7 @@ class Navigation extends Model
                 ->update(['deleted_at' => $navigation->deleted_at]);
         });
 
-        static::restored(function (Navigation $navigation) {
+        static::restored(function (Navigation $navigation): void {
             static::onlyTrashed()
                 ->whereIn('id', $navigation->descendantIds())
                 ->update(['deleted_at' => null]);

@@ -36,22 +36,18 @@ class PublicPageController extends PublicController
             ->remember($cacheKey, 1800, function () use ($locale) { // 30 minutes TTL
                 if ($locale === 'en') {
                     return Calendar::query()->with(['category', 'media'])->where('is_international', true)->where('is_draft', false)
-                        ->orderBy('date', 'desc')->take(100)->get()->map(function ($event) {
-                            return [
-                                ...$event->toArray(),
-                                'images' => $event->getMedia('images'),
-                                'googleLink' => $event->googleLink(),
-                            ];
-                        });
+                        ->orderBy('date', 'desc')->take(100)->get()->map(fn ($event) => [
+                            ...$event->toArray(),
+                            'images' => $event->getMedia('images'),
+                            'googleLink' => $event->googleLink(),
+                        ]);
                 } else {
                     return Calendar::query()->with(['category', 'media'])->where('is_draft', false)
-                        ->orderBy('date', 'desc')->take(100)->get()->map(function ($event) {
-                            return [
-                                ...$event->toArray(),
-                                'images' => $event->getMedia('images'),
-                                'googleLink' => $event->googleLink(),
-                            ];
-                        });
+                        ->orderBy('date', 'desc')->take(100)->get()->map(fn ($event) => [
+                            ...$event->toArray(),
+                            'images' => $event->getMedia('images'),
+                            'googleLink' => $event->googleLink(),
+                        ]);
                 }
             });
     }
@@ -86,12 +82,10 @@ class PublicPageController extends PublicController
         // Fetch news for homepage to enable LCP image preloading (eliminates API waterfall)
         $newsCacheKey = "homepage_news_{$this->tenant->id}_{$locale}";
         $news = Cache::tags(['news', "tenant_{$this->tenant->id}", "locale_{$locale}"])
-            ->remember($newsCacheKey, 1800, function () use ($locale) {
-                return NewsCollection::getPublishedForTenant(
-                    $this->tenant->id,
-                    $locale
-                )->toPublicArray();
-            });
+            ->remember($newsCacheKey, 1800, fn () => NewsCollection::getPublishedForTenant(
+                $this->tenant->id,
+                $locale
+            )->toPublicArray());
 
         // Fetch calendar events for homepage (reduces API calls)
         $calendarEvents = $this->getEventsForCalendar();
@@ -248,7 +242,7 @@ class PublicPageController extends PublicController
             'subdomain' => $this->subdomain,
         ]));
 
-        $category->load(['pages' => function ($query) {
+        $category->load(['pages' => function ($query): void {
             $query->select(['id', 'title', 'permalink', 'lang', 'category_id', 'tenant_id'])
                 ->where('is_active', true);
         }])->load('pages.tenant:id,alias');
@@ -281,7 +275,7 @@ class PublicPageController extends PublicController
         // TODO: add alias in global settings instead
         // The category is a grouping key here, not a publication gate: trashing the
         // "freshmen-camps" category must not silently empty this public archive.
-        $events = Calendar::query()->whereHas('category', function (Builder $query) {
+        $events = Calendar::query()->whereHas('category', function (Builder $query): void {
             /** @var Builder<Category> $query */
             $query->withTrashed()->where('alias', '=', 'freshmen-camps');
         })->with('tenant:id,alias,fullname')->whereYear('date', $year)
@@ -303,7 +297,7 @@ class PublicPageController extends PublicController
             return redirect()->route('pirmakursiuStovyklos', ['lang' => app()->getLocale(), 'year' => null]);
         }
 
-        $yearsWhenEventsExist = Calendar::query()->whereHas('category', function (Builder $query) {
+        $yearsWhenEventsExist = Calendar::query()->whereHas('category', function (Builder $query): void {
             /** @var Builder<Category> $query */
             $query->withTrashed()->where('alias', '=', 'freshmen-camps');
         });
@@ -474,7 +468,7 @@ class PublicPageController extends PublicController
         $returnableEvent = null;
 
         // Sluggify each event title and compare with the slug from the URL
-        $calendarEvents->each(function ($event) use ($slug, &$returnableEvent) {
+        $calendarEvents->each(function ($event) use ($slug, &$returnableEvent): void {
             $sluggifiedTitle = Str::slug($event->title);
             if ($sluggifiedTitle === $slug) {
                 $returnableEvent = $event;
@@ -523,13 +517,11 @@ class PublicPageController extends PublicController
 
         // Execute pagination
         $events = $query->paginate($perPage)
-            ->through(function ($event) {
-                return [
-                    ...$event->toArray(),
-                    'googleLink' => $event->googleLink(),
-                    'images' => $event->getMedia('images'),
-                ];
-            });
+            ->through(fn ($event) => [
+                ...$event->toArray(),
+                'googleLink' => $event->googleLink(),
+                'images' => $event->getMedia('images'),
+            ]);
 
         // Get all available filter options based on tab
         $filterOptions = $this->getCalendarFilterOptions($tab);
@@ -568,7 +560,7 @@ class PublicPageController extends PublicController
         if ($tab === 'past') {
             // For past events, get ALL categories and tenants regardless of current filter
             $categories = Category::query()
-                ->whereHas('calendars', function ($query) {
+                ->whereHas('calendars', function ($query): void {
                     // Only get categories that have calendar events
                     $query->where('is_draft', false);
 
@@ -583,7 +575,7 @@ class PublicPageController extends PublicController
                 ->toArray();
 
             $tenants = Tenant::query()
-                ->whereHas('calendar', function ($query) {
+                ->whereHas('calendar', function ($query): void {
                     // Only get tenants that have calendar events
                     $query->where('is_draft', false);
 
@@ -599,7 +591,7 @@ class PublicPageController extends PublicController
         } else {
             // For upcoming events, only get categories and tenants that have upcoming events
             $categories = Category::query()
-                ->whereHas('calendars', function ($query) use ($now) {
+                ->whereHas('calendars', function ($query) use ($now): void {
                     $query->where('is_draft', false)
                         ->where('date', '>=', $now->format('Y-m-d'));
 
@@ -614,7 +606,7 @@ class PublicPageController extends PublicController
                 ->toArray();
 
             $tenants = Tenant::query()
-                ->whereHas('calendar', function ($query) use ($now) {
+                ->whereHas('calendar', function ($query) use ($now): void {
                     $query->where('is_draft', false)
                         ->where('date', '>=', $now->format('Y-m-d'));
 
@@ -653,7 +645,7 @@ class PublicPageController extends PublicController
         // Filter by search term if provided
         if (request()->has('search') && request()->search) {
             $search = request()->search;
-            $query->where(function ($q) use ($search) {
+            $query->where(function ($q) use ($search): void {
                 $q->where('title', 'like', '%'.$search.'%')
                     ->orWhere('description', 'like', '%'.$search.'%')
                     ->orWhere('location', 'like', '%'.$search.'%');
@@ -799,7 +791,7 @@ class PublicPageController extends PublicController
         $this->getBanners();
         $this->getTenantLinks();
 
-        $form = Form::query()->whereJsonContains('path->'.$lang, $registrationForm)->with(['formFields' => function ($query) {
+        $form = Form::query()->whereJsonContains('path->'.$lang, $registrationForm)->with(['formFields' => function ($query): void {
             $query->orderBy('order');
         }])->firstOrFail();
 
@@ -834,19 +826,15 @@ class PublicPageController extends PublicController
                     if ($field->use_model_options) {
                         // Special handling for Institution model on student rep form
                         if ($isStudentRepForm && $field->options_model === Institution::class) {
-                            $options = $this->getInstitutionsWithoutActiveReps($formSettings, $preselectedInstitutionId)->map(function ($model) use ($field) {
-                                return [
-                                    'value' => $model->getKey(),
-                                    'label' => $model->getAttribute($field->options_model_field),
-                                ];
-                            });
+                            $options = $this->getInstitutionsWithoutActiveReps($formSettings, $preselectedInstitutionId)->map(fn ($model) => [
+                                'value' => $model->getKey(),
+                                'label' => $model->getAttribute($field->options_model_field),
+                            ]);
                         } else {
-                            $options = $field->options_model::all()->map(function (Model $model) use ($field) {
-                                return [
-                                    'value' => $model->getKey(),
-                                    'label' => $model->getAttribute($field->options_model_field),
-                                ];
-                            });
+                            $options = $field->options_model::all()->map(fn (Model $model) => [
+                                'value' => $model->getKey(),
+                                'label' => $model->getAttribute($field->options_model_field),
+                            ]);
                         }
                     }
 
@@ -870,7 +858,7 @@ class PublicPageController extends PublicController
         $allowedTypeIds = $formSettings->getStudentRepInstitutionTypeIds();
 
         $query = Institution::query()
-            ->where(function ($q) use ($preselectedInstitutionId) {
+            ->where(function ($q) use ($preselectedInstitutionId): void {
                 // Include institutions that do not have duties with active users.
                 // Here `duties` is the Institution -> Duty relationship and `current_users` is a nested
                 // relationship/scope on Duty that returns only the members currently active in that duty.
@@ -884,7 +872,7 @@ class PublicPageController extends PublicController
 
         // Filter by allowed institution types if configured
         if ($allowedTypeIds->isNotEmpty()) {
-            $query->whereHas('types', function ($q) use ($allowedTypeIds) {
+            $query->whereHas('types', function ($q) use ($allowedTypeIds): void {
                 $q->whereIn('types.id', $allowedTypeIds);
             });
         }
@@ -918,10 +906,10 @@ class PublicPageController extends PublicController
             // Exclude 'pkp' type tenants as they're student initiatives, not formal representation
             // Also exclude institutions that don't have any active users in their duties
             $representativeBodies = Institution::query()
-                ->whereHas('types', function ($query) use ($representativeTypes) {
+                ->whereHas('types', function ($query) use ($representativeTypes): void {
                     $query->whereIn('id', $representativeTypes->pluck('id'));
                 })
-                ->whereHas('tenant', function ($query) {
+                ->whereHas('tenant', function ($query): void {
                     $query->where('type', '!=', 'pkp');
                 })
                 ->whereHas('duties.current_users') // Only count institutions that have active users
@@ -931,10 +919,10 @@ class PublicPageController extends PublicController
             // Calculate unique student representatives
             // Get all institutions with representative types and their current users
             $institutions = Institution::query()
-                ->whereHas('types', function ($query) use ($representativeTypes) {
+                ->whereHas('types', function ($query) use ($representativeTypes): void {
                     $query->whereIn('id', $representativeTypes->pluck('id'));
                 })
-                ->whereHas('tenant', function ($query) {
+                ->whereHas('tenant', function ($query): void {
                     $query->where('type', '!=', 'pkp');
                 })
                 ->whereHas('duties.current_users') // Only get institutions that have active users

@@ -94,9 +94,7 @@ class SharepointApiController extends ApiController
         /** @var Collection<int, Type> $types */
         $types = $fileable->types()
             ->get()
-            ->map(function (Type $type) {
-                return $type->getParentsAndSelf();
-            })
+            ->map(fn (Type $type) => $type->getParentsAndSelf())
             ->flatten()
             ->unique('id')
             ->values();
@@ -124,8 +122,8 @@ class SharepointApiController extends ApiController
                 ->whereHas('tenant')
                 ->get()
                 ->map
-                ->only('id', 'name', 'meetings'),
-            'types' => Type::all()->map->only('id', 'title'),
+                ->only('id'),
+            'types' => Type::all()->map->only('id'),
         ]);
     }
 

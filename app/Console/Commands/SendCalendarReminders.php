@@ -7,6 +7,8 @@ use App\Enums\NotificationChannel;
 use App\Models\Calendar;
 use App\Models\User;
 use App\Notifications\CalendarReminderNotification;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -22,12 +24,10 @@ use Illuminate\Support\Facades\Cache;
  * Deduplication: Uses cache to ensure each user receives only one
  * notification per event per reminder interval.
  */
+#[Description('Send calendar reminder notifications for upcoming events')]
+#[Signature('notifications:calendar-reminders')]
 class SendCalendarReminders extends Command
 {
-    protected $signature = 'notifications:calendar-reminders';
-
-    protected $description = 'Send calendar reminder notifications for upcoming events';
-
     public function handle(): int
     {
         // Check hours we want to send reminders for
@@ -98,10 +98,9 @@ class SendCalendarReminders extends Command
      */
     protected function getUsersOptedInForCalendar(): Collection
     {
-        return User::all()->filter(function (User $user) {
+        return User::all()->filter(
             // Check if user has enabled at least one channel for calendar
-            return $user->shouldReceiveNotification(NotificationCategory::Calendar, NotificationChannel::InApp)
-                || $user->shouldReceiveNotification(NotificationCategory::Calendar, NotificationChannel::Push);
-        });
+            fn (User $user) => $user->shouldReceiveNotification(NotificationCategory::Calendar, NotificationChannel::InApp)
+            || $user->shouldReceiveNotification(NotificationCategory::Calendar, NotificationChannel::Push));
     }
 }

@@ -40,7 +40,7 @@ trait NotificationTestHelpers
 
     protected function createMutedUser(?Carbon $mutedUntil = null): User
     {
-        $mutedUntil = $mutedUntil ?? now()->addHour();
+        $mutedUntil ??= now()->addHour();
 
         return $this->createUserWithPreferences([
             'muted_until' => $mutedUntil->toIso8601String(),

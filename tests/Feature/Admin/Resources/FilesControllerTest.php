@@ -12,9 +12,9 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     // Set up test storage
     Storage::fake('public');
 
@@ -100,34 +100,34 @@ beforeEach(function () {
     Storage::disk('public')->put('files/padaliniai/vusaother/forbidden.txt', 'forbidden content');
 });
 
-describe('Files Controller - Authentication & Authorization', function () {
-    test('unauthenticated users cannot access files index', function () {
+describe('Files Controller - Authentication & Authorization', function (): void {
+    test('unauthenticated users cannot access files index', function (): void {
         $response = $this->get(route('files.index'));
 
         expect($response->status())->toBe(302);
     });
 
-    test('unauthenticated users cannot access files API endpoints', function () {
+    test('unauthenticated users cannot access files API endpoints', function (): void {
         $response = $this->getJson('/api/v1/admin/files');
 
         expect($response->status())->toBe(401);
     });
 
-    test('regular user without permissions is redirected to dashboard', function () {
+    test('regular user without permissions is redirected to dashboard', function (): void {
         $response = asUser($this->regularUser)->get(route('files.index'));
 
-        expect($response->status())->toBe(302);
-        expect($response->headers->get('location'))->toContain('mano');
+        expect($response->status())->toBe(302)
+            ->and($response->headers->get('location'))->toContain('mano');
     });
 
-    test('file manager can access files within their tenant', function () {
+    test('file manager can access files within their tenant', function (): void {
         $response = asUser($this->fileManager)->get(route('files.index', ['path' => $this->allowedPath]));
 
         // Should succeed or redirect to correct path
         expect($response->status())->toBeIn([200, 302]);
     });
 
-    test('file manager is redirected to tenant directory when accessing root', function () {
+    test('file manager is redirected to tenant directory when accessing root', function (): void {
         $response = asUser($this->fileManager)->get(route('files.index'));
 
         expect($response->status())->toBe(302);
@@ -135,33 +135,33 @@ describe('Files Controller - Authentication & Authorization', function () {
         expect($response->headers->get('location'))->toContain('files');
     });
 
-    test('super admin can access any directory', function () {
+    test('super admin can access any directory', function (): void {
         $response = asUser($this->superAdmin)->get(route('files.index', ['path' => $this->rootPath]));
 
         expect($response->status())->toBe(200);
     });
 });
 
-describe('Files Controller - Directory Listing', function () {
-    test('file manager can list files in allowed directory via API', function () {
+describe('Files Controller - Directory Listing', function (): void {
+    test('file manager can list files in allowed directory via API', function (): void {
         $response = asUser($this->fileManager)->getJson('/api/v1/admin/files?path='.urlencode($this->allowedPath));
 
-        expect($response->status())->toBe(200);
-        expect($response->json('success'))->toBe(true);
-        expect($response->json('data.files'))->toBeArray();
-        expect($response->json('data.directories'))->toBeArray();
-        expect($response->json('data.path'))->toBe($this->allowedPath);
+        expect($response->status())->toBe(200)
+            ->and($response->json('success'))->toBeTrue()
+            ->and($response->json('data.files'))->toBeArray()
+            ->and($response->json('data.directories'))->toBeArray()
+            ->and($response->json('data.path'))->toBe($this->allowedPath);
     });
 
-    test('file manager cannot list files in forbidden directory via API', function () {
+    test('file manager cannot list files in forbidden directory via API', function (): void {
         $response = asUser($this->fileManager)->getJson('/api/v1/admin/files?path='.urlencode($this->forbiddenPath));
 
-        expect($response->status())->toBe(403);
-        expect($response->json('message'))->toContain('Neturite teisių');
-        expect($response->json('code'))->toBe('INSUFFICIENT_PERMISSIONS');
+        expect($response->status())->toBe(403)
+            ->and($response->json('message'))->toContain('Neturite teisių')
+            ->and($response->json('code'))->toBe('INSUFFICIENT_PERMISSIONS');
     });
 
-    test('API returns proper file structure', function () {
+    test('API returns proper file structure', function (): void {
         $response = asUser($this->fileManager)->getJson('/api/v1/admin/files?path='.urlencode($this->allowedPath));
 
         // Should succeed and return JSON
@@ -178,29 +178,29 @@ describe('Files Controller - Directory Listing', function () {
         }
     });
 
-    test('invalid path format is rejected', function () {
+    test('invalid path format is rejected', function (): void {
         $response = asUser($this->fileManager)->getJson('/api/v1/admin/files?path='.urlencode('../../../etc/passwd'));
 
         // Should return error (403 or 400)
         expect($response->status())->toBeIn([400, 403, 422]);
     });
 
-    test('API falls back to tenant directory when unauthorized root', function () {
+    test('API falls back to tenant directory when unauthorized root', function (): void {
         // Request root without explicit path; policy should deny, controller should fall back
         $response = asUser($this->fileManager)->getJson('/api/v1/admin/files?path='.urlencode('public/files'));
 
         // Should succeed with fallback and include redirected flag
         expect($response->status())->toBe(200);
-        expect($response->json('success'))->toBe(true);
-        expect($response->json('data.redirected'))->toBe(true);
+        expect($response->json('success'))->toBeTrue()
+            ->and($response->json('data.redirected'))->toBeTrue();
 
         $path = $response->json('data.path');
         expect($path)->toContain('public/files/padaliniai/vusa'.$this->tenant->alias);
     });
 });
 
-describe('Files Controller - File Upload', function () {
-    test('file manager can upload files to allowed directory', function () {
+describe('Files Controller - File Upload', function (): void {
+    test('file manager can upload files to allowed directory', function (): void {
         $file = UploadedFile::fake()->create('test-upload.txt', 100, 'text/plain');
 
         $response = asUser($this->fileManager)->post(route('files.store'), [
@@ -215,7 +215,7 @@ describe('Files Controller - File Upload', function () {
         Storage::assertExists('public/files/padaliniai/vusa'.$this->tenant->alias.'/test-upload.txt');
     });
 
-    test('file manager cannot upload files to forbidden directory', function () {
+    test('file manager cannot upload files to forbidden directory', function (): void {
         $file = UploadedFile::fake()->create('forbidden-upload.txt', 100, 'text/plain');
 
         $response = asUser($this->fileManager)->post(route('files.store'), [
@@ -227,7 +227,7 @@ describe('Files Controller - File Upload', function () {
         $response->assertSessionHasErrors('permission');
     });
 
-    test('duplicate files are renamed with timestamp', function () {
+    test('duplicate files are renamed with timestamp', function (): void {
         // First upload
         $file1 = UploadedFile::fake()->create('duplicate.txt', 100, 'text/plain');
         $response1 = asUser($this->fileManager)->post(route('files.store'), [
@@ -235,11 +235,8 @@ describe('Files Controller - File Upload', function () {
             'path' => $this->allowedPath,
         ]);
 
-        expect($response1->status())->toBe(302);
-        expect(
-            $response1->getSession()->has('success') ||
-            $response1->getSession()->has('warning')
-        )->toBe(true);
+        expect($response1->status())->toBe(302)
+            ->and($response1->getSession()->has('success') || $response1->getSession()->has('warning'))->toBeTrue();
 
         // Second upload with same name
         $file2 = UploadedFile::fake()->create('duplicate.txt', 100, 'text/plain');
@@ -248,17 +245,14 @@ describe('Files Controller - File Upload', function () {
             'path' => $this->allowedPath,
         ]);
 
-        expect($response2->status())->toBe(302);
-        expect(
-            $response2->getSession()->has('success') ||
-            $response2->getSession()->has('warning')
-        )->toBe(true);
+        expect($response2->status())->toBe(302)
+            ->and($response2->getSession()->has('success') || $response2->getSession()->has('warning'))->toBeTrue();
 
         // The system should handle duplicates gracefully - either by renaming or warning
         // We don't test the exact implementation, just that it doesn't crash
     });
 
-    test('file upload validates file types', function () {
+    test('file upload validates file types', function (): void {
         $file = UploadedFile::fake()->create('test.exe', 100, 'application/x-executable');
 
         $response = asUser($this->fileManager)->post(route('files.store'), [
@@ -270,7 +264,7 @@ describe('Files Controller - File Upload', function () {
         $response->assertSessionHasErrors(['files.0.file']);
     });
 
-    test('file upload validates file size', function () {
+    test('file upload validates file size', function (): void {
         $file = UploadedFile::fake()->create('huge.txt', 60000, 'text/plain'); // 60MB > 50MB limit
 
         $response = asUser($this->fileManager)->post(route('files.store'), [
@@ -282,7 +276,7 @@ describe('Files Controller - File Upload', function () {
         $response->assertSessionHasErrors(['files.0.file']);
     });
 
-    test('multiple files can be uploaded simultaneously', function () {
+    test('multiple files can be uploaded simultaneously', function (): void {
         $files = [
             ['file' => UploadedFile::fake()->create('file1.txt', 100, 'text/plain')],
             ['file' => UploadedFile::fake()->create('file2.txt', 100, 'text/plain')],
@@ -302,8 +296,8 @@ describe('Files Controller - File Upload', function () {
     });
 });
 
-describe('Files Controller - Directory Creation', function () {
-    test('file manager can create directory in allowed path', function () {
+describe('Files Controller - Directory Creation', function (): void {
+    test('file manager can create directory in allowed path', function (): void {
         $response = asUser($this->fileManager)->post(route('files.createDirectory'), [
             'path' => $this->allowedPath,
             'name' => 'test-directory',
@@ -315,10 +309,10 @@ describe('Files Controller - Directory Creation', function () {
         // Check directory exists by looking for it in directories list
         $directories = Storage::disk('public')->directories('files/padaliniai/vusa'.$this->tenant->alias);
         $testDirectoryPath = 'files/padaliniai/vusa'.$this->tenant->alias.'/test-directory';
-        expect(in_array($testDirectoryPath, $directories))->toBe(true);
+        expect($directories)->toContain($testDirectoryPath);
     });
 
-    test('file manager cannot create directory in forbidden path', function () {
+    test('file manager cannot create directory in forbidden path', function (): void {
         $response = asUser($this->fileManager)->post(route('files.createDirectory'), [
             'path' => $this->forbiddenPath,
             'name' => 'forbidden-directory',
@@ -328,7 +322,7 @@ describe('Files Controller - Directory Creation', function () {
         $response->assertSessionHasErrors('permission');
     });
 
-    test('directory creation validates name format', function () {
+    test('directory creation validates name format', function (): void {
         $response = asUser($this->fileManager)->post(route('files.createDirectory'), [
             'path' => $this->allowedPath,
             'name' => 'invalid/directory<name>',
@@ -338,7 +332,7 @@ describe('Files Controller - Directory Creation', function () {
         $response->assertSessionHasErrors('name');
     });
 
-    test('directory creation supports Lithuanian characters', function () {
+    test('directory creation supports Lithuanian characters', function (): void {
         $response = asUser($this->fileManager)->post(route('files.createDirectory'), [
             'path' => $this->allowedPath,
             'name' => 'Lietuviškas aplankas ąčęėįšųūž',
@@ -348,7 +342,7 @@ describe('Files Controller - Directory Creation', function () {
         $response->assertSessionHas('success');
     });
 
-    test('cannot create directory with existing name', function () {
+    test('cannot create directory with existing name', function (): void {
         // Create directory first
         Storage::disk('public')->makeDirectory('files/padaliniai/vusa'.$this->tenant->alias.'/existing');
 
@@ -367,10 +361,10 @@ describe('Files Controller - Directory Creation', function () {
             $response->getSession()->has('error') ||
             $response->getSession()->has('success') ||
             $response->getSession()->get('errors')?->has('name')
-        )->toBe(true);
+        )->toBeTrue();
     });
 
-    test('directory name length is validated', function () {
+    test('directory name length is validated', function (): void {
         $longName = str_repeat('a', 300);
 
         $response = asUser($this->fileManager)->post(route('files.createDirectory'), [
@@ -383,8 +377,8 @@ describe('Files Controller - Directory Creation', function () {
     });
 });
 
-describe('Files Controller - File Deletion', function () {
-    test('file manager can delete files in allowed directory', function () {
+describe('Files Controller - File Deletion', function (): void {
+    test('file manager can delete files in allowed directory', function (): void {
         // Use one of the existing test files
         $filePath = $this->allowedPath.'/test.txt';
 
@@ -399,10 +393,10 @@ describe('Files Controller - File Deletion', function () {
             $response->getSession()->has('success') ||
             $response->getSession()->has('error') ||
             $response->getSession()->has('errors')
-        )->toBe(true);
+        )->toBeTrue();
     });
 
-    test('file manager cannot delete files in forbidden directory', function () {
+    test('file manager cannot delete files in forbidden directory', function (): void {
         $filePath = $this->forbiddenPath.'/forbidden.txt';
 
         $response = asUser($this->fileManager)->delete(route('files.delete'), [
@@ -413,7 +407,7 @@ describe('Files Controller - File Deletion', function () {
         $response->assertSessionHasErrors('permission');
     });
 
-    test('cannot delete non-existent file', function () {
+    test('cannot delete non-existent file', function (): void {
         $filePath = $this->allowedPath.'/nonexistent.txt';
 
         $response = asUser($this->fileManager)->delete(route('files.delete'), [
@@ -424,7 +418,7 @@ describe('Files Controller - File Deletion', function () {
         $response->assertSessionHasErrors('file');
     });
 
-    test('cannot delete directory using file delete method', function () {
+    test('cannot delete directory using file delete method', function (): void {
         Storage::disk('public')->makeDirectory('files/padaliniai/vusa'.$this->tenant->alias.'/testdir');
         $dirPath = $this->allowedPath.'/testdir';
 
@@ -437,15 +431,15 @@ describe('Files Controller - File Deletion', function () {
     });
 });
 
-describe('Files Controller - Bulk Delete', function () {
-    beforeEach(function () {
+describe('Files Controller - Bulk Delete', function (): void {
+    beforeEach(function (): void {
         // Create multiple test files
         Storage::disk('public')->put('files/padaliniai/vusa'.$this->tenant->alias.'/bulk1.txt', 'content1');
         Storage::disk('public')->put('files/padaliniai/vusa'.$this->tenant->alias.'/bulk2.txt', 'content2');
         Storage::disk('public')->put('files/padaliniai/vusa'.$this->tenant->alias.'/bulk3.txt', 'content3');
     });
 
-    test('file manager can bulk delete files in allowed directory', function () {
+    test('file manager can bulk delete files in allowed directory', function (): void {
         $paths = [
             $this->allowedPath.'/bulk1.txt',
             $this->allowedPath.'/bulk2.txt',
@@ -464,10 +458,10 @@ describe('Files Controller - Bulk Delete', function () {
             $response->getSession()->has('warning') ||
             $response->getSession()->has('error') ||
             $response->getSession()->has('errors')
-        )->toBe(true);
+        )->toBeTrue();
     });
 
-    test('bulk delete handles mixed permissions correctly', function () {
+    test('bulk delete handles mixed permissions correctly', function (): void {
         $paths = [
             $this->allowedPath.'/bulk1.txt',  // allowed
             $this->forbiddenPath.'/forbidden.txt',  // forbidden
@@ -487,10 +481,10 @@ describe('Files Controller - Bulk Delete', function () {
             $response->getSession()->has('warning') ||
             $response->getSession()->has('error') ||
             $response->getSession()->has('errors')
-        )->toBe(true);
+        )->toBeTrue();
     });
 
-    test('bulk delete validates maximum number of files', function () {
+    test('bulk delete validates maximum number of files', function (): void {
         $paths = array_fill(0, 60, $this->allowedPath.'/test.txt'); // 60 > 50 limit
 
         $response = asUser($this->fileManager)->delete(route('files.bulkDelete'), [
@@ -501,7 +495,7 @@ describe('Files Controller - Bulk Delete', function () {
         $response->assertSessionHasErrors('paths');
     });
 
-    test('bulk delete requires at least one file', function () {
+    test('bulk delete requires at least one file', function (): void {
         $response = asUser($this->fileManager)->delete(route('files.bulkDelete'), [
             'paths' => [],
         ]);
@@ -511,8 +505,8 @@ describe('Files Controller - Bulk Delete', function () {
     });
 });
 
-describe('Files Controller - Image Upload', function () {
-    test('can upload and process image', function () {
+describe('Files Controller - Image Upload', function (): void {
+    test('can upload and process image', function (): void {
         $image = UploadedFile::fake()->image('test.jpg', 2000, 2000);
 
         $response = asUser($this->fileManager)->postJson(route('files.uploadImage'), [
@@ -525,22 +519,22 @@ describe('Files Controller - Image Upload', function () {
         expect($response->status())->toBeIn([200, 500]);
 
         if ($response->status() === 200) {
-            expect($response->json('message'))->toContain('optimized and converted to WebP');
-            expect($response->json('url'))->toContain('.webp');
-            expect($response->json('name'))->toContain('.webp');
+            expect($response->json('message'))->toContain('optimized and converted to WebP')
+                ->and($response->json('url'))->toContain('.webp')
+                ->and($response->json('name'))->toContain('.webp');
         }
     });
 
-    test('image upload validates required fields', function () {
+    test('image upload validates required fields', function (): void {
         $response = asUser($this->fileManager)->postJson(route('files.uploadImage'), [
             'path' => 'files/test',
         ]);
 
-        expect($response->status())->toBe(400);
-        expect($response->json('error'))->toContain('Nepateiktas paveikslėlis');
+        expect($response->status())->toBe(400)
+            ->and($response->json('error'))->toContain('Nepateiktas paveikslėlis');
     });
 
-    test('image upload handles data URL format', function () {
+    test('image upload handles data URL format', function (): void {
         $base64Image = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
 
         $response = asUser($this->fileManager)->postJson(route('files.uploadImage'), [
@@ -558,7 +552,7 @@ describe('Files Controller - Image Upload', function () {
         }
     });
 
-    test('ImageUpload uploads go to correct directory structure', function () {
+    test('ImageUpload uploads go to correct directory structure', function (): void {
         $image = UploadedFile::fake()->image('banner.jpg', 800, 600);
 
         $response = asUser($this->fileManager)->postJson(route('files.uploadImage'), [
@@ -570,8 +564,8 @@ describe('Files Controller - Image Upload', function () {
         expect($response->status())->toBeIn([200, 500]);
 
         if ($response->status() === 200) {
-            expect($response->json('url'))->toStartWith('/uploads/banners/');
-            expect($response->json('name'))->toContain('.webp');
+            expect($response->json('url'))->toStartWith('/uploads/banners/')
+                ->and($response->json('name'))->toContain('.webp');
 
             // Verify file is stored in correct location: public/banners/ (not public/files/banners/)
             $filename = $response->json('name');
@@ -580,7 +574,7 @@ describe('Files Controller - Image Upload', function () {
         }
     });
 
-    test('FileManager uploads maintain existing behavior', function () {
+    test('FileManager uploads maintain existing behavior', function (): void {
         $image = UploadedFile::fake()->image('filemanager.jpg', 800, 600);
 
         $response = asUser($this->fileManager)->postJson(route('files.uploadImage'), [
@@ -591,15 +585,15 @@ describe('Files Controller - Image Upload', function () {
         expect($response->status())->toBeIn([200, 500]);
 
         if ($response->status() === 200) {
-            expect($response->json('url'))->toStartWith('/uploads/files/');
-            expect($response->json('name'))->toContain('.webp');
+            expect($response->json('url'))->toStartWith('/uploads/files/')
+                ->and($response->json('name'))->toContain('.webp');
 
             $filename = $response->json('name');
             Storage::assertExists('public/files/padaliniai/vusa'.$this->tenant->alias.'/'.$filename);
         }
     });
 
-    test('TipTap uploads maintain existing behavior', function () {
+    test('TipTap uploads maintain existing behavior', function (): void {
         $image = UploadedFile::fake()->image('content.jpg', 800, 600);
 
         $response = asUser($this->fileManager)->postJson(route('files.uploadImage'), [
@@ -619,7 +613,7 @@ describe('Files Controller - Image Upload', function () {
         }
     });
 
-    test('TipTap uploads for super admin go to global content directory', function () {
+    test('TipTap uploads for super admin go to global content directory', function (): void {
         $image = UploadedFile::fake()->image('admin-content.jpg', 800, 600);
 
         $response = asUser($this->superAdmin)->postJson(route('files.uploadImage'), [
@@ -639,7 +633,7 @@ describe('Files Controller - Image Upload', function () {
         }
     });
 
-    test('different ImageUpload folders work correctly', function () {
+    test('different ImageUpload folders work correctly', function (): void {
         $testCases = [
             'banners' => '/uploads/banners/',
             'news' => '/uploads/news/',
@@ -669,23 +663,23 @@ describe('Files Controller - Image Upload', function () {
     });
 });
 
-describe('Files Controller - API Endpoints', function () {
-    test('can get allowed file types', function () {
+describe('Files Controller - API Endpoints', function (): void {
+    test('can get allowed file types', function (): void {
         $response = asUser($this->fileManager)->getJson('/api/v1/admin/files/allowed-types');
 
-        expect($response->status())->toBe(200);
-        expect($response->json('success'))->toBe(true);
-        expect($response->json('data.extensions'))->toBeArray();
-        expect($response->json('data.accept'))->toBeString();
-        expect($response->json('data.maxSizeMB'))->toBe(50);
+        expect($response->status())->toBe(200)
+            ->and($response->json('success'))->toBeTrue()
+            ->and($response->json('data.extensions'))->toBeArray()
+            ->and($response->json('data.accept'))->toBeString()
+            ->and($response->json('data.maxSizeMB'))->toBe(50);
 
         $extensions = $response->json('data.extensions');
-        expect($extensions)->toContain('jpg');
-        expect($extensions)->toContain('pdf');
-        expect($extensions)->toContain('txt');
+        expect($extensions)->toContain('jpg')
+            ->toContain('pdf')
+            ->toContain('txt');
     });
 
-    test('allowed file types endpoint requires authentication', function () {
+    test('allowed file types endpoint requires authentication', function (): void {
         $response = $this->getJson('/api/v1/admin/files/allowed-types');
 
         // Admin API endpoints require authentication
@@ -693,8 +687,8 @@ describe('Files Controller - API Endpoints', function () {
     });
 });
 
-describe('Files Controller - Security Tests', function () {
-    test('path traversal attempts are blocked', function () {
+describe('Files Controller - Security Tests', function (): void {
+    test('path traversal attempts are blocked', function (): void {
         $maliciousPaths = [
             '../../../etc/passwd',
             '..\\..\\..\\windows\\system32',
@@ -708,7 +702,7 @@ describe('Files Controller - Security Tests', function () {
         }
     });
 
-    test('invalid characters in paths are rejected', function () {
+    test('invalid characters in paths are rejected', function (): void {
         $invalidPaths = [
             'public/files/test<script>',
             'public/files/test|pipe',
@@ -721,7 +715,7 @@ describe('Files Controller - Security Tests', function () {
         }
     });
 
-    test('file uploads outside allowed directory are rejected', function () {
+    test('file uploads outside allowed directory are rejected', function (): void {
         $file = UploadedFile::fake()->create('malicious.txt', 100, 'text/plain');
 
         $response = asUser($this->fileManager)->post(route('files.store'), [
@@ -733,7 +727,7 @@ describe('Files Controller - Security Tests', function () {
         $response->assertSessionHasErrors();
     });
 
-    test('directory creation outside allowed path is rejected', function () {
+    test('directory creation outside allowed path is rejected', function (): void {
         $response = asUser($this->fileManager)->post(route('files.createDirectory'), [
             'path' => '../../../tmp',
             'name' => 'malicious',
@@ -744,8 +738,8 @@ describe('Files Controller - Security Tests', function () {
     });
 });
 
-describe('Files Controller - Error Handling', function () {
-    test('handles storage errors gracefully', function () {
+describe('Files Controller - Error Handling', function (): void {
+    test('handles storage errors gracefully', function (): void {
         // Mock storage failure by trying to create directory in non-existent path
         $response = asUser($this->superAdmin)->post(route('files.createDirectory'), [
             'path' => 'public/nonexistent/deep/path',
@@ -756,7 +750,7 @@ describe('Files Controller - Error Handling', function () {
         // Should handle gracefully without throwing exceptions
     });
 
-    test('validates all required parameters', function () {
+    test('validates all required parameters', function (): void {
         $response = asUser($this->fileManager)->post(route('files.createDirectory'), [
             'path' => $this->allowedPath,
             // missing 'name' parameter
@@ -766,7 +760,7 @@ describe('Files Controller - Error Handling', function () {
         $response->assertSessionHasErrors('name');
     });
 
-    test('handles empty file uploads', function () {
+    test('handles empty file uploads', function (): void {
         $response = asUser($this->fileManager)->post(route('files.store'), [
             'files' => [],
             'path' => $this->allowedPath,
@@ -777,8 +771,8 @@ describe('Files Controller - Error Handling', function () {
     });
 });
 
-describe('Files Controller - File Usage Scanning', function () {
-    test('file manager can scan file usage in allowed directory', function () {
+describe('Files Controller - File Usage Scanning', function (): void {
+    test('file manager can scan file usage in allowed directory', function (): void {
         // Create a test file in the allowed directory structure
         $filePath = 'public/files/padaliniai/vusa'.$this->tenant->alias.'/test-file.pdf';
 
@@ -805,7 +799,7 @@ describe('Files Controller - File Usage Scanning', function () {
         expect($flashData)->toHaveKeys(['total_usages', 'is_safe_to_delete', 'scanned_models', 'usage_details', 'scanned_at']);
     });
 
-    test('file manager cannot scan file usage in forbidden directory', function () {
+    test('file manager cannot scan file usage in forbidden directory', function (): void {
         // Create a test file in a forbidden directory
         $filePath = 'public/files/admin/test-file.pdf';
         Storage::put($filePath, 'test content');
@@ -819,7 +813,7 @@ describe('Files Controller - File Usage Scanning', function () {
         expect(session('errors')->first('error'))->toContain('Neturite teisių skenuoti šio failo naudojimą');
     });
 
-    test('super admin can scan file usage in any directory', function () {
+    test('super admin can scan file usage in any directory', function (): void {
         // Create a test file in any directory
         $filePath = 'public/files/admin/test-file.pdf';
         Storage::put($filePath, 'test content');
@@ -835,7 +829,7 @@ describe('Files Controller - File Usage Scanning', function () {
         expect($flashData)->toHaveKeys(['total_usages', 'is_safe_to_delete', 'scanned_models', 'usage_details', 'scanned_at']);
     });
 
-    test('file usage scan validates file path format', function () {
+    test('file usage scan validates file path format', function (): void {
         $response = asUser($this->fileManager)->post(route('files.scanUsage'), [
             'path' => 'public/files/invalid@#$%characters',  // Invalid characters that would fail the regex
         ]);
@@ -845,7 +839,7 @@ describe('Files Controller - File Usage Scanning', function () {
         expect(session('errors')->first('error'))->toContain('Neteisingas failo kelias');
     });
 
-    test('file usage scan requires existing file', function () {
+    test('file usage scan requires existing file', function (): void {
         $response = asUser($this->fileManager)->post(route('files.scanUsage'), [
             'path' => 'public/files/padaliniai/vusa'.$this->tenant->alias.'/nonexistent.pdf',
         ]);
@@ -855,7 +849,7 @@ describe('Files Controller - File Usage Scanning', function () {
         expect(session('errors')->first('error'))->toContain('Failas nerastas');
     });
 
-    test('file usage scan returns appropriate success message for safe files', function () {
+    test('file usage scan returns appropriate success message for safe files', function (): void {
         // Create a test file
         $filePath = 'public/files/padaliniai/vusa'.$this->tenant->alias.'/safe-file.pdf';
         Storage::put($filePath, 'test content');
@@ -869,7 +863,7 @@ describe('Files Controller - File Usage Scanning', function () {
         expect(session('success'))->toContain('Failas saugus trinti');
     });
 
-    test('unauthenticated users cannot scan file usage', function () {
+    test('unauthenticated users cannot scan file usage', function (): void {
         $response = $this->post(route('files.scanUsage'), [
             'path' => 'public/files/test.pdf',
         ]);
@@ -878,7 +872,7 @@ describe('Files Controller - File Usage Scanning', function () {
         $response->assertRedirect(route('login'));
     });
 
-    test('validates required path parameter', function () {
+    test('validates required path parameter', function (): void {
         $response = asUser($this->fileManager)->post(route('files.scanUsage'), [
             // missing 'path' parameter
         ]);
@@ -887,7 +881,7 @@ describe('Files Controller - File Usage Scanning', function () {
         $response->assertSessionHasErrors('path');
     });
 
-    test('can scan file with unicode combining marks in filename', function () {
+    test('can scan file with unicode combining marks in filename', function (): void {
         // Filename with combining caron marks (decomposed form)
         $filename = '20231118_Lšečius_-432.jpg'; // contains s + U+030C, c + U+030C
         $fullPath = $this->allowedPath.'/'.$filename;
@@ -902,7 +896,7 @@ describe('Files Controller - File Usage Scanning', function () {
         $response->assertSessionDoesntHaveErrors('error');
     });
 
-    test('scan detects usage in ContentParts with Lithuanian combining marks (NFD + escaped)', function () {
+    test('scan detects usage in ContentParts with Lithuanian combining marks (NFD + escaped)', function (): void {
         // Create file with composed characters
         $filenameComposed = 'lietuviškas_failas_ščiųž.jpg';
         $fullPathComposed = $this->allowedPath.'/'.$filenameComposed;
@@ -976,8 +970,7 @@ describe('Files Controller - File Usage Scanning', function () {
         expect($responseDecomposed->status())->toBe(302);
         $responseDecomposed->assertSessionHas('data');
         $dataDecomposed = session('data');
-        expect($dataDecomposed)->toHaveKey('total_usages');
-        expect($dataDecomposed)->toHaveKey('is_safe_to_delete');
+        expect($dataDecomposed)->toHaveKeys(['total_usages', 'is_safe_to_delete']);
 
         // Additional: simulate JSON where precomposed š stored as \u0161
         $filenamePrecomposed = 'vardas_šaltinis.jpg';
@@ -1004,7 +997,6 @@ describe('Files Controller - File Usage Scanning', function () {
         expect($respPre->status())->toBe(302);
         $respPre->assertSessionHas('data');
         $dataPre = session('data');
-        expect($dataPre)->toHaveKey('total_usages');
-        expect($dataPre)->toHaveKey('is_safe_to_delete');
+        expect($dataPre)->toHaveKeys(['total_usages', 'is_safe_to_delete']);
     });
 });

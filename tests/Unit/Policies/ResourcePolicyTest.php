@@ -4,9 +4,9 @@ use App\Models\Resource;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenantA = Tenant::query()->first();
     $this->tenantB = Tenant::factory()->create();
 
@@ -14,20 +14,20 @@ beforeEach(function () {
     $this->resource = Resource::factory()->for($this->tenantB)->create();
 });
 
-describe('ResourcePolicy', function () {
-    test('any authenticated user can view a resource from any tenant', function () {
+describe('ResourcePolicy', function (): void {
+    test('any authenticated user can view a resource from any tenant', function (): void {
         expect($this->simpleUser->can('view', $this->resource))->toBeTrue();
     });
 
-    test('any authenticated user can view any resource listing', function () {
+    test('any authenticated user can view any resource listing', function (): void {
         expect($this->simpleUser->can('viewAny', Resource::class))->toBeTrue();
     });
 
-    test('simple user cannot update a resource in another tenant', function () {
+    test('simple user cannot update a resource in another tenant', function (): void {
         expect($this->simpleUser->can('update', $this->resource))->toBeFalse();
     });
 
-    test('simple user cannot delete a resource in another tenant', function () {
+    test('simple user cannot delete a resource in another tenant', function (): void {
         expect($this->simpleUser->can('delete', $this->resource))->toBeFalse();
     });
 });

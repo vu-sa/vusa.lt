@@ -9,9 +9,9 @@ use App\Models\Vote;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
     // Create an admin user with Communication Coordinator role
@@ -38,8 +38,8 @@ beforeEach(function () {
     ]);
 });
 
-describe('vote controller', function () {
-    test('admin can create a vote for an agenda item', function () {
+describe('vote controller', function (): void {
+    test('admin can create a vote for an agenda item', function (): void {
         $response = asUser($this->admin)
             ->post(route('votes.store'), [
                 'agenda_item_id' => $this->agendaItem->id,
@@ -51,16 +51,16 @@ describe('vote controller', function () {
             ]);
 
         $response->assertStatus(302);
-        $this->assertEquals(1, $this->agendaItem->votes()->count());
+        expect($this->agendaItem->votes()->count())->toEqual(1);
 
         $vote = $this->agendaItem->votes()->first();
-        expect($vote->is_main)->toBeTrue();
-        expect($vote->title)->toBe('Main Vote');
-        expect($vote->decision)->toBe('positive');
-        expect($vote->student_vote)->toBe('positive');
+        expect($vote->is_main)->toBeTrue()
+            ->and($vote->title)->toBe('Main Vote')
+            ->and($vote->decision)->toBe('positive')
+            ->and($vote->student_vote)->toBe('positive');
     });
 
-    test('vote title cannot exceed 200 characters', function () {
+    test('vote title cannot exceed 200 characters', function (): void {
         $longTitle = str_repeat('a', 201);
 
         $response = asUser($this->admin)
@@ -75,10 +75,10 @@ describe('vote controller', function () {
 
         $response->assertStatus(302);
         $response->assertSessionHasErrors(['title']);
-        $this->assertEquals(0, $this->agendaItem->votes()->count());
+        expect($this->agendaItem->votes()->count())->toEqual(0);
     });
 
-    test('vote update rejects title longer than 200 characters', function () {
+    test('vote update rejects title longer than 200 characters', function (): void {
         $vote = Vote::factory()->main()->for($this->agendaItem, 'agendaItem')->create([
             'title' => 'Original Vote',
         ]);
@@ -99,7 +99,7 @@ describe('vote controller', function () {
         expect($vote->title)->toBe('Original Vote');
     });
 
-    test('admin can update a vote', function () {
+    test('admin can update a vote', function (): void {
         $vote = Vote::factory()->main()->for($this->agendaItem, 'agendaItem')->create([
             'decision' => 'positive',
         ]);
@@ -113,11 +113,11 @@ describe('vote controller', function () {
         $response->assertStatus(302);
 
         $vote->refresh();
-        expect($vote->decision)->toBe('negative');
-        expect($vote->student_vote)->toBe('negative');
+        expect($vote->decision)->toBe('negative')
+            ->and($vote->student_vote)->toBe('negative');
     });
 
-    test('admin can delete a vote', function () {
+    test('admin can delete a vote', function (): void {
         $vote = Vote::factory()->for($this->agendaItem, 'agendaItem')->create();
 
         $response = asUser($this->admin)
@@ -127,7 +127,7 @@ describe('vote controller', function () {
         expect(Vote::find($vote->id))->toBeNull();
     });
 
-    test('admin can set a vote as main', function () {
+    test('admin can set a vote as main', function (): void {
         $mainVote = Vote::factory()->main()->for($this->agendaItem, 'agendaItem')->create();
         $additionalVote = Vote::factory()->additional()->for($this->agendaItem, 'agendaItem')->create();
 
@@ -139,11 +139,11 @@ describe('vote controller', function () {
         $mainVote->refresh();
         $additionalVote->refresh();
 
-        expect($mainVote->is_main)->toBeFalse();
-        expect($additionalVote->is_main)->toBeTrue();
+        expect($mainVote->is_main)->toBeFalse()
+            ->and($additionalVote->is_main)->toBeTrue();
     });
 
-    test('agenda item can have multiple votes', function () {
+    test('agenda item can have multiple votes', function (): void {
         Vote::factory()->main()->for($this->agendaItem, 'agendaItem')->create([
             'title' => 'Main Vote',
             'decision' => 'positive',
@@ -159,12 +159,12 @@ describe('vote controller', function () {
             'decision' => 'neutral',
         ]);
 
-        expect($this->agendaItem->votes()->count())->toBe(3);
-        expect($this->agendaItem->mainVote()->first()->title)->toBe('Main Vote');
-        expect($this->agendaItem->additionalVotes()->count())->toBe(2);
+        expect($this->agendaItem->votes()->count())->toBe(3)
+            ->and($this->agendaItem->mainVote()->first()->title)->toBe('Main Vote')
+            ->and($this->agendaItem->additionalVotes()->count())->toBe(2);
     });
 
-    test('updating agenda item syncs votes', function () {
+    test('updating agenda item syncs votes', function (): void {
         // Create initial votes
         $existingVote = Vote::factory()->main()->for($this->agendaItem, 'agendaItem')->create([
             'title' => 'Original Vote',
@@ -196,14 +196,14 @@ describe('vote controller', function () {
         $response->assertStatus(302);
 
         $this->agendaItem->refresh();
-        expect($this->agendaItem->title)->toBe('Updated Agenda Item');
-        expect($this->agendaItem->votes()->count())->toBe(2);
+        expect($this->agendaItem->title)->toBe('Updated Agenda Item')
+            ->and($this->agendaItem->votes()->count())->toBe(2);
 
         $existingVote->refresh();
         expect($existingVote->title)->toBe('Updated Vote Title');
     });
 
-    test('vote alignment is tracked correctly on agenda items with multiple votes', function () {
+    test('vote alignment is tracked correctly on agenda items with multiple votes', function (): void {
         // Create votes with different alignments
         Vote::factory()->main()->for($this->agendaItem, 'agendaItem')->create([
             'decision' => 'positive',
@@ -236,12 +236,12 @@ describe('vote controller', function () {
         $alignedCount = $votesWithBoth->filter(fn ($v) => $v->student_vote === $v->decision)->count();
         $misalignedCount = $votesWithBoth->count() - $alignedCount;
 
-        expect($alignedCount)->toBe(1);
-        expect($misalignedCount)->toBe(1);
-        expect($allVotes->count())->toBe(2);
+        expect($alignedCount)->toBe(1)
+            ->and($misalignedCount)->toBe(1)
+            ->and($allVotes->count())->toBe(2);
     });
 
-    test('updating agenda item syncs is_consensus field on votes', function () {
+    test('updating agenda item syncs is_consensus field on votes', function (): void {
         // Create initial vote without consensus
         $existingVote = Vote::factory()->main()->for($this->agendaItem, 'agendaItem')->create([
             'title' => 'Original Vote',
@@ -269,13 +269,13 @@ describe('vote controller', function () {
         $response->assertStatus(302);
 
         $existingVote->refresh();
-        expect($existingVote->is_consensus)->toBeTrue();
-        expect($existingVote->decision)->toBe('positive');
-        expect($existingVote->student_vote)->toBe('positive');
-        expect($existingVote->student_benefit)->toBe('positive');
+        expect($existingVote->is_consensus)->toBeTrue()
+            ->and($existingVote->decision)->toBe('positive')
+            ->and($existingVote->student_vote)->toBe('positive')
+            ->and($existingVote->student_benefit)->toBe('positive');
     });
 
-    test('creating new vote via agenda item update sets is_consensus correctly', function () {
+    test('creating new vote via agenda item update sets is_consensus correctly', function (): void {
         $response = asUser($this->admin)
             ->patch(route('agendaItems.update', $this->agendaItem), [
                 'title' => 'Test Agenda Item',
@@ -298,12 +298,12 @@ describe('vote controller', function () {
         $this->agendaItem->refresh();
         $vote = $this->agendaItem->votes()->first();
 
-        expect($vote)->not->toBeNull();
-        expect($vote->is_consensus)->toBeTrue();
-        expect($vote->is_main)->toBeTrue();
+        expect($vote)->not->toBeNull()
+            ->and($vote->is_consensus)->toBeTrue()
+            ->and($vote->is_main)->toBeTrue();
     });
 
-    test('is_consensus can be toggled off via agenda item update', function () {
+    test('is_consensus can be toggled off via agenda item update', function (): void {
         // Create vote with consensus enabled
         $vote = Vote::factory()->main()->for($this->agendaItem, 'agendaItem')->create([
             'is_consensus' => true,
@@ -331,25 +331,25 @@ describe('vote controller', function () {
         $response->assertStatus(302);
 
         $vote->refresh();
-        expect($vote->is_consensus)->toBeFalse();
-        expect($vote->decision)->toBeNull();
+        expect($vote->is_consensus)->toBeFalse()
+            ->and($vote->decision)->toBeNull();
     });
 
-    test('vote factory supports consensus state', function () {
+    test('vote factory supports consensus state', function (): void {
         $consensusVote = Vote::factory()
             ->consensus()
             ->for($this->agendaItem, 'agendaItem')
             ->create();
 
-        expect($consensusVote->is_consensus)->toBeTrue();
-        expect($consensusVote->decision)->toBe('positive');
-        expect($consensusVote->student_vote)->toBe('positive');
-        expect($consensusVote->student_benefit)->toBe('positive');
+        expect($consensusVote->is_consensus)->toBeTrue()
+            ->and($consensusVote->decision)->toBe('positive')
+            ->and($consensusVote->student_vote)->toBe('positive')
+            ->and($consensusVote->student_benefit)->toBe('positive');
     });
 });
 
-describe('vote authorization', function () {
-    test('unauthenticated users cannot create votes', function () {
+describe('vote authorization', function (): void {
+    test('unauthenticated users cannot create votes', function (): void {
         $response = $this->post(route('votes.store'), [
             'agenda_item_id' => $this->agendaItem->id,
             'is_main' => true,
@@ -358,7 +358,7 @@ describe('vote authorization', function () {
         $response->assertRedirect(route('login'));
     });
 
-    test('users without permission cannot create votes', function () {
+    test('users without permission cannot create votes', function (): void {
         // Create a user without any special permissions
         $regularUser = makeUser($this->tenant);
 

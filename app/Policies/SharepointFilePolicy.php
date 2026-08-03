@@ -15,7 +15,7 @@ class SharepointFilePolicy extends ModelPolicy
     public function __construct(ModelAuthorizer $authorizer)
     {
         parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::SHAREPOINT_FILE()->label);
+        $this->pluralModelName = Str::plural(ModelEnum::SHAREPOINT_FILE->label());
     }
 
     /**
@@ -23,6 +23,7 @@ class SharepointFilePolicy extends ModelPolicy
      *
      * @param  SharepointFile  $sharepointFile
      */
+    #[\Override]
     public function delete(User $user, Model $sharepointFile): bool
     {
         $fileable = $sharepointFile->fileables->first()?->fileable;

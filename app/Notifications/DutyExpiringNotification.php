@@ -18,21 +18,10 @@ use Illuminate\Support\Carbon;
  */
 class DutyExpiringNotification extends BaseNotification
 {
-    protected Duty $duty;
-
-    protected Dutiable $dutiable;
-
-    protected int $daysUntilExpiry;
-
     /**
      * Create a new notification instance.
      */
-    public function __construct(Duty $duty, Dutiable $dutiable, int $daysUntilExpiry = 30)
-    {
-        $this->duty = $duty;
-        $this->dutiable = $dutiable;
-        $this->daysUntilExpiry = $daysUntilExpiry;
-    }
+    public function __construct(protected Duty $duty, protected Dutiable $dutiable, protected int $daysUntilExpiry = 30) {}
 
     public function category(): NotificationCategory
     {
@@ -59,6 +48,7 @@ class DutyExpiringNotification extends BaseNotification
         return route('duties.show', $this->duty->id);
     }
 
+    #[\Override]
     public function icon(): string
     {
         return '🔔';
@@ -79,6 +69,7 @@ class DutyExpiringNotification extends BaseNotification
         ];
     }
 
+    #[\Override]
     public function actions(): array
     {
         return [
@@ -92,6 +83,7 @@ class DutyExpiringNotification extends BaseNotification
     /**
      * Duty expiry notifications are important reminders and should not be digested.
      */
+    #[\Override]
     public function supportsEmailDigest(): bool
     {
         return false;

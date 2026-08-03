@@ -7,9 +7,9 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
     $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant); // Use user with training permissions
@@ -27,20 +27,20 @@ beforeEach(function () {
     ]);
 });
 
-describe('unauthorized access', function () {
-    test('cannot access index page', function () {
+describe('unauthorized access', function (): void {
+    test('cannot access index page', function (): void {
         asUser($this->user)
             ->get(route('trainings.index'))
             ->assertStatus(403);
     });
 
-    test('cannot access create page', function () {
+    test('cannot access create page', function (): void {
         asUser($this->user)
             ->get(route('trainings.create'))
             ->assertStatus(403);
     });
 
-    test('cannot store training', function () {
+    test('cannot store training', function (): void {
         $validData = getControllerTestData('Training')['valid'];
         $institution = Institution::factory()->for($this->tenant)->create();
         $validData['institution_id'] = $institution->id;
@@ -50,13 +50,13 @@ describe('unauthorized access', function () {
             ->assertStatus(403);
     });
 
-    test('cannot access edit page', function () {
+    test('cannot access edit page', function (): void {
         asUser($this->user)
             ->get(route('trainings.edit', $this->training))
             ->assertStatus(403);
     });
 
-    test('cannot update training', function () {
+    test('cannot update training', function (): void {
         $updateData = getControllerTestData('Training')['valid'];
         $institution = Institution::factory()->for($this->tenant)->create();
         $updateData['institution_id'] = $institution->id;
@@ -66,15 +66,15 @@ describe('unauthorized access', function () {
             ->assertStatus(403);
     });
 
-    test('cannot delete training', function () {
+    test('cannot delete training', function (): void {
         asUser($this->user)
             ->delete(route('trainings.destroy', $this->training))
             ->assertStatus(403);
     });
 });
 
-describe('authorized access', function () {
-    test('can access index page', function () {
+describe('authorized access', function (): void {
+    test('can access index page', function (): void {
         asUser($this->admin)
             ->get(route('trainings.index'))
             ->assertStatus(200)
@@ -85,7 +85,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('can access create page', function () {
+    test('can access create page', function (): void {
         asUser($this->admin)
             ->get(route('trainings.create'))
             ->assertStatus(200)
@@ -95,7 +95,22 @@ describe('authorized access', function () {
             );
     });
 
-    test('can store training with valid data', function () {
+    test('can access show page without exposing activitiesAsSubject via Inertia props', function (): void {
+        // Activity history is now served on demand through the paginated
+        // admin API (see ActivityLogApiControllerTest), not eager-loaded into
+        // the show page -- assert it stays out of the Inertia payload.
+        $this->training->update(['address' => 'Updated Address']);
+
+        asUser($this->admin)
+            ->get(route('trainings.show', $this->training))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/People/ShowTraining')
+                ->missing('training.activities_as_subject')
+            );
+    });
+
+    test('can store training with valid data', function (): void {
         $institution = Institution::factory()->for($this->tenant)->create();
         $validData = getControllerTestData('Training')['valid'];
         $validData['institution_id'] = $institution->id;
@@ -115,11 +130,11 @@ describe('authorized access', function () {
 
         // Check that name is stored properly as JSON
         $training = Training::where('name->lt', $validData['name']['lt'])->first();
-        expect($training)->not->toBeNull();
-        expect($training->getTranslation('name', 'lt'))->toBe($validData['name']['lt']);
+        expect($training)->not->toBeNull()
+            ->and($training->getTranslation('name', 'lt'))->toBe($validData['name']['lt']);
     });
 
-    test('cannot store training with invalid data', function () {
+    test('cannot store training with invalid data', function (): void {
         $institution = Institution::factory()->for($this->tenant)->create();
         $invalidData = getControllerTestData('Training')['invalid'];
         $invalidData['institution_id'] = $institution->id;
@@ -132,7 +147,7 @@ describe('authorized access', function () {
             ->assertSessionHasErrors(['name.lt', 'description.lt', 'start_time', 'max_participants']);
     });
 
-    test('can access edit page', function () {
+    test('can access edit page', function (): void {
         asUser($this->admin)
             ->get(route('trainings.edit', $this->training))
             ->assertStatus(200)
@@ -144,7 +159,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('can update training with valid data', function () {
+    test('can update training with valid data', function (): void {
         $institution = Institution::factory()->for($this->tenant)->create();
         $updateData = getControllerTestData('Training')['valid'];
         $updateData['name'] = ['lt' => 'Updated Training Name', 'en' => 'Updated Training Name EN'];
@@ -159,7 +174,7 @@ describe('authorized access', function () {
         expect($this->training->getTranslation('name', 'lt'))->toBe('Updated Training Name');
     });
 
-    test('cannot update training with invalid data', function () {
+    test('cannot update training with invalid data', function (): void {
         $institution = Institution::factory()->for($this->tenant)->create();
         $invalidData = getControllerTestData('Training')['invalid'];
         $invalidData['institution_id'] = $institution->id;
@@ -176,7 +191,7 @@ describe('authorized access', function () {
         expect($this->training->getTranslation('name', 'lt'))->toBe('Test Training');
     });
 
-    test('can delete training', function () {
+    test('can delete training', function (): void {
         asUser($this->admin)
             ->delete(route('trainings.destroy', $this->training))
             ->assertStatus(302)
@@ -189,8 +204,8 @@ describe('authorized access', function () {
     });
 });
 
-describe('filtering and search', function () {
-    beforeEach(function () {
+describe('filtering and search', function (): void {
+    beforeEach(function (): void {
         // Create additional trainings for testing with institutions in the same tenant
         $institution = Institution::factory()->for($this->tenant)->create();
 
@@ -209,41 +224,37 @@ describe('filtering and search', function () {
         ]);
     });
 
-    test('can filter trainings by search term', function () {
+    test('can filter trainings by search term', function (): void {
         asUser($this->admin)
             ->get(route('trainings.index', ['search' => 'Test']))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/People/IndexTraining')
                 ->has('trainings.data')
-                ->where('trainings.data', function ($data) {
-                    return collect($data)->contains(function ($training) {
-                        $name = $training['name'];
-                        $desc = $training['description'] ?? '';
-                        if (is_array($name)) {
-                            return str_contains($name['lt'] ?? '', 'Test') || str_contains($name['en'] ?? '', 'Test');
-                        }
+                ->where('trainings.data', fn ($data) => collect($data)->contains(function ($training) {
+                    $name = $training['name'];
+                    $desc = $training['description'] ?? '';
+                    if (is_array($name)) {
+                        return str_contains($name['lt'] ?? '', 'Test') || str_contains($name['en'] ?? '', 'Test');
+                    }
 
-                        return str_contains($name, 'Test') || str_contains($desc, 'Test');
-                    });
-                })
+                    return str_contains($name, 'Test') || str_contains($desc, 'Test');
+                }))
             );
     });
 
-    test('can filter trainings by location', function () {
+    test('can filter trainings by location', function (): void {
         asUser($this->admin)
             ->get(route('trainings.index', ['filters' => json_encode(['address' => ['Conference Room B']])]))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/People/IndexTraining')
                 ->has('trainings.data')
-                ->where('trainings.data', function ($data) {
-                    return collect($data)->every(fn ($training) => $training['address'] === 'Conference Room B');
-                })
+                ->where('trainings.data', fn ($data) => collect($data)->every(fn ($training) => $training['address'] === 'Conference Room B'))
             );
     });
 
-    test('can filter trainings by date range', function () {
+    test('can filter trainings by date range', function (): void {
         $startDate = now()->addDays(10)->toDateString();
         $endDate = now()->addDays(20)->toDateString();
 
@@ -262,8 +273,8 @@ describe('filtering and search', function () {
     });
 });
 
-describe('edge cases and business logic', function () {
-    test('training name must be unique within tenant', function () {
+describe('edge cases and business logic', function (): void {
+    test('training name must be unique within tenant', function (): void {
         $institution = Institution::factory()->for($this->tenant)->create();
         $duplicateData = getControllerTestData('Training')['valid'];
         $duplicateData['name'] = $this->training->getTranslations('name'); // Same name structure as existing training
@@ -275,7 +286,7 @@ describe('edge cases and business logic', function () {
             ->assertSessionHasErrors(['name.lt']);
     });
 
-    test('training end time must be after start time', function () {
+    test('training end time must be after start time', function (): void {
         $institution = Institution::factory()->for($this->tenant)->create();
         $invalidTimeData = getControllerTestData('Training')['valid'];
         $invalidTimeData['start_time'] = now()->addDays(7)->timestamp * 1000;
@@ -288,7 +299,7 @@ describe('edge cases and business logic', function () {
             ->assertSessionHasErrors(['end_time']);
     });
 
-    test('training handles special characters in name and description', function () {
+    test('training handles special characters in name and description', function (): void {
         $institution = Institution::factory()->for($this->tenant)->create();
         $specialCharsData = getControllerTestData('Training')['valid'];
         $specialCharsData['name'] = ['lt' => 'Mokymas su šiaudiniais žodžiais', 'en' => 'Training with special chars'];
@@ -301,12 +312,12 @@ describe('edge cases and business logic', function () {
             ->assertRedirect(route('trainings.index'));
 
         $training = Training::where('name->lt', 'Mokymas su šiaudiniais žodžiais')->first();
-        expect($training)->not->toBeNull();
-        expect($training->getTranslation('name', 'lt'))->toBe('Mokymas su šiaudiniais žodžiais');
-        expect($training->getTranslation('description', 'lt'))->toBe('Aprašymas su ąčęėįšųūž simboliais');
+        expect($training)->not->toBeNull()
+            ->and($training->getTranslation('name', 'lt'))->toBe('Mokymas su šiaudiniais žodžiais')
+            ->and($training->getTranslation('description', 'lt'))->toBe('Aprašymas su ąčęėįšųūž simboliais');
     });
 
-    test('training can have zero max participants for unlimited capacity', function () {
+    test('training can have zero max participants for unlimited capacity', function (): void {
         $institution = Institution::factory()->for($this->tenant)->create();
         $unlimitedData = getControllerTestData('Training')['valid'];
         $unlimitedData['max_participants'] = 0; // Unlimited
@@ -323,7 +334,7 @@ describe('edge cases and business logic', function () {
         ]);
     });
 
-    test('training location can be empty for online trainings', function () {
+    test('training location can be empty for online trainings', function (): void {
         $institution = Institution::factory()->for($this->tenant)->create();
         $onlineTrainingData = getControllerTestData('Training')['valid'];
         $onlineTrainingData['address'] = ''; // Empty address for online
@@ -341,7 +352,7 @@ describe('edge cases and business logic', function () {
         ]);
     });
 
-    test('training cannot be scheduled in the past', function () {
+    test('training cannot be scheduled in the past', function (): void {
         $institution = Institution::factory()->for($this->tenant)->create();
         $pastTrainingData = getControllerTestData('Training')['valid'];
         $pastTrainingData['start_time'] = now()->addDays(1)->timestamp * 1000; // Change to future date to avoid past validation
@@ -355,15 +366,15 @@ describe('edge cases and business logic', function () {
     });
 });
 
-describe('tenant isolation', function () {
-    beforeEach(function () {
+describe('tenant isolation', function (): void {
+    beforeEach(function (): void {
         $this->otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $otherInstitution = Institution::factory()->for($this->otherTenant)->create();
         $this->otherTraining = Training::factory()->for($otherInstitution, 'institution')->create();
         $this->otherAdmin = makeTenantUserWithRole('Communication Coordinator', $this->otherTenant);
     });
 
-    test('user only sees trainings from their tenant', function () {
+    test('user only sees trainings from their tenant', function (): void {
         asUser($this->admin)
             ->get(route('trainings.index'))
             ->assertStatus(200)
@@ -373,13 +384,13 @@ describe('tenant isolation', function () {
             );
     });
 
-    test('cannot access other tenant training', function () {
+    test('cannot access other tenant training', function (): void {
         asUser($this->admin)
             ->get(route('trainings.edit', $this->otherTraining))
             ->assertStatus(403); // Authorization failure - cannot access other tenant's training
     });
 
-    test('cannot update other tenant training', function () {
+    test('cannot update other tenant training', function (): void {
         $institution = Institution::factory()->for($this->tenant)->create();
         $updateData = getControllerTestData('Training')['valid'];
         $updateData['institution_id'] = $institution->id;
@@ -389,15 +400,15 @@ describe('tenant isolation', function () {
             ->assertStatus(403); // Authorization failure - cannot update other tenant's training
     });
 
-    test('cannot delete other tenant training', function () {
+    test('cannot delete other tenant training', function (): void {
         asUser($this->admin)
             ->delete(route('trainings.destroy', $this->otherTraining))
             ->assertStatus(403); // Authorization failure - cannot delete other tenant's training
     });
 });
 
-describe('training participants and registration', function () {
-    test('training can have registered participants', function () {
+describe('training participants and registration', function (): void {
+    test('training can have registered participants', function (): void {
         $participant = User::factory()->create();
 
         // Assuming there's a participants relationship
@@ -407,12 +418,12 @@ describe('training participants and registration', function () {
                 'status' => 'registered',
             ]);
 
-            expect($this->training->participants)->toHaveCount(1);
-            expect($this->training->participants->first()->id)->toBe($participant->id);
+            expect($this->training->participants)->toHaveCount(1)
+                ->and($this->training->participants->first()->id)->toBe($participant->id);
         }
     });
 
-    test('training respects max participants limit', function () {
+    test('training respects max participants limit', function (): void {
         $this->training->max_participants = 2;
         $this->training->save();
 
@@ -420,7 +431,7 @@ describe('training participants and registration', function () {
         expect($this->training->max_participants)->toBe(2);
     });
 
-    test('training with zero max participants allows unlimited registration', function () {
+    test('training with zero max participants allows unlimited registration', function (): void {
         $this->training->max_participants = 0;
         $this->training->save();
 
@@ -429,8 +440,8 @@ describe('training participants and registration', function () {
     });
 });
 
-describe('training status and dates', function () {
-    test('training can determine if it is upcoming', function () {
+describe('training status and dates', function (): void {
+    test('training can determine if it is upcoming', function (): void {
         $institution = Institution::factory()->for($this->tenant)->create();
         $futureTraining = Training::factory()->for($institution, 'institution')->create([
             'start_time' => now()->addDays(5),
@@ -440,7 +451,7 @@ describe('training status and dates', function () {
         expect($futureTraining->start_time->isFuture())->toBeTrue();
     });
 
-    test('training can determine if it is past', function () {
+    test('training can determine if it is past', function (): void {
         $institution = Institution::factory()->for($this->tenant)->create();
         $pastTraining = Training::factory()->for($institution, 'institution')->create([
             'start_time' => now()->subDays(5),
@@ -450,7 +461,7 @@ describe('training status and dates', function () {
         expect($pastTraining->end_time->isPast())->toBeTrue();
     });
 
-    test('training can determine if it is currently active', function () {
+    test('training can determine if it is currently active', function (): void {
         $institution = Institution::factory()->for($this->tenant)->create();
         $activeTraining = Training::factory()->for($institution, 'institution')->create([
             'start_time' => now()->subHours(1),

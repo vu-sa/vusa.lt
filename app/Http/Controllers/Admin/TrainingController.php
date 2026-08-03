@@ -125,51 +125,43 @@ class TrainingController extends AdminController
      */
     public function show(Training $training)
     {
-        $training->load('activities', 'form', 'tenant', 'organizer', 'trainables', 'tasks', 'institution');
+        $training->load('form', 'tenant', 'organizer', 'trainables', 'tasks', 'institution');
 
         $training->load('programmes.days.elements');
 
         return $this->inertiaResponse('Admin/People/ShowTraining', [
             'training' => [
                 ...$training->toArray(),
-                'programmes' => $training->programmes->map(function ($programme) {
-                    return [
-                        ...$programme->toArray(),
-                        'days' => $programme->days->map(function ($day) {
-                            return [
-                                ...$day->toArray(),
-                                'elements' => $day->elements->map(function ($element) {
-                                    if ($element->elementable instanceof ProgrammeSection) {
-                                        return [
-                                            ...$element->elementable->toArray(),
-                                            'blocks' => $element->elementable->blocks->map(function ($block) {
-                                                return [
-                                                    ...$block->toArray(),
-                                                    'parts' => $block->parts->map(function ($part) {
-                                                        return [
-                                                            ...$part->toArray(),
-                                                            'type' => 'part',
-                                                        ];
-                                                    }),
-                                                    'type' => 'block',
-                                                ];
-                                            }),
-                                            'type' => 'section',
-                                        ];
-                                    }
-
-                                    if ($element->elementable instanceof ProgrammePart) {
-                                        return [
-                                            ...$element->elementable->toArray(),
+                'programmes' => $training->programmes->map(fn ($programme) => [
+                    ...$programme->toArray(),
+                    'days' => $programme->days->map(fn ($day) => [
+                        ...$day->toArray(),
+                        'elements' => $day->elements->map(function ($element) {
+                            if ($element->elementable instanceof ProgrammeSection) {
+                                return [
+                                    ...$element->elementable->toArray(),
+                                    'blocks' => $element->elementable->blocks->map(fn ($block) => [
+                                        ...$block->toArray(),
+                                        'parts' => $block->parts->map(fn ($part) => [
+                                            ...$part->toArray(),
                                             'type' => 'part',
-                                        ];
-                                    }
-                                }),
-                                'type' => 'day',
-                            ];
+                                        ]),
+                                        'type' => 'block',
+                                    ]),
+                                    'type' => 'section',
+                                ];
+                            }
+
+                            if ($element->elementable instanceof ProgrammePart) {
+                                return [
+                                    ...$element->elementable->toArray(),
+                                    'type' => 'part',
+                                ];
+                            }
                         }),
-                    ];
-                }),
+                        'type' => 'day',
+                    ]),
+                ]),
             ],
             'userIsRegistered' => $training->form?->registrations->contains('user_id', auth()->id()),
             'userCanRegister' => ($user = auth()->user()) instanceof User && $user->allAvailableTrainings()->contains('id', $training->id),
@@ -200,47 +192,39 @@ class TrainingController extends AdminController
                 ],
                 'tasks' => $training->tasks->map->toFullArray(),
                 'programme' => collect([
-                    $training->load('programmes.days.elements.elementable')->programmes->map(function ($programme) {
-                        return [
-                            ...$programme->toFullArray(),
-                            'days' => $programme->days->map(function ($day) {
-                                return [
-                                    ...$day->toFullArray(),
-                                    'type' => 'day',
-                                    'elements' => $day->elements->map(function ($element) {
-                                        // check if elementable is a section or part
-                                        $elementable = $element->elementable;
+                    $training->load('programmes.days.elements.elementable')->programmes->map(fn ($programme) => [
+                        ...$programme->toFullArray(),
+                        'days' => $programme->days->map(fn ($day) => [
+                            ...$day->toFullArray(),
+                            'type' => 'day',
+                            'elements' => $day->elements->map(function ($element) {
+                                // check if elementable is a section or part
+                                $elementable = $element->elementable;
 
-                                        if ($elementable instanceof ProgrammeSection) {
-                                            return [
-                                                ...$elementable->toFullArray(),
-                                                'blocks' => $elementable->blocks->map(function (ProgrammeBlock $block) {
-                                                    return [
-                                                        ...$block->toFullArray(),
-                                                        'parts' => $block->parts->map(function ($part) {
-                                                            return [
-                                                                ...$part->toFullArray(),
-                                                                'type' => 'part',
-                                                            ];
-                                                        }),
-                                                        'type' => 'block',
-                                                    ];
-                                                }),
-                                                'type' => 'section',
-                                            ];
-                                        }
-
-                                        if ($elementable instanceof ProgrammePart) {
-                                            return [
-                                                ...$elementable->toFullArray(),
+                                if ($elementable instanceof ProgrammeSection) {
+                                    return [
+                                        ...$elementable->toFullArray(),
+                                        'blocks' => $elementable->blocks->map(fn (ProgrammeBlock $block) => [
+                                            ...$block->toFullArray(),
+                                            'parts' => $block->parts->map(fn ($part) => [
+                                                ...$part->toFullArray(),
                                                 'type' => 'part',
-                                            ];
-                                        }
-                                    }),
-                                ];
+                                            ]),
+                                            'type' => 'block',
+                                        ]),
+                                        'type' => 'section',
+                                    ];
+                                }
+
+                                if ($elementable instanceof ProgrammePart) {
+                                    return [
+                                        ...$elementable->toFullArray(),
+                                        'type' => 'part',
+                                    ];
+                                }
                             }),
-                        ];
-                    })->first(),
+                        ]),
+                    ])->first(),
                 ])->first(),
             ],
             'trainableTypes' => [
@@ -300,12 +284,10 @@ class TrainingController extends AdminController
                 $options = $field->options;
 
                 if ($field->use_model_options) {
-                    $options = $field->options_model::all()->map(function ($model) use ($field) {
-                        return [
-                            'value' => $model->id,
-                            'label' => $model->{$field->options_model_field},
-                        ];
-                    });
+                    $options = $field->options_model::all()->map(fn ($model) => [
+                        'value' => $model->id,
+                        'label' => $model->{$field->options_model_field},
+                    ]);
                 }
 
                 return [

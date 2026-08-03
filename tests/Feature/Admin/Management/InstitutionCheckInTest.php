@@ -4,9 +4,9 @@ use App\Models\Institution;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-test('allows creating check-in with past start date', function () {
+test('allows creating check-in with past start date', function (): void {
     $tenant = Tenant::factory()->create();
     $user = makeAdminUser($tenant);
     $institution = Institution::factory()->for($tenant)->create();
@@ -33,7 +33,7 @@ test('allows creating check-in with past start date', function () {
     ]);
 });
 
-test('rejects check-in end date beyond three months', function () {
+test('rejects check-in end date beyond three months', function (): void {
     $tenant = Tenant::factory()->create();
     $user = makeAdminUser($tenant);
     $institution = Institution::factory()->for($tenant)->create();

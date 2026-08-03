@@ -102,7 +102,7 @@ class UserPermissionObserver
     public function updatedDuty(Duty $duty): void
     {
         // Clear cache for all users with this duty
-        $duty->users->each(function ($user) {
+        $duty->users->each(function ($user): void {
             $this->invalidateUserCache($user->id);
         });
     }
@@ -113,7 +113,7 @@ class UserPermissionObserver
     public function changedRolePermissions(Role $role): void
     {
         // Clear cache for all users with this role
-        $role->users->each(function ($user) {
+        $role->users->each(function ($user): void {
             $this->invalidateUserCache($user->id);
         });
 
@@ -121,8 +121,8 @@ class UserPermissionObserver
         $dutyIds = $role->duties()->pluck('duties.id')->toArray();
 
         if (! empty($dutyIds)) {
-            Duty::whereIn('id', $dutyIds)->get()->each(function ($duty) {
-                $duty->users->each(function ($user) {
+            Duty::whereIn('id', $dutyIds)->get()->each(function ($duty): void {
+                $duty->users->each(function ($user): void {
                     $this->invalidateUserCache($user->id);
                 });
             });

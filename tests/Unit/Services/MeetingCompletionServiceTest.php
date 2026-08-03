@@ -7,28 +7,28 @@ use App\Models\Vote;
 use App\Services\MeetingCompletionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->service = new MeetingCompletionService;
 });
 
-describe('MeetingCompletionService', function () {
-    describe('calculate', function () {
-        test('returns no_items when meeting has no agenda items', function () {
+describe('MeetingCompletionService', function (): void {
+    describe('calculate', function (): void {
+        test('returns no_items when meeting has no agenda items', function (): void {
             $meeting = Meeting::factory()->create();
 
             expect($this->service->calculate($meeting))->toBe('no_items');
         });
 
-        test('returns incomplete when agenda item has no votes', function () {
+        test('returns incomplete when agenda item has no votes', function (): void {
             $meeting = Meeting::factory()->create();
             AgendaItem::factory()->create(['meeting_id' => $meeting->id]);
 
             expect($this->service->calculate($meeting))->toBe('incomplete');
         });
 
-        test('returns complete when all voting items have complete main votes', function () {
+        test('returns complete when all voting items have complete main votes', function (): void {
             $meeting = Meeting::factory()->create();
             $item = AgendaItem::factory()->create(['meeting_id' => $meeting->id, 'type' => AgendaItemType::Voting]);
             Vote::factory()->create([
@@ -42,7 +42,7 @@ describe('MeetingCompletionService', function () {
             expect($this->service->calculate($meeting))->toBe('complete');
         });
 
-        test('returns incomplete when main vote is missing fields', function () {
+        test('returns incomplete when main vote is missing fields', function (): void {
             $meeting = Meeting::factory()->create();
             $item = AgendaItem::factory()->create(['meeting_id' => $meeting->id]);
             Vote::factory()->create([
@@ -56,7 +56,7 @@ describe('MeetingCompletionService', function () {
             expect($this->service->calculate($meeting))->toBe('incomplete');
         });
 
-        test('returns complete when any vote is complete if no main vote exists', function () {
+        test('returns complete when any vote is complete if no main vote exists', function (): void {
             $meeting = Meeting::factory()->create();
             $item = AgendaItem::factory()->create(['meeting_id' => $meeting->id]);
             Vote::factory()->create([
@@ -70,7 +70,7 @@ describe('MeetingCompletionService', function () {
             expect($this->service->calculate($meeting))->toBe('complete');
         });
 
-        test('ignores informational items for completion', function () {
+        test('ignores informational items for completion', function (): void {
             $meeting = Meeting::factory()->create();
             AgendaItem::factory()->create([
                 'meeting_id' => $meeting->id,
@@ -80,7 +80,7 @@ describe('MeetingCompletionService', function () {
             expect($this->service->calculate($meeting))->toBe('complete');
         });
 
-        test('returns incomplete when mix of complete and incomplete items', function () {
+        test('returns incomplete when mix of complete and incomplete items', function (): void {
             $meeting = Meeting::factory()->create();
 
             $completeItem = AgendaItem::factory()->create([

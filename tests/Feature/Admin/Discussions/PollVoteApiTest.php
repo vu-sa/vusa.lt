@@ -14,7 +14,7 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 /**
  * Create a poll comment on the agenda item with two stable option ids.
@@ -34,7 +34,7 @@ function makePoll(AgendaItem $agendaItem, User $author, array $poll = []): Comme
     ]);
 }
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
     $this->coordinator = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
     $this->institution = Institution::factory()->for($this->tenant)->create();
@@ -58,8 +58,8 @@ beforeEach(function () {
     $this->voteUrl = fn (Comment $poll) => route('api.v1.admin.comments.poll.votes.toggle', $poll);
 });
 
-describe('single-choice voting', function () {
-    test('a vote is recorded, switched, then retracted by toggling', function () {
+describe('single-choice voting', function (): void {
+    test('a vote is recorded, switched, then retracted by toggling', function (): void {
         $poll = makePoll($this->agendaItem, $this->coordinator);
         $url = ($this->voteUrl)($poll);
 
@@ -84,7 +84,7 @@ describe('single-choice voting', function () {
             ->assertJsonPath('data.poll.my_option_ids', []);
     });
 
-    test('tallies expose the voters behind each option', function () {
+    test('tallies expose the voters behind each option', function (): void {
         $poll = makePoll($this->agendaItem, $this->coordinator);
 
         asUser($this->viewer)->putJson(($this->voteUrl)($poll), ['option_id' => 'a'])
@@ -95,8 +95,8 @@ describe('single-choice voting', function () {
     });
 });
 
-describe('multiple-choice voting', function () {
-    test('options toggle independently', function () {
+describe('multiple-choice voting', function (): void {
+    test('options toggle independently', function (): void {
         $poll = makePoll($this->agendaItem, $this->coordinator, ['allow_multiple' => true]);
         $url = ($this->voteUrl)($poll);
 
@@ -112,15 +112,15 @@ describe('multiple-choice voting', function () {
     });
 });
 
-describe('guards', function () {
-    test('voting on a closed poll is rejected (422)', function () {
+describe('guards', function (): void {
+    test('voting on a closed poll is rejected (422)', function (): void {
         $poll = makePoll($this->agendaItem, $this->coordinator, ['closes_at' => now()->subHour()->toISOString()]);
 
         asUser($this->viewer)->putJson(($this->voteUrl)($poll), ['option_id' => 'a'])
             ->assertStatus(422);
     });
 
-    test('voting on a non-poll comment is rejected (422)', function () {
+    test('voting on a non-poll comment is rejected (422)', function (): void {
         $this->actingAs($this->coordinator);
         $comment = $this->agendaItem->comment('<p>Just a comment</p>');
 
@@ -128,14 +128,14 @@ describe('guards', function () {
             ->assertStatus(422);
     });
 
-    test('an unknown option is rejected (422)', function () {
+    test('an unknown option is rejected (422)', function (): void {
         $poll = makePoll($this->agendaItem, $this->coordinator);
 
         asUser($this->viewer)->putJson(($this->voteUrl)($poll), ['option_id' => 'nope'])
             ->assertStatus(422)->assertJsonValidationErrors(['option_id']);
     });
 
-    test('an outsider cannot vote (403)', function () {
+    test('an outsider cannot vote (403)', function (): void {
         $poll = makePoll($this->agendaItem, $this->coordinator);
 
         asUser($this->outsider)->putJson(($this->voteUrl)($poll), ['option_id' => 'a'])
@@ -143,7 +143,7 @@ describe('guards', function () {
     });
 });
 
-test('a vote broadcasts a poll action', function () {
+test('a vote broadcasts a poll action', function (): void {
     Event::fake([CommentBroadcast::class]);
     $poll = makePoll($this->agendaItem, $this->coordinator);
 

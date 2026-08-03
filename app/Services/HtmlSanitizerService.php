@@ -12,9 +12,9 @@ use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
  */
 class HtmlSanitizerService
 {
-    private HtmlSanitizer $commentSanitizer;
+    private readonly HtmlSanitizer $commentSanitizer;
 
-    private HtmlSanitizer $richContentSanitizer;
+    private readonly HtmlSanitizer $richContentSanitizer;
 
     public function __construct()
     {

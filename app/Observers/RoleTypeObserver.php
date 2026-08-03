@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Models\Duty;
 use App\Models\RoleType;
 use App\Services\Permissions\PermissionMapBuilder;
 use Illuminate\Support\Facades\Cache;
@@ -19,7 +20,7 @@ class RoleTypeObserver
 
         // get duties
 
-        if ($type->model_type === 'App\Models\Duty') {
+        if ($type->model_type === Duty::class) {
             $duties = $type->duties;
         } else {
             return;
@@ -30,7 +31,7 @@ class RoleTypeObserver
 
         $role->duties()->syncWithoutDetaching($duties);
 
-        $role->usersThroughDuties->each(function ($user) {
+        $role->usersThroughDuties->each(function ($user): void {
             PermissionMapBuilder::forgetCachedMaps($user->id);
             Cache::forget(HandleInertiaRequests::registrationFormsCacheKey($user->id));
         });
@@ -49,7 +50,7 @@ class RoleTypeObserver
 
         // get duties
 
-        if ($type->model_type === 'App\Models\Duty') {
+        if ($type->model_type === Duty::class) {
             $duties = $type->duties;
         } else {
             return;
@@ -60,7 +61,7 @@ class RoleTypeObserver
 
         $role->duties()->detach($duties);
 
-        $role->usersThroughDuties->each(function ($user) {
+        $role->usersThroughDuties->each(function ($user): void {
             PermissionMapBuilder::forgetCachedMaps($user->id);
             Cache::forget(HandleInertiaRequests::registrationFormsCacheKey($user->id));
         });

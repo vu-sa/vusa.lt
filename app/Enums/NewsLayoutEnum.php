@@ -2,25 +2,24 @@
 
 namespace App\Enums;
 
-use Spatie\Enum\Laravel\Enum;
+use App\Enums\Concerns\HasEnumHelpers;
 
-/**
- * @typescript
- *
- * @method static self MODERN()
- * @method static self CLASSIC()
- * @method static self IMMERSIVE()
- * @method static self HEADLINE()
- */
-final class NewsLayoutEnum extends Enum
+enum NewsLayoutEnum: string
 {
-    protected static function labels(): array
+    use HasEnumHelpers;
+
+    case MODERN = 'MODERN';
+    case CLASSIC = 'CLASSIC';
+    case IMMERSIVE = 'IMMERSIVE';
+    case HEADLINE = 'HEADLINE';
+
+    public function label(): string
     {
-        return [
-            'MODERN' => 'modern',
-            'CLASSIC' => 'classic',
-            'IMMERSIVE' => 'immersive',
-            'HEADLINE' => 'headline',
-        ];
+        return match ($this) {
+            self::MODERN => 'modern',
+            self::CLASSIC => 'classic',
+            self::IMMERSIVE => 'immersive',
+            self::HEADLINE => 'headline',
+        };
     }
 }

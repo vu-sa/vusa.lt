@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 class IndexFormRequest extends BaseIndexRequest
 {
     /** @var array<int, array{id: string, desc: bool}> */
+    #[\Override]
     protected array $defaultSorting = [
         ['id' => 'updated_at', 'desc' => true],
     ];

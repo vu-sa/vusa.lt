@@ -11,9 +11,9 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
 
     // A coordinator with read + update on agenda items within the tenant.
@@ -44,25 +44,25 @@ beforeEach(function () {
     );
 });
 
-describe('agenda item view is broader than update', function () {
-    test('a coordinator can both view and update', function () {
-        expect(Gate::forUser($this->coordinator)->allows('view', $this->agendaItem))->toBeTrue();
-        expect(Gate::forUser($this->coordinator)->allows('update', $this->agendaItem))->toBeTrue();
+describe('agenda item view is broader than update', function (): void {
+    test('a coordinator can both view and update', function (): void {
+        expect(Gate::forUser($this->coordinator)->allows('view', $this->agendaItem))->toBeTrue()
+            ->and(Gate::forUser($this->coordinator)->allows('update', $this->agendaItem))->toBeTrue();
     });
 
-    test('a meeting participant without permission can view but not update', function () {
-        expect(Gate::forUser($this->viewer)->allows('view', $this->agendaItem))->toBeTrue();
-        expect(Gate::forUser($this->viewer)->allows('update', $this->agendaItem))->toBeFalse();
+    test('a meeting participant without permission can view but not update', function (): void {
+        expect(Gate::forUser($this->viewer)->allows('view', $this->agendaItem))->toBeTrue()
+            ->and(Gate::forUser($this->viewer)->allows('update', $this->agendaItem))->toBeFalse();
     });
 
-    test('an outsider can neither view nor update', function () {
-        expect(Gate::forUser($this->outsider)->allows('view', $this->agendaItem))->toBeFalse();
-        expect(Gate::forUser($this->outsider)->allows('update', $this->agendaItem))->toBeFalse();
+    test('an outsider can neither view nor update', function (): void {
+        expect(Gate::forUser($this->outsider)->allows('view', $this->agendaItem))->toBeFalse()
+            ->and(Gate::forUser($this->outsider)->allows('update', $this->agendaItem))->toBeFalse();
     });
 });
 
-describe('comment policy follows the parent', function () {
-    beforeEach(function () {
+describe('comment policy follows the parent', function (): void {
+    beforeEach(function (): void {
         $this->actingAs($this->viewer);
         $this->viewerComment = $this->agendaItem->comment('<p>From the view-only participant</p>');
 
@@ -70,26 +70,26 @@ describe('comment policy follows the parent', function () {
         $this->coordinatorComment = $this->agendaItem->comment('<p>From the coordinator</p>');
     });
 
-    test('anyone who can view the parent can read, react and resolve', function () {
+    test('anyone who can view the parent can read, react and resolve', function (): void {
         foreach ([$this->viewer, $this->coordinator] as $user) {
-            expect(Gate::forUser($user)->allows('view', $this->coordinatorComment))->toBeTrue();
-            expect(Gate::forUser($user)->allows('react', $this->coordinatorComment))->toBeTrue();
-            expect(Gate::forUser($user)->allows('resolve', $this->coordinatorComment))->toBeTrue();
+            expect(Gate::forUser($user)->allows('view', $this->coordinatorComment))->toBeTrue()
+                ->and(Gate::forUser($user)->allows('react', $this->coordinatorComment))->toBeTrue()
+                ->and(Gate::forUser($user)->allows('resolve', $this->coordinatorComment))->toBeTrue();
         }
     });
 
-    test('an outsider cannot read, react or resolve', function () {
-        expect(Gate::forUser($this->outsider)->allows('view', $this->coordinatorComment))->toBeFalse();
-        expect(Gate::forUser($this->outsider)->allows('react', $this->coordinatorComment))->toBeFalse();
-        expect(Gate::forUser($this->outsider)->allows('resolve', $this->coordinatorComment))->toBeFalse();
+    test('an outsider cannot read, react or resolve', function (): void {
+        expect(Gate::forUser($this->outsider)->allows('view', $this->coordinatorComment))->toBeFalse()
+            ->and(Gate::forUser($this->outsider)->allows('react', $this->coordinatorComment))->toBeFalse()
+            ->and(Gate::forUser($this->outsider)->allows('resolve', $this->coordinatorComment))->toBeFalse();
     });
 
-    test('only the author can edit their comment', function () {
-        expect(Gate::forUser($this->viewer)->allows('update', $this->viewerComment))->toBeTrue();
-        expect(Gate::forUser($this->coordinator)->allows('update', $this->viewerComment))->toBeFalse();
+    test('only the author can edit their comment', function (): void {
+        expect(Gate::forUser($this->viewer)->allows('update', $this->viewerComment))->toBeTrue()
+            ->and(Gate::forUser($this->coordinator)->allows('update', $this->viewerComment))->toBeFalse();
     });
 
-    test('the author or a parent-moderator can delete a comment', function () {
+    test('the author or a parent-moderator can delete a comment', function (): void {
         // Author deletes own.
         expect(Gate::forUser($this->viewer)->allows('delete', $this->viewerComment))->toBeTrue();
 

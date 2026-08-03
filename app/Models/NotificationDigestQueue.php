@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\NotificationCategory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -25,17 +27,16 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
+#[Fillable([
+    'user_id',
+    'notification_class',
+    'category',
+    'data',
+])]
+#[Table(name: 'notification_digest_queue')]
 class NotificationDigestQueue extends Model
 {
-    protected $table = 'notification_digest_queue';
-
-    protected $fillable = [
-        'user_id',
-        'notification_class',
-        'category',
-        'data',
-    ];
-
+    #[\Override]
     protected function casts(): array
     {
         return [

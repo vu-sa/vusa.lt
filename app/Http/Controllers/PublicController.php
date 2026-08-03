@@ -81,15 +81,13 @@ class PublicController extends Controller
         $cacheKey = "tenant_links_{$this->tenant->id}_{$locale}";
 
         $quickLinks = Cache::tags(['quick_links', "tenant_{$this->tenant->id}", "locale_{$locale}"])
-            ->remember($cacheKey, 3600, function () use ($locale) {
-                return QuickLink::query()
-                    ->where([
-                        ['tenant_id', $this->tenant->id],
-                        ['lang', $locale],
-                    ])
-                    ->orderBy('order')
-                    ->get(['id', 'link', 'text', 'icon', 'is_important']);
-            });
+            ->remember($cacheKey, 3600, fn () => QuickLink::query()
+                ->where([
+                    ['tenant_id', $this->tenant->id],
+                    ['lang', $locale],
+                ])
+                ->orderBy('order')
+                ->get(['id', 'link', 'text', 'icon', 'is_important']));
 
         Inertia::share('tenant.links', $quickLinks);
     }
@@ -100,12 +98,10 @@ class PublicController extends Controller
         $cacheKey = "navigation_{$locale}";
 
         $navigation = Cache::tags(['navigation', "locale_{$locale}"])
-            ->remember($cacheKey, 7200, function () use ($locale) {
-                return Navigation::query()
-                    ->where('lang', $locale)
-                    ->orderBy('order')
-                    ->get();
-            });
+            ->remember($cacheKey, 7200, fn () => Navigation::query()
+                ->where('lang', $locale)
+                ->orderBy('order')
+                ->get());
 
         Inertia::share('navigation', $navigation);
     }
@@ -121,7 +117,7 @@ class PublicController extends Controller
             ]));
 
             Inertia::share('otherLangURL', $otherLangURL);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             // If route generation fails, don't share otherLangURL
             // This allows the LocaleButton to gracefully handle missing translations
             Inertia::share('otherLangURL', null);
@@ -302,15 +298,7 @@ class PublicController extends Controller
         // Generate canonical URL using the content owner's subdomain
         // This ensures content is always canonicalized to its owner's subdomain
         $canonicalUrl = $this->getCanonicalUrl(contentTenant: $contentTenant, includeQueryString: true);
-
-        // If canonical_url is not already set in args, add it
-        $hasCanonicalUrl = false;
-        foreach ($args as $key => $value) {
-            if ($key === 'canonical_url' && $value !== null) {
-                $hasCanonicalUrl = true;
-                break;
-            }
-        }
+        $hasCanonicalUrl = array_any($args, fn ($value, $key) => $key === 'canonical_url' && $value !== null);
 
         if (! $hasCanonicalUrl) {
             $args['canonical_url'] = $canonicalUrl;
@@ -321,9 +309,7 @@ class PublicController extends Controller
         $seoDataArray = seo(clone $seoData);
 
         // Use named array with keys that use object classes
-        $associatedArray = collect($seoDataArray->tags)->mapWithKeys(function ($tag) {
-            return [get_class($tag) => $tag];
-        });
+        $associatedArray = collect($seoDataArray->tags)->mapWithKeys(fn ($tag) => [$tag::class => $tag]);
 
         // Add hreflang tags for bilingual content
         $currentLocale = app()->getLocale();
@@ -379,7 +365,7 @@ class PublicController extends Controller
         $image = config('app.url').config('seo.image.fallback');
 
         if (! empty($seoData->image)) {
-            if (substr($seoData->image, 0, 4) === 'http') {
+            if (str_starts_with($seoData->image, 'http')) {
                 $image = $seoData->image;
             } else {
                 $storedImage = Storage::get(str_replace('uploads', 'public', $seoData->image));

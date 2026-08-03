@@ -68,7 +68,7 @@
         </div>
       </template>
       <template #actions>
-        <ActivityLogButton :activities="meeting.activities ?? []" />
+        <ActivityLogSheet subject-type="meeting" :subject-id="meeting.id" />
         <Button variant="outline" size="icon" class="h-9 w-9" @click="showMeetingModal = true">
           <Edit class="h-4 w-4" />
         </Button>
@@ -385,7 +385,7 @@ import AgendaItemsForm from '@/Components/AdminForms/Special/AgendaItemsForm.vue
 import MeetingForm from '@/Components/AdminForms/MeetingForm.vue';
 import FileManager from '@/Features/Admin/SharepointFileManager/SharepointFileManager.vue';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
-import ActivityLogButton from '@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue';
+import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import { InstitutionIconFilled, MeetingIconFilled } from '@/Components/icons';
 
 const props = defineProps<{

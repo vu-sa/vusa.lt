@@ -2,23 +2,22 @@
 
 namespace App\Enums;
 
-use Spatie\Enum\Laravel\Enum;
+use App\Enums\Concerns\HasEnumHelpers;
 
-/**
- * @typescript
- *
- * @method static self VIEW()
- * @method static self EDIT()
- * @method static self OWNER()
- */
-final class SharepointPermissionTypeEnum extends Enum
+enum SharepointPermissionTypeEnum: string
 {
-    protected static function labels(): array
+    use HasEnumHelpers;
+
+    case VIEW = 'VIEW';
+    case EDIT = 'EDIT';
+    case OWNER = 'OWNER';
+
+    public function label(): string
     {
-        return [
-            'VIEW' => 'view',
-            'EDIT' => 'edit',
-            'OWNER' => 'owner',
-        ];
+        return match ($this) {
+            self::VIEW => 'view',
+            self::EDIT => 'edit',
+            self::OWNER => 'owner',
+        };
     }
 }

@@ -11,8 +11,10 @@ use Tiptap\Core\Node;
  */
 class Youtube extends Node
 {
+    #[\Override]
     public static $name = 'youtube';
 
+    #[\Override]
     public function addOptions(): array
     {
         return [
@@ -25,6 +27,7 @@ class Youtube extends Node
         ];
     }
 
+    #[\Override]
     public function parseHTML(): array
     {
         return [

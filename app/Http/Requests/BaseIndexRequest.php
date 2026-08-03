@@ -52,7 +52,7 @@ abstract class BaseIndexRequest extends FormRequest
                 $decoded = json_decode($this->input('sorting'), true);
 
                 return is_array($decoded) && ! empty($decoded) ? $decoded : $this->defaultSorting;
-            } catch (\Exception $e) {
+            } catch (\Exception) {
                 return $this->defaultSorting;
             }
         }
@@ -72,7 +72,7 @@ abstract class BaseIndexRequest extends FormRequest
         if ($this->has('filters')) {
             try {
                 $filters = json_decode($this->input('filters'), true) ?? [];
-            } catch (\Exception $e) {
+            } catch (\Exception) {
                 $filters = [];
             }
         }

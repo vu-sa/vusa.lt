@@ -51,7 +51,7 @@ class ReservationTaskSubscriber
 
         $reservation = $model->reservation;
 
-        $finalState = get_class($event->finalState);
+        $finalState = $event->finalState !== null ? $event->finalState::class : self::class;
         $resourceName = $model->resource->name ?? '';
 
         match ($finalState) {

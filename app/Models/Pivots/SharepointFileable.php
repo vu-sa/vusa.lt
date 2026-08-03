@@ -6,6 +6,7 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\SharepointFile;
 use App\Models\Type;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
@@ -30,12 +31,12 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
+#[Table(name: 'sharepoint_fileables')]
 class SharepointFileable extends MorphPivot
 {
     use HasRelationships;
 
-    protected $table = 'sharepoint_fileables';
-
+    #[\Override]
     protected $guarded = [];
 
     // dutiable

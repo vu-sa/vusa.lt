@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Duty;
+use App\Models\Institution;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Tenant;
@@ -8,22 +10,22 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
     $this->admin = makeAdminUser($this->tenant);
 });
 
-describe('role index', function () {
-    test('unauthorized user cannot access role index', function () {
+describe('role index', function (): void {
+    test('unauthorized user cannot access role index', function (): void {
         asUser($this->user)
             ->get(route('roles.index'))
             ->assertStatus(403);
     });
 
-    test('admin can access role index', function () {
+    test('admin can access role index', function (): void {
         // Clear existing roles to avoid conflicts, but keep the Super Admin role for our admin
         Role::where('name', '!=', 'Super Admin')->delete();
         Role::factory()->count(3)->create();
@@ -37,7 +39,7 @@ describe('role index', function () {
             );
     });
 
-    test('role index displays paginated roles', function () {
+    test('role index displays paginated roles', function (): void {
         // Clear existing roles and create fresh ones
         Role::where('name', '!=', 'Super Admin')->delete();
         Role::factory()->count(25)->create();
@@ -52,8 +54,8 @@ describe('role index', function () {
     });
 });
 
-describe('role show', function () {
-    test('unauthorized user cannot view role', function () {
+describe('role show', function (): void {
+    test('unauthorized user cannot view role', function (): void {
         $role = Role::factory()->create();
 
         asUser($this->user)
@@ -61,7 +63,7 @@ describe('role show', function () {
             ->assertStatus(403);
     });
 
-    test('admin can view role', function () {
+    test('admin can view role', function (): void {
         $role = Role::factory()->create();
 
         asUser($this->admin)
@@ -75,14 +77,14 @@ describe('role show', function () {
     });
 });
 
-describe('role create', function () {
-    test('unauthorized user cannot access role create', function () {
+describe('role create', function (): void {
+    test('unauthorized user cannot access role create', function (): void {
         asUser($this->user)
             ->get(route('roles.create'))
             ->assertStatus(403);
     });
 
-    test('admin can access role create form', function () {
+    test('admin can access role create form', function (): void {
         asUser($this->admin)
             ->get(route('roles.create'))
             ->assertStatus(200)
@@ -92,8 +94,8 @@ describe('role create', function () {
     });
 });
 
-describe('role store', function () {
-    test('unauthorized user cannot create role', function () {
+describe('role store', function (): void {
+    test('unauthorized user cannot create role', function (): void {
         $data = ['name' => 'Test Role'];
 
         asUser($this->user)
@@ -101,7 +103,7 @@ describe('role store', function () {
             ->assertStatus(403);
     });
 
-    test('admin can create role with valid data', function () {
+    test('admin can create role with valid data', function (): void {
         $data = ['name' => 'Test Role'];
 
         asUser($this->admin)
@@ -114,7 +116,7 @@ describe('role store', function () {
         ]);
     });
 
-    test('admin cannot create role with duplicate name', function () {
+    test('admin cannot create role with duplicate name', function (): void {
         Role::factory()->create(['name' => 'Existing Role']);
         $data = ['name' => 'Existing Role'];
 
@@ -124,7 +126,7 @@ describe('role store', function () {
             ->assertSessionHasErrors(['name']);
     });
 
-    test('admin cannot create role without name', function () {
+    test('admin cannot create role without name', function (): void {
         $data = ['name' => ''];
 
         asUser($this->admin)
@@ -134,8 +136,8 @@ describe('role store', function () {
     });
 });
 
-describe('role edit', function () {
-    test('unauthorized user cannot access role edit', function () {
+describe('role edit', function (): void {
+    test('unauthorized user cannot access role edit', function (): void {
         $role = Role::factory()->create();
 
         asUser($this->user)
@@ -143,7 +145,7 @@ describe('role edit', function () {
             ->assertStatus(403);
     });
 
-    test('admin can access role edit form', function () {
+    test('admin can access role edit form', function (): void {
         $role = Role::factory()->create();
 
         asUser($this->admin)
@@ -157,8 +159,8 @@ describe('role edit', function () {
     });
 });
 
-describe('role update', function () {
-    test('unauthorized user cannot update role', function () {
+describe('role update', function (): void {
+    test('unauthorized user cannot update role', function (): void {
         $role = Role::factory()->create();
         $data = ['name' => 'Updated Role'];
 
@@ -167,7 +169,7 @@ describe('role update', function () {
             ->assertStatus(403);
     });
 
-    test('admin can update role with valid data', function () {
+    test('admin can update role with valid data', function (): void {
         $role = Role::factory()->create();
         $data = ['name' => 'Updated Role'];
 
@@ -182,7 +184,7 @@ describe('role update', function () {
         ]);
     });
 
-    test('admin cannot update role with duplicate name', function () {
+    test('admin cannot update role with duplicate name', function (): void {
         $existingRole = Role::factory()->create(['name' => 'Existing Role']);
         $role = Role::factory()->create(['name' => 'Test Role']);
         $data = ['name' => 'Existing Role'];
@@ -193,7 +195,7 @@ describe('role update', function () {
             ->assertSessionHasErrors(['name']);
     });
 
-    test('admin cannot update role without name', function () {
+    test('admin cannot update role without name', function (): void {
         $role = Role::factory()->create();
         $data = ['name' => ''];
 
@@ -204,8 +206,8 @@ describe('role update', function () {
     });
 });
 
-describe('role destroy', function () {
-    test('unauthorized user cannot delete role', function () {
+describe('role destroy', function (): void {
+    test('unauthorized user cannot delete role', function (): void {
         $role = Role::factory()->create();
 
         asUser($this->user)
@@ -213,7 +215,7 @@ describe('role destroy', function () {
             ->assertStatus(403);
     });
 
-    test('admin can delete role', function () {
+    test('admin can delete role', function (): void {
         $role = Role::factory()->create();
 
         asUser($this->admin)
@@ -226,7 +228,7 @@ describe('role destroy', function () {
         ]);
     });
 
-    test('admin cannot delete super admin role', function () {
+    test('admin cannot delete super admin role', function (): void {
         $role = Role::where('name', 'Super Admin')->first();
 
         asUser($this->admin)
@@ -240,8 +242,8 @@ describe('role destroy', function () {
     });
 });
 
-describe('role permission management', function () {
-    test('admin can sync permission group to role', function () {
+describe('role permission management', function (): void {
+    test('admin can sync permission group to role', function (): void {
         $role = Role::factory()->create();
 
         // Create permissions that match what the controller expects
@@ -270,7 +272,7 @@ describe('role permission management', function () {
         }
     });
 
-    test('admin can sync duties to role', function () {
+    test('admin can sync duties to role', function (): void {
         $role = Role::factory()->create();
         $duty = $this->admin->duties()->first();
 
@@ -286,11 +288,11 @@ describe('role permission management', function () {
         $this->assertDatabaseHas('model_has_roles', [
             'role_id' => $role->id,
             'model_id' => $duty->id,
-            'model_type' => 'App\\Models\\Duty',
+            'model_type' => Duty::class,
         ]);
     });
 
-    test('syncing duties clears both index and create permission caches for affected users', function () {
+    test('syncing duties clears both index and create permission caches for affected users', function (): void {
         $role = Role::factory()->create();
         $duty = $this->admin->duties()->first();
 
@@ -304,17 +306,17 @@ describe('role permission management', function () {
             ->put(route('roles.syncDuties', $role), $data)
             ->assertRedirect();
 
-        expect(Cache::has('index-permissions-'.$this->admin->id))->toBeFalse();
-        expect(Cache::has('create-permissions-'.$this->admin->id))->toBeFalse();
+        expect(Cache::has('index-permissions-'.$this->admin->id))->toBeFalse()
+            ->and(Cache::has('create-permissions-'.$this->admin->id))->toBeFalse();
     });
 
-    test('admin can sync attachable types to role', function () {
+    test('admin can sync attachable types to role', function (): void {
         $role = Role::factory()->create();
 
         // Create a Type record for Institution
         $institutionType = Type::create([
             'title' => ['en' => 'Institution', 'lt' => 'Institucija'],
-            'model_type' => 'App\\Models\\Institution',
+            'model_type' => Institution::class,
             'slug' => 'institution',
         ]);
 
@@ -334,8 +336,8 @@ describe('role permission management', function () {
     });
 });
 
-describe('role security', function () {
-    test('regular user cannot perform any role management actions', function () {
+describe('role security', function (): void {
+    test('regular user cannot perform any role management actions', function (): void {
         $role = Role::factory()->create();
 
         // Test all protected routes
@@ -348,7 +350,7 @@ describe('role security', function () {
         asUser($this->user)->delete(route('roles.destroy', $role))->assertStatus(403);
     });
 
-    test('role management requires proper permissions', function () {
+    test('role management requires proper permissions', function (): void {
         $role = Role::factory()->create();
 
         // Verify that the role management requires proper authorization

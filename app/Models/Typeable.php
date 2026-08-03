@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
@@ -20,11 +21,10 @@ use Illuminate\Database\Eloquent\Relations\MorphPivot;
  *
  * @mixin \Eloquent
  */
+#[WithoutTimestamps]
 class Typeable extends MorphPivot
 {
     use HasFactory;
-
-    public $timestamps = false;
 
     public function type()
     {

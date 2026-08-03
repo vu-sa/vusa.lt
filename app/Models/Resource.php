@@ -12,6 +12,7 @@ use App\Models\Traits\HasTranslations;
 use App\Services\ResourceCapacityCalculator;
 use App\ValueObjects\TimeRange;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -63,15 +64,15 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  *
  * @mixin \Eloquent
  */
+#[Fillable([
+    'name', 'description', 'identifier', 'location', 'capacity', 'is_reservable',
+    'tenant_id', 'resource_category_id', 'media',
+])]
 class Resource extends Model implements GuardsForceDelete, HasMedia
 {
     use EagerLoadPivotTrait, GuardsForceDeleteWhenReferenced, HasFactory, HasTranslations, HasUlids, InteractsWithMedia, Searchable, SoftDeletes;
 
-    protected $fillable = [
-        'name', 'description', 'location', 'capacity', 'is_reservable',
-        'tenant_id', 'resource_category_id', 'media',
-    ];
-
+    #[\Override]
     protected function casts(): array
     {
         return [
@@ -105,7 +106,7 @@ class Resource extends Model implements GuardsForceDelete, HasMedia
     {
         $this
             ->addMediaCollection('images')
-            ->acceptsMimeTypes(['image/jpeg', 'image/jpg', 'image/png'])
+            ->acceptsMimeTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/webp'])
             ->useDisk('spatieMediaLibrary');
     }
 

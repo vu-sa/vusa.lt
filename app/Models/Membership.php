@@ -6,6 +6,7 @@ use App\Models\Pivots\MembershipUser;
 use App\Models\Pivots\Trainable;
 use App\Models\Traits\HasTranslations;
 use Database\Factories\MembershipFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -37,6 +38,10 @@ use Laravel\Scout\Searchable;
  *
  * @mixin \Eloquent
  */
+#[Fillable([
+    'name',
+    'tenant_id',
+])]
 class Membership extends Model
 {
     /** @use HasFactory<MembershipFactory> */
@@ -44,11 +49,6 @@ class Membership extends Model
 
     public $translatable = [
         'name',
-    ];
-
-    protected $fillable = [
-        'name',
-        'tenant_id',
     ];
 
     public function toSearchableArray(): array

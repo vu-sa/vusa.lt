@@ -24,9 +24,9 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-it('exposes deleted_at for soft-deletable models', function (string $modelClass, Closure $createModel, bool $usesFullArray) {
+it('exposes deleted_at for soft-deletable models', function (string $modelClass, Closure $createModel, bool $usesFullArray): void {
     /** @var Model $model */
     $model = $createModel();
     $model->delete();

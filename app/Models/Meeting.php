@@ -10,6 +10,8 @@ use App\Models\Pivots\AgendaItem;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTasks;
+use App\Models\Traits\LogsModelActivity;
+use App\Models\Traits\LogsRelationshipChanges;
 use App\Services\MeetingCompletionService;
 use App\Services\MeetingRepresentativeResolver;
 use App\Services\VoteStatisticsCalculator;
@@ -22,9 +24,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Models\Activity;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
@@ -37,7 +36,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
- * @property-read Collection<int, Activity> $activities
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, AgendaItem> $agendaItems
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Collection<int, Comment> $comments
@@ -67,10 +66,12 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  */
 class Meeting extends Model implements Commentable, SharepointFileableContract
 {
-    use HasComments, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasUlids, LogsActivity, Searchable, SoftDeletes;
+    use HasComments, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable, SoftDeletes;
 
+    #[\Override]
     protected $guarded = [];
 
+    #[\Override]
     protected function casts(): array
     {
         return [
@@ -244,11 +245,6 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
         ];
     }
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
-    }
-
     /** @return HasMany<AgendaItem, $this> */
     public function agendaItems(): HasMany
     {
@@ -307,24 +303,25 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
         return app(MeetingCompletionService::class)->calculate($this);
     }
 
+    #[\Override]
     protected static function booted()
     {
-        static::saving(function (Meeting $meeting) {
+        static::saving(function (Meeting $meeting): void {
             // Dispatch event when start_time is about to change - SharePoint must succeed first
             if ($meeting->isDirty('start_time')) {
                 FileableNameUpdated::dispatch($meeting);
             }
         });
 
-        static::deleted(function (Meeting $meeting) {
+        static::deleted(function (Meeting $meeting): void {
             $meeting->publicSearchModel()->unsearchable();
         });
 
-        static::forceDeleted(function (Meeting $meeting) {
+        static::forceDeleted(function (Meeting $meeting): void {
             $meeting->publicSearchModel()->unsearchable();
         });
 
-        static::restored(function (Meeting $meeting) {
+        static::restored(function (Meeting $meeting): void {
             $publicMeeting = PublicMeeting::query()->find($meeting->getKey());
 
             if ($publicMeeting?->shouldBeSearchable()) {
@@ -332,7 +329,7 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
             }
         });
 
-        static::deleting(function (Meeting $meeting) {
+        static::deleting(function (Meeting $meeting): void {
             // A soft delete has to stay reversible. Agenda items are not soft-deletable
             // and votes + agenda_item_notes CASCADE off them, so removing them here would
             // destroy the substance of the meeting — restore would return an empty shell.

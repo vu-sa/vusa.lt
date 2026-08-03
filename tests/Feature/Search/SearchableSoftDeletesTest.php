@@ -10,9 +10,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     config([
         'scout.prefix' => 'testing_soft_deletes_',
         'scout.queue' => false,
@@ -57,7 +57,7 @@ function assertTypesenseSoftDeleteLifecycle(Model $model, string $query, ?string
     expectTypesenseSearchMissing($searchableModel, $query, $model);
 }
 
-test('news leaves public search when soft deleted and returns when restored', function () {
+test('news leaves public search when soft deleted and returns when restored', function (): void {
     $query = 'Soft Delete News '.Str::uuid()->toString();
     $category = Category::factory()->create();
 
@@ -73,7 +73,7 @@ test('news leaves public search when soft deleted and returns when restored', fu
     assertTypesenseSoftDeleteLifecycle($news, $query);
 });
 
-test('page leaves public search when soft deleted and returns when restored', function () {
+test('page leaves public search when soft deleted and returns when restored', function (): void {
     $query = 'Soft Delete Page '.Str::uuid()->toString();
     $category = Category::factory()->create();
 
@@ -88,7 +88,7 @@ test('page leaves public search when soft deleted and returns when restored', fu
     assertTypesenseSoftDeleteLifecycle($page, $query);
 });
 
-test('calendar leaves public search when soft deleted and returns when restored', function () {
+test('calendar leaves public search when soft deleted and returns when restored', function (): void {
     $query = 'Soft Delete Calendar '.Str::uuid()->toString();
 
     $calendar = Calendar::factory()->create([
@@ -101,7 +101,7 @@ test('calendar leaves public search when soft deleted and returns when restored'
     assertTypesenseSoftDeleteLifecycle($calendar, $query);
 });
 
-test('public institution index follows parent institution soft delete lifecycle', function () {
+test('public institution index follows parent institution soft delete lifecycle', function (): void {
     $query = 'Soft Delete Institution '.Str::uuid()->toString();
 
     $institution = Institution::factory()->create([

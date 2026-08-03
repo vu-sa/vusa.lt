@@ -24,12 +24,13 @@ class AgendaItemPolicy extends ModelPolicy
     public function __construct(ModelAuthorizer $authorizer, protected InstitutionAccessService $institutionAccessService)
     {
         parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::AGENDA_ITEM()->label);
+        $this->pluralModelName = Str::plural(ModelEnum::AGENDA_ITEM->label());
     }
 
     /**
      * @param  AgendaItem  $agendaItem
      */
+    #[\Override]
     public function view(User $user, Model $agendaItem): bool
     {
         $meeting = $agendaItem->meeting;
@@ -46,6 +47,6 @@ class AgendaItemPolicy extends ModelPolicy
             }
         }
 
-        return $this->commonChecker($user, $agendaItem, CRUDEnum::READ()->label, $this->pluralModelName);
+        return $this->commonChecker($user, $agendaItem, CRUDEnum::READ->label(), $this->pluralModelName);
     }
 }

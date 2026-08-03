@@ -17,7 +17,7 @@ uses()->group('routes');
 |--------------------------------------------------------------------------
 */
 
-it('has API v1 routes registered', function () {
+it('has API v1 routes registered', function (): void {
     $routes = collect(Route::getRoutes()->getRoutes());
 
     $apiRoutes = $routes->filter(fn ($route) => str_starts_with($route->uri(), 'api/v1'));
@@ -25,22 +25,22 @@ it('has API v1 routes registered', function () {
     expect($apiRoutes)->not->toBeEmpty();
 });
 
-it('has public API routes', function () {
-    expect(Route::has('api.v1.types.index'))->toBeTrue();
-    expect(Route::has('api.v1.documents.index'))->toBeTrue();
-    expect(Route::has('api.v1.typesense.config'))->toBeTrue();
+it('has public API routes', function (): void {
+    expect(Route::has('api.v1.types.index'))->toBeTrue()
+        ->and(Route::has('api.v1.documents.index'))->toBeTrue()
+        ->and(Route::has('api.v1.typesense.config'))->toBeTrue();
 });
 
-it('has admin API routes', function () {
-    expect(Route::has('api.v1.admin.tasks.indicator'))->toBeTrue();
-    expect(Route::has('api.v1.admin.files.index'))->toBeTrue();
-    expect(Route::has('api.v1.admin.files.allowedTypes'))->toBeTrue();
-    expect(Route::has('api.v1.admin.fileables.files'))->toBeTrue();
-    expect(Route::has('api.v1.admin.sharepoint.potentialFileables'))->toBeTrue();
-    expect(Route::has('api.v1.admin.tutorials.progress'))->toBeTrue();
+it('has admin API routes', function (): void {
+    expect(Route::has('api.v1.admin.tasks.indicator'))->toBeTrue()
+        ->and(Route::has('api.v1.admin.files.index'))->toBeTrue()
+        ->and(Route::has('api.v1.admin.files.allowedTypes'))->toBeTrue()
+        ->and(Route::has('api.v1.admin.fileables.files'))->toBeTrue()
+        ->and(Route::has('api.v1.admin.sharepoint.potentialFileables'))->toBeTrue()
+        ->and(Route::has('api.v1.admin.tutorials.progress'))->toBeTrue();
 });
 
-it('requires authentication for admin API routes', function () {
+it('requires authentication for admin API routes', function (): void {
     $routes = collect(Route::getRoutes()->getRoutes());
 
     $adminApiRoutes = $routes->filter(fn ($route) => str_starts_with($route->uri(), 'api/v1/admin'));
@@ -51,13 +51,11 @@ it('requires authentication for admin API routes', function () {
     }
 });
 
-it('does not require authentication for public API routes', function () {
+it('does not require authentication for public API routes', function (): void {
     $routes = collect(Route::getRoutes()->getRoutes());
 
-    $publicApiRoutes = $routes->filter(function ($route) {
-        return str_starts_with($route->uri(), 'api/v1')
-            && ! str_starts_with($route->uri(), 'api/v1/admin');
-    });
+    $publicApiRoutes = $routes->filter(fn ($route) => str_starts_with($route->uri(), 'api/v1')
+        && ! str_starts_with($route->uri(), 'api/v1/admin'));
 
     foreach ($publicApiRoutes as $route) {
         $middleware = $route->middleware();
@@ -71,7 +69,7 @@ it('does not require authentication for public API routes', function () {
 |--------------------------------------------------------------------------
 */
 
-it('follows API route naming convention', function () {
+it('follows API route naming convention', function (): void {
     $routes = collect(Route::getRoutes()->getRoutes());
 
     $apiRoutes = $routes->filter(fn ($route) => str_starts_with($route->uri(), 'api/v1') && $route->getName());
@@ -84,7 +82,7 @@ it('follows API route naming convention', function () {
     }
 });
 
-it('includes admin in admin API route names', function () {
+it('includes admin in admin API route names', function (): void {
     $routes = collect(Route::getRoutes()->getRoutes());
 
     $adminApiRoutes = $routes->filter(fn ($route) => str_starts_with($route->uri(), 'api/v1/admin') && $route->getName());

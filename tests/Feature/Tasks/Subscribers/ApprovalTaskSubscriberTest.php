@@ -23,16 +23,16 @@ use App\Tasks\Subscribers\ApprovalTaskSubscriber;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     Notification::fake();
     config(['queue.default' => 'sync']);
 });
 
-describe('ApprovalTaskSubscriber', function () {
-    describe('approval task creation', function () {
-        test('does not create task when no approvers exist', function () {
+describe('ApprovalTaskSubscriber', function (): void {
+    describe('approval task creation', function (): void {
+        test('does not create task when no approvers exist', function (): void {
             $tenant = Tenant::query()->first()
                 ?? Tenant::factory()->create();
 
@@ -74,8 +74,8 @@ describe('ApprovalTaskSubscriber', function () {
         });
     });
 
-    describe('approval task completion', function () {
-        test('completes approval task when ApprovalDecisionMade event is fired', function () {
+    describe('approval task completion', function (): void {
+        test('completes approval task when ApprovalDecisionMade event is fired', function (): void {
             $tenant = Tenant::query()->first()
                 ?? Tenant::factory()->create();
 
@@ -130,7 +130,7 @@ describe('ApprovalTaskSubscriber', function () {
             expect($approvalTask->completed_at)->not->toBeNull();
         });
 
-        test('completes multiple approval tasks for same reservation', function () {
+        test('completes multiple approval tasks for same reservation', function (): void {
             $tenant = Tenant::query()->first()
                 ?? Tenant::factory()->create();
 

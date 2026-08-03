@@ -35,7 +35,8 @@
         <MdSuspenseWrapper directory="resources" :locale="$page.props.app.locale" file="description" />
       </template>
       <ImageUpload v-model:files="mediaFiles" :max="10" mode="deferred" folder="resources"
-        accept="image/jpg,image/jpeg,image/png" />
+        accept="image/jpg,image/jpeg,image/png,image/webp" :existing-urls="existingMediaItems"
+        @remove:existing="handleRemoveExistingMedia" />
     </FormElement>
     <FormElement>
       <template #title>
@@ -48,7 +49,7 @@
         <NumberField id="capacity" v-model="form.capacity" :min="1" />
       </FormFieldWrapper>
       <FormFieldWrapper id="is_reservable" :label="capitalize($t('entities.reservation.is_reservable'))" required :error="form.errors.is_reservable">
-        <Switch :model-value="form.is_reservable === 1" @update:model-value="(val: boolean) => form.is_reservable = val ? 1 : 0" />
+        <Switch :model-value="!!form.is_reservable" @update:model-value="(val: boolean) => form.is_reservable = val" />
       </FormFieldWrapper>
       <FormFieldWrapper id="resource_category_id" label="Kategorija" :error="form.errors.resource_category_id">
         <Select v-model="categoryIdString">
@@ -71,7 +72,7 @@
 
 <script setup lang="ts">
 import { Icon } from '@iconify/vue';
-import { capitalize, computed, ref } from 'vue';
+import { capitalize, computed, ref, watch } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 
@@ -87,7 +88,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/Components/ui/switch';
 import { ImageUpload } from '@/Components/ui/upload';
 import { RESOURCE_PLACEHOLDERS } from '@/Constants/I18n/Placeholders';
-import type { ResourceCreationTemplate } from '@/Pages/Admin/Reservations/CreateResource.vue';
+import type { ResourceCreationTemplate, ResourceMediaEntry } from '@/Pages/Admin/Reservations/CreateResource.vue';
 import type { ResourceEditType } from '@/Pages/Admin/Reservations/EditResource.vue';
 import MdSuspenseWrapper from '@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue';
 import { ImageIcon } from '@/Components/icons';
@@ -127,4 +128,17 @@ const categoryIdString = computed({
 
 // Deferred upload files
 const mediaFiles = ref<File[]>([]);
+
+// Existing media (edit mode only) — shown as previews in ImageUpload
+const existingMediaItems = computed(() => props.resource.media.filter((item): item is Extract<ResourceMediaEntry, { id: string | number }> => 'id' in item));
+
+function handleRemoveExistingMedia(item: { id: string | number }) {
+  form.media = form.media.filter(image => !('id' in image && image.id === item.id));
+}
+
+// Sync newly added files into the form, keeping already-retained existing media intact
+watch(mediaFiles, (files) => {
+  const retained = form.media.filter(image => !('file' in image));
+  form.media = [...retained, ...files.map(file => ({ file, status: 'pending' as const }))];
+});
 </script>

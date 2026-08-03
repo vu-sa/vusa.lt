@@ -31,7 +31,7 @@ export function createMockMeeting(
     fileable_files_count: 0,
     available_files_count: 0,
     tasks_count: 0,
-    activities_count: 0,
+    activities_as_subject_count: 0,
     // Exists
     agenda_items_exists: false,
     institutions_exists: true,
@@ -41,7 +41,7 @@ export function createMockMeeting(
     fileable_files_exists: false,
     available_files_exists: false,
     tasks_exists: false,
-    activities_exists: false,
+    activities_as_subject_exists: false,
     // Optional relations
     agenda_items: undefined,
     institutions: undefined,
@@ -49,7 +49,7 @@ export function createMockMeeting(
     types: undefined,
     files: undefined,
     tasks: undefined,
-    activities: undefined,
+    activities_as_subject: undefined,
     ...overrides,
   };
 }
@@ -71,9 +71,9 @@ export function createMockMeetingWithAgenda(
         brought_by_students: false,
         created_at: '2025-01-01T00:00:00.000Z',
         updated_at: '2025-01-01T00:00:00.000Z',
-        activities_count: 0,
+        activities_as_subject_count: 0,
         meeting_exists: true,
-        activities_exists: false,
+        activities_as_subject_exists: false,
       },
       {
         id: '01HYAGENDA2234567890ABCDE',
@@ -84,9 +84,9 @@ export function createMockMeetingWithAgenda(
         brought_by_students: false,
         created_at: '2025-01-01T00:00:00.000Z',
         updated_at: '2025-01-01T00:00:00.000Z',
-        activities_count: 0,
+        activities_as_subject_count: 0,
         meeting_exists: true,
-        activities_exists: false,
+        activities_as_subject_exists: false,
       },
     ],
     agenda_items_count: 2,

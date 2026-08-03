@@ -153,7 +153,6 @@ class ProblemController extends AdminController
                     'responsibleUser',
                     'categories',
                     'institutions',
-                    'activities.causer',
                 ])->toFullArray(),
             ],
             'canUpdate' => $user->can('update', $problem),

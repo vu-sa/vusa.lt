@@ -12,7 +12,7 @@
     <UpsertModelLayout>
       <ResourceForm enable-delete :resource :categories :assignable-tenants
         @submit:form="handleResourceUpdate"
-        @delete="() => router.delete(route('resource.destroy', resource.id))" />
+        @delete="() => router.delete(route('resources.destroy', resource.id))" />
     </UpsertModelLayout>
   </PageContent>
 </template>
@@ -29,6 +29,7 @@ import ResourceForm from '@/Components/AdminForms/ResourceForm.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 import ResourceReservationsTable from '@/Components/Tables/ResourceReservationsTable.vue';
 import { ResourceIcon } from '@/Components/icons';
+import type { ResourceMediaEntry } from '@/Pages/Admin/Reservations/CreateResource.vue';
 
 export type ResourceEditType = Omit<
   App.Entities.Resource,
@@ -36,8 +37,7 @@ export type ResourceEditType = Omit<
 > & {
   name: Record<'lt' | 'en', string>;
   description: Record<'lt' | 'en', string>;
-  media: Record<string, never>[];
-  // media: models.Media[];
+  media: ResourceMediaEntry[];
 };
 
 const { resource } = defineProps<{

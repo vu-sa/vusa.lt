@@ -41,18 +41,7 @@ class TypesenseScopedKeyService
      */
     protected const CACHE_TTL = 3500;
 
-    protected Client $client;
-
-    protected ModelAuthorizer $authorizer;
-
-    protected InstitutionAccessService $institutionAccessService;
-
-    public function __construct(Client $client, ModelAuthorizer $authorizer, InstitutionAccessService $institutionAccessService)
-    {
-        $this->client = $client;
-        $this->authorizer = $authorizer;
-        $this->institutionAccessService = $institutionAccessService;
-    }
+    public function __construct(protected Client $client, protected ModelAuthorizer $authorizer, protected InstitutionAccessService $institutionAccessService) {}
 
     /**
      * Generate scoped search keys for all collections for the given user.
@@ -70,9 +59,7 @@ class TypesenseScopedKeyService
     {
         $cacheKey = self::getCacheKey($user->id);
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($user) {
-            return $this->buildScopedKeys($user);
-        });
+        return Cache::remember($cacheKey, self::CACHE_TTL, fn () => $this->buildScopedKeys($user));
     }
 
     /**

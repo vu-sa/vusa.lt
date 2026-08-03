@@ -41,7 +41,7 @@ class StoreCommentRequest extends FormRequest
 
     public function withValidator(Validator $validator): void
     {
-        $validator->after(function ($validator) {
+        $validator->after(function ($validator): void {
             // A poll is always a thread root — it can't be posted as a reply.
             if ($this->input('kind') === CommentKind::Poll->value && $this->filled('parent_id')) {
                 $validator->errors()->add('parent_id', __('A poll cannot be a reply.'));

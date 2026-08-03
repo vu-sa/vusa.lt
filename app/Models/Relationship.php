@@ -33,8 +33,10 @@ class Relationship extends Model
 
     // Basically they are relationship types, not relationships. But oh well...
 
+    #[\Override]
     protected $guarded = [];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

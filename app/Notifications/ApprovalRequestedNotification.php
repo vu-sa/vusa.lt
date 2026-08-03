@@ -11,18 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ApprovalRequestedNotification extends BaseNotification
 {
-    protected Model $approvable;
-
-    protected int $step;
-
-    /**
-     * @param  Model&Approvable  $approvable
-     */
-    public function __construct(Model $approvable, int $step = 1)
-    {
-        $this->approvable = $approvable;
-        $this->step = $step;
-    }
+    public function __construct(protected Model $approvable, protected int $step = 1) {}
 
     public function category(): NotificationCategory
     {
@@ -78,6 +67,7 @@ class ApprovalRequestedNotification extends BaseNotification
         ];
     }
 
+    #[\Override]
     public function actions(): array
     {
         return [

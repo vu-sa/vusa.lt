@@ -3,7 +3,11 @@
 namespace App\Models;
 
 use App\Enums\ContentPartEnum;
+use App\Models\Traits\LogsModelActivity;
 use App\Tiptap\TiptapEditor;
+use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Database\Eloquent\Attributes\Appends;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\ArrayObject;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Collection;
@@ -13,6 +17,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
+use Spatie\Activitylog\Support\LogOptions;
 
 /**
  * @property int $id
@@ -23,7 +29,9 @@ use Illuminate\Support\Facades\Cache;
  * @property int $order
  * @property Carbon $created_at
  * @property Carbon $updated_at
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Content $content
+ * @property-read string $content_summary
  * @property-read string|null $html
  * @property-read Collection<int, TextBoxSubmission> $textBoxSubmissions
  *
@@ -34,9 +42,54 @@ use Illuminate\Support\Facades\Cache;
  *
  * @mixin \Eloquent
  */
+#[Appends(['html'])]
+#[Fillable([
+    'type',
+    'json_content',
+    'options',
+    'order',
+])]
 class ContentPart extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsModelActivity;
+
+    /**
+     * ContentPart declares #[Fillable] (guarded === ['*']), so
+     * LogsModelActivity::defaultActivitylogOptions() picks logFillable(),
+     * which would log the raw json_content blob (avg 5 KB, up to 300 KB) on
+     * every body edit. Log the plain-text content_summary accessor instead --
+     * it is diffable and renderable, json_content is neither.
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return $this->defaultActivitylogOptions()
+            ->logExcept(['json_content'])
+            // Additive, not restrictive: attributesToBeLogged() merges fillable
+            // + explicit attributes, so this registers the virtual accessor
+            // below alongside type/options/order without dropping them.
+            ->logOnly(['content_summary'])
+            ->dontLogIfAttributesChangedOnly([
+                // dontLogIfAttributesChangedOnly() REPLACES the parent's list
+                // rather than extending it, so the global noise guards (see
+                // config/activitylog.php) must be re-merged here.
+                ...config('activitylog.default_except_attributes', []),
+                // ContentService::updateContentParts() renumbers every
+                // surviving block's `order` on each save -- without this, a
+                // single reorder would log one near-identical entry per block.
+                'order',
+            ]);
+    }
+
+    /**
+     * Plain-text excerpt for the activity log -- reuses getSearchableContent()
+     * (already maintained per block type for Scout indexing) rather than a
+     * second text extractor. Deliberately NOT in #[Appends]: that would ship
+     * this on every public content payload, not just the activity log.
+     */
+    public function getContentSummaryAttribute(): string
+    {
+        return Str::limit(Str::squish($this->getSearchableContent()), 500);
+    }
 
     /**
      * Get the attributes that should be cast.
@@ -47,6 +100,7 @@ class ContentPart extends Model
      *
      * @return array<string, string>
      */
+    #[\Override]
     protected function casts(): array
     {
         return [
@@ -54,16 +108,6 @@ class ContentPart extends Model
             'options' => AsArrayObject::class,
         ];
     }
-
-    protected $fillable = [
-        'type',
-        'json_content',
-        'options',
-        'order',
-    ];
-
-    // Append pre-rendered HTML to JSON serialization
-    protected $appends = ['html'];
 
     public function content(): BelongsTo
     {
@@ -89,9 +133,7 @@ class ContentPart extends Model
         // Use updated_at timestamp in cache key for automatic invalidation on edit
         $cacheKey = "content_part_html_{$this->id}_{$this->updated_at->timestamp}";
 
-        return Cache::remember($cacheKey, 86400, function () {
-            return $this->renderTiptapHtml();
-        });
+        return Cache::remember($cacheKey, 86400, fn () => $this->renderTiptapHtml());
     }
 
     /**
@@ -133,7 +175,7 @@ class ContentPart extends Model
             ContentPartEnum::from($this->type);
 
             return true;
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             return false;
         }
     }
@@ -273,6 +315,16 @@ class ContentPart extends Model
      */
     protected function extractTextFromTiptap($json): string
     {
+        // The top-level call for 'tiptap'/'shadcn-card' passes $this->json_content
+        // itself, which the AsArrayObject cast wraps in Illuminate's ArrayObject --
+        // not a plain array, so it used to fail the is_array() check below and
+        // silently return '' for the single most common block type. Nested calls
+        // already pass plain arrays (json_decode never re-wraps children), so this
+        // only ever has an effect on the outermost call.
+        if ($json instanceof Arrayable) {
+            $json = $json->toArray();
+        }
+
         if (empty($json) || ! is_array($json)) {
             return '';
         }

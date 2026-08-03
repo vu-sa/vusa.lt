@@ -2,16 +2,14 @@
 
 namespace App\Enums;
 
+use App\Enums\Concerns\HasEnumHelpers;
 use App\Enums\Traits\HasCamelCaseLabels;
-use Spatie\Enum\Laravel\Enum;
 
-/**
- * @typescript
- *
- * @method static self LT()
- * @method static self EN()
- */
-final class LocaleEnum extends Enum
+enum LocaleEnum: string
 {
     use HasCamelCaseLabels;
+    use HasEnumHelpers;
+
+    case LT = 'lt';
+    case EN = 'en';
 }

@@ -112,7 +112,7 @@ class UserController extends AdminController
      */
     public function store(StoreUserRequest $request)
     {
-        DB::transaction(function () use ($request) {
+        DB::transaction(function () use ($request): void {
             $user = new User;
 
             $validatedData = $request->safe();
@@ -214,7 +214,7 @@ class UserController extends AdminController
 
         return $this->inertiaResponse('Admin/People/EditUser', [
             'user' => $user->makeVisible(['last_action'])->append('has_password')->toFullArray(),
-            'roles' => fn () => Role::all(),
+            'roles' => Role::all(...),
             'tenantsWithDuties' => fn () => UserDutyService::getTenantsWithDutiesForForm($this->authorizer),
             'permissableTenants' => UserDutyService::getPermissableTenants($this->authorizer),
         ]);
@@ -232,7 +232,7 @@ class UserController extends AdminController
         $actorIsSuperAdmin = $actor->isSuperAdmin();
         $currentDutyIds = $user->current_duties->pluck('id');
 
-        $mutation = function () use ($request, $user, $currentDutyIds, $actorIsSuperAdmin) {
+        $mutation = function () use ($request, $user, $currentDutyIds, $actorIsSuperAdmin): void {
             UserDutyService::syncDutiesForUser(
                 new SupportCollection($request->current_duties ?? []),
                 $currentDutyIds,
@@ -240,7 +240,7 @@ class UserController extends AdminController
                 $this->authorizer
             );
 
-            DB::transaction(function () use ($request, $user, $actorIsSuperAdmin) {
+            DB::transaction(function () use ($request, $user, $actorIsSuperAdmin): void {
                 $user->update($request->only('name', 'email', 'facebook_url', 'phone', 'profile_photo_path', 'profile_photo_focal_point', 'pronouns', 'show_pronouns'));
 
                 // only a super admin may change roles

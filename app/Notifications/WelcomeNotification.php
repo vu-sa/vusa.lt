@@ -34,11 +34,13 @@ class WelcomeNotification extends BaseNotification
         return route('dashboard');
     }
 
+    #[\Override]
     public function icon(): string
     {
         return '🎉';
     }
 
+    #[\Override]
     public function actions(): array
     {
         return [];
@@ -47,6 +49,7 @@ class WelcomeNotification extends BaseNotification
     /**
      * Welcome notifications should not be digested or emailed.
      */
+    #[\Override]
     public function supportsEmailDigest(): bool
     {
         return false;

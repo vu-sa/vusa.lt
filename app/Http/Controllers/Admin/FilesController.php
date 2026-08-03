@@ -54,13 +54,11 @@ class FilesController extends AdminController
     {
         $path = $this->validateAndNormalizePath($path);
 
-        $directories = collect(Storage::directories($path))->map(function ($dir) {
-            return [
-                'path' => $dir,
-                'name' => basename($dir),
-                'type' => 'directory',
-            ];
-        })->toArray();
+        $directories = collect(Storage::directories($path))->map(fn ($dir) => [
+            'path' => $dir,
+            'name' => basename($dir),
+            'type' => 'directory',
+        ])->toArray();
 
         $files = collect(Storage::files($path))->map(function ($file) use ($path) {
             $relativePath = str_replace('public/', '', $file);
@@ -90,7 +88,7 @@ class FilesController extends AdminController
     {
         try {
             $path = $this->validateAndNormalizePath($request->path ?? 'public/files');
-        } catch (\InvalidArgumentException $e) {
+        } catch (\InvalidArgumentException) {
             abort(400, 'Invalid path format');
         }
 
@@ -236,7 +234,7 @@ class FilesController extends AdminController
             // FileManager uploads: validate path normally
             try {
                 $path = $this->validateAndNormalizePath($path);
-            } catch (\InvalidArgumentException $e) {
+            } catch (\InvalidArgumentException) {
                 return back()->withErrors(['path' => 'Neteisingas katalogo kelias.']);
             }
 
@@ -711,7 +709,7 @@ class FilesController extends AdminController
                     'file_name' => basename($path),
                 ]);
 
-            } catch (\InvalidArgumentException $e) {
+            } catch (\InvalidArgumentException) {
                 $errors[] = 'Neteisingas kelias: '.basename($path);
                 $skippedCount++;
             } catch (\Exception $e) {

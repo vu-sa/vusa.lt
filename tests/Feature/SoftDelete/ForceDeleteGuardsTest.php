@@ -14,7 +14,7 @@ use App\Models\Tenant;
 use App\Models\Training;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 /**
  * The trash view offers permanent deletion for every soft-deletable model, but most of
@@ -24,8 +24,8 @@ uses(RefreshDatabase::class);
  *
  * Models that own their dependents cascade instead; those are covered at the bottom.
  */
-describe('blocked', function () {
-    test('an institution with meetings cannot be permanently deleted', function () {
+describe('blocked', function (): void {
+    test('an institution with meetings cannot be permanently deleted', function (): void {
         $institution = Institution::factory()->create();
         $institution->meetings()->attach(Meeting::factory()->create());
 
@@ -33,21 +33,21 @@ describe('blocked', function () {
             ->and($institution->forceDeleteBlockedReason())->toContain('1');
     });
 
-    test('a form with submitted registrations cannot be permanently deleted', function () {
+    test('a form with submitted registrations cannot be permanently deleted', function (): void {
         $form = Form::factory()->create();
         Registration::factory()->for($form)->create();
 
         expect($form->forceDeleteBlockedReason())->toBeString();
     });
 
-    test('a category still used by news cannot be permanently deleted', function () {
+    test('a category still used by news cannot be permanently deleted', function (): void {
         $category = Category::factory()->create();
         News::factory()->create(['category_id' => $category->id]);
 
         expect($category->forceDeleteBlockedReason())->toBeString();
     });
 
-    test('a resource with reservation history cannot be permanently deleted', function () {
+    test('a resource with reservation history cannot be permanently deleted', function (): void {
         $resource = Resource::factory()->create();
         $resource->reservations()->attach(Reservation::factory()->create(), [
             'quantity' => 1,
@@ -57,14 +57,14 @@ describe('blocked', function () {
         expect($resource->forceDeleteBlockedReason())->toBeString();
     });
 
-    test('an unreferenced record reports no blocker', function () {
+    test('an unreferenced record reports no blocker', function (): void {
         expect(Category::factory()->create()->forceDeleteBlockedReason())->toBeNull()
             ->and(Form::factory()->create()->forceDeleteBlockedReason())->toBeNull()
             ->and(StudyProgram::factory()->create()->forceDeleteBlockedReason())->toBeNull()
             ->and(Training::factory()->create()->forceDeleteBlockedReason())->toBeNull();
     });
 
-    test('the reason names the referencing records rather than being generic', function () {
+    test('the reason names the referencing records rather than being generic', function (): void {
         $category = Category::factory()->create();
         News::factory()->count(2)->create(['category_id' => $category->id]);
 
@@ -74,8 +74,8 @@ describe('blocked', function () {
     });
 });
 
-describe('through the controller', function () {
-    test('a blocked record stays trashed and the user is told why', function () {
+describe('through the controller', function (): void {
+    test('a blocked record stays trashed and the user is told why', function (): void {
         $tenant = Tenant::query()->first();
         $admin = makeAdminUser($tenant);
 
@@ -91,7 +91,7 @@ describe('through the controller', function () {
         $this->assertSoftDeleted('categories', ['id' => $category->id]);
     });
 
-    test('an unblocked record is permanently deleted', function () {
+    test('an unblocked record is permanently deleted', function (): void {
         $tenant = Tenant::query()->first();
         $admin = makeAdminUser($tenant);
 
@@ -107,8 +107,8 @@ describe('through the controller', function () {
     });
 });
 
-describe('cascading models', function () {
-    test('a reservation detaches its resources on permanent deletion only', function () {
+describe('cascading models', function (): void {
+    test('a reservation detaches its resources on permanent deletion only', function (): void {
         $reservation = Reservation::factory()->create();
         $reservation->resources()->attach(Resource::factory()->create(), [
             'quantity' => 1,
@@ -123,7 +123,7 @@ describe('cascading models', function () {
     });
 });
 
-test('every guarded model exposes the reason as an appendable attribute', function () {
+test('every guarded model exposes the reason as an appendable attribute', function (): void {
     // The admin index serializes `force_delete_blocked_reason` so the table can disable
     // the action before it is clicked.
     $models = [

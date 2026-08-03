@@ -20,7 +20,7 @@ use Symfony\Component\HtmlSanitizer\Visitor\AttributeSanitizer\AttributeSanitize
  */
 final class EmbedSourceSanitizer implements AttributeSanitizerInterface
 {
-    private const ALLOWED_HOSTS = [
+    private const array ALLOWED_HOSTS = [
         'youtube.com',
         'www.youtube.com',
         'youtube-nocookie.com',

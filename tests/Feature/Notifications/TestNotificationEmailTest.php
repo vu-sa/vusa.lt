@@ -3,19 +3,20 @@
 use App\Enums\NotificationCategory;
 use App\Mail\NotificationDigest;
 use App\Models\NotificationDigestQueue;
+use App\Notifications\TaskAssignedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Tests\Feature\Notifications\NotificationTestHelpers;
 
-uses(RefreshDatabase::class, NotificationTestHelpers::class);
+pest()->use(RefreshDatabase::class, NotificationTestHelpers::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->clearDigestQueue();
     Mail::fake();
 });
 
-describe('profile.sendTestNotificationEmail', function () {
-    test('sends a sample digest to the user digest addresses', function () {
+describe('profile.sendTestNotificationEmail', function (): void {
+    test('sends a sample digest to the user digest addresses', function (): void {
         $user = $this->createUserWithDigestEnabled();
 
         asUser($user)
@@ -23,12 +24,10 @@ describe('profile.sendTestNotificationEmail', function () {
             ->assertOk()
             ->assertJson(['success' => true]);
 
-        Mail::assertSent(NotificationDigest::class, function ($mail) use ($user) {
-            return $mail->hasTo($user->getDigestEmails()[0]);
-        });
+        Mail::assertSent(NotificationDigest::class, fn ($mail) => $mail->hasTo($user->getDigestEmails()[0]));
     });
 
-    test('the sample digest carries an item, so the template renders', function () {
+    test('the sample digest carries an item, so the template renders', function (): void {
         $user = $this->createUserWithDigestEnabled();
 
         asUser($user)->postJson(route('profile.sendTestNotificationEmail'))->assertOk();
@@ -40,12 +39,12 @@ describe('profile.sendTestNotificationEmail', function () {
         });
     });
 
-    test('does not consume the pending digest items', function () {
+    test('does not consume the pending digest items', function (): void {
         $user = $this->createUserWithDigestEnabled();
 
         NotificationDigestQueue::create([
             'user_id' => $user->id,
-            'notification_class' => 'App\\Notifications\\TaskAssignedNotification',
+            'notification_class' => TaskAssignedNotification::class,
             'category' => NotificationCategory::Task->value,
             'data' => ['title' => 'Real', 'body' => 'Real', 'url' => '/t', 'icon' => '📌'],
         ]);
@@ -56,7 +55,7 @@ describe('profile.sendTestNotificationEmail', function () {
         expect($this->getDigestQueueCountForUser($user))->toBe(1);
     });
 
-    test('guests cannot send test emails', function () {
+    test('guests cannot send test emails', function (): void {
         $this->postJson(route('profile.sendTestNotificationEmail'))
             ->assertUnauthorized();
 

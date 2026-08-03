@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Pivots\Trainable;
 use App\Services\PublicInstitutionSearchIndexBuilder;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -13,7 +14,6 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
-use Spatie\Activitylog\Models\Activity;
 
 /**
  * PublicInstitution - Extends Institution for public display and search indexing
@@ -43,7 +43,7 @@ use Spatie\Activitylog\Models\Activity;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
- * @property-read Collection<int, Activity> $activities
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Relationshipable|InstitutionFollow|Trainable|null $pivot
  * @property-read Collection<int, Training> $availableTrainings
@@ -88,22 +88,16 @@ use Spatie\Activitylog\Models\Activity;
  *
  * @mixin \Eloquent
  */
+#[Table(name: 'institutions')]
 class PublicInstitution extends Institution
 {
     use Searchable;
 
     /**
-     * The table associated with the model.
-     * Uses parent Institution table since PublicInstitution is a filtered view.
-     *
-     * @var string
-     */
-    protected $table = 'institutions';
-
-    /**
      * Get the class name for polymorphic relations.
      * This ensures we use the parent Institution morph class for typeables lookup.
      */
+    #[\Override]
     public function getMorphClass(): string
     {
         return Institution::class;
@@ -113,6 +107,7 @@ class PublicInstitution extends Institution
      * Override types relationship to use correct morph name
      * Laravel would default to 'public_institution' based on model name
      */
+    #[\Override]
     public function types(): MorphToMany
     {
         return $this->morphToMany(Type::class, 'typeable');
@@ -122,6 +117,7 @@ class PublicInstitution extends Institution
      * Override duties relationship to use correct foreign key
      * Laravel would default to 'public_institution_id' based on model name
      */
+    #[\Override]
     public function duties(): HasMany
     {
         return $this->hasMany(Duty::class, 'institution_id', 'id');
@@ -131,6 +127,7 @@ class PublicInstitution extends Institution
      * Override meetings relationship to use correct pivot table
      * Laravel would default to 'institution_public_institution' based on model name
      */
+    #[\Override]
     public function meetings(): BelongsToMany
     {
         return $this->belongsToMany(Meeting::class, 'institution_meeting', 'institution_id', 'meeting_id');
@@ -139,6 +136,7 @@ class PublicInstitution extends Institution
     /**
      * Determine if institution should be indexed for public search
      */
+    #[\Override]
     public function shouldBeSearchable(): bool
     {
         return ! $this->trashed() && $this->is_active === 1;
@@ -148,6 +146,7 @@ class PublicInstitution extends Institution
      * Get searchable array for Typesense indexing.
      * Delegates to PublicInstitutionSearchIndexBuilder.
      */
+    #[\Override]
     public function toSearchableArray(): array
     {
         return app(PublicInstitutionSearchIndexBuilder::class)->build($this);
@@ -156,6 +155,7 @@ class PublicInstitution extends Institution
     /**
      * Get the index name for the model
      */
+    #[\Override]
     public function searchableAs(): string
     {
         return config('scout.prefix').'public_institutions';
@@ -164,6 +164,7 @@ class PublicInstitution extends Institution
     /**
      * Get the engine used to index the model
      */
+    #[\Override]
     public function searchableUsing()
     {
         return app(EngineManager::class)->engine('typesense');

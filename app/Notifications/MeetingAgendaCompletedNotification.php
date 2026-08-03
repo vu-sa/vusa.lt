@@ -12,20 +12,12 @@ use App\Tasks\Handlers\AgendaCompletionTaskHandler;
  */
 class MeetingAgendaCompletedNotification extends BaseNotification
 {
-    protected Meeting $meeting;
-
-    protected ?User $completedBy;
-
     /**
      * Create a new notification instance.
      *
      * @param  User|null  $completedBy  The user who completed the last agenda item
      */
-    public function __construct(Meeting $meeting, ?User $completedBy = null)
-    {
-        $this->meeting = $meeting;
-        $this->completedBy = $completedBy;
-    }
+    public function __construct(protected Meeting $meeting, protected ?User $completedBy = null) {}
 
     public function category(): NotificationCategory
     {
@@ -104,6 +96,7 @@ class MeetingAgendaCompletedNotification extends BaseNotification
         return route('meetings.show', $this->meeting->id);
     }
 
+    #[\Override]
     public function icon(): string
     {
         return '✅';
@@ -137,6 +130,7 @@ class MeetingAgendaCompletedNotification extends BaseNotification
         ];
     }
 
+    #[\Override]
     public function actions(): array
     {
         return [

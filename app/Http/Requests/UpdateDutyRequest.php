@@ -54,7 +54,7 @@ class UpdateDutyRequest extends FormRequest
 
     public function withValidator(Validator $validator): void
     {
-        $validator->after(function (Validator $v) {
+        $validator->after(function (Validator $v): void {
             /** @var Duty $duty */
             $duty = $this->route('duty');
 

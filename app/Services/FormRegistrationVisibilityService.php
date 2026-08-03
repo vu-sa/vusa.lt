@@ -15,9 +15,9 @@ use Illuminate\Database\Eloquent\Builder;
 class FormRegistrationVisibilityService
 {
     public function __construct(
-        private FormAccessService $formAccess,
-        private FormSettings $formSettings,
-        private AtstovavimasSettings $atstovavimasSettings,
+        private readonly FormAccessService $formAccess,
+        private readonly FormSettings $formSettings,
+        private readonly AtstovavimasSettings $atstovavimasSettings,
     ) {}
 
     /**
@@ -117,7 +117,7 @@ class FormRegistrationVisibilityService
             ->values()
             ->all();
 
-        return $query->whereHas('fieldResponses', function (Builder $responseQuery) use ($field, $valueStrings) {
+        return $query->whereHas('fieldResponses', function (Builder $responseQuery) use ($field, $valueStrings): void {
             $responseQuery
                 ->where('form_field_id', $field->id)
                 ->whereIn('response->value', $valueStrings);

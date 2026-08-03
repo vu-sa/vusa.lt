@@ -15,9 +15,7 @@ class ContentHelper
      */
     public static function getFirstTiptapElement($content)
     {
-        $firstTiptapElement = $content?->parts?->filter(function ($part) {
-            return $part->type === 'tiptap';
-        })->first();
+        $firstTiptapElement = $content?->parts?->filter(fn ($part) => $part->type === 'tiptap')->first();
 
         // Check if empty array - this comes up when in content creation,
         // user doesn't add any content to tiptap editor. It is initialised

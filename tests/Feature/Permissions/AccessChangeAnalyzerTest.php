@@ -8,9 +8,9 @@ use App\Models\Tenant;
 use App\Services\Permissions\AccessChangeAnalyzer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
     $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
@@ -26,8 +26,8 @@ beforeEach(function () {
     $this->analyzer = app(AccessChangeAnalyzer::class);
 });
 
-test('end-dating the actor\'s only role-granting duty reports the lost role and rolls back', function () {
-    $report = $this->analyzer->apply($this->admin, function () {
+test('end-dating the actor\'s only role-granting duty reports the lost role and rolls back', function (): void {
+    $report = $this->analyzer->apply($this->admin, function (): void {
         $this->admin->duties()->updateExistingPivot($this->adminDuty->id, ['end_date' => now()->subDay()]);
     });
 
@@ -43,8 +43,8 @@ test('end-dating the actor\'s only role-granting duty reports the lost role and 
     expect($stillActive)->toBeTrue();
 });
 
-test('a change that removes no role is committed', function () {
-    $report = $this->analyzer->apply($this->admin, function () {
+test('a change that removes no role is committed', function (): void {
+    $report = $this->analyzer->apply($this->admin, function (): void {
         $this->admin->update(['name' => 'Changed Name']);
     });
 
@@ -54,13 +54,13 @@ test('a change that removes no role is committed', function () {
         ->and($this->admin->fresh()->name)->toBe('Changed Name');
 });
 
-test('a role retained through another current duty is not reported lost', function () {
+test('a role retained through another current duty is not reported lost', function (): void {
     // A second current duty carrying the same role.
     $secondDuty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
     $secondDuty->assignRole('Communication Coordinator');
     $this->admin->duties()->attach($secondDuty->id, ['start_date' => now()->subDay()]);
 
-    $report = $this->analyzer->apply($this->admin, function () {
+    $report = $this->analyzer->apply($this->admin, function (): void {
         $this->admin->duties()->updateExistingPivot($this->adminDuty->id, ['end_date' => now()->subDay()]);
     });
 
@@ -76,11 +76,11 @@ test('a role retained through another current duty is not reported lost', functi
     expect($stillActive)->toBeFalse();
 });
 
-test('removing the super admin role reports it lost', function () {
+test('removing the super admin role reports it lost', function (): void {
     $superAdmin = makeUser($this->tenant);
     $superAdmin->assignRole(config('permission.super_admin_role_name'));
 
-    $report = $this->analyzer->apply($superAdmin, function () use ($superAdmin) {
+    $report = $this->analyzer->apply($superAdmin, function () use ($superAdmin): void {
         $superAdmin->roles()->sync([]);
     });
 

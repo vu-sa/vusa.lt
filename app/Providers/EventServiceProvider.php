@@ -56,6 +56,7 @@ class EventServiceProvider extends ServiceProvider
      *
      * @var array<string, array<int, string>>
      */
+    #[\Override]
     protected $listen = [
         SocialiteWasCalled::class => [
             MicrosoftExtendSocialite::class.'@handle',
@@ -98,6 +99,7 @@ class EventServiceProvider extends ServiceProvider
      *
      * @var array<int, class-string>
      */
+    #[\Override]
     protected $subscribe = [
         // Task subscribers
         ReservationTaskSubscriber::class,
@@ -113,6 +115,7 @@ class EventServiceProvider extends ServiceProvider
      *
      * @return void
      */
+    #[\Override]
     public function boot()
     {
         Document::observe(DocumentObserver::class);

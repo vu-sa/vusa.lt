@@ -35,14 +35,12 @@ class DuplicateNewsAction
             $newNews->refresh();
 
             // Copy content parts if they exist
-            $contentParts = $news->content->parts->map(function ($part) {
-                return [
-                    'type' => $part->type,
-                    'json_content' => $part->json_content,
-                    'options' => $part->options,
-                    'order' => $part->order,
-                ];
-            })->toArray();
+            $contentParts = $news->content->parts->map(fn ($part) => [
+                'type' => $part->type,
+                'json_content' => $part->json_content,
+                'options' => $part->options,
+                'order' => $part->order,
+            ])->toArray();
 
             if (! empty($contentParts)) {
                 $newNews->content->parts()->createMany($contentParts);

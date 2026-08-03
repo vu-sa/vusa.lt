@@ -17,6 +17,7 @@ class UpdateTrainingRequest extends FormRequest
         return $this->user()->can('update', $this->training);
     }
 
+    #[\Override]
     protected function prepareForValidation()
     {
         if ($this->input('start_time') === null) {

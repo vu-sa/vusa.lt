@@ -77,7 +77,7 @@ class QuickLinkController extends AdminController
         $this->handleAuthorization('create', QuickLink::class);
 
         return $this->inertiaResponse('Admin/Content/CreateQuickLink', [
-            'typeOptions' => Inertia::optional(fn () => $this->getQuickLinkTypeOptions(request()->input('type'))),
+            'typeOptions' => Inertia::optional(fn () => static::getQuickLinkTypeOptions(request()->input('type'))),
             'tenantOptions' => GetTenantsForUpserts::execute('quickLinks.create.padalinys', $this->authorizer),
         ]);
     }
@@ -100,7 +100,7 @@ class QuickLinkController extends AdminController
             $tenant_id = $this->authorizer->permissableDuties->first()?->tenants->first()?->id;
         }
 
-        DB::transaction(function () use ($request, $tenant_id) {
+        DB::transaction(function () use ($request, $tenant_id): void {
             $quickLink = new QuickLink;
             $quickLink->text = $request->text;
             $quickLink->link = $request->link;
@@ -144,7 +144,7 @@ class QuickLinkController extends AdminController
         return $this->inertiaResponse('Admin/Content/EditQuickLink', [
             'quickLink' => $quickLink,
             'tenantOptions' => GetTenantsForUpserts::execute('quickLinks.update.padalinys', $this->authorizer),
-            'typeOptions' => Inertia::optional(fn () => $this->getQuickLinkTypeOptions(request()->input('type'))),
+            'typeOptions' => Inertia::optional(fn () => static::getQuickLinkTypeOptions(request()->input('type'))),
         ]);
     }
 
@@ -160,7 +160,7 @@ class QuickLinkController extends AdminController
             'link' => 'required',
         ]);
 
-        DB::transaction(function () use ($request, $quickLink) {
+        DB::transaction(function () use ($request, $quickLink): void {
             $quickLink->update($request->only('text', 'link', 'lang', 'icon', 'is_important'));
         });
 
@@ -189,7 +189,7 @@ class QuickLinkController extends AdminController
             $this->handleAuthorization('update', [QuickLink::class, QuickLink::find($idAndOrder['id']), $this->authorizer]);
         }
 
-        DB::transaction(function () use ($request) {
+        DB::transaction(function () use ($request): void {
             foreach ($request->orderList as $idAndOrder) {
                 $quickLink = QuickLink::find($idAndOrder['id']);
                 $quickLink->order = $idAndOrder['order'];

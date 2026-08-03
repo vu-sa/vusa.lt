@@ -15,6 +15,8 @@ use App\Models\Traits\HasContentRelationships;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTasks;
 use App\Models\Traits\HasTranslations;
+use App\Models\Traits\LogsModelActivity;
+use App\Models\Traits\LogsRelationshipChanges;
 use App\Services\RelationshipService;
 use App\Settings\MeetingSettings;
 use Illuminate\Database\Eloquent\Collection;
@@ -28,9 +30,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Models\Activity;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
@@ -57,7 +56,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
- * @property-read Collection<int, Activity> $activities
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Relationshipable|InstitutionFollow|Trainable|null $pivot
  * @property-read Collection<int, Training> $availableTrainings
@@ -105,8 +104,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  */
 class Institution extends Model implements Commentable, GuardsForceDelete, SharepointFileableContract
 {
-    use GuardsForceDeleteWhenReferenced, HasComments, HasContentRelationships, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsActivity, Searchable, SoftDeletes;
+    use GuardsForceDeleteWhenReferenced, HasComments, HasContentRelationships, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable, SoftDeletes;
 
+    #[\Override]
     protected $guarded = [];
 
     // Note: types are NOT auto-loaded to prevent N+1 in collections.
@@ -118,11 +118,6 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
     // Append it explicitly where needed: $institution->append('has_public_meetings')
 
     public $translatable = ['name', 'short_name', 'description', 'address', 'appointed_by', 'term_length'];
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
-    }
 
     /**
      * @return HasMany<Duty, $this>
@@ -303,16 +298,17 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
         ];
     }
 
+    #[\Override]
     protected static function booted()
     {
-        static::saving(function (Institution $institution) {
+        static::saving(function (Institution $institution): void {
             // Dispatch event when name is about to change - SharePoint must succeed first
             if ($institution->isDirty('name')) {
                 FileableNameUpdated::dispatch($institution);
             }
         });
 
-        static::deleted(function (Institution $institution) {
+        static::deleted(function (Institution $institution): void {
             $institution->publicSearchModel()->unsearchable();
         });
 
@@ -321,11 +317,11 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
         static::deleted(fn (Institution $institution) => $institution->reindexDuties());
         static::restored(fn (Institution $institution) => $institution->reindexDuties());
 
-        static::forceDeleted(function (Institution $institution) {
+        static::forceDeleted(function (Institution $institution): void {
             $institution->publicSearchModel()->unsearchable();
         });
 
-        static::restored(function (Institution $institution) {
+        static::restored(function (Institution $institution): void {
             $publicInstitution = PublicInstitution::query()->find($institution->getKey());
 
             if ($publicInstitution?->shouldBeSearchable()) {

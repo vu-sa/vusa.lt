@@ -6,9 +6,9 @@ use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
     $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
@@ -30,20 +30,20 @@ beforeEach(function () {
     ]);
 });
 
-describe('unauthorized access', function () {
-    test('cannot access index', function () {
+describe('unauthorized access', function (): void {
+    test('cannot access index', function (): void {
         asUser($this->user)
             ->get(route('quickLinks.index'))
             ->assertStatus(403);
     });
 
-    test('cannot access create page', function () {
+    test('cannot access create page', function (): void {
         asUser($this->user)
             ->get(route('quickLinks.create'))
             ->assertStatus(403);
     });
 
-    test('cannot store quick link', function () {
+    test('cannot store quick link', function (): void {
         asUser($this->user)
             ->post(route('quickLinks.store'), [
                 'text' => 'New Link',
@@ -52,13 +52,13 @@ describe('unauthorized access', function () {
             ->assertStatus(403);
     });
 
-    test('cannot access edit page', function () {
+    test('cannot access edit page', function (): void {
         asUser($this->user)
             ->get(route('quickLinks.edit', $this->quickLink))
             ->assertStatus(403);
     });
 
-    test('cannot update quick link', function () {
+    test('cannot update quick link', function (): void {
         asUser($this->user)
             ->patch(route('quickLinks.update', $this->quickLink), [
                 'text' => 'Updated',
@@ -67,15 +67,15 @@ describe('unauthorized access', function () {
             ->assertStatus(403);
     });
 
-    test('cannot delete quick link', function () {
+    test('cannot delete quick link', function (): void {
         asUser($this->user)
             ->delete(route('quickLinks.destroy', $this->quickLink))
             ->assertStatus(403);
     });
 });
 
-describe('authorized access', function () {
-    test('can access index', function () {
+describe('authorized access', function (): void {
+    test('can access index', function (): void {
         asUser($this->admin)
             ->get(route('quickLinks.index'))
             ->assertStatus(200)
@@ -87,7 +87,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('can access create page', function () {
+    test('can access create page', function (): void {
         asUser($this->admin)
             ->get(route('quickLinks.create'))
             ->assertStatus(200)
@@ -97,7 +97,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('can store quick link with valid data', function () {
+    test('can store quick link with valid data', function (): void {
         asUser($this->admin)
             ->post(route('quickLinks.store'), [
                 'text' => 'New Quick Link',
@@ -117,7 +117,7 @@ describe('authorized access', function () {
         ]);
     });
 
-    test('cannot store quick link without required fields', function () {
+    test('cannot store quick link without required fields', function (): void {
         asUser($this->admin)
             ->post(route('quickLinks.store'), [
                 'text' => '',
@@ -127,7 +127,7 @@ describe('authorized access', function () {
             ->assertSessionHasErrors(['text', 'link']);
     });
 
-    test('can access edit page', function () {
+    test('can access edit page', function (): void {
         asUser($this->admin)
             ->get(route('quickLinks.edit', $this->quickLink))
             ->assertStatus(200)
@@ -139,7 +139,7 @@ describe('authorized access', function () {
             );
     });
 
-    test('can update quick link', function () {
+    test('can update quick link', function (): void {
         asUser($this->admin)
             ->patch(route('quickLinks.update', $this->quickLink), [
                 'text' => 'Updated Link',
@@ -159,7 +159,7 @@ describe('authorized access', function () {
         ]);
     });
 
-    test('can delete quick link', function () {
+    test('can delete quick link', function (): void {
         asUser($this->admin)
             ->delete(route('quickLinks.destroy', $this->quickLink))
             ->assertStatus(302)
@@ -171,7 +171,7 @@ describe('authorized access', function () {
         ]);
     });
 
-    test('show deleted index returns only trashed quick links', function () {
+    test('show deleted index returns only trashed quick links', function (): void {
         $trashedQuickLink = QuickLink::factory()->for($this->tenant)->create([
             'text' => 'Deleted Quick Link',
             'lang' => 'lt',
@@ -200,7 +200,7 @@ describe('authorized access', function () {
             ->and($ids)->not->toContain($this->quickLink->id);
     });
 
-    test('deleted count is scoped to the selected tenant and language', function () {
+    test('deleted count is scoped to the selected tenant and language', function (): void {
         $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
 
         $deletedQuickLink = QuickLink::factory()->for($this->tenant)->create(['lang' => 'lt']);
@@ -222,8 +222,8 @@ describe('authorized access', function () {
     });
 });
 
-describe('update order', function () {
-    beforeEach(function () {
+describe('update order', function (): void {
+    beforeEach(function (): void {
         $this->quickLink2 = QuickLink::factory()->for($this->tenant)->create([
             'lang' => 'lt',
             'order' => 2,
@@ -234,7 +234,7 @@ describe('update order', function () {
         ]);
     });
 
-    test('can update order of multiple quick links', function () {
+    test('can update order of multiple quick links', function (): void {
         asUser($this->admin)
             ->post(route('quickLinks.update-order'), [
                 'orderList' => [
@@ -249,12 +249,12 @@ describe('update order', function () {
             ->assertRedirect(route('quickLinks.index', ['tenant' => $this->tenant->id, 'lang' => 'lt']))
             ->assertSessionHas('success');
 
-        expect(QuickLink::find($this->quickLink->id)->order)->toBe(3);
-        expect(QuickLink::find($this->quickLink2->id)->order)->toBe(1);
-        expect(QuickLink::find($this->quickLink3->id)->order)->toBe(2);
+        expect(QuickLink::find($this->quickLink->id)->order)->toBe(3)
+            ->and(QuickLink::find($this->quickLink2->id)->order)->toBe(1)
+            ->and(QuickLink::find($this->quickLink3->id)->order)->toBe(2);
     });
 
-    test('unauthorized user cannot update order', function () {
+    test('unauthorized user cannot update order', function (): void {
         asUser($this->user)
             ->post(route('quickLinks.update-order'), [
                 'orderList' => [
@@ -267,34 +267,32 @@ describe('update order', function () {
     });
 });
 
-describe('tenant isolation', function () {
-    beforeEach(function () {
+describe('tenant isolation', function (): void {
+    beforeEach(function (): void {
         $this->otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $this->otherQuickLink = QuickLink::factory()->for($this->otherTenant)->create([
             'lang' => 'lt',
         ]);
     });
 
-    test('index filters quick links by tenant', function () {
+    test('index filters quick links by tenant', function (): void {
         asUser($this->admin)
             ->get(route('quickLinks.index', ['tenant' => $this->tenant->id, 'lang' => 'lt']))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Content/IndexQuickLink')
                 ->has('quickLinks')
-                ->where('quickLinks', function ($links) {
-                    return collect($links)->every(fn ($link) => $link['tenant_id'] === $this->tenant->id);
-                })
+                ->where('quickLinks', fn ($links) => collect($links)->every(fn ($link) => $link['tenant_id'] === $this->tenant->id))
             );
     });
 
-    test('cannot edit other tenant quick link', function () {
+    test('cannot edit other tenant quick link', function (): void {
         asUser($this->admin)
             ->get(route('quickLinks.edit', $this->otherQuickLink))
             ->assertStatus(403);
     });
 
-    test('cannot update other tenant quick link', function () {
+    test('cannot update other tenant quick link', function (): void {
         asUser($this->admin)
             ->patch(route('quickLinks.update', $this->otherQuickLink), [
                 'text' => 'Hacked',

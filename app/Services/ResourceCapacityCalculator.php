@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class ResourceCapacityCalculator
 {
     public function __construct(
-        private Resource $resource
+        private readonly Resource $resource
     ) {}
 
     /**
@@ -254,7 +254,7 @@ class ResourceCapacityCalculator
         TimeRange $timeRange,
         bool $ignoreTimeEndedActive = false
     ): void {
-        $reservations->each(function (Reservation $reservation) use (&$capacityTimeline, $timeRange, $ignoreTimeEndedActive) {
+        $reservations->each(function (Reservation $reservation) use (&$capacityTimeline, $timeRange, $ignoreTimeEndedActive): void {
             /** @var ReservationResource $pivot */
             $pivot = $reservation->pivot;
 

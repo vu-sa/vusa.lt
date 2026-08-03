@@ -1,10 +1,12 @@
 <?php
 
+use App\Providers\ActivityLogServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\EventServiceProvider;
 use App\Providers\RouteServiceProvider;
 use App\Providers\TelescopeServiceProvider;
 use App\Providers\TestingServiceProvider;
+use App\Providers\TypeScriptTransformerServiceProvider;
 use App\Providers\TypesenseServiceProvider;
 use Illuminate\Auth\AuthServiceProvider;
 use Illuminate\Auth\Passwords\PasswordResetServiceProvider;
@@ -226,6 +228,7 @@ return [
         /*
          * Application Service Providers...
          */
+        ActivityLogServiceProvider::class,
         AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
         App\Providers\BroadcastServiceProvider::class,
@@ -235,6 +238,7 @@ return [
         TypesenseServiceProvider::class, // Register our new Typesense service provider
         TestingServiceProvider::class, // Testing-only hooks (no-op outside the testing env)
         TinkerServiceProvider::class,
+        TypeScriptTransformerServiceProvider::class,
 
     ],
 

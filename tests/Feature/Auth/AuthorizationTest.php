@@ -11,7 +11,7 @@ use App\Models\User;
 use App\Services\PermissionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 function createContent(): string
 {
@@ -25,7 +25,7 @@ function createContent(): string
     return $content->id;
 }
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::factory()->create([
         'type' => 'padalinys',
         'alias' => 'test-tenant',
@@ -99,30 +99,30 @@ beforeEach(function () {
     ]);
 });
 
-test('super admin has all permissions', function () {
-    expect(Permission::check('news.read.all', $this->superAdmin))->toBeTrue();
-    expect(Permission::check('news.create.all', $this->superAdmin))->toBeTrue();
-    expect(Permission::check('news.update.all', $this->superAdmin))->toBeTrue();
-    expect(Permission::check('news.delete.all', $this->superAdmin))->toBeTrue();
-    expect(Permission::check('unknown.permission.scope', $this->superAdmin))->toBeTrue();
+test('super admin has all permissions', function (): void {
+    expect(Permission::check('news.read.all', $this->superAdmin))->toBeTrue()
+        ->and(Permission::check('news.create.all', $this->superAdmin))->toBeTrue()
+        ->and(Permission::check('news.update.all', $this->superAdmin))->toBeTrue()
+        ->and(Permission::check('news.delete.all', $this->superAdmin))->toBeTrue()
+        ->and(Permission::check('unknown.permission.scope', $this->superAdmin))->toBeTrue();
 });
 
-test('tenant admin has tenant scoped permissions', function () {
-    expect(Permission::check('news.read.padalinys', $this->tenantAdmin))->toBeTrue();
-    expect(Permission::check('news.create.padalinys', $this->tenantAdmin))->toBeTrue();
-    expect(Permission::check('news.update.padalinys', $this->tenantAdmin))->toBeTrue();
-    expect(Permission::check('news.delete.padalinys', $this->tenantAdmin))->toBeTrue();
-    expect(Permission::check('news.read.all', $this->tenantAdmin))->toBeFalse();
+test('tenant admin has tenant scoped permissions', function (): void {
+    expect(Permission::check('news.read.padalinys', $this->tenantAdmin))->toBeTrue()
+        ->and(Permission::check('news.create.padalinys', $this->tenantAdmin))->toBeTrue()
+        ->and(Permission::check('news.update.padalinys', $this->tenantAdmin))->toBeTrue()
+        ->and(Permission::check('news.delete.padalinys', $this->tenantAdmin))->toBeTrue()
+        ->and(Permission::check('news.read.all', $this->tenantAdmin))->toBeFalse();
 });
 
-test('normal user has no permissions', function () {
-    expect(Permission::check('news.read.padalinys', $this->normalUser))->toBeFalse();
-    expect(Permission::check('news.create.padalinys', $this->normalUser))->toBeFalse();
-    expect(Permission::check('news.update.padalinys', $this->normalUser))->toBeFalse();
-    expect(Permission::check('news.delete.padalinys', $this->normalUser))->toBeFalse();
+test('normal user has no permissions', function (): void {
+    expect(Permission::check('news.read.padalinys', $this->normalUser))->toBeFalse()
+        ->and(Permission::check('news.create.padalinys', $this->normalUser))->toBeFalse()
+        ->and(Permission::check('news.update.padalinys', $this->normalUser))->toBeFalse()
+        ->and(Permission::check('news.delete.padalinys', $this->normalUser))->toBeFalse();
 });
 
-test('permission cache is cleared when roles change', function () {
+test('permission cache is cleared when roles change', function (): void {
     // Start with checking the user has no special permissions initially
     $initialHasPermission = Permission::check('news.create.padalinys', $this->normalUser);
     expect($initialHasPermission)->toBeFalse();
@@ -145,8 +145,8 @@ test('permission cache is cleared when roles change', function () {
 
     // Check if the duty actually received the role
     $dutyRoles = $duty->roles()->get();
-    expect($dutyRoles)->toHaveCount(1);
-    expect($dutyRoles->first()->name)->toBe('Communication Coordinator');
+    expect($dutyRoles)->toHaveCount(1)
+        ->and($dutyRoles->first()->name)->toBe('Communication Coordinator');
 
     // Debug: Check if the duty has the role and permission with explicit guard
     expect($duty->hasRole($this->communicationCoordinatorRole))->toBeTrue('Duty should have Communication Coordinator role');
@@ -156,26 +156,24 @@ test('permission cache is cleared when roles change', function () {
     $this->markTestIncomplete('Permission inheritance from duties needs debugging - role assignment works but permission check fails');
 });
 
-test('permission cache is cleared when duties change', function () {
+test('permission cache is cleared when duties change', function (): void {
     // Skip this test as it has complex dutiable relationship issues
     $this->markTestSkipped('Duty relationship management needs debugging - Dutiable pivot model issues');
 });
 
-test('policy checks work correctly', function () {
+test('policy checks work correctly', function (): void {
     // Skip this test as the policy system needs architectural fixes for News model
     $this->markTestSkipped('Policy system needs fixes for models without direct duty relationships');
 
-    expect($this->superAdmin->can('view', $this->news))->toBeTrue();
-    expect($this->superAdmin->can('update', $this->news))->toBeTrue();
-    expect($this->superAdmin->can('delete', $this->news))->toBeTrue();
-
-    expect($this->tenantAdmin->can('view', $this->news))->toBeTrue();
-    expect($this->tenantAdmin->can('update', $this->news))->toBeTrue();
-    expect($this->tenantAdmin->can('delete', $this->news))->toBeTrue();
-
-    expect($this->normalUser->can('view', $this->news))->toBeFalse();
-    expect($this->normalUser->can('update', $this->news))->toBeFalse();
-    expect($this->normalUser->can('delete', $this->news))->toBeFalse();
+    expect($this->superAdmin->can('view', $this->news))->toBeTrue()
+        ->and($this->superAdmin->can('update', $this->news))->toBeTrue()
+        ->and($this->superAdmin->can('delete', $this->news))->toBeTrue()
+        ->and($this->tenantAdmin->can('view', $this->news))->toBeTrue()
+        ->and($this->tenantAdmin->can('update', $this->news))->toBeTrue()
+        ->and($this->tenantAdmin->can('delete', $this->news))->toBeTrue()
+        ->and($this->normalUser->can('view', $this->news))->toBeFalse()
+        ->and($this->normalUser->can('update', $this->news))->toBeFalse()
+        ->and($this->normalUser->can('delete', $this->news))->toBeFalse();
 
     // Create a fresh duty with content editor role
     $contentEditorDuty = Duty::factory()->create([
@@ -188,12 +186,12 @@ test('policy checks work correctly', function () {
     // Clear permission cache since observers are not set up
     Permission::resetCache($this->normalUser);
 
-    expect($this->normalUser->can('view', $this->news))->toBeTrue();
-    expect($this->normalUser->can('update', $this->news))->toBeTrue();
-    expect($this->normalUser->can('delete', $this->news))->toBeFalse();
+    expect($this->normalUser->can('view', $this->news))->toBeTrue()
+        ->and($this->normalUser->can('update', $this->news))->toBeTrue()
+        ->and($this->normalUser->can('delete', $this->news))->toBeFalse();
 });
 
-test('tenant scoped permissions only apply to correct tenant', function () {
+test('tenant scoped permissions only apply to correct tenant', function (): void {
     $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
     $otherContent = createContent();
     $otherNews = News::create([
@@ -203,29 +201,26 @@ test('tenant scoped permissions only apply to correct tenant', function () {
         'content_id' => $otherContent,
     ]);
 
-    expect($this->tenantAdmin->can('view', $this->news))->toBeTrue();
-    expect($this->tenantAdmin->can('update', $this->news))->toBeTrue();
-
-    expect($this->tenantAdmin->can('view', $otherNews))->toBeFalse();
-    expect($this->tenantAdmin->can('update', $otherNews))->toBeFalse();
-
-    expect($this->superAdmin->can('view', $otherNews))->toBeTrue();
-    expect($this->superAdmin->can('update', $otherNews))->toBeTrue();
+    expect($this->tenantAdmin->can('view', $this->news))->toBeTrue()
+        ->and($this->tenantAdmin->can('update', $this->news))->toBeTrue()
+        ->and($this->tenantAdmin->can('view', $otherNews))->toBeFalse()
+        ->and($this->tenantAdmin->can('update', $otherNews))->toBeFalse()
+        ->and($this->superAdmin->can('view', $otherNews))->toBeTrue()
+        ->and($this->superAdmin->can('update', $otherNews))->toBeTrue();
 });
 
-test('permission service works correctly', function () {
+test('permission service works correctly', function (): void {
     $permissionService = app(PermissionService::class);
 
-    expect($permissionService->isSuperAdmin($this->superAdmin))->toBeTrue();
-    expect($permissionService->isSuperAdmin($this->normalUser))->toBeFalse();
-
-    expect($permissionService->checkScope('news', 'read', 'padalinys', $this->tenantAdmin))->toBeTrue();
-    expect($permissionService->checkScope('news', 'read', 'all', $this->tenantAdmin))->toBeFalse();
+    expect($permissionService->isSuperAdmin($this->superAdmin))->toBeTrue()
+        ->and($permissionService->isSuperAdmin($this->normalUser))->toBeFalse()
+        ->and($permissionService->checkScope('news', 'read', 'padalinys', $this->tenantAdmin))->toBeTrue()
+        ->and($permissionService->checkScope('news', 'read', 'all', $this->tenantAdmin))->toBeFalse();
 
     $superAdminTenants = $permissionService->getTenants($this->superAdmin);
     $tenantAdminTenants = $permissionService->getTenants($this->tenantAdmin);
 
-    expect($superAdminTenants->count())->toBeGreaterThan(0);
-    expect($tenantAdminTenants->count())->toEqual(1);
-    expect($tenantAdminTenants->first()->id)->toEqual($this->tenant->id);
+    expect($superAdminTenants->count())->toBeGreaterThan(0)
+        ->and($tenantAdminTenants->count())->toEqual(1)
+        ->and($tenantAdminTenants->first()->id)->toEqual($this->tenant->id);
 });

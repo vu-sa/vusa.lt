@@ -13,18 +13,10 @@ use NotificationChannels\WebPush\WebPushChannel;
  */
 class CalendarReminderNotification extends BaseNotification
 {
-    protected Calendar $calendarEvent;
-
-    protected int $hoursUntil;
-
     /**
      * Create a new notification instance.
      */
-    public function __construct(Calendar $calendarEvent, int $hoursUntil)
-    {
-        $this->calendarEvent = $calendarEvent;
-        $this->hoursUntil = $hoursUntil;
-    }
+    public function __construct(protected Calendar $calendarEvent, protected int $hoursUntil) {}
 
     public function category(): NotificationCategory
     {
@@ -72,6 +64,7 @@ class CalendarReminderNotification extends BaseNotification
         return url('/lt/kalendorius/renginys/'.$this->calendarEvent->id);
     }
 
+    #[\Override]
     public function icon(): string
     {
         return $this->hoursUntil <= 2 ? '⏰' : '📆';
@@ -95,6 +88,7 @@ class CalendarReminderNotification extends BaseNotification
     /**
      * Do not support email digest for now.
      */
+    #[\Override]
     public function supportsEmailDigest(): bool
     {
         return false;
@@ -106,6 +100,7 @@ class CalendarReminderNotification extends BaseNotification
      *
      * @return array<int, string>
      */
+    #[\Override]
     public function via(object $notifiable): array
     {
         // Check if notifications are globally muted for this user

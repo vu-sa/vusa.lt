@@ -15,11 +15,12 @@ class ReservationPolicy extends ModelPolicy
     public function __construct(ModelAuthorizer $authorizer)
     {
         parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::RESERVATION()->label);
+        $this->pluralModelName = Str::plural(ModelEnum::RESERVATION->label());
     }
 
     // Override create method to check if user can create reservation
     // NOTE: Every user can create reservation
+    #[\Override]
     public function create(User $user): bool
     {
         return true;
@@ -30,6 +31,7 @@ class ReservationPolicy extends ModelPolicy
      *
      * @param  Reservation  $reservation
      */
+    #[\Override]
     public function view(User $user, Model $reservation): bool
     {
         if ($reservation->users->contains($user)) {
@@ -40,14 +42,14 @@ class ReservationPolicy extends ModelPolicy
         // if user has permission to view it
 
         foreach ($reservation->resources as $resource) {
-            $check = $this->commonChecker($user, $resource, CRUDEnum::UPDATE()->label, 'resources', false);
+            $check = $this->commonChecker($user, $resource, CRUDEnum::UPDATE->label(), 'resources', false);
 
             if ($check) {
                 return true;
             }
         }
 
-        return $this->commonChecker($user, $reservation, CRUDEnum::READ()->label, $this->pluralModelName);
+        return $this->commonChecker($user, $reservation, CRUDEnum::READ->label(), $this->pluralModelName);
     }
 
     /**
@@ -55,13 +57,14 @@ class ReservationPolicy extends ModelPolicy
      *
      * @param  Reservation  $reservation
      */
+    #[\Override]
     public function delete(User $user, Model $reservation): bool
     {
         if ($reservation->users->contains($user)) {
             return true;
         }
 
-        return $this->commonChecker($user, $reservation, CRUDEnum::DELETE()->label, $this->pluralModelName);
+        return $this->commonChecker($user, $reservation, CRUDEnum::DELETE->label(), $this->pluralModelName);
     }
 
     /**
@@ -75,7 +78,7 @@ class ReservationPolicy extends ModelPolicy
             return true;
         }
 
-        if ($this->commonChecker($user, $reservation, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
+        if ($this->commonChecker($user, $reservation, CRUDEnum::UPDATE->label(), $this->pluralModelName)) {
             return true;
         }
 
@@ -87,12 +90,13 @@ class ReservationPolicy extends ModelPolicy
      *
      * @param  Reservation  $reservation
      */
+    #[\Override]
     public function update(User $user, Model $reservation): bool
     {
         if ($reservation->users->contains($user)) {
             return true;
         }
 
-        return $this->commonChecker($user, $reservation, CRUDEnum::UPDATE()->label, $this->pluralModelName);
+        return $this->commonChecker($user, $reservation, CRUDEnum::UPDATE->label(), $this->pluralModelName);
     }
 }

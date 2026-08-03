@@ -12,7 +12,7 @@ class AtstovavimasMeetingsRequest extends FormRequest
     /**
      * Maximum window span, so a single request cannot pull years of meetings.
      */
-    private const MAX_SPAN_MONTHS = 24;
+    private const int MAX_SPAN_MONTHS = 24;
 
     public function authorize(): bool
     {
@@ -37,7 +37,7 @@ class AtstovavimasMeetingsRequest extends FormRequest
 
     public function withValidator(Validator $validator): void
     {
-        $validator->after(function (Validator $validator) {
+        $validator->after(function (Validator $validator): void {
             $from = $this->input('from');
             $until = $this->input('until');
 

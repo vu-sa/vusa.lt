@@ -19,6 +19,7 @@ class AuthServiceProvider extends ServiceProvider
      *
      * @var array<class-string, class-string>
      */
+    #[\Override]
     protected $policies = [
         // explicit policies that are not inferred from model names
         InstitutionCheckIn::class => InstitutionCheckInPolicy::class,
@@ -43,15 +44,13 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         // Define gate for settings management access
-        Gate::define('manage-settings', function (User $user) {
-            return app(SettingsSettings::class)->canUserManageSettings($user);
-        });
+        Gate::define('manage-settings', fn (User $user) => app(SettingsSettings::class)->canUserManageSettings($user));
 
         // Define gate for administration page access
         // User can access if they have viewAny permission on any administrative model
         // Excludes resource model since it's managed through the Reservations dashboard
         Gate::define('access-administration', function (User $user) {
-            $labels = ModelEnum::toLabels();
+            $labels = ModelEnum::labels();
 
             // Remove special cases that don't grant admin access
             $excludedModels = [
@@ -67,13 +66,7 @@ class AuthServiceProvider extends ServiceProvider
                 }
             }
 
-            foreach ($labels as $model) {
-                if ($user->can('viewAny', 'App\\Models\\'.ucfirst($model))) {
-                    return true;
-                }
-            }
-
-            return false;
+            return array_any($labels, fn ($model) => $user->can('viewAny', 'App\\Models\\'.ucfirst($model)));
         });
     }
 }

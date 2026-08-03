@@ -44,7 +44,7 @@ class SharepointFileController extends AdminController
 
         $path = $request->get('path');
 
-        $path = $path ?? 'General';
+        $path ??= 'General';
 
         return $this->inertiaResponse('Admin/Files/IndexSharepoint', [
             'path' => $path,
@@ -147,7 +147,7 @@ class SharepointFileController extends AdminController
 
         try {
             $sharepointService->deleteDriveItem($fileableFile->sharepoint_id);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             // If SharePoint deletion fails, mark as externally deleted
             $fileableFile->markAsDeletedExternally();
 
@@ -221,9 +221,7 @@ class SharepointFileController extends AdminController
         /** @var Collection<int, Type> $types */
         $types = $fileable->types()
             ->get()
-            ->map(function (Type $type) {
-                return $type->getParentsAndSelf();
-            })
+            ->map(fn (Type $type) => $type->getParentsAndSelf())
             ->flatten()
             ->unique('id')
             ->values();
@@ -248,8 +246,8 @@ class SharepointFileController extends AdminController
         $this->handleAuthorization('viewAny', SharepointFile::class);
 
         return response()->json([
-            'institutions' => Institution::with('meetings:meetings.id,start_time')->whereHas('tenant')->get()->map->only('id', 'name', 'meetings'),
-            'types' => Type::all()->map->only('id', 'title'),
+            'institutions' => Institution::with('meetings:meetings.id,start_time')->whereHas('tenant')->get()->map->only('id'),
+            'types' => Type::all()->map->only('id'),
         ]);
     }
 
@@ -312,16 +310,12 @@ class SharepointFileController extends AdminController
             return back()->with('info', 'Neteisinga užklausa. Praneškite administratoriui');
         }
 
-        $types = $fileable->types->map(function ($type) {
-            return $type->getParentsAndSelf();
-        })->flatten()->unique('id')->values();
+        $types = $fileable->types->map(fn ($type) => $type->getParentsAndSelf())->flatten()->unique('id')->values();
 
         $sharepointService = new SharepointGraphService(driveId: config('filesystems.sharepoint.vusa_drive_id'));
 
         // get all types paths into one array
-        $paths = $types->map(function ($type) {
-            return $type->sharepoint_path();
-        })->toArray();
+        $paths = $types->map(fn ($type) => $type->sharepoint_path())->toArray();
 
         if (empty($paths)) {
             return response()->json([]);

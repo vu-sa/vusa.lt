@@ -9,13 +9,13 @@ namespace App\Services\Permissions;
  * removes one or more roles is surfaced to the user for confirmation; the caller
  * (guardSelfLockout) decides whether a given loss is blocking.
  */
-final class AccessChangeReport
+final readonly class AccessChangeReport
 {
     /**
      * @param  list<string>  $lostRoles  Display names of roles the user would lose
      */
     public function __construct(
-        public readonly array $lostRoles,
+        public array $lostRoles,
     ) {}
 
     public static function diff(CapabilitySnapshot $before, CapabilitySnapshot $after): self

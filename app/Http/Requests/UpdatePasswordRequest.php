@@ -25,7 +25,7 @@ class UpdatePasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'current_password' => ['required', 'string', function ($attribute, $value, $fail) {
+            'current_password' => ['required', 'string', function ($attribute, $value, $fail): void {
                 $userPassword = $this->user()->password;
 
                 if (is_null($userPassword)) {
@@ -48,6 +48,7 @@ class UpdatePasswordRequest extends FormRequest
      *
      * @return array<string, string>
      */
+    #[\Override]
     public function messages(): array
     {
         return [

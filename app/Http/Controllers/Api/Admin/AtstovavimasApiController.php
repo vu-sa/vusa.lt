@@ -21,7 +21,7 @@ class AtstovavimasApiController extends ApiController
      * Tenant timeline data is identical for every user authorized to see the same
      * tenant set, so it is cached briefly; mutations bypass via ?refresh=1.
      */
-    private const CACHE_TTL_SECONDS = 600;
+    private const int CACHE_TTL_SECONDS = 600;
 
     public function __construct(
         private readonly AtstovavimasDashboardService $dashboardService,

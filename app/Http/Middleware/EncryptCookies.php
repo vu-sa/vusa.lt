@@ -11,6 +11,7 @@ class EncryptCookies extends Middleware
      *
      * @var array<int, string>
      */
+    #[\Override]
     protected $except = [
         'pwa_mode', // Used by ExtendPWASession middleware to detect installed PWA
     ];

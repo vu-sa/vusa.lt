@@ -9,7 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 /**
  * Unlike ExOfficioSyncTest, nothing here is faked and no listener is invoked by hand.
@@ -17,7 +17,7 @@ uses(RefreshDatabase::class);
  * listeners are dispatched and executed — which is the only way to catch a payload
  * that cannot survive the trip through the queue.
  */
-beforeEach(function () {
+beforeEach(function (): void {
     config(['queue.default' => 'sync']);
 
     $this->tenant = Tenant::query()->first();
@@ -30,7 +30,7 @@ beforeEach(function () {
     $this->user = User::factory()->create();
 });
 
-test('deleting a source dutiable cascades to derived rows through the real queue', function () {
+test('deleting a source dutiable cascades to derived rows through the real queue', function (): void {
     $source = Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
@@ -49,7 +49,7 @@ test('deleting a source dutiable cascades to derived rows through the real queue
     expect(Dutiable::where('via_dutiable_id', $sourceId)->count())->toBe(0);
 });
 
-test('deleting a dutiable does not fail any queued jobs', function () {
+test('deleting a dutiable does not fail any queued jobs', function (): void {
     $source = Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
@@ -65,7 +65,7 @@ test('deleting a dutiable does not fail any queued jobs', function () {
     expect(DB::table('failed_jobs')->count())->toBe(0);
 });
 
-test('deleting a dutiable invalidates the holder permission caches', function () {
+test('deleting a dutiable invalidates the holder permission caches', function (): void {
     $source = Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
@@ -85,7 +85,7 @@ test('deleting a dutiable invalidates the holder permission caches', function ()
         ->and(Cache::has('create-permissions-'.$this->user->id))->toBeFalse();
 });
 
-test('a contact dutiable does not invalidate a user that shares its id', function () {
+test('a contact dutiable does not invalidate a user that shares its id', function (): void {
     Cache::put('index-permissions-'.$this->user->id, ['fresh'], 1800);
     Cache::put('create-permissions-'.$this->user->id, ['fresh'], 1800);
 

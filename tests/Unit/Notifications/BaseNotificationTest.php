@@ -8,10 +8,10 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use NotificationChannels\WebPush\WebPushChannel;
 use Tests\Feature\Notifications\NotificationTestHelpers;
 
-uses(RefreshDatabase::class, NotificationTestHelpers::class);
+pest()->use(RefreshDatabase::class, NotificationTestHelpers::class);
 
-describe('via method', function () {
-    test('via returns empty array when user is globally muted', function () {
+describe('via method', function (): void {
+    test('via returns empty array when user is globally muted', function (): void {
         $user = $this->createMutedUser();
 
         $notification = new CommentPostedNotification(
@@ -25,7 +25,7 @@ describe('via method', function () {
         expect($channels)->toBeEmpty();
     });
 
-    test('via includes database, broadcast, and webpush by default', function () {
+    test('via includes database, broadcast, and webpush by default', function (): void {
         $user = $this->createUserWithPreferences();
 
         $notification = new CommentPostedNotification(
@@ -36,14 +36,14 @@ describe('via method', function () {
 
         $channels = $notification->via($user);
 
-        expect($channels)->toContain('database');
-        expect($channels)->toContain('broadcast');
-        expect(in_array(WebPushChannel::class, $channels))->toBeTrue();
+        expect($channels)->toContain('database')
+            ->toContain('broadcast')
+            ->and($channels)->toContain(WebPushChannel::class);
     });
 });
 
-describe('toArray method', function () {
-    test('toArray includes all standardized fields', function () {
+describe('toArray method', function (): void {
+    test('toArray includes all standardized fields', function (): void {
         $user = $this->createUserWithPreferences();
 
         $notification = new CommentPostedNotification(
@@ -54,23 +54,11 @@ describe('toArray method', function () {
 
         $data = $notification->toArray($user);
 
-        expect($data)->toHaveKey('category');
-        expect($data)->toHaveKey('modelClass');
-        expect($data)->toHaveKey('title');
-        expect($data)->toHaveKey('body');
-        expect($data)->toHaveKey('url');
-        expect($data)->toHaveKey('icon');
-        expect($data)->toHaveKey('color');
-        expect($data)->toHaveKey('actions');
-        expect($data)->toHaveKey('subject');
-        expect($data)->toHaveKey('object');
-
-        expect($data['category'])->toBe(NotificationCategory::Comment->value);
-        expect($data['subject'])->toBe(['modelClass' => 'User', 'name' => 'John Doe', 'image' => '/photo.jpg']);
-        expect($data['object'])->toBe(['modelClass' => 'Task', 'name' => 'Test Task', 'url' => '/tasks/1', 'id' => '1']);
+        expect($data)->toHaveKeys(['category', 'modelClass', 'title', 'body', 'url', 'icon', 'color', 'actions', 'subject', 'object'])
+            ->toMatchArray(['category' => NotificationCategory::Comment->value, 'subject' => ['modelClass' => 'User', 'name' => 'John Doe', 'image' => '/photo.jpg'], 'object' => ['modelClass' => 'Task', 'name' => 'Test Task', 'url' => '/tasks/1', 'id' => '1']]);
     });
 
-    test('toArray category is string value not enum', function () {
+    test('toArray category is string value not enum', function (): void {
         $user = $this->createUserWithPreferences();
 
         $notification = new CommentPostedNotification(
@@ -81,13 +69,13 @@ describe('toArray method', function () {
 
         $data = $notification->toArray($user);
 
-        expect($data['category'])->toBeString();
-        expect($data['category'])->toBe('comment');
+        expect($data['category'])->toBeString()
+            ->toBe('comment');
     });
 });
 
-describe('toDigestItem method', function () {
-    test('toDigestItem returns simplified structure', function () {
+describe('toDigestItem method', function (): void {
+    test('toDigestItem returns simplified structure', function (): void {
         $user = $this->createUserWithPreferences();
 
         $notification = new CommentPostedNotification(
@@ -98,13 +86,10 @@ describe('toDigestItem method', function () {
 
         $digestItem = $notification->toDigestItem($user);
 
-        expect($digestItem)->toHaveKeys(['category', 'title', 'body', 'url', 'icon']);
-        expect($digestItem)->not->toHaveKey('actions');
-        expect($digestItem)->not->toHaveKey('subject');
-        expect($digestItem)->not->toHaveKey('object');
+        expect($digestItem)->toHaveKeys(['category', 'title', 'body', 'url', 'icon'])->not->toHaveKey('actions')->not->toHaveKey('subject')->not->toHaveKey('object');
     });
 
-    test('toDigestItem strips HTML from body', function () {
+    test('toDigestItem strips HTML from body', function (): void {
         $user = $this->createUserWithPreferences();
 
         $notification = new CommentPostedNotification(
@@ -115,14 +100,12 @@ describe('toDigestItem method', function () {
 
         $digestItem = $notification->toDigestItem($user);
 
-        expect($digestItem['body'])->not->toContain('<p>');
-        expect($digestItem['body'])->not->toContain('<strong>');
-        expect($digestItem['body'])->not->toContain('<em>');
+        expect($digestItem['body'])->not->toContain('<p>')->not->toContain('<strong>')->not->toContain('<em>');
     });
 });
 
-describe('supportsEmailDigest', function () {
-    test('most notifications support email digest by default', function () {
+describe('supportsEmailDigest', function (): void {
+    test('most notifications support email digest by default', function (): void {
         $notification = new CommentPostedNotification(
             'Test',
             ['modelClass' => 'Task', 'name' => 'Test', 'url' => '/test', 'id' => '1'],
@@ -132,7 +115,7 @@ describe('supportsEmailDigest', function () {
         expect($notification->supportsEmailDigest())->toBeTrue();
     });
 
-    test('TaskReminderNotification does not support email digest', function () {
+    test('TaskReminderNotification does not support email digest', function (): void {
         $task = Task::factory()->create([
             'due_date' => now()->addDays(3),
         ]);
@@ -143,8 +126,8 @@ describe('supportsEmailDigest', function () {
     });
 });
 
-describe('icon method', function () {
-    test('icon returns category-appropriate emoji', function () {
+describe('icon method', function (): void {
+    test('icon returns category-appropriate emoji', function (): void {
         $commentNotification = new CommentPostedNotification(
             'Test',
             ['modelClass' => 'Task', 'name' => 'Test', 'url' => '/test', 'id' => '1'],
@@ -154,7 +137,7 @@ describe('icon method', function () {
         expect($commentNotification->icon())->toBe('💬');
     });
 
-    test('TaskReminderNotification shows warning icon when due soon', function () {
+    test('TaskReminderNotification shows warning icon when due soon', function (): void {
         $task = Task::factory()->create([
             'due_date' => now()->addDay(),
         ]);
@@ -164,7 +147,7 @@ describe('icon method', function () {
         expect($notification->icon())->toBe('⚠️');
     });
 
-    test('TaskReminderNotification shows clock icon when not urgent', function () {
+    test('TaskReminderNotification shows clock icon when not urgent', function (): void {
         $task = Task::factory()->create([
             'due_date' => now()->addDays(7),
         ]);
@@ -175,8 +158,8 @@ describe('icon method', function () {
     });
 });
 
-describe('category method', function () {
-    test('each notification returns correct category enum', function () {
+describe('category method', function (): void {
+    test('each notification returns correct category enum', function (): void {
         $commentNotification = new CommentPostedNotification(
             'Test',
             ['modelClass' => 'Task', 'name' => 'Test', 'url' => '/test', 'id' => '1'],

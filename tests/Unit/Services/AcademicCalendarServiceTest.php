@@ -3,12 +3,12 @@
 use App\Services\AcademicCalendarService;
 use Carbon\CarbonImmutable;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->calendar = new AcademicCalendarService;
 });
 
-describe('easterSunday', function () {
-    test('calculates known Easter dates', function (int $year, string $expected) {
+describe('easterSunday', function (): void {
+    test('calculates known Easter dates', function (int $year, string $expected): void {
         expect(AcademicCalendarService::easterSunday($year)->toDateString())->toBe($expected);
     })->with([
         [2024, '2024-03-31'],
@@ -18,8 +18,8 @@ describe('easterSunday', function () {
     ]);
 });
 
-describe('isVacationDate', function () {
-    test('recognizes vacation days', function (string $date) {
+describe('isVacationDate', function (): void {
+    test('recognizes vacation days', function (string $date): void {
         expect($this->calendar->isVacationDate(CarbonImmutable::parse($date)))->toBeTrue();
     })->with([
         '2025-07-15', // summer
@@ -30,7 +30,7 @@ describe('isVacationDate', function () {
         '2026-04-06', // Easter Monday (Easter 2026: April 5)
     ]);
 
-    test('recognizes working days', function (string $date) {
+    test('recognizes working days', function (string $date): void {
         expect($this->calendar->isVacationDate(CarbonImmutable::parse($date)))->toBeFalse();
     })->with([
         '2025-10-15', // plain autumn day
@@ -40,8 +40,8 @@ describe('isVacationDate', function () {
     ]);
 });
 
-describe('effectiveDaysBetween', function () {
-    test('equals the calendar difference outside vacations', function () {
+describe('effectiveDaysBetween', function (): void {
+    test('equals the calendar difference outside vacations', function (): void {
         $days = $this->calendar->effectiveDaysBetween(
             CarbonImmutable::parse('2025-10-01'),
             CarbonImmutable::parse('2025-10-31'),
@@ -50,7 +50,7 @@ describe('effectiveDaysBetween', function () {
         expect($days)->toBe(30);
     });
 
-    test('excludes a fully contained vacation period', function () {
+    test('excludes a fully contained vacation period', function (): void {
         // July 1 - August 31 (62 days) sits entirely inside this range.
         $days = $this->calendar->effectiveDaysBetween(
             CarbonImmutable::parse('2025-06-01'),
@@ -60,7 +60,7 @@ describe('effectiveDaysBetween', function () {
         expect($days)->toBe(121 - 62);
     });
 
-    test('returns zero when the whole range is vacation', function () {
+    test('returns zero when the whole range is vacation', function (): void {
         $days = $this->calendar->effectiveDaysBetween(
             CarbonImmutable::parse('2025-07-05'),
             CarbonImmutable::parse('2025-08-20'),
@@ -69,7 +69,7 @@ describe('effectiveDaysBetween', function () {
         expect($days)->toBe(0);
     });
 
-    test('subtracts only the overlapping part of a vacation', function () {
+    test('subtracts only the overlapping part of a vacation', function (): void {
         // June 25 -> July 10: 15 calendar days, of which July 1-9 (9 days) are vacation.
         $days = $this->calendar->effectiveDaysBetween(
             CarbonImmutable::parse('2025-06-25'),
@@ -79,7 +79,7 @@ describe('effectiveDaysBetween', function () {
         expect($days)->toBe(6);
     });
 
-    test('is order-insensitive and never negative', function () {
+    test('is order-insensitive and never negative', function (): void {
         $forwards = $this->calendar->effectiveDaysBetween(
             CarbonImmutable::parse('2025-06-01'),
             CarbonImmutable::parse('2025-09-30'),
@@ -93,7 +93,7 @@ describe('effectiveDaysBetween', function () {
         expect($backwards)->toBe($forwards)->toBeGreaterThan(0);
     });
 
-    test('does not subtract overlapping vacation days twice', function () {
+    test('does not subtract overlapping vacation days twice', function (): void {
         // Spans winter (Dec 24 - Jan 1) and late January vacation of the next year.
         $days = $this->calendar->effectiveDaysBetween(
             CarbonImmutable::parse('2025-12-01'),
@@ -106,8 +106,8 @@ describe('effectiveDaysBetween', function () {
     });
 });
 
-describe('addEffectiveDays', function () {
-    test('skips over a vacation period', function () {
+describe('addEffectiveDays', function (): void {
+    test('skips over a vacation period', function (): void {
         // 7 effective days from June 28: June 29, 30 count, July is vacation,
         // so the remaining 5 days land in September.
         $due = $this->calendar->addEffectiveDays(CarbonImmutable::parse('2025-06-28'), 7);
@@ -115,13 +115,13 @@ describe('addEffectiveDays', function () {
         expect($due->toDateString())->toBe('2025-09-05');
     });
 
-    test('adds plain days outside vacations', function () {
+    test('adds plain days outside vacations', function (): void {
         $due = $this->calendar->addEffectiveDays(CarbonImmutable::parse('2025-10-01'), 7);
 
         expect($due->toDateString())->toBe('2025-10-08');
     });
 
-    test('never returns a vacation day', function () {
+    test('never returns a vacation day', function (): void {
         $due = $this->calendar->addEffectiveDays(CarbonImmutable::parse('2025-12-20'), 5);
 
         expect($this->calendar->isVacationDate($due))->toBeFalse();

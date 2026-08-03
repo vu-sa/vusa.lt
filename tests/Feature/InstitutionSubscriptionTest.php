@@ -7,9 +7,9 @@ use App\Models\User;
 use App\Services\InstitutionSubscriptionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first()
         ?? Tenant::factory()->create();
 
@@ -18,8 +18,8 @@ beforeEach(function () {
     $this->service = app(InstitutionSubscriptionService::class);
 });
 
-describe('InstitutionSubscriptionService', function () {
-    test('followed institutions API includes the shared activity status', function () {
+describe('InstitutionSubscriptionService', function (): void {
+    test('followed institutions API includes the shared activity status', function (): void {
         $this->travelTo('2025-11-15');
 
         $this->institution->update(['meeting_periodicity_days' => 30]);
@@ -35,7 +35,7 @@ describe('InstitutionSubscriptionService', function () {
             ->assertJsonPath('data.0.activity_status.effective_days_since_activity', 45);
     });
 
-    test('user can follow an institution', function () {
+    test('user can follow an institution', function (): void {
         $this->service->follow($this->user, $this->institution);
 
         expect($this->user->follows($this->institution))->toBeTrue()
@@ -43,30 +43,30 @@ describe('InstitutionSubscriptionService', function () {
             ->and($this->user->followedInstitutions->first()->id)->toBe($this->institution->id);
     });
 
-    test('user can unfollow an institution', function () {
+    test('user can unfollow an institution', function (): void {
         $this->service->follow($this->user, $this->institution);
         $this->service->unfollow($this->user, $this->institution);
 
         expect($this->user->follows($this->institution))->toBeFalse()
-            ->and($this->user->followedInstitutions)->toHaveCount(0);
+            ->and($this->user->followedInstitutions)->toBeEmpty();
     });
 
-    test('user can mute an institution', function () {
+    test('user can mute an institution', function (): void {
         $this->service->mute($this->user, $this->institution);
 
         expect($this->user->isInstitutionMuted($this->institution))->toBeTrue()
             ->and($this->user->mutedInstitutions)->toHaveCount(1);
     });
 
-    test('user can unmute an institution', function () {
+    test('user can unmute an institution', function (): void {
         $this->service->mute($this->user, $this->institution);
         $this->service->unmute($this->user, $this->institution);
 
         expect($this->user->isInstitutionMuted($this->institution))->toBeFalse()
-            ->and($this->user->mutedInstitutions)->toHaveCount(0);
+            ->and($this->user->mutedInstitutions)->toBeEmpty();
     });
 
-    test('reset to defaults clears all mutes', function () {
+    test('reset to defaults clears all mutes', function (): void {
         // Follow and mute some institutions
         $institution2 = Institution::factory()->for($this->tenant)->create();
 
@@ -82,7 +82,7 @@ describe('InstitutionSubscriptionService', function () {
             ->and($this->user->followedInstitutions()->count())->toBe(2);
     });
 
-    test('reset to defaults can clear follows too', function () {
+    test('reset to defaults can clear follows too', function (): void {
         $this->service->follow($this->user, $this->institution);
         $this->service->mute($this->user, $this->institution);
 
@@ -93,7 +93,7 @@ describe('InstitutionSubscriptionService', function () {
             ->and($this->user->followedInstitutions()->count())->toBe(0);
     });
 
-    test('get status returns correct values', function () {
+    test('get status returns correct values', function (): void {
         $this->service->follow($this->user, $this->institution);
         $this->service->mute($this->user, $this->institution);
 
@@ -104,7 +104,7 @@ describe('InstitutionSubscriptionService', function () {
             ->and($status['is_duty_based'])->toBeFalse();
     });
 
-    test('toggle follow works correctly', function () {
+    test('toggle follow works correctly', function (): void {
         // Not following initially
         expect($this->user->follows($this->institution))->toBeFalse();
 
@@ -119,7 +119,7 @@ describe('InstitutionSubscriptionService', function () {
             ->and($this->user->follows($this->institution))->toBeFalse();
     });
 
-    test('toggle mute works correctly', function () {
+    test('toggle mute works correctly', function (): void {
         // Not muted initially
         expect($this->user->isInstitutionMuted($this->institution))->toBeFalse();
 
@@ -135,8 +135,8 @@ describe('InstitutionSubscriptionService', function () {
     });
 });
 
-describe('User follow/mute relationships', function () {
-    test('institution can have multiple followers', function () {
+describe('User follow/mute relationships', function (): void {
+    test('institution can have multiple followers', function (): void {
         $user2 = User::factory()->create();
 
         $this->service->follow($this->user, $this->institution);
@@ -145,7 +145,7 @@ describe('User follow/mute relationships', function () {
         expect($this->institution->followers)->toHaveCount(2);
     });
 
-    test('user can follow multiple institutions', function () {
+    test('user can follow multiple institutions', function (): void {
         $institution2 = Institution::factory()->for($this->tenant)->create();
 
         $this->service->follow($this->user, $this->institution);
@@ -154,20 +154,20 @@ describe('User follow/mute relationships', function () {
         expect($this->user->followedInstitutions)->toHaveCount(2);
     });
 
-    test('shouldNotifyForInstitution returns false when muted', function () {
+    test('shouldNotifyForInstitution returns false when muted', function (): void {
         $this->service->follow($this->user, $this->institution);
         $this->service->mute($this->user, $this->institution);
 
         expect($this->user->shouldNotifyForInstitution($this->institution))->toBeFalse();
     });
 
-    test('shouldNotifyForInstitution returns true for followed institution', function () {
+    test('shouldNotifyForInstitution returns true for followed institution', function (): void {
         $this->service->follow($this->user, $this->institution);
 
         expect($this->user->shouldNotifyForInstitution($this->institution))->toBeTrue();
     });
 
-    test('shouldNotifyForInstitution returns false for unfollowed institution', function () {
+    test('shouldNotifyForInstitution returns false for unfollowed institution', function (): void {
         expect($this->user->shouldNotifyForInstitution($this->institution))->toBeFalse();
     });
 });

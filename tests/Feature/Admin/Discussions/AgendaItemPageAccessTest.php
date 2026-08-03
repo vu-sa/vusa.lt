@@ -11,9 +11,9 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
     $this->coordinator = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
 
@@ -37,7 +37,7 @@ beforeEach(function () {
     );
 });
 
-test('a coordinator opens the agenda item page with canUpdate true', function () {
+test('a coordinator opens the agenda item page with canUpdate true', function (): void {
     asUser($this->coordinator)
         ->get(route('agendaItems.edit', $this->agendaItem))
         ->assertOk()
@@ -47,7 +47,7 @@ test('a coordinator opens the agenda item page with canUpdate true', function ()
         );
 });
 
-test('a view-only participant opens the page read-only (canUpdate false)', function () {
+test('a view-only participant opens the page read-only (canUpdate false)', function (): void {
     asUser($this->viewer)
         ->get(route('agendaItems.edit', $this->agendaItem))
         ->assertOk()
@@ -57,13 +57,13 @@ test('a view-only participant opens the page read-only (canUpdate false)', funct
         );
 });
 
-test('an outsider cannot open the page (403)', function () {
+test('an outsider cannot open the page (403)', function (): void {
     asUser($this->outsider)
         ->get(route('agendaItems.edit', $this->agendaItem))
         ->assertStatus(403);
 });
 
-test('a view-only participant cannot persist updates (403)', function () {
+test('a view-only participant cannot persist updates (403)', function (): void {
     asUser($this->viewer)
         ->put(route('agendaItems.update', $this->agendaItem), ['title' => 'Hijacked'])
         ->assertStatus(403);

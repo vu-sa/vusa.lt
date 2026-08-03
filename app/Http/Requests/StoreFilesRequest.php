@@ -58,6 +58,7 @@ class StoreFilesRequest extends FormRequest
     /**
      * Get custom validation messages
      */
+    #[\Override]
     public function messages(): array
     {
         return [
@@ -75,6 +76,7 @@ class StoreFilesRequest extends FormRequest
     /**
      * Get custom attribute names
      */
+    #[\Override]
     public function attributes(): array
     {
         return [
@@ -89,7 +91,7 @@ class StoreFilesRequest extends FormRequest
      */
     public function withValidator($validator)
     {
-        $validator->after(function ($validator) {
+        $validator->after(function ($validator): void {
             // Custom validation for file types with better error message
             if ($this->has('files')) {
                 foreach ($this->files as $index => $fileContainer) {

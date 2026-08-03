@@ -15,6 +15,7 @@ class ResourcePolicy extends ModelPolicy
     /**
      * These models belong to a single tenant through a `tenant` relation.
      */
+    #[\Override]
     protected bool $hasManyTenants = false;
 
     /**
@@ -23,12 +24,13 @@ class ResourcePolicy extends ModelPolicy
     public function __construct(ModelAuthorizer $authorizer)
     {
         parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::RESOURCE()->label);
+        $this->pluralModelName = Str::plural(ModelEnum::RESOURCE->label());
     }
 
     /**
      * Anyone can view the resource listing
      */
+    #[\Override]
     public function viewAny(User $user): bool
     {
         return true;
@@ -40,6 +42,7 @@ class ResourcePolicy extends ModelPolicy
      * Resources are visible to all authenticated users across tenants so they can
      * be discovered and reserved through the unified admin search.
      */
+    #[\Override]
     public function view(User $user, Model $resource): bool
     {
         return true;
@@ -50,9 +53,10 @@ class ResourcePolicy extends ModelPolicy
      *
      * Resources belong to a single tenant, so we use hasManyTenants=false
      */
+    #[\Override]
     public function update(User $user, Model $resource): bool
     {
-        return $this->commonChecker($user, $resource, CRUDEnum::UPDATE()->label, null, false);
+        return $this->commonChecker($user, $resource, CRUDEnum::UPDATE->label(), null, false);
     }
 
     /**
@@ -60,8 +64,9 @@ class ResourcePolicy extends ModelPolicy
      *
      * Resources belong to a single tenant, so we use hasManyTenants=false
      */
+    #[\Override]
     public function delete(User $user, Model $resource): bool
     {
-        return $this->commonChecker($user, $resource, CRUDEnum::DELETE()->label, null, false);
+        return $this->commonChecker($user, $resource, CRUDEnum::DELETE->label(), null, false);
     }
 }

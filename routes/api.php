@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\AcademicCalendarApiController;
+use App\Http\Controllers\Api\Admin\ActivityLogApiController;
 use App\Http\Controllers\Api\Admin\AgendaItemNoteController;
 use App\Http\Controllers\Api\Admin\AnalyticsApiController;
 use App\Http\Controllers\Api\Admin\AtstovavimasApiController;
@@ -53,7 +54,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::prefix('v1')->name('v1.')->group(function () {
+Route::prefix('v1')->name('v1.')->group(function (): void {
     /*
     |--------------------------------------------------------------------------
     | Public API Routes
@@ -68,9 +69,7 @@ Route::prefix('v1')->name('v1.')->group(function () {
     Route::get('documents', [DocumentController::class, 'index'])->name('documents.index');
 
     // Typesense configuration for frontend search
-    Route::get('typesense/config', function () {
-        return response()->json(TypesenseManager::getFrontendConfig());
-    })->name('typesense.config');
+    Route::get('typesense/config', fn () => response()->json(TypesenseManager::getFrontendConfig()))->name('typesense.config');
 
     // Text box submissions (public) - 'web' middleware needed to read session for optional user association
     Route::post('text-box-submissions', [TextBoxSubmissionController::class, 'store'])
@@ -78,7 +77,7 @@ Route::prefix('v1')->name('v1.')->group(function () {
         ->name('text-box-submissions.store');
 
     // Tenant-specific public content
-    Route::prefix('tenants/{tenant:alias}')->name('tenants.')->group(function () {
+    Route::prefix('tenants/{tenant:alias}')->name('tenants.')->group(function (): void {
         Route::get('news', [NewsController::class, 'index'])->name('news.index');
         Route::get('calendar', [CalendarController::class, 'index'])->name('calendar.index');
     });
@@ -102,7 +101,7 @@ Route::prefix('v1')->name('v1.')->group(function () {
     | - Data is loaded on initial page render
     |
     */
-    Route::prefix('admin')->name('admin.')->middleware(['web', 'auth'])->group(function () {
+    Route::prefix('admin')->name('admin.')->middleware(['web', 'auth'])->group(function (): void {
         // Tasks
         Route::get('tasks/indicator', [TaskApiController::class, 'indicator'])->name('tasks.indicator');
 
@@ -128,6 +127,11 @@ Route::prefix('v1')->name('v1.')->group(function () {
         // Agenda item collaborative notes ("Atstovų pastabos")
         Route::get('agenda-items/{agendaItem}/note', [AgendaItemNoteController::class, 'show'])->name('agendaItems.note.show');
         Route::put('agenda-items/{agendaItem}/note', [AgendaItemNoteController::class, 'update'])->name('agendaItems.note.update');
+
+        // Activity log feed for a subject's whole tree (see App\Support\ActivityRoots).
+        // {subjectType} is resolved through the App\Support\Auditables allowlist;
+        // read follows the subject's own `view` ability, same as discussions below.
+        Route::get('activity-log/{subjectType}/{subjectId}', [ActivityLogApiController::class, 'index'])->name('activityLog.index');
 
         // Discussions (polymorphic comment threads). Read/write follow the
         // parent's `view` ability. {commentableType} is resolved through the
@@ -170,7 +174,7 @@ Route::prefix('v1')->name('v1.')->group(function () {
         Route::post('search/refresh-key', [SearchApiController::class, 'refreshKey'])->name('search.refreshKey');
 
         // Institution subscription (follow/mute) management
-        Route::prefix('institutions')->name('institutions.')->group(function () {
+        Route::prefix('institutions')->name('institutions.')->group(function (): void {
             Route::get('followed', [InstitutionSubscriptionApiController::class, 'followed'])->name('followed');
             Route::get('{institution}/subscription-status', [InstitutionSubscriptionApiController::class, 'status'])->name('subscription.status');
             Route::post('{institution}/follow', [InstitutionSubscriptionApiController::class, 'follow'])->name('follow');
@@ -200,7 +204,7 @@ Route::prefix('v1')->name('v1.')->group(function () {
         Route::get('resources/{resource}/preview', [ResourceApiController::class, 'preview'])->name('resources.preview');
 
         // Impersonation (local/staging only, super admins)
-        Route::prefix('impersonate')->name('impersonate.')->group(function () {
+        Route::prefix('impersonate')->name('impersonate.')->group(function (): void {
             Route::get('search', [ImpersonateApiController::class, 'search'])->name('search');
             Route::post('start', [ImpersonateApiController::class, 'start'])->name('start');
             Route::post('stop', [ImpersonateApiController::class, 'stop'])->name('stop');

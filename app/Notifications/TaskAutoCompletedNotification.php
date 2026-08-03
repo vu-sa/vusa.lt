@@ -15,24 +15,13 @@ use App\Models\User;
  */
 class TaskAutoCompletedNotification extends BaseNotification
 {
-    protected Task $task;
-
-    protected string $completionReason;
-
-    protected ?User $completedBy;
-
     /**
      * Create a new notification instance.
      *
      * @param  string  $completionReason  Human-readable reason for completion
      * @param  User|null  $completedBy  The user who triggered the auto-completion
      */
-    public function __construct(Task $task, string $completionReason, ?User $completedBy = null)
-    {
-        $this->task = $task;
-        $this->completionReason = $completionReason;
-        $this->completedBy = $completedBy;
-    }
+    public function __construct(protected Task $task, protected string $completionReason, protected ?User $completedBy = null) {}
 
     public function category(): NotificationCategory
     {
@@ -70,6 +59,7 @@ class TaskAutoCompletedNotification extends BaseNotification
         return route('userTasks');
     }
 
+    #[\Override]
     public function icon(): string
     {
         return match ($this->task->action_type?->value) {
@@ -111,6 +101,7 @@ class TaskAutoCompletedNotification extends BaseNotification
         ];
     }
 
+    #[\Override]
     public function actions(): array
     {
         $actions = [

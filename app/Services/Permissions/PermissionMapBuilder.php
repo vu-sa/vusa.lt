@@ -25,7 +25,7 @@ class PermissionMapBuilder
      *
      * @var list<string>
      */
-    private const CACHE_KEY_PREFIXES = [
+    private const array CACHE_KEY_PREFIXES = [
         self::INDEX_CACHE_PREFIX,
         self::CREATE_CACHE_PREFIX,
         self::FORCE_DELETE_CACHE_PREFIX,
@@ -56,7 +56,7 @@ class PermissionMapBuilder
      *
      * @var list<string>
      */
-    private const EXCLUDED_LABELS = ['reservationResource', 'file'];
+    private const array EXCLUDED_LABELS = ['reservationResource', 'file'];
 
     /**
      * Build the viewAny permission map keyed by model label.
@@ -104,9 +104,9 @@ class PermissionMapBuilder
                 }
 
                 $allowed = collect([
-                    PermissionScopeEnum::PADALINYS()->label,
-                    PermissionScopeEnum::ALL()->label,
-                ])->contains(fn (string $scope) => $authorizer->check($resource.'.'.CRUDEnum::FORCE_DELETE()->label.'.'.$scope));
+                    PermissionScopeEnum::PADALINYS->label(),
+                    PermissionScopeEnum::ALL->label(),
+                ])->contains(fn (string $scope) => $authorizer->check($resource.'.'.CRUDEnum::FORCE_DELETE->label().'.'.$scope));
 
                 return [$model => $allowed];
             })
@@ -130,7 +130,7 @@ class PermissionMapBuilder
      */
     private function manageableLabels(): array
     {
-        $labels = ModelEnum::toLabels();
+        $labels = ModelEnum::labels();
 
         foreach (self::EXCLUDED_LABELS as $excluded) {
             $key = array_search($excluded, $labels);

@@ -14,12 +14,14 @@ use Tiptap\Utils\HTML;
  */
 class RCTag extends Mark
 {
+    #[\Override]
     public static $name = 'rcTag';
 
-    private const VARIANTS = ['filled', 'plain'];
+    private const array VARIANTS = ['filled', 'plain'];
 
-    private const COLORS = ['zinc', 'red', 'yellow', 'green'];
+    private const array COLORS = ['zinc', 'red', 'yellow', 'green'];
 
+    #[\Override]
     public function addOptions()
     {
         return [
@@ -27,6 +29,7 @@ class RCTag extends Mark
         ];
     }
 
+    #[\Override]
     public function addAttributes()
     {
         return [
@@ -41,6 +44,7 @@ class RCTag extends Mark
         ];
     }
 
+    #[\Override]
     public function parseHTML()
     {
         return [

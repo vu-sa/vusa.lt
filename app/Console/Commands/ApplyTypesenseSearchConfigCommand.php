@@ -5,6 +5,8 @@ namespace App\Console\Commands;
 use App\Services\Typesense\TypesenseCollectionConfig;
 use App\Services\Typesense\TypesenseCuration;
 use App\Services\Typesense\TypesenseSynonyms;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use Typesense\Client;
@@ -14,16 +16,14 @@ use Typesense\Client;
  * collection. Idempotent — safe to re-run. Must run after a reindex, since
  * recreating a collection drops its set attachments.
  */
+#[Description('Upsert the Typesense synonym/curation sets and attach them to all collections')]
+#[Signature('typesense:apply-search-config')]
 class ApplyTypesenseSearchConfigCommand extends Command
 {
-    protected $signature = 'typesense:apply-search-config';
-
-    protected $description = 'Upsert the Typesense synonym/curation sets and attach them to all collections';
-
     /**
      * Attempts per collection before giving up.
      */
-    private const MAX_ATTEMPTS = 4;
+    private const int MAX_ATTEMPTS = 4;
 
     public function handle(): int
     {

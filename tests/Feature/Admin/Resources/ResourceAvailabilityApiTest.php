@@ -5,9 +5,9 @@ use App\Models\Resource;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
     $this->resource = Resource::factory()->for($this->tenant)->create([
@@ -19,7 +19,7 @@ beforeEach(function () {
     $this->end = (clone $this->start)->addHours(4);
 });
 
-test('guests cannot query availability', function () {
+test('guests cannot query availability', function (): void {
     $this->postJson(route('api.v1.admin.resources.availability'), [
         'ids' => [$this->resource->id],
         'start' => $this->start->getTimestampMs(),
@@ -27,7 +27,7 @@ test('guests cannot query availability', function () {
     ])->assertUnauthorized();
 });
 
-test('returns full capacity when there are no overlapping reservations', function () {
+test('returns full capacity when there are no overlapping reservations', function (): void {
     $response = asUser($this->user)->postJson(route('api.v1.admin.resources.availability'), [
         'ids' => [$this->resource->id],
         'start' => $this->start->getTimestampMs(),
@@ -41,7 +41,7 @@ test('returns full capacity when there are no overlapping reservations', functio
         ->assertJsonPath("data.{$this->resource->id}.reservations", []);
 });
 
-test('subtracts an overlapping reservation from the available capacity', function () {
+test('subtracts an overlapping reservation from the available capacity', function (): void {
     $reservation = Reservation::factory()->create();
     $reservation->resources()->attach($this->resource->id, [
         'quantity' => 2,
@@ -61,7 +61,7 @@ test('subtracts an overlapping reservation from the available capacity', functio
         ->assertJsonPath("data.{$this->resource->id}.reservations.0.quantity", 2);
 });
 
-test('validates that start is before end', function () {
+test('validates that start is before end', function (): void {
     asUser($this->user)->postJson(route('api.v1.admin.resources.availability'), [
         'ids' => [$this->resource->id],
         'start' => $this->end->getTimestampMs(),

@@ -11,9 +11,9 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     config(['queue.default' => 'sync']);
     Event::fake([DutiableChanged::class]);
 
@@ -26,7 +26,7 @@ beforeEach(function () {
     $this->user = User::factory()->create();
 });
 
-test('creating a source Dutiable fires DutiableChanged', function () {
+test('creating a source Dutiable fires DutiableChanged', function (): void {
     Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
@@ -38,7 +38,7 @@ test('creating a source Dutiable fires DutiableChanged', function () {
     Event::assertDispatched(DutiableChanged::class);
 });
 
-test('listener creates derived Dutiable for each ex-officio target', function () {
+test('listener creates derived Dutiable for each ex-officio target', function (): void {
     $source = Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
@@ -61,7 +61,7 @@ test('listener creates derived Dutiable for each ex-officio target', function ()
         ->and($derived->end_date)->toBeNull();
 });
 
-test('listener mirrors end_date change to derived row', function () {
+test('listener mirrors end_date change to derived row', function (): void {
     $source = Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
@@ -85,7 +85,7 @@ test('listener mirrors end_date change to derived row', function () {
     expect($derived->end_date->toDateString())->toBe($endDate);
 });
 
-test('listener does not overwrite independent fields on derived row', function () {
+test('listener does not overwrite independent fields on derived row', function (): void {
     $source = Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
@@ -112,7 +112,7 @@ test('listener does not overwrite independent fields on derived row', function (
     expect($derived->additional_email)->toBe('custom@example.com');
 });
 
-test('listener adopts existing manual row instead of creating a duplicate', function () {
+test('listener adopts existing manual row instead of creating a duplicate', function (): void {
     // User already has a manual Dutiable on the target duty.
     $manualRow = Dutiable::factory()->create([
         'duty_id' => $this->targetDuty->id,
@@ -146,7 +146,7 @@ test('listener adopts existing manual row instead of creating a duplicate', func
     expect($manualRow->via_dutiable_id)->toBe($source->id);
 });
 
-test('listener deletes derived rows when source is force-deleted', function () {
+test('listener deletes derived rows when source is force-deleted', function (): void {
     $source = Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
@@ -171,7 +171,7 @@ test('listener deletes derived rows when source is force-deleted', function () {
     expect(Dutiable::where('via_dutiable_id', $sourceId)->count())->toBe(0);
 });
 
-test('listener skips non-User dutiable types', function () {
+test('listener skips non-User dutiable types', function (): void {
     $source = Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
@@ -187,7 +187,7 @@ test('listener skips non-User dutiable types', function () {
     expect(Dutiable::where('duty_id', $this->targetDuty->id)->count())->toBe(0);
 });
 
-test('listener skips derived rows to prevent chains', function () {
+test('listener skips derived rows to prevent chains', function (): void {
     $parentDutiable = Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
@@ -213,7 +213,7 @@ test('listener skips derived rows to prevent chains', function () {
     expect(Dutiable::count())->toBe($before);
 });
 
-test('cross-tenant ex-officio sets tenant_id when target supports source tenant', function () {
+test('cross-tenant ex-officio sets tenant_id when target supports source tenant', function (): void {
     $sourceTenant = Tenant::query()->first();
     $targetTenant = Tenant::query()->where('id', '!=', $sourceTenant->id)->first();
 
@@ -248,7 +248,7 @@ test('cross-tenant ex-officio sets tenant_id when target supports source tenant'
         ->and($derived->tenant_id)->toBe($sourceTenant->id);
 });
 
-test('cross-tenant ex-officio does not set tenant_id when target does not support source tenant', function () {
+test('cross-tenant ex-officio does not set tenant_id when target does not support source tenant', function (): void {
     $sourceTenant = Tenant::query()->first();
     $targetTenant = Tenant::query()->where('id', '!=', $sourceTenant->id)->first();
 
@@ -283,7 +283,7 @@ test('cross-tenant ex-officio does not set tenant_id when target does not suppor
         ->and($derived->tenant_id)->toBeNull();
 });
 
-test('same-tenant ex-officio keeps tenant_id null', function () {
+test('same-tenant ex-officio keeps tenant_id null', function (): void {
     // Default beforeEach already creates source and target in the same tenant.
     $source = Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
@@ -303,7 +303,7 @@ test('same-tenant ex-officio keeps tenant_id null', function () {
         ->and($derived->tenant_id)->toBeNull();
 });
 
-test('listener preserves tenant_id when mirroring date changes', function () {
+test('listener preserves tenant_id when mirroring date changes', function (): void {
     $sourceTenant = Tenant::query()->first();
     $targetTenant = Tenant::query()->where('id', '!=', $sourceTenant->id)->first();
 
@@ -343,7 +343,7 @@ test('listener preserves tenant_id when mirroring date changes', function () {
         ->and($derived->start_date->toDateString())->toBe($source->start_date->toDateString());
 });
 
-test('listener adopts manual row and updates tenant_id when target supports source tenant', function () {
+test('listener adopts manual row and updates tenant_id when target supports source tenant', function (): void {
     $sourceTenant = Tenant::query()->first();
     $targetTenant = Tenant::query()->where('id', '!=', $sourceTenant->id)->first();
 
@@ -389,7 +389,7 @@ test('listener adopts manual row and updates tenant_id when target supports sour
         ->and($manualRow->tenant_id)->toBe($sourceTenant->id);
 });
 
-test('backfill sets tenant_id for cross-tenant ex-officio', function () {
+test('backfill sets tenant_id for cross-tenant ex-officio', function (): void {
     $sourceTenant = Tenant::query()->first();
     $targetTenant = Tenant::query()->where('id', '!=', $sourceTenant->id)->first();
 

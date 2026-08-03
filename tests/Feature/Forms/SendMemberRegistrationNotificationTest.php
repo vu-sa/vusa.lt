@@ -10,11 +10,11 @@ use App\Settings\FormSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-describe('SendMemberRegistrationNotification Listener', function () {
+describe('SendMemberRegistrationNotification Listener', function (): void {
 
-    it('demonstrates the null duty error scenario is now fixed', function () {
+    it('demonstrates the null duty error scenario is now fixed', function (): void {
         // This test shows that the error is now properly handled
 
         $tenant = Tenant::factory()->create();
@@ -39,12 +39,12 @@ describe('SendMemberRegistrationNotification Listener', function () {
             $duty  // Using the available duty as fallback
         );
 
-        expect($mail->dutyContact)->toBe($duty);
-        expect($mail->institution)->toBe($institution);
-        expect($mail->name)->toBe('Jonas Jonaitis');
+        expect($mail->dutyContact)->toBe($duty)
+            ->and($mail->institution)->toBe($institution)
+            ->and($mail->name)->toBe('Jonas Jonaitis');
     });
 
-    it('works correctly when duty with role exists', function () {
+    it('works correctly when duty with role exists', function (): void {
         $tenant = Tenant::factory()->create();
         $institution = Institution::factory()->for($tenant)->create();
 
@@ -70,12 +70,12 @@ describe('SendMemberRegistrationNotification Listener', function () {
             $duty
         );
 
-        expect($mail->dutyContact)->toBe($duty);
-        expect($mail->institution)->toBe($institution);
-        expect($mail->name)->toBe('Jonas Jonaitis');
+        expect($mail->dutyContact)->toBe($duty)
+            ->and($mail->institution)->toBe($institution)
+            ->and($mail->name)->toBe('Jonas Jonaitis');
     });
 
-    it('fails when no role is configured in settings', function () {
+    it('fails when no role is configured in settings', function (): void {
         // This test shows what happens when member_registration_notification_recipient_role_id is null
         $settings = app(FormSettings::class);
         expect($settings->member_registration_notification_recipient_role_id)->toBeNull();
@@ -88,24 +88,22 @@ describe('SendMemberRegistrationNotification Listener', function () {
         Duty::factory()->for($institution)->create();
 
         // Simulate the query that would be run in the listener
-        $mailableDuties = $institution->duties()->whereHas('roles', function ($query) use ($settings) {
+        $mailableDuties = $institution->duties()->whereHas('roles', function ($query) use ($settings): void {
             $query->where('id', $settings->member_registration_notification_recipient_role_id);
         })->get();
 
         // The collection should be empty because the role_id is null
         expect($mailableDuties)->toBeEmpty();
         expect($mailableDuties->first())->toBeNull();
-
         // This would cause the TypeError in the actual listener
-        $this->expectException(TypeError::class);
-        new ConfirmMemberRegistration(
+        expect(fn () => new ConfirmMemberRegistration(
             'Jonas Jonaitis',
             $institution,
             $mailableDuties->first()
-        );
+        ))->toThrow(TypeError::class);
     });
 
-    it('fails when configured role does not exist', function () {
+    it('fails when configured role does not exist', function (): void {
         // Configure a non-existent role ID
         $settings = app(FormSettings::class);
         $settings->member_registration_notification_recipient_role_id = 'non-existent-role-id';
@@ -118,24 +116,22 @@ describe('SendMemberRegistrationNotification Listener', function () {
         Duty::factory()->for($institution)->create();
 
         // Simulate the query that would be run in the listener
-        $mailableDuties = $institution->duties()->whereHas('roles', function ($query) use ($settings) {
+        $mailableDuties = $institution->duties()->whereHas('roles', function ($query) use ($settings): void {
             $query->where('id', $settings->member_registration_notification_recipient_role_id);
         })->get();
 
         // The collection should be empty because the role doesn't exist
         expect($mailableDuties)->toBeEmpty();
         expect($mailableDuties->first())->toBeNull();
-
         // This would cause the TypeError in the actual listener
-        $this->expectException(TypeError::class);
-        new ConfirmMemberRegistration(
+        expect(fn () => new ConfirmMemberRegistration(
             'Jonas Jonaitis',
             $institution,
             $mailableDuties->first()
-        );
+        ))->toThrow(TypeError::class);
     });
 
-    it('fails when institution has no duties with the configured role', function () {
+    it('fails when institution has no duties with the configured role', function (): void {
         // Create a role and configure it
         $role = Role::create(['name' => 'Member Registration Coordinator', 'guard_name' => 'web']);
         $settings = app(FormSettings::class);
@@ -151,24 +147,22 @@ describe('SendMemberRegistrationNotification Listener', function () {
         $duty->assignRole($otherRole);
 
         // Simulate the query that would be run in the listener
-        $mailableDuties = $institution->duties()->whereHas('roles', function ($query) use ($settings) {
+        $mailableDuties = $institution->duties()->whereHas('roles', function ($query) use ($settings): void {
             $query->where('id', $settings->member_registration_notification_recipient_role_id);
         })->get();
 
         // The collection should be empty because no duties have the required role
         expect($mailableDuties)->toBeEmpty();
         expect($mailableDuties->first())->toBeNull();
-
         // This would cause the TypeError in the actual listener
-        $this->expectException(TypeError::class);
-        new ConfirmMemberRegistration(
+        expect(fn () => new ConfirmMemberRegistration(
             'Jonas Jonaitis',
             $institution,
             $mailableDuties->first()
-        );
+        ))->toThrow(TypeError::class);
     });
 
-    it('logs warning and skips email when no role-specific duty found', function () {
+    it('logs warning and skips email when no role-specific duty found', function (): void {
         // Create test data
         $tenant = Tenant::factory()->create();
         $institution = Institution::factory()->for($tenant)->create();
@@ -183,7 +177,7 @@ describe('SendMemberRegistrationNotification Listener', function () {
         Duty::factory()->for($institution)->create();
 
         // Simulate the query condition
-        $mailableDuties = $institution->duties()->whereHas('roles', function ($query) use ($settings) {
+        $mailableDuties = $institution->duties()->whereHas('roles', function ($query) use ($settings): void {
             $query->where('id', $settings->member_registration_notification_recipient_role_id);
         })->get();
 
@@ -195,7 +189,7 @@ describe('SendMemberRegistrationNotification Listener', function () {
         // This is now handled gracefully instead of throwing an error
     });
 
-    it('handles gracefully when institution has no duties at all', function () {
+    it('handles gracefully when institution has no duties at all', function (): void {
         // Create institution with no duties
         $tenant = Tenant::factory()->create();
         $institution = Institution::factory()->for($tenant)->create();
@@ -210,12 +204,12 @@ describe('SendMemberRegistrationNotification Listener', function () {
         expect($institution->duties()->count())->toBe(0);
 
         // Simulate the queries that would run in the listener
-        $mailableDuties = $institution->duties()->whereHas('roles', function ($query) use ($settings) {
+        $mailableDuties = $institution->duties()->whereHas('roles', function ($query) use ($settings): void {
             $query->where('id', $settings->member_registration_notification_recipient_role_id);
         })->get();
 
-        expect($mailableDuties)->toBeEmpty();
-        expect($mailableDuties->first())->toBeNull();
+        expect($mailableDuties)->toBeEmpty()
+            ->and($mailableDuties->first())->toBeNull();
 
         // In this case, the listener should return early and not send email
         // This is now handled gracefully instead of throwing an error

@@ -10,7 +10,10 @@ use App\Models\Pivots\Dutiable;
 use App\Models\Pivots\Trainable;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTranslations;
+use App\Models\Traits\LogsModelActivity;
+use App\Models\Traits\LogsRelationshipChanges;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -26,9 +29,6 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Models\Activity;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
 use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
@@ -49,7 +49,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
- * @property-read Collection<int, Activity> $activities
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, AgendaItem> $agendaItems
  * @property-read Collection<int, Tenant> $assignableTenants
  * @property-read Collection<int, FileableFile> $availableFiles
@@ -106,16 +106,16 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
+#[Fillable([
+    'name', 'description', 'email', 'phone', 'order', 'is_active', 'institution_id', 'contacts_grouping', 'places_to_occupy',
+    'selection_method', 'appointed_by', 'term_length', 'responsibilities',
+])]
 class Duty extends Model implements AuthorizableContract, GuardsForceDelete, SharepointFileableContract
 {
-    use Authorizable, HasFactory, HasRelationships, HasRoles, HasSharepointFiles, HasTranslations, HasUlids, LogsActivity, Notifiable, Searchable, SoftDeletes;
+    use Authorizable, HasFactory, HasRelationships, HasRoles, HasSharepointFiles, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Notifiable, Searchable, SoftDeletes;
 
+    #[\Override]
     protected $guarded = [];
-
-    protected $fillable = [
-        'name', 'description', 'email', 'phone', 'order', 'is_active', 'institution_id', 'contacts_grouping', 'places_to_occupy',
-        'selection_method', 'appointed_by', 'term_length', 'responsibilities',
-    ];
 
     // Note: types are NOT auto-loaded to prevent N+1 in collections.
     // Load explicitly where needed: ->with('duties.types') or ->load('types').
@@ -206,11 +206,6 @@ class Duty extends Model implements AuthorizableContract, GuardsForceDelete, Sha
         ];
     }
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
-    }
-
     public function dutiables(): HasMany
     {
         return $this->hasMany(Dutiable::class);
@@ -256,7 +251,7 @@ class Duty extends Model implements AuthorizableContract, GuardsForceDelete, Sha
     public function current_users(): MorphToMany
     {
         return $this->users()
-            ->where(function ($query) {
+            ->where(function ($query): void {
                 $query->whereNull('dutiables.end_date')
                     ->orWhere('dutiables.end_date', '>=', now());
             })
@@ -266,7 +261,7 @@ class Duty extends Model implements AuthorizableContract, GuardsForceDelete, Sha
     public function previous_users(): MorphToMany
     {
         return $this->users()
-            ->where(function ($query) {
+            ->where(function ($query): void {
                 $query->whereNotNull('dutiables.end_date')
                     ->where('dutiables.end_date', '<', now());
             })
@@ -344,9 +339,10 @@ class Duty extends Model implements AuthorizableContract, GuardsForceDelete, Sha
         return $this->belongsToMany(Tenant::class, 'duty_tenant')->withPivot(['quota'])->withTimestamps();
     }
 
+    #[\Override]
     protected static function booted()
     {
-        static::saving(function (Duty $duty) {
+        static::saving(function (Duty $duty): void {
             // Dispatch event when name is about to change - SharePoint must succeed first
             if ($duty->isDirty('name')) {
                 FileableNameUpdated::dispatch($duty);

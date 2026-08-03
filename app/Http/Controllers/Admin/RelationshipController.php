@@ -163,7 +163,7 @@ class RelationshipController extends AdminController
     {
         $this->handleAuthorization('delete', $relationship);
 
-        DB::transaction(function () use ($relationship) {
+        DB::transaction(function () use ($relationship): void {
             // remove all relationshipables
             DB::table('relationshipables')->where('relationship_id', $relationship->id);
             $relationship->delete();

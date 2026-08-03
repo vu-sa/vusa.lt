@@ -12,7 +12,7 @@ use Carbon\CarbonInterface;
 
 class InstitutionActivityStatusService
 {
-    private const APPROACHING_RATIO = 0.8;
+    private const float APPROACHING_RATIO = 0.8;
 
     public function __construct(
         private readonly AcademicCalendarService $academicCalendar,

@@ -3,23 +3,17 @@
 namespace App\Console\Commands;
 
 use App\Enums\SearchableModelEnum;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Typesense\Client;
 use Typesense\Exceptions\ObjectNotFound;
 
+#[Description('Reindex models for search (recreates Typesense collections to update schemas)')]
+#[Signature('search:reindex {model?} {--dry-run : Show which models would be reindexed without actually doing it}')]
 class ReindexSearchCommand extends Command
 {
-    /**
-     * The name and signature of the console command.
-     */
-    protected $signature = 'search:reindex {model?} {--dry-run : Show which models would be reindexed without actually doing it}';
-
-    /**
-     * The console command description.
-     */
-    protected $description = 'Reindex models for search (recreates Typesense collections to update schemas)';
-
     /**
      * Execute the console command.
      */
@@ -101,7 +95,7 @@ class ReindexSearchCommand extends Command
         $instance = new $model;
         $engine = $instance->searchableUsing();
 
-        return class_basename(get_class($engine));
+        return class_basename($engine::class);
     }
 
     /**
@@ -116,7 +110,7 @@ class ReindexSearchCommand extends Command
             $client = new Client(config('scout.typesense.client-settings'));
             $client->collections[$collectionName]->delete();
             $this->line("  - Deleted collection '{$collectionName}' to update schema");
-        } catch (ObjectNotFound $e) {
+        } catch (ObjectNotFound) {
             // Collection doesn't exist yet, which is fine for first run
             $this->line("  - Collection '{$collectionName}' not found (will be created)");
         } catch (\Exception $e) {

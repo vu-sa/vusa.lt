@@ -1,5 +1,8 @@
 <template>
   <PageContent :title="contentType.title.lt" :back-url="route('types.index')">
+    <template #aside-header>
+      <ActivityLogSheet subject-type="type" :subject-id="contentType.id" />
+    </template>
     <UpsertModelLayout>
       <TypeForm :content-types :all-models-from-model-type :type="contentType" :roles :model-type :sharepoint-path
         enable-delete
@@ -13,6 +16,7 @@
 import { router } from '@inertiajs/vue3';
 
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import TypeForm from '@/Components/AdminForms/TypeForm.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -47,17 +48,18 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
+#[WithoutTimestamps]
 class Tenant extends Model
 {
     use HasFactory, HasRelationships, Searchable;
 
+    #[\Override]
     protected $guarded = [];
 
-    public $timestamps = false;
-
+    #[\Override]
     protected static function booted()
     {
-        static::saved(function ($tenant) {
+        static::saved(function ($tenant): void {
             // Clear homepage cache when tenant content changes
             Cache::tags(['homepage', "tenant_{$tenant->id}"])->flush();
         });

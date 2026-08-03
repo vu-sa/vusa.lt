@@ -3,25 +3,19 @@
 namespace App\Console\Commands;
 
 use App\Services\Typesense\TypesenseCollectionConfig;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Redis;
 use Typesense\Client;
 
+#[Description('Rotate all Typesense API keys (public search key and admin search key)')]
+#[Signature('typesense:rotate-keys
+                            {--force : Skip confirmation prompts}
+                            {--delete-old : Delete old API keys from Typesense}')]
 class RotateTypesenseKeys extends Command
 {
-    /**
-     * The name and signature of the console command.
-     */
-    protected $signature = 'typesense:rotate-keys
-                            {--force : Skip confirmation prompts}
-                            {--delete-old : Delete old API keys from Typesense}';
-
-    /**
-     * The console command description.
-     */
-    protected $description = 'Rotate all Typesense API keys (public search key and admin search key)';
-
     /**
      * Execute the console command.
      */

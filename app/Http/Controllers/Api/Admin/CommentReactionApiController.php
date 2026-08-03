@@ -52,7 +52,7 @@ class CommentReactionApiController extends ApiController
             && Gate::forUser($user)->allows('update', $commentable);
         $request->attributes->set('comment_can_moderate', $canModerate);
 
-        $payload = (new CommentResource($comment))->resolve($request);
+        $payload = new CommentResource($comment)->resolve($request);
 
         $alias = Commentables::aliasFor($comment->commentable);
         if ($alias !== null) {

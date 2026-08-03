@@ -13,28 +13,10 @@ use App\Models\User;
  */
 class ReservationStatusChangedNotification extends BaseNotification
 {
-    protected ReservationResource $reservationResource;
-
-    protected string $oldState;
-
-    protected string $newState;
-
-    protected ?User $changedBy;
-
     /**
      * Create a new notification instance.
      */
-    public function __construct(
-        ReservationResource $reservationResource,
-        string $oldState,
-        string $newState,
-        ?User $changedBy = null
-    ) {
-        $this->reservationResource = $reservationResource;
-        $this->oldState = $oldState;
-        $this->newState = $newState;
-        $this->changedBy = $changedBy;
-    }
+    public function __construct(protected ReservationResource $reservationResource, protected string $oldState, protected string $newState, protected ?User $changedBy = null) {}
 
     public function category(): NotificationCategory
     {
@@ -101,6 +83,7 @@ class ReservationStatusChangedNotification extends BaseNotification
         return route('reservations.show', $this->reservationResource->reservation_id);
     }
 
+    #[\Override]
     public function icon(): string
     {
         return match ($this->newState) {
@@ -141,6 +124,7 @@ class ReservationStatusChangedNotification extends BaseNotification
         ];
     }
 
+    #[\Override]
     public function actions(): array
     {
         return [

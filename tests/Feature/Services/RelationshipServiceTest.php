@@ -15,9 +15,9 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
     // Create test relationship
@@ -37,15 +37,15 @@ beforeEach(function () {
     ]);
 });
 
-describe('getRelatedInstitutionsForMultiple', function () {
-    test('returns empty collection when no institutions provided', function () {
+describe('getRelatedInstitutionsForMultiple', function (): void {
+    test('returns empty collection when no institutions provided', function (): void {
         $result = RelationshipService::getRelatedInstitutionsForMultiple(new Collection);
 
-        expect($result)->toBeInstanceOf(Collection::class);
-        expect($result)->toHaveCount(0);
+        expect($result)->toBeInstanceOf(Collection::class)
+            ->toBeEmpty();
     });
 
-    test('returns related institutions with direct relationship', function () {
+    test('returns related institutions with direct relationship', function (): void {
         // Create a direct relationship between institutions (without related_model_type)
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
@@ -62,13 +62,13 @@ describe('getRelatedInstitutionsForMultiple', function () {
             new Collection([$this->sourceInstitution])
         );
 
-        expect($result)->toHaveCount(1);
-        expect($result->first()->id)->toBe($this->relatedInstitution->id);
-        expect($result->first()->is_related)->toBeTrue();
-        expect($result->first()->relationship_direction)->toBe('outgoing');
+        expect($result)->toHaveCount(1)
+            ->and($result->first()->id)->toBe($this->relatedInstitution->id)
+            ->and($result->first()->is_related)->toBeTrue()
+            ->and($result->first()->relationship_direction)->toBe('outgoing');
     });
 
-    test('excludes institutions that are in the source collection', function () {
+    test('excludes institutions that are in the source collection', function (): void {
         // Create relationship where related institution is also in source
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
@@ -86,10 +86,10 @@ describe('getRelatedInstitutionsForMultiple', function () {
             new Collection([$this->sourceInstitution, $this->relatedInstitution])
         );
 
-        expect($result)->toHaveCount(0);
+        expect($result)->toBeEmpty();
     });
 
-    test('eager loads meetings with correct agenda item columns', function () {
+    test('eager loads meetings with correct agenda item columns', function (): void {
         // Create a direct relationship
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
@@ -130,17 +130,17 @@ describe('getRelatedInstitutionsForMultiple', function () {
         expect($result)->toHaveCount(1);
 
         $relatedInst = $result->first();
-        expect($relatedInst->meetings)->toHaveCount(1);
-        expect($relatedInst->meetings->first()->agendaItems)->toHaveCount(1);
+        expect($relatedInst->meetings)->toHaveCount(1)
+            ->and($relatedInst->meetings->first()->agendaItems)->toHaveCount(1);
 
         // Verify the agenda item has votes loaded
         $agendaItem = $relatedInst->meetings->first()->agendaItems->first();
         $agendaItem->load('votes');
-        expect($agendaItem->votes)->toHaveCount(1);
-        expect($agendaItem->votes->first()->decision)->toBe('positive');
+        expect($agendaItem->votes)->toHaveCount(1)
+            ->and($agendaItem->votes->first()->decision)->toBe('positive');
     });
 
-    test('eager loads duties with users for duty member display', function () {
+    test('eager loads duties with users for duty member display', function (): void {
         // Create a direct relationship
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
@@ -167,12 +167,12 @@ describe('getRelatedInstitutionsForMultiple', function () {
         expect($result)->toHaveCount(1);
 
         $relatedInst = $result->first();
-        expect($relatedInst->duties)->toHaveCount(1);
-        expect($relatedInst->duties->first()->users)->toHaveCount(1);
-        expect($relatedInst->duties->first()->users->first()->id)->toBe($user->id);
+        expect($relatedInst->duties)->toHaveCount(1)
+            ->and($relatedInst->duties->first()->users)->toHaveCount(1)
+            ->and($relatedInst->duties->first()->users->first()->id)->toBe($user->id);
     });
 
-    test('includes all meetings without date filter', function () {
+    test('includes all meetings without date filter', function (): void {
         // Create a direct relationship
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
@@ -205,7 +205,7 @@ describe('getRelatedInstitutionsForMultiple', function () {
         expect($result->first()->meetings)->toHaveCount(2);
     });
 
-    test('works correctly when source institutions have partial tenant data loaded', function () {
+    test('works correctly when source institutions have partial tenant data loaded', function (): void {
         // This test ensures getRelatedInstitutionsForMultiple works correctly when
         // institutions are loaded with partial tenant data (e.g., 'tenant:id,shortname')
         // as done by DutyService::buildInstitutionQuery().
@@ -272,15 +272,15 @@ describe('getRelatedInstitutionsForMultiple', function () {
 
         // Should find the related institution (incoming, unauthorized due to bidirectional=false)
         expect($result)->toHaveCount(1, 'Should find incoming type-based relationship despite partial tenant load');
-        expect($result->first()->id)->toBe($relatedInstitution->id);
-        expect($result->first()->authorized)->toBeFalse('Incoming non-bidirectional relationship should be unauthorized');
-        expect($result->first()->relationship_direction)->toBe('incoming');
-        expect($result->first()->relationship_type)->toBe('type-based');
+        expect($result->first()->id)->toBe($relatedInstitution->id)
+            ->and($result->first()->authorized)->toBeFalse('Incoming non-bidirectional relationship should be unauthorized')
+            ->and($result->first()->relationship_direction)->toBe('incoming')
+            ->and($result->first()->relationship_type)->toBe('type-based');
     });
 });
 
-describe('cache invalidation', function () {
-    test('cache key is based on institution id', function () {
+describe('cache invalidation', function (): void {
+    test('cache key is based on institution id', function (): void {
         $cacheKey = RelationshipService::getCacheKey($this->sourceInstitution->id);
 
         // Ensure cache is clear
@@ -294,7 +294,7 @@ describe('cache invalidation', function () {
         expect(Cache::has($cacheKey))->toBeTrue();
     });
 
-    test('clearRelatedInstitutionsCache clears the cache', function () {
+    test('clearRelatedInstitutionsCache clears the cache', function (): void {
         $cacheKey = RelationshipService::getCacheKey($this->sourceInstitution->id);
 
         // Populate cache
@@ -308,8 +308,8 @@ describe('cache invalidation', function () {
     });
 });
 
-describe('relationship scope', function () {
-    beforeEach(function () {
+describe('relationship scope', function (): void {
+    beforeEach(function (): void {
         // Create a pagrindinis tenant with unique shortname
         $this->pagrindinisTenant = Tenant::factory()->create([
             'type' => 'pagrindinis',
@@ -332,7 +332,7 @@ describe('relationship scope', function () {
         ]);
     });
 
-    test('within-tenant scope only matches same tenant', function () {
+    test('within-tenant scope only matches same tenant', function (): void {
         // Create relationship with within-tenant scope (default)
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
@@ -353,7 +353,7 @@ describe('relationship scope', function () {
         expect($result)->toHaveCount(1);
     });
 
-    test('scope defaults to within-tenant', function () {
+    test('scope defaults to within-tenant', function (): void {
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
             'relationshipable_type' => Institution::class,
@@ -366,12 +366,12 @@ describe('relationship scope', function () {
         expect($relationshipable->scope)->toBe(Relationshipable::SCOPE_WITHIN_TENANT);
     });
 
-    test('scope constants are defined correctly', function () {
-        expect(Relationshipable::SCOPE_WITHIN_TENANT)->toBe('within-tenant');
-        expect(Relationshipable::SCOPE_CROSS_TENANT)->toBe('cross-tenant');
+    test('scope constants are defined correctly', function (): void {
+        expect(Relationshipable::SCOPE_WITHIN_TENANT)->toBe('within-tenant')
+            ->and(Relationshipable::SCOPE_CROSS_TENANT)->toBe('cross-tenant');
     });
 
-    test('cross-tenant scope works when institution has preloaded tenant with partial data', function () {
+    test('cross-tenant scope works when institution has preloaded tenant with partial data', function (): void {
         // This test covers a bug where cross-tenant scope matching failed when
         // the institution was preloaded with partial tenant data (e.g., 'tenant:id,shortname')
         // missing the 'type' column needed for scope matching.
@@ -410,8 +410,8 @@ describe('relationship scope', function () {
         $resultFull = RelationshipService::getRelatedInstitutionsFlat($fullLoadInstitution);
 
         $incomingFull = $resultFull->filter(fn ($item) => $item['direction'] === 'incoming' && $item['type'] === 'type-based');
-        expect($incomingFull)->toHaveCount(1, 'Full tenant load should find incoming type-based relationship');
-        expect($incomingFull->first()['institution']->id)->toBe($this->pagrindineInstitution->id);
+        expect($incomingFull)->toHaveCount(1, 'Full tenant load should find incoming type-based relationship')
+            ->and($incomingFull->first()['institution']->id)->toBe($this->pagrindineInstitution->id);
 
         // Clear cache to test partial load
         RelationshipService::clearRelatedInstitutionsCache($this->padalinysInstitution->id);
@@ -427,13 +427,13 @@ describe('relationship scope', function () {
         $resultPartial = RelationshipService::getRelatedInstitutionsFlat($partialLoadInstitution);
 
         $incomingPartial = $resultPartial->filter(fn ($item) => $item['direction'] === 'incoming' && $item['type'] === 'type-based');
-        expect($incomingPartial)->toHaveCount(1, 'Partial tenant load should still find incoming type-based relationship');
-        expect($incomingPartial->first()['institution']->id)->toBe($this->pagrindineInstitution->id);
+        expect($incomingPartial)->toHaveCount(1, 'Partial tenant load should still find incoming type-based relationship')
+            ->and($incomingPartial->first()['institution']->id)->toBe($this->pagrindineInstitution->id);
     });
 });
 
-describe('type-based cross-tenant authorization', function () {
-    test('cross-tenant unidirectional authorizes pagrindinis even when incoming', function () {
+describe('type-based cross-tenant authorization', function (): void {
+    test('cross-tenant unidirectional authorizes pagrindinis even when incoming', function (): void {
         $pagrindinisTenant = Tenant::factory()->create(['type' => 'pagrindinis']);
         $padalinysTenant = Tenant::factory()->create(['type' => 'padalinys']);
 
@@ -472,13 +472,12 @@ describe('type-based cross-tenant authorization', function () {
 
         expect($result)->toHaveCount(1);
         $item = $result->first();
-        expect($item['direction'])->toBe('incoming');
-        expect($item['type'])->toBe('type-based');
-        expect($item['authorized'])->toBeTrue();
-        expect($item['institution']->id)->toBe($padalinysInstitution->id);
+        expect($item)->toMatchArray(['direction' => 'incoming', 'type' => 'type-based'])
+            ->and($item['authorized'])->toBeTrue()
+            ->and($item['institution']->id)->toBe($padalinysInstitution->id);
     });
 
-    test('cross-tenant unidirectional does not authorize padalinys even when outgoing', function () {
+    test('cross-tenant unidirectional does not authorize padalinys even when outgoing', function (): void {
         $pagrindinisTenant = Tenant::factory()->create(['type' => 'pagrindinis']);
         $padalinysTenant = Tenant::factory()->create(['type' => 'padalinys']);
 
@@ -517,15 +516,14 @@ describe('type-based cross-tenant authorization', function () {
 
         expect($result)->toHaveCount(1);
         $item = $result->first();
-        expect($item['direction'])->toBe('outgoing');
-        expect($item['type'])->toBe('type-based');
-        expect($item['authorized'])->toBeFalse();
-        expect($item['institution']->id)->toBe($pagrindinisInstitution->id);
+        expect($item)->toMatchArray(['direction' => 'outgoing', 'type' => 'type-based'])
+            ->and($item['authorized'])->toBeFalse()
+            ->and($item['institution']->id)->toBe($pagrindinisInstitution->id);
     });
 });
 
-describe('directional authorization', function () {
-    test('outgoing relationships have authorized = true', function () {
+describe('directional authorization', function (): void {
+    test('outgoing relationships have authorized = true', function (): void {
         // Create outgoing relationship (source -> related)
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
@@ -541,11 +539,11 @@ describe('directional authorization', function () {
 
         expect($result)->toHaveCount(1);
         $item = $result->first();
-        expect($item['direction'])->toBe('outgoing');
-        expect($item['authorized'])->toBeTrue();
+        expect($item['direction'])->toBe('outgoing')
+            ->and($item['authorized'])->toBeTrue();
     });
 
-    test('incoming relationships have authorized = false', function () {
+    test('incoming relationships have authorized = false', function (): void {
         // Create relationship where this institution is the target
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
@@ -561,11 +559,11 @@ describe('directional authorization', function () {
 
         expect($result)->toHaveCount(1);
         $item = $result->first();
-        expect($item['direction'])->toBe('incoming');
-        expect($item['authorized'])->toBeFalse();
+        expect($item['direction'])->toBe('incoming')
+            ->and($item['authorized'])->toBeFalse();
     });
 
-    test('getRelatedInstitutions with authorizedOnly = true filters incoming relationships', function () {
+    test('getRelatedInstitutions with authorizedOnly = true filters incoming relationships', function (): void {
         // Create bidirectional relationship (both directions)
         // Outgoing: source -> related
         $outgoing = new Relationshipable([
@@ -598,11 +596,11 @@ describe('directional authorization', function () {
 
         // With filter - should only get outgoing (authorized)
         $authorizedOnly = RelationshipService::getRelatedInstitutions($this->sourceInstitution, authorizedOnly: true);
-        expect($authorizedOnly)->toHaveCount(1);
-        expect($authorizedOnly->first()->id)->toBe($this->relatedInstitution->id);
+        expect($authorizedOnly)->toHaveCount(1)
+            ->and($authorizedOnly->first()->id)->toBe($this->relatedInstitution->id);
     });
 
-    test('getRelatedInstitutionsForMultiple loads meetings only for authorized institutions', function () {
+    test('getRelatedInstitutionsForMultiple loads meetings only for authorized institutions', function (): void {
         // Create outgoing relationship (authorized)
         $outgoing = new Relationshipable([
             'relationship_id' => $this->relationship->id,
@@ -644,23 +642,23 @@ describe('directional authorization', function () {
 
         // Authorized institution should have meetings with agenda items loaded
         $authorizedInst = $result->firstWhere('id', $this->relatedInstitution->id);
-        expect($authorizedInst->authorized)->toBeTrue();
-        expect($authorizedInst->relationLoaded('meetings'))->toBeTrue();
-        expect($authorizedInst->meetings)->toHaveCount(1);
-        expect($authorizedInst->meetings->first()->relationLoaded('agendaItems'))->toBeTrue();
-        expect($authorizedInst->meetings->first()->agendaItems)->toHaveCount(1);
+        expect($authorizedInst->authorized)->toBeTrue()
+            ->and($authorizedInst->relationLoaded('meetings'))->toBeTrue()
+            ->and($authorizedInst->meetings)->toHaveCount(1)
+            ->and($authorizedInst->meetings->first()->relationLoaded('agendaItems'))->toBeTrue()
+            ->and($authorizedInst->meetings->first()->agendaItems)->toHaveCount(1);
 
         // Unauthorized institution should have meetings but NO agenda items
         $unauthorizedInst = $result->firstWhere('id', $thirdInstitution->id);
-        expect($unauthorizedInst->authorized)->toBeFalse();
-        expect($unauthorizedInst->relationLoaded('meetings'))->toBeTrue();
-        expect($unauthorizedInst->meetings)->toHaveCount(1);
-        expect($unauthorizedInst->meetings->first()->relationLoaded('agendaItems'))->toBeFalse();
+        expect($unauthorizedInst->authorized)->toBeFalse()
+            ->and($unauthorizedInst->relationLoaded('meetings'))->toBeTrue()
+            ->and($unauthorizedInst->meetings)->toHaveCount(1)
+            ->and($unauthorizedInst->meetings->first()->relationLoaded('agendaItems'))->toBeFalse();
     });
 });
 
-describe('sibling relationships', function () {
-    test('sibling relationships have authorized = true', function () {
+describe('sibling relationships', function (): void {
+    test('sibling relationships have authorized = true', function (): void {
         // Create a type with sibling relationships enabled
         $type = Type::factory()->create([
             'model_type' => Institution::class,
@@ -678,12 +676,11 @@ describe('sibling relationships', function () {
 
         expect($result)->toHaveCount(1);
         $item = $result->first();
-        expect($item['direction'])->toBe('sibling');
-        expect($item['type'])->toBe('within-type');
-        expect($item['authorized'])->toBeTrue();
+        expect($item)->toMatchArray(['direction' => 'sibling', 'type' => 'within-type'])
+            ->and($item['authorized'])->toBeTrue();
     });
 
-    test('sibling relationships only work within same tenant', function () {
+    test('sibling relationships only work within same tenant', function (): void {
         // Create a second tenant
         $otherTenant = Tenant::factory()->create([
             'shortname' => 'Other Tenant '.uniqid(),
@@ -710,10 +707,10 @@ describe('sibling relationships', function () {
         $result = RelationshipService::getRelatedInstitutionsFlat($this->sourceInstitution);
 
         // Should be empty - sibling relationships require same tenant
-        expect($result)->toHaveCount(0);
+        expect($result)->toBeEmpty();
     });
 
-    test('sibling relationships are included in authorization check', function () {
+    test('sibling relationships are included in authorization check', function (): void {
         // Create a type with sibling relationships enabled
         $type = Type::factory()->create([
             'model_type' => Institution::class,
@@ -730,13 +727,13 @@ describe('sibling relationships', function () {
         // With authorizedOnly = true, sibling relationships should still be included
         $authorizedRelated = RelationshipService::getRelatedInstitutions($this->sourceInstitution, authorizedOnly: true);
 
-        expect($authorizedRelated)->toHaveCount(1);
-        expect($authorizedRelated->first()->id)->toBe($this->relatedInstitution->id);
+        expect($authorizedRelated)->toHaveCount(1)
+            ->and($authorizedRelated->first()->id)->toBe($this->relatedInstitution->id);
     });
 });
 
-describe('cross-tenant sibling relationships', function () {
-    test('pagrindinis institution can see padalinys siblings with cross-tenant sibling enabled', function () {
+describe('cross-tenant sibling relationships', function (): void {
+    test('pagrindinis institution can see padalinys siblings with cross-tenant sibling enabled', function (): void {
         // Create pagrindinis tenant
         $pagrindinissTenant = Tenant::factory()->create([
             'type' => 'pagrindinis',
@@ -775,13 +772,12 @@ describe('cross-tenant sibling relationships', function () {
 
         expect($result)->toHaveCount(1);
         $item = $result->first();
-        expect($item['direction'])->toBe('sibling');
-        expect($item['type'])->toBe('cross-tenant-sibling');
-        expect($item['authorized'])->toBeTrue();
-        expect($item['institution']->id)->toBe($padalinysInstitution->id);
+        expect($item)->toMatchArray(['direction' => 'sibling', 'type' => 'cross-tenant-sibling'])
+            ->and($item['authorized'])->toBeTrue()
+            ->and($item['institution']->id)->toBe($padalinysInstitution->id);
     });
 
-    test('padalinys institution can see pagrindinis sibling but without authorization', function () {
+    test('padalinys institution can see pagrindinis sibling but without authorization', function (): void {
         // Create pagrindinis tenant
         $pagrindinissTenant = Tenant::factory()->create([
             'type' => 'pagrindinis',
@@ -821,13 +817,12 @@ describe('cross-tenant sibling relationships', function () {
 
         expect($result)->toHaveCount(1);
         $item = $result->first();
-        expect($item['direction'])->toBe('sibling');
-        expect($item['type'])->toBe('cross-tenant-sibling');
-        expect($item['authorized'])->toBeFalse(); // Can see but no data access
+        expect($item)->toMatchArray(['direction' => 'sibling', 'type' => 'cross-tenant-sibling'])
+            ->and($item['authorized'])->toBeFalse(); // Can see but no data access
         expect($item['institution']->id)->toBe($pagrindinisInstitution->id);
     });
 
-    test('cross-tenant siblings authorization is one-directional', function () {
+    test('cross-tenant siblings authorization is one-directional', function (): void {
         // Create pagrindinis tenant
         $pagrindinissTenant = Tenant::factory()->create([
             'type' => 'pagrindinis',
@@ -865,20 +860,20 @@ describe('cross-tenant sibling relationships', function () {
 
         // Pagrindinis with authorizedOnly = true should see padalinys
         $authorizedFromPagrindinis = RelationshipService::getRelatedInstitutions($pagrindinisInstitution, authorizedOnly: true);
-        expect($authorizedFromPagrindinis)->toHaveCount(1);
-        expect($authorizedFromPagrindinis->first()->id)->toBe($padalinysInstitution->id);
+        expect($authorizedFromPagrindinis)->toHaveCount(1)
+            ->and($authorizedFromPagrindinis->first()->id)->toBe($padalinysInstitution->id);
 
         // Padalinys with authorizedOnly = true should NOT see pagrindinis (unauthorized)
         $authorizedFromPadalinys = RelationshipService::getRelatedInstitutions($padalinysInstitution, authorizedOnly: true);
-        expect($authorizedFromPadalinys)->toHaveCount(0);
+        expect($authorizedFromPadalinys)->toBeEmpty();
 
         // Padalinys with authorizedOnly = false should see pagrindinis
         $allFromPadalinys = RelationshipService::getRelatedInstitutions($padalinysInstitution, authorizedOnly: false);
-        expect($allFromPadalinys)->toHaveCount(1);
-        expect($allFromPadalinys->first()->id)->toBe($pagrindinisInstitution->id);
+        expect($allFromPadalinys)->toHaveCount(1)
+            ->and($allFromPadalinys->first()->id)->toBe($pagrindinisInstitution->id);
     });
 
-    test('regular sibling flag does not enable cross-tenant siblings', function () {
+    test('regular sibling flag does not enable cross-tenant siblings', function (): void {
         // Create pagrindinis tenant
         $pagrindinissTenant = Tenant::factory()->create([
             'type' => 'pagrindinis',
@@ -916,10 +911,10 @@ describe('cross-tenant sibling relationships', function () {
         $result = RelationshipService::getRelatedInstitutionsFlat($pagrindinisInstitution);
 
         // Should be empty - regular sibling flag only works within same tenant
-        expect($result)->toHaveCount(0);
+        expect($result)->toBeEmpty();
     });
 
-    test('pagrindinis can see multiple padalinys siblings', function () {
+    test('pagrindinis can see multiple padalinys siblings', function (): void {
         // Create pagrindinis tenant
         $pagrindinissTenant = Tenant::factory()->create([
             'type' => 'pagrindinis',
@@ -968,8 +963,8 @@ describe('cross-tenant sibling relationships', function () {
         expect($result)->toHaveCount(2);
 
         $institutionIds = $result->pluck('institution.id')->toArray();
-        expect($institutionIds)->toContain($padalinysInstitution1->id);
-        expect($institutionIds)->toContain($padalinysInstitution2->id);
+        expect($institutionIds)->toContain($padalinysInstitution1->id)
+            ->toContain($padalinysInstitution2->id);
 
         // All should be authorized
         expect($result->every(fn ($item) => $item['authorized'] === true))->toBeTrue();
@@ -977,8 +972,8 @@ describe('cross-tenant sibling relationships', function () {
     });
 });
 
-describe('bidirectional relationships', function () {
-    test('unidirectional incoming relationship has authorized = false', function () {
+describe('bidirectional relationships', function (): void {
+    test('unidirectional incoming relationship has authorized = false', function (): void {
         // Create a one-way relationship: related -> source (source is the target)
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
@@ -993,12 +988,12 @@ describe('bidirectional relationships', function () {
 
         $result = RelationshipService::getRelatedInstitutionsFlat($this->sourceInstitution);
 
-        expect($result)->toHaveCount(1);
-        expect($result->first()['direction'])->toBe('incoming');
-        expect($result->first()['authorized'])->toBeFalse();
+        expect($result)->toHaveCount(1)
+            ->and($result->first()['direction'])->toBe('incoming')
+            ->and($result->first()['authorized'])->toBeFalse();
     });
 
-    test('bidirectional incoming relationship has authorized = true', function () {
+    test('bidirectional incoming relationship has authorized = true', function (): void {
         // Create a bidirectional relationship: related -> source (source is the target, but can see back)
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
@@ -1013,12 +1008,12 @@ describe('bidirectional relationships', function () {
 
         $result = RelationshipService::getRelatedInstitutionsFlat($this->sourceInstitution);
 
-        expect($result)->toHaveCount(1);
-        expect($result->first()['direction'])->toBe('incoming');
-        expect($result->first()['authorized'])->toBeTrue();
+        expect($result)->toHaveCount(1)
+            ->and($result->first()['direction'])->toBe('incoming')
+            ->and($result->first()['authorized'])->toBeTrue();
     });
 
-    test('bidirectional setting is respected in getRelatedInstitutions with authorizedOnly filter', function () {
+    test('bidirectional setting is respected in getRelatedInstitutions with authorizedOnly filter', function (): void {
         // Create unidirectional incoming relationship
         $unidirectional = new Relationshipable([
             'relationship_id' => $this->relationship->id,
@@ -1051,11 +1046,11 @@ describe('bidirectional relationships', function () {
 
         // With filter - should only get the bidirectional one
         $authorizedOnly = RelationshipService::getRelatedInstitutions($this->sourceInstitution, authorizedOnly: true);
-        expect($authorizedOnly)->toHaveCount(1);
-        expect($authorizedOnly->first()->id)->toBe($thirdInstitution->id);
+        expect($authorizedOnly)->toHaveCount(1)
+            ->and($authorizedOnly->first()->id)->toBe($thirdInstitution->id);
     });
 
-    test('outgoing relationships are always authorized regardless of bidirectional setting', function () {
+    test('outgoing relationships are always authorized regardless of bidirectional setting', function (): void {
         // Create an outgoing relationship with bidirectional = false (should still be authorized)
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
@@ -1070,12 +1065,12 @@ describe('bidirectional relationships', function () {
 
         $result = RelationshipService::getRelatedInstitutionsFlat($this->sourceInstitution);
 
-        expect($result)->toHaveCount(1);
-        expect($result->first()['direction'])->toBe('outgoing');
-        expect($result->first()['authorized'])->toBeTrue();
+        expect($result)->toHaveCount(1)
+            ->and($result->first()['direction'])->toBe('outgoing')
+            ->and($result->first()['authorized'])->toBeTrue();
     });
 
-    test('bidirectional relationship loads meetings for incoming authorized institution', function () {
+    test('bidirectional relationship loads meetings for incoming authorized institution', function (): void {
         // Create bidirectional incoming relationship
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
@@ -1098,14 +1093,14 @@ describe('bidirectional relationships', function () {
 
         expect($result)->toHaveCount(1);
         $inst = $result->first();
-        expect($inst->authorized)->toBeTrue();
-        expect($inst->relationLoaded('meetings'))->toBeTrue();
-        expect($inst->meetings)->toHaveCount(1);
+        expect($inst->authorized)->toBeTrue()
+            ->and($inst->relationLoaded('meetings'))->toBeTrue()
+            ->and($inst->meetings)->toHaveCount(1);
     });
 });
 
-describe('getAllRelatedInstitutionsEnriched', function () {
-    test('returns enriched direct edges with relationship metadata', function () {
+describe('getAllRelatedInstitutionsEnriched', function (): void {
+    test('returns enriched direct edges with relationship metadata', function (): void {
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
             'relationshipable_type' => Institution::class,
@@ -1119,15 +1114,13 @@ describe('getAllRelatedInstitutionsEnriched', function () {
 
         $edge = collect($edges)->firstWhere('source', $this->sourceInstitution->id);
 
-        expect($edge)->not->toBeNull();
-        expect($edge['target'])->toBe($this->relatedInstitution->id);
-        expect($edge['direction'])->toBe('outgoing');
-        expect($edge['type'])->toBe('direct');
-        expect($edge['bidirectional'])->toBeTrue();
-        expect($edge['relationship_name'])->toBe('Test Relationship');
+        expect($edge)->not->toBeNull()
+            ->toMatchArray(['target' => $this->relatedInstitution->id, 'direction' => 'outgoing', 'type' => 'direct'])
+            ->and($edge['bidirectional'])->toBeTrue()
+            ->and($edge['relationship_name'])->toBe('Test Relationship');
     });
 
-    test('returns a base collection even when there are no direct edges', function () {
+    test('returns a base collection even when there are no direct edges', function (): void {
         // No direct institution edges created; ensures the empty Eloquent collection
         // does not break the merge with array-shaped edges.
         $edges = RelationshipService::getAllRelatedInstitutionsEnriched();
@@ -1135,7 +1128,7 @@ describe('getAllRelatedInstitutionsEnriched', function () {
         expect(collect($edges))->toBeInstanceOf(Illuminate\Support\Collection::class);
     });
 
-    test('includes within-type sibling edges flagged as siblings', function () {
+    test('includes within-type sibling edges flagged as siblings', function (): void {
         $type = Type::factory()->create([
             'model_type' => Institution::class,
             'extra_attributes' => ['enable_sibling_relationships' => true],
@@ -1148,14 +1141,14 @@ describe('getAllRelatedInstitutionsEnriched', function () {
 
         $sibling = collect($edges)->firstWhere('type', 'within-type');
 
-        expect($sibling)->not->toBeNull();
-        expect($sibling['direction'])->toBe('sibling');
-        expect($sibling['bidirectional'])->toBeFalse();
+        expect($sibling)->not->toBeNull()
+            ->and($sibling['direction'])->toBe('sibling')
+            ->and($sibling['bidirectional'])->toBeFalse();
     });
 });
 
-describe('getTypeRelationshipGraph', function () {
-    test('returns type nodes and type-to-type edges with metadata', function () {
+describe('getTypeRelationshipGraph', function (): void {
+    test('returns type nodes and type-to-type edges with metadata', function (): void {
         $sourceType = Type::factory()->create(['model_type' => Institution::class, 'title' => ['lt' => 'Tipas A', 'en' => 'Type A']]);
         $targetType = Type::factory()->create(['model_type' => Institution::class, 'title' => ['lt' => 'Tipas B', 'en' => 'Type B']]);
 
@@ -1165,29 +1158,27 @@ describe('getTypeRelationshipGraph', function () {
         $this->sourceInstitution->types()->attach($sourceType->id);
         $this->relatedInstitution->types()->attach($targetType->id);
 
-        (new Relationshipable([
+        new Relationshipable([
             'relationship_id' => $this->relationship->id,
             'relationshipable_type' => Type::class,
             'relationshipable_id' => $sourceType->id,
             'related_model_id' => $targetType->id,
             'scope' => Relationshipable::SCOPE_CROSS_TENANT,
             'bidirectional' => true,
-        ]))->save();
+        ])->save();
 
         $graph = RelationshipService::getTypeRelationshipGraph();
 
         expect(collect($graph['nodes'])->pluck('id'))->toContain((string) $sourceType->id, (string) $targetType->id);
 
         $edge = collect($graph['edges'])->firstWhere('source', (string) $sourceType->id);
-        expect($edge)->not->toBeNull();
-        expect($edge['target'])->toBe((string) $targetType->id);
-        expect($edge['scope'])->toBe('cross-tenant');
-        expect($edge['bidirectional'])->toBeTrue();
-        expect($edge['relationship_name'])->toBe('Test Relationship');
-        expect($edge['relationship_description'])->toBe('Aprašymas');
+        expect($edge)->not->toBeNull()
+            ->toMatchArray(['target' => (string) $targetType->id, 'scope' => 'cross-tenant'])
+            ->and($edge['bidirectional'])->toBeTrue()
+            ->and($edge)->toMatchArray(['relationship_name' => 'Test Relationship', 'relationship_description' => 'Aprašymas']);
     });
 
-    test('includes institution types that have no relations', function () {
+    test('includes institution types that have no relations', function (): void {
         $isolatedType = Type::factory()->create(['model_type' => Institution::class]);
 
         $graph = RelationshipService::getTypeRelationshipGraph();

@@ -105,8 +105,6 @@ class PageController extends AdminController
 
         $content->save();
 
-        $content->parts()->createMany($request->content['parts']);
-
         $page = Page::query()->create([
             'title' => $request->title,
             'category_id' => $request->category_id,
@@ -120,6 +118,11 @@ class PageController extends AdminController
             'show_breadcrumbs' => $request->boolean('show_breadcrumbs', true),
             'tenant_id' => $tenant_id,
         ]);
+
+        // Created after the Page so the parts' first activity-log entries can
+        // already resolve their root up to the Page (see App\Support\ActivityRoots)
+        // instead of self-rooting to the not-yet-owned Content.
+        $content->parts()->createMany($request->content['parts']);
 
         // Pairing goes through the action rather than the create payload: it has to
         // release whoever already holds the counterpart id, trashed rows included.
@@ -137,7 +140,7 @@ class PageController extends AdminController
 
         $page->load('tenant:id,alias,shortname');
 
-        $other_lang_pages = Page::with('tenant:id,shortname')->when(! request()->user()->isSuperAdmin(), function ($query) use ($page) {
+        $other_lang_pages = Page::with('tenant:id,shortname')->when(! request()->user()->isSuperAdmin(), function ($query) use ($page): void {
             $query->where('tenant_id', $page->tenant_id);
         })->where('lang', '!=', $page->lang)->select('id', 'title', 'tenant_id')->get();
 

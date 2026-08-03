@@ -13,18 +13,10 @@ use App\Models\User;
  */
 class TaskAssignedNotification extends BaseNotification
 {
-    protected Task $task;
-
-    protected ?User $assigner;
-
     /**
      * Create a new notification instance.
      */
-    public function __construct(Task $task, ?User $assigner = null)
-    {
-        $this->task = $task;
-        $this->assigner = $assigner;
-    }
+    public function __construct(protected Task $task, protected ?User $assigner = null) {}
 
     public function category(): NotificationCategory
     {
@@ -83,6 +75,7 @@ class TaskAssignedNotification extends BaseNotification
         ];
     }
 
+    #[\Override]
     public function actions(): array
     {
         return [

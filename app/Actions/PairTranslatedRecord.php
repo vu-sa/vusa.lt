@@ -43,7 +43,7 @@ class PairTranslatedRecord
             throw new \InvalidArgumentException('A record cannot be paired with itself.');
         }
 
-        DB::transaction(function () use ($record, $counterpartId) {
+        DB::transaction(function () use ($record, $counterpartId): void {
             // Releases must be committed before the claims: the unique index rejects the
             // write the moment two rows would hold the same value, even mid-transaction.
             self::release($record, $record->getKey(), except: $counterpartId);

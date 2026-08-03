@@ -9,16 +9,16 @@ use Microsoft\Graph\Generated\Models\FieldValueSet;
 use Microsoft\Graph\Generated\Models\Permission;
 use Microsoft\Graph\Generated\Models\SharingLink;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     // Completely disable Scout indexing for tests to avoid extra job queuing
     config(['scout.driver' => null]);
     config(['scout.queue' => false]);
     config(['scout.after_commit' => false]);
 });
 
-afterEach(function () {
+afterEach(function (): void {
     Mockery::close();
 });
 
@@ -68,8 +68,8 @@ function makePermission(string $id, string $webUrl): Permission
     return $permission;
 }
 
-describe('.url shortcut resolution during sync', function () {
-    test('resolves and persists the link_url for a .url shortcut document', function () {
+describe('.url shortcut resolution during sync', function (): void {
+    test('resolves and persists the link_url for a .url shortcut document', function (): void {
         $document = Document::factory()->create([
             'name' => 'ataskaita2023.vusa.lt.url',
             'eTag' => 'old-etag',
@@ -95,13 +95,13 @@ describe('.url shortcut resolution during sync', function () {
         $service = mockSyncServiceWithGraph($graph);
         $result = $service->sync($document);
 
-        expect($result)->not->toBeNull();
-        expect($result->link_url)->toBe('https://ataskaita2023.vusa.lt');
-        expect($result->anonymous_url)->toBe('https://sharepoint.example.com/shortcut/123');
-        expect($result->sync_status)->toBe('success');
+        expect($result)->not->toBeNull()
+            ->and($result->link_url)->toBe('https://ataskaita2023.vusa.lt')
+            ->and($result->anonymous_url)->toBe('https://sharepoint.example.com/shortcut/123')
+            ->and($result->sync_status)->toBe('success');
     });
 
-    test('does not attempt to resolve a shortcut target for a normal document', function () {
+    test('does not attempt to resolve a shortcut target for a normal document', function (): void {
         $document = Document::factory()->create([
             'name' => 'protokolas.pdf',
             'eTag' => 'old-etag',
@@ -124,12 +124,12 @@ describe('.url shortcut resolution during sync', function () {
         $service = mockSyncServiceWithGraph($graph);
         $result = $service->sync($document);
 
-        expect($result)->not->toBeNull();
-        expect($result->link_url)->toBeNull();
-        expect($result->sync_status)->toBe('success');
+        expect($result)->not->toBeNull()
+            ->and($result->link_url)->toBeNull()
+            ->and($result->sync_status)->toBe('success');
     });
 
-    test('leaves link_url unchanged and sync succeeds when shortcut content is unparseable', function () {
+    test('leaves link_url unchanged and sync succeeds when shortcut content is unparseable', function (): void {
         $document = Document::factory()->create([
             'name' => 'ataskaita2023.vusa.lt.url',
             'eTag' => 'old-etag',
@@ -152,12 +152,12 @@ describe('.url shortcut resolution during sync', function () {
         $service = mockSyncServiceWithGraph($graph);
         $result = $service->sync($document);
 
-        expect($result)->not->toBeNull();
-        expect($result->link_url)->toBeNull();
-        expect($result->sync_status)->toBe('success');
+        expect($result)->not->toBeNull()
+            ->and($result->link_url)->toBeNull()
+            ->and($result->sync_status)->toBe('success');
     });
 
-    test('sync still succeeds and keeps the previous link_url when content fetch throws', function () {
+    test('sync still succeeds and keeps the previous link_url when content fetch throws', function (): void {
         $document = Document::factory()->create([
             'name' => 'ataskaita2023.vusa.lt.url',
             'eTag' => 'old-etag',
@@ -180,12 +180,12 @@ describe('.url shortcut resolution during sync', function () {
         $service = mockSyncServiceWithGraph($graph);
         $result = $service->sync($document);
 
-        expect($result)->not->toBeNull();
-        expect($result->link_url)->toBeNull();
-        expect($result->sync_status)->toBe('success');
+        expect($result)->not->toBeNull()
+            ->and($result->link_url)->toBeNull()
+            ->and($result->sync_status)->toBe('success');
     });
 
-    test('clears link_url when a document is renamed away from .url upstream', function () {
+    test('clears link_url when a document is renamed away from .url upstream', function (): void {
         $document = Document::factory()->create([
             'name' => 'ataskaita2023.vusa.lt.url',
             'eTag' => 'old-etag',
@@ -208,12 +208,12 @@ describe('.url shortcut resolution during sync', function () {
         $service = mockSyncServiceWithGraph($graph);
         $result = $service->sync($document);
 
-        expect($result)->not->toBeNull();
-        expect($result->name)->toBe('ataskaita2023.pdf');
-        expect($result->link_url)->toBeNull();
+        expect($result)->not->toBeNull()
+            ->and($result->name)->toBe('ataskaita2023.pdf')
+            ->and($result->link_url)->toBeNull();
     });
 
-    test('does not short-circuit on matching eTag when the shortcut target is still unresolved', function () {
+    test('does not short-circuit on matching eTag when the shortcut target is still unresolved', function (): void {
         $document = Document::factory()->create([
             'name' => 'ataskaita2023.vusa.lt.url',
             'eTag' => 'same-etag',
@@ -238,11 +238,11 @@ describe('.url shortcut resolution during sync', function () {
         $service = mockSyncServiceWithGraph($graph);
         $result = $service->sync($document);
 
-        expect($result)->not->toBeNull();
-        expect($result->link_url)->toBe('https://ataskaita2023.vusa.lt');
+        expect($result)->not->toBeNull()
+            ->and($result->link_url)->toBe('https://ataskaita2023.vusa.lt');
     });
 
-    test('short-circuits on matching eTag once the shortcut target is already resolved', function () {
+    test('short-circuits on matching eTag once the shortcut target is already resolved', function (): void {
         $document = Document::factory()->create([
             'name' => 'ataskaita2023.vusa.lt.url',
             'eTag' => 'same-etag',
@@ -265,7 +265,7 @@ describe('.url shortcut resolution during sync', function () {
         expect($result)->toBeNull();
 
         $document->refresh();
-        expect($document->link_url)->toBe('https://ataskaita2023.vusa.lt');
-        expect($document->sync_status)->toBe('success');
+        expect($document->link_url)->toBe('https://ataskaita2023.vusa.lt')
+            ->and($document->sync_status)->toBe('success');
     });
 });

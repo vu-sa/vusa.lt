@@ -11,9 +11,9 @@ use Illuminate\Support\Facades\Cache;
 use Spatie\Sitemap\Tags\Url;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::firstOrCreate(
         ['alias' => 'vusa'], // Find by alias
         [
@@ -25,35 +25,35 @@ beforeEach(function () {
     $this->subdomain = 'www';
 });
 
-describe('Sitemap Index', function () {
-    it('generates sitemap index successfully', function () {
+describe('Sitemap Index', function (): void {
+    it('generates sitemap index successfully', function (): void {
         $response = $this->get('/sitemap.xml', ['HTTP_HOST' => 'www.vusa.test']);
 
-        expect($response->status())->toBe(200);
-        expect($response->headers->get('Content-Type'))->toContain('xml');
+        expect($response->status())->toBe(200)
+            ->and($response->headers->get('Content-Type'))->toContain('xml');
 
         $content = $response->getContent();
-        expect($content)->toContain('<?xml version="1.0" encoding="UTF-8"?>');
-        expect($content)->toContain('xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"');
-        expect($content)->toContain('/sitemap-pages.xml');
-        expect($content)->toContain('/sitemap-news.xml');
-        expect($content)->toContain('/sitemap-news-google.xml');
+        expect($content)->toContain('<?xml version="1.0" encoding="UTF-8"?>')
+            ->toContain('xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"')
+            ->toContain('/sitemap-pages.xml')
+            ->toContain('/sitemap-news.xml')
+            ->toContain('/sitemap-news-google.xml');
     });
 
-    it('caches sitemap index', function () {
+    it('caches sitemap index', function (): void {
         // First request should generate sitemap
         $response1 = $this->get('/sitemap.xml', ['HTTP_HOST' => 'www.vusa.test']);
         expect($response1->status())->toBe(200);
 
         // Second request should use cache (same content)
         $response2 = $this->get('/sitemap.xml', ['HTTP_HOST' => 'www.vusa.test']);
-        expect($response2->status())->toBe(200);
-        expect($response2->getContent())->toBe($response1->getContent());
+        expect($response2->status())->toBe(200)
+            ->and($response2->getContent())->toBe($response1->getContent());
     });
 });
 
-describe('Pages Sitemap', function () {
-    it('generates pages sitemap with active pages', function () {
+describe('Pages Sitemap', function (): void {
+    it('generates pages sitemap with active pages', function (): void {
         // Create test pages with explicit attributes
         $activePage = Page::factory()->create([
             'tenant_id' => $this->tenant->id,
@@ -84,30 +84,29 @@ describe('Pages Sitemap', function () {
 
         $response = $this->get('/sitemap-pages.xml', ['HTTP_HOST' => 'www.vusa.test']);
 
-        expect($response->status())->toBe(200);
-        expect($response->headers->get('Content-Type'))->toContain('xml');
+        expect($response->status())->toBe(200)
+            ->and($response->headers->get('Content-Type'))->toContain('xml');
 
         $content = $response->getContent();
-        expect($content)->toContain('test-page');
-        expect($content)->not->toContain('inactive-page');
-        expect($content)->toContain('<priority>1.0</priority>'); // Homepage priority
+        expect($content)->toContain('test-page')->not->toContain('inactive-page')
+            ->toContain('<priority>1.0</priority>'); // Homepage priority
         expect($content)->toContain('<priority>0.7</priority>'); // Page priority
     });
 
-    it('includes homepage in pages sitemap', function () {
+    it('includes homepage in pages sitemap', function (): void {
         $response = $this->get('/sitemap-pages.xml', ['HTTP_HOST' => 'www.vusa.test']);
 
         expect($response->status())->toBe(200);
 
         $content = $response->getContent();
-        expect($content)->toContain('<loc>'.url('/').'</loc>');
-        expect($content)->toContain('<priority>1.0</priority>');
-        expect($content)->toContain('<changefreq>weekly</changefreq>');
+        expect($content)->toContain('<loc>'.url('/').'</loc>')
+            ->toContain('<priority>1.0</priority>')
+            ->toContain('<changefreq>weekly</changefreq>');
     });
 });
 
-describe('News Sitemap', function () {
-    it('generates news sitemap with published articles', function () {
+describe('News Sitemap', function (): void {
+    it('generates news sitemap with published articles', function (): void {
         $publishedNews = News::factory()->create([
             'tenant_id' => $this->tenant->id,
             'permalink' => 'published-news',
@@ -128,27 +127,26 @@ describe('News Sitemap', function () {
 
         $response = $this->get('/sitemap-news.xml', ['HTTP_HOST' => 'www.vusa.test']);
 
-        expect($response->status())->toBe(200);
-        expect($response->headers->get('Content-Type'))->toContain('xml');
+        expect($response->status())->toBe(200)
+            ->and($response->headers->get('Content-Type'))->toContain('xml');
 
         $content = $response->getContent();
-        expect($content)->toContain('published-news');
-        expect($content)->not->toContain('draft-news');
-        expect($content)->toContain('/naujienos'); // News archive
+        expect($content)->toContain('published-news')->not->toContain('draft-news')
+            ->toContain('/naujienos'); // News archive
     });
 
-    it('includes news archive page', function () {
+    it('includes news archive page', function (): void {
         $response = $this->get('/sitemap-news.xml', ['HTTP_HOST' => 'www.vusa.test']);
 
         expect($response->status())->toBe(200);
 
         $content = $response->getContent();
-        expect($content)->toContain('<loc>'.url('/naujienos').'</loc>');
-        expect($content)->toContain('<priority>0.8</priority>');
-        expect($content)->toContain('<changefreq>daily</changefreq>');
+        expect($content)->toContain('<loc>'.url('/naujienos').'</loc>')
+            ->toContain('<priority>0.8</priority>')
+            ->toContain('<changefreq>daily</changefreq>');
     });
 
-    it('handles different language news URLs', function () {
+    it('handles different language news URLs', function (): void {
         News::factory()->create([
             'tenant_id' => $this->tenant->id,
             'permalink' => 'lithuanian-news',
@@ -172,13 +170,13 @@ describe('News Sitemap', function () {
         expect($response->status())->toBe(200);
 
         $content = $response->getContent();
-        expect($content)->toContain('/naujiena/lithuanian-news');
-        expect($content)->toContain('/news/english-news');
+        expect($content)->toContain('/naujiena/lithuanian-news')
+            ->toContain('/news/english-news');
     });
 });
 
-describe('Google News Sitemap', function () {
-    it('generates Google News sitemap with recent articles', function () {
+describe('Google News Sitemap', function (): void {
+    it('generates Google News sitemap with recent articles', function (): void {
         $recentNews = News::factory()->create([
             'tenant_id' => $this->tenant->id,
             'permalink' => 'recent-news',
@@ -199,19 +197,18 @@ describe('Google News Sitemap', function () {
 
         $response = $this->get('/sitemap-news-google.xml', ['HTTP_HOST' => 'www.vusa.test']);
 
-        expect($response->status())->toBe(200);
-        expect($response->headers->get('Content-Type'))->toContain('xml');
+        expect($response->status())->toBe(200)
+            ->and($response->headers->get('Content-Type'))->toContain('xml');
 
         $content = $response->getContent();
-        expect($content)->toContain('recent-news');
-        expect($content)->not->toContain('old-news');
-        expect($content)->toContain('xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"');
-        expect($content)->toContain('<news:name>'.$this->tenant->shortname.'</news:name>');
-        expect($content)->toContain('<news:language>lt</news:language>');
-        expect($content)->toContain('<news:title>Recent News</news:title>');
+        expect($content)->toContain('recent-news')->not->toContain('old-news')
+            ->toContain('xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"')
+            ->toContain('<news:name>'.$this->tenant->shortname.'</news:name>')
+            ->toContain('<news:language>lt</news:language>')
+            ->toContain('<news:title>Recent News</news:title>');
     });
 
-    it('includes proper Google News XML structure', function () {
+    it('includes proper Google News XML structure', function (): void {
         News::factory()->create([
             'tenant_id' => $this->tenant->id,
             'permalink' => 'test-news',
@@ -226,18 +223,18 @@ describe('Google News Sitemap', function () {
         expect($response->status())->toBe(200);
 
         $content = $response->getContent();
-        expect($content)->toContain('<?xml version="1.0" encoding="UTF-8"?>');
-        expect($content)->toContain('xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"');
-        expect($content)->toContain('xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">');
-        expect($content)->toContain('<news:news>');
-        expect($content)->toContain('<news:publication>');
-        expect($content)->toContain('<news:publication_date>');
-        expect($content)->toContain('<news:title>Test News Article</news:title>');
+        expect($content)->toContain('<?xml version="1.0" encoding="UTF-8"?>')
+            ->toContain('xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"')
+            ->toContain('xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">')
+            ->toContain('<news:news>')
+            ->toContain('<news:publication>')
+            ->toContain('<news:publication_date>')
+            ->toContain('<news:title>Test News Article</news:title>');
     });
 });
 
-describe('Cache Invalidation', function () {
-    it('clears sitemap cache when news is updated', function () {
+describe('Cache Invalidation', function (): void {
+    it('clears sitemap cache when news is updated', function (): void {
         $news = News::factory()->create([
             'tenant_id' => $this->tenant->id,
             'title' => 'Original Title',
@@ -257,10 +254,10 @@ describe('Cache Invalidation', function () {
         expect($response2->status())->toBe(200);
 
         // Test passes if no exceptions thrown
-        expect(true)->toBe(true);
+        expect(true)->toBeTrue();
     });
 
-    it('clears sitemap cache when page is updated', function () {
+    it('clears sitemap cache when page is updated', function (): void {
         $page = Page::factory()->create([
             'tenant_id' => $this->tenant->id,
             'title' => 'Original Title',
@@ -279,12 +276,12 @@ describe('Cache Invalidation', function () {
         expect($response2->status())->toBe(200);
 
         // Test passes if no exceptions thrown
-        expect(true)->toBe(true);
+        expect(true)->toBeTrue();
     });
 });
 
-describe('Multi-tenant Support', function () {
-    it('generates different sitemaps for different tenants', function () {
+describe('Multi-tenant Support', function (): void {
+    it('generates different sitemaps for different tenants', function (): void {
         $ifTenant = Tenant::firstOrCreate(
             ['alias' => 'if'],
             ['shortname' => 'VU SA IF']
@@ -321,8 +318,7 @@ describe('Multi-tenant Support', function () {
         expect($response1->status())->toBe(200);
 
         $content1 = $response1->getContent();
-        expect($content1)->toContain('if-news');
-        expect($content1)->not->toContain('vusa-news');
+        expect($content1)->toContain('if-news')->not->toContain('vusa-news');
 
         // Test www tenant
         $request2 = Request::create('/sitemap-news.xml');
@@ -332,37 +328,36 @@ describe('Multi-tenant Support', function () {
         expect($response2->status())->toBe(200);
 
         $content2 = $response2->getContent();
-        expect($content2)->toContain('vusa-news');
-        expect($content2)->not->toContain('if-news');
+        expect($content2)->toContain('vusa-news')->not->toContain('if-news');
     });
 });
 
-describe('Error Handling', function () {
-    it('handles missing tenant gracefully', function () {
+describe('Error Handling', function (): void {
+    it('handles missing tenant gracefully', function (): void {
         $controller = new SitemapController;
         $request = Request::create('/sitemap.xml');
         $request->headers->set('host', 'nonexistent123.vusa.test');
 
-        expect(function () use ($controller, $request) {
+        expect(function () use ($controller, $request): void {
             $controller->index($request);
         })->toThrow(NotFoundHttpException::class);
     });
 
-    it('returns valid XML even when database is empty', function () {
+    it('returns valid XML even when database is empty', function (): void {
         $response = $this->get('/sitemap-pages.xml', ['HTTP_HOST' => 'www.vusa.test']);
 
-        expect($response->status())->toBe(200);
-        expect($response->headers->get('Content-Type'))->toContain('xml');
+        expect($response->status())->toBe(200)
+            ->and($response->headers->get('Content-Type'))->toContain('xml');
 
         $content = $response->getContent();
-        expect($content)->toContain('<?xml version="1.0" encoding="UTF-8"?>');
-        expect($content)->toContain('xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"');
-        expect($content)->toContain('</urlset>');
+        expect($content)->toContain('<?xml version="1.0" encoding="UTF-8"?>')
+            ->toContain('xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"')
+            ->toContain('</urlset>');
     });
 });
 
-describe('Model Sitemap Integration', function () {
-    it('uses toSitemapTag method for news articles', function () {
+describe('Model Sitemap Integration', function (): void {
+    it('uses toSitemapTag method for news articles', function (): void {
         $news = News::factory()->create([
             'tenant_id' => $this->tenant->id,
             'permalink' => 'test-news',
@@ -375,13 +370,13 @@ describe('Model Sitemap Integration', function () {
 
         $sitemapTag = $news->toSitemapTag();
 
-        expect($sitemapTag)->toBeInstanceOf(Url::class);
-        expect($sitemapTag->url)->toBe('/naujiena/test-news');
-        expect($sitemapTag->priority)->toBe(0.6);
-        expect($sitemapTag->changeFrequency)->toBe('never');
+        expect($sitemapTag)->toBeInstanceOf(Url::class)
+            ->and($sitemapTag->url)->toBe('/naujiena/test-news')
+            ->and($sitemapTag->priority)->toBe(0.6)
+            ->and($sitemapTag->changeFrequency)->toBe('never');
     });
 
-    it('uses toSitemapTag method for pages', function () {
+    it('uses toSitemapTag method for pages', function (): void {
         $page = Page::factory()->create([
             'tenant_id' => $this->tenant->id,
             'permalink' => 'test-page',
@@ -391,9 +386,9 @@ describe('Model Sitemap Integration', function () {
 
         $sitemapTag = $page->toSitemapTag();
 
-        expect($sitemapTag)->toBeInstanceOf(Url::class);
-        expect($sitemapTag->url)->toBe('/test-page');
-        expect($sitemapTag->priority)->toBe(0.7);
-        expect($sitemapTag->changeFrequency)->toBe('monthly');
+        expect($sitemapTag)->toBeInstanceOf(Url::class)
+            ->and($sitemapTag->url)->toBe('/test-page')
+            ->and($sitemapTag->priority)->toBe(0.7)
+            ->and($sitemapTag->changeFrequency)->toBe('monthly');
     });
 });

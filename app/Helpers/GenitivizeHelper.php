@@ -31,7 +31,7 @@ class GenitivizeHelper
         }
 
         $words = explode(' ', $name);
-        $genitivizedWords = array_map([self::class, 'genitivize'], $words);
+        $genitivizedWords = array_map(self::genitivize(...), $words);
 
         return implode(' ', $genitivizedWords);
     }

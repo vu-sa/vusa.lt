@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Database\Factories\FieldResponseFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -24,15 +25,15 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
+#[Fillable([
+    'response',
+])]
 class FieldResponse extends Model
 {
     /** @use HasFactory<FieldResponseFactory> */
     use HasFactory;
 
-    protected $fillable = [
-        'response',
-    ];
-
+    #[\Override]
     protected function casts(): array
     {
         return [

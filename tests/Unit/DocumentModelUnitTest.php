@@ -2,7 +2,7 @@
 
 use App\Models\Document;
 
-test('document calculates in effect status correctly', function () {
+test('document calculates in effect status correctly', function (): void {
     // Document with no validity dates - should return null
     $document = new Document([
         'effective_date' => null,
@@ -36,7 +36,7 @@ test('document calculates in effect status correctly', function () {
     expect($document->calculateIsInEffect())->toBeFalse();
 });
 
-test('document should be searchable only when it has anonymous url', function () {
+test('document should be searchable only when it has anonymous url', function (): void {
     // Document without anonymous URL should not be searchable (not public)
     $document = new Document(['anonymous_url' => null]);
     expect($document->shouldBeSearchable())->toBeFalse();
@@ -51,9 +51,9 @@ test('document should be searchable only when it has anonymous url', function ()
     expect($document->shouldBeSearchable())->toBeTrue();
 });
 
-test('isUrlShortcut detects .url files case-insensitively', function () {
-    expect((new Document(['name' => 'ataskaita2023.vusa.lt.url']))->isUrlShortcut())->toBeTrue();
-    expect((new Document(['name' => 'ataskaita2023.vusa.lt.URL']))->isUrlShortcut())->toBeTrue();
-    expect((new Document(['name' => 'protokolas.pdf']))->isUrlShortcut())->toBeFalse();
-    expect((new Document(['name' => null]))->isUrlShortcut())->toBeFalse();
+test('isUrlShortcut detects .url files case-insensitively', function (): void {
+    expect(new Document(['name' => 'ataskaita2023.vusa.lt.url'])->isUrlShortcut())->toBeTrue()
+        ->and(new Document(['name' => 'ataskaita2023.vusa.lt.URL'])->isUrlShortcut())->toBeTrue()
+        ->and(new Document(['name' => 'protokolas.pdf'])->isUrlShortcut())->toBeFalse()
+        ->and(new Document(['name' => null])->isUrlShortcut())->toBeFalse();
 });

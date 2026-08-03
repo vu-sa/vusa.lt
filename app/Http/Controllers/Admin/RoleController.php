@@ -124,7 +124,7 @@ class RoleController extends AdminController
         $role->load('permissions:id,name', 'duties:id,name');
 
         $tenantsWithDuties = Tenant::orderBy('shortname')->with('institutions:id,name,tenant_id', 'institutions.duties:id,name,institution_id')
-            ->when(! auth()->user()?->isSuperAdmin(), function ($query) {
+            ->when(! auth()->user()?->isSuperAdmin(), function ($query): void {
                 $query->whereIn('id', User::find(Auth::id())->tenants->pluck('id'));
             })->get();
 
@@ -143,9 +143,7 @@ class RoleController extends AdminController
             ],
             'tenantsWithDuties' => $tenantsWithDuties,
             'allTypes' => Type::all(),
-            'allAvailablePermissions' => $allAvailablePermissions->map(function ($permissions) {
-                return $permissions->pluck('name');
-            }),
+            'allAvailablePermissions' => $allAvailablePermissions->map(fn ($permissions) => $permissions->pluck('name')),
         ]);
     }
 
@@ -211,7 +209,7 @@ class RoleController extends AdminController
 
         $newPermissions = Permission::whereIn('name', $newPermissions)->get()->pluck('id');
 
-        $role->load(['permissions' => function ($query) use ($model) {
+        $role->load(['permissions' => function ($query) use ($model): void {
             // query for permission names with like $model%
             $query->where('name', 'like', $model.'%');
         }]);
@@ -261,7 +259,7 @@ class RoleController extends AdminController
 
     protected function clearCacheforRoleUsers(Role $role)
     {
-        $role->usersThroughDuties->each(function ($user) {
+        $role->usersThroughDuties->each(function ($user): void {
             PermissionMapBuilder::forgetCachedMaps($user->id);
             Cache::forget(HandleInertiaRequests::registrationFormsCacheKey($user->id));
         });

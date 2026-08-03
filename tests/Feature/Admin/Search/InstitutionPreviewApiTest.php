@@ -7,19 +7,19 @@ use App\Models\Tenant;
 use App\Services\RelationshipService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
     $this->institution = Institution::factory()->for($this->tenant)->create();
 });
 
-test('unauthenticated request is rejected', function () {
+test('unauthenticated request is rejected', function (): void {
     $this->getJson(route('api.v1.admin.institutions.preview', $this->institution))
         ->assertStatus(401);
 });
 
-test('user without access to the institution gets 403', function () {
+test('user without access to the institution gets 403', function (): void {
     $user = makeUser($this->tenant);
 
     asUser($user)
@@ -27,7 +27,7 @@ test('user without access to the institution gets 403', function () {
         ->assertStatus(403);
 });
 
-test('authorized admin receives the preview payload', function () {
+test('authorized admin receives the preview payload', function (): void {
     $admin = makeAdminUser($this->tenant);
 
     asUser($admin)
@@ -39,7 +39,7 @@ test('authorized admin receives the preview payload', function () {
         ]);
 });
 
-test('preview exposes related institutions with edge metadata', function () {
+test('preview exposes related institutions with edge metadata', function (): void {
     $admin = makeAdminUser($this->tenant);
 
     $relationship = new Relationship([
@@ -50,12 +50,12 @@ test('preview exposes related institutions with edge metadata', function () {
 
     $target = Institution::factory()->for($this->tenant)->create();
 
-    (new Relationshipable([
+    new Relationshipable([
         'relationship_id' => $relationship->id,
         'relationshipable_type' => Institution::class,
         'relationshipable_id' => $this->institution->id,
         'related_model_id' => $target->id,
-    ]))->save();
+    ])->save();
 
     RelationshipService::clearRelatedInstitutionsCache($this->institution->id);
 

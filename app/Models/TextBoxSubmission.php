@@ -30,6 +30,7 @@ class TextBoxSubmission extends Model
 {
     use HasFactory, HasUlids;
 
+    #[\Override]
     protected $guarded = [];
 
     public function contentPart(): BelongsTo

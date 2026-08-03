@@ -178,7 +178,7 @@ class NavigationController extends AdminController
             $navigation->order = $key;
             $navigation->save();
 
-            $children = isset($value['links']) ? $value['links'] : null;
+            $children = $value['links'] ?? null;
 
             if ($children) {
                 // Flatten array

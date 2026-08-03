@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Traits\HasTranslations;
+use App\Models\Traits\LogsModelActivity;
 use App\Policies\ProblemPolicy;
 use App\Services\HtmlSanitizerService;
 use Illuminate\Database\Eloquent\Collection;
@@ -13,9 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\Searchable;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Models\Activity;
-use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 /**
  * @property string $id
@@ -32,7 +31,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
- * @property-read Collection<int, Activity> $activities
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, ProblemCategory> $categories
  * @property-read User|null $createdBy
  * @property-read array $translatable_columns_from
@@ -57,14 +56,16 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Problem extends Model
 {
-    use HasFactory, HasTranslations, HasUlids, LogsActivity, Searchable, SoftDeletes {
+    use HasFactory, HasTranslations, HasUlids, LogsModelActivity, Searchable, SoftDeletes {
         HasTranslations::setTranslation as baseSetTranslation;
     }
 
+    #[\Override]
     protected $guarded = [];
 
     public $translatable = ['title', 'description', 'solution', 'steps_taken'];
 
+    #[\Override]
     protected $casts = [
         'occurred_at' => 'date',
         'resolved_at' => 'date',
@@ -78,7 +79,7 @@ class Problem extends Model
      *
      * @var list<string>
      */
-    private const SANITIZED_HTML_FIELDS = ['description', 'solution', 'steps_taken'];
+    private const array SANITIZED_HTML_FIELDS = ['description', 'solution', 'steps_taken'];
 
     /**
      * Sanitize on write. Spatie funnels every write path — mass assignment,
@@ -95,9 +96,20 @@ class Problem extends Model
         return $this->baseSetTranslation($key, $locale, $value);
     }
 
+    /**
+     * Log the raw {"lt":"…","en":"…"} JSON for the diffable rich fields
+     * instead of the trait default, which resolves getAttribute() -- for a
+     * translatable attribute that returns only the saving admin's session
+     * locale (see HasTranslations::getAttributeValue()). Left as single-locale
+     * strings, an EN-only edit made under an LT session would leave the LT
+     * string unchanged, and dontLogEmptyChanges() would silently drop the
+     * whole activity. Only SANITIZED_HTML_FIELDS, not every translatable
+     * attribute (title stays single-locale; it isn't diffed).
+     */
     public function getActivitylogOptions(): LogOptions
     {
-        return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
+        return $this->defaultActivitylogOptions()
+            ->useAttributeRawValues(self::SANITIZED_HTML_FIELDS);
     }
 
     public function toSearchableArray(): array

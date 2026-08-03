@@ -4,7 +4,10 @@ namespace App\Models;
 
 use App\Enums\VoteValue;
 use App\Models\Pivots\AgendaItem;
+use App\Models\Traits\LogsModelActivity;
 use Database\Factories\VoteFactory;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Touches;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -12,9 +15,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Models\Activity;
-use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * Vote model - represents a single vote outcome within an agenda item.
@@ -34,7 +34,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $order
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read Collection<int, Activity> $activities
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read AgendaItem $agendaItem
  * @property-read string|null $decision_label
  * @property-read bool $is_complete
@@ -52,16 +52,16 @@ use Spatie\Activitylog\Traits\LogsActivity;
  *
  * @mixin \Eloquent
  */
+#[Table(name: 'votes')]
+#[Touches(['agendaItem'])]
 class Vote extends Model
 {
-    use HasFactory, HasUlids, LogsActivity;
+    use HasFactory, HasUlids, LogsModelActivity;
 
-    protected $table = 'votes';
-
-    protected $touches = ['agendaItem'];
-
+    #[\Override]
     protected $guarded = [];
 
+    #[\Override]
     protected function casts(): array
     {
         return [
@@ -74,11 +74,6 @@ class Vote extends Model
     protected static function newFactory(): Factory
     {
         return VoteFactory::new();
-    }
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
     /**
@@ -194,12 +189,13 @@ class Vote extends Model
     /**
      * Boot the model.
      */
+    #[\Override]
     protected static function boot()
     {
         parent::boot();
 
         // Set order on creation
-        static::creating(function (Vote $vote) {
+        static::creating(function (Vote $vote): void {
             $order = $vote->getAttribute('order');
 
             if ($order === 0 || $order === null) {

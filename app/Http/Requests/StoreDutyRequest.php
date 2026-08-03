@@ -57,7 +57,7 @@ class StoreDutyRequest extends FormRequest
 
     public function withValidator(Validator $validator): void
     {
-        $validator->after(function (Validator $v) {
+        $validator->after(function (Validator $v): void {
             $authorizer = app(ModelAuthorizer::class)->forUser($this->user());
             $hasGlobalDutyScope = $authorizer->check('duties.create.*');
 

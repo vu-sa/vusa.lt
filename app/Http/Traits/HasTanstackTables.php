@@ -134,7 +134,7 @@ trait HasTanstackTables
             return $rows;
         }
 
-        return $rows->each(function ($row) {
+        return $rows->each(function ($row): void {
             if ($row instanceof GuardsForceDelete) {
                 $row->append('force_delete_blocked_reason');
             }
@@ -154,7 +154,7 @@ trait HasTanstackTables
             $decoded = json_decode($sorting, true);
 
             return is_array($decoded) ? $decoded : [];
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return [];
         }
     }
@@ -172,7 +172,7 @@ trait HasTanstackTables
             $decoded = json_decode($filters, true);
 
             return is_array($decoded) ? $decoded : [];
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return [];
         }
     }

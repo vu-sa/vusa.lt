@@ -12,7 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 /**
  * Attach a freshly-created user to the meeting's institution (via a duty), so
@@ -29,7 +29,7 @@ function audienceMember(Institution $institution): User
     return $user;
 }
 
-beforeEach(function () {
+beforeEach(function (): void {
     Notification::fake();
     config(['queue.default' => 'sync']);
 
@@ -50,7 +50,7 @@ beforeEach(function () {
     $this->bystander = audienceMember($this->institution);
 });
 
-test('a mentioned user is notified', function () {
+test('a mentioned user is notified', function (): void {
     $this->actingAs($this->author);
     $body = '<p>Hey <span data-id="'.$this->rep->id.'">@rep</span></p>';
 
@@ -59,7 +59,7 @@ test('a mentioned user is notified', function () {
     Notification::assertSentTo($this->rep, CommentPostedNotification::class);
 });
 
-test('an agenda-item root comment notifies the meeting audience (the fixed gap)', function () {
+test('an agenda-item root comment notifies the meeting audience (the fixed gap)', function (): void {
     $this->actingAs($this->author);
 
     $this->agendaItem->comment('<p>Anyone around?</p>');
@@ -68,7 +68,7 @@ test('an agenda-item root comment notifies the meeting audience (the fixed gap)'
     Notification::assertSentTo($this->bystander, CommentPostedNotification::class);
 });
 
-test('the comment author is never notified of their own comment', function () {
+test('the comment author is never notified of their own comment', function (): void {
     $this->actingAs($this->author);
 
     $this->agendaItem->comment('<p>Anyone around?</p>');
@@ -76,7 +76,7 @@ test('the comment author is never notified of their own comment', function () {
     Notification::assertNotSentTo($this->author, CommentPostedNotification::class);
 });
 
-test('a reply notifies thread participants only, not the whole audience', function () {
+test('a reply notifies thread participants only, not the whole audience', function (): void {
     // The rep opens the thread (notifies the audience — reset afterwards so we
     // assert only on the reply's recipients).
     $this->actingAs($this->rep);

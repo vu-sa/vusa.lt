@@ -27,6 +27,7 @@
         </div>
       </template>
       <template #actions>
+        <ActivityLogSheet subject-type="institution" :subject-id="institution.id" />
         <Button v-if="canScheduleMeeting" variant="default" size="sm" class="gap-2" @click="showMeetingModal = true">
           <CalendarIcon class="h-4 w-4" />
           {{ $t('Suplanuoti susitikimą') }}
@@ -321,6 +322,7 @@ import {
 // Layout and Components
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import ShowPageHero from '@/Components/Hero/ShowPageHero.vue';
+import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import MoreOptionsButton from '@/Components/Buttons/MoreOptionsButton.vue';
 import SimpleFileViewer from '@/Features/Admin/SharepointFileManager/Viewer/SimpleFileViewer.vue';
 import NewMeetingDialog from '@/Components/Dialogs/NewMeetingDialog.vue';

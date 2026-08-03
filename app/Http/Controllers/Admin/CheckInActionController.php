@@ -11,7 +11,7 @@ use Illuminate\Http\RedirectResponse;
 
 class InstitutionCheckInController extends AdminController
 {
-    public function __construct(private CheckInService $service, public ModelAuthorizer $authorizer) {}
+    public function __construct(private readonly CheckInService $service, public ModelAuthorizer $authorizer) {}
 
     /**
      * Store a new check-in for an institution.

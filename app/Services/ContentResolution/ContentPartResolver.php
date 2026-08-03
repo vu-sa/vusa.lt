@@ -24,7 +24,7 @@ use Illuminate\Support\Collection;
 final class ContentPartResolver
 {
     /** @var array<string, class-string<ResolvesContentPart>> */
-    private const RESOLVERS = [
+    private const array RESOLVERS = [
         'link-list' => LinkListResolver::class,
         'event-list' => EventListResolver::class,
         'news' => NewsBlockResolver::class,

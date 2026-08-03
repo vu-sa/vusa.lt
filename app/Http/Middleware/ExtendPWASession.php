@@ -13,7 +13,7 @@ class ExtendPWASession
      * Extended session lifetime for PWA mode (in minutes).
      * 2 weeks = 20160 minutes
      */
-    private const PWA_SESSION_LIFETIME = 20160;
+    private const int PWA_SESSION_LIFETIME = 20160;
 
     /**
      * Handle an incoming request.

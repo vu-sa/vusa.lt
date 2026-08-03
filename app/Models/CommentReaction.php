@@ -29,6 +29,7 @@ class CommentReaction extends Model
 {
     use HasFactory, HasUlids;
 
+    #[\Override]
     protected $guarded = [];
 
     public function comment(): BelongsTo

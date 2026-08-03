@@ -3,15 +3,15 @@
 use App\Services\Typesense\TypesenseCuration;
 use App\Services\Typesense\TypesenseSynonyms;
 
-describe('TypesenseSynonyms::buildSynonymSetItems', function () {
-    test('includes every configured synonym as an item', function () {
+describe('TypesenseSynonyms::buildSynonymSetItems', function (): void {
+    test('includes every configured synonym as an item', function (): void {
         $items = TypesenseSynonyms::buildSynonymSetItems();
 
         $expected = count(TypesenseSynonyms::MULTI_WAY_SYNONYMS) + count(TypesenseSynonyms::ONE_WAY_SYNONYMS);
         expect($items)->toHaveCount($expected);
     });
 
-    test('multi-way items carry id and synonyms without a root', function () {
+    test('multi-way items carry id and synonyms without a root', function (): void {
         $items = collect(TypesenseSynonyms::buildSynonymSetItems());
 
         $vu = $items->firstWhere('id', 'vu-variants');
@@ -21,7 +21,7 @@ describe('TypesenseSynonyms::buildSynonymSetItems', function () {
             ->and($vu['synonyms'])->toContain('Vilniaus universitetas');
     });
 
-    test('one-way items carry id, root and synonyms', function () {
+    test('one-way items carry id, root and synonyms', function (): void {
         $items = collect(TypesenseSynonyms::buildSynonymSetItems());
 
         $decision = $items->firstWhere('id', 'decision-lt');
@@ -32,8 +32,8 @@ describe('TypesenseSynonyms::buildSynonymSetItems', function () {
     });
 });
 
-describe('TypesenseCuration item builders', function () {
-    test('pinItem builds a rule with an includes entry', function () {
+describe('TypesenseCuration item builders', function (): void {
+    test('pinItem builds a rule with an includes entry', function (): void {
         $item = TypesenseCuration::pinItem('pin-1', 'nuostatai', 'doc-42', 2);
 
         expect($item)->toMatchArray([
@@ -43,7 +43,7 @@ describe('TypesenseCuration item builders', function () {
         ])->and($item)->not->toHaveKey('excludes');
     });
 
-    test('excludeItem builds a rule with an excludes entry', function () {
+    test('excludeItem builds a rule with an excludes entry', function (): void {
         $item = TypesenseCuration::excludeItem('hide-1', 'test', 'doc-99');
 
         expect($item)->toMatchArray([

@@ -30,6 +30,7 @@
         </Badge>
       </template>
       <template #actions>
+        <ActivityLogSheet subject-type="duty" :subject-id="duty.id" />
         <Button v-if="canAssignMembers" variant="default" size="sm" class="gap-2" @click="showAssignMemberModal = true">
           <UserPlus class="h-4 w-4" />
           {{ $t('Priskirti narį') }}
@@ -178,6 +179,7 @@ import { UserPlus, Settings, Mail, Gavel, UserX } from 'lucide-vue-next';
 // Layout and Components
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import ShowPageHero from '@/Components/Hero/ShowPageHero.vue';
+import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import MoreOptionsButton from '@/Components/Buttons/MoreOptionsButton.vue';
 import PriorityAlert from '@/Components/Alerts/PriorityAlert.vue';
 import FileManager from '@/Features/Admin/SharepointFileManager/SharepointFileManager.vue';

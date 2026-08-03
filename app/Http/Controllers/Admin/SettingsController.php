@@ -11,6 +11,7 @@ use App\Http\Requests\UpdateMeetingSettingsRequest;
 use App\Http\Requests\UpdateSettingsAuthorizationRequest;
 use App\Models\Document;
 use App\Models\Form;
+use App\Models\Institution;
 use App\Models\PublicInstitution;
 use App\Models\PublicMeeting;
 use App\Models\Role;
@@ -64,7 +65,7 @@ class SettingsController extends AdminController
             'forms' => Form::all(['id', 'name']),
             'roles' => Role::all(['id', 'name']),
             'institution_types' => Type::query()
-                ->where('model_type', 'App\\Models\\Institution')
+                ->where('model_type', Institution::class)
                 ->get(['id', 'title', 'slug'])
                 ->map->toArray(),
         ]);
@@ -103,7 +104,7 @@ class SettingsController extends AdminController
             'selected_type_ids' => $meetingSettings->getPublicMeetingInstitutionTypeIds()->toArray(),
             'excluded_type_ids' => $meetingSettings->getExcludedInstitutionTypeIds()->toArray(),
             'available_types' => Type::query()
-                ->where('model_type', 'App\\Models\\Institution')
+                ->where('model_type', Institution::class)
                 ->get(['id', 'title', 'slug'])
                 ->map->toArray(),
         ]);
@@ -122,7 +123,7 @@ class SettingsController extends AdminController
 
         // Reindex public meetings and institutions since visibility criteria changed
         // Flush first to remove meetings/institutions that no longer match, then reimport
-        dispatch(function () {
+        dispatch(function (): void {
             PublicMeeting::removeAllFromSearch();
             PublicMeeting::makeAllSearchable();
 

@@ -119,7 +119,7 @@ class InstitutionAccessService
      */
     public function getRelatedInstitutionIds(User $user, ?Collection $dutyInstitutionIds = null): Collection
     {
-        $dutyInstitutionIds = $dutyInstitutionIds ?? $this->getUserDutyInstitutionIds($user);
+        $dutyInstitutionIds ??= $this->getUserDutyInstitutionIds($user);
 
         if ($dutyInstitutionIds->isEmpty()) {
             return collect();

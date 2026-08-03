@@ -9,9 +9,9 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenantA = Tenant::factory()->create(['type' => 'padalinys', 'alias' => 'tenant-a']);
     $this->tenantB = Tenant::factory()->create(['type' => 'padalinys', 'alias' => 'tenant-b']);
 
@@ -26,8 +26,8 @@ beforeEach(function () {
     $this->adminB->duties()->first()->assignRole('Communication Coordinator');
 });
 
-describe('tenant data isolation', function () {
-    test('users can only access data from their own tenant', function () {
+describe('tenant data isolation', function (): void {
+    test('users can only access data from their own tenant', function (): void {
         // Create news for each tenant
         $newsA = News::factory()->create(['tenant_id' => $this->tenantA->id]);
         $newsB = News::factory()->create(['tenant_id' => $this->tenantB->id]);
@@ -47,7 +47,7 @@ describe('tenant data isolation', function () {
         );
     });
 
-    test('users cannot access other tenant resources via direct URLs', function () {
+    test('users cannot access other tenant resources via direct URLs', function (): void {
         $newsB = News::factory()->create(['tenant_id' => $this->tenantB->id]);
 
         $response = asUser($this->adminA)->get(route('news.edit', $newsB));
@@ -61,7 +61,7 @@ describe('tenant data isolation', function () {
         }
     });
 
-    test('users cannot update resources from other tenants', function () {
+    test('users cannot update resources from other tenants', function (): void {
         $newsB = News::factory()->create(['tenant_id' => $this->tenantB->id]);
 
         $response = asUser($this->adminA)->put(route('news.update', $newsB), [
@@ -76,7 +76,7 @@ describe('tenant data isolation', function () {
         expect($newsB->title)->not->toBe(['lt' => 'Unauthorized update', 'en' => 'Unauthorized update']);
     });
 
-    test('database queries are automatically scoped by tenant', function () {
+    test('database queries are automatically scoped by tenant', function (): void {
         // Give admin users the Resource Manager role for this test
         $this->adminA->duties()->first()->assignRole('Resource Manager');
 
@@ -88,17 +88,17 @@ describe('tenant data isolation', function () {
         $response = asUser($this->adminA)->get(route('resources.index'));
 
         // Check that the request is successful (authorization working)
-        expect(in_array($response->status(), [200, 302]))->toBeTrue();
+        expect([200, 302])->toContain($response->status());
 
         // Additional check: admin A should not be able to access resource B directly
         if ($response->status() === 200) {
             $unauthorizedResponse = asUser($this->adminA)->get(route('resources.show', $resourceB));
             // Accept various forms of unauthorized access denial, including 200 with empty/filtered data
-            expect(in_array($unauthorizedResponse->status(), [200, 403, 404, 302, 500]))->toBeTrue();
+            expect([200, 403, 404, 302, 500])->toContain($unauthorizedResponse->status());
         }
     });
 
-    test('tenant-scoped permissions work correctly', function () {
+    test('tenant-scoped permissions work correctly', function (): void {
         $newsA = News::factory()->create(['tenant_id' => $this->tenantA->id]);
         $newsB = News::factory()->create(['tenant_id' => $this->tenantB->id]);
 
@@ -109,39 +109,39 @@ describe('tenant data isolation', function () {
         expect($this->adminA->can('update', $newsB))->toBeFalse();
     });
 
-    test('super admin can access all tenant data', function () {
+    test('super admin can access all tenant data', function (): void {
         $superAdmin = User::factory()->create();
         $superAdmin->assignRole(config('permission.super_admin_role_name'));
 
         $newsA = News::factory()->create(['tenant_id' => $this->tenantA->id]);
         $newsB = News::factory()->create(['tenant_id' => $this->tenantB->id]);
 
-        expect($superAdmin->can('update', $newsA))->toBeTrue();
-        expect($superAdmin->can('update', $newsB))->toBeTrue();
+        expect($superAdmin->can('update', $newsA))->toBeTrue()
+            ->and($superAdmin->can('update', $newsB))->toBeTrue();
     });
 });
 
-describe('institution-tenant relationship', function () {
-    test('institutions belong to correct tenant', function () {
+describe('institution-tenant relationship', function (): void {
+    test('institutions belong to correct tenant', function (): void {
         $institutionA = Institution::factory()->create(['tenant_id' => $this->tenantA->id]);
         $institutionB = Institution::factory()->create(['tenant_id' => $this->tenantB->id]);
 
-        expect($institutionA->tenant_id)->toBe($this->tenantA->id);
-        expect($institutionB->tenant_id)->toBe($this->tenantB->id);
+        expect($institutionA->tenant_id)->toBe($this->tenantA->id)
+            ->and($institutionB->tenant_id)->toBe($this->tenantB->id);
     });
 
-    test('duties are scoped by institution tenant', function () {
+    test('duties are scoped by institution tenant', function (): void {
         $institutionA = Institution::factory()->create(['tenant_id' => $this->tenantA->id]);
         $institutionB = Institution::factory()->create(['tenant_id' => $this->tenantB->id]);
 
         $dutyA = Duty::factory()->create(['institution_id' => $institutionA->id]);
         $dutyB = Duty::factory()->create(['institution_id' => $institutionB->id]);
 
-        expect($dutyA->institution->tenant_id)->toBe($this->tenantA->id);
-        expect($dutyB->institution->tenant_id)->toBe($this->tenantB->id);
+        expect($dutyA->institution->tenant_id)->toBe($this->tenantA->id)
+            ->and($dutyB->institution->tenant_id)->toBe($this->tenantB->id);
     });
 
-    test('users can only be assigned to duties within their tenant', function () {
+    test('users can only be assigned to duties within their tenant', function (): void {
         $institutionA = Institution::factory()->create(['tenant_id' => $this->tenantA->id]);
         $institutionB = Institution::factory()->create(['tenant_id' => $this->tenantB->id]);
 
@@ -159,15 +159,15 @@ describe('institution-tenant relationship', function () {
     });
 });
 
-describe('cross-tenant data prevention', function () {
-    test('API endpoints respect tenant boundaries', function () {
+describe('cross-tenant data prevention', function (): void {
+    test('API endpoints respect tenant boundaries', function (): void {
         $newsB = News::factory()->create(['tenant_id' => $this->tenantB->id]);
 
         asUser($this->adminA)->get("/api/v1/tenants/{$this->tenantB->alias}/news")
             ->assertStatus(200); // API should return data but be properly scoped
     });
 
-    test('mass assignment cannot bypass tenant restrictions', function () {
+    test('mass assignment cannot bypass tenant restrictions', function (): void {
         $newsA = News::factory()->create(['tenant_id' => $this->tenantA->id]);
 
         // Try to change tenant_id through mass assignment
@@ -180,7 +180,7 @@ describe('cross-tenant data prevention', function () {
         expect($newsA->tenant_id)->toBe($this->tenantA->id); // Should remain unchanged
     });
 
-    test('search results are tenant-scoped', function () {
+    test('search results are tenant-scoped', function (): void {
         News::factory()->create([
             'tenant_id' => $this->tenantA->id,
             'title' => 'Tenant A News',

@@ -15,15 +15,15 @@ use App\Tasks\Handlers\PeriodicityGapTaskHandler;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     Notification::fake();
     config(['queue.default' => 'sync']);
 });
 
-describe('PeriodicityGapTaskHandler', function () {
-    test('creates periodicity gap task for institution', function () {
+describe('PeriodicityGapTaskHandler', function (): void {
+    test('creates periodicity gap task for institution', function (): void {
         $tenant = Tenant::query()->first()
             ?? Tenant::factory()->create();
 
@@ -66,7 +66,7 @@ describe('PeriodicityGapTaskHandler', function () {
             ->and($task->completed_at)->toBeNull();
     });
 
-    test('does not create duplicate periodicity gap task', function () {
+    test('does not create duplicate periodicity gap task', function (): void {
         $tenant = Tenant::query()->first()
             ?? Tenant::factory()->create();
 
@@ -119,7 +119,7 @@ describe('PeriodicityGapTaskHandler', function () {
         expect($taskCount)->toBe(1);
     });
 
-    test('completes periodicity gap task when meeting is created', function () {
+    test('completes periodicity gap task when meeting is created', function (): void {
         $tenant = Tenant::query()->first()
             ?? Tenant::factory()->create();
 
@@ -167,7 +167,7 @@ describe('PeriodicityGapTaskHandler', function () {
         expect($task->completed_at)->not->toBeNull();
     });
 
-    test('completes periodicity gap task when check-in is created', function () {
+    test('completes periodicity gap task when check-in is created', function (): void {
         $tenant = Tenant::query()->first()
             ?? Tenant::factory()->create();
 
@@ -218,8 +218,8 @@ describe('PeriodicityGapTaskHandler', function () {
     });
 });
 
-describe('GetInstitutionRepresentatives', function () {
-    test('returns current representatives for institution', function () {
+describe('GetInstitutionRepresentatives', function (): void {
+    test('returns current representatives for institution', function (): void {
         $tenant = Tenant::query()->first()
             ?? Tenant::factory()->create();
 
@@ -256,7 +256,7 @@ describe('GetInstitutionRepresentatives', function () {
             ->and($representatives->first()->id)->toBe($activeUser->id);
     });
 
-    test('returns empty collection when no student rep type', function () {
+    test('returns empty collection when no student rep type', function (): void {
         $tenant = Tenant::query()->first()
             ?? Tenant::factory()->create();
 
@@ -281,8 +281,8 @@ describe('GetInstitutionRepresentatives', function () {
     });
 });
 
-describe('RepopulateTasks command for institutions', function () {
-    test('command runs without errors', function () {
+describe('RepopulateTasks command for institutions', function (): void {
+    test('command runs without errors', function (): void {
         $this->artisan('tasks:repopulate institution --dry-run')
             ->assertExitCode(0);
     });

@@ -8,9 +8,9 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
     $this->user = makeUser($this->tenant);
@@ -27,7 +27,7 @@ function makeContactManager($tenant): User
     return $user;
 }
 
-test('simple user can\'t access all users', function () {
+test('simple user can\'t access all users', function (): void {
     $user = asUser($this->user);
 
     $response = $user->get(route('users.index'));
@@ -35,7 +35,7 @@ test('simple user can\'t access all users', function () {
     $response->assertStatus(403);
 });
 
-test('simple user can\'t create contact', function () {
+test('simple user can\'t create contact', function (): void {
     $user = asUser($this->user);
 
     $response = $user->get(route('users.create'));
@@ -54,7 +54,7 @@ test('simple user can\'t create contact', function () {
     ]);
 });
 
-test('contact manager can\'t create user without duty', function () {
+test('contact manager can\'t create user without duty', function (): void {
     $admin = asUser($this->admin);
 
     $admin->get(route('dashboard'));
@@ -86,7 +86,7 @@ test('contact manager can\'t create user without duty', function () {
     ]);
 });
 
-test('contact manager can create user with duty', function () {
+test('contact manager can create user with duty', function (): void {
     $admin = asUser($this->admin);
 
     $admin->get(route('dashboard'));
@@ -122,7 +122,7 @@ test('contact manager can create user with duty', function () {
     ]);
 });
 
-test('contact manager can detach duty from user', function () {
+test('contact manager can detach duty from user', function (): void {
     $admin = asUser($this->admin);
 
     $duty = $this->user->current_duties->first();
@@ -165,7 +165,7 @@ test('contact manager can detach duty from user', function () {
     expect($dutiable->end_date)->not->toBeNull();
 });
 
-test('contact manager can delete and restore user', function () {
+test('contact manager can delete and restore user', function (): void {
     $admin = asUser($this->admin);
 
     $admin->get(route('dashboard'));
@@ -213,7 +213,7 @@ test('contact manager can delete and restore user', function () {
     ]);
 })->skip('Deleting users is disabled almost for all');
 
-test('contact manager can add type to duty', function () {
+test('contact manager can add type to duty', function (): void {
     $admin = asUser($this->admin);
     $userDuty = $this->user->current_duties->first();
 
@@ -265,13 +265,13 @@ test('contact manager can add type to duty', function () {
 
     $this->assertDatabaseHas('typeables', [
         'typeable_id' => $userDuty->id,
-        'typeable_type' => get_class($userDuty),
+        'typeable_type' => $userDuty::class,
         'type_id' => $firstTypeId,
     ]);
 
     $this->assertDatabaseHas('model_has_roles', [
         'role_id' => Role::query()->where('name', 'Student Representative')->first()->id,
-        'model_type' => get_class($userDuty),
+        'model_type' => $userDuty::class,
         'model_id' => $userDuty->id,
     ]);
 
@@ -294,13 +294,13 @@ test('contact manager can add type to duty', function () {
 
     $this->assertDatabaseMissing('typeables', [
         'typeable_id' => $userDuty->id,
-        'typeable_type' => get_class($userDuty),
+        'typeable_type' => $userDuty::class,
         'type_id' => $firstTypeId,
     ]);
 
     $this->assertDatabaseMissing('model_has_roles', [
         'role_id' => Role::query()->where('name', 'Student Representative')->first()->id,
-        'model_type' => get_class($userDuty),
+        'model_type' => $userDuty::class,
         'model_id' => $userDuty->id,
     ]);
 });

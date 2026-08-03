@@ -34,9 +34,7 @@ class SendMemberRegistrationNotification implements ShouldQueue
         $form = $event->registration->form;
 
         // 2. Find if form has field with use_model_options == true and options_model Tenant
-        $tenantField = $form->formFields->first(function ($field) {
-            return $field->use_model_options && $field->options_model === Tenant::class;
-        });
+        $tenantField = $form->formFields->first(fn ($field) => $field->use_model_options && $field->options_model === Tenant::class);
 
         if (! $tenantField) {
             report('Tenant field not found in member registration form!');
@@ -48,17 +46,11 @@ class SendMemberRegistrationNotification implements ShouldQueue
             ->where('registration_id', $event->registration->id)->get();
 
         // find email field in field response (where form field subtype is email)
-        $emailResponse = $fieldResponses->first(function ($fieldResponse) {
-            return $fieldResponse->formField->subtype === 'email';
-        });
+        $emailResponse = $fieldResponses->first(fn ($fieldResponse) => $fieldResponse->formField->subtype === 'email');
 
-        $nameResponse = $fieldResponses->first(function ($fieldResponse) {
-            return $fieldResponse->formField->subtype === 'name';
-        });
+        $nameResponse = $fieldResponses->first(fn ($fieldResponse) => $fieldResponse->formField->subtype === 'name');
 
-        $tenantResponse = $fieldResponses->first(function ($fieldResponse) use ($tenantField) {
-            return $fieldResponse->formField->id === $tenantField->id;
-        });
+        $tenantResponse = $fieldResponses->first(fn ($fieldResponse) => $fieldResponse->formField->id === $tenantField->id);
 
         // Finalize variables
         $tenant = Tenant::query()->find($tenantResponse->getValue());
@@ -77,7 +69,7 @@ class SendMemberRegistrationNotification implements ShouldQueue
         }
 
         // Find duty for tenant which has a role set in FormSettings::class
-        $mailableDuties = $institution->duties()->whereHas('roles', function ($query) {
+        $mailableDuties = $institution->duties()->whereHas('roles', function ($query): void {
             $query->where('id', app(FormSettings::class)->member_registration_notification_recipient_role_id);
         })->get();
 

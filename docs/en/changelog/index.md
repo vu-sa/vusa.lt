@@ -7,6 +7,15 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.20 — Improved activity log (2026-08-02) {#v1-20}
+
+- ⭐ **New activity log panel** — meetings, institutions, duties, problems, reservations, trainings, and other content pages now show a full change history, including changes to related items (e.g. a meeting's history also shows changes to its agenda items and votes)
+- ✨ **Text changes shown as a diff** — news, page content block, and problem description edits in the activity log now highlight which words changed instead of showing two identical-looking truncated excerpts
+- 🔧 **Some changes were previously not recorded** — every supported model's changes are now reliably logged
+- ✨ **Clearer change display** — dates, statuses, and related records (e.g. the responsible person) now show readable names instead of raw data
+- 🔧 **Fixed resource management**
+- 🔧 **Tried to fix a case of uploading Sharepoint documents**
+
 ## v1.19 — Faster ViSAK Timeline and New Content Blocks (2026-07-28) {#v1-19}
 
 ### ViSAK tenant timeline

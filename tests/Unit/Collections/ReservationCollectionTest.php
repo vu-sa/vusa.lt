@@ -9,7 +9,7 @@ use App\States\ReservationResource\Rejected;
 use App\States\ReservationResource\Reserved;
 use Carbon\Carbon;
 
-beforeEach(function () {
+beforeEach(function (): void {
     // Create test dates
     $this->mockStartTime = Carbon::parse('2024-01-15 10:00:00');
     $this->mockEndTime = Carbon::parse('2024-01-15 12:00:00');
@@ -73,17 +73,17 @@ beforeEach(function () {
     $this->collection = new ReservationCollection($this->reservations);
 });
 
-describe('getPivots method', function () {
-    test('returns collection of all pivot instances', function () {
+describe('getPivots method', function (): void {
+    test('returns collection of all pivot instances', function (): void {
         $pivots = $this->collection->getPivots();
 
         expect($pivots)->toHaveCount(3);
-        $pivots->each(function ($pivot) {
+        $pivots->each(function ($pivot): void {
             expect($pivot)->toBeInstanceOf(ReservationResource::class);
         });
     });
 
-    test('returns empty collection for empty reservation collection', function () {
+    test('returns empty collection for empty reservation collection', function (): void {
         $emptyCollection = new ReservationCollection([]);
         $pivots = $emptyCollection->getPivots();
 
@@ -91,29 +91,29 @@ describe('getPivots method', function () {
     });
 });
 
-describe('whereState method', function () {
-    test('filters reservations by single state', function () {
+describe('whereState method', function (): void {
+    test('filters reservations by single state', function (): void {
         $reservedReservations = $this->collection->whereState('reserved');
 
         expect($reservedReservations)->toHaveCount(2);
-        $reservedReservations->each(function ($reservation) {
+        $reservedReservations->each(function ($reservation): void {
             expect($reservation->pivot->state::class)->toBe(Reserved::class);
         });
     });
 
-    test('filters reservations by multiple states', function () {
+    test('filters reservations by multiple states', function (): void {
         $filteredReservations = $this->collection->whereState(['reserved', 'created']);
 
         expect($filteredReservations)->toHaveCount(3);
     });
 
-    test('returns empty collection for non-existent state', function () {
+    test('returns empty collection for non-existent state', function (): void {
         $filteredReservations = $this->collection->whereState('non-existent');
 
         expect($filteredReservations)->toBeEmpty();
     });
 
-    test('handles enum state values', function () {
+    test('handles enum state values', function (): void {
         $enumReservation = new Reservation([
             'id' => '01HZABC1234567890ABCDEF4',
             'name' => 'Enum State Reservation',
@@ -137,8 +137,8 @@ describe('whereState method', function () {
     });
 });
 
-describe('whereOverlaps method', function () {
-    test('returns reservations that overlap with given time range', function () {
+describe('whereOverlaps method', function (): void {
+    test('returns reservations that overlap with given time range', function (): void {
         $overlappingReservations = $this->collection->whereOverlaps(
             Carbon::parse('2024-01-15 11:30:00'),
             Carbon::parse('2024-01-15 11:45:00')
@@ -147,7 +147,7 @@ describe('whereOverlaps method', function () {
         expect($overlappingReservations)->toHaveCount(2);
     });
 
-    test('returns reservations that start before end time and end after start time', function () {
+    test('returns reservations that start before end time and end after start time', function (): void {
         // Test exact overlap logic: start < end && end > start
         // Query: 10:30 to 11:30 should overlap with both reservation1 (10:00-12:00) and reservation2 (11:00-13:00)
         $overlappingReservations = $this->collection->whereOverlaps(
@@ -158,7 +158,7 @@ describe('whereOverlaps method', function () {
         expect($overlappingReservations)->toHaveCount(2);
     });
 
-    test('returns empty collection when no overlaps', function () {
+    test('returns empty collection when no overlaps', function (): void {
         $noOverlaps = $this->collection->whereOverlaps(
             Carbon::parse('2024-01-20 10:00:00'),
             Carbon::parse('2024-01-20 12:00:00')
@@ -167,7 +167,7 @@ describe('whereOverlaps method', function () {
         expect($noOverlaps)->toBeEmpty();
     });
 
-    test('handles edge cases with exact start/end times', function () {
+    test('handles edge cases with exact start/end times', function (): void {
         // Test when query end time equals reservation start time
         $edgeCaseOverlaps = $this->collection->whereOverlaps(
             Carbon::parse('2024-01-15 08:00:00'),
@@ -178,21 +178,21 @@ describe('whereOverlaps method', function () {
     });
 });
 
-describe('getTotalQuantity method', function () {
-    test('calculates sum of all reservation quantities', function () {
+describe('getTotalQuantity method', function (): void {
+    test('calculates sum of all reservation quantities', function (): void {
         $totalQuantity = $this->collection->getTotalQuantity();
 
         expect($totalQuantity)->toBe(6); // 2 + 3 + 1
     });
 
-    test('returns zero for empty collection', function () {
+    test('returns zero for empty collection', function (): void {
         $emptyCollection = new ReservationCollection([]);
         $totalQuantity = $emptyCollection->getTotalQuantity();
 
         expect($totalQuantity)->toBe(0);
     });
 
-    test('handles null quantities gracefully', function () {
+    test('handles null quantities gracefully', function (): void {
         $nullQuantityReservation = new Reservation([
             'id' => '01HZABC1234567890ABCDEF5',
             'name' => 'Null Quantity Reservation',
@@ -216,8 +216,8 @@ describe('getTotalQuantity method', function () {
     });
 });
 
-describe('whereStartsBefore method', function () {
-    test('returns reservations starting before given time', function () {
+describe('whereStartsBefore method', function (): void {
+    test('returns reservations starting before given time', function (): void {
         $reservationsStartingBefore = $this->collection->whereStartsBefore(
             Carbon::parse('2024-01-15 11:30:00')
         );
@@ -225,7 +225,7 @@ describe('whereStartsBefore method', function () {
         expect($reservationsStartingBefore)->toHaveCount(2);
     });
 
-    test('returns empty collection when no reservations start before time', function () {
+    test('returns empty collection when no reservations start before time', function (): void {
         $reservationsStartingBefore = $this->collection->whereStartsBefore(
             Carbon::parse('2024-01-15 09:00:00')
         );
@@ -234,8 +234,8 @@ describe('whereStartsBefore method', function () {
     });
 });
 
-describe('whereEndsAfter method', function () {
-    test('returns reservations ending after given time', function () {
+describe('whereEndsAfter method', function (): void {
+    test('returns reservations ending after given time', function (): void {
         $reservationsEndingAfter = $this->collection->whereEndsAfter(
             Carbon::parse('2024-01-15 11:30:00')
         );
@@ -243,7 +243,7 @@ describe('whereEndsAfter method', function () {
         expect($reservationsEndingAfter)->toHaveCount(3); // All reservations end after 11:30
     });
 
-    test('returns empty collection when no reservations end after time', function () {
+    test('returns empty collection when no reservations end after time', function (): void {
         $reservationsEndingAfter = $this->collection->whereEndsAfter(
             Carbon::parse('2024-01-17 18:00:00')
         );
@@ -252,15 +252,15 @@ describe('whereEndsAfter method', function () {
     });
 });
 
-describe('sortByStartTime method', function () {
-    test('sorts reservations by start time ascending by default', function () {
+describe('sortByStartTime method', function (): void {
+    test('sorts reservations by start time ascending by default', function (): void {
         $sortedReservations = $this->collection->sortByStartTime();
 
         $times = $sortedReservations->map(fn ($r) => $r->pivot->start_time);
         expect($times->first()->format('Y-m-d H:i:s'))->toBe($this->mockStartTime->format('Y-m-d H:i:s'));
     });
 
-    test('sorts reservations by start time descending when specified', function () {
+    test('sorts reservations by start time descending when specified', function (): void {
         $sortedReservations = $this->collection->sortByStartTime(true);
 
         $times = $sortedReservations->map(fn ($r) => $r->pivot->start_time);
@@ -268,15 +268,15 @@ describe('sortByStartTime method', function () {
     });
 });
 
-describe('sortByEndTime method', function () {
-    test('sorts reservations by end time ascending by default', function () {
+describe('sortByEndTime method', function (): void {
+    test('sorts reservations by end time ascending by default', function (): void {
         $sortedReservations = $this->collection->sortByEndTime();
 
         $times = $sortedReservations->map(fn ($r) => $r->pivot->end_time);
         expect($times->first()->format('Y-m-d H:i:s'))->toBe($this->mockEndTime->format('Y-m-d H:i:s'));
     });
 
-    test('sorts reservations by end time descending when specified', function () {
+    test('sorts reservations by end time descending when specified', function (): void {
         $sortedReservations = $this->collection->sortByEndTime(true);
 
         $times = $sortedReservations->map(fn ($r) => $r->pivot->end_time);
@@ -284,26 +284,26 @@ describe('sortByEndTime method', function () {
     });
 });
 
-describe('groupByState method', function () {
-    test('groups reservations by their pivot state', function () {
+describe('groupByState method', function (): void {
+    test('groups reservations by their pivot state', function (): void {
         $groupedReservations = $this->collection->groupByState();
 
-        expect($groupedReservations)->toHaveCount(2);
-        expect($groupedReservations->has('reserved'))->toBeTrue();
-        expect($groupedReservations->has('created'))->toBeTrue();
-        expect($groupedReservations->get('reserved'))->toHaveCount(2);
-        expect($groupedReservations->get('created'))->toHaveCount(1);
+        expect($groupedReservations)->toHaveCount(2)
+            ->and($groupedReservations->has('reserved'))->toBeTrue()
+            ->and($groupedReservations->has('created'))->toBeTrue()
+            ->and($groupedReservations->get('reserved'))->toHaveCount(2)
+            ->and($groupedReservations->get('created'))->toHaveCount(1);
     });
 
-    test('returns ReservationCollection instances for each group', function () {
+    test('returns ReservationCollection instances for each group', function (): void {
         $groupedReservations = $this->collection->groupByState();
 
-        $groupedReservations->each(function ($group) {
+        $groupedReservations->each(function ($group): void {
             expect($group)->toBeInstanceOf(ReservationCollection::class);
         });
     });
 
-    test('handles enum state values in grouping', function () {
+    test('handles enum state values in grouping', function (): void {
         $rejectedReservation = new Reservation([
             'id' => '01HZABC1234567890ABCDEF6',
             'name' => 'Rejected State Reservation',
@@ -327,18 +327,18 @@ describe('groupByState method', function () {
     });
 });
 
-describe('toOptimizedArray method', function () {
-    test('returns optimized array structure for API responses', function () {
+describe('toOptimizedArray method', function (): void {
+    test('returns optimized array structure for API responses', function (): void {
         $optimizedArray = $this->collection->toOptimizedArray();
 
         expect($optimizedArray)->toHaveCount(3);
 
         $firstItem = $optimizedArray[0];
-        expect($firstItem)->toHaveKeys(['id', 'name', 'description', 'pivot']);
-        expect($firstItem['pivot'])->toHaveKeys(['start_time', 'end_time', 'quantity', 'state']);
+        expect($firstItem)->toHaveKeys(['id', 'name', 'description', 'pivot'])
+            ->and($firstItem['pivot'])->toHaveKeys(['start_time', 'end_time', 'quantity', 'state']);
     });
 
-    test('handles missing description field gracefully', function () {
+    test('handles missing description field gracefully', function (): void {
         $noDescReservation = new Reservation([
             'id' => '01HZABC1234567890ABCDEF7',
             'name' => 'No Description Reservation',
@@ -362,7 +362,7 @@ describe('toOptimizedArray method', function () {
         expect($optimizedArray[0]['description'])->toBeNull();
     });
 
-    test('handles enum state values in optimized array', function () {
+    test('handles enum state values in optimized array', function (): void {
         $enumStateReservation = new Reservation([
             'id' => '01HZABC1234567890ABCDEF8',
             'name' => 'Enum State Reservation',

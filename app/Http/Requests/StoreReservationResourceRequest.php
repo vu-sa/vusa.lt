@@ -17,6 +17,7 @@ class StoreReservationResourceRequest extends FormRequest
         return $this->user()->can('create', Reservation::class);
     }
 
+    #[\Override]
     protected function prepareForValidation()
     {
         $this->merge([

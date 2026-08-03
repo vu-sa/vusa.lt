@@ -3,21 +3,15 @@
 namespace App\Console\Commands;
 
 use App\Services\Typesense\TypesenseCollectionConfig;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Typesense\Client;
 
+#[Description('Generate a search-only API key for Typesense public collections and add it to .env')]
+#[Signature('typesense:generate-search-key')]
 class GenerateTypesenseSearchKey extends Command
 {
-    /**
-     * The name and signature of the console command.
-     */
-    protected $signature = 'typesense:generate-search-key';
-
-    /**
-     * The console command description.
-     */
-    protected $description = 'Generate a search-only API key for Typesense public collections and add it to .env';
-
     /**
      * Execute the console command.
      */

@@ -6,9 +6,9 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
     $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
@@ -40,7 +40,7 @@ function batchRemoveSelfPayload(User $admin, array $overrides = []): array
     ], $overrides);
 }
 
-test('removing yourself from your own admin-granting duty is warned and rolled back', function () {
+test('removing yourself from your own admin-granting duty is warned and rolled back', function (): void {
     asUserWithInertia($this->admin)
         ->post(route('duties.batchUpdateUsers', $this->adminDuty), batchRemoveSelfPayload($this->admin))
         ->assertSessionHas('access_change_warning');
@@ -48,7 +48,7 @@ test('removing yourself from your own admin-granting duty is warned and rolled b
     expect($this->adminDutiable->fresh()->end_date)->toBeNull();
 });
 
-test('acknowledged self-removal proceeds', function () {
+test('acknowledged self-removal proceeds', function (): void {
     asUserWithInertia($this->admin)
         ->post(route('duties.batchUpdateUsers', $this->adminDuty), batchRemoveSelfPayload($this->admin, [
             'acknowledge_access_change' => true,
@@ -58,7 +58,7 @@ test('acknowledged self-removal proceeds', function () {
     expect($this->adminDutiable->fresh()->end_date)->not->toBeNull();
 });
 
-test('removing another user is not guarded', function () {
+test('removing another user is not guarded', function (): void {
     $other = makeUser($this->tenant);
     $this->adminDuty->users()->attach($other->id, ['start_date' => now()->subDay()]);
 

@@ -11,6 +11,6 @@ class NavigationPolicy extends ModelPolicy
     public function __construct(ModelAuthorizer $authorizer)
     {
         parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::NAVIGATION()->label);
+        $this->pluralModelName = Str::plural(ModelEnum::NAVIGATION->label());
     }
 }

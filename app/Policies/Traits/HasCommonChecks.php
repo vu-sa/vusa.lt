@@ -55,12 +55,12 @@ trait HasCommonChecks
         $permissionBase = $resource.'.'.$ability.'.';
 
         // Check for wildcard (.*) - all-access permission
-        if ($authorizer->forUser($user)->check($permissionBase.PermissionScopeEnum::ALL()->label)) {
+        if ($authorizer->forUser($user)->check($permissionBase.PermissionScopeEnum::ALL->label())) {
             return true;
         }
 
         // Check for "own" scope - user's duties directly associated with the model
-        if ($authorizer->forUser($user)->check($permissionBase.PermissionScopeEnum::OWN()->label)) {
+        if ($authorizer->forUser($user)->check($permissionBase.PermissionScopeEnum::OWN->label())) {
             $permissableDuties = $authorizer->getPermissableDuties();
             $relationFromDuties = $resource;
 
@@ -106,7 +106,7 @@ trait HasCommonChecks
             return false;
         }
 
-        if ($authorizer->forUser($user)->check($permissionBase.PermissionScopeEnum::PADALINYS()->label)) {
+        if ($authorizer->forUser($user)->check($permissionBase.PermissionScopeEnum::PADALINYS->label())) {
             $permissableTenants = $user->tenants()
                 ->whereIn('duties.id', $authorizer->getPermissableDuties()->pluck('id'))
                 ->get();
@@ -135,7 +135,7 @@ trait HasCommonChecks
      */
     public function viewAny(User $user): bool
     {
-        return app(ModelAuthorizer::class)->forUser($user)->check($this->pluralModelName.'.'.CRUDEnum::READ()->label.'.padalinys');
+        return app(ModelAuthorizer::class)->forUser($user)->check($this->pluralModelName.'.'.CRUDEnum::READ->label().'.padalinys');
     }
 
     /**
@@ -143,7 +143,7 @@ trait HasCommonChecks
      */
     public function create(User $user): bool
     {
-        return app(ModelAuthorizer::class)->forUser($user)->check($this->pluralModelName.'.'.CRUDEnum::CREATE()->label.'.padalinys');
+        return app(ModelAuthorizer::class)->forUser($user)->check($this->pluralModelName.'.'.CRUDEnum::CREATE->label().'.padalinys');
     }
 
     /**
@@ -155,6 +155,6 @@ trait HasCommonChecks
      */
     public function restore(User $user, Model $model): bool
     {
-        return $this->commonChecker($user, $model, CRUDEnum::DELETE()->label, $this->pluralModelName, $this->hasManyTenants);
+        return $this->commonChecker($user, $model, CRUDEnum::DELETE->label(), $this->pluralModelName, $this->hasManyTenants);
     }
 }

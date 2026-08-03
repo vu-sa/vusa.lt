@@ -29,7 +29,7 @@ class TaskController extends AdminController
     public function index()
     {
         $tasks = Task::with(['users', 'taskable'])
-            ->whereHas('users', function ($query) {
+            ->whereHas('users', function ($query): void {
                 $query->where('users.id', Auth::id());
             })
             ->orderBy('completed_at', 'asc')
@@ -53,7 +53,7 @@ class TaskController extends AdminController
         $limit = $request->input('limit', 5);
 
         $tasks = Task::with('taskable')
-            ->whereHas('users', function ($query) {
+            ->whereHas('users', function ($query): void {
                 $query->where('users.id', Auth::id());
             })
             ->whereNull('completed_at')
@@ -173,18 +173,18 @@ class TaskController extends AdminController
 
         // Build base query with compound authorization
         $baseQuery = Task::with(['users:id,name,email,profile_photo_path', 'taskable'])
-            ->whereHas('tenants', function ($q) use ($taskPermissibleTenants) {
+            ->whereHas('tenants', function ($q) use ($taskPermissibleTenants): void {
                 $q->whereIn('tenants.id', $taskPermissibleTenants->pluck('id'));
             });
 
         // Apply compound authorization: only show tasks where user also has permission on taskable
-        $baseQuery->where(function ($q) use ($meetingPermissibleTenants, $reservationPermissibleTenants, $institutionPermissibleTenants) {
+        $baseQuery->where(function ($q) use ($meetingPermissibleTenants, $reservationPermissibleTenants, $institutionPermissibleTenants): void {
             // Meeting tasks - user must have meetings.read.padalinys
             if ($meetingPermissibleTenants->isNotEmpty()) {
-                $q->orWhere(function ($subQ) use ($meetingPermissibleTenants) {
+                $q->orWhere(function ($subQ) use ($meetingPermissibleTenants): void {
                     $subQ->where('taskable_type', Meeting::class)
-                        ->whereHasMorph('taskable', [Meeting::class], function ($meetingQ) use ($meetingPermissibleTenants) {
-                            $meetingQ->whereHas('tenants', function ($tenantQ) use ($meetingPermissibleTenants) {
+                        ->whereHasMorph('taskable', [Meeting::class], function ($meetingQ) use ($meetingPermissibleTenants): void {
+                            $meetingQ->whereHas('tenants', function ($tenantQ) use ($meetingPermissibleTenants): void {
                                 $tenantQ->whereIn('tenants.id', $meetingPermissibleTenants->pluck('id'));
                             });
                         });
@@ -193,10 +193,10 @@ class TaskController extends AdminController
 
             // Reservation tasks - user must have reservations.read.padalinys
             if ($reservationPermissibleTenants->isNotEmpty()) {
-                $q->orWhere(function ($subQ) use ($reservationPermissibleTenants) {
+                $q->orWhere(function ($subQ) use ($reservationPermissibleTenants): void {
                     $subQ->where('taskable_type', Reservation::class)
-                        ->whereHasMorph('taskable', [Reservation::class], function ($reservationQ) use ($reservationPermissibleTenants) {
-                            $reservationQ->whereHas('tenants', function ($tenantQ) use ($reservationPermissibleTenants) {
+                        ->whereHasMorph('taskable', [Reservation::class], function ($reservationQ) use ($reservationPermissibleTenants): void {
+                            $reservationQ->whereHas('tenants', function ($tenantQ) use ($reservationPermissibleTenants): void {
                                 $tenantQ->whereIn('tenants.id', $reservationPermissibleTenants->pluck('id'));
                             });
                         });
@@ -205,10 +205,10 @@ class TaskController extends AdminController
 
             // Institution tasks (e.g., PeriodicityGap) - user must have institutions.read.padalinys
             if ($institutionPermissibleTenants->isNotEmpty()) {
-                $q->orWhere(function ($subQ) use ($institutionPermissibleTenants) {
+                $q->orWhere(function ($subQ) use ($institutionPermissibleTenants): void {
                     $subQ->where('taskable_type', Institution::class)
-                        ->whereHasMorph('taskable', [Institution::class], function ($institutionQ) use ($institutionPermissibleTenants) {
-                            $institutionQ->whereHas('tenant', function ($tenantQ) use ($institutionPermissibleTenants) {
+                        ->whereHasMorph('taskable', [Institution::class], function ($institutionQ) use ($institutionPermissibleTenants): void {
+                            $institutionQ->whereHas('tenant', function ($tenantQ) use ($institutionPermissibleTenants): void {
                                 $tenantQ->whereIn('tenants.id', $institutionPermissibleTenants->pluck('id'));
                             });
                         });
@@ -219,7 +219,7 @@ class TaskController extends AdminController
         // Filter by tenant if specified
         $tenantIds = $request->input('tenant_ids', []);
         if (! empty($tenantIds)) {
-            $baseQuery->whereHas('tenants', function ($q) use ($tenantIds) {
+            $baseQuery->whereHas('tenants', function ($q) use ($tenantIds): void {
                 $q->whereIn('tenants.id', $tenantIds);
             });
         }

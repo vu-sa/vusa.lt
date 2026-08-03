@@ -19,6 +19,10 @@ import ResourceForm from '@/Components/AdminForms/ResourceForm.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 import { ResourceIcon } from '@/Components/icons';
 
+export type ResourceMediaEntry
+  = | { id: string | number; name: string; type: string; status: 'finished'; url: string }
+    | { file: File; status: 'pending' };
+
 export type ResourceCreationTemplate = Omit<
   App.Entities.Resource,
   'created_at' | 'updated_at' | 'deleted_at' | 'id' | 'name' | 'description'
@@ -26,8 +30,7 @@ export type ResourceCreationTemplate = Omit<
   id: undefined;
   name: Record<'lt' | 'en', string>;
   description: Record<'lt' | 'en', string>;
-  media: Record<string, never>[];
-  // media: models.Media[] | [];
+  media: ResourceMediaEntry[];
 };
 
 defineProps<{
@@ -55,7 +58,7 @@ const resource: ResourceCreationTemplate = {
   resource_category_id: null,
   // If tenant_id is zero, then the form will be disabled (set in form).
   tenant_id: usePage().props.auth?.user.tenants[0]?.id ?? 0,
-  is_reservable: 1,
+  is_reservable: true,
   media: [],
 };
 </script>

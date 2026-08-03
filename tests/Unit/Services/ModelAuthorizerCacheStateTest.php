@@ -11,9 +11,9 @@ use App\Services\ModelAuthorizer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
     $this->institution = Institution::factory()->create([
@@ -48,8 +48,8 @@ beforeEach(function () {
     $this->authorizer = app(ModelAuthorizer::class);
 });
 
-describe('cache restores permissableDuties state', function () {
-    test('permissableDuties is correctly restored from cache on repeated checks', function () {
+describe('cache restores permissableDuties state', function (): void {
+    test('permissableDuties is correctly restored from cache on repeated checks', function (): void {
         $user = makeUser($this->tenant);
         $user->duties()->first()->assignRole($this->coordinatorRole);
 
@@ -67,11 +67,11 @@ describe('cache restores permissableDuties state', function () {
         expect($result2)->toBeTrue();
 
         $dutiesAfterSecond = $this->authorizer->getPermissableDuties();
-        expect($dutiesAfterSecond)->toHaveCount(1);
-        expect($dutiesAfterSecond->first()->id)->toBe($dutiesAfterFirst->first()->id);
+        expect($dutiesAfterSecond)->toHaveCount(1)
+            ->and($dutiesAfterSecond->first()->id)->toBe($dutiesAfterFirst->first()->id);
     });
 
-    test('permissableDuties is not polluted by unrelated permission checks', function () {
+    test('permissableDuties is not polluted by unrelated permission checks', function (): void {
         $user = makeUser($this->tenant);
         $user->duties()->first()->assignRole($this->coordinatorRole);
 
@@ -83,14 +83,14 @@ describe('cache restores permissableDuties state', function () {
 
         // Check a permission the user does NOT have — should clear permissableDuties
         $this->authorizer->checkAllRoleables('news.read.padalinys');
-        expect($this->authorizer->getPermissableDuties())->toHaveCount(0);
+        expect($this->authorizer->getPermissableDuties())->toBeEmpty();
 
         // Re-check the first permission — cache should restore the correct duties
         $this->authorizer->checkAllRoleables('users.update.padalinys');
         expect($this->authorizer->getPermissableDuties())->toHaveCount(1);
     });
 
-    test('isAllScope is correctly restored from cache', function () {
+    test('isAllScope is correctly restored from cache', function (): void {
         $superAdmin = User::factory()->create();
         $superAdmin->assignRole(config('permission.super_admin_role_name'));
 
@@ -113,8 +113,8 @@ describe('cache restores permissableDuties state', function () {
     });
 });
 
-describe('commonChecker authorization flow with caching', function () {
-    test('user with padalinys permission can update models in same tenant', function () {
+describe('commonChecker authorization flow with caching', function (): void {
+    test('user with padalinys permission can update models in same tenant', function (): void {
         $admin = makeUser($this->tenant);
         $admin->duties()->first()->assignRole($this->coordinatorRole);
 
@@ -146,7 +146,7 @@ describe('commonChecker authorization flow with caching', function () {
         expect($permissableTenants->intersect($targetTenants))->not->toBeEmpty();
     });
 
-    test('repeated commonChecker flow returns consistent results from cache', function () {
+    test('repeated commonChecker flow returns consistent results from cache', function (): void {
         $admin = makeUser($this->tenant);
         $admin->duties()->first()->assignRole($this->coordinatorRole);
 
@@ -163,21 +163,21 @@ describe('commonChecker authorization flow with caching', function () {
         // Second pass (simulating second HTTP request — same singleton)
         // All checks should come from cache
         $this->authorizer->checkAllRoleables('users.update.all');
-        expect($this->authorizer->getPermissableDuties())->toHaveCount(0);
+        expect($this->authorizer->getPermissableDuties())->toBeEmpty();
 
         $this->authorizer->checkAllRoleables('users.update.own');
-        expect($this->authorizer->getPermissableDuties())->toHaveCount(0);
+        expect($this->authorizer->getPermissableDuties())->toBeEmpty();
 
         $this->authorizer->checkAllRoleables('users.update.padalinys');
         $dutiesSecondPass = $this->authorizer->getPermissableDuties();
 
-        expect($dutiesSecondPass)->toHaveCount(1);
-        expect($dutiesSecondPass->first()->id)->toBe($dutiesFirstPass->first()->id);
+        expect($dutiesSecondPass)->toHaveCount(1)
+            ->and($dutiesSecondPass->first()->id)->toBe($dutiesFirstPass->first()->id);
     });
 });
 
-describe('getTenants with cached permission state', function () {
-    test('getTenants returns correct tenants after cached padalinys check', function () {
+describe('getTenants with cached permission state', function (): void {
+    test('getTenants returns correct tenants after cached padalinys check', function (): void {
         $admin = makeUser($this->tenant);
         $admin->duties()->first()->assignRole($this->coordinatorRole);
 
@@ -192,14 +192,14 @@ describe('getTenants with cached permission state', function () {
         $tenants2 = $this->authorizer->getTenants('users.update.padalinys');
 
         expect($tenants1->pluck('id')->sort()->values())
-            ->toEqual($tenants2->pluck('id')->sort()->values());
-        expect($tenants1)->toHaveCount(1);
-        expect($tenants1->first()->id)->toBe($this->tenant->id);
+            ->toEqual($tenants2->pluck('id')->sort()->values())
+            ->and($tenants1)->toHaveCount(1)
+            ->and($tenants1->first()->id)->toBe($this->tenant->id);
     });
 });
 
-describe('request-level tenant memoization', function () {
-    test('repeated getTenants for the same permission returns the memoized collection', function () {
+describe('request-level tenant memoization', function (): void {
+    test('repeated getTenants for the same permission returns the memoized collection', function (): void {
         $admin = makeUser($this->tenant);
         $admin->duties()->first()->assignRole($this->coordinatorRole);
 
@@ -210,11 +210,11 @@ describe('request-level tenant memoization', function () {
 
         // Same instance proves the resolution was memoized, not recomputed.
         expect($second)->toBe($first);
-        expect($first)->toHaveCount(1);
-        expect($first->first()->id)->toBe($this->tenant->id);
+        expect($first)->toHaveCount(1)
+            ->and($first->first()->id)->toBe($this->tenant->id);
     });
 
-    test('super admin getTenants memoizes the all-tenants result', function () {
+    test('super admin getTenants memoizes the all-tenants result', function (): void {
         $superAdmin = User::factory()->create();
         $superAdmin->assignRole(config('permission.super_admin_role_name'));
 
@@ -223,11 +223,11 @@ describe('request-level tenant memoization', function () {
         $first = $this->authorizer->getTenants();
         $second = $this->authorizer->getTenants();
 
-        expect($second)->toBe($first);
-        expect($first->count())->toBe(Tenant::count());
+        expect($second)->toBe($first)
+            ->and($first->count())->toBe(Tenant::count());
     });
 
-    test('getTenants preserves isAllScope and permissableDuties side effects', function () {
+    test('getTenants preserves isAllScope and permissableDuties side effects', function (): void {
         // Regression guard: the previously disabled cache skipped checkAllRoleables,
         // leaving callers that read these AFTER getTenants with stale/empty state.
         $admin = makeUser($this->tenant);
@@ -237,12 +237,12 @@ describe('request-level tenant memoization', function () {
 
         $tenants = $this->authorizer->getTenants('users.update.padalinys');
 
-        expect($this->authorizer->isAllScope)->toBeFalse();
-        expect($this->authorizer->getPermissableDuties())->toHaveCount(1);
-        expect($tenants)->toHaveCount(1);
+        expect($this->authorizer->isAllScope)->toBeFalse()
+            ->and($this->authorizer->getPermissableDuties())->toHaveCount(1)
+            ->and($tenants)->toHaveCount(1);
     });
 
-    test('switching users clears the tenant memoization', function () {
+    test('switching users clears the tenant memoization', function (): void {
         $admin = makeUser($this->tenant);
         $admin->duties()->first()->assignRole($this->coordinatorRole);
 
@@ -253,11 +253,10 @@ describe('request-level tenant memoization', function () {
         $this->authorizer->forUser($other);
 
         $cache = new ReflectionProperty(ModelAuthorizer::class, 'requestTenantCache');
-        $cache->setAccessible(true);
         expect($cache->getValue($this->authorizer))->toBeEmpty();
     });
 
-    test('resetCache clears the tenant memoization', function () {
+    test('resetCache clears the tenant memoization', function (): void {
         $admin = makeUser($this->tenant);
         $admin->duties()->first()->assignRole($this->coordinatorRole);
 
@@ -267,13 +266,12 @@ describe('request-level tenant memoization', function () {
         $this->authorizer->resetCache($admin);
 
         $cache = new ReflectionProperty(ModelAuthorizer::class, 'requestTenantCache');
-        $cache->setAccessible(true);
         expect($cache->getValue($this->authorizer))->toBeEmpty();
     });
 });
 
-describe('cache invalidation via resetCache', function () {
-    test('resetCache clears in-memory permission cache and forces re-evaluation', function () {
+describe('cache invalidation via resetCache', function (): void {
+    test('resetCache clears in-memory permission cache and forces re-evaluation', function (): void {
         $user = makeUser($this->tenant);
         $user->duties()->first()->assignRole($this->coordinatorRole);
 
@@ -295,7 +293,7 @@ describe('cache invalidation via resetCache', function () {
         expect($result)->toBeFalse();
     });
 
-    test('resetCache clears in-memory cache when called with user ID', function () {
+    test('resetCache clears in-memory cache when called with user ID', function (): void {
         $user = makeUser($this->tenant);
         $user->duties()->first()->assignRole($this->coordinatorRole);
 
@@ -307,10 +305,10 @@ describe('cache invalidation via resetCache', function () {
         $this->authorizer->resetCache($user->id);
 
         // In-memory state should be cleared
-        expect($this->authorizer->getPermissableDuties())->toHaveCount(0);
+        expect($this->authorizer->getPermissableDuties())->toBeEmpty();
     });
 
-    test('Permission facade resetCache invalidates authorizer cache', function () {
+    test('Permission facade resetCache invalidates authorizer cache', function (): void {
         $user = makeUser($this->tenant);
         $user->duties()->first()->assignRole($this->coordinatorRole);
 
@@ -321,10 +319,10 @@ describe('cache invalidation via resetCache', function () {
         // Call through the facade (same path as observers)
         PermissionFacade::resetCache($user);
 
-        expect($this->authorizer->getPermissableDuties())->toHaveCount(0);
+        expect($this->authorizer->getPermissableDuties())->toBeEmpty();
     });
 
-    test('resetCache clears Redis duties cache', function () {
+    test('resetCache clears Redis duties cache', function (): void {
         $user = makeUser($this->tenant);
         $user->duties()->first()->assignRole($this->coordinatorRole);
 
@@ -340,8 +338,8 @@ describe('cache invalidation via resetCache', function () {
     });
 });
 
-describe('observer-triggered cache invalidation', function () {
-    test('user model update triggers cache invalidation via observer', function () {
+describe('observer-triggered cache invalidation', function (): void {
+    test('user model update triggers cache invalidation via observer', function (): void {
         $user = makeUser($this->tenant);
         $user->duties()->first()->assignRole($this->coordinatorRole);
 
@@ -358,7 +356,7 @@ describe('observer-triggered cache invalidation', function () {
         expect(Cache::has("auth:duties:{$user->id}"))->toBeFalse();
     });
 
-    test('duty model update triggers cache invalidation for associated users', function () {
+    test('duty model update triggers cache invalidation for associated users', function (): void {
         $user = makeUser($this->tenant);
         $duty = $user->duties()->first();
         $duty->assignRole($this->coordinatorRole);
@@ -375,7 +373,7 @@ describe('observer-triggered cache invalidation', function () {
         expect(Cache::has("auth:duties:{$user->id}"))->toBeFalse();
     });
 
-    test('role assignment and removal require explicit cache reset', function () {
+    test('role assignment and removal require explicit cache reset', function (): void {
         $user = makeUser($this->tenant);
         $duty = $user->duties()->first();
 
@@ -397,8 +395,8 @@ describe('observer-triggered cache invalidation', function () {
     });
 });
 
-describe('cache TTL', function () {
-    test('loadDuties cache TTL is at most 1 hour', function () {
+describe('cache TTL', function (): void {
+    test('loadDuties cache TTL is at most 1 hour', function (): void {
         $reflection = new ReflectionClass(ModelAuthorizer::class);
         $ttl = $reflection->getConstant('CACHE_TTL');
 

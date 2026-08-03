@@ -5,14 +5,14 @@ use App\Models\Tenant;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 });
 
-describe('calendar API date range filtering', function () {
-    test('returns events within default date range when no dates specified', function () {
+describe('calendar API date range filtering', function (): void {
+    test('returns events within default date range when no dates specified', function (): void {
         // Create events at various dates
         $pastEvent = Calendar::factory()->create([
             'tenant_id' => $this->tenant->id,
@@ -54,7 +54,7 @@ describe('calendar API date range filtering', function () {
         expect($eventIds)->not->toContain($outOfRangeEvent->id);
     });
 
-    test('filters events by custom date_from and date_to parameters', function () {
+    test('filters events by custom date_from and date_to parameters', function (): void {
         $eventInRange = Calendar::factory()->create([
             'tenant_id' => $this->tenant->id,
             'date' => Carbon::parse('2026-02-15'),
@@ -78,15 +78,14 @@ describe('calendar API date range filtering', function () {
         $data = $response->json('data');
         $eventIds = collect($data)->pluck('id')->toArray();
 
-        expect($eventIds)->toContain($eventInRange->id);
-        expect($eventIds)->not->toContain($eventOutOfRange->id);
+        expect($eventIds)->toContain($eventInRange->id)->not->toContain($eventOutOfRange->id);
 
         // Verify meta shows the requested range
         expect($response->json('meta.date_from'))->toBe('2026-02-01');
         expect($response->json('meta.date_to'))->toBe('2026-02-28');
     });
 
-    test('enforces maximum 455 day range limit', function () {
+    test('enforces maximum 455 day range limit', function (): void {
         $response = $this->getJson(route('api.v1.tenants.calendar.index', [
             'tenant' => $this->tenant->alias,
             'date_from' => '2024-01-01',
@@ -99,11 +98,11 @@ describe('calendar API date range filtering', function () {
         $dateFrom = Carbon::parse($response->json('meta.date_from'));
         $dateTo = Carbon::parse($response->json('meta.date_to'));
 
-        expect($dateFrom->diffInDays($dateTo))->toBeLessThanOrEqual(455);
-        expect($response->json('meta.max_range_days'))->toBe(455);
+        expect($dateFrom->diffInDays($dateTo))->toBeLessThanOrEqual(455)
+            ->and($response->json('meta.max_range_days'))->toBe(455);
     });
 
-    test('swaps date_from and date_to if provided in wrong order', function () {
+    test('swaps date_from and date_to if provided in wrong order', function (): void {
         $response = $this->getJson(route('api.v1.tenants.calendar.index', [
             'tenant' => $this->tenant->alias,
             'date_from' => '2026-02-28',
@@ -117,7 +116,7 @@ describe('calendar API date range filtering', function () {
         expect($response->json('meta.date_to'))->toBe('2026-02-28');
     });
 
-    test('excludes draft events', function () {
+    test('excludes draft events', function (): void {
         $publishedEvent = Calendar::factory()->create([
             'tenant_id' => $this->tenant->id,
             'date' => Carbon::today(),
@@ -138,11 +137,10 @@ describe('calendar API date range filtering', function () {
 
         $eventIds = collect($response->json('data'))->pluck('id')->toArray();
 
-        expect($eventIds)->toContain($publishedEvent->id);
-        expect($eventIds)->not->toContain($draftEvent->id);
+        expect($eventIds)->toContain($publishedEvent->id)->not->toContain($draftEvent->id);
     });
 
-    test('filters by tenant when all_tenants is false', function () {
+    test('filters by tenant when all_tenants is false', function (): void {
         $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
 
         $thisTenantsEvent = Calendar::factory()->create([
@@ -165,11 +163,10 @@ describe('calendar API date range filtering', function () {
 
         $eventIds = collect($response->json('data'))->pluck('id')->toArray();
 
-        expect($eventIds)->toContain($thisTenantsEvent->id);
-        expect($eventIds)->not->toContain($otherTenantsEvent->id);
+        expect($eventIds)->toContain($thisTenantsEvent->id)->not->toContain($otherTenantsEvent->id);
     });
 
-    test('includes events from all tenants when all_tenants is true', function () {
+    test('includes events from all tenants when all_tenants is true', function (): void {
         $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
 
         $thisTenantsEvent = Calendar::factory()->create([
@@ -193,7 +190,7 @@ describe('calendar API date range filtering', function () {
 
         $eventIds = collect($response->json('data'))->pluck('id')->toArray();
 
-        expect($eventIds)->toContain($thisTenantsEvent->id);
-        expect($eventIds)->toContain($otherTenantsEvent->id);
+        expect($eventIds)->toContain($thisTenantsEvent->id)
+            ->toContain($otherTenantsEvent->id);
     });
 });

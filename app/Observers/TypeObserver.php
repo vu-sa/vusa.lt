@@ -37,7 +37,7 @@ class TypeObserver
      */
     protected function clearCacheForTypeInstitutions(Type $type): void
     {
-        $type->institutions()->pluck('id')->each(function ($institutionId) {
+        $type->institutions()->pluck('id')->each(function ($institutionId): void {
             RelationshipService::clearRelatedInstitutionsCache($institutionId);
         });
     }

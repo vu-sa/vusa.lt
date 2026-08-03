@@ -30,6 +30,7 @@ class UpdateProgrammeRequest extends FormRequest
         return $this->user()?->can('update', $training) ?? false;
     }
 
+    #[\Override]
     public function prepareForValidation()
     {
         $days = $this->input('days');

@@ -20,7 +20,7 @@ class TaskApiController extends ApiController
         $limit = $request->input('limit', 5);
 
         $tasks = Task::with('taskable')
-            ->whereHas('users', function ($query) {
+            ->whereHas('users', function ($query): void {
                 $query->where('users.id', Auth::id());
             })
             ->whereNull('completed_at')

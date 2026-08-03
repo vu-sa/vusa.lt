@@ -15,12 +15,13 @@ class TenantPolicy extends ModelPolicy
     public function __construct(ModelAuthorizer $authorizer)
     {
         parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::TENANT()->label);
+        $this->pluralModelName = Str::plural(ModelEnum::TENANT->label());
     }
 
     /**
      * Determine whether the user can create models.
      */
+    #[\Override]
     public function create(User $user): bool
     {
         return $user->isSuperAdmin();
@@ -29,6 +30,7 @@ class TenantPolicy extends ModelPolicy
     /**
      * Determine whether the user can view any models.
      */
+    #[\Override]
     public function viewAny(User $user): bool
     {
         return $user->isSuperAdmin();
@@ -37,6 +39,7 @@ class TenantPolicy extends ModelPolicy
     /**
      * Determine whether the user can view the model.
      */
+    #[\Override]
     public function view(User $user, Model $tenant): bool
     {
         return $user->isSuperAdmin();
@@ -45,6 +48,7 @@ class TenantPolicy extends ModelPolicy
     /**
      * Determine whether the user can update the model.
      */
+    #[\Override]
     public function update(User $user, Model $tenant): bool
     {
         return $user->isSuperAdmin();
@@ -72,6 +76,7 @@ class TenantPolicy extends ModelPolicy
      *
      * @param  Tenant  $tenant
      */
+    #[\Override]
     public function delete(User $user, Model $tenant): bool
     {
         if ($user->isSuperAdmin()) {

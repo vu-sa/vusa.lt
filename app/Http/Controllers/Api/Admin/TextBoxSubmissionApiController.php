@@ -90,7 +90,7 @@ class TextBoxSubmissionApiController extends ApiController
 
         $fileName = "{$slug}-atsakymai.xlsx";
 
-        return (new TextBoxSubmissionsExport($contentPart))->download($fileName);
+        return new TextBoxSubmissionsExport($contentPart)->download($fileName);
     }
 
     /**

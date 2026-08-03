@@ -46,15 +46,15 @@ Route::get('/d/{code}', [Public\DocumentRedirectController::class, 'redirect'])
     ->name('document.short');
 
 // Sitemap routes (outside language group)
-Route::domain('{subdomain}.'.explode('.', config('app.url'), 2)[1])->group(function () {
+Route::domain('{subdomain}.'.explode('.', config('app.url'), 2)[1])->group(function (): void {
     Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap.index');
     Route::get('/sitemap-pages.xml', [SitemapController::class, 'pages'])->name('sitemap.pages');
     Route::get('/sitemap-news.xml', [SitemapController::class, 'news'])->name('sitemap.news');
     Route::get('/sitemap-news-google.xml', [SitemapController::class, 'googleNews'])->name('sitemap.news.google');
 });
 
-Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware' => ['main']], function () {
-    Route::domain('www.'.explode('.', config('app.url'), 2)[1])->group(function () {
+Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware' => ['main']], function (): void {
+    Route::domain('www.'.explode('.', config('app.url'), 2)[1])->group(function (): void {
 
         Route::get('{registrationString}/{registrationForm}', [Public\PublicPageController::class, 'registrationPage'])->name('registrationPage')->whereIn('registrationString', ['registracija', 'registration']);
 
@@ -92,7 +92,7 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::redirect('ataskaita-2023', 'https://ataskaita2023.vusa.lt', 301);
     });
 
-    Route::domain('{subdomain}.'.explode('.', config('app.url'), 2)[1])->group(function () {
+    Route::domain('{subdomain}.'.explode('.', config('app.url'), 2)[1])->group(function (): void {
         Route::get('/', [Public\PublicPageController::class, 'home'])->name('home');
         Route::get('{newsString}', [Public\NewsController::class, 'newsArchive'])->name('newsArchive')->whereIn('newsString', ['naujienos', 'news']);
         Route::redirect('/admin', '/mano', 301);
@@ -110,13 +110,11 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         ])->name('contacts.dutyType');
 
         Route::get('kontaktai/{institution:alias}', [Public\ContactController::class, 'institutionContacts'])->name('contacts.alias')
-            ->missing(function (Request $request) {
-                return Redirect::route('contacts.institution', [
-                    'institution' => $request->institution,
-                    'lang' => $request->lang,
-                    'subdomain' => $request->subdomain,
-                ]);
-            });
+            ->missing(fn (Request $request) => Redirect::route('contacts.institution', [
+                'institution' => $request->institution,
+                'lang' => $request->lang,
+                'subdomain' => $request->subdomain,
+            ]));
 
         Route::get('kontaktai', [Public\ContactController::class, 'contacts'])->name('contacts');
         Route::get('kontaktai/kategorija/{type:slug}', [Public\ContactController::class, 'institutionCategory'])

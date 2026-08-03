@@ -70,7 +70,7 @@ class QueueNotificationForDigest
         // Queue for digest
         NotificationDigestQueue::create([
             'user_id' => $notifiable->id,
-            'notification_class' => get_class($notification),
+            'notification_class' => $notification::class,
             'category' => $notification->category()->value,
             'data' => $notification->toDigestItem($notifiable),
         ]);

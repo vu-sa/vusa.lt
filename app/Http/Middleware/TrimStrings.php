@@ -11,6 +11,7 @@ class TrimStrings extends Middleware
      *
      * @var array<int, string>
      */
+    #[\Override]
     protected $except = [
         'password',
         'password_confirmation',
