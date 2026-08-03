@@ -80,6 +80,11 @@ test('cannot update resource in invalid state', function () {
 
 # Parallel execution (faster)
 ./vendor/bin/sail artisan test --parallel
+
+# Test Impact Analysis (Tia) is on by default locally — reruns only affected
+# tests and replays the rest. Force a full run or rebuild the graph when needed:
+./vendor/bin/sail artisan test --no-tia
+./vendor/bin/sail artisan test --fresh
 ```
 
 ## Test Environment

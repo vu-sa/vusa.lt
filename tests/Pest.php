@@ -21,6 +21,28 @@ pest()->extend(TestCase::class)->in('Feature', 'Unit');
 
 /*
 |--------------------------------------------------------------------------
+| Test Impact Analysis
+|--------------------------------------------------------------------------
+|
+| Tia reruns only the tests affected by your changes and replays cached results for the rest.
+| `locally()` enables it for local runs; ci.yml opts pull requests in explicitly with `--ci --tia`.
+| Pushes to main stay a full run, and tia-baseline.yml records the shared baseline from there.
+|
+| Escape hatches: `--no-tia` (one full run), `--fresh` (discard the graph and re-record).
+|
+*/
+
+$tia = pest()->tia()->locally();
+
+// Baseline fetching shells out to the GitHub CLI. Pest aborts the run (exit 1) when `gh` is
+// missing or unauthenticated, and the Sail container ships without it — so opt in only where
+// the CLI is actually resolvable.
+if (shell_exec('command -v gh 2>/dev/null') !== null) {
+    $tia->baselined();
+}
+
+/*
+|--------------------------------------------------------------------------
 | Expectations
 |--------------------------------------------------------------------------
 |

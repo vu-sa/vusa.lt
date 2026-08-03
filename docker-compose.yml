@@ -40,6 +40,7 @@ services:
             XDEBUG_CONFIG: '${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}'
         volumes:
             - '.:/var/www/html:delegated'
+            - './.pest-cache:/home/sail/.pest'
         networks:
             - sail
         depends_on:

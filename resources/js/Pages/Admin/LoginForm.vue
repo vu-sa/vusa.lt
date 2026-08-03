@@ -22,7 +22,7 @@
   <!-- Main Content -->
   <div class="min-h-screen">
     <FadeTransition appear>
-      <div class="grid min-h-screen items-center justify-center p-4 md:grid-cols-2">
+      <div class="grid min-h-screen items-center justify-center px-1.5 py-4 sm:p-4 md:grid-cols-2">
         <!-- Logo Section -->
         <div class="hidden md:flex items-center justify-center">
           <AppLogo class="w-96 invert" />

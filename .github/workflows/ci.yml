@@ -131,14 +131,22 @@ jobs:
         run: vendor/bin/phpstan analyze --no-progress --memory-limit=1G
 
   php-tests:
-    needs: [changes, setup, php-lint]
+    needs: [changes, setup]
     if: ${{ needs.changes.outputs.php == 'true' || github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     name: PHP Tests
+    # actions: read lets Pest's TIA baseline sync pull the pest-tia-baseline artifact via `gh`.
+    permissions:
+      contents: read
+      actions: read
     steps:
     - uses: actions/checkout@v7
       with:
         ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+        # fetch-depth: 0 — TIA anchors the graph to a commit and resolves changes with
+        # `git merge-base --is-ancestor` / `git diff <sha>..HEAD`; a shallow clone breaks reachability
+        # and silently degrades every PR back to a full run.
+        fetch-depth: 0
 
     - name: Download build artifacts
       uses: actions/download-artifact@v8
@@ -170,6 +178,12 @@ jobs:
         cp .env.example .env
         php artisan key:generate --force
 
+    # Pull requests run Test Impact Analysis against the baseline recorded by tia-baseline.yml,
+    # replaying unaffected tests. Pushes to main deliberately stay a full run — that is the safety
+    # net for anything a stale graph lets slip through on a PR.
+    #
+    # Flag order is load-bearing: `--tia` MUST precede `--parallel`, otherwise ParaTest's option
+    # validation rejects it with `The "--tia" option does not exist.`
     - name: Execute tests with coverage
       env:
         SCOUT_DRIVER: database
@@ -177,7 +191,8 @@ jobs:
         TYPESENSE_PORT: 8108
         TYPESENSE_API_KEY: xyz
         TYPESENSE_PROTOCOL: http
-      run: php artisan test --parallel --coverage --coverage-clover ./coverage.xml --log-junit ./test-results.xml
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: php artisan test --ci ${{ github.event_name == 'pull_request' && '--tia' || '' }} --parallel --coverage --coverage-clover ./coverage.xml --log-junit ./test-results.xml
 
     - name: Upload test results to Codecov
       if: always()

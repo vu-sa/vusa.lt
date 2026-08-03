@@ -18,8 +18,15 @@ jobs:
     runs-on: ubuntu-24.04
     environment: Production
     steps:
+      # Pin to the exact commit that triggered this run. Without an explicit ref, a
+      # workflow_run trigger checks out main's HEAD *at the time this job starts* — which
+      # can drift from the commit the server later `git`s to, if another push landed in
+      # between. That reintroduces the same app-code/vendor mismatch this workflow exists
+      # to prevent. The "Deploy to production" step resets the server to this same SHA.
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -82,8 +89,17 @@ jobs:
           tar -czf docs.tar.gz -C public/docs .
 
       # Upload build artifacts
+      #
+      # deployment/maintenance.php goes up FIRST, straight to storage/framework/maintenance.php.
+      # public/index.php requires that file — if present — before vendor/autoload.php, so this
+      # takes the site down via plain scp, with no PHP boot involved. That closes the window
+      # this workflow exists to close: once "Deploy to production" resets the checked-out code
+      # and swaps vendor/, nothing has booted yet to crash on the still-mismatched pair.
       - name: Upload build artifacts
         run: |
+          echo "Uploading maintenance fallback..."
+          scp deployment/maintenance.php ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/storage/framework/maintenance.php
+
           echo "Uploading build artifacts..."
           scp build.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/build.tar.gz
           scp vendor.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/vendor.tar.gz
@@ -96,26 +112,33 @@ jobs:
 
       # Run deployment process
       #
-      # Order matters here. `php artisan down --render` is called FIRST, against the
-      # still-matching old app code + old vendor/, so it boots cleanly and prerenders the
-      # maintenance page — which public/index.php then serves without loading Composer at
-      # all. Only once the site is safely behind that static page do we `git pull` and
-      # swap vendor/ in via plain shell (not via an artisan-driven step): any `php artisan
-      # ...` call boots the full framework, including service providers that reference app
-      # classes, before the command itself runs. If a deploy adds/changes a Composer
-      # dependency and vendor/ isn't swapped yet, that boot fatals with a missing-class
-      # error — and doing the swap from inside deployment:run's own asset step is too late,
-      # since deployment:run itself is the first artisan call after the pull. Swapping via
-      # shell here, before any artisan command touches the new code, avoids both the
-      # chicken-and-egg boot crash and a live-traffic window with a missing vendor/.
+      # By this point storage/framework/maintenance.php (uploaded above) already has the site
+      # showing the static fallback page, so nothing here needs to boot Laravel to go "down".
+      #
+      # Everything up to and including the vendor/ swap is plain shell — no artisan call:
+      # every `php artisan ...` invocation boots the full framework, including service
+      # providers that reference app classes, before the command itself runs. If a deploy
+      # adds/changes a Composer dependency, booting against checked-out new app code paired
+      # with the still-old vendor/ fatals with a missing-class error — which is exactly what
+      # broke this workflow before: `git pull` landed the new code, then `artisan
+      # deployment:run` was the very first artisan call and crashed on boot, before its own
+      # `deployment:deploy-assets` step ever got a chance to swap vendor/ in.
+      #
+      # The `echo … > storage/framework/down` line exists purely as a recovery safety net: it
+      # makes `maintenanceMode()->active()` true so a manual `artisan up` (run by hand over SSH
+      # to recover a stuck deploy) actually deletes storage/framework/maintenance.php instead of
+      # short-circuiting with "Application is already up" and leaving the site stuck down.
+      # `deployment:run`'s own `maintenance` step overwrites both files with real content moments
+      # later, so this placeholder is never seen by a successful run.
       - name: Deploy to production
         run: |
           ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && \
-          /opt/php85/bin/php artisan down --retry=60 --render=errors::maintenance --refresh=15 && \
-          git pull && \
+          echo '{}' > storage/framework/down && \
           rm -rf vendor.new && \
           mkdir vendor.new && \
           tar -xzf vendor.tar.gz -C vendor.new && \
+          git fetch origin && \
+          git reset --hard ${{ github.event.workflow_run.head_sha || github.sha }} && \
           rm -rf vendor.old && \
           mv vendor vendor.old && \
           mv vendor.new/vendor vendor && \

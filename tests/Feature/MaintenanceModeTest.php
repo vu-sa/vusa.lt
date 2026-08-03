@@ -80,3 +80,24 @@ it('leaves other error pages untouched', function (): void {
         ->assertSee('404')
         ->assertSee('Puslapis nerastas');
 });
+
+it('ships a standalone maintenance fallback that matches the rendered page', function (): void {
+    // deployment/maintenance.php is scp'd straight to storage/framework/maintenance.php by
+    // the deploy workflow, before vendor/ is even swapped in — see .github/workflows/deploy.yml
+    // and app/Console/Commands/DeploymentDeployAssets.php. It cannot depend on Composer or the
+    // framework, so it can't be exercised through the test kernel (which never runs
+    // public/index.php's pre-autoloader require). Only its source is asserted here: that it
+    // sets the same status/headers artisan's `down --render` would, and mirrors the same
+    // dependency-free copy as resources/views/errors/maintenance.blade.php so visitors see one
+    // consistent page throughout a deploy, whichever fallback happens to be serving it.
+    $source = file_get_contents(base_path('deployment/maintenance.php'));
+
+    expect($source)->toContain('http_response_code(503)')
+        ->and($source)->toContain("header('Retry-After: 60')")
+        ->and($source)->toContain('exit;')
+        ->and($source)->not->toContain('/build/')
+        ->and($source)->toContain('Tinklalapis atnaujinamas')
+        ->and($source)->toContain('Šiuo metu atliekami techninės priežiūros darbai. Netrukus grįšime!')
+        ->and($source)->toContain('Site under maintenance')
+        ->and($source)->toContain('We are performing scheduled maintenance and will be back shortly.');
+});

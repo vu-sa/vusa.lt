@@ -17,8 +17,11 @@ class DeploymentDeployAssets extends Command
      * new app code would then boot against the still-old vendor/ and fatal with a
      * missing-class error on the very first artisan call (deployment:run itself),
      * before this step ever got a chance to fix it. So vendor.tar.gz is extracted via
-     * plain shell in the deploy workflow, after maintenance mode is entered but BEFORE
-     * git pull's new app code is ever booted by artisan — see deploy.yml.
+     * plain shell in the deploy workflow's "Deploy to production" step, alongside a
+     * `git reset --hard` to the built commit — all before artisan ever runs. The site is
+     * already behind a static fallback page (scp'd straight to
+     * storage/framework/maintenance.php, no artisan boot needed) for the whole window —
+     * see deploy.yml.
      */
     public function handle(): int
     {

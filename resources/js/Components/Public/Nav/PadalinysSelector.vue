@@ -113,14 +113,14 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from 'laravel-vue-i18n';
 import { computed, ref, watch, onMounted, nextTick } from 'vue';
-import { usePage } from '@inertiajs/vue3';
-import { Check, ChevronDown, MapPin, Map, List, Loader2 } from 'lucide-vue-next';
+import { Check, ChevronDown, MapPin, Map, List } from 'lucide-vue-next';
 import { useStorage } from '@vueuse/core';
 
 import PadalinysMap from './PadalinysMap.vue';
 
+import type { TenantOption } from '@/Composables/useTenantOptions';
+import { useTenantOptions } from '@/Composables/useTenantOptions';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { ScrollArea } from '@/Components/ui/scroll-area';
@@ -128,23 +128,11 @@ import { Popover, PopoverTrigger, PopoverContent } from '@/Components/ui/popover
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Skeleton } from '@/Components/ui/skeleton';
 
-// Import PadalinysMap component
-
-interface DropdownOption {
-  label: string;
-  key: string;
-  primary_institution?: {
-    short_name?: string;
-    image_url?: string;
-  };
-  isMainOffice?: boolean;
-}
-
 interface Props {
   /** Button size variant - affects padding and height */
   size: 'tiny' | 'small' | 'medium';
   /** Additional options to prepend to the dropdown list */
-  prependOptions?: Array<DropdownOption>;
+  prependOptions?: Array<TenantOption>;
   /** Override default label when on main tenant (instead of "Padaliniai") */
   mainTenantLabel?: string;
 }
@@ -180,147 +168,15 @@ const facultyLocations: Record<string, FacultyLocation> = {
   vm: { lat: 54.72498, lng: 25.33620, city: 'vilnius' }, // Business School
 };
 
-// City names for translation
-const cityNames = {
-  vilnius: 'Vilnius',
-  kaunas: 'Kaunas',
-  siauliai: 'Šiauliai',
-};
-
 const viewMode = useStorage('padalinysSelectorViewMode', 'list'); // 'list' or 'map'
 const searchQuery = ref('');
-const hoveredLocation = ref<DropdownOption | null>(null);
+const hoveredLocation = ref<TenantOption | null>(null);
 const isPopoverOpen = ref(false);
 
-const handleSelectPadalinys = (key: string | string[]) => {
-  let padalinys_alias: string = Array.isArray(key) ? key[0] ?? '' : key;
+const { options: options_padaliniai, isActive: isActivePadalinys, switchTenant: handleSelectPadalinys, currentLabel, isSwitchAllowed } = useTenantOptions(props.prependOptions);
 
-  // Remove the first subdomain (current tenant) and keep the rest of the hostname
-  // This handles both production (ff.vusa.lt) and staging (ff.naujas.vusa.lt) environments
-  const hostWithoutSubdomain = window.location.host
-    .split('.')
-    .slice(1)
-    .join('.');
-
-  // If padalinys_alias is 'vusa', set to 'www'
-  if (padalinys_alias === 'vusa') {
-    padalinys_alias = 'www';
-  }
-
-  window.location.href = `${window.location.protocol}//${padalinys_alias}.${hostWithoutSubdomain}${usePage().url}`;
-};
-
-const isActivePadalinys = (key: string): boolean => {
-  return usePage().props.tenant?.alias === key;
-};
-
-// Format faculty alias to standardized format (VU SR PREFIX + UPPERCASE)
-// This is kept for backward compatibility where primary_institution.short_name is not available
-const getFormattedAlias = (key: string): string => {
-  if (!key) return '';
-
-  const isEnglish = usePage().props.app.locale === 'en';
-  const prefix = isEnglish ? 'VU SR ' : 'VU SA ';
-
-  // Special case for main organization
-  if (key === 'vusa') {
-    return isEnglish ? 'VU SR' : 'VU SA';
-  }
-
-  return prefix + key.toUpperCase();
-};
-
-const options_padaliniai = computed(() => {
-  const options = usePage()
-    .props.tenants.filter(
-      tenant => (tenant.type === 'padalinys' || tenant.type === 'pagrindinis') && tenant.id <= 17,
-    )
-    .map((tenant): DropdownOption => ({
-      label: $t(tenant.fullname.split('atstovybė ')[1] || ''),
-      key: tenant.alias,
-      primary_institution: tenant.primary_institution
-        ? {
-            short_name: Array.isArray(tenant.primary_institution.short_name)
-              ? tenant.primary_institution.short_name[0]
-              : tenant.primary_institution.short_name || undefined,
-            image_url: tenant.primary_institution.image_url || undefined,
-          }
-        : undefined,
-      isMainOffice: tenant.type === 'pagrindinis',
-    }));
-
-  if (props.prependOptions) {
-    return [...props.prependOptions, ...options];
-  }
-
-  return options;
-});
-
-// Separate faculties by city for different handling
-const vilniusFaculties = computed(() => {
-  if (!searchQuery.value) {
-    return options_padaliniai.value.filter(
-      option => facultyLocations[option.key]?.city === 'vilnius',
-    );
-  }
-
-  return options_padaliniai.value.filter(option =>
-    facultyLocations[option.key]?.city === 'vilnius' && (
-      option.label.toLowerCase().includes(searchQuery.value.toLowerCase())
-      || option.key.toLowerCase().includes(searchQuery.value.toLowerCase())
-    ),
-  );
-});
-
-const otherCitiesFaculties = computed(() => {
-  if (!searchQuery.value) {
-    return options_padaliniai.value.filter(
-      (option) => {
-        const city = facultyLocations[option.key]?.city;
-        return city && ['kaunas', 'siauliai'].includes(city);
-      },
-    );
-  }
-
-  return options_padaliniai.value.filter((option) => {
-    const city = facultyLocations[option.key]?.city;
-    return city && ['kaunas', 'siauliai'].includes(city) && (
-      option.label.toLowerCase().includes(searchQuery.value.toLowerCase())
-      || option.key.toLowerCase().includes(searchQuery.value.toLowerCase())
-    );
-  });
-});
-
-const padalinys = computed(() => {
-  if (usePage().props.tenant?.alias === 'vusa') {
-    return $t(props.mainTenantLabel ?? 'Padaliniai');
-  }
-  return $t(usePage().props.tenant?.shortname.split(' ').pop() ?? 'Padaliniai');
-});
-
-const isDisabled = computed(() => {
-  if (['lt', 'en', 'lt/naujienos'].includes(usePage().props.app.path)) {
-    return false;
-  }
-
-  // check if contains kontaktai or contacts
-  if (usePage().props.app.path.includes('kontaktai')) {
-    return false;
-  }
-
-  if (usePage().props.app.path.includes('contacts')) {
-    return false;
-  }
-
-  return true;
-});
-
-// Helper to get translated city name
-const getCityName = (option: DropdownOption): string => {
-  const city = facultyLocations[option.key]?.city;
-  if (!city) return '';
-  return $t(cityNames[city] || '');
-};
+const padalinys = currentLabel(props.mainTenantLabel);
+const isDisabled = computed(() => !isSwitchAllowed.value);
 
 // Set view mode and initialize map if needed
 const setViewMode = (mode: 'list' | 'map') => {
