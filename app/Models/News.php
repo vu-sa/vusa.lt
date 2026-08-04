@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Actions\PairTranslatedRecord;
+use App\Feed\FeedHtml;
+use App\Feed\FeedItem;
 use App\Models\Traits\LogsModelActivity;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
@@ -17,7 +19,6 @@ use Illuminate\Support\Facades\Storage;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use Spatie\Feed\Feedable;
-use Spatie\Feed\FeedItem;
 use Spatie\SchemaOrg\NewsArticle;
 use Spatie\SchemaOrg\Organization;
 use Spatie\Sitemap\Contracts\Sitemapable;
@@ -184,17 +185,144 @@ class News extends Model implements Feedable, Sitemapable
 
     public function toFeedItem(): FeedItem
     {
-        // add image to short
-        $short = '<img src="'.config('app.url').'/uploads\/'.$this->image.'" alt="'.$this->title.'" style="max-width: 100%; height: auto; object-position: cover; margin-bottom: 2rem">'.$this->short;
+        $coverUrl = $this->getAbsoluteCoverUrl();
+        $coverHtml = $coverUrl !== ''
+            ? '<img src="'.$coverUrl.'" alt="'.e($this->title).'" style="max-width: 100%; height: auto; margin-bottom: 2rem">'
+            : '';
 
-        return FeedItem::create()
+        $summary = FeedHtml::absolutize($coverHtml.$this->short);
+        $body = FeedHtml::absolutize($coverHtml.$this->renderBodyHtml());
+
+        $linkPrefix = $this->lang === 'lt' ? 'naujiena/' : 'news/';
+
+        $item = FeedItem::create()
             ->id($this->id)
             ->title($this->title)
-            ->summary($short)
+            ->summary($summary)
+            ->content($body)
             ->updated(Carbon::parse($this->publish_time))
-            // image with hostname
-            ->link('naujiena/'.$this->permalink)
-            ->authorName($this->tenant->shortname);
+            ->link($linkPrefix.$this->permalink)
+            ->authorName($this->tenant->shortname)
+            ->authorEmail($this->getFeedAuthorEmail())
+            ->alternates($this->getFeedAlternateLinks());
+
+        $tagNames = $this->getFeedTagNames();
+        if ($tagNames !== []) {
+            $item->category(...$tagNames);
+        }
+
+        if ($coverUrl !== '') {
+            $item->image($coverUrl)
+                ->enclosure($coverUrl)
+                ->enclosureLength($this->getCoverSize())
+                ->enclosureType($this->getCoverMime());
+        }
+
+        return $item;
+    }
+
+    /**
+     * Absolute URL of the cover image (with fallback), or empty string when none.
+     */
+    protected function getAbsoluteCoverUrl(): string
+    {
+        $url = $this->getImageUrl();
+
+        return str_starts_with($url, 'http') ? $url : url($url);
+    }
+
+    /**
+     * Render the full article body from ContentPart blocks as HTML.
+     * Falls back to the short excerpt when the body is empty.
+     */
+    protected function renderBodyHtml(): string
+    {
+        $parts = $this->content?->parts;
+
+        if ($parts === null || $parts->isEmpty()) {
+            return $this->short;
+        }
+
+        return $parts->map(fn (ContentPart $part) => $part->html ?? '')->implode("\n");
+    }
+
+    /**
+     * Tag names for feed <category> elements, localized to the article's locale.
+     *
+     * @return list<string>
+     */
+    protected function getFeedTagNames(): array
+    {
+        return $this->tags
+            ->map(function (Tag $tag) {
+                $name = $tag->name;
+
+                return is_array($name) ? ($name[$this->lang] ?? $name['lt'] ?? null) : $name;
+            })
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Generic info@ address on the tenant's public host (leading "www." stripped),
+     * e.g. info@vusa.lt or info@mif.vusa.lt.
+     */
+    protected function getFeedAuthorEmail(): string
+    {
+        $host = preg_replace('/^www\./', '', $this->tenant->publicHostname());
+
+        return 'info@'.$host;
+    }
+
+    /**
+     * Per-item alternate-language links for the feed.
+     *
+     * @return list<array{hreflang: string, href: string}>
+     */
+    protected function getFeedAlternateLinks(): array
+    {
+        if (! $this->other_language_news) {
+            return [];
+        }
+
+        $other = $this->other_language_news;
+        $prefix = $other->lang === 'lt' ? 'naujiena/' : 'news/';
+
+        return [
+            ['hreflang' => $other->lang, 'href' => url($prefix.$other->permalink)],
+        ];
+    }
+
+    /**
+     * Cover image byte size on the public disk, or 0 when unavailable.
+     */
+    protected function getCoverSize(): int
+    {
+        if (! $this->image || str_starts_with($this->image, 'http')) {
+            return 0;
+        }
+
+        try {
+            return Storage::disk('public')->size(str_replace('uploads/', '', $this->image));
+        } catch (\Throwable) {
+            return 0;
+        }
+    }
+
+    /**
+     * Cover image MIME type, guessed from the file extension (no disk access).
+     */
+    protected function getCoverMime(): string
+    {
+        return match (strtolower(pathinfo($this->image ?? '', PATHINFO_EXTENSION))) {
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            'webp' => 'image/webp',
+            'svg' => 'image/svg+xml',
+            default => 'image/jpeg',
+        };
     }
 
     /**
@@ -267,7 +395,12 @@ class News extends Model implements Feedable, Sitemapable
 
     public static function getFeedItems()
     {
-        return News::query()->where('draft', false)->orderByDesc('publish_time')->take(15)->get();
+        return News::query()
+            ->where('draft', false)
+            ->orderByDesc('publish_time')
+            ->take(15)
+            ->with(['tags', 'content.parts', 'tenant', 'other_language_news'])
+            ->get();
     }
 
     public function toSearchableArray(): array

@@ -7,6 +7,13 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.22 — Praturtintas naujienų RSS srautas (2026-08-04) {#v1-22}
+
+- ⭐ **Pilnas naujienos turinys sraute** — RSS naujienų srautas dabar atneša visą straipsnio turinį (su paveikslėliais), o ne tik trumpą ištrauką, kad skaitytuvėse matytųsi visas tekstas
+- ✨ **Paveikslėliai matomi skaitytuvėse** — viršelio nuotrauka dabar perduodama per `<enclosure>` ir Media RSS žymes, o visi nuorodai ir paveikslėliai sraute paverčiami absoliučiais adresais
+- 🔧 **Sutvarkyta viršelio nuotraukos nuoroda** — anksčiau dėl klaidingo adreso konstravimo viršelio paveikslėlis sraute ne visai rodydavosi
+- ✨ **Daugiau metaduomenų** — naujienų žymos dabar atvaizduojamos kaip `<category>`, pridėtas `<guid>`, autoriaus el. paštas ir nuorodos į kitos kalbos versiją
+
 ## v1.21 — Perdaryta navigacijos redagavimo patirtis (2026-08-04) {#v1-21}
 
 ### Administravimas
