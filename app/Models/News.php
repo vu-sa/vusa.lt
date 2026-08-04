@@ -195,16 +195,19 @@ class News extends Model implements Feedable, Sitemapable
 
         $linkPrefix = $this->lang === 'lt' ? 'naujiena/' : 'news/';
 
-        $item = FeedItem::create()
-            ->id($this->id)
-            ->title($this->title)
-            ->summary($summary)
-            ->content($body)
-            ->updated(Carbon::parse($this->publish_time))
-            ->link($linkPrefix.$this->permalink)
-            ->authorName($this->tenant->shortname)
-            ->authorEmail($this->getFeedAuthorEmail())
-            ->alternates($this->getFeedAlternateLinks());
+        // Chained calls would collapse the fluent type back to the parent Spatie\Feed\FeedItem
+        // (its methods return `self`, not `static`), hiding App\Feed\FeedItem's own methods
+        // from PHPStan. Call each setter as a separate statement instead.
+        $item = FeedItem::create();
+        $item->id($this->id);
+        $item->title($this->title);
+        $item->summary($summary);
+        $item->content($body);
+        $item->updated(Carbon::parse($this->publish_time));
+        $item->link($linkPrefix.$this->permalink);
+        $item->authorName($this->tenant->shortname);
+        $item->authorEmail($this->getFeedAuthorEmail());
+        $item->alternates($this->getFeedAlternateLinks());
 
         $tagNames = $this->getFeedTagNames();
         if ($tagNames !== []) {
@@ -237,9 +240,9 @@ class News extends Model implements Feedable, Sitemapable
      */
     protected function renderBodyHtml(): string
     {
-        $parts = $this->content?->parts;
+        $parts = $this->content->parts;
 
-        if ($parts === null || $parts->isEmpty()) {
+        if ($parts->isEmpty()) {
             return $this->short;
         }
 

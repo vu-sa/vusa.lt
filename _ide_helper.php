@@ -5,7 +5,7 @@
 
 /**
  * A helper file for Laravel, to provide autocomplete information to your IDE
- * Generated for Laravel 13.23.0.
+ * Generated for Laravel 13.24.0.
  *
  * This file should not be included in your code, only analyzed by your IDE!
  *
@@ -649,6 +649,18 @@ namespace  {
         {
             /** @var \Illuminate\Database\Eloquent\Builder $instance */
             return $instance->pluck($column, $key);
+        }
+
+        /**
+         * Get an array of primary keys from the query result.
+         *
+         * @return array<int, array-key>
+         * @static
+         */
+        public static function modelKeys()
+        {
+            /** @var \Illuminate\Database\Eloquent\Builder $instance */
+            return $instance->modelKeys();
         }
 
         /**

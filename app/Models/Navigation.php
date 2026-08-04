@@ -22,9 +22,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property string $url
  * @property int $order
  * @property bool $is_active
- * @property array<array-key, mixed>|null $extra_attributes type, column, col_span, icon, description,
- *                                                          small_text, badge_variant, featured, new_tab, image, image_render, image_overlay, image_blur,
- *                                                          image_focal, image_gradient, cols — see NavigationRequest for the authoritative validation list
+ * @property array<array-key, mixed>|null $extra_attributes column, icon, image, style
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at

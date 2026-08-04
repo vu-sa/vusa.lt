@@ -147,7 +147,9 @@ const hasDutyDescription = (duty: App.Entities.Duty): boolean => {
     return false;
   }
 
-  return desc.replace(/<[^>]*>/g, '').trim().length > 0;
+  const container = document.createElement('div');
+  container.innerHTML = desc;
+  return (container.textContent ?? '').trim().length > 0;
 };
 
 // Some users have multiple duties, so we need to show all of their emails AND duty name
