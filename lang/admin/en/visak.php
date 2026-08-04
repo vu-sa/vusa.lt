@@ -65,6 +65,13 @@ return [
         'dialog_description' => 'Search institutions and compare their vacation-aware activity status.',
         'next_meeting' => 'Next meeting: :date',
         'last_meeting' => 'Last meeting: :date',
+        'overview_tab' => 'Overview',
+        'trend_tab' => 'Trend',
+        'trend_spotlight_title' => 'Status trend over time',
+        'trend_spotlight_description' => 'See how institution status has changed day to day, and spot improving or worsening trends.',
+        'trend_description' => 'How institution status has changed day to day',
+        'trend_empty' => 'No data for this range yet',
+        'trend_range_days' => ':days d.',
     ],
 
     // Representative activity tracking
