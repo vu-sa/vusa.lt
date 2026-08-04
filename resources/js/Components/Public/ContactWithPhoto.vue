@@ -1,22 +1,18 @@
 <template>
   <figure
-    class="group relative flex flex-col overflow-hidden rounded-xl bg-gradient-to-br from-zinc-50 to-zinc-100/50 ring-1 ring-zinc-200/50 transition-all duration-300 hover:ring-zinc-300 hover:shadow-lg dark:from-zinc-800/80 dark:to-zinc-900 dark:ring-zinc-700/50 dark:hover:ring-zinc-600 sm:rounded-2xl"
-  >
+    class="group relative flex flex-col overflow-hidden rounded-xl bg-gradient-to-br from-zinc-50 to-zinc-100/50 ring-1 ring-zinc-200/50 transition-all duration-300 hover:ring-zinc-300 hover:shadow-lg dark:from-zinc-800/80 dark:to-zinc-900 dark:ring-zinc-700/50 dark:hover:ring-zinc-600 sm:rounded-2xl">
     <!-- Photo section -->
     <div v-if="imageUrl" class="relative aspect-[4/3] w-full overflow-hidden">
-      <img
-        :src="imageUrl"
-        :alt="contact?.name"
-        class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-        loading="lazy"
-        :style="{ objectPosition: focalPoint }"
-      >
+      <img :src="imageUrl" :alt="contact?.name"
+        class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy"
+        :style="{ objectPosition: focalPoint }">
       <!-- Subtle gradient overlay at bottom for text readability -->
       <div class="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/20 to-transparent" />
     </div>
 
     <!-- Avatar fallback when no photo -->
-    <div v-else class="flex aspect-[4/3] w-full items-center justify-center bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-700 dark:to-zinc-800">
+    <div v-else
+      class="flex aspect-[4/3] w-full items-center justify-center bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-700 dark:to-zinc-800">
       <span class="text-2xl font-bold text-zinc-400 dark:text-zinc-500 sm:text-3xl">
         {{ getInitials(contact.name) }}
       </span>
@@ -35,35 +31,65 @@
 
         <!-- Duties (hidden when the surrounding section already names the duty) -->
         <div v-if="duties && !hideDutyNames" class="mt-1.5 space-y-0.5 sm:mt-2 sm:space-y-1">
-          <p
-            v-for="duty in duties"
-            :key="duty.id"
-            class="text-[11px] leading-relaxed text-zinc-600 dark:text-zinc-400 sm:text-xs"
-          >
-            {{ changeDutyNameEndings(contact, duty.name, $page.props.app.locale, contact.pronouns, duty.pivot?.use_original_duty_name) }}
-            <span v-if="showAdditionalInfo(duty)" class="text-zinc-400 dark:text-zinc-500">
-              {{ showAdditionalInfo(duty) }}
+          <p v-for="duty in duties" :key="duty.id"
+            class="flex items-center gap-0.5 text-[11px] leading-relaxed text-zinc-600 dark:text-zinc-400 sm:text-xs">
+            <span class="min-w-0">
+              {{ changeDutyNameEndings(contact, duty.name, $page.props.app.locale, contact.pronouns,
+                duty.pivot?.use_original_duty_name) }}
+              <span v-if="showAdditionalInfo(duty)" class="text-zinc-400 dark:text-zinc-500">
+                {{ showAdditionalInfo(duty) }}
+              </span>
             </span>
-            <InfoPopover
-              v-if="duty.description && duty.description !== '<p></p>'"
-              style="max-width: 400px"
-              trigger="hover"
-              color="gray"
-              class="ml-0.5 inline align-middle"
-            >
+            <InfoPopover v-if="hasDutyDescription(duty)" compact style="max-width: 400px" trigger="hover" color="gray">
               <span v-html="dutyDescription(duty)" />
             </InfoPopover>
           </p>
         </div>
+
+        <!-- Primary email (always visible when present) -->
+        <div v-if="primaryEmail" class="mt-1.5 flex items-center gap-1.5 sm:mt-2">
+          <IFluentMail20Regular class="size-3 shrink-0 text-zinc-500 dark:text-zinc-400 sm:size-3.5" />
+          <a :href="`mailto:${primaryEmail.email}`"
+            class="truncate text-[11px] text-zinc-600 hover:text-vusa-red dark:text-zinc-400 dark:hover:text-vusa-red sm:text-xs"
+            :title="primaryEmail.email">
+            {{ primaryEmail.email }}
+          </a>
+          <Popover v-if="shownContactEmail.length > 1">
+            <PopoverTrigger as-child>
+              <button type="button"
+                class="inline-flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-medium text-zinc-500 transition-colors hover:bg-zinc-200/70 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-700/70 dark:hover:text-zinc-200">
+                +{{ shownContactEmail.length - 1 }}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent align="start" class="w-auto max-w-xs p-3">
+              <div class="flex flex-col gap-2 text-sm">
+                <template v-for="(email, index) in shownContactEmail" :key="email.email">
+                  <div>
+                    <span class="block text-xs font-medium text-zinc-500 dark:text-zinc-400">{{ email.name }}</span>
+                    <a :href="`mailto:${email.email}`"
+                      class="text-sm font-medium text-zinc-900 hover:text-vusa-red dark:text-zinc-100">
+                      {{ email.email }}
+                    </a>
+                  </div>
+                  <div v-if="index < shownContactEmail.length - 1" class="h-px bg-zinc-200 dark:bg-zinc-700" />
+                </template>
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
 
       <!-- Action buttons -->
-      <div class="flex items-center gap-1 pt-0.5 sm:gap-1.5 sm:pt-1">
+      <div v-if="contact.phone || contact.facebook_url" class="flex items-center gap-1 pt-0.5 sm:gap-1.5 sm:pt-1">
         <TooltipProvider v-if="contact.phone">
           <Tooltip>
             <TooltipTrigger as-child>
               <a :href="`tel:${contact.phone}`">
-                <Button variant="ghost" size="icon-sm" class="size-7 rounded-full text-zinc-500 hover:bg-zinc-200/70 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-700/70 dark:hover:text-zinc-200 sm:size-8">
+                <Button variant="ghost" size="icon-sm" :class="[
+                  'size-7 rounded-full sm:size-8',
+                  'bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700',
+                  'dark:bg-zinc-700/60 dark:text-zinc-400 dark:hover:bg-zinc-600 dark:hover:text-zinc-200',
+                ]">
                   <IFluentPhone20Regular class="size-3.5 sm:size-4" />
                 </Button>
               </a>
@@ -75,49 +101,14 @@
         </TooltipProvider>
 
         <a v-if="contact.facebook_url" :href="contact.facebook_url" target="_blank" rel="noopener noreferrer">
-          <Button variant="ghost" size="icon-sm" class="size-7 rounded-full text-zinc-500 hover:bg-blue-50 hover:text-blue-600 dark:text-zinc-400 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 sm:size-8">
+          <Button variant="ghost" size="icon-sm" :class="[
+            'size-7 rounded-full sm:size-8',
+            'bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700',
+            'dark:bg-zinc-700/60 dark:text-zinc-400 dark:hover:bg-zinc-600 dark:hover:text-zinc-200',
+          ]">
             <ISimpleIconsFacebook class="size-3.5 sm:size-4" />
           </Button>
         </a>
-
-        <Popover v-if="shownContactEmail.length > 1">
-          <PopoverTrigger as-child>
-            <Button variant="ghost" size="icon-sm" class="size-7 rounded-full text-zinc-500 hover:bg-zinc-200/70 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-700/70 dark:hover:text-zinc-200 sm:size-8">
-              <IFluentMail20Regular class="size-3.5 sm:size-4" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent align="start" class="w-auto max-w-xs p-3">
-            <div class="flex flex-col gap-2 text-sm">
-              <template v-for="(email, index) in shownContactEmail" :key="email.email">
-                <div>
-                  <span class="block text-xs font-medium text-zinc-500 dark:text-zinc-400">{{ email.name }}</span>
-                  <a
-                    :href="`mailto:${email.email}`"
-                    class="text-sm font-medium text-zinc-900 hover:text-vusa-red dark:text-zinc-100"
-                  >
-                    {{ email.email }}
-                  </a>
-                </div>
-                <div v-if="index < shownContactEmail.length - 1" class="h-px bg-zinc-200 dark:bg-zinc-700" />
-              </template>
-            </div>
-          </PopoverContent>
-        </Popover>
-
-        <TooltipProvider v-else-if="shownContactEmail.length === 1">
-          <Tooltip>
-            <TooltipTrigger as-child>
-              <a :href="`mailto:${shownContactEmail[0].email}`">
-                <Button variant="ghost" size="icon-sm" class="size-7 rounded-full text-zinc-500 hover:bg-zinc-200/70 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-700/70 dark:hover:text-zinc-200 sm:size-8">
-                  <IFluentMail20Regular class="size-3.5 sm:size-4" />
-                </Button>
-              </a>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" class="px-3 py-1.5">
-              <span class="text-xs">{{ shownContactEmail[0].email }}</span>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
       </div>
     </div>
   </figure>
@@ -125,7 +116,6 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { usePage } from '@inertiajs/vue3';
 
 import InfoPopover from '../Buttons/InfoPopover.vue';
 
@@ -143,17 +133,21 @@ const props = withDefaults(defineProps<{
   hideDutyNames: false,
 });
 
-const dutyDescription = (duty) => {
-  const { locale } = usePage().props.app;
+// Pivot-level description takes precedence over the duty-level one, matching the
+// data model where a duty assigned to a specific user can override the generic text.
+const dutyDescription = (duty: App.Entities.Duty) => {
+  return duty.pivot?.description ?? duty.description;
+};
 
-  if (locale === 'en') {
-    return (
-      duty.pivot?.description
-      ?? duty.description
-    );
+// The popover should only appear when there is visible text content. Empty HTML
+// wrappers such as "<p></p>" or "<p><br></p>" must not trigger it.
+const hasDutyDescription = (duty: App.Entities.Duty): boolean => {
+  const desc = dutyDescription(duty);
+  if (!desc) {
+    return false;
   }
 
-  return duty.pivot?.description ?? duty.description;
+  return desc.replace(/<[^>]*>/g, '').trim().length > 0;
 };
 
 // Some users have multiple duties, so we need to show all of their emails AND duty name
@@ -164,6 +158,9 @@ const shownContactEmail = computed(() => {
     return acc;
   }, []);
 });
+
+// The first email is shown as a visible mailto link; the rest are reachable via the "+N" popover.
+const primaryEmail = computed(() => shownContactEmail.value[0] ?? null);
 
 const showAdditionalInfo = (duty) => {
   if (!duty.pivot?.study_program) {
