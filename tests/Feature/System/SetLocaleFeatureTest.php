@@ -25,6 +25,17 @@ test('sets valid locale from parameter', function (): void {
         ->and(session()->get('lang'))->toBe('en');
 });
 
+test('returns 409 with x inertia location header for inertia requests', function (): void {
+    // Inertia (fetch-based) visits must not follow a 301 at the network layer,
+    // which trips WebKit sandbox checks in in-app browsers. The middleware
+    // should instead return 409 + X-Inertia-Location so the client does a
+    // clean window.location self-navigation.
+    $response = $this->get('/news/test', ['X-Inertia' => 'true']);
+
+    expect($response->getStatusCode())->toBe(409)
+        ->and($response->headers->get('X-Inertia-Location'))->toEndWith('/lt/news/test');
+});
+
 test('preserves query parameters during redirect', function (): void {
     $response = $this->get('/news/test?lang=en&page=2&search=query');
 

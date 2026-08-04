@@ -7,14 +7,12 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
-## v1.22 — Enriched news RSS feed (2026-08-04) {#v1-22}
+## v1.21 — Navigation editing, ViSAK status trend, and RSS feed (2026-08-04) {#v1-21}
 
-- ⭐ **Full article body in the feed** — the RSS news feed now carries the complete article (images included) instead of just the short excerpt, so the full text shows up in your reader
-- ✨ **Images render in readers** — the cover photo is now delivered via `<enclosure>` and Media RSS tags, and every link and image in the feed is rewritten to an absolute URL
-- 🔧 **Fixed the cover image URL** — a malformed URL previously prevented the cover photo from displaying in the feed
-- ✨ **More metadata** — news tags are now exposed as `<category>`, a `<guid>` is set, along with the author email and a link to the other-language version
+### ViSAK
 
-## v1.21 — Reworked navigation editing experience (2026-08-04) {#v1-21}
+- ⭐ **Institution status over time** 
+- ✨ **Selectable range** — view the chart over 30, 90, or 180 days; hovering shows that day's breakdown of institution statuses
 
 ### Admin
 
@@ -30,6 +28,13 @@ Here you'll find all changes and improvements to the mano.vusa.lt platform.
 - ⭐ **More control over background images** — darkening strength, blur, focal point, and gradient direction are now configurable per item
 - ⭐ **New navigation item options** — heading (a non-clickable section label), featured items, badge color, opening in a new tab, and image display as a card or a small thumbnail
 - 🔧 **Fixed links not opening in a new tab** — this setting silently failed in some cases before
+
+### News RSS feed
+
+- ⭐ **Full article body in the feed** — the RSS news feed now carries the complete article (images included) instead of just the short excerpt, so the full text shows up in your reader
+- ✨ **Images render in readers** — the cover photo is now delivered via `<enclosure>` and Media RSS tags, and every link and image in the feed is rewritten to an absolute URL
+- 🔧 **Fixed the cover image URL** — a malformed URL previously prevented the cover photo from displaying in the feed
+- ✨ **More metadata** — news tags are now exposed as `<category>`, a `<guid>` is set, along with the author email and a link to the other-language version
 
 ## v1.20 — Improved activity log (2026-08-02) {#v1-20}
 
