@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Cache;
 use Spatie\Activitylog\Support\LogOptions;
 
 /**
@@ -22,8 +21,10 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property string $lang
  * @property string $url
  * @property int $order
- * @property int $is_active
- * @property array<array-key, mixed>|null $extra_attributes column, icon, image, style
+ * @property bool $is_active
+ * @property array<array-key, mixed>|null $extra_attributes type, column, col_span, icon, description,
+ *                                                          small_text, badge_variant, featured, new_tab, image, image_render, image_overlay, image_blur,
+ *                                                          image_focal, image_gradient, cols — see NavigationRequest for the authoritative validation list
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
@@ -54,6 +55,7 @@ class Navigation extends Model
     {
         return [
             'extra_attributes' => 'array',
+            'is_active' => 'boolean',
         ];
     }
 
@@ -70,14 +72,10 @@ class Navigation extends Model
     protected static function booted()
     {
         static::saved(function ($navigation): void {
-            Cache::tags(['navigation', "locale_{$navigation->lang}"])->flush();
-            // Also clear the specific navigation cache keys used by NavigationService
             NavigationService::clearCache();
         });
 
         static::deleted(function ($navigation): void {
-            Cache::tags(['navigation', "locale_{$navigation->lang}"])->flush();
-            // Also clear the specific navigation cache keys used by NavigationService
             NavigationService::clearCache();
         });
 
@@ -113,6 +111,8 @@ class Navigation extends Model
             static::onlyTrashed()
                 ->whereIn('id', $navigation->descendantIds())
                 ->update(['deleted_at' => null]);
+
+            NavigationService::clearCache();
         });
     }
 

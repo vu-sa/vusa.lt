@@ -22,10 +22,21 @@ Component API          → Component test (*.component.test.ts)
 Mocks live in `resources/js/mocks/` — **not** in `.storybook/mocks/`. Available:
 
 - `inertia.mock.ts` — `usePage`, `router`, `useForm`
-- `i18n.ts` — `trans`, `transChoice`, `$t` (uses real translations from `lang/*.json`)
+- `i18n.ts` — `trans`, `transChoice`, `$t`, `getActiveLanguage`, `loadLanguageAsync`, `i18nVue` (uses real translations from `lang/*.json`)
 - `route.ts` — `route()` returning predictable mock URLs
 
 `$t()` and `route()` are registered globally in `.storybook/preview.ts` — you don't import them in stories.
+
+`.storybook/main.ts` aliases both `@inertiajs/vue3` and `laravel-vue-i18n` to those mocks. The
+i18n alias is what makes stories render real copy: most components do
+`import { trans as $t } from 'laravel-vue-i18n'`, and a `<script setup>` binding **shadows the
+global of the same name** that `preview.ts` installs — so without the alias they resolve to the
+real package (which has no plugin installed in Storybook) and render raw keys like
+`navigation.builder.edit_mode`. That also wrecks layout review, since an untranslated key is a
+long unbreakable string. If a component imports something new from `laravel-vue-i18n`, add it to
+`resources/js/mocks/i18n.ts` or the story will fail to resolve it.
+
+Stories render in **Lithuanian** — the mock only bundles the `lt` catalogue.
 
 Override per-story via mock methods:
 

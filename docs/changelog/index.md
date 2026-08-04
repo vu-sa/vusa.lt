@@ -7,6 +7,23 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.21 — Perdaryta navigacijos redagavimo patirtis (2026-08-04) {#v1-21}
+
+### Administravimas
+
+- ⭐ **Navigacijos redagavimas ir peržiūra atskirti** 
+- ✨ **Tvarka išsaugoma automatiškai** 
+- ⭐ **Kalbos perjungimas nepriklauso nuo administravimo kalbos** 
+- ✨ **Sutvarkyta navigacijos elemento redagavimo forma** 
+- ⭐ **Greitas nuorodos pasirinkimas** 
+- 🔧 **Rodymo viešai valdiklis pradėjo veikti**
+
+### Vieša navigacija
+
+- ⭐ **Daugiau valdymo paveikslėlio fonui** — patamsinimo stiprumas, suliejimas, fokuso taškas ir gradiento kryptis dabar konfigruojami kiekvienam elementui
+- ✨ **Geresnė mobili navigacija** 
+- 🔧 **Pataisytas nuorodų atsivėrimas naujame lange** — kai kur šis nustatymas anksčiau tyliai neveikdavo
+
 ## v1.20 — Patobulinta pakeitimų istorija (2026-08-02) {#v1-20}
 
 - ⭐ **Nauja pakeitimų istorijos skiltis** - posėdžių, institucijų, pareigų, problemų, rezervacijų, mokymų ir kito turinio puslapiuose dabar galima peržiūrėti visą pakeitimų istoriją, įskaitant susijusių įrašų pakeitimus (pvz., posėdžio istorijoje matomi ir jo darbotvarkės klausimų bei balsavimų pakeitimai)

@@ -114,6 +114,57 @@ export function transChoice(key: string, count: number, replace: Record<string, 
  */
 export const wTransChoice = transChoice;
 
+/**
+ * Alias for $tChoice() - commonly used in Vue templates
+ */
+export const $tChoice = transChoice;
+
+// ============================================================================
+// laravel-vue-i18n API surface
+//
+// `.storybook/main.ts` aliases `laravel-vue-i18n` to this file, so anything a
+// component imports from that package has to exist here too. Without the alias a
+// `<script setup>` binding like `import { trans as $t } from 'laravel-vue-i18n'`
+// shadows the `$t` global that `preview.ts` installs, and every story renders raw
+// translation keys instead of copy — which also throws off layout review, since an
+// untranslated key is a long unbreakable string.
+// ============================================================================
+
+/**
+ * The mock only bundles the Lithuanian catalogue (see the imports at the top), so this
+ * is the language every story renders in.
+ */
+export function getActiveLanguage(): string {
+  return 'lt';
+}
+
+/** No-op: there is nothing to fetch, the catalogue is bundled at build time. */
+export function loadLanguageAsync(_lang?: string): Promise<void> {
+  return Promise.resolve();
+}
+
+/** No-op, mirroring `loadLanguageAsync`. */
+export function loadLanguage(_lang?: string): void {
+  // Intentionally empty — translations are already resolved synchronously.
+}
+
+/** Always true: the bundled catalogue needs no loading step. */
+export function isLoaded(_lang?: string): boolean {
+  return true;
+}
+
+/**
+ * Stand-in for the real Vue plugin. Storybook never boots `admin.ts`/`public.ts`, so
+ * this exists only so an `import { i18nVue }` resolves; installing it registers the
+ * same globals `preview.ts` sets up.
+ */
+export const i18nVue = {
+  install(app: { config: { globalProperties: Record<string, unknown> } }) {
+    app.config.globalProperties.$t = trans;
+    app.config.globalProperties.$tChoice = transChoice;
+  },
+};
+
 // ============================================================================
 // Storybook fn()-wrapped versions for spy/assertion capabilities
 // ============================================================================
@@ -144,6 +195,12 @@ export default {
   transChoice,
   wTransChoice,
   $t,
+  $tChoice,
+  getActiveLanguage,
+  loadLanguageAsync,
+  loadLanguage,
+  isLoaded,
+  i18nVue,
   transFn,
   transChoiceFn,
   // Export raw translations for debugging/inspection

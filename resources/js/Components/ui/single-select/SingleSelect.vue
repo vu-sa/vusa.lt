@@ -51,7 +51,7 @@
             <ComboboxItem
               :value="option"
               :disabled="(option as any).disabled"
-              class="w-full"
+              :class="['w-full', props.itemClass]"
             >
               <slot name="option" :item="option">
                 {{ getItemLabel(option) }}
@@ -67,7 +67,7 @@
             :key="getItemValue(item)"
             :value="item"
             :disabled="(item as any).disabled"
-            class="w-full"
+            :class="['w-full', props.itemClass]"
           >
             <slot name="option" :item>
               {{ getItemLabel(item) }}
@@ -115,6 +115,8 @@ const props = withDefaults(defineProps<{
   estimateSize?: number;
   /** Additional classes for the dropdown content */
   contentClass?: string;
+  /** Additional classes for each dropdown item (both virtualized and standard rendering) */
+  itemClass?: string;
 }>(), {
   labelField: 'label',
   valueField: 'id',

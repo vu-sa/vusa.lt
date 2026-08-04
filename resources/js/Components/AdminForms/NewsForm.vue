@@ -165,28 +165,7 @@
             <!-- Layout Selection -->
             <div>
               <Label class="mb-3 block text-sm font-medium">{{ $t('Išdėstymas') }}</Label>
-              <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
-                <button v-for="layout in layoutOptions" :key="layout.value" type="button"
-                  class="group relative overflow-visible rounded-lg border-2 p-3 text-left transition-all duration-200"
-                  :class="[
-                    form.layout === layout.value
-                      ? 'border-vusa-red bg-red-50/50 ring-2 ring-vusa-red/20 dark:bg-red-950/20'
-                      : 'border-border hover:border-zinc-300 dark:hover:border-zinc-600'
-                  ]" @click="form.layout = layout.value">
-                  <div
-                    class="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-vusa-red text-white shadow-md transition-all"
-                    :class="form.layout === layout.value ? 'scale-100 opacity-100' : 'scale-75 opacity-0'">
-                    <IFluentCheckmark12Regular class="h-2.5 w-2.5" />
-                  </div>
-                  <div class="mb-2 flex justify-center transition-opacity"
-                    :class="form.layout === layout.value ? 'opacity-100' : 'opacity-50 group-hover:opacity-75'">
-                    <component :is="layout.icon" class="h-10 w-16" />
-                  </div>
-                  <div class="text-center">
-                    <span class="text-xs font-medium">{{ layout.label }}</span>
-                  </div>
-                </button>
-              </div>
+              <VisualOptionSelect v-model="form.layout" :options="layoutOptions" :columns="4" />
             </div>
 
             <!-- Breadcrumbs toggle — hide the breadcrumb trail, e.g. for immersive /
@@ -228,6 +207,7 @@ import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import RichContentFormElement from '../RichContent/RichContentFormElement.vue';
+import VisualOptionSelect from '../FormItems/VisualOptionSelect.vue';
 
 import AdminForm from './AdminForm.vue';
 import FormElement from './FormElement.vue';

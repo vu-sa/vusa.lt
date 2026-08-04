@@ -1,5 +1,7 @@
 import type { LocaleEnum, ModelEnum } from './enums';
 
+import type { NavItem } from '@/Components/Public/Nav/types';
+
 interface User extends Omit<App.Entities.User, 'tenants'> {
   tenants: Pick<App.Entities.Tenant, 'id' | 'shortname'>[];
   isSuperAdmin: boolean;
@@ -50,7 +52,10 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
     success: string | null;
     error: string | null;
   };
-  mainNavigation?: App.Entities.Navigation[];
+  // The generated `App.Entities.Navigation` model type lacks `links`/`cols` — this
+  // prop's actual shape comes from `NavigationService::getNavigationForPublic()`, not
+  // the raw Eloquent model. See Components/Public/Nav/types.ts for the authoritative shape.
+  mainNavigation?: NavItem[];
   otherLangURL?: string | null;
   seo: Record<string, any>;
   tenants: Pick<

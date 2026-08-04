@@ -51,7 +51,6 @@ import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import QuickLink from '../QuickLink.vue';
-import type { NavItem } from '../types';
 
 import SearchButton from '@/Components/Public/Nav/SearchButton.vue';
 import { useTenantOptions } from '@/Composables/useTenantOptions';
@@ -66,7 +65,7 @@ defineEmits<{
 
 const page = usePage();
 
-const mainNavigation = computed(() => (page.props.mainNavigation ?? []) as unknown as NavItem[]);
+const mainNavigation = computed(() => page.props.mainNavigation ?? []);
 const tenantLinks = computed(() => page.props.tenant?.links ?? []);
 const tenantShortname = computed(() => page.props.tenant?.shortname ? $t(page.props.tenant.shortname) : 'VU SA');
 

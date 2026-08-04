@@ -1,7 +1,7 @@
 <template>
   <component :is="useInertiaRouter ? Link : 'a'" v-if="href" :href :prefetch="useInertiaRouter ? prefetch : false"
     :cache-for="useInertiaRouter ? cacheFor : undefined"
-    :target="target ?? useInertiaRouter ? undefined : '_blank'">
+    :target="target ?? (useInertiaRouter ? undefined : '_blank')">
     <slot />
   </component>
   <span v-else>

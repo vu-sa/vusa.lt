@@ -22,6 +22,16 @@ export const badgeVariants = cva(
           'border-transparent bg-amber-100 text-amber-700 hover:bg-amber-100/80 dark:bg-amber-900/30 dark:text-amber-300 dark:hover:bg-amber-900/20',
         rose:
           'border-transparent bg-rose-100 text-rose-700 hover:bg-rose-100/80 dark:bg-rose-900/30 dark:text-rose-300 dark:hover:bg-rose-900/20',
+        // Additional soft tints for content-authored badge colors (e.g. navigation link
+        // badges), as opposed to the semantic success/warning status colors above.
+        emerald:
+          'border-transparent bg-emerald-100 text-emerald-700 hover:bg-emerald-100/80 dark:bg-emerald-900/30 dark:text-emerald-300 dark:hover:bg-emerald-900/20',
+        amber:
+          'border-transparent bg-amber-100 text-amber-700 hover:bg-amber-100/80 dark:bg-amber-900/30 dark:text-amber-300 dark:hover:bg-amber-900/20',
+        sky:
+          'border-transparent bg-sky-100 text-sky-700 hover:bg-sky-100/80 dark:bg-sky-900/30 dark:text-sky-300 dark:hover:bg-sky-900/20',
+        zinc:
+          'border-transparent bg-zinc-100 text-zinc-700 hover:bg-zinc-100/80 dark:bg-zinc-800/60 dark:text-zinc-300 dark:hover:bg-zinc-800/40',
       },
       size: {
         default: 'px-2.5 py-0.5 text-xs',

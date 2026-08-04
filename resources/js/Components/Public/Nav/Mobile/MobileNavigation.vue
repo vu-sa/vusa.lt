@@ -86,8 +86,6 @@ import { computed, nextTick, ref, watch, type HTMLAttributes } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import type { NavItem } from '../types';
-
 import MobileNavRootPanel from './MobileNavRootPanel.vue';
 import MobileNavSectionPanel from './MobileNavSectionPanel.vue';
 import MobileTenantPanel from './MobileTenantPanel.vue';
@@ -121,7 +119,7 @@ const titleRef = ref<HTMLElement | null>(null);
 const current = computed(() => stack.value.at(-1)!);
 const panelKey = computed(() => `${current.value.type}-${current.value.type === 'section' ? current.value.index : ''}`);
 
-const mainNavigation = computed(() => (page.props.mainNavigation ?? []) as unknown as NavItem[]);
+const mainNavigation = computed(() => page.props.mainNavigation ?? []);
 const sectionItem = computed(() => current.value.type === 'section' ? mainNavigation.value[current.value.index] : undefined);
 
 const panelTitle = computed(() => {
