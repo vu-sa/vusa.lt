@@ -5,7 +5,7 @@
     </template>
     <UpsertModelLayout>
       <Suspense v-if="navigationElement.parent_id !== 0">
-        <NavigationForm enable-delete :navigation="navigationElement" :parent-elements :type-options
+        <NavigationForm enable-delete :navigation="navigationElement" :parent-elements :category-options
           @submit:form="(form) => form.patch(route('navigation.update', navigationElement.id), { preserveScroll: true })"
           @delete="() => router.delete(route('navigation.destroy', navigationElement.id))" />
       </Suspense>
@@ -27,10 +27,16 @@ import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 import { NavigationIcon } from '@/Components/icons';
 
+interface CategoryOption {
+  id: number;
+  name: string;
+  alias: string | null;
+}
+
 const props = defineProps<{
   navigationElement: App.Entities.Navigation;
   parentElements?: App.Entities.Navigation[];
-  typeOptions?: any;
+  categoryOptions?: CategoryOption[];
 }>();
 
 const navigationElement = {

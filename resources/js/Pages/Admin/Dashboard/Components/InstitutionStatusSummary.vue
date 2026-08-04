@@ -17,44 +17,74 @@
       </CardHeader>
 
       <CardContent>
-        <div v-if="loading && summary.all === 0">
-          <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
-            <Skeleton v-for="index in 6" :key="index" class="h-20 rounded-lg" />
-          </div>
-        </div>
-
-        <div v-else class="space-y-4 transition-opacity" :class="{ 'opacity-60': loading }">
-          <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-            <div
-              v-for="counter in counters"
-              :key="counter.key"
-              class="rounded-lg border bg-card p-3"
-              :class="counter.className"
+        <Tabs v-model="innerTab">
+          <TabsList class="gap-2">
+            <TabsTrigger value="overview">
+              {{ $t('visak.institution_summary.overview_tab') }}
+            </TabsTrigger>
+            <SpotlightPopover
+              :title="$t('visak.institution_summary.trend_spotlight_title')"
+              :description="$t('visak.institution_summary.trend_spotlight_description')"
+              :is-dismissed="trendSpotlight.isDismissed.value"
+              position="bottom"
+              @dismiss="trendSpotlight.dismiss"
             >
-              <div class="flex items-center justify-between gap-2">
-                <span class="text-xs font-medium text-muted-foreground">{{ counter.label }}</span>
-                <component :is="counter.icon" class="h-4 w-4" />
-              </div>
-              <div class="mt-2 text-2xl font-semibold tabular-nums">
-                {{ counter.value }}
+              <TabsTrigger value="trend" data-testid="institution-summary-trend-tab">
+                {{ $t('visak.institution_summary.trend_tab') }}
+              </TabsTrigger>
+            </SpotlightPopover>
+          </TabsList>
+
+          <TabsContent value="overview" class="mt-4">
+            <div v-if="loading && summary.all === 0">
+              <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+                <Skeleton v-for="index in 6" :key="index" class="h-20 rounded-lg" />
               </div>
             </div>
-          </div>
 
-          <div class="flex justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              class="gap-2"
-              :disabled="institutions.length === 0"
-              data-testid="institution-summary-dialog-trigger"
-              @click="dialogOpen = true"
-            >
-              <TableProperties class="h-4 w-4" />
-              {{ $t('visak.institution_summary.view_institutions') }}
-            </Button>
-          </div>
-        </div>
+            <div v-else class="space-y-4 transition-opacity" :class="{ 'opacity-60': loading }">
+              <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                <div
+                  v-for="counter in counters"
+                  :key="counter.key"
+                  class="rounded-lg border bg-card p-3"
+                  :class="counter.className"
+                >
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-xs font-medium text-muted-foreground">{{ counter.label }}</span>
+                    <component :is="counter.icon" class="h-4 w-4" />
+                  </div>
+                  <div class="mt-2 text-2xl font-semibold tabular-nums">
+                    {{ counter.value }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  class="gap-2"
+                  :disabled="institutions.length === 0"
+                  data-testid="institution-summary-dialog-trigger"
+                  @click="dialogOpen = true"
+                >
+                  <TableProperties class="h-4 w-4" />
+                  {{ $t('visak.institution_summary.view_institutions') }}
+                </Button>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="trend" class="mt-4">
+            <InstitutionStatusTrendChart
+              :data="statusHistory.data.value ?? []"
+              :days="historyDays"
+              :loading="statusHistory.isFetching.value"
+              @update:days="historyDays = $event"
+            />
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
 
@@ -83,7 +113,7 @@
 </template>
 
 <script setup lang="tsx">
-import { computed, ref, type Component } from 'vue';
+import { computed, ref, watch, type Component } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
@@ -101,7 +131,11 @@ import {
 } from 'lucide-vue-next';
 
 import type { AtstovavimasInstitution, InstitutionStatusSummaryData } from '../types';
+import { useTenantStatusHistory } from '../Composables/useTenantStatusHistory';
 
+import InstitutionStatusTrendChart from './InstitutionStatusTrendChart.vue';
+
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import SimpleDataTable from '@/Components/Tables/SimpleDataTable.vue';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
@@ -114,15 +148,40 @@ import {
   DialogTitle,
 } from '@/Components/ui/dialog';
 import { Skeleton } from '@/Components/ui/skeleton';
+import Tabs from '@/Components/ui/tabs/Tabs.vue';
+import TabsContent from '@/Components/ui/tabs/TabsContent.vue';
+import TabsList from '@/Components/ui/tabs/TabsList.vue';
+import TabsTrigger from '@/Components/ui/tabs/TabsTrigger.vue';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import type { InstitutionActivityStatusName } from '@/Types/InstitutionActivity';
 import { formatStaticTime } from '@/Utils/IntlTime';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   institutions: AtstovavimasInstitution[];
   summary: InstitutionStatusSummaryData;
+  tenantIds?: string[];
   loading?: boolean;
-}>();
+}>(), {
+  tenantIds: () => [],
+});
 const dialogOpen = ref(false);
+
+const innerTab = ref<'overview' | 'trend'>('overview');
+const trendSpotlight = useFeatureSpotlight('institution-status-trend-v1');
+const historyDays = ref(90);
+const statusHistory = useTenantStatusHistory();
+
+// Lazy: only fetched once the Trend tab is first opened, then kept in sync with
+// the selected tenants / range from there on.
+watch(
+  () => [innerTab.value, props.tenantIds.join(','), historyDays.value] as const,
+  ([tab]) => {
+    if (tab === 'trend' && props.tenantIds.length > 0) {
+      statusHistory.load(props.tenantIds, historyDays.value);
+      trendSpotlight.dismiss();
+    }
+  },
+);
 
 interface Counter {
   key: string;

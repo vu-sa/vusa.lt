@@ -3,6 +3,7 @@
 use App\Models\Calendar;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\InstitutionCheckIn;
 use App\Models\Meeting;
 use App\Models\News;
 use App\Models\Page;
@@ -726,6 +727,30 @@ describe('institutions needing attention', function (): void {
         $this->travelTo('2025-09-01');
 
         [$user, $institution] = institutionForUserWithMeeting('2025-06-20 10:00:00');
+
+        asUser($user)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('institutionsNeedingAttention', fn ($institutions) => collect($institutions)->firstWhere('id', $institution->id) === null)
+            );
+    });
+
+    test('counts a completed check-in as recent activity so the institution is not flagged', function (): void {
+        // Same setup as the overdue test: meeting 45 days ago, 30-day periodicity.
+        $this->travelTo('2025-11-15');
+
+        [$user, $institution] = institutionForUserWithMeeting('2025-10-01 10:00:00');
+
+        // A completed check-in ending 5 days ago should reset the activity clock,
+        // matching what the ShowAtstovavimas page computes via DutyService.
+        InstitutionCheckIn::factory()->create([
+            'institution_id' => $institution->id,
+            'user_id' => $user->id,
+            'tenant_id' => $institution->tenant_id,
+            'start_date' => '2025-11-05',
+            'end_date' => '2025-11-10',
+        ]);
 
         asUser($user)
             ->get(route('dashboard'))

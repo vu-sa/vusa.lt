@@ -139,31 +139,7 @@
             <!-- Layout Selection -->
             <div>
               <Label class="mb-3 block text-sm font-medium">{{ $t('Išdėstymas') }}</Label>
-              <div class="grid gap-3 md:grid-cols-3">
-                <button v-for="layoutOption in layoutOptions" :key="layoutOption.value" type="button"
-                  class="group relative overflow-visible rounded-lg border-2 p-3 text-left transition-all duration-200"
-                  :class="[
-                    form.layout === layoutOption.value
-                      ? 'border-vusa-red bg-red-50/50 ring-2 ring-vusa-red/20 dark:bg-red-950/20'
-                      : 'border-border hover:border-zinc-300 dark:hover:border-zinc-600'
-                  ]" @click="form.layout = layoutOption.value">
-                  <div
-                    class="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-vusa-red text-white shadow-md transition-all"
-                    :class="form.layout === layoutOption.value ? 'scale-100 opacity-100' : 'scale-75 opacity-0'">
-                    <IFluentCheckmark12Regular class="h-2.5 w-2.5" />
-                  </div>
-                  <div class="mb-2 flex justify-center transition-opacity"
-                    :class="form.layout === layoutOption.value ? 'opacity-100' : 'opacity-50 group-hover:opacity-75'">
-                    <component :is="layoutOption.icon" class="h-12 w-20" />
-                  </div>
-                  <div class="text-center">
-                    <span class="text-xs font-medium">{{ layoutOption.label }}</span>
-                    <p class="mt-0.5 text-xs text-muted-foreground">
-                      {{ layoutOption.description }}
-                    </p>
-                  </div>
-                </button>
-              </div>
+              <VisualOptionSelect v-model="form.layout" :options="layoutOptions" :columns="3" icon-class="h-12 w-20" />
             </div>
 
             <!-- Table of contents toggle — only meaningful for the `default` layout, which
@@ -257,6 +233,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import RichContentFormElement from '../RichContent/RichContentFormElement.vue';
 import { getContentType, type BlockWidth } from '../RichContent/Types';
+import VisualOptionSelect from '../FormItems/VisualOptionSelect.vue';
 
 import AdminForm from './AdminForm.vue';
 import FormElement from './FormElement.vue';

@@ -7,6 +7,35 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.21 — Navigation editing, ViSAK status trend, and RSS feed (2026-08-04) {#v1-21}
+
+### ViSAK
+
+- ⭐ **Institution status over time** 
+- ✨ **Selectable range** — view the chart over 30, 90, or 180 days; hovering shows that day's breakdown of institution statuses
+
+### Admin
+
+- ⭐ **Editing and preview are now separate** — edit mode shows a clean, compact list with drag handles; preview mode shows exactly how the menu will look live
+- ✨ **Order saves automatically** — drag links between columns or reorder main items, and the order is saved a couple of seconds later, no separate save button
+- ⭐ **The language switcher no longer depends on your admin language** — the English menu can be edited without switching the whole admin interface to English; a banner also warns when one language has noticeably fewer items than the other
+- ✨ **Cleaner navigation item form** — the essential fields show up front, with image and advanced settings tucked behind collapsible sections
+- ⭐ **Faster link picking** — search for a page, news item, event, institution, or document instead of typing a URL by hand; the same picker was also added to the QuickLinks form
+- 🔧 **The "show publicly" toggle now actually works** — it previously had no effect
+
+### Public navigation
+
+- ⭐ **More control over background images** — darkening strength, blur, focal point, and gradient direction are now configurable per item
+- ⭐ **New navigation item options** — heading (a non-clickable section label), featured items, badge color, opening in a new tab, and image display as a card or a small thumbnail
+- 🔧 **Fixed links not opening in a new tab** — this setting silently failed in some cases before
+
+### News RSS feed
+
+- ⭐ **Full article body in the feed** — the RSS news feed now carries the complete article (images included) instead of just the short excerpt, so the full text shows up in your reader
+- ✨ **Images render in readers** — the cover photo is now delivered via `<enclosure>` and Media RSS tags, and every link and image in the feed is rewritten to an absolute URL
+- 🔧 **Fixed the cover image URL** — a malformed URL previously prevented the cover photo from displaying in the feed
+- ✨ **More metadata** — news tags are now exposed as `<category>`, a `<guid>` is set, along with the author email and a link to the other-language version
+
 ## v1.20 — Improved activity log (2026-08-02) {#v1-20}
 
 - ⭐ **New activity log panel** — meetings, institutions, duties, problems, reservations, trainings, and other content pages now show a full change history, including changes to related items (e.g. a meeting's history also shows changes to its agenda items and votes)

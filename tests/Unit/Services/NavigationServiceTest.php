@@ -170,4 +170,19 @@ describe('NavigationService output structure', function (): void {
         // Should have 2 columns
         expect($rootElement['cols'])->toBe(2);
     });
+
+    test('root extra_attributes are hoisted onto the root, same as children', function (): void {
+        $this->rootNav->extra_attributes = ['menu_width' => 'narrow', 'icon' => 'star-16-regular'];
+        $this->rootNav->save();
+
+        NavigationService::clearCache();
+        app()->setLocale('lt');
+
+        $result = NavigationService::getNavigationForPublic();
+        $rootElement = collect($result)->firstWhere('id', $this->rootNav->id);
+
+        expect($rootElement)->not->toHaveKey('extra_attributes')
+            ->and($rootElement['menu_width'])->toBe('narrow')
+            ->and($rootElement['icon'])->toBe('star-16-regular');
+    });
 });

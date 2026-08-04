@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\Admin\ImpersonateApiController;
 use App\Http\Controllers\Api\Admin\InstitutionApiController;
 use App\Http\Controllers\Api\Admin\InstitutionSubscriptionApiController;
 use App\Http\Controllers\Api\Admin\MeetingApiController;
+use App\Http\Controllers\Api\Admin\NavigationLinkApiController;
 use App\Http\Controllers\Api\Admin\ResourceApiController;
 use App\Http\Controllers\Api\Admin\ResourceAvailabilityApiController;
 use App\Http\Controllers\Api\Admin\SearchApiController;
@@ -114,6 +115,7 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
 
         // ViSAK tenant timeline, windowed Gantt meetings and paginated representative activity
         Route::get('visak/timeline', [AtstovavimasApiController::class, 'timeline'])->name('visak.timeline');
+        Route::get('visak/timeline/history', [AtstovavimasApiController::class, 'statusHistory'])->name('visak.timeline.history');
         Route::get('visak/meetings', [AtstovavimasApiController::class, 'meetings'])->name('visak.meetings');
         Route::get('visak/representatives', [AtstovavimasApiController::class, 'representatives'])->name('visak.representatives');
 
@@ -172,6 +174,11 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         // Typesense admin search configuration with scoped API keys
         Route::get('search/config', [SearchApiController::class, 'config'])->name('search.config');
         Route::post('search/refresh-key', [SearchApiController::class, 'refreshKey'])->name('search.refreshKey');
+
+        // Resolves the public URL for a record picked in the navigation link-target
+        // selector (page/news/calendar/institution/document), so NavigationForm never
+        // has to assemble Ziggy routes from raw record fields itself.
+        Route::post('navigation/resolve-url', [NavigationLinkApiController::class, 'resolveUrl'])->name('navigation.resolveUrl');
 
         // Institution subscription (follow/mute) management
         Route::prefix('institutions')->name('institutions.')->group(function (): void {

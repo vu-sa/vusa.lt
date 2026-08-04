@@ -118,9 +118,12 @@ class DashboardController extends AdminController
             ->with([
                 'meetings:id,start_time',
                 'types',
-                'checkIns' => fn ($query) => $query
-                    ->where('start_date', '<=', today())
-                    ->where('end_date', '>=', today()),
+                // Load all check-ins: InstitutionActivityStatusService::resolve() needs
+                // completed check-ins to compute lastActivityAt, and it calls loadMissing()
+                // which is a no-op once the relation is already loaded. Filtering here
+                // would silently hide historical activity and skew the status, causing the
+                // card to disagree with the ShowAtstovavimas page.
+                'checkIns',
             ])
             ->get()
             ->filter(function ($institution) use ($excludedTypeIds) {

@@ -112,6 +112,7 @@
             v-if="isAdmin"
             :institutions="tenantInstitutionsData"
             :summary="institutionSummary"
+            :tenant-ids="timelineFilters.selectedTenantForGantt.value"
             :loading="timelineFilters.tenantInstitutionsLoading.value"
           />
 

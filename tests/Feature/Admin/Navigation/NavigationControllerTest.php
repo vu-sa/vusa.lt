@@ -14,25 +14,14 @@ beforeEach(function (): void {
 
     $this->navigation = Navigation::factory()->create([
         'name' => 'Test Navigation',
-        'url' => '/test',
+        'url' => '/test-nav',
+        'parent_id' => 0,
         'order' => 1,
+        'lang' => 'lt',
     ]);
 });
 
 describe('cache functionality', function (): void {
-    test('navigation cache is cleared when column is updated', function (): void {
-        asUser($this->admin)
-            ->post(route('navigation.updateColumn'), [
-                'id' => $this->navigation->id,
-                'direction' => 'right',
-            ])
-            ->assertStatus(302);
-
-        // Cache should be cleared after column update
-        $this->navigation->refresh();
-        expect($this->navigation->extra_attributes['column'])->toBe(2);
-    });
-
     test('navigation cache is cleared when navigation is saved', function (): void {
         $updateData = getControllerTestData('Navigation')['valid'];
         $updateData['name'] = 'Updated for cache test';
@@ -61,16 +50,6 @@ describe('cache functionality', function (): void {
             'name' => 'Cache test navigation',
         ]);
     });
-});
-
-beforeEach(function (): void {
-    $this->navigation = Navigation::factory()->create([
-        'name' => 'Test Navigation',
-        'url' => '/test-nav',
-        'parent_id' => 0,
-        'order' => 1,
-        'lang' => 'lt',
-    ]);
 });
 
 describe('unauthorized access', function (): void {
@@ -114,15 +93,6 @@ describe('unauthorized access', function (): void {
             ->assertStatus(403);
     });
 
-    test('cannot update navigation column', function (): void {
-        asUser($this->user)
-            ->post(route('navigation.updateColumn'), [
-                'id' => $this->navigation->id,
-                'direction' => 'right',
-            ])
-            ->assertStatus(403);
-    });
-
     test('cannot update navigation order', function (): void {
         asUser($this->user)
             ->post(route('navigation.updateOrder'), [
@@ -130,6 +100,21 @@ describe('unauthorized access', function (): void {
                     ['id' => $this->navigation->id],
                 ],
             ])
+            ->assertStatus(403);
+    });
+});
+
+describe('tenant isolation', function (): void {
+    // Navigation is a globally-scoped model (see NavigationPolicy / HasCommonChecks —
+    // it has no `tenant`/`tenants` relation), so it is only ever granted via the
+    // blanket `navigation.*.all` permission. There is no per-tenant "own padalinys"
+    // scope to isolate — a role limited to a tenant-scoped permission is simply
+    // denied outright, which is what this asserts.
+    test('a tenant-scoped role without the .all permission cannot manage navigation', function (): void {
+        $tenantScopedUser = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+
+        asUser($tenantScopedUser)
+            ->get(route('navigation.index'))
             ->assertStatus(403);
     });
 });
@@ -142,8 +127,51 @@ describe('authorized access', function (): void {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Navigation/IndexNavigation')
                 ->has('navigation')
-                // typeOptions might be lazy-loaded, so let's not require it
+                ->where('lang', 'lt')
+                ->has('translationSummary')
             );
+    });
+
+    test('index serializes is_active as a real boolean, not 0/1', function (): void {
+        // reka-ui's Switch computes `checked` via `modelValue === true` (strict
+        // equality — see node_modules/reka-ui/dist/Switch/SwitchRoot.js). Without a
+        // `boolean` cast on the model, `toArray()`/JSON serialize `is_active` as an
+        // int, and every switch in the builder renders as off regardless of the
+        // actual value.
+        $response = asUser($this->admin)->get(route('navigation.index'));
+
+        $navigation = $response->viewData('page')['props']['navigation'];
+        expect($navigation[0]['is_active'])->toBeBool();
+    });
+
+    test('index defaults the builder language to the current app locale', function (): void {
+        asUser($this->admin)
+            ->get(route('navigation.index'))
+            ->assertInertia(fn (Assert $page) => $page->where('lang', app()->getLocale()));
+    });
+
+    test('?lang=en scopes the tree and deleted count to English regardless of app locale', function (): void {
+        Navigation::factory()->create(['lang' => 'en', 'name' => 'English Root', 'parent_id' => 0]);
+        $trashedEnglish = Navigation::factory()->create(['lang' => 'en']);
+        $trashedEnglish->delete();
+
+        $response = asUser($this->admin)
+            ->get(route('navigation.index', ['lang' => 'en']))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('lang', 'en')
+                ->where('deletedCount', 1)
+            );
+
+        $names = collect($response->viewData('page')['props']['navigation'])->pluck('name');
+        expect($names)->toContain('English Root')
+            ->and($names)->not->toContain('Test Navigation');
+    });
+
+    test('an invalid lang value falls back to the app locale', function (): void {
+        asUser($this->admin)
+            ->get(route('navigation.index', ['lang' => 'fr']))
+            ->assertInertia(fn (Assert $page) => $page->where('lang', app()->getLocale()));
     });
 
     test('can access create page', function (): void {
@@ -154,6 +182,7 @@ describe('authorized access', function (): void {
                 ->component('Admin/Navigation/CreateNavigation')
                 ->has('parent_id')
                 ->has('parentElements')
+                ->has('categoryOptions')
                 ->where('parent_id', 0)
             );
     });
@@ -230,6 +259,26 @@ describe('authorized access', function (): void {
         ]);
     });
 
+    test('a root can pick an explicit language independent of the request locale', function (): void {
+        asUser($this->admin)
+            ->post(route('navigation.store'), [
+                'name' => 'English root',
+                'url' => '/english-root',
+                'parent_id' => 0,
+                'lang' => 'en',
+                'is_active' => true,
+                'extra_attributes' => [],
+            ])
+            ->assertStatus(302)
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('navigation', [
+            'name' => 'English root',
+            'parent_id' => 0,
+            'lang' => 'en',
+        ]);
+    });
+
     test('can access edit page', function (): void {
         asUser($this->admin)
             ->get(route('navigation.edit', $this->navigation))
@@ -238,6 +287,7 @@ describe('authorized access', function (): void {
                 ->component('Admin/Navigation/EditNavigation')
                 ->has('navigationElement')
                 ->has('parentElements')
+                ->has('categoryOptions')
                 ->where('navigationElement.id', $this->navigation->id)
             );
     });
@@ -257,6 +307,123 @@ describe('authorized access', function (): void {
             'name' => 'Updated Navigation',
             'url' => '/updated-nav',
         ]);
+    });
+
+    test('can toggle is_active on a root navigation item', function (): void {
+        // Roots are ordinary `navigation` rows with `parent_id = 0` and `url = '#'` —
+        // the builder's new root-level Switch (NavigationRootItem.vue) patches through
+        // the same `navigation.update` route as any child link.
+        $root = Navigation::factory()->create([
+            'name' => 'Root Item',
+            'url' => '#',
+            'parent_id' => 0,
+            'lang' => 'lt',
+            'is_active' => true,
+        ]);
+
+        asUser($this->admin)
+            ->patch(route('navigation.update', $root), [
+                'name' => $root->name,
+                'url' => $root->url,
+                'parent_id' => 0,
+                'lang' => 'lt',
+                'is_active' => false,
+                'extra_attributes' => [],
+            ])
+            ->assertStatus(302)
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('navigation', [
+            'id' => $root->id,
+            'is_active' => false,
+        ]);
+    });
+
+    test('can update navigation extra_attributes presentation fields', function (): void {
+        $updateData = getControllerTestData('Navigation')['valid'];
+        $updateData['extra_attributes'] = [
+            'type' => 'full-height-background-link',
+            'image' => 'https://example.com/hero.jpg',
+            'image_render' => 'card',
+            'image_overlay' => 'heavy',
+            'image_blur' => 4,
+            'image_focal' => '30% 70%',
+            'image_gradient' => 'full',
+            'featured' => true,
+            'new_tab' => true,
+            'badge_variant' => 'emerald',
+            'col_span' => 2,
+        ];
+
+        asUser($this->admin)
+            ->patch(route('navigation.update', $this->navigation), $updateData)
+            ->assertStatus(302)
+            ->assertSessionHas('success');
+
+        $this->navigation->refresh();
+        expect($this->navigation->extra_attributes)
+            ->toMatchArray([
+                'type' => 'full-height-background-link',
+                'image_overlay' => 'heavy',
+                'image_blur' => 4,
+                'image_focal' => '30% 70%',
+                'featured' => true,
+                'new_tab' => true,
+                'badge_variant' => 'emerald',
+                'col_span' => 2,
+            ]);
+    });
+
+    test('rejects an invalid image_focal format', function (): void {
+        $updateData = getControllerTestData('Navigation')['valid'];
+        $updateData['extra_attributes'] = ['image_focal' => 'centered'];
+
+        asUser($this->admin)
+            ->patch(route('navigation.update', $this->navigation), $updateData)
+            ->assertSessionHasErrors(['extra_attributes.image_focal']);
+    });
+
+    test('rejects an invalid badge_variant', function (): void {
+        $updateData = getControllerTestData('Navigation')['valid'];
+        $updateData['extra_attributes'] = ['badge_variant' => 'purple'];
+
+        asUser($this->admin)
+            ->patch(route('navigation.update', $this->navigation), $updateData)
+            ->assertSessionHasErrors(['extra_attributes.badge_variant']);
+    });
+
+    test('can set a root item menu_width', function (): void {
+        $updateData = getControllerTestData('Navigation')['valid'];
+        $updateData['extra_attributes'] = ['menu_width' => 'narrow'];
+
+        asUser($this->admin)
+            ->patch(route('navigation.update', $this->navigation), $updateData)
+            ->assertSessionHas('success');
+
+        $this->navigation->refresh();
+        expect($this->navigation->extra_attributes['menu_width'])->toBe('narrow');
+    });
+
+    test('rejects an invalid menu_width', function (): void {
+        $updateData = getControllerTestData('Navigation')['valid'];
+        $updateData['extra_attributes'] = ['menu_width' => 'gigantic'];
+
+        asUser($this->admin)
+            ->patch(route('navigation.update', $this->navigation), $updateData)
+            ->assertSessionHasErrors(['extra_attributes.menu_width']);
+    });
+
+    test('a heading type does not require a name, same as a divider', function (): void {
+        asUser($this->admin)
+            ->post(route('navigation.store'), [
+                'name' => null,
+                'url' => '#',
+                'parent_id' => 0,
+                'is_active' => true,
+                'extra_attributes' => ['type' => 'heading'],
+            ])
+            ->assertStatus(302)
+            ->assertSessionHas('success');
     });
 
     test('can delete navigation', function (): void {
@@ -375,12 +542,14 @@ describe('navigation ordering functionality', function (): void {
             'name' => 'Child 1',
             'parent_id' => $this->parentNav->id,
             'order' => 1,
+            'extra_attributes' => ['column' => 1],
         ]);
 
         $this->childNav2 = Navigation::factory()->create([
             'name' => 'Child 2',
             'parent_id' => $this->parentNav->id,
             'order' => 2,
+            'extra_attributes' => ['column' => 1],
         ]);
     });
 
@@ -410,79 +579,97 @@ describe('navigation ordering functionality', function (): void {
         expect($child2->order)->toBeLessThan($child1->order);
     });
 
-    test('can update navigation column', function (): void {
-        // Set initial column attribute
-        $this->navigation->extra_attributes = ['column' => 2];
-        $this->navigation->save();
+    test('updateOrder moves a link into a different column without colliding with the other column', function (): void {
+        // Both children start in column 1; move child 2 to column 2 while child 1 stays —
+        // `links` position 0 is column 1, position 1 is column 2.
+        $orderData = [
+            'navigation' => [
+                [
+                    'id' => $this->parentNav->id,
+                    'links' => [
+                        [
+                            ['id' => $this->childNav1->id],
+                        ],
+                        [
+                            ['id' => $this->childNav2->id],
+                        ],
+                    ],
+                ],
+            ],
+        ];
 
-        // Move right (column 3)
         asUser($this->admin)
-            ->post(route('navigation.updateColumn'), [
-                'id' => $this->navigation->id,
-                'direction' => 'right',
+            ->post(route('navigation.updateOrder'), $orderData)
+            ->assertStatus(302)
+            ->assertSessionHas('success');
+
+        $this->childNav1->refresh();
+        $this->childNav2->refresh();
+
+        expect($this->childNav1->extra_attributes['column'])->toBe(1)
+            ->and($this->childNav2->extra_attributes['column'])->toBe(2)
+            ->and($this->childNav1->order)->toBe(0)
+            ->and($this->childNav2->order)->toBe(0); // order resets per column, so both can be first
+    });
+
+    test('updateOrder does not crash when a link has a null extra_attributes blob', function (): void {
+        $navWithoutAttributes = Navigation::factory()->create([
+            'parent_id' => $this->parentNav->id,
+            'order' => 3,
+            'extra_attributes' => null,
+        ]);
+
+        asUser($this->admin)
+            ->post(route('navigation.updateOrder'), [
+                'navigation' => [
+                    [
+                        'id' => $this->parentNav->id,
+                        'links' => [
+                            [], // column 1 empty
+                            [['id' => $navWithoutAttributes->id]], // column 2
+                        ],
+                    ],
+                ],
             ])
             ->assertStatus(302)
             ->assertSessionHas('success');
 
-        $this->navigation->refresh();
-        expect($this->navigation->extra_attributes['column'])->toBe(3);
-
-        // Move left (column 2)
-        asUser($this->admin)
-            ->post(route('navigation.updateColumn'), [
-                'id' => $this->navigation->id,
-                'direction' => 'left',
-            ])
-            ->assertStatus(302);
-
-        $this->navigation->refresh();
-        expect($this->navigation->extra_attributes['column'])->toBe(2);
+        $navWithoutAttributes->refresh();
+        expect($navWithoutAttributes->extra_attributes['column'])->toBe(2);
     });
 
-    test('navigation column is constrained between 1 and 3', function (): void {
-        // Test lower bound
-        $this->navigation->extra_attributes = ['column' => 1];
-        $this->navigation->save();
-
+    test('updateOrder rejects more than 3 columns', function (): void {
         asUser($this->admin)
-            ->post(route('navigation.updateColumn'), [
-                'id' => $this->navigation->id,
-                'direction' => 'left',
+            ->post(route('navigation.updateOrder'), [
+                'navigation' => [
+                    [
+                        'id' => $this->parentNav->id,
+                        'links' => [
+                            [['id' => $this->childNav1->id]],
+                            [],
+                            [],
+                            [['id' => $this->childNav2->id]],
+                        ],
+                    ],
+                ],
             ])
-            ->assertStatus(302);
-
-        $this->navigation->refresh();
-        expect($this->navigation->extra_attributes['column'])->toBe(1); // Should stay at 1
-
-        // Test upper bound
-        $this->navigation->extra_attributes = ['column' => 3];
-        $this->navigation->save();
-
-        asUser($this->admin)
-            ->post(route('navigation.updateColumn'), [
-                'id' => $this->navigation->id,
-                'direction' => 'right',
-            ])
-            ->assertStatus(302);
-
-        $this->navigation->refresh();
-        expect($this->navigation->extra_attributes['column'])->toBe(3); // Should stay at 3
+            ->assertSessionHasErrors(['navigation.0.links']);
     });
 
-    test('navigation without column defaults to 1', function (): void {
-        // Navigation without extra_attributes
-        $navWithoutColumn = Navigation::factory()->create([
-            'extra_attributes' => [],
-        ]);
+    test('updateOrder rejects a soft-deleted link id', function (): void {
+        $this->childNav1->delete();
 
         asUser($this->admin)
-            ->post(route('navigation.updateColumn'), [
-                'id' => $navWithoutColumn->id,
-                'direction' => 'right',
+            ->post(route('navigation.updateOrder'), [
+                'navigation' => [
+                    [
+                        'id' => $this->parentNav->id,
+                        'links' => [
+                            [['id' => $this->childNav1->id]],
+                        ],
+                    ],
+                ],
             ])
-            ->assertStatus(302);
-
-        $navWithoutColumn->refresh();
-        expect($navWithoutColumn->extra_attributes['column'])->toBe(2); // Should start from 1, move to 2
+            ->assertSessionHasErrors(['navigation.0.links.0.0.id']);
     });
 });

@@ -2,12 +2,11 @@
 
 namespace App\Http\Middleware;
 
-use App\Services\NavigationService as ServicesNavigationService;
+use App\Services\NavigationService;
 use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 class GetNavigationForPublic
@@ -15,17 +14,17 @@ class GetNavigationForPublic
     /**
      * Handle an incoming request.
      *
+     * `NavigationService::getNavigationForPublic()` already caches per locale — this
+     * used to wrap it in a second `mainNavigation-{locale}` cache layer with its own
+     * invalidation, which just meant two keys could disagree after an edit.
+     *
      * @param  Closure(Request): (Response|RedirectResponse)  $next
      * @return Response|RedirectResponse
      */
     public function handle(Request $request, Closure $next)
     {
-        // Check if method is get
         if ($request->isMethod('get')) {
-
-            $mainNavigation = fn () => Cache::remember('mainNavigation-'.app()->getLocale(), 3600, fn () => ServicesNavigationService::getNavigationForPublic());
-
-            Inertia::share('mainNavigation', $mainNavigation);
+            Inertia::share('mainNavigation', fn () => NavigationService::getNavigationForPublic());
         }
 
         return $next($request);

@@ -3,7 +3,7 @@
     :heading-icon="NavigationIcon">
     <UpsertModelLayout>
       <Suspense v-if="navigationElement.parent_id !== 0">
-        <NavigationForm remember-key="CreateNavigation" :navigation="navigationElement" :parent-elements :type-options
+        <NavigationForm remember-key="CreateNavigation" :navigation="navigationElement" :parent-elements :category-options
           @submit:form="(form) => form.post(route('navigation.store'))" />
       </Suspense>
       <NavigationParentForm v-else remember-key="CreateNavigationParent" :navigation="navigationElement"
@@ -19,17 +19,24 @@ import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 import { NavigationIcon } from '@/Components/icons';
 
+interface CategoryOption {
+  id: number;
+  name: string;
+  alias: string | null;
+}
+
 const props = defineProps<{
   parent_id: number | string;
+  lang?: 'lt' | 'en';
   parentElements?: App.Entities.Navigation[];
-  typeOptions?: any;
+  categoryOptions?: CategoryOption[];
 }>();
 
 const navigationElement = {
   id: null,
   parent_id: parseInt(props.parent_id),
   name: '',
-  lang: 'lt',
+  lang: props.lang ?? 'lt',
   url: '#',
   is_active: true,
   extra_attributes: {},

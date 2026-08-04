@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\Admin\AtstovavimasMeetingsRequest;
 use App\Http\Requests\Api\Admin\AtstovavimasRepresentativesRequest;
+use App\Http\Requests\Api\Admin\AtstovavimasStatusHistoryRequest;
 use App\Http\Requests\Api\Admin\AtstovavimasTenantRequest;
 use App\Models\User;
 use App\Services\AtstovavimasDashboardService;
@@ -23,6 +24,14 @@ class AtstovavimasApiController extends ApiController
      */
     private const int CACHE_TTL_SECONDS = 600;
 
+    /**
+     * Status history has no explicit refresh trigger anywhere in the frontend
+     * (unlike timeline/meetings, which get ?refresh=1'd after creating a meeting
+     * or check-in) and is expensive to recompute, so it can be cached far longer —
+     * only "today"'s bucket can meaningfully change within the window.
+     */
+    private const int STATUS_HISTORY_CACHE_TTL_SECONDS = 3600;
+
     public function __construct(
         private readonly AtstovavimasDashboardService $dashboardService,
         private readonly AtstovavimasSettings $settings,
@@ -35,6 +44,24 @@ class AtstovavimasApiController extends ApiController
 
         return $this->jsonSuccess(
             $this->rememberVisak('timeline', $tenantIds, $request->boolean('refresh'), fn () => $this->dashboardService->tenantTimeline($tenantIds->all()))
+        );
+    }
+
+    public function statusHistory(AtstovavimasStatusHistoryRequest $request): JsonResponse
+    {
+        $user = $this->requireAuth($request);
+        $tenantIds = $this->authorizedTenantIds($request->validated('tenant_ids'), $user);
+        $days = (int) $request->validated('days', 90);
+
+        return $this->jsonSuccess(
+            $this->rememberVisak(
+                'status_history',
+                $tenantIds,
+                $request->boolean('refresh'),
+                fn () => $this->dashboardService->tenantStatusHistory($tenantIds->all(), $days),
+                (string) $days,
+                self::STATUS_HISTORY_CACHE_TTL_SECONDS,
+            )
         );
     }
 
@@ -73,7 +100,7 @@ class AtstovavimasApiController extends ApiController
     /**
      * @param  Collection<int, int>  $tenantIds
      */
-    private function rememberVisak(string $kind, Collection $tenantIds, bool $bypassCache, Closure $callback, string $suffix = ''): mixed
+    private function rememberVisak(string $kind, Collection $tenantIds, bool $bypassCache, Closure $callback, string $suffix = '', ?int $ttlSeconds = null): mixed
     {
         $key = 'visak:'.$kind.':'.md5($tenantIds->sort()->implode(',').':'.$suffix);
 
@@ -92,7 +119,7 @@ class AtstovavimasApiController extends ApiController
         // freshly-created window) — not worth pinning for the full TTL, since it
         // would otherwise mask genuinely new data for that long.
         if ($value !== [] && $value !== null) {
-            Cache::put($key, $value, self::CACHE_TTL_SECONDS);
+            Cache::put($key, $value, $ttlSeconds ?? self::CACHE_TTL_SECONDS);
         }
 
         return $value;

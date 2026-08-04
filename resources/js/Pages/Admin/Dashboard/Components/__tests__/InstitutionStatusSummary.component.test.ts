@@ -1,5 +1,5 @@
 import { defineComponent, h } from 'vue';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import type { ColumnDef } from '@tanstack/vue-table';
 
@@ -30,6 +30,28 @@ const SimpleDataTableStub = defineComponent({
   },
 });
 
+// The chart itself (D3/SVG rendering) is covered by its own component test —
+// here we only need to know what data/days it was handed.
+const InstitutionStatusTrendChartStub = defineComponent({
+  props: {
+    data: { type: Array, required: true },
+    days: { type: Number, required: true },
+    loading: { type: Boolean },
+  },
+  template: '<div data-testid="trend-chart-stub" />',
+});
+
+const loadHistory = vi.fn();
+
+vi.mock('../../Composables/useTenantStatusHistory', () => ({
+  useTenantStatusHistory: () => ({
+    data: { value: [] },
+    isFetching: { value: false },
+    loaded: { value: false },
+    load: loadHistory,
+  }),
+}));
+
 function institution(
   id: string,
   status: AtstovavimasInstitution['activity_status']['status'],
@@ -59,6 +81,10 @@ function institution(
 describe('InstitutionStatusSummary', () => {
   let wrapper: ReturnType<typeof mount>;
 
+  beforeEach(() => {
+    loadHistory.mockClear();
+  });
+
   afterEach(() => {
     wrapper?.unmount();
     capturedData = [];
@@ -81,13 +107,15 @@ describe('InstitutionStatusSummary', () => {
     institutions: AtstovavimasInstitution[],
     statusSummary: InstitutionStatusSummaryData,
     loading = false,
+    tenantIds: string[] = ['1'],
   ) {
     return mount(InstitutionStatusSummary, {
-      props: { institutions, summary: statusSummary, loading },
+      props: { institutions, summary: statusSummary, loading, tenantIds },
       global: {
         stubs: {
           ...commonStubs,
           SimpleDataTable: SimpleDataTableStub,
+          InstitutionStatusTrendChart: InstitutionStatusTrendChartStub,
         },
       },
     });
@@ -136,5 +164,37 @@ describe('InstitutionStatusSummary', () => {
 
     expect(wrapper.find('[data-testid="summary-table"]').exists()).toBe(false);
     expect(wrapper.findAll('.animate-pulse').length).toBeGreaterThan(0);
+  });
+
+  // The Trend tab's fetch dedup (skip a refetch for an unchanged tenant/range key)
+  // is a property of useTenantStatusHistory itself and is covered by its own
+  // composable test; here we only assert when this component decides to call load().
+  describe('trend tab', () => {
+    it('does not fetch trend data before the Trend tab is opened', () => {
+      wrapper = createWrapper([], summary({ all: 1, current: 1 }));
+
+      expect(loadHistory).not.toHaveBeenCalled();
+    });
+
+    it('fetches trend data once the Trend tab is opened', async () => {
+      wrapper = createWrapper([], summary({ all: 1, current: 1 }), false, ['1']);
+
+      await wrapper.get('[data-testid="institution-summary-trend-tab"]').trigger('mousedown');
+
+      expect(loadHistory).toHaveBeenCalledTimes(1);
+      expect(loadHistory).toHaveBeenCalledWith(['1'], 90);
+    });
+
+    it('refetches trend data when the selected tenants change while the Trend tab is active', async () => {
+      wrapper = createWrapper([], summary({ all: 1, current: 1 }), false, ['1']);
+
+      await wrapper.get('[data-testid="institution-summary-trend-tab"]').trigger('mousedown');
+      expect(loadHistory).toHaveBeenCalledTimes(1);
+
+      await wrapper.setProps({ tenantIds: ['2'] });
+
+      expect(loadHistory).toHaveBeenCalledTimes(2);
+      expect(loadHistory).toHaveBeenLastCalledWith(['2'], 90);
+    });
   });
 });

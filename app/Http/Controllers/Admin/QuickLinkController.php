@@ -6,18 +6,13 @@ use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
-use App\Models\Calendar;
 use App\Models\Category;
-use App\Models\Institution;
-use App\Models\News;
-use App\Models\Page;
 use App\Models\QuickLink;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Inertia\Inertia;
 
 class QuickLinkController extends AdminController
 {
@@ -77,7 +72,7 @@ class QuickLinkController extends AdminController
         $this->handleAuthorization('create', QuickLink::class);
 
         return $this->inertiaResponse('Admin/Content/CreateQuickLink', [
-            'typeOptions' => Inertia::optional(fn () => static::getQuickLinkTypeOptions(request()->input('type'))),
+            'categoryOptions' => $this->getCategoryOptions(),
             'tenantOptions' => GetTenantsForUpserts::execute('quickLinks.create.padalinys', $this->authorizer),
         ]);
     }
@@ -144,7 +139,7 @@ class QuickLinkController extends AdminController
         return $this->inertiaResponse('Admin/Content/EditQuickLink', [
             'quickLink' => $quickLink,
             'tenantOptions' => GetTenantsForUpserts::execute('quickLinks.update.padalinys', $this->authorizer),
-            'typeOptions' => Inertia::optional(fn () => static::getQuickLinkTypeOptions(request()->input('type'))),
+            'categoryOptions' => $this->getCategoryOptions(),
         ]);
     }
 
@@ -206,34 +201,26 @@ class QuickLinkController extends AdminController
         ])->with('success', 'Sėkmingai atnaujinta greitųjų nuorodų tvarka!');
     }
 
-    public static function getQuickLinkTypeOptions($type)
+    /**
+     * Categories aren't Typesense-searchable (7 rows repo-wide — see AGENTS.md), so the
+     * link-target picker falls back to a plain list here instead of the multi-collection
+     * search dialog used for pages/news/calendar events/institutions.
+     *
+     * Page/news/calendar/institution options used to be built the same way (an
+     * unpaginated, unfiltered full-table dump per type) until the picker moved to
+     * `MultiCollectionSelectDialog`, which searches those collections directly.
+     *
+     * @return array<int, array{id: int, name: string, alias: string|null}>
+     */
+    private function getCategoryOptions(): array
     {
-        switch ($type) {
-            case 'url':
-                return;
-
-            case 'page':
-                return Page::query()->with('tenant:id,alias,shortname')->get(['id', 'lang', 'title', 'tenant_id', 'permalink']);
-
-            case 'news':
-                return News::query()->with('tenant:id,alias,shortname')->get(['id', 'lang', 'title', 'tenant_id', 'permalink']);
-
-            case 'calendarEvent':
-                return Calendar::query()->with('tenant:id,alias,shortname')->get(['id', 'title', 'tenant_id']);
-
-            case 'institution':
-                return Institution::query()->with('tenant:id,alias,shortname')->get(['id', 'name', 'tenant_id']);
-
-                // case 'special-page':
-                //     return collect();
-
-            case 'category':
-                return Category::query()->get(['id', 'name', 'alias']);
-
-            default:
-                // code...
-                break;
-        }
+        return Category::query()->get(['id', 'name', 'alias'])
+            ->map(fn (Category $category): array => [
+                'id' => $category->id,
+                'name' => $category->name,
+                'alias' => $category->alias,
+            ])
+            ->all();
     }
 
     public function restore(QuickLink $quickLink): RedirectResponse

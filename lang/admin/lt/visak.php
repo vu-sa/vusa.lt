@@ -65,6 +65,13 @@ return [
         'dialog_description' => 'Ieškokite institucijų ir palyginkite jų atostogas įvertinančią veiklos būklę.',
         'next_meeting' => 'Kitas susitikimas: :date',
         'last_meeting' => 'Paskutinis susitikimas: :date',
+        'overview_tab' => 'Apžvalga',
+        'trend_tab' => 'Pokyčiai',
+        'trend_spotlight_title' => 'Būklės pokyčiai laikui bėgant',
+        'trend_spotlight_description' => 'Peržiūrėkite, kaip institucijų būklė keitėsi diena iš dienos, ir pastebėkite gerėjimo ar blogėjimo tendencijas.',
+        'trend_description' => 'Kaip institucijų būklė keitėsi diena iš dienos',
+        'trend_empty' => 'Šiam laikotarpiui duomenų nėra',
+        'trend_range_days' => ':days d.',
     ],
 
     // Representative activity tracking

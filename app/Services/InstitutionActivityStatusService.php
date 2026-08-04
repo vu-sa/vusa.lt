@@ -86,14 +86,13 @@ class InstitutionActivityStatusService
             ? (int) round(($effectiveDays / $periodicityDays) * 100)
             : null;
 
-        $status = match (true) {
-            $nextMeeting !== null => InstitutionActivityStatus::CoveredByUpcomingMeeting,
-            $activeCheckIn !== null => InstitutionActivityStatus::CoveredByCheckIn,
-            $lastActivityAt === null => InstitutionActivityStatus::NoActivity,
-            $effectiveDays > $periodicityDays => InstitutionActivityStatus::Overdue,
-            ($effectiveDays / $periodicityDays) >= self::APPROACHING_RATIO => InstitutionActivityStatus::Approaching,
-            default => InstitutionActivityStatus::Healthy,
-        };
+        $status = $this->classify(
+            hasUpcomingMeeting: $nextMeeting !== null,
+            hasActiveCheckIn: $activeCheckIn !== null,
+            hasActivity: $lastActivityAt !== null,
+            effectiveDays: $effectiveDays ?? 0,
+            periodicityDays: $periodicityDays,
+        );
 
         return new InstitutionActivityStatusData(
             status: $status,
@@ -110,5 +109,29 @@ class InstitutionActivityStatusService
                 ? CarbonImmutable::instance($activeCheckIn->end_date)
                 : null,
         );
+    }
+
+    /**
+     * The pure decision rule behind an institution's activity status, shared by
+     * resolve() and AtstovavimasDashboardService's status-history sweep — the
+     * latter recomputes hasUpcomingMeeting/hasActiveCheckIn/hasActivity/effectiveDays
+     * itself (for performance, across many dates) but must classify them identically.
+     * $effectiveDays is ignored when $hasActivity is false.
+     */
+    public function classify(
+        bool $hasUpcomingMeeting,
+        bool $hasActiveCheckIn,
+        bool $hasActivity,
+        int $effectiveDays,
+        int $periodicityDays,
+    ): InstitutionActivityStatus {
+        return match (true) {
+            $hasUpcomingMeeting => InstitutionActivityStatus::CoveredByUpcomingMeeting,
+            $hasActiveCheckIn => InstitutionActivityStatus::CoveredByCheckIn,
+            ! $hasActivity => InstitutionActivityStatus::NoActivity,
+            $effectiveDays > $periodicityDays => InstitutionActivityStatus::Overdue,
+            ($effectiveDays / $periodicityDays) >= self::APPROACHING_RATIO => InstitutionActivityStatus::Approaching,
+            default => InstitutionActivityStatus::Healthy,
+        };
     }
 }

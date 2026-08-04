@@ -67,45 +67,47 @@
       </template>
 
       <div class="space-y-4">
-        <FormFieldWrapper id="type" :label="$t('Nuorodos tipas')" required>
-          <ToggleGroup v-model="form.type" type="single" class="justify-start flex-wrap"
-            @update:model-value="handleTypeChange">
-            <ToggleGroupItem v-for="opt in quickLinksType" :key="opt.value" :value="opt.value" class="gap-2">
-              <component :is="opt.icon" class="h-4 w-4" />
-              {{ opt.label }}
-            </ToggleGroupItem>
-          </ToggleGroup>
-        </FormFieldWrapper>
+        <FormFieldWrapper id="link_target" :label="$t('navigation.form.link_target')">
+          <div class="flex flex-wrap items-center gap-2">
+            <MultiCollectionSelectDialog
+              v-model:open="pickerOpen"
+              :collections="['pages', 'news', 'calendar', 'institutions', 'documents']"
+              :title="$t('Pasirinkite objektą')"
+              :confirm-label="$t('Pasirinkti')"
+              :search-placeholder="$t('navigation.form.link_target_search')"
+              @confirm="onTargetConfirm"
+            >
+              <template #trigger>
+                <Button type="button" variant="outline" class="justify-between font-normal">
+                  <span class="truncate" :class="{ 'text-muted-foreground': !lastPickedLabel }">
+                    {{ lastPickedLabel ?? $t('navigation.form.link_target_placeholder') }}
+                  </span>
+                  <IFluentChevronDown24Regular class="ml-2 size-4 opacity-50" />
+                </Button>
+              </template>
+            </MultiCollectionSelectDialog>
 
-        <FormFieldWrapper v-if="form.type !== 'url'" id="page" :label="$t('Pasirinkite objektą')" required>
-          <CollectionSelectDialog
-            v-if="targetCollection"
-            v-model:open="targetDialogOpen"
-            :collection="targetCollection"
-            :initial-hits="targetInitialHits"
-            :title="$t('Pasirinkite objektą')"
-            :confirm-label="$t('Pasirinkti')"
-            :search-placeholder="$t('Ieškoti pagal pavadinimą...')"
-            @confirm="onQuickLinkTargetConfirm"
-          >
-            <template #trigger>
-              <Button type="button" variant="outline" class="w-full justify-between font-normal">
-                <span class="truncate" :class="{ 'text-muted-foreground': !selectedPage }">
-                  {{ selectedPage?.label ?? $t('Pasirinkti puslapį...') }}
-                </span>
-                <IFluentChevronDown24Regular class="size-4 opacity-50" />
-              </Button>
-            </template>
-          </CollectionSelectDialog>
-          <SingleSelect v-else v-model="selectedPage" :options="typeOptions" label-field="label" value-field="value"
-            :placeholder="$t('Pasirinkti...')" />
+            <span class="text-xs text-muted-foreground">{{ $t('navigation.form.or') }}</span>
+
+            <Select :model-value="categorySelectValue" @update:model-value="onCategorySelected">
+              <SelectTrigger class="w-auto min-w-40">
+                <SelectValue :placeholder="$t('navigation.form.link_target_category')" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem v-for="category in categoryOptions" :key="category.id" :value="String(category.id)">
+                  {{ category.name }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Loader2 v-if="isResolvingUrl" class="size-4 animate-spin text-muted-foreground" />
+          </div>
         </FormFieldWrapper>
 
         <FormFieldWrapper id="link" :label="$t('Nuoroda')" required :error="form.errors.link"
-          :helper-text="linkHelperText">
+          :helper-text="$t('navigation.form.link_target_manual')">
           <div class="flex gap-1">
-            <Input id="link" v-model="form.link" :disabled="form.type !== 'url'" type="text"
-              :placeholder="$t('Nuoroda...')" />
+            <Input id="link" v-model="form.link" type="text" :placeholder="$t('Nuoroda...')" />
             <Button variant="outline" size="icon" as="a" :href="form.link" target="_blank">
               <IFluentOpen24Regular />
             </Button>
@@ -117,9 +119,10 @@
 </template>
 
 <script setup lang="ts">
-import { router, useForm } from '@inertiajs/vue3';
+import { useForm } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
+import { Loader2 } from 'lucide-vue-next';
 
 import FluentIconSelect from '../FormItems/FluentIconSelect.vue';
 
@@ -127,22 +130,27 @@ import AdminForm from './AdminForm.vue';
 import FormElement from './FormElement.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 
-import Link24Regular from '~icons/fluent/link24-regular';
+import { useApiMutation } from '@/Composables/useApi';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Switch } from '@/Components/ui/switch';
 import { SingleSelect } from '@/Components/ui/single-select';
 import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
-import { CalendarIcon, CategoryIcon, InstitutionIcon, NewsIcon, PageIcon, QuickLinkIcon } from '@/Components/icons';
-import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
-import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
-import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
-import type { AdminCollection } from '@/Features/Admin/AdminSearch/Types/AdminSearchTypes';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { QuickLinkIcon } from '@/Components/icons';
+import { MultiCollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
+import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+
+interface CategoryOption {
+  id: number;
+  name: string;
+  alias: string | null;
+}
 
 const props = defineProps<{
   quickLink: App.Entities.QuickLink;
   tenantOptions: Record<string, any>[];
-  typeOptions?: Record<string, any>[];
+  categoryOptions?: CategoryOption[];
   rememberKey?: 'CreateQuickLink';
 }>();
 
@@ -156,55 +164,6 @@ const isCreate = computed(() => props.rememberKey === 'CreateQuickLink');
 const form = props.rememberKey
   ? useForm(props.rememberKey, props.quickLink)
   : useForm(props.quickLink);
-
-const pageSelection = ref<string | null>(null);
-
-// Bridge: SingleSelect operates on full objects, pageSelection stores string ID
-const selectedPage = computed({
-  get: () => typeOptions.value.find(opt => String(opt.value) === pageSelection.value) ?? null,
-  set: (val: { value: string | number; label: string; option: any } | null) => {
-    pageSelection.value = val?.value ? String(val.value) : null;
-    handlePageSelection(pageSelection.value);
-  },
-});
-
-const targetDialogOpen = ref(false);
-
-// Which searchable collection backs the current target type. `category` is not
-// searchable (keeps the plain select); `url` has no object picker.
-const targetCollection = computed<AdminCollection | null>(() => {
-  switch (form.type) {
-    case 'page': return 'pages';
-    case 'news': return 'news';
-    case 'calendarEvent': return 'calendar';
-    case 'institution': return 'institutions';
-    default: return null;
-  }
-});
-
-const targetInitialHits = computed<NormalizedSearchHit[]>(() => {
-  const option = selectedPage.value;
-  const collection = targetCollection.value;
-  if (!option || !collection) {
-    return [];
-  }
-  const data = option.option ?? {};
-  return [normalizeHit(collection, {
-    id: option.value,
-    title: option.label,
-    name_lt: option.label,
-    name_en: option.label,
-    tenant_name: data.tenant?.shortname,
-  })];
-});
-
-// The dialog only picks an id; link-building still reads the full option from
-// `typeOptions` (which carries tenant.alias / permalink needed for the route).
-function onQuickLinkTargetConfirm(hits: NormalizedSearchHit[]) {
-  const id = hits[0]?.recordId ?? null;
-  pageSelection.value = id;
-  handlePageSelection(id);
-}
 
 const tenantOptions = computed(() =>
   props.tenantOptions.map(padalinys => ({
@@ -220,134 +179,54 @@ const selectedTenant = computed({
   },
 });
 
-const quickLinksType = computed(() => [
-  {
-    value: 'url',
-    label: $t('Nuoroda'),
-    icon: Link24Regular,
-  },
-  {
-    value: 'page',
-    label: $t('Turinio puslapis'),
-    icon: PageIcon,
-  },
-  {
-    value: 'news',
-    label: $t('Naujiena'),
-    icon: NewsIcon,
-  },
-  {
-    value: 'calendarEvent',
-    label: $t('Įvykis'),
-    icon: CalendarIcon,
-  },
-  {
-    value: 'institution',
-    label: $t('Institucija'),
-    icon: InstitutionIcon,
-  },
-  {
-    value: 'category',
-    label: $t('Kategorija'),
-    icon: CategoryIcon,
-  },
-]);
-
-const typeOptions = computed(() => {
-  if (!props.typeOptions) {
-    return [];
-  }
-
-  return props.typeOptions.map((option) => {
-    return {
-      value: option.id,
-      label: option.title ?? option.name,
-      option,
-    };
-  });
-});
-
 // Section completion states
 const basicInfoComplete = computed(() =>
   (form.text?.length || 0) >= 1 && Boolean(form.lang),
 );
 
-const linkTargetComplete = computed(() =>
-  Boolean(form.type && form.link?.length > 0),
+const linkTargetComplete = computed(() => (form.link?.length || 0) > 0);
+
+// --- Link target picker -----------------------------------------------------
+// The picker (and category select) are convenience fillers for `link` — the field
+// itself always stays editable as a manual override. `type` is a legacy column the
+// backend no longer persists (see QuickLinkController::store()/update()), so nothing
+// here needs to track or submit it.
+
+const pickerOpen = ref(false);
+const lastPickedLabel = ref<string | null>(null);
+
+const resolveUrlBody = ref<{ collection: string; id: string | number } | null>(null);
+const { execute: executeResolveUrl, data: resolveUrlData, isFetching: isResolvingUrl } = useApiMutation<{ url: string }, { collection: string; id: string | number }>(
+  route('api.v1.admin.navigation.resolveUrl'),
+  'POST',
+  resolveUrlBody,
+  { showSuccessToast: false },
 );
 
-const linkHelperText = computed(() => {
-  if (form.type === 'url') {
-    return $t('Įveskite norimą nuorodą');
+const resolveAndFillUrl = async (collection: string, id: string | number, label: string) => {
+  resolveUrlBody.value = { collection, id };
+  await executeResolveUrl();
+  if (resolveUrlData.value?.url) {
+    form.link = resolveUrlData.value.url;
+    lastPickedLabel.value = label;
   }
-  return $t('Nuoroda sugeneruota automatiškai pagal pasirinktą objektą');
-});
-
-const handleTypeChange = (value: string) => {
-  form.defaults();
-  router.reload({
-    data: { type: value },
-    only: ['typeOptions'],
-    onSuccess: () => {
-      pageSelection.value = null;
-    },
-  });
 };
 
-const handlePageSelection = (value: string | null) => {
-  if (!value || form.type === 'url') {
+const onTargetConfirm = (hits: NormalizedSearchHit[]) => {
+  const hit = hits[0];
+  if (!hit) {
     return;
   }
+  resolveAndFillUrl(hit.collection, hit.recordId, hit.title);
+};
 
-  const selectedOption = typeOptions.value.find(opt => String(opt.value) === value);
-  if (!selectedOption) return;
-
-  const optionData = selectedOption.option;
-
-  const subdomain = resolveTenantSubdomain(optionData.tenant?.id);
-
-  if (form.type === 'page') {
-    form.link = route('page', {
-      lang: optionData.lang,
-      subdomain,
-      permalink: optionData.permalink,
-    });
-    return;
-  }
-
-  if (form.type === 'news') {
-    form.link = route('news', {
-      lang: optionData.lang,
-      news: optionData.permalink,
-      newsString: 'naujiena',
-      subdomain,
-    });
-    return;
-  }
-
-  if (form.type === 'calendarEvent') {
-    form.link = route('calendar.event', {
-      lang: form.lang as string,
-      calendar: optionData.id,
-    });
-    return;
-  }
-
-  if (form.type === 'institution') {
-    form.link = route('contacts.institution', {
-      lang: form.lang as string,
-      institution: optionData.id,
-      subdomain,
-    });
-    return;
-  }
-
-  if (form.type === 'category') {
-    form.link = route('category', {
-      lang: form.lang as string,
-      category: optionData.id,
-      subdomain,
-    });
+const categorySelectValue = ref<string | undefined>(undefined);
+const onCategorySelected = (val: unknown) => {
+  const value = val as string | undefined;
+  categorySelectValue.value = value;
+  const category = props.categoryOptions?.find(c => String(c.id) === value);
+  if (category) {
+    resolveAndFillUrl('categories', category.id, category.name);
   }
 };
 </script>

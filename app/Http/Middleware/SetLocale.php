@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Inertia\Inertia;
 
 class SetLocale
 {
@@ -79,6 +80,17 @@ class SetLocale
         $segments = $request->segments();
         array_unshift($segments, app()->getLocale());
 
-        return redirect()->to(implode('/', $segments), 301);
+        $url = $request->getSchemeAndHttpHost().'/'.implode('/', $segments);
+
+        // Inertia visits are fetch-based. A raw 301 followed at the network
+        // layer trips sandbox/origin checks on WebKit (e.g. in-app browsers),
+        // because SetLocale runs before HandleInertiaRequests can intervene.
+        // Inertia::location() returns a 409 + X-Inertia-Location header so the
+        // client performs a clean window.location self-navigation instead.
+        if ($request->header('X-Inertia')) {
+            return Inertia::location($url);
+        }
+
+        return redirect()->to($url, 301);
     }
 }

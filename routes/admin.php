@@ -102,9 +102,7 @@ Route::post('quickLinks/update-order', [QuickLinkController::class, 'updateOrder
 Route::resource('quickLinks', QuickLinkController::class)->except(['show']);
 Route::resource('banners', BannerController::class)->except(['show']);
 Route::resource('navigation', NavigationController::class)->except(['show']);
-/* Route::get('navigation/editAll', [NavigationController::class, 'editAll'])->name('navigation.editAll'); */
 Route::post('navigation/updateOrder', [NavigationController::class, 'updateOrder'])->name('navigation.updateOrder');
-Route::post('navigation/updateColumn', [NavigationController::class, 'updateColumn'])->name('navigation.updateColumn');
 
 Route::get('users/merge', [UserController::class, 'merge'])->name('users.merge');
 Route::post('users/merge', [UserController::class, 'mergeUsers'])->name('users.mergeUsers');

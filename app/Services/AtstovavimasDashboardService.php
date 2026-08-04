@@ -2,13 +2,16 @@
 
 namespace App\Services;
 
+use App\Enums\InstitutionActivityStatus;
 use App\Models\Institution;
+use App\Models\InstitutionCheckIn;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\User;
 use App\Services\ResourceServices\DutyService;
 use App\Settings\MeetingSettings;
 use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -19,6 +22,7 @@ class AtstovavimasDashboardService
 
     public function __construct(
         private readonly InstitutionActivityStatusService $activityStatusService,
+        private readonly AcademicCalendarService $academicCalendar,
         private readonly ModelAuthorizer $authorizer,
         private readonly MeetingSettings $meetingSettings,
     ) {}
@@ -50,6 +54,187 @@ class AtstovavimasDashboardService
             'institution_summary' => $this->institutionSummary($institutions),
             'representative_activity' => $this->representativeActivitySummary($tenantIds),
         ];
+    }
+
+    /**
+     * Daily institution status breakdown for the trailing $days days, so the
+     * tenant dashboard can chart how health has changed over time.
+     *
+     * Institutions with no meetings and no check-ins at all are excluded from the
+     * sweep below: InstitutionActivityStatusService::resolve() always puts them in
+     * the NoActivity branch (nextMeeting/activeCheckIn/lastActivityAt are all
+     * necessarily null) for every possible date — so their contribution to every
+     * day's bucket is a fixed count, added back in once. In practice this covers
+     * ~45% of institutions (routinely-idle ones are common).
+     *
+     * For the rest, statuses are computed by sweepActiveStatuses() rather than by
+     * calling resolve() once per (institution, day): profiling showed resolve()'s
+     * per-call overhead (repeated Carbon object construction, Collection closures)
+     * dominates over its algorithmic complexity, since institutions typically carry
+     * few meetings — 16 tenants × 180 days took ~20s even after the idle-institution
+     * skip. The sweep amortizes that by building each institution's sorted
+     * meeting/check-in timeline once, then walking the requested dates in
+     * chronological order with cursors instead of re-scanning from scratch.
+     *
+     * @param  list<int>  $tenantIds
+     * @return list<array{date: string, all: int, needs_attention: int, overdue: int, approaching: int, no_activity: int, current: int}>
+     */
+    public function tenantStatusHistory(array $tenantIds, int $days): array
+    {
+        $institutions = DutyService::getTimelineInstitutionsForTenants($tenantIds, $this->authorizer);
+        $institutions = $this->withoutExcludedInstitutionTypes($institutions);
+        $institutions->each(fn (Institution $institution) => $institution->loadMissing(['meetings', 'checkIns', 'types']));
+
+        [$idle, $active] = $institutions->partition(
+            fn (Institution $institution) => $institution->meetings->isEmpty() && $institution->checkIns->isEmpty()
+        );
+        $idleCount = $idle->count();
+        $totalCount = $institutions->count();
+
+        $today = Carbon::today();
+        $dates = [];
+        for ($offset = $days - 1; $offset >= 0; $offset--) {
+            $dates[] = $today->copy()->subDays($offset)->endOfDay();
+        }
+
+        $statusesByDate = $this->sweepActiveStatuses($active, $dates);
+
+        $series = [];
+        foreach ($dates as $index => $date) {
+            $tally = ['overdue' => 0, 'approaching' => 0, 'no_activity' => $idleCount, 'needs_attention' => $idleCount];
+            foreach ($statusesByDate[$index] as $status) {
+                match ($status) {
+                    InstitutionActivityStatus::Overdue => $tally['overdue']++,
+                    InstitutionActivityStatus::Approaching => $tally['approaching']++,
+                    InstitutionActivityStatus::NoActivity => $tally['no_activity']++,
+                    default => null,
+                };
+                if ($status->requiresAction()) {
+                    $tally['needs_attention']++;
+                }
+            }
+
+            $series[] = [
+                'date' => $date->toDateString(),
+                'all' => $totalCount,
+                'needs_attention' => $tally['needs_attention'],
+                'overdue' => $tally['overdue'],
+                'approaching' => $tally['approaching'],
+                'no_activity' => $tally['no_activity'],
+                'current' => $totalCount - $tally['needs_attention'],
+            ];
+        }
+
+        return $series;
+    }
+
+    /**
+     * Computes each active institution's InstitutionActivityStatus for every date
+     * in $dates (ascending, end-of-day instants), reusing precomputed sorted
+     * meeting/check-in timelines and cursors instead of calling
+     * InstitutionActivityStatusService::resolve() per (institution, day). Delegates
+     * the actual status decision to InstitutionActivityStatusService::classify() —
+     * the same rule resolve() uses — so the two can never diverge; only the (much
+     * cheaper) bookkeeping of "what's the next/last meeting or check-in as of this
+     * date" is reimplemented here.
+     *
+     * @param  Collection<int, Institution>  $institutions
+     * @param  list<CarbonInterface>  $dates
+     * @return list<list<InstitutionActivityStatus>> outer index matches $dates, inner index matches $institutions
+     */
+    private function sweepActiveStatuses(Collection $institutions, array $dates): array
+    {
+        $institutions = $institutions->values();
+
+        // Precompute once per institution: sorted meeting instants (as both raw
+        // timestamps, for cheap cursor comparisons, and reusable CarbonImmutable
+        // objects, so effectiveDaysBetween() never reconstructs the same instant
+        // twice), sorted check-in intervals, and the periodicity threshold.
+        $meetingTimestamps = [];
+        $meetingInstants = [];
+        $checkInIntervals = [];
+        $periodicityDays = [];
+        $meetingCursor = [];
+
+        foreach ($institutions as $i => $institution) {
+            $sortedMeetings = $institution->meetings
+                ->map(fn (Meeting $meeting) => CarbonImmutable::instance($meeting->start_time))
+                ->sort(fn (CarbonImmutable $a, CarbonImmutable $b) => $a->getTimestamp() <=> $b->getTimestamp())
+                ->values();
+
+            $meetingInstants[$i] = $sortedMeetings->all();
+            $meetingTimestamps[$i] = $sortedMeetings->map(fn (CarbonImmutable $instant) => $instant->getTimestamp())->all();
+            $meetingCursor[$i] = 0;
+
+            $checkInIntervals[$i] = $institution->checkIns
+                ->map(fn (InstitutionCheckIn $checkIn) => [
+                    'start' => CarbonImmutable::instance($checkIn->start_date)->startOfDay(),
+                    'end' => CarbonImmutable::instance($checkIn->end_date)->startOfDay(),
+                ])
+                ->sortBy(fn (array $interval) => $interval['end']->getTimestamp())
+                ->values()
+                ->all();
+
+            $periodicityDays[$i] = $institution->meeting_periodicity_days;
+        }
+
+        $statusesByDate = [];
+
+        foreach ($dates as $dateIndex => $moment) {
+            $momentTs = $moment->getTimestamp();
+            $today = $moment->copy()->startOfDay();
+            $todayTs = $today->getTimestamp();
+            $statuses = [];
+
+            foreach ($institutions as $i => $institution) {
+                // Meetings with start_time <= moment have "happened"; advance the
+                // cursor past them (dates are processed in ascending order, so this
+                // pointer only ever moves forward across the whole sweep).
+                while ($meetingCursor[$i] < count($meetingTimestamps[$i]) && $meetingTimestamps[$i][$meetingCursor[$i]] <= $momentTs) {
+                    $meetingCursor[$i]++;
+                }
+                $hasUpcomingMeeting = $meetingCursor[$i] < count($meetingTimestamps[$i]);
+                $lastMeetingInstant = $meetingCursor[$i] > 0 ? $meetingInstants[$i][$meetingCursor[$i] - 1] : null;
+
+                $activeCheckIn = false;
+                $latestCompletedCheckInEnd = null;
+                foreach ($checkInIntervals[$i] as $interval) {
+                    $startTs = $interval['start']->getTimestamp();
+                    $endTs = $interval['end']->getTimestamp();
+
+                    if ($startTs <= $todayTs && $endTs >= $todayTs) {
+                        $activeCheckIn = true;
+                    }
+                    if ($endTs < $todayTs && ($latestCompletedCheckInEnd === null || $endTs > $latestCompletedCheckInEnd->getTimestamp())) {
+                        $latestCompletedCheckInEnd = $interval['end'];
+                    }
+                }
+
+                $checkInIsLatestActivity = $latestCompletedCheckInEnd !== null
+                    && ($lastMeetingInstant === null || $latestCompletedCheckInEnd->endOfDay()->gt($lastMeetingInstant));
+                $hasActivity = $checkInIsLatestActivity || $lastMeetingInstant !== null;
+
+                $effectiveDays = 0;
+                if ($hasActivity) {
+                    $activityCalculationStart = $checkInIsLatestActivity
+                        ? $latestCompletedCheckInEnd->addDay()
+                        : $lastMeetingInstant;
+                    $effectiveDays = $this->academicCalendar->effectiveDaysBetween($activityCalculationStart, $moment);
+                }
+
+                $statuses[] = $this->activityStatusService->classify(
+                    hasUpcomingMeeting: $hasUpcomingMeeting,
+                    hasActiveCheckIn: $activeCheckIn,
+                    hasActivity: $hasActivity,
+                    effectiveDays: $effectiveDays,
+                    periodicityDays: $periodicityDays[$i],
+                );
+            }
+
+            $statusesByDate[$dateIndex] = $statuses;
+        }
+
+        return $statusesByDate;
     }
 
     /**

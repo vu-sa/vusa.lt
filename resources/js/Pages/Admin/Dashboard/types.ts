@@ -245,6 +245,11 @@ export interface AtstovavimasTenantTimelineData {
   representative_activity: RepresentativeActivityData;
 }
 
+// One day's institution_summary breakdown, for the status trend chart
+export interface InstitutionStatusHistoryPoint extends InstitutionStatusSummaryData {
+  date: string;
+}
+
 // Slim meeting DTO from the windowed meetings endpoint (start_time as ISO string)
 export type AtstovavimasTenantMeeting = Omit<GanttMeeting, 'start_time'> & {
   start_time: string;

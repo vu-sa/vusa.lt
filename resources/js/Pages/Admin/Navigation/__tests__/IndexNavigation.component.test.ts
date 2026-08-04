@@ -39,23 +39,15 @@ const pageStubs = {
     props: ['title'],
     template: '<section><slot /></section>',
   },
-  MainNavigationMenuContent: {
-    template: '<div data-testid="main-navigation-menu-content"><slot /></div>',
-  },
-  OrderEditDeleteButtons: {
-    template: '<div data-testid="order-edit-delete-buttons" />',
-  },
   ConfirmDangerousActionDialog: {
     props: ['open', 'confirmationText'],
     emits: ['confirm', 'update:open'],
     template: '<div v-if="open" data-testid="force-delete-dialog"><span>{{ confirmationText }}</span><button data-testid="confirm-force-delete" @click="$emit(\'confirm\')">confirm</button></div>',
   },
-  IFluentReOrderDotsVertical24Regular: {
-    template: '<span class="icon-reorder" />',
-  },
-  Icon: {
-    props: ['icon'],
-    template: '<span class="iconify" />',
+  NavigationBuilder: {
+    props: ['roots', 'lang', 'translationSummary'],
+    emits: ['update:lang'],
+    template: '<div data-testid="navigation-builder">{{ lang }}<button data-testid="trigger-lang-change" @click="$emit(\'update:lang\', \'en\')">switch</button></div>',
   },
 };
 
@@ -161,5 +153,28 @@ describe('IndexNavigation.vue', () => {
     });
 
     expect(wrapper.find('[data-testid="force-delete-button"]').exists()).toBe(false);
+  });
+
+  it('delegates the live tree to NavigationBuilder with the current language', () => {
+    wrapper = createWrapper({
+      lang: 'lt',
+      navigation: [{ id: 1, name: 'Root', url: '#', parent_id: 0, order: 0, is_active: true, extra_attributes: {}, links: [[], [], []], cols: 0 }],
+    });
+
+    const builder = wrapper.find('[data-testid="navigation-builder"]');
+    expect(builder.exists()).toBe(true);
+    expect(builder.text()).toContain('lt');
+  });
+
+  it('revisits the index with the new language when NavigationBuilder emits update:lang', async () => {
+    wrapper = createWrapper({ lang: 'lt', navigation: [] });
+
+    await wrapper.find('[data-testid="trigger-lang-change"]').trigger('click');
+
+    expect(router.get).toHaveBeenCalledWith(
+      '/mocked-route/navigation.index',
+      { lang: 'en' },
+      expect.objectContaining({ preserveScroll: true, preserveState: false }),
+    );
   });
 });
