@@ -581,9 +581,9 @@ class DutyController extends AdminController
             'assignableTenants' => $assignableTenants,
             'institutionTypes' => $institutionTypes,
             // Lazy loaded data - only fetched when explicitly requested via router.reload({ only: [...] })
-            // Step 3: User assignment
-            'users' => Inertia::optional(fn () => User::select('id', 'name', 'email', 'profile_photo_path')
-                ->orderBy('name')->get()),
+            // Step 3 searches users through api.v1.admin.users.search rather than
+            // receiving them as a prop — this used to ship every user in the system,
+            // name and email, to any admin who reached that step.
             'studyPrograms' => Inertia::optional(fn () => StudyProgram::select('id', 'name', 'degree', 'tenant_id')->get()),
             // Step 2: Duty creation (only needed if user wants to create a new duty)
             'dutyTypes' => Inertia::optional(fn () => GetAttachableTypesForDuty::execute()->values()),

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\User;
+use App\Rules\SoftDeleteRules;
 use App\Rules\UniqueAmongTrashed;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -31,7 +32,16 @@ class StoreUserRequest extends FormRequest
             'phone' => 'nullable|string',
             'profile_photo_path' => 'nullable|string',
             'profile_photo_focal_point' => 'nullable|string|max:20',
-            'current_duties' => 'required',
+            'pronouns' => ['nullable', 'array'],
+            'pronouns.lt' => ['nullable', 'string', 'max:50'],
+            'pronouns.en' => ['nullable', 'string', 'max:50'],
+            'show_pronouns' => ['nullable', 'boolean'],
+            // Only a super admin has these applied (see UserController::store), but they
+            // must still be validated: the controller syncs them straight onto the model.
+            'roles' => ['nullable', 'array'],
+            'roles.*' => ['exists:roles,id'],
+            'current_duties' => ['required', 'array', 'min:1'],
+            'current_duties.*' => ['string', SoftDeleteRules::existsLive('duties')],
         ];
     }
 }

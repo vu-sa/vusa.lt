@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Shared restore / permanent-delete behaviour for admin controllers of
@@ -72,8 +73,13 @@ trait HandlesSoftDeletes
      * and are refused with an explanation. The QueryException fallback covers references
      * no model declares: a restricting foreign key must surface as an error toast, never
      * as a 500.
+     *
+     * @param  (\Closure(Model): void)|null  $before  Detach/cleanup that must happen for the
+     *                                                delete to succeed. It runs after the blocker check and inside the
+     *                                                transaction, so a refused or failed delete cannot leave the model
+     *                                                stripped of the relations it still needs.
      */
-    protected function forceDeleteModel(Model $model, ?string $message = null): RedirectResponse
+    protected function forceDeleteModel(Model $model, ?string $message = null, ?\Closure $before = null): RedirectResponse
     {
         $this->assertSoftDeletable($model);
 
@@ -86,7 +92,13 @@ trait HandlesSoftDeletes
         }
 
         try {
-            $model->forceDelete();
+            DB::transaction(function () use ($model, $before): void {
+                if ($before) {
+                    $before($model);
+                }
+
+                $model->forceDelete();
+            });
         } catch (QueryException $exception) {
             report($exception);
 

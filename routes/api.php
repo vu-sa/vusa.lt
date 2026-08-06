@@ -200,6 +200,12 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         // User search for forms (e.g. responsible user in problems)
         Route::get('users/search', [UserSearchApiController::class, 'search'])->name('users.search');
 
+        // Warns about an existing person before a duplicate account is created. Searches
+        // every tenant on purpose, so it is throttled and returns masked emails only.
+        Route::get('users/similar', [UserSearchApiController::class, 'similar'])
+            ->middleware('throttle:30,1')
+            ->name('users.similar');
+
         // Attribution-line suggestions for the person-quote rich-content block —
         // derives "Role, Tenant" labels from a user's current duties.
         Route::get('users/{user}/attributions', [UserAttributionApiController::class, 'index'])->name('users.attributions');

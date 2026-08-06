@@ -102,11 +102,10 @@ test('contact manager can create user with duty', function (): void {
     $response = $admin->post(route('users.store'), [
         'name' => 'Test 3',
         'email' => 'test@email.com',
-        'current_duties' => [
-            [
-                'duty_id' => Duty::query()->first()->id,
-            ],
-        ],
+        // Plain duty ids, in the manager's own tenant. This used to post an array of
+        // objects and pass only because BelongsToMany::formatAttachRecord treats a
+        // non-array value as the id; the Vue form has always sent plain ids.
+        'current_duties' => [$this->admin->duties()->first()->id],
     ]);
 
     $response->assertStatus(302)->assertRedirectToRoute('users.index');

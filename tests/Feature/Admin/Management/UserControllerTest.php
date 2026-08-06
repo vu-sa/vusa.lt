@@ -3,6 +3,7 @@
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
+use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -88,7 +89,10 @@ describe('authorized access', function (): void {
     });
 
     test('can store user', function (): void {
-        $duty = Duty::factory()->create();
+        // The duty must sit in the admin's own tenant — Duty::factory() would
+        // otherwise build its own Institution and Tenant, which UserDutyService
+        // now rejects.
+        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
 
         $userData = [
             'name' => 'Test User',
@@ -289,5 +293,54 @@ describe('duty removal', function (): void {
 
         // The active row must be end-dated even though an older ended row exists.
         expect($activeCount())->toBe(0);
+    });
+});
+
+describe('create-form field coverage', function (): void {
+    beforeEach(function (): void {
+        $this->admin = makeAdminUser($this->tenant);
+        $this->duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
+    });
+
+    test('pronouns submitted on create are persisted', function (): void {
+        // UserForm renders the pronouns section in create mode too, but store() fills
+        // from $request->safe(), so an unvalidated field is silently dropped.
+        asUser($this->admin)->post(route('users.store'), [
+            'name' => 'Pronouns Person',
+            'email' => 'pronouns@stud.vu.lt',
+            'pronouns' => ['lt' => 'Jie/jų', 'en' => 'They/them'],
+            'show_pronouns' => true,
+            'current_duties' => [$this->duty->id],
+        ])->assertRedirect();
+
+        $created = User::query()->where('email', 'pronouns@stud.vu.lt')->firstOrFail();
+
+        expect($created->getTranslation('pronouns', 'lt'))->toBe('Jie/jų')
+            ->and($created->getTranslation('pronouns', 'en'))->toBe('They/them')
+            ->and($created->show_pronouns)->toBeTrue();
+    });
+
+    test('a non-existent role id on create is rejected rather than synced', function (): void {
+        asUser($this->admin)->post(route('users.store'), [
+            'name' => 'Bogus Role',
+            'email' => 'bogus.role@stud.vu.lt',
+            'roles' => [999999],
+            'current_duties' => [$this->duty->id],
+        ])->assertSessionHasErrors('roles.0');
+
+        $this->assertDatabaseMissing('users', ['email' => 'bogus.role@stud.vu.lt']);
+    });
+
+    test('a super admin can still assign a real role on create', function (): void {
+        $role = Role::firstOrCreate(['name' => 'Create Path Role', 'guard_name' => 'web']);
+
+        asUser($this->admin)->post(route('users.store'), [
+            'name' => 'Real Role',
+            'email' => 'real.role@stud.vu.lt',
+            'roles' => [$role->id],
+            'current_duties' => [$this->duty->id],
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        expect(User::query()->where('email', 'real.role@stud.vu.lt')->firstOrFail()->hasRole($role))->toBeTrue();
     });
 });

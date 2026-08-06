@@ -12,6 +12,7 @@ use App\Models\Traits\HasNotificationPreferences;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\HasUIPreferences;
 use App\Models\Traits\LogsModelActivity;
+use App\Models\Traits\LogsRelationshipChanges;
 use App\Services\NotificationRouter;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -33,6 +34,7 @@ use NotificationChannels\WebPush\HasPushSubscriptions;
 use NotificationChannels\WebPush\PushSubscription;
 use Spatie\Activitylog\Support\LogOptions;
 use Spatie\Permission\Traits\HasRoles;
+use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
@@ -121,7 +123,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 ])]
 class User extends Authenticatable implements GuardsForceDelete
 {
-    use GuardsForceDeleteWhenReferenced, HasFactory, HasNotificationPreferences, HasPushSubscriptions, HasRelationships, HasRoles, HasTranslations, HasUIPreferences, HasUlids, LogsModelActivity, Notifiable, Searchable, SoftDeletes;
+    use GuardsForceDeleteWhenReferenced, HasFactory, HasNotificationPreferences, HasPushSubscriptions, HasRelationships, HasRoles, HasTranslations, HasUIPreferences, HasUlids, LogsModelActivity, LogsRelationshipChanges, Notifiable, Searchable, SoftDeletes;
 
     public $translatable = [
         'pronouns',
@@ -256,7 +258,11 @@ class User extends Authenticatable implements GuardsForceDelete
         return $this->morphMany(Dutiable::class, 'dutiable');
     }
 
-    public function tenants()
+    /**
+     * The tenants this user belongs to, derived from *all* their duties — including
+     * ones that have ended. Most tenant-scoped authorization resolves through here.
+     */
+    public function tenants(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->duties(), (new Duty)->institution(), (new Institution)->tenant());
     }

@@ -18,6 +18,7 @@ import { usePage } from '@inertiajs/vue3';
 import type { IndexTablePageInstance,
   IndexTablePageProps } from '@/Types/TableConfigTypes';
 import { DateCell, TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
+import { Badge } from '@/Components/ui/badge';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import { UserIcon } from '@/Components/icons';
@@ -102,8 +103,19 @@ const columns = computed(() => [
   {
     accessorKey: 'duties_count',
     header: () => $t('Pareigų skaičius'),
-    cell: ({ row }) => h(TruncatedText, { text: String(row.getValue('duties_count')) }),
-    size: 120,
+    cell: ({ row }) => {
+      const count = Number(row.getValue('duties_count') ?? 0);
+
+      // A member with no duties belongs to no unit, so they are invisible to every
+      // other tenant admin until someone assigns them one. Flag them so they get
+      // picked up rather than quietly accumulating.
+      if (count === 0) {
+        return h(Badge, { variant: 'warning' }, () => $t('Be padalinio'));
+      }
+
+      return h(TruncatedText, { text: String(count) });
+    },
+    size: 140,
   },
   createStandardActionsColumn<App.Entities.User>('users', {
     canView: true,

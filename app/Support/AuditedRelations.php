@@ -6,6 +6,7 @@ use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Reservation;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -40,6 +41,16 @@ class AuditedRelations
         Reservation::class => [
             'users' => ['display' => 'name'],
             'resources' => ['display' => 'name'],
+        ],
+        // Granting somebody a duty is what puts them inside a tenant, and therefore
+        // what confers authority over their record on that tenant's admins — the one
+        // action most worth being able to reconstruct afterwards.
+        //
+        // current_duties, not duties: a revocation end-dates the pivot row rather than
+        // deleting it, so `duties` membership never changes and nothing would be
+        // logged — a half-audit that reads as a complete one.
+        User::class => [
+            'current_duties' => ['display' => 'name'],
         ],
     ];
 
