@@ -271,7 +271,6 @@ const props = defineProps<{
   institutions: App.Entities.Institution[];
   // Lazy-loaded props (may be undefined initially)
   studyPrograms?: App.Entities.StudyProgram[];
-  users?: App.Entities.User[];
   // For inline creation
   assignableTenants: App.Entities.Tenant[];
   institutionTypes: App.Entities.Type[];
@@ -282,7 +281,6 @@ const props = defineProps<{
 const page = usePage();
 
 // Computed refs for lazy-loaded data (reactive when data arrives via router.reload)
-const users = computed(() => (page.props.users as App.Entities.User[] | undefined) ?? []);
 const studyPrograms = computed(() => (page.props.studyPrograms as App.Entities.StudyProgram[] | undefined) ?? []);
 const dutyTypes = computed(() => (page.props.dutyTypes as App.Entities.Type[] | undefined) ?? []);
 
@@ -319,7 +317,6 @@ const wizard = useDutyUserWizard({
 provide('dutyUserWizard', wizard);
 // Provide lazy-loaded data as computed refs (reactive when data arrives)
 provide('studyPrograms', studyPrograms);
-provide('allUsers', users);
 // For inline creation
 provide('assignableTenants', props.assignableTenants);
 provide('institutionTypes', props.institutionTypes);

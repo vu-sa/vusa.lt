@@ -89,3 +89,50 @@ test('a Duty <-> users sync appears on the parent Institution activity feed via 
     expect($activity->root_subject_type)->toBe(Institution::class)
         ->and($activity->root_subject_id)->toBe($this->institution->id);
 });
+
+describe('duty grants made through the user form', function (): void {
+    // Attaching somebody to a duty is what places them inside a tenant, and so what
+    // gives that tenant's admins authority over their record. Logged on the User via
+    // AuditedRelations rather than on the Dutiable pivot, which is not an audit
+    // subject and would flood the feed from the ex-officio sync.
+    beforeEach(function (): void {
+        $this->coordinator = makeTenantUserWithRole('Student Representative Coordinator', $this->tenant);
+        $this->member = User::factory()->create(['name' => 'Rasa Rasaitė']);
+    });
+
+    $latestRelationActivity = fn (User $user) => Activity::where('subject_type', User::class)
+        ->where('subject_id', $user->id)
+        ->where('event', 'relation_updated')
+        ->latest('id')
+        ->first();
+
+    test('granting a duty logs it against the user', function () use ($latestRelationActivity): void {
+        asUser($this->coordinator)->patch(route('users.update', $this->member), [
+            'name' => $this->member->name,
+            'email' => $this->member->email,
+            'current_duties' => [$this->duty->id],
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        $activity = $latestRelationActivity($this->member);
+
+        expect($activity)->not->toBeNull()
+            ->and(collect($activity->properties->get('attached'))->pluck('label')->all())
+            ->toBe([$this->duty->name]);
+    });
+
+    test('revoking a duty is logged even though the pivot is only end-dated', function () use ($latestRelationActivity): void {
+        $this->member->duties()->attach($this->duty, ['start_date' => now()->subDay()]);
+
+        asUser($this->coordinator)->patch(route('users.update', $this->member), [
+            'name' => $this->member->name,
+            'email' => $this->member->email,
+            'current_duties' => [],
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        $activity = $latestRelationActivity($this->member);
+
+        expect($activity)->not->toBeNull()
+            ->and(collect($activity->properties->get('detached'))->pluck('label')->all())
+            ->toBe([$this->duty->name]);
+    });
+});

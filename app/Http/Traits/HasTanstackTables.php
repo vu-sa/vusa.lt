@@ -69,7 +69,8 @@ trait HasTanstackTables
                 $query,
                 $options['tenantRelation'],
                 $options['permission'],
-                $authorizer
+                $authorizer,
+                $options['permissionOrInclude'] ?? null
             );
         }
 

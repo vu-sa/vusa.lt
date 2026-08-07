@@ -30,11 +30,14 @@ class MainController extends PublicController
 
     public function sendFeedback(Request $request)
     {
-        $data = $request->all();
+        $data = $request->validate([
+            'feedback' => 'required|string',
+            'href' => ['nullable', 'string'],
+            'selectedText' => ['nullable', 'string'],
+        ]);
 
-        Mail::to('it@vusa.lt')->queue(new FeedbackMail($data['feedback'], auth()->user(), $data['href'], $data['selectedText']));
+        Mail::to('it@vusa.lt')->queue(new FeedbackMail($data['feedback'], auth()->user(), $data['href'] ?? null, $data['selectedText'] ?? null));
 
         return back()->with('success', 'Ačiū už atsiliepimą!');
-
     }
 }

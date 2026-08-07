@@ -7,6 +7,18 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.22 — Vartotojų atnaujinimai peržiūrimi griežčiau (2026-08-06) {#v1-22}
+
+### Administravimas
+
+- 🔧 **Vardą ir el. paštą keisti gali tik asmens visų padalinių administratoriai** — el. paštu prisijungiama prie sistemos, todėl jį pakeisti gali tik tas, kuriam priklauso visi to asmens padaliniai. Jeigu asmuo turi pareigybių ir kitame padalinyje, kreipkis į to padalinio arba centrinio biuro administratorius
+- 🔧 **Naudotojo trynimas reikalauja platesnių teisių** — ištrinti ar atkurti galima tik tuos asmenis, kurių visos pareigybės yra tavo padalinyje. Asmenų su tiesiogiai priskirtomis rolėmis ir savo paties paskyros ištrinti nebegalima
+- 🔧 **Pareigybės iš kitų padalinių nebepriskiriamos tyliai** — anksčiau bandymas priskirti ne savo padalinio pareigybę būdavo tyliai praleidžiamas, o forma pranešdavo apie sėkmę. Dabar parodoma aiški klaida su pareigybių pavadinimais
+- ✨ **Naudotojai be padalinio pagaliau matomi** — asmenys, kurie dar neturi nė vienos pareigybės, iki šiol nebuvo matomi jokiam padalinio administratoriui, todėl jiems nebuvo kaip priskirti pareigybės. Dabar jie rodomi narių sąraše su žyma „Be padalinio“ ir juos gali sutvarkyti bet kuris administratorius
+- ✨ **Pareigybių priskyrimai fiksuojami istorijoje** — matyti, kas ir kada priskyrė ar nuėmė pareigybę
+- 🔧 **Nepavykęs galutinis trynimas nebepašalina pareigybių** — anksčiau, jei naudotojo nebuvo galima ištrinti visam laikui, jo pareigybės jau būdavo pašalintos ir asmuo dingdavo iš visų sąrašų
+- ⭐ **Įspėjimas apie galimą dublikatą** — kuriant naują naudotoją (formoje ir pareigybių vedlyje) parodoma, jei panašus profilis jau egzistuoja — net jei jis priklauso kitam padaliniui. Vedlyje galima iš karto pasirinkti esamą profilį vietoj naujo kūrimo
+
 ## v1.21 — Navigacijos redagavimas, ViSAK pokyčių grafikas ir RSS srautas (2026-08-04) {#v1-21}
 
 ### ViSAK

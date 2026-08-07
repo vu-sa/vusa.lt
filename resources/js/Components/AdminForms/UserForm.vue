@@ -21,18 +21,23 @@
         </ol>
       </template>
       <FormFieldWrapper id="name" :label="$t('forms.fields.name_and_surname')" required>
-        <Input v-model="form.name" :disabled="user.name !== ''" type="text"
+        <Input v-model="form.name" :disabled="user.name !== '' || !canUpdateIdentity" type="text"
           placeholder="Įrašyti vardą ir pavardę" />
       </FormFieldWrapper>
 
       <FormFieldWrapper id="email" label="El. paštas" required>
-        <div v-if="isUserEmailMaybeDutyEmail" class="mb-1 text-xs text-amber-600 dark:text-amber-400">
+        <div v-if="isUserEmailMaybeDutyEmail && canUpdateIdentity" class="mb-1 text-xs text-amber-600 dark:text-amber-400">
           Jeigu <strong>{{ user.email }}</strong> nėra pareigybinis el.
           paštas (<code>@vusa.lt</code> dažniausiai naudojami pareigybėms), pagal gerąsias praktikas jį reikėtų
           pakeisti į studentinį arba kitą VU paštą.
         </div>
-        <Input v-model="form.email"
+        <Input v-model="form.email" :disabled="!canUpdateIdentity"
           placeholder="vardas.pavarde@stud.vu.lt" />
+        <div v-if="!canUpdateIdentity" class="mt-1 flex items-start gap-1.5 text-xs text-muted-foreground">
+          <Lock class="mt-0.5 size-3 shrink-0" />
+          <span>{{ $t('users.identity_locked_hint') }}</span>
+        </div>
+        <DuplicateUserWarning v-if="isCreating" :matches="duplicateMatches" class="mt-2" />
         <div v-if="currentDutiesWithVusaEmail.length > 0" class="mt-2 rounded-md bg-blue-50 p-2.5 text-xs dark:bg-blue-950">
           <p class="mb-1.5 font-medium text-blue-800 dark:text-blue-200">
             Šie pareigybiniai el. paštai taip pat leidžia prisijungti prie sistemos:
@@ -325,13 +330,18 @@ import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
 
 import AdminForm from './AdminForm.vue';
 import AccessChangeWarningDialog from './AccessChangeWarningDialog.vue';
+import DuplicateUserWarning from './DuplicateUserWarning.vue';
 import FormElement from './FormElement.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 import { useApiMutation } from '@/Composables/useApi';
+import { useDuplicateUserCheck } from '@/Composables/useDuplicateUserCheck';
 import Delete24Regular from '~icons/fluent/delete24-regular';
 import Eye16Regular from '~icons/fluent/eye16-regular';
+// Lucide is the icon set for admin surfaces (AGENTS.md); the Fluent imports here
+// are legacy and stay until this form is migrated wholesale.
+import { Lock } from 'lucide-vue-next';
 import PersonEdit24Regular from '~icons/fluent/person-edit24-regular';
 import IFluentCopy16Regular from '~icons/fluent/copy16-regular';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/Components/ui/alert-dialog';
@@ -348,13 +358,21 @@ import { ImageUpload } from '@/Components/ui/upload';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import SimpleDataTable from '@/Components/Tables/SimpleDataTable.vue';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   user: App.Entities.User;
   roles: App.Entities.Role[];
   tenantsWithDuties: App.Entities.Tenant[];
   permissableTenants: App.Entities.Tenant[];
   rememberKey?: 'CreateUser';
-}>();
+  /**
+   * Whether the acting admin may change this person's name and email. Defaults to
+   * true so the create form (where both are always being set) needs no prop; the
+   * edit page passes the real value from UserPolicy::updateIdentity.
+   */
+  canUpdateIdentity?: boolean;
+}>(), {
+  canUpdateIdentity: true,
+});
 
 defineEmits<{
   (event: 'submit:form', form: unknown): void;
@@ -432,6 +450,14 @@ const dutyOptions: DutyTreeOption[] = props.tenantsWithDuties.map(
     });
   },
 ).filter(tenant => props.permissableTenants.some(permissable => permissable.id === tenant.value));
+
+// Only the create form can produce a duplicate; on edit the record already exists.
+const isCreating = computed(() => !props.user.id);
+
+const { matches: duplicateMatches } = useDuplicateUserCheck(
+  () => (isCreating.value ? String(form.name ?? '') : ''),
+  () => (isCreating.value ? String(form.email ?? '') : ''),
+);
 
 // check if user email looks like a duty email (@vusa.lt)
 const isUserEmailMaybeDutyEmail = computed(() => {

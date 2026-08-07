@@ -192,6 +192,42 @@ describe('UserForm.vue', () => {
     });
   });
 
+  describe('identity field lock', () => {
+    // Mirrors UserPolicy::updateIdentity — email is the login identity, so a tenant
+    // admin who only shares one tenant with this person must not be able to edit it.
+    const emailInput = (w: ReturnType<typeof mount>) =>
+      w.findAll('input').find(i => i.attributes('placeholder') === 'vardas.pavarde@stud.vu.lt');
+
+    it('leaves email editable by default so the create form is unaffected', async () => {
+      wrapper = createWrapper();
+      await nextTick();
+
+      expect(emailInput(wrapper)?.attributes('disabled')).toBeUndefined();
+    });
+
+    it('disables name and email when canUpdateIdentity is false', async () => {
+      wrapper = createWrapper({ canUpdateIdentity: false });
+      await nextTick();
+
+      const nameInput = wrapper.findAll('input')
+        .find(i => i.attributes('placeholder') === 'Įrašyti vardą ir pavardę');
+
+      expect(nameInput?.attributes('disabled')).toBeDefined();
+      expect(emailInput(wrapper)?.attributes('disabled')).toBeDefined();
+    });
+
+    it('suppresses the @vusa.lt email advice when the field is locked', async () => {
+      // Advising a change the admin cannot make would just be noise.
+      wrapper = createWrapper({
+        user: createUser({ email: 'koordinatorius@vusa.lt' }),
+        canUpdateIdentity: false,
+      });
+      await nextTick();
+
+      expect(wrapper.find('.text-amber-600').exists()).toBe(false);
+    });
+  });
+
   describe('duty email context block', () => {
     it('renders only @vusa.lt duty emails in context block', async () => {
       wrapper = createWrapper();

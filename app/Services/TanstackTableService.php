@@ -292,23 +292,36 @@ class TanstackTableService
      * @param  string  $tenantRelation  The relation name that connects to the tenant
      * @param  string  $permission  The permission string to check
      * @param  ModelAuthorizer  $authorizer  The authorizer service
+     * @param  (\Closure(Builder<TModel>): void)|null  $orInclude  Escape hatch for rows that
+     *                                                             are unreachable through the tenant relation and would
+     *                                                             otherwise be invisible to everyone (see UserController::index)
      * @return Builder<TModel>
      */
     public function applyPermissionFiltering(
         Builder $query,
         string $tenantRelation,
         string $permission,
-        ModelAuthorizer $authorizer
+        ModelAuthorizer $authorizer,
+        ?\Closure $orInclude = null
     ): Builder {
         // Only apply if not all scope and not super admin
-        if (! $authorizer->isAllScope && ! auth()->user()?->isSuperAdmin()) {
-            return $query->whereHas($tenantRelation, function (Builder $q) use ($tenantRelation, $permission, $authorizer): void {
+        if ($authorizer->isAllScope || auth()->user()?->isSuperAdmin()) {
+            return $query;
+        }
+
+        // This runs *after* search, filters and the soft-delete toggle, so the tenant
+        // constraint and the escape hatch have to be ORed inside a single nested
+        // group. A top-level orWhere would let escape-hatch rows past every filter.
+        return $query->where(function (Builder $outer) use ($tenantRelation, $permission, $authorizer, $orInclude): void {
+            $outer->whereHas($tenantRelation, function (Builder $q) use ($tenantRelation, $permission, $authorizer): void {
                 $columnName = $tenantRelation === 'tenants' ? 'tenants.id' : 'id';
                 $q->whereIn($columnName, $authorizer->getTenants($permission)->pluck('id'));
             });
-        }
 
-        return $query;
+            if ($orInclude) {
+                $orInclude($outer);
+            }
+        });
     }
 
     /**
