@@ -438,6 +438,19 @@ test('can leave feedback', function (): void {
     Mail::assertQueued(FeedbackMail::class);
 });
 
+test('feedback requires a non-null message', function (): void {
+    Mail::fake();
+
+    $response = $this->post(route('feedback.send'), [
+        'feedback' => null,
+        'href' => 'https://vusa.lt',
+        'selectedText' => null,
+    ]);
+
+    $response->assertSessionHasErrors('feedback');
+    Mail::assertNotQueued(FeedbackMail::class);
+});
+
 test('duty type contacts page with grouping shows grouped sections', function (): void {
     // Find or create the central institution that's used by duty type contacts
     $institution = Institution::where('alias', 'centrinis-biuras')->first();
