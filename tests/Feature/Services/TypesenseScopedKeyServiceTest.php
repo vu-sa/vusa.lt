@@ -39,8 +39,10 @@ describe('TypesenseCollectionConfig', function (): void {
     test('returns correct public collection names with prefix', function (): void {
         $collections = TypesenseCollectionConfig::getPublicCollectionNames();
 
-        expect($collections)->toContain('test_news')
-            ->toContain('test_pages')
+        // News/pages have separate admin (news/pages) and public (public_news/public_pages)
+        // collections — the public ones carry the publish-status gating.
+        expect($collections)->toContain('test_public_news')
+            ->toContain('test_public_pages')
             ->toContain('test_documents')
             ->toContain('test_calendar')
             ->toContain('test_public_institutions')
@@ -83,12 +85,16 @@ describe('TypesenseCollectionConfig', function (): void {
     });
 
     test('correctly identifies public vs admin collections', function (): void {
-        // News is in BOTH public and admin collections
-        expect(TypesenseCollectionConfig::isPublicCollection('news'))->toBeTrue();
+        // News is admin-only now — public_news is its separate, publication-gated
+        // sibling collection. This split is what makes drafts/scheduled articles
+        // findable in admin search without leaking into public search.
+        expect(TypesenseCollectionConfig::isPublicCollection('news'))->toBeFalse()
+            ->and(TypesenseCollectionConfig::isAdminCollection('news'))->toBeTrue()
+            ->and(TypesenseCollectionConfig::isPublicCollection('public_news'))->toBeTrue()
+            ->and(TypesenseCollectionConfig::isAdminCollection('public_news'))->toBeFalse();
+
         expect(TypesenseCollectionConfig::isPublicCollection('meetings'))->toBeFalse()
             ->and(TypesenseCollectionConfig::isAdminCollection('meetings'))->toBeTrue();
-        // News is now also an admin collection
-        expect(TypesenseCollectionConfig::isAdminCollection('news'))->toBeTrue();
     });
 
     test('returns all model classes', function (): void {
@@ -313,7 +319,7 @@ describe('TypesenseManager', function (): void {
         expect($config)->toHaveKeys(['apiKey', 'nodes', 'collections']);
 
         // Check that all public collections are included
-        expect($config['collections'])->toHaveKeys(['news', 'pages', 'documents', 'calendar', 'public_institutions', 'public_meetings']);
+        expect($config['collections'])->toHaveKeys(['public_news', 'public_pages', 'documents', 'calendar', 'public_institutions', 'public_meetings']);
 
         // Admin collections should NOT be in public config
         expect($config['collections'])->not->toHaveKey('meetings')

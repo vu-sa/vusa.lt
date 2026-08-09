@@ -29,6 +29,7 @@ export const FACET_ICON_COLORS: Record<string, string> = {
   // Status / completion — rose
   CheckCircle: 'bg-rose-500/10 text-rose-600 group-hover:bg-rose-500/15',
   UserCheck: 'bg-rose-500/10 text-rose-600 group-hover:bg-rose-500/15',
+  PencilLine: 'bg-rose-500/10 text-rose-600 group-hover:bg-rose-500/15',
 
   // Voting / decision analytics — violet
   Vote: 'bg-violet-500/10 text-violet-600 group-hover:bg-violet-500/15',

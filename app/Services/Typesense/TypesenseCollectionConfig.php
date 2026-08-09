@@ -12,6 +12,8 @@ use App\Models\Page;
 use App\Models\Pivots\AgendaItem;
 use App\Models\PublicInstitution;
 use App\Models\PublicMeeting;
+use App\Models\PublicNews;
+use App\Models\PublicPage;
 use App\Models\Resource;
 use App\Models\User;
 use Illuminate\Support\Facades\Config;
@@ -38,12 +40,12 @@ class TypesenseCollectionConfig
      * @var array<string, array{model: class-string, description: string}>
      */
     protected const PUBLIC_COLLECTIONS = [
-        'news' => [
-            'model' => News::class,
+        'public_news' => [
+            'model' => PublicNews::class,
             'description' => 'Published news articles',
         ],
-        'pages' => [
-            'model' => Page::class,
+        'public_pages' => [
+            'model' => PublicPage::class,
             'description' => 'Published static pages',
         ],
         'documents' => [

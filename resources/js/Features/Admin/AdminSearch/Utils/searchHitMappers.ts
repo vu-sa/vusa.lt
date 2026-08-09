@@ -382,6 +382,13 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
     badge: n.tenant_name,
     meta: formatSearchDate(n.publish_time),
     href: route('news.edit', n.id),
+    // The admin index (unlike the public one) also contains drafts and
+    // scheduled articles — flag them so they aren't mistaken for live ones.
+    statusBadge: n.draft
+      ? { label: $t('Juodraštis'), tone: 'warning' as BadgeTone }
+      : (n.publish_time && n.publish_time * 1000 > Date.now()
+          ? { label: $t('Suplanuota'), tone: 'info' as BadgeTone }
+          : undefined),
   }),
   pages: (p: PageSearchResult) => ({
     recordId: String(p.id),

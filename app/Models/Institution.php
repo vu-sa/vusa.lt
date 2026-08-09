@@ -308,6 +308,18 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
             }
         });
 
+        static::saved(function (Institution $institution): void {
+            $publicInstitution = PublicInstitution::query()->find($institution->getKey());
+
+            if ($publicInstitution?->shouldBeSearchable()) {
+                $publicInstitution->searchable();
+
+                return;
+            }
+
+            $institution->publicSearchModel()->unsearchable();
+        });
+
         static::deleted(function (Institution $institution): void {
             $institution->publicSearchModel()->unsearchable();
         });

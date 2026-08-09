@@ -103,9 +103,15 @@ class Page extends Model implements Feedable, Sitemapable
             Cache::tags(['sitemap', 'pages', "tenant_{$page->tenant_id}", "locale_{$page->lang}"])->flush();
         });
 
+        static::saved(fn (Page $page) => $page->syncPublicSearchIndex());
+
         static::deleted(function ($page): void {
             Cache::tags(['sitemap', 'pages', "tenant_{$page->tenant_id}", "locale_{$page->lang}"])->flush();
         });
+
+        static::deleted(fn (Page $page) => $page->publicSearchModel()->unsearchable());
+
+        static::forceDeleted(fn (Page $page) => $page->publicSearchModel()->unsearchable());
 
         static::deleting(function (Page $page): void {
             // Drop the surviving counterpart's back-reference so its language switcher
@@ -117,6 +123,34 @@ class Page extends Model implements Feedable, Sitemapable
         static::restored(function (Page $page): void {
             PairTranslatedRecord::repair($page);
         });
+
+        static::restored(fn (Page $page) => $page->syncPublicSearchIndex());
+    }
+
+    /**
+     * Push this page's public-index membership in line with shouldBeSearchable(),
+     * since PublicPage's own Scout observer never fires — nothing ever saves a
+     * PublicPage instance directly.
+     */
+    private function syncPublicSearchIndex(): void
+    {
+        $public = PublicPage::query()->withTrashed()->with('tenant')->find($this->getKey());
+
+        if ($public?->shouldBeSearchable()) {
+            $public->searchable();
+
+            return;
+        }
+
+        $this->publicSearchModel()->unsearchable();
+    }
+
+    private function publicSearchModel(): PublicPage
+    {
+        $public = new PublicPage;
+        $public->setAttribute($public->getKeyName(), $this->getKey());
+
+        return $public;
     }
 
     /**
@@ -173,7 +207,7 @@ class Page extends Model implements Feedable, Sitemapable
         return $this->otherLanguagePage;
     }
 
-    public function category()
+    public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'category_id');
     }
@@ -230,30 +264,21 @@ class Page extends Model implements Feedable, Sitemapable
             'tenant_ids' => [$this->tenant_id],
             'tenant_name' => $this->tenant->fullname,
             'category_name' => $this->category?->name,
+            'is_active' => (bool) $this->is_active,
             'created_at' => $this->created_at->timestamp,
         ];
     }
 
     /**
      * Determine if the model should be searchable.
+     *
+     * This is the admin index (used by admin search and the other-language picker) and
+     * therefore covers everything non-trashed, including inactive and scheduled pages.
+     * Public-facing gating lives in PublicPage::shouldBeSearchable().
      */
     public function shouldBeSearchable(): bool
     {
-        // Only index active pages that are published
-        if ($this->trashed()) {
-            return false;
-        }
-
-        if (! $this->is_active) {
-            return false;
-        }
-
-        // If publish_time is set, check if it's in the past
-        if ($this->publish_time) {
-            return $this->publish_time->isPast();
-        }
-
-        return true;
+        return ! $this->trashed();
     }
 
     /**

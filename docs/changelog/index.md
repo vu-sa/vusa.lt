@@ -7,6 +7,13 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.23 — Juodraščiai ir suplanuotos naujienos matomos paieškoje (2026-08-09) {#v1-23}
+
+### Naujienos ir puslapiai
+
+- 🔧 **Juodraščiai ir suplanuotos naujienos/puslapiai vėl matomi administravimo paieškoje** — pasirenkant „Kitos kalbos naujiena/puslapis“ ar ieškant per administravimo paiešką, juodraščiai ir ateityje planuojami skelbti įrašai anksčiau tiesiog neatsirasdavo rezultatuose, kol kažkas rankiniu būdu neperindeksuodavo paieškos
+- 🔧 **Suplanuotos naujienos ir puslapiai pasirodo viešoje paieškoje laiku** — anksčiau įrašas likdavo nematomas viešoje paieškoje net ir po jo publikavimo laiko, kol kas nors jo neredaguodavo pakartotinai
+
 ## v1.22 — Vartotojų atnaujinimai peržiūrimi griežčiau (2026-08-06) {#v1-22}
 
 ### Administravimas

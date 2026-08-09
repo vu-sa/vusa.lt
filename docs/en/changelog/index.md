@@ -7,6 +7,13 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.23 — Drafts and scheduled news now show up in search (2026-08-09) {#v1-23}
+
+### News and pages
+
+- 🔧 **Drafts and scheduled news/pages are findable in admin search again** — picking "other language news/page" or searching in admin search used to simply omit drafts and not-yet-published articles until someone manually reindexed search
+- 🔧 **Scheduled news and pages appear in public search on time** — an article used to stay invisible in public search even after its publish time passed, until someone happened to edit it again
+
 ## v1.22 — Stronger protection of member records (2026-08-06) {#v1-22}
 
 ### Admin

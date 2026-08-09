@@ -59,7 +59,12 @@ export const newsTemplate = {
     ],
   },
   short: '',
-  publish_time: new Date().toISOString().slice(0, 19).replace('T', ' '),
+  // ISO instant (not a naive "YYYY-MM-DD HH:mm:ss" string) so both the date picker
+  // (`new Date(form.publish_time)`, NewsForm.vue) and the backend
+  // (StoreNewsRequest::prepareForValidation(), which runs this through strtotime())
+  // read it as the same moment instead of re-interpreting it in Europe/Vilnius —
+  // that mismatch used to backdate every new, untouched publish_time by ~3 hours.
+  publish_time: new Date().toISOString(),
   draft: false,
   image: null,
   image_author: null,

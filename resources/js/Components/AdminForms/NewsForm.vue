@@ -386,19 +386,6 @@ function onOtherLangNewsConfirm(hits: NormalizedSearchHit[]) {
   form.other_lang_id = hits[0] ? Number(hits[0].recordId) : null;
 }
 
-const otherLangNewsOptions = computed(() => {
-  if (isCreate.value) {
-    return [];
-  }
-
-  return (props.otherLangNews || [])
-    .map(news => ({
-      value: news.id,
-      label: `${news.title} (${news.tenant?.shortname})`,
-    }))
-    .reverse();
-});
-
 const tagOptions = computed(() => {
   return (props.availableTags || []).map((tag) => {
     let label = 'Unknown';

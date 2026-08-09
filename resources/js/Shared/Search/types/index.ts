@@ -379,12 +379,14 @@ export interface NewsSearchResult {
   id: string;
   title: string;
   short?: string;
-  permalink: string;
+  permalink?: string;
   image?: string;
   publish_time?: number;
   lang: string;
   tenant_id?: number;
   tenant_name?: string;
+  /** Only present in the admin `news` index — the public index drops it. */
+  draft?: boolean;
 }
 
 /**
@@ -393,12 +395,14 @@ export interface NewsSearchResult {
 export interface PageSearchResult {
   id: string;
   title: string;
-  permalink: string;
+  permalink?: string;
   meta_description?: string;
   lang: string;
   tenant_id?: number;
   tenant_name?: string;
   category_name?: string;
+  /** Only present in the admin `pages` index — the public index drops it. */
+  is_active?: boolean;
 }
 
 /**
