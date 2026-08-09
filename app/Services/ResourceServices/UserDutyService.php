@@ -67,7 +67,20 @@ class UserDutyService
         // it is logged as one relation_updated activity on the user.
         $user->auditRelationChange('current_duties', function () use ($newDutyIds, $removedDutyIds, $duties, $user): void {
             foreach ($newDutyIds as $dutyId) {
-                $user->duties()->attach($duties->get($dutyId), ['start_date' => now()->subDay()]);
+                // Defensive backstop: a concurrent save or a stale current_duties
+                // snapshot can leave the user already active on this duty. Never
+                // attach a second concurrent row — the duty has no uniqueness
+                // constraint to catch it at the database level.
+                $alreadyActive = Dutiable::query()
+                    ->where('duty_id', $dutyId)
+                    ->where('dutiable_type', User::class)
+                    ->where('dutiable_id', $user->id)
+                    ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', now()))
+                    ->exists();
+
+                if (! $alreadyActive) {
+                    $user->duties()->attach($duties->get($dutyId), ['start_date' => now()->subDay()]);
+                }
             }
 
             foreach ($removedDutyIds as $dutyId) {

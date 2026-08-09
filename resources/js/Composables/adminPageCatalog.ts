@@ -57,8 +57,9 @@ import {
 export type CatalogCategory = 'navigation' | 'create';
 
 export interface AuthCan {
+  index?: Record<string, boolean | undefined>;
   create?: Record<string, boolean | undefined>;
-  read?: Record<string, boolean | undefined>;
+  forceDelete?: Record<string, boolean | undefined>;
 }
 
 export interface AdminPageEntry {
@@ -103,7 +104,7 @@ export const ADMIN_PAGE_CATALOG: AdminPageEntry[] = [
     icon: MeetingIcon,
     category: 'navigation',
     keywords: ['meetings', 'posedziai', 'susirinkimai'],
-    can: c => !!c.read?.meeting,
+    can: c => !!c.index?.meeting,
   },
   {
     id: 'nav-search',
@@ -120,7 +121,7 @@ export const ADMIN_PAGE_CATALOG: AdminPageEntry[] = [
     icon: InstitutionIcon,
     category: 'navigation',
     keywords: ['institutions', 'institucijos', 'organizacijos'],
-    can: c => !!c.read?.institution,
+    can: c => !!c.index?.institution,
   },
   {
     id: 'nav-users',
@@ -129,7 +130,7 @@ export const ADMIN_PAGE_CATALOG: AdminPageEntry[] = [
     icon: UserIcon,
     category: 'navigation',
     keywords: ['users', 'naudotojai', 'vartotojai', 'zmones'],
-    can: c => !!c.read?.user,
+    can: c => !!c.index?.user,
   },
   {
     id: 'nav-duties',
@@ -138,7 +139,16 @@ export const ADMIN_PAGE_CATALOG: AdminPageEntry[] = [
     icon: DutyIcon,
     category: 'navigation',
     keywords: ['duties', 'pareigybes', 'pareigos'],
-    can: c => !!c.read?.duty,
+    can: c => !!c.index?.duty,
+  },
+  {
+    id: 'nav-study-programs',
+    routeName: 'studyPrograms.index',
+    labelKey: 'Studijų programos',
+    icon: StudyProgramIcon,
+    category: 'navigation',
+    keywords: ['study programs', 'studiju programos', 'studijos'],
+    can: c => !!c.index?.studyProgram,
   },
   {
     id: 'nav-tasks',
@@ -147,7 +157,7 @@ export const ADMIN_PAGE_CATALOG: AdminPageEntry[] = [
     icon: TaskIcon,
     category: 'navigation',
     keywords: ['tasks', 'uzduotys', 'darbai'],
-    can: c => !!c.read?.task,
+    can: c => !!c.index?.task,
   },
   {
     id: 'nav-reservations',
@@ -156,7 +166,7 @@ export const ADMIN_PAGE_CATALOG: AdminPageEntry[] = [
     icon: ReservationIcon,
     category: 'navigation',
     keywords: ['reservations', 'rezervacijos', 'uzsakymai'],
-    can: c => !!c.read?.reservation,
+    can: c => !!c.index?.reservation,
   },
   {
     id: 'nav-calendar',
@@ -165,7 +175,7 @@ export const ADMIN_PAGE_CATALOG: AdminPageEntry[] = [
     icon: CalendarIcon,
     category: 'navigation',
     keywords: ['calendar', 'kalendorius', 'ivykiai'],
-    can: c => !!c.read?.calendar,
+    can: c => !!c.index?.calendar,
   },
   {
     id: 'nav-news',
@@ -174,7 +184,7 @@ export const ADMIN_PAGE_CATALOG: AdminPageEntry[] = [
     icon: NewsIcon,
     category: 'navigation',
     keywords: ['news', 'naujienos', 'straipsniai'],
-    can: c => !!c.read?.news,
+    can: c => !!c.index?.news,
   },
   {
     id: 'nav-profile',

@@ -37,9 +37,6 @@ use Laravel\Scout\Searchable;
  * @property int|null $tenant_id
  * @property int $is_active
  * @property int $meeting_periodicity_days
- * @property string|null $selection_method
- * @property array|string|null $appointed_by
- * @property array|string|null $term_length
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at

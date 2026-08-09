@@ -175,8 +175,8 @@
             </Tree>
           </template>
           <template #target-label="{ option }">
-            <span class="inline-flex items-center gap-2">
-              {{ option.label }}
+            <span class="inline-flex min-w-0 items-center gap-2">
+              <DutyLabel :duty="targetDutyLabel(option)" />
               <Button variant="ghost" size="icon-xs" as="a" :href="route('duties.edit', option.value)" target="_blank" @click.stop>
                 <Eye16Regular />
               </Button>
@@ -185,8 +185,8 @@
         </TransferList>
         <TransferList v-else v-model="form.current_duties" :options="flattenDutyOptions">
           <template #target-label="{ option }">
-            <span class="inline-flex items-center gap-2">
-              {{ option.label }}
+            <span class="inline-flex min-w-0 items-center gap-2">
+              <DutyLabel :duty="targetDutyLabel(option)" />
               <Button variant="ghost" size="icon-xs" as="a" :href="route('duties.edit', option.value)" target="_blank" @click.stop>
                 <Eye16Regular />
               </Button>
@@ -339,9 +339,10 @@ import { useApiMutation } from '@/Composables/useApi';
 import { useDuplicateUserCheck } from '@/Composables/useDuplicateUserCheck';
 import Delete24Regular from '~icons/fluent/delete24-regular';
 import Eye16Regular from '~icons/fluent/eye16-regular';
+import DutyLabel from '@/Components/Duties/DutyLabel.vue';
 // Lucide is the icon set for admin surfaces (AGENTS.md); the Fluent imports here
 // are legacy and stay until this form is migrated wholesale.
-import { Lock } from 'lucide-vue-next';
+import { Lock, TriangleAlert } from 'lucide-vue-next';
 import PersonEdit24Regular from '~icons/fluent/person-edit24-regular';
 import IFluentCopy16Regular from '~icons/fluent/copy16-regular';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/Components/ui/alert-dialog';
@@ -516,15 +517,26 @@ const existingDutyColumns: ColumnDef<any, any>[] = [
   {
     accessorKey: 'name',
     header: () => 'Pavadinimas',
-    cell: ({ row }) => (
-      <a
-        target="_blank"
-        href={route('duties.edit', { id: row.original.id })}
-        class="flex-inline gap-2 text-sm"
-      >
-        {row.original.name}
-      </a>
-    ),
+    cell: ({ row }) => {
+      const missingStudyProgram = row.original.contacts_grouping === 'study_program' && !row.original.pivot?.study_program_id;
+      return (
+        <span class="inline-flex items-center gap-1.5">
+          <a
+            target="_blank"
+            href={route('duties.edit', { id: row.original.id })}
+            class="flex-inline gap-2 text-sm"
+          >
+            <DutyLabel duty={{ name: row.original.name, institution: row.original.institution }} />
+          </a>
+          {missingStudyProgram && (
+            <TriangleAlert
+              class="size-3.5 shrink-0 text-amber-500"
+              title="Ši pareigybė grupuoja kontaktus pagal studijų programą, bet priskyrimui ji nenurodyta"
+            />
+          )}
+        </span>
+      );
+    },
   },
   {
     id: 'period',
@@ -656,13 +668,30 @@ const flattenDutyOptions = computed(() => {
                 dutyShowMode.value === 'tree'
                   ? duty.label
                   : `${duty.label} (${institution.label})`,
+              // Always the bare duty name — `label` above is concatenated with the
+              // institution in transfer mode for the plain source-list rendering,
+              // but the target-label slot below needs the name and institution
+              // as separate fields to render them as DutyLabel does elsewhere.
+              dutyName: duty.label,
               value: duty.value,
               tenantId: tenant.value,
+              institutionName: institution.label,
+              tenantShortname: tenant.label,
             };
           }),
       ),
   ).filter(duty => props.permissableTenants.some(permissable => permissable.id === duty?.tenantId));
 });
+
+/** Builds the DutyLabel prop from a flattened transfer-list option. */
+function targetDutyLabel(option: { dutyName?: string; label: string; institutionName?: string | null; tenantShortname?: string | null }) {
+  return {
+    name: option.dutyName ?? option.label,
+    institution: option.institutionName
+      ? { name: option.institutionName, tenant: option.tenantShortname ? { shortname: option.tenantShortname } : null }
+      : null,
+  };
+}
 
 form.current_duties = props.user.current_duties?.map(duty => duty.id);
 

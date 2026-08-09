@@ -222,7 +222,10 @@ class UserController extends AdminController
     {
         $this->handleAuthorization('update', $user);
 
-        $user->load('current_duties', 'previous_duties', 'roles');
+        // Institution/tenant loaded so the duty tables and transfer-list target
+        // labels can attribute a duty rather than showing a bare, unattributable
+        // name (the same name commonly repeats across institutions).
+        $user->load('current_duties.institution.tenant', 'previous_duties.institution.tenant', 'roles');
 
         $actor = Auth::user();
 

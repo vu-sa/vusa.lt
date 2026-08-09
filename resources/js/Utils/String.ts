@@ -212,9 +212,14 @@ export const changeDutyNameEndings = (
     .replace(/as$/, 'ai')
     .replace(/ys$/, 'iai');
 
+  // The reverse of the feminine rules above, where `-ė` stands in for `-ius`, `-as` and
+  // `-ys` alike, so the letters before it have to decide. `-orė` is the Latin-derived agent
+  // noun ("koordinatorė" → "koordinatorius"); any other `-rė` takes `-ys`
+  // ("narė" → "narys", never "narius").
   const masculinedTitle = dutyName
+    .replace(/orė$/, 'orius')
+    .replace(/rė$/, 'rys')
     .replace(/vė$/, 'vas')
-    .replace(/rė$/, 'rius')
     .replace(/kė$/, 'kas');
 
   if (Array.isArray(splitPronouns) && splitPronouns.length > 1) {
@@ -256,6 +261,68 @@ export const changeDutyNameEndings = (
   }
 
   return dutyName ?? '';
+};
+
+export interface DutyNameGenderVariants {
+  /** Leading text identical in both genders. */
+  stem: string;
+  /** Ending as it would read for a masculine holder. */
+  masculineEnding: string;
+  /** Ending as it would read for a feminine holder. */
+  feminineEnding: string;
+}
+
+/**
+ * Detects whether a Lithuanian duty name carries a gendered ending at all, and if so,
+ * where it splits into an invariant stem and a varying ending — for UI that needs to show
+ * a duty name is not tied to one gender (e.g. before a holder is assigned).
+ *
+ * Reuses {@link changeDutyNameEndings} in both directions rather than duplicating its
+ * suffix rules, so whatever this reports matches what a real holder's pronouns would
+ * produce. Checks both directions because a duty may be stored in either gender
+ * ("Koordinatorius" or "Koordinatorė") — forgetting the other form is exactly the
+ * duplicate-duty mistake this is meant to prevent.
+ */
+export const getDutyNameGenderVariants = (
+  dutyName: string | null | undefined,
+): DutyNameGenderVariants | null => {
+  const name = dutyName?.trim();
+  if (!name) {
+    return null;
+  }
+
+  const feminized = changeDutyNameEndings(null, name, 'lt', 'ji/jos', false);
+  const masculinized = changeDutyNameEndings(null, name, 'lt', 'jis/jo', false);
+
+  let masculine: string;
+  let feminine: string;
+
+  if (feminized !== name) {
+    // `name` matched a masculine ending (-ius/-as/-ys).
+    masculine = name;
+    feminine = feminized;
+  }
+  else if (masculinized !== name) {
+    // `name` matched a feminine ending (-vė/-rė/-kė).
+    masculine = masculinized;
+    feminine = name;
+  }
+  else {
+    // Neither direction changed anything — not a gendered noun (e.g. "Grupė", "Taryba").
+    return null;
+  }
+
+  let stemLength = 0;
+  const maxLength = Math.min(masculine.length, feminine.length);
+  while (stemLength < maxLength && masculine[stemLength] === feminine[stemLength]) {
+    stemLength += 1;
+  }
+
+  return {
+    stem: masculine.slice(0, stemLength),
+    masculineEnding: masculine.slice(stemLength),
+    feminineEnding: feminine.slice(stemLength),
+  };
 };
 
 export function slugify(str: string) {

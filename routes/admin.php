@@ -197,6 +197,8 @@ Route::resource('documents', DocumentController::class)->except('create', 'edit'
 Route::post('documents/{document}/refresh', [DocumentController::class, 'refresh'])->name('documents.refresh');
 Route::post('documents/bulk-sync', [DocumentController::class, 'bulkSync'])->name('documents.bulk-sync');
 
+Route::get('duties/merge', [DutyController::class, 'merge'])->name('duties.merge');
+Route::post('duties/merge', [DutyController::class, 'mergeDuties'])->name('duties.mergeDuties');
 Route::resource('duties', DutyController::class);
 Route::get('duties-update-users', [DutyController::class, 'updateUsersWizard'])->name('duties.updateUsersWizard');
 Route::post('duties/{duty}/batch-update-users', [DutyController::class, 'batchUpdateUsers'])->name('duties.batchUpdateUsers');

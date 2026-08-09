@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Admin\CommentApiController;
 use App\Http\Controllers\Api\Admin\CommentPollVoteApiController;
 use App\Http\Controllers\Api\Admin\CommentReactionApiController;
 use App\Http\Controllers\Api\Admin\ContentPartPreviewApiController;
+use App\Http\Controllers\Api\Admin\DutySearchApiController;
 use App\Http\Controllers\Api\Admin\FileApiController;
 use App\Http\Controllers\Api\Admin\ImpersonateApiController;
 use App\Http\Controllers\Api\Admin\InstitutionApiController;
@@ -209,6 +210,12 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         // Attribution-line suggestions for the person-quote rich-content block —
         // derives "Role, Tenant" labels from a user's current duties.
         Route::get('users/{user}/attributions', [UserAttributionApiController::class, 'index'])->name('users.attributions');
+
+        // Warns about an existing duty before a duplicate is created (typically a
+        // gendered twin — see DutyNameNormalizer).
+        Route::get('duties/similar', [DutySearchApiController::class, 'similar'])
+            ->middleware('throttle:30,1')
+            ->name('duties.similar');
 
         // Date-range resource availability for the reservation resource picker
         Route::post('resources/availability', [ResourceAvailabilityApiController::class, 'index'])->name('resources.availability');

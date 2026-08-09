@@ -287,6 +287,24 @@ describe('UserForm.vue', () => {
       const tables = wrapper.findAll('[data-testid="simple-data-table"]');
       expect(tables.length).toBe(2);
     });
+
+    it('attributes a duty to its institution instead of showing a bare name', async () => {
+      // A duty name alone is unattributable once it repeats across institutions
+      // (which it does constantly — see DutyLabel.vue). The name column must
+      // show the institution, not just link off to the duty.
+      wrapper = createWrapper();
+      await nextTick();
+
+      const nameColumn = capturedColumns.previous?.find((c: any) => c.accessorKey === 'name');
+      const cellVNode = nameColumn.cell({
+        row: { original: { id: 'duty-2', name: 'Studentų atstovas', institution: { name: 'VU SA FsF', tenant: { shortname: 'VU SA FsF' } } } },
+      });
+
+      const cellWrapper = mount(defineComponent({ render: () => cellVNode }));
+
+      expect(cellWrapper.text()).toContain('Studentų atstovas');
+      expect(cellWrapper.text()).toContain('VU SA FsF');
+    });
   });
 
   describe('previous-duty deletion self-lockout guard', () => {

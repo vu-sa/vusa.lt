@@ -69,7 +69,7 @@ describe('resolvePageIcon', () => {
 describe('useAdminPageCatalog permission filtering', () => {
   beforeEach(() => {
     vi.mocked(usePage).mockReturnValue(
-      createMockPage({ auth: { can: { read: { meeting: true }, create: { meeting: false } } } }) as any,
+      createMockPage({ auth: { can: { index: { meeting: true }, create: { meeting: false } } } }) as any,
     );
   });
 
@@ -88,9 +88,9 @@ describe('useAdminPageCatalog permission filtering', () => {
     // No `can` predicate → always present
     expect(ids).toContain('nav-dashboard');
     expect(ids).toContain('nav-profile');
-    // read.meeting === true
+    // index.meeting === true
     expect(ids).toContain('nav-meetings');
-    // read.institution undefined → filtered out
+    // index.institution undefined → filtered out
     expect(ids).not.toContain('nav-institutions');
     // create.meeting falsy → filtered out
     expect(ids).not.toContain('create-meeting');

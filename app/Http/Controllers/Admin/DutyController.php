@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\BackfillExOfficioTargetDuty;
 use App\Actions\GetAttachableTypesForDuty;
 use App\Actions\GetTenantsForUpserts;
+use App\Actions\MergeDuties;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\BatchUpdateDutyUsersRequest;
 use App\Http\Requests\IndexDutyRequest;
+use App\Http\Requests\MergeDutiesRequest;
 use App\Http\Requests\StoreDutyRequest;
 use App\Http\Requests\UpdateDutyRequest;
 use App\Http\Traits\HandlesSoftDeletes;
@@ -55,6 +57,8 @@ class DutyController extends AdminController
         // read scope inside one group (not appended after the search filters).
         $query = $this->applyTanstackFilters($query, $request, $this->tableService, $searchableColumns);
 
+        $this->applyDataQualityFilter($query, $request->getFilters()['data_quality'] ?? null);
+
         $authorizer = $this->authorizer->forUser($request->user());
         $hasGlobalReadScope = $authorizer->check('duties.read.*') || $request->user()?->isSuperAdmin();
 
@@ -98,6 +102,52 @@ class DutyController extends AdminController
             'showDeleted' => $request->boolean('showDeleted', false),
             'deletedCount' => $deletedCount,
         ]);
+    }
+
+    /**
+     * Narrow the index to a single data-quality slice. Surfaces the cheapest
+     * cleanup levers the duties table offers: duties nobody currently holds,
+     * duties missing a localized name (so they render blank in that locale), and
+     * duties where one person holds two concurrently-active rows — the residual
+     * cross-tenant pairs the de-duplication migration left for human review.
+     */
+    private function applyDataQualityFilter($query, ?string $dataQuality): void
+    {
+        match ($dataQuality) {
+            'vacant' => $query->whereDoesntHave('current_users'),
+            'missing_en_name' => $query->whereRaw($this->localeMissingClause('en')),
+            'missing_lt_name' => $query->whereRaw($this->localeMissingClause('lt')),
+            'duplicate_holders' => $query->whereExists(function ($q): void {
+                $q->select(DB::raw(1))
+                    ->from('dutiables as dup')
+                    ->whereColumn('dup.duty_id', 'duties.id')
+                    ->where('dup.dutiable_type', User::class)
+                    ->where(function ($q): void {
+                        $q->whereNull('dup.end_date')->orWhere('dup.end_date', '>=', now());
+                    })
+                    ->groupBy('dup.dutiable_id')
+                    ->havingRaw('COUNT(*) > 1');
+            }),
+            default => null,
+        };
+    }
+
+    /**
+     * Raw SQL matching rows whose translatable `name` lacks a non-empty value
+     * for $locale. Spatie stores the field as JSON; the extractor differs by
+     * driver. "Blank" covers three storage shapes — key absent, an explicit
+     * JSON null (`{"lt":null}`, which JSON_UNQUOTE turns into the literal
+     * string "null" on MySQL), and an empty string.
+     */
+    private function localeMissingClause(string $locale): string
+    {
+        $path = "$.{$locale}";
+
+        return DB::getDriverName() === 'sqlite'
+            // SQLite's json_extract already collapses a JSON null to SQL NULL,
+            // so key-absent and explicit-null are both caught by IS NULL.
+            ? "(json_extract(name, '{$path}') IS NULL OR json_extract(name, '{$path}') = '')"
+            : "(JSON_EXTRACT(name, '{$path}') IS NULL OR JSON_TYPE(JSON_EXTRACT(name, '{$path}')) = 'NULL' OR JSON_UNQUOTE(JSON_EXTRACT(name, '{$path}')) = '')";
     }
 
     /**
@@ -183,7 +233,6 @@ class DutyController extends AdminController
         return $this->inertiaResponse('Admin/People/ShowDuty', [
             'duty' => array_merge($duty->toArray(), [
                 'sharepointPath' => $duty->institution?->tenant ? $duty->sharepoint_path() : null,
-                'appointment' => $duty->resolveAppointment(),
                 'other_duties' => $otherDuties,
                 'next_meeting' => $nextMeeting?->toArray(),
                 'last_meeting' => $lastMeeting?->toArray(),
@@ -267,7 +316,7 @@ class DutyController extends AdminController
         $actor = $request->user();
 
         $mutation = fn () => DB::transaction(function () use ($request, $duty): void {
-            $duty->update($request->only('name', 'description', 'email', 'places_to_occupy', 'contacts_grouping', 'selection_method', 'appointed_by', 'term_length', 'responsibilities'));
+            $duty->update($request->only('name', 'description', 'email', 'places_to_occupy', 'contacts_grouping'));
 
             // Only manage owning-tenant reps (tenant_id IS NULL) via the TransferList.
             $owningTenantCurrentIds = Dutiable::where('duty_id', $duty->id)
@@ -516,6 +565,51 @@ class DutyController extends AdminController
     public function restore(Duty $duty): RedirectResponse
     {
         return $this->restoreModel($duty);
+    }
+
+    /**
+     * Show the form for merging duplicate duties into one.
+     *
+     * `target_duty_id` pre-selects the kept duty (arriving from the duties index
+     * row action or the duplicate-duty warning). The full duty list is sent, as
+     * MergeStudyPrograms does for study programs — institution scoping (a
+     * cross-institution merge is almost never intentional) happens client-side
+     * against `institution_id`, alongside the target selection.
+     */
+    public function merge(Request $request)
+    {
+        $this->handleAuthorization('viewAny', Duty::class);
+
+        $duties = Duty::query()
+            ->with(['institution:id,name,tenant_id', 'institution.tenant:id,shortname'])
+            ->withCount('dutiables')
+            ->orderBy('name')
+            ->get();
+
+        return $this->inertiaResponse('Admin/People/MergeDuty', [
+            'duties' => $duties->map->toFullArray(),
+            'targetDutyId' => $request->string('target_duty_id')->toString() ?: null,
+        ]);
+    }
+
+    /**
+     * Merge one or more duplicate duties into a single kept duty.
+     */
+    public function mergeDuties(MergeDutiesRequest $request)
+    {
+        $kept = Duty::findOrFail($request->validated('target_duty_id'));
+        $sources = Duty::query()->whereIn('id', $request->validated('source_duty_ids'))->get();
+
+        $summary = MergeDuties::execute($kept, $sources);
+
+        return redirect()->route('duties.edit', $kept)->with('success', trans('forms.merge_duty_summary', [
+            'assignments' => $summary['moved_assignments'],
+            'collapsed' => $summary['collapsed_assignments'],
+            'types' => $summary['moved_types'],
+            'roles' => $summary['moved_roles'],
+            'exOfficio' => $summary['moved_ex_officio'],
+            'quotas' => $summary['moved_tenant_quotas'],
+        ]));
     }
 
     /**

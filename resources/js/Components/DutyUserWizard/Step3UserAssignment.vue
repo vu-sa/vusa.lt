@@ -23,8 +23,8 @@
           <p class="text-xs text-muted-foreground">
             {{ $t('Pasirinkta pareigybė') }}
           </p>
-          <p class="font-medium text-foreground truncate">
-            {{ wizard.state.duty?.name }}
+          <p class="min-w-0 font-medium text-foreground">
+            <InflectedDutyName v-if="wizard.state.duty" :name="wizard.state.duty.name" />
           </p>
           <p class="text-xs text-muted-foreground">
             {{ wizard.state.institution?.name }}
@@ -450,6 +450,7 @@ import { useDuplicateUserCheck } from '@/Composables/useDuplicateUserCheck';
 import { getSuggestedEndDate, getTodayDate, formatDateForDisplay } from '@/Composables/useDutyUserWizard';
 import type { useDutyUserWizard, UserChange, NewUserData } from '@/Composables/useDutyUserWizard';
 import { DutyIcon } from '@/Components/icons';
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 
 const wizard = inject<ReturnType<typeof useDutyUserWizard>>('dutyUserWizard')!;
 

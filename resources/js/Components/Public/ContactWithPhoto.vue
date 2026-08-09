@@ -172,13 +172,11 @@ const showAdditionalInfo = (duty) => {
   return `(${duty.pivot.study_program?.name})`;
 };
 
-// NOTE: Nusprendžia, kurią nuotrauką imti, pagal tai, ar url turi "kuratoriai"
+// Uses the first duty assignment that has a per-assignment photo (dutiable.additional_photo),
+// falling back to the profile photo. Iterated via Object.keys since `duties` may not be
+// array-like depending on how the contact was serialized.
 const imageUrl = computed(() => {
-  // check all duties for duties name which includes kuratorius
-  // iterate object simply because it may not be iterable
-
   for (const duty of Object.keys(props.contact.duties)) {
-    // check if props.contact.duties?.[duty] has pivot
     if (!props.contact.duties?.[duty].pivot) {
       continue;
     }
