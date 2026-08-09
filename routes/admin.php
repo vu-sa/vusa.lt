@@ -79,6 +79,10 @@ Route::patch('studyPrograms/{studyProgram}/restore', [StudyProgramController::cl
 Route::delete('studyPrograms/{studyProgram}/force-delete', [StudyProgramController::class, 'forceDelete'])->name('studyPrograms.forceDelete')->withTrashed();
 Route::patch('studySets/{studySet}/restore', [StudySetController::class, 'restore'])->name('studySets.restore')->withTrashed();
 Route::delete('studySets/{studySet}/force-delete', [StudySetController::class, 'forceDelete'])->name('studySets.forceDelete')->withTrashed();
+Route::patch('surveys/{survey}/restore', [SurveyController::class, 'restore'])->name('surveys.restore')->withTrashed();
+Route::delete('surveys/{survey}/force-delete', [SurveyController::class, 'forceDelete'])->name('surveys.forceDelete')->withTrashed();
+Route::patch('surveyQuestionTemplates/{surveyQuestionTemplate}/restore', [SurveyQuestionTemplateController::class, 'restore'])->name('surveyQuestionTemplates.restore')->withTrashed();
+Route::delete('surveyQuestionTemplates/{surveyQuestionTemplate}/force-delete', [SurveyQuestionTemplateController::class, 'forceDelete'])->name('surveyQuestionTemplates.forceDelete')->withTrashed();
 Route::patch('tags/{tag}/restore', [TagController::class, 'restore'])->name('tags.restore')->withTrashed();
 Route::delete('tags/{tag}/force-delete', [TagController::class, 'forceDelete'])->name('tags.forceDelete')->withTrashed();
 Route::patch('trainings/{training}/restore', [TrainingController::class, 'restore'])->name('trainings.restore')->withTrashed();
@@ -130,6 +134,13 @@ Route::post('memberships/{membership}/users/import', [MembershipController::clas
 
 Route::resource('trainings', TrainingController::class);
 Route::get('trainings/{training}/registration', [TrainingController::class, 'showRegistration'])->name('trainings.showRegistration');
+
+// Surveys: drafted and approved here, delivered by LimeSurvey.
+Route::resource('surveys', SurveyController::class);
+Route::put('surveys/{survey}/questions', [SurveyController::class, 'syncQuestions'])->name('surveys.syncQuestions');
+Route::post('surveys/{survey}/request-approval', [SurveyController::class, 'requestApproval'])->name('surveys.requestApproval');
+Route::post('surveys/{survey}/resync', [SurveyController::class, 'resync'])->name('surveys.resync');
+Route::resource('surveyQuestionTemplates', SurveyQuestionTemplateController::class)->except(['show']);
 
 Route::resource('programmes', ProgrammeController::class)->only(['update']);
 Route::resource('programmeDays', ProgrammeDayController::class)->only(['destroy']);

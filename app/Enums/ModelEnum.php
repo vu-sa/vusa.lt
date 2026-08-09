@@ -45,6 +45,7 @@ enum ModelEnum: string
     case SHAREPOINT_FILEABLE = 'sharepoint_fileable';
     case STUDY_PROGRAM = 'study_program';
     case STUDY_SET = 'study_set';
+    case SURVEY = 'survey';
     case TAG = 'tag';
     case TASK = 'task';
     case TENANT = 'tenant';
@@ -100,6 +101,10 @@ enum ModelEnum: string
             'studySets' => ['padalinys', '*'],
             'quickLinks' => ['padalinys', '*'],
             'problems' => ['padalinys', '*'],
+
+            // A survey belongs to a padalinys, never to one person: "own" would let the
+            // author approve their own survey, which is the one thing the flow prevents.
+            'surveys' => ['padalinys', '*'],
 
             // Special case: institutions allow "own" scope only for read operations
             // This is handled in the InstitutionPolicy and a special case in the seeder

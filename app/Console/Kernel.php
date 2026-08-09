@@ -56,6 +56,13 @@ class Kernel extends ConsoleKernel
             ->name('notification-digests')
             ->withoutOverlapping(10);
 
+        // Refresh LimeSurvey response counters. Hourly is plenty: these are progress
+        // indicators on an admin page, not something anyone waits on.
+        $schedule->command('limesurvey:sync-stats')
+            ->hourly()
+            ->name('limesurvey-sync-stats')
+            ->withoutOverlapping(15);
+
         // Task reminders - runs daily at 8 AM for tasks due in 7, 3, or 1 days
         $schedule->call(function (): void {
             // These reminder days are defaults; users can customize in preferences

@@ -122,6 +122,7 @@ export enum ModelEnum {
   SHAREPOINT_FILEABLE = "sharepoint_fileable",
   STUDY_PROGRAM = "study_program",
   STUDY_SET = "study_set",
+  SURVEY = "survey",
   TAG = "tag",
   TASK = "task",
   TENANT = "tenant",
@@ -209,6 +210,21 @@ export enum SharepointScopeEnum {
   ANONYMOUS = "ANONYMOUS",
   ORGANIZATION = "ORGANIZATION",
   USERS = "USERS",
+}
+export enum SurveyQuestionType {
+  ShortText = "S",
+  LongText = "T",
+  List = "L",
+  MultipleChoice = "M",
+  FivePoint = "5",
+}
+export enum SurveyStatus {
+  Draft = "draft",
+  PendingApproval = "pending_approval",
+  Approved = "approved",
+  Rejected = "rejected",
+  Active = "active",
+  Closed = "closed",
 }
 export enum VoteValue {
   Positive = "positive",

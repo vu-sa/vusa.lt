@@ -22,6 +22,7 @@ import {
   Settings,
   Plus,
   LayoutDashboard,
+  ClipboardList,
 } from 'lucide-vue-next';
 
 import {
@@ -177,6 +178,15 @@ export const ADMIN_PAGE_CATALOG: AdminPageEntry[] = [
     can: c => !!c.read?.news,
   },
   {
+    id: 'nav-surveys',
+    routeName: 'surveys.index',
+    labelKey: 'Apklausos',
+    icon: ClipboardList,
+    category: 'navigation',
+    keywords: ['survey', 'surveys', 'apklausa', 'apklausos', 'limesurvey'],
+    can: c => !!c.read?.survey,
+  },
+  {
     id: 'nav-profile',
     routeName: 'profile',
     labelKey: 'Profilis',
@@ -221,6 +231,15 @@ export const ADMIN_PAGE_CATALOG: AdminPageEntry[] = [
     category: 'create',
     keywords: ['create', 'new', 'institution', 'nauja', 'institucija', 'sukurti'],
     can: c => !!c.create?.institution,
+  },
+  {
+    id: 'create-survey',
+    routeName: 'surveys.create',
+    labelKey: 'Nauja apklausa',
+    icon: Plus,
+    category: 'create',
+    keywords: ['create', 'new', 'survey', 'nauja', 'apklausa', 'sukurti'],
+    can: c => !!c.create?.survey,
   },
   {
     id: 'create-duty',
@@ -311,6 +330,8 @@ const ROUTE_PREFIX_ICONS: Record<string, Component> = {
   tags: TagIcon,
   calendar: CalendarIcon,
   trainings: TrainingIcon,
+  surveys: ClipboardList,
+  surveyQuestionTemplates: ClipboardList,
   studyPrograms: StudyProgramIcon,
   roles: RoleIcon,
   permissions: PermissionIcon,

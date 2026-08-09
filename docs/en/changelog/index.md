@@ -7,6 +7,14 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.23 — Surveys (prototype) (2026-08-09) {#v1-23}
+
+### Administration
+
+- ⭐ **Creating and approving surveys** — surveys can be drafted in /mano, filled with questions and submitted for approval. Once approved, the survey is created and activated in LimeSurvey automatically, and its public link comes back to the survey page
+- ⭐ **Question bank** — frequently used questions can be saved as templates (shared or unit-specific) and added to any survey in one click. Custom questions can be written alongside them in the same survey
+- ✨ **Response counts visible in /mano** — a published survey shows how many responses it has collected so far. The responses themselves stay in LimeSurvey
+
 ## v1.22 — Stronger protection of member records (2026-08-06) {#v1-22}
 
 ### Admin

@@ -7,6 +7,14 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.23 — Apklausos (prototipas) (2026-08-09) {#v1-23}
+
+### Administravimas
+
+- ⭐ **Apklausų kūrimas ir tvirtinimas** — apklausas galima parengti /mano sistemoje, sudėlioti klausimus ir pateikti tvirtinti. Patvirtinta apklausa automatiškai sukuriama ir paleidžiama LimeSurvey sistemoje, o nuoroda į ją grąžinama į apklausos kortelę
+- ⭐ **Klausimų bankas** — dažnai naudojamus klausimus galima išsaugoti kaip šablonus (bendrus arba padalinio) ir pridėti į bet kurią apklausą vienu paspaudimu. Šalia jų toje pačioje apklausoje galima rašyti ir savo klausimus
+- ✨ **Atsakymų skaičius matomas /mano** — publikuotos apklausos kortelėje rodoma, kiek atsakymų jau surinkta. Patys atsakymai lieka LimeSurvey sistemoje
+
 ## v1.22 — Vartotojų atnaujinimai peržiūrimi griežčiau (2026-08-06) {#v1-22}
 
 ### Administravimas

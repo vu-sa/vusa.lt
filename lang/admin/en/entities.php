@@ -86,6 +86,12 @@ return [
     'membership' => [
         'model' => '{1} membership|[2,*] memberships',
     ],
+    'survey' => [
+        'model' => '{1} survey|[2,*] surveys',
+    ],
+    'survey_question_template' => [
+        'model' => '{1} question template|[2,*] question templates',
+    ],
     'problem' => [
         'model' => '{1} problem|[2,*] problems',
         'title' => 'problem title',

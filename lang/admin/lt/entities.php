@@ -77,6 +77,12 @@ return [
     'training' => [
         'model' => '{1} mokymas|[2,9] mokymai|[10,*] mokymų',
     ],
+    'survey' => [
+        'model' => '{1} apklausa|[2,9] apklausos|[10,*] apklausų',
+    ],
+    'survey_question_template' => [
+        'model' => '{1} klausimo šablonas|[2,9] klausimų šablonai|[10,*] klausimų šablonų',
+    ],
     'tenant' => [
         'model' => '{1} padalinys|[2,9] padaliniai|[10,*] padalinių',
     ],

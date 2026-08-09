@@ -68,4 +68,21 @@ return [
         'data_since' => env('UMAMI_DATA_SINCE', '2026-07-26'),
     ],
 
+    /*
+     * LimeSurvey 7, reached through its RemoteControl 2 JSON-RPC interface. Surveys are
+     * authored and approved in vusa.lt, then pushed here for delivery; responses never
+     * leave LimeSurvey (we only read aggregate counts back).
+     *
+     * 'url' is the LimeSurvey base URL without a trailing slash — LimeSurveyClient appends
+     * /index.php/admin/remotecontrol itself. The RPC interface must be switched on in
+     * LimeSurvey under Global settings -> Interfaces, and the user below needs survey
+     * create/activate permission there. Leaving any of these empty disables the whole
+     * integration rather than erroring (staging, CI).
+     */
+    'limesurvey' => [
+        'url' => env('LIMESURVEY_URL'),
+        'username' => env('LIMESURVEY_RPC_USER'),
+        'password' => env('LIMESURVEY_RPC_PASSWORD'),
+    ],
+
 ];

@@ -158,6 +158,8 @@ import {
   ListFilterIcon,
   ChevronDownIcon,
   AlertCircleIcon,
+  ClipboardList,
+  ListChecks,
 } from 'lucide-vue-next';
 
 import IconFlowchart from '~icons/fluent/flowchart20-regular';
@@ -252,12 +254,25 @@ const menuItems = computed(() => [
         href: route('studyPrograms.index'),
         show: auth?.can.create.studyProgram,
       },
+      {
+        title: $t('Apklausos'),
+        icon: ClipboardList,
+        href: route('surveys.index'),
+        show: auth?.can.create.survey,
+      },
+      {
+        title: $t('Klausimų bankas'),
+        icon: ListChecks,
+        href: route('surveyQuestionTemplates.index'),
+        show: auth?.can.create.survey,
+      },
     ],
     show:
       auth?.can.create.user
       || auth?.can.create.duty
       || auth?.can.create.membership
       || auth?.can.create.training
+      || auth?.can.create.survey
       || auth?.can.create.studyProgram,
     visibleItems: [] as MenuItemType[],
   },

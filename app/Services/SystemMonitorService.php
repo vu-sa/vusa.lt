@@ -466,6 +466,15 @@ class SystemMonitorService
                 'status' => (! empty(config('services.sharepoint.client_id')) &&
                            ! empty(config('services.sharepoint.client_secret'))) ? 'configured' : 'missing',
             ],
+            'limesurvey' => [
+                'configured' => ! empty(config('services.limesurvey.url')) &&
+                              ! empty(config('services.limesurvey.username')),
+                'url' => config('services.limesurvey.url'),
+                'credentials_set' => ! empty(config('services.limesurvey.username')) &&
+                                   ! empty(config('services.limesurvey.password')),
+                'status' => (! empty(config('services.limesurvey.url')) &&
+                           ! empty(config('services.limesurvey.username'))) ? 'configured' : 'missing',
+            ],
             'mail' => [
                 'driver' => config('mail.default'),
                 'host' => config('mail.mailers.smtp.host'),
