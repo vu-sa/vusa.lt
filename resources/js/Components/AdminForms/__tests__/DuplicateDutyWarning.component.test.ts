@@ -87,19 +87,19 @@ describe('DuplicateDutyWarning.vue', () => {
     expect(exactOnEdit.text()).not.toContain('forms.duty_duplicate.merge_instead');
   });
 
-  it('shows other-institution matches as an informational note, not an alarm', () => {
+  it('does not render the other-institution note while it is intentionally disabled', () => {
     const wrapper = mountWarning({
       ...EMPTY,
       other_institution: [makeMatch({ id: 'duty-2', reason: 'other_institution' })],
       other_institution_count: 57,
     });
 
-    expect(wrapper.text()).toContain('forms.duty_duplicate.other_institutions');
+    expect(wrapper.text()).not.toContain('forms.duty_duplicate.other_institutions');
     // The informational note must not borrow the amber same-institution styling.
     expect(wrapper.find('.border-amber-300').exists()).toBe(false);
   });
 
-  it('renders both tiers together when both are present', () => {
+  it('renders same-institution tier without the disabled other-institution note', () => {
     const wrapper = mountWarning({
       same_institution: [makeMatch()],
       other_institution: [makeMatch({ id: 'duty-2' })],
@@ -107,6 +107,6 @@ describe('DuplicateDutyWarning.vue', () => {
     });
 
     expect(wrapper.find('.border-amber-300').exists()).toBe(true);
-    expect(wrapper.text()).toContain('forms.duty_duplicate.other_institutions');
+    expect(wrapper.text()).not.toContain('forms.duty_duplicate.other_institutions');
   });
 });

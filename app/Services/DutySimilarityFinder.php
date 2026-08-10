@@ -78,7 +78,7 @@ class DutySimilarityFinder
             return collect();
         }
 
-        return Duty::query()
+        $matches = Duty::query()
             ->where('institution_id', $institutionId)
             ->when($excludeDutyId, fn ($query) => $query->where('id', '!=', $excludeDutyId))
             ->with(['institution:id,name', 'institution.tenant:id,shortname', 'current_users:id,name'])
@@ -102,6 +102,9 @@ class DutySimilarityFinder
             })
             ->filter()
             ->values();
+
+        /** @var Collection<int, array{duty: Duty, reason: string}> $matches */
+        return $matches;
     }
 
     /**
@@ -133,10 +136,13 @@ class DutySimilarityFinder
         $matches = $query->limit(self::CANDIDATE_SCAN_LIMIT)->get()
             ->filter(fn (Duty $duty) => DutyNameNormalizer::normalize($this->dutyName($duty)) === $normalized);
 
+        $otherInstitution = $matches->take(self::OTHER_INSTITUTION_LIMIT)
+            ->map(fn (Duty $duty) => ['duty' => $duty, 'reason' => 'other_institution'])
+            ->values();
+
+        /** @var Collection<int, array{duty: Duty, reason: string}> $otherInstitution */
         return [
-            'other_institution' => $matches->take(self::OTHER_INSTITUTION_LIMIT)
-                ->map(fn (Duty $duty) => ['duty' => $duty, 'reason' => 'other_institution'])
-                ->values(),
+            'other_institution' => $otherInstitution,
             'other_institution_count' => $matches->count(),
         ];
     }

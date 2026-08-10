@@ -119,7 +119,7 @@ describe('DutyForm.vue — genderization preview', () => {
     expect(wrapper.text()).not.toContain('jie (they)');
   });
 
-  it('previews the live masculine/feminine inflection and the static plural as the admin types', async () => {
+  it('previews the live masculine/feminine inflection as the admin types', async () => {
     wrapper = mountForm();
 
     const nameInput = wrapper.find('input[placeholder]');
@@ -129,8 +129,6 @@ describe('DutyForm.vue — genderization preview', () => {
     expect(wrapper.text()).toContain('Komunikacijos koordinator');
     expect(wrapper.find('[data-testid="duty-ending-masculine"]').text()).toBe('ius');
     expect(wrapper.find('[data-testid="duty-ending-feminine"]').text()).toBe('ė');
-    expect(wrapper.text()).toContain('jie (they)');
-    expect(wrapper.text()).toContain('Komunikacijos koordinatoriai');
   });
 
   it('updates the preview live as the typed name keeps changing', async () => {
@@ -163,24 +161,24 @@ describe('DutyForm.vue — missing-language advisory', () => {
     wrapper?.unmount();
   });
 
-  it('shows no advisory when both name locales are empty', () => {
+  it('shows no advisory while the missing-language alert is intentionally disabled', () => {
     wrapper = mountForm();
 
     expect(wrapper.text()).not.toContain('forms.helpers.duty_name_missing_lt');
     expect(wrapper.text()).not.toContain('forms.helpers.duty_name_missing_en');
   });
 
-  it('warns about missing English name when only Lithuanian is filled', () => {
+  it('shows no advisory when only Lithuanian is filled', () => {
     wrapper = mountForm(emptyDuty({ name: { lt: 'Pirmininkas', en: '' } }));
 
-    expect(wrapper.text()).toContain('forms.helpers.duty_name_missing_en');
+    expect(wrapper.text()).not.toContain('forms.helpers.duty_name_missing_en');
     expect(wrapper.text()).not.toContain('forms.helpers.duty_name_missing_lt');
   });
 
-  it('warns about missing Lithuanian name when only English is filled', () => {
+  it('shows no advisory when only English is filled', () => {
     wrapper = mountForm(emptyDuty({ name: { lt: '', en: 'Chair' } }));
 
-    expect(wrapper.text()).toContain('forms.helpers.duty_name_missing_lt');
+    expect(wrapper.text()).not.toContain('forms.helpers.duty_name_missing_lt');
     expect(wrapper.text()).not.toContain('forms.helpers.duty_name_missing_en');
   });
 

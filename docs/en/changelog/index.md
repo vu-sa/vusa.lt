@@ -7,24 +7,12 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
-## v1.23 — Drafts and scheduled news now show up in search (2026-08-09) {#v1-23}
+## v1.22 — Member administration and draft updates (2026-08-10) {#v1-22}
 
-### News and pages
-
-- 🔧 **Drafts and scheduled news/pages are findable in admin search again** — picking "other language news/page" or searching in admin search used to simply omit drafts and not-yet-published articles until someone manually reindexed search
-- 🔧 **Scheduled news and pages appear in public search on time** — an article used to stay invisible in public search even after its publish time passed, until someone happened to edit it again
-
-## v1.22 — Stronger protection of member records (2026-08-06) {#v1-22}
-
-### Admin
-
-- 🔧 **Name and email can only be changed by admins covering all of a person's units** — the email address is used to sign in, so changing it now requires that every unit the person belongs to is one you administer. If they also hold duties elsewhere, contact that unit's or the central office administrators — the form names the units that are blocking the change
-- 🔧 **Deleting a member requires broader rights** — you can delete or restore only people whose duties all sit within your unit. People with a directly assigned role, and your own account, can no longer be deleted
-- 🔧 **Duties from other units are no longer skipped silently** — assigning a duty outside your unit used to be dropped quietly while the form reported success. It now shows a clear error naming the duties involved
-- ✨ **Members without a unit are finally visible** — people who hold no duty yet belonged to no unit, so no unit administrator could see them and give them one. They now appear in the member list tagged "No unit" and can be managed by any administrator
-- ✨ **Duty assignments are recorded in the history** — you can see who granted or removed a duty, and when
-- 🔧 **A refused permanent delete no longer strips duties** — if a member could not be permanently deleted, their duties had already been removed and the person disappeared from every list
+- 🔧 More reliable user administration
 - ⭐ **Duplicate warning when creating a member** — both the user form and the duty wizard now warn if a similar profile already exists, including in a unit you cannot see. In the wizard you can pick the existing profile instead of creating a second one
+- 🔧 **Drafts and scheduled news/pages are findable in admin search again** 
+- 🔧 **Scheduled news and pages appear in public search on time** 
 
 ## v1.21 — Navigation editing, ViSAK status trend, and RSS feed (2026-08-04) {#v1-21}
 
