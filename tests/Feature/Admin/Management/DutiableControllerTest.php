@@ -199,6 +199,10 @@ describe('other assignment fields', function (): void {
     });
 
     test('duty manager can toggle use_original_duty_name', function (): void {
+        // The factory rolls this flag (20% true), so pin the starting state —
+        // otherwise the pre-condition below fails on roughly one run in five.
+        $this->dutiable->update(['use_original_duty_name' => false]);
+
         expect($this->dutiable->use_original_duty_name)->toBeFalse();
 
         asUser($this->dutyManager)->patch(route('dutiables.update', $this->dutiable), [

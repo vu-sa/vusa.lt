@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use App\Policies\ProblemPolicy;
-use App\Services\HtmlSanitizerService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -56,9 +55,7 @@ use Spatie\Activitylog\Support\LogOptions;
  */
 class Problem extends Model
 {
-    use HasFactory, HasTranslations, HasUlids, LogsModelActivity, Searchable, SoftDeletes {
-        HasTranslations::setTranslation as baseSetTranslation;
-    }
+    use HasFactory, HasTranslations, HasUlids, LogsModelActivity, Searchable, SoftDeletes;
 
     #[\Override]
     protected $guarded = [];
@@ -76,24 +73,10 @@ class Problem extends Model
      * are visible to every authenticated user (see {@see ProblemPolicy::view()})
      * while only tenant staff may write them, so unsanitized markup here would let
      * one tenant's editor reach every other user's browser.
-     *
-     * @var list<string>
      */
-    private const array SANITIZED_HTML_FIELDS = ['description', 'solution', 'steps_taken'];
-
-    /**
-     * Sanitize on write. Spatie funnels every write path — mass assignment,
-     * `update()`, `setTranslations()` — through `setTranslation()`, so overriding
-     * it here covers them all. An `Attribute` mutator would not fire at all,
-     * because translatable attributes never reach `setAttribute()`'s parent call.
-     */
-    public function setTranslation(string $key, string $locale, $value): self
+    protected function sanitizedHtmlTranslations(): array
     {
-        if (in_array($key, self::SANITIZED_HTML_FIELDS, true) && is_string($value)) {
-            $value = app(HtmlSanitizerService::class)->sanitizeRichContent($value);
-        }
-
-        return $this->baseSetTranslation($key, $locale, $value);
+        return ['description', 'solution', 'steps_taken'];
     }
 
     /**
@@ -103,13 +86,13 @@ class Problem extends Model
      * locale (see HasTranslations::getAttributeValue()). Left as single-locale
      * strings, an EN-only edit made under an LT session would leave the LT
      * string unchanged, and dontLogEmptyChanges() would silently drop the
-     * whole activity. Only SANITIZED_HTML_FIELDS, not every translatable
+     * whole activity. Only the sanitized rich fields, not every translatable
      * attribute (title stays single-locale; it isn't diffed).
      */
     public function getActivitylogOptions(): LogOptions
     {
         return $this->defaultActivitylogOptions()
-            ->useAttributeRawValues(self::SANITIZED_HTML_FIELDS);
+            ->useAttributeRawValues($this->sanitizedHtmlTranslations());
     }
 
     public function toSearchableArray(): array

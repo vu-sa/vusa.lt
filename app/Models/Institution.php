@@ -117,6 +117,16 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
     public $translatable = ['name', 'short_name', 'description', 'address'];
 
     /**
+     * `description` is Tiptap `full` preset HTML, rendered with `v-html` on the
+     * public institution page and contact cards (ShowInstitution.vue,
+     * InstitutionFigure.vue, NewInstitutionCard.vue).
+     */
+    protected function sanitizedHtmlTranslations(): array
+    {
+        return ['description'];
+    }
+
+    /**
      * @return HasMany<Duty, $this>
      */
     public function duties(): HasMany

@@ -220,11 +220,18 @@ const previewInitials = computed(() => {
 
 // Public rendering shows the assignment's own description in place of the duty's
 // (ContactWithPhoto.vue) — the preview mirrors exactly that precedence, live.
+// Emptiness is measured through textContent, not a tag-stripping regex: a single
+// regex pass cannot reliably strip nested markup, and CodeQL flags the pattern.
 const previewDescriptionHtml = computed(() => {
   const html = (form.description as { lt?: string; en?: string })?.[usePage().props.app.locale as 'lt' | 'en']
     || (form.description as { lt?: string })?.lt
     || '';
-  if (!html.replace(/<[^>]*>/g, '').trim()) return '';
+  if (!html) return '';
+
+  const container = document.createElement('div');
+  container.innerHTML = html;
+  if (!(container.textContent ?? '').trim()) return '';
+
   return html;
 });
 </script>

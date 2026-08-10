@@ -312,7 +312,18 @@ abort_if($day->exists && $day->programme_id !== $programme->id, 403);
 - `sanitizeCommentBody()` — comment-tier markup.
 - `sanitizeRichContent()` — the Tiptap `full` preset (headings, images, tables, YouTube).
 
-Pick the profile matching the editor that produced the HTML; a too-tight profile silently deletes the author's content. For Spatie-translatable fields an `Attribute` mutator never fires — override `setTranslation()` instead (see `Problem`).
+Pick the profile matching the editor that produced the HTML; a too-tight profile silently deletes the author's content.
+
+For Spatie-translatable fields an `Attribute` mutator never fires, so `App\Models\Traits\HasTranslations` overrides `setTranslation()` centrally. Opt a model in by listing its rich fields:
+
+```php
+protected function sanitizedHtmlTranslations(): array
+{
+    return ['description'];
+}
+```
+
+That covers every write path (mass assignment, `update()`, `setTranslations()`, factories, seeders). Do **not** add `#[\Override]` — the parent is a trait, not a class. Precedents: `Problem`, `Duty`, `Institution`, `Pivots\Dutiable`.
 
 **No raw identifiers in SQL.** Validate request-derived columns against `Schema::hasColumn` and use query-builder methods so the grammar quotes identifiers.
 

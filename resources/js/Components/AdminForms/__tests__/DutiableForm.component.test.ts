@@ -148,6 +148,14 @@ describe('DutiableForm.vue — public-contact preview', () => {
     expect(wrapper.find('[data-testid="dutiable-description-preview"]').exists()).toBe(false);
   });
 
+  // Emptiness is measured through textContent rather than a tag-stripping regex,
+  // which a single pass cannot do reliably for nested markup.
+  it('treats nested markup with no text as an empty description', () => {
+    wrapper = mountForm(makeDutiable({ description: { lt: '<p><strong><em>  </em></strong><br></p>', en: '' } }));
+
+    expect(wrapper.find('[data-testid="dutiable-description-preview"]').exists()).toBe(false);
+  });
+
   it('falls back to initials when there is no photo', () => {
     wrapper = mountForm();
 

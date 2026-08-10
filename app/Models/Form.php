@@ -64,6 +64,15 @@ class Form extends Model implements GuardsForceDelete
     ];
 
     /**
+     * `description` is Tiptap `full` preset HTML (FormForm.vue), rendered with
+     * `v-html` on the public registration page (Pages/Public/RegistrationPage.vue).
+     */
+    protected function sanitizedHtmlTranslations(): array
+    {
+        return ['description'];
+    }
+
+    /**
      * @return array<string, string>
      */
     #[\Override]

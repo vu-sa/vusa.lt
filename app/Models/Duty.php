@@ -120,6 +120,16 @@ class Duty extends Model implements AuthorizableContract, GuardsForceDelete, Sha
     public $translatable = ['name', 'description'];
 
     /**
+     * `description` is Tiptap `full` preset HTML, shown publicly in the contacts
+     * popover (ContactWithPhoto.vue) to anonymous visitors, while any
+     * padalinys-scoped admin may write it.
+     */
+    protected function sanitizedHtmlTranslations(): array
+    {
+        return ['description'];
+    }
+
+    /**
      * Get the engine used to index the model.
      *
      * Admin search runs on Typesense (scoped keys), so force the typesense

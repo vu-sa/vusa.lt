@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\ContentPartEnum;
 use App\Models\Traits\LogsModelActivity;
+use App\Services\ContentService;
+use App\Services\HtmlSanitizerService;
 use App\Tiptap\TiptapEditor;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Attributes\Appends;
@@ -109,6 +111,64 @@ class ContentPart extends Model
         ];
     }
 
+    /**
+     * `json_content` is persisted verbatim from the editor (see
+     * {@see ContentService::updateContentParts()}), and several block types carry
+     * raw HTML strings inside it that the public page renders with `v-html`:
+     * accordion items and the person quote (`html`), and the hero title.
+     * Sanitize those on write so every persistence path — controller, seeder,
+     * DuplicateNewsAction — is covered.
+     */
+    #[\Override]
+    protected static function booted(): void
+    {
+        static::saving(function (self $part): void {
+            // Read through getAttribute(): a part being saved without content at
+            // all is a NOT NULL violation the database should report, not a fatal
+            // in this listener.
+            $json = $part->getAttribute('json_content');
+
+            if (! $json instanceof ArrayObject) {
+                return;
+            }
+
+            $part->json_content = new ArrayObject($part->sanitizeJsonContentHtml($json->toArray()));
+        });
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $content
+     * @return array<array-key, mixed>
+     */
+    private function sanitizeJsonContentHtml(array $content): array
+    {
+        $sanitizer = app(HtmlSanitizerService::class);
+
+        $walk = function (array $node) use (&$walk, $sanitizer): array {
+            foreach ($node as $key => $value) {
+                if (is_array($value)) {
+                    $node[$key] = $walk($value);
+                } elseif ($key === 'html' && is_string($value)) {
+                    $node[$key] = $sanitizer->sanitizeRichContent($value);
+                }
+            }
+
+            return $node;
+        };
+
+        $content = $walk($content);
+
+        // HeroElement.vue renders json_content.title with `v-html` (authored with
+        // the `compact` preset, a subset of the `full` allowlist). Only the hero's
+        // own title — `title` on other blocks is plain text that sanitizing would
+        // mangle the moment it contained a bare `<`.
+        if ($this->type === 'hero' && isset($content['title']) && is_string($content['title'])) {
+            $content['title'] = $sanitizer->sanitizeRichContent($content['title']);
+        }
+
+        return $content;
+    }
+
     public function content(): BelongsTo
     {
         return $this->belongsTo(Content::class);
@@ -147,7 +207,11 @@ class ContentPart extends Model
             // Convert ArrayObject to plain array for TipTap PHP compatibility
             $content = $this->json_content->toArray();
 
-            return $editor->setContent($content)->getHTML();
+            // The JSON document itself is not HTML, so the write-time mutator can
+            // do nothing for this path — a crafted node (an <img> with onerror,
+            // say) only becomes markup here, at render.
+            return app(HtmlSanitizerService::class)
+                ->sanitizeRichContent($editor->setContent($content)->getHTML());
         } catch (\Throwable $e) {
             // Log error but don't break the page - frontend will fallback to JS rendering
             \Log::warning("TipTap rendering failed for ContentPart {$this->id}: {$e->getMessage()}");
@@ -186,9 +250,10 @@ class ContentPart extends Model
     public function parseTiptapElements(): ContentPart
     {
         $editor = new TiptapEditor;
+        $sanitizer = app(HtmlSanitizerService::class);
 
         if ($this->type === 'tiptap' || $this->type === 'shadcn-card') {
-            $this->html = $editor->setContent($this->json_content)->getHTML();
+            $this->html = $sanitizer->sanitizeRichContent($editor->setContent($this->json_content)->getHTML());
 
             return $this;
         }
@@ -197,7 +262,9 @@ class ContentPart extends Model
             $json_content = $this->json_content;
 
             foreach ($json_content as $key => $value) {
-                $json_content[$key]['html'] = $editor->setContent($value['content'])->getHTML();
+                $json_content[$key]['html'] = $sanitizer->sanitizeRichContent(
+                    $editor->setContent($value['content'])->getHTML()
+                );
             }
 
             $this->json_content = $json_content;

@@ -92,6 +92,17 @@ class Dutiable extends MorphPivot
     public $translatable = ['description'];
 
     /**
+     * `description` is Tiptap `full` preset HTML. It takes precedence over the
+     * duty's own description in the public contacts popover
+     * (ContactWithPhoto.vue `dutyDescription()`), so it reaches anonymous
+     * visitors while any admin who may edit a duty assignment can write it.
+     */
+    protected function sanitizedHtmlTranslations(): array
+    {
+        return ['description'];
+    }
+
+    /**
      * @return MorphTo<Model, $this>
      */
     public function dutiable(): MorphTo

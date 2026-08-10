@@ -6,7 +6,9 @@ use App\Actions\PairTranslatedRecord;
 use App\Feed\FeedHtml;
 use App\Feed\FeedItem;
 use App\Models\Traits\LogsModelActivity;
+use App\Services\HtmlSanitizerService;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -87,6 +89,24 @@ class News extends Model implements Feedable, Sitemapable
             'highlights' => 'array',
             'show_breadcrumbs' => 'boolean',
         ];
+    }
+
+    /**
+     * `short` is Tiptap HTML (NewsForm.vue, `full` preset minus tables) rendered
+     * with `v-html` in the public news list (NewsCard.vue, NewsElement.vue).
+     *
+     * News is not translatable — locales are separate rows — so unlike the
+     * `sanitizedHtmlTranslations()` models this is a plain `Attribute` mutator.
+     * The `full` allowlist is a superset of what this editor produces, so nothing
+     * an author can legitimately write is stripped.
+     */
+    protected function short(): Attribute
+    {
+        return Attribute::make(
+            set: fn (?string $value) => $value === null
+                ? null
+                : app(HtmlSanitizerService::class)->sanitizeRichContent($value),
+        );
     }
 
     /**
