@@ -21,7 +21,7 @@
         </ol>
       </template>
       <FormFieldWrapper id="name" :label="$t('forms.fields.name_and_surname')" required>
-        <Input v-model="form.name" :disabled="user.name !== '' || !canUpdateIdentity" type="text"
+        <Input v-model="form.name" :disabled="(user.name !== '' && !isSuperAdmin) || !canUpdateIdentity" type="text"
           placeholder="Įrašyti vardą ir pavardę" />
       </FormFieldWrapper>
 
@@ -77,7 +77,7 @@
         />
       </FormFieldWrapper>
 
-      <FormFieldWrapper v-if="$page.props.auth?.user?.isSuperAdmin" id="roles" :label="$t('forms.fields.admin_role')">
+      <FormFieldWrapper v-if="isSuperAdmin" id="roles" :label="$t('forms.fields.admin_role')">
         <MultiSelect
           v-model="selectedRoles"
           :options="rolesOptions"
@@ -225,7 +225,7 @@
         </p>
       </template>
       <!-- Password Management Section - Only for Super Admins -->
-      <template v-if="$page.props.auth?.user?.isSuperAdmin">
+      <template v-if="isSuperAdmin">
         <div class="border-t border-gray-200 pt-4 mt-4">
           <h4 class="font-semibold text-lg mb-2">
             {{ $t("Slaptažodžio valdymas") }}
@@ -381,6 +381,8 @@ defineEmits<{
 }>();
 
 const dutyShowMode = ref<'tree' | 'transfer'>('tree');
+
+const isSuperAdmin = computed(() => usePage().props.auth?.user?.isSuperAdmin ?? false);
 const handleChangeDutyShowMode = () => {
   dutyShowMode.value = dutyShowMode.value === 'tree' ? 'transfer' : 'tree';
 };

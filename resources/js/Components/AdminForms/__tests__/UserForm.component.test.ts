@@ -1,11 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import { nextTick, ref, computed, defineComponent, h } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 
 import UserForm from '@/Components/AdminForms/UserForm.vue';
 import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
 import { createMockForm } from '@/tests/helpers/createMockForm';
+import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
 
 // Captures the columns passed to each stubbed SimpleDataTable so the previous-duties
@@ -225,6 +226,38 @@ describe('UserForm.vue', () => {
       await nextTick();
 
       expect(wrapper.find('.text-amber-600').exists()).toBe(false);
+    });
+
+    describe('super-admin override', () => {
+      afterEach(() => {
+        // Restore the default page mock so isSuperAdmin resets for other suites.
+        vi.mocked(usePage).mockReturnValue(createMockPage());
+      });
+
+      it('lets a super-admin edit an existing user name that would otherwise be locked', async () => {
+        // The base user ships with a non-empty name, which hard-locks the field
+        // for everyone except super-admins (UpdateUserRequest + UserPolicy::updateIdentity).
+        vi.mocked(usePage).mockReturnValue(
+          createMockPage({ auth: { user: { isSuperAdmin: true } } }),
+        );
+        wrapper = createWrapper();
+        await nextTick();
+
+        const nameInput = wrapper.findAll('input')
+          .find(i => i.attributes('placeholder') === 'Įrašyti vardą ir pavardę');
+
+        expect(nameInput?.attributes('disabled')).toBeUndefined();
+      });
+
+      it('keeps the name field locked for a non-super-admin with an existing name', async () => {
+        wrapper = createWrapper();
+        await nextTick();
+
+        const nameInput = wrapper.findAll('input')
+          .find(i => i.attributes('placeholder') === 'Įrašyti vardą ir pavardę');
+
+        expect(nameInput?.attributes('disabled')).toBeDefined();
+      });
     });
   });
 
