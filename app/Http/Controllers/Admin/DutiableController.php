@@ -37,9 +37,30 @@ class DutiableController extends AdminController
     {
         $this->authorize('manageDutiable', $dutiable);
 
+        $dutiable->loadMissing('duty.institution');
+        $tenantId = $dutiable->duty?->institution?->tenant_id;
+
+        // Scoped to the duty's own tenant when it's known (16 tenants have study
+        // programs, ~10 each — loading every tenant's ~148 was pointless noise in
+        // the picker). Falls back to the full list when the tenant can't be
+        // resolved, and always keeps whatever is already selected in scope even
+        // if it belongs to another tenant, so an existing cross-tenant value
+        // still resolves to a real option instead of silently vanishing.
+        $studyPrograms = StudyProgram::query()
+            ->when($tenantId, function ($query) use ($tenantId, $dutiable): void {
+                $query->where(function ($query) use ($tenantId, $dutiable): void {
+                    $query->where('tenant_id', $tenantId);
+
+                    if ($dutiable->study_program_id) {
+                        $query->orWhere('id', $dutiable->study_program_id);
+                    }
+                });
+            })
+            ->get();
+
         return $this->inertiaResponse('Admin/People/EditDutiable', [
             'dutiable' => $dutiable->load('duty', 'dutiable', 'viaDutiable.duty')->toFullArray(),
-            'studyPrograms' => StudyProgram::all(),
+            'studyPrograms' => $studyPrograms,
         ]);
     }
 

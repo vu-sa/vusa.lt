@@ -2,11 +2,41 @@
 
 namespace App\Models\Traits;
 
+use App\Services\HtmlSanitizerService;
 use Spatie\Translatable\HasTranslations as BaseHasTranslations;
 
 trait HasTranslations
 {
-    use BaseHasTranslations;
+    use BaseHasTranslations {
+        setTranslation as protected baseSetTranslation;
+    }
+
+    /**
+     * Translatable fields holding Tiptap `full` preset HTML that is later rendered
+     * with `v-html` / `{!! !!}`. Models listing a field here get it sanitized on
+     * write; the default empty list makes this a no-op for everything else.
+     *
+     * @return list<string>
+     */
+    protected function sanitizedHtmlTranslations(): array
+    {
+        return [];
+    }
+
+    /**
+     * Sanitize on write. Spatie funnels every write path — mass assignment,
+     * `update()`, `setTranslations()` — through `setTranslation()`, so overriding
+     * it here covers them all. An `Attribute` mutator would not fire at all,
+     * because translatable attributes never reach `setAttribute()`'s parent call.
+     */
+    public function setTranslation(string $key, string $locale, $value): self
+    {
+        if (is_string($value) && in_array($key, $this->sanitizedHtmlTranslations(), true)) {
+            $value = app(HtmlSanitizerService::class)->sanitizeRichContent($value);
+        }
+
+        return $this->baseSetTranslation($key, $locale, $value);
+    }
 
     /**
      * Return attributes with translations of the model.

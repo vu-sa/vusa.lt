@@ -42,6 +42,10 @@
           <p v-if="createErrors['name.lt']" class="text-sm text-destructive">
             {{ createErrors['name.lt'] }}
           </p>
+          <p class="text-xs text-muted-foreground">
+            {{ $t('forms.helpers.duty_name_inflected_hint') }}
+          </p>
+          <DuplicateDutyWarning :matches="duplicateMatches" />
         </div>
 
         <!-- Places to Occupy -->
@@ -231,8 +235,8 @@
               <!-- Content -->
               <div class="flex-1 min-w-0">
                 <div class="flex items-start justify-between gap-2">
-                  <p class="font-medium text-foreground group-hover:text-primary transition-colors">
-                    {{ duty.name }}
+                  <p class="min-w-0 font-medium text-foreground group-hover:text-primary transition-colors">
+                    <InflectedDutyName :name="duty.name" />
                   </p>
                   <Badge :variant="getDutyStatus(duty).color as any" class="shrink-0 text-xs">
                     {{ getDutyStatus(duty).label }}
@@ -357,7 +361,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
 import type { useDutyUserWizard } from '@/Composables/useDutyUserWizard';
+import { useDuplicateDutyCheck } from '@/Composables/useDuplicateDutyCheck';
 import { DutyIcon, InstitutionIcon } from '@/Components/icons';
+import DuplicateDutyWarning from '@/Components/AdminForms/DuplicateDutyWarning.vue';
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 
 const wizard = inject<ReturnType<typeof useDutyUserWizard>>('dutyUserWizard')!;
 const dutyTypesRef = inject<ComputedRef<App.Entities.Type[]> | App.Entities.Type[]>('dutyTypes', []);
@@ -412,6 +419,13 @@ const resetForm = () => {
   http.reset();
   showExtraFields.value = false;
 };
+
+// This inline create form is a second duty-creation path independent of
+// DutyForm.vue — it needs its own duplicate warning for the same reason.
+const { matches: duplicateMatches } = useDuplicateDutyCheck(
+  () => http.name.lt,
+  () => wizard.state.institution?.id ?? null,
+);
 
 const cancelCreate = () => {
   showCreateForm.value = false;

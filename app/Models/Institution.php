@@ -50,9 +50,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property int|null $tenant_id
  * @property int $is_active
  * @property int $meeting_periodicity_days
- * @property string|null $selection_method
- * @property array|string|null $appointed_by
- * @property array|string|null $term_length
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
@@ -117,7 +114,17 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
     // Note: has_public_meetings is NOT auto-appended due to performance.
     // Append it explicitly where needed: $institution->append('has_public_meetings')
 
-    public $translatable = ['name', 'short_name', 'description', 'address', 'appointed_by', 'term_length'];
+    public $translatable = ['name', 'short_name', 'description', 'address'];
+
+    /**
+     * `description` is Tiptap `full` preset HTML, rendered with `v-html` on the
+     * public institution page and contact cards (ShowInstitution.vue,
+     * InstitutionFigure.vue, NewInstitutionCard.vue).
+     */
+    protected function sanitizedHtmlTranslations(): array
+    {
+        return ['description'];
+    }
 
     /**
      * @return HasMany<Duty, $this>
@@ -306,6 +313,18 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
             if ($institution->isDirty('name')) {
                 FileableNameUpdated::dispatch($institution);
             }
+        });
+
+        static::saved(function (Institution $institution): void {
+            $publicInstitution = PublicInstitution::query()->find($institution->getKey());
+
+            if ($publicInstitution?->shouldBeSearchable()) {
+                $publicInstitution->searchable();
+
+                return;
+            }
+
+            $institution->publicSearchModel()->unsearchable();
         });
 
         static::deleted(function (Institution $institution): void {

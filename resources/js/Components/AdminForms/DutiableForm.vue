@@ -2,6 +2,35 @@
   <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
     <FormElement>
       <template #title>
+        {{ $t('forms.context.dutiable_intro_title') }}
+      </template>
+      <template #description>
+        <p>{{ $t('forms.helpers.dutiable_intro') }}</p>
+      </template>
+
+      <div class="flex items-start gap-3 rounded-lg border bg-muted/30 p-3">
+        <img v-if="previewPhoto" :src="previewPhoto" class="size-16 shrink-0 rounded-md object-cover"
+          :style="{ objectPosition: previewFocalPoint }" alt="">
+        <div v-else class="flex size-16 shrink-0 items-center justify-center rounded-md bg-muted text-sm font-bold text-muted-foreground">
+          {{ previewInitials }}
+        </div>
+        <div class="min-w-0">
+          <p class="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+            {{ $t('forms.helpers.dutiable_preview_label') }}
+          </p>
+          <p class="truncate text-sm font-semibold">
+            {{ personName }}
+          </p>
+          <p class="text-xs text-muted-foreground">
+            {{ shownDutyName }}<span v-if="previewStudyProgramSuffix"> {{ previewStudyProgramSuffix }}</span>
+          </p>
+          <div v-if="previewDescriptionHtml" data-testid="dutiable-description-preview" class="mt-1 text-xs text-muted-foreground" v-html="previewDescriptionHtml" />
+        </div>
+      </div>
+    </FormElement>
+
+    <FormElement>
+      <template #title>
         {{ $t('forms.sections.duty_period') }}
       </template>
       <template #description>
@@ -51,6 +80,10 @@
             </span>
           </template>
         </SingleSelect>
+        <p v-if="missingRequiredStudyProgram" class="mt-1 flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
+          <TriangleAlert class="size-3 shrink-0" />
+          {{ $t('forms.helpers.study_program_required_hint') }}
+        </p>
       </FormFieldWrapper>
 
       <div class="space-y-2">
@@ -58,6 +91,9 @@
           <Label for="description">{{ $t('forms.fields.description') }}</Label>
           <SimpleLocaleButton v-model:locale="locale" />
         </div>
+        <p class="text-xs text-muted-foreground">
+          {{ $t('forms.helpers.dutiable_description_hint') }}
+        </p>
         <TiptapEditor v-if="locale === 'lt'" v-model="form.description.lt" preset="full" :html="true" />
         <TiptapEditor v-else-if="locale === 'en'" v-model="form.description.en" preset="full" :html="true" />
         <p v-if="form.errors.description" class="text-xs text-red-600 dark:text-red-400">
@@ -76,9 +112,6 @@
             {{ $t('čia') }}
           </Link>.
         </p>
-        <p>
-          {{ $t('forms.helpers.shown_duty_name_label') }} <strong> {{ shownDutyName }}</strong>
-        </p>
       </template>
       <FormFieldWrapper id="use_original_duty_name" :label="$t('forms.fields.use_original_duty_name')" :hint="$t('forms.helpers.use_original_duty_name_hint')" :error="form.errors.use_original_duty_name">
         <Switch :model-value="!!form.use_original_duty_name" @update:model-value="(val: boolean) => form.use_original_duty_name = val" />
@@ -90,6 +123,7 @@
 <script setup lang="ts">
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
+import { TriangleAlert } from 'lucide-vue-next';
 
 import SimpleLocaleButton from '../Buttons/SimpleLocaleButton.vue';
 
@@ -154,5 +188,50 @@ const shownDutyName = computed(() => {
     (props.dutiable.dutiable as any)?.pronouns,
     form.use_original_duty_name as boolean,
   );
+});
+
+// vusa.lt/mano is admin-only; the public site always shows the study program in
+// brackets after the duty name (ContactWithPhoto.vue), regardless of the duty's
+// own `contacts_grouping` setting — the field is not "grouping-only".
+const previewStudyProgramSuffix = computed(() => {
+  if (!selectedStudyProgram.value) return '';
+  return `(${selectedStudyProgram.value.name})`;
+});
+
+// A duty that groups its public contacts by study program has nothing to group
+// an assignment into if this is left empty — flag it, rather than let it render
+// silently under "Kita" (the ungrouped fallback bucket).
+const missingRequiredStudyProgram = computed(() =>
+  props.dutiable.duty?.contacts_grouping === 'study_program' && !form.study_program_id);
+
+const personName = computed(() => (props.dutiable.dutiable as any)?.name ?? '');
+
+const previewPhoto = computed(() =>
+  (form.additional_photo as string | null) || (props.dutiable.dutiable as any)?.profile_photo_path || null);
+
+const previewFocalPoint = computed(() =>
+  (props.dutiable as any).additional_photo_focal_point || (props.dutiable.dutiable as any)?.profile_photo_focal_point || '50% 30%');
+
+const previewInitials = computed(() => {
+  const parts = personName.value.split(' ').filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  return parts[0]?.substring(0, 2).toUpperCase() ?? '?';
+});
+
+// Public rendering shows the assignment's own description in place of the duty's
+// (ContactWithPhoto.vue) — the preview mirrors exactly that precedence, live.
+// Emptiness is measured through textContent, not a tag-stripping regex: a single
+// regex pass cannot reliably strip nested markup, and CodeQL flags the pattern.
+const previewDescriptionHtml = computed(() => {
+  const html = (form.description as { lt?: string; en?: string })?.[usePage().props.app.locale as 'lt' | 'en']
+    || (form.description as { lt?: string })?.lt
+    || '';
+  if (!html) return '';
+
+  const container = document.createElement('div');
+  container.innerHTML = html;
+  if (!(container.textContent ?? '').trim()) return '';
+
+  return html;
 });
 </script>

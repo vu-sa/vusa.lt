@@ -45,7 +45,8 @@ export interface DutyUserWizardState {
     submission: boolean;
     institutions: boolean;
     duties: boolean;
-    users: boolean;
+    /** Lazily-loaded data for step 3. Members are searched on demand, not preloaded. */
+    stepData: boolean;
   };
   errors: Record<string, string[]>;
 
@@ -137,7 +138,7 @@ export function useDutyUserWizard(options: UseDutyUserWizardOptions = {}) {
       submission: false,
       institutions: false,
       duties: false,
-      users: false,
+      stepData: false,
     },
     errors: {},
     validation: {
@@ -196,22 +197,22 @@ export function useDutyUserWizard(options: UseDutyUserWizardOptions = {}) {
 
   // Track if lazy data has been loaded
   const lazyDataLoaded = ref({
-    step3: false, // users, studyPrograms
+    step3: false, // studyPrograms
     dutyTypes: false,
   });
 
   // Load lazy data for specific steps
   const loadLazyDataForStep = (step: number) => {
     if (step === 3 && !lazyDataLoaded.value.step3) {
-      state.loading.users = true;
+      state.loading.stepData = true;
       router.reload({
-        only: ['users', 'studyPrograms'],
+        only: ['studyPrograms'],
         onSuccess: () => {
           lazyDataLoaded.value.step3 = true;
-          state.loading.users = false;
+          state.loading.stepData = false;
         },
         onError: () => {
-          state.loading.users = false;
+          state.loading.stepData = false;
         },
       });
     }

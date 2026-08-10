@@ -12,7 +12,7 @@
           :href="route('duties.show', duty.id)"
           class="truncate text-sm font-semibold text-foreground transition-colors hover:text-primary"
         >
-          {{ duty.name }}
+          {{ displayName }}
         </Link>
         <p v-if="showInstitution && duty.institution?.name" class="truncate text-xs text-muted-foreground">
           <Link :href="route('institutions.show', duty.institution.id)" class="hover:text-primary hover:underline">
@@ -48,7 +48,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Calendar } from 'lucide-vue-next';
 
@@ -56,6 +56,7 @@ import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import { Badge } from '@/Components/ui/badge';
 import { interactiveCardClass } from '@/Utils/interactiveCard';
 import { formatStaticTime } from '@/Utils/IntlTime';
+import { changeDutyNameEndings } from '@/Utils/String';
 
 export interface SummaryDuty {
   id: string | number;
@@ -65,7 +66,13 @@ export interface SummaryDuty {
   institution?: { id: string | number; name: string; tenant?: { shortname?: string | null } | null } | null;
   current_users?: App.Entities.User[];
   /** The viewing user's own tenure on this duty (present on ShowUser). */
-  pivot?: { start_date?: string; end_date?: string | null; additional_email?: string } | null;
+  pivot?: { start_date?: string; end_date?: string | null; additional_email?: string; use_original_duty_name?: boolean } | null;
+}
+
+export interface DutySummaryHolder {
+  name?: string | null;
+  /** Pronouns as a locale string ("jis/jo") or a { lt, en } map. */
+  pronouns?: string | { lt?: string; en?: string } | null;
 }
 
 const props = withDefaults(defineProps<{
@@ -76,10 +83,40 @@ const props = withDefaults(defineProps<{
   muted?: boolean;
   /** Exclude this user from the holders avatar group (e.g. the profile being viewed). */
   excludeUserId?: string | number;
+  /**
+   * The person whose duty this is. When provided, the duty name's ending is
+   * inflected to match their pronouns/name (e.g. "Koordinatorius" →
+   * "Koordinatorė"); otherwise the stored name is shown as-is.
+   */
+  holder?: DutySummaryHolder | null;
+  /** Per-assignment override: keep the stored duty name uninflected. */
+  useOriginalDutyName?: boolean;
 }>(), {
   showInstitution: true,
   muted: false,
   excludeUserId: undefined,
+  holder: null,
+  useOriginalDutyName: false,
+});
+
+// `use_original_duty_name` on the pivot takes precedence over the caller-supplied
+// prop, since it is the per-assignment setting that actually governs inflection.
+const effectiveUseOriginal = computed(() => props.duty.pivot?.use_original_duty_name ?? props.useOriginalDutyName);
+
+const displayName = computed(() => {
+  if (!props.holder) return props.duty.name;
+  const { locale } = usePage().props.app;
+  const rawPronouns = props.holder.pronouns;
+  const pronouns = typeof rawPronouns === 'string'
+    ? rawPronouns
+    : (rawPronouns?.[locale as 'lt' | 'en'] ?? '');
+  return changeDutyNameEndings(
+    { name: props.holder.name ?? '' } as App.Entities.User,
+    props.duty.name,
+    locale,
+    pronouns,
+    effectiveUseOriginal.value,
+  );
 });
 
 const holders = computed<App.Entities.User[]>(() => props.duty.current_users ?? []);

@@ -1,7 +1,7 @@
 <template>
   <PageContent :title="userName" :back-url="route('users.index')" :heading-icon="UserIcon">
     <UpsertModelLayout>
-      <UserForm :user :roles :tenants-with-duties :permissable-tenants
+      <UserForm :user :roles :tenants-with-duties :permissable-tenants :can-update-identity
         @submit:form="onSubmit"
         @delete="() => router.delete(route('users.destroy', user.id))" />
     </UpsertModelLayout>
@@ -28,6 +28,7 @@ const props = defineProps<{
   // TODO: don't return all duties from the controller immedixxately
   tenantsWithDuties: App.Entities.Tenant[];
   permissableTenants: App.Entities.Tenant[];
+  canUpdateIdentity: boolean;
 }>();
 
 const { report, open, guardedSubmit, confirm, cancel } = useAccessChangeGuard();

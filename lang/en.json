@@ -1,6 +1,12 @@
 {
     "Ieškoti pareigų pagal pavadinimą...": "Search duties by name...",
     "Pareigų nerasta": "No duties found",
+    "Pasirink instituciją pagal pavadinimą...": "Select an institution by name...",
+    "Pareigybė neturi failų ir nėra priskirta tipams su failais.": "This duty has no files and is not assigned to any type with files.",
+    "Pareigybės failai": "Duty files",
+    "Susiję failai pagal tipą": "Related files by type",
+    "Valdyti": "Manage",
+    "Šie failai yra susiję su pareigybės tipais ir yra bendrinami tarp visų tos kategorijos pareigybių.": "These files are linked to the duty's types and are shared across every duty in that category.",
     "Ieškoti puslapio pagal pavadinimą...": "Search page by name...",
     "Puslapių nerasta": "No pages found",
     "Ieškoti naujienos pagal pavadinimą...": "Search news by title...",
@@ -1234,5 +1240,7 @@
     "Kitų metų stovyklos": "Camps from other years",
     "Šiais metais stovyklų informacija dar neskelbiama.": "Camp information for this year has not been published yet.",
     "Stovyklos pagal padalinius": "Camps by unit",
-    "Kuo tikslesnis adresas, tuo tiksliau renginio puslapyje bus parodytas žemėlapis": "The more precise the address, the more accurately the map is shown on the event page"
+    "Kuo tikslesnis adresas, tuo tiksliau renginio puslapyje bus parodytas žemėlapis": "The more precise the address, the more accurately the map is shown on the event page",
+    "Juodraštis": "Draft",
+    "Suplanuota": "Scheduled"
 }

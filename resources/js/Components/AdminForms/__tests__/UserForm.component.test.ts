@@ -192,6 +192,42 @@ describe('UserForm.vue', () => {
     });
   });
 
+  describe('identity field lock', () => {
+    // Mirrors UserPolicy::updateIdentity — email is the login identity, so a tenant
+    // admin who only shares one tenant with this person must not be able to edit it.
+    const emailInput = (w: ReturnType<typeof mount>) =>
+      w.findAll('input').find(i => i.attributes('placeholder') === 'vardas.pavarde@stud.vu.lt');
+
+    it('leaves email editable by default so the create form is unaffected', async () => {
+      wrapper = createWrapper();
+      await nextTick();
+
+      expect(emailInput(wrapper)?.attributes('disabled')).toBeUndefined();
+    });
+
+    it('disables name and email when canUpdateIdentity is false', async () => {
+      wrapper = createWrapper({ canUpdateIdentity: false });
+      await nextTick();
+
+      const nameInput = wrapper.findAll('input')
+        .find(i => i.attributes('placeholder') === 'Įrašyti vardą ir pavardę');
+
+      expect(nameInput?.attributes('disabled')).toBeDefined();
+      expect(emailInput(wrapper)?.attributes('disabled')).toBeDefined();
+    });
+
+    it('suppresses the @vusa.lt email advice when the field is locked', async () => {
+      // Advising a change the admin cannot make would just be noise.
+      wrapper = createWrapper({
+        user: createUser({ email: 'koordinatorius@vusa.lt' }),
+        canUpdateIdentity: false,
+      });
+      await nextTick();
+
+      expect(wrapper.find('.text-amber-600').exists()).toBe(false);
+    });
+  });
+
   describe('duty email context block', () => {
     it('renders only @vusa.lt duty emails in context block', async () => {
       wrapper = createWrapper();
@@ -250,6 +286,24 @@ describe('UserForm.vue', () => {
 
       const tables = wrapper.findAll('[data-testid="simple-data-table"]');
       expect(tables.length).toBe(2);
+    });
+
+    it('attributes a duty to its institution instead of showing a bare name', async () => {
+      // A duty name alone is unattributable once it repeats across institutions
+      // (which it does constantly — see DutyLabel.vue). The name column must
+      // show the institution, not just link off to the duty.
+      wrapper = createWrapper();
+      await nextTick();
+
+      const nameColumn = capturedColumns.previous?.find((c: any) => c.accessorKey === 'name');
+      const cellVNode = nameColumn.cell({
+        row: { original: { id: 'duty-2', name: 'Studentų atstovas', institution: { name: 'VU SA FsF', tenant: { shortname: 'VU SA FsF' } } } },
+      });
+
+      const cellWrapper = mount(defineComponent({ render: () => cellVNode }));
+
+      expect(cellWrapper.text()).toContain('Studentų atstovas');
+      expect(cellWrapper.text()).toContain('VU SA FsF');
     });
   });
 

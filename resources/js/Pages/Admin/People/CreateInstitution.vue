@@ -32,9 +32,6 @@ const institution = {
   is_active: true,
   tenant_id: null,
   types: null,
-  selection_method: null,
-  appointed_by: { lt: '', en: '' },
-  term_length: { lt: '', en: '' },
 } as any;
 
 const handleSubmit = (form: any) => {

@@ -68,6 +68,16 @@ class FormField extends Model
         'placeholder',
     ];
 
+    /**
+     * `description` is authored through MultiLocaleTiptapFormItem (the `full`
+     * preset) in FormFieldForm.vue and rendered with `v-html` next to the input
+     * on the public form (Features/Registrations/RegistrationForm.vue).
+     */
+    protected function sanitizedHtmlTranslations(): array
+    {
+        return ['description'];
+    }
+
     #[\Override]
     protected function casts(): array
     {

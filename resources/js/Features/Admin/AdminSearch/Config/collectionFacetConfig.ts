@@ -140,7 +140,7 @@ export const AGENDA_ITEM_FACET_CONFIG: CollectionFacetConfig = {
  * News collection facet configuration
  */
 export const NEWS_FACET_CONFIG: CollectionFacetConfig = {
-  facetBy: 'lang,tenant_name',
+  facetBy: 'lang,tenant_name,draft',
   queryBy: 'title,short',
   defaultSortBy: 'publish_time:desc',
   fields: [
@@ -161,6 +161,14 @@ export const NEWS_FACET_CONFIG: CollectionFacetConfig = {
       maxValues: 15,
       sortBy: 'count',
     },
+    {
+      field: 'draft',
+      label: 'Juodraštis',
+      type: 'checkbox',
+      icon: 'PencilLine',
+      defaultOpen: false,
+      sortBy: 'count',
+    },
   ],
 };
 
@@ -168,7 +176,7 @@ export const NEWS_FACET_CONFIG: CollectionFacetConfig = {
  * Page collection facet configuration
  */
 export const PAGE_FACET_CONFIG: CollectionFacetConfig = {
-  facetBy: 'lang,tenant_name,category_name',
+  facetBy: 'lang,tenant_name,category_name,is_active',
   queryBy: 'title,meta_description',
   defaultSortBy: 'created_at:desc',
   fields: [
@@ -195,6 +203,14 @@ export const PAGE_FACET_CONFIG: CollectionFacetConfig = {
       icon: 'Users',
       defaultOpen: false,
       maxValues: 15,
+      sortBy: 'count',
+    },
+    {
+      field: 'is_active',
+      label: 'Aktyvus',
+      type: 'checkbox',
+      icon: 'CheckCircle',
+      defaultOpen: false,
       sortBy: 'count',
     },
   ],

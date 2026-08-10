@@ -180,7 +180,9 @@ public function __construct(
 $job = new SyncStaleDocumentsJob(dispatchDelayMicroseconds: 0, batchDelaySeconds: 0);
 ```
 
-**Typesense is per-process isolated under `--parallel`.** `TestingServiceProvider` sets a unique `scout.prefix` (`testing_{token}_`) for every parallel process and clears stale prefixed collections once per process. Search-backed tests (`Document::search()`, admin document index, sitemap) are hermetic — do not add your own index cleanup. Note that `Document::searchableUsing()` hardcodes the Typesense engine, so these tests require a running Typesense (Sail provides one locally, CI starts one).
+**Typesense is prefix-isolated from the running application.** `TestingServiceProvider` sets a `scout.prefix` that the app never serves from — `testing_{token}_` per process under `--parallel`, `testing_sequential_` otherwise — and clears stale prefixed collections once per process. This matters because ~14 models hardcode the Typesense engine in `searchableUsing()` and so ignore `SCOUT_DRIVER=database` from phpunit.xml; without the prefix a run would index factory records into the live `users` / `documents` / `institutions` collections and leave them there. Search-backed tests (`Document::search()`, admin document index, sitemap) are hermetic — do not add your own index cleanup, and don't pick a custom prefix that is a string prefix of another (cleanup matches by `str_starts_with`). These tests require a running Typesense (Sail provides one locally, CI starts one).
+
+**Clearing leftovers**: `sail artisan typesense:prune-test-collections` drops every `testing_*` / `test_*` collection (`--dry-run` to preview). Needed when a run uses fewer parallel processes than the last one, which strands the higher tokens' collections. To rebuild the real collections from the database, use `sail artisan search:reindex`.
 
 **`RefreshDatabase` already caches migrations** per process — the first test pays migrate+seed, the rest run in rolled-back transactions. Don't build "seed once" abstractions on top of it, and don't clean tables manually (`Model::query()->delete()` in a test is wasted work).
 

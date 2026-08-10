@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { translitLithuanian, latinizeId, slugify, generateSlug } from '../String';
+import { translitLithuanian, latinizeId, slugify, generateSlug, getDutyNameGenderVariants, changeDutyNameEndings } from '../String';
 
 describe('translitLithuanian', () => {
   it('transliterates all Lithuanian lowercase letters', () => {
@@ -162,5 +162,167 @@ describe('generateSlug', () => {
   it('handles empty and punctuation-only input', () => {
     expect(generateSlug('')).toBe('');
     expect(generateSlug('!!!')).toBe('');
+  });
+});
+
+describe('changeDutyNameEndings', () => {
+  const masculinize = (name: string) => changeDutyNameEndings(null, name, 'lt', 'jis/jo', false);
+  const feminize = (name: string) => changeDutyNameEndings(null, name, 'lt', 'ji/jos', false);
+
+  it('turns a feminine -rė duty into -rys, not -rius', () => {
+    // "Narė" is stored feminine on plenty of board/committee duties; "Narius" is not a word.
+    expect(masculinize('Narė')).toBe('Narys');
+    expect(masculinize('Valdybos narė')).toBe('Valdybos narys');
+  });
+
+  it('keeps -orė agent nouns on -orius', () => {
+    expect(masculinize('Koordinatorė')).toBe('Koordinatorius');
+    expect(masculinize('Studentų atstovų koordinatorė')).toBe('Studentų atstovų koordinatorius');
+    expect(masculinize('Kuratorė')).toBe('Kuratorius');
+  });
+
+  it('keeps the other feminine endings unchanged in behaviour', () => {
+    expect(masculinize('Studentų atstovė')).toBe('Studentų atstovas');
+    expect(masculinize('Pirmininkė')).toBe('Pirmininkas');
+  });
+
+  it('round-trips the -ys/-ė pair back to the feminine form', () => {
+    expect(changeDutyNameEndings(null, 'Narys', 'lt', 'ji/jos', false)).toBe('Narė');
+    expect(changeDutyNameEndings(null, 'Narys', 'lt', 'jie/jų', false)).toBe('Nariai');
+  });
+
+  it('inflects the head noun when the title continues past it', () => {
+    // The single largest shape in the duty table: "atstovas" followed by wherever the
+    // person represents students. Anchoring on the end of the string left every one of
+    // these frozen in whichever gender the duty happened to be created in.
+    expect(feminize('Studentų atstovas VU FF Taryboje')).toBe('Studentų atstovė VU FF Taryboje');
+    expect(feminize('Studentų atstovas SPK')).toBe('Studentų atstovė SPK');
+    expect(masculinize('Studentų atstovė Dekanate')).toBe('Studentų atstovas Dekanate');
+    expect(masculinize('Atstovė ryšiams su visuomene')).toBe('Atstovas ryšiams su visuomene');
+  });
+
+  it('inflects the head noun before a parenthesised scope, not inside it', () => {
+    expect(masculinize('VU SA CHGF Kuratorė (Biochemija)')).toBe('VU SA CHGF Kuratorius (Biochemija)');
+    // "(Socialinis darbas)" ends in -as but names a study programme, not the holder.
+    expect(feminize('VU SA FsF kuratorius (Socialinis darbas)')).toBe('VU SA FsF kuratorė (Socialinis darbas)');
+    // The parenthesised role is gendered too, but the title's head noun is the one outside.
+    expect(feminize('Viceprezidentas (Valdybos narys)')).toBe('Viceprezidentė (Valdybos narys)');
+  });
+
+  it('picks the rightmost head noun when qualifiers stack up on the left', () => {
+    expect(masculinize('Chemijos magistras studentų atstovė')).toBe('Chemijos magistras studentų atstovas');
+    expect(masculinize('Studentų atstovų koordinatorė')).toBe('Studentų atstovų koordinatorius');
+  });
+
+  it('leaves the title alone when the head noun already carries a gender marker', () => {
+    expect(feminize('Studentų atstovas(-ė) VU Senate')).toBe('Studentų atstovas(-ė) VU Senate');
+    expect(feminize('SPK atstovas (-ė)')).toBe('SPK atstovas (-ė)');
+  });
+
+  it('still inflects when the marker sits on a modifier rather than the head noun', () => {
+    expect(feminize('Studentų (-čių) iniciatyvų koordinatorius'))
+      .toBe('Studentų (-čių) iniciatyvų koordinatorė');
+  });
+
+  it('leaves words that merely look like head nouns untouched', () => {
+    expect(feminize('Kompiuterinis modeliavimas (MA)')).toBe('Kompiuterinis modeliavimas (MA)');
+    expect(feminize('Duomenų mokslas (BA)')).toBe('Duomenų mokslas (BA)');
+    // "atstovų" is genitive here — a modifier of "koordinatorius", never the head noun.
+    expect(feminize('Atstovų (-ių) koordinatorius')).toBe('Atstovų (-ių) koordinatorė');
+  });
+
+  it('falls back to the end-of-string rules for titles no stem covers', () => {
+    // Misspellings and uncatalogued roles keep the behaviour they had before the vocabulary.
+    expect(feminize('Partnerysčių koodinatorius')).toBe('Partnerysčių koodinatorė');
+  });
+});
+
+describe('getDutyNameGenderVariants', () => {
+  it('splits an -ius/-ė pair stored in the masculine form', () => {
+    expect(getDutyNameGenderVariants('Koordinatorius')).toEqual({
+      stem: 'Koordinator',
+      masculineEnding: 'ius',
+      feminineEnding: 'ė',
+      suffix: '',
+    });
+  });
+
+  it('splits an -as/-ė pair stored in the masculine form', () => {
+    expect(getDutyNameGenderVariants('Pirmininkas')).toEqual({
+      stem: 'Pirminink',
+      masculineEnding: 'as',
+      feminineEnding: 'ė',
+      suffix: '',
+    });
+  });
+
+  it('detects the same pair when the duty is instead stored in the feminine form', () => {
+    // Forgetting the masculine counterpart of an already-feminine duty is exactly as
+    // easy as the reverse, and the whole point is to surface it either way.
+    expect(getDutyNameGenderVariants('Koordinatorė')).toEqual({
+      stem: 'Koordinator',
+      masculineEnding: 'ius',
+      feminineEnding: 'ė',
+      suffix: '',
+    });
+    expect(getDutyNameGenderVariants('Sekretorė')).toEqual({
+      stem: 'Sekretor',
+      masculineEnding: 'ius',
+      feminineEnding: 'ė',
+      suffix: '',
+    });
+    expect(getDutyNameGenderVariants('Valdybos narė')).toEqual({
+      stem: 'Valdybos nar',
+      masculineEnding: 'ys',
+      feminineEnding: 'ė',
+      suffix: '',
+    });
+  });
+
+  it('keeps a multi-word stem intact', () => {
+    expect(getDutyNameGenderVariants('Studentų atstovas')).toEqual({
+      stem: 'Studentų atstov',
+      masculineEnding: 'as',
+      feminineEnding: 'ė',
+      suffix: '',
+    });
+  });
+
+  it('returns null for names with no gendered ending', () => {
+    expect(getDutyNameGenderVariants('Grupė')).toBeNull();
+    expect(getDutyNameGenderVariants('Taryba')).toBeNull();
+    expect(getDutyNameGenderVariants('Atstovybė')).toBeNull();
+  });
+
+  it('splits on a head noun sitting mid-name, keeping the rest as a suffix', () => {
+    expect(getDutyNameGenderVariants('Studentų atstovas VU FF Taryboje')).toEqual({
+      stem: 'Studentų atstov',
+      masculineEnding: 'as',
+      feminineEnding: 'ė',
+      suffix: ' VU FF Taryboje',
+    });
+    expect(getDutyNameGenderVariants('VU SA CHGF Kuratorė (Biochemija)')).toEqual({
+      stem: 'VU SA CHGF Kurator',
+      masculineEnding: 'ius',
+      feminineEnding: 'ė',
+      suffix: ' (Biochemija)',
+    });
+  });
+
+  it('returns null when the admin already wrote the gender marker by hand', () => {
+    expect(getDutyNameGenderVariants('Koordinatorius (-ė)')).toBeNull();
+    expect(getDutyNameGenderVariants('Studentų atstovas(-ė) VU Senate')).toBeNull();
+  });
+
+  it('returns null for a duty stored in the plural, which no single holder inflects to', () => {
+    expect(getDutyNameGenderVariants('Studentų atstovai MIF Taryboje')).toBeNull();
+    expect(getDutyNameGenderVariants('Komunikacijos koordinatorės')).toBeNull();
+  });
+
+  it('returns null for empty, whitespace-only, or nullish input', () => {
+    expect(getDutyNameGenderVariants('')).toBeNull();
+    expect(getDutyNameGenderVariants('   ')).toBeNull();
+    expect(getDutyNameGenderVariants(null)).toBeNull();
+    expect(getDutyNameGenderVariants(undefined)).toBeNull();
   });
 });

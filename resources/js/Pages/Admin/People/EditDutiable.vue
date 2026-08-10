@@ -1,8 +1,8 @@
 <template>
-  <PageContent :title="`${dutiable.duty?.name || 'Pareigybė'} (${dutiable.dutiable?.name || 'Asmuo'})`"
+  <PageContent :title="pageTitle"
     :back-url="route('users.edit', dutiable.dutiable?.id || '')" :heading-icon="DutyIcon">
     <UpsertModelLayout>
-      <DutiableForm :dutiable :study-programs enable-delete
+      <DutiableForm :dutiable :study-programs
         @submit:form="onSubmit"
         @delete="onDelete" />
     </UpsertModelLayout>
@@ -12,7 +12,9 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 
 import DutiableForm from '@/Components/AdminForms/DutiableForm.vue';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
@@ -27,6 +29,12 @@ const props = defineProps<{
 }>();
 
 const { report, open, guardedSubmit, confirm, cancel } = useAccessChangeGuard();
+
+const pageTitle = computed(() => {
+  const dutyName = props.dutiable.duty?.name || $t('forms.dutiable_title_fallback_duty');
+  const personName = props.dutiable.dutiable?.name || $t('forms.dutiable_title_fallback_person');
+  return `${dutyName} (${personName})`;
+});
 
 const onSubmit = (form: any) =>
   guardedSubmit(acknowledge =>

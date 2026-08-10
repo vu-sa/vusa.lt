@@ -79,6 +79,15 @@ class Training extends Model implements GuardsForceDelete
 
     public $translatable = ['name', 'description'];
 
+    /**
+     * `description` is Tiptap `full` preset HTML (TrainingCreateForm.vue,
+     * TrainingUpdateForm.vue), rendered with `v-html` on ShowTraining.vue.
+     */
+    protected function sanitizedHtmlTranslations(): array
+    {
+        return ['description'];
+    }
+
     #[\Override]
     protected function casts(): array
     {

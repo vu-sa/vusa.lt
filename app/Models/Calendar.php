@@ -118,6 +118,15 @@ class Calendar extends Model implements HasMedia
     ];
 
     /**
+     * `description` is Tiptap `full` preset HTML (CalendarForm.vue), rendered with
+     * `v-html` on the public event page (Pages/Public/CalendarEvent.vue).
+     */
+    protected function sanitizedHtmlTranslations(): array
+    {
+        return ['description'];
+    }
+
+    /**
      * Get the main image URL from Spatie Media collection with fallback to legacy URL field.
      */
     public function getMainImageUrlAttribute(): ?string

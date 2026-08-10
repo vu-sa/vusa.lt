@@ -42,10 +42,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $email Commonly the @vusa.lt email address, which is used as the OAuth login. Personal mail is stored in users.email.
  * @property string $contacts_grouping
  * @property int|null $places_to_occupy Full number of positions to occupy for this duty
- * @property string|null $selection_method
- * @property array|string|null $appointed_by
- * @property array|string|null $term_length
- * @property array|string|null $responsibilities
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
@@ -108,7 +104,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  */
 #[Fillable([
     'name', 'description', 'email', 'phone', 'order', 'is_active', 'institution_id', 'contacts_grouping', 'places_to_occupy',
-    'selection_method', 'appointed_by', 'term_length', 'responsibilities',
 ])]
 class Duty extends Model implements AuthorizableContract, GuardsForceDelete, SharepointFileableContract
 {
@@ -122,28 +117,16 @@ class Duty extends Model implements AuthorizableContract, GuardsForceDelete, Sha
 
     protected $guard_name = 'web';
 
-    public $translatable = ['name', 'description', 'appointed_by', 'term_length', 'responsibilities'];
+    public $translatable = ['name', 'description'];
 
     /**
-     * Resolve the appointment metadata for this duty, falling back to the
-     * institution's defaults when the duty does not override a value.
-     *
-     * @return array{selection_method: string|null, appointed_by: string|null, term_length: string|null}
+     * `description` is Tiptap `full` preset HTML, shown publicly in the contacts
+     * popover (ContactWithPhoto.vue) to anonymous visitors, while any
+     * padalinys-scoped admin may write it.
      */
-    public function resolveAppointment(): array
+    protected function sanitizedHtmlTranslations(): array
     {
-        $institution = $this->institution;
-
-        $selectionMethod = $this->selection_method ?: $institution?->selection_method;
-
-        $appointedBy = filled($this->appointed_by) ? $this->appointed_by : $institution?->appointed_by;
-        $termLength = filled($this->term_length) ? $this->term_length : $institution?->term_length;
-
-        return [
-            'selection_method' => $selectionMethod ?: null,
-            'appointed_by' => $appointedBy ?: null,
-            'term_length' => $termLength ?: null,
-        ];
+        return ['description'];
     }
 
     /**

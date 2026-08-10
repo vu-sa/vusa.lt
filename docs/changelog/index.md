@@ -7,6 +7,14 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.22 —  Administravimo ir juodraščių rodymo atnaujinimai (2026-08-10) {#v1-22}
+
+- 🔧 Patikimesnis naudotojų administravimas
+- ⭐ **Įspėjimas apie galimą dublikatą** — kuriant naują naudotoją (formoje ir pareigybių vedlyje) parodoma, jei panašus profilis jau egzistuoja — net jei jis priklauso kitam padaliniui. Vedlyje galima iš karto pasirinkti esamą profilį vietoj naujo kūrimo
+- ✨ **Pareigybės pavadinimas giminizuojamas aiškiau**
+- 🔧 **Juodraščiai ir suplanuotos naujienos/puslapiai vėl matomi administravimo paieškoje** 
+- 🔧 Suplanuotos naujienos ir puslapiai pasirodo viešoje paieškoje laiku
+
 ## v1.21 — Navigacijos redagavimas, ViSAK pokyčių grafikas ir RSS srautas (2026-08-04) {#v1-21}
 
 ### ViSAK

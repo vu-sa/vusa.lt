@@ -14,11 +14,32 @@
           {{ $t('forms.fields.duty_user_wizard') }}
         </Button>
       </Link>
+      <Button variant="outline" size="sm" as-child class="gap-1.5">
+        <Link :href="route('duties.merge')">
+          <MergeIcon class="size-4" />
+          {{ $t('Sulieti pareigybes') }}
+        </Link>
+      </Button>
     </template>
     <template #filters>
       <div class="flex items-center gap-2">
         <Switch id="show-external-duties" :model-value="showExternal" @update:model-value="handleShowExternalChange" />
         <Label for="show-external-duties" class="text-sm font-normal">{{ $t('forms.fields.show_external_duties') }}</Label>
+      </div>
+      <div class="flex items-center gap-2">
+        <Label for="data-quality-filter" class="text-sm font-normal whitespace-nowrap">{{ $t('forms.fields.data_quality_filter') }}</Label>
+        <Select v-model="dataQualityModel">
+          <SelectTrigger id="data-quality-filter" class="h-8 w-52">
+            <SelectValue :placeholder="$t('forms.fields.data_quality_all')" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{{ $t('forms.fields.data_quality_all') }}</SelectItem>
+            <SelectItem value="vacant">{{ $t('forms.fields.data_quality_vacant') }}</SelectItem>
+            <SelectItem value="missing_en_name">{{ $t('forms.fields.data_quality_missing_en_name') }}</SelectItem>
+            <SelectItem value="missing_lt_name">{{ $t('forms.fields.data_quality_missing_lt_name') }}</SelectItem>
+            <SelectItem value="duplicate_holders">{{ $t('forms.fields.data_quality_duplicate_holders') }}</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
     </template>
   </IndexTablePage>
@@ -33,6 +54,7 @@ import type { ColumnDef } from '@tanstack/vue-table';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Label } from '@/Components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Switch } from '@/Components/ui/switch';
 import { TagList, TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
 import { capitalize } from '@/Utils/String';
@@ -40,7 +62,9 @@ import { resolveTranslatable } from '@/Composables/useDataTableColumns';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import type { IndexTablePageProps } from '@/Types/TableConfigTypes';
+import { Merge as MergeIcon } from 'lucide-vue-next';
 import { DutyIcon, InstitutionIcon, UserIcon } from '@/Components/icons';
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 
 const props = defineProps<{
   duties: {
@@ -76,6 +100,19 @@ const handleShowExternalChange = (value: boolean) => {
   indexTablePageRef.value?.updateFilter('show_external', value ? undefined : false);
 };
 
+// Data-quality slice (vacant duties, missing localized names, duplicate holders).
+// "all" is the neutral default — selecting it drops the filter so the full list returns.
+const dataQuality = ref<string | undefined>(props.filters?.data_quality);
+
+const dataQualityModel = computed<string>({
+  get: () => dataQuality.value ?? 'all',
+  set: (value: string) => {
+    const next = value === 'all' ? undefined : value;
+    dataQuality.value = next;
+    indexTablePageRef.value?.updateFilter('data_quality', next);
+  },
+});
+
 const getRowId = (row: App.Entities.Duty) => {
   return `duty-${row.id}`;
 };
@@ -84,7 +121,10 @@ const columns = computed<Array<ColumnDef<App.Entities.Duty, any>>>(() => [
   {
     accessorKey: 'name',
     header: () => $t('Pavadinimas'),
-    cell: ({ row }) => h(TruncatedText, { text: resolveTranslatable(row.getValue('name')) }),
+    // Not TruncatedText — a duty name's gendered ending is shown live (see
+    // InflectedDutyName), which carries its own tooltip and wraps onto as many lines as
+    // the name needs rather than cutting long names off at one line.
+    cell: ({ row }) => h(InflectedDutyName, { name: resolveTranslatable(row.getValue('name')) }),
     size: 200,
     enableSorting: true,
   },

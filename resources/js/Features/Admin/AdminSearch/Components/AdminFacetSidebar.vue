@@ -111,6 +111,7 @@ import {
   TrendingUp,
   Filter,
   RotateCcw,
+  PencilLine,
 } from 'lucide-vue-next';
 
 import type { AdminFacet, AdminSearchFilters, CollectionFacetConfig } from '../Types/AdminSearchTypes';
@@ -163,6 +164,7 @@ const iconMap: Record<string, typeof Calendar> = {
   Layers: markRaw(Layers),
   TrendingUp: markRaw(TrendingUp),
   Filter: markRaw(Filter),
+  PencilLine: markRaw(PencilLine),
 };
 
 const fallbackIcon = iconMap.Filter;

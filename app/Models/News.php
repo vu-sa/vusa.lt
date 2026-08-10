@@ -6,7 +6,9 @@ use App\Actions\PairTranslatedRecord;
 use App\Feed\FeedHtml;
 use App\Feed\FeedItem;
 use App\Models\Traits\LogsModelActivity;
+use App\Services\HtmlSanitizerService;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -90,6 +92,24 @@ class News extends Model implements Feedable, Sitemapable
     }
 
     /**
+     * `short` is Tiptap HTML (NewsForm.vue, `full` preset minus tables) rendered
+     * with `v-html` in the public news list (NewsCard.vue, NewsElement.vue).
+     *
+     * News is not translatable — locales are separate rows — so unlike the
+     * `sanitizedHtmlTranslations()` models this is a plain `Attribute` mutator.
+     * The `full` allowlist is a superset of what this editor produces, so nothing
+     * an author can legitimately write is stripped.
+     */
+    protected function short(): Attribute
+    {
+        return Attribute::make(
+            set: fn (?string $value) => $value === null
+                ? null
+                : app(HtmlSanitizerService::class)->sanitizeRichContent($value),
+        );
+    }
+
+    /**
      * Available layout options for news articles.
      */
     public const LAYOUTS = ['modern', 'classic', 'immersive', 'headline'];
@@ -114,10 +134,16 @@ class News extends Model implements Feedable, Sitemapable
             Cache::tags(['sitemap', 'news', "tenant_{$news->tenant_id}"])->flush();
         });
 
+        static::saved(fn (News $news) => $news->syncPublicSearchIndex());
+
         static::deleted(function ($news): void {
             // Clear sitemap cache when news is deleted
             Cache::tags(['sitemap', 'news', "tenant_{$news->tenant_id}"])->flush();
         });
+
+        static::deleted(fn (News $news) => $news->publicSearchModel()->unsearchable());
+
+        static::forceDeleted(fn (News $news) => $news->publicSearchModel()->unsearchable());
 
         static::deleting(function (News $news): void {
             // Drop the surviving counterpart's back-reference so its language switcher
@@ -134,6 +160,34 @@ class News extends Model implements Feedable, Sitemapable
         static::restored(function (News $news): void {
             PairTranslatedRecord::repair($news);
         });
+
+        static::restored(fn (News $news) => $news->syncPublicSearchIndex());
+    }
+
+    /**
+     * Push this article's public-index membership in line with shouldBeSearchable(),
+     * since PublicNews's own Scout observer never fires — nothing ever saves a
+     * PublicNews instance directly.
+     */
+    private function syncPublicSearchIndex(): void
+    {
+        $public = PublicNews::query()->withTrashed()->with('tenant')->find($this->getKey());
+
+        if ($public?->shouldBeSearchable()) {
+            $public->searchable();
+
+            return;
+        }
+
+        $this->publicSearchModel()->unsearchable();
+    }
+
+    private function publicSearchModel(): PublicNews
+    {
+        $public = new PublicNews;
+        $public->setAttribute($public->getKeyName(), $this->getKey());
+
+        return $public;
     }
 
     /**
@@ -414,25 +468,29 @@ class News extends Model implements Feedable, Sitemapable
             'short' => $this->short,
             'permalink' => $this->permalink,
             'image' => $this->image,
-            'publish_time' => $this->publish_time ? $this->publish_time->timestamp : now()->timestamp,
+            // Falls back to created_at rather than now() so unscheduled drafts (no
+            // publish_time yet) sort by when they were made, not by index time —
+            // this collection now also carries records that are never published.
+            'publish_time' => $this->publish_time ? $this->publish_time->timestamp : $this->created_at->timestamp,
             'lang' => $this->lang,
             'tenant_id' => $this->tenant_id,
             'tenant_ids' => [$this->tenant_id],
             'tenant_name' => $this->tenant->fullname,
+            'draft' => (bool) $this->draft,
             'created_at' => $this->created_at->timestamp,
         ];
     }
 
     /**
      * Determine if the model should be searchable.
+     *
+     * This is the admin index (used by admin search and the other-language picker) and
+     * therefore covers everything non-trashed, including drafts and scheduled articles.
+     * Public-facing gating lives in PublicNews::shouldBeSearchable().
      */
     public function shouldBeSearchable(): bool
     {
-        // Only index published (non-draft) news that has been published
-        return ! $this->trashed() &&
-               ! $this->draft &&
-               $this->publish_time &&
-               $this->publish_time->isPast();
+        return ! $this->trashed();
     }
 
     /**

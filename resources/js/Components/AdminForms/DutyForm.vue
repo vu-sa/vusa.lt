@@ -11,36 +11,37 @@
           {{ $t("forms.context.main_info") }}
         </template>
         <template #description>
-          Pareigos rodymas pagal žmogaus įvardį, jeigu įvardyje pirmas žodis yra:
-          <li>
-            jis (he) - <strong>{{ changeDutyNameEndings(null, duty.name.lt, $page.props.app.locale, "jis/jo", false)
-            }}</strong>
-          </li>
-          <li>
-            ji (she) - <strong>{{ changeDutyNameEndings(null, duty.name.lt, $page.props.app.locale, "ji/jos", false)
-            }}</strong>
-          </li>
-          <li>
-            jie (they) - <strong>{{ changeDutyNameEndings(null, duty.name.lt, $page.props.app.locale, "jie/jų", false)
-            }}</strong>
-          </li>
+          <p>
+            {{ $t('forms.helpers.duty_name_inflected_hint') }}
+          </p>
+          <template v-if="form.name.lt">
+            <p class="mt-2">
+              <InflectedDutyName :name="form.name.lt" locale="lt" class="text-base font-medium text-foreground" />
+            </p>
+            <!-- <p class="mt-1 text-xs"> -->
+            <!--   jie (they) - <strong>{{ changeDutyNameEndings(null, form.name.lt, 'lt', "jie/jų", false) }}</strong> -->
+            <!-- </p> -->
+          </template>
         </template>
         <FormFieldWrapper id="name" :label="$t('forms.fields.title')" :error="form.errors.name">
           <MultiLocaleInput v-model:input="form.name" />
+          <!-- <Alert v-if="showMissingNameAlert" variant="default" class="mt-3"> -->
+          <!--   <TriangleAlert class="size-4" /> -->
+          <!-- </Alert> -->
         </FormFieldWrapper>
+
+        <DuplicateDutyWarning :matches="duplicateMatches" :current-duty-id="duty.id ?? null" class="mb-4" />
 
         <FormFieldWrapper id="email" :label="$t('forms.fields.email')" :error="form.errors.email">
           <Input id="email" v-model="form.email" placeholder="vusa@vusa.lt" />
         </FormFieldWrapper>
 
         <div class="grid gap-4 lg:grid-cols-2">
-          <FormFieldWrapper id="institution_id" :label="$t('forms.fields.institution')" :error="form.errors.institution_id">
-            <InstitutionSelectDialog
-              v-model:open="institutionDialogOpen"
+          <FormFieldWrapper id="institution_id" :label="$t('forms.fields.institution')"
+            :error="form.errors.institution_id">
+            <InstitutionSelectDialog v-model:open="institutionDialogOpen"
               :institutions="assignableInstitutions as unknown as InstitutionOption[]"
-              :initial-hits="institutionInitialHits"
-              @confirm="onInstitutionConfirm"
-            >
+              :initial-hits="institutionInitialHits" @confirm="onInstitutionConfirm">
               <template #trigger>
                 <Button type="button" variant="outline" class="w-full justify-between font-normal">
                   <span class="truncate" :class="{ 'text-muted-foreground': !selectedInstitution }">
@@ -57,12 +58,14 @@
             </InstitutionSelectDialog>
           </FormFieldWrapper>
 
-          <FormFieldWrapper id="places_to_occupy" :label="$t('forms.fields.duty_people_count')" :error="form.errors.places_to_occupy">
+          <FormFieldWrapper id="places_to_occupy" :label="$t('forms.fields.duty_people_count')"
+            :error="form.errors.places_to_occupy">
             <NumberField id="places_to_occupy" v-model="form.places_to_occupy" :min="0" />
           </FormFieldWrapper>
         </div>
 
-        <FormFieldWrapper id="contacts_grouping" :label="$t('forms.fields.contacts_grouping')" :error="form.errors.contacts_grouping">
+        <FormFieldWrapper id="contacts_grouping" :label="$t('forms.fields.contacts_grouping')"
+          :error="form.errors.contacts_grouping">
           <Select v-model="form.contacts_grouping">
             <SelectTrigger>
               <SelectValue :placeholder="$t('forms.placeholders.select_grouping')" />
@@ -94,64 +97,9 @@
             <SimpleLocaleButton v-model:locale="locale" />
           </div>
           <TiptapEditor v-if="locale === 'lt'" v-model="form.description.lt" preset="full" :html="true" />
-          <TiptapEditor v-else v-model="form.description.en" preset="full" :html="true" />
+          <TiptapEditor v-else v-model="form.description.en" preset="full" html />
           <p v-if="form.errors.description" class="text-xs text-red-600 dark:text-red-400">
             {{ form.errors.description }}
-          </p>
-        </div>
-      </FormElement>
-
-      <FormElement v-if="false">
-        <template #title>
-          {{ $t('Skyrimas ir atsakomybės') }}
-        </template>
-        <template #description>
-          {{ $t('Nurodykite, kaip užimama pareigybė ir kokios jos atsakomybės. Tušti laukai paveldimi iš institucijos.') }}
-        </template>
-
-        <FormFieldWrapper id="selection_method" :label="$t('Skyrimo būdas')" :error="form.errors.selection_method">
-          <Select v-model="form.selection_method">
-            <SelectTrigger>
-              <SelectValue :placeholder="$t('Paveldima iš institucijos')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="option in selectionMethodOptions" :key="option.value" :value="option.value">
-                {{ option.label }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </FormFieldWrapper>
-
-        <div class="grid gap-4 lg:grid-cols-2">
-          <FormFieldWrapper id="appointed_by" :label="$t('Skiria')" :error="form.errors.appointed_by">
-            <MultiLocaleInput v-model:input="form.appointed_by" />
-          </FormFieldWrapper>
-          <FormFieldWrapper id="term_length" :label="$t('Kadencija')" :error="form.errors.term_length">
-            <MultiLocaleInput v-model:input="form.term_length" />
-          </FormFieldWrapper>
-        </div>
-
-        <div class="space-y-2">
-          <div class="inline-flex items-center gap-2">
-            <Label for="responsibilities">{{ $t('Atsakomybės') }}</Label>
-            <SimpleLocaleButton v-model:locale="locale" />
-          </div>
-          <Textarea
-            v-if="locale === 'lt'"
-            id="responsibilities"
-            v-model="form.responsibilities.lt"
-            :rows="4"
-            :placeholder="$t('Kiekviena atsakomybė nurodoma naujoje eilutėje')"
-          />
-          <Textarea
-            v-else
-            id="responsibilities"
-            v-model="form.responsibilities.en"
-            :rows="4"
-            :placeholder="$t('Kiekviena atsakomybė nurodoma naujoje eilutėje')"
-          />
-          <p v-if="form.errors.responsibilities" class="text-xs text-red-600 dark:text-red-400">
-            {{ form.errors.responsibilities }}
           </p>
         </div>
       </FormElement>
@@ -190,12 +138,9 @@
           <template #source-label="{ option }">
             <span class="inline-flex items-center gap-2">
               {{ option.label }}
-              <a
-                target="_blank"
-                :href="route('users.edit', option.value)"
+              <a target="_blank" :href="route('users.edit', option.value)"
                 class="inline-flex size-5 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
-                @click.stop
-              >
+                @click.stop>
                 <IconEdit class="size-3.5" />
               </a>
             </span>
@@ -205,11 +150,8 @@
               <UserAvatar :size="24" :user="option.user" />
               <span class="inline-flex items-center gap-2">
                 {{ option.label }}
-                <a
-                  target="_blank"
-                  :href="route('users.edit', option.value)"
-                  class="inline-flex size-5 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
-                >
+                <a target="_blank" :href="route('users.edit', option.value)"
+                  class="inline-flex size-5 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground">
                   <IconEye class="size-3.5" />
                 </a>
               </span>
@@ -240,15 +182,12 @@
                 </div>
               </div>
             </div>
-            <Button
-              v-if="getUserDutiableId(user)"
-              as="a"
-              variant="link"
-              size="xs"
-              target="_blank"
+            <Button v-if="getUserDutiableId(user)" as="a" variant="link" size="xs"
+              :class="{ 'text-amber-600 dark:text-amber-400': missingStudyProgram(user) }" target="_blank"
               :href="route('dutiables.edit', { dutiable: getUserDutiableId(user) })"
-            >
-              <IconEdit />
+              :title="missingStudyProgram(user) ? $t('forms.helpers.study_program_required_hint') : undefined">
+              <TriangleAlert v-if="missingStudyProgram(user)" class="size-3.5 shrink-0" />
+              <IconEdit v-else />
               Redaguoti pareigybės laikotarpį
             </Button>
           </div>
@@ -286,27 +225,19 @@
             :disabled="!$page.props.auth?.user.isSuperAdmin" :placeholder="$t('forms.placeholders.no_role')" />
         </FormFieldWrapper>
 
-        <FormFieldWrapper id="ex_officio_target_duty_ids" :label="$t('forms.fields.ex_officio_duties')" :error="form.errors.ex_officio_target_duty_ids">
-          <CollectionSelectDialog
-            v-model:open="exOfficioDialogOpen"
-            collection="duties"
-            multiple
-            allow-empty
-            :base-filter-by="exOfficioBaseFilterBy"
-            :disabled-ids="exOfficioDisabledIds"
-            :initial-hits="exOfficioInitialHits"
-            :title="$t('forms.fields.ex_officio_duties')"
-            :confirm-label="$t('Pasirinkti')"
-            :search-placeholder="$t('Ieškoti pareigų pagal pavadinimą...')"
-            :empty-message="$t('Pareigų nerasta')"
-            @confirm="onExOfficioConfirm"
-          >
+        <FormFieldWrapper id="ex_officio_target_duty_ids" :label="$t('forms.fields.ex_officio_duties')"
+          :error="form.errors.ex_officio_target_duty_ids">
+          <CollectionSelectDialog v-model:open="exOfficioDialogOpen" collection="duties" multiple allow-empty
+            :base-filter-by="exOfficioBaseFilterBy" :disabled-ids="exOfficioDisabledIds"
+            :initial-hits="exOfficioInitialHits" :title="$t('forms.fields.ex_officio_duties')"
+            :confirm-label="$t('Pasirinkti')" :search-placeholder="$t('Ieškoti pareigų pagal pavadinimą...')"
+            :empty-message="$t('Pareigų nerasta')" @confirm="onExOfficioConfirm">
             <template #trigger>
               <Button type="button" variant="outline" class="w-full justify-between font-normal">
                 <span class="truncate" :class="{ 'text-muted-foreground': selectedExOfficioDuties.length === 0 }">
-                  {{ selectedExOfficioDuties.length > 0
+                  {{selectedExOfficioDuties.length > 0
                     ? selectedExOfficioDuties.map(d => d.name).join(', ')
-                    : $t('forms.fields.ex_officio_duties') }}
+                    : $t('forms.fields.ex_officio_duties')}}
                 </span>
                 <span class="flex shrink-0 items-center gap-2">
                   <Badge v-if="selectedExOfficioDuties.length > 0" variant="secondary" class="text-xs">
@@ -334,28 +265,23 @@
       </template>
 
       <!-- Toggle only shown to owning admin -->
-      <FormFieldWrapper v-if="canEditDuty" id="allow_external_dutiables" :label="$t('forms.fields.allow_external_dutiables')">
+      <FormFieldWrapper v-if="canEditDuty" id="allow_external_dutiables"
+        :label="$t('forms.fields.allow_external_dutiables')">
         <Switch :model-value="allowExternal" @update:model-value="toggleAllowExternal" />
       </FormFieldWrapper>
 
       <div v-if="allowExternal || !canEditDuty" class="space-y-4">
         <!-- Owning admin: configure which tenants can assign reps + their quotas -->
         <div v-if="canEditDuty" class="space-y-3">
-          <div
-            v-for="(row, index) in visibleAssignableTenantRows"
-            :key="row.tenant_id ?? index"
-            class="flex items-end gap-3"
-          >
+          <div v-for="(row, index) in visibleAssignableTenantRows" :key="row.tenant_id ?? index"
+            class="flex items-end gap-3">
             <FormFieldWrapper :id="`assignable_tenant_${index}`" :label="$t('forms.fields.tenant')" class="flex-1">
-              <SingleSelect
-                :model-value="assignableTenants.find(t => t.id === row.tenant_id) ?? null"
-                :options="availableTenantOptions(index)"
-                label-field="shortname"
-                value-field="id"
-                @update:model-value="(val: AssignableTenantOption | null) => row.tenant_id = val?.id ?? null"
-              />
+              <SingleSelect :model-value="assignableTenants.find(t => t.id === row.tenant_id) ?? null"
+                :options="availableTenantOptions(index)" label-field="shortname" value-field="id"
+                @update:model-value="(val: AssignableTenantOption | null) => row.tenant_id = val?.id ?? null" />
             </FormFieldWrapper>
-            <FormFieldWrapper :id="`assignable_tenant_quota_${index}`" :label="$t('forms.fields.tenant_quota')" :hint="$t('forms.fields.tenant_quota_hint')" class="w-32">
+            <FormFieldWrapper :id="`assignable_tenant_quota_${index}`" :label="$t('forms.fields.tenant_quota')"
+              :hint="$t('forms.fields.tenant_quota_hint')" class="w-32">
               <NumberField v-model="row.quota" :min="1" />
             </FormFieldWrapper>
             <Button type="button" variant="ghost" size="icon" @click="removeAssignableTenant(index)">
@@ -368,7 +294,8 @@
         <template v-if="!canEditDuty">
           <div class="inline-flex items-center gap-2 text-sm">
             <Switch id="show-all-users-tenant" v-model="showAllUsers" />
-            <Label for="show-all-users-tenant" class="cursor-pointer font-normal">{{ $t('forms.fields.show_all_users') }}</Label>
+            <Label for="show-all-users-tenant" class="cursor-pointer font-normal">{{ $t('forms.fields.show_all_users')
+              }}</Label>
           </div>
           <p v-if="!showAllUsers" class="text-xs text-muted-foreground">
             {{ $t('forms.fields.recent_users_only_hint', { shown: recentUsersCount, total: assignableUsersTotal }) }}
@@ -376,12 +303,10 @@
         </template>
 
         <!-- Per-tenant rep pickers in collapsible accordion sections -->
-        <Accordion v-if="visibleAssignableTenantRows.length > 0" type="multiple" :default-value="defaultOpenTenantValues">
-          <AccordionItem
-            v-for="row in visibleAssignableTenantRows"
-            :key="formIndexFor(row)"
-            :value="String(row.tenant_id ?? `new-${formIndexFor(row)}`)"
-          >
+        <Accordion v-if="visibleAssignableTenantRows.length > 0" type="multiple"
+          :default-value="defaultOpenTenantValues">
+          <AccordionItem v-for="row in visibleAssignableTenantRows" :key="formIndexFor(row)"
+            :value="String(row.tenant_id ?? `new-${formIndexFor(row)}`)">
             <AccordionTrigger>
               <span class="flex w-full items-center justify-between gap-3 pr-2">
                 <span>{{ tenantShortname(row) }}</span>
@@ -394,11 +319,9 @@
               <div v-if="!canEditDuty" class="mb-2 text-sm text-gray-500">
                 {{ $t('forms.fields.tenant_quota') }}: {{ row.quota ?? '∞' }}
               </div>
-              <TransferList
-                :model-value="selectedTenantUserIds[formIndexFor(row)] ?? []"
+              <TransferList :model-value="selectedTenantUserIds[formIndexFor(row)] ?? []"
                 :options="tenantTransferListOptions(formIndexFor(row))"
-                @update:model-value="(next: string[]) => applyTenantSelection(formIndexFor(row), next, row.quota)"
-              >
+                @update:model-value="(next: string[]) => applyTenantSelection(formIndexFor(row), next, row.quota)">
                 <template #target-label="{ option }">
                   <span class="flex items-center gap-2">
                     <UserAvatar :size="24" :user="(option as any).user" />
@@ -409,7 +332,8 @@
               <p v-if="tenantQuotaReached(row)" class="mt-2 text-xs text-amber-600 dark:text-amber-400">
                 {{ $t('forms.fields.quota_reached') }}
               </p>
-              <p v-if="(form.errors as any)[`assignable_tenants.${formIndexFor(row)}.user_ids`]" class="mt-1 text-xs text-red-600 dark:text-red-400">
+              <p v-if="(form.errors as any)[`assignable_tenants.${formIndexFor(row)}.user_ids`]"
+                class="mt-1 text-xs text-red-600 dark:text-red-400">
                 {{ (form.errors as any)[`assignable_tenants.${formIndexFor(row)}.user_ids`] }}
               </p>
             </AccordionContent>
@@ -433,7 +357,7 @@
 import { computed, ref, watch } from 'vue';
 import { useForm, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronsUpDown } from 'lucide-vue-next';
+import { ChevronsUpDown, TriangleAlert } from 'lucide-vue-next';
 
 import SimpleLocaleButton from '../Buttons/SimpleLocaleButton.vue';
 import UserAvatar from '../Avatars/UserAvatar.vue';
@@ -442,7 +366,9 @@ import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
 import FormElement from './FormElement.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 import AdminForm from './AdminForm.vue';
+import DuplicateDutyWarning from './DuplicateDutyWarning.vue';
 
+import { useDuplicateDutyCheck } from '@/Composables/useDuplicateDutyCheck';
 import IconEdit from '~icons/fluent/edit16-filled';
 import IconEye from '~icons/fluent/eye16-regular';
 import { Alert, AlertDescription } from '@/Components/ui/alert';
@@ -457,11 +383,11 @@ import { SingleSelect } from '@/Components/ui/single-select';
 import { CollectionSelectDialog, InstitutionSelectDialog, type InstitutionOption } from '@/Features/Admin/AdminSearch/Components/Select';
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { Switch } from '@/Components/ui/switch';
-import { Textarea } from '@/Components/ui/textarea';
 import { TransferList } from '@/Components/ui/transfer-list';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/Components/ui/accordion';
 import { changeDutyNameEndings } from '@/Utils/String';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 
 interface AssignableTenantOption { id: number; shortname: string; type?: string }
 interface AssignableDutyOption {
@@ -471,7 +397,7 @@ interface AssignableDutyOption {
 }
 interface AssignableTenantRow { tenant_id: number | null; quota: number | null; user_ids: string[] }
 interface UserWithPivot extends App.Entities.User {
-  pivot?: { id?: string | null; tenant_id?: number | null; via_dutiable_id?: string | null };
+  pivot?: { id?: string | null; tenant_id?: number | null; via_dutiable_id?: string | null; study_program_id?: string | null };
 }
 interface AssignableUserOption {
   id: string;
@@ -524,17 +450,7 @@ const initialFormData = {
     .map(u => u.id),
   ex_officio_target_duty_ids: props.duty.ex_officio_target_duties?.map(d => d.id) ?? [],
   assignable_tenants: initialAssignableTenantRows,
-  selection_method: (props.duty as any).selection_method ?? null,
-  appointed_by: (props.duty as any).appointed_by ?? { lt: '', en: '' },
-  term_length: (props.duty as any).term_length ?? { lt: '', en: '' },
-  responsibilities: (props.duty as any).responsibilities ?? { lt: '', en: '' },
 };
-
-const selectionMethodOptions = [
-  { value: 'elected', label: $t('Renkama') },
-  { value: 'delegated', label: $t('Deleguojama') },
-  { value: 'appointed', label: $t('Skiriama') },
-];
 
 const form = props.rememberKey
   ? useForm(props.rememberKey, initialFormData)
@@ -734,6 +650,18 @@ const institutionInitialHits = computed<NormalizedSearchHit[]>(() => {
   })];
 });
 
+// Advisory warning: this name (or its gendered/plural twin) may already exist,
+// most often in the same institution — see DuplicateDutyWarning.vue.
+const { matches: duplicateMatches } = useDuplicateDutyCheck(
+  () => String((form.name as { lt?: string })?.lt ?? ''),
+  () => form.institution_id as string | null,
+  () => props.duty.id ?? null,
+);
+
+const missingLtName = computed(() => !((form.name as { lt?: string })?.lt ?? '').trim());
+const missingEnName = computed(() => !((form.name as { en?: string })?.en ?? '').trim());
+const showMissingNameAlert = computed(() => !missingLtName.value !== !missingEnName.value);
+
 function onInstitutionConfirm(hits: NormalizedSearchHit[]) {
   form.institution_id = hits[0]?.recordId ?? null;
 }
@@ -741,6 +669,11 @@ function onInstitutionConfirm(hits: NormalizedSearchHit[]) {
 const isExOfficioUser = (user: App.Entities.User) => !!(user as UserWithPivot).pivot?.via_dutiable_id;
 
 const getUserDutiableId = (user: UserWithPivot) => user.pivot?.id || null;
+
+/** True when this duty groups public contacts by study program but the member's assignment has none set. */
+function missingStudyProgram(user: UserWithPivot): boolean {
+  return form.contacts_grouping === 'study_program' && !user.pivot?.study_program_id;
+}
 
 /** Returns the tenant shortname badge for cross-tenant reps, or null for owning-tenant reps. */
 function getCrossTenantLabel(user: App.Entities.User): string | null {

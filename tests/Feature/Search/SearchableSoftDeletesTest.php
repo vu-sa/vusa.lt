@@ -6,6 +6,8 @@ use App\Models\Institution;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\PublicInstitution;
+use App\Models\PublicNews;
+use App\Models\PublicPage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
@@ -57,7 +59,7 @@ function assertTypesenseSoftDeleteLifecycle(Model $model, string $query, ?string
     expectTypesenseSearchMissing($searchableModel, $query, $model);
 }
 
-test('news leaves public search when soft deleted and returns when restored', function (): void {
+test('news leaves the admin search index when soft deleted and returns when restored', function (): void {
     $query = 'Soft Delete News '.Str::uuid()->toString();
     $category = Category::factory()->create();
 
@@ -73,7 +75,7 @@ test('news leaves public search when soft deleted and returns when restored', fu
     assertTypesenseSoftDeleteLifecycle($news, $query);
 });
 
-test('page leaves public search when soft deleted and returns when restored', function (): void {
+test('page leaves the admin search index when soft deleted and returns when restored', function (): void {
     $query = 'Soft Delete Page '.Str::uuid()->toString();
     $category = Category::factory()->create();
 
@@ -86,6 +88,52 @@ test('page leaves public search when soft deleted and returns when restored', fu
     expect($page->shouldBeSearchable())->toBeTrue();
 
     assertTypesenseSoftDeleteLifecycle($page, $query);
+});
+
+test('public news index follows parent news soft delete lifecycle', function (): void {
+    $query = 'Soft Delete Public News '.Str::uuid()->toString();
+    $category = Category::factory()->create();
+
+    $news = News::factory()->create([
+        'category_id' => $category->id,
+        'title' => $query,
+        'draft' => false,
+        'publish_time' => now()->subHour(),
+    ]);
+
+    // News::saved() already synced PublicNews — no manual ->searchable() needed.
+    expectTypesenseSearchContains(PublicNews::class, $query, $news);
+
+    $news->delete();
+    expectTypesenseSearchMissing(PublicNews::class, $query, $news);
+
+    $news->restore();
+    expectTypesenseSearchContains(PublicNews::class, $query, $news);
+
+    $news->forceDelete();
+    expectTypesenseSearchMissing(PublicNews::class, $query, $news);
+});
+
+test('public pages index follows parent page soft delete lifecycle', function (): void {
+    $query = 'Soft Delete Public Page '.Str::uuid()->toString();
+    $category = Category::factory()->create();
+
+    $page = Page::factory()->active()->create([
+        'category_id' => $category->id,
+        'title' => $query,
+        'lang' => 'lt',
+    ]);
+
+    expectTypesenseSearchContains(PublicPage::class, $query, $page);
+
+    $page->delete();
+    expectTypesenseSearchMissing(PublicPage::class, $query, $page);
+
+    $page->restore();
+    expectTypesenseSearchContains(PublicPage::class, $query, $page);
+
+    $page->forceDelete();
+    expectTypesenseSearchMissing(PublicPage::class, $query, $page);
 });
 
 test('calendar leaves public search when soft deleted and returns when restored', function (): void {

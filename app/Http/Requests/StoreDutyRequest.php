@@ -2,14 +2,12 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\DutySelectionMethod;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Rules\SoftDeleteRules;
 use App\Services\ModelAuthorizer;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 class StoreDutyRequest extends FormRequest
@@ -38,10 +36,6 @@ class StoreDutyRequest extends FormRequest
             'institution_id' => 'required',
             'places_to_occupy' => 'nullable|integer',
             'contacts_grouping' => 'required|in:none,study_program,tenant',
-            'selection_method' => ['nullable', Rule::enum(DutySelectionMethod::class)],
-            'appointed_by' => 'nullable|array',
-            'term_length' => 'nullable|array',
-            'responsibilities' => 'nullable|array',
             'types' => 'nullable|array',
             'roles' => 'nullable|array',
             'current_users' => 'nullable|array',

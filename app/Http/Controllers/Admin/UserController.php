@@ -57,6 +57,16 @@ class UserController extends AdminController
                 'applySortBeforePagination' => true,
                 'tenantRelation' => 'tenants',
                 'permission' => 'users.read.padalinys',
+                // A user's tenants are derived from their duties, so someone with no
+                // duties at all belongs to no tenant and would be invisible to every
+                // tenant admin — including the one who just created them and now needs
+                // to assign a duty (GitHub issue #249). Surface them to everyone;
+                // UserPolicy applies the same carve-out, and refuses the ones holding
+                // a directly assigned role.
+                'permissionOrInclude' => fn ($query) => $query
+                    ->orWhere(fn ($unclaimed) => $unclaimed
+                        ->whereDoesntHave('duties')
+                        ->whereDoesntHave('roles')),
             ]
         );
 
@@ -103,7 +113,7 @@ class UserController extends AdminController
         return $this->inertiaResponse('Admin/People/CreateUser', [
             'roles' => Role::all(),
             'tenantsWithDuties' => UserDutyService::getTenantsWithDutiesForForm($this->authorizer),
-            'permissableTenants' => UserDutyService::getPermissableTenants($this->authorizer),
+            'permissableTenants' => UserDutyService::getPermissableTenants($this->authorizer, 'users.create.padalinys'),
         ]);
     }
 
@@ -120,17 +130,19 @@ class UserController extends AdminController
 
             $user->save();
 
-            foreach ($request->current_duties as $duty) {
-                $user->duties()->attach($duty, ['start_date' => now()->subDay()]);
-            }
+            // Routed through the service so creation is held to the same tenant check
+            // as editing; the old raw attach() accepted duty ids from any tenant.
+            UserDutyService::syncDutiesForUser(
+                new SupportCollection($request->validated('current_duties')),
+                new SupportCollection,
+                $user,
+                $this->authorizer,
+                'users.create.padalinys'
+            );
 
-            // check if user is super admin
+            // only a super admin may assign roles
             if (User::find(Auth::id())->isSuperAdmin()) {
-                if ($request->has('roles')) {
-                    $user->roles()->sync($request->roles);
-                } else {
-                    $user->syncRoles([]);
-                }
+                $user->roles()->sync($request->validated('roles') ?? []);
             }
         });
 
@@ -210,13 +222,19 @@ class UserController extends AdminController
     {
         $this->handleAuthorization('update', $user);
 
-        $user->load('current_duties', 'previous_duties', 'roles');
+        // Institution/tenant loaded so the duty tables and transfer-list target
+        // labels can attribute a duty rather than showing a bare, unattributable
+        // name (the same name commonly repeats across institutions).
+        $user->load('current_duties.institution.tenant', 'previous_duties.institution.tenant', 'roles');
+
+        $actor = Auth::user();
 
         return $this->inertiaResponse('Admin/People/EditUser', [
             'user' => $user->makeVisible(['last_action'])->append('has_password')->toFullArray(),
             'roles' => Role::all(...),
-            'tenantsWithDuties' => fn () => UserDutyService::getTenantsWithDutiesForForm($this->authorizer),
-            'permissableTenants' => UserDutyService::getPermissableTenants($this->authorizer),
+            'tenantsWithDuties' => fn () => UserDutyService::getTenantsWithDutiesForForm($this->authorizer, 'users.update.all'),
+            'permissableTenants' => UserDutyService::getPermissableTenants($this->authorizer, 'users.update.padalinys'),
+            'canUpdateIdentity' => $actor->can('updateIdentity', $user),
         ]);
     }
 
@@ -232,16 +250,26 @@ class UserController extends AdminController
         $actorIsSuperAdmin = $actor->isSuperAdmin();
         $currentDutyIds = $user->current_duties->pluck('id');
 
-        $mutation = function () use ($request, $user, $currentDutyIds, $actorIsSuperAdmin): void {
+        // UpdateUserRequest already rejects an identity change the actor may not make;
+        // dropping the fields here as well means no future call path can slip one
+        // through by skipping that validator.
+        $fields = ['facebook_url', 'phone', 'profile_photo_path', 'profile_photo_focal_point', 'pronouns', 'show_pronouns'];
+
+        if ($actor->can('updateIdentity', $user)) {
+            $fields = array_merge(['name', 'email'], $fields);
+        }
+
+        $mutation = function () use ($request, $user, $currentDutyIds, $actorIsSuperAdmin, $fields): void {
             UserDutyService::syncDutiesForUser(
                 new SupportCollection($request->current_duties ?? []),
                 $currentDutyIds,
                 $user,
-                $this->authorizer
+                $this->authorizer,
+                'users.update.padalinys'
             );
 
-            DB::transaction(function () use ($request, $user, $actorIsSuperAdmin): void {
-                $user->update($request->only('name', 'email', 'facebook_url', 'phone', 'profile_photo_path', 'profile_photo_focal_point', 'pronouns', 'show_pronouns'));
+            DB::transaction(function () use ($request, $user, $actorIsSuperAdmin, $fields): void {
+                $user->update($request->only($fields));
 
                 // only a super admin may change roles
                 if ($actorIsSuperAdmin) {
@@ -268,6 +296,10 @@ class UserController extends AdminController
     public function destroy(User $user)
     {
         $this->handleAuthorization('delete', $user);
+
+        // UserPolicy blocks this too, but Gate::before grants super admins every
+        // ability outright, so the policy never runs for them.
+        abort_if($user->is(Auth::user()), 403, __('users.cannot_delete_self'));
 
         $user->delete();
 
@@ -323,11 +355,19 @@ class UserController extends AdminController
     {
         $this->authorize('forceDelete', $user);
 
-        abort_unless($user->trashed(), 403, __('trash.must_be_deleted_first'));
+        abort_if($user->is(Auth::user()), 403, __('users.cannot_delete_self'));
 
-        $user->duties()->detach();
-
-        return $this->forceDeleteModel($user, 'Kontaktas sėkmingai ištrintas!');
+        // The detach is handed to the trait rather than run here: it must not happen
+        // until after the force-delete blockers have passed, or a refused delete
+        // leaves the user stripped of every duty — and therefore of every tenant,
+        // making them unreachable.
+        return $this->forceDeleteModel(
+            $user,
+            'Kontaktas sėkmingai ištrintas!',
+            function () use ($user): void {
+                $user->duties()->detach();
+            },
+        );
     }
 
     /**

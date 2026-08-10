@@ -313,6 +313,18 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
             }
         });
 
+        static::saved(function (Meeting $meeting): void {
+            $publicMeeting = PublicMeeting::query()->find($meeting->getKey());
+
+            if ($publicMeeting?->shouldBeSearchable()) {
+                $publicMeeting->searchable();
+
+                return;
+            }
+
+            $meeting->publicSearchModel()->unsearchable();
+        });
+
         static::deleted(function (Meeting $meeting): void {
             $meeting->publicSearchModel()->unsearchable();
         });

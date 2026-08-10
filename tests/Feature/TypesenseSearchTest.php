@@ -5,6 +5,8 @@ use App\Models\Document;
 use App\Models\Duty;
 use App\Models\News;
 use App\Models\Page;
+use App\Models\PublicNews;
+use App\Models\PublicPage;
 use App\Models\User;
 use App\Services\Typesense\TypesenseManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -93,22 +95,7 @@ test('search arrays contain required fields', function (): void {
         ->and($docSearchArray)->toHaveKey('tenant_shortname');
 });
 
-test('draft models are not searchable', function (): void {
-    // Test that draft news is not searchable
-    $draftNews = News::factory()->create(['draft' => true]);
-    expect($draftNews->shouldBeSearchable())->toBeFalse();
-
-    // Test that future news is not searchable
-    $futureNews = News::factory()->create([
-        'draft' => false,
-        'publish_time' => now()->addDay(),
-    ]);
-    expect($futureNews->shouldBeSearchable())->toBeFalse();
-
-    // Test that draft pages are not searchable
-    $draftPage = Page::factory()->create(['is_active' => false]);
-    expect($draftPage->shouldBeSearchable())->toBeFalse();
-
+test('draft/inactive documents and calendar events are not searchable', function (): void {
     // Test that inactive documents are not searchable
     $inactiveDocument = Document::factory()->create([
         'is_active' => false,
@@ -119,6 +106,49 @@ test('draft models are not searchable', function (): void {
     // Test that draft calendar events are not searchable
     $draftCalendar = Calendar::factory()->create(['is_draft' => true]);
     expect($draftCalendar->shouldBeSearchable())->toBeFalse();
+});
+
+test('the admin news index includes drafts and scheduled articles', function (): void {
+    // News (admin index) covers everything non-trashed, regardless of publish status —
+    // that's what makes drafts/scheduled articles findable in admin search and the
+    // "other language" picker. PublicNews carries the actual publication gating.
+    $published = News::factory()->create(['draft' => false, 'publish_time' => now()->subHour()]);
+    $draft = News::factory()->create(['draft' => true]);
+    $scheduled = News::factory()->create(['draft' => false, 'publish_time' => now()->addDay()]);
+
+    expect($published->shouldBeSearchable())->toBeTrue()
+        ->and($draft->shouldBeSearchable())->toBeTrue()
+        ->and($scheduled->shouldBeSearchable())->toBeTrue();
+});
+
+test('the public news index excludes drafts and scheduled articles', function (): void {
+    $published = News::factory()->create(['draft' => false, 'publish_time' => now()->subHour()]);
+    $draft = News::factory()->create(['draft' => true]);
+    $scheduled = News::factory()->create(['draft' => false, 'publish_time' => now()->addDay()]);
+
+    expect(PublicNews::find($published->id)->shouldBeSearchable())->toBeTrue()
+        ->and(PublicNews::find($draft->id)->shouldBeSearchable())->toBeFalse()
+        ->and(PublicNews::find($scheduled->id)->shouldBeSearchable())->toBeFalse();
+});
+
+test('the admin pages index includes inactive and scheduled pages', function (): void {
+    $active = Page::factory()->create(['is_active' => true]);
+    $inactive = Page::factory()->create(['is_active' => false]);
+    $scheduled = Page::factory()->create(['is_active' => true, 'publish_time' => now()->addDay()]);
+
+    expect($active->shouldBeSearchable())->toBeTrue()
+        ->and($inactive->shouldBeSearchable())->toBeTrue()
+        ->and($scheduled->shouldBeSearchable())->toBeTrue();
+});
+
+test('the public pages index excludes inactive and scheduled pages', function (): void {
+    $active = Page::factory()->create(['is_active' => true]);
+    $inactive = Page::factory()->create(['is_active' => false]);
+    $scheduled = Page::factory()->create(['is_active' => true, 'publish_time' => now()->addDay()]);
+
+    expect(PublicPage::find($active->id)->shouldBeSearchable())->toBeTrue()
+        ->and(PublicPage::find($inactive->id)->shouldBeSearchable())->toBeFalse()
+        ->and(PublicPage::find($scheduled->id)->shouldBeSearchable())->toBeFalse();
 });
 
 test('duty search array carries index-aligned member ids for current and previous members', function (): void {

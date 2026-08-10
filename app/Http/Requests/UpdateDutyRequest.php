@@ -2,13 +2,11 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\DutySelectionMethod;
 use App\Models\Duty;
 use App\Rules\SoftDeleteRules;
 use App\Services\ModelAuthorizer;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 class UpdateDutyRequest extends FormRequest
@@ -37,10 +35,6 @@ class UpdateDutyRequest extends FormRequest
             'institution_id' => 'required',
             'places_to_occupy' => 'required|numeric',
             'contacts_grouping' => 'required|in:none,study_program,tenant',
-            'selection_method' => ['nullable', Rule::enum(DutySelectionMethod::class)],
-            'appointed_by' => 'nullable|array',
-            'term_length' => 'nullable|array',
-            'responsibilities' => 'nullable|array',
             'types' => 'nullable|array',
             'ex_officio_target_duty_ids' => 'nullable|array',
             'ex_officio_target_duty_ids.*' => ['ulid', 'distinct', SoftDeleteRules::existsLive('duties'), 'not_in:'.$duty->id],

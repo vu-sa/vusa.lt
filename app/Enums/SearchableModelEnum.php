@@ -15,6 +15,8 @@ enum SearchableModelEnum: string
     case CALENDAR = 'CALENDAR';
     case PUBLIC_INSTITUTION = 'PUBLIC_INSTITUTION';
     case PUBLIC_MEETING = 'PUBLIC_MEETING';
+    case PUBLIC_NEWS = 'PUBLIC_NEWS';
+    case PUBLIC_PAGE = 'PUBLIC_PAGE';
     case MEETING = 'MEETING';
     case AGENDA_ITEM = 'AGENDA_ITEM';
     case RESOURCE = 'RESOURCE';
@@ -31,6 +33,8 @@ enum SearchableModelEnum: string
             self::CALENDAR => 'calendar',
             self::PUBLIC_INSTITUTION => 'public_institution',
             self::PUBLIC_MEETING => 'public_meeting',
+            self::PUBLIC_NEWS => 'public_news',
+            self::PUBLIC_PAGE => 'public_page',
             self::MEETING => 'meeting',
             self::AGENDA_ITEM => 'agenda_item',
             self::RESOURCE => 'resource',

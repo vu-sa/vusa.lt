@@ -8,14 +8,13 @@
       :title="duty.name"
       :subtitle="duty.institution?.name"
     >
+      <template #title>
+        <InflectedDutyName :name="duty.name" />
+      </template>
       <template #icon>
         <DutyIconFilled class="h-6 w-6 sm:h-7 sm:w-7 text-zinc-600 dark:text-zinc-300" />
       </template>
       <template #badge>
-        <Badge v-if="methodLabel" variant="secondary" class="gap-1 text-xs">
-          <Gavel class="h-3 w-3" />
-          {{ methodLabel }}
-        </Badge>
         <Badge
           v-if="isVacant"
           variant="outline"
@@ -81,7 +80,6 @@
             <DutyAboutCard
               v-if="hasAbout"
               :description
-              :responsibilities
             />
 
             <DutyLineageCard v-if="allMembers.length > 0" :members="allMembers" />
@@ -89,8 +87,6 @@
 
           <!-- Sidebar -->
           <div class="space-y-6 xl:sticky xl:top-6 xl:self-start">
-            <DutyAppointmentCard v-if="hasAppointment" :appointment="duty.appointment!" />
-
             <!-- Context tiles cluster together with tighter spacing -->
             <div v-if="duty.institution || duty.next_meeting || duty.last_meeting" class="space-y-2">
               <DutyInstitutionCard v-if="duty.institution" :institution="duty.institution" />
@@ -174,7 +170,7 @@ import { computed, ref } from 'vue';
 import { router, Head as InertiaHead, usePage } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { UserPlus, Settings, Mail, Gavel, UserX } from 'lucide-vue-next';
+import { UserPlus, Settings, Mail, UserX } from 'lucide-vue-next';
 
 // Layout and Components
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
@@ -188,15 +184,14 @@ import {
   DutyCurrentHoldersCard,
   DutyAboutCard,
   DutyLineageCard,
-  DutyAppointmentCard,
   DutyInstitutionCard,
   DutyMeetingMiniCard,
   DutyOtherDutiesCard,
   DutyDocumentsPreview,
 } from '@/Components/Duties';
-import type { DutyAppointment } from '@/Components/Duties/DutyAppointmentCard.vue';
 import type { OtherDuty } from '@/Components/Duties/DutyOtherDutiesCard.vue';
 import type { MiniMeeting } from '@/Components/Duties/DutyMeetingMiniCard.vue';
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 
 // UI Components
 import { Badge } from '@/Components/ui/badge';
@@ -211,7 +206,6 @@ import { DutyIconFilled, InstitutionIconFilled } from '@/Components/icons';
 const props = defineProps<{
   duty: App.Entities.Duty & {
     sharepointPath?: string | null;
-    appointment?: DutyAppointment;
     other_duties?: OtherDuty[];
     next_meeting?: MiniMeeting | null;
     last_meeting?: MiniMeeting | null;
@@ -225,12 +219,6 @@ if (!['overview', 'files'].includes(currentTab.value)) {
 }
 const showAssignMemberModal = ref(false);
 const showVacancyAlert = ref(true);
-
-const METHOD_LABELS: Record<string, string> = {
-  elected: 'Renkama',
-  delegated: 'Deleguojama',
-  appointed: 'Skiriama',
-};
 
 // Members split into current / historical via the dutiable pivot dates.
 const filteredUsers = computed(() => {
@@ -264,24 +252,9 @@ const hasTypeFiles = computed(() => (props.duty.types?.length ?? 0) > 0);
 
 // Localized translatable strings (server returns them via toArray()).
 const description = computed(() => (typeof props.duty.description === 'string' ? props.duty.description : null));
-const responsibilities = computed(() =>
-  (typeof props.duty.responsibilities === 'string' ? props.duty.responsibilities : null));
-const hasAbout = computed(() => !!description.value || !!responsibilities.value);
+const hasAbout = computed(() => !!description.value);
 
 const otherDuties = computed<OtherDuty[]>(() => props.duty.other_duties ?? []);
-
-const hasAppointment = computed(() => {
-  const a = props.duty.appointment;
-  return !!a && (!!a.selection_method || !!a.appointed_by || !!a.term_length);
-});
-
-const methodLabel = computed(() => {
-  const method = props.duty.appointment?.selection_method;
-  if (!method) {
-    return null;
-  }
-  return $t(METHOD_LABELS[method] ?? method);
-});
 
 // Permissions
 const page = usePage();

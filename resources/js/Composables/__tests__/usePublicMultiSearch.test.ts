@@ -28,8 +28,8 @@ const fakeMultiSearchResponse = (searches: Array<{ collection: string }>) => ({
       public_institutions: { score: 10, found: 3 },
       public_meetings: { score: 50, found: 2 },
       documents: { score: 99, found: 5 },
-      news: { score: 5, found: 1 },
-      pages: { score: 0, found: 0 },
+      public_news: { score: 5, found: 1 },
+      public_pages: { score: 0, found: 0 },
       calendar: { score: 20, found: 4 },
     };
     const meta = scores[search.collection] ?? { score: 1, found: 1 };
@@ -63,8 +63,8 @@ describe('usePublicMultiSearch', () => {
           apiKey: 'search-only-key',
           nodes: [{ protocol: 'http', host: 'localhost', port: 8108 }],
           collections: {
-            news: 'news',
-            pages: 'pages',
+            public_news: 'public_news',
+            public_pages: 'public_pages',
             calendar: 'calendar',
             documents: 'documents',
             public_meetings: 'public_meetings',
@@ -98,8 +98,8 @@ describe('usePublicMultiSearch', () => {
       'public_institutions',
       'public_meetings',
       'documents',
-      'news',
-      'pages',
+      'public_news',
+      'public_pages',
       'calendar',
     ]);
     // public_meetings is included (added on top of the legacy dialog set)
@@ -232,8 +232,8 @@ describe('usePublicMultiSearch', () => {
       'public_institutions',
       'public_meetings',
       'documents',
-      'news',
-      'pages',
+      'public_news',
+      'public_pages',
       'calendar',
     ]);
 
@@ -260,7 +260,7 @@ describe('usePublicMultiSearch', () => {
     const perPageFor = (collection: string) =>
       body.searches.find((s: { collection: string }) => s.collection === collection).per_page;
     expect(perPageFor('documents')).toBe(12); // visible — real page size
-    expect(perPageFor('news')).toBe(1); // hidden — just enough for the count
+    expect(perPageFor('public_news')).toBe(1); // hidden — just enough for the count
   });
 
   it('resetCollections clears the filter back to "show everything" and refetches', async () => {

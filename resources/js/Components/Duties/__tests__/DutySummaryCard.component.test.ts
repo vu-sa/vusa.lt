@@ -69,4 +69,27 @@ describe('DutySummaryCard', () => {
     });
     expect(wrapper.text()).toContain('Dalinai užimta');
   });
+
+  describe('holder-based inflection', () => {
+    // The page locale defaults to 'lt' in the test setup.
+    it('inflects the duty name to match a feminine holder', () => {
+      const wrapper = mount(DutySummaryCard, {
+        props: {
+          duty: makeDuty({ name: 'Koordinatorius' }),
+          holder: { name: 'Ona Onaitė', pronouns: 'ji/jos' },
+        },
+        global: { stubs },
+      });
+      expect(wrapper.text()).toContain('Koordinatorė');
+    });
+
+    it('leaves the stored name unchanged when no holder is given', () => {
+      const wrapper = mount(DutySummaryCard, {
+        props: { duty: makeDuty({ name: 'Koordinatorius' }) },
+        global: { stubs },
+      });
+      expect(wrapper.text()).toContain('Koordinatorius');
+      expect(wrapper.text()).not.toContain('Koordinatorė');
+    });
+  });
 });

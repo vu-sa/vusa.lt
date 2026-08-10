@@ -102,6 +102,18 @@ class Kernel extends ConsoleKernel
             ->name('calendar-reminders')
             ->withoutOverlapping(5);
 
+        // =====================================================================
+        // SEARCH INDEX SYNC
+        // =====================================================================
+
+        // Scheduled news/pages enter the public search index once their publish_time
+        // passes. The model save hooks only fire on save, so without this nothing
+        // else would ever index them — see SyncPublicSearchIndex for details.
+        $schedule->command('search:sync-public')
+            ->everyFiveMinutes()
+            ->name('sync-public-search-index')
+            ->withoutOverlapping(5);
+
         // Prune stale digest items so a stalled mail pipeline cannot build an
         // unbounded backlog of notifications nobody will ever want to read.
         // The cutoff is deliberately conservative: a shorter one risks deleting

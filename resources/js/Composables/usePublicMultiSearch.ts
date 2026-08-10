@@ -151,8 +151,8 @@ const COLLECTIONS: CollectionDef[] = [
   },
   {
     id: 'news',
-    configKey: 'news',
-    fallbackName: 'news',
+    configKey: 'public_news',
+    fallbackName: 'public_news',
     buildParams: query => ({
       query_by: 'title,short',
       query_by_weights: '10,4',
@@ -161,8 +161,8 @@ const COLLECTIONS: CollectionDef[] = [
   },
   {
     id: 'pages',
-    configKey: 'pages',
-    fallbackName: 'pages',
+    configKey: 'public_pages',
+    fallbackName: 'public_pages',
     buildParams: query => ({
       query_by: 'title',
       sort_by: hasRealQuery(query) ? '_text_match:desc,created_at:desc' : 'created_at:desc',

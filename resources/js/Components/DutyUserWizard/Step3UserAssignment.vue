@@ -1,11 +1,11 @@
 <template>
   <div class="space-y-6">
-    <!-- Loading state while users are being fetched -->
-    <div v-if="isLoadingUsers" class="flex flex-col items-center justify-center py-12 space-y-4">
+    <!-- Loading state while the step's lazily-loaded data arrives -->
+    <div v-if="isLoadingStepData" class="flex flex-col items-center justify-center py-12 space-y-4">
       <Loader2 class="h-8 w-8 animate-spin text-primary" />
       <div class="text-center">
         <p class="font-medium text-foreground">
-          {{ $t('Kraunami naudotojai...') }}
+          {{ $t('Kraunami duomenys...') }}
         </p>
         <p class="text-sm text-muted-foreground">
           {{ $t('Prašome palaukti') }}
@@ -23,8 +23,8 @@
           <p class="text-xs text-muted-foreground">
             {{ $t('Pasirinkta pareigybė') }}
           </p>
-          <p class="font-medium text-foreground truncate">
-            {{ wizard.state.duty?.name }}
+          <p class="min-w-0 font-medium text-foreground">
+            <InflectedDutyName v-if="wizard.state.duty" :name="wizard.state.duty.name" />
           </p>
           <p class="text-xs text-muted-foreground">
             {{ wizard.state.institution?.name }}
@@ -195,8 +195,17 @@
                     <span v-else class="text-xs font-medium">{{ user.name?.charAt(0) }}</span>
                   </div>
                   <div class="flex-1 min-w-0">
-                    <p class="font-medium text-sm truncate">
+                    <p class="flex items-center gap-1.5 font-medium text-sm truncate">
                       {{ user.name }}
+                      <!-- Results span every unit, so the unit is what tells two people
+                           with the same name apart — and flags that this assignment is
+                           what will place a unit-less person somewhere. -->
+                      <Badge v-if="user.duties_count === 0" variant="outline" class="text-[10px] shrink-0">
+                        {{ $t('users.no_tenant') }}
+                      </Badge>
+                      <Badge v-else-if="user.tenants?.length" variant="secondary" class="text-[10px] shrink-0">
+                        {{ user.tenants.join(', ') }}
+                      </Badge>
                     </p>
                     <p class="text-xs text-muted-foreground truncate">
                       {{ user.email }}
@@ -205,7 +214,12 @@
                   <Plus class="h-4 w-4 text-primary shrink-0" />
                 </button>
 
-                <div v-if="availableUsers.length === 0" class="p-4 text-center text-sm text-muted-foreground">
+                <!-- Results now arrive asynchronously; without this the "not found"
+                     message flashes on every keystroke while the request is in flight. -->
+                <div v-if="isSearchingUsers" class="p-4 text-center text-sm text-muted-foreground">
+                  {{ $t('Ieškoma...') }}
+                </div>
+                <div v-else-if="availableUsers.length === 0" class="p-4 text-center text-sm text-muted-foreground">
                   {{ $t('Nerasta naudotojų') }}
                 </div>
               </div>
@@ -358,6 +372,7 @@
                     <Label class="text-xs">{{ $t('Telefonas') }}</Label>
                     <Input v-model="newUser.phone" placeholder="+370 600 00000" class="h-8 mt-1" />
                   </div>
+                  <DuplicateUserWarning :matches="duplicateMatches" show-use-action @use="useExistingProfile" />
                   <div class="flex gap-2">
                     <Button
                       size="sm"
@@ -404,9 +419,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject, watch, type ComputedRef } from 'vue';
+import { ref, computed, inject, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { usePage } from '@inertiajs/vue3';
+import { useDebounceFn } from '@vueuse/core';
 import {
   Search,
   UserPlus,
@@ -428,29 +444,65 @@ import { ScrollArea } from '@/Components/ui/scroll-area';
 import { Separator } from '@/Components/ui/separator';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
 import { Label } from '@/Components/ui/label';
+import DuplicateUserWarning from '@/Components/AdminForms/DuplicateUserWarning.vue';
+import { useApi } from '@/Composables/useApi';
+import { useDuplicateUserCheck } from '@/Composables/useDuplicateUserCheck';
 import { getSuggestedEndDate, getTodayDate, formatDateForDisplay } from '@/Composables/useDutyUserWizard';
 import type { useDutyUserWizard, UserChange, NewUserData } from '@/Composables/useDutyUserWizard';
 import { DutyIcon } from '@/Components/icons';
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 
 const wizard = inject<ReturnType<typeof useDutyUserWizard>>('dutyUserWizard')!;
-const allUsersRef = inject<ComputedRef<App.Entities.User[]> | App.Entities.User[]>('allUsers', []);
-
-// Unwrap computed refs or use arrays directly
-const allUsers = computed(() =>
-  'value' in allUsersRef ? allUsersRef.value : allUsersRef,
-);
 
 const page = usePage();
 const auth = page.props.auth as any;
 
-// Check if data is still loading (lazy loaded)
-const isLoadingUsers = computed(() => {
-  return wizard.state.loading.users || !allUsers.value || allUsers.value.length === 0;
-});
+// Only the lazily-loaded step data (study programmes) is waited on. Members are no
+// longer a prop to wait for — they are searched on demand, see below.
+const isLoadingStepData = computed(() => wizard.state.loading.stepData);
 
 // Search for users
 const userSearchQuery = ref('');
 const showUserSearch = ref(false);
+
+// Searched server-side rather than filtering a preloaded list: the wizard used to
+// ship every user in the system (name and email) to any admin who reached this step.
+/** What api.v1.admin.users.search returns — not a full User entity. */
+interface UserSearchResult {
+  id: string;
+  name: string;
+  /** Masked (j***@stud.vu.lt) for people outside the acting admin's units. */
+  email: string;
+  profile_photo_path: string | null;
+  duties_count: number;
+  tenants: string[];
+}
+
+const userSearchUrl = ref('');
+const { data: searchedUsers, isFetching: isSearchingUsers, execute: executeUserSearch } = useApi<UserSearchResult[]>(
+  userSearchUrl,
+  { immediate: false, showErrorToast: false },
+);
+
+const runUserSearch = useDebounceFn(() => {
+  if (userSearchQuery.value.trim().length < 2) {
+    userSearchUrl.value = '';
+    return;
+  }
+
+  const params = new URLSearchParams({
+    search: userSearchQuery.value.trim(),
+    permission: 'duties.update.padalinys',
+    // Every tenant, deliberately. Assigning somebody from another unit is how a
+    // person joins a new one; if they are hidden here, admins create a second
+    // account for someone who already exists.
+    scope: 'all',
+  });
+  userSearchUrl.value = `${route('api.v1.admin.users.search')}?${params.toString()}`;
+  executeUserSearch();
+}, 300);
+
+watch(userSearchQuery, runUserSearch);
 
 // Inline user creation
 const showNewUserForm = ref(false);
@@ -480,7 +532,7 @@ const assignableTenantPivot = computed<{ quota?: number | null } | null>(() => {
 const isExternalDuty = computed(() => assignableTenantPivot.value !== null);
 const tenantQuota = computed<number | null>(() => assignableTenantPivot.value?.quota ?? null);
 
-// Filter out users that are already in the duty
+// Drop anyone already on the duty, or already queued to be added, from the results.
 const availableUsers = computed(() => {
   const currentUserIds = currentUsers.value.map(u => u.id);
   const addedUserIds = wizard.state.userChanges
@@ -489,17 +541,7 @@ const availableUsers = computed(() => {
 
   const excludeIds = new Set([...currentUserIds, ...addedUserIds]);
 
-  let filtered = allUsers.value.filter(u => !excludeIds.has(u.id));
-
-  if (userSearchQuery.value) {
-    const query = userSearchQuery.value.toLowerCase();
-    filtered = filtered.filter(u =>
-      u.name?.toLowerCase().includes(query)
-      || u.email?.toLowerCase().includes(query),
-    );
-  }
-
-  return filtered.slice(0, 20); // Limit for performance
+  return (searchedUsers.value ?? []).filter(u => !excludeIds.has(u.id));
 });
 
 // Users being added
@@ -530,9 +572,13 @@ const remainingCurrentUsers = computed(() => {
 });
 
 // Handle adding a user
-const handleAddUser = (user: App.Entities.User) => {
+const handleAddUser = (user: UserSearchResult) => {
   if (quotaReached.value) return;
-  wizard.addUserToAdd(user, {
+  wizard.addUserToAdd({
+    id: user.id,
+    name: user.name,
+    profile_photo_path: user.profile_photo_path,
+  } as App.Entities.User, {
     startDate: batchStartDate.value,
     endDate: batchEndDate.value,
   });
@@ -597,6 +643,27 @@ const createNewUser = () => {
   wizard.updateUserChange(tempId, { isNewUser: true });
 
   // Reset form
+  newUser.value = { name: '', email: '', phone: '' };
+  showNewUserForm.value = false;
+};
+
+// Warn when the person being typed in already has an account, usually in a unit this
+// admin cannot see. Creating the duplicate is still allowed — names do repeat — but
+// merging afterwards needs users.update.*, which coordinators do not have.
+const { matches: duplicateMatches } = useDuplicateUserCheck(
+  () => newUser.value.name ?? '',
+  () => newUser.value.email ?? '',
+);
+
+/** Attach the existing person instead of creating a second record for them. */
+const useExistingProfile = (match: { id: string; name: string }) => {
+  if (quotaReached.value) return;
+
+  wizard.addUserToAdd({ id: match.id, name: match.name, profile_photo_path: null } as App.Entities.User, {
+    startDate: batchStartDate.value,
+    endDate: batchEndDate.value,
+  });
+
   newUser.value = { name: '', email: '', phone: '' };
   showNewUserForm.value = false;
 };

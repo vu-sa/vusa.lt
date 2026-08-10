@@ -23,8 +23,8 @@ const fakeMultiSearchResponse = (searches: Array<{ collection: string }>) => ({
       public_institutions: 3,
       public_meetings: 2,
       documents: 5,
-      news: 1,
-      pages: 6,
+      public_news: 1,
+      public_pages: 6,
       calendar: 4,
     };
     const count = found[search.collection] ?? 1;

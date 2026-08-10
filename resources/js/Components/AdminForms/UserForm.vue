@@ -21,18 +21,23 @@
         </ol>
       </template>
       <FormFieldWrapper id="name" :label="$t('forms.fields.name_and_surname')" required>
-        <Input v-model="form.name" :disabled="user.name !== ''" type="text"
+        <Input v-model="form.name" :disabled="user.name !== '' || !canUpdateIdentity" type="text"
           placeholder="Įrašyti vardą ir pavardę" />
       </FormFieldWrapper>
 
       <FormFieldWrapper id="email" label="El. paštas" required>
-        <div v-if="isUserEmailMaybeDutyEmail" class="mb-1 text-xs text-amber-600 dark:text-amber-400">
+        <div v-if="isUserEmailMaybeDutyEmail && canUpdateIdentity" class="mb-1 text-xs text-amber-600 dark:text-amber-400">
           Jeigu <strong>{{ user.email }}</strong> nėra pareigybinis el.
           paštas (<code>@vusa.lt</code> dažniausiai naudojami pareigybėms), pagal gerąsias praktikas jį reikėtų
           pakeisti į studentinį arba kitą VU paštą.
         </div>
-        <Input v-model="form.email"
+        <Input v-model="form.email" :disabled="!canUpdateIdentity"
           placeholder="vardas.pavarde@stud.vu.lt" />
+        <div v-if="!canUpdateIdentity" class="mt-1 flex items-start gap-1.5 text-xs text-muted-foreground">
+          <Lock class="mt-0.5 size-3 shrink-0" />
+          <span>{{ $t('users.identity_locked_hint') }}</span>
+        </div>
+        <DuplicateUserWarning v-if="isCreating" :matches="duplicateMatches" class="mt-2" />
         <div v-if="currentDutiesWithVusaEmail.length > 0" class="mt-2 rounded-md bg-blue-50 p-2.5 text-xs dark:bg-blue-950">
           <p class="mb-1.5 font-medium text-blue-800 dark:text-blue-200">
             Šie pareigybiniai el. paštai taip pat leidžia prisijungti prie sistemos:
@@ -170,8 +175,8 @@
             </Tree>
           </template>
           <template #target-label="{ option }">
-            <span class="inline-flex items-center gap-2">
-              {{ option.label }}
+            <span class="inline-flex min-w-0 items-center gap-2">
+              <DutyLabel :duty="targetDutyLabel(option)" :holder="dutyHolder" />
               <Button variant="ghost" size="icon-xs" as="a" :href="route('duties.edit', option.value)" target="_blank" @click.stop>
                 <Eye16Regular />
               </Button>
@@ -180,8 +185,8 @@
         </TransferList>
         <TransferList v-else v-model="form.current_duties" :options="flattenDutyOptions">
           <template #target-label="{ option }">
-            <span class="inline-flex items-center gap-2">
-              {{ option.label }}
+            <span class="inline-flex min-w-0 items-center gap-2">
+              <DutyLabel :duty="targetDutyLabel(option)" :holder="dutyHolder" />
               <Button variant="ghost" size="icon-xs" as="a" :href="route('duties.edit', option.value)" target="_blank" @click.stop>
                 <Eye16Regular />
               </Button>
@@ -325,13 +330,19 @@ import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
 
 import AdminForm from './AdminForm.vue';
 import AccessChangeWarningDialog from './AccessChangeWarningDialog.vue';
+import DuplicateUserWarning from './DuplicateUserWarning.vue';
 import FormElement from './FormElement.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 import { useApiMutation } from '@/Composables/useApi';
+import { useDuplicateUserCheck } from '@/Composables/useDuplicateUserCheck';
 import Delete24Regular from '~icons/fluent/delete24-regular';
 import Eye16Regular from '~icons/fluent/eye16-regular';
+import DutyLabel from '@/Components/Duties/DutyLabel.vue';
+// Lucide is the icon set for admin surfaces (AGENTS.md); the Fluent imports here
+// are legacy and stay until this form is migrated wholesale.
+import { Lock, TriangleAlert } from 'lucide-vue-next';
 import PersonEdit24Regular from '~icons/fluent/person-edit24-regular';
 import IFluentCopy16Regular from '~icons/fluent/copy16-regular';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/Components/ui/alert-dialog';
@@ -348,13 +359,21 @@ import { ImageUpload } from '@/Components/ui/upload';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import SimpleDataTable from '@/Components/Tables/SimpleDataTable.vue';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   user: App.Entities.User;
   roles: App.Entities.Role[];
   tenantsWithDuties: App.Entities.Tenant[];
   permissableTenants: App.Entities.Tenant[];
   rememberKey?: 'CreateUser';
-}>();
+  /**
+   * Whether the acting admin may change this person's name and email. Defaults to
+   * true so the create form (where both are always being set) needs no prop; the
+   * edit page passes the real value from UserPolicy::updateIdentity.
+   */
+  canUpdateIdentity?: boolean;
+}>(), {
+  canUpdateIdentity: true,
+});
 
 defineEmits<{
   (event: 'submit:form', form: unknown): void;
@@ -433,6 +452,14 @@ const dutyOptions: DutyTreeOption[] = props.tenantsWithDuties.map(
   },
 ).filter(tenant => props.permissableTenants.some(permissable => permissable.id === tenant.value));
 
+// Only the create form can produce a duplicate; on edit the record already exists.
+const isCreating = computed(() => !props.user.id);
+
+const { matches: duplicateMatches } = useDuplicateUserCheck(
+  () => (isCreating.value ? String(form.name ?? '') : ''),
+  () => (isCreating.value ? String(form.email ?? '') : ''),
+);
+
 // check if user email looks like a duty email (@vusa.lt)
 const isUserEmailMaybeDutyEmail = computed(() => {
   return props.user.email.toLowerCase().endsWith('@vusa.lt');
@@ -440,6 +467,24 @@ const isUserEmailMaybeDutyEmail = computed(() => {
 
 const currentDutiesWithVusaEmail = computed(() => {
   return props.user.current_duties?.filter(duty => duty.email?.toLowerCase().endsWith('@vusa.lt')) ?? [];
+});
+
+/**
+ * The person whose duties are being listed — drives the duty-name ending
+ * inflection (e.g. "Koordinatorius" → "Koordinatorė") so a holder's duties read
+ * in their gender, like on the public contacts page. Bound to the live form so
+ * the preview updates as the admin edits pronouns or the name.
+ */
+const dutyHolder = computed(() => {
+  const pronouns = form.pronouns as string | Record<string, string> | null | undefined;
+  const locale = usePage().props.app.locale as 'lt' | 'en';
+  const pronounString = typeof pronouns === 'string'
+    ? pronouns
+    : (pronouns?.[locale] ?? '');
+  return {
+    name: form.name,
+    pronouns: pronounString,
+  };
 });
 
 // Inline editing state for dutiable additional_email
@@ -490,15 +535,30 @@ const existingDutyColumns: ColumnDef<any, any>[] = [
   {
     accessorKey: 'name',
     header: () => 'Pavadinimas',
-    cell: ({ row }) => (
-      <a
-        target="_blank"
-        href={route('duties.edit', { id: row.original.id })}
-        class="flex-inline gap-2 text-sm"
-      >
-        {row.original.name}
-      </a>
-    ),
+    cell: ({ row }) => {
+      const missingStudyProgram = row.original.contacts_grouping === 'study_program' && !row.original.pivot?.study_program_id;
+      return (
+        <span class="inline-flex items-center gap-1.5">
+          <a
+            target="_blank"
+            href={route('duties.edit', { id: row.original.id })}
+            class="flex-inline gap-2 text-sm"
+          >
+            <DutyLabel
+              duty={{ name: row.original.name, institution: row.original.institution }}
+              holder={dutyHolder.value}
+              useOriginalDutyName={row.original.pivot?.use_original_duty_name}
+            />
+          </a>
+          {missingStudyProgram && (
+            <TriangleAlert
+              class="size-3.5 shrink-0 text-amber-500"
+              title="Ši pareigybė grupuoja kontaktus pagal studijų programą, bet priskyrimui ji nenurodyta"
+            />
+          )}
+        </span>
+      );
+    },
   },
   {
     id: 'period',
@@ -630,13 +690,30 @@ const flattenDutyOptions = computed(() => {
                 dutyShowMode.value === 'tree'
                   ? duty.label
                   : `${duty.label} (${institution.label})`,
+              // Always the bare duty name — `label` above is concatenated with the
+              // institution in transfer mode for the plain source-list rendering,
+              // but the target-label slot below needs the name and institution
+              // as separate fields to render them as DutyLabel does elsewhere.
+              dutyName: duty.label,
               value: duty.value,
               tenantId: tenant.value,
+              institutionName: institution.label,
+              tenantShortname: tenant.label,
             };
           }),
       ),
   ).filter(duty => props.permissableTenants.some(permissable => permissable.id === duty?.tenantId));
 });
+
+/** Builds the DutyLabel prop from a flattened transfer-list option. */
+function targetDutyLabel(option: { dutyName?: string; label: string; institutionName?: string | null; tenantShortname?: string | null }) {
+  return {
+    name: option.dutyName ?? option.label,
+    institution: option.institutionName
+      ? { name: option.institutionName, tenant: option.tenantShortname ? { shortname: option.tenantShortname } : null }
+      : null,
+  };
+}
 
 form.current_duties = props.user.current_duties?.map(duty => duty.id);
 

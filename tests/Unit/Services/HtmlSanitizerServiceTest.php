@@ -53,6 +53,32 @@ describe('rich content: legitimate editor output survives', function (): void {
         'table header' => ['<table><thead><tr><th>Antraštė</th></tr></thead></table>', '<th>Antraštė</th>'],
     ]);
 
+    /**
+     * Not producible by the current editor, but present in legacy and imported
+     * HTML (calendar descriptions synced from external feeds, pre-Tiptap news).
+     * Symfony's sanitizer drops a disallowed element together with its text, so
+     * omitting these deletes whole paragraphs the first time a record is re-saved.
+     */
+    test('keeps legacy and imported structural elements', function (string $html, string $expected): void {
+        expect($this->sanitizer->sanitizeRichContent($html))->toContain($expected);
+    })->with([
+        'heading h1' => ['<h1>Pavadinimas</h1>', '<h1>Pavadinimas</h1>'],
+        'heading h5' => ['<h5>Smulkiau</h5>', '<h5>Smulkiau</h5>'],
+        'heading h6' => ['<h6>Dar smulkiau</h6>', '<h6>Dar smulkiau</h6>'],
+        'preformatted' => ['<pre>  lygiuota  </pre>', '<pre>'],
+        'nested text in a heading' => ['<h1>Su <strong>paryškinimu</strong></h1>', '<strong>paryškinimu</strong>'],
+        'table colgroup' => [
+            '<table><colgroup><col span="2"></colgroup><tbody><tr><td>a</td></tr></tbody></table>',
+            '<colgroup>',
+        ],
+    ]);
+
+    test('a disallowed element still cannot smuggle script through a heading', function (): void {
+        expect($this->sanitizer->sanitizeRichContent('<h1 onclick="alert(1)">Antraštė</h1>'))
+            ->toContain('Antraštė')
+            ->not->toContain('onclick');
+    });
+
     test('keeps a full document intact', function (): void {
         $html = '<h2 id="t">Problema</h2><p>Aprašymas su <strong>bold</strong> ir '
             .'<a href="https://vusa.lt">nuoroda</a>.</p>'

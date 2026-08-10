@@ -682,14 +682,129 @@ describe('duty creation institution-tenant scoping', function (): void {
     });
 });
 
-describe('show page', function (): void {
-    test('returns the dashboard payload with appointment, meetings and sibling duties', function (): void {
-        $institution = $this->dutyManagerDuty->institution;
-        $institution->update([
-            'selection_method' => 'delegated',
-            'appointed_by' => ['lt' => 'VU Senatas', 'en' => 'VU Senate'],
-            'term_length' => ['lt' => '1 metų kadencija', 'en' => '1 year term'],
+describe('data quality filters', function (): void {
+    test('filters vacant duties', function (): void {
+        $institution = Institution::factory()->for($this->tenant)->create();
+        $vacantDuty = Duty::factory()->for($institution)->create([
+            'name' => ['lt' => 'Tuščia pareiga', 'en' => 'Vacant Duty'],
         ]);
+        $occupiedDuty = Duty::factory()->for($institution)->create([
+            'name' => ['lt' => 'Užimta pareiga', 'en' => 'Occupied Duty'],
+        ]);
+        $user = makeUser($this->tenant);
+        $occupiedDuty->attachAudited('users', $user->id, ['start_date' => now()->subDay()]);
+
+        asUser($this->dutyManager)
+            ->get(route('duties.index', ['filters' => json_encode(['data_quality' => 'vacant'])]))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('Admin/People/IndexDuty')
+                ->where('duties.data', fn ($data) => collect($data)->pluck('id')->contains($vacantDuty->id)
+                    && ! collect($data)->pluck('id')->contains($occupiedDuty->id))
+            );
+    });
+
+    test('filters duties missing english name', function (): void {
+        $institution = Institution::factory()->for($this->tenant)->create();
+        $missingEn = Duty::factory()->for($institution)->create([
+            'name' => ['lt' => 'Be angliško pavadinimo', 'en' => ''],
+        ]);
+        $complete = Duty::factory()->for($institution)->create([
+            'name' => ['lt' => 'Pilnas pavadinimas', 'en' => 'Full name'],
+        ]);
+
+        asUser($this->dutyManager)
+            ->get(route('duties.index', ['filters' => json_encode(['data_quality' => 'missing_en_name'])]))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('Admin/People/IndexDuty')
+                ->where('duties.data', fn ($data) => collect($data)->pluck('id')->contains($missingEn->id)
+                    && ! collect($data)->pluck('id')->contains($complete->id))
+            );
+    });
+
+    test('filters duties missing lithuanian name', function (): void {
+        $institution = Institution::factory()->for($this->tenant)->create();
+        $missingLt = Duty::factory()->for($institution)->create([
+            'name' => ['lt' => '', 'en' => 'No Lithuanian name'],
+        ]);
+        $complete = Duty::factory()->for($institution)->create([
+            'name' => ['lt' => 'Pilnas pavadinimas', 'en' => 'Full name'],
+        ]);
+
+        asUser($this->dutyManager)
+            ->get(route('duties.index', ['filters' => json_encode(['data_quality' => 'missing_lt_name'])]))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('Admin/People/IndexDuty')
+                ->where('duties.data', fn ($data) => collect($data)->pluck('id')->contains($missingLt->id)
+                    && ! collect($data)->pluck('id')->contains($complete->id))
+            );
+    });
+
+    test('filters duties with duplicate active holders', function (): void {
+        $institution = Institution::factory()->for($this->tenant)->create();
+        $user = makeUser($this->tenant);
+        $duplicateDuty = Duty::factory()->for($institution)->create([
+            'name' => ['lt' => 'Pasikartojantys', 'en' => 'Duplicate holders'],
+        ]);
+        $singleHolder = Duty::factory()->for($institution)->create([
+            'name' => ['lt' => 'Vienas narys', 'en' => 'Single holder'],
+        ]);
+
+        // Create two active dutiable rows for the same user on the same duty.
+        DB::table('dutiables')->insert([
+            [
+                'id' => (string) Str::ulid(),
+                'duty_id' => $duplicateDuty->id,
+                'dutiable_id' => $user->id,
+                'dutiable_type' => User::class,
+                'start_date' => now()->subMonths(2)->toDateString(),
+                'end_date' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => (string) Str::ulid(),
+                'duty_id' => $duplicateDuty->id,
+                'dutiable_id' => $user->id,
+                'dutiable_type' => User::class,
+                'start_date' => now()->subMonth()->toDateString(),
+                'end_date' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        asUser($this->dutyManager)
+            ->get(route('duties.index', ['filters' => json_encode(['data_quality' => 'duplicate_holders'])]))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('Admin/People/IndexDuty')
+                ->where('duties.data', fn ($data) => collect($data)->pluck('id')->contains($duplicateDuty->id)
+                    && ! collect($data)->pluck('id')->contains($singleHolder->id))
+            );
+    });
+
+    test('all filter returns full list', function (): void {
+        $institution = Institution::factory()->for($this->tenant)->create();
+        $first = Duty::factory()->for($institution)->create(['name' => ['lt' => 'Pirma', 'en' => 'First']]);
+        $second = Duty::factory()->for($institution)->create(['name' => ['lt' => 'Antra', 'en' => 'Second']]);
+
+        asUser($this->dutyManager)
+            ->get(route('duties.index', ['filters' => json_encode(['data_quality' => 'all'])]))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('Admin/People/IndexDuty')
+                ->where('duties.data', fn ($data) => collect($data)->pluck('id')->contains($first->id)
+                    && collect($data)->pluck('id')->contains($second->id))
+            );
+    });
+});
+
+describe('show page', function (): void {
+    test('returns the dashboard payload with meetings and sibling duties', function (): void {
+        $institution = $this->dutyManagerDuty->institution;
 
         // A sibling duty in the same institution.
         Duty::factory()->for($institution)->create([
@@ -701,53 +816,7 @@ describe('show page', function (): void {
         $response->assertStatus(200)
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('Admin/People/ShowDuty')
-                ->has('duty.appointment')
-                ->where('duty.appointment.selection_method', 'delegated')
-                ->where('duty.appointment.appointed_by', 'VU Senatas')
                 ->has('duty.other_duties', 1)
             );
-    });
-
-    test('duty appointment values override the institution defaults', function (): void {
-        $institution = $this->dutyManagerDuty->institution;
-        $institution->update([
-            'selection_method' => 'delegated',
-            'appointed_by' => ['lt' => 'Institucijos numatytas', 'en' => 'Institution default'],
-        ]);
-
-        $this->dutyManagerDuty->update([
-            'selection_method' => 'elected',
-            'appointed_by' => ['lt' => 'Pareigybės reikšmė', 'en' => 'Duty value'],
-        ]);
-
-        $response = asUser($this->dutyManager)->get(route('duties.show', $this->dutyManagerDuty));
-
-        $response->assertStatus(200)
-            ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('duty.appointment.selection_method', 'elected')
-                ->where('duty.appointment.appointed_by', 'Pareigybės reikšmė')
-            );
-    });
-
-    test('persists appointment fields and responsibilities on update', function (): void {
-        $response = asUser($this->dutyManager)->put(route('duties.update', $this->dutyManagerDuty), [
-            'name' => ['lt' => 'Atnaujinta', 'en' => 'Updated'],
-            'institution_id' => $this->dutyManagerDuty->institution_id,
-            'places_to_occupy' => 1,
-            'contacts_grouping' => 'none',
-            'selection_method' => 'appointed',
-            'appointed_by' => ['lt' => 'Dekanas', 'en' => 'Dean'],
-            'term_length' => ['lt' => '2 metai', 'en' => '2 years'],
-            'responsibilities' => ['lt' => "Pirma\nAntra", 'en' => "First\nSecond"],
-            'roles' => $this->dutyManagerDuty->roles()->pluck('id')->all(),
-            'current_users' => [$this->dutyManager->id],
-        ]);
-
-        $response->assertSessionDoesntHaveErrors();
-
-        $this->dutyManagerDuty->refresh();
-        expect($this->dutyManagerDuty->selection_method)->toBe('appointed')
-            ->and($this->dutyManagerDuty->getTranslation('appointed_by', 'lt'))->toBe('Dekanas')
-            ->and($this->dutyManagerDuty->getTranslation('responsibilities', 'en'))->toBe("First\nSecond");
     });
 });

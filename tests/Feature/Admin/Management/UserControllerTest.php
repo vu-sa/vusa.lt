@@ -3,10 +3,15 @@
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
+use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\ModelAuthorizer;
+use App\Services\ResourceServices\UserDutyService;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 
 pest()->use(RefreshDatabase::class);
 
@@ -88,7 +93,10 @@ describe('authorized access', function (): void {
     });
 
     test('can store user', function (): void {
-        $duty = Duty::factory()->create();
+        // The duty must sit in the admin's own tenant — Duty::factory() would
+        // otherwise build its own Institution and Tenant, which UserDutyService
+        // now rejects.
+        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
 
         $userData = [
             'name' => 'Test User',
@@ -117,6 +125,35 @@ describe('authorized access', function (): void {
                 ->component('Admin/People/EditUser')
                 ->has('user')
                 ->where('user.id', $user->id)
+            );
+    });
+
+    test('current duty pivot exposes study_program_id so the admin form can flag a missing one', function (): void {
+        $user = makeUser($this->tenant);
+
+        $response = asUser($this->admin)->get(route('users.edit', $user));
+
+        $response->assertStatus(200)
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/People/EditUser')
+                ->has('user.current_duties.0.pivot.study_program_id')
+            );
+    });
+
+    test('edit page attributes each duty to its institution, not just a bare name', function (): void {
+        // A duty name alone is unattributable once it repeats across institutions
+        // (it does constantly, e.g. "Studentų atstovas") — the admin form needs
+        // the institution to tell two "Vadovas" duties apart.
+        $user = makeUser($this->tenant);
+        $duty = $user->duties()->first();
+
+        $response = asUser($this->admin)->get(route('users.edit', $user));
+
+        $response->assertStatus(200)
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/People/EditUser')
+                ->where('user.current_duties.0.id', $duty->id)
+                ->where('user.current_duties.0.institution.tenant.shortname', $duty->institution->tenant->shortname)
             );
     });
 
@@ -289,5 +326,90 @@ describe('duty removal', function (): void {
 
         // The active row must be end-dated even though an older ended row exists.
         expect($activeCount())->toBe(0);
+    });
+});
+
+describe('duty assignment', function (): void {
+    beforeEach(function (): void {
+        $this->admin = makeUser($this->tenant);
+        $this->admin->assignRole(config('permission.super_admin_role_name'));
+    });
+
+    test('re-adding a duty the user already actively holds does not create a second active row', function (): void {
+        $target = User::factory()->create();
+        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
+
+        // The user is already active on the duty.
+        $target->duties()->attach($duty->id, ['start_date' => now()->subDay(), 'end_date' => null]);
+
+        // syncDutiesForUser resolves the actor's tenants through Auth, so log in.
+        Auth::login($this->admin);
+
+        // Simulate a stale snapshot: the duty is passed as "new" even though an
+        // active row already exists. The guard must keep it to a single row.
+        UserDutyService::syncDutiesForUser(
+            new Collection([$duty->id]),
+            new Collection([]),
+            $target,
+            app(ModelAuthorizer::class),
+            'users.update.all',
+        );
+
+        $activeCount = Dutiable::where('duty_id', $duty->id)
+            ->where('dutiable_type', User::class)
+            ->where('dutiable_id', $target->id)
+            ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', now()))
+            ->count();
+
+        expect($activeCount)->toBe(1);
+    });
+});
+
+describe('create-form field coverage', function (): void {
+    beforeEach(function (): void {
+        $this->admin = makeAdminUser($this->tenant);
+        $this->duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
+    });
+
+    test('pronouns submitted on create are persisted', function (): void {
+        // UserForm renders the pronouns section in create mode too, but store() fills
+        // from $request->safe(), so an unvalidated field is silently dropped.
+        asUser($this->admin)->post(route('users.store'), [
+            'name' => 'Pronouns Person',
+            'email' => 'pronouns@stud.vu.lt',
+            'pronouns' => ['lt' => 'Jie/jų', 'en' => 'They/them'],
+            'show_pronouns' => true,
+            'current_duties' => [$this->duty->id],
+        ])->assertRedirect();
+
+        $created = User::query()->where('email', 'pronouns@stud.vu.lt')->firstOrFail();
+
+        expect($created->getTranslation('pronouns', 'lt'))->toBe('Jie/jų')
+            ->and($created->getTranslation('pronouns', 'en'))->toBe('They/them')
+            ->and($created->show_pronouns)->toBeTrue();
+    });
+
+    test('a non-existent role id on create is rejected rather than synced', function (): void {
+        asUser($this->admin)->post(route('users.store'), [
+            'name' => 'Bogus Role',
+            'email' => 'bogus.role@stud.vu.lt',
+            'roles' => [999999],
+            'current_duties' => [$this->duty->id],
+        ])->assertSessionHasErrors('roles.0');
+
+        $this->assertDatabaseMissing('users', ['email' => 'bogus.role@stud.vu.lt']);
+    });
+
+    test('a super admin can still assign a real role on create', function (): void {
+        $role = Role::firstOrCreate(['name' => 'Create Path Role', 'guard_name' => 'web']);
+
+        asUser($this->admin)->post(route('users.store'), [
+            'name' => 'Real Role',
+            'email' => 'real.role@stud.vu.lt',
+            'roles' => [$role->id],
+            'current_duties' => [$this->duty->id],
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        expect(User::query()->where('email', 'real.role@stud.vu.lt')->firstOrFail()->hasRole($role))->toBeTrue();
     });
 });

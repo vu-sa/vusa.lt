@@ -3,6 +3,10 @@
     duty.institution?.name ??
     'Neturi institucijos'
   })`" :back-url="route('duties.index')" :heading-icon="DutyIcon">
+    <template #title>
+      <InflectedDutyName :name="duty.name.lt" locale="lt" />
+      ({{ duty.institution?.short_name ?? duty.institution?.name ?? 'Neturi institucijos' }})
+    </template>
     <UpsertModelLayout>
       <DutyForm
         :duty
@@ -33,6 +37,7 @@ import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 import { DutyIcon } from '@/Components/icons';
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 
 const props = defineProps<{
   duty: App.Entities.Duty;

@@ -29,8 +29,8 @@
             <p class="text-xs text-zinc-600/70 dark:text-zinc-400/70">
               {{ $t('Pareigybė') }}
             </p>
-            <p class="font-medium text-zinc-900 dark:text-zinc-100 truncate">
-              {{ wizard.state.duty?.name }}
+            <p class="min-w-0 font-medium text-zinc-900 dark:text-zinc-100">
+              <InflectedDutyName v-if="wizard.state.duty" :name="wizard.state.duty.name" />
             </p>
           </div>
         </div>
@@ -306,6 +306,7 @@ import { Label } from '@/Components/ui/label';
 import { formatDateForDisplay } from '@/Composables/useDutyUserWizard';
 import type { useDutyUserWizard } from '@/Composables/useDutyUserWizard';
 import { DutyIcon } from '@/Components/icons';
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 
 const wizard = inject<ReturnType<typeof useDutyUserWizard>>('dutyUserWizard')!;
 

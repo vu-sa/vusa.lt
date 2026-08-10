@@ -428,10 +428,6 @@ declare global {
       email?: string | null
       contacts_grouping: string
       places_to_occupy?: number | null
-      selection_method?: string | null
-      appointed_by?: Array<unknown> | null
-      term_length?: Array<unknown> | null
-      responsibilities?: Array<unknown> | null
       created_at: string
       updated_at: string
       deleted_at?: string | null
@@ -629,9 +625,6 @@ declare global {
       tenant_id?: number | null
       is_active: boolean
       meeting_periodicity_days?: number | null
-      selection_method?: string | null
-      appointed_by?: Array<unknown> | null
-      term_length?: Array<unknown> | null
       created_at: string
       updated_at: string
       deleted_at?: string | null
@@ -1229,9 +1222,6 @@ declare global {
       tenant_id?: number | null
       is_active: boolean
       meeting_periodicity_days?: number | null
-      selection_method?: string | null
-      appointed_by?: Array<unknown> | null
-      term_length?: Array<unknown> | null
       created_at: string
       updated_at: string
       deleted_at?: string | null

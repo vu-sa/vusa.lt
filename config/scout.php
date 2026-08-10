@@ -10,6 +10,8 @@ use App\Models\Page;
 use App\Models\Pivots\AgendaItem;
 use App\Models\PublicInstitution;
 use App\Models\PublicMeeting;
+use App\Models\PublicNews;
+use App\Models\PublicPage;
 use App\Models\User;
 
 return [
@@ -192,14 +194,76 @@ return [
         */
         'model-settings' => [
 
-            // News Articles - Only published, non-draft content
+            // News Articles - Admin index: everything non-trashed, drafts and
+            // scheduled articles included. See PublicNews below for the public index.
             News::class => [
                 'collection-schema' => [
                     'fields' => [
                         ['name' => 'id', 'type' => 'string'],
                         ['name' => 'title', 'type' => 'string', 'infix' => true],
                         ['name' => 'short', 'type' => 'string', 'optional' => true, 'infix' => true],
-                        ['name' => 'permalink', 'type' => 'string'],
+                        ['name' => 'permalink', 'type' => 'string', 'optional' => true],
+                        ['name' => 'image', 'type' => 'string', 'optional' => true],
+                        ['name' => 'publish_time', 'type' => 'int64'],
+                        ['name' => 'lang', 'type' => 'string', 'facet' => true],
+                        ['name' => 'tenant_id', 'type' => 'int32', 'facet' => true],
+                        ['name' => 'tenant_ids', 'type' => 'int32[]', 'facet' => true],
+                        ['name' => 'tenant_name', 'type' => 'string', 'facet' => true],
+                        ['name' => 'draft', 'type' => 'bool', 'facet' => true],
+                        ['name' => 'created_at', 'type' => 'int64'],
+                    ],
+                    'default_sorting_field' => 'publish_time',
+                    'enable_nested_fields' => false,
+                ],
+                'search-parameters' => [
+                    'query_by' => 'title,short',
+                    'query_by_weights' => '10,4',
+                    'typo_tokens_threshold' => 1,
+                    'num_typos' => 2,
+                    'prioritize_exact_match' => true,
+                    'prioritize_token_position' => true,
+                ],
+            ],
+
+            // Static Pages - Admin index: everything non-trashed, inactive and
+            // scheduled pages included. See PublicPage below for the public index.
+            Page::class => [
+                'collection-schema' => [
+                    'fields' => [
+                        ['name' => 'id', 'type' => 'string'],
+                        ['name' => 'title', 'type' => 'string', 'infix' => true],
+                        ['name' => 'permalink', 'type' => 'string', 'optional' => true],
+                        ['name' => 'meta_description', 'type' => 'string', 'optional' => true, 'infix' => true],
+                        ['name' => 'lang', 'type' => 'string', 'facet' => true],
+                        ['name' => 'tenant_id', 'type' => 'int32', 'facet' => true],
+                        ['name' => 'tenant_ids', 'type' => 'int32[]', 'facet' => true],
+                        ['name' => 'tenant_name', 'type' => 'string', 'facet' => true],
+                        ['name' => 'category_name', 'type' => 'string', 'facet' => true, 'optional' => true],
+                        ['name' => 'is_active', 'type' => 'bool', 'facet' => true],
+                        ['name' => 'created_at', 'type' => 'int64'],
+                    ],
+                    'default_sorting_field' => 'created_at',
+                    'enable_nested_fields' => false,
+                ],
+                'search-parameters' => [
+                    'query_by' => 'title,meta_description',
+                    'query_by_weights' => '10,4',
+                    'typo_tokens_threshold' => 1,
+                    'num_typos' => 2,
+                    'prioritize_exact_match' => true,
+                    'prioritize_token_position' => true,
+                ],
+            ],
+
+            // Public News - Only published, non-draft articles. Field shape mirrors
+            // News::class above minus the admin-only `draft` facet.
+            PublicNews::class => [
+                'collection-schema' => [
+                    'fields' => [
+                        ['name' => 'id', 'type' => 'string'],
+                        ['name' => 'title', 'type' => 'string', 'infix' => true],
+                        ['name' => 'short', 'type' => 'string', 'optional' => true, 'infix' => true],
+                        ['name' => 'permalink', 'type' => 'string', 'optional' => true],
                         ['name' => 'image', 'type' => 'string', 'optional' => true],
                         ['name' => 'publish_time', 'type' => 'int64'],
                         ['name' => 'lang', 'type' => 'string', 'facet' => true],
@@ -221,13 +285,14 @@ return [
                 ],
             ],
 
-            // Static Pages - Only published pages
-            Page::class => [
+            // Public Pages - Only active, published pages. Field shape mirrors
+            // Page::class above minus the admin-only `is_active` facet.
+            PublicPage::class => [
                 'collection-schema' => [
                     'fields' => [
                         ['name' => 'id', 'type' => 'string'],
                         ['name' => 'title', 'type' => 'string', 'infix' => true],
-                        ['name' => 'permalink', 'type' => 'string'],
+                        ['name' => 'permalink', 'type' => 'string', 'optional' => true],
                         ['name' => 'meta_description', 'type' => 'string', 'optional' => true, 'infix' => true],
                         ['name' => 'lang', 'type' => 'string', 'facet' => true],
                         ['name' => 'tenant_id', 'type' => 'int32', 'facet' => true],
