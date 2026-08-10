@@ -58,4 +58,48 @@ describe('DutyLabel.vue', () => {
     expect(wrapper.find('[data-testid="duty-ending-masculine"]').text()).toBe('ius');
     expect(wrapper.find('[data-testid="duty-ending-feminine"]').text()).toBe('ė');
   });
+
+  describe('holder-based inflection', () => {
+    // The page locale defaults to 'lt' in the test setup.
+    it('inflects the ending to match a feminine holder and skips the animation', () => {
+      const wrapper = mount(DutyLabel, {
+        props: {
+          duty: { name: 'Koordinatorius' },
+          holder: { name: 'Ona Onaitė', pronouns: 'ji/jos' },
+        },
+        global: { stubs: commonStubs },
+      });
+
+      expect(wrapper.text()).toContain('Koordinatorė');
+      // No holder means the animated ending group renders; with a holder it must not.
+      expect(wrapper.find('[data-testid="duty-ending-masculine"]').exists()).toBe(false);
+      expect(wrapper.find('[data-testid="duty-ending-feminine"]').exists()).toBe(false);
+    });
+
+    it('inflects back to the masculine form when the stored name is feminine', () => {
+      const wrapper = mount(DutyLabel, {
+        props: {
+          duty: { name: 'Koordinatorė' },
+          holder: { name: 'Petras Petraitis', pronouns: 'jis/jo' },
+        },
+        global: { stubs: commonStubs },
+      });
+
+      expect(wrapper.text()).toContain('Koordinatorius');
+    });
+
+    it('honours useOriginalDutyName to keep the stored name uninflected', () => {
+      const wrapper = mount(DutyLabel, {
+        props: {
+          duty: { name: 'Koordinatorius' },
+          holder: { name: 'Ona Onaitė', pronouns: 'ji/jos' },
+          useOriginalDutyName: true,
+        },
+        global: { stubs: commonStubs },
+      });
+
+      expect(wrapper.text()).toContain('Koordinatorius');
+      expect(wrapper.text()).not.toContain('Koordinatorė');
+    });
+  });
 });

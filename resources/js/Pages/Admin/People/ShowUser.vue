@@ -36,7 +36,7 @@
             variant="outline"
             class="text-xs"
           >
-            {{ duty.name }}
+            {{ inflectedDutyName(duty) }}
             <span v-if="duty.institution?.name" class="text-muted-foreground">@ {{ duty.institution.name }}</span>
           </Badge>
           <span v-if="hiddenDutyCount > 0" class="text-xs text-muted-foreground">
@@ -147,6 +147,7 @@
                   :key="duty.id"
                   :duty
                   :exclude-user-id="user.id"
+                  :holder="dutyHolder"
                 />
               </CardContent>
             </Card>
@@ -194,6 +195,7 @@
                 :key="duty.id"
                 :duty
                 :exclude-user-id="user.id"
+                :holder="dutyHolder"
               />
             </div>
           </div>
@@ -209,6 +211,7 @@
                 :key="duty.id"
                 :duty
                 :exclude-user-id="user.id"
+                :holder="dutyHolder"
                 muted
               />
             </div>
@@ -270,6 +273,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 // Utils
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { UserIconFilled } from '@/Components/icons';
+import { changeDutyNameEndings } from '@/Utils/String';
 
 const props = defineProps<{
   user: App.Entities.User & {
@@ -334,6 +338,32 @@ const pronounsBadge = computed(() => {
   }
   return null;
 });
+
+/**
+ * The person whose duties are being listed — drives the duty-name ending
+ * inflection (e.g. "Koordinatorius" → "Koordinatorė") so this profile's duties
+ * read in their gender, matching the public contacts page.
+ */
+const dutyHolder = computed(() => ({
+  name: props.user.name,
+  pronouns: props.user.pronouns,
+}));
+
+// Used in the hero badges, where DutySummaryCard isn't rendered.
+const inflectedDutyName = (duty: { name: string; pivot?: { use_original_duty_name?: boolean } | null }) => {
+  const { locale } = usePage().props.app;
+  const rawPronouns = props.user.pronouns;
+  const pronouns = typeof rawPronouns === 'string'
+    ? rawPronouns
+    : (rawPronouns?.[locale as 'lt' | 'en'] ?? '');
+  return changeDutyNameEndings(
+    props.user,
+    duty.name,
+    locale,
+    pronouns,
+    duty.pivot?.use_original_duty_name ?? false,
+  );
+};
 
 const VISIBLE_DUTY_LIMIT = 3;
 const visibleCurrentDuties = computed(() => currentDuties.value.slice(0, VISIBLE_DUTY_LIMIT));

@@ -176,7 +176,7 @@
           </template>
           <template #target-label="{ option }">
             <span class="inline-flex min-w-0 items-center gap-2">
-              <DutyLabel :duty="targetDutyLabel(option)" />
+              <DutyLabel :duty="targetDutyLabel(option)" :holder="dutyHolder" />
               <Button variant="ghost" size="icon-xs" as="a" :href="route('duties.edit', option.value)" target="_blank" @click.stop>
                 <Eye16Regular />
               </Button>
@@ -186,7 +186,7 @@
         <TransferList v-else v-model="form.current_duties" :options="flattenDutyOptions">
           <template #target-label="{ option }">
             <span class="inline-flex min-w-0 items-center gap-2">
-              <DutyLabel :duty="targetDutyLabel(option)" />
+              <DutyLabel :duty="targetDutyLabel(option)" :holder="dutyHolder" />
               <Button variant="ghost" size="icon-xs" as="a" :href="route('duties.edit', option.value)" target="_blank" @click.stop>
                 <Eye16Regular />
               </Button>
@@ -469,6 +469,24 @@ const currentDutiesWithVusaEmail = computed(() => {
   return props.user.current_duties?.filter(duty => duty.email?.toLowerCase().endsWith('@vusa.lt')) ?? [];
 });
 
+/**
+ * The person whose duties are being listed — drives the duty-name ending
+ * inflection (e.g. "Koordinatorius" → "Koordinatorė") so a holder's duties read
+ * in their gender, like on the public contacts page. Bound to the live form so
+ * the preview updates as the admin edits pronouns or the name.
+ */
+const dutyHolder = computed(() => {
+  const pronouns = form.pronouns as string | Record<string, string> | null | undefined;
+  const locale = usePage().props.app.locale as 'lt' | 'en';
+  const pronounString = typeof pronouns === 'string'
+    ? pronouns
+    : (pronouns?.[locale] ?? '');
+  return {
+    name: form.name,
+    pronouns: pronounString,
+  };
+});
+
 // Inline editing state for dutiable additional_email
 const editingDutiableId = ref<string | null>(null);
 const editingEmail = ref('');
@@ -526,7 +544,11 @@ const existingDutyColumns: ColumnDef<any, any>[] = [
             href={route('duties.edit', { id: row.original.id })}
             class="flex-inline gap-2 text-sm"
           >
-            <DutyLabel duty={{ name: row.original.name, institution: row.original.institution }} />
+            <DutyLabel
+              duty={{ name: row.original.name, institution: row.original.institution }}
+              holder={dutyHolder.value}
+              useOriginalDutyName={row.original.pivot?.use_original_duty_name}
+            />
           </a>
           {missingStudyProgram && (
             <TriangleAlert
