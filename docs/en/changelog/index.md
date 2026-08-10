@@ -11,6 +11,7 @@ Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
 - 🔧 More reliable user administration
 - ⭐ **Duplicate warning when creating a member** — both the user form and the duty wizard now warn if a similar profile already exists, including in a unit you cannot see. In the wizard you can pick the existing profile instead of creating a second one
+- ✨ **Clearer LT duty ending genderizing**
 - 🔧 **Drafts and scheduled news/pages are findable in admin search again** 
 - 🔧 **Scheduled news and pages appear in public search on time** 
 

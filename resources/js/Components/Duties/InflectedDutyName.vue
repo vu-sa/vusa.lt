@@ -35,6 +35,8 @@
           </Tooltip>
         </TooltipProvider>
       </span>
+      <!-- Everything after the head noun ("… VU FF Taryboje", "… SPK"), free to wrap. -->
+      <template v-if="variants.suffix">{{ variants.suffix }}</template>
       <span data-testid="duty-gender-pair" class="sr-only select-none">{{ genderPairLabel }}</span>
     </template>
   </span>
@@ -50,8 +52,10 @@ import { getDutyNameGenderVariants } from '@/Utils/String';
 import { useDutyGenderFlip } from '@/Composables/useDutyGenderFlip';
 
 /**
- * Shows a Lithuanian duty name's stem as fixed text with its gendered ending slowly
- * rolling between the masculine and feminine form — a passive signal, for anywhere a
+ * Shows a Lithuanian duty name as fixed text with the gendered ending of its head noun
+ * slowly rolling between the masculine and feminine form — the head noun is often mid-name
+ * ("Studentų <b>atstovas</b> VU FF Taryboje"), so anything after it renders unchanged after
+ * the animated letters. A passive signal, for anywhere a
  * duty is shown without a holder attached, that the stored name is not tied to one gender
  * (holders get it inflected automatically per pronoun or name, see `changeDutyNameEndings`).
  * This exists because admins reading a frozen "Koordinatorius" here have no way to know it
@@ -107,10 +111,10 @@ const genderPairLabel = computed(() => {
   if (!variants.value) {
     return '';
   }
-  const { stem, masculineEnding, feminineEnding } = variants.value;
+  const { stem, masculineEnding, feminineEnding, suffix } = variants.value;
   return $t('forms.helpers.duty_name_gender_pair', {
-    masculine: stem + masculineEnding,
-    feminine: stem + feminineEnding,
+    masculine: stem + masculineEnding + suffix,
+    feminine: stem + feminineEnding + suffix,
   });
 });
 </script>

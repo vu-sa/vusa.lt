@@ -27,6 +27,45 @@ class DutyNameNormalizer
     private const GENDERED_ENDINGS = ['ius', 'iai', 'ys', 'as', 'ai', 'es', 'e', 'a'];
 
     /**
+     * Agent-noun stems that can head a duty title, mapped to the masculine singular ending
+     * they take — ASCII-folded, because matching happens after Str::ascii() ("iždinink"
+     * arrives as "izdinink", "atstovė" as "atstove").
+     *
+     * The head noun is frequently not the last word ("Studentų atstovas VU FF Taryboje",
+     * "SPK atstovas"), so normalising only the tail leaves the masculine and feminine
+     * spellings of one duty looking like two different duties. Recognising the noun itself
+     * is what makes those collapse.
+     *
+     * Mirrors DUTY_AGENT_NOUN_STEMS in resources/js/Utils/String.ts — keep the two in step.
+     *
+     * @var array<string, string>
+     */
+    private const AGENT_NOUN_STEMS = [
+        'administrator' => 'ius',
+        'atstov' => 'as',
+        'direktor' => 'ius',
+        'instruktor' => 'ius',
+        'izdinink' => 'as',
+        'koordinator' => 'ius',
+        'kurator' => 'ius',
+        'mentor' => 'ius',
+        'nar' => 'ys',
+        'pavaduotoj' => 'as',
+        'pirminink' => 'as',
+        'prezident' => 'as',
+        'redaktor' => 'ius',
+        'sekretor' => 'ius',
+        'seniun' => 'as',
+        'trener' => 'is',
+        'vadov' => 'as',
+        'vicepirminink' => 'as',
+        'viceprezident' => 'as',
+    ];
+
+    /** @var array<string, string> */
+    private const MASCULINE_PLURAL_ENDINGS = ['ius' => 'iai', 'as' => 'ai', 'ys' => 'iai', 'is' => 'iai'];
+
+    /**
      * @return string the normalized form; equal for names that denote the same duty
      */
     public static function normalize(string $name): string
@@ -58,9 +97,73 @@ class DutyNameNormalizer
 
         $words = explode(' ', $stem);
         $lastIndex = array_key_last($words);
+
+        // The head noun first, wherever it sits, then the tail as before — the tail rule
+        // still earns its keep for titles no stem covers ("Partnerysčių koodinatorius").
+        // When they are the same word the second pass is a no-op, so this stays idempotent.
+        $headIndex = self::findAgentNounIndex($words);
+
+        if ($headIndex !== null) {
+            $words[$headIndex] = self::normalizeAgentNoun($words[$headIndex]);
+        }
+
         $words[$lastIndex] = self::stripGenderedEnding($words[$lastIndex]);
 
         return implode(' ', $words).$suffix;
+    }
+
+    /**
+     * Index of the last word that is a recognised agent noun, or null when the title uses
+     * none. Last, because qualifiers stack up to its left ("Chemijos magistras studentų
+     * atstove").
+     *
+     * @param  list<string>  $words
+     */
+    private static function findAgentNounIndex(array $words): ?int
+    {
+        $found = null;
+
+        foreach ($words as $index => $word) {
+            if (self::matchAgentNounStem($word) !== null) {
+                $found = $index;
+            }
+        }
+
+        return $found;
+    }
+
+    /**
+     * Returns the stem behind a word if the word is one of that stem's gendered/pluralised
+     * spellings, or null otherwise. Non-nominative forms deliberately miss: "atstovu"
+     * ("atstovų") is a modifier in "studentu atstovu koordinatore", not the head noun.
+     */
+    private static function matchAgentNounStem(string $word): ?string
+    {
+        foreach (self::AGENT_NOUN_STEMS as $stem => $masculineEnding) {
+            $forms = [
+                $stem.$masculineEnding,
+                $stem.self::MASCULINE_PLURAL_ENDINGS[$masculineEnding],
+                $stem.'e',
+                $stem.'es',
+            ];
+
+            if (in_array($word, $forms, true)) {
+                return $stem;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Replaces an agent noun with its stem plus the same placeholder
+     * {@see self::stripGenderedEnding()} uses, so every spelling of it compares equal.
+     */
+    private static function normalizeAgentNoun(string $word): string
+    {
+        $stem = self::matchAgentNounStem($word);
+
+        return $stem === null ? $word : $stem.'~';
     }
 
     /**

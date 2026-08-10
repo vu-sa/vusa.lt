@@ -32,6 +32,31 @@ test('gendered/variant pairs normalize to the same form', function (string $a, s
         'Studentų atstovas(-ė) VU Centrinėje akademinės etikos komisijoje',
         'Studentų atstovas VU Centrinėje akademinės etikos komisijoje',
     ],
+    'head noun mid-name, before a locative' => [
+        'Studentų atstovas VU FF Taryboje',
+        'Studentų atstovė VU FF Taryboje',
+    ],
+    'head noun mid-name, before an acronym' => ['Studentų atstovas SPK', 'Studentų atstovė SPK'],
+    'head noun mid-name, plural vs singular' => [
+        'Studentų atstovai MIF Taryboje',
+        'Studentų atstovė MIF Taryboje',
+    ],
+    'head noun mid-name, differing locative case' => [
+        'Studentų atstovas VU FF taryboje',
+        'Studentų atstovė VU FF Taryboje',
+    ],
+    'rightmost head noun wins over an earlier -as word' => [
+        'Chemijos magistras studentų atstovas',
+        'Chemijos magistras studentų atstovė',
+    ],
+]);
+
+test('head noun mid-name does not collapse differently-scoped duties', function (string $a, string $b): void {
+    expect(DutyNameNormalizer::normalize($a))->not->toBe(DutyNameNormalizer::normalize($b));
+})->with([
+    'different body' => ['Studentų atstovas VU FF Taryboje', 'Studentų atstovas VU FF Dekanate'],
+    'different faculty' => ['Studentų atstovas VU FF Taryboje', 'Studentų atstovas VU KnF Taryboje'],
+    'scoped vs bare' => ['Studentų atstovė SPK', 'Studentų atstovė'],
 ]);
 
 test('unrelated or differently-scoped names do not collapse together', function (string $a, string $b): void {

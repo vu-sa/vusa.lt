@@ -11,6 +11,7 @@ lastUpdated: true
 
 - 🔧 Patikimesnis naudotojų administravimas
 - ⭐ **Įspėjimas apie galimą dublikatą** — kuriant naują naudotoją (formoje ir pareigybių vedlyje) parodoma, jei panašus profilis jau egzistuoja — net jei jis priklauso kitam padaliniui. Vedlyje galima iš karto pasirinkti esamą profilį vietoj naujo kūrimo
+- ✨ **Pareigybės pavadinimas giminizuojamas aiškiau**
 - 🔧 **Juodraščiai ir suplanuotos naujienos/puslapiai vėl matomi administravimo paieškoje** 
 - 🔧 Suplanuotos naujienos ir puslapiai pasirodo viešoje paieškoje laiku
 

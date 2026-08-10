@@ -16,6 +16,7 @@ describe('InflectedDutyName.vue', () => {
   afterEach(() => {
     wrapper?.unmount();
     vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   it('renders plain text for a name with no detectable gendered ending', () => {
@@ -74,6 +75,33 @@ describe('InflectedDutyName.vue', () => {
     expect(wrapper.text()).toContain('Studentų');
   });
 
+  it('renders the text after a mid-name head noun outside the animated ending', () => {
+    wrapper = mount(InflectedDutyName, {
+      props: { name: 'Studentų atstovas VU FF Taryboje', locale: 'lt' },
+      global: { stubs: commonStubs },
+    });
+
+    const group = wrapper.get('[data-testid="duty-ending-group"]');
+
+    // Only the head noun and its ending are locked together; the locative that follows is
+    // plain text and free to wrap onto the next line.
+    expect(group.text()).toContain('atstovas');
+    expect(group.text()).not.toContain('Taryboje');
+    expect(wrapper.find('[data-testid="duty-ending-masculine"]').text()).toBe('as');
+    expect(wrapper.find('[data-testid="duty-ending-feminine"]').text()).toBe('ė');
+    expect(wrapper.text()).toContain('VU FF Taryboje');
+  });
+
+  it('renders plain text when the name already spells both genders out', () => {
+    wrapper = mount(InflectedDutyName, {
+      props: { name: 'Studentų atstovas(-ė) VU Senate', locale: 'lt' },
+      global: { stubs: commonStubs },
+    });
+
+    expect(wrapper.text()).toBe('Studentų atstovas(-ė) VU Senate');
+    expect(wrapper.find('[data-testid="duty-ending-masculine"]').exists()).toBe(false);
+  });
+
   it('anchors the tooltip on the ending alone, so it points at the letters that change', () => {
     wrapper = mount(InflectedDutyName, {
       props: { name: 'Koordinatorius', locale: 'lt' },
@@ -98,6 +126,8 @@ describe('InflectedDutyName.vue', () => {
 
   it('starts with the masculine ending active, and flips both instances together on the shared timer', async () => {
     vi.useFakeTimers();
+    // The initial form is a weighted random roll (see useDutyGenderFlip); pin it masculine.
+    vi.spyOn(Math, 'random').mockReturnValue(0.9);
 
     wrapper = mount(InflectedDutyName, {
       props: { name: 'Koordinatorius', locale: 'lt' },
@@ -135,5 +165,18 @@ describe('InflectedDutyName.vue', () => {
     expect(otherMasculine()).toContain('opacity-0');
 
     other.unmount();
+  });
+
+  it('starts with the feminine ending active when the weighted roll lands feminine', () => {
+    // Math.random() < 0.71 → feminine; a low return value pins it. See useDutyGenderFlip.
+    vi.spyOn(Math, 'random').mockReturnValue(0.1);
+
+    wrapper = mount(InflectedDutyName, {
+      props: { name: 'Koordinatorius', locale: 'lt' },
+      global: { stubs: commonStubs },
+    });
+
+    expect(wrapper.get('[data-testid="duty-ending-masculine"]').classes()).toContain('opacity-0');
+    expect(wrapper.get('[data-testid="duty-ending-feminine"]').classes()).toContain('opacity-100');
   });
 });

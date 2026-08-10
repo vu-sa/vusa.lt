@@ -185,6 +185,173 @@ export const capitalize = (word: string) => {
   return word.charAt(0).toUpperCase() + word.slice(1);
 };
 
+/**
+ * Nominative agent-noun stems that can head a Lithuanian duty title, each mapped to the
+ * masculine singular ending it takes. A duty name is inflected on this word wherever it
+ * sits in the title, so "Studentų atstovas VU FF Taryboje" turns on "atstovas" instead of
+ * being left alone because the title ends in a locative.
+ *
+ * A curated vocabulary rather than a suffix rule, because from the outside the neighbouring
+ * words are indistinguishable from the head noun: "Socialinis darbas", "Duomenų mokslas",
+ * "Chemijos magistras" and "Kompiuterinis modeliavimas" all end in `-as` without ever
+ * naming the person who holds the duty. Keyed by stem, so both genders and both numbers of
+ * one noun collapse into a single entry.
+ *
+ * Add a stem here when a new kind of title appears; names with no entry still fall back to
+ * the end-of-string rules in {@link inflectDutyNameEnding}, which is all any duty name had
+ * before. Mirrored, ASCII-folded, by `App\Services\DutyNameNormalizer` on the server.
+ */
+const DUTY_AGENT_NOUN_STEMS: Record<string, 'ius' | 'as' | 'ys' | 'is'> = {
+  administrator: 'ius',
+  atstov: 'as',
+  direktor: 'ius',
+  instruktor: 'ius',
+  iždinink: 'as',
+  koordinator: 'ius',
+  kurator: 'ius',
+  mentor: 'ius',
+  nar: 'ys',
+  pavaduotoj: 'as',
+  pirminink: 'as',
+  prezident: 'as',
+  redaktor: 'ius',
+  sekretor: 'ius',
+  seniūn: 'as',
+  trener: 'is',
+  vadov: 'as',
+  vicepirminink: 'as',
+  viceprezident: 'as',
+};
+
+const MASCULINE_PLURAL_ENDINGS = { ius: 'iai', as: 'ai', ys: 'iai', is: 'iai' } as const;
+
+interface DutyAgentNoun {
+  stem: string;
+  masculineEnding: string;
+  pluralEnding: string;
+  /** Whether the spelling found in the name is already plural ("atstovai", "koordinatorės"). */
+  isPlural: boolean;
+}
+
+/** Every surface form of every stem above, keyed by the lowercased word. */
+const DUTY_AGENT_NOUN_FORMS = new Map<string, DutyAgentNoun>(
+  Object.entries(DUTY_AGENT_NOUN_STEMS).flatMap(([stem, masculineEnding]) => {
+    const pluralEnding = MASCULINE_PLURAL_ENDINGS[masculineEnding];
+    const noun = { stem, masculineEnding, pluralEnding };
+
+    return [
+      [stem + masculineEnding, { ...noun, isPlural: false }],
+      [`${stem}ė`, { ...noun, isPlural: false }],
+      [stem + pluralEnding, { ...noun, isPlural: true }],
+      [`${stem}ės`, { ...noun, isPlural: true }],
+    ] as [string, DutyAgentNoun][];
+  }),
+);
+
+/** Parenthesised qualifiers ("(Biochemija)", "(Valdybos narys)") name the duty's scope, not its holder. */
+const PARENTHESISED = /\([^)]*\)/gu;
+
+/** A hand-written both-gender marker: "(-ė)", "(-čių)", "( -ių )". */
+const GENDER_MARKER_AT_START = /^\s*\(\s*-[^)]*\)/u;
+
+interface DutyHeadNoun extends DutyAgentNoun {
+  /** Index of the head noun's first character in the original name. */
+  start: number;
+  /** Index just past the head noun's last character. */
+  end: number;
+  /** Whether the admin already spelled both genders out, as in "atstovas (-ė)". */
+  isGenderMarked: boolean;
+}
+
+/**
+ * Locates the word a duty name should be inflected on: the last recognised agent noun
+ * outside any parentheses. Last rather than first, because the qualifiers pile up on the
+ * left ("Chemijos magistras studentų atstovė") while the head noun is the rightmost
+ * person-word.
+ */
+const findDutyHeadNoun = (name: string): DutyHeadNoun | null => {
+  // Blanked rather than removed so indices still line up with the original string.
+  const searchable = name.replace(PARENTHESISED, match => ' '.repeat(match.length));
+
+  let found: DutyHeadNoun | null = null;
+
+  for (const match of searchable.matchAll(/\p{L}+/gu)) {
+    const noun = DUTY_AGENT_NOUN_FORMS.get(match[0].toLowerCase());
+
+    if (noun && match.index !== undefined) {
+      const end = match.index + match[0].length;
+
+      found = {
+        ...noun,
+        start: match.index,
+        end,
+        // Only a marker on the head noun itself means "either gender" — one sitting on a
+        // modifier ("Studentų (-čių) iniciatyvų koordinatorius") leaves the title gendered.
+        isGenderMarked: GENDER_MARKER_AT_START.test(name.slice(end)),
+      };
+    }
+  }
+
+  return found;
+};
+
+type DutyNameGender = 'masculine' | 'feminine' | 'plural';
+
+/**
+ * The original end-of-string rules, used for titles whose head noun isn't in
+ * {@link DUTY_AGENT_NOUN_STEMS} — a misspelling ("Partnerysčių koodinatorius") or a role
+ * nobody has catalogued yet.
+ *
+ * Going the masculine direction, `-ė` stands in for `-ius`, `-as` and `-ys` alike, so the
+ * letters before it have to decide. `-orė` is the Latin-derived agent noun
+ * ("koordinatorė" → "koordinatorius"); any other `-rė` takes `-ys` ("narė" → "narys",
+ * never "narius").
+ */
+const inflectDutyNameEnding = (name: string, gender: DutyNameGender): string => {
+  if (gender === 'feminine') {
+    return name
+      .replace(/ius$/, 'ė')
+      .replace(/as$/, 'ė')
+      .replace(/ys$/, 'ė');
+  }
+
+  if (gender === 'plural') {
+    return name
+      .replace(/ius$/, 'iai')
+      .replace(/as$/, 'ai')
+      .replace(/ys$/, 'iai');
+  }
+
+  return name
+    .replace(/orė$/, 'orius')
+    .replace(/rė$/, 'rys')
+    .replace(/vė$/, 'vas')
+    .replace(/kė$/, 'kas');
+};
+
+/**
+ * Rewrites a duty name into the requested gender/number, leaving everything around the head
+ * noun — qualifiers, locatives, parenthesised scopes — exactly as the admin typed it.
+ */
+const inflectDutyName = (name: string, gender: DutyNameGender): string => {
+  const head = findDutyHeadNoun(name);
+
+  if (!head) {
+    return inflectDutyNameEnding(name, gender);
+  }
+
+  if (head.isGenderMarked) {
+    return name;
+  }
+
+  const ending = gender === 'feminine'
+    ? 'ė'
+    : gender === 'plural' ? head.pluralEnding : head.masculineEnding;
+
+  // Slicing the stem out of the original name keeps whatever casing was typed ("Kuratorė").
+  return name.slice(0, head.start + head.stem.length) + ending + name.slice(head.end);
+};
+
 export const changeDutyNameEndings = (
   contact: App.Entities.User | null | undefined,
   dutyName: App.Entities.Duty['name'],
@@ -201,26 +368,9 @@ export const changeDutyNameEndings = (
 
   const splitPronouns = pronouns?.split('/');
 
-  // replace duty.name ending 'ius' with 'ė', but only on end of string
-  const womanizedTitle = dutyName
-    .replace(/ius$/, 'ė')
-    .replace(/as$/, 'ė')
-    .replace(/ys$/, 'ė');
-
-  const pluralizedTitle = dutyName
-    .replace(/ius$/, 'iai')
-    .replace(/as$/, 'ai')
-    .replace(/ys$/, 'iai');
-
-  // The reverse of the feminine rules above, where `-ė` stands in for `-ius`, `-as` and
-  // `-ys` alike, so the letters before it have to decide. `-orė` is the Latin-derived agent
-  // noun ("koordinatorė" → "koordinatorius"); any other `-rė` takes `-ys`
-  // ("narė" → "narys", never "narius").
-  const masculinedTitle = dutyName
-    .replace(/orė$/, 'orius')
-    .replace(/rė$/, 'rys')
-    .replace(/vė$/, 'vas')
-    .replace(/kė$/, 'kas');
+  const womanizedTitle = inflectDutyName(dutyName, 'feminine');
+  const pluralizedTitle = inflectDutyName(dutyName, 'plural');
+  const masculinedTitle = inflectDutyName(dutyName, 'masculine');
 
   if (Array.isArray(splitPronouns) && splitPronouns.length > 1) {
     if (splitPronouns[0] === 'ji' || splitPronouns[0] === 'she') {
@@ -270,6 +420,8 @@ export interface DutyNameGenderVariants {
   masculineEnding: string;
   /** Ending as it would read for a feminine holder. */
   feminineEnding: string;
+  /** Trailing text identical in both genders — everything after the head noun. */
+  suffix: string;
 }
 
 /**
@@ -277,11 +429,15 @@ export interface DutyNameGenderVariants {
  * where it splits into an invariant stem and a varying ending — for UI that needs to show
  * a duty name is not tied to one gender (e.g. before a holder is assigned).
  *
- * Reuses {@link changeDutyNameEndings} in both directions rather than duplicating its
- * suffix rules, so whatever this reports matches what a real holder's pronouns would
- * produce. Checks both directions because a duty may be stored in either gender
- * ("Koordinatorius" or "Koordinatorė") — forgetting the other form is exactly the
- * duplicate-duty mistake this is meant to prevent.
+ * Reuses the same head-noun detection and suffix rules as {@link changeDutyNameEndings},
+ * so whatever this reports matches what a real holder's pronouns would produce. Checks both
+ * directions because a duty may be stored in either gender ("Koordinatorius" or
+ * "Koordinatorė") — forgetting the other form is exactly the duplicate-duty mistake this is
+ * meant to prevent.
+ *
+ * Returns null for names that carry a hand-written "(-ė)" on the head noun (they already
+ * say they cover both genders) and for names stored in the plural ("Studentų atstovai MIF
+ * Taryboje"), where showing a singular pair would misreport what is actually stored.
  */
 export const getDutyNameGenderVariants = (
   dutyName: string | null | undefined,
@@ -289,6 +445,21 @@ export const getDutyNameGenderVariants = (
   const name = dutyName?.trim();
   if (!name) {
     return null;
+  }
+
+  const head = findDutyHeadNoun(name);
+
+  if (head) {
+    if (head.isGenderMarked || head.isPlural) {
+      return null;
+    }
+
+    return {
+      stem: name.slice(0, head.start + head.stem.length),
+      masculineEnding: head.masculineEnding,
+      feminineEnding: 'ė',
+      suffix: name.slice(head.end),
+    };
   }
 
   const feminized = changeDutyNameEndings(null, name, 'lt', 'ji/jos', false);
@@ -322,6 +493,7 @@ export const getDutyNameGenderVariants = (
     stem: masculine.slice(0, stemLength),
     masculineEnding: masculine.slice(stemLength),
     feminineEnding: feminine.slice(stemLength),
+    suffix: '',
   };
 };
 
