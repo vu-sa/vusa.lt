@@ -7,6 +7,10 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.24 — Ex-officio duties are granted again (2026-08-11) {#v1-24}
+
+- 🔧 **Ex-officio members no longer disappear** 
+
 ## v1.23 — Calmer admin tables (2026-08-11) {#v1-23}
 
 - ✨ **Fewer tooltips in tables** 

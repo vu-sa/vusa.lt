@@ -103,6 +103,30 @@ class Dutiable extends MorphPivot
     }
 
     /**
+     * Ex-officio rows derived from this one have to go before it does.
+     *
+     * `dutiables.via_dutiable_id` is `nullOnDelete()`, so the database clears the
+     * link the instant the parent row disappears — by the time SyncExOfficioDutiables
+     * runs its `where('via_dutiable_id', $sourceId)` cleanup there is nothing left to
+     * match, and the derived rows survive as permission-granting orphans that look
+     * exactly like manual assignments (see AuditExOfficioDutiables). Deleting them
+     * here, while the link still exists, is the only ordering that works.
+     */
+    #[\Override]
+    protected static function booted(): void
+    {
+        static::deleting(function (Dutiable $dutiable): void {
+            // Derived rows are leaves — they never grant further ex-officio seats,
+            // so this cannot recurse beyond one level.
+            if (! is_null($dutiable->via_dutiable_id)) {
+                return;
+            }
+
+            $dutiable->derivedDutiables()->get()->each->delete();
+        });
+    }
+
+    /**
      * @return MorphTo<Model, $this>
      */
     public function dutiable(): MorphTo

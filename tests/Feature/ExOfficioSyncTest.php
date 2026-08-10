@@ -163,12 +163,14 @@ test('listener deletes derived rows when source is force-deleted', function (): 
 
     // A real delete, not a simulated one: the event reads `exists` at construction,
     // which is how it captures the delete signal before the row is gone.
-    $sourceId = $source->id;
     $source->delete();
 
     $listener->handle(new DutiableChanged($source));
 
-    expect(Dutiable::where('via_dutiable_id', $sourceId)->count())->toBe(0);
+    // Asserted on the target duty, not on `via_dutiable_id`: that column is
+    // nullOnDelete(), so a query for the dead source id returns zero rows whether
+    // the derived rows were cleaned up or merely orphaned.
+    expect(Dutiable::where('duty_id', $this->targetDuty->id)->count())->toBe(0);
 });
 
 test('listener skips non-User dutiable types', function (): void {

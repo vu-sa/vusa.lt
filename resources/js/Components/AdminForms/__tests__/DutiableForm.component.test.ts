@@ -23,8 +23,10 @@ const stubs = {
   FormElement: { template: '<section><slot name="title" /><slot name="description" /><slot /></section>' },
   FormFieldWrapper: { template: '<div><slot /></div>' },
   Alert: { template: '<div><slot /></div>' },
+  AlertTitle: { template: '<div><slot /></div>' },
   AlertDescription: { template: '<div><slot /></div>' },
-  DatePicker: { template: '<input type="date" />' },
+  Badge: { template: '<span><slot /></span>' },
+  DatePicker: { props: ['disabled'], template: '<input type="date" :disabled="disabled" />' },
   SingleSelect: { template: '<div />' },
   TiptapEditor: { template: '<div />' },
   ImageUpload: { template: '<div />' },
@@ -160,5 +162,52 @@ describe('DutiableForm.vue — public-contact preview', () => {
     wrapper = mountForm();
 
     expect(wrapper.text()).toContain('OO');
+  });
+});
+
+describe('DutiableForm.vue — ex-officio indication', () => {
+  let wrapper: ReturnType<typeof mount>;
+
+  const exOfficioDutiable = () => makeDutiable({
+    via_dutiable_id: 'dutiable-source',
+    via_dutiable: {
+      id: 'dutiable-source',
+      duty: { id: 'duty-source', name: { lt: 'Pirmininkas', en: 'Chairperson' } },
+    },
+  });
+
+  afterEach(() => {
+    wrapper?.unmount();
+  });
+
+  it('badges the assignment as ex officio and explains where it came from', () => {
+    wrapper = mountForm(exOfficioDutiable());
+
+    expect(wrapper.find('[data-testid="ex-officio-badge"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="ex-officio-notice"]').text())
+      .toContain('forms.fields.ex_officio_period_managed');
+  });
+
+  it('links back to the duty that granted the seat', () => {
+    wrapper = mountForm(exOfficioDutiable());
+
+    expect(wrapper.find('[data-testid="ex-officio-notice"]').text())
+      .toContain('forms.fields.ex_officio_source_link');
+  });
+
+  it('locks the period fields, which the source duty owns', () => {
+    wrapper = mountForm(exOfficioDutiable());
+
+    const pickers = wrapper.findAll('input[type="date"]');
+
+    expect(pickers).toHaveLength(2);
+    pickers.forEach(picker => expect(picker.attributes('disabled')).toBeDefined());
+  });
+
+  it('shows nothing ex-officio for an ordinary assignment', () => {
+    wrapper = mountForm();
+
+    expect(wrapper.find('[data-testid="ex-officio-badge"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="ex-officio-notice"]').exists()).toBe(false);
   });
 });

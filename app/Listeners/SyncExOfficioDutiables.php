@@ -14,6 +14,15 @@ class SyncExOfficioDutiables implements ShouldQueue
 {
     use InteractsWithQueue;
 
+    /**
+     * Dutiable rows are written inside DB::transaction() by every admin path that
+     * assigns a duty. Without this the job is queued the moment the event fires, so
+     * a worker can dequeue it before the transaction commits, find no row for
+     * `dutiableRowId`, and return having synced nothing — an ex-officio seat that
+     * silently fails to appear, depending purely on worker timing.
+     */
+    public $afterCommit = true;
+
     public function handle(DutiableChanged $event): void
     {
         // Only sync User dutiables; contacts and other morphable types are excluded.

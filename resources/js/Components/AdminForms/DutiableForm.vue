@@ -18,8 +18,12 @@
           <p class="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
             {{ $t('forms.helpers.dutiable_preview_label') }}
           </p>
-          <p class="truncate text-sm font-semibold">
+          <p class="flex items-center gap-2 truncate text-sm font-semibold">
             {{ personName }}
+            <Badge v-if="isExOfficio" data-testid="ex-officio-badge" variant="secondary" class="gap-1 text-[10px] font-medium">
+              <Sparkles class="size-3 shrink-0" />
+              {{ $t('forms.fields.ex_officio_badge') }}
+            </Badge>
           </p>
           <p class="text-xs text-muted-foreground">
             {{ shownDutyName }}<span v-if="previewStudyProgramSuffix"> {{ previewStudyProgramSuffix }}</span>
@@ -36,9 +40,14 @@
       <template #description>
         {{ $t('forms.helpers.duty_period_info') }}
       </template>
-      <Alert v-if="isExOfficio" class="mb-4">
+      <Alert v-if="isExOfficio" data-testid="ex-officio-notice" class="mb-4">
+        <Sparkles class="size-4" />
+        <AlertTitle>{{ $t('forms.fields.ex_officio_notice', { duty: exOfficioSourceName }) }}</AlertTitle>
         <AlertDescription>
-          {{ $t('forms.fields.ex_officio_notice', { duty: exOfficioSourceName }) }}
+          <p>{{ $t('forms.fields.ex_officio_period_managed') }}</p>
+          <Link v-if="exOfficioSourceDutyId" :href="route('duties.edit', exOfficioSourceDutyId)" class="mt-1 inline-block underline underline-offset-2">
+            {{ $t('forms.fields.ex_officio_source_link') }}
+          </Link>
         </AlertDescription>
       </Alert>
       <FormFieldWrapper id="start_date" :label="$t('forms.fields.duty_start_date')" required :error="form.errors.start_date">
@@ -123,7 +132,7 @@
 <script setup lang="ts">
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
-import { TriangleAlert } from 'lucide-vue-next';
+import { Sparkles, TriangleAlert } from 'lucide-vue-next';
 
 import SimpleLocaleButton from '../Buttons/SimpleLocaleButton.vue';
 
@@ -132,7 +141,7 @@ import FormFieldWrapper from './FormFieldWrapper.vue';
 import AdminForm from './AdminForm.vue';
 
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
-import { Alert, AlertDescription } from '@/Components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Badge } from '@/Components/ui/badge';
 import { DatePicker } from '@/Components/ui/date-picker';
 import { Input } from '@/Components/ui/input';
@@ -164,6 +173,8 @@ if (Array.isArray(form.description)) {
 const locale = ref('lt');
 
 const isExOfficio = computed(() => !!props.dutiable.via_dutiable_id);
+
+const exOfficioSourceDutyId = computed(() => props.dutiable.via_dutiable?.duty?.id ?? null);
 
 const exOfficioSourceName = computed(() => {
   const name = props.dutiable.via_dutiable?.duty?.name as string | Record<string, string> | null | undefined;

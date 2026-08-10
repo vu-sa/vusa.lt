@@ -7,6 +7,10 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.24 — Ex-officio pareigos vėl priskiriamos (2026-08-11) {#v1-24}
+
+- 🔧 **Ex-officio pareigos vėl priskiriamos**
+
 ## v1.23 — Patogesnės administravimo lentelės (2026-08-11) {#v1-23}
 
 - ✨ **Mažiau paaiškinimų burbulų lentelėse** 

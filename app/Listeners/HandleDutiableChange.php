@@ -16,6 +16,12 @@ class HandleDutiableChange implements ShouldQueue
     use InteractsWithQueue;
 
     /**
+     * Clearing the caches before the write commits just re-warms them from the old
+     * state, leaving the user's permissions stale for as long as the cache lives.
+     */
+    public $afterCommit = true;
+
+    /**
      * Handle the event.
      *
      * This runs on deletion as well as saving: losing a duty changes a user's

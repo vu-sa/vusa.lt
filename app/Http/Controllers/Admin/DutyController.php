@@ -24,6 +24,7 @@ use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ResourceServices\DutyService;
 use App\Services\TanstackTableService;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -275,9 +276,11 @@ class DutyController extends AdminController
         // UI can pre-populate each assignable-tenant's user picker.
         // Must match Duty::current_users() semantics: end_date >= now() (datetime) so
         // a rep whose end_date is today is already considered inactive.
+        // Ex-officio rows are left out — they are not the picker's to grant or revoke.
         $crossTenantRepsQuery = Dutiable::where('duty_id', $duty->id)
             ->where('dutiable_type', User::class)
             ->whereNotNull('tenant_id')
+            ->whereNull('via_dutiable_id')
             ->where(function ($query): void {
                 $query->whereNull('end_date')
                     ->orWhere('end_date', '>=', now());
@@ -319,9 +322,13 @@ class DutyController extends AdminController
             $duty->update($request->only('name', 'description', 'email', 'places_to_occupy', 'contacts_grouping'));
 
             // Only manage owning-tenant reps (tenant_id IS NULL) via the TransferList.
+            // Ex-officio rows are excluded to match DutyForm.vue, which filters them out
+            // of `current_users` before posting: counting them here made every save of a
+            // target duty read them as "removed" and end-date the whole ex-officio cohort.
             $owningTenantCurrentIds = Dutiable::where('duty_id', $duty->id)
                 ->where('dutiable_type', User::class)
                 ->whereNull('tenant_id')
+                ->whereNull('via_dutiable_id')
                 ->where(function ($query): void {
                     $query->whereNull('end_date')
                         ->orWhere('end_date', '>=', now());
@@ -379,15 +386,16 @@ class DutyController extends AdminController
             // End-date reps of tenants that are being removed entirely.
             $removedTenantIds = array_values(array_diff($previousTenantIds, $newTenantIds));
             foreach ($removedTenantIds as $tenantId) {
-                DB::table('dutiables')
-                    ->where('duty_id', $duty->id)
-                    ->where('dutiable_type', User::class)
-                    ->where('tenant_id', $tenantId)
-                    ->where(function ($query): void {
-                        $query->whereNull('end_date')
-                            ->orWhere('end_date', '>=', now());
-                    })
-                    ->update(['end_date' => now()->subDay()]);
+                $this->endDateDutiables(
+                    Dutiable::where('duty_id', $duty->id)
+                        ->where('dutiable_type', User::class)
+                        ->where('tenant_id', $tenantId)
+                        ->where(function ($query): void {
+                            $query->whereNull('end_date')
+                                ->orWhere('end_date', '>=', now());
+                        }),
+                    now()->subDay()
+                );
             }
 
             $duty->assignableTenants()->sync($this->buildAssignableTenantsSync($assignableTenantsInput));
@@ -474,6 +482,26 @@ class DutyController extends AdminController
         return $sync;
     }
 
+    /**
+     * End-date the matched dutiable rows through the model layer.
+     *
+     * A mass `update()` — on `DB::table()` or on an Eloquent builder — fires no
+     * model events, so `DutiableChanged` never reaches SyncExOfficioDutiables and
+     * the rows derived from an ended membership keep their open period forever.
+     * Saving row by row costs one write each and is always a handful of rows.
+     *
+     * A plain loop rather than `each()`: that helper treats a falsy return as
+     * "stop", so one refused save would silently skip every remaining row.
+     *
+     * @param  EloquentBuilder<Dutiable>  $query
+     */
+    private function endDateDutiables(EloquentBuilder $query, mixed $endDate): void
+    {
+        foreach ($query->get() as $dutiable) {
+            $dutiable->update(['end_date' => $endDate]);
+        }
+    }
+
     private function handleUsersUpdate(Collection $existingUserIds, Collection $requestUserIds, Duty $duty)
     {
         $new = $requestUserIds->diff($existingUserIds);
@@ -481,17 +509,20 @@ class DutyController extends AdminController
 
         // Only touch owning-tenant rows (tenant_id IS NULL) — cross-tenant reps
         // are managed separately via the per-tenant user_ids in assignable_tenants.
+        // Ex-officio rows are off-limits too: they end when their source does.
         if ($removed->isNotEmpty()) {
-            DB::table('dutiables')
-                ->where('duty_id', $duty->id)
-                ->whereIn('dutiable_id', $removed->all())
-                ->where('dutiable_type', User::class)
-                ->whereNull('tenant_id')
-                ->where(function ($query): void {
-                    $query->whereNull('end_date')
-                        ->orWhere('end_date', '>=', now());
-                })
-                ->update(['end_date' => now()->subDay()]);
+            $this->endDateDutiables(
+                Dutiable::where('duty_id', $duty->id)
+                    ->whereIn('dutiable_id', $removed->all())
+                    ->where('dutiable_type', User::class)
+                    ->whereNull('tenant_id')
+                    ->whereNull('via_dutiable_id')
+                    ->where(function ($query): void {
+                        $query->whereNull('end_date')
+                            ->orWhere('end_date', '>=', now());
+                    }),
+                now()->subDay()
+            );
         }
 
         if ($new->isNotEmpty()) {
@@ -514,9 +545,12 @@ class DutyController extends AdminController
     {
         $today = now()->toDateString();
 
+        // Ex-officio rows are excluded on both sides: DutyController@edit keeps them
+        // out of the tenant's picker, so they must not read as "removed" here either.
         $currentUserIds = Dutiable::where('duty_id', $duty->id)
             ->where('dutiable_type', User::class)
             ->where('tenant_id', $tenantId)
+            ->whereNull('via_dutiable_id')
             ->where(function ($query): void {
                 $query->whereNull('end_date')
                     ->orWhere('end_date', '>=', now());
@@ -528,16 +562,18 @@ class DutyController extends AdminController
         $toRemove = array_values(array_diff($currentUserIds, $requestedUserIds));
 
         if ($toRemove) {
-            DB::table('dutiables')
-                ->where('duty_id', $duty->id)
-                ->where('dutiable_type', User::class)
-                ->where('tenant_id', $tenantId)
-                ->whereIn('dutiable_id', $toRemove)
-                ->where(function ($query): void {
-                    $query->whereNull('end_date')
-                        ->orWhere('end_date', '>=', now());
-                })
-                ->update(['end_date' => now()->subDay()]);
+            $this->endDateDutiables(
+                Dutiable::where('duty_id', $duty->id)
+                    ->where('dutiable_type', User::class)
+                    ->where('tenant_id', $tenantId)
+                    ->whereNull('via_dutiable_id')
+                    ->whereIn('dutiable_id', $toRemove)
+                    ->where(function ($query): void {
+                        $query->whereNull('end_date')
+                            ->orWhere('end_date', '>=', now());
+                    }),
+                now()->subDay()
+            );
         }
 
         if ($toAdd) {
@@ -765,9 +801,11 @@ class DutyController extends AdminController
                         }
                     } elseif ($change['action'] === 'remove') {
                         // End-date only the active row belonging to the acting tenant.
+                        // Ex-officio rows follow their source and are never removed here.
                         $removeQuery = Dutiable::where('duty_id', $duty->id)
                             ->where('dutiable_type', User::class)
                             ->where('dutiable_id', $userId)
+                            ->whereNull('via_dutiable_id')
                             ->where(function ($query): void {
                                 $query->whereNull('end_date')
                                     ->orWhere('end_date', '>=', now());
@@ -779,7 +817,7 @@ class DutyController extends AdminController
                             $removeQuery->whereNull('tenant_id');
                         }
 
-                        $removeQuery->update(['end_date' => $change['end_date'] ?? now()]);
+                        $this->endDateDutiables($removeQuery, $change['end_date'] ?? now());
                     }
                 }
 
