@@ -7,6 +7,14 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.23 — Patogesnės administravimo lentelės (2026-08-11) {#v1-23}
+
+- ✨ **Mažiau paaiškinimų burbulų lentelėse** 
+- ✨ **Peržiūros ir redagavimo mygtukai yra nuorodos** 
+- ✨ **Institucijų sąraše rodomi naujausi posėdžiai** — vietoj seniausių
+- ✨ **Paieška veikia rašant** — atskiro „Ieškoti“ mygtuko nebeliko visuose sąrašuose
+- ✨ **Filtrai suskleisti po vienu mygtuku** 
+
 ## v1.22 —  Administravimo ir juodraščių rodymo atnaujinimai (2026-08-10) {#v1-22}
 
 - 🔧 Patikimesnis naudotojų administravimas

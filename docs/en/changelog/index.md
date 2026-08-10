@@ -7,6 +7,14 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.23 — Calmer admin tables (2026-08-11) {#v1-23}
+
+- ✨ **Fewer tooltips in tables** 
+- ✨ **View and edit buttons are real links** 
+- ✨ **The institution list shows the most recent meetings** — instead of the oldest ones
+- ✨ **Search runs as you type** 
+- ✨ **Filters collapse behind one button** 
+
 ## v1.22 — Member administration and draft updates (2026-08-10) {#v1-22}
 
 - 🔧 More reliable user administration

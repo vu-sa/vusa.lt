@@ -3,12 +3,31 @@
     <TooltipProvider v-if="inlineActions.length > 0">
       <Tooltip v-for="action in inlineActions" :key="action.key">
         <TooltipTrigger as-child>
+          <!--
+            Navigational actions render as real anchors so middle-click,
+            ctrl-click and "copy link address" behave the way they do anywhere
+            else on the web. Inertia's Link leaves those clicks to the browser.
+          -->
           <Button
+            v-if="action.href"
+            as-child
             variant="ghost"
             size="icon"
             class="size-8"
             :data-testid="`row-action-${action.key}`"
-            @click="action.run()"
+          >
+            <Link :href="action.href" @click="emitAction(action.key)">
+              <component :is="action.icon" class="size-4" />
+              <span class="sr-only">{{ action.label }}</span>
+            </Link>
+          </Button>
+          <Button
+            v-else
+            variant="ghost"
+            size="icon"
+            class="size-8"
+            :data-testid="`row-action-${action.key}`"
+            @click="handleAction(action.key)"
           >
             <component :is="action.icon" class="size-4" />
             <span class="sr-only">{{ action.label }}</span>
@@ -110,7 +129,7 @@
 <script setup lang="ts" generic="TModel extends { id: string | number, deleted_at?: string | null, force_delete_blocked_reason?: string | null }">
 import { ref, computed, useSlots, type Component } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { router, usePage } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import {
   CopyIcon,
   EyeIcon,
@@ -199,7 +218,8 @@ type InlineAction = {
   key: string;
   icon: Component;
   label: string;
-  run: () => void;
+  /** Set for navigational actions; renders the control as an anchor. */
+  href?: string;
 };
 
 /**
@@ -210,22 +230,23 @@ type InlineAction = {
 const inlineActions = computed<InlineAction[]>(() => {
   if (isTrashed.value) {
     return props.canRestore
-      ? [{ key: 'restore', icon: HistoryIcon, label: $t('trash.restore'), run: () => handleAction('restore') }]
+      ? [{ key: 'restore', icon: HistoryIcon, label: $t('trash.restore') }]
       : [];
   }
 
   const actions: InlineAction[] = [];
 
   if (props.canView) {
-    actions.push({ key: 'view', icon: EyeIcon, label: $t('tables.view'), run: () => handleAction('view') });
+    actions.push({ key: 'view', icon: EyeIcon, label: $t('tables.view'), href: props.viewRoute });
   }
 
   if (props.canEdit) {
-    actions.push({ key: 'edit', icon: PencilIcon, label: $t('forms.edit'), run: () => handleAction('edit') });
+    actions.push({ key: 'edit', icon: PencilIcon, label: $t('forms.edit'), href: props.editRoute });
   }
 
+  // Duplicating POSTs and restoring PATCHes, so neither can be an anchor.
   if (props.canDuplicate) {
-    actions.push({ key: 'duplicate', icon: CopyIcon, label: $t('tables.duplicate'), run: () => handleAction('duplicate') });
+    actions.push({ key: 'duplicate', icon: CopyIcon, label: $t('tables.duplicate') });
   }
 
   return actions;
@@ -261,13 +282,15 @@ const forceDeleteDescription = computed(() => {
   return note ? `${base} ${note}` : base;
 });
 
+/** Tell listening parents an action ran, without performing it. */
+const emitAction = (action: string) => {
+  emit('action', action, props.model);
+  emit(action as any, props.model);
+};
+
 // Action handler for standard actions
 const handleAction = (action: string) => {
-  // Emit generic action event
-  emit('action', action, props.model);
-
-  // Emit specific action event
-  emit(action as any, props.model);
+  emitAction(action);
 
   // Handle based on action type
   switch (action) {

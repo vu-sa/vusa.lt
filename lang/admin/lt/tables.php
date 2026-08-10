@@ -15,6 +15,9 @@ return [
     'columns' => 'Stulpeliai',
     'clear' => 'Išvalyti',
     'apply' => 'Taikyti',
+    'filters' => 'Filtrai',
+    'clear_filters' => 'Išvalyti filtrus',
+    'more_actions' => 'Daugiau veiksmų',
 
     'selected' => 'Pasirinkta',
     'clear_selection' => 'Išvalyti pasirinkimą',

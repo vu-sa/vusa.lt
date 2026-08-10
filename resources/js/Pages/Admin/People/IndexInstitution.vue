@@ -140,7 +140,7 @@ const columns = computed<Array<ColumnDef<App.Entities.Institution, any>>>(() => 
           href: route('meetings.show', meeting.id),
         }, formatStaticTime(meeting.start_time))),
         meetings.length > 3
-          ? h('span', { class: 'text-xs text-muted-foreground' }, `+${meetings.length - 3} more`)
+          ? h('span', { class: 'text-xs text-muted-foreground' }, `+${meetings.length - 3}`)
           : null,
       ]);
     },

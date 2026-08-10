@@ -1,6 +1,7 @@
 import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { defineComponent } from 'vue';
+import { defineComponent, nextTick } from 'vue';
+import { router } from '@inertiajs/vue3';
 import type { ColumnDef } from '@tanstack/vue-table';
 
 import ServerDataTable from '@/Components/Tables/ServerDataTable.vue';
@@ -39,7 +40,7 @@ const columnsWithActions: ColumnDef<TestRow, any>[] = [
 describe('ServerDataTable', () => {
   let wrapper: ReturnType<typeof mount>;
 
-  const mountTable = (props: Record<string, unknown> = {}) => mount(ServerDataTable, {
+  const mountTable = (props: Record<string, unknown> = {}, slots: Record<string, string> = {}) => mount(ServerDataTable, {
     props: {
       modelName: 'tests',
       columns: columns as ColumnDef<unknown, any>[],
@@ -48,6 +49,7 @@ describe('ServerDataTable', () => {
       allowToggleDeleted: true,
       ...props,
     },
+    slots,
     global: {
       stubs: {
         ...commonStubs,
@@ -190,6 +192,99 @@ describe('ServerDataTable', () => {
       wrapper = mountTable({ showDeleted: true });
 
       expect(renderedColumnIds()).toEqual(['name', 'deleted_at']);
+    });
+  });
+
+  describe('search', () => {
+    it('searches as you type, so no separate search button is needed', async () => {
+      vi.useFakeTimers();
+      wrapper = mountTable();
+
+      expect(wrapper.findAll('button').some(button => button.text() === 'tables.search')).toBe(false);
+
+      await wrapper.find('input').setValue('vardas');
+      vi.advanceTimersByTime(500);
+      await nextTick();
+
+      expect(vi.mocked(router.visit)).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({ data: expect.objectContaining({ search: 'vardas' }) }),
+      );
+
+      vi.useRealTimers();
+    });
+
+    it('does not re-request when the input is synced from server props', async () => {
+      vi.useFakeTimers();
+      wrapper = mountTable({ initialFilters: { search: 'pradinis' } });
+      vi.mocked(router.visit).mockClear();
+
+      await wrapper.setProps({ initialFilters: { search: 'is serverio' } });
+      vi.advanceTimersByTime(500);
+      await nextTick();
+
+      // The props watcher reloads once; the debounced search must not add a second.
+      expect(vi.mocked(router.visit)).toHaveBeenCalledTimes(1);
+
+      vi.useRealTimers();
+    });
+  });
+
+  describe('filter panel', () => {
+    const filterSlot = { filters: '<button data-testid="page-filter">Type</button>' };
+
+    it('offers no filter trigger when the page defines no filters', () => {
+      wrapper = mountTable();
+
+      expect(wrapper.find('[data-testid="toggle-filters"]').exists()).toBe(false);
+    });
+
+    // Page filters used to occupy the toolbar permanently; collapsing them keeps
+    // the chrome above the table to one row.
+    it('keeps page filters collapsed until asked for', async () => {
+      wrapper = mountTable({}, filterSlot);
+
+      expect(wrapper.find('[data-testid="filters-panel"]').exists()).toBe(false);
+
+      await wrapper.find('[data-testid="toggle-filters"]').trigger('click');
+
+      expect(wrapper.find('[data-testid="page-filter"]').exists()).toBe(true);
+    });
+
+    // A list that arrives already filtered has to say so, or the missing rows
+    // read as missing data.
+    it('opens itself and counts the filters already narrowing the list', () => {
+      wrapper = mountTable({ initialFilters: { 'types.id': [1, 2], 'data_quality': 'vacant' } }, filterSlot);
+
+      expect(wrapper.find('[data-testid="filters-panel"]').exists()).toBe(true);
+      expect(wrapper.find('[data-testid="toggle-filters"]').text()).toContain('2');
+    });
+
+    it('ignores empty filter values and the table\'s own keys when counting', () => {
+      wrapper = mountTable(
+        { showDeleted: true, initialFilters: { 'types.id': [], 'search': 'abc', 'language': null } },
+        filterSlot,
+      );
+
+      expect(wrapper.find('[data-testid="toggle-filters"]').text()).not.toMatch(/\d/);
+      expect(wrapper.find('[data-testid="clear-filters"]').exists()).toBe(false);
+    });
+
+    // Pages seed their filter controls from props during setup, so clearing has
+    // to remount the page rather than preserve its state.
+    it('clears filters with a fresh visit that keeps the current view', async () => {
+      wrapper = mountTable({ initialFilters: { 'types.id': [1] }, showDeleted: true }, filterSlot);
+      vi.mocked(router.visit).mockClear();
+
+      await wrapper.find('[data-testid="clear-filters"]').trigger('click');
+
+      expect(vi.mocked(router.visit)).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          preserveState: false,
+          data: { showDeleted: true },
+        }),
+      );
     });
   });
 

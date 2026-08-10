@@ -59,6 +59,24 @@ export interface AdvancedTableConfig {
 }
 
 /**
+ * A page-level action that is not the primary "create" one.
+ *
+ * These are collected into a single overflow menu rather than each claiming a
+ * button in the header — a row of equally weighted buttons hides which one is
+ * the page's actual purpose.
+ */
+export interface SecondaryPageAction {
+  /** Visible, already-translated label */
+  label: string;
+  /** Lucide (admin) icon component */
+  icon?: any;
+  /** Navigation target; rendered as a link so middle-click works */
+  href?: string;
+  /** Used instead of `href` for actions that are not navigations */
+  onSelect?: () => void;
+}
+
+/**
  * Page and UI customization - for full-page table layouts
  */
 export interface PageTableConfig {
@@ -79,6 +97,8 @@ export interface PageTableConfig {
   createRoute?: string;
   /** Whether the user can create new items (defaults to false) */
   canCreate?: boolean;
+  /** Non-primary page actions, collapsed into one overflow menu */
+  secondaryActions?: SecondaryPageAction[];
 
   // Customization
   /** Custom message when table is empty */

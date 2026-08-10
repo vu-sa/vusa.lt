@@ -7,39 +7,20 @@
     @page-changed="handlePageChange"
     @filter-changed="handleFilterChange"
   >
-    <template #headerActions>
-      <Link :href="route('duties.updateUsersWizard')">
-        <Button variant="outline" size="sm">
-          <UserIcon class="size-4" />
-          {{ $t('forms.fields.duty_user_wizard') }}
-        </Button>
-      </Link>
-      <Button variant="outline" size="sm" as-child class="gap-1.5">
-        <Link :href="route('duties.merge')">
-          <MergeIcon class="size-4" />
-          {{ $t('Sulieti pareigybes') }}
-        </Link>
-      </Button>
-    </template>
     <template #filters>
-      <div class="flex items-center gap-2">
+      <DataTableFilter
+        v-model:value="dataQuality"
+        :options="dataQualityOptions"
+        filter-key="data_quality"
+        @apply="handleDataQualityChange"
+        @clear="handleDataQualityChange(null)"
+      >
+        {{ $t('forms.fields.data_quality_filter') }}
+      </DataTableFilter>
+
+      <div class="flex items-center gap-2 rounded-md border border-border bg-background px-2.5 py-1.5">
         <Switch id="show-external-duties" :model-value="showExternal" @update:model-value="handleShowExternalChange" />
         <Label for="show-external-duties" class="text-sm font-normal">{{ $t('forms.fields.show_external_duties') }}</Label>
-      </div>
-      <div class="flex items-center gap-2">
-        <Label for="data-quality-filter" class="text-sm font-normal whitespace-nowrap">{{ $t('forms.fields.data_quality_filter') }}</Label>
-        <Select v-model="dataQualityModel">
-          <SelectTrigger id="data-quality-filter" class="h-8 w-52">
-            <SelectValue :placeholder="$t('forms.fields.data_quality_all')" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{{ $t('forms.fields.data_quality_all') }}</SelectItem>
-            <SelectItem value="vacant">{{ $t('forms.fields.data_quality_vacant') }}</SelectItem>
-            <SelectItem value="missing_en_name">{{ $t('forms.fields.data_quality_missing_en_name') }}</SelectItem>
-            <SelectItem value="missing_lt_name">{{ $t('forms.fields.data_quality_missing_lt_name') }}</SelectItem>
-            <SelectItem value="duplicate_holders">{{ $t('forms.fields.data_quality_duplicate_holders') }}</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
     </template>
   </IndexTablePage>
@@ -47,15 +28,14 @@
 
 <script setup lang="ts">
 import { h, ref, computed } from 'vue';
-import { Link, usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 
-import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Label } from '@/Components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Switch } from '@/Components/ui/switch';
+import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
 import { TagList, TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
 import { capitalize } from '@/Utils/String';
 import { resolveTranslatable } from '@/Composables/useDataTableColumns';
@@ -101,17 +81,35 @@ const handleShowExternalChange = (value: boolean) => {
 };
 
 // Data-quality slice (vacant duties, missing localized names, duplicate holders).
-// "all" is the neutral default — selecting it drops the filter so the full list returns.
-const dataQuality = ref<string | undefined>(props.filters?.data_quality);
+// Unset is the neutral default — clearing it drops the filter so the full list returns.
+const dataQuality = ref<string | null>(props.filters?.data_quality ?? null);
 
-const dataQualityModel = computed<string>({
-  get: () => dataQuality.value ?? 'all',
-  set: (value: string) => {
-    const next = value === 'all' ? undefined : value;
-    dataQuality.value = next;
-    indexTablePageRef.value?.updateFilter('data_quality', next);
+const dataQualityOptions = computed(() => [
+  { label: $t('forms.fields.data_quality_vacant'), value: 'vacant' },
+  { label: $t('forms.fields.data_quality_missing_en_name'), value: 'missing_en_name' },
+  { label: $t('forms.fields.data_quality_missing_lt_name'), value: 'missing_lt_name' },
+  { label: $t('forms.fields.data_quality_duplicate_holders'), value: 'duplicate_holders' },
+]);
+
+const handleDataQualityChange = (value: string | null) => {
+  dataQuality.value = value;
+  indexTablePageRef.value?.updateFilter('data_quality', value ?? undefined);
+};
+
+// Duty administration lives beside the list but is not what the page is for,
+// so both entry points sit in the header's overflow menu.
+const secondaryActions = computed(() => [
+  {
+    label: $t('forms.fields.duty_user_wizard'),
+    icon: UserIcon,
+    href: route('duties.updateUsersWizard'),
   },
-});
+  {
+    label: $t('Sulieti pareigybes'),
+    icon: MergeIcon,
+    href: route('duties.merge'),
+  },
+]);
 
 const getRowId = (row: App.Entities.Duty) => {
   return `duty-${row.id}`;
@@ -207,6 +205,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Duty>>(() => ({
   icon: DutyIcon,
   createRoute: route('duties.create'),
   canCreate: true,
+  secondaryActions: secondaryActions.value,
 }));
 
 const onDataLoaded = (data: any) => {};

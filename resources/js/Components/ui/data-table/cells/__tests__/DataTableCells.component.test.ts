@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 
 import { commonStubs } from '@/tests/stubs';
 import {
+  CellTooltip,
   DateCell,
   TagList,
   TruncatedBadge,
@@ -47,6 +48,47 @@ describe('TruncatedText', () => {
     });
 
     expect(wrapper.text()).toBe('—');
+  });
+
+  // jsdom has no layout engine and no ResizeObserver, so nothing ever measures
+  // as clipped here — which is exactly the "text fits" case we want covered.
+  // Whether a real browser measures overflow correctly is not testable in jsdom.
+  it('renders no tooltip when the text is not clipped', () => {
+    const wrapper = mount(TruncatedText, {
+      props: { text: 'Short' },
+      global: { stubs: commonStubs },
+    });
+
+    expect(wrapper.find('.tooltip-content').exists()).toBe(false);
+  });
+});
+
+describe('CellTooltip', () => {
+  const mountTooltip = (props: Record<string, unknown>) => mount(CellTooltip, {
+    props,
+    slots: { default: '<span class="cell-value">Value</span>' },
+    global: { stubs: commonStubs },
+  });
+
+  it('wraps the cell in a tooltip when the value is hidden', () => {
+    const wrapper = mountTooltip({ text: 'Full value', enabled: true });
+
+    expect(wrapper.find('.tooltip-content').text()).toBe('Full value');
+    expect(wrapper.find('.cell-value').exists()).toBe(true);
+  });
+
+  it('renders the cell bare when nothing is hidden', () => {
+    const wrapper = mountTooltip({ text: 'Full value', enabled: false });
+
+    expect(wrapper.find('.tooltip-content').exists()).toBe(false);
+    expect(wrapper.find('.cell-value').exists()).toBe(true);
+  });
+
+  it('renders no tooltip when there is no text to reveal', () => {
+    const wrapper = mountTooltip({ text: null, enabled: true });
+
+    expect(wrapper.find('.tooltip-content').exists()).toBe(false);
+    expect(wrapper.find('.cell-value').exists()).toBe(true);
   });
 });
 
@@ -179,5 +221,23 @@ describe('DateCell', () => {
     });
 
     expect(wrapper.text()).toBe('—');
+  });
+
+  it('adds no tooltip to an absolute date, which already reads in full', () => {
+    const wrapper = mount(DateCell, {
+      props: { date: '2024-01-15T10:30:00' },
+      global: { stubs: commonStubs },
+    });
+
+    expect(wrapper.find('.tooltip-content').exists()).toBe(false);
+  });
+
+  it('reveals the exact timestamp behind a relative date', () => {
+    const wrapper = mount(DateCell, {
+      props: { date: '2024-01-15T10:30:00', mode: 'relative' },
+      global: { stubs: commonStubs },
+    });
+
+    expect(wrapper.find('.tooltip-content').text()).toContain('2024');
   });
 });

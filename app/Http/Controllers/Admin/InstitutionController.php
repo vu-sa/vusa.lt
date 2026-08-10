@@ -45,7 +45,9 @@ class InstitutionController extends AdminController
         $this->handleAuthorization('viewAny', Institution::class);
 
         // Build base query with eager loading
-        $query = Institution::query()->with(['meetings' => fn ($query) => $query->orderBy('start_time'), 'tenant', 'types']);
+        // Newest meetings first — the index cell shows only the first few, and
+        // the recent ones are what an administrator is looking for.
+        $query = Institution::query()->with(['meetings' => fn ($query) => $query->orderByDesc('start_time'), 'tenant', 'types']);
 
         // Define searchable columns
         $searchableColumns = ['name', 'alias', 'email', 'tenant.name'];

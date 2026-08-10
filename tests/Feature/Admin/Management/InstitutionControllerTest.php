@@ -192,6 +192,33 @@ describe('authorized access', function (): void {
         $response->assertInertia(fn ($page) => $page->component('Admin/People/IndexInstitution'));
     });
 
+    // The index cell shows only the first few meetings, so they must arrive
+    // newest first — an administrator is looking for what just happened.
+    test('indexes institution meetings newest first', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        Meeting::factory()->create(['start_time' => '2024-01-01 10:00:00'])
+            ->institutions()->attach($institution);
+        Meeting::factory()->create(['start_time' => '2026-01-01 10:00:00'])
+            ->institutions()->attach($institution);
+        Meeting::factory()->create(['start_time' => '2025-01-01 10:00:00'])
+            ->institutions()->attach($institution);
+
+        asUser($this->admin)->get(route('institutions.index'))
+            ->assertOk()
+            ->assertInertia(function ($page) use ($institution): void {
+                $meetings = collect($page->toArray()['props']['data'])
+                    ->firstWhere('id', $institution->id)['meetings'];
+
+                $years = array_map(
+                    fn (array $meeting): int => (int) substr((string) $meeting['start_time'], 0, 4),
+                    $meetings,
+                );
+
+                expect($years)->toBe([2026, 2025, 2024]);
+            });
+    });
+
     test('can access institution create page', function (): void {
         $response = asUser($this->admin)->get(route('institutions.create'));
 

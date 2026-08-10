@@ -15,6 +15,9 @@ return [
     'columns' => 'Columns',
     'clear' => 'Clear',
     'apply' => 'Apply',
+    'filters' => 'Filters',
+    'clear_filters' => 'Clear filters',
+    'more_actions' => 'More actions',
 
     'selected' => 'Selected',
     'clear_selection' => 'Clear selection',

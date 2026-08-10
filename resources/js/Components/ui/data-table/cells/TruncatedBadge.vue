@@ -1,28 +1,18 @@
 <template>
-  <TooltipProvider>
-    <Tooltip>
-      <TooltipTrigger as-child>
-        <Badge :variant :class="['truncate max-w-full inline-block', badgeClass]">
-          {{ displayText }}
-        </Badge>
-      </TooltipTrigger>
-      <TooltipContent v-if="tooltipText" side="top" align="start" class="max-w-md">
-        <p>{{ tooltipText }}</p>
-      </TooltipContent>
-    </Tooltip>
-  </TooltipProvider>
+  <CellTooltip :text="tooltipText" :enabled="isTruncated">
+    <Badge ref="el" :variant :class="['truncate max-w-full inline-block', badgeClass]">
+      {{ displayText }}
+    </Badge>
+  </CellTooltip>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 
+import CellTooltip from './CellTooltip.vue';
+
 import { Badge } from '@/Components/ui/badge';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/Components/ui/tooltip';
+import { useIsTruncated } from '@/Composables/useIsTruncated';
 import type { BadgeVariants } from '@/Components/ui/badge';
 
 const props = withDefaults(defineProps<{
@@ -36,4 +26,6 @@ const props = withDefaults(defineProps<{
 const displayText = computed(() => props.text ?? '—');
 const tooltipText = computed(() => props.text ?? undefined);
 const badgeClass = computed(() => props.class);
+
+const { el, isTruncated } = useIsTruncated();
 </script>

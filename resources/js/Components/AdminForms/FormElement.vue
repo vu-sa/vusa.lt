@@ -6,7 +6,6 @@
       variant === 'subtle' && 'opacity-75 hover:opacity-100 transition-opacity duration-300',
     ]"
   >
-    <!-- Header row -->
     <div class="flex items-start gap-4">
       <!-- Section indicator -->
       <div
@@ -25,7 +24,7 @@
           leave-active-class="transition-all duration-150 ease-in"
           leave-from-class="scale-100 opacity-100"
           leave-to-class="scale-0 opacity-0"
-          mode="out-in"
+          mode="out/in"
         >
           <IFluentCheckmark16Filled v-if="isComplete" class="size-4" />
           <component :is="icon" v-else-if="icon" class="size-4" />
@@ -33,50 +32,65 @@
         </Transition>
       </div>
 
-      <!-- Title block -->
-      <div class="min-w-0 flex-1">
-        <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <h3 class="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-            <slot name="title" />
-          </h3>
-          <span
-            v-if="required"
-            class="inline-flex items-center rounded-full bg-amber-400/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-600 dark:bg-amber-500/15 dark:text-amber-400"
-          >
-            {{ $t('Privaloma') }}
-          </span>
-        </div>
-        <p v-if="$slots.subtitle" class="mt-0.5 text-[13px] leading-relaxed text-zinc-500 dark:text-zinc-400">
-          <slot name="subtitle" />
-        </p>
-      </div>
-    </div>
+      <!-- Content grid -->
+      <div class="min-w-0 flex-1 grid gap-6 lg:grid-cols-12">
+        <!-- Left column: title + description -->
+        <aside
+          v-if="!noSider && $slots.description"
+          class="lg:col-span-4 xl:col-span-3"
+        >
+          <!-- Title block -->
+          <div v-if="$slots.title" class="mb-4">
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <h3 class="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+                <slot name="title" />
+              </h3>
+              <span
+                v-if="required"
+                class="inline-flex items-center rounded-full bg-amber-400/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-600 dark:bg-amber-500/15 dark:text-amber-400"
+              >
+                {{ $t('Privaloma') }}
+              </span>
+            </div>
+            <p v-if="$slots.subtitle" class="mt-0.5 text-[13px] leading-relaxed text-zinc-500 dark:text-zinc-400">
+              <slot name="subtitle" />
+            </p>
+          </div>
+          <div class="text-xs leading-[1.4] text-zinc-500 dark:text-zinc-400 [&_p]:mb-3 [&_p:last-child]:mb-0 [&_a]:text-primary [&_a]:underline [&_a]:decoration-primary/30 [&_a]:underline-offset-2 hover:[&_a]:decoration-primary/60 [&_strong]:font-medium [&_strong]:text-zinc-700 dark:[&_strong]:text-zinc-300 [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5">
+            <slot name="description" />
+          </div>
+        </aside>
 
-    <!-- Content area -->
-    <div
-      class="mt-4 grid gap-6 lg:grid-cols-12"
-      :class="[(sectionNumber || icon) && 'lg:pl-[52px]']"
-    >
-      <!-- Description sidebar -->
-      <aside
-        v-if="!noSider && $slots.description"
-        class="lg:col-span-4 xl:col-span-3"
-      >
-        <div class="text-xs leading-[1.4] text-zinc-500 dark:text-zinc-400 [&_p]:mb-3 [&_p:last-child]:mb-0 [&_a]:text-primary [&_a]:underline [&_a]:decoration-primary/30 [&_a]:underline-offset-2 hover:[&_a]:decoration-primary/60 [&_strong]:font-medium [&_strong]:text-zinc-700 dark:[&_strong]:text-zinc-300 [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5">
-          <slot name="description" />
-        </div>
-      </aside>
+        <!-- Main content -->
+        <div
+          :class="[
+            'space-y-4',
+            noSider || !$slots.description
+              ? 'lg:col-span-12'
+              : 'lg:col-span-8 xl:col-span-9'
+          ]"
+        >
+          <!-- Title block (only when no description sidebar) -->
+          <div v-if="(noSider || !$slots.description) && $slots.title">
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <h3 class="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+                <slot name="title" />
+              </h3>
+              <span
+                v-if="required"
+                class="inline-flex items-center rounded-full bg-amber-400/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-600 dark:bg-amber-500/15 dark:text-amber-400"
+              >
+                {{ $t('Privaloma') }}
+              </span>
+            </div>
+            <p v-if="$slots.subtitle" class="mt-0.5 text-[13px] leading-relaxed text-zinc-500 dark:text-zinc-400">
+              <slot name="subtitle" />
+            </p>
+          </div>
 
-      <!-- Main content -->
-      <div
-        :class="[
-          'space-y-4',
-          noSider || !$slots.description
-            ? 'lg:col-span-12'
-            : 'lg:col-span-8 xl:col-span-9'
-        ]"
-      >
-        <slot />
+          <!-- Form fields -->
+          <slot />
+        </div>
       </div>
     </div>
 

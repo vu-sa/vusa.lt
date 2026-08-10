@@ -1,32 +1,23 @@
 <template>
-  <TooltipProvider>
-    <Tooltip>
-      <TooltipTrigger as-child>
-        <span
-          :class="[
-            lineClass,
-            props.class,
-          ]"
-        >
-          {{ displayText }}
-        </span>
-      </TooltipTrigger>
-      <TooltipContent v-if="tooltipText" side="top" align="start" class="max-w-md">
-        <p>{{ tooltipText }}</p>
-      </TooltipContent>
-    </Tooltip>
-  </TooltipProvider>
+  <CellTooltip :text="tooltipText" :enabled="isTruncated">
+    <span
+      ref="el"
+      :class="[
+        lineClass,
+        props.class,
+      ]"
+    >
+      {{ displayText }}
+    </span>
+  </CellTooltip>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/Components/ui/tooltip';
+import CellTooltip from './CellTooltip.vue';
+
+import { useIsTruncated } from '@/Composables/useIsTruncated';
 
 const props = withDefaults(defineProps<{
   text?: string | null;
@@ -38,6 +29,8 @@ const props = withDefaults(defineProps<{
 
 const displayText = computed(() => props.text ?? '—');
 const tooltipText = computed(() => props.text ?? undefined);
+
+const { el, isTruncated } = useIsTruncated();
 
 // Static class map — Tailwind only generates classes it can find as literals in source.
 // `block` is only set for single-line truncation: line-clamp needs its own

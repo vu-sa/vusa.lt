@@ -39,35 +39,52 @@
       @page-change="handlePageChange" @update:sorting="handleSortChange" @update:global-filter="updateSearchText"
       @update:row-selection="handleRowSelectionChange">
       <template #filters>
-        <div class="flex flex-col gap-3 w-full">
-          <!-- Search -->
-          <div class="flex items-center gap-2 flex-1 min-w-0">
-            <div class="relative flex-1 min-w-0 max-w-full sm:max-w-xs md:max-w-sm">
-              <SearchIcon class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <div class="flex w-full flex-col gap-3">
+          <!--
+            One row of controls: search, a single trigger for however many
+            filters the page defines, and the view switch. Page filters used to
+            sit here permanently, which on a page with three of them left more
+            chrome above the table than table.
+          -->
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="relative min-w-0 max-w-full flex-1 sm:max-w-xs md:max-w-sm">
+              <SearchIcon class="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 v-model="searchText"
                 :placeholder="$t('tables.search_placeholder')"
-                class="pl-9 pr-8 w-full"
+                class="w-full pl-9 pr-8"
                 @keydown.enter="handleSearch"
               />
               <button
                 v-if="searchText"
                 type="button"
+                :aria-label="$t('tables.clear')"
                 class="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                @click="searchText = ''; handleSearch()"
+                @click="clearSearch"
               >
                 <XIcon class="h-4 w-4" />
               </button>
             </div>
-            <Button variant="default" size="sm" class="gap-1.5" @click="handleSearch">
-              <SearchIcon class="h-4 w-4" />
-              <span>{{ $t('tables.search') }}</span>
-            </Button>
-          </div>
 
-          <!-- Custom filters from pages + active/deleted view toggle -->
-          <div class="flex flex-wrap items-center gap-2">
-            <slot name="filters" />
+            <Button
+              v-if="$slots.filters"
+              variant="outline"
+              size="sm"
+              :class="{ 'border-primary': activeFilterCount > 0 }"
+              :aria-expanded="filtersOpen"
+              data-testid="toggle-filters"
+              @click="filtersOpen = !filtersOpen"
+            >
+              <SlidersHorizontalIcon class="h-4 w-4" />
+              <span>{{ $t('tables.filters') }}</span>
+              <span
+                v-if="activeFilterCount > 0"
+                class="ml-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-xs font-medium text-primary-foreground tabular-nums"
+              >
+                {{ activeFilterCount }}
+              </span>
+              <ChevronDownIcon class="h-4 w-4 transition-transform" :class="{ 'rotate-180': filtersOpen }" />
+            </Button>
 
             <SpotlightPopover
               v-if="shouldShowDeletedToggle"
@@ -83,6 +100,27 @@
                 @update:show-deleted="handleShowDeletedChange"
               />
             </SpotlightPopover>
+          </div>
+
+          <!-- Page-defined filters, revealed on demand but opened for you when some are already narrowing the list. -->
+          <div
+            v-if="$slots.filters && filtersOpen"
+            class="flex flex-wrap items-center gap-2 rounded-lg border border-dashed border-border bg-muted/30 p-2.5"
+            data-testid="filters-panel"
+          >
+            <slot name="filters" />
+
+            <Button
+              v-if="activeFilterCount > 0"
+              variant="ghost"
+              size="sm"
+              class="ml-auto text-muted-foreground"
+              data-testid="clear-filters"
+              @click="clearFilters"
+            >
+              <XIcon class="h-4 w-4" />
+              <span>{{ $t('tables.clear_filters') }}</span>
+            </Button>
           </div>
         </div>
       </template>
@@ -119,7 +157,7 @@ import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef, SortingState, RowSelectionState } from '@tanstack/vue-table';
 import { router, Link, usePage } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
-import { PlusCircleIcon, SearchIcon, Trash2Icon, XIcon } from 'lucide-vue-next';
+import { ChevronDownIcon, PlusCircleIcon, SearchIcon, SlidersHorizontalIcon, Trash2Icon, XIcon } from 'lucide-vue-next';
 
 import DataTableProvider from '../ui/data-table/DataTableProvider.vue';
 import TrashViewToggle from './TrashViewToggle.vue';
@@ -195,6 +233,8 @@ const extractSearchFromFilters = (filterRecord?: Record<string, unknown>): strin
 
 // Component state
 const searchText = ref(extractSearchFromFilters(props.initialFilters));
+/** The search term the current result set was actually fetched with. */
+const submittedSearch = ref(searchText.value);
 const pageIndex = ref(props.initialPage ? props.initialPage - 1 : 0);
 const sorting = ref<SortingState>(props.initialSorting || []);
 const filters = ref<Record<string, unknown>>({
@@ -309,25 +349,80 @@ const dismissTrashSpotlight = () => {
 // Reference to the DataTableProvider
 const dataTableProviderRef = ref<DataTableProviderInstance>();
 
-// Debounce function for search
-const debouncedReload = useDebounceFn((resetPage = false) => {
-  if (resetPage) {
-    pageIndex.value = 0;
-  }
-  reloadData();
-}, 300);
-
 // Event handlers
+/** External search input (client-side filtering slot); the watcher below reloads. */
 const updateSearchText = (text: string) => {
   searchText.value = text;
-  pageIndex.value = 0; // Go back to first page on search change
-  debouncedReload(true);
 };
 
 const handleSearch = () => {
+  submittedSearch.value = searchText.value;
   pageIndex.value = 0; // Go back to first page on search
   // Explicitly pass the current search text to ensure it's included in the request
   reloadData();
+};
+
+/**
+ * Typing searches on its own, which is what removes the "Search" button that
+ * used to sit beside every table's input. Enter still submits immediately.
+ * Guarded against `submittedSearch` so syncing the input from server props on
+ * back-navigation cannot bounce straight back into another request.
+ */
+const debouncedSearch = useDebounceFn(() => {
+  if (searchText.value === submittedSearch.value) {
+    return;
+  }
+
+  handleSearch();
+}, 400);
+
+watch(searchText, debouncedSearch);
+
+const clearSearch = () => {
+  searchText.value = '';
+  handleSearch();
+};
+
+/**
+ * Filter keys the table owns rather than the page — they have their own
+ * controls, so they must not count towards the page's filter badge.
+ */
+const INTERNAL_FILTER_KEYS = ['showDeleted', 'search'];
+
+const isFilterActive = (value: unknown): boolean => {
+  if (value === undefined || value === null || value === '') {
+    return false;
+  }
+
+  return Array.isArray(value) ? value.length > 0 : true;
+};
+
+/**
+ * How many page-defined filters are narrowing the list. Drives the badge, and
+ * decides whether the filter panel starts open — a list that arrives already
+ * filtered must say so, or the missing rows read as missing data.
+ */
+const activeFilterCount = computed(() => {
+  return Object.entries(filters.value)
+    .filter(([key, value]) => !INTERNAL_FILTER_KEYS.includes(key) && isFilterActive(value))
+    .length;
+});
+
+const filtersOpen = ref(activeFilterCount.value > 0);
+
+/**
+ * Pages read their filter controls' initial values from props during setup, so
+ * a state-preserving reload would leave those controls showing the filters we
+ * just dropped. A fresh visit remounts the page and re-seeds them.
+ */
+const clearFilters = () => {
+  loading.value = true;
+
+  router.visit(window.location.pathname, {
+    data: showDeleted.value ? { showDeleted: true } : {},
+    preserveScroll: true,
+    preserveState: false,
+  });
 };
 
 const handleSortChange = (newSorting: SortingState) => {
@@ -461,6 +556,9 @@ watch(() => props.initialFilters?.search, (newSearch) => {
   const next = typeof newSearch === 'string' ? newSearch : '';
   if (searchText.value !== next) {
     searchText.value = next;
+    // Mark it as already fetched so the debounced watcher treats this as a
+    // sync from the server, not as the user typing.
+    submittedSearch.value = next;
   }
 }, { immediate: true });
 

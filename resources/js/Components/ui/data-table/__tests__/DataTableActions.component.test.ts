@@ -72,6 +72,44 @@ describe('DataTableActions', () => {
       expect(wrapper.text()).toContain('tables.view');
       expect(wrapper.text()).toContain('forms.edit');
     });
+
+    // Anchors are what make middle-click, ctrl-click and "copy link address"
+    // work; a button handled by router.visit() supports none of them.
+    it('renders navigational actions as anchors carrying their route', () => {
+      wrapper = mountActions({
+        model: liveModel,
+        canView: true,
+        canEdit: true,
+        viewRoute: '/mano/tests/1',
+        editRoute: '/mano/tests/1/edit',
+      });
+
+      const view = wrapper.find('[data-testid="row-action-view"]');
+      const edit = wrapper.find('[data-testid="row-action-edit"]');
+
+      expect(view.element.tagName).toBe('A');
+      expect(view.attributes('href')).toBe('/mano/tests/1');
+      expect(edit.element.tagName).toBe('A');
+      expect(edit.attributes('href')).toBe('/mano/tests/1/edit');
+    });
+
+    it('keeps non-GET actions as buttons', () => {
+      wrapper = mountActions({
+        model: liveModel,
+        canDuplicate: true,
+        duplicateRoute: '/mano/tests/1/duplicate',
+      });
+
+      expect(wrapper.find('[data-testid="row-action-duplicate"]').element.tagName).toBe('BUTTON');
+    });
+
+    it('still emits the action when a navigational anchor is clicked', async () => {
+      wrapper = mountActions({ model: liveModel, canView: true, viewRoute: '/mano/tests/1' });
+
+      await wrapper.find('[data-testid="row-action-view"]').trigger('click');
+
+      expect(wrapper.emitted('action')?.[0]).toEqual(['view', liveModel]);
+    });
   });
 
   describe('destructive actions', () => {

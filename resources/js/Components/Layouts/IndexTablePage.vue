@@ -32,6 +32,35 @@
           </template>
           <template #actions>
             <slot name="headerActions" />
+
+            <!--
+              Everything that is not "create" collapses behind one trigger, so
+              the header reads as a single primary action rather than a row of
+              equally weighted buttons.
+            -->
+            <DropdownMenu v-if="secondaryActions?.length">
+              <DropdownMenuTrigger as-child>
+                <Button variant="outline" size="icon" class="size-9" data-testid="page-secondary-actions">
+                  <MoreHorizontalIcon class="h-4 w-4" />
+                  <span class="sr-only">{{ $t('tables.more_actions') }}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" class="w-60">
+                <template v-for="action in secondaryActions" :key="action.label">
+                  <DropdownMenuItem v-if="action.href" as-child>
+                    <Link :href="action.href">
+                      <component :is="action.icon" v-if="action.icon" class="h-4 w-4" />
+                      {{ action.label }}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem v-else @select="action.onSelect?.()">
+                    <component :is="action.icon" v-if="action.icon" class="h-4 w-4" />
+                    {{ action.label }}
+                  </DropdownMenuItem>
+                </template>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             <Link v-if="canCreate && createRoute" :href="createRoute">
               <Button variant="default" class="gap-1.5 shadow-sm">
                 <PlusCircleIcon class="h-4 w-4" />
@@ -80,7 +109,7 @@
 
 <script setup lang="ts" generic="TData">
 import { ref, computed, watch } from 'vue';
-import { PlusCircleIcon } from 'lucide-vue-next';
+import { MoreHorizontalIcon, PlusCircleIcon } from 'lucide-vue-next';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { RowSelectionState } from '@tanstack/vue-table';
 import { Link } from '@inertiajs/vue3';
@@ -89,6 +118,12 @@ import AdminContentPage from './AdminContentPage.vue';
 
 import ServerDataTable from '@/Components/Tables/ServerDataTable.vue';
 import { Button } from '@/Components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/Components/ui/dropdown-menu';
 import { Spinner } from '@/Components/ui/spinner';
 import { BreadcrumbHelpers, useBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import type {

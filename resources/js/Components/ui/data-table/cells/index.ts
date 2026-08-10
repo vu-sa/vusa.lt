@@ -1,3 +1,4 @@
+export { default as CellTooltip } from './CellTooltip.vue';
 export { default as DateCell } from './DateCell.vue';
 export { default as TagList } from './TagList.vue';
 export { default as TruncatedBadge } from './TruncatedBadge.vue';
