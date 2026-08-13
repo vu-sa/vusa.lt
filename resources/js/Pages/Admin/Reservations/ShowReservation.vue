@@ -1,120 +1,134 @@
 <template>
-  <AdminContentPage>
-    <div class="min-w-0 w-full space-y-6">
-      <!-- Hero Section -->
-      <ReservationHero :reservation @add-resource="handleAddResource" @add-user="handleAddUser"
-        @show-help="showReservationHelpModal = true">
-        <template #extra-actions>
-          <ActivityLogSheet subject-type="reservation" :subject-id="reservation.id" />
-        </template>
-      </ReservationHero>
+  <ShowPageLayout
+    :title="reservation.name"
+    :icon="ReservationIconFilled"
+    :model="reservation"
+    audit-subject-type="reservation"
+    :tabs
+    tab-storage-key="show-reservation-tab"
+  >
+    <template #badge>
+      <ReservationStateSummary :states="reservationStates" :unresolved="isUnresolved" />
+      <Button variant="ghost" size="icon-sm" class="size-6" @click="showReservationHelpModal = true">
+        <Info class="size-4 text-muted-foreground" />
+        <span class="sr-only">{{ $t('Būsenų informacija') }}</span>
+      </Button>
+    </template>
 
-      <!-- Main Content with Tabs -->
-      <Tabs v-model="currentTab" class="space-y-4">
-        <TabsList class="h-auto flex-wrap gap-2">
-          <TabsTrigger value="resources" class="gap-2">
-            <component :is="ResourceIconFilled" class="size-4" />
-            {{ capitalize($tChoice('entities.resource.model', 2)) }}
-            <Badge variant="secondary" class="ml-1">
-              {{ reservation.resources?.length ?? 0 }}
-            </Badge>
-          </TabsTrigger>
-          <TabsTrigger value="description" class="gap-2">
-            <IFluentTextDescription24Regular class="size-4" />
-            {{ $t('Aprašymas') }}
-          </TabsTrigger>
-        </TabsList>
+    <template #info>
+      <p class="inline-flex items-center gap-1.5 text-xs text-muted-foreground sm:text-sm">
+        <CalendarDays class="size-3.5 shrink-0 sm:size-4" />
+        <span>{{ formattedDateRange }}</span>
+      </p>
 
-        <!-- Resources Tab -->
-        <TabsContent value="resources" class="space-y-4">
-          <!-- Show card header only when there are resources -->
-          <Card v-if="reservation.resources?.length">
-            <CardHeader class="flex flex-row flex-wrap items-center justify-between gap-3 space-y-0 pb-4">
-              <div>
-                <CardTitle class="text-base">
-                  {{ $t('Rezervuoti ištekliai') }}
-                </CardTitle>
-                <CardDescription>{{ $t('Valdyk rezervacijos išteklius ir jų būsenas') }}</CardDescription>
-              </div>
-              <div class="flex flex-wrap items-center gap-2">
-                <!-- Only worth showing once the reservation spans more than one unit. -->
-                <Select v-if="resourceTenants.length > 1" v-model="tenantFilter">
-                  <SelectTrigger class="w-[170px]">
-                    <SelectValue :placeholder="$t('reservations.dashboard.filters.tenant')" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">
-                      {{ $t('reservations.dashboard.filters.tenant_all') }}
-                    </SelectItem>
-                    <SelectItem v-for="tenant in resourceTenants" :key="tenant.id" :value="tenant.id">
-                      {{ $t(tenant.shortname) }}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button size="sm" @click="handleAddResource">
-                  <IFluentAdd24Filled class="size-4" />
-                  {{ $t('Pridėti') }}
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent class="pt-0">
-              <div
-                v-if="!filteredReservation.resources?.length"
-                class="flex flex-col items-center gap-3 rounded-xl border-2 border-dashed border-zinc-200 py-12 dark:border-zinc-700"
-              >
-                <p class="text-sm text-muted-foreground">
-                  {{ $t('reservations.show.no_resources_for_tenant') }}
-                </p>
-                <Button variant="outline" size="sm" @click="tenantFilter = 'all'">
-                  {{ $t('reservations.dashboard.filters.clear') }}
-                </Button>
-              </div>
-              <ReservationResourceTable
-                v-else
-                v-model:selected-reservation-resource="selectedReservationResource"
-                :reservation="filteredReservation"
-                @edit:reservation-resource="editReservationResource"
-                @add-resource="handleAddResource"
-              />
-            </CardContent>
-          </Card>
+      <div v-if="reservation.users?.length" class="flex items-center gap-1">
+        <UsersAvatarGroup :users="reservation.users" :max="3" :size="20" />
+        <span class="text-xs leading-5 text-muted-foreground">
+          {{ reservation.users.length }} {{ $t('valdytojai') }}
+        </span>
+      </div>
 
-          <!-- Empty state handled by table component -->
+      <div class="flex items-stretch gap-2 sm:gap-3">
+        <div class="flex min-w-16 flex-col items-center justify-center rounded-lg border bg-background px-3 py-1.5">
+          <span class="text-xl font-semibold leading-none">{{ resourcesCount }}</span>
+          <span class="mt-0.5 text-[10px] leading-tight text-muted-foreground">
+            {{ $tChoice('entities.resource.model', resourcesCount) }}
+          </span>
+        </div>
+        <div
+          v-if="pendingCount > 0"
+          class="flex min-w-16 flex-col items-center justify-center rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 dark:border-amber-900 dark:bg-amber-950"
+        >
+          <span class="text-xl font-semibold leading-none text-amber-600 dark:text-amber-400">
+            {{ pendingCount }}
+          </span>
+          <span class="mt-0.5 text-[10px] leading-tight text-amber-600 dark:text-amber-400">
+            {{ $t('laukia') }}
+          </span>
+        </div>
+      </div>
+    </template>
+
+    <template #actions>
+      <Button variant="outline" size="sm" class="h-9 gap-1.5" @click="handleAddUser">
+        <UserPlus class="size-4 shrink-0" />
+        <span class="hidden sm:inline">{{ $t('Pridėti valdytoją') }}</span>
+      </Button>
+      <Button size="sm" class="h-9 gap-1.5" @click="handleAddResource">
+        <Plus class="size-4 shrink-0" />
+        <span class="hidden xs:inline">{{ $t('Pridėti išteklių') }}</span>
+      </Button>
+    </template>
+
+    <template #resources>
+      <div class="space-y-4">
+        <SectionCard
+          :title="$t('Rezervuoti ištekliai')"
+          :icon="ResourceIconFilled"
+          :count="filteredReservation.resources?.length"
+          :empty="hasNoResourcesForTenant"
+        >
+          <template #action>
+            <!-- Only worth showing once the reservation spans more than one unit. -->
+            <Select v-if="resourceTenants.length > 1" v-model="tenantFilter">
+              <SelectTrigger class="w-[170px]">
+                <SelectValue :placeholder="$t('reservations.dashboard.filters.tenant')" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">
+                  {{ $t('reservations.dashboard.filters.tenant_all') }}
+                </SelectItem>
+                <SelectItem v-for="tenant in resourceTenants" :key="tenant.id" :value="tenant.id">
+                  {{ $t(tenant.shortname) }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            <Button size="sm" @click="handleAddResource">
+              <Plus class="size-4" />
+              {{ $t('Pridėti') }}
+            </Button>
+          </template>
+
+          <!-- The table renders its own empty state, so it stays mounted even with no rows. -->
           <ReservationResourceTable
-            v-else
             v-model:selected-reservation-resource="selectedReservationResource"
-            :reservation
+            :reservation="filteredReservation"
             @edit:reservation-resource="editReservationResource"
             @add-resource="handleAddResource"
           />
 
-          <!-- Reservation discussion lives below the resources. -->
-          <section class="border-t pt-6 dark:border-zinc-800">
-            <DiscussionPanel commentable-type="reservation" :commentable-id="reservation.id" />
-          </section>
-        </TabsContent>
+          <!-- Compact in-card empty: the filter hid everything, the reservation isn't empty. -->
+          <template #empty>
+            <div class="flex flex-col items-center gap-3 py-8">
+              <p class="text-sm text-muted-foreground">
+                {{ $t('reservations.show.no_resources_for_tenant') }}
+              </p>
+              <Button variant="outline" size="sm" @click="tenantFilter = 'all'">
+                {{ $t('reservations.dashboard.filters.clear') }}
+              </Button>
+            </div>
+          </template>
+        </SectionCard>
 
-        <!-- Description Tab -->
-        <TabsContent value="description">
-          <Card>
-            <CardHeader>
-              <CardTitle class="flex items-center gap-2 text-base">
-                <IFluentTextDescription24Regular class="size-5" />
-                {{ $t('Aprašymas') }}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p v-if="reservation.description" class="text-sm text-muted-foreground whitespace-pre-wrap">
-                {{ reservation.description }}
-              </p>
-              <p v-else class="text-sm text-muted-foreground italic">
-                {{ $t('Aprašymas nepateiktas.') }}
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
+        <!-- Reservation discussion lives below the resources. -->
+        <section class="border-t pt-6 dark:border-zinc-800">
+          <DiscussionPanel commentable-type="reservation" :commentable-id="reservation.id" />
+        </section>
+      </div>
+    </template>
+
+    <template #description>
+      <SectionCard :title="$t('Aprašymas')" :icon="FileText" :empty="!reservation.description">
+        <p class="text-sm text-muted-foreground whitespace-pre-wrap">
+          {{ reservation.description }}
+        </p>
+        <template #empty>
+          <p class="text-sm text-muted-foreground italic">
+            {{ $t('Aprašymas nepateiktas.') }}
+          </p>
+        </template>
+      </SectionCard>
+    </template>
 
     <!-- Dialogs -->
     <Dialog :open="showReservationHelpModal" @update:open="showReservationHelpModal = $event">
@@ -175,28 +189,22 @@
           </div>
           <Button :disabled="selectedUsersList.length === 0 || reservationUserForm.processing"
             @click="handleSubmitUserForm">
-            <IFluentCheckmark24Filled v-if="!reservationUserForm.processing" class="size-4" />
+            <Check v-if="!reservationUserForm.processing" class="size-4" />
             {{ $t("forms.submit") }}
           </Button>
         </div>
       </DialogContent>
     </Dialog>
-  </AdminContentPage>
+  </ShowPageLayout>
 </template>
 
 <script setup lang="ts">
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { computed, ref, watch, capitalize } from 'vue';
-import { router, useForm } from '@inertiajs/vue3';
-import { useStorage } from '@vueuse/core';
+import { router, useForm, usePage } from '@inertiajs/vue3';
+import { CalendarDays, Check, FileText, Info, Plus, UserPlus } from 'lucide-vue-next';
 
-import ReservationHero from './Partials/ReservationHero.vue';
-
-import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
-
-import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import {
   Select,
@@ -205,18 +213,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/Components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { RESERVATION_CARD_MODAL_TITLES } from '@/Constants/I18n/CardModalTitles';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
-import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
+import ShowPageLayout from '@/Components/Layouts/ShowPageLayout.vue';
+import { SectionCard } from '@/Components/Patterns';
 import DiscussionPanel from '@/Components/Discussions/DiscussionPanel.vue';
 import MdSuspenseWrapper from '@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue';
 import ReservationResourceForm from '@/Components/AdminForms/ReservationResourceForm.vue';
 import ReservationResourceTable from '@/Components/Tables/ReservationResourceTable.vue';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
+import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
+import ReservationStateSummary from '@/Components/Tag/ReservationStateSummary.vue';
 import { MultiSelect } from '@/Components/ui/multi-select';
 import { Label } from '@/Components/ui/label';
 import { ReservationIconFilled, ResourceIconFilled } from '@/Components/icons';
+import type { ReservationResourceState } from '@/Utils/ReservationStatus';
+import { isPivotUnresolved, summarizeStates } from '@/Utils/ReservationStatus';
 
 const props = defineProps<{
   reservation: App.Entities.Reservation;
@@ -236,12 +248,59 @@ usePageBreadcrumbs(() => [
   BreadcrumbHelpers.createBreadcrumbItem(props.reservation.name),
 ]);
 
-// Tab management
-const currentTab = useStorage('show-reservation-tab', 'resources');
+const tabs = computed(() => [
+  {
+    value: 'resources',
+    label: capitalize($tChoice('entities.resource.model', 2)),
+    count: props.reservation.resources?.length ?? 0,
+    icon: ResourceIconFilled,
+  },
+  { value: 'description', label: $t('Aprašymas'), icon: FileText },
+]);
+
+const locale = computed(() => usePage().props.app.locale);
+
+const dateFormatter = computed(() => new Intl.DateTimeFormat(locale.value, {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+}));
+
+const formattedDateRange = computed(() => {
+  const format = dateFormatter.value;
+  return `${format.format(new Date(props.reservation.start_time))} – ${format.format(new Date(props.reservation.end_time))}`;
+});
+
+const resourcesCount = computed(() => props.reservation.resources?.length ?? 0);
+
+const pendingCount = computed(() => props.reservation.resources?.filter(
+  r => r.pivot?.state === 'created' || r.pivot?.state === 'reserved',
+).length ?? 0);
+
+/**
+ * The reservation's overall state, reported the same way the reservation hub reports it: every
+ * state its items are in, rather than one label that has to guess which of them matters.
+ */
+const reservationStates = computed(() => summarizeStates(
+  (props.reservation.resources ?? [])
+    .map(resource => resource.pivot?.state)
+    .filter((state): state is ReservationResourceState => state != null),
+));
+
+const isUnresolved = computed(() => (props.reservation.resources ?? []).some(
+  resource => resource.pivot != null && isPivotUnresolved(resource.pivot),
+));
 
 // Tenant filter — a reservation can pull resources from several units, and a manager usually
 // only cares about the ones their unit owns.
 const tenantFilter = ref<string>('all');
+
+/** The filter hid everything — distinct from a reservation that simply has no resources. */
+const hasNoResourcesForTenant = computed(() =>
+  Boolean(props.reservation.resources?.length) && !filteredReservation.value.resources?.length,
+);
 
 const resourceTenants = computed(() => {
   const tenants = new Map<string, { id: string; shortname: string }>();

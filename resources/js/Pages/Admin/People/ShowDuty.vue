@@ -1,119 +1,105 @@
 <template>
-  <AdminContentPage>
-    <InertiaHead :title="duty.name" />
+  <ShowPageLayout
+    :title="duty.name"
+    :subtitle="duty.institution?.name"
+    :model="duty"
+    audit-subject-type="duty"
+    :tabs
+    tab-storage-key="show-duty-tab"
+  >
+    <template #title>
+      <InflectedDutyName :name="duty.name" />
+    </template>
+    <template #icon>
+      <DutyIconFilled class="h-6 w-6 sm:h-7 sm:w-7 text-zinc-600 dark:text-zinc-300" />
+    </template>
+    <template #badge>
+      <Badge
+        v-if="isVacant"
+        variant="outline"
+        class="gap-1 text-xs text-amber-600 border-amber-300 dark:text-amber-400 dark:border-amber-700"
+      >
+        <UserX class="h-3 w-3" />
+        {{ $t('Neužimta') }}
+      </Badge>
+      <Badge v-if="duty.email" variant="outline" class="gap-1 text-xs">
+        <Mail class="h-3 w-3" />
+        {{ duty.email }}
+      </Badge>
+    </template>
+    <template #actions>
+      <Button v-if="canAssignMembers" variant="default" size="sm" class="gap-2" @click="showAssignMemberModal = true">
+        <UserPlus class="h-4 w-4" />
+        {{ $t('Priskirti narį') }}
+      </Button>
+      <Button v-if="canManageDuty" variant="outline" size="sm" class="gap-2" @click="handleEdit">
+        <Settings class="h-4 w-4" />
+        {{ $t('Valdyti') }}
+      </Button>
+      <MoreOptionsButton edit delete @edit-click="handleEdit" @delete-click="handleDelete" />
+    </template>
 
-    <!-- Duty Hero -->
-    <ShowPageHero
-      flat
-      :title="duty.name"
-      :subtitle="duty.institution?.name"
-    >
-      <template #title>
-        <InflectedDutyName :name="duty.name" />
-      </template>
-      <template #icon>
-        <DutyIconFilled class="h-6 w-6 sm:h-7 sm:w-7 text-zinc-600 dark:text-zinc-300" />
-      </template>
-      <template #badge>
-        <Badge
-          v-if="isVacant"
-          variant="outline"
-          class="gap-1 text-xs text-amber-600 border-amber-300 dark:text-amber-400 dark:border-amber-700"
-        >
-          <UserX class="h-3 w-3" />
-          {{ $t('Neužimta') }}
-        </Badge>
-        <Badge v-if="duty.email" variant="outline" class="gap-1 text-xs">
-          <Mail class="h-3 w-3" />
-          {{ duty.email }}
-        </Badge>
-      </template>
-      <template #actions>
-        <ActivityLogSheet subject-type="duty" :subject-id="duty.id" />
-        <Button v-if="canAssignMembers" variant="default" size="sm" class="gap-2" @click="showAssignMemberModal = true">
-          <UserPlus class="h-4 w-4" />
-          {{ $t('Priskirti narį') }}
-        </Button>
-        <Button v-if="canManageDuty" variant="outline" size="sm" class="gap-2" @click="handleEdit">
-          <Settings class="h-4 w-4" />
-          {{ $t('Valdyti') }}
-        </Button>
-        <MoreOptionsButton edit delete @edit-click="handleEdit" @delete-click="handleDelete" />
-      </template>
-    </ShowPageHero>
+    <template #alert>
+      <PriorityAlert
+        v-if="isVacant"
+        v-model="showVacancyAlert"
+        variant="warning"
+        class="mt-4"
+        :title="$t('Pareigos neužimtos')"
+        :description="$t('Šiuo metu niekas neeina šių pareigų. Priskirkite narį, kad atnaujintumėte sudėtį.')"
+        :action-label="canAssignMembers ? $t('Priskirti narį') : undefined"
+        @action="showAssignMemberModal = true"
+      />
+    </template>
 
-    <!-- Vacancy alert -->
-    <PriorityAlert
-      v-if="isVacant"
-      v-model="showVacancyAlert"
-      variant="warning"
-      class="mt-4"
-      :title="$t('Pareigos neužimtos')"
-      :description="$t('Šiuo metu niekas neeina šių pareigų. Priskirkite narį, kad atnaujintumėte sudėtį.')"
-      :action-label="canAssignMembers ? $t('Priskirti narį') : undefined"
-      @action="showAssignMemberModal = true"
-    />
+    <!-- Overview Tab: two-column dashboard -->
+    <template #overview>
+      <ShowPageGrid>
+        <template #main>
+          <DutyCurrentHoldersCard
+            :holders="currentHolders"
+            :places-to-occupy="duty.places_to_occupy ?? 0"
+            :can-assign="canAssignMembers"
+            @assign="showAssignMemberModal = true"
+          />
 
-    <!-- Main Content with Tabs -->
-    <Tabs v-model="currentTab" class="mt-6">
-      <TabsList class="mb-4">
-        <TabsTrigger value="overview">
-          {{ $t('Apžvalga') }}
-        </TabsTrigger>
-        <TabsTrigger value="files">
-          {{ $t('Failai') }}
-        </TabsTrigger>
-      </TabsList>
+          <DutyAboutCard
+            v-if="hasAbout"
+            :description
+          />
 
-      <!-- Overview Tab: two-column dashboard -->
-      <TabsContent value="overview">
-        <div class="grid grid-cols-1 items-start gap-6 xl:grid-cols-3">
-          <!-- Main column -->
-          <div class="space-y-6 xl:col-span-2">
-            <DutyCurrentHoldersCard
-              :holders="currentHolders"
-              :places-to-occupy="duty.places_to_occupy ?? 0"
-              :can-assign="canAssignMembers"
-              @assign="showAssignMemberModal = true"
+          <DutyLineageCard v-if="allMembers.length > 0" :members="allMembers" />
+        </template>
+
+        <template #sidebar>
+          <!-- Context tiles cluster together with tighter spacing -->
+          <div v-if="duty.institution || duty.next_meeting || duty.last_meeting" class="space-y-2">
+            <DutyInstitutionCard v-if="duty.institution" :institution="duty.institution" />
+            <DutyMeetingMiniCard
+              v-if="duty.next_meeting"
+              :meeting="duty.next_meeting"
+              :label="$t('Kitas posėdis')"
             />
-
-            <DutyAboutCard
-              v-if="hasAbout"
-              :description
-            />
-
-            <DutyLineageCard v-if="allMembers.length > 0" :members="allMembers" />
-          </div>
-
-          <!-- Sidebar -->
-          <div class="space-y-6 xl:sticky xl:top-6 xl:self-start">
-            <!-- Context tiles cluster together with tighter spacing -->
-            <div v-if="duty.institution || duty.next_meeting || duty.last_meeting" class="space-y-2">
-              <DutyInstitutionCard v-if="duty.institution" :institution="duty.institution" />
-              <DutyMeetingMiniCard
-                v-if="duty.next_meeting"
-                :meeting="duty.next_meeting"
-                :label="$t('Kitas posėdis')"
-              />
-              <DutyMeetingMiniCard
-                v-if="duty.last_meeting"
-                :meeting="duty.last_meeting"
-                :label="$t('Paskutinis posėdis')"
-              />
-            </div>
-
-            <DutyOtherDutiesCard v-if="otherDuties.length > 0" :duties="otherDuties" />
-
-            <DutyDocumentsPreview
-              v-if="hasTypeFiles"
-              :fileable="{ id: duty.id, type: 'Duty' }"
+            <DutyMeetingMiniCard
+              v-if="duty.last_meeting"
+              :meeting="duty.last_meeting"
+              :label="$t('Paskutinis posėdis')"
             />
           </div>
-        </div>
-      </TabsContent>
 
-      <!-- Files Tab -->
-      <TabsContent value="files" class="space-y-6">
+          <DutyOtherDutiesCard v-if="otherDuties.length > 0" :duties="otherDuties" />
+
+          <FileablePreviewCard
+            v-if="hasTypeFiles"
+            :fileable="{ id: duty.id, type: 'Duty' }"
+          />
+        </template>
+      </ShowPageGrid>
+    </template>
+
+    <!-- Files Tab -->
+    <template #files>
+      <div class="space-y-6">
         <!-- Direct Duty Files (with upload capability) -->
         <div v-if="duty.sharepointPath">
           <h3 class="mb-4 text-lg font-medium">
@@ -141,13 +127,17 @@
         </div>
 
         <!-- No files state -->
-        <div v-if="!duty.sharepointPath && !hasTypeFiles" class="py-8 text-center">
-          <p class="text-zinc-500 dark:text-zinc-400">
-            {{ $t('Pareigybė neturi failų ir nėra priskirta tipams su failais.') }}
-          </p>
-        </div>
-      </TabsContent>
-    </Tabs>
+        <EmptyState
+          v-if="!duty.sharepointPath && !hasTypeFiles"
+          :title="$t('Failų nėra')"
+          :description="$t('Pareigybė neturi failų ir nėra priskirta tipams su failais.')"
+        >
+          <template #icon>
+            <FolderOpen class="h-10 w-10 text-muted-foreground" />
+          </template>
+        </EmptyState>
+      </div>
+    </template>
 
     <!-- Modals -->
     <Dialog v-model:open="showAssignMemberModal">
@@ -162,24 +152,23 @@
         </div>
       </DialogContent>
     </Dialog>
-  </AdminContentPage>
+  </ShowPageLayout>
 </template>
 
 <script setup lang="tsx">
 import { computed, ref } from 'vue';
-import { router, Head as InertiaHead, usePage } from '@inertiajs/vue3';
-import { useStorage } from '@vueuse/core';
+import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { UserPlus, Settings, Mail, UserX } from 'lucide-vue-next';
+import { UserPlus, Settings, Mail, UserX, FolderOpen } from 'lucide-vue-next';
 
 // Layout and Components
-import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
-import ShowPageHero from '@/Components/Hero/ShowPageHero.vue';
-import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
+import ShowPageLayout from '@/Components/Layouts/ShowPageLayout.vue';
 import MoreOptionsButton from '@/Components/Buttons/MoreOptionsButton.vue';
 import PriorityAlert from '@/Components/Alerts/PriorityAlert.vue';
 import FileManager from '@/Features/Admin/SharepointFileManager/SharepointFileManager.vue';
 import SimpleFileViewer from '@/Features/Admin/SharepointFileManager/Viewer/SimpleFileViewer.vue';
+import { EmptyState, ShowPageGrid } from '@/Components/Patterns';
+import { FileablePreviewCard } from '@/Components/Files';
 import {
   DutyCurrentHoldersCard,
   DutyAboutCard,
@@ -187,7 +176,6 @@ import {
   DutyInstitutionCard,
   DutyMeetingMiniCard,
   DutyOtherDutiesCard,
-  DutyDocumentsPreview,
 } from '@/Components/Duties';
 import type { OtherDuty } from '@/Components/Duties/DutyOtherDutiesCard.vue';
 import type { MiniMeeting } from '@/Components/Duties/DutyMeetingMiniCard.vue';
@@ -196,7 +184,6 @@ import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 // UI Components
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 
 // Utils
@@ -212,11 +199,11 @@ const props = defineProps<{
   };
 }>();
 
-// State — normalize any previously-stored (now removed) tab value.
-const currentTab = useStorage('show-duty-tab', 'overview');
-if (!['overview', 'files'].includes(currentTab.value)) {
-  currentTab.value = 'overview';
-}
+const tabs = computed(() => [
+  { value: 'overview', label: $t('Apžvalga') },
+  { value: 'files', label: $t('Failai') },
+]);
+
 const showAssignMemberModal = ref(false);
 const showVacancyAlert = ref(true);
 

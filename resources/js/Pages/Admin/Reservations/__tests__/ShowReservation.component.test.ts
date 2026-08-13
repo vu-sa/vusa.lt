@@ -31,10 +31,17 @@ const mockRoute = (name?: string, params?: Record<string, unknown>) => {
 vi.stubGlobal('route', mockRoute);
 
 const stubs = {
-  ReservationHero: {
-    name: 'ReservationHero',
-    props: ['reservation'],
-    template: '<div data-testid="reservation-hero" />',
+  // Mounted by ShowPageLayout; it fetches on mount and pulls in Sheet + SpotlightPopover.
+  ActivityLogSheet: {
+    template: '<div data-testid="activity-log" />',
+  },
+  UsersAvatarGroup: {
+    props: ['users', 'max', 'size'],
+    template: '<div data-testid="users-avatar-group" />',
+  },
+  ReservationStateSummary: {
+    props: ['states', 'unresolved'],
+    template: '<div data-testid="state-summary" />',
   },
   DiscussionPanel: {
     name: 'DiscussionPanel',
@@ -163,6 +170,24 @@ describe('ShowReservation.vue', () => {
     });
 
     expect(wrapper.find('[data-testid="tenant-filter"]').exists()).toBe(false);
+  });
+
+  it('renders the reservation name in the hero', () => {
+    expect(createWrapper().text()).toContain('Test Reservation');
+  });
+
+  it('renders a trigger for each tab, with the resource count', () => {
+    const wrapper = createWrapper({
+      reservation: {
+        ...baseReservation,
+        resources: [resourceFromTenant('r1', 'tenant-1', 'VU SA MIF')],
+      },
+    });
+
+    const triggers = wrapper.findAll('[role="tab"]');
+
+    expect(triggers).toHaveLength(2);
+    expect(triggers[0].text()).toContain('1');
   });
 
   it('filters the resource table down to the selected tenant', async () => {

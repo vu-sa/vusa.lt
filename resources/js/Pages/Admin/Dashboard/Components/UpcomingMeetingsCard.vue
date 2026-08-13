@@ -1,145 +1,142 @@
 <template>
-  <Card data-tour="meetings-card" :class="dashboardCardClasses" role="region" :aria-label="$t('Tavo artėjantys susitikimai')">
-    <!-- Status indicator - small amber accent when meetings exist -->
-    <div :class="statusIndicatorClasses" aria-hidden="true" />
+  <DashboardCard
+    data-tour="meetings-card"
+    :title="$t('Tavo artėjantys susitikimai')"
+    :accent-class="cardAccentColors.amber.statusIndicatorActive"
+    content-class="flex flex-col justify-center"
+  >
+    <template #icon>
+      <component :is="MeetingIconFilled" :class="iconClasses" aria-hidden="true" />
+    </template>
 
-    <CardHeader class="pb-3 relative z-10">
-      <CardTitle class="flex items-center gap-2">
-        <component :is="MeetingIconFilled" :class="iconClasses" aria-hidden="true" />
-        {{ $t('Tavo artėjantys susitikimai') }}
-      </CardTitle>
-    </CardHeader>
-
-    <CardContent class="flex-1 relative z-10 flex flex-col justify-center">
-      <!-- Metrics section -->
-      <div class="flex items-end gap-4 mb-6">
-        <span :class="[
-          'text-4xl font-bold',
-          upcomingMeetings.length > 0 ? 'text-zinc-800 dark:text-zinc-100' : 'text-zinc-700 dark:text-zinc-300'
-        ]" :aria-label="$t('Susitikimų skaičius') + ': ' + upcomingMeetings.length">
-          {{ upcomingMeetings.length }}
-        </span>
+    <!-- Metrics section -->
+    <StatTile
+      class="mb-6"
+      :value="upcomingMeetings.length"
+      :aria-label="$t('Susitikimų skaičius') + ': ' + upcomingMeetings.length"
+    >
+      <template #badge>
         <div :class="['px-2 py-1 rounded-full text-xs font-medium mb-2', badgeClasses]" role="status" :aria-label="$t('Būsenos indikatorius')">
           {{ hasAttention ? $t('Reikia dėmesio') : $t('Viskas tvarkoje') }}
         </div>
-      </div>
+      </template>
+    </StatTile>
 
-      <!-- Content section - flex-1 to push actions down -->
-      <div class="flex-1 flex flex-col justify-center min-h-[200px]">
-        <div v-if="upcomingMeetings.length > 0" class="space-y-2">
-          <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            {{ upcomingMeetings.length === 1 ? $t('Kitas susitikimas') : $t('Artimiausi susitikimai') }}:
-          </p>
+    <!-- Content section - flex-1 to push actions down -->
+    <div class="flex-1 flex flex-col justify-center min-h-[200px]">
+      <div v-if="upcomingMeetings.length > 0" class="space-y-2">
+        <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          {{ upcomingMeetings.length === 1 ? $t('Kitas susitikimas') : $t('Artimiausi susitikimai') }}:
+        </p>
 
-          <!-- Show up to 3 upcoming meetings -->
-          <div class="space-y-2">
-            <Link
-              v-for="(meeting, index) in upcomingMeetings.slice(0, 3)"
-              :key="meeting.id"
-              class="block p-3 bg-white/60 dark:bg-zinc-800/50 rounded-md border border-zinc-200 dark:border-zinc-700 hover:bg-white/80 dark:hover:bg-zinc-700/50 hover:border-amber-300 dark:hover:border-amber-700/50 transition-colors"
-              :href="route('meetings.show', meeting.id)"
-              prefetch
-            >
-              <div class="flex items-start justify-between gap-2">
-                <div class="flex-1 min-w-0">
-                  <div class="font-semibold text-zinc-900 dark:text-zinc-100 truncate">
-                    {{ formatMeetingDateTime(meeting, {
-                      month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric'
-                    }) }}
-                  </div>
-                  <div class="text-sm text-zinc-600 dark:text-zinc-400 mt-1 truncate flex items-center gap-1">
-                    {{ meeting.institutions?.[0]?.name }}
-                    <Globe v-if="meeting.institutions?.[0]?.has_public_meetings"
-                      class="h-3 w-3 text-green-600 dark:text-green-400 shrink-0"
-                      :title="$t('Vieši posėdžiai')" />
-                  </div>
+        <!-- Show up to 3 upcoming meetings -->
+        <div class="space-y-2">
+          <Link
+            v-for="(meeting, index) in upcomingMeetings.slice(0, 3)"
+            :key="meeting.id"
+            class="block p-3 bg-white/60 dark:bg-zinc-800/50 rounded-md border border-zinc-200 dark:border-zinc-700 hover:bg-white/80 dark:hover:bg-zinc-700/50 hover:border-amber-300 dark:hover:border-amber-700/50 transition-colors"
+            :href="route('meetings.show', meeting.id)"
+            prefetch
+          >
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex-1 min-w-0">
+                <div class="font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+                  {{ formatMeetingDateTime(meeting, {
+                    month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric'
+                  }) }}
                 </div>
-
-                <!-- Show badge for today's or next meeting -->
-                <div v-if="isMeetingToday(meeting)" class="flex-shrink-0">
-                  <span class="inline-flex items-center rounded-full bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400/80">
-                    {{ $t('Šiandien') }}
-                  </span>
-                </div>
-                <div v-else-if="index === 0 || (index > 0 && upcomingMeetings.slice(0, index).every(m => isMeetingToday(m)))" class="flex-shrink-0">
-                  <span class="inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400/80">
-                    {{ $t('Kitas') }}
-                  </span>
+                <div class="text-sm text-zinc-600 dark:text-zinc-400 mt-1 truncate flex items-center gap-1">
+                  {{ meeting.institutions?.[0]?.name }}
+                  <Globe v-if="meeting.institutions?.[0]?.has_public_meetings"
+                    class="h-3 w-3 text-green-600 dark:text-green-400 shrink-0"
+                    :title="$t('Vieši posėdžiai')" />
                 </div>
               </div>
-            </Link>
-          </div>
 
-          <!-- Show "and X more" if there are more than 3 -->
-          <div v-if="upcomingMeetings.length > 3" class="text-center pt-2">
-            <button
-              class="text-xs text-zinc-600 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-amber-400 hover:underline transition-colors"
-              @click="$emit('show-all-meetings')"
-            >
-              {{ $t('ir dar') }} {{ upcomingMeetings.length - 3 }}...
-            </button>
-          </div>
+              <!-- Show badge for today's or next meeting -->
+              <div v-if="isMeetingToday(meeting)" class="flex-shrink-0">
+                <span class="inline-flex items-center rounded-full bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400/80">
+                  {{ $t('Šiandien') }}
+                </span>
+              </div>
+              <div v-else-if="index === 0 || (index > 0 && upcomingMeetings.slice(0, index).every(m => isMeetingToday(m)))" class="flex-shrink-0">
+                <span class="inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400/80">
+                  {{ $t('Kitas') }}
+                </span>
+              </div>
+            </div>
+          </Link>
         </div>
 
-        <div v-else class="text-center py-8">
-          <div class="text-4xl mb-4">
-            🎉
-          </div>
-          <p class="text-zinc-800 dark:text-zinc-200 font-medium mb-2">
-            {{ $t('Artėjančių susitikimų nėra!') }}
-          </p>
-          <p class="text-sm text-zinc-600 dark:text-zinc-400">
-            {{ $t('Puikus laikas planuoti naują veiklą') }}
-          </p>
+        <!-- Show "and X more" if there are more than 3 -->
+        <div v-if="upcomingMeetings.length > 3" class="text-center pt-2">
+          <button
+            class="text-xs text-zinc-600 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-amber-400 hover:underline transition-colors"
+            @click="$emit('show-all-meetings')"
+          >
+            {{ $t('ir dar') }} {{ upcomingMeetings.length - 3 }}...
+          </button>
         </div>
       </div>
 
-      <!-- Prominent CTA within card -->
-      <div class="mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-700">
-        <div class="flex justify-between items-center">
+      <div v-else class="text-center py-8">
+        <div class="text-4xl mb-4">
+          🎉
+        </div>
+        <p class="text-zinc-800 dark:text-zinc-200 font-medium mb-2">
+          {{ $t('Artėjančių susitikimų nėra!') }}
+        </p>
+        <p class="text-sm text-zinc-600 dark:text-zinc-400">
+          {{ $t('Puikus laikas planuoti naują veiklą') }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Prominent CTA within card -->
+    <div class="mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+      <div class="flex justify-between items-center">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <Button data-tour="all-meetings" size="sm" variant="outline" class="flex-1 mr-2" @click="$emit('show-all-meetings')">
+                <component :is="MeetingIconFilled" class="mr-2 h-4 w-4" />
+                {{ $t('Visi susitikimai') }}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{{ $t('Peržiūrėkite visus savo susitikimus lentelėje') }}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
+        <!-- Icon-only action buttons -->
+        <div class="flex gap-1">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger as-child>
-                <Button data-tour="all-meetings" size="sm" variant="outline" class="flex-1 mr-2" @click="$emit('show-all-meetings')">
-                  <component :is="MeetingIconFilled" class="mr-2 h-4 w-4" />
-                  {{ $t('Visi susitikimai') }}
+                <Button data-tour="create-meeting-action" variant="ghost" size="sm" class="h-8 w-8" @click="$emit('create-meeting')">
+                  <component :is="Plus" class="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>{{ $t('Peržiūrėkite visus savo susitikimus lentelėje') }}</TooltipContent>
+              <TooltipContent>{{ $t('Sukurti naują susitikimą') }}</TooltipContent>
             </Tooltip>
           </TooltipProvider>
 
-          <!-- Icon-only action buttons -->
-          <div class="flex gap-1">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger as-child>
-                  <Button data-tour="create-meeting-action" variant="ghost" size="sm" class="h-8 w-8" @click="$emit('create-meeting')">
-                    <component :is="Plus" class="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{{ $t('Sukurti naują susitikimą') }}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            <TooltipProvider v-if="upcomingMeetings.length > 0">
-              <Tooltip>
-                <TooltipTrigger as-child>
-                  <Button variant="ghost" size="sm" class="h-8 w-8" as-child>
-                    <Link :href="route('meetings.show', upcomingMeetings[0]!.id)">
-                      <ArrowRight class="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{{ $t('Eiti į kitą susitikimą') }}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
+          <TooltipProvider v-if="upcomingMeetings.length > 0">
+            <Tooltip>
+              <TooltipTrigger as-child>
+                <Button variant="ghost" size="sm" class="h-8 w-8" as-child>
+                  <Link :href="route('meetings.show', upcomingMeetings[0]!.id)">
+                    <ArrowRight class="h-4 w-4" />
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{{ $t('Eiti į kitą susitikimą') }}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
-    </CardContent>
+    </div>
 
-    <CardFooter :class="[dashboardCardFooterClasses, 'p-4 relative z-10']">
+    <template #footer>
       <!-- Meeting insights to encourage registration -->
       <div class="text-xs text-center w-full space-y-1">
         <div v-if="attentionInstitution" :class="attentionTextClass">
@@ -161,8 +158,8 @@
           <div>{{ $t('Nepamirškite registruoti susitikimus') }}</div>
         </div>
       </div>
-    </CardFooter>
-  </Card>
+    </template>
+  </DashboardCard>
 </template>
 
 <script setup lang="ts">
@@ -173,11 +170,12 @@ import { ArrowRight, Globe, Plus } from 'lucide-vue-next';
 
 import type { AtstovavimasMeeting, InstitutionInsights } from '../types';
 
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/Components/ui/card';
+import DashboardCard from '@/Components/Dashboard/DashboardCard.vue';
+import { StatTile } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { formatMeetingDateTime } from '@/Utils/MeetingDisplay';
-import { dashboardCardClasses, dashboardCardFooterClasses, cardAccentColors } from '@/Composables/useDashboardCardStyles';
+import { cardAccentColors } from '@/Composables/useDashboardCardStyles';
 import { MeetingIconFilled } from '@/Components/icons';
 
 interface Props {

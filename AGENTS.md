@@ -18,6 +18,7 @@ Specialized guidance lives in sub-directory `CLAUDE.md` files:
 
 - Backend testing: [tests/CLAUDE.md](tests/CLAUDE.md) + [tests/README.md](tests/README.md)
 - Frontend testing: [resources/js/CLAUDE.md](resources/js/CLAUDE.md)
+- Components (tiers, which one to use): [resources/js/Components/CLAUDE.md](resources/js/Components/CLAUDE.md)
 - Data tables: [resources/js/Components/Tables/CLAUDE.md](resources/js/Components/Tables/CLAUDE.md)
 - Storybook: [.storybook/CLAUDE.md](.storybook/CLAUDE.md)
 - Breadcrumbs: [resources/js/Composables/BREADCRUMBS_GUIDE.md](resources/js/Composables/BREADCRUMBS_GUIDE.md)
@@ -190,6 +191,16 @@ if ($request->filled('field')) {
 - Pivot models → `database/factories/Pivots/{Model}Factory.php` (namespace must match: `Database\Factories\Pivots\…`)
 
 ## Frontend
+
+### Component tiers
+
+`ui/` (shadcn primitives) → `Patterns/` (generic: `SectionCard`, `EmptyState`, `EntityLinkCard`, `DateBadge`, `ShowPageGrid`) → entity folders (`Duties/`, `Institutions/`, …) → `Layouts/` → pages. Dependencies run one way only.
+
+Pages **compose**; they don't hand-roll card chrome. A titled panel is `SectionCard` from `@/Components/Patterns`, not raw `<Card><CardHeader>` — ESLint warns on `ui/card` imports under `Pages/Admin/**`. Admin Show pages use `ShowPageLayout` (`ShowDuty.vue` / `ShowUser.vue` are the reference pages).
+
+Before adding a card, check the ~40 that exist: `find resources/js -name '*Card*.vue' -not -path '*/ui/*'`.
+
+Full rules and a "what do I reach for" table: [resources/js/Components/CLAUDE.md](resources/js/Components/CLAUDE.md).
 
 ### Shadcn Vue gotchas
 

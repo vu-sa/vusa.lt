@@ -1242,5 +1242,16 @@
     "Stovyklos pagal padalinius": "Camps by unit",
     "Kuo tikslesnis adresas, tuo tiksliau renginio puslapyje bus parodytas žemėlapis": "The more precise the address, the more accurately the map is shown on the event page",
     "Juodraštis": "Draft",
-    "Suplanuota": "Scheduled"
+    "Suplanuota": "Scheduled",
+    "Problema dar neišspręsta": "The problem is not solved yet",
+    "Kai problema bus išspręsta, aprašykite sprendimą čia.": "Once the problem is solved, describe the solution here.",
+    "Trūksta informacijos": "Missing information",
+    "Programa": "Programme",
+    "Užsiregistravusių": "Registered",
+    "Prisijungti nuotoliu": "Join remotely",
+    "Registracija nevykdoma": "Registration not open",
+    "Negalite registruotis": "You cannot register",
+    "Registracija vyksta": "Registration open",
+    "Užsiregistruota": "Registered",
+    "Atšaukti registraciją": "Cancel registration"
 }

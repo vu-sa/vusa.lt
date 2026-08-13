@@ -1,88 +1,78 @@
 <template>
-  <Card :class="dashboardCardClasses" role="region" :aria-label="$t('Tavo užduotys')">
-    <!-- Status indicator - accent based on urgency -->
-    <div :class="statusIndicatorClasses" aria-hidden="true" />
-
-    <CardHeader class="relative z-10 pb-3">
-      <div class="flex items-center justify-between">
-        <CardTitle class="flex items-center gap-2 text-base font-semibold">
-          <div :class="['rounded-lg p-1.5', headerIconBgClass]">
-            <ClipboardCheckIcon :class="['h-4 w-4', headerIconClass]" aria-hidden="true" />
-          </div>
-          {{ $t('Užduotys') }}
-        </CardTitle>
-
-        <!-- Stats badges -->
-        <div class="flex items-center gap-2">
-          <Badge
-            variant="secondary"
-            class="text-sm font-bold tabular-nums"
-          >
-            {{ taskStats.total }}
-          </Badge>
-          <Badge
-            v-if="taskStats.overdue > 0"
-            variant="rose"
-            class="text-xs font-medium tabular-nums"
-          >
-            {{ taskStats.overdue }} {{ $t('overdue') }}
-          </Badge>
-          <Badge
-            v-else-if="taskStats.dueSoon > 0"
-            class="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-xs font-medium tabular-nums"
-          >
-            {{ taskStats.dueSoon }} {{ $t('soon') }}
-          </Badge>
-        </div>
+  <DashboardCard :title="$t('Užduotys')" :accent-class="statusIndicatorTint" content-class="pt-0">
+    <!-- The icon sits in its own tinted chip here, so it uses the slot. -->
+    <template #icon>
+      <div :class="['rounded-lg p-1.5', headerIconBgClass]">
+        <ClipboardCheckIcon :class="['h-4 w-4', headerIconClass]" aria-hidden="true" />
       </div>
-    </CardHeader>
+    </template>
 
-    <CardContent class="relative z-10 flex-1 pt-0">
-      <!-- Task list -->
-      <div v-if="displayedTasks.length > 0" class="space-y-1">
-        <TaskItem
-          v-for="task in displayedTasks"
-          :id="task.id"
-          :key="task.id"
-          :name="task.name"
-          :due-date="task.due_date"
-          :is-overdue="task.is_overdue"
-          :action-type="task.action_type"
-          :progress="task.progress"
-          :can-be-manually-completed="task.can_be_manually_completed"
-          :taskable-type="task.taskable_type"
-          :taskable-id="task.taskable_id"
-          :is-updating="isUpdating === task.id"
-          @complete="completeTask(task)"
-          @delete="deleteTask(task)"
-        />
-      </div>
+    <template #header-action>
+      <Badge
+        variant="secondary"
+        class="text-sm font-bold tabular-nums"
+      >
+        {{ taskStats.total }}
+      </Badge>
+      <Badge
+        v-if="taskStats.overdue > 0"
+        variant="rose"
+        class="text-xs font-medium tabular-nums"
+      >
+        {{ taskStats.overdue }} {{ $t('overdue') }}
+      </Badge>
+      <Badge
+        v-else-if="taskStats.dueSoon > 0"
+        class="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-xs font-medium tabular-nums"
+      >
+        {{ taskStats.dueSoon }} {{ $t('soon') }}
+      </Badge>
+    </template>
 
-      <!-- Empty state - celebratory -->
-      <div v-else class="flex flex-col items-center justify-center py-8 text-center">
-        <div class="mb-3 rounded-full bg-zinc-100 p-3 dark:bg-zinc-800">
-          <CheckCircleIcon class="h-6 w-6 text-zinc-500 dark:text-zinc-400" />
-        </div>
-        <h3 class="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-          {{ $t('Viskas atlikta!') }}
-        </h3>
-        <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-          {{ $t('Šiuo metu neturite aktyvių užduočių') }}
-        </p>
-      </div>
+    <!-- Task list -->
+    <div v-if="displayedTasks.length > 0" class="space-y-1">
+      <TaskItem
+        v-for="task in displayedTasks"
+        :id="task.id"
+        :key="task.id"
+        :name="task.name"
+        :due-date="task.due_date"
+        :is-overdue="task.is_overdue"
+        :action-type="task.action_type"
+        :progress="task.progress"
+        :can-be-manually-completed="task.can_be_manually_completed"
+        :taskable-type="task.taskable_type"
+        :taskable-id="task.taskable_id"
+        :is-updating="isUpdating === task.id"
+        @complete="completeTask(task)"
+        @delete="deleteTask(task)"
+      />
+    </div>
 
-      <!-- Footer with link -->
-      <div class="mt-3 border-t border-zinc-200 pt-3 dark:border-zinc-700">
-        <Link
-          :href="route('userTasks')"
-          class="group flex items-center justify-between rounded-md px-2 py-1.5 text-sm text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
-        >
-          <span>{{ $t('Visos užduotys') }}</span>
-          <ChevronRightIcon class="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-        </Link>
+    <!-- Empty state - celebratory -->
+    <div v-else class="flex flex-col items-center justify-center py-8 text-center">
+      <div class="mb-3 rounded-full bg-zinc-100 p-3 dark:bg-zinc-800">
+        <CheckCircleIcon class="h-6 w-6 text-zinc-500 dark:text-zinc-400" />
       </div>
-    </CardContent>
-  </Card>
+      <h3 class="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+        {{ $t('Viskas atlikta!') }}
+      </h3>
+      <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+        {{ $t('Šiuo metu neturite aktyvių užduočių') }}
+      </p>
+    </div>
+
+    <!-- Footer with link -->
+    <div class="mt-3 border-t border-zinc-200 pt-3 dark:border-zinc-700">
+      <Link
+        :href="route('userTasks')"
+        class="group flex items-center justify-between rounded-md px-2 py-1.5 text-sm text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+      >
+        <span>{{ $t('Visos užduotys') }}</span>
+        <ChevronRightIcon class="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+      </Link>
+    </div>
+  </DashboardCard>
 </template>
 
 <script setup lang="ts">
@@ -96,9 +86,9 @@ import {
   CheckCircle as CheckCircleIcon,
 } from 'lucide-vue-next';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import DashboardCard from '@/Components/Dashboard/DashboardCard.vue';
 import { Badge } from '@/Components/ui/badge';
-import { dashboardCardClasses, cardAccentColors } from '@/Composables/useDashboardCardStyles';
+import { cardAccentColors } from '@/Composables/useDashboardCardStyles';
 import { useTaskUrgency } from '@/Composables/useTaskUrgency';
 import TaskItem from '@/Components/Tasks/TaskItem.vue';
 import type { TaskProgress, TaskActionType } from '@/Types/TaskTypes';
@@ -129,19 +119,21 @@ const props = defineProps<{
 // Track which task is being updated
 const isUpdating = ref<string | null>(null);
 
-// Computed classes based on task stats
-const statusIndicatorClasses = computed(() => {
-  const base = 'absolute top-0 right-0 w-12 h-12 -mr-6 -mt-6 rotate-45';
+/**
+ * Four task states (overdue / due soon / open / clear) rather than the four
+ * urgency levels, so the wedge tint is supplied directly.
+ */
+const statusIndicatorTint = computed(() => {
   if (props.taskStats.overdue > 0) {
-    return `${base} bg-rose-300/40 dark:bg-rose-800/25`;
+    return 'bg-rose-300/40 dark:bg-rose-800/25';
   }
   if (props.taskStats.dueSoon > 0) {
-    return `${base} ${cardAccentColors.amber.statusIndicatorActive}`;
+    return cardAccentColors.amber.statusIndicatorActive;
   }
   if (props.taskStats.total > 0) {
-    return `${base} ${cardAccentColors.amber.statusIndicator}`;
+    return cardAccentColors.amber.statusIndicator;
   }
-  return `${base} bg-emerald-300/40 dark:bg-emerald-800/25`;
+  return 'bg-emerald-300/40 dark:bg-emerald-800/25';
 });
 
 const headerIconBgClass = computed(() => {

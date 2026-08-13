@@ -1,129 +1,110 @@
 <template>
-  <AdminContentPage>
-    <Card class="border bg-white dark:bg-zinc-800 dark:border-zinc-700">
-      <div class="h-48">
-        <img :src="training.image" class="size-full rounded-t-lg object-cover">
-      </div>
-      <CardHeader>
-        <div class="flex justify-between">
-          <div>
-            <h2 class="mb-px text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-              {{ training.name }}
-            </h2>
-            <div class="inline-flex text-zinc-500 items-center whitespace-pre">
-              <IFluentCalendar24Regular class="mr-1" />
-              <span>
-                {{ formatStaticTime(training.start_time, { month: "long", day: "numeric", }) }}
-              </span>
-              <span>{{ " - " }}</span>
-              <span>
-                {{ formatStaticTime(training.end_time, { month: "long", day: "numeric" }) }}
-              </span>
-            </div>
-          </div>
-          <div class="flex items-center gap-2">
-            <ActivityLogSheet subject-type="training" :subject-id="training.id" />
-            <Badge v-if="training.form === null" variant="warning">
-              <IFluentSubtractCircle12Regular class="mr-1" />
-              Registracija nevykdoma
-            </Badge>
-            <Badge v-else-if="!userCanRegister" variant="secondary">
-              <IFluentCircleOff16Regular class="mr-1" />
-              Negalite registruotis
-            </Badge>
-            <Badge v-else-if="!userIsRegistered" variant="warning">
-              <IFluentCircle24Regular class="mr-1" />
-              Registracija vyksta
-            </Badge>
-            <Badge v-else-if="userIsRegistered" variant="success">
-              <IFluentCheckmarkCircle24Filled class="mr-1" />
-              Uzsiregistruota
-            </Badge>
-          </div>
-        </div>
-        <div class="text-zinc-900 mt-2">
-          <div v-html="training.description" />
-        </div>
-      </CardHeader>
-      <CardFooter>
-        <!-- Registration component -->
-        <div class="flex gap-2">
-          <Link v-if="userCanRegister" :href="route('trainings.showRegistration', training.id)">
-            <Button :disabled="!userCanRegister">
-              Registruotis
-            </Button>
-          </Link>
-          <Button v-else-if="userIsRegistered" variant="warning" disabled>
-            Atsaukti registracija
-          </Button>
-          <Button v-else disabled>
-            Registruotis
-          </Button>
-          <!-- Share button -->
-          <Button variant="secondary" size="icon">
-            <IFluentShareAndroid24Regular />
-          </Button>
-        </div>
-      </CardFooter>
-    </Card>
-    <Tabs class="my-4" :default-value="defaultTab">
-      <TabsList>
-        <TabsTrigger value="summary">
-          Pagrindinis
-        </TabsTrigger>
-        <TabsTrigger value="programme">
-          Programa
-        </TabsTrigger>
-      </TabsList>
-      <TabsContent value="summary">
-        <Card class="border bg-white dark:bg-zinc-800 dark:border-zinc-700">
-          <CardHeader>
-            <h2 class="mb-0">
-              Pagrindine informacija
-            </h2>
-          </CardHeader>
-          <CardContent class="flex flex-col gap-2">
+  <ShowPageLayout
+    :title="trainingName"
+    :subtitle="dateRange"
+    :icon="TrainingIconFilled"
+    :model="training"
+    audit-subject-type="training"
+    :tabs
+    tab-storage-key="show-training-tab"
+  >
+    <template #badge>
+      <Badge v-if="training.form === null" variant="warning">
+        <MinusCircle class="mr-1 h-3 w-3" />
+        {{ $t('Registracija nevykdoma') }}
+      </Badge>
+      <Badge v-else-if="!userCanRegister" variant="secondary">
+        <Ban class="mr-1 h-3 w-3" />
+        {{ $t('Negalite registruotis') }}
+      </Badge>
+      <Badge v-else-if="!userIsRegistered" variant="warning">
+        <Circle class="mr-1 h-3 w-3" />
+        {{ $t('Registracija vyksta') }}
+      </Badge>
+      <Badge v-else variant="success">
+        <CheckCircle2 class="mr-1 h-3 w-3" />
+        {{ $t('Užsiregistruota') }}
+      </Badge>
+    </template>
+
+    <template #actions>
+      <Link v-if="userCanRegister" :href="route('trainings.showRegistration', training.id)">
+        <Button>{{ $t('Registruotis') }}</Button>
+      </Link>
+      <Button v-else-if="userIsRegistered" variant="warning" disabled>
+        {{ $t('Atšaukti registraciją') }}
+      </Button>
+      <Button v-else disabled>
+        {{ $t('Registruotis') }}
+      </Button>
+      <Button variant="secondary" size="icon">
+        <Share2 class="h-4 w-4" />
+      </Button>
+    </template>
+
+    <template #summary>
+      <div class="space-y-6">
+        <img
+          v-if="training.image"
+          :src="training.image"
+          alt=""
+          class="h-48 w-full rounded-lg object-cover"
+        >
+
+        <SectionCard v-if="training.description" :title="$t('Aprašymas')" :icon="AlignLeft">
+          <!-- eslint-disable-next-line vue/no-v-html -->
+          <div class="max-w-none" v-html="training.description" />
+        </SectionCard>
+
+        <SectionCard :title="$t('Pagrindinė informacija')" :icon="Info">
+          <div class="flex flex-col gap-2">
             <div v-if="training.address" class="flex items-center gap-2">
-              <IFluentLocation24Regular />
+              <MapPin class="h-4 w-4 shrink-0 text-muted-foreground" />
               <span class="font-bold">{{ training.address }}</span>
             </div>
             <div v-if="training.meeting_url" class="flex items-center gap-2">
-              <IFluentLink24Regular />
-              <a :href="training.meeting_url" target="_blank" class="underline">Prisijungti nuotoliu</a>
+              <Link2 class="h-4 w-4 shrink-0 text-muted-foreground" />
+              <a :href="training.meeting_url" target="_blank" rel="noopener noreferrer" class="underline">
+                {{ $t('Prisijungti nuotoliu') }}
+              </a>
             </div>
             <div class="flex items-center gap-2">
-              <InstitutionIconFilled />
+              <InstitutionIconFilled class="h-4 w-4 shrink-0 text-muted-foreground" />
               <span>{{ training.institution?.name }}</span>
             </div>
             <div class="inline-flex items-center gap-2">
-              <UserIconFilled />
-              Organizuoja:
+              <UserIconFilled class="h-4 w-4 shrink-0 text-muted-foreground" />
+              {{ $t('Organizuoja') }}:
               <UserPopover show-name :size="20" :user="training.organizer" />
             </div>
-          </CardContent>
-        </Card>
-      </TabsContent>
-      <TabsContent value="programme">
-        <ProgrammePlanner show-times :programme="training.programmes?.at(0)" />
-      </TabsContent>
-    </Tabs>
-  </AdminContentPage>
+            <div class="flex items-center gap-2">
+              <Users class="h-4 w-4 shrink-0 text-muted-foreground" />
+              <span>{{ $t('Užsiregistravusių') }}: {{ registeredUserCount }}</span>
+            </div>
+          </div>
+        </SectionCard>
+      </div>
+    </template>
+
+    <template #programme>
+      <ProgrammePlanner show-times :programme="training.programmes?.at(0)" />
+    </template>
+  </ShowPageLayout>
 </template>
 
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+import { AlignLeft, Ban, CheckCircle2, Circle, Info, Link2, MapPin, MinusCircle, Share2, Users } from 'lucide-vue-next';
 
 import UserPopover from '@/Components/Avatars/UserPopover.vue';
-import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
+import ShowPageLayout from '@/Components/Layouts/ShowPageLayout.vue';
+import { SectionCard } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
-import { Card, CardContent, CardFooter, CardHeader } from '@/Components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
-import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import ProgrammePlanner from '@/Features/Admin/ProgrammePlanner/ProgrammePlanner.vue';
 import { formatStaticTime } from '@/Utils/IntlTime';
-import Sparkle20Filled from '~icons/fluent/sparkle20-filled';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { InstitutionIconFilled, TrainingIconFilled, UserIconFilled } from '@/Components/icons';
 
@@ -134,22 +115,30 @@ const props = defineProps<{
   userCanRegister: boolean;
 }>();
 
-const defaultTab = computed(() => {
-  if (props.userIsRegistered) {
-    return 'summary';
-  }
+/**
+ * The controller serialises with `toArray()`, so translatable fields arrive as
+ * localized strings — but the IDE-helper-generated type still calls them arrays.
+ */
+const trainingName = computed(() => props.training.name as unknown as string);
 
-  return 'summary';
+const dateRange = computed(() => {
+  const options = { month: 'long', day: 'numeric' } as const;
+  return `${formatStaticTime(props.training.start_time, options)} – ${formatStaticTime(props.training.end_time, options)}`;
 });
+
+const tabs = computed(() => [
+  { value: 'summary', label: $t('Pagrindinis') },
+  { value: 'programme', label: $t('Programa') },
+]);
 
 usePageBreadcrumbs(() =>
   BreadcrumbHelpers.adminShow(
     'Mokymai',
     'trainings.index',
     {},
-    props.training.name,
+    trainingName.value,
     TrainingIconFilled,
-    Sparkle20Filled,
+    TrainingIconFilled,
   ),
 );
 </script>

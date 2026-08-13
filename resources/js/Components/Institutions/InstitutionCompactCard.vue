@@ -139,45 +139,18 @@
         <!-- Divider -->
         <div class="w-px h-6 bg-zinc-200 dark:bg-zinc-700 mx-1" />
 
-        <!-- Follow/Unfollow button -->
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger as-child>
-              <Button variant="ghost" size="sm"
-                class="h-8 w-8 opacity-60 hover:opacity-100 transition-all"
-                :class="isFollowed ? 'text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'"
-                :disabled="followLoading"
-                @click="emit('toggle-follow', institution.id)">
-                <Loader2 v-if="followLoading" class="h-3.5 w-3.5 animate-spin" />
-                <Eye v-else-if="isFollowed" class="h-3.5 w-3.5" />
-                <EyeOff v-else class="h-3.5 w-3.5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              {{ isFollowed ? $t('visak.unfollow') : $t('visak.follow') }}
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-
-        <!-- Mute/Unmute button (only show if followed) -->
-        <TooltipProvider v-if="isFollowed">
-          <Tooltip>
-            <TooltipTrigger as-child>
-              <Button variant="ghost" size="sm"
-                class="h-8 w-8 opacity-60 hover:opacity-100 transition-all"
-                :class="isMuted ? 'text-zinc-500 dark:text-zinc-400' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'"
-                :disabled="muteLoading"
-                @click="emit('toggle-mute', institution.id)">
-                <Loader2 v-if="muteLoading" class="h-3.5 w-3.5 animate-spin" />
-                <BellOff v-else-if="isMuted" class="h-3.5 w-3.5" />
-                <Bell v-else class="h-3.5 w-3.5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              {{ isMuted ? $t('visak.unmute') : $t('visak.mute') }}
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <InstitutionSubscriptionActions
+          size="sm"
+          :followed="isFollowed"
+          :muted="isMuted"
+          :follow-loading
+          :mute-loading
+          class="opacity-60 transition-all hover:opacity-100 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+          followed-class="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30"
+          muted-class="text-zinc-500 dark:text-zinc-400"
+          @toggle-follow="emit('toggle-follow', institution.id)"
+          @toggle-mute="emit('toggle-mute', institution.id)"
+        />
       </template>
     </div>
   </div>
@@ -188,6 +161,8 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Link as InertiaLink } from '@inertiajs/vue3';
 import { AlertTriangle, Bell, BellOff, CalendarCheck, CalendarClock, CalendarOff, CalendarX, CheckCircle2, Clock, Eye, EyeOff, Globe, Loader2, X } from 'lucide-vue-next';
+
+import InstitutionSubscriptionActions from './InstitutionSubscriptionActions.vue';
 
 import { Button } from '@/Components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';

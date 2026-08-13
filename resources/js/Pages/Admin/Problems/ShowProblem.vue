@@ -1,82 +1,88 @@
 <template>
-  <AdminContentPage>
-    <InertiaHead :title="localizedTitle" />
+  <ShowPageLayout
+    :title="localizedTitle"
+    :subtitle="problem.tenant?.shortname"
+    :icon="ProblemIcon"
+    :model="problem"
+    audit-subject-type="problem"
+  >
+    <!-- statusBadge uses the `warning`/`success` badge variants, which the hero's
+         BadgeConfig union doesn't cover — so render it through the slot. -->
+    <template #badge>
+      <Badge :variant="statusBadge.variant">
+        {{ statusBadge.label }}
+      </Badge>
+    </template>
 
-    <ShowPageHero
-      :title="localizedTitle"
-      :subtitle="problem.tenant?.shortname"
-      :icon="ProblemIcon"
-      :badge="statusBadge"
-    >
-      <template #info>
-        <div class="flex flex-wrap items-center gap-2 sm:gap-4 text-sm">
-          <div class="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400">
-            <Calendar class="h-4 w-4 text-zinc-400 shrink-0" />
-            <span>{{ new Date(problem.occurred_at).toLocaleDateString('lt-LT') }}</span>
-          </div>
-          <div v-if="problem.resolved_at" class="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400">
-            <CheckCircle2 class="h-4 w-4 text-green-500 shrink-0" />
-            <span>{{ new Date(problem.resolved_at).toLocaleDateString('lt-LT') }}</span>
-          </div>
-          <Separator orientation="vertical" class="h-4" />
-          <div class="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
-            <Clock class="h-4 w-4 text-zinc-400 shrink-0" />
-            <span>{{ durationText }}</span>
-          </div>
+    <template #info>
+      <div class="flex flex-wrap items-center gap-2 sm:gap-4 text-sm">
+        <div class="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400">
+          <Calendar class="h-4 w-4 text-zinc-400 shrink-0" />
+          <span>{{ new Date(problem.occurred_at).toLocaleDateString('lt-LT') }}</span>
         </div>
-      </template>
-      <template #actions>
-        <ActivityLogSheet subject-type="problem" :subject-id="problem.id" />
-        <Button v-if="canUpdate" variant="outline" size="icon" class="h-9 w-9" as-child>
-          <Link :href="route('problems.edit', problem.id)">
-            <Edit class="h-4 w-4" />
-          </Link>
-        </Button>
-        <DropdownMenu v-if="canUpdate || canDelete">
-          <DropdownMenuTrigger as-child>
-            <Button variant="outline" size="icon" class="h-9 w-9">
-              <MoreHorizontal class="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <template v-if="canUpdate">
-              <DropdownMenuItem as-child>
-                <Link :href="route('problems.edit', problem.id)">
-                  <Edit class="h-4 w-4 mr-2" />
-                  {{ $t('Redaguoti') }}
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel class="text-xs text-zinc-500">
-                {{ $t('Keisti būseną') }}
-              </DropdownMenuLabel>
-              <DropdownMenuItem
-                v-for="s in availableStatuses"
-                :key="s.value"
-                :disabled="statusChanging"
-                @click="handleStatusChange(s.value)"
-              >
-                <component :is="s.icon" class="h-4 w-4 mr-2" :class="s.iconClass" />
-                {{ s.label }}
-              </DropdownMenuItem>
-            </template>
-            <template v-if="canDelete">
-              <DropdownMenuSeparator v-if="canUpdate" />
-              <DropdownMenuItem class="text-destructive focus:text-destructive" @click="showDeleteDialog = true">
-                <Trash2 class="h-4 w-4 mr-2" />
-                {{ $t('Šalinti problemą') }}
-              </DropdownMenuItem>
-            </template>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </template>
-    </ShowPageHero>
+        <div v-if="problem.resolved_at" class="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400">
+          <CheckCircle2 class="h-4 w-4 text-green-500 shrink-0" />
+          <span>{{ new Date(problem.resolved_at).toLocaleDateString('lt-LT') }}</span>
+        </div>
+        <Separator orientation="vertical" class="h-4" />
+        <div class="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
+          <Clock class="h-4 w-4 text-zinc-400 shrink-0" />
+          <span>{{ durationText }}</span>
+        </div>
+      </div>
+    </template>
 
-    <!-- Status Progress -->
-    <div class="mt-6 flex items-center gap-0">
+    <template #actions>
+      <Button v-if="canUpdate" variant="outline" size="icon" class="h-9 w-9" as-child>
+        <Link :href="route('problems.edit', problem.id)">
+          <Edit class="h-4 w-4" />
+        </Link>
+      </Button>
+      <DropdownMenu v-if="canUpdate || canDelete">
+        <DropdownMenuTrigger as-child>
+          <Button variant="outline" size="icon" class="h-9 w-9">
+            <MoreHorizontal class="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <template v-if="canUpdate">
+            <DropdownMenuItem as-child>
+              <Link :href="route('problems.edit', problem.id)">
+                <Edit class="h-4 w-4 mr-2" />
+                {{ $t('Redaguoti') }}
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel class="text-xs text-zinc-500">
+              {{ $t('Keisti būseną') }}
+            </DropdownMenuLabel>
+            <DropdownMenuItem
+              v-for="s in availableStatuses"
+              :key="s.value"
+              :disabled="statusChanging"
+              @click="handleStatusChange(s.value)"
+            >
+              <component :is="s.icon" class="h-4 w-4 mr-2" :class="s.iconClass" />
+              {{ s.label }}
+            </DropdownMenuItem>
+          </template>
+          <template v-if="canDelete">
+            <DropdownMenuSeparator v-if="canUpdate" />
+            <DropdownMenuItem class="text-destructive focus:text-destructive" @click="showDeleteDialog = true">
+              <Trash2 class="h-4 w-4 mr-2" />
+              {{ $t('Šalinti problemą') }}
+            </DropdownMenuItem>
+          </template>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </template>
+
+    <!-- Status progress: a domain control with exactly one caller, so it stays inline. -->
+    <div class="flex items-center gap-0">
       <button
-        v-for="(step, index) in statusSteps"
+        v-for="step in statusSteps"
         :key="step.value"
+        type="button"
         :disabled="!canUpdate || statusChanging"
         :class="[
           'relative flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors',
@@ -97,167 +103,108 @@
       </button>
     </div>
 
-    <!-- Main Content: Two-column layout -->
-    <div class="mt-6 grid grid-cols-1 lg:grid-cols-[2fr_auto_1fr] gap-6">
-      <!-- Left column: Content -->
-      <div class="space-y-6">
-        <!-- Description -->
-        <section>
-          <h2 class="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-            <AlignLeft class="h-3.5 w-3.5" />
-            {{ $t('Aprašymas') }}
-          </h2>
-          <Card>
-            <CardContent class="pt-6">
-              <!-- eslint-disable-next-line vue/no-v-html -->
-              <div class="max-w-none" v-html="localizedDescription" />
-            </CardContent>
-          </Card>
-        </section>
+    <ShowPageGrid class="mt-6">
+      <template #main>
+        <SectionCard :title="$t('Aprašymas')" :icon="AlignLeft">
+          <!-- eslint-disable-next-line vue/no-v-html -->
+          <div class="max-w-none" v-html="localizedDescription" />
+        </SectionCard>
 
-        <!-- Steps Taken -->
-        <section v-if="hasStepsTaken">
-          <h2 class="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-            <List class="h-3.5 w-3.5" />
-            {{ $t('Atlikti žingsniai') }}
-          </h2>
-          <Card>
-            <CardContent class="pt-6">
-              <!-- eslint-disable-next-line vue/no-v-html -->
-              <div class="max-w-none" v-html="localizedStepsTaken" />
-            </CardContent>
-          </Card>
-        </section>
+        <SectionCard v-if="hasStepsTaken" :title="$t('Atlikti žingsniai')" :icon="List">
+          <!-- eslint-disable-next-line vue/no-v-html -->
+          <div class="max-w-none" v-html="localizedStepsTaken" />
+        </SectionCard>
 
-        <!-- Solution -->
-        <section>
-          <h2 class="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-            <CircleCheck v-if="hasSolution" class="h-3.5 w-3.5 text-green-500" />
-            <CircleX v-else class="h-3.5 w-3.5 text-red-400" />
-            {{ $t('Sprendimas') }}
-          </h2>
-          <Card v-if="hasSolution" class="border-green-200 dark:border-green-900/50 bg-green-50/30 dark:bg-green-900/10">
-            <CardContent class="pt-6">
-              <!-- eslint-disable-next-line vue/no-v-html -->
-              <div class="max-w-none" v-html="localizedSolution" />
-            </CardContent>
-          </Card>
-          <Card v-else class="border-dashed">
-            <CardContent class="py-8">
-              <div class="flex flex-col items-center text-center gap-2">
-                <div class="h-10 w-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                  <Lightbulb class="h-5 w-5 text-zinc-400" />
-                </div>
-                <p class="text-sm text-zinc-500 dark:text-zinc-400">
-                  {{ $t('Problema dar neišspręsta') }}
-                </p>
-                <Button v-if="canUpdate" variant="outline" size="sm" as-child class="mt-1">
-                  <Link :href="route('problems.edit', problem.id)">
-                    {{ $t('Pridėti sprendimą') }}
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-      </div>
+        <SectionCard
+          :title="$t('Sprendimas')"
+          :icon="hasSolution ? CircleCheck : CircleX"
+          :empty="!hasSolution"
+          :class="hasSolution
+            ? 'border-green-200 dark:border-green-900/50 bg-green-50/30 dark:bg-green-900/10'
+            : 'border-dashed'"
+        >
+          <!-- eslint-disable-next-line vue/no-v-html -->
+          <div class="max-w-none" v-html="localizedSolution" />
 
-      <!-- Vertical separator -->
-      <Separator orientation="vertical" class="hidden lg:block" />
-
-      <!-- Right column: Sidebar -->
-      <div class="space-y-5 self-start">
-        <!-- Responsible User -->
-        <section v-if="problem.responsible_user">
-          <h2 class="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-            <User class="h-3.5 w-3.5" />
-            {{ $t('entities.problem.responsible_user') }}
-          </h2>
-          <Card class="h-auto">
-            <CardContent class="py-3" size="sm">
-              <span class="text-sm font-medium">{{ problem.responsible_user.name }}</span>
-            </CardContent>
-          </Card>
-        </section>
-
-        <!-- Created By -->
-        <section v-if="createdByUser">
-          <h2 class="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-            <UserCheck class="h-3.5 w-3.5" />
-            {{ $t('Sukūrė') }}
-          </h2>
-          <Card class="h-auto">
-            <CardContent class="py-3" size="sm">
-              <span class="text-sm font-medium">{{ createdByUser.name }}</span>
-            </CardContent>
-          </Card>
-        </section>
-
-        <!-- Categories -->
-        <section v-if="problem.categories && problem.categories.length > 0">
-          <h2 class="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-            <Tags class="h-3.5 w-3.5" />
-            {{ $t('entities.problem.categories') }}
-          </h2>
-          <Card class="h-auto">
-            <CardContent class="py-3" size="sm">
-              <div class="flex flex-wrap gap-1.5">
-                <Badge v-for="cat in problem.categories" :key="cat.id" variant="secondary">
-                  {{ cat.name }}
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-
-        <!-- Institutions -->
-        <section v-if="problem.institutions && problem.institutions.length > 0">
-          <h2 class="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-            <Building2 class="h-3.5 w-3.5" />
-            {{ $tChoice('entities.institution.model', 2) }}
-          </h2>
-          <Card class="h-auto">
-            <CardContent class="py-3" size="sm">
-              <div class="flex flex-wrap gap-1.5">
-                <Badge v-for="inst in problem.institutions" :key="inst.id" variant="outline">
-                  {{ inst.name }}
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-
-        <!-- Empty metadata prompt -->
-        <Card v-if="!hasMetadata && canUpdate" class="border-dashed h-auto">
-          <CardContent class="py-6">
-            <div class="flex flex-col items-center text-center gap-2">
-              <p class="text-sm text-zinc-500 dark:text-zinc-400">
-                {{ $t('Pridėkite kategoriją, atsakingą asmenį ar instituciją.') }}
-              </p>
-              <Button variant="outline" size="sm" as-child>
+          <template #empty>
+            <EmptyState
+              :title="$t('Problema dar neišspręsta')"
+              :description="$t('Kai problema bus išspręsta, aprašykite sprendimą čia.')"
+            >
+              <template #icon>
+                <Lightbulb class="h-10 w-10 text-muted-foreground" />
+              </template>
+              <Button v-if="canUpdate" variant="outline" size="sm" as-child>
                 <Link :href="route('problems.edit', problem.id)">
-                  <Edit class="h-3.5 w-3.5 mr-1.5" />
-                  {{ $t('Redaguoti') }}
+                  {{ $t('Pridėti sprendimą') }}
                 </Link>
               </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+            </EmptyState>
+          </template>
+        </SectionCard>
+      </template>
 
-    <!-- Bottom navigation -->
-    <Separator class="mt-8 mb-4" />
-    <div class="flex items-center justify-start">
-      <Button variant="ghost" size="sm" as-child>
-        <Link :href="route('problems.index')">
-          <ArrowLeft class="h-4 w-4 mr-1.5" />
-          {{ $t('Grįžti į sąrašą') }}
-        </Link>
-      </Button>
-    </div>
+      <template #sidebar>
+        <SectionCard
+          v-if="problem.responsible_user"
+          :title="$t('entities.problem.responsible_user')"
+          :icon="User"
+          content-size="sm"
+        >
+          <span class="text-sm font-medium">{{ problem.responsible_user.name }}</span>
+        </SectionCard>
 
-    <!-- Delete Confirmation Dialog -->
+        <SectionCard v-if="createdByUser" :title="$t('Sukūrė')" :icon="UserCheck" content-size="sm">
+          <span class="text-sm font-medium">{{ createdByUser.name }}</span>
+        </SectionCard>
+
+        <SectionCard
+          v-if="problem.categories?.length"
+          :title="$t('entities.problem.categories')"
+          :icon="Tags"
+          :count="problem.categories.length"
+          content-size="sm"
+        >
+          <div class="flex flex-wrap gap-1.5">
+            <Badge v-for="cat in problem.categories" :key="cat.id" variant="secondary">
+              {{ cat.name }}
+            </Badge>
+          </div>
+        </SectionCard>
+
+        <SectionCard
+          v-if="problem.institutions?.length"
+          :title="$tChoice('entities.institution.model', 2)"
+          :icon="Building2"
+          :count="problem.institutions.length"
+          content-size="sm"
+        >
+          <div class="flex flex-wrap gap-1.5">
+            <Badge v-for="inst in problem.institutions" :key="inst.id" variant="outline">
+              {{ inst.name }}
+            </Badge>
+          </div>
+        </SectionCard>
+
+        <!-- A prompt rather than a section, so it renders bare instead of inside a card. -->
+        <EmptyState
+          v-if="!hasMetadata && canUpdate"
+          :title="$t('Trūksta informacijos')"
+          :description="$t('Pridėkite kategoriją, atsakingą asmenį ar instituciją.')"
+        >
+          <template #icon>
+            <Info class="h-10 w-10 text-muted-foreground" />
+          </template>
+          <Button variant="outline" size="sm" as-child>
+            <Link :href="route('problems.edit', problem.id)">
+              <Edit class="h-3.5 w-3.5 mr-1.5" />
+              {{ $t('Redaguoti') }}
+            </Link>
+          </Button>
+        </EmptyState>
+      </template>
+    </ShowPageGrid>
+
     <Dialog v-model:open="showDeleteDialog">
       <DialogContent class="max-w-md">
         <DialogHeader>
@@ -282,29 +229,25 @@
         </div>
       </DialogContent>
     </Dialog>
-  </AdminContentPage>
+  </ShowPageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { router, Head as InertiaHead, Link } from '@inertiajs/vue3';
+import { router, Link } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice, getActiveLanguage } from 'laravel-vue-i18n';
 import {
   Edit, Trash2, MoreHorizontal, User, UserCheck, Calendar,
-  Building2, CheckCircle2, Clock, ArrowLeft, CircleDot, Loader2,
+  Building2, CheckCircle2, Clock, CircleDot, Loader2, Info,
   Lightbulb, AlignLeft, List, CircleCheck, CircleX, Tags,
 } from 'lucide-vue-next';
 
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
-
-// Layout
-import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
-
-// UI Components
+import ShowPageLayout from '@/Components/Layouts/ShowPageLayout.vue';
+import { EmptyState, SectionCard, ShowPageGrid } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
-import { Card, CardContent } from '@/Components/ui/card';
 import { Separator } from '@/Components/ui/separator';
 import {
   DropdownMenu,
@@ -314,10 +257,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
-
-// Custom Components
-import ShowPageHero from '@/Components/Hero/ShowPageHero.vue';
-import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import { ProblemIcon } from '@/Components/icons';
 
 const props = defineProps<{
@@ -435,8 +374,6 @@ const handleStatusChange = (status: string) => {
     },
   });
 };
-
-const { problem } = props;
 
 usePageBreadcrumbs(() =>
   BreadcrumbHelpers.adminShow(

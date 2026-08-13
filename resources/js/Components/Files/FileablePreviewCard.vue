@@ -45,7 +45,7 @@ import { useFetch } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { FileText, ExternalLink } from 'lucide-vue-next';
 
-import { SectionCard } from '@/Components/ui/section-card';
+import { SectionCard } from '@/Components/Patterns';
 
 interface DriveItem {
   id: string;
