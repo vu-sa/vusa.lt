@@ -45,7 +45,7 @@ const stubs = {
   FormFieldWrapper: { template: '<div><slot /></div>' },
   Alert: { template: '<div><slot /></div>' },
   AlertDescription: { template: '<div><slot /></div>' },
-  MultiSelect: { template: '<div />' },
+  MultiSelect: { name: 'MultiSelect', props: ['modelValue', 'options'], template: '<div />' },
   SingleSelect: { template: '<div />' },
   NumberField: { template: '<input type="number" />' },
   Select: { template: '<div><slot /></div>' },
@@ -55,7 +55,8 @@ const stubs = {
   SelectValue: { template: '<div />' },
   InstitutionSelectDialog: { template: '<div><slot name="trigger" /></div>' },
   CollectionSelectDialog: { template: '<div><slot name="trigger" /></div>' },
-  TransferList: { template: '<div />' },
+  // Props are declared so tests can read what the form hands each picker.
+  TransferList: { name: 'TransferList', props: ['modelValue', 'options', 'lockedOptions'], template: '<div />' },
   Accordion: { template: '<div><slot /></div>' },
   AccordionItem: { template: '<div><slot /></div>' },
   AccordionContent: { template: '<div><slot /></div>' },
@@ -89,7 +90,7 @@ beforeEach(() => {
   duplicateMatches.value = { same_institution: [], other_institution: [], other_institution_count: 0 };
 });
 
-const mountForm = (duty = emptyDuty()) =>
+const mountForm = (duty = emptyDuty(), extraProps: Record<string, unknown> = {}) =>
   mount(DutyForm, {
     props: {
       duty,
@@ -99,6 +100,7 @@ const mountForm = (duty = emptyDuty()) =>
       assignableInstitutions: [],
       assignableTenants: [],
       assignableDuties: [],
+      ...extraProps,
     },
     global: { stubs },
   });
@@ -239,5 +241,140 @@ describe('DutyForm.vue — duplicate duty warning wiring', () => {
     wrapper = mountForm();
 
     expect(wrapper.text()).not.toContain('forms.duty_duplicate.warning_title');
+  });
+});
+
+describe('DutyForm.vue — ex-officio seats in the assignable-tenants section', () => {
+  let wrapper: ReturnType<typeof mount>;
+
+  const tenant = { id: 11, shortname: 'VU SA MIF', type: 'padalinys' };
+
+  const dutyWithTenantRow = (quota: number | null) => emptyDuty({
+    id: 'duty-1',
+    assignable_tenants: [{ id: tenant.id, shortname: tenant.shortname, pivot: { quota } }],
+  });
+
+  const exOfficioMember = {
+    dutiable_id: 'dutiable-1',
+    user_id: 'user-ex',
+    name: 'Jonas Jonaitis',
+    tenant_id: tenant.id,
+    source_duty_name: 'Pirmininkas',
+  };
+
+  afterEach(() => {
+    wrapper?.unmount();
+  });
+
+  it('counts ex-officio seats towards the tenant occupancy badge', () => {
+    // The regression: a tenant whose third seat is held ex officio reported 2/3
+    // and looked like it still had room.
+    wrapper = mountForm(dutyWithTenantRow(3), {
+      assignableTenants: [tenant],
+      assignableTenantUsers: { [tenant.id]: ['user-a', 'user-b'] },
+      exOfficioMembers: [exOfficioMember],
+    });
+
+    expect(wrapper.find(`[data-testid="tenant-occupancy-${tenant.id}"]`).text()).toBe('3 / 3');
+  });
+
+  it('reports occupancy from the picked reps alone when no seat is held ex officio', () => {
+    wrapper = mountForm(dutyWithTenantRow(3), {
+      assignableTenants: [tenant],
+      assignableTenantUsers: { [tenant.id]: ['user-a', 'user-b'] },
+    });
+
+    expect(wrapper.find(`[data-testid="tenant-occupancy-${tenant.id}"]`).text()).toBe('2 / 3');
+  });
+
+  it('shows an unlimited quota rather than a cap when none is set', () => {
+    wrapper = mountForm(dutyWithTenantRow(null), {
+      assignableTenants: [tenant],
+      assignableTenantUsers: { [tenant.id]: ['user-a'] },
+      exOfficioMembers: [exOfficioMember],
+    });
+
+    expect(wrapper.find(`[data-testid="tenant-occupancy-${tenant.id}"]`).text()).toBe('2 / ∞');
+  });
+
+  it('keeps ex-officio holders out of the owning-tenant member selection', () => {
+    // They already hold the seat through their source duty, so offering them
+    // in the picker would let an admin "add" a row that already exists.
+    wrapper = mountForm(emptyDuty({ id: 'duty-1' }), {
+      assignableUsers: [
+        { id: 'user-ex', name: 'Jonas Jonaitis', is_recent: true },
+        { id: 'user-a', name: 'Ona Onaitė', is_recent: true },
+      ],
+      exOfficioMembers: [{ ...exOfficioMember, tenant_id: null }],
+    });
+
+    const transferList = wrapper.findComponent({ name: 'TransferList' });
+    const options = transferList.props('options') as Array<{ value: string }>;
+    const locked = transferList.props('lockedOptions') as Array<{ value: string }>;
+
+    expect(options.map(o => o.value)).toEqual(['user-a']);
+    expect(locked.map(o => o.value)).toEqual(['user-ex']);
+  });
+});
+
+describe('DutyForm.vue — picking which tenants may assign representatives', () => {
+  let wrapper: ReturnType<typeof mount>;
+
+  const tenantA = { id: 11, shortname: 'VU SA MIF', type: 'padalinys' };
+  const tenantB = { id: 12, shortname: 'VU SA TSPMI', type: 'padalinys' };
+
+  /** The tenant picker is the last MultiSelect on the form (after types and roles). */
+  const tenantPicker = (w: ReturnType<typeof mount>) => {
+    const pickers = w.findAllComponents({ name: 'MultiSelect' });
+    return pickers[pickers.length - 1];
+  };
+
+  const mountWithRows = () => mountForm(
+    emptyDuty({
+      id: 'duty-1',
+      assignable_tenants: [
+        { id: tenantA.id, shortname: tenantA.shortname, pivot: { quota: null } },
+        { id: tenantB.id, shortname: tenantB.shortname, pivot: { quota: null } },
+      ],
+    }),
+    {
+      assignableTenants: [tenantA, tenantB],
+      assignableTenantUsers: { [tenantA.id]: ['user-a'], [tenantB.id]: ['user-b', 'user-c'] },
+    },
+  );
+
+  afterEach(() => {
+    wrapper?.unmount();
+  });
+
+  it('lists the duty\'s existing assignable tenants as the picker selection', () => {
+    wrapper = mountWithRows();
+
+    expect((tenantPicker(wrapper).props('modelValue') as Array<{ id: number }>).map(t => t.id))
+      .toEqual([tenantA.id, tenantB.id]);
+  });
+
+  it('adds a section for a newly picked tenant', async () => {
+    wrapper = mountForm(emptyDuty({
+      id: 'duty-1',
+      assignable_tenants: [{ id: tenantA.id, shortname: tenantA.shortname, pivot: { quota: null } }],
+    }), { assignableTenants: [tenantA, tenantB] });
+
+    tenantPicker(wrapper).vm.$emit('update:modelValue', [tenantA, tenantB]);
+    await nextTick();
+
+    expect(wrapper.find(`[data-testid="tenant-occupancy-${tenantB.id}"]`).exists()).toBe(true);
+  });
+
+  it('keeps each remaining tenant\'s reps with it when another tenant is dropped', async () => {
+    // The reps live in an array parallel to the rows, so dropping a row without
+    // dropping its entry would shift every tenant below onto someone else's reps.
+    wrapper = mountWithRows();
+
+    tenantPicker(wrapper).vm.$emit('update:modelValue', [tenantB]);
+    await nextTick();
+
+    expect(wrapper.find(`[data-testid="tenant-occupancy-${tenantA.id}"]`).exists()).toBe(false);
+    expect(wrapper.find(`[data-testid="tenant-occupancy-${tenantB.id}"]`).text()).toBe('2 / ∞');
   });
 });

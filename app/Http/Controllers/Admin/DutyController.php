@@ -300,6 +300,7 @@ class DutyController extends AdminController
             'canEditDuty' => $canEditDuty,
             'actingAssignableTenantIds' => $actingAssignableTenantIds->values()->all(),
             'assignableTenantUsers' => $assignableTenantUsers,
+            'exOfficioMembers' => $this->exOfficioMembersForDutyForm($duty, $canEditDuty ? null : $actingAssignableTenantIds),
             'roles' => Role::all(),
             'dutyTypes' => GetAttachableTypesForDuty::execute()->values(),
             'assignableInstitutions' => DutyService::getInstitutionsForUpserts($this->authorizer),
@@ -463,6 +464,49 @@ class DutyController extends AdminController
                 'profile_photo_path' => $u->profile_photo_path,
                 'is_recent' => (bool) $u->getAttribute('is_recent'),
             ])
+            ->all();
+    }
+
+    /**
+     * Active ex-officio seats on this duty, for display in the edit form.
+     *
+     * These rows are granted by another duty and end with it, so no picker may
+     * grant or revoke them — but they do occupy a seat and count against the
+     * assigning tenant's quota, which is why the form still needs to see them.
+     * Without this a tenant with 3 of 3 seats filled (one ex officio) reads as 2/3
+     * and looks like it has room left.
+     *
+     * @param  Collection<int, int>|null  $limitToTenantIds  Null = no tenant limit (owning admin).
+     * @return array<int, array{dutiable_id: string, user_id: string, name: string, profile_photo_path: string|null, tenant_id: int|null, source_duty_name: string|null}>
+     */
+    private function exOfficioMembersForDutyForm(Duty $duty, ?Collection $limitToTenantIds): array
+    {
+        $query = Dutiable::where('duty_id', $duty->id)
+            ->where('dutiable_type', User::class)
+            ->whereNotNull('via_dutiable_id')
+            ->where(function ($query): void {
+                $query->whereNull('end_date')
+                    ->orWhere('end_date', '>=', now());
+            });
+
+        if ($limitToTenantIds !== null) {
+            $query->whereIn('tenant_id', $limitToTenantIds->all());
+        }
+
+        return $query
+            ->with(['user:id,name,profile_photo_path', 'viaDutiable.duty:id,name'])
+            ->get()
+            // A soft-deleted holder leaves the row without a user to name.
+            ->filter(fn (Dutiable $row) => $row->user !== null)
+            ->map(fn (Dutiable $row) => [
+                'dutiable_id' => $row->id,
+                'user_id' => $row->dutiable_id,
+                'name' => $row->user->name,
+                'profile_photo_path' => $row->user->profile_photo_path,
+                'tenant_id' => $row->tenant_id,
+                'source_duty_name' => $row->viaDutiable?->duty?->name,
+            ])
+            ->values()
             ->all();
     }
 

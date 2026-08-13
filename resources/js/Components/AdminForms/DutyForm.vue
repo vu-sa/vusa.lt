@@ -134,7 +134,8 @@
         <p v-if="!showAllUsers" class="text-xs text-muted-foreground">
           {{ $t('forms.fields.recent_users_only_hint', { shown: recentUsersCount, total: assignableUsersTotal }) }}
         </p>
-        <TransferList v-model="form.current_users" :options="owningTenantUserOptions">
+        <TransferList v-model="form.current_users" :options="owningTenantUserOptions"
+          :locked-options="owningExOfficioOptions">
           <template #source-label="{ option }">
             <span class="inline-flex items-center gap-2">
               {{ option.label }}
@@ -157,32 +158,46 @@
               </span>
             </div>
           </template>
+          <template #locked-label="{ option }">
+            <ExOfficioMemberLabel :option />
+          </template>
         </TransferList>
+        <p v-if="owningExOfficioOptions.length > 0" class="text-xs text-muted-foreground">
+          {{ $t('forms.fields.ex_officio_not_removable') }}
+        </p>
       </div>
 
       <!-- Current members list with cross-tenant badges -->
       <div v-if="duty.current_users && duty.current_users.length > 0" class="mt-4">
-        <div class="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-          Dabartiniai nariai:
+        <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+            {{ $t('forms.fields.current_members') }} ({{ duty.current_users.length }})
+          </span>
+          <Input v-if="duty.current_users.length > memberPreviewCount" v-model="memberSearch"
+            :placeholder="$t('forms.placeholders.search_members')" class="h-8 w-full sm:w-64" />
         </div>
         <div class="space-y-2">
-          <div v-for="user in duty.current_users" :key="user.id"
-            class="flex items-center justify-between rounded-lg border border-gray-200 p-3 dark:border-gray-700">
-            <div class="flex items-center gap-3">
+          <div v-for="user in visibleCurrentUsers" :key="user.id"
+            class="flex items-center justify-between gap-3 rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+            <div class="flex min-w-0 items-center gap-3">
               <UserAvatar :user :size="32" />
-              <div>
-                <div class="font-medium inline-flex items-center gap-2">
+              <div class="min-w-0">
+                <div class="inline-flex flex-wrap items-center gap-2 font-medium">
                   <a :href="route('users.edit', user.id)" target="_blank" class="hover:underline">{{ user.name }}</a>
-                  <Badge v-if="isExOfficioUser(user)" variant="outline" class="text-xs">
-                    ex-officio
+                  <Badge v-if="isExOfficioUser(user)" variant="outline" class="text-xs"
+                    :title="exOfficioSourceFor(user) ?? undefined">
+                    {{ $t('forms.fields.ex_officio_badge') }}
                   </Badge>
                   <Badge v-if="getCrossTenantLabel(user)" variant="secondary" class="text-xs">
                     {{ getCrossTenantLabel(user) }}
                   </Badge>
                 </div>
+                <p v-if="exOfficioSourceFor(user)" class="truncate text-xs text-muted-foreground">
+                  {{ $t('forms.fields.ex_officio_source', { duty: exOfficioSourceFor(user) }) }}
+                </p>
               </div>
             </div>
-            <Button v-if="getUserDutiableId(user)" as="a" variant="link" size="xs"
+            <Button v-if="getUserDutiableId(user)" as="a" variant="link" size="xs" class="shrink-0"
               :class="{ 'text-amber-600 dark:text-amber-400': missingStudyProgram(user) }" target="_blank"
               :href="route('dutiables.edit', { dutiable: getUserDutiableId(user) })"
               :title="missingStudyProgram(user) ? $t('forms.helpers.study_program_required_hint') : undefined">
@@ -191,7 +206,16 @@
               Redaguoti pareigybės laikotarpį
             </Button>
           </div>
+          <p v-if="filteredCurrentUsers.length === 0" class="py-4 text-center text-sm text-muted-foreground">
+            {{ $t('forms.fields.no_members_found') }}
+          </p>
         </div>
+        <Button v-if="filteredCurrentUsers.length > memberPreviewCount" type="button" variant="link" size="xs"
+          class="mt-1" @click="showAllMembers = !showAllMembers">
+          {{ showAllMembers
+            ? $t('forms.fields.show_fewer')
+            : $t('forms.fields.show_all_members', { count: filteredCurrentUsers.length }) }}
+        </Button>
       </div>
     </FormElement>
 
@@ -271,23 +295,16 @@
       </FormFieldWrapper>
 
       <div v-if="allowExternal || !canEditDuty" class="space-y-4">
-        <!-- Owning admin: configure which tenants can assign reps + their quotas -->
-        <div v-if="canEditDuty" class="space-y-3">
-          <div v-for="(row, index) in visibleAssignableTenantRows" :key="row.tenant_id ?? index"
-            class="flex items-end gap-3">
-            <FormFieldWrapper :id="`assignable_tenant_${index}`" :label="$t('forms.fields.tenant')" class="flex-1">
-              <SingleSelect :model-value="assignableTenants.find(t => t.id === row.tenant_id) ?? null"
-                :options="availableTenantOptions(index)" label-field="shortname" value-field="id"
-                @update:model-value="(val: AssignableTenantOption | null) => row.tenant_id = val?.id ?? null" />
-            </FormFieldWrapper>
-            <FormFieldWrapper :id="`assignable_tenant_quota_${index}`" :label="$t('forms.fields.tenant_quota')"
-              :hint="$t('forms.fields.tenant_quota_hint')" class="w-32">
-              <NumberField v-model="row.quota" :min="1" />
-            </FormFieldWrapper>
-            <Button type="button" variant="ghost" size="icon" @click="removeAssignableTenant(index)">
-              <IFluentDelete24Regular />
-            </Button>
-          </div>
+        <!-- Owning admin picks the tenants in one control; each one's quota and reps
+             live inside its own accordion section, so the section stays short with 15 of them. -->
+        <div v-if="canEditDuty" class="space-y-2">
+          <MultiSelect v-model="selectedAssignableTenants" :options="assignableTenants" label-field="shortname"
+            value-field="id" :placeholder="$t('forms.placeholders.select_tenants')" />
+          <Button v-if="unaddedPadalinysTenants.length > 0" type="button" variant="outline" size="xs"
+            @click="addAllPadalinysTenants">
+            <IFluentAdd24Filled />
+            {{ $t('forms.fields.add_all_tenants', { count: unaddedPadalinysTenants.length }) }}
+          </Button>
         </div>
 
         <!-- User filter toggle — only shown to cross-tenant admins (owning admins have it in the members section above) -->
@@ -302,48 +319,68 @@
           </p>
         </template>
 
-        <!-- Per-tenant rep pickers in collapsible accordion sections -->
+        <!-- Per-tenant quota + rep picker in collapsible accordion sections -->
         <Accordion v-if="visibleAssignableTenantRows.length > 0" type="multiple"
           :default-value="defaultOpenTenantValues">
-          <AccordionItem v-for="row in visibleAssignableTenantRows" :key="formIndexFor(row)"
+          <AccordionItem v-for="row in visibleAssignableTenantRows" :key="row.tenant_id ?? formIndexFor(row)"
             :value="String(row.tenant_id ?? `new-${formIndexFor(row)}`)">
             <AccordionTrigger>
               <span class="flex w-full items-center justify-between gap-3 pr-2">
-                <span>{{ tenantShortname(row) }}</span>
-                <Badge variant="outline">
-                  {{ selectedTenantUserIds[formIndexFor(row)]?.length ?? 0 }} / {{ row.quota ?? '∞' }}
+                <span class="inline-flex items-center gap-2">
+                  {{ tenantShortname(row) }}
+                  <Badge v-if="tenantExOfficioMembers(row).length > 0" variant="outline" class="text-xs font-normal">
+                    {{ $t('forms.fields.ex_officio_badge') }} · {{ tenantExOfficioMembers(row).length }}
+                  </Badge>
+                </span>
+                <Badge :variant="tenantQuotaReached(row) ? 'secondary' : 'outline'"
+                  :data-testid="`tenant-occupancy-${row.tenant_id}`">
+                  {{ tenantOccupancy(row) }} / {{ row.quota ?? '∞' }}
                 </Badge>
               </span>
             </AccordionTrigger>
             <AccordionContent>
-              <div v-if="!canEditDuty" class="mb-2 text-sm text-gray-500">
-                {{ $t('forms.fields.tenant_quota') }}: {{ row.quota ?? '∞' }}
+              <div class="space-y-3">
+                <div v-if="canEditDuty" class="flex items-end justify-between gap-3">
+                  <FormFieldWrapper :id="`assignable_tenant_quota_${formIndexFor(row)}`"
+                    :label="$t('forms.fields.tenant_quota')" :hint="$t('forms.fields.tenant_quota_hint')" class="w-32">
+                    <NumberField v-model="row.quota" :min="1" />
+                  </FormFieldWrapper>
+                  <Button type="button" variant="ghost" size="sm"
+                    class="text-destructive hover:text-destructive" @click="removeTenantRow(row.tenant_id)">
+                    <IFluentDelete24Regular />
+                    {{ $t('forms.fields.remove_assignable_tenant') }}
+                  </Button>
+                </div>
+                <div v-else class="text-sm text-gray-500">
+                  {{ $t('forms.fields.tenant_quota') }}: {{ row.quota ?? '∞' }}
+                </div>
+                <TransferList :model-value="selectedTenantUserIds[formIndexFor(row)] ?? []"
+                  :options="tenantTransferListOptions(formIndexFor(row))" :locked-options="tenantLockedOptions(row)"
+                  @update:model-value="(next: string[]) => applyTenantSelection(row, next)">
+                  <template #target-label="{ option }">
+                    <span class="flex items-center gap-2">
+                      <UserAvatar :size="24" :user="(option as any).user" />
+                      <span>{{ option.label }}</span>
+                    </span>
+                  </template>
+                  <template #locked-label="{ option }">
+                    <ExOfficioMemberLabel :option />
+                  </template>
+                </TransferList>
+                <p v-if="tenantExOfficioMembers(row).length > 0" class="text-xs text-muted-foreground">
+                  {{ $t('forms.fields.ex_officio_not_removable') }}
+                </p>
+                <p v-if="tenantQuotaReached(row)" class="text-xs text-amber-600 dark:text-amber-400">
+                  {{ $t('forms.fields.quota_reached') }}
+                </p>
+                <p v-if="(form.errors as any)[`assignable_tenants.${formIndexFor(row)}.user_ids`]"
+                  class="text-xs text-red-600 dark:text-red-400">
+                  {{ (form.errors as any)[`assignable_tenants.${formIndexFor(row)}.user_ids`] }}
+                </p>
               </div>
-              <TransferList :model-value="selectedTenantUserIds[formIndexFor(row)] ?? []"
-                :options="tenantTransferListOptions(formIndexFor(row))"
-                @update:model-value="(next: string[]) => applyTenantSelection(formIndexFor(row), next, row.quota)">
-                <template #target-label="{ option }">
-                  <span class="flex items-center gap-2">
-                    <UserAvatar :size="24" :user="(option as any).user" />
-                    <span>{{ option.label }}</span>
-                  </span>
-                </template>
-              </TransferList>
-              <p v-if="tenantQuotaReached(row)" class="mt-2 text-xs text-amber-600 dark:text-amber-400">
-                {{ $t('forms.fields.quota_reached') }}
-              </p>
-              <p v-if="(form.errors as any)[`assignable_tenants.${formIndexFor(row)}.user_ids`]"
-                class="mt-1 text-xs text-red-600 dark:text-red-400">
-                {{ (form.errors as any)[`assignable_tenants.${formIndexFor(row)}.user_ids`] }}
-              </p>
             </AccordionContent>
           </AccordionItem>
         </Accordion>
-
-        <Button v-if="canEditDuty" type="button" variant="outline" size="sm" @click="addAssignableTenant">
-          <IFluentAdd24Filled />
-          {{ $t("forms.fields.add_assignable_tenant") }}
-        </Button>
 
         <p v-if="form.errors.assignable_tenants" class="text-xs text-red-600 dark:text-red-400">
           {{ form.errors.assignable_tenants }}
@@ -379,7 +416,6 @@ import { Label } from '@/Components/ui/label';
 import { MultiSelect } from '@/Components/ui/multi-select';
 import { NumberField } from '@/Components/ui/number-field';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { SingleSelect } from '@/Components/ui/single-select';
 import { CollectionSelectDialog, InstitutionSelectDialog, type InstitutionOption } from '@/Features/Admin/AdminSearch/Components/Select';
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { Switch } from '@/Components/ui/switch';
@@ -388,6 +424,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { changeDutyNameEndings } from '@/Utils/String';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
+import ExOfficioMemberLabel from '@/Components/Duties/ExOfficioMemberLabel.vue';
 
 interface AssignableTenantOption { id: number; shortname: string; type?: string }
 interface AssignableDutyOption {
@@ -398,6 +435,15 @@ interface AssignableDutyOption {
 interface AssignableTenantRow { tenant_id: number | null; quota: number | null; user_ids: string[] }
 interface UserWithPivot extends App.Entities.User {
   pivot?: { id?: string | null; tenant_id?: number | null; via_dutiable_id?: string | null; study_program_id?: string | null };
+}
+/** An active seat granted by another duty — displayed, counted, but never editable here. */
+interface ExOfficioMember {
+  dutiable_id: string;
+  user_id: string;
+  name: string;
+  profile_photo_path?: string | null;
+  tenant_id: number | null;
+  source_duty_name?: string | null;
 }
 interface AssignableUserOption {
   id: string;
@@ -416,6 +462,8 @@ const props = withDefaults(defineProps<{
   assignableDuties: AssignableDutyOption[];
   /** Map of tenantId → array of currently-active user ids for that tenant. */
   assignableTenantUsers?: Record<number, string[]>;
+  /** Active ex-officio seats on this duty (tenant_id null = owning tenant). */
+  exOfficioMembers?: ExOfficioMember[];
   /** Tenant ids the acting admin is managing (empty = owning admin). */
   actingAssignableTenantIds?: number[];
   /** False when opened by a cross-tenant admin — only the assignable-tenants section is editable. */
@@ -425,6 +473,7 @@ const props = withDefaults(defineProps<{
   canEditDuty: true,
   assignableTenantUsers: () => ({}),
   actingAssignableTenantIds: () => [],
+  exOfficioMembers: () => [],
 });
 
 defineEmits<{
@@ -478,21 +527,50 @@ function toggleAllowExternal(val: boolean) {
   }
 }
 
-function addAssignableTenant() {
-  (form.assignable_tenants as AssignableTenantRow[]).push({ tenant_id: null, quota: null, user_ids: [] });
+function addTenantRow(tenantId: number) {
+  if ((form.assignable_tenants as AssignableTenantRow[]).some(r => r.tenant_id === tenantId)) {
+    return;
+  }
+  (form.assignable_tenants as AssignableTenantRow[]).push({ tenant_id: tenantId, quota: null, user_ids: [] });
   selectedTenantUserIds.value.push([]);
 }
 
-function removeAssignableTenant(index: number) {
+// `selectedTenantUserIds` is index-parallel to `form.assignable_tenants`, so both
+// arrays must be spliced at the same position or every row below shifts onto the
+// wrong tenant's picker.
+function removeTenantRow(tenantId: number | null) {
+  const index = (form.assignable_tenants as AssignableTenantRow[]).findIndex(r => r.tenant_id === tenantId);
+  if (index === -1) {
+    return;
+  }
   (form.assignable_tenants as AssignableTenantRow[]).splice(index, 1);
   selectedTenantUserIds.value.splice(index, 1);
 }
 
-function availableTenantOptions(index: number): AssignableTenantOption[] {
-  const usedIds = (form.assignable_tenants as AssignableTenantRow[])
-    .filter((_, i) => i !== index)
-    .map(r => r.tenant_id);
-  return props.assignableTenants.filter(t => !usedIds.includes(t.id));
+/** The tenant picker's selection, projected onto the assignable-tenant rows. */
+const selectedAssignableTenants = computed<AssignableTenantOption[]>({
+  get: () => (form.assignable_tenants as AssignableTenantRow[])
+    .map(row => props.assignableTenants.find(t => t.id === row.tenant_id))
+    .filter((t): t is AssignableTenantOption => t !== undefined),
+  set: (items: AssignableTenantOption[]) => {
+    const nextIds = new Set(items.map(t => t.id));
+    const removedIds = (form.assignable_tenants as AssignableTenantRow[])
+      .map(r => r.tenant_id)
+      .filter((id): id is number => id !== null && !nextIds.has(id));
+
+    removedIds.forEach(removeTenantRow);
+    items.forEach(t => addTenantRow(t.id));
+  },
+});
+
+/** Padalinys-type tenants not yet given a row — the bulk-add shortcut's payload. */
+const unaddedPadalinysTenants = computed(() => {
+  const usedIds = new Set((form.assignable_tenants as AssignableTenantRow[]).map(r => r.tenant_id));
+  return props.assignableTenants.filter(t => t.type === 'padalinys' && !usedIds.has(t.id));
+});
+
+function addAllPadalinysTenants() {
+  unaddedPadalinysTenants.value.forEach(t => addTenantRow(t.id));
 }
 
 // For cross-tenant admins: only show their rows; for owning admin: all rows.
@@ -509,12 +587,34 @@ function formIndexFor(row: AssignableTenantRow): number {
   return (form.assignable_tenants as AssignableTenantRow[]).indexOf(row);
 }
 
+/** Ex-officio seats this tenant holds — granted elsewhere, but they fill its places. */
+function tenantExOfficioMembers(row: AssignableTenantRow): ExOfficioMember[] {
+  if (row.tenant_id === null) {
+    return [];
+  }
+  return props.exOfficioMembers.filter(m => m.tenant_id === row.tenant_id);
+}
+
+/**
+ * Seats a tenant actually occupies: the ones its admin picked plus the ones it
+ * holds ex officio. Counting only the picker's selection reported 2/3 for a
+ * tenant whose third seat was an ex-officio member, so a full duty looked open.
+ */
+function tenantOccupancy(row: AssignableTenantRow): number {
+  const idx = (form.assignable_tenants as AssignableTenantRow[]).indexOf(row);
+  return (selectedTenantUserIds.value[idx]?.length ?? 0) + tenantExOfficioMembers(row).length;
+}
+
 function tenantQuotaReached(row: AssignableTenantRow): boolean {
   if (row.quota === null) {
     return false;
   }
-  const idx = (form.assignable_tenants as AssignableTenantRow[]).indexOf(row);
-  return (selectedTenantUserIds.value[idx]?.length ?? 0) >= row.quota;
+
+  return tenantOccupancy(row) >= row.quota;
+}
+
+function tenantLockedOptions(row: AssignableTenantRow) {
+  return exOfficioTransferListOptions(tenantExOfficioMembers(row));
 }
 
 const selectedExOfficioDuties = ref<AssignableDutyOption[]>(
@@ -566,10 +666,28 @@ const crossTenantUserIds = computed(() => selectedTenantUserIds.value.flat());
 const recentUsersCount = computed(() => props.assignableUsers.filter(u => u.is_recent).length);
 const assignableUsersTotal = computed(() => props.assignableUsers.length);
 
+/** Users holding a seat ex officio — never offered in a picker, they already hold it. */
+const exOfficioUserIds = computed(() => new Set(props.exOfficioMembers.map(m => m.user_id)));
+
+function exOfficioTransferListOptions(members: ExOfficioMember[]) {
+  return members.map(member => ({
+    value: member.user_id,
+    label: member.name,
+    user: { id: member.user_id, name: member.name, profile_photo_path: member.profile_photo_path },
+    sourceDutyName: member.source_duty_name ?? null,
+  }));
+}
+
+/** Ex-officio seats that belong to the duty's own tenant rather than to an assignable one. */
+const owningExOfficioOptions = computed(() =>
+  exOfficioTransferListOptions(props.exOfficioMembers.filter(m => m.tenant_id === null)),
+);
+
 const owningTenantUserOptions = computed(() => {
   const selected = new Set((form.current_users as string[] | undefined) ?? []);
   return props.assignableUsers
     .filter(u => !crossTenantUserIds.value.includes(u.id))
+    .filter(u => !exOfficioUserIds.value.has(u.id))
     .filter(u => showAllUsers.value || u.is_recent || selected.has(u.id))
     .map(user => ({ label: user.name, value: user.id, user }));
 });
@@ -588,15 +706,25 @@ function tenantTransferListOptions(rowIndex: number) {
   const selectedHere = new Set<string>(selectedTenantUserIds.value[rowIndex] ?? []);
   return props.assignableUsers
     .filter(u => !otherRowIds.has(u.id) && !owningIds.has(u.id))
+    .filter(u => !exOfficioUserIds.value.has(u.id))
     .filter(u => showAllUsers.value || u.is_recent || selectedHere.has(u.id))
     .map(u => ({ value: u.id, label: u.name, user: u }));
 }
 
-function applyTenantSelection(index: number, next: string[], quota: number | null) {
-  const current = selectedTenantUserIds.value[index] ?? [];
-  if (quota !== null && next.length > quota && next.length > current.length) {
+/** Ex-officio seats count against the quota, so they cap what the picker may still add. */
+function applyTenantSelection(row: AssignableTenantRow, next: string[]) {
+  const index = (form.assignable_tenants as AssignableTenantRow[]).indexOf(row);
+  if (index === -1) {
     return;
   }
+
+  const current = selectedTenantUserIds.value[index] ?? [];
+  const occupiedElsewhere = tenantExOfficioMembers(row).length;
+
+  if (row.quota !== null && next.length + occupiedElsewhere > row.quota && next.length > current.length) {
+    return;
+  }
+
   selectedTenantUserIds.value[index] = next;
 }
 
@@ -667,6 +795,28 @@ function onInstitutionConfirm(hits: NormalizedSearchHit[]) {
 }
 
 const isExOfficioUser = (user: App.Entities.User) => !!(user as UserWithPivot).pivot?.via_dutiable_id;
+
+/** Name of the duty that granted this member's seat, when it was granted ex officio. */
+function exOfficioSourceFor(user: App.Entities.User): string | null {
+  return props.exOfficioMembers.find(m => m.user_id === user.id)?.source_duty_name ?? null;
+}
+
+// A duty can hold dozens of members (46 in the worst real case), which buries
+// everything below it — so the list is searchable and capped until asked to grow.
+const memberPreviewCount = 8;
+const memberSearch = ref('');
+const showAllMembers = ref(false);
+
+const filteredCurrentUsers = computed(() => {
+  const users = (props.duty.current_users ?? []) as UserWithPivot[];
+  const term = memberSearch.value.trim().toLowerCase();
+
+  return term ? users.filter(u => u.name?.toLowerCase().includes(term)) : users;
+});
+
+const visibleCurrentUsers = computed(() =>
+  showAllMembers.value ? filteredCurrentUsers.value : filteredCurrentUsers.value.slice(0, memberPreviewCount),
+);
 
 const getUserDutiableId = (user: UserWithPivot) => user.pivot?.id || null;
 

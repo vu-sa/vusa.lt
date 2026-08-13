@@ -7,6 +7,7 @@ use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia;
 
 /**
  * End-to-end coverage for ex-officio assignment through the real admin routes.
@@ -121,6 +122,74 @@ test('deleting the source dutiable removes the derived row', function (): void {
     // The `via_dutiable_id` foreign key is nullOnDelete(), so a derived row that
     // outlives its source keeps granting permissions while looking manual.
     expect(Dutiable::where('duty_id', $this->targetDuty->id)->count())->toBe(0);
+});
+
+/**
+ * A tenant lead is also a parliament member: the chair duty lives in the tenant,
+ * the seat it grants lives in the owning tenant of the target duty. The derived
+ * row carries the chair's tenant, so it fills one of that tenant's places.
+ */
+function grantCrossTenantExOfficioSeat(Duty $targetDuty, ?int $quota = null): array
+{
+    $tenant = Tenant::factory()->create();
+    $chairDuty = Duty::factory()
+        ->for(Institution::factory()->for($tenant)->create())
+        ->create(['name' => ['lt' => 'Pirmininkas', 'en' => 'Chairperson']]);
+
+    $chairDuty->exOfficioTargetDuties()->attach($targetDuty);
+    $targetDuty->assignableTenants()->attach($tenant->id, ['quota' => $quota]);
+
+    $user = User::factory()->create();
+    grantSourceDuty($chairDuty, $user);
+
+    return [$tenant, $user];
+}
+
+test('the edit form receives the ex-officio seats with their tenant and source duty', function (): void {
+    [$tenant, $user] = grantCrossTenantExOfficioSeat($this->targetDuty, quota: 2);
+
+    asUser($this->superAdmin)->get(route('duties.edit', $this->targetDuty))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->has('exOfficioMembers', 1)
+            ->where('exOfficioMembers.0.user_id', $user->id)
+            ->where('exOfficioMembers.0.tenant_id', $tenant->id)
+            ->where('exOfficioMembers.0.source_duty_name', 'Pirmininkas')
+            // The picker itself must not offer them — they are not its to grant.
+            ->where('assignableTenantUsers', fn ($map) => ! collect($map)->flatten()->contains($user->id))
+        );
+});
+
+test('an ex-officio seat counts against the tenant quota', function (): void {
+    [$tenant] = grantCrossTenantExOfficioSeat($this->targetDuty, quota: 1);
+
+    // The tenant's single place is already taken ex officio, so its admin cannot
+    // add a second rep on top of it.
+    asUser($this->superAdmin)->patch(route('duties.update', $this->targetDuty), [
+        'name' => ['lt' => 'Narys', 'en' => 'Member'],
+        'institution_id' => $this->targetDuty->institution_id,
+        'places_to_occupy' => 2,
+        'contacts_grouping' => 'none',
+        'current_users' => [],
+        'assignable_tenants' => [
+            ['tenant_id' => $tenant->id, 'quota' => 1, 'user_ids' => [User::factory()->create()->id]],
+        ],
+    ])->assertSessionHasErrors('assignable_tenants.0.user_ids');
+});
+
+test('a tenant quota still admits reps up to the seats left beside ex-officio ones', function (): void {
+    [$tenant] = grantCrossTenantExOfficioSeat($this->targetDuty, quota: 2);
+
+    asUser($this->superAdmin)->patch(route('duties.update', $this->targetDuty), [
+        'name' => ['lt' => 'Narys', 'en' => 'Member'],
+        'institution_id' => $this->targetDuty->institution_id,
+        'places_to_occupy' => 2,
+        'contacts_grouping' => 'none',
+        'current_users' => [],
+        'assignable_tenants' => [
+            ['tenant_id' => $tenant->id, 'quota' => 2, 'user_ids' => [User::factory()->create()->id]],
+        ],
+    ])->assertSessionHasNoErrors();
 });
 
 test('an admin assigning themselves still triggers the ex-officio sync', function (): void {

@@ -17,6 +17,7 @@
         :assignable-tenants
         :assignable-duties
         :assignable-tenant-users
+        :ex-officio-members
         :acting-assignable-tenant-ids
         :can-edit-duty
         @submit:form="handleSubmit"
@@ -44,6 +45,14 @@ const props = defineProps<{
   canEditDuty: boolean;
   actingAssignableTenantIds: number[];
   assignableTenantUsers: Record<number, string[]>;
+  exOfficioMembers: Array<{
+    dutiable_id: string;
+    user_id: string;
+    name: string;
+    profile_photo_path?: string | null;
+    tenant_id: number | null;
+    source_duty_name?: string | null;
+  }>;
   roles: App.Entities.Role[];
   assignableInstitutions: App.Entities.Institution[];
   assignableUsers: App.Entities.User[];

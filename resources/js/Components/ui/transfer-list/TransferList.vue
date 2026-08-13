@@ -36,7 +36,7 @@
         </slot>
       </ScrollArea>
       <div class="border-t px-3 py-1.5 text-xs text-muted-foreground">
-        {{ modelValue?.length ?? 0 }} / {{ options.length }} pasirinkta
+        {{ (modelValue?.length ?? 0) + lockedOptions.length }} / {{ options.length + lockedOptions.length }} pasirinkta
       </div>
     </div>
 
@@ -50,9 +50,24 @@
       </div>
       <ScrollArea class="h-72">
         <div class="p-1">
+          <!-- Locked entries occupy the target panel but are owned elsewhere — no remove button. -->
+          <div
+            v-for="option in filteredLockedOptions"
+            :key="`locked-${option.value}`"
+            data-testid="transfer-list-locked-item"
+            class="flex items-center gap-2 rounded-sm bg-muted/40 px-2 py-1.5"
+          >
+            <div class="min-w-0 flex-1 text-sm">
+              <slot name="locked-label" :option>
+                {{ option.label }}
+              </slot>
+            </div>
+            <Lock class="size-3.5 shrink-0 text-muted-foreground" />
+          </div>
           <div
             v-for="option in selectedOptions"
             :key="option.value"
+            data-testid="transfer-list-selected-item"
             class="flex items-center gap-2 rounded-sm px-2 py-1.5 hover:bg-accent/50"
           >
             <div class="min-w-0 flex-1 text-sm">
@@ -68,7 +83,7 @@
               <X class="size-3.5" />
             </button>
           </div>
-          <div v-if="selectedOptions.length === 0" class="px-2 py-8 text-center text-sm text-muted-foreground">
+          <div v-if="selectedOptions.length === 0 && filteredLockedOptions.length === 0" class="px-2 py-8 text-center text-sm text-muted-foreground">
             Nėra pasirinktų elementų
           </div>
         </div>
@@ -79,7 +94,7 @@
 
 <script setup lang="ts">
 import { computed, ref, type HTMLAttributes } from 'vue';
-import { X } from 'lucide-vue-next';
+import { Lock, X } from 'lucide-vue-next';
 
 import { Input } from '@/Components/ui/input';
 import { Checkbox } from '@/Components/ui/checkbox';
@@ -97,6 +112,12 @@ const props = withDefaults(defineProps<{
   modelValue: (string | number)[];
   /** Flat option list — used for default source rendering and target panel */
   options: TransferListOption[];
+  /**
+   * Entries that are already in the target but are not this picker's to remove
+   * (e.g. an ex-officio seat granted by another duty). They render above the
+   * selected ones, without a remove button, and count towards the footer total.
+   */
+  lockedOptions?: TransferListOption[];
   /** Show search input in source panel */
   sourceFilterable?: boolean;
   /** Show search input in target panel */
@@ -105,6 +126,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   sourceFilterable: true,
   targetFilterable: false,
+  lockedOptions: () => [],
 });
 
 const emit = defineEmits<{
@@ -123,6 +145,8 @@ defineSlots<{
   'source-label'?: (props: { option: TransferListOption }) => any;
   /** Customize individual target item label */
   'target-label'?: (props: { option: TransferListOption }) => any;
+  /** Customize individual locked item label */
+  'locked-label'?: (props: { option: TransferListOption }) => any;
 }>();
 
 const sourceFilter = ref('');
@@ -136,6 +160,14 @@ const filteredSourceOptions = computed(() => {
   }
   const f = sourceFilter.value.toLowerCase();
   return props.options.filter(o => o.label.toLowerCase().includes(f));
+});
+
+const filteredLockedOptions = computed(() => {
+  if (!targetFilter.value) {
+    return props.lockedOptions;
+  }
+  const f = targetFilter.value.toLowerCase();
+  return props.lockedOptions.filter(o => o.label.toLowerCase().includes(f));
 });
 
 const selectedOptions = computed(() => {
