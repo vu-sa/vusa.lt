@@ -14,17 +14,19 @@
         "spatie/laravel-permission",
         "spatie/laravel-translatable",
         "pestphp/pest-plugin-agent",
-        "barryvdh/laravel-debugbar"
+        "barryvdh/laravel-debugbar",
+        "spatie/laravel-activitylog"
     ],
     "sail": true,
     "skills": [
+        "infer-conventions",
         "laravel-best-practices",
         "scout-development",
         "socialite-development",
         "pest-testing",
         "inertia-vue-development",
-        "echo-development",
         "tailwindcss-development",
+        "echo-development",
         "medialibrary-development",
         "laravel-permission-development",
         "translatable-development",
