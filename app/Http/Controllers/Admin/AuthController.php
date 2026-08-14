@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Duty;
 use App\Models\User;
-use App\Providers\RouteServiceProvider;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -136,10 +135,10 @@ class AuthController extends Controller
             $request->session()->regenerate();
 
             if ($isPopup) {
-                return $this->handlePopupCallback(true, RouteServiceProvider::HOME);
+                return $this->handlePopupCallback(true, route('dashboard'));
             }
 
-            return redirect()->intended(RouteServiceProvider::HOME);
+            return redirect()->intended(route('dashboard'));
         }
 
         $duty = Duty::where('email', $microsoftUser->getEmail())->first();
@@ -180,10 +179,10 @@ class AuthController extends Controller
             $request->session()->regenerate();
 
             if ($isPopup) {
-                return $this->handlePopupCallback(true, RouteServiceProvider::HOME);
+                return $this->handlePopupCallback(true, route('dashboard'));
             }
 
-            return redirect()->intended(RouteServiceProvider::HOME);
+            return redirect()->intended(route('dashboard'));
         }
 
         // No user or duty found with this email - redirect to login with error
@@ -213,7 +212,7 @@ class AuthController extends Controller
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
-            return redirect()->intended(RouteServiceProvider::HOME);
+            return redirect()->intended(route('dashboard'));
         }
 
         return back()->withErrors([

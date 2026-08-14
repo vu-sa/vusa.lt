@@ -1,6 +1,6 @@
 <?php
 
-use App\Exceptions\Handler;
+use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;

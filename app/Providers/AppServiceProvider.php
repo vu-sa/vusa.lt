@@ -2,10 +2,12 @@
 
 namespace App\Providers;
 
-use App\Http\Middleware\TrimStrings;
 use App\Services\ModelAuthorizer;
 use App\Services\PermissionService;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Foundation\Http\Middleware\TrimStrings;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Head\Enums\OgType;
@@ -39,6 +41,8 @@ class AppServiceProvider extends ServiceProvider
     {
         Schema::defaultStringLength(125);
 
+        $this->configureRateLimiting();
+
         // Load translations from split directories (shared, admin, public)
         // Laravel will merge these with the default translations
         $this->loadSplitTranslations();
@@ -62,6 +66,32 @@ class AppServiceProvider extends ServiceProvider
             ->link('sitemap', '/sitemap.xml', ['type' => 'application/xml'])
             ->preconnect('https://embed.tawk.to', crossorigin: 'anonymous')
             ->preload('https://cdn.userway.org/widgetapp/images/body_wh.svg', as: 'image'));
+    }
+
+    /**
+     * Configure the rate limiters for the application.
+     */
+    private function configureRateLimiting(): void
+    {
+        RateLimiter::for('api', fn (Request $request) => Limit::perMinute(60)->by(optional($request->user())->id ?: $request->ip()));
+
+        RateLimiter::for('summerCamps', fn (Request $request) => $request->user()
+            ? Limit::perMinute(100)->by($request->user()->id)
+            : Limit::perMinute(15)->by($request->ip()));
+
+        RateLimiter::for('formRegistrations', fn (Request $request) => $request->user()
+            ? Limit::perMinute(100)->by($request->user()->id)
+            : Limit::perHour(5)->by($request->ip()));
+
+        RateLimiter::for('login', function (Request $request) {
+            $email = (string) $request->email;
+
+            return Limit::perMinute(5)->by($email.$request->ip());
+        });
+
+        RateLimiter::for('textBoxSubmissions', fn (Request $request) => $request->user()
+            ? Limit::perMinute(10)->by($request->user()->id)
+            : Limit::perMinute(5)->by($request->ip()));
     }
 
     /**
