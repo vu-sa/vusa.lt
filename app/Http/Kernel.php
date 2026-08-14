@@ -34,6 +34,7 @@ use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Routing\Middleware\ValidateSignature;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Laravel\Head\Inertia\ShareHead;
 
 class Kernel extends HttpKernel
 {
@@ -55,6 +56,14 @@ class Kernel extends HttpKernel
         ValidatePostSize::class,
         TrimStrings::class,
         ConvertEmptyStringsToNull::class,
+        // Registered explicitly rather than relying on Laravel\Head\Inertia\Integration's own
+        // auto-registration: that hooks `afterResolving(Kernel::class, ...)`, which never fires
+        // here because public/index.php resolves the Http Kernel (via $app->make()) before this
+        // app's own App\Http\Kernel-style bootstrap/app.php has registered any service providers
+        // — so the callback queues against a binding that will never resolve again. Laravel 11+'s
+        // fluent Application::configure() bootstrap doesn't have this ordering issue; this app's
+        // classic Kernel-class bootstrap does.
+        ShareHead::class,
     ];
 
     /**

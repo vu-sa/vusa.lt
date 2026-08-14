@@ -90,7 +90,7 @@ class PublicPageController extends PublicController
         // Fetch calendar events for homepage (reduces API calls)
         $calendarEvents = $this->getEventsForCalendar();
 
-        $seo = $this->shareAndReturnSEOObject(contentTenant: $this->tenant, title: __('Pagrindinis puslapis').' - '.$this->tenant->shortname);
+        $this->applyPageHead(contentTenant: $this->tenant, title: __('Pagrindinis puslapis'));
 
         // Get first news image URL for LCP preload hint
         $firstNewsImageUrl = $news[0]['image'] ?? null;
@@ -104,8 +104,6 @@ class PublicPageController extends PublicController
             'news' => $news,
             'calendarEvents' => $calendarEvents,
             'firstNewsImageUrl' => $firstNewsImageUrl,
-        ])->withViewData([
-            'SEOData' => $seo,
         ]);
     }
 
@@ -169,9 +167,9 @@ class PublicPageController extends PublicController
 
         // Get description for SEO from first tiptap element
         // Use the page's tenant for proper canonical URL
-        $seo = $this->shareAndReturnSEOObject(
+        $this->applyPageHead(
             contentTenant: $page->tenant,
-            title: $page->title.' - '.$page->tenant->shortname,
+            title: $page->title,
             description: ContentHelper::getDescriptionForSeo($page),
         );
 
@@ -225,7 +223,6 @@ class PublicPageController extends PublicController
                 /* ] */
             ],
         ])->withViewData([
-            'SEOData' => $seo,
             'JSONLD_Schemas' => [$this->getBreadcrumbSchema($breadcrumbs)],
         ]);
     }
@@ -247,16 +244,14 @@ class PublicPageController extends PublicController
                 ->where('is_active', true);
         }])->load('pages.tenant:id,alias');
 
-        $seo = $this->shareAndReturnSEOObject(
+        $this->applyPageHead(
             contentTenant: $this->tenant,
-            title: $category->name.' - '.$this->tenant->shortname,
+            title: $category->name,
             description: $category->description,
         );
 
         return Inertia::render('Public/CategoryPage', [
             'category' => $category->only('id', 'name', 'description', 'pages'),
-        ])->withViewData([
-            'SEOData' => $seo,
         ]);
     }
 
@@ -315,10 +310,12 @@ class PublicPageController extends PublicController
             ->unique()
             ->values();
 
-        // Global content - use main vusa tenant (null defaults to current tenant)
-        $seo = $this->shareAndReturnSEOObject(
+        // Global content - use main vusa tenant (null defaults to current tenant).
+        // This route only exists on the www domain group, so the derived " - VU SA"
+        // suffix matches what was previously hardcoded here.
+        $this->applyPageHead(
             contentTenant: null,
-            title: $year == intval(date('Y')) ? 'Pirmakursių stovyklos - VU SA' : $year.' m. pirmakursių stovyklos - VU SA',
+            title: $year == intval(date('Y')) ? 'Pirmakursių stovyklos' : $year.' m. pirmakursių stovyklos',
             description: 'Universiteto tvarka niekada su ja nesusidūrusiam žmogui gali pasirodyti labai sudėtinga ir būtent dėl to jau prieš septyniolika metų Vilniaus universiteto Studentų atstovybė (VU SA) surengė pirmąją pirmakursių stovyklą.',
             image: config('app.url').'/images/photos/stovykla.jpg',
         );
@@ -330,8 +327,6 @@ class PublicPageController extends PublicController
                 'events' => $events->makeHidden(['description', 'category', 'user_id'])->values()->all(),
                 'year' => $year,
                 'yearsWhenEventsExist' => $yearsWhenEventsExist,
-            ])->withViewData([
-                'SEOData' => $seo,
             ]);
     }
 
@@ -341,17 +336,16 @@ class PublicPageController extends PublicController
         $this->getTenantLinks();
         $this->shareOtherLangURL('individualStudies');
 
-        // Global content - use null for current tenant
-        $seo = $this->shareAndReturnSEOObject(
+        // Global content - use null for current tenant. This route only exists on the www
+        // domain group, so the derived " - VU SA" suffix matches what was hardcoded here.
+        $this->applyPageHead(
             contentTenant: null,
-            title: __('Individualios studijos').' - VU SA',
-            description: app()->getLocale() === 'lt' ? 'Nuo 2023 m. Vilniaus universitete kiekvienas naujai įstojęs (-usi) bakalauro ar vientisųjų studijų programos studentas (-ė) turi galimybę dėlioti savo studijas pagal asmeninius interesus, pasinaudodas (-a) individualių studijų galimybe.' : 'Since 2023 m. every newly 
+            title: __('Individualios studijos'),
+            description: app()->getLocale() === 'lt' ? 'Nuo 2023 m. Vilniaus universitete kiekvienas naujai įstojęs (-usi) bakalauro ar vientisųjų studijų programos studentas (-ė) turi galimybę dėlioti savo studijas pagal asmeninius interesus, pasinaudodas (-a) individualių studijų galimybe.' : 'Since 2023 m. every newly
             enrolled bachelor\'s or integrated study program student at Vilnius University has the opportunity to arrange their studies according to personal interests, using the possibility of individual studies.',
         );
 
-        return Inertia::render('Public/IndividualStudies')->withViewData([
-            'SEOData' => $seo,
-        ]);
+        return Inertia::render('Public/IndividualStudies');
     }
 
     // dynamically grabs list of pkp
@@ -363,10 +357,11 @@ class PublicPageController extends PublicController
 
         $institutions = (new InstitutionService)->getInstitutionsByTypeSlug('pkp')->where('is_active', true);
 
-        // Global content - use null for current tenant
-        $seo = $this->shareAndReturnSEOObject(
+        // Global content - use null for current tenant. This route only exists on the www
+        // domain group, so the derived " - VU SA" suffix matches what was hardcoded here.
+        $this->applyPageHead(
             contentTenant: null,
-            title: __('Studentiškos iniciatyvos').' - VU SA',
+            title: __('Studentiškos iniciatyvos'),
             description: 'VU SA studentiškos iniciatyvos – plati erdvė Vilniaus universiteto studentų(-čių) idėjoms, kūrybiškumui ir savirealizacijai.'
         );
 
@@ -378,8 +373,6 @@ class PublicPageController extends PublicController
                     'description' => Str::limit(strip_tags($institution->description), 100, '...'),
                 ];
             }),
-        ])->withViewData([
-            'SEOData' => $seo,
         ]);
     }
 
@@ -392,7 +385,7 @@ class PublicPageController extends PublicController
         $this->shareOtherLangURL('curatorRegistrations');
 
         // Global content - use null for current tenant
-        $seo = $this->shareAndReturnSEOObject(
+        $this->applyPageHead(
             contentTenant: null,
             title: app()->getLocale() === 'lt' ? 'Registracija į kuratorių programą' : 'Registration to mentor program',
             description: 'Kuratoriai - tai studentai, kurie savo laisvalaikiu padeda naujiems studentams prisitaikyti prie universiteto aplinkos, dalinasi patirtimi ir patarimais, skatina aktyvų studentų gyvenimą.'
@@ -449,8 +442,6 @@ class PublicPageController extends PublicController
             'forms' => $forms,
             'tenants' => $tenants,
             'englishTenantNames' => $english_tenant_names,
-        ])->withViewData([
-            'SEOData' => $seo,
         ]);
     }
 
@@ -526,9 +517,9 @@ class PublicPageController extends PublicController
         // Get all available filter options based on tab
         $filterOptions = $this->getCalendarFilterOptions($tab);
 
-        $seo = $this->shareAndReturnSEOObject(
+        $this->applyPageHead(
             contentTenant: $this->tenant,
-            title: __('Visų renginių sąrašas').' - '.$this->tenant->shortname,
+            title: __('Visų renginių sąrašas'),
             description: __('Vilniaus universiteto Studentų atstovybės ir bendruomenės renginių sąrašas.'),
         );
 
@@ -540,8 +531,6 @@ class PublicPageController extends PublicController
             'activeTab' => $tab,
             'allCategories' => $filterOptions['categories'],
             'allTenants' => $filterOptions['tenants'],
-        ])->withViewData([
-            'SEOData' => $seo,
         ]);
     }
 
@@ -728,14 +717,14 @@ class PublicPageController extends PublicController
         $calendar->load(['tenant:id,alias,fullname,shortname', 'category']);
 
         // Use the calendar event's tenant for proper canonical URL
-        $seo = $this->shareAndReturnSEOObject(
+        $this->applyPageHead(
             contentTenant: $calendar->tenant,
-            title: $calendar->title.' - '.$calendar->tenant->shortname,
+            title: $calendar->title,
             // Replace " with empty string, because it breaks JSON-LD
             description: app()->getLocale() === 'lt' ? Str::of((strip_tags($calendar->description)))->limit(160)->replaceMatches(pattern: '/\"/', replace: '') : Str::of((strip_tags($calendar->description)))->limit(160)->replaceMatches(pattern: '/\"/', replace: ''),
             image: $calendar->getFirstMediaUrl('images'),
-            published_time: $calendar->created_at,
-            modified_time: $calendar->updated_at,
+            publishedTime: $calendar->created_at,
+            modifiedTime: $calendar->updated_at,
         );
 
         // Get related events without caching
@@ -776,7 +765,6 @@ class PublicPageController extends PublicController
         ])
             ->withViewData(
                 [
-                    'SEOData' => $seo,
                     'JSONLD_Schemas' => [
                         $this->getBreadcrumbSchema($breadcrumbs),
                         $calendar->toEventSchema(),
@@ -805,9 +793,9 @@ class PublicPageController extends PublicController
         Inertia::share('otherLangURL', route('registrationPage', ['lang' => $otherLocale, 'registrationString' => $otherLocale === 'lt' ? 'registracija' : 'registration', 'registrationForm' => $form->getTranslation('path', $otherLocale)]));
 
         // Global content - use null for current tenant
-        $seo = $this->shareAndReturnSEOObject(
+        $this->applyPageHead(
             contentTenant: null,
-            title: $form->name.' - '.$this->tenant->shortname,
+            title: $form->name,
         );
 
         // Check if this is the student rep registration form
@@ -844,8 +832,6 @@ class PublicPageController extends PublicController
                     ];
                 }),
             ],
-        ])->withViewData([
-            'SEOData' => $seo,
         ]);
     }
 
@@ -960,16 +946,14 @@ class PublicPageController extends PublicController
         // Get membership statistics
         $membershipStats = $this->getMembershipStats();
 
-        $seo = $this->shareAndReturnSEOObject(
+        $this->applyPageHead(
             contentTenant: $this->tenant,
-            title: __('Tapk VU SA nariu').' - '.$this->tenant->shortname,
+            title: __('Tapk VU SA nariu'),
             description: __('Prisijunk prie VU SA bendruomenės!')
         );
 
         return Inertia::render('Public/MembershipPage', [
             'membershipStats' => $membershipStats,
-        ])->withViewData([
-            'SEOData' => $seo,
         ]);
     }
 }

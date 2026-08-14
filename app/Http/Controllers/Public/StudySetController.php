@@ -15,7 +15,7 @@ class StudySetController extends PublicController
         $this->getTenantLinks();
         $this->shareOtherLangURL('studySets');
 
-        $seo = $this->shareAndReturnSEOObject(
+        $this->applyPageHead(
             contentTenant: null,
             title: __('studySets.page_title'),
             description: __('studySets.page_description')
@@ -49,8 +49,6 @@ class StudySetController extends PublicController
         return Inertia::render('Public/ShowStudySets', [
             'tenants' => $tenants,
             'studySetsByTenant' => $studySets,
-        ])->withViewData([
-            'SEOData' => $seo,
         ]);
     }
 }

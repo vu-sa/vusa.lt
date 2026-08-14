@@ -277,6 +277,64 @@ jobs:
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
+  # Real-browser tests (Playwright via pestphp/pest-plugin-browser). Separate from php-tests
+  # because it needs Node + Playwright browser binaries, which that job doesn't otherwise use.
+  browser-tests:
+    needs: [changes, setup]
+    if: ${{ needs.changes.outputs.php == 'true' || needs.changes.outputs.js == 'true' || github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    # Non-blocking for now — this is the first Pest browser-test job in the repo, and Playwright
+    # setup (browser binary download, system deps) can fail for reasons unrelated to the code
+    # under test. Promote to blocking once the suite has proven stable.
+    continue-on-error: true
+    name: Browser Tests
+    steps:
+    - uses: actions/checkout@v7
+
+    - name: Download build artifacts
+      uses: actions/download-artifact@v8
+      with:
+        name: build-assets
+        path: ./
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: lts/*
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Cache Playwright browsers
+      uses: actions/cache@v6
+      with:
+        path: ~/.cache/ms-playwright
+        key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps chromium
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 8.5
+        extensions: dom, curl, libxml, mbstring, zip, fileinfo, sockets
+
+    - name: Set up environment
+      run: |
+        cp .env.example .env
+        php artisan key:generate --force
+
+    # routes/web.php registers public routes under Route::domain('{subdomain}.vusa.test') groups;
+    # the plugin's ephemeral test server always binds to 127.0.0.1, so the runner needs to resolve
+    # that hostname to itself for tenant-subdomain routing to work at all. See tests/Browser/README.md.
+    - name: Add local domain to /etc/hosts
+      run: echo "127.0.0.1 www.vusa.test" | sudo tee -a /etc/hosts
+
+    - name: Run browser tests
+      run: vendor/bin/pest tests/Browser --compact
+
   # JS Quality - TypeScript typecheck and ESLint (non-blocking)
   js-quality:
     needs: [changes, setup]
@@ -326,7 +384,7 @@ jobs:
 
   status-check:
     name: CI Status
-    needs: [changes, php-static-analysis, php-tests, js-tests, js-quality]
+    needs: [changes, php-static-analysis, php-tests, js-tests, js-quality, browser-tests]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -336,18 +394,23 @@ jobs:
           PHP_TESTS_RESULT="${{ needs.php-tests.result }}"
           JS_TESTS_RESULT="${{ needs.js-tests.result }}"
           JS_QUALITY_RESULT="${{ needs.js-quality.result }}"
+          BROWSER_TESTS_RESULT="${{ needs.browser-tests.result }}"
 
-          echo "Results: Static Analysis=$STATIC_ANALYSIS_RESULT, PHP Tests=$PHP_TESTS_RESULT, JS Tests=$JS_TESTS_RESULT, JS Quality=$JS_QUALITY_RESULT"
+          echo "Results: Static Analysis=$STATIC_ANALYSIS_RESULT, PHP Tests=$PHP_TESTS_RESULT, JS Tests=$JS_TESTS_RESULT, JS Quality=$JS_QUALITY_RESULT, Browser Tests=$BROWSER_TESTS_RESULT"
 
-          # Check if any required job failed (js-quality is non-blocking)
+          # Check if any required job failed (js-quality and browser-tests are non-blocking)
           if [[ "$STATIC_ANALYSIS_RESULT" == "failure" ]] || [[ "$PHP_TESTS_RESULT" == "failure" ]] || [[ "$JS_TESTS_RESULT" == "failure" ]]; then
             echo "❌ Some checks failed"
             exit 1
           fi
 
-          # Report js-quality status (informational only)
+          # Report non-blocking job status (informational only)
           if [[ "$JS_QUALITY_RESULT" == "failure" ]]; then
             echo "⚠️ TypeScript/ESLint check has issues (non-blocking)"
+          fi
+
+          if [[ "$BROWSER_TESTS_RESULT" == "failure" ]]; then
+            echo "⚠️ Browser tests have issues (non-blocking)"
           fi
 
           # All required jobs either succeeded or were skipped

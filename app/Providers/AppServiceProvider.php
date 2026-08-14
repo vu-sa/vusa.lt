@@ -6,12 +6,12 @@ use App\Http\Middleware\TrimStrings;
 use App\Services\ModelAuthorizer;
 use App\Services\PermissionService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
-use RalphJSmit\Laravel\SEO\Facades\SEOManager;
-use RalphJSmit\Laravel\SEO\Support\Tag;
-use RalphJSmit\Laravel\SEO\TagCollection;
+use Laravel\Head\Enums\OgType;
+use Laravel\Head\Enums\TwitterCard;
+use Laravel\Head\Facades\Head;
+use Laravel\Head\HeadBuilder;
 use Spatie\Translatable\Facades\Translatable;
 
 class AppServiceProvider extends ServiceProvider
@@ -50,29 +50,18 @@ class AppServiceProvider extends ServiceProvider
             fallbackLocale: 'lt'
         );
 
-        // HACK: Add inertia attribute to all SEO tags, so SPA can handle it
-        SEOManager::tagTransformer(function (TagCollection $tags): TagCollection {
-
-            // Apply the helper function to each tag in the collection
-            $tags = $tags->map(function ($tag) {
-                $this->addInertiaAttribute($tag);
-
-                return $tag;
-            });
-
-            return $tags;
-        });
-    }
-
-    private function addInertiaAttribute($tag)
-    {
-        if (is_subclass_of($tag, Tag::class)) {
-            $tag->attributes['inertia'] = '';
-        } elseif ($tag instanceof Collection) {
-            foreach ($tag as $item) {
-                $this->addInertiaAttribute($item);
-            }
-        }
+        // Site-wide public head defaults. Page-specific values (title, description, canonical,
+        // hreflang, etc.) are set at runtime in PublicController::applyPageHead().
+        Head::defaults(fn (HeadBuilder $head) => $head
+            ->description('VU SA - visuomeninė, ne pelno siekianti, nepolitinė, ekspertinė švietimo organizacija, atstovaujanti studentų interesams Vilniaus universitete bei už jo ribų')
+            ->og(siteName: 'VU SA', type: OgType::Website)
+            ->ogImage(config('app.url').'/images/photos/vusa.jpg')
+            ->twitter(card: TwitterCard::SummaryWithLargeImage)
+            ->meta('author', 'VU SA')
+            ->robots('max-snippet:-1,max-image-preview:large,max-video-preview:-1')
+            ->link('sitemap', '/sitemap.xml', ['type' => 'application/xml'])
+            ->preconnect('https://embed.tawk.to', crossorigin: 'anonymous')
+            ->preload('https://cdn.userway.org/widgetapp/images/body_wh.svg', as: 'image'));
     }
 
     /**

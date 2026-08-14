@@ -6,14 +6,14 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    
+
     {{-- PWA Meta Tags --}}
     <link rel="manifest" href="/build/manifest.webmanifest">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="VU SA Mano">
-    
+
     {{-- iOS Splash Screens --}}
     <link rel="apple-touch-startup-image" href="/images/pwa/splash-640x1136.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)">
     <link rel="apple-touch-startup-image" href="/images/pwa/splash-750x1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)">
@@ -27,40 +27,28 @@
     <link rel="apple-touch-startup-image" href="/images/pwa/splash-1668x2388.png" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)">
     <link rel="apple-touch-startup-image" href="/images/pwa/splash-2048x2732.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)">
 
-    {!! isset($SEOData) ? seo($SEOData) : null !!}
-    
-    {{-- Hreflang tags for bilingual content --}}
-    @if (isset($page['props']['seo']['hreflang']))
-        @foreach ($page['props']['seo']['hreflang'] as $hreflangTag)
-            {!! $hreflangTag !!}
-        @endforeach
+    {{-- Public-page head metadata (title, description, canonical, Open Graph, hreflang, pagination
+         links, …), set per-controller via PublicController::applyPageHead(). Admin pages set their
+         own title client-side and render no server head. --}}
+    @if (str_starts_with($page['component'] ?? '', 'Public/'))
+        @head
     @endif
-    
-    {{-- Pagination SEO: rel=prev/next for paginated content --}}
-    @if (isset($page['props']['seo']['pagination']))
-        @if ($page['props']['seo']['pagination']['prevPageUrl'])
-            <link rel="prev" href="{{ $page['props']['seo']['pagination']['prevPageUrl'] }}" />
-        @endif
-        @if ($page['props']['seo']['pagination']['nextPageUrl'])
-            <link rel="next" href="{{ $page['props']['seo']['pagination']['nextPageUrl'] }}" />
-        @endif
-    @endif
-    
+
     {{-- Site-wide structured data schemas --}}
     @if (isset($page['props']['schemas']))
         @foreach ($page['props']['schemas'] as $schema)
             {!! $schema->toScript() !!}
         @endforeach
     @endif
-    
+
     {{-- Page-specific structured data schemas --}}
     @if (isset($JSONLD_Schemas) && is_array($JSONLD_Schemas))
         @foreach($JSONLD_Schemas as $schema)
             {!! $schema->toScript() !!}
         @endforeach
     @endif
-            
-        
+
+
     <meta name="theme-color" content="#252528" media="(prefers-color-scheme: dark)" />
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
 
@@ -72,10 +60,10 @@
             // Check localStorage for saved theme preference
             const savedTheme = localStorage.getItem('vueuse-color-scheme');
             const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            
+
             // Determine if dark mode should be active
             let isDark = false;
-            
+
             if (savedTheme === 'dark') {
                 isDark = true;
             } else if (savedTheme === 'light') {
@@ -84,11 +72,11 @@
                 // savedTheme is 'auto' or null - use system preference
                 isDark = prefersDark;
             }
-            
+
             if (isDark) {
                 document.documentElement.classList.add('dark');
             }
-            
+
             // Remove initialization class to allow normal operation
             document.documentElement.classList.remove('dark-mode-init');
         })();

@@ -15,9 +15,10 @@ use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Tenant;
 use App\Models\User;
+use Pest\Browser\Api\PendingAwaitablePage;
 use Tests\TestCase;
 
-pest()->extend(TestCase::class)->in('Feature', 'Unit');
+pest()->extend(TestCase::class)->in('Feature', 'Unit', 'Browser');
 
 /*
 |--------------------------------------------------------------------------
@@ -101,6 +102,52 @@ expect()->extend('toHaveTranslation', function (string $field, string $locale) {
 | global functions to help you to reduce the number of lines of code in your test files.
 |
 */
+
+/**
+ * Visit a public page, as a given tenant subdomain, inside a Pest browser test.
+ *
+ * Handles the plumbing every public-page browser test on this app needs, none of which is
+ * obvious from the plugin's own docs:
+ *
+ * - `Route::domain('{subdomain}.<apex>')` (routes/web.php) only matches when the request's Host
+ *   header is `<subdomain>.<apex>`, but the plugin's ephemeral HTTP server always binds to
+ *   127.0.0.1 — so the Host header has to be pinned explicitly via `pest()->browser()->withHost()`
+ *   or every public route 404s.
+ * - The plugin also overwrites `config('app.url')` to that same ephemeral 127.0.0.1 address.
+ *   `SmartLink.vue` (used for most in-app public navigation) compares `window.location` against
+ *   the shared `app.url` prop to decide whether a link is same-tenant (renders an Inertia `<Link>`)
+ *   or external (renders a plain `<a target="_blank">`); left unfixed, every internal link opens
+ *   a background tab that this test never sees instead of navigating client-side. Re-anchoring
+ *   `app.url` to the real host — deliberately **without** a port, since `SmartLink.vue`'s
+ *   `hostname.endsWith(...)` check assumes there isn't one (true in every real deployment) —
+ *   fixes the comparison.
+ * - The ephemeral port isn't known ahead of time, so a throwaway warm-up visit is required
+ *   first to discover it before the real (correctly-anchored) visit can be made.
+ *
+ * Requires the target tenant to already exist (`Tenant::firstOrCreate(['alias' => $subdomain === 'www' ? 'vusa' : $subdomain], …)`)
+ * — like every public controller, the warm-up visit 500s otherwise.
+ */
+function visitPublicSubdomain(string $subdomain, string $path): PendingAwaitablePage
+{
+    // Not derived from config('app.url') — merely calling visit() anywhere in a browser test
+    // file triggers the plugin's server bootstrap (which overwrites that config key) before
+    // this helper's own body runs, same as everywhere else in this app assumes the
+    // 'vusa.test' apex from APP_URL=https://www.vusa.test (.env).
+    $host = "{$subdomain}.vusa.test";
+
+    pest()->browser()->withHost($host);
+
+    // Bootstraps the plugin's server and reveals its port; this first response (served under
+    // the wrong 127.0.0.1 origin) is otherwise discarded. Deliberately visits '/', not $path —
+    // visiting $path twice in a row (once pre-, once post-anchoring) leaves the Inertia/Vue
+    // app unmounted on the second load for reasons not fully root-caused; '/' as a distinct
+    // throwaway warm-up path avoids it.
+    $port = visit('/')->script('location.port');
+
+    config(['app.url' => "http://{$host}"]);
+
+    return visit("http://{$host}:{$port}{$path}");
+}
 
 function makeUser(Tenant $tenant): User
 {

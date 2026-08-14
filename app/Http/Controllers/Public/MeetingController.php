@@ -19,7 +19,7 @@ class MeetingController extends PublicController
         $this->shareOtherLangURL('publicMeetings.index');
 
         // Create SEO metadata
-        $seo = $this->shareAndReturnSEOObject(
+        $this->applyPageHead(
             contentTenant: $this->tenant,
             title: __('search.meeting_page_title'),
             description: __('search.meeting_page_description')
@@ -27,9 +27,6 @@ class MeetingController extends PublicController
 
         // Render the meeting search page
         // Frontend handles all search via Typesense client-side
-        return Inertia::render('Public/Meetings/ShowMeetings', [])
-            ->withViewData([
-                'SEOData' => $seo,
-            ]);
+        return Inertia::render('Public/Meetings/ShowMeetings', []);
     }
 }

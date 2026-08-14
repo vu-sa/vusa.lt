@@ -1,99 +1,9 @@
 <template>
   <!-- https://www.joshwcomeau.com/css/full-bleed/ -->
-  <!-- Overwrite image meta -->
-  <Head>
-    <meta head-key="og:image" property="og:image" :content="safeString(usePage().props.seo.image)">
-    <meta head-key="image" name="image" :content="safeString(usePage().props.seo.image)">
-  </Head>
-
-  <Head>
-    <link rel="preconnect" href="https://embed.tawk.to" crossorigin="anonymous">
-    <link rel="preload" href="https://cdn.userway.org/widgetapp/images/body_wh.svg" as="image">
-    <template v-if="seo.length > 0">
-      <template v-for="(headItem, index) in seo" :key="index">
-        <!-- Title tags -->
-        <template v-if="headItem.tag === 'title'">
-          <title>{{ safeString(headItem.inner) }}</title>
-        </template>
-        <!-- Meta tags - build each one individually based on attributes -->
-        <template v-else-if="headItem.tag === 'meta'">
-          <!-- Meta with name attribute -->
-          <meta
-            v-if="headItem.attributes?.name"
-            :head-key="safeString(headItem.attributes.name)"
-            :name="safeString(headItem.attributes.name)"
-            :content="safeString(headItem.attributes.content)">
-          <!-- Meta with property attribute -->
-          <meta
-            v-else-if="headItem.attributes?.property"
-            :head-key="safeString(headItem.attributes.property)"
-            :property="safeString(headItem.attributes.property)"
-            :content="safeString(headItem.attributes.content)">
-          <!-- Meta with http-equiv attribute -->
-          <meta
-            v-else-if="headItem.attributes?.['http-equiv']"
-            :head-key="safeString(headItem.attributes['http-equiv'])"
-            :http-equiv="safeString(headItem.attributes['http-equiv'])"
-            :content="safeString(headItem.attributes.content)">
-          <!-- Meta with charset attribute -->
-          <meta
-            v-else-if="headItem.attributes?.charset"
-            :head-key="`charset-${index}`"
-            :charset="safeString(headItem.attributes.charset)">
-          <!-- Meta with itemprop attribute -->
-          <meta
-            v-else-if="headItem.attributes?.itemprop"
-            :head-key="safeString(headItem.attributes.itemprop)"
-            :itemprop="safeString(headItem.attributes.itemprop)"
-            :content="safeString(headItem.attributes.content)">
-        </template>
-        <!-- Link tags - build each one individually based on attributes -->
-        <template v-else-if="headItem.tag === 'link'">
-          <!-- Basic link (rel + href only) -->
-          <link
-            v-if="!headItem.attributes?.type && !headItem.attributes?.title && !headItem.attributes?.media && !headItem.attributes?.sizes && !headItem.attributes?.hreflang && !headItem.attributes?.crossorigin"
-            :head-key="safeString(headItem.attributes?.rel ?? `link-${index}`)"
-            :rel="safeString(headItem.attributes?.rel)"
-            :href="safeString(headItem.attributes?.href)">
-          <!-- Link with type -->
-          <link
-            v-else-if="headItem.attributes?.type && !headItem.attributes?.title && !headItem.attributes?.media && !headItem.attributes?.sizes && !headItem.attributes?.hreflang && !headItem.attributes?.crossorigin"
-            :head-key="safeString(headItem.attributes?.rel ?? `link-${index}`)"
-            :rel="safeString(headItem.attributes?.rel)"
-            :href="safeString(headItem.attributes?.href)"
-            :type="safeString(headItem.attributes.type)">
-          <!-- Link with title -->
-          <link
-            v-else-if="!headItem.attributes?.type && headItem.attributes?.title && !headItem.attributes?.media && !headItem.attributes?.sizes && !headItem.attributes?.hreflang && !headItem.attributes?.crossorigin"
-            :head-key="safeString(headItem.attributes?.rel ?? `link-${index}`)"
-            :rel="safeString(headItem.attributes?.rel)"
-            :href="safeString(headItem.attributes?.href)"
-            :title="safeString(headItem.attributes.title)">
-          <!-- Link with type and title -->
-          <link
-            v-else-if="headItem.attributes?.type && headItem.attributes?.title && !headItem.attributes?.media && !headItem.attributes?.sizes && !headItem.attributes?.hreflang && !headItem.attributes?.crossorigin"
-            :head-key="safeString(headItem.attributes?.rel ?? `link-${index}`)"
-            :rel="safeString(headItem.attributes?.rel)"
-            :href="safeString(headItem.attributes?.href)"
-            :type="safeString(headItem.attributes.type)"
-            :title="safeString(headItem.attributes.title)">
-          <!-- Link with crossorigin -->
-          <link
-            v-else-if="!headItem.attributes?.type && !headItem.attributes?.title && !headItem.attributes?.media && !headItem.attributes?.sizes && !headItem.attributes?.hreflang && headItem.attributes?.crossorigin"
-            :head-key="safeString(headItem.attributes?.rel ?? `link-${index}`)"
-            :rel="safeString(headItem.attributes?.rel)"
-            :href="safeString(headItem.attributes?.href)"
-            :crossorigin="safeString(headItem.attributes.crossorigin)">
-          <!-- Fallback - only essential attributes -->
-          <link
-            v-else
-            :head-key="safeString(headItem.attributes?.rel ?? `link-${index}`)"
-            :rel="safeString(headItem.attributes?.rel)"
-            :href="safeString(headItem.attributes?.href)">
-        </template>
-      </template>
-    </template>
-  </Head>
+  <!-- Head metadata (title, description, canonical, Open Graph, hreflang, …) is owned server-side
+       by Laravel Head — see app.blade.php's @head directive and PublicController::applyPageHead().
+       Inertia adopts and keeps those elements in sync on SPA navigation via serverHead: true in
+       public.ts; no client-side <Head> component is needed here. -->
   <div class="@container min-h-screen flex flex-col bg-zinc-50 dark:bg-zinc-900 font-public">
     <!-- Staging environment warning banner -->
     <StagingBanner class="mx-2 mt-2 sm:mx-4" />
@@ -143,32 +53,10 @@
 <script setup lang="ts">
 /**
  * PublicLayout - Main layout component for public pages
- *
- * IMPORTANT FIX: Inertia Head Component Compatibility
- * ================================================
- *
- * Issue: After updating @inertiajs/vue3 to version 2.0.14+, the Head component
- * started using an escape() function to sanitize all attribute values. This function
- * expects string values but was receiving non-string values from the Laravel SEO package,
- * causing "str.replace is not a function" errors.
- *
- * Root Cause: The Inertia commit 246c1258 added escaping to attribute values in the
- * Head component's renderTagStart function, but the Laravel SEO package was providing
- * complex objects that weren't being properly stringified before reaching the escape function.
- *
- * Solution:
- * 1. Added safeString() helper function to ensure all values are strings
- * 2. Created buildMetaAttributes() and buildLinkAttributes() functions to build clean attribute objects
- * 3. Filter out null/undefined/empty values before adding to attribute objects
- * 4. Use v-bind with clean attribute objects instead of individual attribute bindings
- * 5. Fixed title function in public.ts to always return strings
- *
- * This ensures the escape() function only receives string values, preventing the error
- * while maintaining all SEO functionality.
  */
 import { computed, defineAsyncComponent, onMounted, ref, watch, nextTick } from 'vue';
 import { useDark } from '@vueuse/core';
-import { Head, usePage, router } from '@inertiajs/vue3';
+import { usePage, router } from '@inertiajs/vue3';
 
 import SiteFooter from '../FullWidth/SiteFooter.vue';
 
@@ -268,78 +156,6 @@ watch(() => usePage().component, (component) => {
     breadcrumbState.clear();
   }
 }, { immediate: true });
-
-// Safe string conversion function to prevent Inertia Head escape() errors
-const safeString = (value: any): string => {
-  if (value === null || value === undefined || value === '') {
-    return '';
-  }
-  try {
-    return String(value);
-  }
-  catch (error) {
-    console.error('Error converting value to string:', value, error);
-    return '';
-  }
-};
-
-// Helper function to check if an attribute has a meaningful value
-const hasValue = (value: any): boolean => {
-  return value !== null && value !== undefined && value !== '';
-};
-
-// Simplified SEO computed with better performance
-const seo = computed(() => {
-  const page = usePage();
-  const computedSeo = page.props.seo?.tags;
-
-  if (!computedSeo) {
-    return [];
-  }
-
-  try {
-    // Safely access the meta tag
-    const metaTag = computedSeo['RalphJSmit\\Laravel\\SEO\\Support\\MetaTag'];
-    if (metaTag && metaTag.attributes && metaTag.attributes.name === 'image') {
-      metaTag.attributes.content = usePage().props.seo.image;
-    }
-
-    // Safely access OpenGraph tags
-    const openGraphTags = computedSeo['RalphJSmit\\Laravel\\SEO\\Tags\\OpenGraphTags'];
-    if (openGraphTags) {
-      for (const [key, value] of Object.entries(openGraphTags)) {
-        if (value && typeof value === 'object' && 'attributes' in value) {
-          const attributes = value.attributes as any;
-          if (attributes.property && !attributes.property.startsWith('og:')) {
-            attributes.property = `og:${attributes.property}`;
-          }
-          if (attributes.property === 'og:image') {
-            attributes.content = usePage().props.seo.image;
-          }
-        }
-      }
-    }
-
-    // Safely flatten the structure
-    const result = Object.values(computedSeo)
-      .filter(val => val !== null && val !== undefined)
-      .reduce((acc: any[], val: any) => {
-        if (Array.isArray(val)) {
-          return acc.concat(val);
-        }
-        else if (val && typeof val === 'object') {
-          return acc.concat([val]);
-        }
-        return acc;
-      }, []);
-
-    return result;
-  }
-  catch (error) {
-    console.error('Error processing SEO tags:', error);
-    return [];
-  }
-});
 
 const mounted = ref(false);
 

@@ -10,6 +10,7 @@ For test commands, environment setup, the directory tree, and authorization-stat
   - `i18n.ts` — `trans`, `wTrans`, `$t` (uses real generated translations)
   - `route.ts` — `route()` (predictable mock URLs)
 - Component tests live in `resources/js/Components/**/__tests__/`, composable tests in `resources/js/Composables/__tests__/`, service tests in `resources/js/Services/__tests__/`.
+- **Real browser tests** (Playwright via `pestphp/pest-plugin-browser`) live in `tests/Browser/` — run explicitly with `vendor/bin/sail pest tests/Browser` (not part of the default suite). See [Browser/README.md](Browser/README.md) before writing one, especially the subdomain-routing/SmartLink gotcha and the `visitPublicSubdomain()` helper.
 
 ## Controller test pattern
 

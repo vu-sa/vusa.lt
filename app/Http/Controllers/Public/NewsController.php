@@ -34,14 +34,14 @@ class NewsController extends PublicController
 
         // Get description for SEO, prioritizing 'short' field over tiptap content
         // Pass the news article's tenant for proper canonical URL
-        $seo = $this->shareAndReturnSEOObject(
+        $this->applyPageHead(
             contentTenant: $news->tenant,
-            title: $news->title.' - '.$news->tenant->shortname,
+            title: $news->title,
             description: ContentHelper::getDescriptionForSeo($news),
             author: $news->tenant->shortname,
             image: $news->getImageUrl(),
-            published_time: $news->publish_time,
-            modified_time: $news->updated_at,
+            publishedTime: $news->publish_time,
+            modifiedTime: $news->updated_at,
         );
 
         // Fetch related articles from the same tenant
@@ -117,7 +117,6 @@ class NewsController extends PublicController
             ],
             'relatedArticles' => $relatedArticles,
         ])->withViewData([
-            'SEOData' => $seo,
             'JSONLD_Schemas' => [
                 $news->toNewsArticleSchema(),
                 $this->getBreadcrumbSchema($breadcrumbs),
@@ -169,11 +168,13 @@ class NewsController extends PublicController
         }
 
         // Pass the current tenant for proper canonical URL
-        $seo = $this->shareAndReturnSEOObject(
+        // Title suffix (" - <tenant>") is applied by applyPageHead(), so the org name
+        // must not also appear at the front of the title here.
+        $this->applyPageHead(
             contentTenant: $this->tenant,
             title: $currentTag
-                ? "{$this->tenant->shortname} naujienos - {$currentTag->name}"
-                : "{$this->tenant->shortname} naujienų archyvas",
+                ? "Naujienos - {$currentTag->name}"
+                : 'Naujienų archyvas',
             description: $currentTag
                 ? "Naršyk per {$this->tenant->shortname} naujienas pagal žymą '{$currentTag->name}'"
                 : "Naršyk per visas {$this->tenant->shortname} naujienas"
@@ -217,7 +218,6 @@ class NewsController extends PublicController
             'currentTag' => $currentTag,
         ])->withViewData(
             [
-                'SEOData' => $seo,
                 'JSONLD_Schemas' => [$this->getBreadcrumbSchema($breadcrumbs)],
             ]
         );

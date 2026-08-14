@@ -7,13 +7,14 @@ use App\Http\Traits\ResolvesPublicContent;
 use App\Models\Navigation;
 use App\Models\QuickLink;
 use App\Models\Tenant;
+use Carbon\CarbonInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Uri;
 use Inertia\Inertia;
-use RalphJSmit\Laravel\SEO\Support\SEOData;
+use Laravel\Head\Facades\Head;
 use Spatie\SchemaOrg\BreadcrumbList;
 use Spatie\SchemaOrg\ListItem;
 use Spatie\SchemaOrg\Organization;
@@ -248,19 +249,10 @@ class PublicController extends Controller
      */
     protected function sharePaginationSeoMeta(LengthAwarePaginator $paginator, ?Tenant $contentTenant = null): void
     {
-        $paginationSeo = [
-            'currentPage' => $paginator->currentPage(),
-            'lastPage' => $paginator->lastPage(),
-            'prevPageUrl' => null,
-            'nextPageUrl' => null,
-        ];
-
         $currentRoute = Route::current();
         $routeName = Route::currentRouteName();
 
         if (! $currentRoute || ! $routeName) {
-            Inertia::share('seo.pagination', $paginationSeo);
-
             return;
         }
 
@@ -274,61 +266,90 @@ class PublicController extends Controller
             if ($paginator->currentPage() > 2) {
                 $prevParams['page'] = $paginator->currentPage() - 1;
             }
-            $paginationSeo['prevPageUrl'] = $this->tenantRoute($routeName, $prevParams, $contentTenant);
+            Head::link('prev', $this->tenantRoute($routeName, $prevParams, $contentTenant));
         }
 
         if ($paginator->currentPage() < $paginator->lastPage()) {
             $nextParams = array_merge($routeParams, $queryParams, [
                 'page' => $paginator->currentPage() + 1,
             ]);
-            $paginationSeo['nextPageUrl'] = $this->tenantRoute($routeName, $nextParams, $contentTenant);
+            Head::link('next', $this->tenantRoute($routeName, $nextParams, $contentTenant));
         }
-
-        Inertia::share('seo.pagination', $paginationSeo);
     }
 
     /**
-     * Share and return SEO object with proper canonical URL based on content ownership.
+     * Apply page-specific head metadata (title, description, canonical, Open Graph, hreflang, …)
+     * via Laravel Head, using the content owner's subdomain for URL generation.
      *
-     * @param  Tenant|null  $contentTenant  The tenant that owns the content (for proper canonical URL)
-     * @param  mixed  ...$args  Additional arguments for SEOData
+     * @param  Tenant|null  $contentTenant  The tenant that owns the content (for proper canonical/hreflang URLs)
+     * @param  string|null  $titleSuffix  Overrides the derived " - <tenant shortname>" suffix; pass '' to
+     *                                    suppress it entirely, or a string (e.g. an institution name) to replace it
      */
-    protected function shareAndReturnSEOObject(?Tenant $contentTenant = null, ...$args)
-    {
-        // Generate canonical URL using the content owner's subdomain
-        // This ensures content is always canonicalized to its owner's subdomain
-        $canonicalUrl = $this->getCanonicalUrl(contentTenant: $contentTenant, includeQueryString: true);
-        $hasCanonicalUrl = array_any($args, fn ($value, $key) => $key === 'canonical_url' && $value !== null);
+    protected function applyPageHead(
+        ?Tenant $contentTenant = null,
+        ?string $title = null,
+        ?string $titleSuffix = null,
+        ?string $description = null,
+        ?string $image = null,
+        ?string $author = null,
+        ?string $robots = null,
+        ?CarbonInterface $publishedTime = null,
+        ?CarbonInterface $modifiedTime = null,
+        ?string $canonicalUrl = null,
+    ): void {
+        // Generate canonical URL using the content owner's subdomain.
+        // This ensures content is always canonicalized to its owner's subdomain.
+        $canonicalUrl ??= $this->getCanonicalUrl(contentTenant: $contentTenant, includeQueryString: true);
 
-        if (! $hasCanonicalUrl) {
-            $args['canonical_url'] = $canonicalUrl;
+        Head::canonical($canonicalUrl);
+
+        if ($title !== null) {
+            $suffix = $titleSuffix ?? ' - '.($contentTenant ?? $this->tenant)->shortname;
+
+            $suffix === '' ? Head::title($title) : Head::title($title, suffix: $suffix);
         }
 
-        $seoData = new SEOData(...$args);
+        if ($description !== null) {
+            Head::description($description);
+        }
 
-        $seoDataArray = seo(clone $seoData);
+        Head::ogImage($this->resolveOgImageUrl($image));
 
-        // Use named array with keys that use object classes
-        $associatedArray = collect($seoDataArray->tags)->mapWithKeys(fn ($tag) => [$tag::class => $tag]);
+        if ($author !== null) {
+            Head::meta('author', $author);
+        }
 
-        // Add hreflang tags for bilingual content
+        if ($robots !== null) {
+            Head::robots($robots);
+        }
+
+        if ($publishedTime !== null) {
+            Head::meta('article:published_time', $publishedTime->toIso8601String());
+        }
+
+        if ($modifiedTime !== null) {
+            Head::meta('article:modified_time', $modifiedTime->toIso8601String());
+        }
+
+        $this->shareHreflangAlternates($contentTenant, $canonicalUrl);
+
+        // Add structured data schemas (rendered in Blade via $JSONLD_Schemas / $page['props']['schemas'])
+        Inertia::share('schemas', $this->getStructuredDataSchemas());
+    }
+
+    /**
+     * Register hreflang alternate links for bilingual content, using the content owner's subdomain.
+     */
+    private function shareHreflangAlternates(?Tenant $contentTenant, string $canonicalUrl): void
+    {
         $currentLocale = app()->getLocale();
         $otherLocale = $currentLocale === 'lt' ? 'en' : 'lt';
 
         // Use canonical URL for hreflang (content owner's subdomain)
         $currentUrl = $canonicalUrl;
 
-        // Generate hreflang URLs for current page
-        $hreflangTags = [];
+        $alternates = [$currentLocale => $currentUrl];
 
-        // Current language URL
-        $hreflangTags[] = sprintf(
-            '<link rel="alternate" hreflang="%s" href="%s" />',
-            $currentLocale,
-            $currentUrl
-        );
-
-        // Other language URL (if available via shared otherLangURL)
         // Note: otherLangURL is already generated via route() with correct subdomain,
         // but we need to regenerate it with the content tenant's subdomain
         $otherLangURL = Inertia::getShared('otherLangURL');
@@ -338,50 +359,36 @@ class PublicController extends Controller
             // Parse the URL to extract route info and regenerate with content tenant
             // Since otherLangURL was generated via route(), we can use URL replacement
             $normalizedOtherLangUrl = $this->replaceSubdomainInUrl($otherLangURL, $contentTenant);
-            $hreflangTags[] = sprintf(
-                '<link rel="alternate" hreflang="%s" href="%s" />',
-                $otherLocale,
-                $normalizedOtherLangUrl
-            );
+            $alternates[$otherLocale] = $normalizedOtherLangUrl;
         }
 
         // x-default to Lithuanian (primary language) - use content owner's subdomain
-        $normalizedDefaultUrl = $currentLocale === 'lt' ? $currentUrl : ($normalizedOtherLangUrl ?? $currentUrl);
-        $hreflangTags[] = sprintf(
-            '<link rel="alternate" hreflang="x-default" href="%s" />',
-            $normalizedDefaultUrl
-        );
+        $alternates['x-default'] = $currentLocale === 'lt' ? $currentUrl : ($normalizedOtherLangUrl ?? $currentUrl);
 
-        // Share hreflang tags
-        Inertia::share('seo.hreflang', $hreflangTags);
+        Head::alternates($alternates);
+    }
 
-        // Add structured data schemas
-        $schemas = $this->getStructuredDataSchemas();
-        Inertia::share('schemas', $schemas);
+    /**
+     * Resolve the Open Graph image URL, falling back to the site default when no image is
+     * given or the referenced upload no longer exists in storage.
+     */
+    private function resolveOgImageUrl(?string $image): string
+    {
+        $fallback = config('app.url').'/images/photos/vusa.jpg';
 
-        // NOTE: seo() modifies the object in place, so we need to clone it
-        Inertia::share('seo.tags', $associatedArray);
-
-        $image = config('app.url').config('seo.image.fallback');
-
-        if (! empty($seoData->image)) {
-            if (str_starts_with($seoData->image, 'http')) {
-                $image = $seoData->image;
-            } else {
-                $storedImage = Storage::get(str_replace('uploads', 'public', $seoData->image));
-                if ($storedImage !== null) {
-                    $image = $seoData->image;
-                } else {
-                    $image = config('seo.image.fallback');
-                }
-            }
+        if (empty($image)) {
+            return $fallback;
         }
 
-        // HACK: Share image separately, because it's hard to consume directly
-        // But maybe it's because of secure_url not working in localhost
-        Inertia::share('seo.image', $image);
+        if (str_starts_with($image, 'http')) {
+            return $image;
+        }
 
-        return $seoData;
+        // Confirm the uploaded image still exists in storage before using it —
+        // guards against stale paths left behind by deleted uploads.
+        $storedImage = Storage::get(str_replace('uploads', 'public', $image));
+
+        return $storedImage !== null ? $image : $fallback;
     }
 
     protected function getStructuredDataSchemas()
