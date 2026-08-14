@@ -48,8 +48,8 @@ describe('unauthorized access', function (): void {
             'source_duty_ids' => [$this->source->id],
         ]);
 
-        expect($response->status())->toBe(403);
-        expect($this->source->fresh()->trashed())->toBeFalse();
+        expect($response->status())->toBe(403)
+            ->and($this->source->fresh()->trashed())->toBeFalse();
     });
 });
 

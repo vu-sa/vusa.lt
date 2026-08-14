@@ -41,7 +41,7 @@ use Illuminate\Support\Collection;
  * @method static Builder<static>|Activity forEvent(\Spatie\Activitylog\Enums\ActivityEvent|string $event)
  * @method static Builder<static>|Activity forRoot(string $type, string $id)
  * @method static Builder<static>|Activity forSubject(\Illuminate\Database\Eloquent\Model $subject)
- * @method static Builder<static>|Activity inLog(array|string ...$logNames)
+ * @method static Builder<static>|Activity inLog(\BackedEnum|array|string ...$logNames)
  * @method static Builder<static>|Activity newModelQuery()
  * @method static Builder<static>|Activity newQuery()
  * @method static Builder<static>|Activity query()

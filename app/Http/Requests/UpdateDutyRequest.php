@@ -102,7 +102,7 @@ class UpdateDutyRequest extends FormRequest
                 }
 
                 $exOfficioUserIds = $exOfficioUserIdsByTenant[$row['tenant_id'] ?? null] ?? [];
-                $userIds = array_map('strval', (array) ($row['user_ids'] ?? []));
+                $userIds = array_map(strval(...), (array) ($row['user_ids'] ?? []));
                 $occupied = count(array_unique([...$userIds, ...$exOfficioUserIds]));
 
                 if ($occupied > (int) $quota) {

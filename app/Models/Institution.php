@@ -54,12 +54,12 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, FileableFile> $availableFiles
- * @property-read Relationshipable|InstitutionFollow|null $pivot
  * @property-read Collection<int, InstitutionCheckIn> $checkIns
  * @property-read Collection<int, Comment> $comments
  * @property-read Collection<int, Document> $documents
  * @property-read Collection<int, Duty> $duties
  * @property-read Collection<int, FileableFile> $fileableFiles
+ * @property-read Relationshipable|InstitutionFollow|null $pivot
  * @property-read Collection<int, User> $followers
  * @property-read string|null $force_delete_blocked_reason
  * @property-read bool $has_protocol

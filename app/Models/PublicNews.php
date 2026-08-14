@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
@@ -19,7 +20,7 @@ use Laravel\Scout\Searchable;
  * @property string $title
  * @property int|null $category_id
  * @property string|null $permalink
- * @property string $short
+ * @property string|null $short
  * @property string $lang
  * @property int|null $other_lang_id
  * @property int $content_id
@@ -38,6 +39,12 @@ use Laravel\Scout\Searchable;
  * @property Carbon $updated_at
  * @property Carbon|null $last_edited_at
  * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Activity> $activitiesAsSubject
+ * @property-read Content $content
+ * @property-read News|null $other_language_news
+ * @property-read Collection<int, Tag> $tags
+ * @property-read Tenant $tenant
+ * @property-read User|null $user
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicNews newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicNews newQuery()

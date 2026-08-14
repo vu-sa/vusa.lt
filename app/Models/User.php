@@ -79,6 +79,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Permission> $teams
  * @property-read Collection<int, Tenant> $tenants
  * @property-read mixed $translations
+ * @property-read int|null $tenants_count
  *
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newModelQuery()

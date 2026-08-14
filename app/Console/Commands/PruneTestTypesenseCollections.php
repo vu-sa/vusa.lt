@@ -24,7 +24,7 @@ class PruneTestTypesenseCollections extends Command
      *
      * @var list<string>
      */
-    private const TEST_PREFIXES = ['testing_', 'test_'];
+    private const array TEST_PREFIXES = ['testing_', 'test_'];
 
     public function __construct(private readonly Client $client)
     {
@@ -88,12 +88,6 @@ class PruneTestTypesenseCollections extends Command
 
     private function isTestCollection(string $name): bool
     {
-        foreach (self::TEST_PREFIXES as $prefix) {
-            if (str_starts_with($name, $prefix)) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any(self::TEST_PREFIXES, fn ($prefix) => str_starts_with($name, $prefix));
     }
 }

@@ -28,8 +28,8 @@ describe('unauthorized access', function (): void {
             'merged_user_id' => $merged->id,
         ]);
 
-        expect($response->status())->toBe(403);
-        expect(User::find($merged->id))->not->toBeNull();
+        expect($response->status())->toBe(403)
+            ->and(User::find($merged->id))->not->toBeNull();
     });
 });
 

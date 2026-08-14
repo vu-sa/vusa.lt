@@ -31,7 +31,7 @@ use Spatie\Sitemap\Tags\Url;
  * @property string $title
  * @property int|null $category_id
  * @property string|null $permalink
- * @property string $short
+ * @property string|null $short
  * @property string $lang
  * @property int|null $other_lang_id
  * @property int $content_id

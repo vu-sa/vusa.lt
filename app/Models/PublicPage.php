@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
@@ -36,7 +37,10 @@ use Laravel\Scout\Searchable;
  * @property Carbon $updated_at
  * @property Carbon|null $last_edited_at
  * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Category|null $category
+ * @property-read Content $content
+ * @property-read Page|null $otherLanguagePage
  * @property-read Tenant $tenant
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicPage newModelQuery()

@@ -335,6 +335,6 @@ describe('name normalisation', function (): void {
 
     test('masking leaves the domain readable', function (): void {
         expect(UserSimilarityFinder::maskEmail('jonas.jonaitis@stud.vu.lt'))->toBe('j***@stud.vu.lt')
-            ->and(UserSimilarityFinder::maskEmail(null))->toBe('');
+            ->and(UserSimilarityFinder::maskEmail(null))->toBeEmpty();
     });
 });
