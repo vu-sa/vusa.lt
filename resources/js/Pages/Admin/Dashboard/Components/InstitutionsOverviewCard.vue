@@ -72,7 +72,6 @@ import {
 
 const props = defineProps<{
   institutions: AtstovavimasInstitution[];
-  isAdmin?: boolean;
   maxDisplayCount?: number;
   currentUserId?: string;
 }>();

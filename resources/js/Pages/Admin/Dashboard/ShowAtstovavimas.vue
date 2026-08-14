@@ -61,7 +61,7 @@
         </SpotlightPopover>
 
         <SpotlightPopover
-          v-else-if="isAdmin && activeTab === 'tenant' && props.availableTenants.length > 0"
+          v-else-if="activeTab === 'tenant' && canViewTenantOverview"
           class="ml-auto"
           :title="$t('visak.institution_summary.spotlight_title')"
           :description="$t('visak.institution_summary.spotlight_description')"
@@ -83,7 +83,7 @@
         <!-- Personal Overview Section -->
         <PersonalOverviewSection :institutions="userScopedInstitutions"
           :upcoming-meetings="userScopedUpcomingMeetings"
-          :institutions-insights="userScopedInsights" :is-admin
+          :institutions-insights="userScopedInsights"
           :current-user-id="Number(props.user.id)" @show-all-institutions="actions.showAllInstitutionModal.value = true"
           @show-all-meetings="actions.showAllMeetingModal.value = true"
           @create-meeting="actions.showMeetingModal.value = true" @schedule-meeting="actions.handleScheduleMeeting"
@@ -109,7 +109,7 @@
       <TabsContent value="tenant" class="mt-6 space-y-6">
         <template v-if="deferredContentReady">
           <InstitutionStatusSummary
-            v-if="isAdmin"
+            v-if="canViewTenantOverview"
             :institutions="tenantInstitutionsData"
             :summary="institutionSummary"
             :tenant-ids="timelineFilters.selectedTenantForGantt.value"
@@ -125,7 +125,7 @@
             :institution-periodicity="tenantInstitutionPeriodicity" :duty-members="ganttData.tenantDutyMembers.value"
             :inactive-periods="ganttData.tenantInactivePeriods.value" :is-hidden="actions.showFullscreenGantt.value"
             :loading-range="meetingsLoadingRange" :meetings-loading="meetingsLoadingVisible"
-            :representative-activity="representativeActivityData" :show-tenant-selector="!isAdmin"
+            :representative-activity="representativeActivityData" :show-tenant-selector="false"
             @create-meeting="actions.onGapCreateMeeting" @create-check-in="actions.onGapCreateCheckIn"
             @fullscreen="actions.onGanttFullscreen('tenant')"
             @range-changed="onTenantRangeChanged" />
@@ -498,12 +498,11 @@ watch(activeTab, (newTab) => {
   }
 });
 
-// Computed admin check
-const isAdmin = computed(() => {
-  const roles = props.user.roles?.map(role => role.name) ?? [];
-  return roles.includes('Super Admin') || roles.includes('Administratorius')
-    || roles.includes('Resource Manager') || roles.includes('Communication Coordinator');
-});
+// Computed: can the user see the tenant overview (summary + tenant scope selector)?
+// Mirrors the backend decision in AtstovavimasSettings::getVisibleTenantIds(), which
+// resolves permissions through the ModelAuthorizer (including duty-assigned roles) and
+// is materialized as the `availableTenants` Inertia prop. No hardcoded role names.
+const canViewTenantOverview = computed(() => props.availableTenants.length > 0);
 
 // Initialize composables - pass getter to maintain reactivity on Inertia prop updates
 const atstovavimasData = useAtstovavimasData(() => props.user);

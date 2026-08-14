@@ -17,7 +17,6 @@
       <!-- Institution check-in card -->
       <InstitutionsOverviewCard
         :institutions
-        :is-admin
         :max-display-count="5"
         :current-user-id="String(currentUserId)"
         @show-all-modal="$emit('show-all-institutions')"
@@ -40,7 +39,6 @@ interface Props {
   institutions: AtstovavimasInstitution[];
   upcomingMeetings: AtstovavimasMeeting[];
   institutionsInsights: InstitutionInsights;
-  isAdmin: boolean;
   currentUserId: number;
 }
 
