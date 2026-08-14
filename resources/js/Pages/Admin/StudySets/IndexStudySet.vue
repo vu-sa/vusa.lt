@@ -26,7 +26,7 @@ import {
   createBooleanColumn,
 } from '@/Composables/useDataTableColumns';
 import type { IndexTablePageProps, IndexTablePageInstance } from '@/Types/TableConfigTypes';
-import { TrainingIcon } from '@/Components/icons';
+import { StudySetIcon } from '@/Components/icons';
 
 interface StudySetRow {
   id: string;
@@ -129,7 +129,7 @@ const tableConfig = computed<IndexTablePageProps<StudySetRow>>(() => ({
   deletedCount: props.deletedCount,
 
   headerTitle: 'Individualių studijų komplektai',
-  icon: TrainingIcon,
+  icon: StudySetIcon,
   createRoute: canCreate.value ? route('studySets.create') : undefined,
   canCreate: canCreate.value,
 }));

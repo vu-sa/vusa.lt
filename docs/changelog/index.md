@@ -7,6 +7,10 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.25 — Pašalintos nenaudotos sritys (2026-08-14) {#v1-25}
+
+- ✨ **Pašalinti „Mokymai“ ir „Narystės“** — šios sritys nuo 2024 m. pabaigos liko nebaigtos ir nenaudotos (jose nebuvo jokių duomenų), todėl išimtos iš administravimo meniu. Kartu pašalintas ir mokymų programos planuoklis
+
 ## v1.24 — Ex-officio pareigos vėl priskiriamos (2026-08-11) {#v1-24}
 
 - 🔧 **Ex-officio pareigos vėl priskiriamos**

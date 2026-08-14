@@ -4,7 +4,6 @@ use App\Models\Comment;
 use App\Models\InstitutionCheckIn;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
-use App\Models\Training;
 use App\Models\Traits\LogsModelActivity;
 use App\Models\User;
 use App\Models\Vote;
@@ -96,24 +95,6 @@ test('saving a vote only logs an activity for the vote, not the agenda item or m
     expect(Activity::where('subject_type', Vote::class)->where('subject_id', $vote->id)->count())->toBe(1)
         ->and(Activity::where('subject_type', AgendaItem::class)->count())->toBe(0)
         ->and(Activity::where('subject_type', Meeting::class)->count())->toBe(0);
-});
-
-test('Training logs attribute changes despite declaring #[Fillable] instead of $guarded', function (): void {
-    $training = Training::factory()->create();
-
-    $created = Activity::where('subject_type', Training::class)->where('subject_id', $training->id)->first();
-    expect($created)->not->toBeNull()
-        ->and(data_get($created, 'attribute_changes.attributes'))->not->toBeEmpty();
-
-    $training->update(['address' => 'Updated Address']);
-
-    $updated = Activity::where('subject_type', Training::class)
-        ->where('subject_id', $training->id)
-        ->where('event', 'updated')
-        ->latest('id')
-        ->first();
-
-    expect(data_get($updated, 'attribute_changes.attributes.address'))->toBe('Updated Address');
 });
 
 test('User logs attribute changes despite declaring #[Fillable] instead of $guarded', function (): void {

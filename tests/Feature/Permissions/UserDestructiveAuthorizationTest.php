@@ -2,9 +2,9 @@
 
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\InstitutionCheckIn;
 use App\Models\Role;
 use App\Models\Tenant;
-use App\Models\Training;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -154,7 +154,7 @@ describe('force delete does not strip duties before it is allowed to run', funct
         $target = makeUser($this->tenant);
         $dutyCount = $target->duties()->count();
 
-        Training::factory()->create(['organizer_id' => $target->id]);
+        InstitutionCheckIn::factory()->create(['user_id' => $target->id]);
         $target->delete();
 
         asUser($admin)

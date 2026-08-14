@@ -81,8 +81,6 @@ Route::patch('studySets/{studySet}/restore', [StudySetController::class, 'restor
 Route::delete('studySets/{studySet}/force-delete', [StudySetController::class, 'forceDelete'])->name('studySets.forceDelete')->withTrashed();
 Route::patch('tags/{tag}/restore', [TagController::class, 'restore'])->name('tags.restore')->withTrashed();
 Route::delete('tags/{tag}/force-delete', [TagController::class, 'forceDelete'])->name('tags.forceDelete')->withTrashed();
-Route::patch('trainings/{training}/restore', [TrainingController::class, 'restore'])->name('trainings.restore')->withTrashed();
-Route::delete('trainings/{training}/force-delete', [TrainingController::class, 'forceDelete'])->name('trainings.forceDelete')->withTrashed();
 Route::patch('types/{type}/restore', [TypeController::class, 'restore'])->name('types.restore')->withTrashed();
 Route::delete('types/{type}/force-delete', [TypeController::class, 'forceDelete'])->name('types.forceDelete')->withTrashed();
 Route::patch('users/{user}/restore', [UserController::class, 'restore'])->name('users.restore')->withTrashed();
@@ -124,24 +122,6 @@ Route::post('push-subscription', [PushSubscriptionController::class, 'store'])->
 Route::delete('push-subscription', [PushSubscriptionController::class, 'destroy'])->name('push-subscription.destroy');
 Route::delete('push-subscription/{id}', [PushSubscriptionController::class, 'destroyById'])->name('push-subscription.destroyById');
 Route::post('push-subscription/test', [PushSubscriptionController::class, 'sendTest'])->name('push-subscription.test');
-
-Route::resource('memberships', MembershipController::class);
-Route::post('memberships/{membership}/users/import', [MembershipController::class, 'importUsers'])->name('membershipUsers.import');
-
-Route::resource('trainings', TrainingController::class);
-Route::get('trainings/{training}/registration', [TrainingController::class, 'showRegistration'])->name('trainings.showRegistration');
-
-Route::resource('programmes', ProgrammeController::class)->only(['update']);
-Route::resource('programmeDays', ProgrammeDayController::class)->only(['destroy']);
-Route::resource('programmeBlocks', ProgrammeBlockController::class)->only(['destroy']);
-
-Route::resource('programmeParts', ProgrammePartController::class)->only(['destroy']);
-Route::post('programmeParts/{programmePart}/attach', [ProgrammePartController::class, 'attach'])->name('programmeParts.attach');
-Route::post('programmeParts/{programmePart}/detach', [ProgrammePartController::class, 'detach'])->name('programmeParts.detach');
-
-Route::resource('programmeSections', ProgrammeSectionController::class)->only(['destroy']);
-Route::post('programmeSections/{programmeSection}/attach', [ProgrammeSectionController::class, 'attach'])->name('programmeSections.attach');
-Route::post('programmeSections/{programmeSection}/detach', [ProgrammeSectionController::class, 'detach'])->name('programmeSections.detach');
 
 Route::resource('calendar', CalendarController::class)
     ->middleware(HandlePrecognitiveRequests::class);

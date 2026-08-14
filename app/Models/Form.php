@@ -115,7 +115,6 @@ class Form extends Model implements GuardsForceDelete
     {
         return $this->forceDeleteReasonFor([
             'trash.blockers.registrations' => $this->countedRelation('registrations'),
-            'entities.training.model' => Training::query()->where('form_id', $this->id)->count(),
         ]);
     }
 }

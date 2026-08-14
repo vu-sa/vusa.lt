@@ -639,7 +639,6 @@ describe('Files Controller - Image Upload', function (): void {
             'news' => '/uploads/news/',
             'institutions' => '/uploads/institutions/',
             'contacts' => '/uploads/contacts/',
-            'trainings' => '/uploads/trainings/',
         ];
 
         foreach ($testCases as $folder => $expectedUrlPrefix) {

@@ -14,7 +14,6 @@ use App\Models\Form;
 use App\Models\FormField;
 use App\Models\Institution;
 use App\Models\Tenant;
-use App\Models\Training;
 use App\Services\FormAccessService;
 use App\Services\FormRegistrationVisibilityService;
 use App\Services\ModelAuthorizer as Authorizer;
@@ -184,14 +183,6 @@ class FormController extends AdminController
         $form->tenant()->associate($request->tenant_id);
 
         $form->save();
-
-        if ($request->training_id) {
-            $training = Training::query()->find($request->training_id);
-
-            $training->form()->associate($form);
-
-            $training->save();
-        }
 
         // Then, update or create the remaining form fields
         collect($request->only('form_fields')['form_fields'] ?? [])->each(function ($formField) use ($form): void {

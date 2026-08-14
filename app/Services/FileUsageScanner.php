@@ -13,7 +13,6 @@ use App\Models\News;
 use App\Models\Page;
 use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
-use App\Models\Training;
 use App\Models\Type;
 use App\Models\User;
 use Carbon\Carbon;
@@ -125,13 +124,6 @@ class FileUsageScanner
                 $totalFound += $usage['calendar']->count();
             }
 
-            if (! isset($usage['trainings'])) {
-                $trainDesc = $this->scanTranslatableField(Training::class, 'description', $variantSet, $fileMetadata);
-                $trainImage = $this->scanTextField(Training::class, 'image', $variantSet, $fileMetadata);
-                $usage['trainings'] = $trainDesc->merge($trainImage);
-                $totalFound += $usage['trainings']->count();
-            }
-
             if (! isset($usage['duties'])) {
                 $usage['duties'] = $this->scanTranslatableField(Duty::class, 'description', $variantSet, $fileMetadata);
                 $totalFound += $usage['duties']->count();
@@ -160,7 +152,7 @@ class FileUsageScanner
         }
 
         // Fill in empty collections for models that weren't scanned
-        $allModelTypes = ['contentParts', 'calendar', 'news', 'banners', 'duties', 'institutions', 'trainings', 'types', 'forms', 'users', 'dutiables'];
+        $allModelTypes = ['contentParts', 'calendar', 'news', 'banners', 'duties', 'institutions', 'types', 'forms', 'users', 'dutiables'];
         foreach ($allModelTypes as $modelType) {
             if (! isset($usage[$modelType])) {
                 $usage[$modelType] = new Collection;
@@ -1043,7 +1035,6 @@ class FileUsageScanner
                 'news' => 'news',
                 'duty' => 'duties',
                 'institution' => 'institutions',
-                'training' => 'trainings',
                 'type' => 'types',
                 'form' => 'forms',
                 'dutiable' => 'dutiables',
@@ -1076,7 +1067,6 @@ class FileUsageScanner
                 'news' => 'news',
                 'duty' => 'duties',
                 'institution' => 'institutions',
-                'training' => 'trainings',
                 'type' => 'types',
                 'form' => 'forms',
                 'dutiable' => 'dutiables',

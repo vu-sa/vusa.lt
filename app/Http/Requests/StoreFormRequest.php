@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Models\Form;
-use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
@@ -55,7 +54,6 @@ class StoreFormRequest extends FormRequest
             'form_fields.*.is_required' => 'boolean',
             'form_fields.*.order' => 'integer',
             'form_fields.*.options' => 'nullable|array',
-            'training_id' => ['nullable', SoftDeleteRules::existsLive('trainings')],
             'publish_time' => 'nullable|date',
         ];
     }

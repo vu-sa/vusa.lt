@@ -307,12 +307,15 @@ These come from real bugs found in this codebase. Treat them as non-negotiable.
 
 **Every mutating route authorizes.** A controller that only injects `ModelAuthorizer` without calling it is unprotected — the `auth` middleware proves *who* the user is, not *what* they may touch. Check `routes/admin.php` against the controller: a registered route with no `authorize`/`handleAuthorization`/Form-Request `authorize()` is a hole.
 
-**A child resource authorizes against its parent.** When a model carries no permissions of its own, delegate to the policy of the model that owns it, rather than inventing unseeded permissions (which lock out everyone but super admins). Precedents: `ReservationResourceController` → `Reservation`; `Programme*Controller` → the owning `Training` (`App\Http\Traits\AuthorizesProgrammes`).
+**A child resource authorizes against its parent.** When a model carries no permissions of its own, delegate to the policy of the model that owns it, rather than inventing unseeded permissions (which lock out everyone but super admins). Precedent: `ReservationResourceController` → `Reservation`.
 
-**`findOrNew()` on request ids is an IDOR.** It resolves *any* id, not just ones belonging to the record in the URL. Assert parentage before writing:
+**Resolving a child by a request id is an IDOR.** `find()`/`findOrNew()` on the model itself resolves *any* id, not just ones belonging to the record in the URL. Resolve through the parent's relation and refuse what it cannot find (`FormController::syncFormFields()`):
 
 ```php
-abort_if($day->exists && $day->programme_id !== $programme->id, 403);
+// Resolve through the relation so a crafted payload cannot reach another form's fields.
+$formFieldFromDb = $form->formFields()->find($formField['id']);
+
+abort_if($formFieldFromDb === null, 403, 'Form field does not belong to this form.');
 ```
 
 **Never dispatch a method name built from request input.** `$model->{$request->model_type}()->sync(...)` reaches unintended relations and 500s on unknown values. Resolve through an allowlist — `Type::TYPEABLE_RELATIONS`, `AllowedRelationshipablesEnum` — and validate with `Rule::in(...)`.

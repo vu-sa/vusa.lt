@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Models\Pivots\Relationshipable;
-use App\Models\Pivots\Trainable;
 use App\Services\PublicInstitutionSearchIndexBuilder;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
@@ -42,8 +41,7 @@ use Laravel\Scout\Searchable;
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, FileableFile> $availableFiles
- * @property-read Relationshipable|InstitutionFollow|Trainable|null $pivot
- * @property-read Collection<int, Training> $availableTrainings
+ * @property-read Relationshipable|InstitutionFollow|null $pivot
  * @property-read Collection<int, InstitutionCheckIn> $checkIns
  * @property-read Collection<int, Comment> $comments
  * @property-read Collection<int, Document> $documents

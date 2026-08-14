@@ -73,7 +73,7 @@ class UserController extends AdminController
         $deletedCount = $this->getTrashedCount($query);
 
         // Trash view only: lets the table say why permanent deletion is refused.
-        $query = $this->withForceDeleteBlockers($query, $request, ['trainings']);
+        $query = $this->withForceDeleteBlockers($query, $request);
 
         $users = $query->paginate($request->input('per_page', 20))
             ->withQueryString();

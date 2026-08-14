@@ -11,7 +11,6 @@ use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\StudyProgram;
 use App\Models\Tenant;
-use App\Models\Training;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
@@ -60,8 +59,7 @@ describe('blocked', function (): void {
     test('an unreferenced record reports no blocker', function (): void {
         expect(Category::factory()->create()->forceDeleteBlockedReason())->toBeNull()
             ->and(Form::factory()->create()->forceDeleteBlockedReason())->toBeNull()
-            ->and(StudyProgram::factory()->create()->forceDeleteBlockedReason())->toBeNull()
-            ->and(Training::factory()->create()->forceDeleteBlockedReason())->toBeNull();
+            ->and(StudyProgram::factory()->create()->forceDeleteBlockedReason())->toBeNull();
     });
 
     test('the reason names the referencing records rather than being generic', function (): void {
@@ -130,7 +128,6 @@ test('every guarded model exposes the reason as an appendable attribute', functi
         Category::factory()->create(),
         Form::factory()->create(),
         StudyProgram::factory()->create(),
-        Training::factory()->create(),
         Institution::factory()->create(),
     ];
 

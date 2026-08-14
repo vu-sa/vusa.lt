@@ -69,7 +69,7 @@ class InstitutionController extends AdminController
         $deletedCount = $this->getTrashedCount($query);
 
         // Trash view only: lets the table say why permanent deletion is refused.
-        $query = $this->withForceDeleteBlockers($query, $request, ['meetings', 'duties', 'availableTrainings', 'checkIns']);
+        $query = $this->withForceDeleteBlockers($query, $request, ['meetings', 'duties', 'checkIns']);
 
         $institutions = $query->paginate($request->input('per_page', 15))
             ->withQueryString();

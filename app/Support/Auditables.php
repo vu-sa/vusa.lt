@@ -17,7 +17,6 @@ use App\Models\Pivots\AgendaItem;
 use App\Models\Problem;
 use App\Models\Reservation;
 use App\Models\Tenant;
-use App\Models\Training;
 use App\Models\Type;
 use App\Models\User;
 use App\Models\Vote;
@@ -45,7 +44,6 @@ class Auditables
         'duty' => Duty::class,
         'problem' => Problem::class,
         'reservation' => Reservation::class,
-        'training' => Training::class,
         'news' => News::class,
         'page' => Page::class,
         'document' => Document::class,

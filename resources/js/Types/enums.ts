@@ -70,11 +70,6 @@ export enum DegreeEnum {
   PROFESSIONAL_PEDAGOGY = "PROFESSIONAL_PEDAGOGY",
   OTHER = "OTHER",
 }
-export enum DutySelectionMethod {
-  Elected = "elected",
-  Delegated = "delegated",
-  Appointed = "appointed",
-}
 export enum InstitutionActivityStatus {
   NoActivity = "no_activity",
   Healthy = "healthy",
@@ -105,7 +100,6 @@ export enum ModelEnum {
   FORM = "form",
   INSTITUTION = "institution",
   MEETING = "meeting",
-  MEMBERSHIP = "membership",
   NAVIGATION = "navigation",
   NEWS = "news",
   QUICK_LINK = "quick_link",
@@ -125,7 +119,6 @@ export enum ModelEnum {
   TAG = "tag",
   TASK = "task",
   TENANT = "tenant",
-  TRAINING = "training",
   TYPE = "type",
   USER = "user",
 }

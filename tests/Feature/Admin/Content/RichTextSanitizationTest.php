@@ -7,7 +7,6 @@ use App\Models\Form;
 use App\Models\FormField;
 use App\Models\News;
 use App\Models\Tenant;
-use App\Models\Training;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
@@ -56,16 +55,6 @@ test('form field description is sanitized on write', function (): void {
     expect($field->fresh()->getTranslation('description', 'lt'))
         ->toContain('Paaiškinimas')
         ->not->toContain('javascript:');
-});
-
-test('training description is sanitized on write', function (): void {
-    $training = Training::factory()->create([
-        'description' => ['lt' => '<p>Mokymai</p><img src=x onerror="alert(1)">'],
-    ]);
-
-    expect($training->fresh()->getTranslation('description', 'lt'))
-        ->toContain('Mokymai')
-        ->not->toContain('onerror');
 });
 
 /**

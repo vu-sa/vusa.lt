@@ -7,7 +7,6 @@ use App\Contracts\SharepointFileableContract;
 use App\Events\FileableNameUpdated;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Pivots\Dutiable;
-use App\Models\Pivots\Trainable;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
@@ -49,8 +48,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, AgendaItem> $agendaItems
  * @property-read Collection<int, Tenant> $assignableTenants
  * @property-read Collection<int, FileableFile> $availableFiles
- * @property-read Typeable|Dutiable|Trainable|null $pivot
- * @property-read Collection<int, Training> $availableTrainings
+ * @property-read Typeable|Dutiable|null $pivot
  * @property-read Collection<int, User> $current_users
  * @property-read Collection<int, Dutiable> $dutiables
  * @property-read Collection<int, Duty> $exOfficioSourceDuties
@@ -297,11 +295,6 @@ class Duty extends Model implements AuthorizableContract, GuardsForceDelete, Sha
     public function resources(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->tenants(), (new Tenant)->resources());
-    }
-
-    public function availableTrainings()
-    {
-        return $this->morphToMany(Training::class, 'trainable')->using(Trainable::class);
     }
 
     /** Duties that are automatically granted when a user holds this duty. */

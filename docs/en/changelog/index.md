@@ -7,6 +7,10 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.25 — Unused sections removed (2026-08-14) {#v1-25}
+
+- ✨ **Trainings and Memberships removed** — both were left unfinished and unused since late 2024 (neither held any data), so they are gone from the admin menu. The training programme planner went with them
+
 ## v1.24 — Ex-officio duties are granted again (2026-08-11) {#v1-24}
 
 - 🔧 **Ex-officio members no longer disappear** 
