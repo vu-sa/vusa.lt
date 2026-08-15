@@ -48,6 +48,14 @@ class AppServiceProvider extends ServiceProvider
         $this->loadSplitTranslations();
 
         // Needed for json_content in Content model
+        //
+        // flushState() first: same leak class as ActivityLogServiceProvider::boot() —
+        // TrimStrings::$skipCallbacks is a process-lifetime static array (vendor), and this
+        // boot() re-runs on every application rebuild (every test). TrimStrings is in the
+        // default `web` middleware group, so every stale closure accumulated here runs on every
+        // subsequent request for the rest of the process. bootstrap/app.php never calls
+        // $middleware->trimStrings(...), so nothing else depends on this being pre-populated.
+        TrimStrings::flushState();
         TrimStrings::skipWhen(fn (Request $request) => $request->is('mano/*'));
 
         Translatable::fallback(

@@ -12,6 +12,9 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * @property-read ModelAuthorizer $authorizer Injected by ModelPolicy, the trait's only consumer.
+ */
 trait HasCommonChecks
 {
     /**
@@ -40,7 +43,9 @@ trait HasCommonChecks
         ?string $resourceName = null,
         bool $hasManyTenants = true
     ): bool {
-        $authorizer = app(ModelAuthorizer::class);
+        // ModelAuthorizer is a singleton; ModelPolicy (the trait's only consumer) already
+        // injects it, so reuse that instance instead of paying a container resolution here.
+        $authorizer = $this->authorizer;
 
         // WARNING: Uses the current object pluralModelName, it must be set, or a resource name must be provided
         $resource = $resourceName ?? $this->pluralModelName;
@@ -67,7 +72,7 @@ trait HasCommonChecks
             if ($resource === 'duties') {
                 $permissableModels = $permissableDuties;
             } else {
-                $permissableModels = $permissableDuties->load($relationFromDuties)
+                $permissableModels = $permissableDuties->loadMissing($relationFromDuties)
                     ->pluck($relationFromDuties)
                     ->flatten()
                     ->filter(); // Remove null values from duties without the related model
@@ -107,11 +112,15 @@ trait HasCommonChecks
         }
 
         if ($authorizer->forUser($user)->check($permissionBase.PermissionScopeEnum::PADALINYS->label())) {
-            $permissableTenants = $user->tenants()
-                ->whereIn('duties.id', $authorizer->getPermissableDuties()->pluck('id'))
-                ->get();
+            // getTenants() scopes by current_duties (via ModelAuthorizer::loadDuties()) and is
+            // memoized per (user, permission) request-scope — the check() call above already
+            // primed that cache, so this is free. Previously this queried $user->tenants(), a
+            // HasManyDeep relation that includes *every* duty the user has ever held, including
+            // ended ones — an ended duty could still grant padalinys-scope access through this
+            // branch even though ModelAuthorizer itself only ever authorizes current duties.
+            $permissableTenants = $authorizer->getTenants($permissionBase.PermissionScopeEnum::PADALINYS->label());
 
-            $modelTenants = $model->load($tenantRelation)->getRelation($tenantRelation);
+            $modelTenants = $model->loadMissing($tenantRelation)->getRelation($tenantRelation);
 
             // Convert to collection for consistent handling
             $modelCollection = new Collection;
@@ -135,7 +144,7 @@ trait HasCommonChecks
      */
     public function viewAny(User $user): bool
     {
-        return app(ModelAuthorizer::class)->forUser($user)->check($this->pluralModelName.'.'.CRUDEnum::READ->label().'.padalinys');
+        return $this->authorizer->forUser($user)->check($this->pluralModelName.'.'.CRUDEnum::READ->label().'.padalinys');
     }
 
     /**
@@ -143,7 +152,7 @@ trait HasCommonChecks
      */
     public function create(User $user): bool
     {
-        return app(ModelAuthorizer::class)->forUser($user)->check($this->pluralModelName.'.'.CRUDEnum::CREATE->label().'.padalinys');
+        return $this->authorizer->forUser($user)->check($this->pluralModelName.'.'.CRUDEnum::CREATE->label().'.padalinys');
     }
 
     /**

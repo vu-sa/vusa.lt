@@ -61,7 +61,10 @@ describe('API validation and error handling', function (): void {
 
 describe('API pagination and filtering', function (): void {
     test('API responses are properly paginated', function (): void {
-        News::factory()->count(25)->create([
+        // NewsCollection::getPublishedForTenant() takes(5) — the endpoint has no pagination
+        // to exercise, and the assertions below only check shape, not count, so this only
+        // needs enough records to prove "many records don't break it".
+        News::factory()->count(3)->create([
             'tenant_id' => $this->tenant->id,
         ]);
 

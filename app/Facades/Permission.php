@@ -9,8 +9,8 @@ use Illuminate\Support\Facades\Facade;
  * @method static bool check(string $permission, \App\Models\User $user = null)
  * @method static bool checkScope(string $resource, string $action, string $scope, \App\Models\User $user = null)
  * @method static bool isSuperAdmin(\App\Models\User $user = null)
- * @method static \Illuminate\Database\Eloquent\Collection getTenants(\App\Models\User $user = null)
- * @method static void resetCache(\App\Models\User|int|string $user)
+ * @method static \Illuminate\Database\Eloquent\Collection getTenants(\App\Models\User $user = null, string $permission = null)
+ * @method static void resetCache(\App\Models\User|int|string $user, bool $flushGlobal = false)
  *
  * @see PermissionService
  */

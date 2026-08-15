@@ -12,20 +12,28 @@
         <testsuite name="Feature">
             <directory suffix="Test.php">./tests/Feature</directory>
         </testsuite>
+        <testsuite name="Architecture">
+            <directory suffix="Test.php">./tests/Architecture</directory>
+        </testsuite>
     </testsuites>
     <php>
         <env name="APP_ENV" value="testing"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_DRIVER" value="array"/>
-        <env name="DB_CONNECTION" value="sqlite"/> 
-        <env name="DB_DATABASE" value=":memory:"/> 
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value=":memory:"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
-        <!-- Use database driver for general Scout operations, specific models use Typesense explicitly -->
+        <!-- Models using the database Scout driver read this. The ~14 models that hard-code
+             the Typesense engine in searchableUsing() ignore it; TestingServiceProvider nulls
+             their engine by default (see tests/Pest.php's usesTypesense() for the opt-in). -->
         <env name="SCOUT_DRIVER" value="database"/>
+        <!-- Only matters once a test opts back into the real Typesense engine — index
+             synchronously instead of through the sync queue connection. -->
+        <env name="SCOUT_QUEUE" value="false"/>
     </php>
     <source>
         <include>

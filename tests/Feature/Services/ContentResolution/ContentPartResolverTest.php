@@ -189,7 +189,9 @@ describe('LinkListResolver — news source', function (): void {
     });
 
     test('clamps limit to the 1-12 range', function (): void {
-        News::factory()->for($this->tenant)->count(15)->create(['lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay()]);
+        // 13, not 12: with exactly 12 available, "12 results" would hold even if the
+        // clamp did nothing — one extra record is needed to actually prove truncation.
+        News::factory()->for($this->tenant)->count(13)->create(['lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay()]);
         $part = makeResolvablePart('link-list', [], ['source' => 'news', 'mode' => 'latest', 'limit' => 99]);
 
         $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);

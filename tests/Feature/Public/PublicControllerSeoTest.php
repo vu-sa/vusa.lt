@@ -195,8 +195,9 @@ describe('Hreflang tags', function (): void {
 
 describe('Pagination SEO metadata', function (): void {
     it('renders rel=next on the first page of a paginated archive', function (): void {
-        // Create enough news to trigger pagination
-        News::factory()->count(20)->create([
+        // NewsController::newsArchive() paginates at 15 — 16 is the smallest count that
+        // produces a second page.
+        News::factory()->count(16)->create([
             'tenant_id' => $this->mainTenant->id,
             'lang' => 'lt',
             'draft' => false,
@@ -217,8 +218,9 @@ describe('Pagination SEO metadata', function (): void {
     });
 
     it('renders rel=prev when on page 2 of a paginated archive', function (): void {
-        // Create enough news to have at least 2 pages
-        News::factory()->count(20)->create([
+        // NewsController::newsArchive() paginates at 15 — 16 is the smallest count that
+        // produces a second page.
+        News::factory()->count(16)->create([
             'tenant_id' => $this->mainTenant->id,
             'lang' => 'lt',
             'draft' => false,

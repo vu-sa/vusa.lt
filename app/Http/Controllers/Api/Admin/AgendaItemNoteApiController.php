@@ -15,7 +15,7 @@ use Illuminate\Http\Request;
  * (agenda-item-notes.{id}); these endpoints only hydrate late joiners and store
  * a durable snapshot. Both are gated by the AgendaItem "update" ability.
  */
-class AgendaItemNoteController extends ApiController
+class AgendaItemNoteApiController extends ApiController
 {
     /**
      * Return the persisted Y.js snapshot + HTML for an agenda item's notes.

@@ -208,7 +208,10 @@ class MeetingController extends AdminController
             // For Inertia requests (from modal), redirect to meeting show page
             return redirect()->route('meetings.show', $meeting)->with(['success' => 'Posėdis sukurtas sėkmingai!']);
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            // \Throwable, not \Exception: a \TypeError (or any other \Error) between
+            // beginTransaction() and commit() must still roll back, or the transaction depth
+            // leaks for the rest of the process.
             DB::rollBack();
 
             return back()->withErrors(['general' => $e->getMessage()])->with(['error' => 'Nepavyko sukurti posėdžio.']);

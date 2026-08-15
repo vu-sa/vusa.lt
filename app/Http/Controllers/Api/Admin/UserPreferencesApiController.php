@@ -7,7 +7,7 @@ use App\Http\Requests\UpdateUIPreferencesRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
-class UserPreferencesController extends ApiController
+class UserPreferencesApiController extends ApiController
 {
     /**
      * Update sidebar customization preferences (which sections are visible,

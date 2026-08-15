@@ -15,6 +15,7 @@ use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Providers\TestingServiceProvider;
 use Pest\Browser\Api\PendingAwaitablePage;
 use Tests\TestCase;
 
@@ -147,6 +148,22 @@ function visitPublicSubdomain(string $subdomain, string $path): PendingAwaitable
     config(['app.url' => "http://{$host}"]);
 
     return visit("http://{$host}:{$port}{$path}");
+}
+
+/**
+ * Restore the real Typesense engine for the current test.
+ *
+ * The suite runs against Scout's NullEngine by default (see `TestingServiceProvider`):
+ * ~14 models hard-code the Typesense engine in `searchableUsing()`, and with `scout.queue`
+ * on the sync connection every factory `create()` was paying a synchronous HTTP round trip
+ * — measured at ~29ms of the ~35ms it took to build one `makeUser()` fixture.
+ *
+ * Call this in `beforeEach()` when the test asserts on search results or index state.
+ * Requires a running Typesense (Sail provides one locally; CI starts one).
+ */
+function usesTypesense(): void
+{
+    app()->getProvider(TestingServiceProvider::class)->enableRealTypesense();
 }
 
 function makeUser(Tenant $tenant): User

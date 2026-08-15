@@ -96,14 +96,21 @@ test('cannot update resource in invalid state', function () {
 
 ### CI/CD Environment
 - SQLite in-memory database for PHP tests
-- Database driver for all Scout operations
-- No external services required for testing
+- Scout's search engine is nulled by default (`TestingServiceProvider`) — no external
+  services required for the default path. `SCOUT_DRIVER=database` in phpunit.xml only
+  covers models that don't hardcode Typesense in `searchableUsing()`; the ~14 that do
+  (`User`, `News`, `Page`, `Document`, …) are covered by the null engine instead.
+- Tests that actually assert on search results or index state call `usesTypesense()`
+  (`tests/Pest.php`) in `beforeEach()` and require a running Typesense (Sail provides
+  one locally, CI starts one) — see `tests/CLAUDE.md`'s "Test performance patterns".
 
 ### Search Testing Architecture
-- **TypesenseSearchTest.php**: Tests configuration and model searchability
-- **Database driver**: Used for all tests to avoid external dependencies  
-- **Configuration testing**: Validates Typesense config without connection
-- **Model testing**: Validates `shouldBeSearchable()` and `toSearchableArray()`
+- **TypesenseSearchTest.php**: Tests configuration and model searchability without
+  needing the real engine (`shouldBeSearchable()`, `toSearchableArray()`) — no
+  `usesTypesense()` call.
+- **`tests/Feature/Search/*`**: Assert on actual index state (`::search()->raw()`,
+  `->searchable()`) — these call `usesTypesense()` and need a running Typesense.
+- **Configuration testing**: Validates Typesense config without a connection.
 
 ### Search Architecture in Production
 - **Public frontend**: Typesense for fast, typo-tolerant search

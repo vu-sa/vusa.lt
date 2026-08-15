@@ -561,15 +561,19 @@ class RelationshipService
     /**
      * Get related institutions for a single institution.
      *
-     * This method now uses getRelatedInstitutionsFlat internally for consistency,
-     * which includes sibling relationships (same type + same tenant).
+     * Uses the cached flat lookup (`getRelatedInstitutionsCached`) — this is called from
+     * `HasCommonChecks::commonChecker()` on every "own"-scope institution authorization
+     * check, once per institution in the user's permissable set, so an uncached call here
+     * was a real N+1 on institution-heavy index pages. The cache is already invalidated on
+     * every write path that could change the result (`InstitutionObserver`,
+     * `clearCacheForRelationshipable()`), so this introduces no new staleness.
      *
      * @param  bool  $authorizedOnly  If true, only returns institutions where the source has access (outgoing/sibling)
      * @return Collection<int, Institution>
      */
     public static function getRelatedInstitutions(Institution $institution, bool $authorizedOnly = false): Collection
     {
-        $flat = self::getRelatedInstitutionsFlat($institution);
+        $flat = self::getRelatedInstitutionsCached($institution);
 
         if ($authorizedOnly) {
             $flat = $flat->filter(fn ($item) => $item['authorized'] === true);

@@ -191,8 +191,14 @@ class ModelAuthorizer
 
             $this->duties = Cache::remember($cacheKey, static::CACHE_TTL, fn () => $this->user->load([
                 'current_duties:id,name,institution_id',
-                'current_duties.institution:id',
+                // tenant_id (not just id) so getTenants()'s loadMissing('institution.tenant')
+                // can resolve the nested tenant relation without re-fetching institution.
+                'current_duties.institution:id,tenant_id',
                 'current_duties.roles.permissions',
+                // Without this, checkAllRoleables()'s `foreach ($this->duties as $duty)`
+                // loop lazy-loads $duty->permissions (direct, not via role) once per duty —
+                // an N+1 on every permission check that falls through to the duty loop.
+                'current_duties.permissions',
             ])->current_duties);
         }
 
@@ -251,7 +257,10 @@ class ModelAuthorizer
 
         /** @var Collection<int, Tenant> $tenants */
         $tenants = $dutiesToUse
-            ->load('institution.tenant')
+            // loadMissing, not load: loadDuties() already eager-loads current_duties.institution,
+            // and a second getTenants() call in the same request (different permission) will
+            // already have the .tenant leg loaded too — load() re-queried both unconditionally.
+            ->loadMissing('institution.tenant')
             ->pluck('institution.tenant')
             ->filter()
             ->unique('id')
@@ -284,11 +293,23 @@ class ModelAuthorizer
     }
 
     /**
-     * Reset the internal cache for a specific user
+     * Reset the internal cache for a specific user.
      *
      * @param  User|int|string  $user  User instance or user ID
+     * @param  bool  $flushGlobal  Also drop Spatie's shared `spatie.permission.cache` key and
+     *                             its in-memory wildcard index. Defaults to false: every existing
+     *                             caller resets cache in reaction to a change already made through
+     *                             Spatie's own `HasRoles`/`HasPermissions` trait methods (or the
+     *                             `Role`/`Permission` models' own `RefreshesPermissionCache` hooks),
+     *                             which already flush that shared cache themselves — flushing it a
+     *                             second time here only matters for callers that bypass those
+     *                             methods (see `AccessChangeAnalyzer`, which passes `true`).
+     *                             Was previously always flushed unconditionally, which meant an
+     *                             unrelated per-user reset — e.g. `UpdateLastAction` touching
+     *                             `last_action` on every authenticated request — dropped the
+     *                             permission cache for the entire application on every request.
      */
-    public function resetCache($user): void
+    public function resetCache($user, bool $flushGlobal = false): void
     {
         $userId = $user instanceof User ? $user->id : $user;
 
@@ -306,7 +327,8 @@ class ModelAuthorizer
         // Persisted duty cache (loadDuties) is the only cross-request entry for this user.
         Cache::forget("auth:duties:{$userId}");
 
-        // Clear Spatie's permission registrar cache
-        app(PermissionRegistrar::class)->forgetCachedPermissions();
+        if ($flushGlobal) {
+            app(PermissionRegistrar::class)->forgetCachedPermissions();
+        }
     }
 }
