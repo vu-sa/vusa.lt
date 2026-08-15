@@ -16,7 +16,9 @@ use App\Models\Institution;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Providers\TestingServiceProvider;
+use Pest\Browser\Api\AwaitableWebpage;
 use Pest\Browser\Api\PendingAwaitablePage;
+use Pest\Browser\Playwright\Page as PlaywrightPage;
 use Tests\TestCase;
 
 pest()->extend(TestCase::class)->in('Feature', 'Unit', 'Browser');
@@ -127,6 +129,11 @@ expect()->extend('toHaveTranslation', function (string $field, string $locale) {
  *
  * Requires the target tenant to already exist (`Tenant::firstOrCreate(['alias' => $subdomain === 'www' ? 'vusa' : $subdomain], …)`)
  * — like every public controller, the warm-up visit 500s otherwise.
+ *
+ * The returned page has already navigated *and* mounted (see `waitForInertiaRender()`), so any
+ * per-page configuration that must precede the visit — `pest()->browser()->...()`,
+ * `inDarkMode()` and friends — has to be applied before calling this, not chained onto the
+ * result.
  */
 function visitPublicSubdomain(string $subdomain, string $path): PendingAwaitablePage
 {
@@ -147,7 +154,44 @@ function visitPublicSubdomain(string $subdomain, string $path): PendingAwaitable
 
     config(['app.url' => "http://{$host}"]);
 
-    return visit("http://{$host}:{$port}{$path}");
+    $page = visit("http://{$host}:{$port}{$path}");
+
+    // The returned page is guaranteed mounted, not merely loaded — see waitForInertiaRender().
+    waitForInertiaRender($page);
+
+    return $page;
+}
+
+/**
+ * Block until an Inertia page has actually rendered into `#app`.
+ *
+ * Every public page is client-rendered — public.ts code-splits
+ * `import.meta.glob('./Pages/Public/**\/*.vue')` lazily (no `eager: true`) — and the plugin's
+ * navigation only waits for the `load` event, which by spec does not wait for a dynamically
+ * `import()`ed chunk. So immediately after a visit, and again after any Inertia SPA navigation,
+ * `#app` is still the empty div Inertia renders server-side.
+ *
+ * The plugin's assertion retry (`Execution::waitForExpectation`) looks like it papers over this,
+ * and does locally — but it's a PHP-side hot spin (`Amp\delay(0)`, no backoff) sharing a process
+ * with the Laravel HTTP server that has to serve the page chunk (`LaravelHttpServer` runs the
+ * app in-process). On a CPU-constrained CI runner the spin can starve the very request it's
+ * waiting on, which is why raising `pest()->browser()->timeout()` alone didn't fix a CI-only
+ * failure here (see `tests/Browser/Pest.php`).
+ *
+ * `waitForSelector()` hands the waiting to Playwright instead: one blocking round trip that
+ * suspends this fiber, so the in-process HTTP server keeps serving. Do NOT reach for
+ * `waitForFunction()`, `waitForURL()`, or `waitForLoadState()` as alternatives — in
+ * pestphp/pest-plugin-browser 5.0.1 all three build a `Client::execute()` Generator and never
+ * iterate it (`vendor/pestphp/pest-plugin-browser/src/Playwright/Page.php:237,253,272`), so they
+ * send nothing and return instantly. `waitForSelector()` is the only one that actually waits.
+ */
+function waitForInertiaRender(
+    PendingAwaitablePage|AwaitableWebpage $page,
+    string $selector = '#app > *:first-child',
+): void {
+    // Unstrict: waitForSelector() follows with an elementHandle() querySelector that throws on a
+    // multi-match selector, a pointless failure mode for a readiness check.
+    $page->page()->unstrict(fn (PlaywrightPage $playwrightPage) => $playwrightPage->waitForSelector($selector));
 }
 
 /**

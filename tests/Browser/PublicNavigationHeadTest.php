@@ -46,8 +46,17 @@ it('swaps title and canonical URL on client-side navigation between public pages
     // real client-side Inertia visit (no full page reload): if Laravel Head's page-managed
     // elements weren't correctly adopted, the assertions below would still see the archive
     // page's title/canonical after this click, not the article's.
-    $page->click('a[href*="browser-test-navigation-article"]')
-        ->assertPathContains('browser-test-navigation-article')
+    $page->click('a[href*="browser-test-navigation-article"]');
+
+    // Second async gap, same shape as the initial load (see waitForInertiaRender()'s docblock in
+    // tests/Pest.php): the Inertia XHR plus a lazily-imported NewsPage chunk. Wait on the
+    // article's own <h1> (NewsArticleLayout.vue), which never exists on the archive page, so
+    // this can't pass against the pre-click DOM. Don't use waitForURL() here — Inertia pushes
+    // the new URL before the destination component resolves, and it's a no-op in this plugin
+    // version anyway.
+    waitForInertiaRender($page, sprintf('h1:has-text("%s")', $news->title));
+
+    $page->assertPathContains('browser-test-navigation-article')
         ->assertTitleContains($news->title);
 
     $canonicalHref = $page->script("document.querySelector('link[rel=canonical]')?.getAttribute('href')");

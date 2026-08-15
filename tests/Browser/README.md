@@ -60,6 +60,36 @@ Admin (`/mano`) pages aren't domain-routed, so plain `visit('/mano/...')` works 
 helper — though you'll still want `pest()->browser()->withHost('www.vusa.test')` (or similar) if
 the page under test resolves a tenant from the subdomain.
 
+## The client-render gotcha (and why waitForFunction/waitForURL won't help)
+
+Every public page is client-rendered and code-split (`public.ts`'s
+`import.meta.glob('./Pages/Public/**/*.vue')` isn't `eager`), and the plugin's navigation only
+waits for the `load` event — which by spec does **not** wait for a dynamically `import()`ed
+chunk. So right after any visit (or any Inertia SPA navigation), `#app` is still the empty div
+Inertia renders server-side.
+
+The plugin's assertion retry (`assertSee` and friends) looks like it papers over this, and does
+locally — but it's a PHP-side hot spin (`Execution::waitForExpectation`, `Amp\delay(0)`, no
+backoff) sharing a process with the Laravel HTTP server that has to serve the page chunk
+(`LaravelHttpServer` runs the app in-process). On a CPU-constrained CI runner the spin can starve
+the very request it's waiting on. Symptom: passes locally in ~2s, fails only in GitHub Actions,
+and **raising the timeout does not help** (observed failing at ~13.25s against a 15s budget).
+
+Rule: `visitPublicSubdomain()` already blocks until `#app` has rendered, so the initial load is
+covered for free. **After any click that triggers an Inertia (SPA) navigation, call
+`waitForInertiaRender($page, '<selector unique to the destination>')` before asserting** — see
+`PublicNavigationHeadTest.php` for the pattern (it waits on the destination article's own
+`<h1>` after clicking a card).
+
+Hard warning: in `pestphp/pest-plugin-browser` 5.0.1, `Page::waitForFunction()`,
+`Page::waitForURL()`, and `Page::waitForLoadState()` never send anything to Playwright — they
+build a `Client::execute()` `Generator` and drop it without iterating
+(`vendor/pestphp/pest-plugin-browser/src/Playwright/Page.php:237,253,272`), so they return
+instantly having waited for nothing. Only `waitForSelector()` genuinely waits (it's what
+`waitForInertiaRender()` uses). Don't "fix" a flake with one of the other three. Also don't wait
+on the URL for an Inertia navigation even once that bug is fixed upstream — Inertia pushes the
+new URL before the destination component resolves, so a URL-based wait proves nothing.
+
 ## Screenshots
 
 `tests/Browser/Screenshots/` is gitignored. Always pass an explicit `filename:` —
