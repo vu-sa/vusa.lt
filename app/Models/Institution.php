@@ -150,7 +150,13 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
         return $this->belongsTo(Tenant::class);
     }
 
-    public function tenants()
+    /**
+     * Alias of {@see self::tenant()} for the callers that ask every model for its "tenants"
+     * (ModelIndexer, eager loads shared with models that really do have many).
+     *
+     * @return BelongsTo<Tenant, $this>
+     */
+    public function tenants(): BelongsTo
     {
         return $this->tenant();
     }

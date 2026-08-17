@@ -100,6 +100,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
+import { TenantType } from '@/Types/enums';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Building2, Users } from 'lucide-vue-next';
 
@@ -163,7 +164,7 @@ const institutionUrl = computed(() => {
   const locale = (page.props.app as any)?.locale || 'lt';
   // Use www subdomain for: vusa alias, pkp type tenants, or when no tenant
   const { tenant } = props.institution;
-  const subdomain = (!tenant || tenant.alias === 'vusa' || tenant.type === 'pkp')
+  const subdomain = (!tenant || tenant.alias === 'vusa' || tenant.type === TenantType.Pkp)
     ? 'www'
     : (tenant.alias || 'www');
 

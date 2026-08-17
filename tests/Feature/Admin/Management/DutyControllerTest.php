@@ -6,6 +6,7 @@ use App\Models\News;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -249,7 +250,7 @@ describe('authorized access', function (): void {
         $user1Pivot = DB::table('dutiables')
             ->where('duty_id', $this->dutyManagerDuty->id)
             ->where('dutiable_id', $user1->id)
-            ->where('dutiable_type', User::class)
+            ->where('dutiable_type', MorphMap::alias(User::class))
             ->first();
 
         expect($user1Pivot->end_date)->not->toBeNull();
@@ -565,7 +566,7 @@ describe('assignable users is_recent flag', function (): void {
             'id' => (string) Str::ulid(),
             'duty_id' => $this->dutyManagerDuty->id,
             'dutiable_id' => $currentDutyUser->id,
-            'dutiable_type' => User::class,
+            'dutiable_type' => MorphMap::alias(User::class),
             'start_date' => now()->subYear()->toDateString(),
             'end_date' => null,
             'created_at' => now()->subYear(),
@@ -581,7 +582,7 @@ describe('assignable users is_recent flag', function (): void {
             'id' => (string) Str::ulid(),
             'duty_id' => $this->dutyManagerDuty->id,
             'dutiable_id' => $recentPastDutyUser->id,
-            'dutiable_type' => User::class,
+            'dutiable_type' => MorphMap::alias(User::class),
             'start_date' => now()->subMonths(9)->toDateString(),
             'end_date' => now()->subMonths(6)->toDateString(),
             'created_at' => now()->subMonths(9),
@@ -609,7 +610,7 @@ describe('assignable users is_recent flag', function (): void {
             'id' => (string) Str::ulid(),
             'duty_id' => $this->dutyManagerDuty->id,
             'dutiable_id' => $staleUser->id,
-            'dutiable_type' => User::class,
+            'dutiable_type' => MorphMap::alias(User::class),
             'start_date' => now()->subMonths(20)->toDateString(),
             'end_date' => now()->subMonths(18)->toDateString(),
             'created_at' => now()->subMonths(20),
@@ -758,7 +759,7 @@ describe('data quality filters', function (): void {
                 'id' => (string) Str::ulid(),
                 'duty_id' => $duplicateDuty->id,
                 'dutiable_id' => $user->id,
-                'dutiable_type' => User::class,
+                'dutiable_type' => MorphMap::alias(User::class),
                 'start_date' => now()->subMonths(2)->toDateString(),
                 'end_date' => null,
                 'created_at' => now(),
@@ -768,7 +769,7 @@ describe('data quality filters', function (): void {
                 'id' => (string) Str::ulid(),
                 'duty_id' => $duplicateDuty->id,
                 'dutiable_id' => $user->id,
-                'dutiable_type' => User::class,
+                'dutiable_type' => MorphMap::alias(User::class),
                 'start_date' => now()->subMonth()->toDateString(),
                 'end_date' => null,
                 'created_at' => now(),

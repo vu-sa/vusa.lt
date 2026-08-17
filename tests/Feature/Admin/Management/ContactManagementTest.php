@@ -264,13 +264,13 @@ test('contact manager can add type to duty', function (): void {
 
     $this->assertDatabaseHas('typeables', [
         'typeable_id' => $userDuty->id,
-        'typeable_type' => $userDuty::class,
+        'typeable_type' => $userDuty->getMorphClass(),
         'type_id' => $firstTypeId,
     ]);
 
     $this->assertDatabaseHas('model_has_roles', [
         'role_id' => Role::query()->where('name', 'Student Representative')->first()->id,
-        'model_type' => $userDuty::class,
+        'model_type' => $userDuty->getMorphClass(),
         'model_id' => $userDuty->id,
     ]);
 
@@ -293,13 +293,13 @@ test('contact manager can add type to duty', function (): void {
 
     $this->assertDatabaseMissing('typeables', [
         'typeable_id' => $userDuty->id,
-        'typeable_type' => $userDuty::class,
+        'typeable_type' => $userDuty->getMorphClass(),
         'type_id' => $firstTypeId,
     ]);
 
     $this->assertDatabaseMissing('model_has_roles', [
         'role_id' => Role::query()->where('name', 'Student Representative')->first()->id,
-        'model_type' => $userDuty::class,
+        'model_type' => $userDuty->getMorphClass(),
         'model_id' => $userDuty->id,
     ]);
 });

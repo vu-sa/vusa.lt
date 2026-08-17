@@ -3,6 +3,7 @@
 use App\Models\FileableFile;
 use App\Models\Institution;
 use App\Models\Tenant;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
@@ -17,7 +18,7 @@ describe('FileableFile model basic functionality', function (): void {
         $fileableFile = FileableFile::factory()->for($this->institution, 'fileable')->create();
 
         expect($fileableFile)->toBeInstanceOf(FileableFile::class)
-            ->and($fileableFile->fileable_type)->toBe(Institution::class)
+            ->and($fileableFile->fileable_type)->toBe(MorphMap::alias(Institution::class))
             ->and($fileableFile->fileable_id)->toBe($this->institution->id)
             ->and($fileableFile->sharepoint_id)->toBeString()
             ->and($fileableFile->name)->toBeString();

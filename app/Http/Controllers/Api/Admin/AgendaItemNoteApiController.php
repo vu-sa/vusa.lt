@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Api\Admin\UpdateAgendaItemNoteRequest;
 use App\Models\AgendaItemNote;
 use App\Models\Pivots\AgendaItem;
 use Illuminate\Http\JsonResponse;
@@ -57,14 +58,9 @@ class AgendaItemNoteApiController extends ApiController
     /**
      * Persist the debounced Y.js snapshot + rendered HTML.
      */
-    public function update(Request $request, AgendaItem $agendaItem): JsonResponse
+    public function update(UpdateAgendaItemNoteRequest $request, AgendaItem $agendaItem): JsonResponse
     {
-        $this->authorize('update', $agendaItem);
-
-        $validated = $request->validate([
-            'yjs_state' => ['required', 'string'],
-            'notes_html' => ['nullable', 'string'],
-        ]);
+        $validated = $request->validated();
 
         /** @var AgendaItemNote $note */
         $note = $agendaItem->note()->updateOrCreate([], [
@@ -76,6 +72,6 @@ class AgendaItemNoteApiController extends ApiController
         return $this->jsonSuccess([
             'updated_by' => $note->updated_by,
             'updated_at' => $note->updated_at?->toISOString(),
-        ], 'Pastabos išsaugotos.');
+        ], __('messages.agenda_item.notes_saved'));
     }
 }

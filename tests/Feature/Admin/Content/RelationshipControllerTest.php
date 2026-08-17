@@ -5,6 +5,7 @@ use App\Models\Pivots\Relationshipable;
 use App\Models\Relationship;
 use App\Models\Tenant;
 use App\Models\Type;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -77,7 +78,7 @@ describe('unauthorized access', function (): void {
     test('cannot store model relationship', function (): void {
         $data = [
             'model_id' => $this->institution->id,
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
             'related_model_id' => $this->relatedInstitution->id,
         ];
         asUser($this->user)->post(route('relationships.storeModelRelationship', $this->relationship), $data)
@@ -132,7 +133,7 @@ describe('relationship CRUD operations', function (): void {
 
         asUser($this->admin)->post(route('relationships.store'), $data)
             ->assertRedirect(route('relationships.index'))
-            ->assertSessionHas('success', 'Ryšio tipas sukurtas sėkmingai.');
+            ->assertSessionHas('success', 'Ryšio tipas sėkmingai sukurtas.');
 
         $this->assertDatabaseHas('relationships', [
             'name' => $data['name'],
@@ -168,7 +169,7 @@ describe('relationship CRUD operations', function (): void {
 
         asUser($this->admin)->put(route('relationships.update', $this->relationship), $data)
             ->assertRedirect(route('relationships.index'))
-            ->assertSessionHas('success', 'Ryšio tipas atnaujintas sėkmingai.');
+            ->assertSessionHas('success', 'Ryšio tipas sėkmingai atnaujintas.');
 
         $this->assertDatabaseHas('relationships', [
             'id' => $this->relationship->id,
@@ -211,7 +212,7 @@ describe('relationship CRUD operations', function (): void {
     test('can delete relationship', function (): void {
         asUser($this->admin)->delete(route('relationships.destroy', $this->relationship))
             ->assertRedirect()
-            ->assertSessionHas('success', 'Ryšio tipas tarp modelių ištrintas');
+            ->assertSessionHas('success', 'Ryšio tipas tarp modelių ištrintas.');
 
         $this->assertDatabaseMissing('relationships', [
             'id' => $this->relationship->id,
@@ -242,17 +243,17 @@ describe('model relationship operations', function (): void {
     test('can store model relationship', function (): void {
         $data = [
             'model_id' => $this->institution->id,
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
             'related_model_id' => $this->relatedInstitution->id,
         ];
 
         asUser($this->admin)->post(route('relationships.storeModelRelationship', $this->relationship), $data)
             ->assertRedirect(route('relationships.edit', $this->relationship))
-            ->assertSessionHas('success', 'Ryšys sukurtas sėkmingai.');
+            ->assertSessionHas('success', 'Ryšys sėkmingai sukurtas.');
 
         $this->assertDatabaseHas('relationshipables', [
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->institution->id,
             'related_model_id' => $this->relatedInstitution->id,
         ]);
@@ -261,18 +262,18 @@ describe('model relationship operations', function (): void {
     test('can store type relationship with scope', function (): void {
         $data = [
             'model_id' => $this->type->id,
-            'model_type' => Type::class,
+            'model_type' => MorphMap::alias(Type::class),
             'related_model_id' => $this->type->id,
             'scope' => 'cross-tenant',
         ];
 
         asUser($this->admin)->post(route('relationships.storeModelRelationship', $this->relationship), $data)
             ->assertRedirect(route('relationships.edit', $this->relationship))
-            ->assertSessionHas('success', 'Ryšys sukurtas sėkmingai.');
+            ->assertSessionHas('success', 'Ryšys sėkmingai sukurtas.');
 
         $this->assertDatabaseHas('relationshipables', [
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Type::class,
+            'relationshipable_type' => MorphMap::alias(Type::class),
             'relationshipable_id' => $this->type->id,
             'scope' => 'cross-tenant',
         ]);
@@ -281,7 +282,7 @@ describe('model relationship operations', function (): void {
     test('scope defaults to within-tenant for type relationships', function (): void {
         $data = [
             'model_id' => $this->type->id,
-            'model_type' => Type::class,
+            'model_type' => MorphMap::alias(Type::class),
             'related_model_id' => $this->type->id,
             // No scope provided - should default to within-tenant
         ];
@@ -291,7 +292,7 @@ describe('model relationship operations', function (): void {
 
         $this->assertDatabaseHas('relationshipables', [
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Type::class,
+            'relationshipable_type' => MorphMap::alias(Type::class),
             'relationshipable_id' => $this->type->id,
             'scope' => 'within-tenant',
         ]);
@@ -300,7 +301,7 @@ describe('model relationship operations', function (): void {
     test('can store model relationship with bidirectional = true', function (): void {
         $data = [
             'model_id' => $this->institution->id,
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
             'related_model_id' => $this->relatedInstitution->id,
             'bidirectional' => true,
         ];
@@ -310,7 +311,7 @@ describe('model relationship operations', function (): void {
 
         $this->assertDatabaseHas('relationshipables', [
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->institution->id,
             'related_model_id' => $this->relatedInstitution->id,
             'bidirectional' => true,
@@ -320,7 +321,7 @@ describe('model relationship operations', function (): void {
     test('can store model relationship with bidirectional = false', function (): void {
         $data = [
             'model_id' => $this->institution->id,
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
             'related_model_id' => $this->relatedInstitution->id,
             'bidirectional' => false,
         ];
@@ -330,7 +331,7 @@ describe('model relationship operations', function (): void {
 
         $this->assertDatabaseHas('relationshipables', [
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->institution->id,
             'related_model_id' => $this->relatedInstitution->id,
             'bidirectional' => false,
@@ -340,7 +341,7 @@ describe('model relationship operations', function (): void {
     test('bidirectional defaults to false when not provided', function (): void {
         $data = [
             'model_id' => $this->institution->id,
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
             'related_model_id' => $this->relatedInstitution->id,
             // No bidirectional provided - should default to false
         ];
@@ -350,7 +351,7 @@ describe('model relationship operations', function (): void {
 
         $this->assertDatabaseHas('relationshipables', [
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->institution->id,
             'related_model_id' => $this->relatedInstitution->id,
             'bidirectional' => false,
@@ -360,7 +361,7 @@ describe('model relationship operations', function (): void {
     test('cannot store model relationship with invalid scope', function (): void {
         $data = [
             'model_id' => $this->type->id,
-            'model_type' => Type::class,
+            'model_type' => MorphMap::alias(Type::class),
             'related_model_id' => $this->type->id,
             'scope' => 'invalid-scope',
         ];
@@ -384,7 +385,7 @@ describe('model relationship operations', function (): void {
         // Test the basic model deletion functionality
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->institution->id,
             'related_model_id' => $this->relatedInstitution->id,
         ]);
@@ -393,7 +394,7 @@ describe('model relationship operations', function (): void {
         // Verify it was created
         $this->assertDatabaseHas('relationshipables', [
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->institution->id,
         ]);
 
@@ -409,7 +410,7 @@ describe('model relationship operations', function (): void {
         // Create a relationshipable first
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->institution->id,
             'related_model_id' => $this->relatedInstitution->id,
             'bidirectional' => false,
@@ -431,7 +432,7 @@ describe('model relationship operations', function (): void {
         // Create a type-based relationshipable
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Type::class,
+            'relationshipable_type' => MorphMap::alias(Type::class),
             'relationshipable_id' => $this->type->id,
             'related_model_id' => $this->type->id,
             'scope' => 'within-tenant',
@@ -521,7 +522,7 @@ describe('relationship eager loading', function (): void {
         // Create relationshipables for the relationship
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->institution->id,
             'related_model_id' => $this->relatedInstitution->id,
         ]);
@@ -605,7 +606,7 @@ describe('security and authorization', function (): void {
     test('model relationship operations require authentication', function (): void {
         $data = [
             'model_id' => $this->institution->id,
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
             'related_model_id' => $this->relatedInstitution->id,
         ];
 

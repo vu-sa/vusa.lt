@@ -101,7 +101,7 @@ class DocumentController extends AdminController
             $options['sort_by'] = 'created_at:desc';
         }
 
-        $perPage = $request->input('per_page', 20);
+        $perPage = $request->getPerPage();
         $results = Document::search($searchText)->options($options)->paginate($perPage);
 
         // Get complete filter options (all distinct values across all documents)
@@ -176,14 +176,14 @@ class DocumentController extends AdminController
 
         // Check if documents array is not empty
         if ($model === null) {
-            return redirect()->route('documents.index')->with('info', 'No documents to process.');
+            return redirect()->route('documents.index')->with('info', __('messages.document.none_to_process'));
         }
 
         $graph = new SharepointGraphService(siteId: $model->sharepoint_site_id, driveId: config('filesystems.sharepoint.archive_drive_id'));
 
         $documentCollection = $graph->batchProcessDocuments($documentCollection);
 
-        return redirect()->route('documents.index')->with('success', 'Documents have been successfully stored.');
+        return redirect()->route('documents.index')->with('success', __('messages.document.stored'));
     }
 
     public function refresh(Document $document)
@@ -193,7 +193,7 @@ class DocumentController extends AdminController
         // Dispatch sync job to background instead of synchronous processing
         SyncDocumentFromSharePointJob::dispatch($document);
 
-        return back()->with('success', 'Document refresh has been queued. It will be updated shortly.');
+        return back()->with('success', __('messages.document.refresh_queued'));
     }
 
     /**
@@ -215,7 +215,7 @@ class DocumentController extends AdminController
             SyncDocumentFromSharePointJob::dispatch($document);
         }
 
-        return back()->with('success', "Bulk sync queued for {$documents->count()} documents. They will be updated shortly.");
+        return back()->with('success', __('messages.document.bulk_sync_queued', ['count' => $documents->count()]));
     }
 
     /**
@@ -243,6 +243,6 @@ class DocumentController extends AdminController
 
         $document->delete();
 
-        return redirect()->route('documents.index')->with('success', 'Document has been successfully deleted.');
+        return redirect()->route('documents.index')->with('success', $this->entityMessage('deleted', 'document'));
     }
 }

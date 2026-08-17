@@ -6,6 +6,7 @@ use App\Models\Pivots\Dutiable;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
@@ -139,7 +140,7 @@ test('cross-tenant admin can swap users within their quota', function (): void {
     Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $user1->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'tenant_id' => $this->assignableTenant->id,
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
@@ -147,7 +148,7 @@ test('cross-tenant admin can swap users within their quota', function (): void {
     Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $user2->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'tenant_id' => $this->assignableTenant->id,
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
@@ -187,7 +188,7 @@ test('cross-tenant admin cannot exceed their quota', function (): void {
     Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $user1->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'tenant_id' => $this->assignableTenant->id,
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
@@ -195,7 +196,7 @@ test('cross-tenant admin cannot exceed their quota', function (): void {
     Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $user2->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'tenant_id' => $this->assignableTenant->id,
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
@@ -222,7 +223,7 @@ test('dutiable can be edited by cross-tenant admin when user belongs to their te
     $dutiable = Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $this->tenantUser->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
     ]);
@@ -239,7 +240,7 @@ test('cross-tenant admin cannot edit dutiable of user from another tenant', func
     $dutiable = Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $this->outsideUser->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
     ]);
@@ -280,7 +281,7 @@ test('edit page exposes assignableTenantUsers map for cross-tenant admin', funct
     Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $tenantUser->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'tenant_id' => $this->assignableTenant->id,
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
@@ -298,7 +299,7 @@ test('edit page assignableTenantUsers excludes users end-dated today', function 
     Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $tenantUser->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'tenant_id' => $this->assignableTenant->id,
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => now()->toDateString(),
@@ -316,7 +317,7 @@ test('edit page assignableTenantUsers excludes users end-dated yesterday', funct
     Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $tenantUser->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'tenant_id' => $this->assignableTenant->id,
         'start_date' => now()->subWeek()->toDateString(),
         'end_date' => now()->subDay()->toDateString(),
@@ -334,7 +335,7 @@ test('edit page assignableTenantUsers includes users end-dated tomorrow', functi
     Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $tenantUser->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'tenant_id' => $this->assignableTenant->id,
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => now()->addDay()->toDateString(),
@@ -352,7 +353,7 @@ test('edit page assignableTenantUsers includes users with null end_date', functi
     Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $tenantUser->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'tenant_id' => $this->assignableTenant->id,
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
@@ -374,7 +375,7 @@ test('batch update quota allows adding user after end-dating one today', functio
     Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $user1->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'tenant_id' => $this->assignableTenant->id,
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
@@ -382,7 +383,7 @@ test('batch update quota allows adding user after end-dating one today', functio
     Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $user2->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'tenant_id' => $this->assignableTenant->id,
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
@@ -426,7 +427,7 @@ test('batch update quota still blocks when net count exceeds quota after swaps',
     Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $user1->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'tenant_id' => $this->assignableTenant->id,
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
@@ -434,7 +435,7 @@ test('batch update quota still blocks when net count exceeds quota after swaps',
     Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $user2->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'tenant_id' => $this->assignableTenant->id,
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
@@ -467,7 +468,7 @@ test('batch update quota counts user end-dated yesterday as already removed', fu
     Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $user1->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'tenant_id' => $this->assignableTenant->id,
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
@@ -475,7 +476,7 @@ test('batch update quota counts user end-dated yesterday as already removed', fu
     Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $user2->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'tenant_id' => $this->assignableTenant->id,
         'start_date' => now()->subWeek()->toDateString(),
         'end_date' => now()->subDay()->toDateString(),
@@ -518,7 +519,7 @@ test('removing a tenant from assignable_tenants end-dates their active reps', fu
     $dutiable = Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $crossUser->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'tenant_id' => $this->assignableTenant->id,
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
@@ -544,7 +545,7 @@ test('owning-tenant TransferList update does not touch cross-tenant reps', funct
     Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $crossUser->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'tenant_id' => $this->assignableTenant->id,
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
@@ -586,7 +587,7 @@ test('batchUpdateUsers can remove user with future end_date', function (): void 
     Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $crossUser->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'tenant_id' => $this->assignableTenant->id,
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => now()->addYear()->toDateString(),
@@ -618,7 +619,7 @@ test('batchUpdateUsers quota allows swap when removing future-end-dated user', f
     Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $user1->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'tenant_id' => $this->assignableTenant->id,
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
@@ -626,7 +627,7 @@ test('batchUpdateUsers quota allows swap when removing future-end-dated user', f
     Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $user2->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'tenant_id' => $this->assignableTenant->id,
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => now()->addYear()->toDateString(),
@@ -658,7 +659,7 @@ test('owning admin can remove wizard-added cross-tenant user via duties.update',
     Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $crossUser->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'tenant_id' => $this->assignableTenant->id,
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => now()->addYear()->toDateString(),
@@ -689,7 +690,7 @@ test('removing assignable tenant end-dates all active reps including future end_
     Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $crossUser->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'tenant_id' => $this->assignableTenant->id,
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => now()->addYear()->toDateString(),

@@ -6,6 +6,7 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Reservation;
 use App\Models\Task;
+use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -25,7 +26,7 @@ class TaskFactory extends Factory
             'name' => $this->faker->sentence(3),
             'description' => $this->faker->paragraph(),
             'due_date' => $this->faker->dateTimeBetween('now', '+30 days'),
-            'taskable_type' => Institution::class,
+            'taskable_type' => MorphMap::alias(Institution::class),
             'taskable_id' => Institution::query()->inRandomOrder()->first()?->id ?? Institution::factory(),
             'completed_at' => null,
         ];
@@ -90,7 +91,7 @@ class TaskFactory extends Factory
     public function forReservation(?Reservation $reservation = null): static
     {
         return $this->state([
-            'taskable_type' => Reservation::class,
+            'taskable_type' => MorphMap::alias(Reservation::class),
             'taskable_id' => $reservation?->id ?? Reservation::factory(),
         ]);
     }
@@ -101,7 +102,7 @@ class TaskFactory extends Factory
     public function forMeeting(?Meeting $meeting = null): static
     {
         return $this->state([
-            'taskable_type' => Meeting::class,
+            'taskable_type' => MorphMap::alias(Meeting::class),
             'taskable_id' => $meeting?->id ?? Meeting::factory(),
         ]);
     }

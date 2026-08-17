@@ -170,7 +170,9 @@ Route::post('files/upload-image', [FilesController::class, 'uploadImage'])->name
 Route::delete('files/delete', [FilesController::class, 'delete'])->name('files.delete');
 Route::delete('files/bulk-delete', [FilesController::class, 'bulkDelete'])->name('files.bulkDelete');
 Route::post('files/scan-usage', [FilesController::class, 'scanFileUsage'])->name('files.scanUsage');
-Route::resource('files', FilesController::class);
+// FilesController only implements index and store; the other resource verbs were
+// registered but had no method behind them.
+Route::resource('files', FilesController::class)->only(['index', 'store']);
 Route::post('files/compress', [FilesController::class, 'compressImage'])->name('files.compress');
 
 Route::resource('documents', DocumentController::class)->except('create', 'edit');
@@ -182,7 +184,9 @@ Route::post('duties/merge', [DutyController::class, 'mergeDuties'])->name('dutie
 Route::resource('duties', DutyController::class);
 Route::get('duties-update-users', [DutyController::class, 'updateUsersWizard'])->name('duties.updateUsersWizard');
 Route::post('duties/{duty}/batch-update-users', [DutyController::class, 'batchUpdateUsers'])->name('duties.batchUpdateUsers');
-Route::resource('dutiables', DutiableController::class)->except(['index', 'show']);
+// DutiableController has no create/store — dutiables are created through the duty and
+// user flows, not directly.
+Route::resource('dutiables', DutiableController::class)->only(['edit', 'update', 'destroy']);
 Route::get('studyPrograms/merge', [StudyProgramController::class, 'merge'])->name('studyPrograms.merge');
 Route::post('studyPrograms/merge', [StudyProgramController::class, 'mergeStudyPrograms'])->name('studyPrograms.mergeStudyPrograms');
 Route::resource('studyPrograms', StudyProgramController::class)->except(['show']);
@@ -241,6 +245,8 @@ Route::get('settings/documents', [SettingsController::class, 'editDocumentSettin
 Route::post('settings/documents', [SettingsController::class, 'updateDocumentSettings'])->name('settings.documents.update');
 Route::get('settings/atstovavimas', [SettingsController::class, 'editAtstovavimasSettings'])->name('settings.atstovavimas.edit');
 Route::post('settings/atstovavimas', [SettingsController::class, 'updateAtstovavimasSettings'])->name('settings.atstovavimas.update');
+Route::get('settings/site', [SettingsController::class, 'editSiteSettings'])->name('settings.site.edit');
+Route::post('settings/site', [SettingsController::class, 'updateSiteSettings'])->name('settings.site.update');
 Route::get('settings/authorization', [SettingsController::class, 'editAuthorization'])->name('settings.authorization.edit');
 Route::post('settings/authorization', [SettingsController::class, 'updateAuthorization'])->name('settings.authorization.update');
 

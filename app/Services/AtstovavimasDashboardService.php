@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\InstitutionActivityStatus;
+use App\Enums\TenantType;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\Meeting;
@@ -285,7 +286,7 @@ class AtstovavimasDashboardService
 
         return Institution::query()
             ->whereIn('tenant_id', $tenantIds)
-            ->whereHas('tenant', fn (Builder $query) => $query->where('type', '!=', 'pkp'))
+            ->whereHas('tenant', fn (Builder $query) => $query->whereIn('type', TenantType::representationalValues()))
             ->when(
                 $excludedTypeIds->isNotEmpty(),
                 fn (Builder $query) => $query->whereDoesntHave(

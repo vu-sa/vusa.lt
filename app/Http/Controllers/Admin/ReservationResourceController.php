@@ -6,15 +6,12 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreReservationResourceRequest;
 use App\Models\Pivots\ReservationResource;
 use App\Models\Reservation;
-use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
 class ReservationResourceController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
-
     /**
      * Redirect to the reservation show page. Separate reservation resource show pages are not needed.
      */
@@ -30,7 +27,7 @@ class ReservationResourceController extends AdminController
         $reservationResource->fill($request->validated());
         $reservationResource->save();
 
-        return back()->with('success', trans_choice('messages.created', 1, ['model' => trans_choice('entities.reservation_resource.model', 1)]));
+        return back()->with('success', $this->entityMessage('created', 'reservationResource'));
     }
 
     /**
@@ -49,7 +46,7 @@ class ReservationResourceController extends AdminController
 
         $reservationResource->save();
 
-        return back()->with('success', trans_choice('messages.updated', 1, ['model' => trans_choice('entities.reservation_resource.model', 1)]));
+        return back()->with('success', $this->entityMessage('updated', 'reservationResource'));
     }
 
     public function destroy(ReservationResource $reservationResource)
@@ -58,6 +55,6 @@ class ReservationResourceController extends AdminController
 
         $reservationResource->delete();
 
-        return back()->with('info', trans_choice('messages.deleted', 1, ['model' => trans_choice('entities.reservation_resource.model', 1)]));
+        return back()->with('info', $this->entityMessage('deleted', 'reservationResource'));
     }
 }

@@ -9,7 +9,6 @@ use App\Tasks\DTOs\CreateTaskData;
 use App\Tasks\Handlers\ApprovalTaskHandler;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Events\Dispatcher;
-use Illuminate\Support\Str;
 
 /**
  * Event subscriber for approval-related task operations.
@@ -87,9 +86,6 @@ class ApprovalTaskSubscriber
         // Complete tasks for the approvable itself
         $this->approvalHandler->completeForModel($approvable, $reason);
 
-        // For models with snake_case morph mapping, try that too
-        $this->completeForMorphVariants($approvable, $reason);
-
         // For ReservationResource, also check tasks on the Reservation
         if (method_exists($approvable, 'reservation')) {
             $reservation = $approvable->reservation()->first();
@@ -97,22 +93,6 @@ class ApprovalTaskSubscriber
             if ($reservation) {
                 $this->approvalHandler->completeForModel($reservation, $reason);
             }
-        }
-    }
-
-    /**
-     * Complete tasks for morph class name variants.
-     */
-    protected function completeForMorphVariants($approvable, string $reason): void
-    {
-        $snakeCaseClass = Str::snake(class_basename($approvable));
-        $morphClass = $approvable->getMorphClass();
-
-        // If the morph class differs from snake case, complete those too
-        if ($snakeCaseClass !== $morphClass) {
-            // Create a temporary wrapper to pass the snake case type
-            // This handles legacy data with different morph type formats
-            $this->approvalHandler->completeForModel($approvable, $reason);
         }
     }
 

@@ -145,8 +145,8 @@ const meta: Meta<typeof NewMeetingDialog> = {
         method: 'GET',
         status: 200,
         response: [
-          { id: 1, title: 'Regular Meeting', model_type: 'App\\Models\\Meeting' },
-          { id: 2, title: 'Special Meeting', model_type: 'App\\Models\\Meeting' },
+          { id: 1, title: 'Regular Meeting', model_type: 'meeting' },
+          { id: 2, title: 'Special Meeting', model_type: 'meeting' },
         ],
       },
     ],

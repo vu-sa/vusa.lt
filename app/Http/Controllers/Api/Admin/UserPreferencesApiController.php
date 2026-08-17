@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Api\Admin\TrackRecentPageRequest;
 use App\Http\Requests\UpdateUIPreferencesRequest;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class UserPreferencesApiController extends ApiController
@@ -52,15 +52,9 @@ class UserPreferencesApiController extends ApiController
     /**
      * Record a recently visited admin page.
      */
-    public function trackRecentPage(Request $request): Response
+    public function trackRecentPage(TrackRecentPageRequest $request): Response
     {
-        $validated = $request->validate([
-            'route' => 'required_without:clear|nullable|string',
-            'params' => 'nullable|array',
-            'title' => 'nullable|string|max:255',
-            'url' => 'nullable|string|max:2048',
-            'clear' => 'nullable|boolean',
-        ]);
+        $validated = $request->validated();
 
         $user = $this->requireAuth($request);
 

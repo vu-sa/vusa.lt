@@ -239,10 +239,25 @@ return [
     'cancel' => 'Atšaukti',
     'delete' => 'Ištrinti',
     'edit' => 'Redaguoti',
+    'messages' => [
+        'submission_deleted' => 'Atsakymas ištrintas.',
+        'all_submissions_deleted' => 'Visi atsakymai ištrinti.',
+    ],
     'remove' => 'Pašalinti',
     'upload_file' => 'Įkelti failą',
     'import' => 'Importuoti',
-    'new_model' => '{0} Nauja :model|{1} Naujas :model',
+    // The adjective agrees with the entity's gender (entities.php), so the key is split by
+    // gender rather than by count. Reach for newEntityTitle() / editEntityTitle() in JS.
+    'new_model' => [
+        'f' => 'Nauja :model',
+        'm' => 'Naujas :model',
+    ],
+    // Lithuanian would need the genitive of the entity name for ":Model redagavimas", and
+    // entities.php only holds the nominative, so the neutral "Redaguojama: <entity>" is used.
+    'edit_model' => [
+        'f' => 'Redaguojama: :model',
+        'm' => 'Redaguojama: :model',
+    ],
     'merge_duty_summary' => 'Sujungta: :assignments priskyrimų (iš jų :collapsed sutapo), :types tipų, :roles rolių, :exOfficio ex-officio ryšių, :quotas padalinių kvotų.',
     'dutiable_title_fallback_duty' => 'Pareigybė',
     'dutiable_title_fallback_person' => 'Asmuo',
@@ -255,5 +270,43 @@ return [
         'contact_admins' => 'Kreipkis į institucijos administratorius',
         'variant_hint' => 'Moteriškosios/vyriškosios giminės ar daugiskaitos forma yra sugeneruojama automatiškai pagal asmens įvardį — atskiros pareigybės kurti nereikia.',
         'other_institutions' => 'Tokia pareigybė yra dar :count institucijoje (-ose) — tai normalu.',
+    ],
+    'validation' => [
+        'agenda_item' => [
+            'titles_required' => 'Bent vienas darbotvarkės klausimas turi būti pridėtas.',
+            'title_required' => 'Darbotvarkės klausimas negali būti tuščias.',
+            'title_string' => 'Darbotvarkės klausimo pavadinimas turi būti tekstas.',
+            'title_max' => 'Darbotvarkės klausimo pavadinimas negali būti ilgesnis nei 255 simbolių.',
+            'description_string' => 'Darbotvarkės klausimo aprašymas turi būti tekstas.',
+            'order_integer' => 'Darbotvarkės klausimo tvarka turi būti skaičius.',
+            'order_min' => 'Darbotvarkės klausimo tvarka turi būti bent 1.',
+            'type_in' => 'Punkto tipas turi būti vienas iš: voting, informational, deferred.',
+            'student_position_max' => 'Studentų pozicija negali būti ilgesnė nei 5000 simbolių.',
+        ],
+        'merge' => [
+            'source_is_target' => 'Sujungiami įrašai negali apimti tikslinio įrašo.',
+            'target_required' => 'Tikslinis įrašas yra privalomas.',
+            'target_exists' => 'Pasirinktas tikslinis įrašas neegzistuoja.',
+            'sources_required' => 'Reikia pasirinkti bent vieną sujungiamą įrašą.',
+            'sources_min' => 'Reikia pasirinkti bent vieną sujungiamą įrašą.',
+            'sources_exist' => 'Vienas ar keli pasirinkti įrašai neegzistuoja.',
+        ],
+        'content' => [
+            'required' => 'Turinys yra privalomas.',
+            'parts_required' => 'Turinio blokai yra privalomi.',
+            'part_type_required' => 'Kiekvienas turinio blokas turi turėti tipą.',
+            'part_type_exists' => 'Pasirinktas turinio bloko tipas yra neteisingas.',
+            'part_content_required' => 'Kiekvienas turinio blokas turi turėti turinį.',
+        ],
+        'image' => [
+            'main_required' => 'Pagrindinė nuotrauka yra privaloma.',
+            'must_be_image' => 'Failas turi būti paveikslėlis.',
+            'max' => 'Paveikslėlis negali būti didesnis nei :max KB.',
+            'mimes' => 'Paveikslėlis turi būti JPEG, PNG arba WebP formato.',
+            'count_max' => 'Galima įkelti ne daugiau kaip :max nuotraukų.',
+            'all_must_be_images' => 'Visi failai turi būti paveikslėliai.',
+            'each_max' => 'Kiekvienas paveikslėlis negali būti didesnis nei :max KB.',
+            'all_mimes' => 'Paveikslėliai turi būti JPEG, PNG arba WebP formato.',
+        ],
     ],
 ];

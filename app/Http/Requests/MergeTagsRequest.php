@@ -34,11 +34,11 @@ class MergeTagsRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'target_tag_id.required' => 'Target tag is required.',
-            'target_tag_id.exists' => 'Selected target tag does not exist.',
-            'source_tag_ids.required' => 'At least one tag to merge is required.',
-            'source_tag_ids.min' => 'At least one tag to merge must be selected.',
-            'source_tag_ids.*.exists' => 'One or more selected tags do not exist.',
+            'target_tag_id.required' => trans('forms.validation.merge.target_required'),
+            'target_tag_id.exists' => trans('forms.validation.merge.target_exists'),
+            'source_tag_ids.required' => trans('forms.validation.merge.sources_required'),
+            'source_tag_ids.min' => trans('forms.validation.merge.sources_min'),
+            'source_tag_ids.*.exists' => trans('forms.validation.merge.sources_exist'),
         ];
     }
 }

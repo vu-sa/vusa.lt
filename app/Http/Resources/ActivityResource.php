@@ -46,7 +46,7 @@ class ActivityResource extends JsonResource
             'created_at' => $this->created_at?->toISOString(),
             'causer' => $this->when($causerData !== null, fn () => $causerData),
             'subject' => [
-                'type' => Auditables::aliasFor($this->subject_type) ?? $this->subject_type,
+                'type' => Auditables::aliasFor($this->resource->subjectClass()) ?? $this->subject_type,
                 'id' => (string) $this->subject_id,
                 'label' => $this->getAttribute('formatted_subject_label') ?? (string) $this->subject_id,
                 'is_root' => $isRoot,

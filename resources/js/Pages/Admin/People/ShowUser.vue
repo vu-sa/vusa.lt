@@ -196,6 +196,7 @@
 </template>
 
 <script setup lang="ts">
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { computed } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -285,7 +286,7 @@ const pronounsBadge = computed(() => {
   const p = props.user.pronouns;
   if (typeof p === 'string') return p;
   if (typeof p === 'object' && p !== null) {
-    return p.lt || p.en || null;
+    return getTranslatedValue(p) || null;
   }
   return null;
 });

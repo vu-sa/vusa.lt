@@ -11,6 +11,7 @@ use App\Models\Type;
 use App\Models\User;
 use App\Models\Vote;
 use App\Services\RelationshipService;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -49,7 +50,7 @@ describe('getRelatedInstitutionsForMultiple', function (): void {
         // Create a direct relationship between institutions (without related_model_type)
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->sourceInstitution->id,
             'related_model_id' => $this->relatedInstitution->id,
         ]);
@@ -72,7 +73,7 @@ describe('getRelatedInstitutionsForMultiple', function (): void {
         // Create relationship where related institution is also in source
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->sourceInstitution->id,
             'related_model_id' => $this->relatedInstitution->id,
         ]);
@@ -93,7 +94,7 @@ describe('getRelatedInstitutionsForMultiple', function (): void {
         // Create a direct relationship
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->sourceInstitution->id,
             'related_model_id' => $this->relatedInstitution->id,
         ]);
@@ -144,7 +145,7 @@ describe('getRelatedInstitutionsForMultiple', function (): void {
         // Create a direct relationship
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->sourceInstitution->id,
             'related_model_id' => $this->relatedInstitution->id,
         ]);
@@ -176,7 +177,7 @@ describe('getRelatedInstitutionsForMultiple', function (): void {
         // Create a direct relationship
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->sourceInstitution->id,
             'related_model_id' => $this->relatedInstitution->id,
         ]);
@@ -229,11 +230,11 @@ describe('getRelatedInstitutionsForMultiple', function (): void {
         // Create types for type-based relationship
         $userType = Type::factory()->create([
             'title' => ['lt' => 'Vartotojo tipas', 'en' => 'User Type'],
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
         ]);
         $relatedType = Type::factory()->create([
             'title' => ['lt' => 'Susijęs tipas', 'en' => 'Related Type'],
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
         ]);
 
         // Attach types to institutions
@@ -244,7 +245,7 @@ describe('getRelatedInstitutionsForMultiple', function (): void {
         // This means userInstitution has INCOMING relationship from relatedInstitution
         $typeRelationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Type::class,
+            'relationshipable_type' => MorphMap::alias(Type::class),
             'relationshipable_id' => $relatedType->id,
             'related_model_id' => $userType->id,
             'scope' => Relationshipable::SCOPE_CROSS_TENANT,
@@ -336,7 +337,7 @@ describe('relationship scope', function (): void {
         // Create relationship with within-tenant scope (default)
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->pagrindineInstitution->id,
             'related_model_id' => $this->padalinysInstitution->id,
             'scope' => Relationshipable::SCOPE_WITHIN_TENANT,
@@ -356,7 +357,7 @@ describe('relationship scope', function (): void {
     test('scope defaults to within-tenant', function (): void {
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->sourceInstitution->id,
             'related_model_id' => $this->relatedInstitution->id,
         ]);
@@ -379,11 +380,11 @@ describe('relationship scope', function (): void {
         // Create types for the relationship
         $sourceType = Type::factory()->create([
             'title' => ['lt' => 'KAP Taryba Test', 'en' => 'KAP Council Test'],
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
         ]);
         $targetType = Type::factory()->create([
             'title' => ['lt' => 'Senatas Test', 'en' => 'Senate Test'],
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
         ]);
 
         // Create cross-tenant type-based relationship: targetType -> sourceType
@@ -391,7 +392,7 @@ describe('relationship scope', function (): void {
         // And institutions with sourceType have incoming relationship from institutions with targetType
         $typeRelationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Type::class,
+            'relationshipable_type' => MorphMap::alias(Type::class),
             'relationshipable_id' => $targetType->id,
             'related_model_id' => $sourceType->id,
             'scope' => Relationshipable::SCOPE_CROSS_TENANT,
@@ -446,11 +447,11 @@ describe('type-based cross-tenant authorization', function (): void {
 
         $sourceType = Type::factory()->create([
             'title' => ['lt' => 'Šaltinio tipas', 'en' => 'Source Type'],
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
         ]);
         $targetType = Type::factory()->create([
             'title' => ['lt' => 'Tikslo tipas', 'en' => 'Target Type'],
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
         ]);
 
         $padalinysInstitution->types()->attach($sourceType->id);
@@ -458,7 +459,7 @@ describe('type-based cross-tenant authorization', function (): void {
 
         $typeRelationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Type::class,
+            'relationshipable_type' => MorphMap::alias(Type::class),
             'relationshipable_id' => $sourceType->id,
             'related_model_id' => $targetType->id,
             'scope' => Relationshipable::SCOPE_CROSS_TENANT,
@@ -490,11 +491,11 @@ describe('type-based cross-tenant authorization', function (): void {
 
         $sourceType = Type::factory()->create([
             'title' => ['lt' => 'Šaltinio tipas', 'en' => 'Source Type'],
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
         ]);
         $targetType = Type::factory()->create([
             'title' => ['lt' => 'Tikslo tipas', 'en' => 'Target Type'],
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
         ]);
 
         $padalinysInstitution->types()->attach($sourceType->id);
@@ -502,7 +503,7 @@ describe('type-based cross-tenant authorization', function (): void {
 
         $typeRelationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Type::class,
+            'relationshipable_type' => MorphMap::alias(Type::class),
             'relationshipable_id' => $sourceType->id,
             'related_model_id' => $targetType->id,
             'scope' => Relationshipable::SCOPE_CROSS_TENANT,
@@ -527,7 +528,7 @@ describe('directional authorization', function (): void {
         // Create outgoing relationship (source -> related)
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->sourceInstitution->id,
             'related_model_id' => $this->relatedInstitution->id,
         ]);
@@ -547,7 +548,7 @@ describe('directional authorization', function (): void {
         // Create relationship where this institution is the target
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->relatedInstitution->id, // Other is source
             'related_model_id' => $this->sourceInstitution->id, // This is target
         ]);
@@ -568,7 +569,7 @@ describe('directional authorization', function (): void {
         // Outgoing: source -> related
         $outgoing = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->sourceInstitution->id,
             'related_model_id' => $this->relatedInstitution->id,
         ]);
@@ -582,7 +583,7 @@ describe('directional authorization', function (): void {
         // Incoming: third -> source (source receives but can't see third)
         $incoming = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $thirdInstitution->id,
             'related_model_id' => $this->sourceInstitution->id,
         ]);
@@ -604,7 +605,7 @@ describe('directional authorization', function (): void {
         // Create outgoing relationship (authorized)
         $outgoing = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->sourceInstitution->id,
             'related_model_id' => $this->relatedInstitution->id,
         ]);
@@ -617,7 +618,7 @@ describe('directional authorization', function (): void {
 
         $incoming = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $thirdInstitution->id,
             'related_model_id' => $this->sourceInstitution->id,
         ]);
@@ -661,7 +662,7 @@ describe('sibling relationships', function (): void {
     test('sibling relationships have authorized = true', function (): void {
         // Create a type with sibling relationships enabled
         $type = Type::factory()->create([
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
             'title' => ['lt' => 'Test Type', 'en' => 'Test Type'],
             'extra_attributes' => ['enable_sibling_relationships' => true],
         ]);
@@ -693,7 +694,7 @@ describe('sibling relationships', function (): void {
 
         // Create a type with sibling relationships enabled
         $type = Type::factory()->create([
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
             'title' => ['lt' => 'Test Type', 'en' => 'Test Type'],
             'extra_attributes' => ['enable_sibling_relationships' => true],
         ]);
@@ -713,7 +714,7 @@ describe('sibling relationships', function (): void {
     test('sibling relationships are included in authorization check', function (): void {
         // Create a type with sibling relationships enabled
         $type = Type::factory()->create([
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
             'title' => ['lt' => 'Test Type', 'en' => 'Test Type'],
             'extra_attributes' => ['enable_sibling_relationships' => true],
         ]);
@@ -757,7 +758,7 @@ describe('cross-tenant sibling relationships', function (): void {
 
         // Create a type with cross-tenant sibling relationships enabled
         $type = Type::factory()->create([
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
             'title' => ['lt' => 'AEK Type', 'en' => 'AEK Type'],
             'extra_attributes' => ['enable_cross_tenant_sibling_relationships' => true],
         ]);
@@ -801,7 +802,7 @@ describe('cross-tenant sibling relationships', function (): void {
 
         // Create a type with cross-tenant sibling relationships enabled
         $type = Type::factory()->create([
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
             'title' => ['lt' => 'AEK Type', 'en' => 'AEK Type'],
             'extra_attributes' => ['enable_cross_tenant_sibling_relationships' => true],
         ]);
@@ -846,7 +847,7 @@ describe('cross-tenant sibling relationships', function (): void {
 
         // Create a type with cross-tenant sibling relationships enabled
         $type = Type::factory()->create([
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
             'title' => ['lt' => 'AEK Type', 'en' => 'AEK Type'],
             'extra_attributes' => ['enable_cross_tenant_sibling_relationships' => true],
         ]);
@@ -897,7 +898,7 @@ describe('cross-tenant sibling relationships', function (): void {
 
         // Create a type with REGULAR sibling relationships enabled (not cross-tenant)
         $type = Type::factory()->create([
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
             'title' => ['lt' => 'AEK Type', 'en' => 'AEK Type'],
             'extra_attributes' => ['enable_sibling_relationships' => true],
         ]);
@@ -946,7 +947,7 @@ describe('cross-tenant sibling relationships', function (): void {
 
         // Create a type with cross-tenant sibling relationships enabled
         $type = Type::factory()->create([
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
             'title' => ['lt' => 'AEK Type', 'en' => 'AEK Type'],
             'extra_attributes' => ['enable_cross_tenant_sibling_relationships' => true],
         ]);
@@ -977,7 +978,7 @@ describe('bidirectional relationships', function (): void {
         // Create a one-way relationship: related -> source (source is the target)
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->relatedInstitution->id,
             'related_model_id' => $this->sourceInstitution->id,
             'bidirectional' => false,
@@ -997,7 +998,7 @@ describe('bidirectional relationships', function (): void {
         // Create a bidirectional relationship: related -> source (source is the target, but can see back)
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->relatedInstitution->id,
             'related_model_id' => $this->sourceInstitution->id,
             'bidirectional' => true,
@@ -1017,7 +1018,7 @@ describe('bidirectional relationships', function (): void {
         // Create unidirectional incoming relationship
         $unidirectional = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->relatedInstitution->id,
             'related_model_id' => $this->sourceInstitution->id,
             'bidirectional' => false,
@@ -1031,7 +1032,7 @@ describe('bidirectional relationships', function (): void {
 
         $bidirectional = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $thirdInstitution->id,
             'related_model_id' => $this->sourceInstitution->id,
             'bidirectional' => true,
@@ -1054,7 +1055,7 @@ describe('bidirectional relationships', function (): void {
         // Create an outgoing relationship with bidirectional = false (should still be authorized)
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->sourceInstitution->id,
             'related_model_id' => $this->relatedInstitution->id,
             'bidirectional' => false,
@@ -1074,7 +1075,7 @@ describe('bidirectional relationships', function (): void {
         // Create bidirectional incoming relationship
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->relatedInstitution->id,
             'related_model_id' => $this->sourceInstitution->id,
             'bidirectional' => true,
@@ -1103,7 +1104,7 @@ describe('getAllRelatedInstitutionsEnriched', function (): void {
     test('returns enriched direct edges with relationship metadata', function (): void {
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->sourceInstitution->id,
             'related_model_id' => $this->relatedInstitution->id,
             'bidirectional' => true,
@@ -1130,7 +1131,7 @@ describe('getAllRelatedInstitutionsEnriched', function (): void {
 
     test('includes within-type sibling edges flagged as siblings', function (): void {
         $type = Type::factory()->create([
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
             'extra_attributes' => ['enable_sibling_relationships' => true],
         ]);
 
@@ -1149,8 +1150,8 @@ describe('getAllRelatedInstitutionsEnriched', function (): void {
 
 describe('getTypeRelationshipGraph', function (): void {
     test('returns type nodes and type-to-type edges with metadata', function (): void {
-        $sourceType = Type::factory()->create(['model_type' => Institution::class, 'title' => ['lt' => 'Tipas A', 'en' => 'Type A']]);
-        $targetType = Type::factory()->create(['model_type' => Institution::class, 'title' => ['lt' => 'Tipas B', 'en' => 'Type B']]);
+        $sourceType = Type::factory()->create(['model_type' => MorphMap::alias(Institution::class), 'title' => ['lt' => 'Tipas A', 'en' => 'Type A']]);
+        $targetType = Type::factory()->create(['model_type' => MorphMap::alias(Institution::class), 'title' => ['lt' => 'Tipas B', 'en' => 'Type B']]);
 
         $this->relationship->description = 'Aprašymas';
         $this->relationship->save();
@@ -1160,7 +1161,7 @@ describe('getTypeRelationshipGraph', function (): void {
 
         new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Type::class,
+            'relationshipable_type' => MorphMap::alias(Type::class),
             'relationshipable_id' => $sourceType->id,
             'related_model_id' => $targetType->id,
             'scope' => Relationshipable::SCOPE_CROSS_TENANT,
@@ -1179,7 +1180,7 @@ describe('getTypeRelationshipGraph', function (): void {
     });
 
     test('includes institution types that have no relations', function (): void {
-        $isolatedType = Type::factory()->create(['model_type' => Institution::class]);
+        $isolatedType = Type::factory()->create(['model_type' => MorphMap::alias(Institution::class)]);
 
         $graph = RelationshipService::getTypeRelationshipGraph();
 

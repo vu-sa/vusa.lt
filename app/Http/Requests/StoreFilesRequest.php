@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\File;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -9,11 +10,15 @@ class StoreFilesRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
+     *
+     * This is the coarse gate — the user must be allowed to create files at all. Which
+     * *directory* they may write to is decided in FilesController::store(), because that
+     * depends on the branch the path takes (tenant content tree vs. FileManager path).
      */
-    /* public function authorize(): bool */
-    /* { */
-    /*    return false; */
-    /* } */
+    public function authorize(): bool
+    {
+        return $this->user()?->can('create', File::class) ?? false;
+    }
 
     /**
      * Get the validation rules that apply to the request.
@@ -62,14 +67,14 @@ class StoreFilesRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'files.required' => 'Nepasirinktas nei vienas failas įkėlimui.',
-            'files.array' => 'Neteisingas failų formatas.',
-            'files.*.file.required' => 'Failas yra privalomas.',
-            'files.*.file.file' => 'Įkeltas elementas nėra failas.',
-            'files.*.file.mimes' => 'Failas turi būti vienas iš šių formatų: :values',
-            'files.*.file.max' => 'Failas negali būti didesnis nei 50MB.',
-            'path.required' => 'Katalogo kelias yra privalomas.',
-            'path.string' => 'Katalogo kelias turi būti tekstas.',
+            'files.required' => trans('files.validation.files_required'),
+            'files.array' => trans('files.validation.files_array'),
+            'files.*.file.required' => trans('files.validation.file_required'),
+            'files.*.file.file' => trans('files.validation.file_file'),
+            'files.*.file.mimes' => trans('files.validation.file_mimes'),
+            'files.*.file.max' => trans('files.validation.file_max'),
+            'path.required' => trans('files.validation.path_required'),
+            'path.string' => trans('files.validation.path_string'),
         ];
     }
 

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Services\ActivityRootResolver;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -60,10 +61,25 @@ class Activity extends \Spatie\Activitylog\Models\Activity
 
     /**
      * @param  Builder<Activity>  $query
+     * @param  string  $type  a morph alias, as stored in root_subject_type
      */
     public function scopeForRoot(Builder $query, string $type, string $id): Builder
     {
         return $query->where('root_subject_type', $type)->where('root_subject_id', $id);
+    }
+
+    /**
+     * The class behind `subject_type`.
+     *
+     * The column stores a morph alias, so anything that wants to reflect on the subject's
+     * model (translatable fields, relations, casts) has to resolve it first. Null when the
+     * alias has no class — historic rows outlive the models they pointed at.
+     *
+     * @return class-string|null
+     */
+    public function subjectClass(): ?string
+    {
+        return $this->subject_type === null ? null : MorphMap::classFor($this->subject_type);
     }
 
     #[\Override]

@@ -3,15 +3,16 @@
 namespace App\Services;
 
 use App\Enums\AllowedRelationshipablesEnum;
+use App\Enums\TenantType;
 use App\Models\Institution;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Relationship;
 use App\Models\Tenant;
 use App\Models\Type;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Str;
 
 class RelationshipService
 {
@@ -49,7 +50,7 @@ class RelationshipService
         self::clearRelatedInstitutionsCache($relationshipable->related_model_id);
 
         // If this is a Type-based relationship, we need to clear all institutions of those types
-        if ($relationshipable->relationshipable_type === Type::class) {
+        if ($relationshipable->relationshipable_type === MorphMap::alias(Type::class)) {
             $sourceType = Type::find($relationshipable->relationshipable_id);
             $targetType = Type::find($relationshipable->related_model_id);
 
@@ -266,7 +267,7 @@ class RelationshipService
         // - pagrindinis institutions see padalinys siblings with authorized: true
         // - padalinys institutions see pagrindinis sibling with authorized: false (visible but no data access)
         $institutionTenant = $institution->tenant;
-        if (! $institutionTenant || $institutionTenant->type === null || $institutionTenant->type === '') {
+        if (! $institutionTenant || $institutionTenant->type === null) {
             $institutionTenant = Tenant::find($institution->tenant_id);
         }
 
@@ -275,11 +276,11 @@ class RelationshipService
                 continue;
             }
 
-            if ($institutionTenant?->type === 'pagrindinis') {
+            if ($institutionTenant?->type === TenantType::Pagrindinis) {
                 // Pagrindinis institution sees padalinys siblings with full authorization
                 $crossTenantSiblings = Institution::query()
                     ->where('id', '!=', $sourceId)
-                    ->whereHas('tenant', fn ($q) => $q->where('type', 'padalinys'))
+                    ->whereHas('tenant', fn ($q) => $q->where('type', TenantType::Padalinys))
                     ->whereHas('types', fn ($q) => $q->where('types.id', $type->id))
                     ->with('tenant')
                     ->get();
@@ -293,12 +294,12 @@ class RelationshipService
                         'authorized' => true,
                     ]);
                 }
-            } elseif ($institutionTenant?->type === 'padalinys') {
+            } elseif ($institutionTenant?->type === TenantType::Padalinys) {
                 // Padalinys institution sees pagrindinis sibling but without authorization
                 // (can see meetings exist, but no agenda items access)
                 $crossTenantSiblings = Institution::query()
                     ->where('id', '!=', $sourceId)
-                    ->whereHas('tenant', fn ($q) => $q->where('type', 'pagrindinis'))
+                    ->whereHas('tenant', fn ($q) => $q->where('type', TenantType::Pagrindinis))
                     ->whereHas('types', fn ($q) => $q->where('types.id', $type->id))
                     ->with('tenant')
                     ->get();
@@ -341,10 +342,10 @@ class RelationshipService
             $targetTenantType = self::getTenantType($targetInstitution);
 
             // Allow if one is pagrindinis and the other is padalinys
-            $sourceIsPagrindinis = $sourceTenantType === 'pagrindinis';
-            $targetIsPagrindinis = $targetTenantType === 'pagrindinis';
-            $sourceIsPadalinys = $sourceTenantType === 'padalinys';
-            $targetIsPadalinys = $targetTenantType === 'padalinys';
+            $sourceIsPagrindinis = $sourceTenantType === TenantType::Pagrindinis;
+            $targetIsPagrindinis = $targetTenantType === TenantType::Pagrindinis;
+            $sourceIsPadalinys = $sourceTenantType === TenantType::Padalinys;
+            $targetIsPadalinys = $targetTenantType === TenantType::Padalinys;
 
             return ($sourceIsPagrindinis && $targetIsPadalinys)
                 || ($sourceIsPadalinys && $targetIsPagrindinis);
@@ -354,11 +355,11 @@ class RelationshipService
         return $sourceInstitution->tenant_id === $targetInstitution->tenant_id;
     }
 
-    protected static function getTenantType(Institution $institution): ?string
+    protected static function getTenantType(Institution $institution): ?TenantType
     {
         $tenant = $institution->tenant;
 
-        if (! $tenant || $tenant->type === null || $tenant->type === '') {
+        if (! $tenant || $tenant->type === null) {
             $tenant = Tenant::find($institution->tenant_id);
         }
 
@@ -376,7 +377,7 @@ class RelationshipService
                 return true;
             }
 
-            return self::getTenantType($sourceInstitution) === 'pagrindinis';
+            return self::getTenantType($sourceInstitution) === TenantType::Pagrindinis;
         }
 
         if ($direction === 'outgoing') {
@@ -509,22 +510,32 @@ class RelationshipService
      */
     public static function allowedModelClasses(): array
     {
-        return [
-            Institution::class,
-            Type::class,
-        ];
+        return AllowedRelationshipablesEnum::modelClasses();
     }
 
+    /**
+     * The morph aliases a relationship may be attached to — what `relationshipable_type`
+     * stores and what the frontend submits.
+     *
+     * @return list<string>
+     */
+    public static function allowedModelAliases(): array
+    {
+        return array_map(MorphMap::alias(...), AllowedRelationshipablesEnum::modelClasses());
+    }
+
+    /**
+     * @param  string  $modelClass  a morph alias, or a class name for older callers
+     */
     public static function getModelsByClass(string $modelClass)
     {
+        $modelClass = MorphMap::classFor($modelClass) ?? $modelClass;
+
         if (! class_exists($modelClass)) {
             return [];
         }
 
-        // get $modelClass delimited by backslash last element
-        $modelClassName = Str::upper(array_slice(explode('\\', $modelClass), -1)[0]);
-
-        if (! in_array($modelClassName, AllowedRelationshipablesEnum::values())) {
+        if (! in_array($modelClass, AllowedRelationshipablesEnum::modelClasses(), true)) {
             return [];
         }
 
@@ -587,10 +598,10 @@ class RelationshipService
 
     public static function getAllRelatedInstitutions()
     {
-        $institutionRelationshipables = collect(Relationshipable::where('relationshipable_type', Institution::class)->get(['relationshipable_id', 'related_model_id'])->toArray()); // OK
+        $institutionRelationshipables = collect(Relationshipable::where('relationshipable_type', MorphMap::alias(Institution::class))->get(['relationshipable_id', 'related_model_id'])->toArray()); // OK
 
         // we need to get all institutions which are related to the institution
-        $typeRelationshipables = Relationshipable::where('relationshipable_type', Type::class)->get()->map(fn ($relationshipable) => self::getGivenModelsFromModelType(Institution::class, $relationshipable))->flatten(1);
+        $typeRelationshipables = Relationshipable::where('relationshipable_type', MorphMap::alias(Type::class))->get()->map(fn ($relationshipable) => self::getGivenModelsFromModelType(Institution::class, $relationshipable))->flatten(1);
 
         // Within-type sibling relationships (institutions with same type + same tenant)
         $withinTypeRelationships = self::getWithinTypeSiblingRelationships();
@@ -619,7 +630,7 @@ class RelationshipService
     public static function getAllRelatedInstitutionsEnriched(): array
     {
         // Direct institution -> institution edges
-        $direct = Relationshipable::where('relationshipable_type', Institution::class)
+        $direct = Relationshipable::where('relationshipable_type', MorphMap::alias(Institution::class))
             ->with('relationship:id,name,description')
             ->get()
             ->map(fn (Relationshipable $relationshipable) => [
@@ -633,7 +644,7 @@ class RelationshipService
             ]);
 
         // Type-based edges, expanded to concrete institution pairs (scope-aware)
-        $typeBased = Relationshipable::where('relationshipable_type', Type::class)
+        $typeBased = Relationshipable::where('relationshipable_type', MorphMap::alias(Type::class))
             ->with('relationship:id,name,description')
             ->get()
             ->flatMap(fn (Relationshipable $relationshipable) => self::getGivenModelsFromModelType(Institution::class, $relationshipable, [
@@ -684,7 +695,7 @@ class RelationshipService
      */
     public static function getTypeRelationshipGraph(): array
     {
-        $relationshipables = Relationshipable::where('relationshipable_type', Type::class)
+        $relationshipables = Relationshipable::where('relationshipable_type', MorphMap::alias(Type::class))
             ->with('relationship:id,name,description')
             ->get();
 
@@ -806,15 +817,15 @@ class RelationshipService
             } elseif ($scope === Relationshipable::SCOPE_CROSS_TENANT) {
                 // Cross-tenant: match pagrindinis <-> padalinys relationships
                 $giverTenant = $giver->tenant;
-                if ($giverTenant?->type === 'pagrindinis') {
+                if ($giverTenant?->type === TenantType::Pagrindinis) {
                     // Giver is in pagrindinis, find receivers in padalinys-type tenants
                     $query->whereHas('tenant', function ($q): void {
-                        $q->where('type', 'padalinys');
+                        $q->where('type', TenantType::Padalinys);
                     });
-                } elseif ($giverTenant?->type === 'padalinys') {
+                } elseif ($giverTenant?->type === TenantType::Padalinys) {
                     // Giver is in padalinys, find receivers in pagrindinis tenant
                     $query->whereHas('tenant', function ($q): void {
-                        $q->where('type', 'pagrindinis');
+                        $q->where('type', TenantType::Pagrindinis);
                     });
                 } else {
                     // Other tenant types - fall back to within-tenant behavior

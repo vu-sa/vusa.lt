@@ -116,7 +116,6 @@ usePageBreadcrumbs(() => {
       'Naujienos',
       'newsArchive',
       {
-        newsString: page.props.app.locale === 'lt' ? 'naujienos' : 'news',
         lang: page.props.app.locale,
         subdomain: page.props.tenant?.subdomain || 'www',
       },

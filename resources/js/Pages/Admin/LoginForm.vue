@@ -39,10 +39,10 @@
             <!-- Welcome Header -->
             <div class="text-center space-y-2">
               <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-800 dark:text-zinc-100">
-                {{ $page.props.app.locale === 'en' ? 'Welcome back' : 'Sveiki sugrįžę' }}
+                {{ $t('Sveiki sugrįžę') }}
               </h1>
               <p class="text-base sm:text-lg font-medium text-vusa-red/80 dark:text-vusa-red/70">
-                {{ $page.props.app.locale === 'en' ? 'to my VU SR' : 'į Mano VU SA' }}
+                {{ $t('į Mano VU SA') }}
               </p>
             </div>
 
@@ -54,7 +54,7 @@
                 <Alert v-if="Object.keys(errors).length > 0 && !errorDismissed" variant="destructive" class="relative">
                   <IFluentErrorCircle16Regular class="size-4" />
                   <AlertTitle>
-                    {{ $page.props.app.locale === 'en' ? 'Login failed' : 'Prisijungimas nepavyko' }}
+                    {{ $t('Prisijungimas nepavyko') }}
                   </AlertTitle>
                   <AlertDescription>
                     <ul class="space-y-1">
@@ -74,7 +74,7 @@
 
                 <MicrosoftButton class="w-full" />
                 <p class="text-center text-xs text-zinc-500 dark:text-zinc-400">
-                  {{ $page.props.app.locale === 'en' ? 'Quick access with your university account' : 'Greitas priėjimas su universiteto paskyra' }}
+                  {{ $t('Greitas priėjimas su universiteto paskyra') }}
                 </p>
 
                 <!-- Simple Divider -->
@@ -93,7 +93,7 @@
                   @click="useSimpleRegistration = true"
                 >
                   <IFluentKey24Filled class="w-4 h-4 mr-2" />
-                  {{ $page.props.app.locale === 'en' ? 'Sign in with email' : 'Prisijungti el. paštu' }}
+                  {{ $t('Prisijungti el. paštu') }}
                 </Button>
               </div>
 
@@ -103,12 +103,10 @@
                 <div class="p-3 rounded-md bg-zinc-50/50 border border-zinc-200/30 dark:bg-zinc-800/30 dark:border-zinc-700/30">
                   <div class="text-xs text-zinc-600 dark:text-zinc-400">
                     <p class="font-medium mb-1 text-zinc-700 dark:text-zinc-300">
-                      {{ $page.props.app.locale === 'en' ? 'Administrator Access' : 'Administratoriaus prieiga' }}
+                      {{ $t('Administratoriaus prieiga') }}
                     </p>
                     <p>
-                      {{ $page.props.app.locale === 'en'
-                        ? 'These credentials should be provided by a VU SR administrator. If you don\'t have them, please continue with Microsoft login.'
-                        : 'Šiuos prisijungimo duomenis turėjo suteikti VU SA administratorius. Jei jų neturite, prisijunkite su Microsoft paskyra.' }}
+                      {{ $t('Šiuos prisijungimo duomenis turėjo suteikti VU SA administratorius. Jei jų neturite, prisijunkite su Microsoft paskyra.') }}
                     </p>
                   </div>
                 </div>
@@ -117,7 +115,7 @@
                 <Alert v-if="Object.keys(errors).length > 0 && !errorDismissed" variant="destructive" class="relative">
                   <IFluentErrorCircle16Regular class="size-4" />
                   <AlertTitle>
-                    {{ $page.props.app.locale === 'en' ? 'Something went wrong' : 'Kažkas ne taip' }}...
+                    {{ $t('Kažkas ne taip') }}...
                   </AlertTitle>
                   <AlertDescription>
                     <ul class="space-y-1">
@@ -156,7 +154,7 @@
                             id="email"
                             v-bind="componentField"
                             type="email"
-                            :placeholder="$page.props.app.locale === 'en' ? 'Enter your email address' : 'Įveskite el. pašto adresą'"
+                            :placeholder="$t('Įveskite el. pašto adresą')"
                             autocomplete="email"
                             autofocus
                             class="transition-colors focus:ring-2 focus:ring-vusa-red/20 focus:border-vusa-red"
@@ -177,7 +175,7 @@
                             id="password"
                             v-bind="componentField"
                             type="password"
-                            :placeholder="$page.props.app.locale === 'en' ? 'Enter your password' : 'Įveskite slaptažodį'"
+                            :placeholder="$t('Įveskite slaptažodį')"
                             autocomplete="current-password"
                             class="transition-colors focus:ring-2 focus:ring-vusa-red/20 focus:border-vusa-red"
                           />
@@ -207,10 +205,10 @@
                       >
                         <span v-if="form.processing" class="flex items-center">
                           <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                          {{ $page.props.app.locale === 'en' ? 'Signing in...' : 'Prisijungiama...' }}
+                          {{ $t('Prisijungiama...') }}
                         </span>
                         <span v-else>
-                          {{ $page.props.app.locale === 'en' ? 'Sign In' : 'Prisijungti' }}
+                          {{ $t('Prisijungti') }}
                         </span>
                       </Button>
                     </div>
@@ -227,7 +225,7 @@
             class="flex items-center justify-center gap-2 py-3.5 text-xs text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors border-t border-zinc-200/50 dark:border-zinc-700/50 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30"
           >
             <IFluentArrowLeft16Regular class="size-3.5" />
-            {{ $page.props.app.locale === 'en' ? 'Back to vusa.lt' : 'Grįžti į vusa.lt' }}
+            {{ $t('Grįžti į vusa.lt') }}
           </a>
         </div>
       </div>
@@ -296,32 +294,17 @@ const form = useForm({
   remember: false,
 });
 
-const $page = usePage();
 
 // Validation schema using Zod
 const validationSchema = toTypedSchema(
   z.object({
     email: z
-      .string({
-        required_error: $page.props.app.locale === 'en'
-          ? 'Email is required.'
-          : 'El. paštas yra privalomas.',
-      })
-      .min(1, $page.props.app.locale === 'en'
-        ? 'Email is required.'
-        : 'El. paštas yra privalomas.')
-      .email($page.props.app.locale === 'en'
-        ? 'Please enter a valid email address.'
-        : 'Įveskite tinkamą el. pašto adresą.'),
+      .string({ required_error: $t('El. paštas yra privalomas.') })
+      .min(1, $t('El. paštas yra privalomas.'))
+      .email($t('Įveskite tinkamą el. pašto adresą.')),
     password: z
-      .string({
-        required_error: $page.props.app.locale === 'en'
-          ? 'Password is required.'
-          : 'Slaptažodis yra privalomas.',
-      })
-      .min(1, $page.props.app.locale === 'en'
-        ? 'Password is required.'
-        : 'Slaptažodis yra privalomas.'),
+      .string({ required_error: $t('Slaptažodis yra privalomas.') })
+      .min(1, $t('Slaptažodis yra privalomas.')),
   }),
 );
 

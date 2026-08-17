@@ -5,6 +5,7 @@ use App\Models\ContentPart;
 use App\Models\News;
 use App\Models\Page;
 use App\Services\ContentService;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Activitylog\Models\Activity;
 use Tiptap\Editor;
@@ -67,7 +68,7 @@ test('editing a content part logs content_summary, not the raw json_content', fu
 
     $part->update(['json_content' => (new Editor)->setContent('<p>Updated body text</p>')->getDocument()]);
 
-    $activity = Activity::where('subject_type', ContentPart::class)->where('subject_id', $part->id)->latest('id')->first();
+    $activity = Activity::where('subject_type', MorphMap::alias(ContentPart::class))->where('subject_id', $part->id)->latest('id')->first();
 
     expect($activity)->not->toBeNull()
         ->and($activity->event)->toBe('updated')
@@ -85,7 +86,7 @@ test('a long block body is truncated to 500 characters in content_summary', func
     $longText = trim(str_repeat('Lorem ipsum dolor sit amet consectetur adipiscing elit. ', 30));
     $part->update(['json_content' => (new Editor)->setContent("<p>{$longText}</p>")->getDocument()]);
 
-    $activity = Activity::where('subject_type', ContentPart::class)->where('subject_id', $part->id)->latest('id')->first();
+    $activity = Activity::where('subject_type', MorphMap::alias(ContentPart::class))->where('subject_id', $part->id)->latest('id')->first();
     $summary = (string) data_get($activity, 'attribute_changes.attributes.content_summary');
 
     // Str::limit(…, 500) truncates the content to 500 chars and then appends
@@ -104,7 +105,7 @@ test('a pure order-only touch on a content part logs nothing', function (): void
 
     $part->update(['order' => $part->order + 5]);
 
-    expect(Activity::where('subject_type', ContentPart::class)->where('subject_id', $part->id)->count())->toBe(0);
+    expect(Activity::where('subject_type', MorphMap::alias(ContentPart::class))->where('subject_id', $part->id)->count())->toBe(0);
 });
 
 test('removing a content part through ContentService logs a deleted activity', function (): void {
@@ -120,7 +121,7 @@ test('removing a content part through ContentService logs a deleted activity', f
         tiptapPartData($keptPart->id, '<p>Still here</p>'),
     ]);
 
-    expect(Activity::where('subject_type', ContentPart::class)->where('subject_id', $removedId)->where('event', 'deleted')->count())->toBe(1)
+    expect(Activity::where('subject_type', MorphMap::alias(ContentPart::class))->where('subject_id', $removedId)->where('event', 'deleted')->count())->toBe(1)
         ->and($content->fresh('parts')->parts)->toHaveCount(1);
 });
 
@@ -138,9 +139,9 @@ test('inserting a block at the front logs one created activity, zero updated act
 
     app(ContentService::class)->updateContentParts($content->fresh('parts'), $newContentParts);
 
-    expect(Activity::where('subject_type', ContentPart::class)->where('event', 'created')->count())->toBe(1)
-        ->and(Activity::where('subject_type', ContentPart::class)->whereIn('subject_id', $existingParts->pluck('id'))->where('event', 'updated')->count())->toBe(0)
-        ->and(Activity::where('subject_type', Page::class)->where('subject_id', $page->id)->where('event', 'content_reordered')->count())->toBe(1);
+    expect(Activity::where('subject_type', MorphMap::alias(ContentPart::class))->where('event', 'created')->count())->toBe(1)
+        ->and(Activity::where('subject_type', MorphMap::alias(ContentPart::class))->whereIn('subject_id', $existingParts->pluck('id'))->where('event', 'updated')->count())->toBe(0)
+        ->and(Activity::where('subject_type', MorphMap::alias(Page::class))->where('subject_id', $page->id)->where('event', 'content_reordered')->count())->toBe(1);
 });
 
 test('a metadata-only save that leaves content parts untouched logs no content_reordered', function (): void {
@@ -154,8 +155,8 @@ test('a metadata-only save that leaves content parts untouched logs no content_r
 
     app(ContentService::class)->updateContentParts($content->fresh('parts'), $sameOrderContentParts);
 
-    expect(Activity::where('subject_type', Page::class)->where('subject_id', $page->id)->where('event', 'content_reordered')->count())->toBe(0)
-        ->and(Activity::where('subject_type', ContentPart::class)->whereIn('subject_id', $parts->pluck('id'))->count())->toBe(0);
+    expect(Activity::where('subject_type', MorphMap::alias(Page::class))->where('subject_id', $page->id)->where('event', 'content_reordered')->count())->toBe(0)
+        ->and(Activity::where('subject_type', MorphMap::alias(ContentPart::class))->whereIn('subject_id', $parts->pluck('id'))->count())->toBe(0);
 });
 
 test('swapping two blocks logs exactly one content_reordered activity', function (): void {
@@ -171,5 +172,5 @@ test('swapping two blocks logs exactly one content_reordered activity', function
 
     app(ContentService::class)->updateContentParts($content->fresh('parts'), $swapped);
 
-    expect(Activity::where('subject_type', Page::class)->where('subject_id', $page->id)->where('event', 'content_reordered')->count())->toBe(1);
+    expect(Activity::where('subject_type', MorphMap::alias(Page::class))->where('subject_id', $page->id)->where('event', 'content_reordered')->count())->toBe(1);
 });

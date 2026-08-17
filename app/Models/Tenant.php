@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\TenantType;
 use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,7 +17,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
  * @property int $id
- * @property string|null $type
+ * @property TenantType|null $type
  * @property string $fullname
  * @property string $shortname
  * @property string $alias
@@ -45,6 +47,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tenant newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tenant newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tenant query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Tenant representational()
  *
  * @mixin \Eloquent
  */
@@ -57,12 +60,49 @@ class Tenant extends Model
     protected $guarded = [];
 
     #[\Override]
+    protected function casts(): array
+    {
+        return [
+            'type' => TenantType::class,
+        ];
+    }
+
+    #[\Override]
     protected static function booted()
     {
         static::saved(function ($tenant): void {
             // Clear homepage cache when tenant content changes
             Cache::tags(['homepage', "tenant_{$tenant->id}"])->flush();
         });
+    }
+
+    /**
+     * The single VU SA central-office tenant.
+     *
+     * This lookup was hand-written in six places (controllers and Form Requests alike); it is
+     * cheap but it is also the sort of thing that should have exactly one spelling.
+     */
+    public static function main(): ?self
+    {
+        return static::query()->where('type', TenantType::Pagrindinis)->first();
+    }
+
+    /**
+     * Tenants that take part in student representation — everything except PKP.
+     *
+     * @param  Builder<static>  $query
+     */
+    public function scopeRepresentational($query): void
+    {
+        $query->whereIn('type', TenantType::representationalValues());
+    }
+
+    /**
+     * Whether this tenant is the central office.
+     */
+    public function isMain(): bool
+    {
+        return $this->type === TenantType::Pagrindinis;
     }
 
     public function banners(): HasMany

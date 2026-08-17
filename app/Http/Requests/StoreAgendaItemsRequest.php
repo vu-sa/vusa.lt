@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Rules\SoftDeleteRules;
 use Illuminate\Foundation\Http\FormRequest;
@@ -11,11 +12,24 @@ class StoreAgendaItemsRequest extends FormRequest
     /**
      * Determine if the user is authorized to make this request.
      *
-     * @return bool
+     * The class-level create check is tenant-agnostic (see HasCommonChecks::create), and the
+     * meeting these items are filed under comes from request input — so the meeting itself has
+     * to be authorized as an object, exactly as AgendaItemController::reorder() does.
      */
-    public function authorize()
+    public function authorize(): bool
     {
-        return $this->user()->can('create', AgendaItem::class);
+        if (! $this->user()->can('create', AgendaItem::class)) {
+            return false;
+        }
+
+        $meeting = Meeting::query()->find($this->input('meeting_id'));
+
+        // Leave a missing meeting to the exists rule so it reads as a validation error.
+        if ($meeting === null) {
+            return true;
+        }
+
+        return $this->user()->can('update', $meeting);
     }
 
     /**
@@ -43,8 +57,8 @@ class StoreAgendaItemsRequest extends FormRequest
     public function messages()
     {
         return [
-            'agendaItemTitles.required' => 'Bent vienas darbotvarkės klausimas turi būti pridėtas.',
-            'agendaItemTitles.*.required' => 'Darbotvarkės klausimas negali būti tuščias.',
+            'agendaItemTitles.required' => trans('forms.validation.agenda_item.titles_required'),
+            'agendaItemTitles.*.required' => trans('forms.validation.agenda_item.title_required'),
         ];
     }
 }

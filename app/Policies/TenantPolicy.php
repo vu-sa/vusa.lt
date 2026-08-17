@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Enums\ModelEnum;
+use App\Enums\TenantType;
 use App\Models\Duty;
 use App\Models\Tenant;
 use App\Models\User;
@@ -81,7 +82,7 @@ class TenantPolicy extends ModelPolicy
     {
         if ($user->isSuperAdmin()) {
             // Only allow deletion of pkp tenants
-            if ($tenant->type == 'pkp') {
+            if ($tenant->type === TenantType::Pkp) {
                 return true;
             }
         }

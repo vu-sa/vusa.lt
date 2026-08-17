@@ -18,6 +18,7 @@ use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
 use App\States\ReservationResource\Created;
+use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
 use App\Tasks\Subscribers\ApprovalTaskSubscriber;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -64,7 +65,7 @@ describe('ApprovalTaskSubscriber', function (): void {
             event(new ApprovalRequested($reservationResource, step: 1));
 
             $approvalTaskCount = Task::query()
-                ->where('taskable_type', Reservation::class)
+                ->where('taskable_type', MorphMap::alias(Reservation::class))
                 ->where('taskable_id', $reservation->id)
                 ->where('action_type', ActionType::Approval)
                 ->count();
@@ -106,7 +107,7 @@ describe('ApprovalTaskSubscriber', function (): void {
 
             // Create an approval task manually
             $approvalTask = Task::factory()->create([
-                'taskable_type' => Reservation::class,
+                'taskable_type' => MorphMap::alias(Reservation::class),
                 'taskable_id' => $reservation->id,
                 'action_type' => ActionType::Approval,
                 'completed_at' => null,
@@ -161,14 +162,14 @@ describe('ApprovalTaskSubscriber', function (): void {
 
             // Create two approval tasks (simulating multi-step approval)
             $task1 = Task::factory()->create([
-                'taskable_type' => Reservation::class,
+                'taskable_type' => MorphMap::alias(Reservation::class),
                 'taskable_id' => $reservation->id,
                 'action_type' => ActionType::Approval,
                 'completed_at' => null,
             ]);
 
             $task2 = Task::factory()->create([
-                'taskable_type' => Reservation::class,
+                'taskable_type' => MorphMap::alias(Reservation::class),
                 'taskable_id' => $reservation->id,
                 'action_type' => ActionType::Approval,
                 'completed_at' => null,

@@ -7,6 +7,33 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.28 — Angliškos nuorodos ir vieningi pranešimai (2026-08-17) {#v1-28}
+
+- ⭐ **Angliška svetainės dalis turi angliškas nuorodas** — dokumentai, paieška, kontaktai, studentų atstovai ir posėdžiai anglų kalba dabar pasiekiami adresais `/en/documents`, `/en/search`, `/en/contacts`, `/en/contacts/student-representatives`, `/en/meetings`. Senos nuorodos automatiškai nukreipiamos į naująsias, tad išsaugotos nuorodos veikia toliau
+- ✨ **Kalbos perjungiklis nebeperkelia į lietuvišką adresą** — perjungus kalbą keičiasi ir adreso dalis, o ne tik `/lt` į `/en`
+- ✨ **Administravimo pranešimai išversti** — sukūrimo, atnaujinimo ir ištrynimo pranešimai anksčiau daliai skilčių būdavo rodomi tik lietuviškai arba tik angliškai; dabar visi seka pasirinktą kalbą, o lietuviški pranešimai derinami pagal giminę („naujiena sukurta“, „puslapis sukurtas“)
+- ✨ **Failų tvarkyklės pranešimai** — įkėlimo, trynimo ir klaidų pranešimai išversti, o failų skaičiavimas nebeturi klaidingų galūnių
+- 🔧 **Redaguojant išteklių kategoriją neberodoma „Naujas“** — antraštė rodo, kad įrašas redaguojamas
+
+## v1.27 — Vertimų ir teisių pataisymai (2026-08-16) {#v1-27}
+
+- 🔧 **Kai kurios žinutės buvo rodomos kaip techninis tekstas** — atnaujinus posėdį, atkūrus įrašą, atsijungus ar pridėjus instituciją prie posėdžio vietoje žinutės matydavosi raktas, pvz. „messages.meeting.updated“
+- 🔧 **Formų klaidų pranešimai lietuviškai** — didžioji dalis tikrinimo klaidų (failų, datų, sąrašų, pasirinkimų) buvo rodoma angliškai; dabar išversti visi. Angliškoje versijoje laukelių pavadinimai neberodomi kaip „first_name“
+- 🔧 **Nebegalima kurti kalendoriaus įvykių ir problemų svetimame padalinyje** — anksčiau padalinys buvo priimamas iš užklausos ir netikrinamas; taip pat nebegalima esamo įrašo perkelti į kitą padalinį
+- 🔧 **Kalendoriaus įvykio kategorija tikrinama ir redaguojant** — anksčiau redaguojant buvo galima priskirti ištrintą kategoriją
+- 🔧 **Rolės teisės nebegali būti netyčia panaikintos** — tam tikra klaidinga nuoroda galėjo iš rolės pašalinti visas teises iš karto
+- 🔧 **Rolės pareigybių ir tipų išsaugojimas nebegrąžina klaidos** — nepažymėjus nė vieno varianto anksčiau įvykdavo serverio klaida
+
+## v1.26 — Prieigos teisių sutvarkymas ir svetainės nustatymai (2026-08-16) {#v1-26}
+
+- 🔧 **Kelios administravimo veiksmų vietos neturėjo teisių patikros** — viešų „SharePoint“ nuorodų kūrimas, darbotvarkės klausimų perrikiavimas ir patvirtinimų istorija dabar tikrina, ar naudotojas iš tiesų turi tam teisę
+- 🔧 **Nebegalima kurti įrašų svetimame padalinyje** — kuriant išteklius, formas, posėdžius, užduotis ir kt. padalinys tikrinamas pagal jūsų teises, o ne priimamas iš užklausos
+- 🔧 **Kalendoriaus paieška veikia ne tik super administratoriams** — nuorodų parinkiklyje (navigacijoje ir greitosiose nuorodose) kalendoriaus įrašai buvo nerandami dėl klaidingo teisės pavadinimo
+- 🔧 **Ištrinti išteklių kategoriją gali tik tas, kas turi trynimo teisę** — anksčiau pakakdavo kūrimo teisės
+- ⭐ **Nauji svetainės nustatymai** — nustatymuose galima nurodyti privatumo politikos puslapį; slapukų juostos nuoroda dabar seka pasirinktą puslapį ir naudotojo kalbą (anksčiau anglakalbiai patekdavo į lietuvišką puslapį)
+- ✨ **Padalinių perjungiklyje matomi visi padaliniai** — anksčiau naujesni padaliniai būtų nerodomi; taip pat perjungiklis veikia ir angliškame naujienų puslapyje
+- 🔧 **Turinio tipo formoje nebesiūlomas „Meeting“** — jis vis tiek būdavo atmetamas išsaugant
+
 ## v1.25 — Pašalintos nenaudotos sritys (2026-08-14) {#v1-25}
 
 - ✨ **Pašalinti „Mokymai“ ir „Narystės“** — šios sritys nuo 2024 m. pabaigos liko nebaigtos ir nenaudotos (jose nebuvo jokių duomenų), todėl išimtos iš administravimo meniu. Kartu pašalintas ir mokymų programos planuoklis

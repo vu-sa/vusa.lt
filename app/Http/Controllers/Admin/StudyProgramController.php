@@ -59,7 +59,7 @@ class StudyProgramController extends AdminController
         // Trash view only: lets the table say why permanent deletion is refused.
         $query = $this->withForceDeleteBlockers($query, $request, ['dutiables']);
 
-        $studyPrograms = $query->paginate($request->input('per_page', 20))
+        $studyPrograms = $query->paginate($request->getPerPage())
             ->withQueryString();
 
         $this->appendForceDeleteBlockedReason($studyPrograms->getCollection(), $request);
@@ -81,7 +81,7 @@ class StudyProgramController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $sorting,
-            'showDeleted' => $request->boolean('showDeleted', false),
+            'showDeleted' => $request->getShowDeleted(),
             'deletedCount' => $deletedCount,
             'initialSorting' => $sorting,
             'degreeOptions' => DegreeEnum::getFormOptions(),
@@ -111,7 +111,7 @@ class StudyProgramController extends AdminController
         $studyProgram = StudyProgram::create($request->validated());
 
         return redirect()->route('studyPrograms.index')
-            ->with('success', 'Study program created successfully.');
+            ->with('success', $this->entityMessage('created', 'studyProgram'));
     }
 
     /**
@@ -138,7 +138,7 @@ class StudyProgramController extends AdminController
         $studyProgram->update($request->validated());
 
         return redirect()->route('studyPrograms.index')
-            ->with('success', 'Study program updated successfully.');
+            ->with('success', $this->entityMessage('updated', 'studyProgram'));
     }
 
     /**
@@ -152,13 +152,13 @@ class StudyProgramController extends AdminController
         $dutiablesCount = Dutiable::where('study_program_id', $studyProgram->id)->count();
 
         if ($dutiablesCount > 0) {
-            return back()->with('error', "Cannot delete study program. It is currently assigned to {$dutiablesCount} duty assignment(s).");
+            return back()->with('error', __('messages.study_program.in_use', ['count' => $dutiablesCount]));
         }
 
         $studyProgram->delete();
 
         return redirect()->route('studyPrograms.index')
-            ->with('success', 'Study program deleted successfully.');
+            ->with('success', $this->entityMessage('deleted', 'studyProgram'));
     }
 
     /**
@@ -198,7 +198,7 @@ class StudyProgramController extends AdminController
         });
 
         return redirect()->route('studyPrograms.index')
-            ->with('success', 'Study programs merged successfully.');
+            ->with('success', __('messages.study_program.merged'));
     }
 
     public function restore(StudyProgram $studyProgram): RedirectResponse

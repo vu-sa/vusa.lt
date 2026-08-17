@@ -98,6 +98,7 @@
 </template>
 
 <script setup lang="ts">
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import {
   type D3DragEvent,
@@ -197,16 +198,7 @@ const legendTitle = computed(() =>
   mode.value === 'types' ? 'relationships.graph.scope_legend_title' : 'relationships.graph.legend_title',
 );
 
-function resolveName(name: unknown): string {
-  if (typeof name === 'string') {
-    return name;
-  }
-  if (name && typeof name === 'object') {
-    const record = name as Record<string, string>;
-    return record.lt ?? record.en ?? Object.values(record)[0] ?? '';
-  }
-  return '';
-}
+const resolveName = (name: unknown): string => getTranslatedValue(name);
 
 function buildNodes(): GraphNode[] {
   return activeNodesRaw.value.map(item => ({

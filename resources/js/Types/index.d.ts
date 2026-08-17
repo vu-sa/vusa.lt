@@ -17,6 +17,18 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
     path: string;
     url: string;
   };
+  /** Organisation-level facts, from config/vusa.php. */
+  organization: {
+    contacts: { it: string; accounting: string; phone: string };
+    social: { facebook: string; instagram: string; linkedin: string };
+    legal: {
+      company_code: string;
+      vat_code: string;
+      address: { street: string; city: string };
+    };
+    /** Public URL of the configured privacy policy page, or null when unset. */
+    privacyPageUrl: string | null;
+  };
   auth: {
     can: {
       index: { [str in ModelEnum]?: boolean };

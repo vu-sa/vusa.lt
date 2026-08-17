@@ -7,6 +7,7 @@ use App\Models\Role;
 use App\Models\StudyProgram;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
@@ -31,7 +32,7 @@ beforeEach(function (): void {
     $this->dutiable = Dutiable::factory()->create([
         'duty_id' => $this->dutyManagerDuty->id,
         'dutiable_id' => $this->regularUser->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'start_date' => now()->subDay(),
         'additional_email' => null,
     ]);
@@ -43,7 +44,7 @@ test('cannot update dutiable without permission', function (): void {
     $dutiableRecord = Dutiable::factory()->create([
         'duty_id' => $plainDuty->id,
         'dutiable_id' => $unauthorizedUser->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'start_date' => now()->subDay(),
         'additional_email' => null,
     ]);

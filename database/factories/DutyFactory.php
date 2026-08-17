@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Type;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class DutyFactory extends Factory
@@ -35,7 +36,7 @@ class DutyFactory extends Factory
     public function withType()
     {
         return $this->afterCreating(function ($duty) {
-            $duty->types()->attach(Type::query()->where('model_type', Duty::class)->inRandomOrder()->first());
+            $duty->types()->attach(Type::query()->where('model_type', MorphMap::alias(Duty::class))->inRandomOrder()->first());
         });
     }
 }

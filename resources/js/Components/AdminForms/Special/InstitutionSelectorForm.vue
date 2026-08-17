@@ -2,13 +2,9 @@
   <div class="flex flex-col gap-6">
     <FadeTransition>
       <SuggestionAlert :show-alert @alert-closed="showAlert = false">
-        <p v-if="$page.props.app.locale === 'lt'">
-          Viena svarbiausių veiklų atstovavime yra
-          <strong>dalinimasis informacija</strong>, tada kai ji pasirodo!
-        </p>
-        <p v-else>
-          One of the most important activities in representation is
-          <strong>sharing information</strong> when it appears!
+        <p>
+          {{ $t('Viena svarbiausių veiklų atstovavime yra') }}
+          <strong>{{ $t('dalinimasis informacija') }}</strong>{{ $t(', tada kai ji pasirodo!') }}
         </p>
         <p class="mt-4">
           {{ $t('Būtent') }}
@@ -16,12 +12,7 @@
             <MeetingIconFilled class="h-3 w-3" />
             <strong>{{ $t('posėdžiai') }}</strong>
           </Badge>
-          <template v-if="$page.props.app.locale === 'lt'">
-            ir jų informacija yra labai svarbi – kad galėtume atstovauti studentams geriausiai, kaip tik tai įmanoma!
-          </template>
-          <template v-else>
-            and their information is very important – so we can represent students as best as possible!
-          </template>
+          {{ $t('ir jų informacija yra labai svarbi – kad galėtume atstovauti studentams geriausiai, kaip tik tai įmanoma!') }}
         </p>
         <p class="mt-4">
           <strong>{{ $t('Pradėkim') }}! 💪</strong>

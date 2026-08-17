@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
@@ -58,13 +59,12 @@ class PublicPage extends Page
     use Searchable;
 
     /**
-     * Get the class name for polymorphic relations.
-     * This ensures activity logging resolves back to the parent Page class.
+     * Share the parent Page's morph alias — see App\Models\PublicNews::getMorphClass().
      */
     #[\Override]
     public function getMorphClass(): string
     {
-        return Page::class;
+        return MorphMap::alias(MorphMap::ALIASED_TO_PARENT[static::class]);
     }
 
     /**

@@ -7,13 +7,11 @@ use App\Http\Requests\UpdateDutiableRequest;
 use App\Models\Pivots\Dutiable;
 use App\Models\StudyProgram;
 use App\Models\User;
-use App\Services\ModelAuthorizer as Authorizer;
+use App\Support\MorphMap;
 use Illuminate\Http\Request;
 
 class DutiableController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
-
     /**
      * Whether the given dutiable belongs to the currently authenticated user,
      * meaning a change to it could affect their own access.
@@ -26,7 +24,7 @@ class DutiableController extends AdminController
             return false;
         }
 
-        return $dutiable->dutiable_type === User::class
+        return $dutiable->dutiable_type === MorphMap::alias(User::class)
             && (string) $dutiable->dutiable_id === (string) $request->user()->id;
     }
 
@@ -93,11 +91,11 @@ class DutiableController extends AdminController
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Pareigybės el. paštas sėkmingai atnaujintas!',
+                'message' => __('messages.duty.email_updated'),
             ]);
         }
 
-        return back()->with('success', 'Pareigybės laikotarpis sėkmingai atnaujintas!');
+        return back()->with('success', $this->entityMessage('updated', 'dutiable'));
     }
 
     /**
@@ -115,6 +113,6 @@ class DutiableController extends AdminController
             return $warning;
         }
 
-        return redirect()->route('users.edit', $user)->with('success', 'Pareigybės laikotarpis sėkmingai ištrintas!');
+        return redirect()->route('users.edit', $user)->with('success', $this->entityMessage('deleted', 'dutiable'));
     }
 }

@@ -50,7 +50,7 @@ class CalendarController extends AdminController
 
         $deletedCount = $this->getTrashedCount($query);
 
-        $calendar = $query->paginate($request->input('per_page', 20))
+        $calendar = $query->paginate($request->getPerPage())
             ->withQueryString();
 
         return $this->inertiaResponse('Admin/Calendar/IndexCalendarEvents', [
@@ -72,7 +72,7 @@ class CalendarController extends AdminController
             'allCategories' => Category::all(['id', 'alias', 'name', 'description']),
             'filters' => $request->getFilters(),
             'sorting' => $request->getSorting(),
-            'showDeleted' => $request->boolean('showDeleted', false),
+            'showDeleted' => $request->getShowDeleted(),
             'deletedCount' => $deletedCount,
         ]);
     }
@@ -97,8 +97,10 @@ class CalendarController extends AdminController
     {
         $calendar = new Calendar;
 
-        $calendar = $calendar->fill($request->except(['images', 'main_image']));
-        $calendar->category_id = $request->input('category_id');
+        // safe(), not except(): on a FormRequest, $request->except() returns raw input minus the
+        // named keys, so anything unvalidated would be mass-assigned straight through fill().
+        $calendar = $calendar->fill($request->safe()->except(['images', 'main_image']));
+        $calendar->category_id = $request->validated('category_id');
 
         $calendar->save();
 
@@ -108,7 +110,7 @@ class CalendarController extends AdminController
             'images' => ['collection' => 'images', 'single' => false],
         ]);
 
-        return redirect()->route('calendar.index')->with('success', 'Kalendoriaus įvykis sėkmingai sukurtas!');
+        return redirect()->route('calendar.index')->with('success', $this->entityMessage('created', 'calendar'));
     }
 
     /**
@@ -156,7 +158,7 @@ class CalendarController extends AdminController
         DB::transaction(function () use ($request, $calendar): void {
             // Exclude file fields from fill
             $calendar->fill($request->safe()->except(['images', 'main_image']));
-            $calendar->category_id = $request->input('category_id');
+            $calendar->category_id = $request->validated('category_id');
 
             $calendar->save();
 
@@ -167,7 +169,7 @@ class CalendarController extends AdminController
             ]);
         });
 
-        return back()->with('success', 'Kalendoriaus įvykis sėkmingai atnaujintas!');
+        return back()->with('success', $this->entityMessage('updated', 'calendar'));
     }
 
     public function duplicate(Calendar $calendar)
@@ -188,7 +190,7 @@ class CalendarController extends AdminController
 
         $calendar->delete();
 
-        return redirect()->route('calendar.index')->with('info', 'Kalendoriaus įvykis ištrintas!');
+        return redirect()->route('calendar.index')->with('info', $this->entityMessage('deleted', 'calendar'));
     }
 
     // TODO: something with this???
@@ -198,7 +200,7 @@ class CalendarController extends AdminController
 
         $calendar->getMedia('images')->where('id', '=', $media->id)->first()?->delete();
 
-        return back()->with('info', 'Nuotrauka ištrinta!');
+        return back()->with('info', __('messages.calendar.image_deleted'));
     }
 
     public function restore(Calendar $calendar): RedirectResponse

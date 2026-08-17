@@ -406,7 +406,7 @@ const menuItems = computed(() => [
         searchTab: 'resources',
       },
       {
-        title: capitalize($tChoice('entities.resource_category.model', 2)),
+        title: capitalize($tChoice('entities.resourceCategory.model', 2)),
         icon: CategoryIcon,
         href: route('resourceCategories.index'),
         show: auth?.can.create.resource,

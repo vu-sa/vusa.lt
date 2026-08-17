@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Events\CommentBroadcast;
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Api\Admin\StoreCommentPollVoteRequest;
 use App\Http\Resources\CommentResource;
 use App\Models\Comment;
 use App\Support\Commentables;
@@ -11,7 +12,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\Rule;
 
 /**
  * Cast (or retract) a vote on a poll comment. Anyone who can view the parent may
@@ -22,18 +22,13 @@ use Illuminate\Validation\Rule;
  */
 class CommentPollVoteApiController extends ApiController
 {
-    public function toggle(Request $request, Comment $comment): JsonResponse
+    public function toggle(StoreCommentPollVoteRequest $request, Comment $comment): JsonResponse
     {
         $this->authorize('vote', $comment);
 
-        abort_unless($comment->isPoll(), 422, 'This comment is not a poll.');
-        abort_if($comment->pollIsClosed(), 422, 'This poll is closed.');
-
-        $optionIds = collect($comment->pollOptions())->pluck('id')->all();
-
-        $validated = $request->validate([
-            'option_id' => ['required', 'string', Rule::in($optionIds)],
-        ]);
+        // The poll guards and the option allowlist both live on the request now, so they
+        // still run in the same order as when this was inline.
+        $validated = $request->validated();
 
         $user = $request->user();
         $optionId = $validated['option_id'];

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\DegreeEnum;
+use App\Http\Requests\Concerns\ValidatesTenantScope;
 use App\Rules\TranslatableField;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -10,6 +11,8 @@ use Illuminate\Validation\Rule;
 
 class UpdateStudyProgramRequest extends FormRequest
 {
+    use ValidatesTenantScope;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -32,7 +35,7 @@ class UpdateStudyProgramRequest extends FormRequest
             'name.lt' => ['required', 'string', 'max:255', Rule::unique('study_programs', 'name->lt')->ignore($studyProgramId)->withoutTrashed()],
             'name.en' => 'nullable|string|max:255',
             'degree' => ['required', 'string', DegreeEnum::getValidationRule()],
-            'tenant_id' => 'required|exists:tenants,id',
+            'tenant_id' => ['required', 'integer', 'exists:tenants,id', $this->tenantIdInAuthorizedScope('studyPrograms.update.padalinys')],
         ];
     }
 }

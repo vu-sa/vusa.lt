@@ -233,6 +233,7 @@
 </template>
 
 <script setup lang="ts">
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { computed, ref } from 'vue';
 import { router, Link } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice, getActiveLanguage } from 'laravel-vue-i18n';
@@ -272,7 +273,7 @@ const getLocalized = (field: string[] | null | undefined): string => {
   if (!field) return '';
   const locale = getActiveLanguage() as 'lt' | 'en';
   const obj = field as unknown as Record<string, string>;
-  return obj[locale] || obj['lt'] || obj['en'] || '';
+  return getTranslatedValue(obj, locale);
 };
 
 const localizedTitle = computed(() => getLocalized(props.problem.title) || '—');

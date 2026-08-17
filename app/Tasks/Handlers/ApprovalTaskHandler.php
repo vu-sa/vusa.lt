@@ -6,7 +6,6 @@ use App\Models\Task;
 use App\Tasks\DTOs\CreateTaskData;
 use App\Tasks\Enums\ActionType;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 /**
  * Handles Approval tasks that auto-complete when an approval decision is made.
@@ -38,29 +37,19 @@ class ApprovalTaskHandler extends BaseTaskHandler
     /**
      * Complete all approval tasks for a given model.
      *
-     * Checks both full class name and snake_case variants to handle
-     * legacy data with different morph type formats.
+     * This used to query the class name and its snake_case spelling separately, because
+     * taskable_type held whichever the writing code happened to produce. The morph map makes
+     * the alias the only spelling, so one condition covers everything.
      *
      * @param  Model  $model
      */
     public function completeForModel($model, string $reason): void
     {
-        $morphClass = $model->getMorphClass();
-        $snakeCaseClass = Str::snake(class_basename($model));
-
         $tasks = Task::query()
             ->with('users')
             ->where('action_type', ActionType::Approval)
             ->whereNull('completed_at')
-            ->where(function ($query) use ($model, $morphClass, $snakeCaseClass): void {
-                $query->where(function ($q) use ($model, $morphClass): void {
-                    $q->where('taskable_type', $morphClass)
-                        ->where('taskable_id', $model->getKey());
-                })->orWhere(function ($q) use ($model, $snakeCaseClass): void {
-                    $q->where('taskable_type', $snakeCaseClass)
-                        ->where('taskable_id', $model->getKey());
-                });
-            })
+            ->whereMorphedTo('taskable', $model)
             ->get();
 
         foreach ($tasks as $task) {

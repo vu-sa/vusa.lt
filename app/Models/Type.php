@@ -11,6 +11,7 @@ use App\Models\Traits\HasContentRelationships;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -20,7 +21,6 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 /**
  * @property int $id
@@ -98,16 +98,18 @@ class Type extends Model implements GuardsForceDelete, SharepointFileableContrac
     }
 
     /**
-     * The only models a type may be attached to, mapped to the relation holding
-     * them. A request-supplied `model_type` is resolved through this map — it is
-     * never turned into a method name and dispatched, which previously allowed
-     * `roles` to be synced and any unknown value to raise a 500.
+     * The only models a type may be attached to, mapped to the relation holding them.
      *
-     * @var array<class-string, string>
+     * A request-supplied `model_type` is resolved through this map — it is never turned into
+     * a method name and dispatched, which previously allowed `roles` to be synced and any
+     * unknown value to raise a 500. Keyed by morph alias, which is what the column stores and
+     * what Store/UpdateTypeRequest validates against.
+     *
+     * @var array<string, string>
      */
     public const TYPEABLE_RELATIONS = [
-        Institution::class => 'institutions',
-        Duty::class => 'duties',
+        'institution' => 'institutions',
+        'duty' => 'duties',
     ];
 
     /**
@@ -202,13 +204,15 @@ class Type extends Model implements GuardsForceDelete, SharepointFileableContrac
 
     public function allModelsFromModelType()
     {
-        if (Str::contains($this->model_type, 'Institution')) {
-            return $this->model_type::select('id', 'name', 'tenant_id')->with('tenants')->orderBy('name')->get();
-        } elseif (Str::contains($this->model_type, 'Duty')) {
-            return $this->model_type::select('id', 'name', 'institution_id')->with('tenants')->orderBy('name')->get();
-        }
-
-        return collect();
+        // The class is resolved through the morph map rather than from the stored string, so
+        // model_type can never name a class this method was not written for.
+        return match ($this->model_type) {
+            MorphMap::alias(Institution::class) => Institution::query()
+                ->select('id', 'name', 'tenant_id')->with('tenants')->orderBy('name')->get(),
+            MorphMap::alias(Duty::class) => Duty::query()
+                ->select('id', 'name', 'institution_id')->with('tenants')->orderBy('name')->get(),
+            default => collect(),
+        };
     }
 
     /**
@@ -220,7 +224,7 @@ class Type extends Model implements GuardsForceDelete, SharepointFileableContrac
      */
     public function scopeForInstitutions(Builder $query): Builder
     {
-        return $query->where('model_type', Institution::class);
+        return $query->where('model_type', MorphMap::alias(Institution::class));
     }
 
     /**
@@ -228,7 +232,7 @@ class Type extends Model implements GuardsForceDelete, SharepointFileableContrac
      */
     public function scopeForDuties($query)
     {
-        return $query->where('model_type', Duty::class);
+        return $query->where('model_type', MorphMap::alias(Duty::class));
     }
 
     /**

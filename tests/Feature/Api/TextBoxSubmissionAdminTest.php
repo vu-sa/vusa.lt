@@ -60,7 +60,7 @@ describe('destroy', function (): void {
             ->assertOk()
             ->assertJson([
                 'success' => true,
-                'message' => 'Atsakymas ištrintas',
+                'message' => 'Atsakymas ištrintas.',
             ]);
 
         $this->assertDatabaseMissing('text_box_submissions', ['id' => $submission->id]);
@@ -114,7 +114,7 @@ describe('destroyAll', function (): void {
             ->assertOk()
             ->assertJson([
                 'success' => true,
-                'message' => 'Visi atsakymai ištrinti',
+                'message' => 'Visi atsakymai ištrinti.',
             ]);
 
         $this->assertDatabaseCount('text_box_submissions', 1);

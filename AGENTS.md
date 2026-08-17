@@ -87,6 +87,17 @@ full run, or hard-fails on a 403/404.
 | `lang/*.php` for nested translations | Nested objects in `lang/*.json` |
 | `vendor/bin/sail` for every CLI command | Run PHP/Node/Composer outside Sail |
 
+## Comments
+
+Default to none. A comment earns its place by saying something the code cannot.
+
+- **Budget**: one line for a local `why`, up to three for a docblock. Longer than the code it describes is a smell — and a rule of thumb, not a licence to pad up to it.
+- **Say why, never what.** A constraint, a rejected alternative, the bug a line prevents. Never restate the signature or the next line.
+- **No narration.** No history of how the code got here, no reasoning transcript, no essay on why something matters. Durable background belongs in `.ai/rules/` (via `record-rule`) or the changelog.
+- Trim bloated comments in files you touch.
+
+Language specifics: PHPDoc over inline comments (PHP), JSDoc rules under [TypeScript](#typescript).
+
 ## Architecture
 
 ### Routes & API

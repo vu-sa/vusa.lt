@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Pivots\Relationshipable;
 use App\Services\PublicInstitutionSearchIndexBuilder;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -89,13 +90,12 @@ class PublicInstitution extends Institution
     use Searchable;
 
     /**
-     * Get the class name for polymorphic relations.
-     * This ensures we use the parent Institution morph class for typeables lookup.
+     * Share the parent Institution's morph alias — see App\Models\PublicNews::getMorphClass().
      */
     #[\Override]
     public function getMorphClass(): string
     {
-        return Institution::class;
+        return MorphMap::alias(MorphMap::ALIASED_TO_PARENT[static::class]);
     }
 
     /**

@@ -12,6 +12,7 @@
  */
 import { ref, computed, provide, inject, watch, type Ref, type InjectionKey } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { TenantType } from '@/Types/enums';
 
 import type { AtstovavimasInstitution, AtstovavimasTenant } from '../types';
 
@@ -101,7 +102,7 @@ export function getInstitutionTenants(
     tenants.set(String(tenant.id), {
       id: tenant.id,
       shortname: tenant.shortname,
-      type: tenant.type ?? 'padalinys',
+      type: tenant.type ?? TenantType.Padalinys,
     });
   });
 

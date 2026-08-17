@@ -7,6 +7,7 @@ use App\Models\Duty;
 use App\Models\InstitutionCheckIn;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
+use App\Support\MorphMap;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -34,14 +35,14 @@ class MergeUsers
             // Capture the merged user's duties before repointing, so each can be
             // collapsed afterwards for overlaps with the kept user's own rows.
             $affectedDutyIds = Dutiable::query()
-                ->where('dutiable_type', User::class)
+                ->where('dutiable_type', MorphMap::alias(User::class))
                 ->where('dutiable_id', $mergedUser->id)
                 ->pluck('duty_id')
                 ->unique();
 
             // Repoint every dutiable row the merged user holds onto the kept user.
             Dutiable::query()
-                ->where('dutiable_type', User::class)
+                ->where('dutiable_type', MorphMap::alias(User::class))
                 ->where('dutiable_id', $mergedUser->id)
                 ->update(['dutiable_id' => $keptUser->id]);
 

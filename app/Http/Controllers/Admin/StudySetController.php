@@ -49,7 +49,7 @@ class StudySetController extends AdminController
 
         $deletedCount = $this->getTrashedCount($query);
 
-        $studySets = $query->paginate($request->input('per_page', 20))
+        $studySets = $query->paginate($request->getPerPage())
             ->withQueryString();
 
         return $this->inertiaResponse('Admin/StudySets/IndexStudySet', [
@@ -66,7 +66,7 @@ class StudySetController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $request->getSorting(),
-            'showDeleted' => $request->boolean('showDeleted', false),
+            'showDeleted' => $request->getShowDeleted(),
             'deletedCount' => $deletedCount,
         ]);
     }
@@ -103,7 +103,7 @@ class StudySetController extends AdminController
             $this->syncReviews($studySet, $request->input('reviews', []));
         });
 
-        return $this->redirectToIndexWithSuccess('studySets', 'Individualių studijų komplektas sėkmingai sukurtas!');
+        return $this->redirectToIndexWithSuccess('studySets', $this->entityMessage('created', 'studySet'));
     }
 
     /**
@@ -150,7 +150,7 @@ class StudySetController extends AdminController
             $this->syncReviews($studySet, $request->input('reviews', []));
         });
 
-        return back()->with('success', 'Individualių studijų komplektas sėkmingai atnaujintas!');
+        return back()->with('success', $this->entityMessage('updated', 'studySet'));
     }
 
     /**
@@ -162,7 +162,7 @@ class StudySetController extends AdminController
 
         $studySet->delete();
 
-        return $this->redirectToIndexWithInfo('studySets', 'Individualių studijų komplektas sėkmingai ištrintas!');
+        return $this->redirectToIndexWithInfo('studySets', $this->entityMessage('deleted', 'studySet'));
     }
 
     private function syncCourses(StudySet $studySet, array $courses): void

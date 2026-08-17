@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Api\Admin\SimilarDutiesRequest;
 use App\Models\Duty;
 use App\Services\DutySimilarityFinder;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 /**
  * Warns about an existing duty before a duplicate is created — the duty
@@ -21,14 +21,8 @@ class DutySearchApiController extends ApiController
      * it only the (looser, capped) other-institution tier is checked.
      * `exclude_id` omits the duty being edited from its own results.
      */
-    public function similar(Request $request, DutySimilarityFinder $finder): JsonResponse
+    public function similar(SimilarDutiesRequest $request, DutySimilarityFinder $finder): JsonResponse
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'institution_id' => 'nullable|string|ulid',
-            'exclude_id' => 'nullable|string|ulid',
-        ]);
-
         $actor = $this->requireAuth($request);
 
         if (! $actor->can('create', Duty::class)) {

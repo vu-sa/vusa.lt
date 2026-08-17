@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Public;
 
 use App\Collections\NewsCollection;
+use App\Enums\TenantType;
 use App\Helpers\ContentHelper;
 use App\Http\Controllers\PublicController;
 use App\Models\Calendar;
@@ -17,6 +18,7 @@ use App\Models\Type;
 use App\Services\LocationGeocoder;
 use App\Services\ResourceServices\InstitutionService;
 use App\Settings\FormSettings;
+use App\Support\LocalizedRouteSlugs;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -73,7 +75,7 @@ class PublicPageController extends PublicController
 
                 // If no content or content has no parts, fall back to main tenant
                 if (! $tenantContent || $tenantContent->parts->isEmpty()) {
-                    return Tenant::query()->where('type', 'pagrindinis')->first()?->content;
+                    return Tenant::main()?->content;
                 }
 
                 return $tenantContent;
@@ -427,16 +429,10 @@ class PublicPageController extends PublicController
             'vm' => 'Business School',
         ];
 
-        $tenants = Tenant::query()->where('type', 'padalinys')->with('primary_institution')->orderBy('fullname')
+        $tenants = Tenant::query()->where('type', TenantType::Padalinys)->with('primary_institution')->orderBy('fullname')
             ->get(['id', 'primary_institution_id', 'alias', 'fullname']);
 
-        Inertia::share('otherLangURL',
-            route('curatorRegistrations',
-                [
-                    'lang' => $this->getOtherLang(),
-                    'registrationString' => app()->getLocale() === 'lt' ? 'registration-to-mentor-program' : 'registracija-i-kuratoriu-programa',
-                ])
-        );
+        Inertia::share('otherLangURL', LocalizedRouteSlugs::route('curatorRegistrations', [], $this->getOtherLang()));
 
         return Inertia::render('Public/CuratorRegistrations', [
             'forms' => $forms,
@@ -790,7 +786,9 @@ class PublicPageController extends PublicController
 
         $otherLocale = app()->getLocale() === 'lt' ? 'en' : 'lt';
 
-        Inertia::share('otherLangURL', route('registrationPage', ['lang' => $otherLocale, 'registrationString' => $otherLocale === 'lt' ? 'registracija' : 'registration', 'registrationForm' => $form->getTranslation('path', $otherLocale)]));
+        Inertia::share('otherLangURL', LocalizedRouteSlugs::route('registrationPage', [
+            'registrationForm' => $form->getTranslation('path', $otherLocale),
+        ], $otherLocale));
 
         // Global content - use null for current tenant
         $this->applyPageHead(
@@ -896,7 +894,7 @@ class PublicPageController extends PublicController
                     $query->whereIn('id', $representativeTypes->pluck('id'));
                 })
                 ->whereHas('tenant', function ($query): void {
-                    $query->where('type', '!=', 'pkp');
+                    $query->whereIn('type', TenantType::representationalValues());
                 })
                 ->whereHas('duties.current_users') // Only count institutions that have active users
                 ->where('is_active', true)
@@ -909,7 +907,7 @@ class PublicPageController extends PublicController
                     $query->whereIn('id', $representativeTypes->pluck('id'));
                 })
                 ->whereHas('tenant', function ($query): void {
-                    $query->where('type', '!=', 'pkp');
+                    $query->whereIn('type', TenantType::representationalValues());
                 })
                 ->whereHas('duties.current_users') // Only get institutions that have active users
                 ->where('is_active', true)

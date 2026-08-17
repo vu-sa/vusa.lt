@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\Institution;
 use App\Models\Tenant;
 use App\Models\Type;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -34,7 +35,7 @@ class InstitutionFactory extends Factory
     public function withType()
     {
         return $this->afterCreating(function ($institution) {
-            $institution->types()->attach(Type::query()->where('model_type', Institution::class)->inRandomOrder()->first());
+            $institution->types()->attach(Type::query()->where('model_type', MorphMap::alias(Institution::class))->inRandomOrder()->first());
         });
     }
 }

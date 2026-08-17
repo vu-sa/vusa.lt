@@ -7,6 +7,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexProblemRequest;
 use App\Http\Requests\StoreProblemRequest;
 use App\Http\Requests\UpdateProblemRequest;
+use App\Http\Requests\UpdateProblemStatusRequest;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Institution;
@@ -15,7 +16,6 @@ use App\Models\ProblemCategory;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
 class ProblemController extends AdminController
 {
@@ -68,7 +68,7 @@ class ProblemController extends AdminController
 
         $deletedCount = $this->getTrashedCount($query);
 
-        $problems = $query->paginate($request->input('per_page', 20))->withQueryString();
+        $problems = $query->paginate($request->getPerPage())->withQueryString();
 
         return $this->inertiaResponse('Admin/Problems/IndexProblem', [
             'data' => $problems->items(),
@@ -82,7 +82,7 @@ class ProblemController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $request->getSorting(),
-            'showDeleted' => $request->boolean('showDeleted', false),
+            'showDeleted' => $request->getShowDeleted(),
             'deletedCount' => $deletedCount,
             'categories' => ProblemCategory::orderBy('slug')->get()->map(fn ($category) => $category->toArray()),
             'institutions' => Institution::select('id', 'name')->orderBy('name')->get()->map(fn ($institution) => $institution->toArray()),
@@ -133,7 +133,7 @@ class ProblemController extends AdminController
             $problem->institutions()->sync($institutions);
         }
 
-        return $this->redirectToIndexWithSuccess('problems', trans_choice('messages.created', 0, ['model' => trans_choice('entities.problem.model', 1)]));
+        return $this->redirectToIndexWithSuccess('problems', $this->entityMessage('created', 'problem'));
     }
 
     /**
@@ -204,7 +204,7 @@ class ProblemController extends AdminController
         $problem->categories()->sync($categories);
         $problem->institutions()->sync($institutions);
 
-        return back()->with('success', trans_choice('messages.updated', 0, ['model' => trans_choice('entities.problem.model', 1)]))->with('data', $problem->load(['categories', 'institutions']));
+        return back()->with('success', $this->entityMessage('updated', 'problem'))->with('data', $problem->load(['categories', 'institutions']));
     }
 
     /**
@@ -216,19 +216,17 @@ class ProblemController extends AdminController
 
         $problem->delete();
 
-        return $this->redirectToIndexWithInfo('problems', trans_choice('messages.deleted', 0, ['model' => trans_choice('entities.problem.model', 1)]));
+        return $this->redirectToIndexWithInfo('problems', $this->entityMessage('deleted', 'problem'));
     }
 
     /**
      * Update the status of the specified problem.
      */
-    public function updateStatus(Request $request, Problem $problem)
+    public function updateStatus(UpdateProblemStatusRequest $request, Problem $problem)
     {
         $this->handleAuthorization('update', $problem);
 
-        $validated = $request->validate([
-            'status' => 'required|string|in:open,in_progress,resolved',
-        ]);
+        $validated = $request->validated();
 
         $data = ['status' => $validated['status']];
 
@@ -242,7 +240,7 @@ class ProblemController extends AdminController
 
         $problem->update($data);
 
-        return back()->with('success', trans_choice('messages.updated', 0, ['model' => trans_choice('entities.problem.model', 1)]));
+        return back()->with('success', $this->entityMessage('updated', 'problem'));
     }
 
     /**
@@ -250,7 +248,7 @@ class ProblemController extends AdminController
      */
     public function restore(Problem $problem): RedirectResponse
     {
-        return $this->restoreModel($problem, trans_choice('messages.restored', 0, ['model' => trans_choice('entities.problem.model', 1)]));
+        return $this->restoreModel($problem, $this->entityMessage('restored', 'problem'));
     }
 
     public function forceDelete(Problem $problem): RedirectResponse

@@ -5,6 +5,7 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\SharepointFile;
 use App\Models\Tenant;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
@@ -24,7 +25,7 @@ beforeEach(function (): void {
 describe('destroyFileableFile', function (): void {
     test('marks fileableFile as externally deleted when sharepoint api fails', function (): void {
         $fileableFile = FileableFile::factory()->create([
-            'fileable_type' => Meeting::class,
+            'fileable_type' => MorphMap::alias(Meeting::class),
             'fileable_id' => $this->meeting->id,
             'sharepoint_id' => 'test-sharepoint-id',
             'name' => 'Test File.pdf',
@@ -44,7 +45,7 @@ describe('destroyFileableFile', function (): void {
 
     test('returns 403 for unauthorized user', function (): void {
         $fileableFile = FileableFile::factory()->create([
-            'fileable_type' => Meeting::class,
+            'fileable_type' => MorphMap::alias(Meeting::class),
             'fileable_id' => $this->meeting->id,
             'sharepoint_id' => 'test-sharepoint-id',
             'name' => 'Test File.pdf',
@@ -69,5 +70,33 @@ describe('destroy (legacy sharepointFile)', function (): void {
         );
 
         $response->assertStatus(403);
+    });
+});
+
+/**
+ * These three endpoints address SharePoint drive items by their opaque Graph id, so there is
+ * no local model to authorize against — they are gated on the SharepointFile capability the
+ * way createFolder already is. Authorization must happen before any Graph call is attempted.
+ */
+describe('drive item permission endpoints', function (): void {
+    test('createPublicPermission returns 403 for unauthorized user', function (): void {
+        asUser($this->user)
+            ->post(route('sharepoint.createPublicPermission', ['id' => 'some-drive-item-id']))
+            ->assertStatus(403);
+    });
+
+    test('getDriveItemPublicLink returns 403 for unauthorized user', function (): void {
+        asUser($this->user)
+            ->get(route('sharepoint.getDriveItemPublicLink', ['id' => 'some-drive-item-id']))
+            ->assertStatus(403);
+    });
+
+    test('getTypesDriveItems returns 403 when the user cannot view the fileable', function (): void {
+        asUser($this->user)
+            ->get(route('sharepoint.getTypesDriveItems', [
+                'type' => 'Institution',
+                'id' => $this->institution->id,
+            ]))
+            ->assertStatus(403);
     });
 });

@@ -59,7 +59,7 @@ class ResourceController extends AdminController
             $resource->addMedia($image['file'])->toMediaCollection('images');
         }
 
-        return redirect()->route('search.index', ['tab' => 'resources'])->with('success', trans_choice('messages.created', 1, ['model' => trans_choice('entities.resource.model', 1)]));
+        return redirect()->route('search.index', ['tab' => 'resources'])->with('success', $this->entityMessage('created', 'resource'));
     }
 
     /**
@@ -115,7 +115,7 @@ class ResourceController extends AdminController
         }
 
         return back()
-            ->with('success', trans_choice('messages.updated', 1, ['model' => trans_choice('entities.resource.model', 1)]));
+            ->with('success', $this->entityMessage('updated', 'resource'));
     }
 
     /**
@@ -128,7 +128,7 @@ class ResourceController extends AdminController
         $resource->delete();
 
         return redirect()->route('search.index', ['tab' => 'resources'])
-            ->with('info', trans_choice('messages.deleted', 1, ['model' => trans_choice('entities.resource.model', 1)]));
+            ->with('info', $this->entityMessage('deleted', 'resource'));
     }
 
     /**
@@ -136,7 +136,7 @@ class ResourceController extends AdminController
      */
     public function restore(Resource $resource): RedirectResponse
     {
-        return $this->restoreModel($resource, 'Išteklius sėkmingai atkurtas!');
+        return $this->restoreModel($resource, $this->entityMessage('restored', 'resource'));
     }
 
     public function forceDelete(Resource $resource): RedirectResponse

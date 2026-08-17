@@ -1,9 +1,15 @@
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { usePage } from '@inertiajs/vue3';
+
 import ConsentCard from '../ConsentCard.vue';
 
+import { createMockPage } from '@/tests/helpers/createMockPage';
+
 const acknowledge = vi.fn();
+
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 vi.mock('@/Composables/useCookieConsent', () => ({
   useCookieConsent: () => ({ acknowledge }),
@@ -19,6 +25,12 @@ function mountCard() {
   });
 }
 
+function withPrivacyPageUrl(privacyPageUrl: string | null) {
+  vi.mocked(usePage).mockReturnValue(
+    createMockPage({ organization: { privacyPageUrl } }),
+  );
+}
+
 function findButtonByText(wrapper: ReturnType<typeof mount>, text: string) {
   return wrapper.findAll('button').find(b => b.text().includes(text));
 }
@@ -26,6 +38,7 @@ function findButtonByText(wrapper: ReturnType<typeof mount>, text: string) {
 describe('ConsentCard', () => {
   beforeEach(() => {
     acknowledge.mockClear();
+    withPrivacyPageUrl('https://www.vusa.test/lt/privatumas');
   });
 
   it('states that visit statistics involve no cookies and no personal data', () => {
@@ -50,9 +63,22 @@ describe('ConsentCard', () => {
     expect(acknowledge).toHaveBeenCalledTimes(1);
   });
 
-  it('links to the privacy policy', () => {
+  it('links to the privacy policy page resolved from SiteSettings', () => {
     const wrapper = mountCard();
 
-    expect(wrapper.find('a[href$="/privatumas"]').exists()).toBe(true);
+    // The URL is resolved server-side (locale-correct, permalink-correct); the component only
+    // renders whatever it is handed. It used to hardcode `${app.url}/privatumas`, which sent
+    // English visitors to the Lithuanian page.
+    expect(wrapper.find('a[href="https://www.vusa.test/lt/privatumas"]').exists()).toBe(true);
+  });
+
+  it('hides the privacy link when no page is configured', () => {
+    withPrivacyPageUrl(null);
+
+    const wrapper = mountCard();
+
+    expect(wrapper.find('a').exists()).toBe(false);
+    // The acknowledge button must still be there.
+    expect(findButtonByText(wrapper, 'Supratau')).toBeDefined();
   });
 });

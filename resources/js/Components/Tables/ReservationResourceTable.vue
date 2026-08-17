@@ -70,16 +70,11 @@
   <Dialog v-model:open="showCommentModal">
     <DialogContent class="max-w-2xl">
       <DialogHeader>
-        <DialogTitle>{{ $page.props.app.locale === 'lt' ? 'Palikti komentarą' : 'Leave a comment' }}</DialogTitle>
+        <DialogTitle>{{ $t('Palikti komentarą') }}</DialogTitle>
       </DialogHeader>
       <div class="relative w-full">
         <InfoText>
-          <template v-if="$page.props.app.locale === 'lt'">
-            Palik trumpą komentarą
-          </template>
-          <template v-else>
-            Leave a short comment
-          </template>
+          {{ $t('Palik trumpą komentarą') }}
         </InfoText>
 
         <CommentTipTap
@@ -103,14 +98,8 @@
       </DialogHeader>
       <div class="space-y-4">
         <InfoText v-if="selectedReservationResource">
-          <template v-if="$page.props.app.locale === 'lt'">
-            Išteklius: <strong>{{ getResourceName(selectedReservationResource) }}</strong>
-            <span v-if="selectedReservationResource.quantity > 1" class="ml-1">({{ selectedReservationResource.quantity }} vnt.)</span>
-          </template>
-          <template v-else>
-            Resource: <strong>{{ getResourceName(selectedReservationResource) }}</strong>
-            <span v-if="selectedReservationResource.quantity > 1" class="ml-1">({{ selectedReservationResource.quantity }} pcs.)</span>
-          </template>
+          {{ $t('Išteklius') }}: <strong>{{ getResourceName(selectedReservationResource) }}</strong>
+          <span v-if="selectedReservationResource.quantity > 1" class="ml-1">({{ $t(':count vnt.', { count: selectedReservationResource.quantity }) }})</span>
         </InfoText>
 
         <ApprovalActions
@@ -398,16 +387,15 @@ const getResourceName = (pivot: App.Entities.ReservationResource) => {
 
 // Approval modal title based on state
 const approvalModalTitle = computed(() => {
-  const { locale } = usePage().props.app;
   const state = selectedReservationResource.value?.state;
 
   if (state === 'reserved') {
-    return locale === 'lt' ? 'Patvirtinti išdavimą' : 'Confirm handover';
+    return $t('Patvirtinti išdavimą');
   }
   if (state === 'lent') {
-    return locale === 'lt' ? 'Patvirtinti grąžinimą' : 'Confirm return';
+    return $t('Patvirtinti grąžinimą');
   }
-  return locale === 'lt' ? 'Tvirtinti rezervaciją' : 'Approve reservation';
+  return $t('Tvirtinti rezervaciją');
 });
 
 // Get selected resources grouped by state for bulk action preview
@@ -439,23 +427,19 @@ const selectedResourcesByState = computed(() => {
 
 // Get action label for each state transition
 const getApproveActionLabel = (state: string) => {
-  const { locale } = usePage().props.app;
   if (state === 'created') {
-    return locale === 'lt' ? 'Bus patvirtinta rezervacija →' : 'Reservation will be approved →';
+    return $t('Bus patvirtinta rezervacija →');
   }
   if (state === 'reserved') {
-    return locale === 'lt' ? 'Bus išduota →' : 'Will be handed over →';
+    return $t('Bus išduota →');
   }
   if (state === 'lent') {
-    return locale === 'lt' ? 'Bus grąžinta →' : 'Will be returned →';
+    return $t('Bus grąžinta →');
   }
   return '';
 };
 
-const getRejectActionLabel = () => {
-  const { locale } = usePage().props.app;
-  return locale === 'lt' ? 'Bus atmesta' : 'Will be rejected';
-};
+const getRejectActionLabel = () => $t('Bus atmesta');
 
 const columns = computed<ColumnDef<App.Entities.Resource>[]>(() => [
   {

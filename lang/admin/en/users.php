@@ -12,4 +12,11 @@ return [
     'duplicate_open_profile' => 'Open',
     'duplicate_contact_admins' => 'Contact that unit\'s administrators',
     'no_tenant' => 'No unit',
+    'validation' => [
+        'current_password_required' => 'The current password is required.',
+        'current_password_string' => 'The current password must be text.',
+        'password_required' => 'The new password is required.',
+        'password_confirmed' => 'The password confirmation does not match.',
+        'password_confirmation_required' => 'The password confirmation is required.',
+    ],
 ];

@@ -5,6 +5,7 @@ namespace App\Tasks\Handlers;
 use App\Models\Institution;
 use App\Models\Task;
 use App\Models\User;
+use App\Support\MorphMap;
 use App\Tasks\DTOs\CreateTaskData;
 use App\Tasks\Enums\ActionType;
 use App\ValueObjects\InstitutionActivityStatusData;
@@ -89,7 +90,7 @@ class PeriodicityGapTaskHandler extends BaseTaskHandler
     {
         return Task::query()
             ->with('users')
-            ->where('taskable_type', Institution::class)
+            ->where('taskable_type', MorphMap::alias(Institution::class))
             ->where('taskable_id', $institution->getKey())
             ->where('action_type', ActionType::PeriodicityGap)
             ->whereNull('completed_at')

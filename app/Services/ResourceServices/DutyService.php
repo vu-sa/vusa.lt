@@ -2,6 +2,7 @@
 
 namespace App\Services\ResourceServices;
 
+use App\Enums\TenantType;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Meeting;
@@ -43,7 +44,7 @@ class DutyService
                 $query->whereIn('tenant_id', $tenantIds);
             })
             ->whereHas('tenant', function ($query): void {
-                $query->where('type', '!=', 'pkp');
+                $query->whereIn('type', TenantType::representationalValues());
             })
             ->with('tenant:id,shortname')
             ->get();
@@ -122,7 +123,7 @@ class DutyService
                 $query->whereIn('id', $userInstitutionIds);
             })
             ->whereHas('tenant', function ($query): void {
-                $query->where('type', '!=', 'pkp');
+                $query->whereIn('type', TenantType::representationalValues());
             })
             ->with([
                 'tenant:id,shortname',
@@ -245,7 +246,7 @@ class DutyService
         return Institution::select('id', 'name', 'alias', 'tenant_id', 'meeting_periodicity_days')
             ->whereIn('tenant_id', $accessibleTenantIds)
             ->whereHas('tenant', function ($query): void {
-                $query->where('type', '!=', 'pkp');
+                $query->whereIn('type', TenantType::representationalValues());
             })
             ->with([
                 'tenant:id,shortname,type',
@@ -278,7 +279,7 @@ class DutyService
     {
         return Institution::select('id', 'name', 'alias', 'tenant_id', 'meeting_periodicity_days')
             ->whereHas('tenant', function ($query): void {
-                $query->where('type', '!=', 'pkp');
+                $query->whereIn('type', TenantType::representationalValues());
             })
             ->with([
                 'tenant:id,shortname,type', // type is needed for cross-tenant scope matching in RelationshipService

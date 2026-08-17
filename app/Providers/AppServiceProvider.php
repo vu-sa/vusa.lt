@@ -4,11 +4,15 @@ namespace App\Providers;
 
 use App\Services\ModelAuthorizer;
 use App\Services\PermissionService;
+use App\Support\LocalizedRouteSlugs;
+use App\Support\MorphMap;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Http\Middleware\TrimStrings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Head\Enums\OgType;
 use Laravel\Head\Enums\TwitterCard;
@@ -61,6 +65,17 @@ class AppServiceProvider extends ServiceProvider
         Translatable::fallback(
             fallbackLocale: 'lt'
         );
+
+        // Polymorphic columns store short aliases instead of class names — see App\Support\MorphMap.
+        // requireMorphMap() stays off on purpose: a model only needs an alias once it is a
+        // morph target, and enforcing it would turn every new model into a runtime exception.
+        Relation::morphMap(MorphMap::MAP);
+
+        // Localized URL segments ("/lt/dokumentai" vs "/en/documents") are route parameters
+        // filled from URL defaults, so route() needs them wherever it runs — including
+        // queued notifications, console commands and tests, which never pass through
+        // SetLocale (that middleware refreshes them once the request's locale is known).
+        URL::defaults(LocalizedRouteSlugs::defaults(app()->getLocale()));
 
         // Site-wide public head defaults. Page-specific values (title, description, canonical,
         // hreflang, etc.) are set at runtime in PublicController::applyPageHead().

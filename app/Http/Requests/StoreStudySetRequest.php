@@ -2,12 +2,15 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ValidatesTenantScope;
 use App\Models\StudySet;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreStudySetRequest extends FormRequest
 {
+    use ValidatesTenantScope;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -30,7 +33,7 @@ class StoreStudySetRequest extends FormRequest
             'description.en' => 'nullable|string|max:2000',
             'order' => 'required|integer|min:0',
             'is_visible' => 'boolean',
-            'tenant_id' => 'required|exists:tenants,id',
+            'tenant_id' => ['required', 'integer', 'exists:tenants,id', $this->tenantIdInAuthorizedScope('studySets.create.padalinys')],
             'courses' => 'nullable|array',
             'courses.*.name.lt' => 'required|string|max:255',
             'courses.*.name.en' => 'nullable|string|max:255',

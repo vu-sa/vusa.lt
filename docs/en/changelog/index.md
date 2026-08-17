@@ -7,6 +7,33 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.28 — English URLs and consistent messages (2026-08-17) {#v1-28}
+
+- ⭐ **The English site now has English URLs** — documents, search, contacts, student representatives and meetings are served from `/en/documents`, `/en/search`, `/en/contacts`, `/en/contacts/student-representatives` and `/en/meetings`. Old links redirect to the new ones, so saved links keep working
+- ✨ **The language toggle no longer keeps the Lithuanian path** — switching language now changes the URL segment as well, not just `/lt` to `/en`
+- ✨ **Admin messages are translated** — created / updated / deleted messages were shown only in Lithuanian (or only in English) in several sections; they now follow the selected language, and the Lithuanian ones agree with the noun's gender
+- ✨ **File manager messages** — upload, delete and error messages are translated, and file counts no longer use the wrong Lithuanian ending
+- 🔧 **Editing a resource category no longer says "New"** — the heading now shows that the record is being edited
+
+## v1.27 — Translation and permission fixes (2026-08-16) {#v1-27}
+
+- 🔧 **Some messages showed raw technical text** — updating a meeting, restoring a record, logging out or attaching an institution to a meeting displayed a key such as "messages.meeting.updated" instead of a sentence
+- 🔧 **Validation errors are now translated** — most form validation messages (files, dates, lists, choices) were shown in English regardless of the selected language; all are now translated. In English, field names no longer appear as "first_name"
+- 🔧 **You can no longer create calendar events or problems in another tenant** — the tenant was taken from the request without being checked; moving an existing record to another tenant is blocked too
+- 🔧 **Calendar event category is validated when editing** — it was previously possible to assign a deleted category while editing
+- 🔧 **Role permissions can no longer be wiped by accident** — a malformed link could strip every permission from a role at once
+- 🔧 **Saving a role's duties and types no longer errors** — submitting with nothing selected previously caused a server error
+
+## v1.26 — Authorization clean-up and site settings (2026-08-16) {#v1-26}
+
+- 🔧 **Several admin actions had no permission check** — creating public SharePoint links, reordering agenda items and reading approval history now verify that the user is actually allowed to
+- 🔧 **You can no longer create records in another tenant** — resources, forms, meetings, tasks and others now check the tenant against your permissions instead of trusting the request
+- 🔧 **Calendar search works for more than super admins** — the link picker (navigation and quick links) found no calendar entries because of a misspelled permission name
+- 🔧 **Deleting a resource category now needs the delete permission** — the create permission used to be enough
+- ⭐ **New site settings page** — pick which page holds the privacy policy; the cookie banner's link now follows that page and the visitor's language (English visitors used to land on the Lithuanian page)
+- ✨ **The tenant switcher lists every unit** — newer units would previously have been hidden, and switching now also works on the English news page
+- 🔧 **"Meeting" no longer offered in the content type form** — it was rejected on save anyway
+
 ## v1.25 — Unused sections removed (2026-08-14) {#v1-25}
 
 - ✨ **Trainings and Memberships removed** — both were left unfinished and unused since late 2024 (neither held any data), so they are gone from the admin menu. The training programme planner went with them

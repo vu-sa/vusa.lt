@@ -4,11 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Concerns\ApiResponses;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DestroyPushSubscriptionRequest;
+use App\Http\Requests\StorePushSubscriptionRequest;
 use App\Models\User;
 use App\Notifications\TestPushNotification;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use NotificationChannels\WebPush\PushSubscription;
 
@@ -49,15 +50,8 @@ class PushSubscriptionController extends Controller
     /**
      * Store a new push subscription for the authenticated user.
      */
-    public function store(Request $request): JsonResponse
+    public function store(StorePushSubscriptionRequest $request): JsonResponse
     {
-        $request->validate([
-            'endpoint' => 'required|url',
-            'keys.auth' => 'required|string',
-            'keys.p256dh' => 'required|string',
-            'contentEncoding' => 'nullable|string',
-            'deviceName' => 'nullable|string|max:255',
-        ]);
 
         /** @var User $user */
         $user = Auth::user();
@@ -88,11 +82,8 @@ class PushSubscriptionController extends Controller
     /**
      * Remove a push subscription for the authenticated user by endpoint.
      */
-    public function destroy(Request $request): JsonResponse
+    public function destroy(DestroyPushSubscriptionRequest $request): JsonResponse
     {
-        $request->validate([
-            'endpoint' => 'required|url',
-        ]);
 
         /** @var User $user */
         $user = Auth::user();

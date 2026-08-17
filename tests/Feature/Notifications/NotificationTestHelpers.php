@@ -14,6 +14,7 @@ use App\Models\Resource;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -124,7 +125,7 @@ trait NotificationTestHelpers
         $institution = Institution::factory()->for($tenant)->create();
 
         $task = Task::factory()->create(array_merge([
-            'taskable_type' => Institution::class,
+            'taskable_type' => MorphMap::alias(Institution::class),
             'taskable_id' => $institution->id,
         ], $attributes));
 
@@ -138,7 +139,7 @@ trait NotificationTestHelpers
         User $commenter
     ): Comment {
         return Comment::factory()->create([
-            'commentable_type' => ReservationResource::class,
+            'commentable_type' => MorphMap::alias(ReservationResource::class),
             'commentable_id' => $reservationResource->id,
             'user_id' => $commenter->id,
             'body' => 'Test comment content',

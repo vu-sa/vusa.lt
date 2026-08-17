@@ -71,6 +71,21 @@
               </CardHeader>
             </Card>
           </Link>
+
+          <!-- Site Settings -->
+          <Link :href="route('settings.site.edit')">
+            <Card class="h-full transition-colors duration-200 hover:border-primary/40 hover:bg-accent/40">
+              <CardHeader>
+                <CardTitle class="flex items-center gap-2">
+                  <component :is="PageIcon" class="size-5" />
+                  {{ $t('settings.pages.site.title') }}
+                </CardTitle>
+                <CardDescription>
+                  {{ $t('settings.pages.site.description') }}
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
         </div>
       </section>
 
@@ -105,7 +120,7 @@ import { Link } from '@inertiajs/vue3';
 
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/Components/ui/card';
-import { DocumentIcon, FormIcon, InstitutionIcon, MeetingIcon, RoleIcon } from '@/Components/icons';
+import { DocumentIcon, FormIcon, InstitutionIcon, MeetingIcon, PageIcon, RoleIcon } from '@/Components/icons';
 
 defineProps<{
   isSuperAdmin: boolean;

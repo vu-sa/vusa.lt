@@ -1,8 +1,6 @@
 <template>
   <PageContent
-    :title="$tChoice('forms.new_model', 0, {
-      model: $tChoice('entities.reservation.model', 1),
-    })"
+    :title="newEntityTitle('reservation')"
     :heading-icon="ReservationIcon">
     <UpsertModelLayout>
       <ReservationForm remember-key="CreateReservation" model-route="reservations.store" :reservation :all-resources="resources" />
@@ -11,6 +9,7 @@
 </template>
 
 <script setup lang="tsx">
+import { newEntityTitle } from '@/Utils/EntityMessages';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { capitalize } from 'vue';
 

@@ -1,3 +1,4 @@
+import { TenantType } from '@/Types/enums';
 /**
  * Creates a mock Tenant entity
  * Note: Uses type assertion for test mocks where not all properties are needed
@@ -10,7 +11,7 @@ export function createMockTenant(
     fullname: 'Vilniaus universiteto Studentų atstovybė',
     shortname: 'VU SA',
     alias: 'vusa',
-    type: 'pagrindinis',
+    type: TenantType.Pagrindinis,
     primary_institution_id: '1',
     // Counts
     banners_count: 2,
@@ -51,14 +52,14 @@ export const mockTenants = {
     fullname: 'VU SA Istorijos fakultete',
     shortname: 'VU SA IF',
     alias: 'if',
-    type: 'padalinys',
+    type: TenantType.Padalinys,
   }),
   vumif: createMockTenant({
     id: 3,
     fullname: 'VU SA Matematikos ir informatikos fakultete',
     shortname: 'VU SA MIF',
     alias: 'mif',
-    type: 'padalinys',
+    type: TenantType.Padalinys,
   }),
 };
 

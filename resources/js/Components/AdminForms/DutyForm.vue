@@ -393,6 +393,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useForm, usePage } from '@inertiajs/vue3';
+import { TenantType } from '@/Types/enums';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronsUpDown, TriangleAlert } from 'lucide-vue-next';
 
@@ -566,7 +567,7 @@ const selectedAssignableTenants = computed<AssignableTenantOption[]>({
 /** Padalinys-type tenants not yet given a row — the bulk-add shortcut's payload. */
 const unaddedPadalinysTenants = computed(() => {
   const usedIds = new Set((form.assignable_tenants as AssignableTenantRow[]).map(r => r.tenant_id));
-  return props.assignableTenants.filter(t => t.type === 'padalinys' && !usedIds.has(t.id));
+  return props.assignableTenants.filter(t => t.type === TenantType.Padalinys && !usedIds.has(t.id));
 });
 
 function addAllPadalinysTenants() {

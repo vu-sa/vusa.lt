@@ -6,6 +6,7 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\Type;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -288,7 +289,7 @@ describe('role permission management', function (): void {
         $this->assertDatabaseHas('model_has_roles', [
             'role_id' => $role->id,
             'model_id' => $duty->id,
-            'model_type' => Duty::class,
+            'model_type' => MorphMap::alias(Duty::class),
         ]);
     });
 
@@ -316,7 +317,7 @@ describe('role permission management', function (): void {
         // Create a Type record for Institution
         $institutionType = Type::create([
             'title' => ['en' => 'Institution', 'lt' => 'Institucija'],
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
             'slug' => 'institution',
         ]);
 
@@ -333,6 +334,46 @@ describe('role permission management', function (): void {
             'role_id' => $role->id,
             'type_id' => $institutionType->id,
         ]);
+    });
+
+    test('a wildcard model segment cannot strip every permission from a role', function (): void {
+        $role = Role::factory()->create();
+
+        $permission = Permission::create(['name' => 'test.read.own', 'guard_name' => 'web']);
+        $role->givePermissionTo($permission);
+
+        // '%' used to make the LIKE match every permission while matching none of the
+        // requested ones, so the diff detached the role's whole permission set.
+        asUser($this->admin)
+            ->patch(route('roles.syncPermissionGroup', [$role, '%']), ['read' => 'own'])
+            ->assertStatus(404);
+
+        expect($role->fresh()->hasPermissionTo($permission))->toBeTrue();
+    });
+
+    test('an unknown permission scope is rejected', function (): void {
+        $role = Role::factory()->create();
+        Permission::create(['name' => 'test.read.own', 'guard_name' => 'web']);
+
+        asUser($this->admin)
+            ->patch(route('roles.syncPermissionGroup', [$role, 'test']), ['read' => 'everything'])
+            ->assertSessionHasErrors('read');
+    });
+
+    test('syncing duties without the duties key reports a validation error, not a server error', function (): void {
+        $role = Role::factory()->create();
+
+        asUser($this->admin)
+            ->put(route('roles.syncDuties', $role), [])
+            ->assertSessionHasErrors('duties');
+    });
+
+    test('syncing attachable types without the key reports a validation error, not a server error', function (): void {
+        $role = Role::factory()->create();
+
+        asUser($this->admin)
+            ->put(route('roles.syncAttachableTypes', $role), [])
+            ->assertSessionHasErrors('attachable_types');
     });
 });
 

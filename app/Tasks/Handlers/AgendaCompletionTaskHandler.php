@@ -6,6 +6,7 @@ use App\Enums\AgendaItemType;
 use App\Models\Meeting;
 use App\Models\Task;
 use App\Models\User;
+use App\Support\MorphMap;
 use App\Tasks\DTOs\CreateTaskData;
 use App\Tasks\Enums\ActionType;
 use Illuminate\Support\Collection;
@@ -146,7 +147,7 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
     {
         return Task::query()
             ->with('users')
-            ->where('taskable_type', Meeting::class)
+            ->where('taskable_type', MorphMap::alias(Meeting::class))
             ->where('taskable_id', $meeting->getKey())
             ->where('action_type', ActionType::AgendaCompletion)
             ->whereNull('completed_at')
@@ -247,7 +248,7 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
     {
         // Find a completed task for this meeting
         $completedTask = Task::query()
-            ->where('taskable_type', Meeting::class)
+            ->where('taskable_type', MorphMap::alias(Meeting::class))
             ->where('taskable_id', $meeting->getKey())
             ->where('action_type', ActionType::AgendaCompletion)
             ->whereNotNull('completed_at')

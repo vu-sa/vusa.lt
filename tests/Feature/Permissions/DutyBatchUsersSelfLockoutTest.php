@@ -4,6 +4,7 @@ use App\Models\Pivots\Dutiable;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
@@ -23,7 +24,7 @@ beforeEach(function (): void {
 
     $this->adminDutiable = Dutiable::where('duty_id', $this->adminDuty->id)
         ->where('dutiable_id', $this->admin->id)
-        ->where('dutiable_type', User::class)
+        ->where('dutiable_type', MorphMap::alias(User::class))
         ->first();
 });
 
@@ -68,7 +69,7 @@ test('removing another user is not guarded', function (): void {
 
     $otherDutiable = Dutiable::where('duty_id', $this->adminDuty->id)
         ->where('dutiable_id', $other->id)
-        ->where('dutiable_type', User::class)
+        ->where('dutiable_type', MorphMap::alias(User::class))
         ->first();
 
     expect($otherDutiable->end_date)->not->toBeNull();

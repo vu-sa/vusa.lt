@@ -7,23 +7,21 @@ use App\Http\Requests\IndexResourceCategoryRequest;
 use App\Http\Requests\StoreResourceCategoryRequest;
 use App\Http\Requests\UpdateResourceCategoryRequest;
 use App\Http\Traits\HasTanstackTables;
-use App\Models\Resource;
 use App\Models\ResourceCategory;
-use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
 
 class ResourceCategoryController extends AdminController
 {
     use HasTanstackTables;
 
-    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
+    public function __construct(private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
      */
     public function index(IndexResourceCategoryRequest $request)
     {
-        $this->handleAuthorization('viewAny', Resource::class);
+        $this->handleAuthorization('viewAny', ResourceCategory::class);
 
         $query = ResourceCategory::query();
 
@@ -36,7 +34,7 @@ class ResourceCategoryController extends AdminController
             $searchableColumns,
         );
 
-        $resourceCategories = $query->paginate($request->input('per_page', 20))
+        $resourceCategories = $query->paginate($request->getPerPage())
             ->withQueryString();
 
         return $this->inertiaResponse('Admin/Reservations/IndexResourceCategory', [
@@ -64,7 +62,7 @@ class ResourceCategoryController extends AdminController
      */
     public function create()
     {
-        $this->handleAuthorization('create', Resource::class);
+        $this->handleAuthorization('create', ResourceCategory::class);
 
         return $this->inertiaResponse('Admin/Reservations/CreateResourceCategory');
     }
@@ -80,7 +78,7 @@ class ResourceCategoryController extends AdminController
         $resourceCategory->fill($validatedData->toArray());
         $resourceCategory->save();
 
-        return redirect()->route('resourceCategories.index')->with(['success' => 'Resource category created successfully!']);
+        return redirect()->route('resourceCategories.index')->with(['success' => $this->entityMessage('created', 'resourceCategory')]);
     }
 
     /**
@@ -88,7 +86,7 @@ class ResourceCategoryController extends AdminController
      */
     public function edit(ResourceCategory $resourceCategory)
     {
-        $this->handleAuthorization('create', Resource::class);
+        $this->handleAuthorization('update', $resourceCategory);
 
         return $this->inertiaResponse('Admin/Reservations/EditResourceCategory', [
             'resourceCategory' => $resourceCategory->toFullArray(),
@@ -100,12 +98,13 @@ class ResourceCategoryController extends AdminController
      */
     public function update(UpdateResourceCategoryRequest $request, ResourceCategory $resourceCategory)
     {
+        $this->handleAuthorization('update', $resourceCategory);
 
         $validatedData = $request->safe();
         $resourceCategory->fill($validatedData->toArray());
         $resourceCategory->save();
 
-        return back()->with(['success' => 'Resource category updated successfully!']);
+        return back()->with(['success' => $this->entityMessage('updated', 'resourceCategory')]);
     }
 
     /**
@@ -113,10 +112,10 @@ class ResourceCategoryController extends AdminController
      */
     public function destroy(ResourceCategory $resourceCategory)
     {
-        $this->handleAuthorization('create', Resource::class);
+        $this->handleAuthorization('delete', $resourceCategory);
 
         $resourceCategory->delete();
 
-        return redirect()->route('resourceCategories.index')->with(['success' => 'Resource category deleted successfully!']);
+        return redirect()->route('resourceCategories.index')->with(['success' => $this->entityMessage('deleted', 'resourceCategory')]);
     }
 }

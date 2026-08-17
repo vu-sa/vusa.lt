@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Api\Admin\TourIdRequest;
 use App\Notifications\WelcomeNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -28,12 +29,8 @@ class TutorialApiController extends ApiController
      * Tour IDs should follow the format: {page}-{section}-v{version} (e.g., "atstovavimas-overview-v1")
      * or spotlight-{feature}-v{version} for spotlights (e.g., "spotlight-tenant-tab-v1")
      */
-    public function markComplete(Request $request): JsonResponse
+    public function markComplete(TourIdRequest $request): JsonResponse
     {
-        $request->validate([
-            'tour_id' => 'required|string|max:100',
-        ]);
-
         $user = $this->requireAuth($request);
 
         $tourId = $request->input('tour_id');
@@ -62,12 +59,8 @@ class TutorialApiController extends ApiController
     /**
      * Reset a specific tutorial for the current user (allows replay).
      */
-    public function resetTour(Request $request): JsonResponse
+    public function resetTour(TourIdRequest $request): JsonResponse
     {
-        $request->validate([
-            'tour_id' => 'required|string|max:100',
-        ]);
-
         $user = $this->requireAuth($request);
 
         $tourId = $request->input('tour_id');

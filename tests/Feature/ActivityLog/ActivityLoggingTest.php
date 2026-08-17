@@ -7,6 +7,7 @@ use App\Models\Pivots\AgendaItem;
 use App\Models\Traits\LogsModelActivity;
 use App\Models\User;
 use App\Models\Vote;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Spatie\Activitylog\Models\Activity;
@@ -92,9 +93,9 @@ test('saving a vote only logs an activity for the vote, not the agenda item or m
 
     $vote->update(['decision' => 'positive']);
 
-    expect(Activity::where('subject_type', Vote::class)->where('subject_id', $vote->id)->count())->toBe(1)
-        ->and(Activity::where('subject_type', AgendaItem::class)->count())->toBe(0)
-        ->and(Activity::where('subject_type', Meeting::class)->count())->toBe(0);
+    expect(Activity::where('subject_type', MorphMap::alias(Vote::class))->where('subject_id', $vote->id)->count())->toBe(1)
+        ->and(Activity::where('subject_type', MorphMap::alias(AgendaItem::class))->count())->toBe(0)
+        ->and(Activity::where('subject_type', MorphMap::alias(Meeting::class))->count())->toBe(0);
 });
 
 test('User logs attribute changes despite declaring #[Fillable] instead of $guarded', function (): void {
@@ -104,7 +105,7 @@ test('User logs attribute changes despite declaring #[Fillable] instead of $guar
 
     $user->update(['name' => 'Updated Name']);
 
-    $updated = Activity::where('subject_type', User::class)->where('subject_id', $user->id)->latest('id')->first();
+    $updated = Activity::where('subject_type', MorphMap::alias(User::class))->where('subject_id', $user->id)->latest('id')->first();
 
     expect(data_get($updated, 'attribute_changes.attributes.name'))->toBe('Updated Name');
 });
@@ -116,7 +117,7 @@ test('a password-only change logs no activity at all', function (): void {
 
     $user->update(['password' => bcrypt('a-new-password')]);
 
-    expect(Activity::where('subject_type', User::class)->where('subject_id', $user->id)->count())->toBe(0);
+    expect(Activity::where('subject_type', MorphMap::alias(User::class))->where('subject_id', $user->id)->count())->toBe(0);
 });
 
 test('password never appears in a User activity even when changed alongside a logged attribute', function (): void {
@@ -126,7 +127,7 @@ test('password never appears in a User activity even when changed alongside a lo
 
     $user->update(['name' => 'Updated Name', 'password' => bcrypt('a-new-password')]);
 
-    $activity = Activity::where('subject_type', User::class)->where('subject_id', $user->id)->latest('id')->first();
+    $activity = Activity::where('subject_type', MorphMap::alias(User::class))->where('subject_id', $user->id)->latest('id')->first();
 
     expect($activity)->not->toBeNull()
         ->and(data_get($activity, 'attribute_changes.attributes'))->not->toHaveKey('password')
@@ -137,17 +138,17 @@ test('Comment does not log activity', function (): void {
     $meeting = Meeting::factory()->create();
 
     Comment::factory()->create([
-        'commentable_type' => Meeting::class,
+        'commentable_type' => MorphMap::alias(Meeting::class),
         'commentable_id' => $meeting->id,
     ]);
 
-    expect(Activity::where('subject_type', Comment::class)->count())->toBe(0);
+    expect(Activity::where('subject_type', MorphMap::alias(Comment::class))->count())->toBe(0);
 });
 
 test('InstitutionCheckIn does not log activity', function (): void {
     InstitutionCheckIn::factory()->create();
 
-    expect(Activity::where('subject_type', InstitutionCheckIn::class)->count())->toBe(0);
+    expect(Activity::where('subject_type', MorphMap::alias(InstitutionCheckIn::class))->count())->toBe(0);
 });
 
 test('a soft delete logs a deleted event with the snapshot under old and no attributes key', function (): void {
@@ -156,7 +157,7 @@ test('a soft delete logs a deleted event with the snapshot under old and no attr
 
     $meeting->delete();
 
-    $activity = Activity::where('subject_type', Meeting::class)
+    $activity = Activity::where('subject_type', MorphMap::alias(Meeting::class))
         ->where('subject_id', $meeting->id)
         ->where('event', 'deleted')
         ->latest('id')
@@ -174,7 +175,7 @@ test('restoring a soft-deleted model logs a restored event and no spurious updat
 
     $meeting->restore();
 
-    $activities = Activity::where('subject_type', Meeting::class)->where('subject_id', $meeting->id)->get();
+    $activities = Activity::where('subject_type', MorphMap::alias(Meeting::class))->where('subject_id', $meeting->id)->get();
 
     expect($activities->pluck('event')->all())->toBe(['restored']);
 });

@@ -45,6 +45,7 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 import { useForm } from '@inertiajs/vue3';
+import { TenantType } from '@/Types/enums';
 
 import FormElement from './FormElement.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
@@ -66,10 +67,12 @@ defineEmits<{
 
 const form = rememberKey ? useForm(rememberKey, tenant) : useForm(tenant);
 
+// Values come from the generated TenantType enum so this list cannot drift from the
+// `tenants.type` column; only the labels live in the translation files.
 const typeOptions = computed(() => [
-  { label: $t('forms.options.tenant_type_pkp'), value: 'pkp' },
-  { label: $t('forms.options.tenant_type_padalinys'), value: 'padalinys' },
-  { label: $t('forms.options.tenant_type_pagrindinis'), value: 'pagrindinis' },
+  { label: $t('forms.options.tenant_type_pkp'), value: TenantType.Pkp },
+  { label: $t('forms.options.tenant_type_padalinys'), value: TenantType.Padalinys },
+  { label: $t('forms.options.tenant_type_pagrindinis'), value: TenantType.Pagrindinis },
 ]);
 
 // Bridge: SingleSelect operates on full objects, form stores primary_institution_id for server submission

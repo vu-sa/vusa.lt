@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Actions\PairTranslatedRecord;
+use App\Enums\PageLayoutEnum;
 use App\Models\Traits\LogsModelActivity;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -63,11 +64,6 @@ class Page extends Model implements Feedable, Sitemapable
     #[\Override]
     protected $guarded = [];
 
-    /**
-     * Available layout options for pages.
-     */
-    public const LAYOUTS = ['default', 'wide', 'focused'];
-
     #[\Override]
     protected function casts(): array
     {
@@ -93,10 +89,8 @@ class Page extends Model implements Feedable, Sitemapable
                 $page->highlights = array_slice($page->highlights, 0, 3);
             }
 
-            // Validate layout
-            if (! in_array($page->layout, self::LAYOUTS)) {
-                $page->layout = 'default';
-            }
+            // See News::booted() — coerce rather than fail; the request layer validates.
+            $page->layout = (PageLayoutEnum::tryFrom((string) $page->layout) ?? PageLayoutEnum::default())->value;
         });
 
         static::saved(function ($page): void {

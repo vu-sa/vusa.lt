@@ -6,6 +6,7 @@ use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
@@ -25,7 +26,7 @@ describe('unauthorized access', function (): void {
     test('a simple user cannot store a type', function (): void {
         asUser($this->user)->post(route('types.store'), [
             'title' => ['lt' => 'Tipas', 'en' => 'Type'],
-            'model_type' => Duty::class,
+            'model_type' => MorphMap::alias(Duty::class),
         ])->assertStatus(403);
     });
 });
@@ -52,23 +53,23 @@ describe('model_type allowlist', function (): void {
     ]);
 
     test('rejects a model_type outside the allowlist when updating', function (): void {
-        $type = Type::factory()->create(['model_type' => Duty::class]);
+        $type = Type::factory()->create(['model_type' => MorphMap::alias(Duty::class)]);
 
         asUser($this->admin)->patch(route('types.update', $type), [
             'title' => ['lt' => 'Tipas', 'en' => 'Type'],
-            'model_type' => Role::class,
+            'model_type' => MorphMap::alias(Role::class),
         ])->assertSessionHasErrors('model_type');
 
-        expect($type->fresh()->model_type)->toBe(Duty::class);
+        expect($type->fresh()->model_type)->toBe(MorphMap::alias(Duty::class));
     });
 
     test('a bogus model_type cannot sync roles onto a type', function (): void {
-        $type = Type::factory()->create(['model_type' => Institution::class]);
+        $type = Type::factory()->create(['model_type' => MorphMap::alias(Institution::class)]);
         $role = Role::query()->first();
 
         asUser($this->admin)->patch(route('types.update', $type), [
             'title' => ['lt' => 'Tipas', 'en' => 'Type'],
-            'model_type' => Role::class,
+            'model_type' => MorphMap::alias(Role::class),
             'roles' => [$role->id],
         ])->assertSessionHasErrors('model_type');
 
@@ -80,19 +81,19 @@ describe('allowed model types still work', function (): void {
     test('can store an institution type', function (): void {
         asUser($this->admin)->post(route('types.store'), [
             'title' => ['lt' => 'Padalinys', 'en' => 'Unit'],
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
         ])->assertRedirect(route('types.index'));
 
-        expect(Type::query()->where('model_type', Institution::class)->exists())->toBeTrue();
+        expect(Type::query()->where('model_type', MorphMap::alias(Institution::class))->exists())->toBeTrue();
     });
 
     test('can sync institutions onto an institution type', function (): void {
-        $type = Type::factory()->create(['model_type' => Institution::class]);
+        $type = Type::factory()->create(['model_type' => MorphMap::alias(Institution::class)]);
         $institution = Institution::factory()->for($this->tenant)->create();
 
         asUser($this->admin)->patch(route('types.update', $type), [
             'title' => ['lt' => 'Padalinys', 'en' => 'Unit'],
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
             'institutions' => [$institution->id],
         ])->assertRedirect();
 
@@ -100,13 +101,13 @@ describe('allowed model types still work', function (): void {
     });
 
     test('can sync duties and roles onto a duty type', function (): void {
-        $type = Type::factory()->create(['model_type' => Duty::class]);
+        $type = Type::factory()->create(['model_type' => MorphMap::alias(Duty::class)]);
         $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
         $role = Role::query()->first();
 
         asUser($this->admin)->patch(route('types.update', $type), [
             'title' => ['lt' => 'Pareigos', 'en' => 'Duty'],
-            'model_type' => Duty::class,
+            'model_type' => MorphMap::alias(Duty::class),
             'duties' => [$duty->id],
             'roles' => [$role->id],
         ])->assertRedirect();

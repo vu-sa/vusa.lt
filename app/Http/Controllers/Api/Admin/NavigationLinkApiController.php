@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Api\Admin\ResolveNavigationUrlRequest;
 use App\Models\Calendar;
 use App\Models\Category;
 use App\Models\Document;
@@ -10,8 +11,8 @@ use App\Models\Institution;
 use App\Models\Navigation;
 use App\Models\News;
 use App\Models\Page;
+use App\Support\LocalizedRouteSlugs;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class NavigationLinkApiController extends ApiController
@@ -25,14 +26,9 @@ class NavigationLinkApiController extends ApiController
      *
      * @routeName api.v1.admin.navigation.resolveUrl
      */
-    public function resolveUrl(Request $request): JsonResponse
+    public function resolveUrl(ResolveNavigationUrlRequest $request): JsonResponse
     {
-        $this->authorizeApi('viewAny', Navigation::class);
-
-        $data = $request->validate([
-            'collection' => ['required', 'string', Rule::in(['pages', 'news', 'calendar', 'institutions', 'documents', 'categories'])],
-            'id' => ['required'],
-        ]);
+        $data = $request->validated();
 
         $url = match ($data['collection']) {
             'pages' => $this->resolvePageUrl($data['id']),
@@ -77,12 +73,10 @@ class NavigationLinkApiController extends ApiController
             return null;
         }
 
-        return route('news', [
-            'lang' => $news->lang,
+        return LocalizedRouteSlugs::route('news', [
             'news' => $news->permalink,
-            'newsString' => 'naujiena',
             'subdomain' => $news->tenant->subdomain(),
-        ]);
+        ], $news->lang);
     }
 
     private function resolveCalendarUrl(int|string $id): ?string

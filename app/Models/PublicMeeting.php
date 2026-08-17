@@ -6,6 +6,7 @@ use App\Enums\MeetingType;
 use App\Models\Pivots\AgendaItem;
 use App\Services\VoteStatisticsCalculator;
 use App\Settings\MeetingSettings;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -64,6 +65,15 @@ use Laravel\Scout\Searchable;
 class PublicMeeting extends Meeting
 {
     use Searchable;
+
+    /**
+     * Share the parent Meeting's morph alias — see App\Models\PublicNews::getMorphClass().
+     */
+    #[\Override]
+    public function getMorphClass(): string
+    {
+        return MorphMap::alias(MorphMap::ALIASED_TO_PARENT[static::class]);
+    }
 
     /**
      * Override institutions relationship to use correct pivot table

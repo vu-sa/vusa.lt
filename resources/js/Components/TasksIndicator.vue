@@ -203,11 +203,11 @@
 </template>
 
 <script setup lang="ts">
+import { useDateLocale } from '@/Composables/useDateLocale';
 import { ref, computed, onMounted } from 'vue';
 import { Link, router, usePage, useHttp } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { formatDistanceToNow, parseISO, isToday, isTomorrow } from 'date-fns';
-import { lt, enUS } from 'date-fns/locale';
 import {
   ClipboardCheck as ClipboardCheckIcon,
   CheckCircle as CheckCircleIcon,
@@ -257,7 +257,7 @@ const maxTasksToDisplay = 5;
 const http = useHttp({});
 
 // Locale for date formatting
-const dateLocale = computed(() => usePage().props.app.locale === 'lt' ? lt : enUS);
+const dateLocale = useDateLocale();
 
 // Get pending tasks count from Inertia shared props if available
 const page = usePage();
@@ -427,7 +427,7 @@ function getActionTypeLabel(task: Task) {
 function getTaskableLink(task: Task) {
   if (!task.taskable) return '#';
 
-  const type = task.taskable_type.split('\\').pop()?.toLowerCase();
+  const type = task.taskable_type;
 
   switch (type) {
     case 'meeting':

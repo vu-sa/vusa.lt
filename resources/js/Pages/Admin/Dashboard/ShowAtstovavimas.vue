@@ -138,7 +138,7 @@
 
         <!-- Quick actions for tenant view -->
         <div class="flex flex-wrap items-center gap-3">
-          <Link :href="route('tasks.summary', { taskable_type: 'App\\Models\\Meeting' })">
+          <Link :href="route('tasks.summary', { taskable_type: ModelEnum.MEETING })">
             <Button variant="outline" size="sm" class="gap-2">
               <ClipboardList class="h-4 w-4" />
               {{ $t('tasks.summary.view_meeting_tasks') }}
@@ -192,6 +192,7 @@
 </template>
 
 <script setup lang="tsx">
+import { ModelEnum } from '@/Types/enums';
 import { Head as InertiaHead, Link } from '@inertiajs/vue3';
 import { computed, ref, watch, onMounted } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';

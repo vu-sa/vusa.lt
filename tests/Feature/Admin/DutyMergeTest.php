@@ -7,6 +7,7 @@ use App\Models\StudyProgram;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
@@ -173,8 +174,8 @@ describe('merging related pivots', function (): void {
     });
 
     test('moves types onto the kept duty without duplicating a type both already share', function (): void {
-        $shared = Type::factory()->create(['model_type' => Duty::class]);
-        $onlyOnSource = Type::factory()->create(['model_type' => Duty::class]);
+        $shared = Type::factory()->create(['model_type' => MorphMap::alias(Duty::class)]);
+        $onlyOnSource = Type::factory()->create(['model_type' => MorphMap::alias(Duty::class)]);
 
         $this->target->types()->attach($shared->id);
         $this->source->types()->attach([$shared->id, $onlyOnSource->id]);

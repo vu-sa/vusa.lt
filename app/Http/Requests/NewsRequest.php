@@ -2,10 +2,12 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\NewsLayoutEnum;
 use App\Http\Requests\Concerns\ValidatesContentParts;
 use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class NewsRequest extends FormRequest
 {
@@ -26,7 +28,7 @@ class NewsRequest extends FormRequest
             'draft' => 'nullable|boolean',
             'image_author' => 'nullable|string',
             'publish_time' => 'required',
-            'layout' => 'nullable|string|in:modern,classic,immersive,headline',
+            'layout' => ['nullable', new Enum(NewsLayoutEnum::class)],
             'show_breadcrumbs' => ['boolean'],
             'highlights' => 'nullable|array|max:3',
             'highlights.*' => 'nullable|string|max:500',
@@ -43,11 +45,11 @@ class NewsRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'content.required' => 'The content is required.',
-            'content.parts.required' => 'The content parts are required.',
-            'content.parts.*.type.required' => 'Each content part must have a type.',
-            'content.parts.*.type.exists' => 'The selected content part type is invalid.',
-            'content.parts.*.json_content.required' => 'Each content part must have content.',
+            'content.required' => trans('forms.validation.content.required'),
+            'content.parts.required' => trans('forms.validation.content.parts_required'),
+            'content.parts.*.type.required' => trans('forms.validation.content.part_type_required'),
+            'content.parts.*.type.exists' => trans('forms.validation.content.part_type_exists'),
+            'content.parts.*.json_content.required' => trans('forms.validation.content.part_content_required'),
         ];
     }
 }

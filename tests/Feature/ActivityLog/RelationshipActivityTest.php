@@ -4,6 +4,7 @@ use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Spatie\Activitylog\Models\Activity;
@@ -34,7 +35,7 @@ test('attachAudited logs a relation_updated activity with the attached member', 
 
     $this->duty->attachAudited('users', dutyAttachData([$userA->id, $userB->id]));
 
-    $activity = Activity::where('subject_type', Duty::class)
+    $activity = Activity::where('subject_type', MorphMap::alias(Duty::class))
         ->where('subject_id', $this->duty->id)
         ->where('event', 'relation_updated')
         ->latest('id')
@@ -51,11 +52,11 @@ test('re-syncing the same members logs no activity', function (): void {
     $user = User::factory()->create();
     $this->duty->attachAudited('users', dutyAttachData([$user->id]));
 
-    $before = Activity::where('subject_type', Duty::class)->where('event', 'relation_updated')->count();
+    $before = Activity::where('subject_type', MorphMap::alias(Duty::class))->where('event', 'relation_updated')->count();
 
     $this->duty->syncAudited('users', [$user->id]);
 
-    expect(Activity::where('subject_type', Duty::class)->where('event', 'relation_updated')->count())->toBe($before);
+    expect(Activity::where('subject_type', MorphMap::alias(Duty::class))->where('event', 'relation_updated')->count())->toBe($before);
 });
 
 test('detaching a member logs it under detached', function (): void {
@@ -64,7 +65,7 @@ test('detaching a member logs it under detached', function (): void {
 
     $this->duty->detachAudited('users', [$user->id]);
 
-    $activity = Activity::where('subject_type', Duty::class)
+    $activity = Activity::where('subject_type', MorphMap::alias(Duty::class))
         ->where('event', 'relation_updated')
         ->latest('id')
         ->first();
@@ -84,9 +85,9 @@ test('a Duty <-> users sync appears on the parent Institution activity feed via 
 
     $this->duty->attachAudited('users', dutyAttachData([$user->id]));
 
-    $activity = Activity::where('subject_type', Duty::class)->where('event', 'relation_updated')->latest('id')->first();
+    $activity = Activity::where('subject_type', MorphMap::alias(Duty::class))->where('event', 'relation_updated')->latest('id')->first();
 
-    expect($activity->root_subject_type)->toBe(Institution::class)
+    expect($activity->root_subject_type)->toBe(MorphMap::alias(Institution::class))
         ->and($activity->root_subject_id)->toBe($this->institution->id);
 });
 
@@ -100,7 +101,7 @@ describe('duty grants made through the user form', function (): void {
         $this->member = User::factory()->create(['name' => 'Rasa Rasaitė']);
     });
 
-    $latestRelationActivity = fn (User $user) => Activity::where('subject_type', User::class)
+    $latestRelationActivity = fn (User $user) => Activity::where('subject_type', MorphMap::alias(User::class))
         ->where('subject_id', $user->id)
         ->where('event', 'relation_updated')
         ->latest('id')

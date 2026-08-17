@@ -3,13 +3,16 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\IndexTaskSummaryRequest;
 use App\Http\Requests\StoreTaskRequest;
+use App\Http\Requests\UpdateTaskRequest;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Reservation;
 use App\Models\Task;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -89,27 +92,24 @@ class TaskController extends AdminController
             $task->users()->attach($request->responsible_people);
         }
 
-        return back()->with('success', 'Užduotis sėkmingai pridėta');
+        return back()->with('success', $this->entityMessage('created', 'task'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Task $task)
+    public function update(UpdateTaskRequest $request, Task $task)
     {
         $this->handleAuthorization('update', $task);
 
-        $validated = $request->validate([
-            'name' => 'required',
-            'due_date' => 'required',
-        ]);
+        $validated = $request->validated();
 
         // change due_date to Carbon object
         $validated['due_date'] = Carbon::createFromTimestamp($validated['due_date'] / 1000, 'Europe/Vilnius');
 
         $task->update($validated);
 
-        return back()->with('success', 'Užduotis sėkmingai atnaujinta');
+        return back()->with('success', $this->entityMessage('updated', 'task'));
     }
 
     /**
@@ -121,12 +121,12 @@ class TaskController extends AdminController
 
         // Prevent deletion of auto-completing tasks
         if (! $task->canBeManuallyCompleted()) {
-            return back()->with('error', 'Ši užduotis užsibaigia automatiškai ir negali būti ištrinta');
+            return back()->with('error', __('messages.task.automatic_not_deletable'));
         }
 
         $task->delete();
 
-        return back()->with('success', 'Užduotis sėkmingai ištrinta');
+        return back()->with('success', $this->entityMessage('deleted', 'task'));
     }
 
     public function updateCompletionStatus(Request $request, Task $task)
@@ -135,7 +135,7 @@ class TaskController extends AdminController
 
         // Prevent manual completion of auto-completing tasks
         if (! $task->canBeManuallyCompleted()) {
-            return back()->with('error', 'Ši užduotis užsibaigia automatiškai ir negali būti pažymėta rankiniu būdu');
+            return back()->with('error', __('messages.task.automatic_not_markable'));
         }
 
         if ($request->completed == true) {
@@ -146,7 +146,7 @@ class TaskController extends AdminController
 
         $task->save();
 
-        return back()->with('success', 'Užduoties būsena sėkmingai atnaujinta');
+        return back()->with('success', __('messages.task.status_updated'));
     }
 
     /**
@@ -156,7 +156,7 @@ class TaskController extends AdminController
      *
      * @return Response
      */
-    public function summary(Request $request)
+    public function summary(IndexTaskSummaryRequest $request)
     {
         $this->handleAuthorization('viewAny', Task::class);
 
@@ -182,7 +182,7 @@ class TaskController extends AdminController
             // Meeting tasks - user must have meetings.read.padalinys
             if ($meetingPermissibleTenants->isNotEmpty()) {
                 $q->orWhere(function ($subQ) use ($meetingPermissibleTenants): void {
-                    $subQ->where('taskable_type', Meeting::class)
+                    $subQ->where('taskable_type', MorphMap::alias(Meeting::class))
                         ->whereHasMorph('taskable', [Meeting::class], function ($meetingQ) use ($meetingPermissibleTenants): void {
                             $meetingQ->whereHas('tenants', function ($tenantQ) use ($meetingPermissibleTenants): void {
                                 $tenantQ->whereIn('tenants.id', $meetingPermissibleTenants->pluck('id'));
@@ -194,7 +194,7 @@ class TaskController extends AdminController
             // Reservation tasks - user must have reservations.read.padalinys
             if ($reservationPermissibleTenants->isNotEmpty()) {
                 $q->orWhere(function ($subQ) use ($reservationPermissibleTenants): void {
-                    $subQ->where('taskable_type', Reservation::class)
+                    $subQ->where('taskable_type', MorphMap::alias(Reservation::class))
                         ->whereHasMorph('taskable', [Reservation::class], function ($reservationQ) use ($reservationPermissibleTenants): void {
                             $reservationQ->whereHas('tenants', function ($tenantQ) use ($reservationPermissibleTenants): void {
                                 $tenantQ->whereIn('tenants.id', $reservationPermissibleTenants->pluck('id'));
@@ -206,7 +206,7 @@ class TaskController extends AdminController
             // Institution tasks (e.g., PeriodicityGap) - user must have institutions.read.padalinys
             if ($institutionPermissibleTenants->isNotEmpty()) {
                 $q->orWhere(function ($subQ) use ($institutionPermissibleTenants): void {
-                    $subQ->where('taskable_type', Institution::class)
+                    $subQ->where('taskable_type', MorphMap::alias(Institution::class))
                         ->whereHasMorph('taskable', [Institution::class], function ($institutionQ) use ($institutionPermissibleTenants): void {
                             $institutionQ->whereHas('tenant', function ($tenantQ) use ($institutionPermissibleTenants): void {
                                 $tenantQ->whereIn('tenants.id', $institutionPermissibleTenants->pluck('id'));
@@ -246,13 +246,13 @@ class TaskController extends AdminController
         // Type counts using direct database queries
         $institutionsCount = (clone $statsQuery)
             ->whereIn('taskable_type', [
-                Institution::class,
-                Meeting::class,
+                MorphMap::alias(Institution::class),
+                MorphMap::alias(Meeting::class),
             ])
             ->count();
 
         $reservationsCount = (clone $statsQuery)
-            ->where('taskable_type', Reservation::class)
+            ->where('taskable_type', MorphMap::alias(Reservation::class))
             ->count();
 
         $taskStats = [
@@ -271,8 +271,8 @@ class TaskController extends AdminController
         $taskableType = $request->input('taskable_type');
         if ($taskableType === 'institutions') {
             $baseQuery->whereIn('taskable_type', [
-                Institution::class,
-                Meeting::class,
+                MorphMap::alias(Institution::class),
+                MorphMap::alias(Meeting::class),
             ]);
         } elseif ($taskableType) {
             $baseQuery->where('taskable_type', $taskableType);
@@ -292,7 +292,7 @@ class TaskController extends AdminController
             ->orderBy('created_at', 'desc');
 
         // Paginate results
-        $tasks = $baseQuery->paginate($request->input('per_page', 20))
+        $tasks = $baseQuery->paginate($request->getPerPage())
             ->withQueryString();
 
         // Transform tasks for frontend
@@ -317,9 +317,9 @@ class TaskController extends AdminController
                 'taskable' => $taskable ? [
                     'id' => $taskable->getKey(),
                     'name' => $taskable->getAttribute('title') ?? $taskable->getAttribute('name') ?? null,
-                    'type' => class_basename($task->taskable_type),
+                    'type' => $task->taskable_type,
                 ] : null,
-                'taskable_type' => class_basename($task->taskable_type ?? ''),
+                'taskable_type' => $task->taskable_type ?? '',
                 'taskable_id' => $task->taskable_id,
                 'users' => $task->users->map(fn (User $u) => [
                     'id' => $u->id,

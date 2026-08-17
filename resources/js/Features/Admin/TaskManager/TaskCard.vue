@@ -181,11 +181,11 @@
 </template>
 
 <script setup lang="ts">
+import { useDateLocale } from '@/Composables/useDateLocale';
 import { computed } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { formatDistanceToNow, parseISO, isToday, isTomorrow, differenceInDays } from 'date-fns';
-import { lt, enUS } from 'date-fns/locale';
 import { toast } from 'vue-sonner';
 import {
   CheckIcon,
@@ -244,7 +244,7 @@ const emit = defineEmits<{
 }>();
 
 // Date locale
-const dateLocale = computed(() => usePage().props.app?.locale === 'lt' ? lt : enUS);
+const dateLocale = useDateLocale();
 
 // Computed properties
 const canManuallyComplete = computed(() => props.task.can_be_manually_completed !== false);
@@ -264,9 +264,9 @@ const isAgendaCreationTask = computed(() =>
   props.task.action_type === TaskActionType.AgendaCreation || props.task.action_type === 'agenda_creation',
 );
 
-const isInstitution = computed(() => props.task.taskable_type?.includes('Institution') ?? false);
+const isInstitution = computed(() => props.task.taskable_type === 'institution');
 
-const isMeeting = computed(() => props.task.taskable_type?.includes('Meeting') ?? false);
+const isMeeting = computed(() => props.task.taskable_type === 'meeting');
 
 // URL for navigating to meeting agenda
 const meetingAgendaUrl = computed(() => {
@@ -433,7 +433,7 @@ const actionTypeLabel = computed(() => {
 // Taskable link
 const taskableLink = computed(() => {
   if (!props.task.taskable) return '#';
-  const type = props.task.taskable_type.split('\\').pop()?.toLowerCase();
+  const type = props.task.taskable_type;
   switch (type) {
     case 'meeting':
       return route('meetings.show', props.task.taskable_id);

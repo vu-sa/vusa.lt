@@ -54,7 +54,7 @@ class NewsController extends AdminController
 
         $deletedCount = $this->getTrashedCount($query);
 
-        $news = $query->paginate($request->input('per_page', 20))
+        $news = $query->paginate($request->getPerPage())
             ->withQueryString();
 
         return $this->inertiaResponse('Admin/Content/IndexNews', [
@@ -71,7 +71,7 @@ class NewsController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $request->getSorting(),
-            'showDeleted' => $request->boolean('showDeleted', false),
+            'showDeleted' => $request->getShowDeleted(),
             'deletedCount' => $deletedCount,
         ]);
     }
@@ -96,7 +96,7 @@ class NewsController extends AdminController
 
         $newNews = DuplicateNewsAction::execute($news);
 
-        return $this->redirectWithSuccess('news.edit', 'Naujiena sėkmingai nukopijuota!', $newNews);
+        return $this->redirectWithSuccess('news.edit', __('messages.news.duplicated'), $newNews);
     }
 
     /**
@@ -108,14 +108,14 @@ class NewsController extends AdminController
 
         // check if super admin, else set tenant_id
         if (request()->user()->isSuperAdmin()) {
-            $tenant_id = Tenant::where('type', 'pagrindinis')->first()?->id;
+            $tenant_id = Tenant::main()?->id;
         } else {
             $tenant_id = $this->authorizer->permissableDuties->first()?->tenants->first()?->id;
         }
 
         if ($tenant_id === null) {
             throw ValidationException::withMessages([
-                'tenant_id' => 'Nėra prieinamo padalinio, kuriam galėtumėte sukurti naujieną. / No available tenant to create news for.',
+                'tenant_id' => __('messages.news.no_available_tenant'),
             ]);
         }
 
@@ -149,7 +149,7 @@ class NewsController extends AdminController
             $news->tags()->sync($request->tags);
         }
 
-        return $this->redirectToIndexWithSuccess('news', 'Naujiena sėkmingai sukurta!');
+        return $this->redirectToIndexWithSuccess('news', $this->entityMessage('created', 'news'));
     }
 
     /**
@@ -197,7 +197,7 @@ class NewsController extends AdminController
     public function update(UpdateNewsRequest $request, News $news)
     {
         $news->update([
-            ...$request->only(
+            ...$request->safe()->only(
                 'title',
                 'lang',
                 'draft',
@@ -226,7 +226,7 @@ class NewsController extends AdminController
 
         PairTranslatedRecord::execute($news, $request->other_lang_id);
 
-        return back()->with('success', 'Naujiena sėkmingai atnaujinta!')->with('data', $news->load('content'));
+        return back()->with('success', $this->entityMessage('updated', 'news'))->with('data', $news->load('content'));
     }
 
     /**
@@ -238,7 +238,7 @@ class NewsController extends AdminController
 
         $news->delete();
 
-        return $this->redirectToIndexWithInfo('news', 'Naujiena sėkmingai ištrinta!');
+        return $this->redirectToIndexWithInfo('news', $this->entityMessage('deleted', 'news'));
     }
 
     /**
@@ -246,7 +246,7 @@ class NewsController extends AdminController
      */
     public function restore(News $news): RedirectResponse
     {
-        return $this->restoreModel($news, 'Naujiena sėkmingai atkurta!');
+        return $this->restoreModel($news, $this->entityMessage('restored', 'news'));
     }
 
     public function forceDelete(News $news): RedirectResponse

@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\VoteValue;
 use App\Models\Pivots\AgendaItem;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class StoreVoteRequest extends FormRequest
 {
@@ -28,9 +30,9 @@ class StoreVoteRequest extends FormRequest
             'agenda_item_id' => 'required|exists:agenda_items,id',
             'is_main' => 'nullable|boolean',
             'title' => 'nullable|string|max:200',
-            'student_vote' => 'nullable|string|in:positive,negative,neutral',
-            'decision' => 'nullable|string|in:positive,negative,neutral',
-            'student_benefit' => 'nullable|string|in:positive,negative,neutral',
+            'student_vote' => ['nullable', new Enum(VoteValue::class)],
+            'decision' => ['nullable', new Enum(VoteValue::class)],
+            'student_benefit' => ['nullable', new Enum(VoteValue::class)],
             'note' => 'nullable|string|max:2000',
         ];
     }
@@ -44,14 +46,16 @@ class StoreVoteRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'agenda_item_id.required' => 'Darbotvarkės punktas yra privalomas.',
-            'agenda_item_id.exists' => 'Nurodytas darbotvarkės punktas neegzistuoja.',
-            'title.string' => 'Balsavimo pavadinimas turi būti tekstas.',
-            'title.max' => 'Balsavimo pavadinimas negali būti ilgesnis nei 200 simbolių.',
-            'student_vote.in' => 'Studentų balsavimo reikšmė turi būti viena iš: positive, negative, neutral.',
-            'decision.in' => 'Sprendimo reikšmė turi būti viena iš: positive, negative, neutral.',
-            'student_benefit.in' => 'Naudos studentams reikšmė turi būti viena iš: positive, negative, neutral.',
-            'note.max' => 'Pastaba negali būti ilgesnė nei 2000 simbolių.',
+            'agenda_item_id.required' => trans('voting.validation.agenda_item_required'),
+            'agenda_item_id.exists' => trans('voting.validation.agenda_item_exists'),
+            'title.string' => trans('voting.validation.title_string'),
+            'title.max' => trans('voting.validation.title_max'),
+            // The rules use `new Enum(VoteValue::class)`, which reports under the `enum` key —
+            // an `in` key here would never fire.
+            'student_vote.enum' => trans('voting.validation.student_vote_enum'),
+            'decision.enum' => trans('voting.validation.decision_enum'),
+            'student_benefit.enum' => trans('voting.validation.student_benefit_enum'),
+            'note.max' => trans('voting.validation.note_max'),
         ];
     }
 }

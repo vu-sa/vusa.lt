@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Concerns\ApiResponses;
 use App\Http\Controllers\Controller;
+use App\Http\Traits\TranslatesEntityMessages;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
@@ -23,6 +24,7 @@ use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 abstract class ApiController extends Controller
 {
     use ApiResponses;
+    use TranslatesEntityMessages;
 
     /**
      * Handle authorization with JSON error responses.

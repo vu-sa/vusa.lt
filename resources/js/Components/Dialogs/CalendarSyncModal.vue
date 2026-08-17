@@ -9,12 +9,7 @@
           {{ $t('Kalendoriaus sinchronizavimo instrukcija') }}
         </DialogTitle>
         <DialogDescription>
-          <template v-if="$page.props.app.locale === 'lt'">
-            Sinchronizuok VU SA renginių kalendorių su savo asmeniniu kalendoriumi
-          </template>
-          <template v-else>
-            Sync VU SR events calendar with your personal calendar
-          </template>
+          {{ $t('Sinchronizuok VU SA renginių kalendorių su savo asmeniniu kalendoriumi') }}
         </DialogDescription>
       </DialogHeader>
 
@@ -24,7 +19,7 @@
           <div class="mb-3 flex items-center gap-2">
             <span class="flex size-6 items-center justify-center rounded-full bg-vusa-red text-xs font-semibold text-white">1</span>
             <span class="font-medium">
-              {{ $page.props.app.locale === 'lt' ? 'Nukopijuok nuorodą' : 'Copy the link' }}
+              {{ $t('Nukopijuok nuorodą') }}
             </span>
           </div>
 
@@ -40,8 +35,8 @@
                 <CopyToClipboardButton
                   show-icon
                   :text-to-copy="route('calendar.ics')"
-                  error-text="Nepavyko nukopijuoti nuorodos..."
-                  success-text="Nuoroda nukopijuota!"
+                  :error-text="$t('Nepavyko nukopijuoti nuorodos...')"
+                  :success-text="$t('Nuoroda nukopijuota!')"
                   class="shrink-0"
                 >
                   {{ $t("Kopijuoti") }}
@@ -78,7 +73,7 @@
           <div class="mb-3 flex items-center gap-2">
             <span class="flex size-6 items-center justify-center rounded-full bg-vusa-red text-xs font-semibold text-white">2</span>
             <span class="font-medium">
-              {{ $page.props.app.locale === 'lt' ? 'Pridėk prie savo kalendoriaus' : 'Add to your calendar' }}
+              {{ $t('Pridėk prie savo kalendoriaus') }}
             </span>
           </div>
 
@@ -95,105 +90,54 @@
             </TabsList>
 
             <TabsContent value="google" class="mt-0">
-              <ol v-if="$page.props.app.locale === 'lt'" class="space-y-2.5 text-sm">
+              <ol class="space-y-2.5 text-sm">
                 <li class="flex gap-3">
                   <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-xs font-medium dark:bg-zinc-700">1</span>
                   <span>
-                    Nueik į savo
-                    <a target="_blank" class="font-medium text-vusa-red underline-offset-2 hover:underline" href="https://calendar.google.com/calendar/u/0/r/settings/addbyurl">
-                      Google kalendorių</a>
-                    <span class="text-zinc-500">(per naršyklę kompiuteryje)</span>
+                    {{ $t('Nueik į savo') }}
+                    <a target="_blank" class="font-medium text-vusa-red underline-offset-2 hover:underline" href="https://calendar.google.com/calendar/u/0/r/settings/addbyurl">{{ $t('Google kalendorių') }}</a>
+                    <span class="text-zinc-500">{{ $t('(per naršyklę kompiuteryje)') }}</span>
                   </span>
                 </li>
                 <li class="flex gap-3">
                   <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-xs font-medium dark:bg-zinc-700">2</span>
-                  <span>Įklijuok nukopijuotą nuorodą</span>
+                  <span>{{ $t('Įklijuok nukopijuotą nuorodą') }}</span>
                 </li>
                 <li class="flex gap-3">
                   <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-xs font-medium dark:bg-zinc-700">3</span>
-                  <span>Paspausk <strong>„Add calendar"</strong></span>
+                  <span>{{ $t('Paspausk') }} <strong>„Add calendar"</strong></span>
                 </li>
                 <li class="flex items-center gap-3 text-green-600 dark:text-green-400">
                   <span class="flex size-5 shrink-0 items-center justify-center">✓</span>
-                  <span>Paruošta! Renginiai atsiras per kelias minutes.</span>
-                </li>
-              </ol>
-              <ol v-else class="space-y-2.5 text-sm">
-                <li class="flex gap-3">
-                  <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-xs font-medium dark:bg-zinc-700">1</span>
-                  <span>
-                    Go to your
-                    <a target="_blank" class="font-medium text-vusa-red underline-offset-2 hover:underline" href="https://calendar.google.com/calendar/u/0/r/settings/addbyurl">
-                      Google Calendar</a>
-                    <span class="text-zinc-500">(using a browser on a PC)</span>
-                  </span>
-                </li>
-                <li class="flex gap-3">
-                  <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-xs font-medium dark:bg-zinc-700">2</span>
-                  <span>Paste the copied link</span>
-                </li>
-                <li class="flex gap-3">
-                  <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-xs font-medium dark:bg-zinc-700">3</span>
-                  <span>Click <strong>„Add calendar"</strong></span>
-                </li>
-                <li class="flex items-center gap-3 text-green-600 dark:text-green-400">
-                  <span class="flex size-5 shrink-0 items-center justify-center">✓</span>
-                  <span>Done! Events will appear in a few minutes.</span>
+                  <span>{{ $t('Paruošta! Renginiai atsiras per kelias minutes.') }}</span>
                 </li>
               </ol>
             </TabsContent>
 
             <TabsContent value="outlook" class="mt-0">
-              <ol v-if="$page.props.app.locale === 'lt'" class="space-y-2.5 text-sm">
+              <ol class="space-y-2.5 text-sm">
                 <li class="flex gap-3">
                   <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-xs font-medium dark:bg-zinc-700">1</span>
                   <span>
-                    Nueik į savo
-                    <a target="_blank" class="font-medium text-vusa-red underline-offset-2 hover:underline" href="https://outlook.office.com/calendar/addcalendar">
-                      Outlook kalendorių</a>
+                    {{ $t('Nueik į savo') }}
+                    <a target="_blank" class="font-medium text-vusa-red underline-offset-2 hover:underline" href="https://outlook.office.com/calendar/addcalendar">{{ $t('Outlook kalendorių') }}</a>
                   </span>
                 </li>
                 <li class="flex gap-3">
                   <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-xs font-medium dark:bg-zinc-700">2</span>
-                  <span>Pasirink <strong>„Subscribe from web"</strong> sekciją</span>
+                  <span>{{ $t('Pasirink') }} <strong>„Subscribe from web"</strong> {{ $t('sekciją') }}</span>
                 </li>
                 <li class="flex gap-3">
                   <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-xs font-medium dark:bg-zinc-700">3</span>
-                  <span>Įklijuok nukopijuotą nuorodą</span>
+                  <span>{{ $t('Įklijuok nukopijuotą nuorodą') }}</span>
                 </li>
                 <li class="flex gap-3">
                   <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-xs font-medium dark:bg-zinc-700">4</span>
-                  <span>Paspausk <strong>„Import"</strong></span>
+                  <span>{{ $t('Paspausk') }} <strong>„Import"</strong></span>
                 </li>
                 <li class="flex items-center gap-3 text-green-600 dark:text-green-400">
                   <span class="flex size-5 shrink-0 items-center justify-center">✓</span>
-                  <span>Paruošta!</span>
-                </li>
-              </ol>
-              <ol v-else class="space-y-2.5 text-sm">
-                <li class="flex gap-3">
-                  <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-xs font-medium dark:bg-zinc-700">1</span>
-                  <span>
-                    Go to your
-                    <a target="_blank" class="font-medium text-vusa-red underline-offset-2 hover:underline" href="https://outlook.office.com/calendar/addcalendar">
-                      Outlook calendar</a>
-                  </span>
-                </li>
-                <li class="flex gap-3">
-                  <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-xs font-medium dark:bg-zinc-700">2</span>
-                  <span>Go to <strong>„Subscribe from web"</strong> section</span>
-                </li>
-                <li class="flex gap-3">
-                  <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-xs font-medium dark:bg-zinc-700">3</span>
-                  <span>Paste the copied link</span>
-                </li>
-                <li class="flex gap-3">
-                  <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-xs font-medium dark:bg-zinc-700">4</span>
-                  <span>Click <strong>„Import"</strong></span>
-                </li>
-                <li class="flex items-center gap-3 text-green-600 dark:text-green-400">
-                  <span class="flex size-5 shrink-0 items-center justify-center">✓</span>
-                  <span>Done!</span>
+                  <span>{{ $t('Paruošta!') }}</span>
                 </li>
               </ol>
             </TabsContent>
@@ -205,14 +149,9 @@
       <div class="mt-2 flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2.5 text-sm text-amber-800 dark:bg-amber-900/20 dark:text-amber-200">
         <Info class="mt-0.5 size-4 shrink-0" />
         <p>
-          <template v-if="$page.props.app.locale === 'lt'">
-            „Google" ir „Outlook" kartais atnaujina renginių informaciją tik <strong>kartą per dieną</strong>.
-            Dėl naujausios informacijos apsilankyk vusa.lt
-          </template>
-          <template v-else>
-            Google and Outlook sometimes refresh these calendars only <strong>once per day</strong>.
-            For the latest events, always visit vusa.lt
-          </template>
+          {{ $t('„Google" ir „Outlook" kartais atnaujina renginių informaciją tik') }}
+          <strong>{{ $t('kartą per dieną') }}</strong>.
+          {{ $t('Dėl naujausios informacijos apsilankyk vusa.lt') }}
         </p>
       </div>
     </DialogContent>

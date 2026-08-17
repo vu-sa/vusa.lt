@@ -7,6 +7,7 @@ use App\Http\Traits\ResolvesPublicContent;
 use App\Models\Navigation;
 use App\Models\QuickLink;
 use App\Models\Tenant;
+use App\Support\LocalizedRouteSlugs;
 use Carbon\CarbonInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
@@ -61,7 +62,7 @@ class PublicController extends Controller
                     ->where('is_active', 1)
                     ->get();
 
-                if ($this->tenant->type !== 'pagrindinis') {
+                if (! $this->tenant->isMain()) {
                     $tenantBanners = $this->tenant
                         ->banners()
                         ->inRandomOrder()
@@ -107,20 +108,32 @@ class PublicController extends Controller
         Inertia::share('navigation', $navigation);
     }
 
-    // This is mostly used for default sharing, other cases likes pages and news link to other URLs
+    /**
+     * Share the current page's URL in the other language, for the language toggle.
+     *
+     * Routes with a localized segment ("/lt/dokumentai" vs "/en/documents") get the other
+     * language's slug filled in by {@see LocalizedRouteSlugs::route()} — `URL::defaults()`
+     * always describes the language being rendered, so it cannot serve this.
+     *
+     * Pages whose content differs per language (news, pages) share their own URL instead.
+     */
     protected function shareOtherLangURL($name, ?string $subdomain = null, $calendarId = null)
     {
         try {
-            $otherLangURL = route($name, array_filter([
-                'lang' => $this->getOtherLang(),
+            $otherLangURL = LocalizedRouteSlugs::route($name, array_filter([
                 'calendar' => $calendarId,
                 'subdomain' => $subdomain,
-            ]));
+            ]), $this->getOtherLang());
 
             Inertia::share('otherLangURL', $otherLangURL);
-        } catch (\Exception) {
-            // If route generation fails, don't share otherLangURL
-            // This allows the LocaleButton to gracefully handle missing translations
+        } catch (\Exception $exception) {
+            // A missing route means the toggle silently disappears, which is how two pages
+            // pointing at routes that no longer exist went unnoticed. Report it outside
+            // production so it surfaces, and still let LocaleButton hide itself.
+            if (! app()->isProduction()) {
+                report($exception);
+            }
+
             Inertia::share('otherLangURL', null);
         }
     }
@@ -410,11 +423,7 @@ class PublicController extends Controller
                         ? 'VU SA - visuomeninė, ne pelno siekianti, nepolitinė, ekspertinė švietimo organizacija, atstovaujanti Vilniaus universiteto studentų interesams.'
                         : 'VU SA - a public, non-profit, non-political, expert educational organization representing the interests of Vilnius University students.'
                     )
-                    ->sameAs([
-                        'https://www.facebook.com/VUSA.LT',
-                        'https://www.instagram.com/vusa.lt',
-                        'https://www.linkedin.com/company/vusa-lt',
-                    ]);
+                    ->sameAs(array_values(config('vusa.social')));
 
                 return [
                     $organizationSchema,

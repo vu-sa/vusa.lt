@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Public;
 
+use App\Enums\TenantType;
 use App\Http\Controllers\PublicController;
 use App\Models\StudySet;
 use App\Models\Tenant;
@@ -22,7 +23,7 @@ class StudySetController extends PublicController
         );
 
         $tenants = Tenant::query()
-            ->where('type', 'padalinys')
+            ->where('type', TenantType::Padalinys)
             ->orderBy('shortname_vu')
             ->get(['id', 'shortname', 'alias', 'shortname_vu']);
 

@@ -161,7 +161,7 @@
     <template #tasks>
       <TaskManager
         :tasks="taskManagerTasks"
-        :taskable="{ id: institution.id, type: 'App\\Models\\Institution' }"
+        :taskable="{ id: institution.id, type: ModelEnum.INSTITUTION }"
       />
     </template>
 
@@ -183,6 +183,7 @@
 </template>
 
 <script setup lang="tsx">
+import { ModelEnum } from '@/Types/enums';
 import { computed, defineAsyncComponent, ref } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';

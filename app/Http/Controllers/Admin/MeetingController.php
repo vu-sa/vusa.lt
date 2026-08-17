@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\MeetingType;
 use App\Events\MeetingFullyCreated;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\AttachMeetingInstitutionRequest;
 use App\Http\Requests\IndexMeetingRequest;
 use App\Http\Requests\StoreMeetingRequest;
+use App\Http\Requests\UpdateMeetingRequest;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Institution;
@@ -21,12 +23,9 @@ use App\Services\ResourceServices\SharepointFileService;
 use App\Services\TanstackTableService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Enum;
 use Inertia\Inertia;
 
 class MeetingController extends AdminController
@@ -117,7 +116,7 @@ class MeetingController extends AdminController
         // Paginate results
         $deletedCount = $this->getTrashedCount($query);
 
-        $meetings = $query->paginate($request->input('per_page', 20))
+        $meetings = $query->paginate($request->getPerPage())
             ->withQueryString();
 
         // Append file status attributes for badge display
@@ -139,7 +138,7 @@ class MeetingController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $sorting,
-            'showDeleted' => $request->boolean('showDeleted', false),
+            'showDeleted' => $request->getShowDeleted(),
             'deletedCount' => $deletedCount,
         ]);
     }
@@ -206,7 +205,7 @@ class MeetingController extends AdminController
             event(new MeetingFullyCreated($meeting));
 
             // For Inertia requests (from modal), redirect to meeting show page
-            return redirect()->route('meetings.show', $meeting)->with(['success' => 'Posėdis sukurtas sėkmingai!']);
+            return redirect()->route('meetings.show', $meeting)->with(['success' => __('messages.meeting.created')]);
 
         } catch (\Throwable $e) {
             // \Throwable, not \Exception: a \TypeError (or any other \Error) between
@@ -214,7 +213,7 @@ class MeetingController extends AdminController
             // leaks for the rest of the process.
             DB::rollBack();
 
-            return back()->withErrors(['general' => $e->getMessage()])->with(['error' => 'Nepavyko sukurti posėdžio.']);
+            return back()->withErrors(['general' => $e->getMessage()])->with(['error' => __('messages.meeting.create_failed')]);
         }
     }
 
@@ -259,9 +258,9 @@ class MeetingController extends AdminController
                 'taskable' => $taskable ? [
                     'id' => $taskable->getKey(),
                     'name' => $taskable->getAttribute('title') ?? $taskable->getAttribute('name') ?? null,
-                    'type' => class_basename($task->taskable_type),
+                    'type' => $task->taskable_type,
                 ] : null,
-                'taskable_type' => class_basename($task->taskable_type ?? ''),
+                'taskable_type' => $task->taskable_type ?? '',
                 'taskable_id' => $task->taskable_id,
                 'users' => $task->users->map(fn (User $u) => [
                     'id' => $u->id,
@@ -327,15 +326,11 @@ class MeetingController extends AdminController
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Meeting $meeting)
+    public function update(UpdateMeetingRequest $request, Meeting $meeting)
     {
         $this->handleAuthorization('update', $meeting);
 
-        $validated = $request->validate([
-            // 'title' => 'required|string',
-            'start_time' => 'required|date',
-            'type' => ['nullable', new Enum(MeetingType::class)],
-        ]);
+        $validated = $request->validated();
 
         $validated['title'] = $this->buildMeetingTitle(
             $validated['start_time'],
@@ -359,7 +354,7 @@ class MeetingController extends AdminController
 
         $meeting->delete();
 
-        return redirect($redirect_url)->with('success', 'Posėdis ištrintas sėkmingai!');
+        return redirect($redirect_url)->with('success', __('messages.meeting.deleted'));
     }
 
     public function restore(Meeting $meeting): RedirectResponse
@@ -370,18 +365,11 @@ class MeetingController extends AdminController
     /**
      * Attach an additional institution to a joint meeting.
      */
-    public function attachInstitution(Request $request, Meeting $meeting): RedirectResponse
+    public function attachInstitution(AttachMeetingInstitutionRequest $request, Meeting $meeting): RedirectResponse
     {
         $this->handleAuthorization('update', $meeting);
 
-        $validated = $request->validate([
-            'institution_id' => [
-                'required',
-                'ulid',
-                Rule::exists('institutions', 'id'),
-                Rule::notIn($meeting->institutions()->pluck('institutions.id')->all()),
-            ],
-        ]);
+        $validated = $request->validated();
 
         $meeting->attachAudited('institutions', $validated['institution_id']);
 

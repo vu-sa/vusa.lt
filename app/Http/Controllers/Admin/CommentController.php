@@ -2,24 +2,20 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\ModelEnum;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\StoreAdminCommentRequest;
+use App\Http\Requests\UpdateAdminCommentRequest;
 use App\Models\Comment;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\ReservationResource;
 use App\Models\Reservation;
 use App\Models\SharepointFile;
-use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rules\Enum;
 
 class CommentController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
-
     /**
      * Allowed commentable model types.
      * Only these models can be commented on via user input.
@@ -37,33 +33,28 @@ class CommentController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreAdminCommentRequest $request)
     {
-        $validated = $request->validate([
-            'commentable_type' => [new Enum(ModelEnum::class), 'required'],
-            'commentable_id' => 'required',
-            'comment' => 'required|string',
-            'route' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         $typeKey = Str::kebab($validated['commentable_type']);
 
         if (! isset(self::ALLOWED_COMMENTABLE_TYPES[$typeKey])) {
-            return back()->with('error', 'Neleistinas komentaro tipas.');
+            return back()->with('error', __('messages.comment.invalid_type'));
         }
 
         $modelClass = self::ALLOWED_COMMENTABLE_TYPES[$typeKey];
         $model = $modelClass::find($validated['commentable_id']);
 
         if (! $model) {
-            return back()->with('error', 'Modelis nerastas.');
+            return back()->with('error', __('messages.comment.model_not_found'));
         }
 
         $this->authorize('view', $model);
 
         $model->comment($validated['comment']);
 
-        return back()->with('success', 'Komentaras pridėtas.');
+        return back()->with('success', $this->entityMessage('created', 'comment'));
     }
 
     /**
@@ -71,14 +62,14 @@ class CommentController extends AdminController
      *
      * @return RedirectResponse
      */
-    public function update(Request $request, Comment $comment)
+    public function update(UpdateAdminCommentRequest $request, Comment $comment)
     {
         $this->handleAuthorization('update', $comment);
 
         // update comment
-        $comment->update($request->only('comment'));
+        $comment->update($request->safe()->only('comment'));
 
-        return back()->with('success', 'Komentaras atnaujintas.');
+        return back()->with('success', $this->entityMessage('updated', 'comment'));
     }
 
     /**
@@ -93,6 +84,6 @@ class CommentController extends AdminController
         // delete comment
         $comment->delete();
 
-        return back()->with('success', 'Komentaras ištrintas.');
+        return back()->with('success', $this->entityMessage('deleted', 'comment'));
     }
 }

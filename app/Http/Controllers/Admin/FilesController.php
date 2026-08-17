@@ -3,11 +3,16 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\Files\BulkDeleteFilesRequest;
+use App\Http\Requests\Files\CreateDirectoryRequest;
+use App\Http\Requests\Files\FilePathRequest;
+use App\Http\Requests\Files\UploadImageRequest;
 use App\Http\Requests\StoreFilesRequest;
 use App\Models\File;
 use App\Services\FileUsageScanner;
 use App\Services\ImageUploadService;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Support\StoragePath;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -15,6 +20,25 @@ use Intervention\Image\Laravel\Facades\Image;
 
 class FilesController extends AdminController
 {
+    /**
+     * Folders the admin `<ImageUpload>` component may target directly, matching the `folder`
+     * prop values used across resources/js/Components/AdminForms. These are shared across
+     * tenants, so uploads into them are gated on the File create ability rather than on a
+     * per-directory policy.
+     *
+     * @var list<string>
+     */
+    private const SHARED_IMAGE_FOLDERS = [
+        'banners',
+        'calendar',
+        'contacts',
+        'institutions',
+        'news',
+        'pages',
+        'resources',
+        'uploads',
+    ];
+
     public function __construct(
         public Authorizer $authorizer,
         protected ImageUploadService $imageUploadService
@@ -25,16 +49,13 @@ class FilesController extends AdminController
      */
     protected function validateAndNormalizePath(string $path): string
     {
-        // Remove any path traversal attempts
-        $path = str_replace(['../', '..\\', '../', '..\\'], '', $path);
+        // Drop every traversal segment. Doing this per-segment rather than by str_replace is
+        // what makes `....//` and `..././` safe — see App\Support\StoragePath.
+        $path = StoragePath::normalizeRelative($path);
 
         // If user supplied only a filename or relative fragment, prepend base directory
         if (! str_starts_with($path, 'public/files')) {
-            $path = ltrim($path, '/');
-            // If it contains a slash treat as relative subpath, else treat as file in root files dir
-            $path = str_contains($path, '/')
-                ? 'public/files/'.$path
-                : 'public/files/'.$path; // single filename
+            $path = 'public/files/'.$path;
         }
 
         // Normalize path separators and remove duplicate slashes
@@ -101,12 +122,12 @@ class FilesController extends AdminController
                 // Check if user can access their tenant directory
                 if ($request->user()->can('viewDirectory', [File::class, $allowedPath])) {
                     return $this->redirectResponse('files.index', ['path' => $allowedPath])
-                        ->with('info', 'Nukreiptas į jūsų padalinio failų aplanką.');
+                        ->with('info', __('files.messages.redirected_to_tenant_folder'));
                 }
             }
 
             // If no access to tenant directory, redirect to dashboard
-            return $this->redirectResponse('dashboard')->with('error', 'Neturite teisių peržiūrėti failų systemos. Kreipkitės į administratorių dėl prieigos teisių.');
+            return $this->redirectResponse('dashboard')->with('error', __('files.errors.no_filesystem_access'));
         }
 
         [$files, $directories, $currentDirectory] = $this->getFilesFromStorage($path);
@@ -142,7 +163,7 @@ class FilesController extends AdminController
                     try {
                         // Set a flash for Inertia toasts even though this is a JSON request.
                         // The frontend triggers a small Inertia reload to pick it up.
-                        session()->flash('success', 'Nukreiptas į jūsų padalinio failų aplanką.');
+                        session()->flash('success', __('files.messages.redirected_to_tenant_folder'));
                         [$files, $directories, $currentDirectory] = $this->getFilesFromStorage($allowedPath);
 
                         return response()->json([
@@ -161,7 +182,7 @@ class FilesController extends AdminController
                         ]);
 
                         return response()->json([
-                            'error' => 'Nepavyko gauti failų sąrašo po nukreipimo.',
+                            'error' => __('files.errors.fetch_failed_after_redirect'),
                             'code' => 'FETCH_ERROR',
                         ], 500);
                     }
@@ -169,7 +190,7 @@ class FilesController extends AdminController
             }
 
             return response()->json([
-                'error' => 'Neturite teisių peržiūrėti šio aplanko.',
+                'error' => __('files.errors.no_directory_access'),
                 'code' => 'INSUFFICIENT_PERMISSIONS',
             ], 403);
         }
@@ -191,7 +212,7 @@ class FilesController extends AdminController
             ]);
 
             return response()->json([
-                'error' => 'Nepavyko gauti failų sąrašo. Bandykite dar kartą.',
+                'error' => __('files.errors.fetch_failed'),
                 'code' => 'FETCH_ERROR',
             ], 500);
         }
@@ -218,8 +239,7 @@ class FilesController extends AdminController
             } elseif ($this->authorizer->getTenants()->count() > 0) {
                 $tenant = $this->authorizer->getTenants()->first();
 
-                // Check if this is the main tenant (type 'pagrindinis')
-                if ($tenant->type === 'pagrindinis') {
+                if ($tenant->isMain()) {
                     // Main tenant uploads to root content directory
                     $path = 'files/content/'.date('Y/m');
                 } else {
@@ -240,7 +260,7 @@ class FilesController extends AdminController
 
             // Check if user has permission to upload to this directory
             if (! $request->user()->can('viewDirectory', [File::class, $path])) {
-                return back()->withErrors(['permission' => 'Neturite teisių įkelti failų į šį aplanką.']);
+                return back()->withErrors(['permission' => __('files.errors.no_upload_permission')]);
             }
         }
 
@@ -293,21 +313,18 @@ class FilesController extends AdminController
         // Create success message
         $messages = [];
         if ($uploadedCount > 0) {
-            $messages[] = "Įkelta {$uploadedCount} ".
-                ($uploadedCount === 1 ? 'failas' : ($uploadedCount < 10 ? 'failai' : 'failų'));
+            $messages[] = trans_choice('files.messages.uploaded_count', $uploadedCount, ['count' => $uploadedCount]);
         }
         if ($renamedCount > 0) {
-            $messages[] = "{$renamedCount} ".
-                ($renamedCount === 1 ? 'failas pervardytas' : ($renamedCount < 10 ? 'failai pervardyti' : 'failų pervardita')).
-                ' (egzistavo tokie pat pavadinimai)';
+            $messages[] = trans_choice('files.messages.renamed_count', $renamedCount, ['count' => $renamedCount]);
         }
 
         if (! empty($messages)) {
             $successMessage = implode(', ', $messages).'.';
             if (! empty($errors)) {
-                $successMessage .= ' Nepavyko įkelti: '.implode(', ', array_slice($errors, 0, 3));
+                $successMessage .= ' '.__('files.messages.upload_failed_list', ['files' => implode(', ', array_slice($errors, 0, 3))]);
                 if (count($errors) > 3) {
-                    $successMessage .= ' ir dar '.(count($errors) - 3).'...';
+                    $successMessage .= ' '.__('files.messages.and_more', ['count' => count($errors) - 3]);
                 }
 
                 return back()->with('warning', $successMessage);
@@ -315,21 +332,12 @@ class FilesController extends AdminController
 
             return back()->with('success', $successMessage);
         } else {
-            return back()->withErrors(['error' => 'Nepavyko įkelti nei vieno failo.']);
+            return back()->withErrors(['error' => __('files.errors.upload_all_failed')]);
         }
     }
 
-    public function createDirectory(Request $request)
+    public function createDirectory(CreateDirectoryRequest $request)
     {
-        $request->validate([
-            'path' => 'required|string',
-            'name' => 'required|string|max:255|regex:/^[\p{L}\p{N}_\- ]+$/u',
-        ], [
-            'name.regex' => 'Aplanko pavadinimas gali turėti tik raides, skaičius, pabraukimus, brūkšnelius ir tarpus.',
-            'name.required' => 'Aplanko pavadinimas yra privalomas.',
-            'name.max' => 'Aplanko pavadinimas negali būti ilgesnis nei :max simbolių.',
-        ]);
-
         try {
             $path = $this->validateAndNormalizePath($request->input('path'));
         } catch (\InvalidArgumentException $e) {
@@ -340,7 +348,7 @@ class FilesController extends AdminController
 
         // Check if user has permission to create directories in this path
         if (! $request->user()->can('viewDirectory', [File::class, $path])) {
-            return back()->withErrors(['permission' => 'Neturite teisių kurti aplankų šioje vietoje.']);
+            return back()->withErrors(['permission' => __('files.errors.no_create_directory_permission')]);
         }
 
         $newDirectoryPath = $path.'/'.$name;
@@ -364,7 +372,7 @@ class FilesController extends AdminController
                 'name' => $name,
             ]);
 
-            return back()->with('success', 'Aplankas "'.$name.'" sėkmingai sukurtas.');
+            return back()->with('success', __('files.messages.directory_created', ['name' => $name]));
         } catch (\Exception $e) {
             Log::error('Error creating directory', [
                 'path' => $newDirectoryPath,
@@ -373,23 +381,12 @@ class FilesController extends AdminController
                 'name' => $name,
             ]);
 
-            return back()->withErrors(['error' => 'Nepavyko sukurti aplanko. Bandykite dar kartą.']);
+            return back()->withErrors(['error' => __('files.errors.create_directory_failed')]);
         }
     }
 
-    public function uploadImage(Request $request)
+    public function uploadImage(UploadImageRequest $request)
     {
-        $request->validate([
-            'image' => 'nullable|image|max:51200', // 50MB max
-            'name' => 'nullable|string|max:255',
-            'path' => 'required|string',
-        ], [
-            'path.required' => 'Kelias yra privalomas.',
-            'name.max' => 'Failo pavadinimas per ilgas.',
-            'image.image' => 'Failas turi būti paveikslėlis.',
-            'image.max' => 'Paveikslėlis negali būti didesnis nei 50MB.',
-        ]);
-
         try {
             // Images can be uploaded as 1. files or as 2. data urls
             $file = $request->file('image') ?? $request->file('file');
@@ -399,25 +396,39 @@ class FilesController extends AdminController
                 : $request->name;
 
             if (! $data) {
-                return response()->json(['error' => 'Nepateiktas paveikslėlis.'], 400);
+                return response()->json(['error' => __('files.errors.image_missing')], 400);
             }
 
             if (! $originalName) {
-                return response()->json(['error' => 'Nepateiktas failo pavadinimas.'], 400);
+                return response()->json(['error' => __('files.errors.file_name_missing')], 400);
             }
 
             $path = (string) $request->input('path');
 
-            // Determine upload directory based on path structure
-            $directory = $this->resolveUploadDirectory($path, $request->user());
+            // Every branch below is authorized. Previously only the FileManager branch was,
+            // which left the shared image folders and any unrecognised path ungated.
+            if (StoragePath::hasTraversal($path)) {
+                return response()->json(['error' => __('files.errors.invalid_directory_path')], 422);
+            }
 
-            // Check permissions for FileManager uploads
-            if ($this->isFileManagerUpload($path)) {
+            if ($this->isSharedImageFolder($path)) {
+                // The shared folders (banners, news, ...) are not tenant-scoped, so they are
+                // gated on the plain "may create files" ability rather than on a directory.
+                if ($request->user()->cannot('create', File::class)) {
+                    return response()->json(['error' => __('files.errors.no_upload_permission')], 403);
+                }
+            } elseif (! $this->isTipTapUpload($path)) {
+                // Anything that is neither a shared folder nor a TipTap content path is treated
+                // as a FileManager path and must clear the directory policy.
                 $validatedPath = $this->validateAndNormalizePath($path);
+
                 if (! $request->user()->can('viewDirectory', [File::class, $validatedPath])) {
-                    return response()->json(['error' => 'Neturite teisių įkelti failų į šį aplanką.'], 403);
+                    return response()->json(['error' => __('files.errors.no_upload_permission')], 403);
                 }
             }
+
+            // Determine upload directory based on path structure
+            $directory = $this->resolveUploadDirectory($path, $request->user());
 
             // Use ImageUploadService for processing and saving
             $result = $this->imageUploadService->processAndSave($data, $directory, $originalName);
@@ -466,7 +477,7 @@ class FilesController extends AdminController
                 'request_data' => $request->only(['name', 'path']),
             ]);
 
-            $errorMessage = 'Nepavyko apdoroti paveikslėlio: '.$e->getMessage();
+            $errorMessage = __('files.errors.image_processing_failed', ['error' => $e->getMessage()]);
 
             // Return Inertia response if request is from Inertia, otherwise JSON
             if ($request->header('X-Inertia')) {
@@ -485,17 +496,17 @@ class FilesController extends AdminController
     protected function resolveUploadDirectory(string $path, $user): string
     {
         // TipTap uploads: use tenant-based content directory logic
-        if (str_starts_with($path, 'content/')) {
+        if ($this->isTipTapUpload($path)) {
             return $this->resolveTipTapDirectory($user);
         }
 
-        // Simple folder name (e.g., 'banners', 'news', 'calendar')
-        if (! str_contains($path, '/') && ! str_starts_with($path, 'public/')) {
+        // One of the shared image folders the admin forms upload to.
+        if ($this->isSharedImageFolder($path)) {
             return $path;
         }
 
-        // FileManager uploads: use the provided path directly
-        return str_replace('public/', '', $path);
+        // FileManager uploads: use the normalized path, minus the disk's `public/` root.
+        return str_replace('public/', '', $this->validateAndNormalizePath($path));
     }
 
     /**
@@ -511,7 +522,7 @@ class FilesController extends AdminController
             $tenant = $this->authorizer->getTenants()->first();
 
             // Main tenant uploads to root content directory
-            if ($tenant->type === 'pagrindinis') {
+            if ($tenant->isMain()) {
                 return 'files/content/'.date('Y/m');
             }
 
@@ -523,6 +534,28 @@ class FilesController extends AdminController
     }
 
     /**
+     * Whether the path targets the TipTap content tree, whose real directory is derived from
+     * the user's tenant rather than from the request.
+     */
+    protected function isTipTapUpload(string $path): bool
+    {
+        return str_starts_with($path, 'content/');
+    }
+
+    /**
+     * Whether the path names one of the shared, non-tenant-scoped image folders the admin
+     * forms upload into (`<ImageUpload folder="...">`).
+     *
+     * This is an allowlist on purpose: the branch writes the caller's string straight through
+     * as a directory name, so accepting arbitrary bare folder names would let a request pick
+     * its own destination.
+     */
+    protected function isSharedImageFolder(string $path): bool
+    {
+        return in_array($path, self::SHARED_IMAGE_FOLDERS, true);
+    }
+
+    /**
      * Check if this is a FileManager upload (has full path structure).
      */
     protected function isFileManagerUpload(string $path): bool
@@ -530,30 +563,26 @@ class FilesController extends AdminController
         return str_starts_with($path, 'public/files') || str_contains($path, '/files/');
     }
 
-    public function compressImage(Request $request)
+    public function compressImage(FilePathRequest $request)
     {
-        $request->validate([
-            'path' => 'required|string',
-        ]);
-
         try {
             $path = $this->validateAndNormalizePath($request->input('path'));
         } catch (\InvalidArgumentException $e) {
-            return back()->withErrors(['error' => 'Neteisingas failo kelias.']);
+            return back()->withErrors(['error' => __('files.errors.invalid_file_path')]);
         }
 
         $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
         if (! in_array($extension, ['jpg', 'jpeg', 'png'])) {
-            return back()->withErrors(['error' => 'Failo formatas negali būti suspaustas.']);
+            return back()->withErrors(['error' => __('files.errors.not_compressible')]);
         }
 
         $directoryPath = dirname($path);
         if (! $request->user()->can('viewDirectory', [File::class, $directoryPath])) {
-            return back()->withErrors(['permission' => 'Neturite teisių modifikuoti failų šiame aplanke.']);
+            return back()->withErrors(['permission' => __('files.errors.no_modify_permission')]);
         }
 
         if (! \Storage::exists($path) || \Storage::directoryExists($path)) {
-            return back()->withErrors(['error' => 'Failas nerastas.']);
+            return back()->withErrors(['error' => __('files.errors.file_not_found')]);
         }
 
         try {
@@ -580,7 +609,7 @@ class FilesController extends AdminController
             ]);
 
             $fileName = basename($path);
-            $msg = 'Paveikslėlis optimizuotas (sutaupyta '.$saved.'%).';
+            $msg = __('files.messages.image_optimised', ['percent' => $saved]);
 
             return back()->with('success', $fileName.' – '.$msg)->with('data', [
                 'path' => $path,
@@ -594,36 +623,32 @@ class FilesController extends AdminController
                 'error' => $e->getMessage(),
             ]);
 
-            return back()->withErrors(['error' => 'Nepavyko optimizuoti paveikslėlio: '.$e->getMessage()]);
+            return back()->withErrors(['error' => __('files.errors.compress_failed', ['error' => $e->getMessage()])]);
         }
     }
 
-    public function delete(Request $request)
+    public function delete(FilePathRequest $request)
     {
-        $request->validate([
-            'path' => 'required|string',
-        ]);
-
         try {
             $path = $this->validateAndNormalizePath($request->input('path'));
         } catch (\InvalidArgumentException $e) {
-            return back()->withErrors(['error' => 'Neteisingas failo kelias.']);
+            return back()->withErrors(['error' => __('files.errors.invalid_file_path')]);
         }
 
         // Check if user has permission to delete files in this directory
         $directoryPath = dirname($path);
         if (! $request->user()->can('viewDirectory', [File::class, $directoryPath])) {
-            return back()->withErrors(['permission' => 'Neturite teisių trinti failų šiame aplanke.']);
+            return back()->withErrors(['permission' => __('files.errors.no_delete_permission')]);
         }
 
         // Additional safety check: ensure file exists and is within allowed directory
         if (! Storage::exists($path)) {
-            return back()->withErrors(['file' => 'Failas nerastas.']);
+            return back()->withErrors(['file' => __('files.errors.file_not_found')]);
         }
 
         // Verify the file is actually a file, not a directory
         if (Storage::directoryExists($path)) {
-            return back()->withErrors(['file' => 'Negalima trinti aplankų šiuo būdu.']);
+            return back()->withErrors(['file' => __('files.errors.cannot_delete_directory_this_way')]);
         }
 
         // Get file name for success message
@@ -640,7 +665,7 @@ class FilesController extends AdminController
                 'file_name' => $fileName,
             ]);
 
-            return back()->with('success', 'Failas "'.$fileName.'" sėkmingai ištrintas.');
+            return back()->with('success', __('files.messages.file_deleted', ['name' => $fileName]));
         } catch (\Exception $e) {
             Log::error('Error deleting file', [
                 'path' => $path,
@@ -649,21 +674,12 @@ class FilesController extends AdminController
                 'file_name' => $fileName,
             ]);
 
-            return back()->withErrors(['error' => 'Nepavyko ištrinti failo. Bandykite dar kartą.']);
+            return back()->withErrors(['error' => __('files.errors.delete_failed')]);
         }
     }
 
-    public function bulkDelete(Request $request)
+    public function bulkDelete(BulkDeleteFilesRequest $request)
     {
-        $request->validate([
-            'paths' => 'required|array|min:1|max:50', // Limit to 50 files for safety
-            'paths.*' => 'required|string',
-        ], [
-            'paths.required' => 'Nepasirinktas nei vienas failas trinimui.',
-            'paths.max' => 'Per daug failų pasirinkta. Maksimalus kiekis: :max.',
-            'paths.min' => 'Nepasirinktas nei vienas failas trinimui.',
-        ]);
-
         $paths = $request->input('paths');
         $deletedCount = 0;
         $errors = [];
@@ -676,7 +692,7 @@ class FilesController extends AdminController
                 // Check permissions for each file
                 $directoryPath = dirname($validatedPath);
                 if (! $request->user()->can('viewDirectory', [File::class, $directoryPath])) {
-                    $errors[] = 'Nėra teisių trinti: '.basename($path);
+                    $errors[] = __('files.errors.bulk_no_delete_permission', ['name' => basename($path)]);
                     $skippedCount++;
 
                     continue;
@@ -684,14 +700,14 @@ class FilesController extends AdminController
 
                 // Safety checks
                 if (! Storage::exists($validatedPath)) {
-                    $errors[] = 'Failas nerastas: '.basename($path);
+                    $errors[] = __('files.errors.bulk_file_not_found', ['name' => basename($path)]);
                     $skippedCount++;
 
                     continue;
                 }
 
                 if (Storage::directoryExists($validatedPath)) {
-                    $errors[] = 'Negalima trinti aplanko: '.basename($path);
+                    $errors[] = __('files.errors.bulk_is_directory', ['name' => basename($path)]);
                     $skippedCount++;
 
                     continue;
@@ -710,10 +726,10 @@ class FilesController extends AdminController
                 ]);
 
             } catch (\InvalidArgumentException) {
-                $errors[] = 'Neteisingas kelias: '.basename($path);
+                $errors[] = __('files.errors.bulk_invalid_path', ['name' => basename($path)]);
                 $skippedCount++;
             } catch (\Exception $e) {
-                $errors[] = 'Klaida trinant: '.basename($path);
+                $errors[] = __('files.errors.bulk_delete_error', ['name' => basename($path)]);
                 $skippedCount++;
                 Log::error('Bulk delete error', [
                     'path' => $path,
@@ -725,25 +741,26 @@ class FilesController extends AdminController
 
         // Prepare response message
         if ($deletedCount > 0 && $skippedCount === 0) {
-            return back()->with('success', "Sėkmingai ištrinta {$deletedCount} ".
-                ($deletedCount === 1 ? 'failas' : ($deletedCount < 10 ? 'failai' : 'failų')).'.');
+            return back()->with('success', trans_choice('files.messages.bulk_deleted', $deletedCount, ['count' => $deletedCount]));
         } elseif ($deletedCount > 0) {
-            $message = "Ištrinta {$deletedCount} ".
-                ($deletedCount === 1 ? 'failas' : ($deletedCount < 10 ? 'failai' : 'failų'));
+            $message = trans_choice('files.messages.bulk_deleted_partial', $deletedCount, ['count' => $deletedCount]);
             if (! empty($errors)) {
-                $message .= ". Praleista {$skippedCount}: ".implode(', ', array_slice($errors, 0, 3));
+                $message .= '. '.__('files.messages.bulk_skipped', [
+                    'count' => $skippedCount,
+                    'files' => implode(', ', array_slice($errors, 0, 3)),
+                ]);
                 if (count($errors) > 3) {
-                    $message .= ' ir dar '.(count($errors) - 3).'...';
+                    $message .= ' '.__('files.messages.and_more', ['count' => count($errors) - 3]);
                 }
             }
 
             return back()->with('warning', $message);
         } else {
-            $errorMessage = 'Nepavyko ištrinti nei vieno failo.';
+            $errorMessage = __('files.errors.bulk_delete_all_failed');
             if (! empty($errors)) {
-                $errorMessage .= ' Klaidos: '.implode(', ', array_slice($errors, 0, 3));
+                $errorMessage .= ' '.__('files.messages.bulk_errors', ['files' => implode(', ', array_slice($errors, 0, 3))]);
                 if (count($errors) > 3) {
-                    $errorMessage .= ' ir dar '.(count($errors) - 3).'...';
+                    $errorMessage .= ' '.__('files.messages.and_more', ['count' => count($errors) - 3]);
                 }
             }
 
@@ -751,32 +768,28 @@ class FilesController extends AdminController
         }
     }
 
-    public function deleteDirectory(Request $request)
+    public function deleteDirectory(FilePathRequest $request)
     {
-        $request->validate([
-            'path' => 'required|string',
-        ]);
-
         try {
             $path = $this->validateAndNormalizePath($request->input('path'));
         } catch (\InvalidArgumentException $e) {
-            return back()->withErrors(['error' => 'Neteisingas aplanko kelias.']);
+            return back()->withErrors(['error' => __('files.errors.invalid_folder_path')]);
         }
 
         // Ensure we're not trying to delete the root directory
         if ($path === 'public/files') {
-            return back()->withErrors(['error' => 'Negalima ištrinti šakninio failų aplanko.']);
+            return back()->withErrors(['error' => __('files.errors.cannot_delete_root')]);
         }
 
         // Check if user has permission to delete directories in the parent directory
         $parentDirectory = dirname($path);
         if (! $request->user()->can('viewDirectory', [File::class, $parentDirectory])) {
-            return back()->withErrors(['permission' => 'Neturite teisių trinti aplankų šioje vietoje.']);
+            return back()->withErrors(['permission' => __('files.errors.no_directory_delete_permission')]);
         }
 
         // Additional safety check: ensure directory exists
         if (! Storage::directoryExists($path)) {
-            return back()->withErrors(['directory' => 'Aplankas nerastas.']);
+            return back()->withErrors(['directory' => __('files.errors.directory_not_found')]);
         }
 
         // Check if directory is empty
@@ -784,7 +797,7 @@ class FilesController extends AdminController
         $subdirectories = Storage::directories($path);
 
         if (count($files) > 0 || count($subdirectories) > 0) {
-            return back()->withErrors(['directory' => 'Aplankas nėra tuščias. Pirmiausia ištrinkite visus failus ir poaplankus.']);
+            return back()->withErrors(['directory' => __('files.errors.directory_not_empty')]);
         }
 
         // Get directory name for success message
@@ -813,7 +826,7 @@ class FilesController extends AdminController
                 'directory_name' => $directoryName,
             ]);
 
-            return back()->withErrors(['error' => 'Nepavyko ištrinti aplanko. Bandykite dar kartą.']);
+            return back()->withErrors(['error' => __('files.errors.delete_directory_failed')]);
         }
     }
 
@@ -832,27 +845,23 @@ class FilesController extends AdminController
     /**
      * Scan file usage across all TipTap-enabled models
      */
-    public function scanFileUsage(Request $request, FileUsageScanner $scanner)
+    public function scanFileUsage(FilePathRequest $request, FileUsageScanner $scanner)
     {
-        $request->validate([
-            'path' => 'required|string',
-        ]);
-
         try {
             $path = $this->validateAndNormalizePath($request->input('path'));
         } catch (\InvalidArgumentException $e) {
-            return back()->withErrors(['error' => 'Neteisingas failo kelias.']);
+            return back()->withErrors(['error' => __('files.errors.invalid_file_path')]);
         }
 
         // Check if user has permission to view this file
         $directoryPath = dirname($path);
         if (! $request->user()->can('viewDirectory', [File::class, $directoryPath])) {
-            return back()->withErrors(['error' => 'Neturite teisių skenuoti šio failo naudojimą.']);
+            return back()->withErrors(['error' => __('files.errors.no_scan_permission')]);
         }
 
         // Additional safety check: ensure file exists
         if (! Storage::exists($path)) {
-            return back()->withErrors(['error' => 'Failas nerastas.']);
+            return back()->withErrors(['error' => __('files.errors.file_not_found')]);
         }
 
         try {
@@ -867,11 +876,11 @@ class FilesController extends AdminController
 
             // Create appropriate success message
             if ($usageData['is_safe_to_delete']) {
-                $message = 'Failas saugus trinti - nerasta jokių naudojimų '.count($usageData['scanned_models']).' turinio tipuose.';
+                $message = __('files.messages.usage_safe', ['count' => count($usageData['scanned_models'])]);
 
                 return back()->with('data', $usageData)->with('success', $message);
             } else {
-                $message = "Rasta {$usageData['total_usages']} naudojimų - peržiūrėkite detales prieš trinant.";
+                $message = __('files.messages.usage_found', ['count' => $usageData['total_usages']]);
 
                 return back()->with('data', $usageData)->with('info', $message);
             }
@@ -882,7 +891,7 @@ class FilesController extends AdminController
                 'error' => $e->getMessage(),
             ]);
 
-            return back()->withErrors(['error' => 'Nepavyko nuskaityti failo naudojimo: '.$e->getMessage()]);
+            return back()->withErrors(['error' => __('files.errors.scan_failed', ['error' => $e->getMessage()])]);
         }
     }
 }

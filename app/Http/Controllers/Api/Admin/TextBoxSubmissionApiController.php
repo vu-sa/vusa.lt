@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Exports\TextBoxSubmissionsExport;
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Api\Admin\ContentPartScopedRequest;
+use App\Http\Requests\Api\Admin\IndexTextBoxSubmissionRequest;
 use App\Models\ContentPart;
 use App\Models\Page;
 use App\Models\TextBoxSubmission;
@@ -13,14 +15,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class TextBoxSubmissionApiController extends ApiController
 {
-    public function index(Request $request): JsonResponse
+    public function index(IndexTextBoxSubmissionRequest $request): JsonResponse
     {
         $this->requireAuth($request);
-
-        $request->validate([
-            'content_part_id' => ['required', 'integer', 'exists:content_parts,id'],
-            'per_page' => ['nullable', 'integer', 'min:5', 'max:100'],
-        ]);
 
         $this->authorizeApi('view', $this->pageForContentPart($request->integer('content_part_id')));
 
@@ -28,7 +25,7 @@ class TextBoxSubmissionApiController extends ApiController
             ->where('content_part_id', $request->content_part_id)
             ->with('user:id,name')
             ->orderByDesc('created_at')
-            ->paginate($request->integer('per_page', 20));
+            ->paginate($request->getPerPage());
 
         $paginator->through(fn (TextBoxSubmission $submission) => [
             'id' => $submission->id,
@@ -48,16 +45,12 @@ class TextBoxSubmissionApiController extends ApiController
 
         $submission->delete();
 
-        return $this->jsonSuccess(null, 'Atsakymas ištrintas');
+        return $this->jsonSuccess(null, __('forms.messages.submission_deleted'));
     }
 
-    public function destroyAll(Request $request): JsonResponse
+    public function destroyAll(ContentPartScopedRequest $request): JsonResponse
     {
         $this->requireAuth($request);
-
-        $request->validate([
-            'content_part_id' => ['required', 'integer', 'exists:content_parts,id'],
-        ]);
 
         $this->authorizeApi('update', $this->pageForContentPart($request->integer('content_part_id')));
 
@@ -65,16 +58,12 @@ class TextBoxSubmissionApiController extends ApiController
             ->where('content_part_id', $request->integer('content_part_id'))
             ->delete();
 
-        return $this->jsonSuccess(null, 'Visi atsakymai ištrinti');
+        return $this->jsonSuccess(null, __('forms.messages.all_submissions_deleted'));
     }
 
-    public function export(Request $request): StreamedResponse
+    public function export(ContentPartScopedRequest $request): StreamedResponse
     {
         $this->requireAuth($request);
-
-        $request->validate([
-            'content_part_id' => ['required', 'integer', 'exists:content_parts,id'],
-        ]);
 
         $contentPart = ContentPart::findOrFail($request->content_part_id);
 

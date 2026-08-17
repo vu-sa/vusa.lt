@@ -6,6 +6,7 @@ use App\Enums\ModelEnum;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
+use App\Support\MorphMap;
 use Illuminate\Support\Str;
 
 class DutiablePolicy extends ModelPolicy
@@ -30,7 +31,7 @@ class DutiablePolicy extends ModelPolicy
             return false;
         }
 
-        $targetUser = $dutiable->dutiable_type === User::class
+        $targetUser = $dutiable->dutiable_type === MorphMap::alias(User::class)
             ? $dutiable->user
             : null;
 

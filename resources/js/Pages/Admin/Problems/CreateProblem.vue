@@ -1,10 +1,6 @@
 <template>
   <PageContent
-    :title="
-      $tChoice('forms.new_model', 0, {
-        model: $tChoice('entities.problem.model', 1),
-      })
-    "
+    :title="newEntityTitle('problem')"
     :back-url="route('problems.index')"
     :heading-icon="ProblemIcon"
   >
@@ -23,8 +19,8 @@
 </template>
 
 <script setup lang="ts">
+import { newEntityTitle } from '@/Utils/EntityMessages';
 import { useForm } from '@inertiajs/vue3';
-import { transChoice as $tChoice } from 'laravel-vue-i18n';
 
 import ProblemForm from '@/Components/AdminForms/ProblemForm.vue';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';

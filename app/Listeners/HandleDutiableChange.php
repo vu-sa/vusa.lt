@@ -7,6 +7,7 @@ use App\Facades\Permission;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\User;
 use App\Services\Permissions\PermissionMapBuilder;
+use App\Support\MorphMap;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Cache;
@@ -31,7 +32,7 @@ class HandleDutiableChange implements ShouldQueue
     {
         // Only User dutiables carry permissions. Contacts and other morph types have
         // none, and their id must not be used to look up a User that happens to share it.
-        if ($event->dutiableType !== User::class) {
+        if ($event->dutiableType !== MorphMap::alias(User::class)) {
             return;
         }
 

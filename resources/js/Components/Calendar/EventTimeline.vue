@@ -229,10 +229,10 @@
 </template>
 
 <script setup lang="ts">
+import { dateLocaleFor } from '@/Composables/useDateLocale';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, ref, onMounted, type Component } from 'vue';
 import { format, addDays, subDays, startOfDay, isAfter, isBefore, isSameDay, startOfWeek, differenceInDays } from 'date-fns';
-import { lt, enUS } from 'date-fns/locale';
 import {
   Calendar,
   GraduationCap,
@@ -277,7 +277,7 @@ const timelineRef = ref<HTMLElement | null>(null);
 const offsetWeeks = ref(0); // Navigation offset in weeks
 
 // Computed values
-const dateLocale = computed(() => props.locale === 'lt' ? lt : enUS);
+const dateLocale = computed(() => dateLocaleFor(props.locale));
 
 const today = computed(() => startOfDay(new Date()));
 

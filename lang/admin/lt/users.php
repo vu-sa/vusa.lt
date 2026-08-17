@@ -12,4 +12,11 @@ return [
     'duplicate_open_profile' => 'Peržiūrėti',
     'duplicate_contact_admins' => 'Kreipkis į to padalinio administratorius',
     'no_tenant' => 'Be padalinio',
+    'validation' => [
+        'current_password_required' => 'Dabartinis slaptažodis yra privalomas.',
+        'current_password_string' => 'Dabartinis slaptažodis turi būti tekstas.',
+        'password_required' => 'Naujas slaptažodis yra privalomas.',
+        'password_confirmed' => 'Slaptažodžio patvirtinimas nesutampa.',
+        'password_confirmation_required' => 'Slaptažodžio patvirtinimas yra privalomas.',
+    ],
 ];

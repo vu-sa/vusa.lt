@@ -7,8 +7,14 @@ use App\Rules\SoftDeleteRules;
 
 class StoreCalendarRequest extends CalendarRequest
 {
+    protected string $tenantScopePermission = 'calendars.create.padalinys';
+
     /**
      * Determine if the user is authorized to make this request.
+     *
+     * `can('create', Calendar::class)` is tenant-agnostic, so the `tenant_id` rule inherited
+     * from CalendarRequest is what actually confines the event to a padalinys the user may
+     * create in.
      */
     public function authorize(): bool
     {

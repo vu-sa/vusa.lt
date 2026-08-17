@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\LocalizedRouteSlugs;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Route;
@@ -56,7 +57,8 @@ Route::domain('{subdomain}.'.explode('.', config('app.url'), 2)[1])->group(funct
 Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware' => ['main']], function (): void {
     Route::domain('www.'.explode('.', config('app.url'), 2)[1])->group(function (): void {
 
-        Route::get('{registrationString}/{registrationForm}', [Public\PublicPageController::class, 'registrationPage'])->name('registrationPage')->whereIn('registrationString', ['registracija', 'registration']);
+        Route::get('{registrationString}/{registrationForm}', [Public\PublicPageController::class, 'registrationPage'])->name('registrationPage')
+            ->whereIn('registrationString', LocalizedRouteSlugs::accepted('registrationString'));
 
         Route::get('kalendorius/renginys/{calendar}', [Public\PublicPageController::class, 'calendarEventRedirect'])->name('calendar.event');
 
@@ -72,7 +74,8 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
         Route::get('kategorija/{category:alias}', [Public\PublicPageController::class, 'category'])->name('category');
 
-        Route::get('{registrationString}', [Public\PublicPageController::class, 'curatorRegistrations'])->name('curatorRegistrations')->whereIn('registrationString', ['registracija-i-kuratoriu-programa', 'registration-to-mentor-program']);
+        Route::get('{curatorRegistrationString}', [Public\PublicPageController::class, 'curatorRegistrations'])->name('curatorRegistrations')
+            ->whereIn('curatorRegistrationString', LocalizedRouteSlugs::accepted('curatorRegistrationString'));
 
         Route::get('kalendorius/ics', [Public\MainController::class, 'publicAllEventCalendar'])->name('calendar.ics');
 
@@ -81,9 +84,11 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
         // Note: API routes should be defined in api.php, not here
 
-        Route::get('dokumentai', [Public\DocumentController::class, 'index'])->name('documents');
+        Route::get('{documentsString}', [Public\DocumentController::class, 'index'])->name('documents')
+            ->whereIn('documentsString', LocalizedRouteSlugs::accepted('documentsString'));
 
-        Route::get('paieska', [Public\SearchController::class, 'index'])->name('search');
+        Route::get('{searchString}', [Public\SearchController::class, 'index'])->name('search')
+            ->whereIn('searchString', LocalizedRouteSlugs::accepted('searchString'));
 
         Route::get('ind-komplektai', [Public\StudySetController::class, 'index'])->name('studySets');
 
@@ -94,30 +99,40 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
     Route::domain('{subdomain}.'.explode('.', config('app.url'), 2)[1])->group(function (): void {
         Route::get('/', [Public\PublicPageController::class, 'home'])->name('home');
-        Route::get('{newsString}', [Public\NewsController::class, 'newsArchive'])->name('newsArchive')->whereIn('newsString', ['naujienos', 'news']);
+        Route::get('{newsArchiveString}', [Public\NewsController::class, 'newsArchive'])->name('newsArchive')
+            ->whereIn('newsArchiveString', LocalizedRouteSlugs::accepted('newsArchiveString'));
         Route::redirect('/admin', '/mano', 301);
 
         /* Route::get('tapk-nariu', [Public\PublicPageController::class, 'membership'])->name('joinUs'); */
 
-        Route::get('kontaktai/id/{institution}', [Public\ContactController::class, 'institutionContacts'])->name('contacts.institution');
+        Route::get('{contactsString}/id/{institution}', [Public\ContactController::class, 'institutionContacts'])->name('contacts.institution')
+            ->whereIn('contactsString', LocalizedRouteSlugs::accepted('contactsString'));
 
-        Route::get('posedziai', [Public\MeetingController::class, 'index'])->name('publicMeetings.index');
-        Route::get('posedziai/{meeting}', [Public\ContactController::class, 'showMeeting'])->name('publicMeetings.show');
+        Route::get('{meetingsString}', [Public\MeetingController::class, 'index'])->name('publicMeetings.index')
+            ->whereIn('meetingsString', LocalizedRouteSlugs::accepted('meetingsString'));
+        Route::get('{meetingsString}/{meeting}', [Public\ContactController::class, 'showMeeting'])->name('publicMeetings.show')
+            ->whereIn('meetingsString', LocalizedRouteSlugs::accepted('meetingsString'));
 
-        Route::get('kontaktai/studentu-atstovai', [Public\ContactController::class, 'studentRepresentatives'])->name('contacts.studentRepresentatives');
-        Route::get('kontaktai/{type:slug}', [Public\ContactController::class, 'institutionDutyTypeContacts'])->whereIn('type', [
-            'koordinatoriai', 'kuratoriai', 'mentors',
-        ])->name('contacts.dutyType');
+        Route::get('{contactsString}/{studentRepsString}', [Public\ContactController::class, 'studentRepresentatives'])->name('contacts.studentRepresentatives')
+            ->whereIn('contactsString', LocalizedRouteSlugs::accepted('contactsString'))
+            ->whereIn('studentRepsString', LocalizedRouteSlugs::accepted('studentRepsString'));
+        Route::get('{contactsString}/{type:slug}', [Public\ContactController::class, 'institutionDutyTypeContacts'])
+            ->whereIn('contactsString', LocalizedRouteSlugs::accepted('contactsString'))
+            ->whereIn('type', ['koordinatoriai', 'kuratoriai', 'mentors'])->name('contacts.dutyType');
 
-        Route::get('kontaktai/{institution:alias}', [Public\ContactController::class, 'institutionContacts'])->name('contacts.alias')
+        Route::get('{contactsString}/{institution:alias}', [Public\ContactController::class, 'institutionContacts'])->name('contacts.alias')
+            ->whereIn('contactsString', LocalizedRouteSlugs::accepted('contactsString'))
             ->missing(fn (Request $request) => Redirect::route('contacts.institution', [
                 'institution' => $request->institution,
                 'lang' => $request->lang,
                 'subdomain' => $request->subdomain,
             ]));
 
-        Route::get('kontaktai', [Public\ContactController::class, 'contacts'])->name('contacts');
-        Route::get('kontaktai/kategorija/{type:slug}', [Public\ContactController::class, 'institutionCategory'])
+        Route::get('{contactsString}', [Public\ContactController::class, 'contacts'])->name('contacts')
+            ->whereIn('contactsString', LocalizedRouteSlugs::accepted('contactsString'));
+        Route::get('{contactsString}/{contactCategoryString}/{type:slug}', [Public\ContactController::class, 'institutionCategory'])
+            ->whereIn('contactsString', LocalizedRouteSlugs::accepted('contactsString'))
+            ->whereIn('contactCategoryString', LocalizedRouteSlugs::accepted('contactCategoryString'))
             ->name('contacts.category');
 
         Route::get('{newsString}/{news}', [Public\NewsController::class, 'news'])

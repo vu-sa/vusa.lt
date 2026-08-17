@@ -74,7 +74,7 @@ class ActivityChangeFormatter
 
         return [
             'relation' => $relation,
-            'label' => $this->resolveLabel($activity->subject_type, $relation),
+            'label' => $this->resolveLabel((string) $activity->subjectClass(), $relation),
             'attached' => $properties->get('attached', []),
             'detached' => $properties->get('detached', []),
         ];
@@ -97,7 +97,7 @@ class ActivityChangeFormatter
             $old = $activity->attribute_changes?->get('old') ?? [];
 
             foreach (array_unique([...array_keys($attributes), ...array_keys($old)]) as $key) {
-                $relation = $this->relationTarget($activity->subject_type, $key);
+                $relation = $this->relationTarget((string) $activity->subjectClass(), $key);
 
                 if ($relation === null) {
                     continue;
@@ -186,7 +186,8 @@ class ActivityChangeFormatter
             return [];
         }
 
-        $ownerClass = $activity->subject_type;
+        // The column stores a morph alias; everything below reflects on the model class.
+        $ownerClass = (string) $activity->subjectClass();
         $attributes = $activity->attribute_changes?->get('attributes') ?? [];
         $old = $activity->attribute_changes?->get('old') ?? [];
 
@@ -361,7 +362,7 @@ class ActivityChangeFormatter
             }
         }
 
-        $alias = Auditables::aliasFor($activity->subject_type);
+        $alias = Auditables::aliasFor($activity->subjectClass());
 
         return Str::headline($alias ?? 'record');
     }

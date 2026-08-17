@@ -13,6 +13,11 @@ use Illuminate\Support\Facades\Auth;
  */
 class GetTenantsForUpserts
 {
+    /**
+     * Note the `->value` on `type`: this array shape is handed straight to Inertia and compared
+     * against plain strings by several callers, so the enum is unwrapped here rather than
+     * leaking a TenantType into an array payload.
+     */
     public static function execute(string $permission, Authorizer $authorizer): Collection
     {
         $authorizer->forUser(Auth::user())->checkAllRoleables($permission);
@@ -22,7 +27,7 @@ class GetTenantsForUpserts
                 fn ($tenant) => [
                     'id' => $tenant->id,
                     'shortname' => __($tenant->shortname),
-                    'type' => $tenant->type,
+                    'type' => $tenant->type?->value,
                 ]
             );
         }
@@ -35,7 +40,7 @@ class GetTenantsForUpserts
             fn ($tenant) => [
                 'id' => $tenant->id,
                 'shortname' => __($tenant->shortname),
-                'type' => $tenant->type,
+                'type' => $tenant->type?->value,
             ]
         );
     }

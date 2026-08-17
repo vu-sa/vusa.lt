@@ -88,7 +88,7 @@
         </TransferList>
       </div>
     </FormElement>
-    <FormElement v-if="form.model_type === 'App\\Models\\Duty'">
+    <FormElement v-if="form.model_type === ModelEnum.DUTY">
       <template #title>
         {{ $t('forms.sections.type_duty_roles') }}
       </template>
@@ -103,7 +103,7 @@
         })) ?? []" />
       </div>
     </FormElement>
-    <FormElement v-if="form.model_type === 'App\\Models\\Institution'">
+    <FormElement v-if="form.model_type === ModelEnum.INSTITUTION">
       <template #title>
         {{ $t('forms.sections.institution_settings') }}
       </template>
@@ -136,6 +136,7 @@
 </template>
 
 <script setup lang="ts">
+import { ModelEnum } from '@/Types/enums';
 import { computed, ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -157,7 +158,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/Components/ui/switch';
 import { TransferList } from '@/Components/ui/transfer-list';
 import FileManager from '@/Features/Admin/SharepointFileManager/SharepointFileManager.vue';
-import { modelTypes } from '@/Types/formOptions';
+import { modelTypeLabel, modelTypes } from '@/Types/formOptions';
 
 defineEmits<{
   (event: 'submit:form', form: unknown): void;
@@ -248,12 +249,10 @@ if (props.modelType) {
   form[props.modelType] = props.type[props.modelType]?.map(model => model.id);
 }
 
-const modelDefaults = modelTypes.type.map((type) => {
-  return {
-    value: `App\\Models\\${type}`,
-    label: type,
-  };
-});
+const modelDefaults = modelTypes.type.map(alias => ({
+  value: alias,
+  label: modelTypeLabel(alias),
+}));
 
 const modelOptions = computed(() => {
   return props.allModelsFromModelType?.map((model) => {

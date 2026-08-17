@@ -114,10 +114,10 @@
 </template>
 
 <script setup lang="ts">
+import { useDateLocale } from '@/Composables/useDateLocale';
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { format, parseISO, isPast } from 'date-fns';
-import { lt, enUS } from 'date-fns/locale';
 import { usePage } from '@inertiajs/vue3';
 import {
   Info as InfoIcon,
@@ -173,7 +173,8 @@ defineEmits<{
   'report-no-meeting': [];
 }>();
 
-const getDateLocale = () => usePage().props.app?.locale === 'lt' ? lt : enUS;
+const dateLocale = useDateLocale();
+const getDateLocale = () => dateLocale.value;
 
 const isOverdue = computed(() => {
   if (props.task.is_overdue !== undefined) return props.task.is_overdue;

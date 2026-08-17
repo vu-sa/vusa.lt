@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Api\Admin\AnalyticsContentRequest;
+use App\Http\Requests\Api\Admin\AnalyticsOverviewRequest;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Tenant;
@@ -23,7 +25,7 @@ use Illuminate\Http\Request;
 class AnalyticsApiController extends ApiController
 {
     /** @var array<string, int> Supported periods, in days back from today. */
-    private const array PERIODS = [
+    public const array PERIODS = [
         '7d' => 7,
         '30d' => 30,
         '12m' => 365,
@@ -34,14 +36,11 @@ class AnalyticsApiController extends ApiController
         protected ModelAuthorizer $authorizer,
     ) {}
 
-    public function overview(Request $request): JsonResponse
+    public function overview(AnalyticsOverviewRequest $request): JsonResponse
     {
         $this->requireAuth($request);
 
-        $validated = $request->validate([
-            'tenant_id' => ['required', 'integer', 'exists:tenants,id'],
-            'period' => ['nullable', 'string', 'in:'.implode(',', array_keys(self::PERIODS))],
-        ]);
+        $validated = $request->validated();
 
         $this->authorize('viewAny', Page::class);
 
@@ -98,14 +97,11 @@ class AnalyticsApiController extends ApiController
      * here, so nobody can ask for traffic on an arbitrary URL, and authorization is the
      * record's own `update` policy — the same one that gates the edit page.
      */
-    public function content(Request $request): JsonResponse
+    public function content(AnalyticsContentRequest $request): JsonResponse
     {
         $this->requireAuth($request);
 
-        $validated = $request->validate([
-            'type' => ['required', 'string', 'in:news,page'],
-            'id' => ['required', 'integer'],
-        ]);
+        $validated = $request->validated();
 
         /** @var News|Page $model */
         $model = match ($validated['type']) {

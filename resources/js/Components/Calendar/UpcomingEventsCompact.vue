@@ -92,10 +92,10 @@
 </template>
 
 <script setup lang="ts">
+import { dateLocaleFor } from '@/Composables/useDateLocale';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 import { format, parseISO } from 'date-fns';
-import { lt, enUS } from 'date-fns/locale';
 
 const props = withDefaults(defineProps<{
   events: App.Entities.Calendar[];
@@ -106,7 +106,7 @@ const props = withDefaults(defineProps<{
   maxVisible: 4,
 });
 
-const dateLocale = computed(() => props.locale === 'lt' ? lt : enUS);
+const dateLocale = computed(() => dateLocaleFor(props.locale));
 
 // Filter and sort upcoming events
 const upcomingEvents = computed(() => {

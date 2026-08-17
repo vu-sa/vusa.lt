@@ -8,6 +8,7 @@ use App\Models\StudyProgram;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -466,7 +467,7 @@ test('duty type contacts page with grouping shows grouped sections', function ()
         $type = Type::factory()->create([
             'slug' => 'koordinatoriai',
             'title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators'],
-            'model_type' => Duty::class,
+            'model_type' => MorphMap::alias(Duty::class),
         ]);
     }
 
@@ -524,7 +525,7 @@ test('duty type contacts page handles both grouped and flat duties correctly', f
         $type = Type::factory()->create([
             'slug' => 'koordinatoriai',
             'title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators'],
-            'model_type' => Duty::class,
+            'model_type' => MorphMap::alias(Duty::class),
         ]);
     }
 

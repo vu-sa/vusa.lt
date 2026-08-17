@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\TenantType;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -243,13 +244,15 @@ describe('relationships', function (): void {
             'fullname' => 'Test Full Name',
             'shortname' => 'TFN',
             'alias' => 'test-alias',
-            'type' => 'pagrindinis',
+            'type' => TenantType::Pagrindinis,
         ]);
 
         expect($tenant->fullname)->toBe('Test Full Name')
             ->and($tenant->shortname)->toBe('TFN')
             ->and($tenant->alias)->toBe('test-alias')
-            ->and($tenant->type)->toBe('pagrindinis');
+            // `type` is cast to TenantType, so this asserts the enum rather than the raw column.
+            ->and($tenant->type)->toBe(TenantType::Pagrindinis)
+            ->and($tenant->isMain())->toBeTrue();
     });
 
     test('can retrieve tenant by alias', function (): void {
@@ -262,9 +265,27 @@ describe('relationships', function (): void {
     });
 
     test('tenant types are properly validated', function (): void {
-        $tenant = Tenant::factory()->create(['type' => 'padalinys']);
+        $tenant = Tenant::factory()->create(['type' => TenantType::Padalinys]);
 
-        expect($tenant->type)->toBe('padalinys')
-            ->and(['pagrindinis', 'padalinys'])->toContain($tenant->type);
+        expect($tenant->type)->toBe(TenantType::Padalinys)
+            ->and(TenantType::representational())->toContain($tenant->type)
+            ->and($tenant->isMain())->toBeFalse();
+    });
+
+    test('a string column value still casts to the enum', function (): void {
+        // Rows written before the cast existed (and any raw insert) hold plain strings.
+        $tenant = Tenant::factory()->create(['type' => 'pkp']);
+
+        expect($tenant->fresh()->type)->toBe(TenantType::Pkp);
+    });
+
+    test('representational scope excludes pkp tenants', function (): void {
+        $pkp = Tenant::factory()->create(['type' => TenantType::Pkp]);
+        $padalinys = Tenant::factory()->create(['type' => TenantType::Padalinys]);
+
+        $ids = Tenant::query()->representational()->pluck('id');
+
+        expect($ids)->toContain($padalinys->id)
+            ->not->toContain($pkp->id);
     });
 });

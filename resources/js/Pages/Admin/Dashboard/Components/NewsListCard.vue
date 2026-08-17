@@ -12,8 +12,7 @@
         </CardTitle>
         <a :href="route('newsArchive', {
           subdomain: $page.props.tenant?.subdomain ?? 'www',
-          lang: locale === 'lt' ? 'lt' : 'en',
-          newsString: locale === 'lt' ? 'naujienos' : 'news'
+          lang: locale,
         })" class="text-xs text-primary hover:underline">
           {{ $t('Visos') }} →
         </a>
@@ -22,13 +21,10 @@
 
     <CardContent class="flex-1 relative z-10 pt-0">
       <div class="flex flex-col space-y-1">
-        <a v-for="news in newsList" :key="news.id" :href="route('news', {
-          subdomain: $page.props.tenant?.subdomain
-            ?? 'www',
-          lang: news.lang,
-          newsString: locale === 'lt' ? 'naujiena' : 'news',
-          news: news.permalink
-        })"
+        <a v-for="news in newsList" :key="news.id" :href="localizedRoute('news', {
+          subdomain: $page.props.tenant?.subdomain ?? 'www',
+          news: news.permalink,
+        }, news.lang)"
           class="flex items-center gap-3 py-2 px-2 -mx-2 rounded-md transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-700/50">
           <!-- Image thumbnail -->
           <div class="overflow-hidden rounded-md aspect-4/3 shrink-0 bg-muted" style="width: 70px;">
@@ -54,11 +50,12 @@
 </template>
 
 <script setup lang="ts">
+import { localizedRoute } from '@/Utils/LocalizedRoutes';
+import { dateLocaleFor } from '@/Composables/useDateLocale';
 import { trans as $t } from 'laravel-vue-i18n';
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { format, parseISO } from 'date-fns';
-import { lt, enUS } from 'date-fns/locale';
 import { Newspaper as NewspaperIcon, ChevronRight as ChevronRightIcon } from 'lucide-vue-next';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -70,7 +67,7 @@ const props = defineProps<{
 
 const page = usePage();
 const locale = computed(() => page.props.app.locale);
-const dateLocale = computed(() => locale.value === 'lt' ? lt : enUS);
+const dateLocale = computed(() => dateLocaleFor(locale.value));
 
 // Format date
 const formatDate = (dateStr: string | Date | null) => {

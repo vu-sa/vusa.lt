@@ -3,36 +3,24 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Contracts\SharepointFileableContract;
+use App\Enums\AllowedFileablesEnum;
 use App\Http\Controllers\AdminController;
-use App\Models\Duty;
+use App\Http\Requests\CreateSharepointFolderRequest;
+use App\Http\Requests\StoreSharepointFileRequest;
 use App\Models\FileableFile;
 use App\Models\Institution;
-use App\Models\Meeting;
 use App\Models\SharepointFile;
 use App\Models\Type;
-use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Services\SharepointGraphService;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Microsoft\Graph\Generated\Models\ODataErrors\ODataError;
 
-/**
- * Allowed fileable model types for SharePoint file operations.
- * Only these models can be referenced via the type parameter.
- */
-const ALLOWED_FILEABLE_TYPES = [
-    'Duty' => Duty::class,
-    'Type' => Type::class,
-    'Meeting' => Meeting::class,
-    'Institution' => Institution::class,
-];
-
 class SharepointFileController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
-
     /**
      * Display a listing of the resource.
      */
@@ -55,40 +43,30 @@ class SharepointFileController extends AdminController
      * Store a newly created resource in storage.
      * Now creates FileableFile records with local metadata.
      */
-    public function store(Request $request)
+    public function store(StoreSharepointFileRequest $request)
     {
         $this->handleAuthorization('create', SharepointFile::class);
 
-        $validated = $request->validate([
-            'file' => 'required|array',
-            'file.uploadValue' => 'required|file',
-            'file.typeValue' => 'required|string',
-            'file.nameValue' => 'required|string',
-            'file.datetimeValue' => 'required|numeric',
-            'file.description0Value' => 'nullable|string',
-            'fileable' => 'required|array',
-            'fileable.id' => 'required',
-            'fileable.type' => 'required|string',
-        ]);
+        $validated = $request->validated();
 
         $fileableType = $validated['fileable']['type'];
 
         // Only allow whitelisted fileable types
-        if (! isset(ALLOWED_FILEABLE_TYPES[$fileableType])) {
-            return back()->with('error', 'Failas negali būti priskirtas objektui.');
+        if (AllowedFileablesEnum::classFor($fileableType) === null) {
+            return back()->with('error', __('messages.sharepoint.not_fileable'));
         }
 
-        $fileable_class = ALLOWED_FILEABLE_TYPES[$fileableType];
+        $fileable_class = AllowedFileablesEnum::classFor($fileableType);
 
         // check if fileable exists
         $fileable = $fileable_class::find($validated['fileable']['id']);
         if (! $fileable) {
-            return back()->with('error', 'Susijęs objektas neegzistuoja.');
+            return back()->with('error', __('messages.sharepoint.fileable_missing'));
         }
 
         // check if fileable is allowed to have files (new method)
         if (! method_exists($fileable, 'fileableFiles')) {
-            return back()->with('error', 'Susijęs objektas negali turėti failų.');
+            return back()->with('error', __('messages.sharepoint.fileable_not_allowed'));
         }
 
         $sharepointFileService = new SharepointFileService;
@@ -115,7 +93,7 @@ class SharepointFileController extends AdminController
             $listItemProperties
         );
 
-        return back()->with('success', 'Failas sėkmingai įkeltas į Sharepoint!');
+        return back()->with('success', __('messages.sharepoint.uploaded'));
     }
 
     /**
@@ -133,7 +111,7 @@ class SharepointFileController extends AdminController
         // Also delete any associated FileableFile records
         FileableFile::where('sharepoint_id', $sharepointFile->sharepoint_id)->delete();
 
-        return back()->with('info', 'Failas ištrintas.');
+        return back()->with('info', __('messages.sharepoint.file_deleted'));
     }
 
     /**
@@ -151,12 +129,12 @@ class SharepointFileController extends AdminController
             // If SharePoint deletion fails, mark as externally deleted
             $fileableFile->markAsDeletedExternally();
 
-            return back()->with('warning', 'Failas pažymėtas kaip ištrintas, bet SharePoint operacija nepavyko.');
+            return back()->with('warning', __('messages.sharepoint.deleted_locally_only'));
         }
 
         $fileableFile->delete();
 
-        return back()->with('info', 'Failas ištrintas.');
+        return back()->with('info', __('messages.sharepoint.file_deleted'));
     }
 
     /**
@@ -165,11 +143,11 @@ class SharepointFileController extends AdminController
      */
     public function getFileableFiles(Request $request, string $type, string $id)
     {
-        if (! isset(ALLOWED_FILEABLE_TYPES[$type])) {
+        if (AllowedFileablesEnum::classFor($type) === null) {
             return response()->json(['error' => 'Invalid fileable type'], 400);
         }
 
-        $fileable_class = ALLOWED_FILEABLE_TYPES[$type];
+        $fileable_class = AllowedFileablesEnum::classFor($type);
 
         /** @var Model|null $fileable */
         $fileable = $fileable_class::find($id);
@@ -198,11 +176,11 @@ class SharepointFileController extends AdminController
      */
     public function getTypeInheritedFiles(Request $request, string $type, string $id)
     {
-        if (! isset(ALLOWED_FILEABLE_TYPES[$type])) {
+        if (AllowedFileablesEnum::classFor($type) === null) {
             return response()->json(['error' => 'Invalid fileable type'], 400);
         }
 
-        $fileable_class = ALLOWED_FILEABLE_TYPES[$type];
+        $fileable_class = AllowedFileablesEnum::classFor($type);
 
         $fileable = $fileable_class::find($id);
 
@@ -229,7 +207,7 @@ class SharepointFileController extends AdminController
         // Get FileableFile records for all these types
         $typeIds = $types->pluck('id');
 
-        $files = FileableFile::where('fileable_type', Type::class)
+        $files = FileableFile::where('fileable_type', MorphMap::alias(Type::class))
             ->whereIn('fileable_id', $typeIds)
             ->available()
             ->orderBy('file_date', 'desc')
@@ -271,14 +249,11 @@ class SharepointFileController extends AdminController
     /**
      * Create a new folder in SharePoint.
      */
-    public function createFolder(Request $request)
+    public function createFolder(CreateSharepointFolderRequest $request)
     {
         $this->handleAuthorization('create', SharepointFile::class);
 
-        $validated = $request->validate([
-            'path' => 'required|string',
-            'name' => 'required|string|max:255',
-        ]);
+        $validated = $request->validated();
 
         $sharepointService = new SharepointGraphService(driveId: config('filesystems.sharepoint.vusa_drive_id'));
 
@@ -286,7 +261,7 @@ class SharepointFileController extends AdminController
             $folderPath = rtrim($validated['path'], '/').'/'.$validated['name'];
             $sharepointService->createFolder($folderPath);
 
-            return response()->json(['success' => true, 'message' => 'Aplankas sukurtas sėkmingai']);
+            return response()->json(['success' => true, 'message' => $this->entityMessage('created', 'folder')]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Nepavyko sukurti aplanko: '.$e->getMessage()], 500);
         }
@@ -298,19 +273,28 @@ class SharepointFileController extends AdminController
      */
     public function getTypesDriveItems(Request $request, string $type, string $id)
     {
-        if (! isset(ALLOWED_FILEABLE_TYPES[$type])) {
-            return back()->with('info', 'Neteisinga užklausa. Praneškite administratoriui');
+        if (AllowedFileablesEnum::classFor($type) === null) {
+            return back()->with('info', __('messages.sharepoint.invalid_request'));
         }
 
-        $fileable_class = ALLOWED_FILEABLE_TYPES[$type];
+        $fileable_class = AllowedFileablesEnum::classFor($type);
 
         $fileable = $fileable_class::find($id);
 
         if (! $fileable) {
-            return back()->with('info', 'Neteisinga užklausa. Praneškite administratoriui');
+            return back()->with('info', __('messages.sharepoint.invalid_request'));
         }
 
-        $types = $fileable->types->map(fn ($type) => $type->getParentsAndSelf())->flatten()->unique('id')->values();
+        $this->authorize('view', $fileable);
+
+        // Only Duty and Institution carry a types() relation; Meeting and Type are equally
+        // valid fileables but have none, and this used to fatal on them. Mirrors the guard in
+        // getTypeInheritedFiles().
+        if (! method_exists($fileable, 'types')) {
+            return response()->json([]);
+        }
+
+        $types = $fileable->types()->get()->map(fn ($type) => $type->getParentsAndSelf())->flatten()->unique('id')->values();
 
         $sharepointService = new SharepointGraphService(driveId: config('filesystems.sharepoint.vusa_drive_id'));
 
@@ -328,6 +312,10 @@ class SharepointFileController extends AdminController
 
     public function getDriveItemPublicLink(Request $request, string $driveItemId)
     {
+        // A drive item id is an opaque Graph identifier with no local model behind it, so this
+        // is gated on the SharepointFile capability rather than on an object — same as createFolder().
+        $this->handleAuthorization('viewAny', SharepointFile::class);
+
         $sharepointService = new SharepointGraphService(driveId: config('filesystems.sharepoint.vusa_drive_id'));
 
         $permission = $sharepointService->getDriveItemPublicLink($driveItemId);
@@ -343,6 +331,11 @@ class SharepointFileController extends AdminController
 
     public function createPublicPermission(Request $request, string $driveItemId)
     {
+        // Mints an anonymous, non-expiring public link, so it must be gated at least as
+        // tightly as creating a SharePoint file. See getDriveItemPublicLink() on why this is
+        // a capability check rather than an object check.
+        $this->handleAuthorization('create', SharepointFile::class);
+
         $sharepointService = new SharepointGraphService(driveId: config('filesystems.sharepoint.vusa_drive_id'));
 
         try {

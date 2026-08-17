@@ -128,7 +128,7 @@
               <div class="flex items-center gap-2">
                 <SimpleLocaleButton v-model:locale="locale" />
                 <span class="text-sm text-muted-foreground">
-                  {{ locale === 'lt' ? $t('Rašote lietuviškai') : $t('Writing in English') }}
+                  {{ locale === 'lt' ? $t('Rašote lietuviškai') : $t('Rašote angliškai') }}
                 </span>
               </div>
               <TiptapEditor v-if="locale === 'lt'" v-model="form.description.lt" preset="full" :html="true" />

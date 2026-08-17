@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
+use App\Support\MorphMap;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -146,20 +147,20 @@ class MergeDuties
     ): int {
         $moved = 0;
 
-        $rows = DB::table($table)->where($modelTypeColumn, Duty::class)->whereIn($modelIdColumn, $sourceIds)->get();
+        $rows = DB::table($table)->where($modelTypeColumn, MorphMap::alias(Duty::class))->whereIn($modelIdColumn, $sourceIds)->get();
 
         foreach ($rows as $row) {
             $otherId = $row->{$otherIdColumn};
 
             $alreadyOnKept = DB::table($table)
-                ->where($modelTypeColumn, Duty::class)
+                ->where($modelTypeColumn, MorphMap::alias(Duty::class))
                 ->where($modelIdColumn, $kept->id)
                 ->where($otherIdColumn, $otherId)
                 ->exists();
 
             if (! $alreadyOnKept) {
                 DB::table($table)
-                    ->where($modelTypeColumn, Duty::class)
+                    ->where($modelTypeColumn, MorphMap::alias(Duty::class))
                     ->where($modelIdColumn, $row->{$modelIdColumn})
                     ->where($otherIdColumn, $otherId)
                     ->update([$modelIdColumn => $kept->id]);
@@ -169,7 +170,7 @@ class MergeDuties
 
         // Whatever still points at a source id at this point is an exact
         // duplicate of something the kept duty already has — spent.
-        DB::table($table)->where($modelTypeColumn, Duty::class)->whereIn($modelIdColumn, $sourceIds)->delete();
+        DB::table($table)->where($modelTypeColumn, MorphMap::alias(Duty::class))->whereIn($modelIdColumn, $sourceIds)->delete();
 
         return $moved;
     }

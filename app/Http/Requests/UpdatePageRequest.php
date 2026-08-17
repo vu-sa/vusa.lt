@@ -2,12 +2,15 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\LocaleEnum;
+use App\Enums\PageLayoutEnum;
 use App\Http\Requests\Concerns\ValidatesContentParts;
 use App\Rules\SoftDeleteRules;
 use App\Rules\UniqueAmongTrashed;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Enum;
 
 class UpdatePageRequest extends FormRequest
 {
@@ -40,14 +43,14 @@ class UpdatePageRequest extends FormRequest
         return [
             ...$this->contentPartRules(),
             'title' => 'required|string|max:255',
-            'lang' => 'required|string|in:lt,en',
+            'lang' => ['required', new Enum(LocaleEnum::class)],
             'permalink' => ['sometimes', 'required', 'string', 'max:255', UniqueAmongTrashed::of('pages')->ignore($this->page->id)->where('tenant_id', $this->getTargetTenantId())],
             'category_id' => ['nullable', SoftDeleteRules::existsLive('categories')],
             // `different:id` was inert — the payload has no `id` field — so a page
             // could be paired with itself. Compare against the route model instead.
             'other_lang_id' => ['nullable', SoftDeleteRules::existsLive('pages'), Rule::notIn([$this->page->id])],
             'is_active' => 'required|boolean',
-            'layout' => 'nullable|string|in:default,wide,focused',
+            'layout' => ['nullable', new Enum(PageLayoutEnum::class)],
             'show_table_of_contents' => ['boolean'],
             'show_title' => ['boolean'],
             'show_breadcrumbs' => ['boolean'],

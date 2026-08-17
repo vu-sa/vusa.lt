@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
@@ -61,13 +62,16 @@ class PublicNews extends News
     use Searchable;
 
     /**
-     * Get the class name for polymorphic relations.
-     * This ensures activity logging resolves back to the parent News class.
+     * Share the parent's morph alias.
+     *
+     * A morph map is keyed by alias, so it cannot hold two classes under 'news'. Without this
+     * override an activity entry or comment recorded against the public mirror would be
+     * stored under its own alias and never show up on the News record admins edit.
      */
     #[\Override]
     public function getMorphClass(): string
     {
-        return News::class;
+        return MorphMap::alias(MorphMap::ALIASED_TO_PARENT[static::class]);
     }
 
     /**

@@ -3,7 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
+use App\Enums\TenantType;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\IndexQuickLinkRequest;
+use App\Http\Requests\StoreQuickLinkRequest;
+use App\Http\Requests\UpdateQuickLinkOrderRequest;
+use App\Http\Requests\UpdateQuickLinkRequest;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Category;
@@ -11,7 +16,6 @@ use App\Models\QuickLink;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class QuickLinkController extends AdminController
@@ -23,12 +27,12 @@ class QuickLinkController extends AdminController
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(IndexQuickLinkRequest $request)
     {
         $this->handleAuthorization('viewAny', QuickLink::class);
 
         $tenants = GetTenantsForUpserts::execute('quickLinks.read.padalinys', $this->authorizer)
-            ->filter(fn ($tenant) => in_array($tenant['type'], ['pagrindinis', 'padalinys']))
+            ->filter(fn ($tenant) => in_array($tenant['type'], TenantType::representationalValues(), true))
             ->values();
 
         $tenantId = $request->input('tenant', $tenants->first()['id'] ?? null);
@@ -36,7 +40,7 @@ class QuickLinkController extends AdminController
 
         $tenant = $tenantId ? Tenant::find($tenantId) : null;
 
-        $showDeleted = $request->boolean('showDeleted', false);
+        $showDeleted = $request->getShowDeleted();
         $deletedCount = 0;
         $quickLinks = [];
 
@@ -80,33 +84,24 @@ class QuickLinkController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreQuickLinkRequest $request)
     {
         $this->handleAuthorization('create', QuickLink::class);
 
-        $request->validate([
-            'text' => 'required',
-            'link' => 'required',
-        ]);
-
         if (request()->user()->isSuperAdmin()) {
-            $tenant_id = Tenant::where('type', 'pagrindinis')->first()?->id;
+            $tenant_id = Tenant::main()?->id;
         } else {
             $tenant_id = $this->authorizer->permissableDuties->first()?->tenants->first()?->id;
         }
 
         DB::transaction(function () use ($request, $tenant_id): void {
             $quickLink = new QuickLink;
-            $quickLink->text = $request->text;
-            $quickLink->link = $request->link;
-            $quickLink->lang = $request->lang;
-            $quickLink->icon = $request->icon;
-            $quickLink->is_important = $request->is_important;
+            $quickLink->fill($request->safe()->only('text', 'link', 'lang', 'icon', 'is_important'));
             $quickLink->tenant()->associate($tenant_id);
             $quickLink->save();
         });
 
-        return redirect()->route('quickLinks.index')->with('success', 'Sėkmingai sukurta greitoji nuoroda!');
+        return redirect()->route('quickLinks.index')->with('success', $this->entityMessage('created', 'quickLink'));
     }
 
     /**
@@ -146,20 +141,15 @@ class QuickLinkController extends AdminController
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, QuickLink $quickLink)
+    public function update(UpdateQuickLinkRequest $request, QuickLink $quickLink)
     {
         $this->handleAuthorization('update', $quickLink);
 
-        $request->validate([
-            'text' => 'required',
-            'link' => 'required',
-        ]);
-
         DB::transaction(function () use ($request, $quickLink): void {
-            $quickLink->update($request->only('text', 'link', 'lang', 'icon', 'is_important'));
+            $quickLink->update($request->safe()->only('text', 'link', 'lang', 'icon', 'is_important'));
         });
 
-        return back()->with('success', 'Sėkmingai atnaujinta greitoji nuoroda!');
+        return back()->with('success', $this->entityMessage('updated', 'quickLink'));
     }
 
     /**
@@ -171,15 +161,11 @@ class QuickLinkController extends AdminController
 
         $quickLink->delete();
 
-        return redirect()->route('quickLinks.index')->with('info', 'Sėkmingai ištrinta greitoji nuoroda!');
+        return redirect()->route('quickLinks.index')->with('info', $this->entityMessage('deleted', 'quickLink'));
     }
 
-    public function updateOrder(Request $request)
+    public function updateOrder(UpdateQuickLinkOrderRequest $request)
     {
-        $request->validate([
-            'orderList' => 'required|array',
-        ]);
-
         foreach ($request->orderList as $idAndOrder) {
             $this->handleAuthorization('update', [QuickLink::class, QuickLink::find($idAndOrder['id']), $this->authorizer]);
         }
@@ -198,7 +184,7 @@ class QuickLinkController extends AdminController
         return redirect()->route('quickLinks.index', [
             'tenant' => $tenantId,
             'lang' => $lang,
-        ])->with('success', 'Sėkmingai atnaujinta greitųjų nuorodų tvarka!');
+        ])->with('success', __('messages.quick_link.order_updated'));
     }
 
     /**

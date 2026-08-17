@@ -142,7 +142,7 @@
     </template>
 
     <template #tasks>
-      <TaskManager :taskable="{ id: meeting.id, type: 'App\\Models\\Meeting' }" :tasks="meeting.tasks" />
+      <TaskManager :taskable="{ id: meeting.id, type: ModelEnum.MEETING }" :tasks="meeting.tasks" />
     </template>
 
     <!-- Modals -->
@@ -310,6 +310,7 @@
 </template>
 
 <script setup lang="tsx">
+import { ModelEnum } from '@/Types/enums';
 import { ref, computed, watch, onMounted } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';

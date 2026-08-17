@@ -40,7 +40,7 @@ class CommentApiController extends ApiController
 
         $replyLoad = ['user:id,name,profile_photo_path', 'reactions.user:id,name'];
 
-        $query = Comment::forCommentable($commentable::class, $commentable->getKey())
+        $query = Comment::forCommentable($commentable->getMorphClass(), $commentable->getKey())
             ->roots()
             ->with([
                 'reactions.user:id,name',
@@ -129,7 +129,7 @@ class CommentApiController extends ApiController
         $this->broadcastForComment($comment, 'deleted', ['id' => $comment->id]);
         $comment->delete();
 
-        return $this->jsonSuccess(['id' => $comment->id], 'Komentaras ištrintas.');
+        return $this->jsonSuccess(['id' => $comment->id], $this->entityMessage('deleted', 'comment'));
     }
 
     public function resolve(Request $request, Comment $comment): JsonResponse

@@ -5,6 +5,7 @@ namespace App\Actions;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
+use App\Support\MorphMap;
 use Illuminate\Support\Collection;
 
 /**
@@ -28,7 +29,7 @@ class BackfillExOfficioTargetDuty
 
         // Load active (source) Dutiables for this duty — root sources only.
         $sourceRows = Dutiable::where('duty_id', $sourceDuty->id)
-            ->where('dutiable_type', User::class)
+            ->where('dutiable_type', MorphMap::alias(User::class))
             ->whereNull('via_dutiable_id')
             ->whereNull('end_date')
             ->get();
@@ -66,7 +67,7 @@ class BackfillExOfficioTargetDuty
 
         $existing = Dutiable::where('via_dutiable_id', $source->id)
             ->where('duty_id', $targetDutyId)
-            ->where('dutiable_type', User::class)
+            ->where('dutiable_type', MorphMap::alias(User::class))
             ->where('dutiable_id', $userId)
             ->first();
 
@@ -76,7 +77,7 @@ class BackfillExOfficioTargetDuty
 
         // Adopt an existing active manual row.
         $manual = Dutiable::where('duty_id', $targetDutyId)
-            ->where('dutiable_type', User::class)
+            ->where('dutiable_type', MorphMap::alias(User::class))
             ->where('dutiable_id', $userId)
             ->whereNull('via_dutiable_id')
             ->whereNull('end_date')
@@ -95,7 +96,7 @@ class BackfillExOfficioTargetDuty
         Dutiable::create([
             'duty_id' => $targetDutyId,
             'dutiable_id' => $userId,
-            'dutiable_type' => User::class,
+            'dutiable_type' => MorphMap::alias(User::class),
             'via_dutiable_id' => $source->id,
             'tenant_id' => $resolvedTenantId,
             'start_date' => $source->start_date,

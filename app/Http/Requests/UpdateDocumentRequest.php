@@ -12,7 +12,7 @@ class UpdateDocumentRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()->can('create', $this->document);
+        return $this->user()->can('update', $this->document);
     }
 
     /**

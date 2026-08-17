@@ -167,8 +167,9 @@
 </template>
 
 <script setup lang="ts">
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { computed } from 'vue';
-import { useForm, usePage } from '@inertiajs/vue3';
+import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { PlusIcon, Trash2Icon } from 'lucide-vue-next';
 
@@ -244,10 +245,7 @@ const savedCourses = computed(() =>
   form.courses.filter(c => c.id),
 );
 
-const getCourseName = (course: CourseForm) => {
-  const locale = usePage().props.app.locale as 'lt' | 'en';
-  return course.name[locale] || course.name.lt || course.name.en || '—';
-};
+const getCourseName = (course: CourseForm) => getTranslatedValue(course.name, undefined, '—');
 
 const addCourse = () => {
   form.courses.push({

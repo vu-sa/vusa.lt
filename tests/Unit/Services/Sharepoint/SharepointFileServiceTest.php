@@ -8,6 +8,7 @@ use App\Models\News;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Services\ResourceServices\SharepointFileService;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -61,7 +62,7 @@ describe('SharepointFileService', function (): void {
         test('generates correct path for Type model', function (): void {
             $type = Type::factory()->create([
                 'title' => 'Test Type',
-                'model_type' => News::class,
+                'model_type' => MorphMap::alias(News::class),
             ]);
 
             $path = SharepointFileService::pathForFileableDriveItem($type);
@@ -161,7 +162,7 @@ describe('SharepointFileService', function (): void {
         test('uses SharepointFolderEnum constants', function (): void {
             $type = Type::factory()->create([
                 'title' => 'Test Type',
-                'model_type' => News::class,
+                'model_type' => MorphMap::alias(News::class),
             ]);
 
             $path = SharepointFileService::pathForFileableDriveItem($type);

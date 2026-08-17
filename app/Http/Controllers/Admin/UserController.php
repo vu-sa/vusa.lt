@@ -75,7 +75,7 @@ class UserController extends AdminController
         // Trash view only: lets the table say why permanent deletion is refused.
         $query = $this->withForceDeleteBlockers($query, $request);
 
-        $users = $query->paginate($request->input('per_page', 20))
+        $users = $query->paginate($request->getPerPage())
             ->withQueryString();
 
         $this->appendForceDeleteBlockedReason($users->getCollection(), $request);
@@ -98,7 +98,7 @@ class UserController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $request->getSorting(),
-            'showDeleted' => $request->boolean('showDeleted', false),
+            'showDeleted' => $request->getShowDeleted(),
             'deletedCount' => $deletedCount,
         ]);
     }
@@ -146,7 +146,7 @@ class UserController extends AdminController
             }
         });
 
-        return $this->redirectResponse('users.index')->with('success', 'Kontaktas sėkmingai sukurtas!');
+        return $this->redirectResponse('users.index')->with('success', $this->entityMessage('created', 'user'));
     }
 
     /**
@@ -196,9 +196,9 @@ class UserController extends AdminController
                 'taskable' => $taskable ? [
                     'id' => $taskable->getKey(),
                     'name' => $taskable->getAttribute('title') ?? $taskable->getAttribute('name') ?? null,
-                    'type' => class_basename($task->taskable_type),
+                    'type' => $task->taskable_type,
                 ] : null,
-                'taskable_type' => class_basename($task->taskable_type ?? ''),
+                'taskable_type' => $task->taskable_type ?? '',
                 'taskable_id' => $task->taskable_id,
                 'users' => $task->users->map(fn (User $u) => [
                     'id' => $u->id,
@@ -269,7 +269,7 @@ class UserController extends AdminController
             );
 
             DB::transaction(function () use ($request, $user, $actorIsSuperAdmin, $fields): void {
-                $user->update($request->only($fields));
+                $user->update($request->safe()->only($fields));
 
                 // only a super admin may change roles
                 if ($actorIsSuperAdmin) {
@@ -287,7 +287,7 @@ class UserController extends AdminController
             return $warning;
         }
 
-        return back()->with('success', 'Kontaktas sėkmingai atnaujintas!');
+        return back()->with('success', $this->entityMessage('updated', 'user'));
     }
 
     /**
@@ -303,7 +303,7 @@ class UserController extends AdminController
 
         $user->delete();
 
-        return $this->redirectResponse('users.index')->with('info', 'Kontaktas sėkmingai ištrintas!');
+        return $this->redirectResponse('users.index')->with('info', $this->entityMessage('deleted', 'user'));
     }
 
     /**
@@ -337,7 +337,7 @@ class UserController extends AdminController
 
         MergeUsers::execute($keptUser, $mergedUser);
 
-        return back()->with('success', 'Kontaktai sėkmingai sujungti!');
+        return back()->with('success', __('messages.user.merged'));
     }
 
     /**
@@ -345,7 +345,7 @@ class UserController extends AdminController
      */
     public function restore(User $user): RedirectResponse
     {
-        return $this->restoreModel($user, 'Kontaktas sėkmingai atkurtas!');
+        return $this->restoreModel($user, $this->entityMessage('restored', 'user'));
     }
 
     /**
@@ -363,7 +363,7 @@ class UserController extends AdminController
         // making them unreachable.
         return $this->forceDeleteModel(
             $user,
-            'Kontaktas sėkmingai ištrintas!',
+            $this->entityMessage('deleted', 'user'),
             function () use ($user): void {
                 $user->duties()->detach();
             },
@@ -378,7 +378,7 @@ class UserController extends AdminController
         $password = GenerateUserPassword::execute($user);
 
         return back()->with('data', $password)
-            ->with('success', 'Slaptažodis sėkmingai sukurtas!');
+            ->with('success', __('messages.user.password_created'));
     }
 
     /**
@@ -388,6 +388,6 @@ class UserController extends AdminController
     {
         DeleteUserPassword::execute($user);
 
-        return back()->with('success', 'Slaptažodis sėkmingai ištrintas!');
+        return back()->with('success', __('messages.user.password_deleted'));
     }
 }

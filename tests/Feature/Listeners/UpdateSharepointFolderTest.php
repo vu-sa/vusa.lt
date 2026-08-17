@@ -6,6 +6,7 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Tenant;
 use App\Models\Type;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 
@@ -125,7 +126,7 @@ describe('Type SharePoint folder renaming', function (): void {
         // Create type first (without faking events for creation)
         $type = Type::factory()->create([
             'title' => ['lt' => 'Originalus Pavadinimas', 'en' => 'Original Title'],
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
         ]);
 
         // Now fake events for the update
@@ -141,7 +142,7 @@ describe('Type SharePoint folder renaming', function (): void {
         // Create type first (without faking events for creation)
         $type = Type::factory()->create([
             'title' => ['lt' => 'Originalus Pavadinimas', 'en' => 'Original Title'],
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
         ]);
 
         // Now fake events for the update
@@ -157,7 +158,7 @@ describe('Type SharePoint folder renaming', function (): void {
     test('listener skips when Type old and new titles are the same', function (): void {
         $type = Type::factory()->create([
             'title' => ['lt' => 'Same Title', 'en' => 'Same Title EN'],
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
         ]);
 
         // Set the same Lithuanian title (which is used for folder names)

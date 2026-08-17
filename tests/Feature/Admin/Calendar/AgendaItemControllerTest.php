@@ -300,3 +300,44 @@ describe('agenda items controller', function (): void {
         $response->assertStatus(403);
     });
 });
+
+describe('reorder', function (): void {
+    test('admin can reorder agenda items of their own meeting', function (): void {
+        $first = AgendaItem::factory()->create(['meeting_id' => $this->meeting->id, 'order' => 1]);
+        $second = AgendaItem::factory()->create(['meeting_id' => $this->meeting->id, 'order' => 2]);
+
+        asUser($this->admin)
+            ->post(route('agendaItems.reorder'), [
+                'meeting_id' => $this->meeting->id,
+                'agenda_items' => [
+                    ['id' => $first->id, 'order' => 2],
+                    ['id' => $second->id, 'order' => 1],
+                ],
+            ])
+            ->assertStatus(302)
+            ->assertSessionHas('success');
+
+        expect($first->refresh()->order)->toEqual(2)
+            ->and($second->refresh()->order)->toEqual(1);
+    });
+
+    test('unauthorized user cannot reorder another meeting\'s agenda items', function (): void {
+        $first = AgendaItem::factory()->create(['meeting_id' => $this->meeting->id, 'order' => 1]);
+        $second = AgendaItem::factory()->create(['meeting_id' => $this->meeting->id, 'order' => 2]);
+
+        $outsider = makeUser(Tenant::query()->where('id', '!=', $this->tenant->id)->first() ?? $this->tenant);
+
+        asUser($outsider)
+            ->post(route('agendaItems.reorder'), [
+                'meeting_id' => $this->meeting->id,
+                'agenda_items' => [
+                    ['id' => $first->id, 'order' => 2],
+                    ['id' => $second->id, 'order' => 1],
+                ],
+            ])
+            ->assertStatus(403);
+
+        expect($first->refresh()->order)->toEqual(1)
+            ->and($second->refresh()->order)->toEqual(2);
+    });
+});

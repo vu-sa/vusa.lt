@@ -14,4 +14,15 @@ return [
         'steps_taken' => 'What has already been done: conversations, letters, meetings and their outcomes.',
         'solution' => 'The final solution to the problem. May be left empty and filled in later.',
     ],
+    'validation' => [
+        'title_required' => 'The problem title must be provided in at least one language.',
+        'description_required' => 'The problem description must be provided in at least one language.',
+        'tenant_required' => 'The tenant is required.',
+        'tenant_exists' => 'The selected tenant is invalid.',
+        'occurred_at_required' => 'The occurred date is required.',
+        'resolved_at_after' => 'The resolved date must be after or equal to the occurred date.',
+        'status_in' => 'The selected status is invalid.',
+        'categories_exist' => 'One or more selected categories are invalid.',
+        'institutions_exist' => 'One or more selected institutions are invalid.',
+    ],
 ];

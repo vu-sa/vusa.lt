@@ -6,6 +6,7 @@ use App\Helpers\ContentHelper;
 use App\Http\Controllers\PublicController;
 use App\Models\News;
 use App\Models\Tag;
+use App\Support\LocalizedRouteSlugs;
 use Inertia\Inertia;
 
 class NewsController extends PublicController
@@ -22,14 +23,13 @@ class NewsController extends PublicController
 
         $other_lang_page = $news->other_language_news;
 
-        Inertia::share('otherLangURL', $other_lang_page ? route(
+        Inertia::share('otherLangURL', $other_lang_page ? LocalizedRouteSlugs::route(
             'news',
             [
                 'news' => $other_lang_page->permalink,
-                'lang' => $other_lang_page->lang,
-                'newsString' => $other_lang_page->lang === 'lt' ? 'naujiena' : 'news',
                 'subdomain' => $this->subdomain,
-            ]
+            ],
+            $other_lang_page->lang
         ) : null);
 
         // Get description for SEO, prioritizing 'short' field over tiptap content
@@ -58,12 +58,10 @@ class NewsController extends PublicController
                 'title' => $article->title,
                 'permalink' => $article->permalink,
                 'publish_time' => $article->publish_time,
-                'url' => route('news', [
+                'url' => LocalizedRouteSlugs::route('news', [
                     'subdomain' => $this->subdomain,
-                    'lang' => $article->lang,
-                    'newsString' => $article->lang === 'lt' ? 'naujiena' : 'news',
                     'news' => $article->permalink,
-                ]),
+                ], $article->lang),
             ]);
 
         // Generate breadcrumb schema
@@ -74,20 +72,14 @@ class NewsController extends PublicController
             ],
             [
                 'name' => $lang === 'lt' ? 'Naujienos' : 'News',
-                'url' => route('newsArchive', [
-                    'subdomain' => $this->subdomain,
-                    'lang' => $lang,
-                    'newsString' => $lang === 'lt' ? 'naujienos' : 'news',
-                ]),
+                'url' => LocalizedRouteSlugs::route('newsArchive', ['subdomain' => $this->subdomain], $lang),
             ],
             [
                 'name' => $news->title,
-                'url' => route('news', [
+                'url' => LocalizedRouteSlugs::route('news', [
                     'subdomain' => $this->subdomain,
-                    'lang' => $lang,
-                    'newsString' => $lang === 'lt' ? 'naujiena' : 'news',
                     'news' => $news->permalink,
-                ]),
+                ], $lang),
             ],
         ];
 
@@ -129,7 +121,7 @@ class NewsController extends PublicController
         $this->getBanners();
         $this->getTenantLinks();
 
-        Inertia::share('otherLangURL', route('newsArchive', ['lang' => $this->getOtherLang(), 'subdomain' => $this->subdomain, 'newsString' => app()->getLocale() === 'lt' ? 'news' : 'naujienos']));
+        Inertia::share('otherLangURL', LocalizedRouteSlugs::route('newsArchive', ['subdomain' => $this->subdomain], $this->getOtherLang()));
 
         $query = News::where('tenant_id', $this->tenant->id)
             ->where('lang', app()->getLocale())
@@ -192,11 +184,7 @@ class NewsController extends PublicController
             ],
             [
                 'name' => $locale === 'lt' ? 'Naujienos' : 'News',
-                'url' => route('newsArchive', [
-                    'subdomain' => $this->subdomain,
-                    'lang' => $locale,
-                    'newsString' => $locale === 'lt' ? 'naujienos' : 'news',
-                ]),
+                'url' => LocalizedRouteSlugs::route('newsArchive', ['subdomain' => $this->subdomain], $locale),
             ],
         ];
 
@@ -204,12 +192,10 @@ class NewsController extends PublicController
         if ($currentTag) {
             $breadcrumbs[] = [
                 'name' => $currentTag->name,
-                'url' => route('newsArchive', [
+                'url' => LocalizedRouteSlugs::route('newsArchive', [
                     'subdomain' => $this->subdomain,
-                    'lang' => $locale,
-                    'newsString' => $locale === 'lt' ? 'naujienos' : 'news',
                     'tag' => $currentTag->alias,
-                ]),
+                ], $locale),
             ];
         }
 

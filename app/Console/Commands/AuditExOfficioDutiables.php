@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
+use App\Support\MorphMap;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -105,7 +106,7 @@ class AuditExOfficioDutiables extends Command
         $query = DB::table('ex_officio_duties as eo')
             ->join('dutiables as t', function ($join): void {
                 $join->on('t.duty_id', '=', 'eo.target_duty_id')
-                    ->where('t.dutiable_type', '=', User::class)
+                    ->where('t.dutiable_type', '=', MorphMap::alias(User::class))
                     ->whereNull('t.via_dutiable_id');
             })
             ->join('users as u', 'u.id', '=', 't.dutiable_id')
@@ -121,7 +122,7 @@ class AuditExOfficioDutiables extends Command
                     ->from('dutiables as s')
                     ->whereColumn('s.duty_id', 'eo.source_duty_id')
                     ->whereColumn('s.dutiable_id', 't.dutiable_id')
-                    ->where('s.dutiable_type', '=', User::class)
+                    ->where('s.dutiable_type', '=', MorphMap::alias(User::class))
                     ->where(fn ($q) => $q->whereNull('s.end_date')->orWhere('s.end_date', '>=', $today));
             })
             ->select([

@@ -4,46 +4,40 @@ namespace App\Http\Controllers\Admin;
 
 use App\Contracts\Approvable;
 use App\Enums\ApprovalDecision;
-use App\Enums\ModelEnum;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Concerns\ApiResponses;
+use App\Http\Requests\Approvals\ApprovalHistoryRequest;
+use App\Http\Requests\Approvals\BulkStoreApprovalRequest;
+use App\Http\Requests\Approvals\ResolveApprovalsRequest;
+use App\Http\Requests\Approvals\StoreApprovalRequest;
 use App\Models\Approval;
-use App\Models\Pivots\ReservationResource;
 use App\Models\Traits\HasApprovals;
 use App\Services\ApprovalService;
-use App\Services\ModelAuthorizer as Authorizer;
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rules\Enum;
+use App\Support\MorphMap;
 
 class ApprovalController extends AdminController
 {
     use ApiResponses;
 
-    public function __construct(
-        public Authorizer $authorizer,
-        protected ApprovalService $approvalService
-    ) {}
+    public function __construct(protected ApprovalService $approvalService) {}
 
     /**
      * Store a new approval decision.
      */
-    public function store(Request $request)
+    public function store(StoreApprovalRequest $request)
     {
-        $validated = $request->validate([
-            'approvable_type' => ['required', new Enum(ModelEnum::class)],
-            'approvable_id' => 'required|string',
-            'decision' => 'required|string|in:approved,rejected,cancelled',
-            'notes' => 'nullable|string|max:1000',
-            'step' => 'nullable|integer|min:1',
-            'quantity' => 'nullable|integer|min:1',
-        ]);
+        $validated = $request->validated();
 
         $approvable = $this->resolveApprovable($validated['approvable_type'], $validated['approvable_id']);
 
         if (! $approvable) {
             return back()->with('error', __('Modelis nerastas.'));
         }
+
+        // ApprovalService::approve() has the final say via canBeApprovedBy(), but that is a
+        // per-step approver check, not an access check — a coarse `view` gate here keeps the
+        // endpoint from being a probe for records the user cannot see at all.
+        $this->handleAuthorization('view', $approvable);
 
         $decision = ApprovalDecision::from($validated['decision']);
         $user = auth()->user();
@@ -80,16 +74,9 @@ class ApprovalController extends AdminController
     /**
      * Bulk approve multiple items.
      */
-    public function bulkStore(Request $request)
+    public function bulkStore(BulkStoreApprovalRequest $request)
     {
-        $validated = $request->validate([
-            'approvable_type' => ['required', new Enum(ModelEnum::class)],
-            'approvable_ids' => 'required|array|min:1',
-            'approvable_ids.*' => 'required|string',
-            'decision' => 'required|string|in:approved,rejected,cancelled',
-            'notes' => 'nullable|string|max:1000',
-            'step' => 'nullable|integer|min:1',
-        ]);
+        $validated = $request->validated();
 
         $decision = ApprovalDecision::from($validated['decision']);
         $user = auth()->user();
@@ -98,7 +85,9 @@ class ApprovalController extends AdminController
 
         $approvables = collect($validated['approvable_ids'])
             ->map(fn ($id) => $this->resolveApprovable($validated['approvable_type'], $id))
-            ->filter();
+            ->filter()
+            // Same coarse gate as store(); bulkApprove() still applies canBeApprovedBy() per item.
+            ->each(fn ($approvable) => $this->handleAuthorization('view', $approvable));
 
         $result = $this->approvalService->bulkApprove($approvables, $user, $decision, $notes, $step);
         $approvals = $result['approvals'];
@@ -133,14 +122,9 @@ class ApprovalController extends AdminController
      * clicking approve, hand over and mark returned in sequence. Each intermediate transition is
      * still recorded, so the history shows what happened.
      */
-    public function resolve(Request $request)
+    public function resolve(ResolveApprovalsRequest $request)
     {
-        $validated = $request->validate([
-            'approvable_type' => ['required', new Enum(ModelEnum::class)],
-            'approvable_ids' => 'required|array|min:1',
-            'approvable_ids.*' => 'required|string',
-            'notes' => 'nullable|string|max:1000',
-        ]);
+        $validated = $request->validated();
 
         $user = auth()->user();
         $notes = $validated['notes'] ?? null;
@@ -154,6 +138,8 @@ class ApprovalController extends AdminController
             if (! $approvable) {
                 continue;
             }
+
+            $this->handleAuthorization('view', $approvable);
 
             try {
                 if ($this->approvalService->fastForward($approvable, $user, $notes)->isNotEmpty()) {
@@ -178,19 +164,17 @@ class ApprovalController extends AdminController
     }
 
     /**
-     * Resolve the approvable model from type and ID.
+     * Resolve the approvable model from its morph alias and ID.
+     *
+     * The alias comes straight from the morph map, so pivots resolve like any other model —
+     * this used to rebuild a class name out of the string and needed a hardcoded exception
+     * for ReservationResource, which does not live under App\Models.
      */
     protected function resolveApprovable(string $type, string $id)
     {
-        $formatted = Str::ucfirst(Str::camel($type));
+        $modelClass = MorphMap::classFor($type);
 
-        if ($formatted === 'ReservationResource') {
-            $modelClass = ReservationResource::class;
-        } else {
-            $modelClass = 'App\\Models\\'.$formatted;
-        }
-
-        if (! class_exists($modelClass)) {
+        if ($modelClass === null) {
             return null;
         }
 
@@ -217,18 +201,19 @@ class ApprovalController extends AdminController
     /**
      * Get approval history for a model.
      */
-    public function history(Request $request)
+    public function history(ApprovalHistoryRequest $request)
     {
-        $validated = $request->validate([
-            'approvable_type' => ['required', new Enum(ModelEnum::class)],
-            'approvable_id' => 'required|string',
-        ]);
+        $validated = $request->validated();
 
         $approvable = $this->resolveApprovable($validated['approvable_type'], $validated['approvable_id']);
 
         if (! $approvable) {
             return $this->jsonNotFound('Model not found');
         }
+
+        // The history carries approver names and their internal notes, so reading it follows
+        // the approvable's own view ability rather than being open to any authenticated user.
+        $this->handleAuthorization('view', $approvable);
 
         $approvals = $approvable->approvals()
             ->with('user:id,name,profile_photo_path')

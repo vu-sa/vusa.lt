@@ -10,15 +10,21 @@ All admin controllers should implement `AdminControllerInterface` to ensure cons
 
 ### Standard Admin Controller Methods
 
+Every method that reads request input type-hints a **Form Request**, never `Illuminate\Http\Request` —
+see [.ai/rules/controllers.md](../../../.ai/rules/controllers.md).
+
 ```php
-public function index(Request $request): InertiaResponse;    // Display listing
-public function create(): InertiaResponse;                  // Show create form
-public function store(Request $request): RedirectResponse;  // Store new resource
-public function show(mixed $model): InertiaResponse;        // Display resource
-public function edit(mixed $model): InertiaResponse;        // Show edit form  
-public function update(Request $request, mixed $model): RedirectResponse; // Update resource
-public function destroy(mixed $model): RedirectResponse;    // Delete resource
+public function index(IndexExampleRequest $request): InertiaResponse;    // Display listing
+public function create(): InertiaResponse;                               // Show create form
+public function store(StoreExampleRequest $request): RedirectResponse;   // Store new resource
+public function show(mixed $model): InertiaResponse;                     // Display resource
+public function edit(mixed $model): InertiaResponse;                     // Show edit form
+public function update(UpdateExampleRequest $request, mixed $model): RedirectResponse;
+public function destroy(mixed $model): RedirectResponse;                 // Delete resource
 ```
+
+Index requests extend `BaseIndexRequest` and read paging through its helpers
+(`getPerPage()`, `getShowDeleted()`, `getSorting()`, `getFilters()`).
 
 ## Authorization in Controllers
 
@@ -74,5 +80,7 @@ Route::get('/admin/news', [NewsController::class, 'index'])
 1. **Implement AdminControllerInterface** for all admin controllers
 2. **Use Permission facade** for authorization checks
 3. **Follow consistent return types** as defined in the interface
-4. **Use Form Request classes** for complex validation
-5. **Return proper Inertia responses** for views and redirects for actions
+4. **Use Form Request classes for all validation** — inline `$request->validate()` is not
+   allowed and is enforced by `tests/Feature/System/ValidationConventionTest.php`
+5. **Read `validated()` / `safe()`**, never raw `only()`/`except()`/`input()` on a Form Request
+6. **Return proper Inertia responses** for views and redirects for actions

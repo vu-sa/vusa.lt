@@ -11,6 +11,7 @@ use App\Models\Task;
 use App\Models\User;
 use App\Notifications\MeetingAgendaCompletedNotification;
 use App\Notifications\MeetingCreatedNotification;
+use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
 use App\Tasks\Handlers\AgendaCompletionTaskHandler;
 use App\Tasks\Handlers\AgendaCreationTaskHandler;
@@ -255,7 +256,7 @@ class MeetingTaskSubscriber
 
         // Also check for completed tasks (reopenIfNeeded would have handled them already)
         $hasCompletedTask = Task::query()
-            ->where('taskable_type', Meeting::class)
+            ->where('taskable_type', MorphMap::alias(Meeting::class))
             ->where('taskable_id', $meeting->getKey())
             ->where('action_type', ActionType::AgendaCompletion)
             ->whereNotNull('completed_at')

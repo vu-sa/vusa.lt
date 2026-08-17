@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\LocaleEnum;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 /**
  * Shared rules for Store/UpdateNavigationRequest — the two differ only in `authorize()`.
@@ -46,7 +48,7 @@ abstract class NavigationRequest extends FormRequest
             'name' => $isNameless ? 'nullable|string|max:100' : 'required|string|max:100',
             'url' => 'required|string|max:500',
             'parent_id' => 'required|integer|min:0',
-            'lang' => 'nullable|string|in:lt,en',
+            'lang' => ['nullable', new Enum(LocaleEnum::class)],
             'padalinys_id' => 'nullable|integer|exists:tenants,id',
             'is_active' => 'nullable|boolean',
             'extra_attributes' => 'nullable|array',

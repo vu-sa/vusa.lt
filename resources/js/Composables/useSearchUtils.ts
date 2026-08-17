@@ -10,6 +10,7 @@ import IconPage from '~icons/fluent/document-text20-regular';
 import IconDocument from '~icons/fluent/document20-regular';
 import IconCalendar from '~icons/fluent/calendar20-regular';
 import IconInstitution from '~icons/fluent/people-team20-regular';
+import { localizedRoute } from '@/Utils/LocalizedRoutes';
 
 export interface SearchItem {
   id: string | number;
@@ -56,7 +57,7 @@ export const useSearchUtils = () => {
     try {
       switch (item.type) {
         case 'news':
-          return route('news', { ...baseParams, news: item.permalink, newsString: 'naujiena' });
+          return localizedRoute('news', { subdomain: baseParams.subdomain, news: item.permalink }, baseParams.lang);
         case 'pages':
           return route('page', { ...baseParams, permalink: item.permalink });
         case 'calendar':

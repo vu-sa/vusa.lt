@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Public;
 
+use App\Enums\TenantType;
 use App\Http\Controllers\PublicController;
 use App\Models\Form;
 use App\Models\Institution;
@@ -50,7 +51,7 @@ class ContactController extends PublicController
         ]);
     }
 
-    public function institutionContacts($subdomain, $lang, Institution $institution)
+    public function institutionContacts($subdomain, $lang, $contactsString, Institution $institution)
     {
         $this->getTenantLinks();
 
@@ -88,7 +89,7 @@ class ContactController extends PublicController
         return $this->renderInstitutionPage($institution, $contacts, $institution->name.' | Kontaktai');
     }
 
-    public function institutionDutyTypeContacts($subdomain, $lang, Type $type)
+    public function institutionDutyTypeContacts($subdomain, $lang, $contactsString, Type $type)
     {
         $this->getTenantLinks();
 
@@ -103,7 +104,7 @@ class ContactController extends PublicController
 
         $types = $type->getDescendantsAndSelf();
 
-        if ($this->tenant->type === 'pagrindinis') {
+        if ($this->tenant->isMain()) {
             $institution = Institution::where('alias', '=', 'centrinis-biuras')->first();
         } else {
             $institution = Institution::where('alias', '=', $this->tenant->alias)->firstOrFail();
@@ -305,7 +306,7 @@ class ContactController extends PublicController
     /**
      * Show individual meeting detail page
      */
-    public function showMeeting($subdomain, $lang, Meeting $meeting)
+    public function showMeeting($subdomain, $lang, $meetingsString, Meeting $meeting)
     {
         $this->getTenantLinks();
 
@@ -396,7 +397,7 @@ class ContactController extends PublicController
      * @param  string  $lang
      * @return Response
      */
-    public function institutionCategory($subdomain, $lang, Type $type)
+    public function institutionCategory($subdomain, $lang, $contactsString, $contactCategoryString, Type $type)
     {
         $this->getTenantLinks();
 
@@ -408,7 +409,7 @@ class ContactController extends PublicController
         if ($type->slug === 'padaliniai') {
             $institutions = $type->load(['institutions' => function ($query): void {
                 $query->orderBy('name')->with(['tenant' => function ($query): void {
-                    $query->where('type', 'padalinys');
+                    $query->where('type', TenantType::Padalinys);
                 }]);
             }])->institutions;
 
@@ -434,7 +435,7 @@ class ContactController extends PublicController
 
         // Default to showing all tenants on www (pagrindinis), filter by tenant on padalinys subdomains
         // Can be overridden with ?all=1 or ?all=0 query parameter
-        $isMainTenant = $this->tenant->type === 'pagrindinis';
+        $isMainTenant = $this->tenant->isMain();
         $showAllTenants = request()->has('all') ? request()->boolean('all') : $isMainTenant;
 
         $descendants->load(['institutions' => function ($query) use ($showAllTenants): void {
@@ -442,8 +443,11 @@ class ContactController extends PublicController
                 ->with('duties.current_users:id,name,email,phone,facebook_url,profile_photo_path,profile_photo_focal_point')
                 ->with('tenant:id,alias,shortname,type')
                 ->where('is_active', true)
-                // Order by tenant type 'pagrindinis' first, then by name
-                ->orderByRaw("CASE WHEN EXISTS (SELECT 1 FROM tenants WHERE tenants.id = institutions.tenant_id AND tenants.type = 'pagrindinis') THEN 0 ELSE 1 END")
+                // Central-office institutions first, then by name.
+                ->orderByRaw(
+                    'CASE WHEN EXISTS (SELECT 1 FROM tenants WHERE tenants.id = institutions.tenant_id AND tenants.type = ?) THEN 0 ELSE 1 END',
+                    [TenantType::Pagrindinis->value]
+                )
                 ->orderBy('name');
 
             // Only filter by tenant if not showing all
@@ -624,7 +628,6 @@ class ContactController extends PublicController
 
         return [
             'formPath' => route('registrationPage', [
-                'registrationString' => app()->getLocale() === 'lt' ? 'registracija' : 'registration',
                 'registrationForm' => $form->path,
                 'lang' => app()->getLocale(),
             ]),

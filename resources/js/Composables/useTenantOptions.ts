@@ -2,6 +2,9 @@ import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { TenantType } from '@/Types/enums';
+import { localizedSlug } from '@/Utils/LocalizedRoutes';
+
 export interface TenantOption {
   label: string;
   key: string;
@@ -23,8 +26,11 @@ export function useTenantOptions(prependOptions?: TenantOption[]) {
   const page = usePage();
 
   const options = computed<TenantOption[]>(() => {
+    // Representation units only: PKP tenants are student initiatives and have no public
+    // subdomain of their own to switch to. This used to also carry an unexplained
+    // `tenant.id <= 17` cut-off, which would have silently hidden the 18th padalinys.
     const tenantOptions = page.props.tenants
-      .filter(tenant => (tenant.type === 'padalinys' || tenant.type === 'pagrindinis') && tenant.id <= 17)
+      .filter(tenant => tenant.type === TenantType.Padalinys || tenant.type === TenantType.Pagrindinis)
       .map((tenant): TenantOption => ({
         label: $t(tenant.fullname.split('atstovybė ')[1] || ''),
         key: tenant.alias,
@@ -36,7 +42,7 @@ export function useTenantOptions(prependOptions?: TenantOption[]) {
               image_url: tenant.primary_institution.image_url || undefined,
             }
           : undefined,
-        isMainOffice: tenant.type === 'pagrindinis',
+        isMainOffice: tenant.type === TenantType.Pagrindinis,
       }));
 
     return prependOptions ? [...prependOptions, ...tenantOptions] : tenantOptions;
@@ -70,13 +76,23 @@ export function useTenantOptions(prependOptions?: TenantOption[]) {
     return $t(page.props.tenant?.shortname.split(' ').pop() ?? 'Padaliniai');
   });
 
-  /** Whether tenant switching makes sense on the current page (home, news, contacts). */
+  /**
+   * Whether tenant switching makes sense on the current page (home, news, contacts).
+   *
+   * The slugs come from the localized-route registry rather than a hardcoded list, which is
+   * how `en/news` came to be missing here in the first place.
+   */
   const isSwitchAllowed = computed(() => {
-    if (['lt', 'en', 'lt/naujienos'].includes(page.props.app.path)) {
+    const path = page.props.app.path;
+    const locales = ['lt', 'en'];
+
+    const newsArchivePaths = locales.map(locale => `${locale}/${localizedSlug('newsArchiveString', locale)}`);
+
+    if ([...locales, ...newsArchivePaths].includes(path)) {
       return true;
     }
 
-    return page.props.app.path.includes('kontaktai') || page.props.app.path.includes('contacts');
+    return locales.some(locale => path.includes(localizedSlug('contactsString', locale)));
   });
 
   return {

@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Services\Permissions\PermissionMapBuilder;
 use App\Services\Typesense\TypesenseManager;
 use App\Settings\FormSettings;
+use App\Settings\SiteSettings;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -59,6 +60,17 @@ class HandleInertiaRequests extends Middleware
                 'locale' => fn () => app()->getLocale(),
                 'path' => $request->path(...),
                 'url' => fn () => config('app.url'),
+            ],
+            // Organisation-level facts (contact addresses, social profiles, registry details)
+            // so the footer, error pages and navigation buttons stop hardcoding their own
+            // copies. See config/vusa.php.
+            'organization' => fn () => [
+                'contacts' => config('vusa.contacts'),
+                'social' => config('vusa.social'),
+                'legal' => config('vusa.legal'),
+                // Resolved server-side so the cookie banner links to the right language
+                // record without knowing anything about permalinks. Null when unconfigured.
+                'privacyPageUrl' => app(SiteSettings::class)->privacyPageUrl(),
             ],
             'auth' => is_null($user) ? null : [
                 'can' => fn () => [

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use AjCastro\EagerLoadPivotRelations\EagerLoadPivotTrait;
 use App\Models\Pivots\Relationshipable;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -46,10 +47,13 @@ class Relationship extends Model
     }
 
     // Is it safe?
+    /**
+     * @param  string|null  $model  a morph alias (what the request submits) or a class name
+     */
     public function models($model = null)
     {
         if ($model) {
-            return $this->morphedByMany($model, 'relationshipable');
+            return $this->morphedByMany(MorphMap::classFor($model) ?? $model, 'relationshipable');
         }
 
         return $this;

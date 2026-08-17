@@ -45,7 +45,7 @@ class CategoryController extends AdminController
         // Trash view only: lets the table say why permanent deletion is refused.
         $query = $this->withForceDeleteBlockers($query, $request, ['news']);
 
-        $categories = $query->paginate($request->input('per_page', 20))
+        $categories = $query->paginate($request->getPerPage())
             ->withQueryString();
 
         $this->appendForceDeleteBlockedReason($categories->getCollection(), $request);
@@ -70,7 +70,7 @@ class CategoryController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $sorting,
-            'showDeleted' => $request->boolean('showDeleted', false),
+            'showDeleted' => $request->getShowDeleted(),
             'deletedCount' => $deletedCount,
         ]);
     }
@@ -92,7 +92,7 @@ class CategoryController extends AdminController
     {
         Category::create($request->validated());
 
-        return $this->redirectToIndexWithSuccess('categories', 'Kategorija sukurta.');
+        return $this->redirectToIndexWithSuccess('categories', $this->entityMessage('created', 'category'));
     }
 
     /**
@@ -100,7 +100,7 @@ class CategoryController extends AdminController
      */
     public function edit(Category $category)
     {
-        $this->handleAuthorization($category, 'view');
+        $this->handleAuthorization('view', $category);
 
         return $this->inertiaResponse('Admin/Content/EditCategory', [
             'category' => $category,
@@ -114,7 +114,7 @@ class CategoryController extends AdminController
     {
         $category->update($request->validated());
 
-        return $this->redirectToIndexWithSuccess('categories', 'Kategorija atnaujinta.');
+        return $this->redirectToIndexWithSuccess('categories', $this->entityMessage('updated', 'category'));
     }
 
     /**
@@ -122,11 +122,11 @@ class CategoryController extends AdminController
      */
     public function destroy(Category $category)
     {
-        $this->handleAuthorization($category, 'delete');
+        $this->handleAuthorization('delete', $category);
 
         $category->delete();
 
-        return $this->redirectToIndexWithSuccess('categories', 'Kategorija ištrinta.');
+        return $this->redirectToIndexWithSuccess('categories', $this->entityMessage('deleted', 'category'));
     }
 
     public function restore(Category $category): RedirectResponse

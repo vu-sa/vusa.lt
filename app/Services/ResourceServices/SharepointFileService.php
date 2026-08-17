@@ -42,9 +42,11 @@ class SharepointFileService
         $path = SharepointFolderEnum::GENERAL->label();
 
         if ($fileable instanceof Type) {
-            $typeableType = Str::plural(class_basename($fileable->model_type));
+            // model_type / getMorphClass() are morph aliases; the folder names are the model
+            // names ("Types/News"), so both are studly-cased back before pluralizing.
+            $typeableType = Str::plural(Str::studly((string) $fileable->model_type));
 
-            $path .= '/'.Str::plural(class_basename($fileable->getMorphClass()));
+            $path .= '/'.Str::plural(Str::studly($fileable->getMorphClass()));
             $path .= '/'.$typeableType;
             $path .= '/'.$fileable->title;
         }

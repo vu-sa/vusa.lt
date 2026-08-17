@@ -29,6 +29,10 @@ return [
             'title' => 'Atstovavimo nustatymai',
             'description' => 'Konfigūruokite, kurios rolės suteikia prieigą prie padalinio institucijų atstovavimo skydelyje.',
         ],
+        'site' => [
+            'title' => 'Svetainės nustatymai',
+            'description' => 'Nurodykite svetainės puslapius, į kuriuos nukreipia sistema, pvz., privatumo politiką.',
+        ],
         'authorization' => [
             'title' => 'Nustatymų autorizacija',
             'description' => 'Konfigūruokite, kuri rolė gali valdyti sistemos nustatymus.',
@@ -113,5 +117,13 @@ return [
         'documents' => 'Dokumentų nustatymai',
         'atstovavimas' => 'Atstovavimo nustatymai',
         'authorization' => 'Autorizacija',
+    ],
+
+    'site_settings' => [
+        'privacy_page_title' => 'Privatumo politikos puslapis',
+        'privacy_page_description' => 'Puslapis, į kurį veda slapukų juostos nuoroda. Pasirinkus, nuoroda automatiškai seka puslapio kalbą ir nuorodos adresą.',
+        'privacy_page_label' => 'Privatumo politikos puslapis',
+        'privacy_page_placeholder' => 'Nepasirinkta (nuoroda nerodoma)',
+        'no_pages_found' => 'Puslapių nerasta.',
     ],
 ];

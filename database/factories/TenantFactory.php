@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\TenantType;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -26,7 +27,7 @@ class TenantFactory extends Factory
             'shortname' => $shortname,
             'alias' => $this->faker->word().'-'.$this->faker->randomNumber(2),
             'shortname_vu' => $this->faker->word().$this->faker->randomNumber(2),
-            'type' => 'padalinys',
+            'type' => TenantType::Padalinys,
         ];
     }
 }

@@ -2,11 +2,14 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ValidatesTenantScope;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateStudySetRequest extends FormRequest
 {
+    use ValidatesTenantScope;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -29,7 +32,7 @@ class UpdateStudySetRequest extends FormRequest
             'description.en' => 'nullable|string|max:2000',
             'order' => 'required|integer|min:0',
             'is_visible' => 'boolean',
-            'tenant_id' => 'required|exists:tenants,id',
+            'tenant_id' => ['required', 'integer', 'exists:tenants,id', $this->tenantIdInAuthorizedScope('studySets.update.padalinys')],
             'courses' => 'nullable|array',
             'courses.*.id' => 'nullable|string',
             'courses.*.name.lt' => 'required|string|max:255',

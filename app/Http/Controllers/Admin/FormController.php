@@ -19,6 +19,7 @@ use App\Services\FormRegistrationVisibilityService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
 use App\Settings\FormSettings;
+use App\Support\LocalizedRouteSlugs;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -88,7 +89,7 @@ class FormController extends AdminController
         // Trash view only: lets the table say why permanent deletion is refused.
         $query = $this->withForceDeleteBlockers($query, $request, ['registrations']);
 
-        $forms = $query->paginate($request->input('per_page', 15))
+        $forms = $query->paginate($request->getPerPage())
             ->withQueryString();
 
         $this->appendForceDeleteBlockedReason($forms->getCollection(), $request);
@@ -130,7 +131,7 @@ class FormController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $sorting,
-            'showDeleted' => $request->boolean('showDeleted', false),
+            'showDeleted' => $request->getShowDeleted(),
             'deletedCount' => $deletedCount,
             'can' => [
                 'create' => $user->can('create', Form::class),
@@ -178,18 +179,18 @@ class FormController extends AdminController
     {
         $form = new Form;
 
-        $form->fill($request->only('name', 'description', 'path', 'publish_time'));
+        $form->fill($request->safe()->only('name', 'description', 'path', 'publish_time'));
 
         $form->tenant()->associate($request->tenant_id);
 
         $form->save();
 
         // Then, update or create the remaining form fields
-        collect($request->only('form_fields')['form_fields'] ?? [])->each(function ($formField) use ($form): void {
+        collect($request->safe()->only('form_fields')['form_fields'] ?? [])->each(function ($formField) use ($form): void {
             $form->formFields()->create(collect($formField)->only(self::FORM_FIELD_ATTRIBUTES)->all());
         });
 
-        return redirect(request()->redirect_to ?? route('forms.index'))->with('success', 'Form created.');
+        return redirect(request()->redirect_to ?? route('forms.index'))->with('success', $this->entityMessage('created', 'form'));
     }
 
     /**
@@ -251,11 +252,7 @@ class FormController extends AdminController
             return null;
         }
 
-        return route('registrationPage', [
-            'lang' => $locale,
-            'registrationString' => $locale === 'lt' ? 'registracija' : 'registration',
-            'registrationForm' => $path,
-        ]);
+        return LocalizedRouteSlugs::route('registrationPage', ['registrationForm' => $path], $locale);
     }
 
     /**
@@ -285,7 +282,7 @@ class FormController extends AdminController
      */
     public function update(UpdateFormRequest $request, Form $form)
     {
-        $form->update($request->only('name', 'description', 'path', 'publish_time'));
+        $form->update($request->safe()->only('name', 'description', 'path', 'publish_time'));
 
         $form->tenant()->associate($request->tenant_id);
 
@@ -295,7 +292,7 @@ class FormController extends AdminController
         // First, compare which form fields were removed
         $form->formFields->whereNotIn('id', collect($request->form_fields)->pluck('id'))->each->delete();
 
-        collect($request->only('form_fields')['form_fields'] ?? [])->each(function ($formField) use ($form): void {
+        collect($request->safe()->only('form_fields')['form_fields'] ?? [])->each(function ($formField) use ($form): void {
             $attributes = collect($formField)->only(self::FORM_FIELD_ATTRIBUTES)->all();
 
             // The frontend prefixes ids of not-yet-persisted fields with 'new-'.
@@ -313,7 +310,7 @@ class FormController extends AdminController
             $formFieldFromDb->update($attributes);
         });
 
-        return redirect()->back()->with('success', 'Form updated.');
+        return redirect()->back()->with('success', $this->entityMessage('updated', 'form'));
     }
 
     /**
@@ -325,7 +322,7 @@ class FormController extends AdminController
 
         $form->delete();
 
-        return redirect()->route('forms.index')->with('success', 'Form deleted.');
+        return redirect()->route('forms.index')->with('success', $this->entityMessage('deleted', 'form'));
     }
 
     public function export(Form $form)

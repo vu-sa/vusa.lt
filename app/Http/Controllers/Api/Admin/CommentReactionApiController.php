@@ -4,14 +4,13 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Events\CommentBroadcast;
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Api\Admin\ToggleCommentReactionRequest;
 use App\Http\Resources\CommentResource;
 use App\Models\Comment;
 use App\Support\Commentables;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\Rule;
 
 /**
  * Toggle one-tap emoji reactions on a comment. Anyone who can view the parent
@@ -19,13 +18,9 @@ use Illuminate\Validation\Rule;
  */
 class CommentReactionApiController extends ApiController
 {
-    public function toggle(Request $request, Comment $comment): JsonResponse
+    public function toggle(ToggleCommentReactionRequest $request, Comment $comment): JsonResponse
     {
-        $this->authorize('react', $comment);
-
-        $validated = $request->validate([
-            'emoji' => ['required', 'string', Rule::in(Comment::ALLOWED_REACTIONS)],
-        ]);
+        $validated = $request->validated();
 
         $user = $request->user();
 

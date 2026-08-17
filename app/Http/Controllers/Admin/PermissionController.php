@@ -6,7 +6,6 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexPermissionRequest;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Permission;
-use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
 use Inertia\Response;
 
@@ -14,7 +13,7 @@ class PermissionController extends AdminController
 {
     use HasTanstackTables;
 
-    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
+    public function __construct(private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
@@ -37,7 +36,7 @@ class PermissionController extends AdminController
             ]
         );
 
-        $permissions = $query->paginate($request->input('per_page', 20))
+        $permissions = $query->paginate($request->getPerPage())
             ->withQueryString();
 
         $sorting = $request->getSorting();

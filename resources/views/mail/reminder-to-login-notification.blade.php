@@ -31,7 +31,7 @@ Prisijungti prie vusa.lt/mano
 
 Jeigu turi klausimų, drąsiai kreipkis į savo atstovų koordinatorių (-ę) arba pasiskaityk **[D.U.K. sekciją VU SA dokumentacijoje]({{ config('app.url') }}/docs/faq.html)**.
 
-<small>p.s. Jeigu manai, kad gavai šį laišką per klaidą, pranešk mums el. paštu: [it@vusa.lt](mailto:it@vusa.lt). Laiškas buvo sugeneruotas automatiškai pagal vusa.lt/mano esančią informaciją.</small>
+<small>p.s. Jeigu manai, kad gavai šį laišką per klaidą, pranešk mums el. paštu: [{{ config('vusa.contacts.it') }}](mailto:{{ config('vusa.contacts.it') }}). Laiškas buvo sugeneruotas automatiškai pagal vusa.lt/mano esančią informaciją.</small>
 
 Ačiū ir Vieningai Už Studentų Ateitį,<br>
 {{ config('app.name') }} ❤️  💛
@@ -62,7 +62,7 @@ Log in to vusa.lt/mano
 
 If you have any questions, feel free to contact your representative coordinator or read the **[FAQ section in the VU SA documentation]({{ config('app.url') }}/docs/en/faq.html)**.
 
-<small>p.s. If you think you received this email by mistake, please let us know by email: [it@vusa.lt](mailto:it@vusa.lt)</small>
+<small>p.s. If you think you received this email by mistake, please let us know by email: [{{ config('vusa.contacts.it') }}](mailto:{{ config('vusa.contacts.it') }})</small>
 
 Thank you and United For The Future Of Students,<br>
 {{ config('app.name') }} ❤️  💛
