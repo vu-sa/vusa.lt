@@ -107,7 +107,7 @@ test('every entity declares a gender the message files can resolve', function (s
         }
     }
 
-    expect($problems)->toBe([]);
+    expect($problems)->toBeEmpty();
 })->with(['lt', 'en']);
 
 test('entityMessage renders the gendered Lithuanian participle', function (): void {

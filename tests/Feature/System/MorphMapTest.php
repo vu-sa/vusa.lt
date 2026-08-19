@@ -56,7 +56,7 @@ test('every model in app/Models has an alias', function (): void {
 
     $missing = $classes->reject(fn (string $class): bool => in_array($class, MorphMap::MAP, true));
 
-    expect($missing->all())->toBe([]);
+    expect($missing->all())->toBeEmpty();
 });
 
 test('aliases are the snake_case class basename', function (): void {
@@ -70,7 +70,7 @@ test('aliases are the snake_case class basename', function (): void {
         }
     }
 
-    expect($wrong)->toBe([]);
+    expect($wrong)->toBeEmpty();
 });
 
 test('getMorphClass returns the alias, including for the public mirrors', function (): void {
@@ -90,7 +90,7 @@ test('the alias vocabularies that predate the map still resolve to mapped classe
         ->reject(fn (string $class): bool => in_array($class, MorphMap::MAP, true))
         ->values();
 
-    expect($unmapped->all())->toBe([]);
+    expect($unmapped->all())->toBeEmpty();
 });
 
 test('no source file writes a class name into a polymorphic column', function (): void {
@@ -133,5 +133,5 @@ test('no source file writes a class name into a polymorphic column', function ()
         }
     }
 
-    expect($offenders)->toBe([]);
+    expect($offenders)->toBeEmpty();
 });

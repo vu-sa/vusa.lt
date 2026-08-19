@@ -28,7 +28,7 @@ class FilesController extends AdminController
      *
      * @var list<string>
      */
-    private const SHARED_IMAGE_FOLDERS = [
+    private const array SHARED_IMAGE_FOLDERS = [
         'banners',
         'calendar',
         'contacts',

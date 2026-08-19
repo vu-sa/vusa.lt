@@ -26,5 +26,5 @@ test('every configured admin collection permission is a real, seeded permission'
         ->values()
         ->all();
 
-    expect($missing)->toBe([]);
+    expect($missing)->toBeEmpty();
 });

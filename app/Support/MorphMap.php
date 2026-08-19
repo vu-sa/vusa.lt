@@ -21,7 +21,7 @@ final class MorphMap
     /**
      * @var array<string, class-string<Model>>
      */
-    public const MAP = [
+    public const array MAP = [
         'activity' => Models\Activity::class,
         'agenda_item' => Models\Pivots\AgendaItem::class,
         'agenda_item_note' => Models\AgendaItemNote::class,
@@ -87,7 +87,7 @@ final class MorphMap
      *
      * @var array<class-string, class-string>
      */
-    public const ALIASED_TO_PARENT = [
+    public const array ALIASED_TO_PARENT = [
         Models\PublicInstitution::class => Models\Institution::class,
         Models\PublicNews::class => Models\News::class,
         Models\PublicPage::class => Models\Page::class,

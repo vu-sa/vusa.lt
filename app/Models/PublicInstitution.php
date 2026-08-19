@@ -64,6 +64,7 @@ use Laravel\Scout\Searchable;
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Task> $tasksFromMeetings
  * @property-read Tenant|null $tenant
+ * @property-read Tenant|null $tenants
  * @property-read mixed $translations
  * @property-read Collection<int, Type> $types
  * @property-read Collection<int, User> $users

@@ -125,7 +125,7 @@ test('every translation key referenced in app/ resolves in both locales', functi
         ->values()
         ->all();
 
-    expect($unresolved)->toBe([]);
+    expect($unresolved)->toBeEmpty();
 })->with(['lt', 'en']);
 
 test('lt and en short-key files hold the same keys', function (): void {
@@ -165,7 +165,7 @@ test('lt and en short-key files hold the same keys', function (): void {
         }
     }
 
-    expect($drift)->toBe([]);
+    expect($drift)->toBeEmpty();
 });
 
 test('lithuanian validation messages are actually translated', function (): void {
@@ -188,5 +188,5 @@ test('lithuanian validation messages are actually translated', function (): void
         ->values()
         ->all();
 
-    expect($untranslated)->toBe([]);
+    expect($untranslated)->toBeEmpty();
 });

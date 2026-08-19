@@ -161,13 +161,7 @@ function methodBody(ReflectionMethod $reflection): string
 
 function bodyAuthorizes(string $body): bool
 {
-    foreach (AUTHORIZATION_TOKENS as $token) {
-        if (str_contains($body, $token)) {
-            return true;
-        }
-    }
-
-    return false;
+    return array_any(AUTHORIZATION_TOKENS, fn ($token) => str_contains($body, $token));
 }
 
 /**
@@ -202,5 +196,5 @@ test('every mutating admin route authorizes', function (): void {
         ->values()
         ->all();
 
-    expect($unprotected)->toBe([]);
+    expect($unprotected)->toBeEmpty();
 });

@@ -638,6 +638,7 @@ declare global {
       duties?: Duty[]
       types?: Type[]
       tenant?: Tenant
+      tenants?: Tenant
       documents?: Document[]
       check_ins?: InstitutionCheckIn[]
       meetings?: Meeting[]
@@ -673,6 +674,7 @@ declare global {
       duties_exists: boolean
       types_exists: boolean
       tenant_exists: boolean
+      tenants_exists: boolean
       documents_exists: boolean
       check_ins_exists: boolean
       meetings_exists: boolean
@@ -1053,6 +1055,7 @@ declare global {
       duties?: Duty[]
       meetings?: Meeting[]
       tenant?: Tenant
+      tenants?: Tenant
       documents?: Document[]
       check_ins?: InstitutionCheckIn[]
       problems?: Problem[]
@@ -1088,6 +1091,7 @@ declare global {
       duties_exists: boolean
       meetings_exists: boolean
       tenant_exists: boolean
+      tenants_exists: boolean
       documents_exists: boolean
       check_ins_exists: boolean
       problems_exists: boolean
@@ -1657,7 +1661,7 @@ declare global {
     export interface Tenant {
       // columns
       id: number
-      type?: string | null
+      type?: TenantType | null
       fullname: string
       shortname: string
       alias: string
@@ -1940,6 +1944,14 @@ declare global {
     } as const;
 
     export type ActionType = typeof ActionType[keyof typeof ActionType]
+
+    const TenantType = {
+      Pagrindinis: 'pagrindinis',
+      Padalinys: 'padalinys',
+      Pkp: 'pkp',
+    } as const;
+
+    export type TenantType = typeof TenantType[keyof typeof TenantType]
 
   }
 }

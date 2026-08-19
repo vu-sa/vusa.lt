@@ -37,7 +37,6 @@ function bootFreshApplicationForLeakTest(): void
 function countStaticCallbacks(string $class, string $property): int
 {
     $reflection = new ReflectionProperty($class, $property);
-    $reflection->setAccessible(true);
 
     return count($reflection->getValue());
 }
@@ -75,7 +74,6 @@ test('TelescopeServiceProvider only registers once per process', function (): vo
     bootFreshApplicationForLeakTest();
 
     $reflection = new ReflectionProperty(TelescopeServiceProvider::class, 'registered');
-    $reflection->setAccessible(true);
 
     expect($reflection->getValue())->toBeTrue();
 

@@ -285,7 +285,7 @@ jobs:
     runs-on: ubuntu-latest
     # Non-blocking for now — this is the first Pest browser-test job in the repo, and Playwright
     # setup (browser binary download, system deps) can fail for reasons unrelated to the code
-    # under test. Promote to blocking once the suite has proven stable.
+    # under test. Drop `continue-on-error` once 2-3 consecutive runs are green.
     continue-on-error: true
     name: Browser Tests
     steps:
@@ -337,6 +337,20 @@ jobs:
 
     - name: Run browser tests
       run: vendor/bin/pest tests/Browser --compact
+
+    # A bare Playwright timeout says nothing about *why* the page never rendered. The screenshot
+    # and captured HTML (see captureBrowserDiagnostics() in tests/Pest.php) separate "still
+    # rendering" from a 500/404, without pushing speculative commits to find out.
+    - name: Upload browser failure diagnostics
+      if: failure()
+      uses: actions/upload-artifact@v7
+      with:
+        name: browser-test-diagnostics
+        path: |
+          tests/Browser/Screenshots
+          storage/logs
+        retention-days: 7
+        if-no-files-found: ignore
 
   # JS Quality - TypeScript typecheck and ESLint (non-blocking)
   js-quality:

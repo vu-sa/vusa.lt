@@ -12,6 +12,12 @@ rendered HTML or Inertia props.
 vendor/bin/sail pest tests/Browser
 ```
 
+Browser configuration (`pest()->browser()->timeout()`, `inDarkMode()`, …) belongs in
+[`tests/Pest.php`](../Pest.php), **not** a `tests/Browser/Pest.php`. Pest's `BootFiles` bootstrapper
+includes only `Pest.php`, `Helpers*` and `Expectations*` at the `tests/` root
+(`Pest\Bootstrappers\BootFiles::STRUCTURE`); a nested `Pest.php` is silently never loaded, and the
+config in it silently never applies.
+
 These tests are **not** part of the default `sail artisan test` / `vendor/bin/pest` run — they're
 excluded from `phpunit.xml`'s testsuites on purpose (spinning up a real Chromium instance per test
 is slow, and needs Playwright browser binaries most environments don't have installed). Always
@@ -71,9 +77,14 @@ Inertia renders server-side.
 The plugin's assertion retry (`assertSee` and friends) looks like it papers over this, and does
 locally — but it's a PHP-side hot spin (`Execution::waitForExpectation`, `Amp\delay(0)`, no
 backoff) sharing a process with the Laravel HTTP server that has to serve the page chunk
-(`LaravelHttpServer` runs the app in-process). On a CPU-constrained CI runner the spin can starve
-the very request it's waiting on. Symptom: passes locally in ~2s, fails only in GitHub Actions,
-and **raising the timeout does not help** (observed failing at ~13.25s against a 15s budget).
+(`LaravelHttpServer` runs the app in-process). Symptom: passes locally in ~2s, fails only in
+GitHub Actions.
+
+The budget matters here. The plugin's default is **5s** (`Playwright\Client::$timeout`), which a
+cold runner overshoots on the first client-side render — that was the actual cause of this job
+being red from the day it was added, because the `timeout(15_000)` meant to fix it sat in a
+`tests/Browser/Pest.php` Pest never loads (see "Running" above). `waitForInertiaRender()` now
+passes its timeout to Playwright explicitly, so it can't quietly fall back to the default again.
 
 Rule: `visitPublicSubdomain()` already blocks until `#app` has rendered, so the initial load is
 covered for free. **After any click that triggers an Inertia (SPA) navigation, call

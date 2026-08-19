@@ -6,6 +6,7 @@ use App\Models\Problem;
 
 class StoreProblemRequest extends ProblemRequest
 {
+    #[\Override]
     protected string $tenantScopePermission = 'problems.create.padalinys';
 
     /**

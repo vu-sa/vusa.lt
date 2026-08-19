@@ -17,7 +17,7 @@ class UpdateLastAction
      * "active today / last 7 days / last 30 days" reporting (see
      * `AtstovavimasDashboardService`), so per-request precision buys nothing.
      */
-    private const THROTTLE_SECONDS = 60;
+    private const int THROTTLE_SECONDS = 60;
 
     /**
      * Handle an incoming request.

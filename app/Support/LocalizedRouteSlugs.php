@@ -35,7 +35,7 @@ final class LocalizedRouteSlugs
      *
      * @var array<string, array<string, string>>
      */
-    public const SLUGS = [
+    public const array SLUGS = [
         'newsArchiveString' => ['lt' => 'naujienos', 'en' => 'news'],
         'newsString' => ['lt' => 'naujiena', 'en' => 'news'],
         'registrationString' => ['lt' => 'registracija', 'en' => 'registration'],

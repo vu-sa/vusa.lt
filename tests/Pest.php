@@ -23,6 +23,13 @@ use Tests\TestCase;
 
 pest()->extend(TestCase::class)->in('Feature', 'Unit', 'Browser');
 
+// Browser-test configuration has to live here, not in tests/Browser/Pest.php: BootFiles only ever
+// includes Pest.php at the tests/ root (Pest\Bootstrappers\BootFiles::STRUCTURE), so a nested
+// Pest.php is silently ignored. Governs both the assertion retry budget
+// (Pest\Browser\Execution::waitForExpectation) and Playwright's default action timeout; the plugin
+// defaults to 5s, which a cold CI runner overshoots on the first client-side render.
+pest()->browser()->timeout(15_000);
+
 /*
 |--------------------------------------------------------------------------
 | Test Impact Analysis
@@ -174,24 +181,70 @@ function visitPublicSubdomain(string $subdomain, string $path): PendingAwaitable
  * The plugin's assertion retry (`Execution::waitForExpectation`) looks like it papers over this,
  * and does locally — but it's a PHP-side hot spin (`Amp\delay(0)`, no backoff) sharing a process
  * with the Laravel HTTP server that has to serve the page chunk (`LaravelHttpServer` runs the
- * app in-process). On a CPU-constrained CI runner the spin can starve the very request it's
- * waiting on, which is why raising `pest()->browser()->timeout()` alone didn't fix a CI-only
- * failure here (see `tests/Browser/Pest.php`).
+ * app in-process). `waitForSelector()` hands the waiting to Playwright instead: one blocking round
+ * trip that suspends this fiber, so the in-process HTTP server keeps serving.
  *
- * `waitForSelector()` hands the waiting to Playwright instead: one blocking round trip that
- * suspends this fiber, so the in-process HTTP server keeps serving. Do NOT reach for
- * `waitForFunction()`, `waitForURL()`, or `waitForLoadState()` as alternatives — in
- * pestphp/pest-plugin-browser 5.0.1 all three build a `Client::execute()` Generator and never
+ * Do NOT reach for `waitForFunction()`, `waitForURL()`, or `waitForLoadState()` as alternatives —
+ * in pestphp/pest-plugin-browser 5.0.1 all three build a `Client::execute()` Generator and never
  * iterate it (`vendor/pestphp/pest-plugin-browser/src/Playwright/Page.php:237,253,272`), so they
  * send nothing and return instantly. `waitForSelector()` is the only one that actually waits.
+ *
+ * The timeout is passed explicitly rather than left to `pest()->browser()->timeout()` — a wait
+ * that silently runs on the plugin's 5s default is exactly how this failed in CI before.
  */
 function waitForInertiaRender(
     PendingAwaitablePage|AwaitableWebpage $page,
     string $selector = '#app > *:first-child',
+    ?int $timeoutMs = null,
 ): void {
-    // Unstrict: waitForSelector() follows with an elementHandle() querySelector that throws on a
-    // multi-match selector, a pointless failure mode for a readiness check.
-    $page->page()->unstrict(fn (PlaywrightPage $playwrightPage) => $playwrightPage->waitForSelector($selector));
+    // CI runners are cold and CPU-starved; a budget that is generous locally is marginal there.
+    $timeoutMs ??= getenv('CI') !== false ? 30_000 : 15_000;
+
+    try {
+        // Unstrict: waitForSelector() follows with an elementHandle() querySelector that throws on a
+        // multi-match selector, a pointless failure mode for a readiness check.
+        $page->page()->unstrict(
+            fn (PlaywrightPage $playwrightPage) => $playwrightPage->waitForSelector($selector, ['timeout' => $timeoutMs])
+        );
+    } catch (Throwable $e) {
+        throw new RuntimeException(
+            sprintf("Timed out after %dms waiting for [%s].\n\n%s", $timeoutMs, $selector, captureBrowserDiagnostics($page)),
+            previous: $e,
+        );
+    }
+}
+
+/**
+ * Best-effort page state for a failed browser wait: screenshot, HTML, console logs.
+ *
+ * Distinguishes "still rendering" from "Laravel error page" / "404" / "JS blew up on boot", which
+ * is otherwise unknowable from a bare timeout — CI uploads the screenshots as an artifact.
+ * Every capture is individually guarded: a dead page must not mask the original failure.
+ */
+function captureBrowserDiagnostics(PendingAwaitablePage|AwaitableWebpage $page): string
+{
+    $lines = [];
+
+    foreach ([
+        'Screenshot' => fn (PlaywrightPage $p): string => base_path('tests/Browser/Screenshots/'.$p->screenshot(filename: 'wait-for-inertia-render-failure').'.png'),
+        'Console' => fn (PlaywrightPage $p): string => json_encode($p->consoleLogs()) ?: '[]',
+        // Title + `#app`, not content(): 4000 chars of this app's <head> is PWA splash-screen
+        // boilerplate that never reaches the part saying whether the page mounted. Falling back to
+        // <body> covers the case where there is no `#app` at all — i.e. a Laravel error page.
+        'Page' => fn (PlaywrightPage $p): string => mb_substr(
+            (string) $p->evaluate("document.title + '\\n' + (document.querySelector('#app')?.innerHTML ?? document.body.innerHTML)"),
+            0,
+            4000,
+        ),
+    ] as $label => $capture) {
+        try {
+            $lines[] = "{$label}: ".(string) $page->page()->unstrict($capture);
+        } catch (Throwable $e) {
+            $lines[] = "{$label}: (capture failed: {$e->getMessage()})";
+        }
+    }
+
+    return implode("\n\n", $lines);
 }
 
 /**

@@ -67,7 +67,7 @@ test('controllers do not validate inline', function (): void {
 
     sort($offenders);
 
-    expect($offenders)->toBe([]);
+    expect($offenders)->toBeEmpty();
 });
 
 test('index listings read the page size through BaseIndexRequest', function (): void {
@@ -85,7 +85,7 @@ test('index listings read the page size through BaseIndexRequest', function (): 
 
     // BaseIndexRequest::getPerPage() reads through validated(), so the max:100 cap always
     // applies; $request->input() bypasses it and re-hardcodes the default at every call site.
-    expect($offenders)->toBe([]);
+    expect($offenders)->toBeEmpty();
 });
 
 test('every Form Request declares rules', function (): void {
@@ -120,5 +120,5 @@ test('every Form Request declares rules', function (): void {
 
     sort($withoutRules);
 
-    expect($withoutRules)->toBe([]);
+    expect($withoutRules)->toBeEmpty();
 });

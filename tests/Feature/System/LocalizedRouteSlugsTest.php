@@ -87,7 +87,7 @@ test('routes constrain their localized segments to the registered slugs', functi
         }
     }
 
-    expect($unconstrained)->toBe([]);
+    expect($unconstrained)->toBeEmpty();
 });
 
 test('the TypeScript mirror holds the same slugs as the PHP registry', function (): void {
@@ -123,7 +123,7 @@ test('the TypeScript route map matches what the routes actually declare', functi
         }
     }
 
-    expect($drift)->toBe([]);
+    expect($drift)->toBeEmpty();
 });
 
 test('route() fills the current language slug from URL defaults', function (): void {

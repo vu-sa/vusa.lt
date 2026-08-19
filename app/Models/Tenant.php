@@ -44,10 +44,10 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read int|null $reservations_count
  *
  * @method static \Database\Factories\TenantFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Tenant newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Tenant newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Tenant query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Tenant representational()
+ * @method static Builder<static>|Tenant newModelQuery()
+ * @method static Builder<static>|Tenant newQuery()
+ * @method static Builder<static>|Tenant query()
+ * @method static Builder<static>|Tenant representational()
  *
  * @mixin \Eloquent
  */

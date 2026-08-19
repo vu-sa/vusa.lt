@@ -7,6 +7,7 @@ use App\Rules\SoftDeleteRules;
 
 class StoreCalendarRequest extends CalendarRequest
 {
+    #[\Override]
     protected string $tenantScopePermission = 'calendars.create.padalinys';
 
     /**
