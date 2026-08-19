@@ -7,6 +7,11 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.30 — Hero carousel block (2026-08-20) {#v1-30}
+
+- ⭐ **New hero carousel block** — page content can now open with rotating large photos, each carrying its own title, subtitle, description and buttons. Photos sit in a rounded, page-gutter-inset panel, with three height sizes to choose from. The carousel is keyboard- and screen-reader-friendly (arrows, dots, "Slide 2 of 5"), autoplay pauses on hover or focus and turns off entirely when the device requests reduced motion
+- 🔧 **Carousel and other block switches no longer get stuck** — editing the home page (and any other form submitted with files) stored switch values as the text "1"/"0", so autoplay or arrows turned off would come back on after saving. Values are now stored correctly, and older rows have been repaired
+
 ## v1.29 — Privacy policy page per language (2026-08-19) {#v1-29}
 
 - ✨ **The privacy policy page can be chosen separately for Lithuanian and English** — in site settings the page is now found through search (no more full page list), and each language gets its own page. When one language has no page, its visitors get the other language's link

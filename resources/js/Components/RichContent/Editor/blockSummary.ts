@@ -91,6 +91,12 @@ export function deriveBlockSummary(part: ContentPart): string {
       const rest = slides.length > 1 ? ` (+${slides.length - 1})` : '';
       return truncate(slides[0]?.title || noTitle()) + rest;
     }
+    case 'hero-carousel': {
+      const slides = Array.isArray(json) ? json : [];
+      if (slides.length === 0) return '—';
+      const rest = slides.length > 1 ? ` (+${slides.length - 1})` : '';
+      return truncate(slides[0]?.title || noTitle()) + rest;
+    }
     case 'card-stack': {
       const cards = Array.isArray(json) ? json : [];
       if (cards.length === 0) return '—';

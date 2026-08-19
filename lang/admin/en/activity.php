@@ -61,6 +61,7 @@ return [
         'content-grid' => 'Content grid',
         'text-box' => 'Text box',
         'carousel-slide-deck' => 'Slide carousel',
+        'hero-carousel' => 'Hero carousel',
         'card-stack' => 'Card stack',
         'photo-gallery' => 'Photo gallery',
         'link-list' => 'Link list',

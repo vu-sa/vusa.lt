@@ -117,6 +117,32 @@ export const contentSamples: Record<string, () => ContentSample> = {
     ],
     options: { autoplay: false, autoplayDelay: 8000, showNavigation: true, showThumbnails: true },
   }),
+  'hero-carousel': () => ({
+    json_content: [
+      {
+        eyebrow: 'VU SA kviečia',
+        title: 'Prisijunk prie bendruomenės',
+        subtitle: 'Atrask naujas galimybes ir rask bendraminčių.',
+        description: tiptapDoc([LOREM[1]!]),
+        imageSrc: PLACEHOLDER_IMAGES[0],
+        imageAlt: 'Studentai renginyje',
+        align: 'start',
+        buttons: [{ text: 'Tapk nariu', link: '#', variant: 'default', color: 'red' }],
+      },
+      {
+        eyebrow: '',
+        title: 'Palik pokytį universitete',
+        subtitle: '',
+        description: tiptapDoc([]),
+        imageSrc: PLACEHOLDER_IMAGES[4],
+        imageAlt: 'Studentų veikla',
+        align: 'center',
+        buttons: [{ text: 'Sužinok daugiau', link: '#', variant: 'outline', color: 'white' }],
+      },
+    ],
+    // Autoplay off — the picker previews must never start rotating on their own.
+    options: { autoplay: false, autoplayDelay: 8000, showArrows: true, showIndicators: true, scrim: 'medium', height: 'md' },
+  }),
   'card-stack': () => ({
     json_content: [
       { icon: 'book-open', title: 'Studijos', description: 'Kokybiškos studijos ir joms pritaikyta aplinka.' },

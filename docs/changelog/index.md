@@ -7,6 +7,11 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.30 — Hero karuselės blokas (2026-08-20) {#v1-30}
+
+- ⭐ **Naujas hero karuselės blokas** — puslapio turinį dabar galima pradėti besikeičiančiomis didelėmis nuotraukomis su antrašte, paantrašte, aprašymu ir mygtukais ant kiekvienos skaidrės. Nuotraukos rodomos apvaliakampiame polangere su tarpais nuo kraštų, o karuselės aukštis parenkamas iš trijų dydžių. Karuselė pritaikyta klaviatūrai ir ekrano skaitytuvams (rodyklės, taškai, „Skaidrė 2 iš 5“), automatinis slinkimas stoja užvedus pele ar sutelkus dėmesį ir išvis neveikia, kai įrenginys prašo mažiau judesio
+- 🔧 **Karuselių ir kitų blokų jungikliai nebe„stringa“** — redaguojant pagrindinį puslapį (ir kitur, kur formos siunčiamos su failais) jungiklių reikšmės būdavo įrašomos kaip tekstas „1“/„0“, todėl išjungtas automatinis slinkimas ar rodyklės po įrašymo vėl įsijungdavo. Dabar reikšmės saugomos tinkamai, o senesni įrašai sutvarkyti
+
 ## v1.29 — Privatumo politikos pasirinkimas kiekvienai kalbai (2026-08-19) {#v1-29}
 
 - ✨ **Privatumo politikos puslapį galima rinktis atskirai lietuvių ir anglų kalbom** — svetainės nustatymuose puslapis dabar ieškomas paieškoje (neberekamas visas sąrašas), o kiekvienai kalbai priskiriamas savo puslapis. Jei viena kalba nepasirinkta, jos lankytojams rodoma kitos kalbos puslapio nuoroda

@@ -128,12 +128,64 @@ class ContentPart extends Model
             // in this listener.
             $json = $part->getAttribute('json_content');
 
-            if (! $json instanceof ArrayObject) {
-                return;
+            if ($json instanceof ArrayObject) {
+                $part->json_content = new ArrayObject($part->normalizeFormDataScalars($part->sanitizeJsonContentHtml($json->toArray())));
             }
 
-            $part->json_content = new ArrayObject($part->sanitizeJsonContentHtml($json->toArray()));
+            // options is nullable — absent stays absent.
+            $options = $part->getAttribute('options');
+
+            if ($options instanceof ArrayObject) {
+                $part->options = new ArrayObject($part->normalizeFormDataScalars($options->toArray()));
+            }
         });
+    }
+
+    /**
+     * Option/content keys that hold booleans or integers but arrive as their string
+     * equivalents ("1"/"0", "true"/"false", "8000") when the editor form was submitted
+     * as FormData — Inertia's FormData serializer encodes every scalar that way (see
+     * EditHomePage.vue's `forceFormData`). A stored "0" reads as truthy on the JS side
+     * and flips the switch semantics, so normalize by key name on every write path.
+     * Unlisted keys and unrecognizable values are left untouched.
+     */
+    private const FORMDATA_BOOLEAN_KEYS = [
+        'autoplay', 'showNavigation', 'showThumbnails', 'showArrows', 'showIndicators',
+        'showAvatar', 'showCaption', 'showLightbox', 'showIcon', 'showPlus', 'isClosed',
+        'isTitleColored', 'is_active', 'allTenants', 'mobileStacking', 'equalHeight',
+        'textLeft', 'imageLeft', 'rotation', 'overlayOverhang',
+    ];
+
+    private const FORMDATA_INTEGER_KEYS = ['autoplayDelay', 'limit', 'year', 'endNumber'];
+
+    /**
+     * @param  array<array-key, mixed>  $node
+     * @return array<array-key, mixed>
+     */
+    private function normalizeFormDataScalars(array $node): array
+    {
+        foreach ($node as $key => $value) {
+            if (is_array($value)) {
+                $node[$key] = $this->normalizeFormDataScalars($value);
+
+                continue;
+            }
+
+            if (! is_string($value) && ! is_int($value)) {
+                continue;
+            }
+
+            if (in_array($key, self::FORMDATA_BOOLEAN_KEYS, true)) {
+                // FILTER_NULL_ON_FAILURE returns null for non-boolean-ish strings —
+                // keep the original value in that case.
+                $boolean = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                $node[$key] = $boolean ?? $value;
+            } elseif (in_array($key, self::FORMDATA_INTEGER_KEYS, true) && is_numeric($value)) {
+                $node[$key] = (int) $value;
+            }
+        }
+
+        return $node;
     }
 
     /**
@@ -317,6 +369,17 @@ class ContentPart extends Model
                     $content .= ($slide['title'] ?? '').' ';
                     $content .= ($slide['badge'] ?? '').' ';
                     $content .= $this->extractTextFromTiptap($slide['description'] ?? []).' ';
+                }
+                break;
+            case 'hero-carousel':
+                foreach ($this->json_content as $slide) {
+                    $content .= ($slide['eyebrow'] ?? '').' ';
+                    $content .= ($slide['title'] ?? '').' ';
+                    $content .= ($slide['subtitle'] ?? '').' ';
+                    $content .= $this->extractTextFromTiptap($slide['description'] ?? []).' ';
+                    foreach ($slide['buttons'] ?? [] as $button) {
+                        $content .= ($button['text'] ?? '').' ';
+                    }
                 }
                 break;
             case 'card-stack':

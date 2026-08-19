@@ -22,6 +22,7 @@ enum ContentPartEnum: string
     case CONTENT_GRID = 'CONTENT_GRID';
     case TEXT_BOX = 'TEXT_BOX';
     case CAROUSEL_SLIDE_DECK = 'CAROUSEL_SLIDE_DECK';
+    case HERO_CAROUSEL = 'HERO_CAROUSEL';
     case CARD_STACK = 'CARD_STACK';
     case PHOTO_GALLERY = 'PHOTO_GALLERY';
     case LINK_LIST = 'LINK_LIST';
@@ -47,6 +48,7 @@ enum ContentPartEnum: string
             self::CONTENT_GRID => 'content-grid',
             self::TEXT_BOX => 'text-box',
             self::CAROUSEL_SLIDE_DECK => 'carousel-slide-deck',
+            self::HERO_CAROUSEL => 'hero-carousel',
             self::CARD_STACK => 'card-stack',
             self::PHOTO_GALLERY => 'photo-gallery',
             self::LINK_LIST => 'link-list',

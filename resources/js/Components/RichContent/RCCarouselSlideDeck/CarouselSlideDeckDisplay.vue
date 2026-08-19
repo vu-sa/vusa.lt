@@ -49,16 +49,16 @@
 
         <!-- Navigation buttons -->
         <CarouselPrevious
-          v-if="element.options?.showNavigation"
+          v-if="asBoolean(element.options?.showNavigation)"
           class="hidden sm:flex -left-12 bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-500 text-zinc-900 dark:text-zinc-100"
           @click="restartCarouselAutoplay" />
         <CarouselNext
-          v-if="element.options?.showNavigation"
+          v-if="asBoolean(element.options?.showNavigation)"
           class="hidden sm:flex -right-12 bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-500 text-zinc-900 dark:text-zinc-100"
           @click="restartCarouselAutoplay" />
 
         <!-- Photo Preview Navigation -->
-        <div v-if="element.options?.showThumbnails" class="flex flex-wrap justify-center mt-2 xl:mt-8 gap-3">
+        <div v-if="asBoolean(element.options?.showThumbnails)" class="flex flex-wrap justify-center mt-2 xl:mt-8 gap-3">
           <button
             v-for="(slide, index) in element.json_content"
             :key="index"
@@ -96,6 +96,7 @@ import ImageWithDecorations from '@/Components/ui/ImageWithDecorations.vue';
 import RCIcon from '../RCIcon.vue';
 import RCSection from '../RCSection.vue';
 import RichContentTiptapHTML from '../RichContentTiptapHTML.vue';
+import { asBoolean } from '../booleanish';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/Components/ui/carousel';
 import type { CarouselSlideDeck } from '@/Types/contentParts';
 
@@ -144,7 +145,7 @@ watch(carouselApi, (api) => {
   });
 
   // Start autoplay if enabled
-  if (element.options?.autoplay) {
+  if (asBoolean(element.options?.autoplay)) {
     startCarouselAutoplay();
   }
 

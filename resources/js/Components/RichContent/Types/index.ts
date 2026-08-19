@@ -18,6 +18,7 @@ import GridIcon from '~icons/fluent/table-simple24-regular';
 import SocialIcon from '~icons/fluent/share-24-regular';
 import TextBoxIcon from '~icons/fluent/text-field24-regular';
 import CarouselIcon from '~icons/fluent/swipe-right24-regular';
+import HeroCarouselIcon from '~icons/fluent/filmstrip-image24-regular';
 import StackIcon from '~icons/fluent/stack24-regular';
 import GalleryIcon from '~icons/fluent/collections24-regular';
 import LinkListIcon from '~icons/fluent/link-multiple24-regular';
@@ -478,6 +479,47 @@ export const contentTypeRegistry: Record<string, ContentType> = {
               <Skeleton class="h-20 w-full" />
             </div>
             <Skeleton class="h-64 md:h-80" />
+          </div>
+        </div>
+      `,
+    },
+  },
+  'hero-carousel': {
+    value: 'hero-carousel',
+    label: 'Hero karuselė',
+    icon: HeroCarouselIcon,
+    isNew: true,
+    description: 'Viso pločio karuselė su didelėmis nuotraukomis ir tekstu ant jų',
+    category: 'section',
+    defaultWidth: 'full',
+    // Full-bleed is the default, not a lock — but unlike RCSection-based types there
+    // is no section chrome; narrowing to content/wide insets the photo panel instead.
+    allowedWidths: ['content', 'wide', 'full'],
+    selfSpaced: true,
+    defaultContent: () => ([]),
+    defaultOptions: () => ({
+      autoplay: true,
+      autoplayDelay: 8000,
+      showArrows: true,
+      showIndicators: true,
+      scrim: 'medium',
+      height: 'md',
+    }),
+    editor: defineAsyncComponent(() => import('./HeroCarouselEditor.vue')),
+    display: defineAsyncComponent(() => import('../RCHeroCarousel/HeroCarouselDisplay.vue')),
+    skeleton: {
+      height: 'min-h-[22rem]',
+      template: `
+        <div class="w-full px-4 pt-4 pb-4 sm:px-6 sm:pt-6 sm:pb-5 lg:px-8">
+          <div class="min-h-[22rem] rounded-2xl md:rounded-3xl bg-zinc-200 dark:bg-zinc-800 animate-pulse relative overflow-hidden">
+            <div class="absolute inset-0 flex items-end p-8">
+              <div class="space-y-3 max-w-xl">
+                <Skeleton class="h-4 w-24" />
+                <Skeleton class="h-10 w-3/4" />
+                <Skeleton class="h-5 w-1/2" />
+                <Skeleton class="h-11 w-36 rounded-full" />
+              </div>
+            </div>
           </div>
         </div>
       `,

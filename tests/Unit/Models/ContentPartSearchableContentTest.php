@@ -64,6 +64,34 @@ test('carousel-slide-deck extracts title, badge and tiptap description', functio
         ->toContain('Rask bendraminčių');
 });
 
+test('hero-carousel extracts eyebrow, title, subtitle, tiptap description and button text', function (): void {
+    $part = makePart('hero-carousel', [
+        [
+            'eyebrow' => 'VU SA kviečia',
+            'title' => 'Prisijunk prie bendruomenės',
+            'subtitle' => 'Atrask naujas galimybes',
+            'description' => [
+                'type' => 'doc',
+                'content' => [
+                    ['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Rask bendraminčių']]],
+                ],
+            ],
+            'buttons' => [
+                ['text' => 'Tapk nariu', 'link' => '#'],
+            ],
+        ],
+    ]);
+
+    $content = $part->getSearchableContent();
+
+    expect($content)
+        ->toContain('VU SA kviečia')
+        ->toContain('Prisijunk prie bendruomenės')
+        ->toContain('Atrask naujas galimybes')
+        ->toContain('Rask bendraminčių')
+        ->toContain('Tapk nariu');
+});
+
 test('card-stack extracts card titles and descriptions', function (): void {
     $part = makePart('card-stack', [
         ['icon' => 'users', 'title' => 'Studijos', 'description' => 'Kokybiškos studijos'],

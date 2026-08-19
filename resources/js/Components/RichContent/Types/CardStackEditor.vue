@@ -4,13 +4,16 @@
     <Field>
       <FieldLabel>{{ $t('rich-content.card_stack_options') }}</FieldLabel>
       <div class="space-y-3">
+        <!-- `asBoolean` on the Switch: rows saved through FormData forms
+             (EditHomePage) carry "1"/"0" strings, which reka-ui's strict boolean
+             model renders as always-unchecked. -->
         <div class="flex items-center gap-3">
-          <Switch v-model="options.autoplay" />
+          <Switch :model-value="asBoolean(options.autoplay)" @update:model-value="options.autoplay = $event" />
           <span class="text-sm text-zinc-700 dark:text-zinc-300">
             {{ $t('rich-content.enable_autoplay') }}
           </span>
         </div>
-        <div v-if="options.autoplay" class="flex items-center gap-3">
+        <div v-if="asBoolean(options.autoplay)" class="flex items-center gap-3">
           <FieldLabel class="min-w-fit">{{ $t('rich-content.autoplay_delay') }}</FieldLabel>
           <Input
             v-model.number="options.autoplayDelay"
@@ -81,6 +84,7 @@
 import type { CardStack } from '@/Types/contentParts';
 import RCSectionOptions from '../Editor/RCSectionOptions.vue';
 import RCIconSelect from '../RCIconSelect.vue';
+import { asBoolean } from '../booleanish';
 import { Switch } from '@/Components/ui/switch';
 import { Input } from '@/Components/ui/input';
 import { Field, FieldLabel } from '@/Components/ui/field';
