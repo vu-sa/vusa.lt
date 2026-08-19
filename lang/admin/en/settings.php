@@ -121,9 +121,10 @@ return [
 
     'site_settings' => [
         'privacy_page_title' => 'Privacy policy page',
-        'privacy_page_description' => 'The page the cookie banner links to. Once set, the link follows the page\'s language and permalink automatically.',
+        'privacy_page_description' => 'The pages the cookie banner links to. Pick a separate page for each language; when one language has no page, its visitors get the other language\'s link.',
         'privacy_page_label' => 'Privacy policy page',
-        'privacy_page_placeholder' => 'Not set (the link is hidden)',
-        'no_pages_found' => 'No pages found.',
+        'privacy_page_placeholder' => 'Not set',
+        'privacy_page_search_placeholder' => 'Search pages by title...',
+        'privacy_page_empty' => 'No pages found.',
     ],
 ];

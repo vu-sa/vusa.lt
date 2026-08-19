@@ -7,6 +7,10 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.29 — Privatumo politikos pasirinkimas kiekvienai kalbai (2026-08-19) {#v1-29}
+
+- ✨ **Privatumo politikos puslapį galima rinktis atskirai lietuvių ir anglų kalbom** — svetainės nustatymuose puslapis dabar ieškomas paieškoje (neberekamas visas sąrašas), o kiekvienai kalbai priskiriamas savo puslapis. Jei viena kalba nepasirinkta, jos lankytojams rodoma kitos kalbos puslapio nuoroda
+
 ## v1.28 — Angliškos nuorodos ir vieningi pranešimai (2026-08-17) {#v1-28}
 
 - ⭐ **Angliška svetainės dalis turi angliškas nuorodas** — dokumentai, paieška, kontaktai, studentų atstovai ir posėdžiai anglų kalba dabar pasiekiami adresais `/en/documents`, `/en/search`, `/en/contacts`, `/en/contacts/student-representatives`, `/en/meetings`. Senos nuorodos automatiškai nukreipiamos į naująsias, tad išsaugotos nuorodos veikia toliau

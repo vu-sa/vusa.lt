@@ -247,19 +247,36 @@ class SettingsController extends AdminController
     {
         $this->authorizeSettingsAccess($settingsSettings);
 
+        $ids = array_filter([$siteSettings->privacy_page_id_lt, $siteSettings->privacy_page_id_en]);
+
+        // Only live pages — the picker searches Typesense, which also excludes them.
+        $pages = Page::query()
+            ->with('tenant')
+            ->where('is_active', true)
+            ->whereKey($ids)
+            ->get()
+            ->keyBy(fn (Page $page) => (string) $page->id);
+
+        $summary = function (?string $id) use ($pages): ?array {
+            $page = $id !== null ? $pages->get($id) : null;
+
+            if ($page === null) {
+                return null;
+            }
+
+            return [
+                'id' => (string) $page->id,
+                'title' => $page->title,
+                'lang' => $page->lang,
+                'tenant_shortname' => $page->tenant?->shortname,
+            ];
+        };
+
         return $this->inertiaResponse('Admin/Settings/EditSiteSettings', [
-            'privacy_page_id' => $siteSettings->privacy_page_id,
-            // Only live pages, and only the fields the picker needs.
-            'pages' => Page::query()
-                ->where('is_active', true)
-                ->orderBy('title')
-                ->get(['id', 'title', 'permalink', 'lang'])
-                ->map(fn (Page $page) => [
-                    'id' => (string) $page->id,
-                    'title' => $page->title,
-                    'permalink' => $page->permalink,
-                    'lang' => $page->lang,
-                ]),
+            'selectedPages' => [
+                'lt' => $summary($siteSettings->privacy_page_id_lt),
+                'en' => $summary($siteSettings->privacy_page_id_en),
+            ],
         ]);
     }
 
@@ -270,7 +287,10 @@ class SettingsController extends AdminController
     {
         $this->authorizeSettingsAccess($settingsSettings);
 
-        $siteSettings->privacy_page_id = $request->input('privacy_page_id');
+        $validated = $request->validated();
+
+        $siteSettings->privacy_page_id_lt = $validated['privacy_page_id_lt'] ?? null;
+        $siteSettings->privacy_page_id_en = $validated['privacy_page_id_en'] ?? null;
         $siteSettings->save();
 
         return $this->redirectBackWithSuccess(__('settings.messages.updated'));

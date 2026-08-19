@@ -11,7 +11,7 @@ use Spatie\LaravelSettings\Settings;
  * The first of these is the privacy policy. `ConsentCard.vue` used to hardcode
  * `${app.url}/privatumas` — a Lithuanian permalink with no locale prefix, so English visitors
  * were sent to the Lithuanian page, and renaming the page silently broke the cookie banner's
- * only link. Storing the page id instead means the link follows the page.
+ * only link. Storing the page ids instead means the link follows the pages.
  *
  * Ids rather than slugs, matching how every other setting in this directory stores its target
  * (see FormSettings::$member_registration_form_id).
@@ -19,10 +19,12 @@ use Spatie\LaravelSettings\Settings;
 class SiteSettings extends Settings
 {
     /**
-     * Id of the Page holding the privacy policy. Only one id is stored — the counterpart in
-     * the other language is resolved through Page::otherLanguagePage().
+     * Ids of the Pages holding the privacy policy, one per language. Chosen separately —
+     * they need not be each other's translated counterpart.
      */
-    public ?string $privacy_page_id = null;
+    public ?string $privacy_page_id_lt = null;
+
+    public ?string $privacy_page_id_en = null;
 
     public static function group(): string
     {
@@ -30,11 +32,10 @@ class SiteSettings extends Settings
     }
 
     /**
-     * The public URL of the privacy policy page in the current locale.
+     * The public URL of the privacy policy page in the given locale.
      *
-     * Falls back to the configured page's own locale when no translated counterpart exists,
-     * and to null when nothing is configured — callers hide the link rather than render a
-     * broken one.
+     * Falls back to the other locale's page when this locale has none configured, and to null
+     * when neither is set — callers hide the link rather than render a broken one.
      */
     public function privacyPageUrl(?string $locale = null): ?string
     {
@@ -53,22 +54,14 @@ class SiteSettings extends Settings
 
     private function privacyPage(string $locale): ?Page
     {
-        if ($this->privacy_page_id === null) {
+        $id = $locale === 'en'
+            ? ($this->privacy_page_id_en ?? $this->privacy_page_id_lt)
+            : ($this->privacy_page_id_lt ?? $this->privacy_page_id_en);
+
+        if ($id === null) {
             return null;
         }
 
-        $page = Page::query()->with('tenant')->find($this->privacy_page_id);
-
-        if ($page === null) {
-            return null;
-        }
-
-        if ($page->lang === $locale) {
-            return $page;
-        }
-
-        $counterpart = $page->otherLanguagePage()->with('tenant')->first();
-
-        return $counterpart instanceof Page ? $counterpart : $page;
+        return Page::query()->with('tenant')->find($id);
     }
 }

@@ -7,6 +7,10 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.29 — Privacy policy page per language (2026-08-19) {#v1-29}
+
+- ✨ **The privacy policy page can be chosen separately for Lithuanian and English** — in site settings the page is now found through search (no more full page list), and each language gets its own page. When one language has no page, its visitors get the other language's link
+
 ## v1.28 — English URLs and consistent messages (2026-08-17) {#v1-28}
 
 - ⭐ **The English site now has English URLs** — documents, search, contacts, student representatives and meetings are served from `/en/documents`, `/en/search`, `/en/contacts`, `/en/contacts/student-representatives` and `/en/meetings`. Old links redirect to the new ones, so saved links keep working

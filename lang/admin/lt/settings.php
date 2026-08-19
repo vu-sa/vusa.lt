@@ -121,9 +121,10 @@ return [
 
     'site_settings' => [
         'privacy_page_title' => 'Privatumo politikos puslapis',
-        'privacy_page_description' => 'Puslapis, į kurį veda slapukų juostos nuoroda. Pasirinkus, nuoroda automatiškai seka puslapio kalbą ir nuorodos adresą.',
+        'privacy_page_description' => 'Puslapiai, į kuriuos veda slapukų juostos nuoroda. Kiekvienai kalbai pasirinkite atskirą puslapį; jei viena kalba nepasirinkta, jos lankytojams bus rodoma kitos kalbos puslapio nuoroda.',
         'privacy_page_label' => 'Privatumo politikos puslapis',
-        'privacy_page_placeholder' => 'Nepasirinkta (nuoroda nerodoma)',
-        'no_pages_found' => 'Puslapių nerasta.',
+        'privacy_page_placeholder' => 'Nepasirinkta',
+        'privacy_page_search_placeholder' => 'Ieškoti puslapio pagal pavadinimą...',
+        'privacy_page_empty' => 'Puslapių nerasta.',
     ],
 ];
