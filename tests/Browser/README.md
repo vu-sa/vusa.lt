@@ -80,12 +80,20 @@ backoff) sharing a process with the Laravel HTTP server that has to serve the pa
 (`LaravelHttpServer` runs the app in-process). Symptom: passes locally in ~2s, fails only in
 GitHub Actions.
 
-The budget matters here. The plugin's default is **5s** (`Playwright\Client::$timeout`), which a
-cold runner overshoots on the first client-side render — that was the actual cause of this job
-being red from the day it was added, because the `timeout(15_000)` meant to fix it sat in a
-`tests/Browser/Pest.php` Pest never loads (see "Running" above). `waitForInertiaRender()` now
-passes its timeout to Playwright explicitly, so it can't quietly fall back to the default again.
+**Assets must be same-origin, or nothing runs.** `LaravelHttpServer::bootstrap()` points the asset
+origin at `127.0.0.1:$port` while `visitPublicSubdomain()` loads the page from `<sub>.vusa.test:$port`.
+A `<script type="module">` is *always* fetched in CORS mode, and the plugin serves files under
+`public/` by short-circuiting **before** the HTTP kernel — so `HandleCors` never runs and the
+response has no `Access-Control-Allow-Origin`. Chromium blocks the Vite entry outright: `#app` stays
+empty forever, and neither `consoleLogs()` nor `javaScriptErrors()` reports a thing. The helper
+fixes this with `useAssetOrigin("http://{$host}:{$port}")`; don't remove it.
 
+**These tests run against `public/build`, not the Vite dev server.** `visitPublicSubdomain()` forces
+the manifest path via `useHotFile()`, so run `sail npm run build` first. Without this, a developer
+running `sail npm run dev` tests a completely different code path from CI — which is exactly how the
+CORS bug above passed locally and failed in CI three times running.
+
+When a wait does fail, read the `Requests:` line first: a resource at `-> 0` was blocked, not slow.
 Rule: `visitPublicSubdomain()` already blocks until `#app` has rendered, so the initial load is
 covered for free. **After any click that triggers an Inertia (SPA) navigation, call
 `waitForInertiaRender($page, '<selector unique to the destination>')` before asserting** — see

@@ -16,6 +16,7 @@ use App\Models\Institution;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Providers\TestingServiceProvider;
+use Illuminate\Foundation\Vite;
 use Pest\Browser\Api\AwaitableWebpage;
 use Pest\Browser\Api\PendingAwaitablePage;
 use Pest\Browser\Playwright\Page as PlaywrightPage;
@@ -150,6 +151,12 @@ function visitPublicSubdomain(string $subdomain, string $path): PendingAwaitable
     // 'vusa.test' apex from APP_URL=https://www.vusa.test (.env).
     $host = "{$subdomain}.vusa.test";
 
+    // Always render against the built manifest, never the Vite dev server. If the developer has
+    // `sail npm run dev` running, public/hot exists and @vite serves from localhost:5173 — a
+    // completely different code path from CI, which has no hot file. That divergence is what let a
+    // CORS-blocked Vite entry pass locally and fail in CI. Requires `sail npm run build` first.
+    app(Vite::class)->useHotFile(storage_path('framework/testing/vite-hot-disabled'));
+
     pest()->browser()->withHost($host);
 
     // Bootstraps the plugin's server and reveals its port; this first response (served under
@@ -160,6 +167,15 @@ function visitPublicSubdomain(string $subdomain, string $path): PendingAwaitable
     $port = visit('/')->script('location.port');
 
     config(['app.url' => "http://{$host}"]);
+
+    // Re-anchor the asset origin too, or nothing on the page ever runs. LaravelHttpServer::bootstrap()
+    // points it at 127.0.0.1:$port while the page itself loads from $host:$port — and a
+    // `<script type="module">` is always fetched in CORS mode, whatever its crossorigin attribute.
+    // The plugin serves files under public/ by short-circuiting *before* the HTTP kernel, so
+    // HandleCors never runs and the response carries no Access-Control-Allow-Origin: Chromium
+    // blocks the Vite entry outright (resource status 0), `#app` stays empty forever, and neither
+    // consoleLogs() nor javaScriptErrors() reports anything. Same origin => no CORS to fail.
+    app('url')->useAssetOrigin("http://{$host}:{$port}");
 
     $page = visit("http://{$host}:{$port}{$path}");
 
@@ -195,11 +211,8 @@ function visitPublicSubdomain(string $subdomain, string $path): PendingAwaitable
 function waitForInertiaRender(
     PendingAwaitablePage|AwaitableWebpage $page,
     string $selector = '#app > *:first-child',
-    ?int $timeoutMs = null,
+    int $timeoutMs = 15_000,
 ): void {
-    // CI runners are cold and CPU-starved; a budget that is generous locally is marginal there.
-    $timeoutMs ??= getenv('CI') !== false ? 30_000 : 15_000;
-
     try {
         // Unstrict: waitForSelector() follows with an elementHandle() querySelector that throws on a
         // multi-match selector, a pointless failure mode for a readiness check.
@@ -227,6 +240,12 @@ function captureBrowserDiagnostics(PendingAwaitablePage|AwaitableWebpage $page):
 
     foreach ([
         'Screenshot' => fn (PlaywrightPage $p): string => base_path('tests/Browser/Screenshots/'.$p->screenshot(filename: 'wait-for-inertia-render-failure').'.png'),
+        // The one that matters most: a blocked asset reports status 0 here, and shows up nowhere
+        // else — consoleLogs() only hooks console.log, and javaScriptErrors() uses a non-capture
+        // window 'error' listener, which sees neither resource failures nor unhandled rejections.
+        'Requests' => fn (PlaywrightPage $p): string => (string) json_encode($p->evaluate(
+            'performance.getEntriesByType("resource").map(e => e.name.split("/").pop() + " -> " + e.responseStatus)'
+        )),
         'Console' => fn (PlaywrightPage $p): string => json_encode($p->consoleLogs()) ?: '[]',
         // Title + `#app`, not content(): 4000 chars of this app's <head> is PWA splash-screen
         // boilerplate that never reaches the part saying whether the page mounted. Falling back to
