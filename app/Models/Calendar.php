@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\CalendarHeroStyleEnum;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use App\Services\IcalendarService;
@@ -37,8 +38,9 @@ use Spatie\SchemaOrg\Place;
  * @property string|null $video_url
  * @property string|null $main_image
  * @property bool $is_draft
- * @property int $is_all_day
- * @property int $is_international
+ * @property bool $is_all_day
+ * @property bool $is_international
+ * @property CalendarHeroStyleEnum $hero_style
  * @property Carbon $date
  * @property Carbon|null $end_date
  * @property int|null $category_id
@@ -95,6 +97,9 @@ class Calendar extends Model implements HasMedia
             'updated_at' => 'datetime:Y-m-d H:i:s',
             'created_at' => 'datetime:Y-m-d H:i:s',
             'is_draft' => 'boolean',
+            'is_all_day' => 'boolean',
+            'is_international' => 'boolean',
+            'hero_style' => CalendarHeroStyleEnum::class,
         ];
     }
 

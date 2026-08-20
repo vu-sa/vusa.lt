@@ -151,6 +151,23 @@ declare global {
       activities_as_subject_exists: boolean
     }
 
+    export interface Cadence {
+      // columns
+      id: string
+      institution_id?: string | null
+      start_date: string
+      end_date: string
+      created_at?: string | null
+      updated_at?: string | null
+      // mutators
+      label: string
+      // relations
+      institution?: Institution
+      // counts
+      // exists
+      institution_exists: boolean
+    }
+
     export interface Calendar {
       // columns
       id: number
@@ -165,6 +182,7 @@ declare global {
       is_draft: boolean
       is_all_day: boolean
       is_international: boolean
+      hero_style: CalendarHeroStyleEnum
       date: string
       end_date?: string | null
       category_id?: number | null
@@ -636,6 +654,7 @@ declare global {
       translations: unknown
       // relations
       duties?: Duty[]
+      cadences?: Cadence[]
       types?: Type[]
       tenant?: Tenant
       tenants?: Tenant
@@ -656,6 +675,7 @@ declare global {
       activities_as_subject?: Activity[]
       // counts
       duties_count: number
+      cadences_count: number
       types_count: number
       documents_count: number
       check_ins_count: number
@@ -672,6 +692,7 @@ declare global {
       activities_as_subject_count: number
       // exists
       duties_exists: boolean
+      cadences_exists: boolean
       types_exists: boolean
       tenant_exists: boolean
       tenants_exists: boolean
@@ -1054,6 +1075,7 @@ declare global {
       types?: Type[]
       duties?: Duty[]
       meetings?: Meeting[]
+      cadences?: Cadence[]
       tenant?: Tenant
       tenants?: Tenant
       documents?: Document[]
@@ -1074,6 +1096,7 @@ declare global {
       types_count: number
       duties_count: number
       meetings_count: number
+      cadences_count: number
       documents_count: number
       check_ins_count: number
       problems_count: number
@@ -1090,6 +1113,7 @@ declare global {
       types_exists: boolean
       duties_exists: boolean
       meetings_exists: boolean
+      cadences_exists: boolean
       tenant_exists: boolean
       tenants_exists: boolean
       documents_exists: boolean
@@ -1917,6 +1941,14 @@ declare global {
     } as const;
 
     export type ApprovalDecision = typeof ApprovalDecision[keyof typeof ApprovalDecision]
+
+    const CalendarHeroStyleEnum = {
+      CARD: 'card',
+      SPLIT: 'split',
+      MINIMAL: 'minimal',
+    } as const;
+
+    export type CalendarHeroStyleEnum = typeof CalendarHeroStyleEnum[keyof typeof CalendarHeroStyleEnum]
 
     const CommentKind = {
       Comment: 'comment',

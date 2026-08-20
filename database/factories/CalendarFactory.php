@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\CalendarHeroStyleEnum;
 use App\Models\Calendar;
 use App\Models\Category;
 use App\Models\Tenant;
@@ -40,6 +41,7 @@ class CalendarFactory extends Factory
             'is_international' => fake()->boolean,
             'is_draft' => fake()->boolean,
             'is_all_day' => fake()->boolean,
+            'hero_style' => fake()->randomElement(CalendarHeroStyleEnum::cases()),
             'tenant_id' => Tenant::factory(),
         ];
     }

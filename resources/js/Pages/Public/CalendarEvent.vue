@@ -1,6 +1,6 @@
 <template>
-  <div class="calendar-event-page min-h-screen bg-white dark:bg-zinc-900">
-    <!-- Hero Section - Full Bleed -->
+  <div class="calendar-event-page">
+    <!-- Hero: inset card inside the layout's wrapper — no full-bleed -->
     <EventHero :event>
       <template #actions="{ onImage }">
         <EventActions
@@ -15,64 +15,62 @@
     </EventHero>
 
     <!-- Main Content Area -->
-    <div class="wrapper">
-      <div class="py-10 lg:py-16">
-        <!-- Two Column Layout -->
-        <div class="grid lg:grid-cols-12 gap-10 lg:gap-16">
-          <!-- Main Content -->
-          <main class="lg:col-span-8 space-y-12">
-            <!-- Description leads the column: no heading needed -->
-            <div
-              v-if="event.description"
-              class="typography max-w-none text-zinc-700 dark:text-zinc-300"
-              v-html="event.description"
-            />
+    <div class="mt-8 lg:mt-12">
+      <!-- Two Column Layout -->
+      <div class="grid lg:grid-cols-12 gap-8 lg:gap-12">
+        <!-- Main Content -->
+        <main class="lg:col-span-8 space-y-10">
+          <!-- Description leads the column: no heading needed -->
+          <div
+            v-if="event.description"
+            class="typography max-w-none text-zinc-700 dark:text-zinc-300"
+            v-html="event.description"
+          />
 
-            <!-- Video Section -->
-            <section v-if="event.video_url">
-              <div class="flex items-center gap-4 mb-6">
-                <h2 class="text-xl font-bold text-zinc-900 dark:text-zinc-100">
-                  {{ $t("Video") }}
-                </h2>
-                <div class="h-px flex-1 bg-gradient-to-r from-zinc-200 to-transparent dark:from-zinc-700" />
-              </div>
-              <div class="overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-800 ring-1 ring-zinc-900/5 dark:ring-white/10">
-                <iframe
-                  class="aspect-video w-full"
-                  :src="`https://www.youtube-nocookie.com/embed/${event.video_url}`"
-                  title="YouTube video player"
-                  frameborder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowfullscreen
-                />
-              </div>
-            </section>
-
-            <!-- Image Gallery Section -->
-            <section v-if="normalizedImages.length > 1">
-              <EventImageGallery :images="normalizedImages" :event-title="eventTitle" />
-            </section>
-          </main>
-
-          <!-- Sidebar -->
-          <aside class="lg:col-span-4 space-y-8 order-2 lg:order-none">
-            <!-- top-28 clears the fixed main navigation (see MainNavigation.vue) -->
-            <div class="lg:sticky lg:top-28 space-y-8">
-              <EventDetailsCard
-                :event
-                :google-link
-                :coordinates="eventLocation"
-              />
-
-              <UpcomingEventsCompact
-                :events="calendar"
-                :locale="locale"
-                :exclude-event-id="event.id"
-                :max-visible="3"
+          <!-- Video Section -->
+          <section v-if="event.video_url">
+            <div class="flex items-center gap-4 mb-4">
+              <h2 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                {{ $t("Video") }}
+              </h2>
+              <div class="h-px flex-1 bg-gradient-to-r from-zinc-200 to-transparent dark:from-zinc-700" />
+            </div>
+            <div class="overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-800 ring-1 ring-zinc-900/5 dark:ring-white/10">
+              <iframe
+                class="aspect-video w-full"
+                :src="`https://www.youtube-nocookie.com/embed/${event.video_url}`"
+                title="YouTube video player"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
               />
             </div>
-          </aside>
-        </div>
+          </section>
+
+          <!-- Image Gallery Section -->
+          <section v-if="normalizedImages.length > 1">
+            <EventImageGallery :images="normalizedImages" :event-title="eventTitle" />
+          </section>
+        </main>
+
+        <!-- Sidebar -->
+        <aside class="lg:col-span-4 space-y-8 order-2 lg:order-none">
+          <!-- top-28 clears the fixed main navigation (see MainNavigation.vue) -->
+          <div class="lg:sticky lg:top-28 space-y-8">
+            <EventDetailsCard
+              :event
+              :google-link
+              :coordinates="eventLocation"
+            />
+
+            <UpcomingEventsCompact
+              :events="calendar"
+              :locale="locale"
+              :exclude-event-id="event.id"
+              :max-visible="3"
+            />
+          </div>
+        </aside>
       </div>
     </div>
   </div>

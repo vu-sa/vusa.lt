@@ -100,16 +100,37 @@ describe('Public/CalendarEvent.vue', () => {
   it('renders hero actions via the EventHero slot', () => {
     const wrapper = mountPage();
 
-    const heroActions = wrapper.find('.event-hero-wrapper').find('.event-actions-stub');
+    const hero = wrapper.find('[data-slot="event-hero"]');
+    const heroActions = hero.find('.event-actions-stub');
     expect(heroActions.exists()).toBe(true);
     expect(heroActions.attributes('data-registration-url')).toBe('https://forms.example.com/register');
     expect(heroActions.attributes('data-on-image')).toBe('true');
   });
 
+  it('renders hero actions off-image for the split style', () => {
+    const wrapper = mountPage({
+      event: makeEvent({ hero_style: 'split' }),
+    });
+
+    const heroActions = wrapper.find('[data-slot="event-hero"]').find('.event-actions-stub');
+    expect(heroActions.exists()).toBe(true);
+    expect(heroActions.attributes('data-on-image')).toBe('false');
+  });
+
+  it('renders hero actions off-image for the minimal style', () => {
+    const wrapper = mountPage({
+      event: makeEvent({ hero_style: 'minimal' }),
+    });
+
+    const heroActions = wrapper.find('[data-slot="event-hero"]').find('.event-actions-stub');
+    expect(heroActions.exists()).toBe(true);
+    expect(heroActions.attributes('data-on-image')).toBe('false');
+  });
+
   it('passes upcoming state to hero actions for events with a registration URL', () => {
     const wrapper = mountPage();
 
-    const heroActions = wrapper.find('.event-hero-wrapper').find('.event-actions-stub');
+    const heroActions = wrapper.find('[data-slot="event-hero"]').find('.event-actions-stub');
     expect(heroActions.attributes('data-registration-url')).toBe('https://forms.example.com/register');
   });
 
@@ -118,7 +139,7 @@ describe('Public/CalendarEvent.vue', () => {
       event: makeEvent({ date: '2020-01-01T18:00:00+00:00' }),
     });
 
-    const heroActions = wrapper.find('.event-hero-wrapper').find('.event-actions-stub');
+    const heroActions = wrapper.find('[data-slot="event-hero"]').find('.event-actions-stub');
     expect(heroActions.exists()).toBe(true);
   });
 
@@ -127,7 +148,7 @@ describe('Public/CalendarEvent.vue', () => {
       event: makeEvent({ cto_url: null }),
     });
 
-    const heroActions = wrapper.find('.event-hero-wrapper').find('.event-actions-stub');
+    const heroActions = wrapper.find('[data-slot="event-hero"]').find('.event-actions-stub');
     expect(heroActions.exists()).toBe(true);
     expect(heroActions.attributes('data-registration-url')).toBeUndefined();
   });

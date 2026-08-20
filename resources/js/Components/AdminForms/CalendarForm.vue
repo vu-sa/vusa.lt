@@ -90,6 +90,12 @@
             </Button>
           </div>
         </FormFieldWrapper>
+
+        <!-- Hero style picker -->
+        <FormFieldWrapper id="hero_style" :label="$t('Renginio vaizdas')"
+          :hint="$t('Kaip renginio puslapio viršus atrodys lankytojams')">
+          <VisualOptionSelect v-model="heroStyle" :options="heroStyleOptions" :columns="3" icon-class="h-12 w-20" />
+        </FormFieldWrapper>
       </div>
     </FormElement>
 
@@ -105,27 +111,27 @@
         <p>{{ $t('Jeigu nėra nurodytas pabaigos laikas, kalendoriuje renginys rodomas kaip 1 val. trukmės.') }}</p>
       </template>
 
-      <div class="grid gap-4 lg:grid-cols-3">
-        <FormFieldWrapper id="date" :label="$t('Renginio pradžia')" required :error="form.errors.date"
-          :valid="form.valid('date')" :invalid="form.invalid('date')">
-          <DateTimePicker v-model="startDate" @update:model-value="form.validate('date')" />
-        </FormFieldWrapper>
+      <div class="space-y-4">
+        <div class="grid gap-4 lg:grid-cols-2">
+          <FormFieldWrapper id="date" :label="$t('Renginio pradžia')" required :error="form.errors.date"
+            :valid="form.valid('date')" :invalid="form.invalid('date')">
+            <DateTimePicker v-model="startDate" @update:model-value="form.validate('date')" />
+          </FormFieldWrapper>
 
-        <FormFieldWrapper id="end_date" :label="$t('Renginio pabaiga')" :error="form.errors.end_date">
-          <DateTimePicker v-model="endDate" />
-        </FormFieldWrapper>
+          <FormFieldWrapper id="end_date" :label="$t('Renginio pabaiga')" :error="form.errors.end_date">
+            <DateTimePicker v-model="endDate" />
+          </FormFieldWrapper>
+        </div>
 
-        <div class="flex items-end pb-2">
-          <div class="flex w-full items-center gap-3 rounded-lg border p-3">
-            <Switch id="is_all_day" v-model="form.is_all_day" />
-            <div class="flex-1">
-              <Label for="is_all_day" class="flex items-center gap-2 font-medium">
-                {{ $t('Visos dienos renginys') }}
-                <InfoPopover>
-                  {{ $t('ICS kalendoriuje šis renginys bus žymimas kaip visos dienos renginys.') }}
-                </InfoPopover>
-              </Label>
-            </div>
+        <div class="flex w-full items-center gap-3 rounded-lg border p-3">
+          <Switch id="is_all_day" v-model="form.is_all_day" />
+          <div class="flex-1 min-w-0 flex items-center gap-2">
+            <Label for="is_all_day" class="font-medium">
+              {{ $t('Visos dienos renginys') }}
+            </Label>
+            <InfoPopover>
+              {{ $t('ICS kalendoriuje šis renginys bus žymimas kaip visos dienos renginys.') }}
+            </InfoPopover>
           </div>
         </div>
       </div>
@@ -141,7 +147,7 @@
       </template>
 
       <div class="space-y-4">
-        <FormFieldWrapper id="cto_url" :label="$t('CTO nuoroda')"
+        <FormFieldWrapper id="cto_url" :label="$t('Renginio nuoroda')"
           :hint="$t('Nuoroda į pagrindinį renginio puslapį arba registracijos formą')">
           <MultiLocaleInput v-model:input="form.cto_url" />
         </FormFieldWrapper>
@@ -224,7 +230,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, h, ref, watch } from 'vue';
 import { router, useForm, usePage } from '@inertiajs/vue3';
 
 import InfoPopover from '../Buttons/InfoPopover.vue';
@@ -245,6 +251,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ImageUpload } from '@/Components/ui/upload';
 import DateTimePicker from '@/Components/ui/date-picker/DateTimePicker.vue';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
+import VisualOptionSelect from '@/Components/FormItems/VisualOptionSelect.vue';
 
 defineEmits<{
   (event: 'submit:form', form: unknown): void;
@@ -291,6 +298,56 @@ const hasMainImage = computed(() => !!form.main_image || !!existingMainImageUrl.
 const mainInfoComplete = computed(() =>
   (form.title?.lt?.length || 0) >= 3 && form.tenant_id,
 );
+
+// Hero style icons as simple SVG representations
+const CardHeroIcon = () => h('svg', { viewBox: '0 0 96 64', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, [
+  h('rect', { x: 4, y: 4, width: 88, height: 56, rx: 6 }),
+  h('path', { d: 'M4 40 h88' }),
+  h('path', { d: 'M12 48 h20' }),
+  h('path', { d: 'M12 30 l10 -8 l12 10 l8 -6 l14 10' }),
+  h('circle', { cx: 74, cy: 16, r: 4 }),
+]);
+
+const SplitHeroIcon = () => h('svg', { viewBox: '0 0 96 64', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, [
+  h('rect', { x: 4, y: 4, width: 88, height: 56, rx: 6 }),
+  h('path', { d: 'M40 4 v56' }),
+  h('path', { d: 'M48 16 h32 M48 26 h24 M48 36 h32' }),
+]);
+
+const MinimalHeroIcon = () => h('svg', { viewBox: '0 0 96 64', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, [
+  h('path', { d: 'M8 20 h80' }),
+  h('path', { d: 'M8 32 h56' }),
+  h('path', { d: 'M8 44 h32' }),
+  h('circle', { cx: 82, cy: 44, r: 6 }),
+]);
+
+const heroStyleOptions = [
+  {
+    value: 'card',
+    label: 'Didelė kortelė',
+    description: 'Nuotrauka fone',
+    icon: CardHeroIcon,
+  },
+  {
+    value: 'split',
+    label: 'Nuotrauka šalia',
+    description: 'Kortelė su nuotrauka',
+    icon: SplitHeroIcon,
+  },
+  {
+    value: 'minimal',
+    label: 'Minimalus',
+    description: 'Be nuotraukos',
+    icon: MinimalHeroIcon,
+  },
+];
+
+const heroStyle = computed({
+  get: () => form.hero_style ?? 'card',
+  set: (val: string) => {
+    form.hero_style = val as CalendarEventForm['hero_style'];
+  },
+});
 
 // Status header links
 const statusLinks = computed(() => {

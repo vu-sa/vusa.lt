@@ -34,6 +34,11 @@ export enum CRUDEnum {
   DELETE = "delete",
   FORCE_DELETE = "forceDelete",
 }
+export enum CalendarHeroStyleEnum {
+  CARD = "card",
+  SPLIT = "split",
+  MINIMAL = "minimal",
+}
 export enum CommentKind {
   Comment = "comment",
   Poll = "poll",

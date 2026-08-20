@@ -24,7 +24,7 @@
           leave-active-class="transition-all duration-150 ease-in"
           leave-from-class="scale-100 opacity-100"
           leave-to-class="scale-0 opacity-0"
-          mode="out/in"
+          mode="out-in"
         >
           <IFluentCheckmark16Filled v-if="isComplete" class="size-4" />
           <component :is="icon" v-else-if="icon" class="size-4" />

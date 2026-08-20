@@ -7,6 +7,12 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.27 — Event page hero styles (2026-08-20) {#v1-27}
+
+- ⭐ **Pickable event page hero styles** — every event can now choose one of three hero layouts: a large card with the photo behind the text, a card with the photo beside the text, or a minimal layout with no photo at all. The style is picked on the event form
+- ✨ **Calmer default event hero** — the hero is now compact, the title much smaller, and the actions (registration, sharing) keep a sensible layout on every screen. The full-bleed hero that broke the page's flow is gone
+- 🔧 **Fixed event date texts** — long Lithuanian dates no longer clip in the date picker, and the "All-day event" switch has a consistently visible row
+
 ## v1.26 — Duty period timeline (2026-08-20) {#v1-26}
 
 - ⭐ **Duty periods on one timeline** — every duty in an institution is drawn as a bar you can drag, with a dock underneath showing the selected row, the suggested fixes and any unsaved changes. Reachable from the People area and from duty, member and institution pages

@@ -9,8 +9,8 @@
         )"
         :disabled
       >
-        <CalendarIcon class="mr-2 h-4 w-4" />
-        {{ displayText }}
+        <CalendarIcon class="mr-2 h-4 w-4 shrink-0" />
+        <span class="truncate min-w-0">{{ displayText }}</span>
       </Button>
     </PopoverTrigger>
     <PopoverContent class="w-auto p-0" align="start">

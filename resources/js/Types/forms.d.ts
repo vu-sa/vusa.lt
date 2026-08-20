@@ -15,6 +15,7 @@ declare global {
       | 'is_draft'
       | 'is_all_day'
       | 'is_international'
+      | 'hero_style'
       | 'tenant_id'
       | 'category_id'
       | 'tenant'

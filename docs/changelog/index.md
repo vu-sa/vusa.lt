@@ -7,6 +7,12 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.27 — Renginio puslapio vaizdo stiliai (2026-08-20) {#v1-27}
+
+- ⭐ **Renkami renginio puslapio vaizdo stiliai** — kiekvienam renginiui galima pasirinkti vieną iš trijų stilių: didelę kortelę su nuotrauka fone, kortelę su nuotrauka šalia teksto arba minimalų vaizdą be nuotraukos. Stilius parenkamas renginio formoje
+- ✨ **Ramesnis numatytasis renginio vaizdas** — herojus tapo kompaktiškas, antraštė gerokai mažesnė, o veiksmai (registracija, dalinimasis) išlaiko tą patį tinkamą išdėstymą visuose ekranuose. Pašalintas „išsiplėtęs“ pilno ekrano vaizdas, trukdęs puslapio eigai
+- 🔧 **Sutvarkyti renginio datos tekstai** — ilgos lietuviškos datos nebe „nusikerta“ datos parinkimo lauke, o „Visos dienos renginys“ perjungimas turi nuolat matomą eilutę
+
 ## v1.26 — Pareigybių laikotarpių laiko juosta (2026-08-20) {#v1-26}
 
 - ⭐ **Pareigybių laikotarpiai vienoje laiko juostoje** — visos institucijos pareigybės matomos kaip juostos; datas galima tempti pele, o apačioje esantis skydelis rodo pažymėtą įrašą, siūlomus taisymus ir neišsaugotus pakeitimus. Pasiekiama iš „Žmonės“ srities, pareigybės, nario ir institucijos puslapių
