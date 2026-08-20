@@ -268,7 +268,7 @@ class SettingsController extends AdminController
                 'id' => (string) $page->id,
                 'title' => $page->title,
                 'lang' => $page->lang,
-                'tenant_shortname' => $page->tenant?->shortname,
+                'tenant_shortname' => $page->tenant->shortname,
             ];
         };
 
