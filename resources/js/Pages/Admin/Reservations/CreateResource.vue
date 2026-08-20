@@ -1,8 +1,5 @@
 <template>
-  <PageContent :title="$tChoice('forms.new_model', 1, {
-    model: $tChoice('entities.resource.model', 1),
-  })
-  " :heading-icon="ResourceIcon">
+  <PageContent :title="newEntityTitle('resource')" :heading-icon="ResourceIcon">
     <UpsertModelLayout>
       <ResourceForm remember-key="CreateResource" :assignable-tenants :resource :categories
         @submit:form="(form) => form.post(route('resources.store'))" />
@@ -11,6 +8,7 @@
 </template>
 
 <script setup lang="ts">
+import { newEntityTitle } from '@/Utils/EntityMessages';
 import { usePage } from '@inertiajs/vue3';
 
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';

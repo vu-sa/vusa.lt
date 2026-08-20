@@ -7,6 +7,7 @@ use App\Models\StudyProgram;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -94,7 +95,7 @@ describe('wizard page access', function (): void {
     test('wizard includes institution types for creation', function (): void {
         // Create some institution types
         $type = Type::factory()->create([
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
             'title' => ['lt' => 'Test Type', 'en' => 'Test Type'],
         ]);
 
@@ -138,7 +139,7 @@ describe('batch update users', function (): void {
         $this->assertDatabaseHas('dutiables', [
             'duty_id' => $this->duty->id,
             'dutiable_id' => $newUser->id,
-            'dutiable_type' => User::class,
+            'dutiable_type' => MorphMap::alias(User::class),
         ]);
     });
 

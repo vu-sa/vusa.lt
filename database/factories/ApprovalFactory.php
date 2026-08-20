@@ -6,6 +6,7 @@ use App\Enums\ApprovalDecision;
 use App\Models\Approval;
 use App\Models\Reservation;
 use App\Models\User;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -22,7 +23,7 @@ class ApprovalFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'approvable_type' => Reservation::class,
+            'approvable_type' => MorphMap::alias(Reservation::class),
             'approvable_id' => Reservation::factory(),
             'decision' => null,
             'step' => 1,

@@ -57,7 +57,7 @@ class ApprovalService
 
         $approval = DB::transaction(function () use ($approvable, $user, $decision, $notes, $step) {
             $approval = Approval::create([
-                'approvable_type' => $approvable::class,
+                'approvable_type' => $approvable->getMorphClass(),
                 'approvable_id' => $approvable->getKey(),
                 'user_id' => $user->id,
                 'decision' => $decision,

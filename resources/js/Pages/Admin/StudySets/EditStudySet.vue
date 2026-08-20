@@ -1,5 +1,5 @@
 <template>
-  <PageContent :title :heading-icon="TrainingIcon">
+  <PageContent :title :heading-icon="StudySetIcon">
     <UpsertModelLayout>
       <StudySetForm :study-set :tenants
         @submit:form="(form: any) => form.patch(route('studySets.update', studySet.id))"
@@ -16,7 +16,7 @@ import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import StudySetForm from '@/Components/AdminForms/StudySetForm.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 import { useTranslatedTitle } from '@/Composables/useTranslatedTitle';
-import { TrainingIcon } from '@/Components/icons';
+import { StudySetIcon } from '@/Components/icons';
 
 const props = defineProps<{
   studySet: any;

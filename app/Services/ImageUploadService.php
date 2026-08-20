@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\StoragePath;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -136,23 +137,17 @@ class ImageUploadService
      */
     protected function normalizeDirectoryPath(string $directory): string
     {
-        // Remove any path traversal attempts
-        $directory = str_replace(['../', '..\\'], '', $directory);
+        // Drop traversal segments. Callers are expected to have rejected these already; this is
+        // the last line of defence before the path reaches storage_path(), so it must not be a
+        // single-pass str_replace (which `....//` walks straight through).
+        $directory = StoragePath::normalizeRelative($directory);
 
-        // Handle different path patterns
         if (str_starts_with($directory, 'public/')) {
             return $directory;
         }
 
-        if (str_starts_with($directory, 'files/')) {
-            return 'public/'.$directory;
-        }
-
-        // Simple folder name (e.g., 'banners', 'news')
-        if (! str_contains($directory, '/')) {
-            return 'public/'.$directory;
-        }
-
+        // Everything else — `files/...` subpaths and simple folder names alike — lives under
+        // the public disk root.
         return 'public/'.$directory;
     }
 

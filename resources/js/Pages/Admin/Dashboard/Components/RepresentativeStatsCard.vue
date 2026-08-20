@@ -1,16 +1,16 @@
 <template>
-  <Card :class="dashboardCardClasses" role="region" :aria-label="$t('Atstovų aktyvumas')">
-    <!-- Status indicator - corner accent based on activity health -->
-    <div :class="statusIndicatorClasses" aria-hidden="true" />
+  <DashboardCard
+    :title="$t('Atstovų aktyvumas')"
+    accent-class="bg-zinc-300/50 dark:bg-zinc-600/30"
+    content-class="flex flex-col justify-center"
+  >
+    <!-- The five health states (incl. orange "low" and red "critical") are finer
+         grained than the four urgency levels, so the icon tint stays local. -->
+    <template #icon>
+      <Users :class="iconClasses" aria-hidden="true" />
+    </template>
 
-    <CardHeader class="pb-3 relative z-10">
-      <CardTitle class="flex items-center gap-2">
-        <Users :class="iconClasses" aria-hidden="true" />
-        {{ $t('Atstovų aktyvumas') }}
-      </CardTitle>
-    </CardHeader>
-
-    <CardContent class="flex-1 relative z-10 flex flex-col justify-center">
+    <template #default>
       <!-- Loading state -->
       <div v-if="loading" class="space-y-4 py-4">
         <Skeleton class="h-12 w-24" />
@@ -23,20 +23,13 @@
 
       <!-- Stats display -->
       <template v-else>
-        <!-- Main metrics section -->
-        <div class="flex items-end gap-4 mb-6">
-          <div class="flex items-baseline gap-1">
-            <span :class="[
-              'text-4xl font-bold',
-              activityRatio >= 0.7 ? 'text-emerald-600 dark:text-emerald-400' :
-              activityRatio >= 0.4 ? 'text-amber-600 dark:text-amber-400' :
-              'text-zinc-700 dark:text-zinc-300'
-            ]" :aria-label="$t('Aktyvūs atstovai') + ': ' + stats.activeLast30Days">
-              {{ stats.activeLast30Days }}
-            </span>
-            <span class="text-lg text-zinc-500 dark:text-zinc-400">/{{ stats.total }}</span>
-          </div>
-        </div>
+        <StatTile
+          class="mb-6"
+          :value="stats.activeLast30Days"
+          :total="stats.total"
+          :urgency="activityUrgency"
+          :aria-label="$t('Aktyvūs atstovai') + ': ' + stats.activeLast30Days"
+        />
 
         <!-- Activity breakdown badges -->
         <div class="flex flex-wrap gap-2 mb-6">
@@ -106,9 +99,9 @@
           </div>
         </div>
       </template>
-    </CardContent>
+    </template>
 
-    <CardFooter :class="[dashboardCardFooterClasses, 'p-4 relative z-10']">
+    <template #footer>
       <!-- Insight message based on activity health -->
       <div class="text-xs text-center w-full">
         <template v-if="stats.neverLoggedIn > 0">
@@ -136,8 +129,8 @@
           </div>
         </template>
       </div>
-    </CardFooter>
-  </Card>
+    </template>
+  </DashboardCard>
 </template>
 
 <script setup lang="ts">
@@ -147,10 +140,11 @@ import { Users, AlertCircle } from 'lucide-vue-next';
 
 import type { RepresentativeActivityStats } from '../types';
 
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/Components/ui/card';
+import DashboardCard from '@/Components/Dashboard/DashboardCard.vue';
+import { StatTile } from '@/Components/Patterns';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { Skeleton } from '@/Components/ui/skeleton';
-import { dashboardCardClasses, dashboardCardFooterClasses } from '@/Composables/useDashboardCardStyles';
+import type { UrgencyLevel } from '@/Composables/useDashboardCardStyles';
 
 interface Props {
   stats: RepresentativeActivityStats;
@@ -198,9 +192,11 @@ const healthBadgeClasses = computed(() => {
   }
 });
 
-const statusIndicatorClasses = computed(() => {
-  const base = 'absolute top-0 right-0 w-12 h-12 -mr-6 -mt-6 rotate-45';
-  return `${base} bg-zinc-300/50 dark:bg-zinc-600/30`;
+/** Coarser than `healthStatus` — StatTile only distinguishes good / middling / poor. */
+const activityUrgency = computed<UrgencyLevel>(() => {
+  if (activityRatio.value >= 0.7) return 'success';
+  if (activityRatio.value >= 0.4) return 'warning';
+  return 'neutral';
 });
 
 const iconClasses = computed(() => {

@@ -20,7 +20,6 @@
             <SmartLink
               :href="route('newsArchive', {
                 lang: $page.props.app.locale,
-                newsString: $page.props.app.locale === 'lt' ? 'naujienos' : 'news',
                 subdomain: $page.props.tenant?.subdomain || 'www'
               })"
               class="plain"
@@ -50,12 +49,10 @@
         :key="item.id"
         class="plain"
         prefetch
-        :href="route('news', {
-          lang: item.lang,
+        :href="localizedRoute('news', {
           news: item.permalink ?? '',
-          newsString: 'naujiena',
           subdomain: $page.props.tenant?.subdomain ?? 'www',
-        })"
+        }, item.lang)"
       >
         <NewsCard :news="item" :locale="$page.props.app.locale" />
       </SmartLink>
@@ -163,6 +160,7 @@
 </template>
 
 <script setup lang="ts">
+import { localizedRoute } from '@/Utils/LocalizedRoutes';
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { XIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-vue-next';

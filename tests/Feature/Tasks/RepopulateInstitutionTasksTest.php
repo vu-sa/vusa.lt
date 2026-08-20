@@ -8,6 +8,7 @@ use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
+use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
@@ -34,7 +35,7 @@ function institutionWithRepresentative(): Institution
         ]);
 
     $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
-        ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => Duty::class]);
+        ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => MorphMap::alias(Duty::class)]);
 
     $duty = Duty::factory()
         ->for($institution)
@@ -52,7 +53,7 @@ function institutionWithRepresentative(): Institution
 function periodicityGapTaskFor(Institution $institution): ?Task
 {
     return Task::query()
-        ->where('taskable_type', Institution::class)
+        ->where('taskable_type', MorphMap::alias(Institution::class))
         ->where('taskable_id', $institution->id)
         ->where('action_type', ActionType::PeriodicityGap)
         ->first();

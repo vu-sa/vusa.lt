@@ -7,6 +7,7 @@ use App\Models\Duty;
 use App\Models\InstitutionCheckIn;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
+use App\Support\MorphMap;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -16,8 +17,8 @@ use Illuminate\Support\Facades\DB;
  * Sibling to {@see MergeDuties}. Dutiable rows are repointed in bulk (not
  * pivot-by-pivot) so a duty both users hold lands on the kept user exactly
  * once — {@see CollapseOverlappingDutiables} then folds any overlapping rows
- * this produces. The many-to-many pivots (tasks, reservations, memberships,
- * trainings) are repointed at the pivot table with the kept user's existing
+ * this produces. The many-to-many pivots (tasks, reservations) are repointed at
+ * the pivot table with the kept user's existing
  * rows de-duplicated, and HasMany records (comments, check-ins) are repointed
  * directly. The merged user is soft-deleted, like duties are on merge, so a
  * botched merge is recoverable.
@@ -34,14 +35,14 @@ class MergeUsers
             // Capture the merged user's duties before repointing, so each can be
             // collapsed afterwards for overlaps with the kept user's own rows.
             $affectedDutyIds = Dutiable::query()
-                ->where('dutiable_type', User::class)
+                ->where('dutiable_type', MorphMap::alias(User::class))
                 ->where('dutiable_id', $mergedUser->id)
                 ->pluck('duty_id')
                 ->unique();
 
             // Repoint every dutiable row the merged user holds onto the kept user.
             Dutiable::query()
-                ->where('dutiable_type', User::class)
+                ->where('dutiable_type', MorphMap::alias(User::class))
                 ->where('dutiable_id', $mergedUser->id)
                 ->update(['dutiable_id' => $keptUser->id]);
 
@@ -59,17 +60,10 @@ class MergeUsers
             // already has, then repoint the rest. (table, related-key column)
             self::repointPivot('task_user', 'task_id', $keptUser, $mergedUser);
             self::repointPivot('reservation_user', 'reservation_id', $keptUser, $mergedUser);
-            self::repointPivot('training_user', 'training_id', $keptUser, $mergedUser);
-            self::repointPivot('membership_user', 'membership_id', $keptUser, $mergedUser);
 
             // HasMany records — repoint the foreign key directly.
             Comment::query()->where('user_id', $mergedUser->id)->update(['user_id' => $keptUser->id]);
             InstitutionCheckIn::query()->where('user_id', $mergedUser->id)->update(['user_id' => $keptUser->id]);
-
-            // Training organizer role (trainings.organizer_id references users).
-            DB::table('trainings')
-                ->where('organizer_id', $mergedUser->id)
-                ->update(['organizer_id' => $keptUser->id]);
 
             // Finally, soft-delete the merged user (recoverable, like MergeDuties).
             $mergedUser->delete();

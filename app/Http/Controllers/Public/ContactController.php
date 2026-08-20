@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Public;
 
+use App\Enums\TenantType;
 use App\Http\Controllers\PublicController;
 use App\Models\Form;
 use App\Models\Institution;
@@ -31,9 +32,9 @@ class ContactController extends PublicController
         $this->getTenantLinks();
         $this->shareOtherLangURL('contacts', $this->subdomain);
 
-        $seo = $this->shareAndReturnSEOObject(
+        $this->applyPageHead(
             contentTenant: $this->tenant,
-            title: __('Kontaktų paieška').' - '.$this->tenant->shortname,
+            title: __('Kontaktų paieška'),
             description: app()->getLocale() === 'lt' ? 'VU SA kontaktų paieškoje vienoje vietoje suraskite visus VU SA kontaktus' : 'In the VU SA contact search, find all VU SA contacts in one place',
         );
 
@@ -47,12 +48,10 @@ class ContactController extends PublicController
 
         return Inertia::render('Public/Contacts/ShowContacts', [
             'institutionTypes' => $institutionTypes,
-        ])->withViewData(
-            ['SEOData' => $seo]
-        );
+        ]);
     }
 
-    public function institutionContacts($subdomain, $lang, Institution $institution)
+    public function institutionContacts($subdomain, $lang, $contactsString, Institution $institution)
     {
         $this->getTenantLinks();
 
@@ -90,7 +89,7 @@ class ContactController extends PublicController
         return $this->renderInstitutionPage($institution, $contacts, $institution->name.' | Kontaktai');
     }
 
-    public function institutionDutyTypeContacts($subdomain, $lang, Type $type)
+    public function institutionDutyTypeContacts($subdomain, $lang, $contactsString, Type $type)
     {
         $this->getTenantLinks();
 
@@ -105,7 +104,7 @@ class ContactController extends PublicController
 
         $types = $type->getDescendantsAndSelf();
 
-        if ($this->tenant->type === 'pagrindinis') {
+        if ($this->tenant->isMain()) {
             $institution = Institution::where('alias', '=', 'centrinis-biuras')->first();
         } else {
             $institution = Institution::where('alias', '=', $this->tenant->alias)->firstOrFail();
@@ -181,15 +180,13 @@ class ContactController extends PublicController
             return $descendant->institutions->count() > 0;
         })->values();
 
-        $seo = $this->shareAndReturnSEOObject(
+        $this->applyPageHead(
             contentTenant: $this->tenant,
-            title: __('Studentų atstovai').' - '.$this->tenant->shortname,
+            title: __('Studentų atstovai'),
             description: app()->getLocale() === 'lt' ? $this->tenant->shortname.' studentų atstovų paieškoje vienoje vietoje suraskite visus '.$this->tenant->shortname.'studentų atstovus' : 'In '.$this->tenant->shortname.'contact search find all'.$this->tenant->shortname.'student representatives');
 
         return Inertia::render('Public/Contacts/ShowStudentReps', [
             'types' => $descendants,
-        ])->withViewData([
-            'SEOData' => $seo,
         ]);
     }
 
@@ -207,9 +204,9 @@ class ContactController extends PublicController
         $groupedMeetings = $this->groupMeetingsByAcademicYear($meetings);
 
         // Use the institution's tenant for proper canonical URL
-        $seo = $this->shareAndReturnSEOObject(
+        $this->applyPageHead(
             contentTenant: $institution->tenant,
-            title: $title.' - '.$institution->tenant->shortname,
+            title: $title,
             description: Str::limit(strip_tags($institution->description), 160),
             image: $institution->image_url,
         );
@@ -247,9 +244,7 @@ class ContactController extends PublicController
             })->values();
         }
 
-        return Inertia::render('Public/Contacts/ShowInstitution', $data)->withViewData(
-            ['SEOData' => $seo]
-        );
+        return Inertia::render('Public/Contacts/ShowInstitution', $data);
     }
 
     /**
@@ -311,7 +306,7 @@ class ContactController extends PublicController
     /**
      * Show individual meeting detail page
      */
-    public function showMeeting($subdomain, $lang, Meeting $meeting)
+    public function showMeeting($subdomain, $lang, $meetingsString, Meeting $meeting)
     {
         $this->getTenantLinks();
 
@@ -376,10 +371,12 @@ class ContactController extends PublicController
             'meeting' => $meeting->id,
         ]));
 
-        // Use the institution's tenant for proper canonical URL
-        $seo = $this->shareAndReturnSEOObject(
+        // Use the institution's tenant for proper canonical URL. The title is suffixed with
+        // the institution's name rather than the (possibly different) tenant's shortname.
+        $this->applyPageHead(
             contentTenant: $primaryInstitution->tenant,
-            title: $meeting->title.' - '.$primaryInstitution->name,
+            title: $meeting->title,
+            titleSuffix: ' - '.$primaryInstitution->name,
             description: Str::limit(strip_tags($meeting->description), 160),
             robots: 'noindex, nofollow',
         );
@@ -390,7 +387,7 @@ class ContactController extends PublicController
             'representatives' => $representatives,
             'previousMeeting' => $previousMeeting,
             'nextMeeting' => $nextMeeting,
-        ])->withViewData(['SEOData' => $seo]);
+        ]);
     }
 
     /**
@@ -400,7 +397,7 @@ class ContactController extends PublicController
      * @param  string  $lang
      * @return Response
      */
-    public function institutionCategory($subdomain, $lang, Type $type)
+    public function institutionCategory($subdomain, $lang, $contactsString, $contactCategoryString, Type $type)
     {
         $this->getTenantLinks();
 
@@ -412,13 +409,15 @@ class ContactController extends PublicController
         if ($type->slug === 'padaliniai') {
             $institutions = $type->load(['institutions' => function ($query): void {
                 $query->orderBy('name')->with(['tenant' => function ($query): void {
-                    $query->where('type', 'padalinys');
+                    $query->where('type', TenantType::Padalinys);
                 }]);
             }])->institutions;
 
-            $seo = $this->shareAndReturnSEOObject(
+            // Title suffix now derives from the current tenant instead of a hardcoded "VU SA" — on a
+            // padalinys subdomain this reads "... - VU SA <padalinys>" instead of always "- VU SA".
+            $this->applyPageHead(
                 contentTenant: $this->tenant,
-                title: __('Kontaktai').': '.$type->title.' - VU SA',
+                title: __('Kontaktai').': '.$type->title,
                 description: Str::limit($type->description, 160),
             );
 
@@ -428,9 +427,7 @@ class ContactController extends PublicController
                     'description' => '',
                 ]),
                 'type' => $type->unsetRelation('institutions'),
-            ])->withViewData(
-                ['SEOData' => $seo]
-            );
+            ]);
         }
 
         // For other types (pkp, studentu-atstovu-organas), use ShowStudentReps format
@@ -438,7 +435,7 @@ class ContactController extends PublicController
 
         // Default to showing all tenants on www (pagrindinis), filter by tenant on padalinys subdomains
         // Can be overridden with ?all=1 or ?all=0 query parameter
-        $isMainTenant = $this->tenant->type === 'pagrindinis';
+        $isMainTenant = $this->tenant->isMain();
         $showAllTenants = request()->has('all') ? request()->boolean('all') : $isMainTenant;
 
         $descendants->load(['institutions' => function ($query) use ($showAllTenants): void {
@@ -446,8 +443,11 @@ class ContactController extends PublicController
                 ->with('duties.current_users:id,name,email,phone,facebook_url,profile_photo_path,profile_photo_focal_point')
                 ->with('tenant:id,alias,shortname,type')
                 ->where('is_active', true)
-                // Order by tenant type 'pagrindinis' first, then by name
-                ->orderByRaw("CASE WHEN EXISTS (SELECT 1 FROM tenants WHERE tenants.id = institutions.tenant_id AND tenants.type = 'pagrindinis') THEN 0 ELSE 1 END")
+                // Central-office institutions first, then by name.
+                ->orderByRaw(
+                    'CASE WHEN EXISTS (SELECT 1 FROM tenants WHERE tenants.id = institutions.tenant_id AND tenants.type = ?) THEN 0 ELSE 1 END',
+                    [TenantType::Pagrindinis->value]
+                )
                 ->orderBy('name');
 
             // Only filter by tenant if not showing all
@@ -465,9 +465,9 @@ class ContactController extends PublicController
             return $descendant->institutions->count() > 0;
         })->values();
 
-        $seo = $this->shareAndReturnSEOObject(
+        $this->applyPageHead(
             contentTenant: $this->tenant,
-            title: __('Kontaktai').': '.$type->title.' - '.$this->tenant->shortname,
+            title: __('Kontaktai').': '.$type->title,
             description: Str::limit($type->description, 160),
         );
 
@@ -475,9 +475,7 @@ class ContactController extends PublicController
             'types' => $descendants,
             'categoryType' => $type->only(['id', 'slug', 'title', 'description']),
             'showAllTenants' => $showAllTenants,
-        ])->withViewData(
-            ['SEOData' => $seo]
-        );
+        ]);
     }
 
     /**
@@ -630,7 +628,6 @@ class ContactController extends PublicController
 
         return [
             'formPath' => route('registrationPage', [
-                'registrationString' => app()->getLocale() === 'lt' ? 'registracija' : 'registration',
                 'registrationForm' => $form->path,
                 'lang' => app()->getLocale(),
             ]),

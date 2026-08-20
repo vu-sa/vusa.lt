@@ -82,12 +82,15 @@ class PermissionService
     }
 
     /**
-     * Reset permission cache for the specified user
+     * Reset permission cache for the specified user.
      *
      * @param  User|int|string  $user  User instance or user ID
+     * @param  bool  $flushGlobal  See `ModelAuthorizer::resetCache()` — only pass true when the
+     *                             caller mutated roles/permissions without going through Spatie's
+     *                             own trait methods, which flush the shared cache themselves.
      */
-    public function resetCache($user): void
+    public function resetCache($user, bool $flushGlobal = false): void
     {
-        $this->authorizer->resetCache($user);
+        $this->authorizer->resetCache($user, $flushGlobal);
     }
 }

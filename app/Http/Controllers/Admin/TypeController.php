@@ -11,15 +11,15 @@ use App\Http\Traits\HasTanstackTables;
 use App\Models\Duty;
 use App\Models\Role;
 use App\Models\Type;
-use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
+use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
 
 class TypeController extends AdminController
 {
     use HandlesSoftDeletes, HasTanstackTables;
 
-    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
+    public function __construct(private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
@@ -51,7 +51,7 @@ class TypeController extends AdminController
         // Trash view only: lets the table say why permanent deletion is refused.
         $query = $this->withForceDeleteBlockers($query, $request, []);
 
-        $types = $query->paginate($request->input('per_page', 20))
+        $types = $query->paginate($request->getPerPage())
             ->withQueryString();
 
         $this->appendForceDeleteBlockedReason($types->getCollection(), $request);
@@ -71,7 +71,7 @@ class TypeController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $sorting,
-            'showDeleted' => $request->boolean('showDeleted', false),
+            'showDeleted' => $request->getShowDeleted(),
             'deletedCount' => $deletedCount,
             'initialSorting' => $sorting,
         ]);
@@ -98,15 +98,15 @@ class TypeController extends AdminController
         $validated = $request->validated();
 
         $type = Type::query()->create(
-            $request->only('title', 'model_type', 'description', 'parent_id', 'slug', 'extra_attributes')
+            $request->safe()->only('title', 'model_type', 'description', 'parent_id', 'slug', 'extra_attributes')
         );
 
-        if ($validated['model_type'] === Duty::class) {
+        if ($validated['model_type'] === MorphMap::alias(Duty::class)) {
             $type->roles()->sync($request->input('roles', []));
         }
 
         return redirect()->route('types.index')
-            ->with('success', 'Turinio tipas sukurtas sėkmingai.');
+            ->with('success', $this->entityMessage('created', 'type'));
     }
 
     /**
@@ -152,7 +152,7 @@ class TypeController extends AdminController
     {
         $validated = $request->validated();
 
-        $type->update($request->only('title', 'model_type', 'description', 'parent_id', 'extra_attributes'));
+        $type->update($request->safe()->only('title', 'model_type', 'description', 'parent_id', 'extra_attributes'));
 
         // Resolved through the allowlist rather than built from the request, so
         // only `institutions` and `duties` are ever reachable.
@@ -160,11 +160,11 @@ class TypeController extends AdminController
 
         $type->{$relation}()->sync($request->input($relation, []));
 
-        if ($validated['model_type'] === Duty::class) {
+        if ($validated['model_type'] === MorphMap::alias(Duty::class)) {
             $type->roles()->sync($request->input('roles', []));
         }
 
-        return back()->with('success', 'Turinio tipas sėkmingai atnaujintas!');
+        return back()->with('success', $this->entityMessage('updated', 'type'));
     }
 
     /**
@@ -177,12 +177,12 @@ class TypeController extends AdminController
         $type->delete();
 
         return redirect()->route('types.index')
-            ->with('success', 'Turinio tipas ištrintas sėkmingai.');
+            ->with('success', $this->entityMessage('deleted', 'type'));
     }
 
     public function restore(Type $type): RedirectResponse
     {
-        return $this->restoreModel($type, 'Tipas atkurtas!');
+        return $this->restoreModel($type, $this->entityMessage('restored', 'type'));
     }
 
     public function forceDelete(Type $type): RedirectResponse

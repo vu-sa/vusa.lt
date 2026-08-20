@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use App\Models\Pivots\Relationshipable;
-use App\Models\Pivots\Trainable;
 use App\Services\PublicInstitutionSearchIndexBuilder;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -42,13 +42,12 @@ use Laravel\Scout\Searchable;
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, FileableFile> $availableFiles
- * @property-read Relationshipable|InstitutionFollow|Trainable|null $pivot
- * @property-read Collection<int, Training> $availableTrainings
  * @property-read Collection<int, InstitutionCheckIn> $checkIns
  * @property-read Collection<int, Comment> $comments
  * @property-read Collection<int, Document> $documents
  * @property-read Collection<int, Duty> $duties
  * @property-read Collection<int, FileableFile> $fileableFiles
+ * @property-read Relationshipable|InstitutionFollow|null $pivot
  * @property-read Collection<int, User> $followers
  * @property-read string|null $force_delete_blocked_reason
  * @property-read bool $has_protocol
@@ -65,6 +64,7 @@ use Laravel\Scout\Searchable;
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Task> $tasksFromMeetings
  * @property-read Tenant|null $tenant
+ * @property-read Tenant|null $tenants
  * @property-read mixed $translations
  * @property-read Collection<int, Type> $types
  * @property-read Collection<int, User> $users
@@ -91,13 +91,12 @@ class PublicInstitution extends Institution
     use Searchable;
 
     /**
-     * Get the class name for polymorphic relations.
-     * This ensures we use the parent Institution morph class for typeables lookup.
+     * Share the parent Institution's morph alias — see App\Models\PublicNews::getMorphClass().
      */
     #[\Override]
     public function getMorphClass(): string
     {
-        return Institution::class;
+        return MorphMap::alias(MorphMap::ALIASED_TO_PARENT[static::class]);
     }
 
     /**

@@ -7,6 +7,14 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.25 — Hero carousel, English URLs and authorization clean-up (2026-08-20) {#v1-25}
+
+- ⭐ **New hero carousel block** — page content can now open with rotating large photos, each carrying its own title, subtitle, description and buttons. The carousel is keyboard- and screen-reader-friendly, autoplay pauses on hover and turns off entirely when the device requests reduced motion
+- ⭐ **The English site now has English URLs** — documents, search, contacts, student representatives and meetings are served from `/en/documents`, `/en/search`, `/en/contacts`, `/en/meetings` and so on. Old links redirect to the new ones, so saved links keep working
+- ⭐ **New site settings page** — the privacy policy page can be picked separately for Lithuanian and English, and the cookie banner's link follows the visitor's language
+- ✨ **Admin and form validation messages are translated** — some previously appeared in one language only, or as a raw key such as "messages.meeting.updated"
+- ✨ **Trainings and Memberships removed** — both were left unfinished and without data since late 2024, so they are gone from the admin menu
+
 ## v1.24 — Ex-officio duties are granted again (2026-08-11) {#v1-24}
 
 - 🔧 **Ex-officio members no longer disappear** 

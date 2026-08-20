@@ -17,6 +17,12 @@ abstract class BaseIndexRequest extends FormRequest
     protected array $defaultSorting = [];
 
     /**
+     * Page size used when the request carries no `per_page`.
+     * Override in child classes that want a different default.
+     */
+    protected int $defaultPerPage = 20;
+
+    /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
@@ -58,6 +64,28 @@ abstract class BaseIndexRequest extends FormRequest
         }
 
         return $this->defaultSorting;
+    }
+
+    /**
+     * Get the page size, read through the validated payload so the `max:100` cap above is
+     * always the one that applies.
+     */
+    public function getPerPage(): int
+    {
+        $perPage = $this->validated('per_page');
+
+        return $perPage === null ? $this->defaultPerPage : (int) $perPage;
+    }
+
+    /**
+     * Whether the listing should include soft-deleted records.
+     *
+     * The param arrives as the string 'true'/'false' (see the rule above), which
+     * `$this->boolean()` already handles.
+     */
+    public function getShowDeleted(): bool
+    {
+        return $this->boolean('showDeleted');
     }
 
     /**

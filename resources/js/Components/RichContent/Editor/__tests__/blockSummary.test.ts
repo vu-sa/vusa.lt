@@ -77,9 +77,10 @@ describe('deriveBlockSummary', () => {
     expect(deriveBlockSummary(part('text-box', {}, { title: { lt: '', en: 'Suggestions' } }))).toBe('Suggestions');
   });
 
-  it('shows carousel/card-stack first item title plus remaining count', () => {
+  it('shows carousel/card-stack/hero-carousel first item title plus remaining count', () => {
     const slides = [{ title: 'Bendruomenė' }, { title: 'Poveikis' }, { title: 'Augimas' }];
     expect(deriveBlockSummary(part('carousel-slide-deck', slides))).toBe('Bendruomenė (+2)');
+    expect(deriveBlockSummary(part('hero-carousel', slides))).toBe('Bendruomenė (+2)');
 
     const cards = [{ title: 'Studijos' }];
     expect(deriveBlockSummary(part('card-stack', cards))).toBe('Studijos');

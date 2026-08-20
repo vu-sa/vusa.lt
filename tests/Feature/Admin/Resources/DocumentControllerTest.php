@@ -11,6 +11,10 @@ use Illuminate\Support\Facades\Queue;
 pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
+    // The index action serves data straight from Typesense (Document::search()),
+    // which the suite's default NullEngine would leave empty.
+    usesTypesense();
+
     $this->tenant = Tenant::query()->first();
     $this->regularUser = makeUser($this->tenant);
     $this->documentManager = makeUser($this->tenant);

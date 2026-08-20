@@ -33,22 +33,39 @@ export function useTranslatedTitle(
 }
 
 /**
- * Type-safe helper for accessing translated field values
+ * Read a Spatie-translatable field (`{ lt: '…', en: '…' }`) in the current locale.
+ *
+ * Every caller used to re-implement its own fallback chain, and they disagreed on the order.
+ * The chain here is: the requested locale → Lithuanian (the source language, always filled) →
+ * the first non-empty translation → the `fallback`.
+ *
+ * @param locale overrides the page locale — pass it when rendering a specific language tab
  */
 export function getTranslatedValue(
-  translatedField: any,
+  translatedField: unknown,
   locale?: string,
+  fallback = '',
 ): string {
-  const page = usePage();
-  const currentLocale = locale || page.props.app.locale as 'lt' | 'en';
-
-  if (typeof translatedField === 'object' && translatedField !== null && currentLocale in translatedField) {
-    return translatedField[currentLocale];
-  }
-
   if (typeof translatedField === 'string') {
     return translatedField;
   }
 
-  return '';
+  if (typeof translatedField !== 'object' || translatedField === null) {
+    return fallback;
+  }
+
+  const translations = translatedField as Record<string, unknown>;
+  const currentLocale = locale || (usePage().props.app?.locale as string) || 'lt';
+
+  const candidates = [
+    translations[currentLocale],
+    translations.lt,
+    ...Object.values(translations),
+  ];
+
+  const value = candidates.find(
+    candidate => typeof candidate === 'string' && candidate.trim() !== '',
+  );
+
+  return (value as string | undefined) ?? fallback;
 }

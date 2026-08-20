@@ -309,6 +309,7 @@
 </template>
 
 <script setup lang="ts">
+import { ModelEnum } from '@/Types/enums';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, ref } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
@@ -337,7 +338,7 @@ import { Label } from '@/Components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Switch } from '@/Components/ui/switch';
-import { modelTypes } from '@/Types/formOptions';
+import { modelTypeLabel, modelTypes } from '@/Types/formOptions';
 import FormElement from '@/Components/AdminForms/FormElement.vue';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import RelationshipForm from '@/Components/AdminForms/RelationshipForm.vue';
@@ -371,7 +372,7 @@ const relationForm = useForm(relationTemplate);
 
 // Check if the current model type is Type (for showing scope selector)
 const isTypeBasedRelationship = computed(() => {
-  return relationForm.model_type === 'App\\Models\\Type';
+  return relationForm.model_type === ModelEnum.TYPE;
 });
 
 // Scope options for the dropdown
@@ -473,9 +474,9 @@ const sameTypeError = computed(() => {
   return null;
 });
 
-const modelTypeOptions = modelTypes.relationshipable.map(relationshipable => ({
-  label: relationshipable,
-  value: `App\\Models\\${relationshipable}`,
+const modelTypeOptions = modelTypes.relationshipable.map(alias => ({
+  label: modelTypeLabel(alias),
+  value: alias,
 }));
 
 function openCreateModal() {

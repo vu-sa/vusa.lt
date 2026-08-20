@@ -6,6 +6,7 @@ use App\Models\Pivots\Dutiable;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
@@ -47,7 +48,7 @@ test('dutiable description is sanitized on write', function (): void {
     $dutiable = Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => User::factory()->create()->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'start_date' => now()->subDay(),
         'description' => ['lt' => '<p>Aprašymas</p><script>alert(1)</script>'],
     ]);

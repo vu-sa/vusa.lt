@@ -77,10 +77,10 @@
 </template>
 
 <script setup lang="ts">
+import { dateLocaleFor } from '@/Composables/useDateLocale';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 import { format, parseISO } from 'date-fns';
-import { lt, enUS } from 'date-fns/locale';
 
 import { Button } from '@/Components/ui/button';
 
@@ -89,7 +89,7 @@ const props = defineProps<{
   locale: string;
 }>();
 
-const dateLocale = computed(() => props.locale === 'lt' ? lt : enUS);
+const dateLocale = computed(() => dateLocaleFor(props.locale));
 
 // Computed values for event data
 const eventImage = computed((): string | null => {

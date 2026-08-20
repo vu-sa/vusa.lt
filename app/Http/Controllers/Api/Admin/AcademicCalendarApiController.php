@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Api\Admin\AcademicCalendarVacationsRequest;
 use App\Services\AcademicCalendarService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -29,14 +30,11 @@ class AcademicCalendarApiController extends ApiController
      * The same periods are excluded from institution inactivity counting, so the
      * chart and the periodicity tasks stay in agreement.
      */
-    public function vacations(Request $request, AcademicCalendarService $calendar): JsonResponse
+    public function vacations(AcademicCalendarVacationsRequest $request, AcademicCalendarService $calendar): JsonResponse
     {
         $this->requireAuth($request);
 
-        $validated = $request->validate([
-            'from_year' => 'nullable|integer|min:1990|max:2100',
-            'to_year' => 'nullable|integer|min:1990|max:2100',
-        ]);
+        $validated = $request->validated();
 
         $currentYear = (int) now()->year;
         $fromYear = (int) ($validated['from_year'] ?? $currentYear - 1);

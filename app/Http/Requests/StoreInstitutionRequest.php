@@ -8,6 +8,9 @@ use Illuminate\Validation\Rule;
 
 class StoreInstitutionRequest extends InstitutionRequest
 {
+    #[\Override]
+    protected string $tenantScopePermission = 'institutions.create.padalinys';
+
     /**
      * Determine if the user is authorized to make this request.
      */

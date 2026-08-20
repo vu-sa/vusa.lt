@@ -14,4 +14,15 @@ return [
         'steps_taken' => 'Kas jau buvo daryta: pokalbiai, raštai, susitikimai ir jų rezultatai.',
         'solution' => 'Galutinis problemos sprendimas. Galima palikti tuščią ir užpildyti vėliau.',
     ],
+    'validation' => [
+        'title_required' => 'Problemos pavadinimas turi būti nurodytas bent viena kalba.',
+        'description_required' => 'Problemos aprašymas turi būti nurodytas bent viena kalba.',
+        'tenant_required' => 'Padalinys yra privalomas.',
+        'tenant_exists' => 'Pasirinktas padalinys neegzistuoja.',
+        'occurred_at_required' => 'Įvykimo data yra privaloma.',
+        'resolved_at_after' => 'Išsprendimo data negali būti ankstesnė nei įvykimo data.',
+        'status_in' => 'Pasirinkta būsena yra neteisinga.',
+        'categories_exist' => 'Viena ar kelios pasirinktos kategorijos neegzistuoja.',
+        'institutions_exist' => 'Viena ar kelios pasirinktos institucijos neegzistuoja.',
+    ],
 ];

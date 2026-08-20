@@ -7,6 +7,7 @@ use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Typeable;
 use App\Services\RelationshipService;
+use App\Support\MorphMap;
 
 class TypeableObserver
 {
@@ -17,11 +18,11 @@ class TypeableObserver
     {
         // Clear relationship cache when an institution's types change
         // This is needed for within-type sibling relationships
-        if ($typeable->getAttribute('typeable_type') === Institution::class) {
+        if ($typeable->getAttribute('typeable_type') === MorphMap::alias(Institution::class)) {
             RelationshipService::clearRelatedInstitutionsCache($typeable->getAttribute('typeable_id'));
         }
 
-        if ($typeable->getAttribute('typeable_type') === Duty::class) {
+        if ($typeable->getAttribute('typeable_type') === MorphMap::alias(Duty::class)) {
             $attachable_types = GetAttachableTypesForDuty::execute();
 
             if ($attachable_types->contains($typeable->getAttribute('type_id'))) {
@@ -41,7 +42,7 @@ class TypeableObserver
     public function deleted(Typeable $typeable): void
     {
         // Clear relationship cache when an institution's types change
-        if ($typeable->getAttribute('typeable_type') === Institution::class) {
+        if ($typeable->getAttribute('typeable_type') === MorphMap::alias(Institution::class)) {
             RelationshipService::clearRelatedInstitutionsCache($typeable->getAttribute('typeable_id'));
         }
 

@@ -33,4 +33,14 @@ return [
     'type_deferred_tooltip' => 'Klausimo svarstymas atidėtas kitam posėdžiui. Balsavimo duomenų pildyti nereikia.',
     'type_informational_tooltip' => 'Informacinio pobūdžio klausimas be balsavimo. Balsavimo duomenų pildyti nereikia.',
     'main_vote_required_tooltip' => 'Pagrindinis balsavimas yra privalomas balsavimo tipo klausimams. Jo pašalinti negalima.',
+    'validation' => [
+        'agenda_item_required' => 'Darbotvarkės punktas yra privalomas.',
+        'agenda_item_exists' => 'Nurodytas darbotvarkės punktas neegzistuoja.',
+        'title_string' => 'Balsavimo pavadinimas turi būti tekstas.',
+        'title_max' => 'Balsavimo pavadinimas negali būti ilgesnis nei 200 simbolių.',
+        'student_vote_enum' => 'Studentų balsavimo reikšmė turi būti viena iš: positive, negative, neutral.',
+        'decision_enum' => 'Sprendimo reikšmė turi būti viena iš: positive, negative, neutral.',
+        'student_benefit_enum' => 'Naudos studentams reikšmė turi būti viena iš: positive, negative, neutral.',
+        'note_max' => 'Pastaba negali būti ilgesnė nei 2000 simbolių.',
+    ],
 ];

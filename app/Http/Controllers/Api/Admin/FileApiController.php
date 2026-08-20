@@ -89,11 +89,11 @@ class FileApiController extends ApiController
                         'directories' => $directories,
                         'path' => $allowedPath,
                         'redirected' => true,
-                    ], 'Nukreiptas į jūsų padalinio failų aplanką.');
+                    ], __('files.messages.redirected_to_tenant_folder'));
                 }
             }
 
-            return $this->jsonError('Neturite teisių peržiūrėti šio aplanko.', 403, code: 'INSUFFICIENT_PERMISSIONS');
+            return $this->jsonError(__('files.errors.no_directory_access'), 403, code: 'INSUFFICIENT_PERMISSIONS');
         }
 
         [$files, $directories] = $this->getFilesFromStorage($path, $extensions);

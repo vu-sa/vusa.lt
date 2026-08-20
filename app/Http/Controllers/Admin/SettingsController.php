@@ -9,9 +9,11 @@ use App\Http\Requests\UpdateDocumentSettingsRequest;
 use App\Http\Requests\UpdateFormSettingsRequest;
 use App\Http\Requests\UpdateMeetingSettingsRequest;
 use App\Http\Requests\UpdateSettingsAuthorizationRequest;
+use App\Http\Requests\UpdateSiteSettingsRequest;
 use App\Models\Document;
 use App\Models\Form;
 use App\Models\Institution;
+use App\Models\Page;
 use App\Models\PublicInstitution;
 use App\Models\PublicMeeting;
 use App\Models\Role;
@@ -22,6 +24,8 @@ use App\Settings\DocumentSettings;
 use App\Settings\FormSettings;
 use App\Settings\MeetingSettings;
 use App\Settings\SettingsSettings;
+use App\Settings\SiteSettings;
+use App\Support\MorphMap;
 use Illuminate\Support\Facades\Cache;
 
 class SettingsController extends AdminController
@@ -65,7 +69,7 @@ class SettingsController extends AdminController
             'forms' => Form::all(['id', 'name']),
             'roles' => Role::all(['id', 'name']),
             'institution_types' => Type::query()
-                ->where('model_type', Institution::class)
+                ->where('model_type', MorphMap::alias(Institution::class))
                 ->get(['id', 'title', 'slug'])
                 ->map->toArray(),
         ]);
@@ -104,7 +108,7 @@ class SettingsController extends AdminController
             'selected_type_ids' => $meetingSettings->getPublicMeetingInstitutionTypeIds()->toArray(),
             'excluded_type_ids' => $meetingSettings->getExcludedInstitutionTypeIds()->toArray(),
             'available_types' => Type::query()
-                ->where('model_type', Institution::class)
+                ->where('model_type', MorphMap::alias(Institution::class))
                 ->get(['id', 'title', 'slug'])
                 ->map->toArray(),
         ]);
@@ -232,6 +236,62 @@ class SettingsController extends AdminController
 
         $documentSettings->setImportantContentTypes($request->input('important_content_types', []));
         $documentSettings->save();
+
+        return $this->redirectBackWithSuccess(__('settings.messages.updated'));
+    }
+
+    /**
+     * Show site-wide settings.
+     */
+    public function editSiteSettings(SiteSettings $siteSettings, SettingsSettings $settingsSettings)
+    {
+        $this->authorizeSettingsAccess($settingsSettings);
+
+        $ids = array_filter([$siteSettings->privacy_page_id_lt, $siteSettings->privacy_page_id_en]);
+
+        // Only live pages — the picker searches Typesense, which also excludes them.
+        $pages = Page::query()
+            ->with('tenant')
+            ->where('is_active', true)
+            ->whereKey($ids)
+            ->get()
+            ->keyBy(fn (Page $page) => (string) $page->id);
+
+        $summary = function (?string $id) use ($pages): ?array {
+            $page = $id !== null ? $pages->get($id) : null;
+
+            if ($page === null) {
+                return null;
+            }
+
+            return [
+                'id' => (string) $page->id,
+                'title' => $page->title,
+                'lang' => $page->lang,
+                'tenant_shortname' => $page->tenant->shortname,
+            ];
+        };
+
+        return $this->inertiaResponse('Admin/Settings/EditSiteSettings', [
+            'selectedPages' => [
+                'lt' => $summary($siteSettings->privacy_page_id_lt),
+                'en' => $summary($siteSettings->privacy_page_id_en),
+            ],
+        ]);
+    }
+
+    /**
+     * Update site-wide settings.
+     */
+    public function updateSiteSettings(UpdateSiteSettingsRequest $request, SiteSettings $siteSettings, SettingsSettings $settingsSettings)
+    {
+        $this->authorizeSettingsAccess($settingsSettings);
+
+        $validated = $request->validated();
+
+        $siteSettings->privacy_page_id_lt = $validated['privacy_page_id_lt'] ?? null;
+        $siteSettings->privacy_page_id_en = $validated['privacy_page_id_en'] ?? null;
+        $siteSettings->save();
 
         return $this->redirectBackWithSuccess(__('settings.messages.updated'));
     }

@@ -52,7 +52,7 @@ class ReservationController extends AdminController
 
         $deletedCount = $this->getTrashedCount($query);
 
-        $reservations = $query->paginate($request->input('per_page', 20))
+        $reservations = $query->paginate($request->getPerPage())
             ->withQueryString();
 
         $allowedTenantIds = $this->authorizer->getTenants()->pluck('id');
@@ -71,7 +71,7 @@ class ReservationController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $request->getSorting(),
-            'showDeleted' => $request->boolean('showDeleted', false),
+            'showDeleted' => $request->getShowDeleted(),
             'deletedCount' => $deletedCount,
             'activeReservations' => Reservation::whereHas('resources', function ($query) use ($allowedTenantIds): void {
                 $query->whereIn('resources.tenant_id', $allowedTenantIds);
@@ -157,7 +157,7 @@ class ReservationController extends AdminController
 
         $reservation->attachAudited('users', auth()->id());
 
-        return redirect()->route('reservations.show', $reservation->id)->with('success', trans_choice('messages.created', 0, ['model' => trans_choice('entities.reservation.model', 1)]));
+        return redirect()->route('reservations.show', $reservation->id)->with('success', $this->entityMessage('created', 'reservation'));
     }
 
     /**
@@ -224,12 +224,12 @@ class ReservationController extends AdminController
 
         $reservation->delete();
 
-        return back()->with('success', 'Rezervacija ištrinta sėkmingai!');
+        return back()->with('success', $this->entityMessage('deleted', 'reservation'));
     }
 
     public function restore(Reservation $reservation): RedirectResponse
     {
-        return $this->restoreModel($reservation, 'Rezervacija atkurta!');
+        return $this->restoreModel($reservation, $this->entityMessage('restored', 'reservation'));
     }
 
     public function addUsers(Reservation $reservation, Request $request)

@@ -3,7 +3,6 @@
 use App\Models\Banner;
 use App\Models\Calendar;
 use App\Models\Category;
-use App\Models\Institution;
 use App\Models\Navigation;
 use App\Models\QuickLink;
 use App\Models\Role;
@@ -11,7 +10,6 @@ use App\Models\StudyProgram;
 use App\Models\StudySet;
 use App\Models\Tag;
 use App\Models\Tenant;
-use App\Models\Training;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -85,19 +83,6 @@ function softDeletableResourceCases(): array
             'scope' => '*',
             'prop' => 'tags.data',
             'create' => fn (Tenant $tenant): Model => Tag::factory()->create(),
-        ],
-        'training' => [
-            'model' => Training::class,
-            'table' => 'trainings',
-            'route' => 'trainings',
-            'permission' => 'trainings',
-            'scope' => 'padalinys',
-            'prop' => 'trainings.data',
-            'create' => function (Tenant $tenant): Model {
-                $institution = Institution::factory()->for($tenant)->create();
-
-                return Training::factory()->for($institution, 'institution')->create();
-            },
         ],
         'study program' => [
             'model' => StudyProgram::class,

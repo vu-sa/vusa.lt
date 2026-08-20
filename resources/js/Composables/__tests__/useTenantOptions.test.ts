@@ -10,10 +10,10 @@ const tenants = [
   { id: 1, alias: 'vusa', fullname: 'VU studentų atstovybė', type: 'pagrindinis', primary_institution: null },
   { id: 2, alias: 'mif', fullname: 'VU MIF studentų atstovybė VU MIF', type: 'padalinys', primary_institution: { short_name: 'VU MIF', image_url: '/mif.png' } },
   { id: 3, alias: 'ff', fullname: 'VU FF studentų atstovybė VU FF', type: 'padalinys', primary_institution: null },
-  // Excluded: id above the cutoff used by the switcher.
-  { id: 18, alias: 'excluded', fullname: 'Excluded studentų atstovybė Excluded', type: 'padalinys', primary_institution: null },
-  // Excluded: not a padalinys/pagrindinis tenant.
-  { id: 4, alias: 'other', fullname: 'Other studentų atstovybė Other', type: 'other', primary_institution: null },
+  // Included: a padalinys past the old hardcoded `id <= 17` cutoff, which used to hide it.
+  { id: 18, alias: 'newest', fullname: 'Newest studentų atstovybė Newest', type: 'padalinys', primary_institution: null },
+  // Excluded: PKP tenants are student initiatives with no subdomain to switch to.
+  { id: 4, alias: 'other', fullname: 'Other studentų atstovybė Other', type: 'pkp', primary_institution: null },
 ];
 
 describe('useTenantOptions', () => {
@@ -25,10 +25,10 @@ describe('useTenantOptions', () => {
     }));
   });
 
-  it('filters tenants to padalinys/pagrindinis with id <= 17', () => {
+  it('includes every representational tenant and excludes pkp', () => {
     const { options } = useTenantOptions();
 
-    expect(options.value.map(option => option.key)).toEqual(['vusa', 'mif', 'ff']);
+    expect(options.value.map(option => option.key)).toEqual(['vusa', 'mif', 'ff', 'newest']);
   });
 
   it('derives the label from the part of fullname after "atstovybė "', () => {
@@ -61,6 +61,8 @@ describe('useTenantOptions', () => {
     ['lt', true],
     ['en', true],
     ['lt/naujienos', true],
+    // The English news archive is served from /en/news, which the path list used to omit.
+    ['en/news', true],
     ['lt/kontaktai', true],
     ['en/contacts', true],
     ['lt/naujienos/some-slug', false],

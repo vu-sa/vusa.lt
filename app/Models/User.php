@@ -5,8 +5,6 @@ namespace App\Models;
 use App\Contracts\GuardsForceDelete;
 use App\Helpers\AddressivizeHelper;
 use App\Models\Pivots\Dutiable;
-use App\Models\Pivots\MembershipUser;
-use App\Models\Pivots\Trainable;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasNotificationPreferences;
 use App\Models\Traits\HasTranslations;
@@ -61,8 +59,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon|null $deleted_at
  * @property bool $name_was_changed
  * @property-read Collection<int, Activity> $activitiesAsSubject
- * @property-read InstitutionNotificationMute|MembershipUser|InstitutionFollow|Dutiable|Trainable|null $pivot
- * @property-read Collection<int, Training> $availableTrainingsThroughUser
+ * @property-read InstitutionNotificationMute|InstitutionFollow|Dutiable|null $pivot
  * @property-read Collection<int, Duty> $current_duties
  * @property-read Collection<int, Dutiable> $dutiables
  * @property-read Collection<int, Duty> $duties
@@ -71,7 +68,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read mixed $has_password
  * @property-read array $translatable_columns_from
  * @property-read Collection<int, Institution> $institutions
- * @property-read Collection<int, Membership> $memberships
  * @property-read Collection<int, Institution> $mutedInstitutions
  * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $notifications
  * @property-read Collection<int, Permission> $permissions
@@ -82,8 +78,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Permission> $teams
  * @property-read Collection<int, Tenant> $tenants
- * @property-read Collection<int, Training> $trainings
  * @property-read mixed $translations
+ * @property-read int|null $tenants_count
  *
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newModelQuery()
@@ -341,40 +337,9 @@ class User extends Authenticatable implements GuardsForceDelete
         return $this->belongsToMany(Reservation::class)->withTimestamps();
     }
 
-    public function memberships()
-    {
-        return $this->belongsToMany(Membership::class)->using(MembershipUser::class)->withTimestamps()->withPivot('start_date', 'end_date');
-    }
-
     public function isSuperAdmin(): bool
     {
         return $this->hasRole(config('permission.super_admin_role_name'));
-    }
-
-    public function trainings()
-    {
-        return $this->belongsToMany(Training::class, 'training_user')->withTimestamps();
-    }
-
-    public function availableTrainingsThroughUser()
-    {
-        return $this->morphToMany(Training::class, 'trainable')->using(Trainable::class)->withTimestamps();
-    }
-
-    /**
-     * @return \Illuminate\Support\Collection<int, Training>
-     */
-    public function allAvailableTrainings()
-    {
-        $avThDuty = $this->load('current_duties.availableTrainings')->current_duties->map(fn ($duty) => $duty->availableTrainings)->flatten();
-
-        $avThUser = $this->availableTrainingsThroughUser()->get();
-
-        $avThInstitution = $this->load('institutions.availableTrainings')->institutions->map(fn ($institution) => $institution->availableTrainings)->flatten();
-
-        $avThMembership = $this->load('memberships.availableTrainings')->memberships->map(fn ($membership) => $membership->availableTrainings)->flatten();
-
-        return $avThDuty->merge($avThUser)->merge($avThInstitution)->merge($avThMembership)->unique('id');
     }
 
     public function addressivizedName(): string
@@ -383,17 +348,14 @@ class User extends Authenticatable implements GuardsForceDelete
     }
 
     /**
-     * Comments, check-ins and training records restrict deletes, and
-     * `problems.created_by` cascades — permanently deleting a person would take the
-     * problems they reported with them.
+     * Comments and check-ins restrict deletes, and `problems.created_by` cascades —
+     * permanently deleting a person would take the problems they reported with them.
      */
     public function forceDeleteBlockedReason(): ?string
     {
         return $this->forceDeleteReasonFor([
             'trash.blockers.comments' => Comment::query()->where('user_id', $this->id)->count(),
             'trash.blockers.check_ins' => InstitutionCheckIn::query()->where('user_id', $this->id)->count(),
-            'trash.blockers.organised_trainings' => Training::query()->where('organizer_id', $this->id)->count(),
-            'trash.blockers.training_participation' => $this->countedRelation('trainings'),
             'trash.blockers.reported_problems' => Problem::query()->where('created_by', $this->id)->count(),
         ]);
     }

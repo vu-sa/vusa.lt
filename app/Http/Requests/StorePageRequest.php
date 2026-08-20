@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\LocaleEnum;
+use App\Enums\PageLayoutEnum;
 use App\Http\Requests\Concerns\ValidatesContentParts;
 use App\Models\Page;
 use App\Models\Tenant;
@@ -10,6 +12,7 @@ use App\Rules\UniqueAmongTrashed;
 use App\Services\ModelAuthorizer;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class StorePageRequest extends FormRequest
 {
@@ -32,7 +35,7 @@ class StorePageRequest extends FormRequest
     protected function getTargetTenantId(): ?int
     {
         if ($this->user()->isSuperAdmin()) {
-            return Tenant::where('type', 'pagrindinis')->first()?->id;
+            return Tenant::main()?->id;
         }
 
         $authorizer = app(ModelAuthorizer::class)->forUser($this->user());
@@ -51,12 +54,12 @@ class StorePageRequest extends FormRequest
         return [
             ...$this->contentPartRules(),
             'title' => 'required|string|max:255',
-            'lang' => 'required|string|in:lt,en',
+            'lang' => ['required', new Enum(LocaleEnum::class)],
             'permalink' => ['required', 'string', 'max:255', UniqueAmongTrashed::of('pages')->where('tenant_id', $this->getTargetTenantId())],
             'category_id' => ['nullable', SoftDeleteRules::existsLive('categories')],
             'other_lang_id' => ['nullable', SoftDeleteRules::existsLive('pages')],
             'is_active' => 'required|boolean',
-            'layout' => 'nullable|string|in:default,wide,focused',
+            'layout' => ['nullable', new Enum(PageLayoutEnum::class)],
             'show_table_of_contents' => ['boolean'],
             'show_title' => ['boolean'],
             'show_breadcrumbs' => ['boolean'],

@@ -7,6 +7,7 @@ use App\Models\Pivots\Dutiable;
 use App\Models\StudyProgram;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -38,7 +39,7 @@ class DutiableFactory extends Factory
         return [
             'duty_id' => Duty::factory(),
             'tenant_id' => null,
-            'dutiable_type' => User::class,
+            'dutiable_type' => MorphMap::alias(User::class),
             'dutiable_id' => User::factory(),
             'start_date' => $this->faker->dateTimeBetween('-2 years', '-1 year'),
             'end_date' => $this->faker->optional(0.3)->dateTimeBetween('-1 year', 'now'),
@@ -62,7 +63,7 @@ class DutiableFactory extends Factory
     {
         return $this->state(function (array $attributes) use ($user) {
             return [
-                'dutiable_type' => User::class,
+                'dutiable_type' => MorphMap::alias(User::class),
                 'dutiable_id' => $user->id,
             ];
         });

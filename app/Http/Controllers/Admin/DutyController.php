@@ -24,6 +24,7 @@ use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ResourceServices\DutyService;
 use App\Services\TanstackTableService;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -80,7 +81,7 @@ class DutyController extends AdminController
 
         $deletedCount = $this->getTrashedCount($query);
 
-        $duties = $query->paginate($request->input('per_page', 20))
+        $duties = $query->paginate($request->getPerPage())
             ->withQueryString();
 
         return $this->inertiaResponse('Admin/People/IndexDuty', [
@@ -100,7 +101,7 @@ class DutyController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $request->getSorting(),
-            'showDeleted' => $request->boolean('showDeleted', false),
+            'showDeleted' => $request->getShowDeleted(),
             'deletedCount' => $deletedCount,
         ]);
     }
@@ -122,7 +123,7 @@ class DutyController extends AdminController
                 $q->select(DB::raw(1))
                     ->from('dutiables as dup')
                     ->whereColumn('dup.duty_id', 'duties.id')
-                    ->where('dup.dutiable_type', User::class)
+                    ->where('dup.dutiable_type', MorphMap::alias(User::class))
                     ->where(function ($q): void {
                         $q->whereNull('dup.end_date')->orWhere('dup.end_date', '>=', now());
                     })
@@ -159,7 +160,7 @@ class DutyController extends AdminController
         $this->handleAuthorization('create', Duty::class);
 
         return $this->inertiaResponse('Admin/People/CreateDuty', [
-            'dutyTypes' => Type::where('model_type', Duty::class)->get(),
+            'dutyTypes' => Type::where('model_type', MorphMap::alias(Duty::class))->get(),
             'roles' => Role::all(),
             'assignableInstitutions' => DutyService::getInstitutionsForUpserts($this->authorizer),
             'assignableUsers' => $this->assignableUsersForDutyForm(),
@@ -192,12 +193,12 @@ class DutyController extends AdminController
         if ($request->wantsJson() || $request->header('X-Inertia-Partial-Data')) {
             return response()->json([
                 'success' => true,
-                'message' => trans_choice('messages.created', 0, ['model' => trans_choice('entities.duty.model', 1)]),
+                'message' => $this->entityMessage('created', 'duty'),
                 'duty' => $duty,
             ]);
         }
 
-        return back()->with('success', trans_choice('messages.created', 0, ['model' => trans_choice('entities.duty.model', 1)]));
+        return back()->with('success', $this->entityMessage('created', 'duty'));
     }
 
     /**
@@ -278,7 +279,7 @@ class DutyController extends AdminController
         // a rep whose end_date is today is already considered inactive.
         // Ex-officio rows are left out — they are not the picker's to grant or revoke.
         $crossTenantRepsQuery = Dutiable::where('duty_id', $duty->id)
-            ->where('dutiable_type', User::class)
+            ->where('dutiable_type', MorphMap::alias(User::class))
             ->whereNotNull('tenant_id')
             ->whereNull('via_dutiable_id')
             ->where(function ($query): void {
@@ -320,14 +321,14 @@ class DutyController extends AdminController
         $actor = $request->user();
 
         $mutation = fn () => DB::transaction(function () use ($request, $duty): void {
-            $duty->update($request->only('name', 'description', 'email', 'places_to_occupy', 'contacts_grouping'));
+            $duty->update($request->safe()->only('name', 'description', 'email', 'places_to_occupy', 'contacts_grouping'));
 
             // Only manage owning-tenant reps (tenant_id IS NULL) via the TransferList.
             // Ex-officio rows are excluded to match DutyForm.vue, which filters them out
             // of `current_users` before posting: counting them here made every save of a
             // target duty read them as "removed" and end-date the whole ex-officio cohort.
             $owningTenantCurrentIds = Dutiable::where('duty_id', $duty->id)
-                ->where('dutiable_type', User::class)
+                ->where('dutiable_type', MorphMap::alias(User::class))
                 ->whereNull('tenant_id')
                 ->whereNull('via_dutiable_id')
                 ->where(function ($query): void {
@@ -350,7 +351,7 @@ class DutyController extends AdminController
 
                 foreach ($roles as $role) {
                     if ($role->name == config('permission.super_admin_role_name')) {
-                        abort(403, 'Negalima priskirti šios rolės pareigybėms! Bandykite iš naujo');
+                        abort(403, __('messages.role.not_assignable_to_duty'));
                     }
                 }
 
@@ -389,7 +390,7 @@ class DutyController extends AdminController
             foreach ($removedTenantIds as $tenantId) {
                 $this->endDateDutiables(
                     Dutiable::where('duty_id', $duty->id)
-                        ->where('dutiable_type', User::class)
+                        ->where('dutiable_type', MorphMap::alias(User::class))
                         ->where('tenant_id', $tenantId)
                         ->where(function ($query): void {
                             $query->whereNull('end_date')
@@ -417,7 +418,7 @@ class DutyController extends AdminController
         // or institution change beneath them.
         $couldAffectSelf = ! $actor->isSuperAdmin()
             && Dutiable::where('duty_id', $duty->id)
-                ->where('dutiable_type', User::class)
+                ->where('dutiable_type', MorphMap::alias(User::class))
                 ->where('dutiable_id', $actor->id)
                 ->where(function ($query): void {
                     $query->whereNull('end_date')->orWhere('end_date', '>=', now());
@@ -428,7 +429,7 @@ class DutyController extends AdminController
             return $warning;
         }
 
-        return back()->with('success', trans_choice('messages.updated', 0, ['model' => trans_choice('entities.duty.model', 1)]));
+        return back()->with('success', $this->entityMessage('updated', 'duty'));
     }
 
     /**
@@ -454,7 +455,7 @@ class DutyController extends AdminController
                       AND d.dutiable_type = ?
                       AND (d.end_date IS NULL OR d.end_date >= ?)
                 )) AS is_recent',
-                [$cutoff, $cutoff, User::class, $cutoff]
+                [$cutoff, $cutoff, MorphMap::alias(User::class), $cutoff]
             )
             ->orderBy('users.name')
             ->get()
@@ -482,7 +483,7 @@ class DutyController extends AdminController
     private function exOfficioMembersForDutyForm(Duty $duty, ?Collection $limitToTenantIds): array
     {
         $query = Dutiable::where('duty_id', $duty->id)
-            ->where('dutiable_type', User::class)
+            ->where('dutiable_type', MorphMap::alias(User::class))
             ->whereNotNull('via_dutiable_id')
             ->where(function ($query): void {
                 $query->whereNull('end_date')
@@ -558,7 +559,7 @@ class DutyController extends AdminController
             $this->endDateDutiables(
                 Dutiable::where('duty_id', $duty->id)
                     ->whereIn('dutiable_id', $removed->all())
-                    ->where('dutiable_type', User::class)
+                    ->where('dutiable_type', MorphMap::alias(User::class))
                     ->whereNull('tenant_id')
                     ->whereNull('via_dutiable_id')
                     ->where(function ($query): void {
@@ -592,7 +593,7 @@ class DutyController extends AdminController
         // Ex-officio rows are excluded on both sides: DutyController@edit keeps them
         // out of the tenant's picker, so they must not read as "removed" here either.
         $currentUserIds = Dutiable::where('duty_id', $duty->id)
-            ->where('dutiable_type', User::class)
+            ->where('dutiable_type', MorphMap::alias(User::class))
             ->where('tenant_id', $tenantId)
             ->whereNull('via_dutiable_id')
             ->where(function ($query): void {
@@ -608,7 +609,7 @@ class DutyController extends AdminController
         if ($toRemove) {
             $this->endDateDutiables(
                 Dutiable::where('duty_id', $duty->id)
-                    ->where('dutiable_type', User::class)
+                    ->where('dutiable_type', MorphMap::alias(User::class))
                     ->where('tenant_id', $tenantId)
                     ->whereNull('via_dutiable_id')
                     ->whereIn('dutiable_id', $toRemove)
@@ -639,7 +640,7 @@ class DutyController extends AdminController
 
         $duty->delete();
 
-        return redirect()->route('duties.index')->with('info', trans_choice('messages.deleted', 0, ['model' => trans_choice('entities.duty.model', 1)]));
+        return redirect()->route('duties.index')->with('info', $this->entityMessage('deleted', 'duty'));
     }
 
     public function restore(Duty $duty): RedirectResponse
@@ -746,7 +747,7 @@ class DutyController extends AdminController
 
         // Get data needed for creating institutions and duties
         $assignableTenants = GetTenantsForUpserts::execute('institutions.create.padalinys', $this->authorizer);
-        $institutionTypes = Type::where('model_type', Institution::class)->get();
+        $institutionTypes = Type::where('model_type', MorphMap::alias(Institution::class))->get();
 
         return $this->inertiaResponse('Admin/People/DutyUserUpdateWizard', [
             // Immediate data for Step 1
@@ -847,7 +848,7 @@ class DutyController extends AdminController
                         // End-date only the active row belonging to the acting tenant.
                         // Ex-officio rows follow their source and are never removed here.
                         $removeQuery = Dutiable::where('duty_id', $duty->id)
-                            ->where('dutiable_type', User::class)
+                            ->where('dutiable_type', MorphMap::alias(User::class))
                             ->where('dutiable_id', $userId)
                             ->whereNull('via_dutiable_id')
                             ->where(function ($query): void {

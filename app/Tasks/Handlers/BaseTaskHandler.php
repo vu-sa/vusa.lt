@@ -25,7 +25,7 @@ abstract class BaseTaskHandler implements TaskHandler
             'name' => $data->name,
             'description' => $data->description,
             'taskable_id' => $data->taskable->getKey(),
-            'taskable_type' => $data->taskable::class,
+            'taskable_type' => $data->taskable->getMorphClass(),
             'due_date' => $data->dueDate,
             'action_type' => $data->actionType,
             'metadata' => $data->metadata,

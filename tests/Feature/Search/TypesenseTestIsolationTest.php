@@ -18,8 +18,12 @@ use Typesense\Client;
 /**
  * Guards the isolation that keeps the suite from indexing factory records into the
  * collections the running application serves. Deliberately sets no `scout.prefix`
- * of its own — the whole point is to assert on whatever the suite booted with.
+ * of its own — the whole point is to assert on whatever `usesTypesense()` booted with.
  */
+beforeEach(function (): void {
+    usesTypesense();
+});
+
 test('the suite never indexes into the collections the application serves', function (): void {
     expect(config('scout.prefix'))->toStartWith('testing_');
 

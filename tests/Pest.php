@@ -15,9 +15,21 @@ use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Providers\TestingServiceProvider;
+use Illuminate\Foundation\Vite;
+use Pest\Browser\Api\AwaitableWebpage;
+use Pest\Browser\Api\PendingAwaitablePage;
+use Pest\Browser\Playwright\Page as PlaywrightPage;
 use Tests\TestCase;
 
-pest()->extend(TestCase::class)->in('Feature', 'Unit');
+pest()->extend(TestCase::class)->in('Feature', 'Unit', 'Browser');
+
+// Browser-test configuration has to live here, not in tests/Browser/Pest.php: BootFiles only ever
+// includes Pest.php at the tests/ root (Pest\Bootstrappers\BootFiles::STRUCTURE), so a nested
+// Pest.php is silently ignored. Governs both the assertion retry budget
+// (Pest\Browser\Execution::waitForExpectation) and Playwright's default action timeout; the plugin
+// defaults to 5s, which a cold CI runner overshoots on the first client-side render.
+pest()->browser()->timeout(15_000);
 
 /*
 |--------------------------------------------------------------------------
@@ -101,6 +113,174 @@ expect()->extend('toHaveTranslation', function (string $field, string $locale) {
 | global functions to help you to reduce the number of lines of code in your test files.
 |
 */
+
+/**
+ * Visit a public page, as a given tenant subdomain, inside a Pest browser test.
+ *
+ * Handles the plumbing every public-page browser test on this app needs, none of which is
+ * obvious from the plugin's own docs:
+ *
+ * - `Route::domain('{subdomain}.<apex>')` (routes/web.php) only matches when the request's Host
+ *   header is `<subdomain>.<apex>`, but the plugin's ephemeral HTTP server always binds to
+ *   127.0.0.1 — so the Host header has to be pinned explicitly via `pest()->browser()->withHost()`
+ *   or every public route 404s.
+ * - The plugin also overwrites `config('app.url')` to that same ephemeral 127.0.0.1 address.
+ *   `SmartLink.vue` (used for most in-app public navigation) compares `window.location` against
+ *   the shared `app.url` prop to decide whether a link is same-tenant (renders an Inertia `<Link>`)
+ *   or external (renders a plain `<a target="_blank">`); left unfixed, every internal link opens
+ *   a background tab that this test never sees instead of navigating client-side. Re-anchoring
+ *   `app.url` to the real host — deliberately **without** a port, since `SmartLink.vue`'s
+ *   `hostname.endsWith(...)` check assumes there isn't one (true in every real deployment) —
+ *   fixes the comparison.
+ * - The ephemeral port isn't known ahead of time, so a throwaway warm-up visit is required
+ *   first to discover it before the real (correctly-anchored) visit can be made.
+ *
+ * Requires the target tenant to already exist (`Tenant::firstOrCreate(['alias' => $subdomain === 'www' ? 'vusa' : $subdomain], …)`)
+ * — like every public controller, the warm-up visit 500s otherwise.
+ *
+ * The returned page has already navigated *and* mounted (see `waitForInertiaRender()`), so any
+ * per-page configuration that must precede the visit — `pest()->browser()->...()`,
+ * `inDarkMode()` and friends — has to be applied before calling this, not chained onto the
+ * result.
+ */
+function visitPublicSubdomain(string $subdomain, string $path): PendingAwaitablePage
+{
+    // Not derived from config('app.url') — merely calling visit() anywhere in a browser test
+    // file triggers the plugin's server bootstrap (which overwrites that config key) before
+    // this helper's own body runs, same as everywhere else in this app assumes the
+    // 'vusa.test' apex from APP_URL=https://www.vusa.test (.env).
+    $host = "{$subdomain}.vusa.test";
+
+    // Always render against the built manifest, never the Vite dev server. If the developer has
+    // `sail npm run dev` running, public/hot exists and @vite serves from localhost:5173 — a
+    // completely different code path from CI, which has no hot file. That divergence is what let a
+    // CORS-blocked Vite entry pass locally and fail in CI. Requires `sail npm run build` first.
+    app(Vite::class)->useHotFile(storage_path('framework/testing/vite-hot-disabled'));
+
+    pest()->browser()->withHost($host);
+
+    // Bootstraps the plugin's server and reveals its port; this first response (served under
+    // the wrong 127.0.0.1 origin) is otherwise discarded. Deliberately visits '/', not $path —
+    // visiting $path twice in a row (once pre-, once post-anchoring) leaves the Inertia/Vue
+    // app unmounted on the second load for reasons not fully root-caused; '/' as a distinct
+    // throwaway warm-up path avoids it.
+    $port = visit('/')->script('location.port');
+
+    config(['app.url' => "http://{$host}"]);
+
+    // Re-anchor the asset origin too, or nothing on the page ever runs. LaravelHttpServer::bootstrap()
+    // points it at 127.0.0.1:$port while the page itself loads from $host:$port — and a
+    // `<script type="module">` is always fetched in CORS mode, whatever its crossorigin attribute.
+    // The plugin serves files under public/ by short-circuiting *before* the HTTP kernel, so
+    // HandleCors never runs and the response carries no Access-Control-Allow-Origin: Chromium
+    // blocks the Vite entry outright (resource status 0), `#app` stays empty forever, and neither
+    // consoleLogs() nor javaScriptErrors() reports anything. Same origin => no CORS to fail.
+    app('url')->useAssetOrigin("http://{$host}:{$port}");
+
+    $page = visit("http://{$host}:{$port}{$path}");
+
+    // The returned page is guaranteed mounted, not merely loaded — see waitForInertiaRender().
+    waitForInertiaRender($page);
+
+    return $page;
+}
+
+/**
+ * Block until an Inertia page has actually rendered into `#app`.
+ *
+ * Every public page is client-rendered — public.ts code-splits
+ * `import.meta.glob('./Pages/Public/**\/*.vue')` lazily (no `eager: true`) — and the plugin's
+ * navigation only waits for the `load` event, which by spec does not wait for a dynamically
+ * `import()`ed chunk. So immediately after a visit, and again after any Inertia SPA navigation,
+ * `#app` is still the empty div Inertia renders server-side.
+ *
+ * The plugin's assertion retry (`Execution::waitForExpectation`) looks like it papers over this,
+ * and does locally — but it's a PHP-side hot spin (`Amp\delay(0)`, no backoff) sharing a process
+ * with the Laravel HTTP server that has to serve the page chunk (`LaravelHttpServer` runs the
+ * app in-process). `waitForSelector()` hands the waiting to Playwright instead: one blocking round
+ * trip that suspends this fiber, so the in-process HTTP server keeps serving.
+ *
+ * Do NOT reach for `waitForFunction()`, `waitForURL()`, or `waitForLoadState()` as alternatives —
+ * in pestphp/pest-plugin-browser 5.0.1 all three build a `Client::execute()` Generator and never
+ * iterate it (`vendor/pestphp/pest-plugin-browser/src/Playwright/Page.php:237,253,272`), so they
+ * send nothing and return instantly. `waitForSelector()` is the only one that actually waits.
+ *
+ * The timeout is passed explicitly rather than left to `pest()->browser()->timeout()` — a wait
+ * that silently runs on the plugin's 5s default is exactly how this failed in CI before.
+ */
+function waitForInertiaRender(
+    PendingAwaitablePage|AwaitableWebpage $page,
+    string $selector = '#app > *:first-child',
+    int $timeoutMs = 15_000,
+): void {
+    try {
+        // Unstrict: waitForSelector() follows with an elementHandle() querySelector that throws on a
+        // multi-match selector, a pointless failure mode for a readiness check.
+        $page->page()->unstrict(
+            fn (PlaywrightPage $playwrightPage) => $playwrightPage->waitForSelector($selector, ['timeout' => $timeoutMs])
+        );
+    } catch (Throwable $e) {
+        throw new RuntimeException(
+            sprintf("Timed out after %dms waiting for [%s].\n\n%s", $timeoutMs, $selector, captureBrowserDiagnostics($page)),
+            previous: $e,
+        );
+    }
+}
+
+/**
+ * Best-effort page state for a failed browser wait: screenshot, HTML, console logs.
+ *
+ * Distinguishes "still rendering" from "Laravel error page" / "404" / "JS blew up on boot", which
+ * is otherwise unknowable from a bare timeout — CI uploads the screenshots as an artifact.
+ * Every capture is individually guarded: a dead page must not mask the original failure.
+ */
+function captureBrowserDiagnostics(PendingAwaitablePage|AwaitableWebpage $page): string
+{
+    $lines = [];
+
+    foreach ([
+        'Screenshot' => fn (PlaywrightPage $p): string => base_path('tests/Browser/Screenshots/'.$p->screenshot(filename: 'wait-for-inertia-render-failure').'.png'),
+        // The one that matters most: a blocked asset reports status 0 here, and shows up nowhere
+        // else — consoleLogs() only hooks console.log, and javaScriptErrors() uses a non-capture
+        // window 'error' listener, which sees neither resource failures nor unhandled rejections.
+        'Requests' => fn (PlaywrightPage $p): string => (string) json_encode($p->evaluate(
+            'performance.getEntriesByType("resource").map(e => e.name.split("/").pop() + " -> " + e.responseStatus)'
+        )),
+        'Console' => fn (PlaywrightPage $p): string => json_encode($p->consoleLogs()) ?: '[]',
+        // Title + `#app`, not content(): 4000 chars of this app's <head> is PWA splash-screen
+        // boilerplate that never reaches the part saying whether the page mounted. Falling back to
+        // <body> covers the case where there is no `#app` at all — i.e. a Laravel error page.
+        'Page' => fn (PlaywrightPage $p): string => mb_substr(
+            (string) $p->evaluate("document.title + '\\n' + (document.querySelector('#app')?.innerHTML ?? document.body.innerHTML)"),
+            0,
+            4000,
+        ),
+    ] as $label => $capture) {
+        try {
+            $lines[] = "{$label}: ".(string) $page->page()->unstrict($capture);
+        } catch (Throwable $e) {
+            $lines[] = "{$label}: (capture failed: {$e->getMessage()})";
+        }
+    }
+
+    return implode("\n\n", $lines);
+}
+
+/**
+ * Restore the real Typesense engine for the current test.
+ *
+ * The suite runs against Scout's NullEngine by default (see `TestingServiceProvider`):
+ * ~14 models hard-code the Typesense engine in `searchableUsing()`, and with `scout.queue`
+ * on the sync connection every factory `create()` was paying a synchronous HTTP round trip
+ * — measured at ~29ms of the ~35ms it took to build one `makeUser()` fixture.
+ *
+ * Call this in `beforeEach()` when the test asserts on search results or index state.
+ * Requires a running Typesense (Sail provides one locally; CI starts one).
+ */
+function usesTypesense(): void
+{
+    app()->getProvider(TestingServiceProvider::class)->enableRealTypesense();
+}
 
 function makeUser(Tenant $tenant): User
 {
@@ -232,26 +412,6 @@ function getControllerTestData(string $controller): array
                 'url' => '',
             ],
         ],
-        'Training' => [
-            'valid' => [
-                'name' => ['lt' => 'Test Training', 'en' => 'Test Training EN'],
-                'description' => ['lt' => 'Test training description', 'en' => 'Test training description EN'],
-                'start_time' => now()->addDays(7)->timestamp * 1000, // Convert to milliseconds
-                'end_time' => now()->addDays(7)->addHours(3)->timestamp * 1000, // Convert to milliseconds
-                'address' => 'Training Room',
-                'max_participants' => 25,
-                'trainables' => [], // Empty array for related trainables
-                'tasks' => [], // Empty array for related tasks
-            ],
-            'invalid' => [
-                'name' => '', // Required field empty
-                'start_time' => '', // Required field empty
-                'end_time' => '', // Required field empty
-                'max_participants' => -1, // Invalid value
-                'trainables' => [], // Empty array for related trainables
-                'tasks' => [], // Empty array for related tasks
-            ],
-        ],
         'Relationship' => [
             'valid' => [
                 'name' => 'Test Relationship Type',
@@ -277,7 +437,6 @@ function getControllerValidationErrors(string $controller): array
         'Category' => ['name.lt', 'name.en'],
         'Banner' => ['title', 'image_url'],
         'Navigation' => ['name', 'url'],
-        'Training' => ['name', 'start_time', 'end_time', 'max_participants'],
         'Relationship' => ['name', 'slug'],
         default => ['name'],
     };

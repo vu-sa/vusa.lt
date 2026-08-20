@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\AdminController;
+
 /**
  * `ServerDataTable` resolves its empty-state heading through
  * `entities.{entityName}.model`, so a missing key leaks the raw key string into the
@@ -37,7 +39,7 @@ dataset('admin index entity names', array_map(
 test('the entity name scan finds every admin index page', function () use ($entityNames): void {
     // Guards the regex above: a rename that silently matches nothing would make
     // every dataset case vanish and the suite pass while covering nothing.
-    expect($entityNames)->toHaveCount(24);
+    expect($entityNames)->toHaveCount(22);
 });
 
 test('every admin index entity name has a Lithuanian model translation', function (string $entityName): void {
@@ -63,3 +65,63 @@ test('Lithuanian model translations declare the genitive plural form used by emp
     // larger counts unmatched and renders the raw pluralization string.
     expect($translations[$entityName]['model'])->toContain('[10,*]');
 })->with('admin index entity names');
+
+/**
+ * Entities that are not real entities: they hold field labels or meta strings rather than a
+ * model name, so they take no gender.
+ */
+const GENDERLESS_ENTITY_KEYS = ['meta', 'common', 'contentPart'];
+
+test('every entity declares a gender the message files can resolve', function (string $locale): void {
+    $entities = require base_path("lang/admin/{$locale}/entities.php");
+    $messages = require base_path("lang/admin/{$locale}/messages.php");
+    $forms = require base_path("lang/admin/{$locale}/forms.php");
+
+    $problems = [];
+
+    foreach ($entities as $entity => $lines) {
+        if (in_array($entity, GENDERLESS_ENTITY_KEYS, true)) {
+            continue;
+        }
+
+        $gender = $lines['gender'] ?? null;
+
+        if (! in_array($gender, ['f', 'm'], true)) {
+            $problems[] = "{$entity}: gender must be 'f' or 'm', got ".var_export($gender, true);
+
+            continue;
+        }
+
+        // entityMessage() / newEntityTitle() build the key from the gender, so a variant
+        // missing for one gender only surfaces on the entity that happens to use it.
+        foreach (['created', 'updated', 'deleted', 'restored'] as $action) {
+            if (! isset($messages[$action][$gender])) {
+                $problems[] = "{$entity}: messages.{$action}.{$gender} is missing";
+            }
+        }
+
+        foreach (['new_model', 'edit_model'] as $key) {
+            if (! isset($forms[$key][$gender])) {
+                $problems[] = "{$entity}: forms.{$key}.{$gender} is missing";
+            }
+        }
+    }
+
+    expect($problems)->toBeEmpty();
+})->with(['lt', 'en']);
+
+test('entityMessage renders the gendered Lithuanian participle', function (): void {
+    app()->setLocale('lt');
+
+    $controller = new class extends AdminController
+    {
+        public function message(string $action, string $entity): string
+        {
+            return $this->entityMessage($action, $entity);
+        }
+    };
+
+    expect($controller->message('created', 'news'))->toBe('Naujiena sėkmingai sukurta.')
+        ->and($controller->message('created', 'page'))->toBe('Puslapis sėkmingai sukurtas.')
+        ->and($controller->message('restored', 'reservation'))->toBe('Rezervacija sėkmingai atkurta.');
+});

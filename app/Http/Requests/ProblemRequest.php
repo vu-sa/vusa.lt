@@ -2,12 +2,21 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ValidatesTenantScope;
 use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ProblemRequest extends FormRequest
 {
+    use ValidatesTenantScope;
+
+    /**
+     * The permission whose tenant scope constrains `tenant_id`. Store and Update override it
+     * so each uses its own scope.
+     */
+    protected string $tenantScopePermission = 'problems.update.padalinys';
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -24,7 +33,7 @@ class ProblemRequest extends FormRequest
             'solution.en' => 'nullable|string',
             'steps_taken.lt' => 'nullable|string',
             'steps_taken.en' => 'nullable|string',
-            'tenant_id' => 'required|integer|exists:tenants,id',
+            'tenant_id' => ['required', 'integer', 'exists:tenants,id', $this->tenantIdInAuthorizedScope($this->tenantScopePermission)],
             'responsible_user_id' => ['nullable', 'string', SoftDeleteRules::existsLive('users')],
             'occurred_at' => 'required|date',
             'resolved_at' => 'nullable|date|after_or_equal:occurred_at',
@@ -43,17 +52,17 @@ class ProblemRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'title.lt.required_without' => 'The problem title must be provided in at least one language.',
-            'title.en.required_without' => 'The problem title must be provided in at least one language.',
-            'description.lt.required_without' => 'The problem description must be provided in at least one language.',
-            'description.en.required_without' => 'The problem description must be provided in at least one language.',
-            'tenant_id.required' => 'The tenant is required.',
-            'tenant_id.exists' => 'The selected tenant is invalid.',
-            'occurred_at.required' => 'The occurred date is required.',
-            'resolved_at.after_or_equal' => 'The resolved date must be after or equal to the occurred date.',
-            'status.in' => 'The selected status is invalid.',
-            'categories.*.exists' => 'One or more selected categories are invalid.',
-            'institutions.*.exists' => 'One or more selected institutions are invalid.',
+            'title.lt.required_without' => trans('problems.validation.title_required'),
+            'title.en.required_without' => trans('problems.validation.title_required'),
+            'description.lt.required_without' => trans('problems.validation.description_required'),
+            'description.en.required_without' => trans('problems.validation.description_required'),
+            'tenant_id.required' => trans('problems.validation.tenant_required'),
+            'tenant_id.exists' => trans('problems.validation.tenant_exists'),
+            'occurred_at.required' => trans('problems.validation.occurred_at_required'),
+            'resolved_at.after_or_equal' => trans('problems.validation.resolved_at_after'),
+            'status.in' => trans('problems.validation.status_in'),
+            'categories.*.exists' => trans('problems.validation.categories_exist'),
+            'institutions.*.exists' => trans('problems.validation.institutions_exist'),
         ];
     }
 }

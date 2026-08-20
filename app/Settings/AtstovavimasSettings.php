@@ -2,6 +2,7 @@
 
 namespace App\Settings;
 
+use App\Enums\TenantType;
 use App\Models\Duty;
 use App\Models\Role;
 use App\Models\Tenant;
@@ -163,18 +164,14 @@ class AtstovavimasSettings extends Settings
     public function getVisibleTenantIds(User $user): Collection
     {
         if ($user->isSuperAdmin()) {
-            return Tenant::query()
-                ->where('type', '!=', 'pkp')
-                ->pluck('id');
+            return Tenant::query()->representational()->pluck('id');
         }
 
         $authorizer = app(ModelAuthorizer::class)->forUser($user);
 
         // Check for global read permission
         if ($authorizer->check('institutions.read.*')) {
-            return Tenant::query()
-                ->where('type', '!=', 'pkp')
-                ->pluck('id');
+            return Tenant::query()->representational()->pluck('id');
         }
 
         // Check for padalinys-level permission
@@ -182,7 +179,7 @@ class AtstovavimasSettings extends Settings
             $tenants = $authorizer->getTenants('institutions.read.padalinys');
 
             return $tenants
-                ->where('type', '!=', 'pkp')
+                ->whereIn('type', TenantType::representational())
                 ->pluck('id')
                 ->filter()
                 ->unique()

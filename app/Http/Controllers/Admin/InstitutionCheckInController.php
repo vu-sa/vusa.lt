@@ -6,12 +6,11 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreInstitutionCheckInRequest;
 use App\Models\Institution;
 use App\Services\CheckInService;
-use App\Services\ModelAuthorizer;
 use Illuminate\Http\RedirectResponse;
 
 class InstitutionCheckInController extends AdminController
 {
-    public function __construct(private readonly CheckInService $service, public ModelAuthorizer $authorizer) {}
+    public function __construct(private readonly CheckInService $service) {}
 
     /**
      * Store a new check-in for an institution.

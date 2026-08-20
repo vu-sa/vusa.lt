@@ -8,6 +8,7 @@ use App\Models\News;
 use App\Models\Page;
 use App\Services\ContentResolution\ResolutionContext;
 use App\Services\ContentResolution\ResolvesContentPart;
+use App\Support\LocalizedRouteSlugs;
 use Illuminate\Support\Collection;
 
 /**
@@ -84,12 +85,10 @@ final class LinkListResolver implements ResolvesContentPart
                 $items[] = [
                     'id' => $resolvedNews->id,
                     'title' => $resolvedNews->title,
-                    'href' => route('news', [
+                    'href' => LocalizedRouteSlugs::route('news', [
                         'subdomain' => $context->subdomain,
-                        'lang' => $resolvedNews->lang,
-                        'newsString' => $resolvedNews->lang === 'lt' ? 'naujiena' : 'news',
                         'news' => $resolvedNews->permalink,
-                    ]),
+                    ], $resolvedNews->lang),
                     'imageUrl' => $resolvedNews->getImageUrl(),
                     'publishedAt' => optional($resolvedNews->publish_time)->toIso8601String(),
                 ];

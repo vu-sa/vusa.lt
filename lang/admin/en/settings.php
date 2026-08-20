@@ -29,6 +29,10 @@ return [
             'title' => 'Representation Settings',
             'description' => 'Configure which roles grant access to tenant-wide institutions in the representation dashboard.',
         ],
+        'site' => [
+            'title' => 'Site settings',
+            'description' => 'Point the system at the pages it links to, such as the privacy policy.',
+        ],
         'authorization' => [
             'title' => 'Settings Authorization',
             'description' => 'Configure which role can manage system settings.',
@@ -113,5 +117,14 @@ return [
         'documents' => 'Document Settings',
         'atstovavimas' => 'Representation Settings',
         'authorization' => 'Authorization',
+    ],
+
+    'site_settings' => [
+        'privacy_page_title' => 'Privacy policy page',
+        'privacy_page_description' => 'The pages the cookie banner links to. Pick a separate page for each language; when one language has no page, its visitors get the other language\'s link.',
+        'privacy_page_label' => 'Privacy policy page',
+        'privacy_page_placeholder' => 'Not set',
+        'privacy_page_search_placeholder' => 'Search pages by title...',
+        'privacy_page_empty' => 'No pages found.',
     ],
 ];

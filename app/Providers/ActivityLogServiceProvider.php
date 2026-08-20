@@ -32,6 +32,18 @@ class ActivityLogServiceProvider extends ServiceProvider
         // declared type), but the instance is always our configured
         // activity_model (App\Models\Activity) in practice -- the instanceof
         // check is a defensive no-op unless that config is ever changed.
+        //
+        // clearBeforeLoggingCallbacks() first: LogActivityAction::$beforeLoggingCallbacks is a
+        // process-lifetime static array, not container-scoped, and every application boot
+        // (every test, since Pest rebuilds the app per test) re-runs this boot() method. Without
+        // clearing first, the array -- and the Application each closure captures via $this->app
+        // -- grows by one per boot forever, turning every activity write into an O(n) scan of
+        // stale closures and pinning every past Application instance alive. Confirmed to cause a
+        // severe process-wide slowdown in the full sequential test suite (tests unrelated to
+        // activity logging measured 12-58x slower once ~800+ tests had run in one process). No-op
+        // in production, where a fresh process boots once per request.
+        LogActivityAction::clearBeforeLoggingCallbacks();
+
         LogActivityAction::beforeLogging(function (ActivityContract $activity): void {
             if ($activity instanceof Activity) {
                 $this->app->make(ActivityRootResolver::class)->stamp($activity);

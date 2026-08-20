@@ -3,20 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\ReorderAgendaItemsRequest;
 use App\Http\Requests\StoreAgendaItemsRequest;
 use App\Http\Requests\UpdateAgendaItemRequest;
+use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Vote;
-use App\Rules\SoftDeleteRules;
-use App\Services\ModelAuthorizer as Authorizer;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
 class AgendaItemController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
-
     /**
      * Store a newly created resource in storage.
      */
@@ -44,7 +41,7 @@ class AgendaItemController extends AdminController
             // We no longer create tasks for placeholder agenda items
         }
 
-        return back()->with(['success' => 'Darbotvarkės punktai sukurti sėkmingai!']);
+        return back()->with(['success' => __('messages.agenda_item.created_many')]);
     }
 
     /**
@@ -120,7 +117,7 @@ class AgendaItemController extends AdminController
             }
         });
 
-        return back()->with('success', 'Darbotvarkės punktas atnaujintas sėkmingai!');
+        return back()->with('success', $this->entityMessage('updated', 'agendaItem'));
     }
 
     /**
@@ -181,20 +178,20 @@ class AgendaItemController extends AdminController
 
         $agendaItem->delete();
 
-        return back()->with(['success' => 'Darbotvarkės punktas ištrintas sėkmingai!']);
+        return back()->with(['success' => $this->entityMessage('deleted', 'agendaItem')]);
     }
 
     /**
      * Reorder agenda items for a meeting.
      */
-    public function reorder(Request $request)
+    public function reorder(ReorderAgendaItemsRequest $request)
     {
-        $request->validate([
-            'meeting_id' => ['required', SoftDeleteRules::existsLive('meetings')],
-            'agenda_items' => 'required|array',
-            'agenda_items.*.id' => 'required|exists:agenda_items,id',
-            'agenda_items.*.order' => 'required|integer|min:1',
-        ]);
+        $validated = $request->validated();
+
+        // Reordering is a write against the meeting's agenda, so it follows the meeting's
+        // update ability. The scoped where() below already confines the writes to this
+        // meeting's items, so authorizing the meeting covers every row touched.
+        $this->handleAuthorization('update', Meeting::query()->findOrFail($validated['meeting_id']));
 
         DB::transaction(function () use ($request): void {
             foreach ($request->agenda_items as $item) {
@@ -204,6 +201,6 @@ class AgendaItemController extends AdminController
             }
         });
 
-        return back()->with(['success' => 'Darbotvarkės punktų tvarka pakeista sėkmingai!']);
+        return back()->with(['success' => __('messages.agenda_item.reordered')]);
     }
 }

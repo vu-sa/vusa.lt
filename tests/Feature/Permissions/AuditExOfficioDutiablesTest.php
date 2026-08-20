@@ -5,6 +5,7 @@ use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 
@@ -29,7 +30,7 @@ test('reports a target duty held without its source duty', function (): void {
     Dutiable::factory()->create([
         'duty_id' => $this->targetDuty->id,
         'dutiable_id' => $this->user->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
         'via_dutiable_id' => null,
@@ -44,7 +45,7 @@ test('does not report a target duty when the source duty is still held', functio
     Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
         'via_dutiable_id' => null,
@@ -61,7 +62,7 @@ test('ignores expired target duties', function (): void {
     Dutiable::factory()->create([
         'duty_id' => $this->targetDuty->id,
         'dutiable_id' => $this->user->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'start_date' => now()->subYear()->toDateString(),
         'end_date' => now()->subMonth()->toDateString(),
         'via_dutiable_id' => null,

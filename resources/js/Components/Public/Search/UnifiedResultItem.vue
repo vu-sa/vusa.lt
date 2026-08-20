@@ -44,6 +44,7 @@
 </template>
 
 <script setup lang="ts">
+import { localizedRoute } from '@/Utils/LocalizedRoutes';
 import { computed, ref, type Component } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { ArrowRight, ArrowUpRight } from 'lucide-vue-next';
@@ -163,7 +164,7 @@ const href = computed(() => {
         }
         return route('contacts.institution', { ...base, institution: doc.id });
       case 'news':
-        return route('news', { ...base, news: doc.permalink, newsString: 'naujiena' });
+        return localizedRoute('news', { subdomain: base.subdomain, news: doc.permalink }, base.lang);
       case 'pages':
         return route('page', { ...base, permalink: doc.permalink });
       case 'calendar':

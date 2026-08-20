@@ -7,6 +7,7 @@ use App\Events\DutiableChanged;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
+use App\Support\MorphMap;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 
@@ -26,7 +27,7 @@ class SyncExOfficioDutiables implements ShouldQueue
     public function handle(DutiableChanged $event): void
     {
         // Only sync User dutiables; contacts and other morphable types are excluded.
-        if ($event->dutiableType !== User::class) {
+        if ($event->dutiableType !== MorphMap::alias(User::class)) {
             return;
         }
 
@@ -83,7 +84,7 @@ class SyncExOfficioDutiables implements ShouldQueue
         // If a derived row for this source already exists, mirror the dates and tenant_id.
         $derived = Dutiable::where('via_dutiable_id', $source->id)
             ->where('duty_id', $targetDutyId)
-            ->where('dutiable_type', User::class)
+            ->where('dutiable_type', MorphMap::alias(User::class))
             ->where('dutiable_id', $userId)
             ->first();
 
@@ -98,7 +99,7 @@ class SyncExOfficioDutiables implements ShouldQueue
 
         // Adopt an existing active manual row for this user+target duty.
         $manual = Dutiable::where('duty_id', $targetDutyId)
-            ->where('dutiable_type', User::class)
+            ->where('dutiable_type', MorphMap::alias(User::class))
             ->where('dutiable_id', $userId)
             ->whereNull('via_dutiable_id')
             ->whereNull('end_date')
@@ -118,7 +119,7 @@ class SyncExOfficioDutiables implements ShouldQueue
         Dutiable::create([
             'duty_id' => $targetDutyId,
             'dutiable_id' => $userId,
-            'dutiable_type' => User::class,
+            'dutiable_type' => MorphMap::alias(User::class),
             'via_dutiable_id' => $source->id,
             'tenant_id' => $resolvedTenantId,
             'start_date' => $source->start_date,

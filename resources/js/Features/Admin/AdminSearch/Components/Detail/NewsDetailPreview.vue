@@ -47,6 +47,7 @@
 </template>
 
 <script setup lang="ts">
+import { localizedRoute } from '@/Utils/LocalizedRoutes';
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -73,11 +74,9 @@ const publicUrl = computed(() => {
     return undefined;
   }
   const lang = props.news.lang ?? 'lt';
-  return route('news', {
+  return localizedRoute('news', {
     subdomain: resolveTenantSubdomain(props.news.tenant_id),
-    lang,
-    newsString: lang === 'lt' ? 'naujiena' : 'news',
     news: props.news.permalink,
-  });
+  }, lang);
 });
 </script>

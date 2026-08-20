@@ -40,7 +40,7 @@ class MergeStudyProgramsRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'source_study_program_ids.*.different' => 'Source study programs cannot include the target study program.',
+            'source_study_program_ids.*.different' => trans('forms.validation.merge.source_is_target'),
         ];
     }
 }

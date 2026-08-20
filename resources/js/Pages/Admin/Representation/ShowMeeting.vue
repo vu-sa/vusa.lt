@@ -1,153 +1,121 @@
 <template>
-  <AdminContentPage>
-    <InertiaHead :title="meetingTitle" />
-
-    <!-- Meeting Hero Section -->
-    <ShowPageHero
-      :title="meetingTitle"
-      :badge="meetingBadge"
-    >
-      <template #icon>
-        <div class="flex flex-col items-center justify-center leading-none">
-          <span class="text-lg sm:text-xl font-semibold text-zinc-700 dark:text-zinc-200">
-            {{ formatStaticTime(new Date(meeting.start_time), { day: "numeric" }) }}
-          </span>
-          <span class="mt-0.5 text-[10px] font-medium tracking-wide text-zinc-400 dark:text-zinc-500">
-            {{ formatMonthShort(new Date(meeting.start_time)) }}
-          </span>
-        </div>
-      </template>
-      <template #subtitle>
-        <!-- Joint meeting institution management (unobtrusive) -->
-        <div v-if="meeting.institutions && meeting.institutions.length > 0" class="flex flex-wrap mt-1 items-center gap-2">
-          <span class="text-xs text-zinc-400 dark:text-zinc-500">{{ $t('Institucijos') }}:</span>
-          <div v-for="institution in meeting.institutions" :key="institution.id" class="flex items-center gap-0.5">
-            <Badge variant="outline" class="text-xs">
-              {{ institution.name }}
-            </Badge>
-            <button
-              v-if="(meeting.institutions?.length ?? 0) > 1"
-              type="button"
-              class="flex items-center justify-center h-4 w-4 rounded text-zinc-400 hover:text-destructive hover:bg-destructive/10 transition-colors"
-              :title="$t('Pašalinti instituciją')"
-              @click="handleDetachInstitution(institution.id)"
-            >
-              <X class="h-2.5 w-2.5" />
-            </button>
-          </div>
+  <ShowPageLayout
+    v-model:tab="currentTab"
+    :title="meetingTitle"
+    :badge="meetingBadge"
+    :model="meeting"
+    audit-subject-type="meeting"
+    :tabs
+  >
+    <template #icon>
+      <div class="flex flex-col items-center justify-center leading-none">
+        <span class="text-lg sm:text-xl font-semibold text-zinc-700 dark:text-zinc-200">
+          {{ formatStaticTime(new Date(meeting.start_time), { day: "numeric" }) }}
+        </span>
+        <span class="mt-0.5 text-[10px] font-medium tracking-wide text-zinc-400 dark:text-zinc-500">
+          {{ formatMonthShort(new Date(meeting.start_time)) }}
+        </span>
+      </div>
+    </template>
+    <template #subtitle>
+      <!-- Joint meeting institution management (unobtrusive) -->
+      <div v-if="meeting.institutions && meeting.institutions.length > 0" class="flex flex-wrap mt-1 items-center gap-2">
+        <span class="text-xs text-zinc-400 dark:text-zinc-500">{{ $t('Institucijos') }}:</span>
+        <div v-for="institution in meeting.institutions" :key="institution.id" class="flex items-center gap-0.5">
+          <Badge variant="outline" class="text-xs">
+            {{ institution.name }}
+          </Badge>
           <button
+            v-if="(meeting.institutions?.length ?? 0) > 1"
             type="button"
-            class="flex items-center gap-1 text-xs text-zinc-400 hover:text-primary transition-colors"
-            :title="$t('Pridėti instituciją')"
-            @click="showAddInstitutionDialog = true"
+            class="flex items-center justify-center h-4 w-4 rounded text-zinc-400 hover:text-destructive hover:bg-destructive/10 transition-colors"
+            :title="$t('Pašalinti instituciją')"
+            @click="handleDetachInstitution(institution.id)"
           >
-            <Plus class="h-3 w-3" />
-            <span class="hidden sm:inline">{{ $t('Pridėti instituciją') }}</span>
+            <X class="h-2.5 w-2.5" />
           </button>
         </div>
-      </template>
-      <template #info>
-        <div class="flex flex-wrap items-center gap-2 sm:gap-4 text-sm">
-          <div v-if="meetingTimeLabel" class="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400">
-            <Clock class="h-4 w-4 text-green-500 shrink-0" />
-            <span>{{ meetingTimeLabel }}</span>
-            <span class="text-zinc-400 dark:text-zinc-500">· {{ meetingRelativeTime }}</span>
-          </div>
-          <Badge v-if="meeting.type_label" variant="secondary" class="text-xs">
-            {{ meeting.type_label }}
-          </Badge>
-          <Badge v-if="meeting.is_public" variant="outline" class="text-xs gap-1 text-green-600 border-green-300 dark:text-green-400 dark:border-green-700">
-            <Globe class="h-3 w-3" />
-            <span class="hidden sm:inline">{{ $t('Rodomas viešai') }}</span>
-            <span class="sm:hidden">{{ $t('Viešas') }}</span>
-          </Badge>
+        <button
+          type="button"
+          class="flex items-center gap-1 text-xs text-zinc-400 hover:text-primary transition-colors"
+          :title="$t('Pridėti instituciją')"
+          @click="showAddInstitutionDialog = true"
+        >
+          <Plus class="h-3 w-3" />
+          <span class="hidden sm:inline">{{ $t('Pridėti instituciją') }}</span>
+        </button>
+      </div>
+    </template>
+    <template #info>
+      <div class="flex flex-wrap items-center gap-2 sm:gap-4 text-sm">
+        <div v-if="meetingTimeLabel" class="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400">
+          <Clock class="h-4 w-4 text-green-500 shrink-0" />
+          <span>{{ meetingTimeLabel }}</span>
+          <span class="text-zinc-400 dark:text-zinc-500">· {{ meetingRelativeTime }}</span>
         </div>
-        <div v-if="representatives && representatives.length > 0" class="flex items-center gap-2">
-          <span class="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:inline">{{ $t('Atstovai') }}:</span>
-          <UsersAvatarGroup :users="representatives" :max="4" :size="24" expandable />
-        </div>
-      </template>
-      <template #actions>
-        <ActivityLogSheet subject-type="meeting" :subject-id="meeting.id" />
-        <Button variant="outline" size="icon" class="h-9 w-9" @click="showMeetingModal = true">
-          <Edit class="h-4 w-4" />
-        </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger as-child>
-            <Button variant="outline" size="icon" class="h-9 w-9">
-              <MoreHorizontal class="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem @click="showMeetingModal = true">
-              <Edit class="h-4 w-4 mr-2" />
-              {{ $t('Redaguoti posėdį') }}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem class="text-destructive focus:text-destructive" @click="showDeleteDialog = true">
-              <Trash2 class="h-4 w-4 mr-2" />
-              {{ $t('Šalinti posėdį') }}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </template>
-    </ShowPageHero>
-
-    <!-- Tabs Navigation -->
-    <Tabs v-model="currentTab" class="mt-6">
-      <div class="mb-4 flex items-center justify-between gap-4">
-        <TabsList class="h-10 gap-1 rounded-xl bg-zinc-100/80 p-1 dark:bg-zinc-800/60">
-          <TabsTrigger
-            value="agenda"
-            class="rounded-lg px-3.5 data-[state=active]:font-semibold"
-          >
-            {{ $t('Darbotvarkė') }}
-            <span v-if="meeting.agenda_items?.length" class="ml-1.5 text-xs font-normal text-zinc-400 dark:text-zinc-500">
-              {{ meeting.agenda_items.length }}
-            </span>
-          </TabsTrigger>
-          <TabsTrigger
-            value="files"
-            class="rounded-lg px-3.5 data-[state=active]:font-semibold"
-          >
-            {{ $t('Failai') }}
-          </TabsTrigger>
-          <TabsTrigger
-            value="tasks"
-            class="rounded-lg px-3.5 data-[state=active]:font-semibold"
-          >
-            {{ $t('Užduotys') }}
-            <span v-if="meeting.tasks?.length" class="ml-1.5 text-xs font-normal text-zinc-400 dark:text-zinc-500">
-              {{ meeting.tasks.length }}
-            </span>
-          </TabsTrigger>
-        </TabsList>
-
-        <!-- Protocol / report status (past meetings only) -->
-        <div v-if="isPastMeeting" class="hidden sm:flex items-center gap-3">
-          <span
-            class="inline-flex items-center gap-1.5 text-xs"
-            :class="hasProtocol ? 'text-green-600 dark:text-green-400' : 'text-zinc-400 dark:text-zinc-500'"
-            :title="hasProtocol ? $t('Protokolas įkeltas') : $t('Protokolas neįkeltas')"
-          >
-            <FileText class="h-4 w-4 shrink-0" />
-            {{ $t('Protokolas') }}
-            <Check v-if="hasProtocol" class="h-3.5 w-3.5" />
-          </span>
-          <span
-            class="inline-flex items-center gap-1.5 text-xs"
-            :class="hasReport ? 'text-green-600 dark:text-green-400' : 'text-zinc-400 dark:text-zinc-500'"
-            :title="hasReport ? $t('Ataskaita įkelta') : $t('Ataskaita neįkelta')"
-          >
-            <FileBarChart class="h-4 w-4 shrink-0" />
-            {{ $t('Ataskaita') }}
-            <Check v-if="hasReport" class="h-3.5 w-3.5" />
-          </span>
-        </div>
+        <Badge v-if="meeting.type_label" variant="secondary" class="text-xs">
+          {{ meeting.type_label }}
+        </Badge>
+        <Badge v-if="meeting.is_public" variant="outline" class="text-xs gap-1 text-green-600 border-green-300 dark:text-green-400 dark:border-green-700">
+          <Globe class="h-3 w-3" />
+          <span class="hidden sm:inline">{{ $t('Rodomas viešai') }}</span>
+          <span class="sm:hidden">{{ $t('Viešas') }}</span>
+        </Badge>
+      </div>
+      <div v-if="representatives && representatives.length > 0" class="flex items-center gap-2">
+        <span class="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:inline">{{ $t('Atstovai') }}:</span>
+        <UsersAvatarGroup :users="representatives" :max="4" :size="24" expandable />
       </div>
 
-      <!-- Agenda Tab -->
-      <TabsContent value="agenda" class="space-y-6">
+      <!-- Protocol / report status (past meetings only). This is meeting metadata,
+           so it belongs with the rest of the hero info rather than beside the tabs. -->
+      <div v-if="isPastMeeting" class="hidden sm:flex items-center gap-3">
+        <span
+          class="inline-flex items-center gap-1.5 text-xs"
+          :class="hasProtocol ? 'text-green-600 dark:text-green-400' : 'text-zinc-400 dark:text-zinc-500'"
+          :title="hasProtocol ? $t('Protokolas įkeltas') : $t('Protokolas neįkeltas')"
+        >
+          <FileText class="h-4 w-4 shrink-0" />
+          {{ $t('Protokolas') }}
+          <Check v-if="hasProtocol" class="h-3.5 w-3.5" />
+        </span>
+        <span
+          class="inline-flex items-center gap-1.5 text-xs"
+          :class="hasReport ? 'text-green-600 dark:text-green-400' : 'text-zinc-400 dark:text-zinc-500'"
+          :title="hasReport ? $t('Ataskaita įkelta') : $t('Ataskaita neįkelta')"
+        >
+          <FileBarChart class="h-4 w-4 shrink-0" />
+          {{ $t('Ataskaita') }}
+          <Check v-if="hasReport" class="h-3.5 w-3.5" />
+        </span>
+      </div>
+    </template>
+    <template #actions>
+      <Button variant="outline" size="icon" class="h-9 w-9" @click="showMeetingModal = true">
+        <Edit class="h-4 w-4" />
+      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger as-child>
+          <Button variant="outline" size="icon" class="h-9 w-9">
+            <MoreHorizontal class="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem @click="showMeetingModal = true">
+            <Edit class="h-4 w-4 mr-2" />
+            {{ $t('Redaguoti posėdį') }}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem class="text-destructive focus:text-destructive" @click="showDeleteDialog = true">
+            <Trash2 class="h-4 w-4 mr-2" />
+            {{ $t('Šalinti posėdį') }}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </template>
+
+    <template #agenda>
+      <div class="space-y-6">
         <MeetingAgendaList
           v-model:editing="agendaEditing"
           :agenda-items="meeting.agenda_items ?? []"
@@ -166,18 +134,16 @@
         <section class="border-t pt-6 dark:border-zinc-800">
           <DiscussionPanel commentable-type="meeting" :commentable-id="meeting.id" />
         </section>
-      </TabsContent>
+      </div>
+    </template>
 
-      <!-- Files Tab -->
-      <TabsContent value="files" class="space-y-6">
-        <FileManager :starting-path="meeting.sharepointPath" :fileable="{ id: meeting.id, type: 'Meeting' }" />
-      </TabsContent>
+    <template #files>
+      <FileManager :starting-path="meeting.sharepointPath" :fileable="{ id: meeting.id, type: 'Meeting' }" />
+    </template>
 
-      <!-- Tasks Tab -->
-      <TabsContent value="tasks" class="space-y-6">
-        <TaskManager :taskable="{ id: meeting.id, type: 'App\\Models\\Meeting' }" :tasks="meeting.tasks" />
-      </TabsContent>
-    </Tabs>
+    <template #tasks>
+      <TaskManager :taskable="{ id: meeting.id, type: ModelEnum.MEETING }" :tasks="meeting.tasks" />
+    </template>
 
     <!-- Modals -->
     <Dialog v-model:open="showMeetingModal">
@@ -340,12 +306,13 @@
         </div>
       </DialogContent>
     </Dialog>
-  </AdminContentPage>
+  </ShowPageLayout>
 </template>
 
 <script setup lang="tsx">
+import { ModelEnum } from '@/Types/enums';
 import { ref, computed, watch, onMounted } from 'vue';
-import { router, useForm, Head as InertiaHead } from '@inertiajs/vue3';
+import { router, useForm } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { AlertTriangle, Plus, Trash2, X, Clock, Globe, Edit, MoreHorizontal, Video, Link2, Check, FileText, FileBarChart } from 'lucide-vue-next';
@@ -358,14 +325,13 @@ import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcru
 import { useMeetingUrgency } from '@/Composables/useMeetingUrgency';
 
 // Layout
-import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
+import ShowPageLayout from '@/Components/Layouts/ShowPageLayout.vue';
 
 // UI Components
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -375,7 +341,6 @@ import {
 } from '@/Components/ui/dropdown-menu';
 
 // Custom Components
-import ShowPageHero from '@/Components/Hero/ShowPageHero.vue';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import MeetingAgendaList from '@/Components/Meetings/MeetingAgendaList.vue';
 import DiscussionPanel from '@/Components/Discussions/DiscussionPanel.vue';
@@ -385,7 +350,6 @@ import AgendaItemsForm from '@/Components/AdminForms/Special/AgendaItemsForm.vue
 import MeetingForm from '@/Components/AdminForms/MeetingForm.vue';
 import FileManager from '@/Features/Admin/SharepointFileManager/SharepointFileManager.vue';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
-import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import { InstitutionIconFilled, MeetingIconFilled } from '@/Components/icons';
 
 const props = defineProps<{
@@ -447,6 +411,13 @@ watch(currentTab, (newTab) => {
     window.history.replaceState({}, '', url.toString());
   }
 });
+
+/** Values must stay in step with TAB_NAMES, which guards the `?tab=` URL param. */
+const tabs = computed(() => [
+  { value: 'agenda', label: $t('Darbotvarkė'), count: props.meeting.agenda_items?.length },
+  { value: 'files', label: $t('Failai') },
+  { value: 'tasks', label: $t('Užduotys'), count: props.meeting.tasks?.length },
+]);
 
 onMounted(() => {
   const lastVisitedMeetingId = useStorage('last-visited-meeting-id', '');

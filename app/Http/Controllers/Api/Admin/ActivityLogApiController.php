@@ -8,6 +8,7 @@ use App\Http\Resources\ActivityResource;
 use App\Models\Activity;
 use App\Services\ActivityChangeFormatter;
 use App\Support\Auditables;
+use App\Support\MorphMap;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -39,13 +40,13 @@ class ActivityLogApiController extends ApiController
         $query = Activity::query()
             ->when(
                 $scope === 'self',
-                fn ($q) => $q->where('subject_type', $subject::class)->where('subject_id', $subject->getKey()),
-                fn ($q) => $q->forRoot($subject::class, (string) $subject->getKey()),
+                fn ($q) => $q->whereMorphedTo('subject', $subject),
+                fn ($q) => $q->forRoot($subject->getMorphClass(), (string) $subject->getKey()),
             )
             ->when($request->validated('event'), fn ($q, $event) => $q->where('event', $event))
             ->when(
                 $request->validated('subject_type'),
-                fn ($q, $type) => $q->where('subject_type', Auditables::subjectClassFor($type))
+                fn ($q, $type) => $q->where('subject_type', MorphMap::alias(Auditables::subjectClassFor($type)))
             )
             ->when($request->validated('causer_id'), fn ($q, $causerId) => $q->where('causer_id', $causerId))
             ->with('causer:id,name,profile_photo_path')

@@ -26,10 +26,10 @@ use Illuminate\Support\Collection;
 class DutySimilarityFinder
 {
     /** How many other-institution matches to name individually. */
-    private const OTHER_INSTITUTION_LIMIT = 3;
+    private const int OTHER_INSTITUTION_LIMIT = 3;
 
     /** Rows scanned when narrowing other-institution candidates. */
-    private const CANDIDATE_SCAN_LIMIT = 50;
+    private const int CANDIDATE_SCAN_LIMIT = 50;
 
     /**
      * @return array{

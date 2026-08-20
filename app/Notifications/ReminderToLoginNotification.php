@@ -36,7 +36,7 @@ class ReminderToLoginNotification extends Notification
             'addressivizedName' => $notifiable->addressivizedName(),
             'institutionLtNames' => $institutions->map(fn ($institution) => $institution?->getTranslation('name', 'lt'))->filter()->values(),
             'institutionEnNames' => $institutions->map(fn ($institution) => $institution?->getTranslation('name', 'en'))->filter()->values(),
-        ])->replyTo('it@vusa.lt')->subject('📢 Primename apie atstovavimo procesą | Reminding about the representation process');
+        ])->replyTo(config('vusa.contacts.it'))->subject('📢 Primename apie atstovavimo procesą | Reminding about the representation process');
     }
 
     /**

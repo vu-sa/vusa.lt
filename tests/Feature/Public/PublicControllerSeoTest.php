@@ -2,14 +2,44 @@
 
 use App\Models\Content;
 use App\Models\ContentPart;
+use App\Models\Institution;
+use App\Models\Meeting;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Tenant;
+use App\Models\Type;
+use App\Settings\MeetingSettings;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tiptap\Editor;
 
 pest()->use(RefreshDatabase::class);
+
+/**
+ * Create an Institution whose type is allowed by MeetingSettings, and attach it to a
+ * freshly created Meeting — the minimum setup ContactController::showMeeting() needs to
+ * not 404 (it gates on the institution's type being in the public-meeting allowlist).
+ */
+function makePublicMeeting(Tenant $tenant, array $institutionAttributes = [], array $meetingAttributes = []): Meeting
+{
+    $type = Type::factory()->create(['model_type' => MorphMap::alias(Institution::class)]);
+
+    $settings = app(MeetingSettings::class);
+    $settings->public_meeting_institution_type_ids = [$type->id];
+    $settings->save();
+
+    $institution = Institution::factory()->create([
+        'tenant_id' => $tenant->id,
+        ...$institutionAttributes,
+    ]);
+    $institution->types()->attach($type->id);
+
+    $meeting = Meeting::factory()->create($meetingAttributes);
+    $meeting->institutions()->attach($institution->id);
+
+    return $meeting;
+}
 
 beforeEach(function (): void {
     // Create main tenant (vusa -> www subdomain)
@@ -42,7 +72,7 @@ describe('Canonical URL generation', function (): void {
         $response->assertStatus(200);
         $response->assertInertia(fn (Assert $page) => $page
             ->component('Public/HomePage')
-            ->has('seo.tags')
+            ->has('head')
         );
 
         // The canonical URL should use www subdomain for main tenant content
@@ -59,7 +89,7 @@ describe('Canonical URL generation', function (): void {
         );
     });
 
-    it('includes canonical URL in SEO data for news article', function (): void {
+    it('includes canonical URL pointing at the content owner subdomain for news article', function (): void {
         $news = News::factory()->create([
             'tenant_id' => $this->mifTenant->id,
             'title' => 'Test MIF News',
@@ -69,7 +99,9 @@ describe('Canonical URL generation', function (): void {
             'publish_time' => now()->subHour(),
         ]);
 
-        // Access from MIF subdomain for content belonging to MIF
+        // News is only reachable from its owning tenant's subdomain — but the canonical URL
+        // is still built from the content owner explicitly (getCanonicalUrl(contentTenant: …)),
+        // not derived from the current request, so this still exercises that code path.
         $response = $this->get(route('news', [
             'subdomain' => 'mif',
             'lang' => 'lt',
@@ -81,15 +113,15 @@ describe('Canonical URL generation', function (): void {
         $response->assertInertia(fn (Assert $page) => $page
             ->component('Public/NewsPage')
             ->has('article')
-            ->has('seo.tags')
+            ->has('head')
         );
 
-        // Canonical should be present and point to MIF subdomain
         $html = $response->getContent();
-        expect($html)->toContain('rel="canonical"');
+        expect($html)->toContain('rel="canonical"')
+            ->toMatch('/rel="canonical"[^>]*href="https:\/\/mif\./');
     });
 
-    it('includes canonical URL in SEO data for page', function (): void {
+    it('includes canonical URL in head metadata for page', function (): void {
         $content = Content::factory()->create();
         ContentPart::factory()->create([
             'content_id' => $content->id,
@@ -114,49 +146,59 @@ describe('Canonical URL generation', function (): void {
         $response->assertStatus(200);
         $response->assertInertia(fn (Assert $page) => $page
             ->component('Public/ContentPage')
-            ->has('seo.tags')
+            ->has('head')
         );
     });
 });
 
-describe('Hreflang tags', function (): void {
-    it('shares hreflang tags for bilingual content', function (): void {
+describe('Inertia head adoption', function (): void {
+    it('stamps page-managed head elements with data-inertia for SPA adoption', function (): void {
+        // Regression test: AppServiceProvider used to stamp a stale `inertia=""` attribute
+        // (Inertia v2). Laravel Head must stamp the current `data-inertia="..."` attribute
+        // instead, or the SPA can no longer adopt/replace these elements on navigation.
         $response = $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']));
 
         $response->assertStatus(200);
-        $response->assertInertia(fn (Assert $page) => $page
-            ->component('Public/HomePage')
-            ->has('seo.hreflang')
-        );
+        $html = $response->getContent();
+
+        expect($html)->toContain('data-inertia=')->not->toMatch('/<title[^>]*\sinertia=""/');
+    });
+});
+
+describe('Hreflang tags', function (): void {
+    it('renders hreflang alternate links for bilingual content', function (): void {
+        $response = $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']));
+
+        $response->assertStatus(200);
+        $html = $response->getContent();
+
+        expect($html)->toContain('hreflang="x-default"')
+            ->toContain('hreflang="lt"');
     });
 
     it('includes x-default hreflang for Lithuanian content', function (): void {
         $response = $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']));
 
         $response->assertStatus(200);
-        $response->assertInertia(fn (Assert $page) => $page
-            ->has('seo.hreflang')
-            ->where('seo.hreflang', fn ($hreflang) => collect($hreflang)->contains(fn ($tag) => str_contains($tag, 'x-default'))
-            )
-        );
+        expect($response->getContent())->toContain('hreflang="x-default"');
     });
 
     it('includes lt and en hreflang tags', function (): void {
         $response = $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']));
 
         $response->assertStatus(200);
-        $response->assertInertia(fn (Assert $page) => $page
-            ->has('seo.hreflang')
-            ->where('seo.hreflang', fn ($hreflang) => collect($hreflang)->contains(fn ($tag) => str_contains($tag, 'hreflang="lt"'))
-            )
-        );
+        $html = $response->getContent();
+
+        expect($html)->toContain('hreflang="lt"')
+            ->toContain('hreflang="en"');
     });
 });
 
 describe('Pagination SEO metadata', function (): void {
-    it('shares pagination SEO data for news archive', function (): void {
-        // Create enough news to trigger pagination
-        News::factory()->count(20)->create([
+    it('renders rel=next on the first page of a paginated archive', function (): void {
+        // NewsController::newsArchive() paginates at 15 — 16 is the smallest count that
+        // produces a second page.
+        News::factory()->count(16)->create([
             'tenant_id' => $this->mainTenant->id,
             'lang' => 'lt',
             'draft' => false,
@@ -170,40 +212,16 @@ describe('Pagination SEO metadata', function (): void {
         ]));
 
         $response->assertStatus(200);
-        $response->assertInertia(fn (Assert $page) => $page
-            ->component('Public/NewsArchive')
-            ->has('seo.pagination')
-            ->has('seo.pagination.currentPage')
-            ->has('seo.pagination.lastPage')
-        );
+        $response->assertInertia(fn (Assert $page) => $page->component('Public/NewsArchive'));
+
+        $html = $response->getContent();
+        expect($html)->toContain('rel="next"')->not->toContain('rel="prev"');
     });
 
-    it('generates correct next page URL for paginated content', function (): void {
-        // Create enough news to have at least 2 pages
-        News::factory()->count(20)->create([
-            'tenant_id' => $this->mainTenant->id,
-            'lang' => 'lt',
-            'draft' => false,
-            'publish_time' => now()->subHour(),
-        ]);
-
-        $response = $this->get(route('newsArchive', [
-            'subdomain' => 'www',
-            'lang' => 'lt',
-            'newsString' => 'naujienos',
-        ]));
-
-        $response->assertStatus(200);
-        $response->assertInertia(fn (Assert $page) => $page
-            ->component('Public/NewsArchive')
-            ->has('seo.pagination.nextPageUrl')
-            ->where('seo.pagination.prevPageUrl', null) // First page has no previous
-        );
-    });
-
-    it('generates correct prev page URL when on page 2', function (): void {
-        // Create enough news to have at least 2 pages
-        News::factory()->count(20)->create([
+    it('renders rel=prev when on page 2 of a paginated archive', function (): void {
+        // NewsController::newsArchive() paginates at 15 — 16 is the smallest count that
+        // produces a second page.
+        News::factory()->count(16)->create([
             'tenant_id' => $this->mainTenant->id,
             'lang' => 'lt',
             'draft' => false,
@@ -218,11 +236,7 @@ describe('Pagination SEO metadata', function (): void {
         ]));
 
         $response->assertStatus(200);
-        $response->assertInertia(fn (Assert $page) => $page
-            ->component('Public/NewsArchive')
-            ->has('seo.pagination.prevPageUrl')
-            ->where('seo.pagination.currentPage', 2)
-        );
+        expect($response->getContent())->toContain('rel="prev"');
     });
 });
 
@@ -331,5 +345,89 @@ describe('SEO structured data', function (): void {
         $response->assertInertia(fn (Assert $page) => $page
             ->has('schemas')
         );
+    });
+});
+
+describe('Robots directive override', function (): void {
+    it('renders noindex, nofollow for a meeting page', function (): void {
+        $meeting = makePublicMeeting($this->mainTenant);
+
+        $response = $this->get(route('publicMeetings.show', [
+            'subdomain' => 'www',
+            'lang' => 'lt',
+            'meeting' => $meeting->id,
+        ]));
+
+        $response->assertStatus(200);
+        expect($response->getContent())->toContain('noindex, nofollow');
+    });
+});
+
+describe('Title suffixes', function (): void {
+    it('suffixes a news article title with the content-owning tenant, not the accessing one', function (): void {
+        $news = News::factory()->create([
+            'tenant_id' => $this->mifTenant->id,
+            'title' => 'MIF specific news',
+            'permalink' => 'mif-title-suffix-news',
+            'lang' => 'lt',
+            'draft' => false,
+            'publish_time' => now()->subHour(),
+        ]);
+
+        $response = $this->get(route('news', [
+            'subdomain' => 'mif',
+            'lang' => 'lt',
+            'news' => $news->permalink,
+            'newsString' => 'naujiena',
+        ]));
+
+        $response->assertStatus(200);
+        expect($response->getContent())->toMatch('/<title[^>]*>MIF specific news - VU SA MIF</');
+    });
+
+    it('gives a previously suffix-less page a tenant suffix', function (): void {
+        $response = $this->get(route('documents', ['subdomain' => 'www', 'lang' => 'lt']));
+
+        $response->assertStatus(200);
+        expect($response->getContent())->toMatch('/<title[^>]*>[^<]* - VU SA</');
+    });
+
+    it('renders the tenant name exactly once in a news archive title', function (): void {
+        News::factory()->count(3)->create([
+            'tenant_id' => $this->mifTenant->id,
+            'lang' => 'lt',
+            'draft' => false,
+            'publish_time' => now()->subHour(),
+        ]);
+
+        $response = $this->get(route('newsArchive', [
+            'subdomain' => 'mif',
+            'lang' => 'lt',
+            'newsString' => 'naujienos',
+        ]));
+
+        $response->assertStatus(200);
+        preg_match('/<title[^>]*>([^<]*)</', $response->getContent(), $matches);
+        $title = $matches[1] ?? '';
+
+        expect($title)->not->toBeEmpty()
+            ->and(substr_count($title, 'VU SA MIF'))->toBe(1);
+    });
+
+    it('suffixes a meeting title with the institution name rather than the tenant', function (): void {
+        $meeting = makePublicMeeting(
+            $this->mainTenant,
+            institutionAttributes: ['name' => 'Test Institution For Meeting Title'],
+            meetingAttributes: ['title' => 'Meeting Title Test'],
+        );
+
+        $response = $this->get(route('publicMeetings.show', [
+            'subdomain' => 'www',
+            'lang' => 'lt',
+            'meeting' => $meeting->id,
+        ]));
+
+        $response->assertStatus(200);
+        expect($response->getContent())->toMatch('/<title[^>]*>Meeting Title Test - Test Institution For Meeting Title</');
     });
 });

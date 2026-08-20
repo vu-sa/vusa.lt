@@ -8,6 +8,8 @@ use Illuminate\Support\Str;
 pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
+    usesTypesense();
+
     config([
         'scout.prefix' => 'testing_other_lang_picker_',
         'scout.queue' => false,

@@ -69,6 +69,13 @@
                 v-for="institution in filteredRelatedInstitutions"
                 :key="institution.id"
                 :institution
+                :followed="subscriptionOf(institution).is_followed"
+                :muted="subscriptionOf(institution).is_muted"
+                :duty-based="subscriptionOf(institution).is_duty_based"
+                :follow-loading="followLoading[institution.id] ?? false"
+                :mute-loading="muteLoading[institution.id] ?? false"
+                @toggle-follow="handleToggleFollow"
+                @toggle-mute="handleToggleMute"
               />
             </div>
 
@@ -121,8 +128,9 @@ import { router } from '@inertiajs/vue3';
 
 import type { AtstovavimasInstitution } from '../types';
 
-import RelatedInstitutionCard from './RelatedInstitutionCard.vue';
+import { useInstitutionSubscription } from '../Composables/useInstitutionSubscription';
 
+import RelatedInstitutionCard from '@/Components/Institutions/RelatedInstitutionCard.vue';
 import InstitutionCompactCard from '@/Components/Institutions/InstitutionCompactCard.vue';
 import {
   Dialog,
@@ -173,6 +181,51 @@ const filteredRelatedInstitutions = computed(() => {
     institution.name.toLowerCase().includes(query),
   );
 });
+
+/**
+ * Subscription state lives here rather than in each card, so the two card types
+ * rendered by this dialog share one composable instance and one set of pending
+ * flags instead of drifting apart.
+ */
+const { toggleFollow, toggleMute, followLoading, muteLoading } = useInstitutionSubscription();
+
+const localSubscriptions = ref<Record<string, { is_followed: boolean; is_muted: boolean; is_duty_based: boolean }>>({});
+
+const subscriptionOf = (institution: AtstovavimasInstitution) =>
+  localSubscriptions.value[institution.id] ?? {
+    is_followed: institution.subscription?.is_followed ?? false,
+    is_muted: institution.subscription?.is_muted ?? false,
+    is_duty_based: institution.subscription?.is_duty_based ?? false,
+  };
+
+const findRelated = (institutionId: string) =>
+  props.relatedInstitutions.find(i => i.id === institutionId);
+
+const handleToggleFollow = async (institutionId: string) => {
+  const institution = findRelated(institutionId);
+  if (!institution) return;
+
+  const current = subscriptionOf(institution);
+  const isFollowed = await toggleFollow(institutionId, current);
+
+  localSubscriptions.value[institutionId] = {
+    ...current,
+    is_followed: isFollowed,
+    // Unfollowing drops the mute with it, so the UI must not keep showing it.
+    is_muted: isFollowed ? current.is_muted : false,
+  };
+};
+
+const handleToggleMute = async (institutionId: string) => {
+  const institution = findRelated(institutionId);
+  if (!institution) return;
+
+  const current = subscriptionOf(institution);
+  localSubscriptions.value[institutionId] = {
+    ...current,
+    is_muted: await toggleMute(institutionId, current),
+  };
+};
 
 const handleRemoveActiveCheckIn = (institutionId: string) => {
   router.delete(route('institutions.check-ins.destroyActive', institutionId), {

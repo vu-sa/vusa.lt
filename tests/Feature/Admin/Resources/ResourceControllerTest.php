@@ -120,7 +120,7 @@ describe('destroy', function (): void {
         asUser($this->resourceManager)->delete(route('resources.destroy', $this->resource))
             ->assertSessionHas('info');
 
-        $expectedMessage = trans_choice('messages.deleted', 1, ['model' => trans_choice('entities.resource.model', 1)]);
+        $expectedMessage = __('messages.deleted.m', ['model' => trans_choice('entities.resource.model', 1)]);
 
         asUser($this->resourceManager)->get(route('search.index', ['tab' => 'resources']))
             ->assertOk()
@@ -132,7 +132,7 @@ describe('destroy', function (): void {
 
 describe('store', function (): void {
     test('redirects straight to the search results with a success flash', function (): void {
-        $expectedMessage = trans_choice('messages.created', 1, ['model' => trans_choice('entities.resource.model', 1)]);
+        $expectedMessage = __('messages.created.m', ['model' => trans_choice('entities.resource.model', 1)]);
 
         asUser($this->resourceManager)->post(route('resources.store'), [
             'name' => ['lt' => 'Naujas', 'en' => 'New'],
@@ -151,5 +151,44 @@ describe('store', function (): void {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Search/SearchIndex')
                 ->where('flash.success', $expectedMessage));
+    });
+});
+
+describe('tenant scoping of tenant_id', function (): void {
+    /**
+     * ResourcePolicy::create() inherits HasCommonChecks::create(), which only asks whether the
+     * user holds resources.create.padalinys *somewhere*. The owning tenant arrives in the
+     * payload, so it has to be constrained separately — otherwise a resource manager for one
+     * padalinys can create (or move) resources inside another.
+     */
+    test('cannot create a resource in a tenant the user does not manage', function (): void {
+        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->firstOrFail();
+
+        asUser($this->resourceManager)->post(route('resources.store'), [
+            'name' => ['lt' => 'Naujas', 'en' => 'New'],
+            'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
+            'location' => 'Room 1',
+            'tenant_id' => $otherTenant->id,
+            'capacity' => 1,
+            'is_reservable' => true,
+            'media' => [],
+        ])->assertSessionHasErrors('tenant_id');
+
+        expect(Resource::query()->where('tenant_id', $otherTenant->id)->exists())->toBeFalse();
+    });
+
+    test('cannot move an existing resource into a tenant the user does not manage', function (): void {
+        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->firstOrFail();
+
+        asUser($this->resourceManager)->patch(route('resources.update', $this->resource), [
+            'name' => $this->resource->getTranslations('name'),
+            'description' => $this->resource->getTranslations('description'),
+            'location' => $this->resource->location,
+            'tenant_id' => $otherTenant->id,
+            'capacity' => $this->resource->capacity,
+            'is_reservable' => true,
+        ])->assertSessionHasErrors('tenant_id');
+
+        expect($this->resource->fresh()->tenant_id)->toEqual($this->tenant->id);
     });
 });

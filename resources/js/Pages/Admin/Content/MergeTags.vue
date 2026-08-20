@@ -54,6 +54,7 @@
 </template>
 
 <script setup lang="ts">
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
@@ -78,7 +79,7 @@ const form = useForm({
 
 const tagOptions = computed(() =>
   tags.map(tag => ({
-    label: typeof tag.name === 'object' ? (tag.name.lt || tag.name.en || 'Unknown') : tag.name,
+    label: getTranslatedValue(tag.name, undefined, 'Unknown'),
     value: tag.id,
     alias: tag.alias,
   })),

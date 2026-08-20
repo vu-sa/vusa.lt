@@ -34,7 +34,6 @@ import {
   FileIcon,
   InstitutionIcon,
   MeetingIcon,
-  MembershipIcon,
   NavigationIcon,
   NewsIcon,
   PageIcon,
@@ -49,7 +48,6 @@ import {
   TagIcon,
   TaskIcon,
   TenantIcon,
-  TrainingIcon,
   TypeIcon,
   UserIcon,
 } from '@/Components/icons';
@@ -320,7 +318,6 @@ const ROUTE_PREFIX_ICONS: Record<string, Component> = {
   categories: CategoryIcon,
   tags: TagIcon,
   calendar: CalendarIcon,
-  trainings: TrainingIcon,
   studyPrograms: StudyProgramIcon,
   roles: RoleIcon,
   permissions: PermissionIcon,
@@ -328,7 +325,6 @@ const ROUTE_PREFIX_ICONS: Record<string, Component> = {
   quickLinks: QuickLinkIcon,
   navigation: NavigationIcon,
   tenants: TenantIcon,
-  memberships: MembershipIcon,
   relationships: RelationshipIcon,
 };
 

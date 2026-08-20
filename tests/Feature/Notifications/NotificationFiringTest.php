@@ -15,6 +15,7 @@ use App\Notifications\MeetingReminderNotification;
 use App\Notifications\ReservationStatusChangedNotification;
 use App\Notifications\TaskAssignedNotification;
 use App\States\ReservationResource\Reserved;
+use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
@@ -85,7 +86,7 @@ describe('task notifications', function (): void {
         $user = $this->createUserWithPreferences();
         $institution = Institution::factory()->create();
         $task = Task::factory()->create([
-            'taskable_type' => Institution::class,
+            'taskable_type' => MorphMap::alias(Institution::class),
             'taskable_id' => $institution->id,
             'action_type' => ActionType::PeriodicityGap,
             'metadata' => ['activity_status' => 'approaching'],
@@ -146,7 +147,7 @@ describe('comment notifications', function (): void {
         ['reservationResource' => $reservationResource] = $this->createReservationWithResource($user);
 
         $comment = Comment::factory()->create([
-            'commentable_type' => ReservationResource::class,
+            'commentable_type' => MorphMap::alias(ReservationResource::class),
             'commentable_id' => $reservationResource->id,
             'user_id' => $commenter->id,
             'body' => 'Test comment',
@@ -219,7 +220,7 @@ describe('notification not sent to commenter', function (): void {
 
         // User comments on their own reservation
         $comment = Comment::factory()->create([
-            'commentable_type' => ReservationResource::class,
+            'commentable_type' => MorphMap::alias(ReservationResource::class),
             'commentable_id' => $reservationResource->id,
             'user_id' => $user->id, // Same user is the commenter
             'body' => 'My own comment',

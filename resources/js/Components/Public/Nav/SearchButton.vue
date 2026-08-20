@@ -11,6 +11,7 @@
 </template>
 
 <script setup lang="ts">
+import { localizedRoute, localizedSlug } from '@/Utils/LocalizedRoutes';
 import { computed, type HTMLAttributes } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
@@ -29,10 +30,11 @@ const page = usePage();
 const searchUrl = computed(() => {
   const locale = (page.props.app as { locale?: string })?.locale || 'lt';
   try {
-    return route('search', { subdomain: 'www', lang: locale });
+    return localizedRoute('search', { subdomain: 'www' }, locale);
   }
   catch {
-    return '/paieska';
+    // Ziggy is unavailable (SSR without the route list); fall back to the plain path.
+    return `/${locale}/${localizedSlug('searchString', locale)}`;
   }
 });
 </script>

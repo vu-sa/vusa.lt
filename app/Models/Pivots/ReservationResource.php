@@ -20,6 +20,7 @@ use App\States\ReservationResource\Rejected;
 use App\States\ReservationResource\ReservationResourceState;
 use App\States\ReservationResource\Reserved;
 use App\States\ReservationResource\Returned;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
@@ -169,7 +170,7 @@ class ReservationResource extends Pivot implements Approvable
     {
         // Try to find a global flow for ReservationResource
         return ApprovalFlow::query()
-            ->where('flowable_type', self::class)
+            ->where('flowable_type', MorphMap::alias(self::class))
             ->whereNull('flowable_id')
             ->first();
     }

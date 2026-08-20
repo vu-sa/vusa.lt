@@ -169,7 +169,7 @@ import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Badge } from '@/Components/ui/badge';
 import { Alert, AlertTitle, AlertDescription } from '@/Components/ui/alert';
-import { BannerIcon, CalendarIcon, CategoryIcon, DocumentIcon, DutyIcon, FormIcon, InstitutionIcon, MeetingIcon, NavigationIcon, NewsIcon, NotificationIcon, PageIcon, PermissionIcon, ProblemIcon, QuickLinkIcon, RelationshipIcon, ReservationIcon, ResourceIcon, RoleIcon, SettingIcon, SharepointFileIcon, StudyProgramIcon, TagIcon, TenantIcon, TrainingIcon, TypeIcon, UserIcon } from '@/Components/icons';
+import { BannerIcon, CalendarIcon, CategoryIcon, DocumentIcon, DutyIcon, FormIcon, InstitutionIcon, MeetingIcon, NavigationIcon, NewsIcon, NotificationIcon, PageIcon, PermissionIcon, ProblemIcon, QuickLinkIcon, RelationshipIcon, ReservationIcon, ResourceIcon, RoleIcon, SettingIcon, SharepointFileIcon, StudyProgramIcon, TagIcon, TenantIcon, TypeIcon, UserIcon } from '@/Components/icons';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -235,18 +235,6 @@ const menuItems = computed(() => [
         searchTab: 'duties',
       },
       {
-        title: $t('Narystės'),
-        icon: InstitutionIcon,
-        href: route('memberships.index'),
-        show: auth?.can.create.membership,
-      },
-      {
-        title: $t('Mokymai'),
-        icon: TrainingIcon,
-        href: route('trainings.index'),
-        show: auth?.can.create.training,
-      },
-      {
         title: $t('Studijų programos'),
         icon: StudyProgramIcon,
         href: route('studyPrograms.index'),
@@ -256,8 +244,6 @@ const menuItems = computed(() => [
     show:
       auth?.can.create.user
       || auth?.can.create.duty
-      || auth?.can.create.membership
-      || auth?.can.create.training
       || auth?.can.create.studyProgram,
     visibleItems: [] as MenuItemType[],
   },
@@ -420,7 +406,7 @@ const menuItems = computed(() => [
         searchTab: 'resources',
       },
       {
-        title: capitalize($tChoice('entities.resource_category.model', 2)),
+        title: capitalize($tChoice('entities.resourceCategory.model', 2)),
         icon: CategoryIcon,
         href: route('resourceCategories.index'),
         show: auth?.can.create.resource,

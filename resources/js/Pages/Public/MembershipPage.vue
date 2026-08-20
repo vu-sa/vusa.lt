@@ -265,6 +265,7 @@
 </template>
 
 <script setup lang="ts">
+import { localizedRoute } from '@/Utils/LocalizedRoutes';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
@@ -430,14 +431,10 @@ onUnmounted(() => {
 });
 
 // Helper function to create news route
-const getNewsRoute = (item: any) => {
-  return route('news', {
-    lang: item.lang,
-    news: item.permalink ?? '',
-    newsString: 'naujiena',
-    subdomain: page.props.tenant?.subdomain ?? 'www',
-  });
-};
+const getNewsRoute = (item: any) => localizedRoute('news', {
+  news: item.permalink ?? '',
+  subdomain: page.props.tenant?.subdomain ?? 'www',
+}, item.lang);
 
 // Helper function to format dates
 const formatDate = (dateString: string) => {
@@ -448,8 +445,7 @@ const formatDate = (dateString: string) => {
 const newsArchiveRoute = computed(() => {
   return route('newsArchive', {
     subdomain: page.props.tenant?.subdomain ?? 'www',
-    lang: page.props.app.locale === 'lt' ? 'lt' : 'en',
-    newsString: page.props.app.locale === 'lt' ? 'naujienos' : 'news',
+    lang: page.props.app.locale,
   });
 });
 

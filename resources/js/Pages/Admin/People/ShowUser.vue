@@ -1,195 +1,108 @@
 <template>
-  <AdminContentPage>
-    <InertiaHead :title="user.name" />
-
-    <!-- User Hero -->
-    <ShowPageHero
-      flat
-      :title="user.name"
-      :subtitle
-    >
-      <template #icon>
-        <div
-          class="shrink-0 h-12 w-12 sm:h-14 sm:w-14 rounded-lg flex items-center justify-center border border-zinc-200 dark:border-zinc-600 overflow-hidden"
+  <ShowPageLayout
+    :title="user.name"
+    :subtitle
+    :model="user"
+    audit-subject-type="user"
+    :tabs
+    tab-storage-key="show-user-tab"
+  >
+    <template #icon>
+      <div
+        class="shrink-0 h-12 w-12 sm:h-14 sm:w-14 rounded-lg flex items-center justify-center border border-zinc-200 dark:border-zinc-600 overflow-hidden"
+      >
+        <img
+          v-if="user.profile_photo_path"
+          :src="user.profile_photo_path"
+          :alt="user.name"
+          class="h-full w-full object-cover"
+          :style="focalPointStyle"
         >
-          <img
-            v-if="user.profile_photo_path"
-            :src="user.profile_photo_path"
-            :alt="user.name"
-            class="h-full w-full object-cover"
-            :style="focalPointStyle"
-          >
-          <UserIconFilled v-else class="h-6 w-6 sm:h-7 sm:w-7 text-zinc-600 dark:text-zinc-300" />
-        </div>
-      </template>
-      <template #badge>
-        <Badge v-if="pronounsBadge" variant="secondary" class="text-xs">
-          {{ pronounsBadge }}
-        </Badge>
-      </template>
-      <template #info>
-        <div v-if="currentDuties.length > 0" class="flex items-center gap-2 flex-wrap">
-          <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('Pareigos') }}:</span>
-          <Badge
-            v-for="duty in visibleCurrentDuties"
-            :key="duty.id"
-            variant="outline"
-            class="text-xs"
-          >
-            {{ inflectedDutyName(duty) }}
-            <span v-if="duty.institution?.name" class="text-muted-foreground">@ {{ duty.institution.name }}</span>
-          </Badge>
-          <span v-if="hiddenDutyCount > 0" class="text-xs text-muted-foreground">
-            +{{ hiddenDutyCount }}
-          </span>
-        </div>
-      </template>
-      <template #actions>
-        <ActivityLogSheet subject-type="user" :subject-id="user.id" />
-        <Button v-if="canEdit" variant="outline" size="sm" class="gap-2" @click="handleEdit">
-          <Pencil class="h-4 w-4" />
-          {{ $t('Redaguoti') }}
-        </Button>
-        <Button
-          v-if="canGeneratePassword && !user.has_password"
+        <UserIconFilled v-else class="h-6 w-6 sm:h-7 sm:w-7 text-zinc-600 dark:text-zinc-300" />
+      </div>
+    </template>
+    <template #badge>
+      <Badge v-if="pronounsBadge" variant="secondary" class="text-xs">
+        {{ pronounsBadge }}
+      </Badge>
+    </template>
+    <template #info>
+      <div v-if="currentDuties.length > 0" class="flex items-center gap-2 flex-wrap">
+        <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('Pareigos') }}:</span>
+        <Badge
+          v-for="duty in visibleCurrentDuties"
+          :key="duty.id"
           variant="outline"
-          size="sm"
-          class="gap-2"
-          @click="handleGeneratePassword"
+          class="text-xs"
         >
-          <KeyRound class="h-4 w-4" />
-          {{ $t('Sugeneruoti slaptažodį') }}
-        </Button>
-        <MoreOptionsButton edit delete @edit-click="handleEdit" @delete-click="handleDelete" />
-      </template>
-    </ShowPageHero>
+          {{ inflectedDutyName(duty) }}
+          <span v-if="duty.institution?.name" class="text-muted-foreground">@ {{ duty.institution.name }}</span>
+        </Badge>
+        <span v-if="hiddenDutyCount > 0" class="text-xs text-muted-foreground">
+          +{{ hiddenDutyCount }}
+        </span>
+      </div>
+    </template>
+    <template #actions>
+      <Button v-if="canEdit" variant="outline" size="sm" class="gap-2" @click="handleEdit">
+        <Pencil class="h-4 w-4" />
+        {{ $t('Redaguoti') }}
+      </Button>
+      <Button
+        v-if="canGeneratePassword && !user.has_password"
+        variant="outline"
+        size="sm"
+        class="gap-2"
+        @click="handleGeneratePassword"
+      >
+        <KeyRound class="h-4 w-4" />
+        {{ $t('Sugeneruoti slaptažodį') }}
+      </Button>
+      <MoreOptionsButton edit delete @edit-click="handleEdit" @delete-click="handleDelete" />
+    </template>
 
-    <!-- Main Content with Tabs -->
-    <Tabs v-model="currentTab" class="mt-6">
-      <TabsList class="mb-4">
-        <TabsTrigger value="overview">
-          {{ $t('Apžvalga') }}
-        </TabsTrigger>
-        <TabsTrigger value="duties">
-          <span>{{ $t('Pareigos') }}</span>
-          <span v-if="allDuties.length" class="ml-1.5 text-xs font-normal text-zinc-400 dark:text-zinc-500">
-            {{ allDuties.length }}
-          </span>
-        </TabsTrigger>
-        <TabsTrigger value="tasks">
-          <span>{{ $t('Užduotys') }}</span>
-          <span v-if="taskStats.total > 0" class="ml-1.5 text-xs font-normal text-zinc-400 dark:text-zinc-500">
-            {{ taskStats.total }}
-          </span>
-        </TabsTrigger>
-      </TabsList>
+    <!-- Overview Tab -->
+    <template #overview>
+      <ShowPageGrid>
+        <template #main>
+          <SectionCard :title="$t('Kontaktinė informacija')" :icon="Mail">
+            <div class="space-y-3">
+              <div v-if="user.email" class="flex items-center gap-3">
+                <Mail class="h-4 w-4 text-muted-foreground" />
+                <a :href="`mailto:${user.email}`" class="text-sm hover:text-vusa-red transition">
+                  {{ user.email }}
+                </a>
+              </div>
+              <div v-if="user.phone" class="flex items-center gap-3">
+                <Phone class="h-4 w-4 text-muted-foreground" />
+                <a :href="`tel:${user.phone}`" class="text-sm hover:text-vusa-red transition">
+                  {{ user.phone }}
+                </a>
+              </div>
+              <div v-if="user.facebook_url" class="flex items-center gap-3">
+                <Facebook class="h-4 w-4 text-muted-foreground" />
+                <a :href="user.facebook_url" target="_blank" rel="noopener" class="text-sm hover:text-vusa-red transition">
+                  {{ $t('Facebook') }}
+                </a>
+              </div>
+            </div>
+          </SectionCard>
 
-      <!-- Overview Tab -->
-      <TabsContent value="overview">
-        <div class="grid grid-cols-1 items-start gap-6 xl:grid-cols-3">
-          <!-- Main column -->
-          <div class="space-y-6 xl:col-span-2">
-            <!-- Contact Info -->
-            <Card>
-              <CardHeader class="pb-3">
-                <CardTitle class="text-base">
-                  {{ $t('Kontaktinė informacija') }}
-                </CardTitle>
-              </CardHeader>
-              <CardContent class="space-y-3">
-                <div v-if="user.email" class="flex items-center gap-3">
-                  <Mail class="h-4 w-4 text-muted-foreground" />
-                  <a :href="`mailto:${user.email}`" class="text-sm hover:text-vusa-red transition">
-                    {{ user.email }}
-                  </a>
-                </div>
-                <div v-if="user.phone" class="flex items-center gap-3">
-                  <Phone class="h-4 w-4 text-muted-foreground" />
-                  <a :href="`tel:${user.phone}`" class="text-sm hover:text-vusa-red transition">
-                    {{ user.phone }}
-                  </a>
-                </div>
-                <div v-if="user.facebook_url" class="flex items-center gap-3">
-                  <Facebook class="h-4 w-4 text-muted-foreground" />
-                  <a :href="user.facebook_url" target="_blank" rel="noopener" class="text-sm hover:text-vusa-red transition">
-                    {{ $t('Facebook') }}
-                  </a>
-                </div>
-              </CardContent>
-            </Card>
+          <SectionCard v-if="roles.length" :title="$t('Rolės')" :icon="Shield" :count="roles.length">
+            <div class="flex flex-wrap gap-1.5">
+              <Badge v-for="role in roles" :key="role.id" variant="secondary">
+                {{ role.name }}
+              </Badge>
+            </div>
+          </SectionCard>
 
-            <!-- Roles -->
-            <Card v-if="roles.length">
-              <CardHeader class="pb-3">
-                <CardTitle class="text-base">
-                  {{ $t('Rolės') }}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div class="flex flex-wrap gap-1.5">
-                  <Badge v-for="role in roles" :key="role.id" variant="secondary">
-                    {{ role.name }}
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-
-            <!-- Current Duties Summary -->
-            <Card v-if="currentDuties.length">
-              <CardHeader class="pb-3">
-                <CardTitle class="text-base">
-                  {{ $t('Dabartinės pareigos') }}
-                </CardTitle>
-              </CardHeader>
-              <CardContent class="space-y-2">
-                <DutySummaryCard
-                  v-for="duty in currentDuties"
-                  :key="duty.id"
-                  :duty
-                  :exclude-user-id="user.id"
-                  :holder="dutyHolder"
-                />
-              </CardContent>
-            </Card>
-          </div>
-
-          <!-- Sidebar -->
-          <div class="space-y-6 xl:sticky xl:top-6 xl:self-start">
-            <!-- Activity Summary -->
-            <Card>
-              <CardHeader class="pb-3">
-                <CardTitle class="text-base">
-                  {{ $t('Aktyvumas') }}
-                </CardTitle>
-              </CardHeader>
-              <CardContent class="space-y-3">
-                <div class="flex items-center justify-between">
-                  <span class="text-sm text-muted-foreground">{{ $t('Dabartinių pareigų') }}</span>
-                  <span class="text-sm font-medium">{{ currentDuties.length }}</span>
-                </div>
-                <div class="flex items-center justify-between">
-                  <span class="text-sm text-muted-foreground">{{ $t('Buvusių pareigų') }}</span>
-                  <span class="text-sm font-medium">{{ previousDuties.length }}</span>
-                </div>
-                <div class="flex items-center justify-between">
-                  <span class="text-sm text-muted-foreground">{{ $t('Užduočių') }}</span>
-                  <span class="text-sm font-medium">{{ taskStats.total }}</span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </TabsContent>
-
-      <!-- Duties Tab -->
-      <TabsContent value="duties">
-        <div class="space-y-6">
-          <!-- Current Duties -->
-          <div v-if="currentDuties.length">
-            <h3 class="mb-3 text-lg font-medium">
-              {{ $t('Dabartinės pareigos') }}
-            </h3>
-            <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <SectionCard
+            v-if="currentDuties.length"
+            :title="$t('Dabartinės pareigos')"
+            :icon="Briefcase"
+            :count="currentDuties.length"
+          >
+            <div class="space-y-2">
               <DutySummaryCard
                 v-for="duty in currentDuties"
                 :key="duty.id"
@@ -198,77 +111,116 @@
                 :holder="dutyHolder"
               />
             </div>
-          </div>
+          </SectionCard>
+        </template>
 
-          <!-- Previous Duties -->
-          <div v-if="previousDuties.length">
-            <h3 class="mb-3 text-lg font-medium">
-              {{ $t('Buvusios pareigos') }}
-            </h3>
-            <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-              <DutySummaryCard
-                v-for="duty in previousDuties"
-                :key="duty.id"
-                :duty
-                :exclude-user-id="user.id"
-                :holder="dutyHolder"
-                muted
-              />
+        <template #sidebar>
+          <SectionCard :title="$t('Aktyvumas')" :icon="Activity">
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-muted-foreground">{{ $t('Dabartinių pareigų') }}</span>
+                <span class="text-sm font-medium tabular-nums">{{ currentDuties.length }}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-muted-foreground">{{ $t('Buvusių pareigų') }}</span>
+                <span class="text-sm font-medium tabular-nums">{{ previousDuties.length }}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-muted-foreground">{{ $t('Užduočių') }}</span>
+                <span class="text-sm font-medium tabular-nums">{{ taskStats.total }}</span>
+              </div>
             </div>
-          </div>
+          </SectionCard>
+        </template>
+      </ShowPageGrid>
+    </template>
 
-          <div v-if="!allDuties.length" class="py-8 text-center">
-            <p class="text-muted-foreground">
-              {{ $t('Nėra priskirtų pareigų') }}
-            </p>
+    <!-- Duties Tab -->
+    <template #duties>
+      <div class="space-y-6">
+        <!-- Current Duties -->
+        <div v-if="currentDuties.length">
+          <h3 class="mb-3 text-lg font-medium">
+            {{ $t('Dabartinės pareigos') }}
+          </h3>
+          <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <DutySummaryCard
+              v-for="duty in currentDuties"
+              :key="duty.id"
+              :duty
+              :exclude-user-id="user.id"
+              :holder="dutyHolder"
+            />
           </div>
         </div>
-      </TabsContent>
 
-      <!-- Tasks Tab -->
-      <TabsContent value="tasks">
-        <TaskManager
-          :tasks
-          :task-stats
-          :disabled="false"
-          @open-task-detail="handleOpenTaskDetail"
-        />
-      </TabsContent>
-    </Tabs>
-  </AdminContentPage>
+        <!-- Previous Duties -->
+        <div v-if="previousDuties.length">
+          <h3 class="mb-3 text-lg font-medium">
+            {{ $t('Buvusios pareigos') }}
+          </h3>
+          <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <DutySummaryCard
+              v-for="duty in previousDuties"
+              :key="duty.id"
+              :duty
+              :exclude-user-id="user.id"
+              :holder="dutyHolder"
+              muted
+            />
+          </div>
+        </div>
+
+        <EmptyState
+          v-if="!allDuties.length"
+          :title="$t('Pareigų nėra')"
+          :description="$t('Nėra priskirtų pareigų')"
+        >
+          <template #icon>
+            <Briefcase class="h-10 w-10 text-muted-foreground" />
+          </template>
+        </EmptyState>
+      </div>
+    </template>
+
+    <!-- Tasks Tab -->
+    <template #tasks>
+      <TaskManager
+        :tasks
+        :task-stats
+        :disabled="false"
+        @open-task-detail="handleOpenTaskDetail"
+      />
+    </template>
+  </ShowPageLayout>
 </template>
 
 <script setup lang="ts">
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { computed } from 'vue';
-import { router, Head as InertiaHead, usePage } from '@inertiajs/vue3';
-import { useStorage } from '@vueuse/core';
+import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
+  Activity,
+  Briefcase,
   Pencil,
   KeyRound,
   Mail,
   Phone,
   Facebook,
+  Shield,
 } from 'lucide-vue-next';
 
 // Layout and Components
-import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
-import ShowPageHero from '@/Components/Hero/ShowPageHero.vue';
+import ShowPageLayout from '@/Components/Layouts/ShowPageLayout.vue';
 import MoreOptionsButton from '@/Components/Buttons/MoreOptionsButton.vue';
-import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
+import { EmptyState, SectionCard, ShowPageGrid } from '@/Components/Patterns';
 import { DutySummaryCard } from '@/Components/Duties';
 
 // UI Components
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/Components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 
 // Utils
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
@@ -310,17 +262,17 @@ const props = defineProps<{
   };
 }>();
 
-// Tab state
-const currentTab = useStorage('show-user-tab', 'overview');
-if (!['overview', 'duties', 'tasks'].includes(currentTab.value)) {
-  currentTab.value = 'overview';
-}
-
 // Computed
 const currentDuties = computed(() => props.user.current_duties ?? []);
 const previousDuties = computed(() => props.user.previous_duties ?? []);
 const allDuties = computed(() => [...currentDuties.value, ...previousDuties.value]);
 const roles = computed(() => props.user.roles ?? []);
+
+const tabs = computed(() => [
+  { value: 'overview', label: $t('Apžvalga') },
+  { value: 'duties', label: $t('Pareigos'), count: allDuties.value.length },
+  { value: 'tasks', label: $t('Užduotys'), count: props.taskStats.total },
+]);
 
 const subtitle = computed(() => {
   const parts: string[] = [];
@@ -334,7 +286,7 @@ const pronounsBadge = computed(() => {
   const p = props.user.pronouns;
   if (typeof p === 'string') return p;
   if (typeof p === 'object' && p !== null) {
-    return p.lt || p.en || null;
+    return getTranslatedValue(p) || null;
   }
   return null;
 });

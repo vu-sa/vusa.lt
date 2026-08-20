@@ -2,10 +2,12 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\TenantType;
 use App\Models\Tenant;
 use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class StoreTenantRequest extends FormRequest
 {
@@ -28,7 +30,7 @@ class StoreTenantRequest extends FormRequest
             'fullname' => 'required|unique:tenants,fullname',
             'shortname' => 'required|unique:tenants,shortname',
             // Type one of: pagrindinis, padalinys, pkp
-            'type' => 'required|in:pagrindinis,padalinys,pkp',
+            'type' => ['required', new Enum(TenantType::class)],
             'alias' => 'nullable|unique:tenants,alias',
             'shortname_vu' => 'nullable|unique:tenants,shortname_vu',
             'primary_institution_id' => ['nullable', SoftDeleteRules::existsLive('institutions')],

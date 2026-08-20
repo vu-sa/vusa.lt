@@ -5,6 +5,7 @@ namespace App\Tasks\Handlers;
 use App\Models\Meeting;
 use App\Models\Task;
 use App\Models\User;
+use App\Support\MorphMap;
 use App\Tasks\DTOs\CreateTaskData;
 use App\Tasks\Enums\ActionType;
 use Illuminate\Support\Collection;
@@ -110,7 +111,7 @@ class AgendaCreationTaskHandler extends BaseTaskHandler
     {
         return Task::query()
             ->with('users')
-            ->where('taskable_type', Meeting::class)
+            ->where('taskable_type', MorphMap::alias(Meeting::class))
             ->where('taskable_id', $meeting->getKey())
             ->where('action_type', ActionType::AgendaCreation)
             ->whereNull('completed_at')

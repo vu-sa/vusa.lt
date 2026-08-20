@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Rules\SoftDeleteRules;
 use App\Rules\UniqueAmongTrashed;
 use App\Services\ModelAuthorizer;
+use App\Support\MorphMap;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
@@ -109,7 +110,7 @@ class BatchUpdateDutyUsersRequest extends FormRequest
                 $validRemoveCount = 0;
                 if ($removeUserIds->isNotEmpty()) {
                     $validRemoveCount = Dutiable::where('duty_id', $duty->id)
-                        ->where('dutiable_type', User::class)
+                        ->where('dutiable_type', MorphMap::alias(User::class))
                         ->whereIn('dutiable_id', $removeUserIds)
                         ->where('tenant_id', $tenant->id)
                         ->where(function ($query): void {
@@ -123,7 +124,7 @@ class BatchUpdateDutyUsersRequest extends FormRequest
                 // Must match Duty::current_users() semantics (end_date >= now()) so a
                 // rep end-dated today is no longer counted toward the quota.
                 $currentCount = Dutiable::where('duty_id', $duty->id)
-                    ->where('dutiable_type', User::class)
+                    ->where('dutiable_type', MorphMap::alias(User::class))
                     ->where('tenant_id', $tenant->id)
                     ->where(function ($query): void {
                         $query->whereNull('end_date')

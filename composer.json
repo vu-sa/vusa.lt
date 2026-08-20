@@ -16,6 +16,7 @@
         "intervention/image-laravel": "^4.0",
         "laravel-notification-channels/webpush": "^11.0",
         "laravel/framework": "^13.3.0",
+        "laravel/head": "^0.2",
         "laravel/reverb": "^1.7",
         "laravel/scout": "^11.1.0",
         "laravel/telescope": "^5.0",
@@ -23,7 +24,6 @@
         "microsoft/microsoft-graph": "^3.0.0",
         "nyholm/psr7": "^1.8",
         "phpoffice/phpspreadsheet": "^5.7",
-        "ralphjsmit/laravel-seo": "^1.6",
         "socialiteproviders/microsoft": "^4.1",
         "spatie/calendar-links": "^2.0",
         "spatie/icalendar-generator": "^3.0",
@@ -60,6 +60,7 @@
         "nunomaduro/collision": "^8.1",
         "pestphp/pest": "^5.0",
         "pestphp/pest-plugin-agent": "^5.0",
+        "pestphp/pest-plugin-browser": "^5.0",
         "pestphp/pest-plugin-laravel": "^5.0",
         "pestphp/pest-plugin-rector": "^5.0",
         "phpmd/phpmd": "^2.15",
@@ -104,6 +105,9 @@
         ],
         "test": [
             "./vendor/bin/pest"
+        ],
+        "test:browser": [
+            "./vendor/bin/pest tests/Browser"
         ],
         "lint": [
             "./vendor/bin/pint"

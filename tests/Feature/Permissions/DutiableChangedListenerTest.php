@@ -5,6 +5,7 @@ use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -34,7 +35,7 @@ test('deleting a source dutiable cascades to derived rows through the real queue
     $source = Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
         'via_dutiable_id' => null,
@@ -53,7 +54,7 @@ test('deleting a dutiable does not fail any queued jobs', function (): void {
     $source = Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
         'via_dutiable_id' => null,
@@ -69,7 +70,7 @@ test('deleting a dutiable invalidates the holder permission caches', function ()
     $source = Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
         'via_dutiable_id' => null,

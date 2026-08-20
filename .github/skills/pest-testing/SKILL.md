@@ -106,7 +106,6 @@ Tia reruns only tests affected by recent changes and replays cached results for 
 
 - Replayed tests are not skipped — cached tests store everything they produced, including covered lines and branches.
 - Detects Laravel, Symfony, Livewire, and Inertia automatically.
-- **In this project**, Tia is enabled by default for local/Sail runs via `pest()->tia()->locally()` in `tests/Pest.php` — plain `sail artisan test` already uses it. CI always runs the full suite (`--ci`); `.github/workflows/tia-baseline.yml` records the shared baseline on pushes to `main`.
 
 ### New Validation Expectations
 

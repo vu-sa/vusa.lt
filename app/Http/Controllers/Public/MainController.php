@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\PublicController;
+use App\Http\Requests\SendFeedbackRequest;
 use App\Mail\FeedbackMail;
 use App\Models\News;
 use App\Models\Tenant;
 use App\Services\IcalendarService;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
 class MainController extends PublicController
@@ -28,16 +28,12 @@ class MainController extends PublicController
         //
     }
 
-    public function sendFeedback(Request $request)
+    public function sendFeedback(SendFeedbackRequest $request)
     {
-        $data = $request->validate([
-            'feedback' => 'required|string',
-            'href' => ['nullable', 'string'],
-            'selectedText' => ['nullable', 'string'],
-        ]);
+        $data = $request->validated();
 
-        Mail::to('it@vusa.lt')->queue(new FeedbackMail($data['feedback'], auth()->user(), $data['href'] ?? null, $data['selectedText'] ?? null));
+        Mail::to(config('vusa.contacts.it'))->queue(new FeedbackMail($data['feedback'], auth()->user(), $data['href'] ?? null, $data['selectedText'] ?? null));
 
-        return back()->with('success', 'Ačiū už atsiliepimą!');
+        return back()->with('success', __('messages.feedback.thanks'));
     }
 }

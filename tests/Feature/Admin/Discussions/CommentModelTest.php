@@ -9,6 +9,7 @@ use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\MorphMap;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -41,7 +42,7 @@ describe('threaded creation via HasComments::comment', function (): void {
         expect($root->parent_id)->toBeNull()
             ->and($root->thread_root_id)->toBeNull()
             ->and($root->user_id)->toBe($this->author->id)
-            ->and($root->commentable_type)->toBe(AgendaItem::class)
+            ->and($root->commentable_type)->toBe(MorphMap::alias(AgendaItem::class))
             ->and($root->commentable_id)->toBe($this->agendaItem->id);
 
         $reply = $this->agendaItem->comment('<p>Reply</p>', $root->id);

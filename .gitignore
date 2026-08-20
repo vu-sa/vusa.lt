@@ -75,6 +75,9 @@ resources/js/Types/typescript-transformer-manifest.json
 # === Storybook ===
 *storybook.log
 storybook-static
+
+# === Pest browser testing ===
+tests/Browser/Screenshots
 /.idea/copilot.data.migration.ask2agent.xml
 /.idea/laravel-idea.xml
 /.idea/modules.xml

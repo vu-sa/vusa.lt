@@ -12,6 +12,7 @@ use App\Models\Pivots\AgendaItem;
 use App\Models\Tenant;
 use App\Models\Vote;
 use App\Services\ActivityRootResolver;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Spatie\Activitylog\Models\Activity;
@@ -23,9 +24,9 @@ test('a Vote activity roots to its Meeting', function (): void {
     $agendaItem = AgendaItem::factory()->for($meeting, 'meeting')->create();
     $vote = Vote::factory()->for($agendaItem, 'agendaItem')->create();
 
-    $activity = Activity::where('subject_type', Vote::class)->where('subject_id', $vote->id)->latest('id')->first();
+    $activity = Activity::where('subject_type', MorphMap::alias(Vote::class))->where('subject_id', $vote->id)->latest('id')->first();
 
-    expect($activity->root_subject_type)->toBe(Meeting::class)
+    expect($activity->root_subject_type)->toBe(MorphMap::alias(Meeting::class))
         ->and($activity->root_subject_id)->toBe($meeting->id);
 });
 
@@ -34,9 +35,9 @@ test('an AgendaItemNote activity roots to its Meeting', function (): void {
     $agendaItem = AgendaItem::factory()->for($meeting, 'meeting')->create();
     $note = AgendaItemNote::factory()->for($agendaItem, 'agendaItem')->create();
 
-    $activity = Activity::where('subject_type', AgendaItemNote::class)->where('subject_id', $note->id)->latest('id')->first();
+    $activity = Activity::where('subject_type', MorphMap::alias(AgendaItemNote::class))->where('subject_id', $note->id)->latest('id')->first();
 
-    expect($activity->root_subject_type)->toBe(Meeting::class)
+    expect($activity->root_subject_type)->toBe(MorphMap::alias(Meeting::class))
         ->and($activity->root_subject_id)->toBe($meeting->id);
 });
 
@@ -44,18 +45,18 @@ test('a Duty activity roots to its Institution', function (): void {
     $institution = Institution::factory()->create();
     $duty = Duty::factory()->for($institution, 'institution')->create();
 
-    $activity = Activity::where('subject_type', Duty::class)->where('subject_id', $duty->id)->latest('id')->first();
+    $activity = Activity::where('subject_type', MorphMap::alias(Duty::class))->where('subject_id', $duty->id)->latest('id')->first();
 
-    expect($activity->root_subject_type)->toBe(Institution::class)
+    expect($activity->root_subject_type)->toBe(MorphMap::alias(Institution::class))
         ->and($activity->root_subject_id)->toBe($institution->id);
 });
 
 test('a Meeting activity roots to itself', function (): void {
     $meeting = Meeting::factory()->create();
 
-    $activity = Activity::where('subject_type', Meeting::class)->where('subject_id', $meeting->id)->latest('id')->first();
+    $activity = Activity::where('subject_type', MorphMap::alias(Meeting::class))->where('subject_id', $meeting->id)->latest('id')->first();
 
-    expect($activity->root_subject_type)->toBe(Meeting::class)
+    expect($activity->root_subject_type)->toBe(MorphMap::alias(Meeting::class))
         ->and($activity->root_subject_id)->toBe($meeting->id);
 });
 
@@ -73,7 +74,7 @@ test('a Duty whose Institution was soft-deleted resolves to itself instead of th
     // invalidation.
     [$type, $id] = (new ActivityRootResolver)->resolve(Duty::find($duty->id));
 
-    expect($type)->toBe(Duty::class)->and($id)->toBe($duty->id);
+    expect($type)->toBe(MorphMap::alias(Duty::class))->and($id)->toBe($duty->id);
 });
 
 test('resolving the root of an agenda item whose meeting was soft-deleted does not throw', function (): void {
@@ -88,16 +89,16 @@ test('resolving the root of an agenda item whose meeting was soft-deleted does n
     // resolver falls back to the agenda item as its own root rather than
     // throwing -- the path exercised when a Meeting cascade-deletes its
     // agenda items and votes.
-    expect($type)->toBe(AgendaItem::class)->and($id)->toBe($agendaItem->id);
+    expect($type)->toBe(MorphMap::alias(AgendaItem::class))->and($id)->toBe($agendaItem->id);
 });
 
 test('a ContentPart activity roots to its owning News', function (): void {
     $news = News::factory()->create();
     $part = $news->content->parts->first();
 
-    $activity = Activity::where('subject_type', ContentPart::class)->where('subject_id', $part->id)->latest('id')->first();
+    $activity = Activity::where('subject_type', MorphMap::alias(ContentPart::class))->where('subject_id', $part->id)->latest('id')->first();
 
-    expect($activity->root_subject_type)->toBe(News::class)
+    expect($activity->root_subject_type)->toBe(MorphMap::alias(News::class))
         ->and($activity->root_subject_id)->toBe((string) $news->id);
 });
 
@@ -105,9 +106,9 @@ test('a ContentPart activity roots to its owning Page', function (): void {
     $page = Page::factory()->create();
     $part = $page->content->parts->first();
 
-    $activity = Activity::where('subject_type', ContentPart::class)->where('subject_id', $part->id)->latest('id')->first();
+    $activity = Activity::where('subject_type', MorphMap::alias(ContentPart::class))->where('subject_id', $part->id)->latest('id')->first();
 
-    expect($activity->root_subject_type)->toBe(Page::class)
+    expect($activity->root_subject_type)->toBe(MorphMap::alias(Page::class))
         ->and($activity->root_subject_id)->toBe((string) $page->id);
 });
 
@@ -122,9 +123,9 @@ test('a ContentPart activity roots to its owning Tenant', function (): void {
         'order' => 0,
     ]);
 
-    $activity = Activity::where('subject_type', ContentPart::class)->where('subject_id', $part->id)->latest('id')->first();
+    $activity = Activity::where('subject_type', MorphMap::alias(ContentPart::class))->where('subject_id', $part->id)->latest('id')->first();
 
-    expect($activity->root_subject_type)->toBe(Tenant::class)
+    expect($activity->root_subject_type)->toBe(MorphMap::alias(Tenant::class))
         ->and($activity->root_subject_id)->toBe((string) $tenant->id);
 });
 
@@ -138,7 +139,7 @@ test('a ContentPart on a soft-deleted News still rolls up to it instead of self-
     // this is about Content::news()'s withTrashed(), not memoization.
     [$type, $id] = (new ActivityRootResolver)->resolve(ContentPart::find($part->id));
 
-    expect($type)->toBe(News::class)->and($id)->toBe((string) $news->id);
+    expect($type)->toBe(MorphMap::alias(News::class))->and($id)->toBe((string) $news->id);
 });
 
 test('an orphan Content (no News/Page/Tenant owner) self-roots without throwing', function (): void {
@@ -151,7 +152,7 @@ test('an orphan Content (no News/Page/Tenant owner) self-roots without throwing'
 
     [$type, $id] = (new ActivityRootResolver)->resolve($part);
 
-    expect($type)->toBe(Content::class)->and($id)->toBe((string) $content->id);
+    expect($type)->toBe(MorphMap::alias(Content::class))->and($id)->toBe((string) $content->id);
 });
 
 test('resolving the owner for several content parts of one Content costs at most two queries total', function (): void {

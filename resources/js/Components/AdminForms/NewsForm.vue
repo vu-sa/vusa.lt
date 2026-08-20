@@ -202,6 +202,8 @@
 </template>
 
 <script setup lang="ts">
+import { localizedRoute } from '@/Utils/LocalizedRoutes';
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { computed, ref, watch, h } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -319,12 +321,10 @@ const statusLinks = computed(() => {
   if (!form.permalink || !props.news?.tenant) return [];
 
   const newsLang = form.lang ?? 'lt';
-  const url = route('news', {
+  const url = localizedRoute('news', {
     subdomain: resolveTenantSubdomain(props.news.tenant.id),
-    lang: newsLang,
-    newsString: newsLang === 'lt' ? 'naujiena' : 'news',
     news: form.permalink,
-  });
+  }, newsLang);
 
   return [{ url, label: 'Public' }];
 });
@@ -388,16 +388,7 @@ function onOtherLangNewsConfirm(hits: NormalizedSearchHit[]) {
 
 const tagOptions = computed(() => {
   return (props.availableTags || []).map((tag) => {
-    let label = 'Unknown';
-    if (tag.name) {
-      if (typeof tag.name === 'object' && !Array.isArray(tag.name)) {
-        const nameObj = tag.name as Record<string, string>;
-        label = nameObj.lt || nameObj.en || 'Unknown';
-      }
-      else if (typeof tag.name === 'string') {
-        label = tag.name;
-      }
-    }
+    const label = getTranslatedValue(tag.name, undefined, 'Unknown');
     return { label, value: tag.id };
   });
 });

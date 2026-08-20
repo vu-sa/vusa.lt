@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use App\Actions\PairTranslatedRecord;
+use App\Enums\NewsLayoutEnum;
 use App\Feed\FeedHtml;
 use App\Feed\FeedItem;
 use App\Models\Traits\LogsModelActivity;
 use App\Services\HtmlSanitizerService;
+use App\Support\LocalizedRouteSlugs;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
@@ -31,7 +33,7 @@ use Spatie\Sitemap\Tags\Url;
  * @property string $title
  * @property int|null $category_id
  * @property string|null $permalink
- * @property string $short
+ * @property string|null $short
  * @property string $lang
  * @property int|null $other_lang_id
  * @property int $content_id
@@ -109,11 +111,6 @@ class News extends Model implements Feedable, Sitemapable
         );
     }
 
-    /**
-     * Available layout options for news articles.
-     */
-    public const LAYOUTS = ['modern', 'classic', 'immersive', 'headline'];
-
     #[\Override]
     protected static function booted()
     {
@@ -123,10 +120,9 @@ class News extends Model implements Feedable, Sitemapable
                 $news->highlights = array_slice($news->highlights, 0, 3);
             }
 
-            // Validate layout
-            if (! in_array($news->layout, self::LAYOUTS)) {
-                $news->layout = 'modern';
-            }
+            // Coerce an unrecognised layout rather than failing the save — the value is
+            // validated at the request boundary; this is the belt-and-braces pass.
+            $news->layout = (NewsLayoutEnum::tryFrom((string) $news->layout) ?? NewsLayoutEnum::default())->value;
         });
 
         static::saved(function ($news): void {
@@ -504,8 +500,12 @@ class News extends Model implements Feedable, Sitemapable
 
     public function toSitemapTag(): Url
     {
-        $url = $this->lang === 'lt' ? '/naujiena/' : '/news/';
-        $url .= $this->permalink;
+        // The slug and the language prefix both come from the route, so a sitemap entry
+        // can never drift from the URL the site actually serves.
+        $url = LocalizedRouteSlugs::route('news', [
+            'subdomain' => $this->tenant->subdomain(),
+            'news' => $this->permalink,
+        ], $this->lang);
 
         $sitemapUrl = Url::create($url)
             ->setLastModificationDate($this->updated_at)

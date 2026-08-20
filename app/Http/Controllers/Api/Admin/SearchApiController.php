@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\ApiController;
 use App\Services\Typesense\TypesenseManager;
 use App\Services\Typesense\TypesenseScopedKeyService;
 use Illuminate\Http\JsonResponse;
@@ -15,7 +15,7 @@ use Illuminate\Http\Request;
  * - Getting Typesense configuration with scoped API keys
  * - Refreshing expired scoped keys
  */
-class SearchApiController extends Controller
+class SearchApiController extends ApiController
 {
     /**
      * Get Typesense configuration with scoped API key for the authenticated user.

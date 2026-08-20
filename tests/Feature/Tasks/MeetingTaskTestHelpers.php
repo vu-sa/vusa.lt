@@ -11,6 +11,7 @@ use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
+use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
 
 /**
@@ -32,7 +33,7 @@ trait MeetingTaskTestHelpers
 
         // Create student rep type and duty
         $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
-            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => Duty::class]);
+            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => MorphMap::alias(Duty::class)]);
 
         $duty = Duty::factory()
             ->for($institution)
@@ -54,7 +55,7 @@ trait MeetingTaskTestHelpers
         event(new MeetingFullyCreated($meeting));
 
         $task = Task::query()
-            ->where('taskable_type', Meeting::class)
+            ->where('taskable_type', MorphMap::alias(Meeting::class))
             ->where('taskable_id', $meeting->id)
             ->where('action_type', ActionType::AgendaCreation)
             ->first();
@@ -76,7 +77,7 @@ trait MeetingTaskTestHelpers
 
         // Create student rep type and duty
         $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
-            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => Duty::class]);
+            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => MorphMap::alias(Duty::class)]);
 
         $duty = Duty::factory()
             ->for($institution)
@@ -108,7 +109,7 @@ trait MeetingTaskTestHelpers
         event(new MeetingFullyCreated($meeting));
 
         $task = Task::query()
-            ->where('taskable_type', Meeting::class)
+            ->where('taskable_type', MorphMap::alias(Meeting::class))
             ->where('taskable_id', $meeting->id)
             ->where('action_type', ActionType::AgendaCompletion)
             ->first();

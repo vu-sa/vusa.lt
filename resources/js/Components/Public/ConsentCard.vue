@@ -11,8 +11,8 @@
       </div>
 
       <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div class="flex items-center justify-center sm:justify-start">
-          <Button as="a" :href="`${$page.props.app.url}/privatumas`" target="_blank" size="sm" variant="link">
+        <div v-if="privacyPageUrl" class="flex items-center justify-center sm:justify-start">
+          <Button as="a" :href="privacyPageUrl" target="_blank" size="sm" variant="link">
             {{ $t("Privatumo politika") }}
           </Button>
         </div>
@@ -26,8 +26,16 @@
 </template>
 
 <script setup lang="ts">
+import { usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
+
 import { Button } from '@/Components/ui/button';
 import { useCookieConsent } from '@/Composables/useCookieConsent';
 
 const { acknowledge } = useCookieConsent();
+
+// Resolved server-side from SiteSettings::privacy_page_id, so it already points at the right
+// language record. Null when no page is configured — better to hide the link than to send
+// visitors to a 404. This used to be a hardcoded `${app.url}/privatumas`.
+const privacyPageUrl = computed(() => usePage().props.organization.privacyPageUrl);
 </script>

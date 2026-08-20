@@ -7,6 +7,7 @@ use App\Models\Pivots\Dutiable;
 use App\Models\User;
 use App\Rules\SoftDeleteRules;
 use App\Services\ModelAuthorizer;
+use App\Support\MorphMap;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
@@ -33,6 +34,10 @@ class UpdateDutyRequest extends FormRequest
 
         return [
             'name' => 'required',
+            // Both are persisted by DutyController::update() and previously had no rule at
+            // all. `description` is rich text, sanitized on write by HasTranslations.
+            'description' => 'nullable',
+            'email' => 'nullable|email',
             'current_users' => 'nullable|array',
             'institution_id' => 'required',
             'places_to_occupy' => 'required|numeric',
@@ -56,7 +61,7 @@ class UpdateDutyRequest extends FormRequest
     private function exOfficioUserIdsByTenant(Duty $duty): array
     {
         return Dutiable::where('duty_id', $duty->id)
-            ->where('dutiable_type', User::class)
+            ->where('dutiable_type', MorphMap::alias(User::class))
             ->whereNotNull('via_dutiable_id')
             ->whereNotNull('tenant_id')
             ->where(function ($query): void {
@@ -102,7 +107,7 @@ class UpdateDutyRequest extends FormRequest
                 }
 
                 $exOfficioUserIds = $exOfficioUserIdsByTenant[$row['tenant_id'] ?? null] ?? [];
-                $userIds = array_map('strval', (array) ($row['user_ids'] ?? []));
+                $userIds = array_map(strval(...), (array) ($row['user_ids'] ?? []));
                 $occupied = count(array_unique([...$userIds, ...$exOfficioUserIds]));
 
                 if ($occupied > (int) $quota) {

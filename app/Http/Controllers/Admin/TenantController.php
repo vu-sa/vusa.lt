@@ -12,7 +12,6 @@ use App\Models\Content;
 use App\Models\Institution;
 use App\Models\Tenant;
 use App\Services\ContentService;
-use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Response;
@@ -21,7 +20,7 @@ class TenantController extends AdminController
 {
     use HasTanstackTables;
 
-    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
+    public function __construct(private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
@@ -44,7 +43,7 @@ class TenantController extends AdminController
             ]
         );
 
-        $tenants = $query->paginate($request->input('per_page', 15))
+        $tenants = $query->paginate($request->getPerPage())
             ->withQueryString();
 
         $sorting = $request->getSorting();
@@ -89,7 +88,7 @@ class TenantController extends AdminController
 
         $tenant->save();
 
-        return redirect()->route('tenants.index')->with('success', 'Tenant created.');
+        return redirect()->route('tenants.index')->with('success', $this->entityMessage('created', 'tenant'));
     }
 
     /**
@@ -114,7 +113,7 @@ class TenantController extends AdminController
 
         $tenant->save();
 
-        return redirect()->route('tenants.index')->with('success', 'Tenant updated.');
+        return redirect()->route('tenants.index')->with('success', $this->entityMessage('updated', 'tenant'));
     }
 
     /**
@@ -126,7 +125,7 @@ class TenantController extends AdminController
 
         $tenant->delete();
 
-        return redirect()->route('tenants.index')->with('success', 'Tenant deleted.');
+        return redirect()->route('tenants.index')->with('success', $this->entityMessage('deleted', 'tenant'));
     }
 
     public function editMainPage(Tenant $tenant)
@@ -158,6 +157,6 @@ class TenantController extends AdminController
         // Clear homepage cache for this tenant (both locales)
         Cache::tags(['homepage', "tenant_{$tenant->id}"])->flush();
 
-        return redirect()->back()->with('success', 'Tenant updated.');
+        return redirect()->back()->with('success', $this->entityMessage('updated', 'tenant'));
     }
 }

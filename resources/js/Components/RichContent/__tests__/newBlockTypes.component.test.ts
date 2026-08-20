@@ -144,6 +144,36 @@ describe('carousel-slide-deck', () => {
     });
     expect(wrapper.exists()).toBe(true);
   });
+
+  it('display reads FormData-mangled "0" strings as off (legacy rows saved via forceFormData)', () => {
+    // Plain truthiness would see showNavigation: "0" as truthy and render arrows.
+    const element = {
+      type: 'carousel-slide-deck',
+      json_content: [
+        { icon: 'info', badge: 'B', title: 'T', description: '', imageSrc: '/x.webp', imageAlt: '', imageLeft: false },
+      ],
+      options: { autoplay: '0', autoplayDelay: '8000', showNavigation: '0', showThumbnails: '0' },
+    };
+    // Slot-rendering stubs so the slide itself (its image) still renders; arrows
+    // stay stubbed so their presence/absence is directly assertable.
+    const wrapper = mount(CarouselSlideDeckDisplay, {
+      props: { element },
+      global: {
+        stubs: {
+          Carousel: { template: '<div><slot /></div>' },
+          CarouselContent: { template: '<div><slot /></div>' },
+          CarouselItem: { template: '<div><slot /></div>' },
+          CarouselNext: true,
+          CarouselPrevious: true,
+        },
+      },
+    });
+
+    expect(wrapper.find('carousel-previous-stub').exists()).toBe(false);
+    expect(wrapper.find('carousel-next-stub').exists()).toBe(false);
+    // Only the slide's own image renders — the thumbnail strip stays hidden.
+    expect(wrapper.findAll('img')).toHaveLength(1);
+  });
 });
 
 describe('photo-gallery', () => {

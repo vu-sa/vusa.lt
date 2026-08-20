@@ -300,6 +300,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { usePage, router } from '@inertiajs/vue3';
+import { TenantType } from '@/Types/enums';
 import { SearchIcon, GlobeIcon } from 'lucide-vue-next';
 
 import SmartLink from '@/Components/Public/SmartLink.vue';
@@ -391,7 +392,7 @@ const pageDescription = computed(() => {
 // Check if current tenant is main (pagrindinis/vusa)
 const isMainTenant = computed(() => {
   const { tenant } = $page.props;
-  return tenant?.alias === 'vusa' || tenant?.type === 'pagrindinis';
+  return tenant?.alias === 'vusa' || tenant?.type === TenantType.Pagrindinis;
 });
 
 // Get current tenant name for display

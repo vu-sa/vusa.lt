@@ -8,6 +8,7 @@ use App\Models\Page;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Problem;
 use App\Services\ActivityChangeFormatter;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Tiptap\Editor;
@@ -33,7 +34,7 @@ test('a page content-part edit produces a diff row with the full plain-text proj
     $longOld = str_repeat('Sena teksto dalis. ', 20); // ~380 chars, past the old 120-char display cap
     $part->update(['json_content' => (new Editor)->setContent("<p>{$longOld}</p>")->getDocument()]);
 
-    $activity = Activity::where('subject_type', ContentPart::class)->where('subject_id', $part->id)
+    $activity = Activity::where('subject_type', MorphMap::alias(ContentPart::class))->where('subject_id', $part->id)
         ->where('event', 'updated')->latest('id')->first();
 
     $change = collect(formatSingleActivity($activity))->firstWhere('key', 'content_summary');
@@ -52,7 +53,7 @@ test('a translatable field logs one diff row per locale that actually changed', 
     // Only EN changes; LT is set to the exact same value it already has.
     $problem->update(['description' => ['lt' => 'Nepakitęs LT tekstas', 'en' => 'Updated EN text']]);
 
-    $activity = Activity::where('subject_type', Problem::class)->where('subject_id', $problem->id)
+    $activity = Activity::where('subject_type', MorphMap::alias(Problem::class))->where('subject_id', $problem->id)
         ->where('event', 'updated')->latest('id')->first();
 
     $changes = collect(formatSingleActivity($activity));
@@ -75,7 +76,7 @@ test('an EN-only edit under the LT app locale still produces an activity (does n
     // resolveAttributeValue() read getAttribute(), which under an LT session
     // returns only the LT string -- unchanged here, so the whole activity
     // would previously have been dropped by dontLogEmptyChanges().
-    expect(Activity::where('subject_type', Problem::class)->where('subject_id', $problem->id)
+    expect(Activity::where('subject_type', MorphMap::alias(Problem::class))->where('subject_id', $problem->id)
         ->where('event', 'updated')->exists())->toBeTrue();
 });
 
@@ -84,7 +85,7 @@ test('a legacy single-locale string value (pre-fix activity rows) still renders 
 
     $activity = Activity::create([
         'log_name' => 'default',
-        'subject_type' => Problem::class,
+        'subject_type' => MorphMap::alias(Problem::class),
         'subject_id' => $problem->id,
         'event' => 'updated',
         'description' => 'updated',
@@ -107,7 +108,7 @@ test('adjacent HTML block tags are separated by a space, not concatenated', func
 
     $activity = Activity::create([
         'log_name' => 'default',
-        'subject_type' => Problem::class,
+        'subject_type' => MorphMap::alias(Problem::class),
         'subject_id' => $problem->id,
         'event' => 'updated',
         'description' => 'updated',
@@ -129,7 +130,7 @@ test('a formatting-only edit (unchanged plain text) degrades to the rich placeho
 
     $activity = Activity::create([
         'log_name' => 'default',
-        'subject_type' => Problem::class,
+        'subject_type' => MorphMap::alias(Problem::class),
         'subject_id' => $problem->id,
         'event' => 'updated',
         'description' => 'updated',
@@ -155,7 +156,7 @@ test('a value past the diff character cap degrades to the rich placeholder', fun
 
     $activity = Activity::create([
         'log_name' => 'default',
-        'subject_type' => Problem::class,
+        'subject_type' => MorphMap::alias(Problem::class),
         'subject_id' => $problem->id,
         'event' => 'updated',
         'description' => 'updated',
@@ -178,7 +179,7 @@ test('AgendaItemNote rich fields still show the flat placeholder, unaffected by 
 
     $note->update(['notes_html' => '<p>Changed</p>']);
 
-    $activity = Activity::where('subject_type', AgendaItemNote::class)->where('subject_id', $note->id)
+    $activity = Activity::where('subject_type', MorphMap::alias(AgendaItemNote::class))->where('subject_id', $note->id)
         ->where('event', 'updated')->latest('id')->first();
 
     $change = collect(formatSingleActivity($activity))->firstWhere('key', 'notes_html');

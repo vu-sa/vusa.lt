@@ -109,6 +109,7 @@
 </template>
 
 <script setup lang="ts">
+import { localizedSlug } from '@/Utils/LocalizedRoutes';
 import { Link, usePage, useForm } from '@inertiajs/vue3';
 import { computed, ref, toRaw, watch } from 'vue';
 
@@ -176,10 +177,10 @@ const pathChangedOnExistingForm = computed(() =>
   || (originalPath.en !== '' && form.path.en !== originalPath.en),
 );
 
-const registrationSegment = (locale: Locale) => (locale === 'lt' ? 'registracija' : 'registration');
-
+// The registration path segment is a localized route slug, not a literal — see
+// App\Support\LocalizedRouteSlugs.
 const registrationBaseUrl = (locale: Locale) =>
-  `${usePage().props.app.url}/${locale}/${registrationSegment(locale)}`;
+  `${usePage().props.app.url}/${locale}/${localizedSlug('registrationString', locale)}`;
 
 const publicUrl = (locale: Locale) =>
   form.path[locale] ? `${registrationBaseUrl(locale)}/${form.path[locale]}` : undefined;

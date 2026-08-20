@@ -17,6 +17,7 @@ use App\Models\Vote;
 use App\Notifications\MeetingAgendaCompletedNotification;
 use App\Notifications\MeetingCreatedNotification;
 use App\Settings\AtstovavimasSettings;
+use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
 use App\Tasks\Handlers\AgendaCompletionTaskHandler;
 use App\Tasks\Handlers\AgendaCreationTaskHandler;
@@ -43,7 +44,7 @@ describe('MeetingTaskSubscriber', function (): void {
 
             // Create student rep type
             $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
-                ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => Duty::class]);
+                ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => MorphMap::alias(Duty::class)]);
 
             // Create a duty with student rep type
             $duty = Duty::factory()
@@ -70,7 +71,7 @@ describe('MeetingTaskSubscriber', function (): void {
 
             // Check that creation task was created
             $creationTask = Task::query()
-                ->where('taskable_type', Meeting::class)
+                ->where('taskable_type', MorphMap::alias(Meeting::class))
                 ->where('taskable_id', $meeting->id)
                 ->where('action_type', ActionType::AgendaCreation)
                 ->first();
@@ -104,7 +105,7 @@ describe('MeetingTaskSubscriber', function (): void {
 
             // Check that completion task was created
             $completionTask = Task::query()
-                ->where('taskable_type', Meeting::class)
+                ->where('taskable_type', MorphMap::alias(Meeting::class))
                 ->where('taskable_id', $meeting->id)
                 ->where('action_type', ActionType::AgendaCompletion)
                 ->first();
@@ -127,7 +128,7 @@ describe('MeetingTaskSubscriber', function (): void {
                 ->create(['start_time' => now()]);
 
             $tasks = Task::query()
-                ->where('taskable_type', Meeting::class)
+                ->where('taskable_type', MorphMap::alias(Meeting::class))
                 ->where('taskable_id', $meeting->id)
                 ->get();
 
@@ -277,7 +278,7 @@ describe('MeetingTaskSubscriber', function (): void {
 
             // Create student rep type and duty
             $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
-                ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => Duty::class]);
+                ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => MorphMap::alias(Duty::class)]);
 
             $repDuty = Duty::factory()
                 ->for($institution)
@@ -431,7 +432,7 @@ describe('MeetingTaskSubscriber', function (): void {
 
             // Create the institution-manager-role type for GetInstitutionManagers
             $institutionManagerType = Type::query()->where('slug', 'institution-manager-role')->first()
-                ?? Type::factory()->create(['slug' => 'institution-manager-role', 'model_type' => Role::class]);
+                ?? Type::factory()->create(['slug' => 'institution-manager-role', 'model_type' => MorphMap::alias(Role::class)]);
 
             // Create a role attached to the institution manager type
             $managerRole = Role::factory()->create(['guard_name' => 'web']);
@@ -578,7 +579,7 @@ describe('MeetingTaskSubscriber', function (): void {
 
             // No student reps = no tasks at all
             $tasks = Task::query()
-                ->where('taskable_type', Meeting::class)
+                ->where('taskable_type', MorphMap::alias(Meeting::class))
                 ->where('taskable_id', $meeting->id)
                 ->get();
 
@@ -628,7 +629,7 @@ describe('MeetingTaskSubscriber', function (): void {
 
             // Get the latest completed task (tasks auto-complete for informational items)
             $completionTask = Task::query()
-                ->where('taskable_type', Meeting::class)
+                ->where('taskable_type', MorphMap::alias(Meeting::class))
                 ->where('taskable_id', $meeting->id)
                 ->where('action_type', ActionType::AgendaCompletion)
                 ->latest('id')
@@ -664,7 +665,7 @@ describe('MeetingTaskSubscriber', function (): void {
 
             // Get the latest completed task (tasks auto-complete for deferred items)
             $completionTask = Task::query()
-                ->where('taskable_type', Meeting::class)
+                ->where('taskable_type', MorphMap::alias(Meeting::class))
                 ->where('taskable_id', $meeting->id)
                 ->where('action_type', ActionType::AgendaCompletion)
                 ->latest('id')
@@ -696,7 +697,7 @@ describe('MeetingTaskSubscriber', function (): void {
 
             // Get fresh task
             $completionTask = Task::query()
-                ->where('taskable_type', Meeting::class)
+                ->where('taskable_type', MorphMap::alias(Meeting::class))
                 ->where('taskable_id', $meeting->id)
                 ->where('action_type', ActionType::AgendaCompletion)
                 ->first();
@@ -739,7 +740,7 @@ describe('MeetingTaskSubscriber', function (): void {
 
             // Get fresh task
             $completionTask = Task::query()
-                ->where('taskable_type', Meeting::class)
+                ->where('taskable_type', MorphMap::alias(Meeting::class))
                 ->where('taskable_id', $meeting->id)
                 ->where('action_type', ActionType::AgendaCompletion)
                 ->first();
@@ -782,7 +783,7 @@ describe('MeetingTaskSubscriber', function (): void {
 
             // Get fresh task
             $completionTask = Task::query()
-                ->where('taskable_type', Meeting::class)
+                ->where('taskable_type', MorphMap::alias(Meeting::class))
                 ->where('taskable_id', $meeting->id)
                 ->where('action_type', ActionType::AgendaCompletion)
                 ->first();
@@ -839,7 +840,7 @@ describe('MeetingTaskSubscriber', function (): void {
 
             // Get fresh task
             $completionTask = Task::query()
-                ->where('taskable_type', Meeting::class)
+                ->where('taskable_type', MorphMap::alias(Meeting::class))
                 ->where('taskable_id', $meeting->id)
                 ->where('action_type', ActionType::AgendaCompletion)
                 ->first();
@@ -879,7 +880,7 @@ describe('MeetingTaskSubscriber', function (): void {
 
             // Get fresh task
             $completionTask = Task::query()
-                ->where('taskable_type', Meeting::class)
+                ->where('taskable_type', MorphMap::alias(Meeting::class))
                 ->where('taskable_id', $meeting->id)
                 ->where('action_type', ActionType::AgendaCompletion)
                 ->first();

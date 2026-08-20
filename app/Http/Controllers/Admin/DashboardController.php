@@ -5,9 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\GetTenantsForUpserts;
 use App\Enums\NotificationCategory;
 use App\Enums\NotificationChannel;
+use App\Enums\TenantType;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Concerns\ApiResponses;
+use App\Http\Requests\IndexUserTasksRequest;
+use App\Http\Requests\SendFeedbackRequest;
+use App\Http\Requests\UpdateNotificationPreferencesRequest;
 use App\Http\Requests\UpdatePasswordRequest;
+use App\Http\Requests\UpdateUserSettingsRequest;
 use App\Mail\FeedbackMail;
 use App\Mail\NotificationDigest;
 use App\Models\Calendar;
@@ -82,7 +87,7 @@ class DashboardController extends AdminController
                 'name' => $task->name,
                 'due_date' => $task->due_date?->toISOString(),
                 'is_overdue' => $task->isOverdue(),
-                'taskable_type' => class_basename($task->taskable_type ?? ''),
+                'taskable_type' => $task->taskable_type ?? '',
                 'taskable_id' => $task->taskable_id,
                 'action_type' => $task->action_type?->value,
                 'metadata' => $task->metadata,
@@ -257,7 +262,7 @@ class DashboardController extends AdminController
         if ($visibleTenantIds->isNotEmpty()) {
             $availableTenants = Tenant::query()
                 ->whereIn('id', $visibleTenantIds)
-                ->where('type', '!=', 'pkp')
+                ->representational()
                 ->orderBy('shortname_vu')
                 ->get(['id', 'shortname', 'type'])
                 ->map(fn ($tenant) => [
@@ -341,14 +346,14 @@ class DashboardController extends AdminController
         $selectedTenant = request()->input('tenant_id');
 
         // Leave only tenants that are not 'pkp'
-        $tenants = collect(GetTenantsForUpserts::execute('pages.update.padalinys', $this->authorizer))->filter(fn ($tenant) => $tenant['type'] !== 'pkp')->values();
+        $tenants = collect(GetTenantsForUpserts::execute('pages.update.padalinys', $this->authorizer))->filter(fn ($tenant) => in_array($tenant['type'], TenantType::representationalValues(), true))->values();
 
         // Check if selected tenant is in the list of tenants
         if ($selectedTenant) {
             $selectedTenant = $tenants->firstWhere('id', $selectedTenant);
         } else {
             // Check if there's tenant with type 'pagrindinis'
-            $selectedTenant = $tenants->firstWhere('type', 'pagrindinis');
+            $selectedTenant = $tenants->firstWhere('type', TenantType::Pagrindinis->value);
         }
 
         // If not, select first tenant
@@ -524,21 +529,11 @@ class DashboardController extends AdminController
         ]);
     }
 
-    public function updateUserSettings(Request $request)
+    public function updateUserSettings(UpdateUserSettingsRequest $request)
     {
         $user = User::find(Auth::id());
 
-        // Only self-service profile fields — never email/password, which have
-        // their own dedicated flows (updatePassword).
-        $validated = $request->validate([
-            'name' => ['nullable', 'string', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:255'],
-            'facebook_url' => ['nullable', 'string', 'max:255'],
-            'profile_photo_path' => ['nullable', 'string'],
-            'profile_photo_focal_point' => ['nullable', 'array'],
-            'pronouns' => ['nullable', 'array'],
-            'show_pronouns' => ['nullable', 'boolean'],
-        ]);
+        $validated = $request->validated();
 
         // The display name may only be changed once.
         if (array_key_exists('name', $validated) && $user->name !== $validated['name'] && ! $user->name_was_changed) {
@@ -549,7 +544,7 @@ class DashboardController extends AdminController
 
         $user->update($validated);
 
-        return $this->redirectBackWithSuccess('Nustatymai išsaugoti.');
+        return $this->redirectBackWithSuccess(__('messages.dashboard.settings_saved'));
     }
 
     public function updatePassword(UpdatePasswordRequest $request)
@@ -559,29 +554,14 @@ class DashboardController extends AdminController
         $user->password = bcrypt($request->password);
         $user->save();
 
-        return redirect()->back()->with('success', 'Slaptažodis sėkmingai pakeistas.');
+        return redirect()->back()->with('success', __('messages.auth.password_changed'));
     }
 
-    public function updateNotificationPreferences(Request $request)
+    public function updateNotificationPreferences(UpdateNotificationPreferencesRequest $request)
     {
         $user = User::find(Auth::id());
 
-        $validated = $request->validate([
-            'channels' => 'nullable|array',
-            'channels.*' => 'nullable|array',
-            'channels.*.*' => 'boolean',
-            'digest_frequency_hours' => 'nullable|integer|min:1|max:24',
-            'digest_emails' => 'nullable|array',
-            'digest_emails.*' => 'email',
-            'muted_until' => 'nullable|date',
-            'reminder_settings' => 'nullable|array',
-            'reminder_settings.task_reminder_days' => 'nullable|array',
-            'reminder_settings.task_reminder_days.*' => 'integer|min:1',
-            'reminder_settings.meeting_reminder_hours' => 'nullable|array',
-            'reminder_settings.meeting_reminder_hours.*' => 'integer|min:1',
-            'reminder_settings.calendar_reminder_hours' => 'nullable|array',
-            'reminder_settings.calendar_reminder_hours.*' => 'integer|min:1',
-        ]);
+        $validated = $request->validated();
 
         $preferences = $user->notification_preferences;
 
@@ -613,7 +593,7 @@ class DashboardController extends AdminController
         $user->notification_preferences = $preferences;
         $user->save();
 
-        return $this->redirectBackWithSuccess('Pranešimų nustatymai išsaugoti.');
+        return $this->redirectBackWithSuccess(__('messages.dashboard.notification_settings_saved'));
     }
 
     /**
@@ -652,7 +632,7 @@ class DashboardController extends AdminController
         );
     }
 
-    public function userTasks(Request $request)
+    public function userTasks(IndexUserTasksRequest $request)
     {
         $user = User::find(Auth::id());
 
@@ -690,7 +670,7 @@ class DashboardController extends AdminController
         }
 
         // Paginate tasks
-        $perPage = $request->input('per_page', 20);
+        $perPage = $request->getPerPage();
         $paginatedTasks = $tasksQuery->paginate($perPage)->withQueryString();
 
         // Transform tasks with computed properties
@@ -712,9 +692,9 @@ class DashboardController extends AdminController
             'taskable' => $task->taskable ? [
                 'id' => $task->taskable->id,
                 'name' => $task->taskable->title ?? $task->taskable->name ?? null,
-                'type' => class_basename($task->taskable_type),
+                'type' => $task->taskable_type,
             ] : null,
-            'taskable_type' => class_basename($task->taskable_type ?? ''),
+            'taskable_type' => $task->taskable_type ?? '',
             'taskable_id' => $task->taskable_id,
             'users' => $task->users->map(fn ($u) => [
                 'id' => $u->id,
@@ -745,17 +725,13 @@ class DashboardController extends AdminController
         ]);
     }
 
-    public function sendFeedback(Request $request)
+    public function sendFeedback(SendFeedbackRequest $request)
     {
-        $request->validate([
-            'feedback' => 'required|string',
-            'anonymous' => 'boolean',
-        ]);
 
-        // just send simple email to it@vusa.lt with feedback, conditional user name and with in a queue
-        Mail::to('it@vusa.lt')->queue(new FeedbackMail($request->input('feedback'), $request->input('anonymous') ? null : Auth::user()));
+        // Simple feedback email to the IT address, with the sender's name unless anonymous.
+        Mail::to(config('vusa.contacts.it'))->queue(new FeedbackMail($request->input('feedback'), $request->input('anonymous') ? null : Auth::user()));
 
-        return $this->redirectBackWithSuccess('Ačiū už atsiliepimą!');
+        return $this->redirectBackWithSuccess(__('messages.feedback.thanks'));
     }
 
     // Removed atstovavimasSummary endpoint and related view as per simplification request.

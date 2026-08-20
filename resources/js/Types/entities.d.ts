@@ -26,7 +26,6 @@ declare namespace App.Entities {
   // }
 
   export type Meeting = models.Meeting;
-  export type Membership = models.Membership;
 
   export type Navigation = models.Navigation;
   export type News = models.News;
@@ -47,11 +46,6 @@ declare namespace App.Entities {
   export type Permission = models.Permission;
   export type Problem = models.Problem;
   export type ProblemCategory = models.ProblemCategory;
-  export type Programme = models.Programme;
-  export type ProgrammeDay = models.ProgrammeDay;
-  export type ProgrammeBlock = models.ProgrammeBlock;
-  export type ProgrammePart = models.ProgrammePart;
-  export type ProgrammeSection = models.ProgrammeSection;
   export type Registration = models.Registration;
   export type Relationship = models.Relationship;
   export type Relationshipable = models.Relationshipable;
@@ -86,7 +80,6 @@ declare namespace App.Entities {
   export type Tag = models.Tag;
   export type Task = models.Task;
   export type Tenant = models.Tenant;
-  export type Training = models.Training;
   export type Type = models.Type;
   export type Vote = models.Vote;
 

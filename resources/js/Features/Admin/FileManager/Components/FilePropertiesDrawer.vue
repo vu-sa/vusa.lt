@@ -663,7 +663,6 @@ function getModelDisplayName(modelType: string): string {
     news: 'News Articles',
     duties: 'Duties',
     institutions: 'Institutions',
-    trainings: 'Trainings',
     types: 'Types',
     forms: 'Forms',
     dutiables: 'Duty Assignments',

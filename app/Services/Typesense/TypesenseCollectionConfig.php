@@ -101,7 +101,10 @@ class TypesenseCollectionConfig
         ],
         'calendar' => [
             'model' => Calendar::class,
-            'permission' => 'calendar.read.padalinys',
+            // Permissions are seeded as Str::plural(ModelEnum label) — `calendars`, not
+            // `calendar`. The singular form here matched nothing, so this collection was
+            // silently dropped from every non-super-admin's scoped key.
+            'permission' => 'calendars.read.padalinys',
             'description' => 'Calendar events with tenant-based access for editing',
         ],
         'institutions' => [

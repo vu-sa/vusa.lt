@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\Api\Admin\AcademicCalendarApiController;
 use App\Http\Controllers\Api\Admin\ActivityLogApiController;
-use App\Http\Controllers\Api\Admin\AgendaItemNoteController;
+use App\Http\Controllers\Api\Admin\AgendaItemNoteApiController;
 use App\Http\Controllers\Api\Admin\AnalyticsApiController;
 use App\Http\Controllers\Api\Admin\AtstovavimasApiController;
 use App\Http\Controllers\Api\Admin\CommentApiController;
@@ -24,7 +24,7 @@ use App\Http\Controllers\Api\Admin\TaskApiController;
 use App\Http\Controllers\Api\Admin\TextBoxSubmissionApiController;
 use App\Http\Controllers\Api\Admin\TutorialApiController;
 use App\Http\Controllers\Api\Admin\UserAttributionApiController;
-use App\Http\Controllers\Api\Admin\UserPreferencesController;
+use App\Http\Controllers\Api\Admin\UserPreferencesApiController;
 use App\Http\Controllers\Api\Admin\UserSearchApiController;
 use App\Http\Controllers\Api\CalendarController;
 use App\Http\Controllers\Api\DocumentController;
@@ -128,8 +128,8 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         Route::get('institutions/{institution}/preview', [InstitutionApiController::class, 'preview'])->name('institutions.preview');
 
         // Agenda item collaborative notes ("Atstovų pastabos")
-        Route::get('agenda-items/{agendaItem}/note', [AgendaItemNoteController::class, 'show'])->name('agendaItems.note.show');
-        Route::put('agenda-items/{agendaItem}/note', [AgendaItemNoteController::class, 'update'])->name('agendaItems.note.update');
+        Route::get('agenda-items/{agendaItem}/note', [AgendaItemNoteApiController::class, 'show'])->name('agendaItems.note.show');
+        Route::put('agenda-items/{agendaItem}/note', [AgendaItemNoteApiController::class, 'update'])->name('agendaItems.note.update');
 
         // Activity log feed for a subject's whole tree (see App\Support\ActivityRoots).
         // {subjectType} is resolved through the App\Support\Auditables allowlist;
@@ -195,8 +195,8 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         Route::post('notification-subscriptions/reset', [InstitutionSubscriptionApiController::class, 'reset'])->name('subscriptions.reset');
 
         // User preferences (sidebar customization, recent pages)
-        Route::patch('user-preferences', [UserPreferencesController::class, 'updateUIPreferences'])->name('user-preferences.update');
-        Route::patch('user-preferences/recent-page', [UserPreferencesController::class, 'trackRecentPage'])->name('user-preferences.trackRecentPage');
+        Route::patch('user-preferences', [UserPreferencesApiController::class, 'updateUIPreferences'])->name('user-preferences.update');
+        Route::patch('user-preferences/recent-page', [UserPreferencesApiController::class, 'trackRecentPage'])->name('user-preferences.trackRecentPage');
 
         // User search for forms (e.g. responsible user in problems)
         Route::get('users/search', [UserSearchApiController::class, 'search'])->name('users.search');

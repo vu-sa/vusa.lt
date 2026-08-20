@@ -41,7 +41,7 @@ class StoreNewsRequest extends NewsRequest
     protected function getTargetTenantId(): ?int
     {
         if ($this->user()->isSuperAdmin()) {
-            return Tenant::where('type', 'pagrindinis')->first()?->id;
+            return Tenant::main()?->id;
         }
 
         $authorizer = app(ModelAuthorizer::class)->forUser($this->user());

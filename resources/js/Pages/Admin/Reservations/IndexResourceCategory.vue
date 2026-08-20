@@ -39,7 +39,7 @@ const props = defineProps<{
 }>();
 
 const modelName = 'resourceCategories';
-const entityName = 'resource_category';
+const entityName = 'resourceCategory';
 
 const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
 
@@ -92,7 +92,7 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.ResourceCategory>>
   enableColumnVisibility: false,
   enableRowSelection: false,
 
-  headerTitle: capitalize($tChoice('entities.resource_category.model', 2)),
+  headerTitle: capitalize($tChoice('entities.resourceCategory.model', 2)),
   icon: CategoryIcon,
   createRoute: route('resourceCategories.create'),
   canCreate: true,

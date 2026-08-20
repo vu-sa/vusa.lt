@@ -28,7 +28,6 @@ enum ModelEnum: string
     case FORM = 'form';
     case INSTITUTION = 'institution';
     case MEETING = 'meeting';
-    case MEMBERSHIP = 'membership';
     case NAVIGATION = 'navigation';
     case NEWS = 'news';
     case QUICK_LINK = 'quick_link';
@@ -48,7 +47,6 @@ enum ModelEnum: string
     case TAG = 'tag';
     case TASK = 'task';
     case TENANT = 'tenant';
-    case TRAINING = 'training';
     case TYPE = 'type';
     case USER = 'user';
 

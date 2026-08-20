@@ -60,7 +60,6 @@ import PersonBoard24Filled from '~icons/fluent/person-board24-filled';
 import BookOpenGlobe24Filled from '~icons/fluent/book-open-globe24-filled';
 import Tag24Filled from '~icons/fluent/tag24-filled';
 import TaskListSquareLtr24Filled from '~icons/fluent/task-list-square-ltr24-filled';
-import Notebook24Filled from '~icons/fluent/notebook24-filled';
 import DocumentSettings20Filled from '~icons/fluent/document-settings20-filled';
 import Person24Filled from '~icons/fluent/person24-filled';
 import Alert24Filled from '~icons/fluent/alert24-filled';
@@ -80,7 +79,6 @@ export const FileIcon = DocumentMultiple24Regular;
 export const FormIcon = DocumentBulletList24Regular;
 export const InstitutionIcon = PeopleTeam24Regular;
 export const MeetingIcon = DeviceMeetingRoomRemote24Regular;
-export const MembershipIcon = PersonClock24Regular;
 export const NavigationIcon = Navigation24Regular;
 export const NewsIcon = News24Regular;
 export const PageIcon = DocumentMultiple24Regular;
@@ -99,7 +97,7 @@ export const StudyProgramIcon = BookOpenGlobe24Regular;
 export const TagIcon = Tag24Regular;
 export const TaskIcon = TaskListSquareLtr24Regular;
 export const TenantIcon = PeopleSearch24Regular;
-export const TrainingIcon = Notebook24Regular;
+export const StudySetIcon = Notebook24Regular;
 export const TypeIcon = DocumentSettings20Regular;
 export const UserIcon = Person24Regular;
 
@@ -115,7 +113,6 @@ export const FileIconFilled = DocumentMultiple24Filled;
 export const FormIconFilled = DocumentBulletList24Filled;
 export const InstitutionIconFilled = PeopleTeam24Filled;
 export const MeetingIconFilled = DeviceMeetingRoomRemote24Filled;
-export const MembershipIconFilled = PersonClock24Filled;
 export const NavigationIconFilled = Navigation24Filled;
 export const NewsIconFilled = News24Filled;
 export const PageIconFilled = DocumentMultiple24Filled;
@@ -134,7 +131,6 @@ export const StudyProgramIconFilled = BookOpenGlobe24Filled;
 export const TagIconFilled = Tag24Filled;
 export const TaskIconFilled = TaskListSquareLtr24Filled;
 export const TenantIconFilled = PeopleSearch24Regular; // Note: No filled variant available
-export const TrainingIconFilled = Notebook24Filled;
 export const TypeIconFilled = DocumentSettings20Filled;
 export const UserIconFilled = Person24Filled;
 
@@ -155,7 +151,6 @@ const modelIconMappingRegular: Record<keyof typeof ModelEnum, Component> = {
   FORM: FormIcon,
   INSTITUTION: InstitutionIcon,
   MEETING: MeetingIcon,
-  MEMBERSHIP: MembershipIcon,
   NAVIGATION: NavigationIcon,
   NEWS: NewsIcon,
   PAGE: PageIcon,
@@ -174,7 +169,6 @@ const modelIconMappingRegular: Record<keyof typeof ModelEnum, Component> = {
   TAG: TagIcon,
   TASK: TaskIcon,
   TENANT: TenantIcon,
-  TRAINING: TrainingIcon,
   TYPE: TypeIcon,
   USER: UserIcon,
 };
@@ -192,7 +186,6 @@ const modelIconMappingFilled: Record<keyof typeof ModelEnum, Component> = {
   FORM: FormIconFilled,
   INSTITUTION: InstitutionIconFilled,
   MEETING: MeetingIconFilled,
-  MEMBERSHIP: MembershipIconFilled,
   NAVIGATION: NavigationIconFilled,
   NEWS: NewsIconFilled,
   PAGE: PageIconFilled,
@@ -211,7 +204,6 @@ const modelIconMappingFilled: Record<keyof typeof ModelEnum, Component> = {
   TAG: TagIconFilled,
   TASK: TaskIconFilled,
   TENANT: TenantIconFilled,
-  TRAINING: TrainingIconFilled,
   TYPE: TypeIconFilled,
   USER: UserIconFilled,
 };

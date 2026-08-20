@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Api\Admin\ImpersonateSearchRequest;
+use App\Http\Requests\Api\Admin\StartImpersonationRequest;
 use App\Models\User;
-use App\Rules\SoftDeleteRules;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,16 +21,12 @@ class ImpersonateApiController extends ApiController
     /**
      * Search users available for impersonation.
      */
-    public function search(Request $request): JsonResponse
+    public function search(ImpersonateSearchRequest $request): JsonResponse
     {
         $this->guardEnvironment();
 
         $user = $this->requireAuth($request);
         $this->guardSuperAdmin($user);
-
-        $request->validate([
-            'search' => 'required|string|min:2',
-        ]);
 
         $users = User::query()
             ->select('id', 'name', 'email')
@@ -45,16 +42,12 @@ class ImpersonateApiController extends ApiController
     /**
      * Start impersonating a user.
      */
-    public function start(Request $request): JsonResponse
+    public function start(StartImpersonationRequest $request): JsonResponse
     {
         $this->guardEnvironment();
 
         $user = $this->requireAuth($request);
         $this->guardSuperAdmin($user);
-
-        $request->validate([
-            'user_id' => ['required', SoftDeleteRules::existsLive('users')],
-        ]);
 
         $target = User::findOrFail($request->input('user_id'));
 

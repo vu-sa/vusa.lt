@@ -135,13 +135,15 @@ describe('News Sitemap', function (): void {
             ->toContain('/naujienos'); // News archive
     });
 
-    it('includes news archive page', function (): void {
+    it('includes the news archive in both languages', function (): void {
         $response = $this->get('/sitemap-news.xml', ['HTTP_HOST' => 'www.vusa.test']);
 
         expect($response->status())->toBe(200);
 
+        // Each language is its own URL, and both carry the language prefix the site serves.
         $content = $response->getContent();
-        expect($content)->toContain('<loc>'.url('/naujienos').'</loc>')
+        expect($content)->toContain('<loc>https://www.vusa.test/lt/naujienos</loc>')
+            ->toContain('<loc>https://www.vusa.test/en/news</loc>')
             ->toContain('<priority>0.8</priority>')
             ->toContain('<changefreq>daily</changefreq>');
     });
@@ -371,7 +373,7 @@ describe('Model Sitemap Integration', function (): void {
         $sitemapTag = $news->toSitemapTag();
 
         expect($sitemapTag)->toBeInstanceOf(Url::class)
-            ->and($sitemapTag->url)->toBe('/naujiena/test-news')
+            ->and($sitemapTag->url)->toBe('https://www.vusa.test/lt/naujiena/test-news')
             ->and($sitemapTag->priority)->toBe(0.6)
             ->and($sitemapTag->changeFrequency)->toBe('never');
     });

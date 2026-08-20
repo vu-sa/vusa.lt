@@ -7,6 +7,14 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.25 — Hero karuselė, angliškos nuorodos ir teisių sutvarkymas (2026-08-20) {#v1-25}
+
+- ⭐ **Naujas hero karuselės blokas** — puslapio turinį galima pradėti besikeičiančiomis didelėmis nuotraukomis su antrašte, paantrašte, aprašymu ir mygtukais. Karuselė pritaikyta klaviatūrai ir ekrano skaitytuvams, o automatinis slinkimas stoja užvedus pele ir neveikia, kai įrenginys prašo mažiau judesio
+- ⭐ **Angliška svetainės dalis turi angliškas nuorodas** — dokumentai, paieška, kontaktai, studentų atstovai ir posėdžiai pasiekiami adresais `/en/documents`, `/en/search`, `/en/contacts`, `/en/meetings` ir pan. Senos nuorodos automatiškai nukreipiamos, tad išsaugotos nuorodos veikia toliau
+- ⭐ **Nauji svetainės nustatymai** — privatumo politikos puslapį galima nurodyti atskirai lietuvių ir anglų kalbai; slapukų juostos nuoroda seka naudotojo kalbą
+- ✨ **Administravimo ir formų klaidų pranešimai išversti** — anksčiau dalis jų buvo rodomi tik viena kalba arba kaip techninis raktas (pvz. „messages.meeting.updated“)
+- ✨ **Pašalinti „Mokymai“ ir „Narystės“** — šios sritys nuo 2024 m. pabaigos liko nebaigtos ir be duomenų, todėl išimtos iš administravimo meniu
+
 ## v1.24 — Ex-officio pareigos vėl priskiriamos (2026-08-11) {#v1-24}
 
 - 🔧 **Ex-officio pareigos vėl priskiriamos**

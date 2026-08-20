@@ -6,7 +6,7 @@
     "config": "",
     "css": "resources/css/app.css",
     "baseColor": "zinc",
-    "cssVariables": false,
+    "cssVariables": true,
     "prefix": ""
   },
   "aliases": {

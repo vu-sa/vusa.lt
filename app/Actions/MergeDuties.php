@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
+use App\Support\MorphMap;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -13,8 +14,8 @@ use Illuminate\Support\Facades\DB;
  * Sibling to MergeUsers and StudyProgramController::mergeStudyPrograms(), but a
  * duty carries far more than either: assignments (dutiables), cross-tenant
  * quotas (duty_tenant), ex-officio links (ex_officio_duties), content types and
- * admin roles (typeables / model_has_roles), and training eligibility
- * (trainables). Every one of them is repointed here, in a single transaction.
+ * and admin roles (typeables / model_has_roles). Every one of them is repointed
+ * here, in a single transaction.
  * Sources are soft-deleted, not force-deleted — recoverable, like the other
  * merge actions in this app.
  */
@@ -22,7 +23,7 @@ class MergeDuties
 {
     /**
      * @param  Collection<int, Duty>  $sources
-     * @return array{moved_assignments: int, collapsed_assignments: int, moved_types: int, moved_roles: int, moved_ex_officio: int, moved_tenant_quotas: int, moved_trainings: int}
+     * @return array{moved_assignments: int, collapsed_assignments: int, moved_types: int, moved_roles: int, moved_ex_officio: int, moved_tenant_quotas: int}
      */
     public static function execute(Duty $kept, Collection $sources): array
     {
@@ -39,7 +40,6 @@ class MergeDuties
                 'moved_roles' => self::repointMorphPivot('model_has_roles', 'model_id', 'model_type', 'role_id', $kept, $sourceIds),
                 'moved_ex_officio' => self::mergeExOfficioLinks($kept, $sourceIds),
                 'moved_tenant_quotas' => self::mergeDutyTenantQuotas($kept, $sourceIds),
-                'moved_trainings' => self::repointMorphPivot('trainables', 'trainable_id', 'trainable_type', 'training_id', $kept, $sourceIds),
             ];
 
             foreach ($sources as $source) {
@@ -130,7 +130,7 @@ class MergeDuties
     }
 
     /**
-     * Shared shape for typeables, model_has_roles and trainables: a polymorphic
+     * Shared shape for typeables and model_has_roles: a polymorphic
      * pivot keyed on (model id, model type, other id). Repoints a source's row
      * onto the kept duty unless the kept duty already has that same pairing, in
      * which case the source's row is a pure duplicate and is simply dropped.
@@ -147,20 +147,20 @@ class MergeDuties
     ): int {
         $moved = 0;
 
-        $rows = DB::table($table)->where($modelTypeColumn, Duty::class)->whereIn($modelIdColumn, $sourceIds)->get();
+        $rows = DB::table($table)->where($modelTypeColumn, MorphMap::alias(Duty::class))->whereIn($modelIdColumn, $sourceIds)->get();
 
         foreach ($rows as $row) {
             $otherId = $row->{$otherIdColumn};
 
             $alreadyOnKept = DB::table($table)
-                ->where($modelTypeColumn, Duty::class)
+                ->where($modelTypeColumn, MorphMap::alias(Duty::class))
                 ->where($modelIdColumn, $kept->id)
                 ->where($otherIdColumn, $otherId)
                 ->exists();
 
             if (! $alreadyOnKept) {
                 DB::table($table)
-                    ->where($modelTypeColumn, Duty::class)
+                    ->where($modelTypeColumn, MorphMap::alias(Duty::class))
                     ->where($modelIdColumn, $row->{$modelIdColumn})
                     ->where($otherIdColumn, $otherId)
                     ->update([$modelIdColumn => $kept->id]);
@@ -170,7 +170,7 @@ class MergeDuties
 
         // Whatever still points at a source id at this point is an exact
         // duplicate of something the kept duty already has — spent.
-        DB::table($table)->where($modelTypeColumn, Duty::class)->whereIn($modelIdColumn, $sourceIds)->delete();
+        DB::table($table)->where($modelTypeColumn, MorphMap::alias(Duty::class))->whereIn($modelIdColumn, $sourceIds)->delete();
 
         return $moved;
     }

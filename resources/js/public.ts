@@ -18,10 +18,9 @@ const PublicLayout = defineAsyncComponent(
 // const pageTitle = metaTitle.replace(" - VU SA", "");
 
 createInertiaApp({
-  title: (title) => {
-    // Ensure title is always a string to prevent Inertia Head escape() errors
-    return title ? String(title) : '';
-  },
+  // Title is owned server-side by Laravel Head (see PublicController::applyPageHead()
+  // and app.blade.php's @head directive) — no client-side title callback needed.
+  serverHead: true,
   resolve: (name) => {
     const page = resolvePageComponent(
       `./Pages/${name}.vue`,

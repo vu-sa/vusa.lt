@@ -7,12 +7,9 @@ use App\Http\Requests\StoreVoteRequest;
 use App\Http\Requests\UpdateVoteRequest;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Vote;
-use App\Services\ModelAuthorizer as Authorizer;
 
 class VoteController extends AdminController
 {
-    public function __construct(public Authorizer $authorizer) {}
-
     /**
      * Store a newly created vote.
      */
@@ -42,7 +39,7 @@ class VoteController extends AdminController
                 ->update(['is_main' => false]);
         }
 
-        return back()->with('success', 'Balsavimas pridėtas sėkmingai!');
+        return back()->with('success', $this->entityMessage('created', 'vote'));
     }
 
     /**
@@ -64,7 +61,7 @@ class VoteController extends AdminController
                 ->update(['is_main' => false]);
         }
 
-        return back()->with('success', 'Balsavimas atnaujintas sėkmingai!');
+        return back()->with('success', $this->entityMessage('updated', 'vote'));
     }
 
     /**
@@ -88,7 +85,7 @@ class VoteController extends AdminController
             }
         }
 
-        return back()->with('success', 'Balsavimas ištrintas sėkmingai!');
+        return back()->with('success', $this->entityMessage('deleted', 'vote'));
     }
 
     /**
@@ -108,6 +105,6 @@ class VoteController extends AdminController
         // Set this vote as main
         $vote->update(['is_main' => true]);
 
-        return back()->with('success', 'Pagrindinis balsavimas pakeistas sėkmingai!');
+        return back()->with('success', __('messages.vote.main_changed'));
     }
 }

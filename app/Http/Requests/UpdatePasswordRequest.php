@@ -52,11 +52,11 @@ class UpdatePasswordRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'current_password.required' => 'Dabartinis slaptažodis yra privalomas.',
-            'current_password.string' => 'Dabartinis slaptažodis turi būti tekstas.',
-            'password.required' => 'Naujas slaptažodis yra privalomas.',
-            'password.confirmed' => 'Slaptažodžio patvirtinimas nesutampa.',
-            'password_confirmation.required' => 'Slaptažodžio patvirtinimas yra privalomas.',
+            'current_password.required' => trans('users.validation.current_password_required'),
+            'current_password.string' => trans('users.validation.current_password_string'),
+            'password.required' => trans('users.validation.password_required'),
+            'password.confirmed' => trans('users.validation.password_confirmed'),
+            'password_confirmation.required' => trans('users.validation.password_confirmation_required'),
         ];
     }
 }

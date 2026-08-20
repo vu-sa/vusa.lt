@@ -6,6 +6,7 @@ use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\Duty;
 use App\Models\RoleType;
 use App\Services\Permissions\PermissionMapBuilder;
+use App\Support\MorphMap;
 use Illuminate\Support\Facades\Cache;
 
 class RoleTypeObserver
@@ -20,7 +21,7 @@ class RoleTypeObserver
 
         // get duties
 
-        if ($type->model_type === Duty::class) {
+        if ($type->model_type === MorphMap::alias(Duty::class)) {
             $duties = $type->duties;
         } else {
             return;
@@ -50,7 +51,7 @@ class RoleTypeObserver
 
         // get duties
 
-        if ($type->model_type === Duty::class) {
+        if ($type->model_type === MorphMap::alias(Duty::class)) {
             $duties = $type->duties;
         } else {
             return;

@@ -33,4 +33,14 @@ return [
     'type_deferred_tooltip' => 'The discussion of this item was postponed to another meeting. No voting data required.',
     'type_informational_tooltip' => 'An informational item with no voting. No voting data required.',
     'main_vote_required_tooltip' => 'The main vote is required for voting type items and cannot be removed.',
+    'validation' => [
+        'agenda_item_required' => 'The agenda item is required.',
+        'agenda_item_exists' => 'The selected agenda item does not exist.',
+        'title_string' => 'The vote title must be text.',
+        'title_max' => 'The vote title cannot be longer than 200 characters.',
+        'student_vote_enum' => 'The student vote must be one of: positive, negative, neutral.',
+        'decision_enum' => 'The decision must be one of: positive, negative, neutral.',
+        'student_benefit_enum' => 'The student benefit must be one of: positive, negative, neutral.',
+        'note_max' => 'The note cannot be longer than 2000 characters.',
+    ],
 ];

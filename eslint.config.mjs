@@ -215,6 +215,28 @@ export default tseslint.config(
     },
   },
 
+  // Pages compose; they don't hand-roll card chrome. See resources/js/Components/CLAUDE.md.
+  // Scoped to Pages only — Components/** and Features/** legitimately build on ui/card.
+  {
+    files: ['resources/js/Pages/Admin/**/*.{vue,ts}'],
+    rules: {
+      // NOTE: no-restricted-imports fully overrides rather than merges, so the
+      // lodash and Fluent-icon entries from the block above must be repeated here.
+      'no-restricted-imports': ['warn', {
+        paths: [...lodashImportPaths],
+        patterns: [
+          ...lodashImportPatterns,
+          ...removedIconPatterns,
+          { group: ['~icons/fluent/*'], message: 'Admin uses Lucide (lucide-vue-next). Fluent is reserved for Public surfaces.' },
+          {
+            group: ['@/Components/ui/card', '@/Components/ui/card/*'],
+            message: 'Use SectionCard from @/Components/Patterns for titled panels, or an entity component. Raw ui/card belongs in Components/**, not in a page.',
+          },
+        ],
+      }],
+    },
+  },
+
   // Public surfaces must use Fluent; Lucide is for Admin only.
   {
     files: [

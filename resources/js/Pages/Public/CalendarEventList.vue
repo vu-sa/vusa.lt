@@ -112,11 +112,11 @@
 </template>
 
 <script setup lang="ts">
+import { useDateLocale } from '@/Composables/useDateLocale';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ref, computed } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { format, addDays, subDays, startOfDay, differenceInDays, isSameDay, parseISO } from 'date-fns';
-import { lt, enUS } from 'date-fns/locale';
 
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { Button } from '@/Components/ui/button';
@@ -319,7 +319,7 @@ const resetFilters = () => {
 };
 
 // ===== Event Density Visualization =====
-const dateLocale = computed(() => page.props.app.locale === 'lt' ? lt : enUS);
+const dateLocale = useDateLocale();
 const today = computed(() => startOfDay(new Date()));
 
 const densityBars = computed(() => {

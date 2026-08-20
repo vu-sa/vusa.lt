@@ -5,20 +5,10 @@
         {{ $t("forms.context.main_info") }}
       </template>
       <template #description>
-        <template v-if="$page.props.app.locale === 'lt'">
-          <a target="_blank" class="mb-4 flex items-center gap-1"
-            href="https://vustudentuatstovybe.sharepoint.com/:b:/s/vieningai/ERnxptqtoF5DmDiqAbpfBewBjV-z7QcgAZiZi5w5sS1ODQ?e=cP6Zsv">
-            <IFluentLink24Filled />
-            <strong class="underline">Rezervacijų atmintinė</strong>
-          </a>
-        </template>
-        <template v-else>
-          <a target="_blank" class="mb-4 flex items-center gap-1"
-            href="https://vustudentuatstovybe.sharepoint.com/:b:/s/vieningai/ESPcgxR0HqNFj0TBAQL4hmQBLmE5RSN72cEFe9psis3gjg?e=wS2uKj">
-            <IFluentLink24Filled />
-            <strong class="underline">Reservation guide</strong>
-          </a>
-        </template>
+        <a target="_blank" class="mb-4 flex items-center gap-1" :href="reservationGuideUrl">
+          <IFluentLink24Filled />
+          <strong class="underline">{{ $t('Rezervacijų atmintinė') }}</strong>
+        </a>
         <MdSuspenseWrapper directory="reservations" :locale="$page.props.app.locale" file="description" />
       </template>
       <FormFieldWrapper id="name" :label="$t('forms.fields.title')" required>
@@ -114,14 +104,7 @@
       <div class="flex items-center gap-2">
         <Checkbox id="condition" v-model="conditionAcquaintance" />
         <Label for="condition">
-          <template v-if="$page.props.app.locale === 'lt'">
-            Sutinku įdėmiai sekti rezervacijos informaciją, išteklius pasiimti
-            ir grąžinti laiku.
-          </template>
-          <template v-else>
-            I agree to carefully follow the reservation information, take and
-            return the resources on time.
-          </template>
+          {{ $t('Sutinku įdėmiai sekti rezervacijos informaciją, išteklius pasiimti ir grąžinti laiku.') }}
         </Label>
       </div>
     </FormElement>
@@ -134,7 +117,7 @@
 </template>
 
 <script setup lang="ts">
-import { router, useForm } from '@inertiajs/vue3';
+import { router, useForm, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, ref, watch } from 'vue';
 
@@ -175,6 +158,12 @@ const props = defineProps<{
 }>();
 
 const conditionAcquaintance = ref(false);
+
+// The guide is a SharePoint document that exists as two separate files, so the locale picks
+// the URL rather than a translated string.
+const reservationGuideUrl = computed(() => usePage().props.app.locale === 'lt'
+  ? 'https://vustudentuatstovybe.sharepoint.com/:b:/s/vieningai/ERnxptqtoF5DmDiqAbpfBewBjV-z7QcgAZiZi5w5sS1ODQ?e=cP6Zsv'
+  : 'https://vustudentuatstovybe.sharepoint.com/:b:/s/vieningai/ESPcgxR0HqNFj0TBAQL4hmQBLmE5RSN72cEFe9psis3gjg?e=wS2uKj');
 
 const routeToSubmit = computed(() => {
   return props.reservation?.id

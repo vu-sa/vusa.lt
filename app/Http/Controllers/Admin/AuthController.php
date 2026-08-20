@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AuthenticateRequest;
 use App\Models\Duty;
 use App\Models\User;
-use App\Providers\RouteServiceProvider;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -36,9 +36,7 @@ class AuthController extends Controller
 
             // User cancelled the login - redirect gracefully
             if ($error === 'access_denied' || $errorSubcode === 'cancel') {
-                $message = app()->getLocale() === 'en'
-                    ? 'Login was cancelled. Please try again if you wish to sign in.'
-                    : 'Prisijungimas buvo atšauktas. Bandykite dar kartą, jei norite prisijungti.';
+                $message = __('messages.auth.login_cancelled');
 
                 if ($isPopup) {
                     return $this->handlePopupCallback(false, route('login'), $message);
@@ -48,9 +46,7 @@ class AuthController extends Controller
             }
 
             // Other OAuth errors
-            $message = app()->getLocale() === 'en'
-                ? 'An error occurred during login. Please try again.'
-                : 'Prisijungimo metu įvyko klaida. Bandykite dar kartą.';
+            $message = __('messages.auth.login_error');
 
             if ($isPopup) {
                 return $this->handlePopupCallback(false, route('login'), $message);
@@ -80,9 +76,7 @@ class AuthController extends Controller
                 'user_ip' => $request->ip(),
             ]);
 
-            $message = app()->getLocale() === 'en'
-                ? 'Login failed. Please try again.'
-                : 'Prisijungimas nepavyko. Bandykite dar kartą.';
+            $message = __('messages.auth.login_failed');
 
             if ($isPopup) {
                 return $this->handlePopupCallback(false, route('login'), $message);
@@ -97,9 +91,7 @@ class AuthController extends Controller
                 'user_ip' => $request->ip(),
             ]);
 
-            $message = app()->getLocale() === 'en'
-                ? 'An unexpected error occurred. Please try again.'
-                : 'Įvyko netikėta klaida. Bandykite dar kartą.';
+            $message = __('messages.auth.login_unexpected_error');
 
             if ($isPopup) {
                 return $this->handlePopupCallback(false, route('login'), $message);
@@ -136,10 +128,10 @@ class AuthController extends Controller
             $request->session()->regenerate();
 
             if ($isPopup) {
-                return $this->handlePopupCallback(true, RouteServiceProvider::HOME);
+                return $this->handlePopupCallback(true, route('dashboard'));
             }
 
-            return redirect()->intended(RouteServiceProvider::HOME);
+            return redirect()->intended(route('dashboard'));
         }
 
         $duty = Duty::where('email', $microsoftUser->getEmail())->first();
@@ -151,7 +143,7 @@ class AuthController extends Controller
             $count = $duty->current_users()->count();
 
             if ($count > 1) {
-                $errorMsg = 'Nepavyko prisijungti su pareigybiniu paštu, nes pareigybinis paštas turi daugiau nei vieną aktyvų vartotoją. Susisiekite su administratoriumi.';
+                $errorMsg = __('messages.auth.duty_email_many_users');
                 if ($isPopup) {
                     return $this->handlePopupCallback(false, route('login'), $errorMsg);
                 }
@@ -162,7 +154,7 @@ class AuthController extends Controller
             $user = $duty->current_users()->first();
 
             if (! $user) {
-                $errorMsg = 'Nepavyko prisijungti su pareigybiniu paštu, nes pareigybinis paštas neturi aktyvaus vartotojo. Bandykite ištrinti slapukus arba naudoti naršyklės privatų rėžimą.';
+                $errorMsg = __('messages.auth.duty_email_no_user');
                 if ($isPopup) {
                     return $this->handlePopupCallback(false, route('login'), $errorMsg);
                 }
@@ -180,16 +172,14 @@ class AuthController extends Controller
             $request->session()->regenerate();
 
             if ($isPopup) {
-                return $this->handlePopupCallback(true, RouteServiceProvider::HOME);
+                return $this->handlePopupCallback(true, route('dashboard'));
             }
 
-            return redirect()->intended(RouteServiceProvider::HOME);
+            return redirect()->intended(route('dashboard'));
         }
 
         // No user or duty found with this email - redirect to login with error
-        $message = app()->getLocale() === 'en'
-            ? 'No account or duty was found with this email address. Please contact a VU SR student representative coordinator or administrator to get access.'
-            : 'Su šiuo el. pašto adresu nerastas nei vartotojas, nei pareigybė. Susisiekite su VU SA padalinio studentų atstovų koordinatoriumi ar administratoriumi, kad gautumėte prieigą.';
+        $message = __('messages.auth.no_account_found');
 
         if ($isPopup) {
             return $this->handlePopupCallback(false, route('login'), $message);
@@ -203,17 +193,14 @@ class AuthController extends Controller
     /**
      * Handle password-based authentication.
      */
-    public function authenticate(Request $request)
+    public function authenticate(AuthenticateRequest $request)
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
+        $credentials = $request->validated();
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
-            return redirect()->intended(RouteServiceProvider::HOME);
+            return redirect()->intended(route('dashboard'));
         }
 
         return back()->withErrors([

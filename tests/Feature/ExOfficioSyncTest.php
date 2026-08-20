@@ -8,6 +8,7 @@ use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 
@@ -30,7 +31,7 @@ test('creating a source Dutiable fires DutiableChanged', function (): void {
     Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'start_date' => now()->subDay(),
         'end_date' => null,
     ]);
@@ -42,7 +43,7 @@ test('listener creates derived Dutiable for each ex-officio target', function ()
     $source = Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
         'via_dutiable_id' => null,
@@ -65,7 +66,7 @@ test('listener mirrors end_date change to derived row', function (): void {
     $source = Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'start_date' => now()->subMonth()->toDateString(),
         'end_date' => null,
         'via_dutiable_id' => null,
@@ -89,7 +90,7 @@ test('listener does not overwrite independent fields on derived row', function (
     $source = Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
         'via_dutiable_id' => null,
@@ -117,7 +118,7 @@ test('listener adopts existing manual row instead of creating a duplicate', func
     $manualRow = Dutiable::factory()->create([
         'duty_id' => $this->targetDuty->id,
         'dutiable_id' => $this->user->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'start_date' => now()->subYear()->toDateString(),
         'end_date' => null,
         'via_dutiable_id' => null,
@@ -126,7 +127,7 @@ test('listener adopts existing manual row instead of creating a duplicate', func
     $source = Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
         'via_dutiable_id' => null,
@@ -150,7 +151,7 @@ test('listener deletes derived rows when source is force-deleted', function (): 
     $source = Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
         'via_dutiable_id' => null,
@@ -193,7 +194,7 @@ test('listener skips derived rows to prevent chains', function (): void {
     $parentDutiable = Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
         'via_dutiable_id' => null,
@@ -202,7 +203,7 @@ test('listener skips derived rows to prevent chains', function (): void {
     $derivedRow = Dutiable::factory()->create([
         'duty_id' => $this->targetDuty->id,
         'dutiable_id' => $this->user->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
         'via_dutiable_id' => $parentDutiable->id,
@@ -235,7 +236,7 @@ test('cross-tenant ex-officio sets tenant_id when target supports source tenant'
     $source = Dutiable::factory()->create([
         'duty_id' => $sourceDuty->id,
         'dutiable_id' => $this->user->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
         'via_dutiable_id' => null,
@@ -270,7 +271,7 @@ test('cross-tenant ex-officio does not set tenant_id when target does not suppor
     $source = Dutiable::factory()->create([
         'duty_id' => $sourceDuty->id,
         'dutiable_id' => $this->user->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
         'via_dutiable_id' => null,
@@ -290,7 +291,7 @@ test('same-tenant ex-officio keeps tenant_id null', function (): void {
     $source = Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
         'via_dutiable_id' => null,
@@ -325,7 +326,7 @@ test('listener preserves tenant_id when mirroring date changes', function (): vo
     $source = Dutiable::factory()->create([
         'duty_id' => $sourceDuty->id,
         'dutiable_id' => $this->user->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'start_date' => now()->subMonth()->toDateString(),
         'end_date' => null,
         'via_dutiable_id' => null,
@@ -366,7 +367,7 @@ test('listener adopts manual row and updates tenant_id when target supports sour
     $manualRow = Dutiable::factory()->create([
         'duty_id' => $targetDuty->id,
         'dutiable_id' => $this->user->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'start_date' => now()->subYear()->toDateString(),
         'end_date' => null,
         'via_dutiable_id' => null,
@@ -376,7 +377,7 @@ test('listener adopts manual row and updates tenant_id when target supports sour
     $source = Dutiable::factory()->create([
         'duty_id' => $sourceDuty->id,
         'dutiable_id' => $this->user->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
         'via_dutiable_id' => null,
@@ -410,7 +411,7 @@ test('backfill sets tenant_id for cross-tenant ex-officio', function (): void {
     $source = Dutiable::factory()->create([
         'duty_id' => $sourceDuty->id,
         'dutiable_id' => $this->user->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
         'via_dutiable_id' => null,

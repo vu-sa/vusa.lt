@@ -53,7 +53,10 @@ class AccessChangeAnalyzer
 
             // Reset caches so the "after" snapshot reflects the just-applied
             // (still uncommitted) state rather than memoised pre-change data.
-            Permission::resetCache($actingUser);
+            // flushGlobal: true because $mutation may touch role/permission pivot rows
+            // directly rather than through Spatie's HasRoles/HasPermissions methods
+            // (which self-flush), and this snapshot must never read stale wildcard state.
+            Permission::resetCache($actingUser, flushGlobal: true);
 
             $after = CapabilitySnapshot::capture($actingUser->fresh());
             $report = AccessChangeReport::diff($before, $after);
@@ -66,7 +69,7 @@ class AccessChangeAnalyzer
             }
         } catch (Throwable $e) {
             DB::rollBack();
-            Permission::resetCache($actingUser);
+            Permission::resetCache($actingUser, flushGlobal: true);
 
             throw $e;
         }
@@ -81,7 +84,7 @@ class AccessChangeAnalyzer
 
         // Whether committed or rolled back, drop any cache the snapshots warmed
         // so the live request recomputes against the real persisted state.
-        Permission::resetCache($actingUser);
+        Permission::resetCache($actingUser, flushGlobal: true);
 
         return $report;
     }

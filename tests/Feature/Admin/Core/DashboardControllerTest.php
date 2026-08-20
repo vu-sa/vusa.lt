@@ -19,6 +19,7 @@ use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
 use App\Services\RelationshipService;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -582,7 +583,7 @@ describe('atstovavimas dashboard periodicity', function (): void {
 
         // Create a duty and assign it to the user
         $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
-            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => Duty::class]);
+            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => MorphMap::alias(Duty::class)]);
 
         $duty = Duty::factory()
             ->for($institution)
@@ -623,7 +624,7 @@ describe('atstovavimas dashboard periodicity', function (): void {
     test('user institutions use type periodicity when no override', function (): void {
         // Create a type with custom periodicity
         $institutionType = Type::factory()->create([
-            'model_type' => Institution::class,
+            'model_type' => MorphMap::alias(Institution::class),
             'extra_attributes' => ['meeting_periodicity_days' => 14],
         ]);
 
@@ -636,7 +637,7 @@ describe('atstovavimas dashboard periodicity', function (): void {
 
         // Create a duty and assign it to the user
         $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
-            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => Duty::class]);
+            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => MorphMap::alias(Duty::class)]);
 
         $duty = Duty::factory()
             ->for($institution)
@@ -682,7 +683,7 @@ describe('institutions needing attention', function (): void {
         ]);
 
         $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
-            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => Duty::class]);
+            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => MorphMap::alias(Duty::class)]);
 
         $duty = Duty::factory()
             ->for($institution)
@@ -1106,7 +1107,7 @@ describe('atstovavimas related institutions', function (): void {
         // Create outgoing relationship (user's institution -> related)
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->userInstitution->id,
             'related_model_id' => $this->relatedInstitution->id,
             'bidirectional' => false,
@@ -1150,7 +1151,7 @@ describe('atstovavimas related institutions', function (): void {
         // Create incoming relationship (related -> user's institution, NOT bidirectional)
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->relatedInstitution->id,
             'related_model_id' => $this->userInstitution->id,
             'bidirectional' => false,
@@ -1194,7 +1195,7 @@ describe('atstovavimas related institutions', function (): void {
         // Create incoming relationship (related -> user's institution, IS bidirectional)
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->relatedInstitution->id,
             'related_model_id' => $this->userInstitution->id,
             'bidirectional' => true,
@@ -1238,7 +1239,7 @@ describe('atstovavimas related institutions', function (): void {
         // Create outgoing relationship (authorized)
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->userInstitution->id,
             'related_model_id' => $this->relatedInstitution->id,
             'bidirectional' => false,
@@ -1291,7 +1292,7 @@ describe('atstovavimas related institutions', function (): void {
         // Create incoming relationship (NOT authorized because NOT bidirectional)
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->relatedInstitution->id,
             'related_model_id' => $this->userInstitution->id,
             'bidirectional' => false,

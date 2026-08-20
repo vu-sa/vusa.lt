@@ -3,12 +3,20 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\HasImageValidation;
+use App\Http\Requests\Concerns\ValidatesTenantScope;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CalendarRequest extends FormRequest
 {
     use HasImageValidation;
+    use ValidatesTenantScope;
+
+    /**
+     * The permission whose tenant scope constrains `tenant_id`. Store and Update override it
+     * so each uses its own scope.
+     */
+    protected string $tenantScopePermission = 'calendars.update.padalinys';
 
     /**
      * Get the validation rules that apply to the request.
@@ -35,7 +43,7 @@ class CalendarRequest extends FormRequest
             'is_international' => 'boolean',
             'date' => 'required|date',
             'end_date' => 'nullable|date|after:date',
-            'tenant_id' => 'required|integer',
+            'tenant_id' => ['required', 'integer', 'exists:tenants,id', $this->tenantIdInAuthorizedScope($this->tenantScopePermission)],
         ];
 
         // Skip file validation during precognitive requests

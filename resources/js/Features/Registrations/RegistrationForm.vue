@@ -19,6 +19,7 @@
 </template>
 
 <script setup lang="ts">
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { z } from 'zod';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
@@ -55,7 +56,7 @@ const hiddenFieldIds = computed(() => {
 });
 
 const checkIfFieldIsLocalized = (field: Record<string, any>) => {
-  return field.options?.[0].label?.lt || field.options?.[0].label?.en;
+  return getTranslatedValue(field.options?.[0].label);
 };
 
 const getEnumLabel = (field: Record<string, any>, value: string | number | boolean) => {

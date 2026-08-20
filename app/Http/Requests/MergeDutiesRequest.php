@@ -53,7 +53,7 @@ class MergeDutiesRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'source_duty_ids.*.different' => 'Sujungiamos pareigybės negali apimti tikslinės pareigybės.',
+            'source_duty_ids.*.different' => trans('forms.validation.merge.source_is_target'),
         ];
     }
 }

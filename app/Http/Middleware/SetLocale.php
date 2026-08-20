@@ -2,7 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\LocalizedRouteSlugs;
 use Closure;
+use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 
 class SetLocale
@@ -17,6 +19,10 @@ class SetLocale
 
         if (! $this->isLocaleSegment($request->segment(1))) {
             return $this->redirectToLocale($request);
+        }
+
+        if ($redirect = $this->redirectToLocalizedSlug($request)) {
+            return $redirect;
         }
 
         return $next($request);
@@ -35,6 +41,56 @@ class SetLocale
         } else {
             app()->setLocale(config('app.locale'));
         }
+
+        // Localized URL segments ("dokumentai" / "documents") are route parameters. Registering
+        // them as URL defaults means neither route() nor Ziggy's route() has to know they exist.
+        URL::defaults(LocalizedRouteSlugs::defaults(app()->getLocale()));
+    }
+
+    /**
+     * Send "/en/dokumentai" to "/en/documents".
+     *
+     * The slug parameters accept every language's slug, so a page would otherwise be reachable
+     * under both — duplicate URLs for search engines, and a language toggle that flips the
+     * prefix while leaving the segment behind.
+     */
+    protected function redirectToLocalizedSlug($request)
+    {
+        $route = $request->route();
+
+        if ($route === null || $route->getName() === null) {
+            return null;
+        }
+
+        $locale = app()->getLocale();
+        $parameters = $route->parameters();
+        $corrected = [];
+
+        foreach ($parameters as $name => $value) {
+            if (! is_string($value) || ! isset(LocalizedRouteSlugs::SLUGS[$name])) {
+                continue;
+            }
+
+            $expected = LocalizedRouteSlugs::slug($name, $locale);
+
+            // Only correct values that are a slug of a *known* language; anything else is a
+            // 404 the router should report rather than something to redirect.
+            if ($value !== $expected && LocalizedRouteSlugs::localeOf($name, $value, $locale) !== null) {
+                $corrected[$name] = $expected;
+            }
+        }
+
+        if ($corrected === []) {
+            return null;
+        }
+
+        $url = route($route->getName(), array_merge($parameters, $corrected, ['lang' => $locale]));
+
+        if ($query = $request->getQueryString()) {
+            $url .= '?'.$query;
+        }
+
+        return $this->redirectTo($request, $url);
     }
 
     protected function sanitizeLocale($locale)
@@ -82,11 +138,18 @@ class SetLocale
 
         $url = $request->getSchemeAndHttpHost().'/'.implode('/', $segments);
 
-        // Inertia visits are fetch-based. A raw 301 followed at the network
-        // layer trips sandbox/origin checks on WebKit (e.g. in-app browsers),
-        // because SetLocale runs before HandleInertiaRequests can intervene.
-        // Inertia::location() returns a 409 + X-Inertia-Location header so the
-        // client performs a clean window.location self-navigation instead.
+        return $this->redirectTo($request, $url);
+    }
+
+    /**
+     * Inertia visits are fetch-based. A raw 301 followed at the network layer trips
+     * sandbox/origin checks on WebKit (e.g. in-app browsers), because SetLocale runs before
+     * HandleInertiaRequests can intervene. Inertia::location() returns a 409 +
+     * X-Inertia-Location header so the client performs a clean window.location
+     * self-navigation instead.
+     */
+    protected function redirectTo($request, string $url)
+    {
         if ($request->header('X-Inertia')) {
             return Inertia::location($url);
         }

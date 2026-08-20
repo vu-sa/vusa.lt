@@ -11,7 +11,6 @@ use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\News;
 use App\Models\Tag;
-use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Response;
@@ -20,7 +19,7 @@ class TagController extends AdminController
 {
     use HandlesSoftDeletes, HasTanstackTables;
 
-    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
+    public function __construct(private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
@@ -49,7 +48,7 @@ class TagController extends AdminController
         // Paginate results
         $deletedCount = $this->getTrashedCount($query);
 
-        $tags = $query->paginate($request->input('per_page', 20))
+        $tags = $query->paginate($request->getPerPage())
             ->withQueryString();
 
         // Get the sorting state
@@ -73,7 +72,7 @@ class TagController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $sorting,
-            'showDeleted' => $request->boolean('showDeleted', false),
+            'showDeleted' => $request->getShowDeleted(),
             'deletedCount' => $deletedCount,
             'initialSorting' => $sorting,
         ]);

@@ -1,8 +1,5 @@
 <template>
-  <PageContent :title="$tChoice('forms.new_model', 1, {
-    model: $tChoice('entities.resource_category.model', 1),
-  })
-  " :heading-icon="CategoryIcon">
+  <PageContent :title="newEntityTitle('resourceCategory')" :heading-icon="CategoryIcon">
     <UpsertModelLayout>
       <ResourceCategoryForm remember-key="CreateResourceCategory" :resource-category :categories
         @submit:form="(form) => form.post(route('resourceCategories.store'))" />
@@ -11,6 +8,7 @@
 </template>
 
 <script setup lang="tsx">
+import { newEntityTitle } from '@/Utils/EntityMessages';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import ResourceCategoryForm from '@/Components/AdminForms/ResourceCategoryForm.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';

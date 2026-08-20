@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Public;
 
+use App\Enums\TenantType;
 use App\Http\Controllers\PublicController;
 use App\Models\StudySet;
 use App\Models\Tenant;
@@ -15,14 +16,14 @@ class StudySetController extends PublicController
         $this->getTenantLinks();
         $this->shareOtherLangURL('studySets');
 
-        $seo = $this->shareAndReturnSEOObject(
+        $this->applyPageHead(
             contentTenant: null,
             title: __('studySets.page_title'),
             description: __('studySets.page_description')
         );
 
         $tenants = Tenant::query()
-            ->where('type', 'padalinys')
+            ->where('type', TenantType::Padalinys)
             ->orderBy('shortname_vu')
             ->get(['id', 'shortname', 'alias', 'shortname_vu']);
 
@@ -49,8 +50,6 @@ class StudySetController extends PublicController
         return Inertia::render('Public/ShowStudySets', [
             'tenants' => $tenants,
             'studySetsByTenant' => $studySets,
-        ])->withViewData([
-            'SEOData' => $seo,
         ]);
     }
 }

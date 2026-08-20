@@ -10,7 +10,7 @@
           <CalendarDaysIcon class="h-5 w-5 text-vusa-red dark:text-vusa-red" aria-hidden="true" />
           {{ $t('Artėjantys renginiai') }}
         </CardTitle>
-        <a :href="route('calendar.list', { lang: locale === 'lt' ? 'lt' : 'en' })"
+        <a :href="route('calendar.list', { lang: locale })"
           class="text-xs text-primary hover:underline">
           {{ $t('Visi') }} →
         </a>
@@ -26,7 +26,7 @@
         <div class="flex flex-col space-y-1">
           <a v-for="(event, index) in eventsList" :key="event.id" :href="route('calendar.event', {
             calendar: event.id,
-            lang: locale === 'lt' ? 'lt' : 'en',
+            lang: locale,
           })"
             class="group relative flex items-center gap-3 py-2 px-2 -mx-2 rounded-md transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-700/50">
 
@@ -110,11 +110,11 @@
 </template>
 
 <script setup lang="ts">
+import { dateLocaleFor } from '@/Composables/useDateLocale';
 import { trans as $t } from 'laravel-vue-i18n';
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { format, parseISO } from 'date-fns';
-import { lt, enUS } from 'date-fns/locale';
 import { CalendarDays as CalendarDaysIcon, ChevronRight as ChevronRightIcon } from 'lucide-vue-next';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -126,7 +126,7 @@ const props = defineProps<{
 
 const page = usePage();
 const locale = computed(() => page.props.app.locale);
-const dateLocale = computed(() => locale.value === 'lt' ? lt : enUS);
+const dateLocale = computed(() => dateLocaleFor(locale.value));
 
 // Get event image
 const getEventImage = (event: App.Entities.Calendar): string | null => {

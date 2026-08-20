@@ -6,6 +6,7 @@ use App\Models\Pivots\Dutiable;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
 
@@ -37,7 +38,7 @@ function grantSourceDuty(Duty $duty, User $user): Dutiable
     return Dutiable::create([
         'duty_id' => $duty->id,
         'dutiable_id' => $user->id,
-        'dutiable_type' => User::class,
+        'dutiable_type' => MorphMap::alias(User::class),
         'start_date' => now()->subDay(),
     ]);
 }

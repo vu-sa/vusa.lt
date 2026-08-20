@@ -7,6 +7,7 @@ use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -73,7 +74,7 @@ class UserDutyService
                 // constraint to catch it at the database level.
                 $alreadyActive = Dutiable::query()
                     ->where('duty_id', $dutyId)
-                    ->where('dutiable_type', User::class)
+                    ->where('dutiable_type', MorphMap::alias(User::class))
                     ->where('dutiable_id', $user->id)
                     ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', now()))
                     ->exists();
@@ -88,7 +89,7 @@ class UserDutyService
                 // plus a current one). updateExistingPivot() only touches the first match
                 // under the custom pivot class, so end-date the active row(s) directly.
                 Dutiable::where('duty_id', $dutyId)
-                    ->where('dutiable_type', User::class)
+                    ->where('dutiable_type', MorphMap::alias(User::class))
                     ->where('dutiable_id', $user->id)
                     ->where(function ($query): void {
                         $query->whereNull('end_date')

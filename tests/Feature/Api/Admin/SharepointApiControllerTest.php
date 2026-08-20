@@ -5,6 +5,7 @@ use App\Models\FileableFile;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Tenant;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
@@ -41,7 +42,7 @@ describe('attachFileableFilesToDriveItems', function (): void {
         $reflection = new ReflectionMethod($controller, 'attachFileableFilesToDriveItems');
 
         $fileableFile = FileableFile::factory()->create([
-            'fileable_type' => Meeting::class,
+            'fileable_type' => MorphMap::alias(Meeting::class),
             'fileable_id' => $this->meeting->id,
             'sharepoint_id' => 'drive-item-1',
             'name' => 'Test File.pdf',
@@ -82,7 +83,7 @@ describe('attachFileableFilesToDriveItems', function (): void {
         $reflection = new ReflectionMethod($controller, 'attachFileableFilesToDriveItems');
 
         FileableFile::factory()->create([
-            'fileable_type' => Meeting::class,
+            'fileable_type' => MorphMap::alias(Meeting::class),
             'fileable_id' => $this->meeting->id,
             'sharepoint_id' => 'drive-item-1',
             'name' => 'Deleted File.pdf',
@@ -116,7 +117,7 @@ describe('attachFileableFilesToDriveItems', function (): void {
 describe('fileableFiles endpoint', function (): void {
     test('returns FileableFile records for a fileable', function (): void {
         FileableFile::factory()->count(3)->create([
-            'fileable_type' => Meeting::class,
+            'fileable_type' => MorphMap::alias(Meeting::class),
             'fileable_id' => $this->meeting->id,
         ]);
 

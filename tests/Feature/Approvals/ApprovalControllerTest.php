@@ -7,6 +7,7 @@ use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\ResourceCategory;
 use App\Models\Tenant;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
@@ -185,5 +186,47 @@ describe('ApprovalController@bulkStore', function (): void {
 
         // Only the first one should be approved (from same tenant)
         expect(Approval::where('decision', ApprovalDecision::Approved)->count())->toBe(1);
+    });
+});
+
+describe('ApprovalController@history', function (): void {
+    beforeEach(function (): void {
+        Approval::factory()->create([
+            'approvable_type' => MorphMap::alias(ReservationResource::class),
+            'approvable_id' => (string) $this->reservationResource->id,
+            'user_id' => $this->resourceManager->id,
+            'decision' => ApprovalDecision::Approved,
+            'notes' => 'Internal reviewer note',
+        ]);
+    });
+
+    test('resource manager can read the approval history', function (): void {
+        asUser($this->resourceManager)
+            ->getJson(route('approvals.history', [
+                'approvable_type' => 'reservation_resource',
+                'approvable_id' => (string) $this->reservationResource->id,
+            ]))
+            ->assertOk()
+            ->assertJsonPath('data.0.notes', 'Internal reviewer note');
+    });
+
+    test('reservation owner can read the approval history', function (): void {
+        asUser($this->user)
+            ->getJson(route('approvals.history', [
+                'approvable_type' => 'reservation_resource',
+                'approvable_id' => (string) $this->reservationResource->id,
+            ]))
+            ->assertOk();
+    });
+
+    test('unrelated user cannot read the approval history', function (): void {
+        $outsider = makeUser($this->tenant);
+
+        asUser($outsider)
+            ->getJson(route('approvals.history', [
+                'approvable_type' => 'reservation_resource',
+                'approvable_id' => (string) $this->reservationResource->id,
+            ]))
+            ->assertStatus(403);
     });
 });

@@ -24,31 +24,21 @@ export const dashboardCardClasses = [
 export const dashboardCardFooterClasses
   = 'border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-900/60';
 
+/** Geometry of the diagonal corner wedge; the tint comes from `urgencyPalette`. */
+export const STATUS_INDICATOR_BASE = 'absolute top-0 right-0 w-12 h-12 -mr-6 -mt-6 rotate-45';
+
 /**
  * Get urgency-based status indicator classes (corner accent)
  */
 export function getStatusIndicatorClasses(urgency: UrgencyLevel): string {
-  const base = 'absolute top-0 right-0 w-12 h-12 -mr-6 -mt-6 rotate-45';
-  const urgencyClasses: Record<UrgencyLevel, string> = {
-    success: 'bg-emerald-400/60 dark:bg-emerald-700/35',
-    warning: 'bg-amber-400/60 dark:bg-amber-700/35',
-    danger: 'bg-zinc-200 dark:bg-zinc-700',
-    neutral: 'bg-zinc-200 dark:bg-zinc-700',
-  };
-  return `${base} ${urgencyClasses[urgency]}`;
+  return `${STATUS_INDICATOR_BASE} ${urgencyPalette.statusIndicator[urgency]}`;
 }
 
 /**
  * Get urgency-based icon classes
  */
 export function getIconClasses(urgency: UrgencyLevel): string {
-  const urgencyClasses: Record<UrgencyLevel, string> = {
-    success: 'h-5 w-5 text-emerald-600 dark:text-emerald-400/80',
-    warning: 'h-5 w-5 text-amber-600 dark:text-amber-400/80',
-    danger: 'h-5 w-5 text-zinc-600 dark:text-zinc-400',
-    neutral: 'h-5 w-5 text-zinc-600 dark:text-zinc-400',
-  };
-  return urgencyClasses[urgency];
+  return `h-5 w-5 ${urgencyPalette.icon[urgency]}`;
 }
 
 /**
@@ -126,14 +116,9 @@ export const urgencyPalette = {
  * ```
  */
 export function useDashboardCardStyles(urgencyLevel: ComputedRef<UrgencyLevel>) {
-  const statusIndicatorClasses = computed(() => {
-    const base = 'absolute top-0 right-0 w-12 h-12 -mr-6 -mt-6 rotate-45';
-    return `${base} ${urgencyPalette.statusIndicator[urgencyLevel.value]}`;
-  });
+  const statusIndicatorClasses = computed(() => getStatusIndicatorClasses(urgencyLevel.value));
 
-  const iconClasses = computed(() => {
-    return `h-5 w-5 ${urgencyPalette.icon[urgencyLevel.value]}`;
-  });
+  const iconClasses = computed(() => getIconClasses(urgencyLevel.value));
 
   const borderClasses = computed(() => urgencyPalette.border[urgencyLevel.value]);
   const textClasses = computed(() => urgencyPalette.text[urgencyLevel.value]);

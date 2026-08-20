@@ -17,7 +17,7 @@ class DocumentController extends PublicController
         $this->shareOtherLangURL('documents');
 
         // Global content - use null for current tenant
-        $seo = $this->shareAndReturnSEOObject(
+        $this->applyPageHead(
             contentTenant: null,
             title: __('search.document_page_title'),
             description: __('search.document_page_description')
@@ -41,8 +41,6 @@ class DocumentController extends PublicController
         return Inertia::render('Public/ShowDocuments', [
             'allContentTypes' => $staticData['contentTypes'],
             'importantContentTypes' => $documentSettings->getImportantContentTypes()->toArray(),
-        ])->withViewData([
-            'SEOData' => $seo,
         ]);
     }
 }

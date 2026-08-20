@@ -24,7 +24,7 @@ class DutyNameNormalizer
      *
      * @var list<string>
      */
-    private const GENDERED_ENDINGS = ['ius', 'iai', 'ys', 'as', 'ai', 'es', 'e', 'a'];
+    private const array GENDERED_ENDINGS = ['ius', 'iai', 'ys', 'as', 'ai', 'es', 'e', 'a'];
 
     /**
      * Agent-noun stems that can head a duty title, mapped to the masculine singular ending
@@ -40,7 +40,7 @@ class DutyNameNormalizer
      *
      * @var array<string, string>
      */
-    private const AGENT_NOUN_STEMS = [
+    private const array AGENT_NOUN_STEMS = [
         'administrator' => 'ius',
         'atstov' => 'as',
         'direktor' => 'ius',
@@ -63,7 +63,7 @@ class DutyNameNormalizer
     ];
 
     /** @var array<string, string> */
-    private const MASCULINE_PLURAL_ENDINGS = ['ius' => 'iai', 'as' => 'ai', 'ys' => 'iai', 'is' => 'iai'];
+    private const array MASCULINE_PLURAL_ENDINGS = ['ius' => 'iai', 'as' => 'ai', 'ys' => 'iai', 'is' => 'iai'];
 
     /**
      * @return string the normalized form; equal for names that denote the same duty

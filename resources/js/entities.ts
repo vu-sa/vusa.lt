@@ -19,7 +19,6 @@ const modelTitles: Record<keyof typeof ModelEnum, string> = {
   FORM: 'Formos',
   INSTITUTION: 'Institucijos',
   MEETING: 'Susitikimai',
-  MEMBERSHIP: 'Narystės',
   NAVIGATION: 'Navigacija',
   NEWS: 'Naujienos',
   PROBLEM: 'Problemos',
@@ -38,7 +37,6 @@ const modelTitles: Record<keyof typeof ModelEnum, string> = {
   TAG: 'Žymės',
   TASK: 'Užduotys',
   TENANT: 'Padaliniai',
-  TRAINING: 'Mokymai',
   TYPE: 'Tipai',
   USER: 'Naudotojai',
 };
@@ -57,7 +55,6 @@ const uiModels: (keyof typeof ModelEnum)[] = [
   'FORM',
   'INSTITUTION',
   'MEETING',
-  'MEMBERSHIP',
   'NAVIGATION',
   'NEWS',
   'PROBLEM',
@@ -73,7 +70,6 @@ const uiModels: (keyof typeof ModelEnum)[] = [
   'TAG',
   'TASK',
   'TENANT',
-  'TRAINING',
   'TYPE',
   'USER',
 ];

@@ -7,8 +7,8 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexInstitutionRequest;
 use App\Http\Requests\ReorderDutiesRequest;
 use App\Http\Requests\StoreInstitutionRequest;
-use App\Http\Requests\UpdateInstitutionRequest; // Create this request class
-use App\Http\Traits\HandlesSoftDeletes;
+use App\Http\Requests\UpdateInstitutionRequest;
+use App\Http\Traits\HandlesSoftDeletes; // Create this request class
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Comment;
 use App\Models\Duty;
@@ -21,6 +21,7 @@ use App\Services\InstitutionActivityStatusService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
 use App\Services\TanstackTableService;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -69,15 +70,15 @@ class InstitutionController extends AdminController
         $deletedCount = $this->getTrashedCount($query);
 
         // Trash view only: lets the table say why permanent deletion is refused.
-        $query = $this->withForceDeleteBlockers($query, $request, ['meetings', 'duties', 'availableTrainings', 'checkIns']);
+        $query = $this->withForceDeleteBlockers($query, $request, ['meetings', 'duties', 'checkIns']);
 
-        $institutions = $query->paginate($request->input('per_page', 15))
+        $institutions = $query->paginate($request->getPerPage())
             ->withQueryString();
 
         $this->appendForceDeleteBlockedReason($institutions->getCollection(), $request);
 
         // Get institution types for filtering
-        $types = Type::where('model_type', Institution::class)->get();
+        $types = Type::where('model_type', MorphMap::alias(Institution::class))->get();
 
         // Get the sorting state using the custom method to ensure consistent parsing
         $sorting = $request->getSorting();
@@ -97,7 +98,7 @@ class InstitutionController extends AdminController
             'filters' => $request->getFilters(),
             'sorting' => $sorting, // Pass properly parsed sorting state to frontend
             'initialSorting' => $sorting, // Add initial sorting to persist state on first load
-            'showDeleted' => $request->boolean('showDeleted', false),
+            'showDeleted' => $request->getShowDeleted(),
             'deletedCount' => $deletedCount,
         ]);
     }
@@ -113,7 +114,7 @@ class InstitutionController extends AdminController
 
         return $this->inertiaResponse('Admin/People/CreateInstitution', [
             'assignableTenants' => GetTenantsForUpserts::execute('institutions.create.padalinys', $this->authorizer),
-            'institutionTypes' => Type::where('model_type', Institution::class)->get(),
+            'institutionTypes' => Type::where('model_type', MorphMap::alias(Institution::class))->get(),
         ]);
     }
 
@@ -135,12 +136,12 @@ class InstitutionController extends AdminController
         if ($request->wantsJson() || $request->header('X-Inertia-Partial-Data')) {
             return response()->json([
                 'success' => true,
-                'message' => 'Institucija sėkmingai sukurta!',
+                'message' => $this->entityMessage('created', 'institution'),
                 'institution' => $institution,
             ]);
         }
 
-        return back()->with('success', 'Institucija sėkmingai sukurta!');
+        return back()->with('success', $this->entityMessage('created', 'institution'));
     }
 
     /**
@@ -219,9 +220,9 @@ class InstitutionController extends AdminController
                     'taskable' => $taskable ? [
                         'id' => $taskable->getKey(),
                         'name' => $taskable->getAttribute('title') ?? $taskable->getAttribute('name') ?? null,
-                        'type' => class_basename($task->taskable_type),
+                        'type' => $task->taskable_type,
                     ] : null,
-                    'taskable_type' => class_basename($task->taskable_type ?? ''),
+                    'taskable_type' => $task->taskable_type ?? '',
                     'taskable_id' => $task->taskable_id,
                     'users' => $task->users->map(fn (User $u) => [
                         'id' => $u->id,
@@ -312,7 +313,7 @@ class InstitutionController extends AdminController
                 ...$institution->toFullArray(),
                 'types' => $institution->types->pluck('id'),
             ],
-            'institutionTypes' => Type::where('model_type', Institution::class)->get(),
+            'institutionTypes' => Type::where('model_type', MorphMap::alias(Institution::class))->get(),
             'assignableTenants' => GetTenantsForUpserts::execute('institutions.update.padalinys', $this->authorizer),
         ]);
     }
@@ -334,7 +335,7 @@ class InstitutionController extends AdminController
         // get only types id
         $institution->syncAudited('types', $request->types);
 
-        return back()->with('success', 'Institucija sėkmingai atnaujinta!');
+        return back()->with('success', $this->entityMessage('updated', 'institution'));
     }
 
     /**
@@ -346,12 +347,12 @@ class InstitutionController extends AdminController
 
         // check if auth user is from this institution
         if (auth()->user()->institutions->contains($institution)) {
-            return back()->with('error', 'Negalima ištrinti institucijos, kurioje esate!');
+            return back()->with('error', __('messages.institution.cannot_delete_own'));
         }
 
         $institution->delete();
 
-        return redirect()->route('institutions.index')->with('info', 'Institucija sėkmingai ištrinta!');
+        return redirect()->route('institutions.index')->with('info', $this->entityMessage('deleted', 'institution'));
     }
 
     /**
@@ -359,7 +360,7 @@ class InstitutionController extends AdminController
      */
     public function restore(Institution $institution): RedirectResponse
     {
-        return $this->restoreModel($institution, 'Institucija sėkmingai atkurta!');
+        return $this->restoreModel($institution, $this->entityMessage('restored', 'institution'));
     }
 
     /**
@@ -383,7 +384,7 @@ class InstitutionController extends AdminController
             }
         }
 
-        return back()->with('success', 'Pareigų tvarka sėkmingai atnaujinta!');
+        return back()->with('success', __('messages.duty.order_updated'));
     }
 
     public function forceDelete(Institution $institution): RedirectResponse

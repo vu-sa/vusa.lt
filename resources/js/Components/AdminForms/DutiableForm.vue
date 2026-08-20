@@ -130,6 +130,7 @@
 </template>
 
 <script setup lang="ts">
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { Sparkles, TriangleAlert } from 'lucide-vue-next';
@@ -176,12 +177,7 @@ const isExOfficio = computed(() => !!props.dutiable.via_dutiable_id);
 
 const exOfficioSourceDutyId = computed(() => props.dutiable.via_dutiable?.duty?.id ?? null);
 
-const exOfficioSourceName = computed(() => {
-  const name = props.dutiable.via_dutiable?.duty?.name as string | Record<string, string> | null | undefined;
-  if (!name) return '';
-  if (typeof name === 'string') return name;
-  return name[usePage().props.app.locale] ?? name.lt ?? '';
-});
+const exOfficioSourceName = computed(() => getTranslatedValue(props.dutiable.via_dutiable?.duty?.name));
 
 // Bridge: SingleSelect operates on full objects, form stores study_program_id for server submission
 const selectedStudyProgram = computed({

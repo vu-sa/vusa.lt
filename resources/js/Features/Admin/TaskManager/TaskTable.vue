@@ -27,6 +27,7 @@
 </template>
 
 <script setup lang="tsx">
+import { useDateLocale } from '@/Composables/useDateLocale';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ref, defineAsyncComponent } from 'vue';
@@ -52,7 +53,6 @@ import {
 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 import { format, formatDistanceToNow, parseISO, differenceInDays } from 'date-fns';
-import { lt, enUS } from 'date-fns/locale';
 
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
@@ -111,7 +111,8 @@ const emit = defineEmits<{
 const loadingTaskId = ref<string | null>(null);
 
 // Get locale for date formatting
-const getDateLocale = () => usePage().props.app?.locale === 'lt' ? lt : enUS;
+const dateLocale = useDateLocale();
+const getDateLocale = () => dateLocale.value;
 
 /**
  * Handle row styling based on task status
@@ -210,14 +211,14 @@ const isAgendaCreationTask = (task: Task): boolean => {
  * Check if task is a meeting-based task
  */
 const isMeetingTask = (task: Task): boolean => {
-  return task.taskable_type?.includes('Meeting') ?? false;
+  return task.taskable_type === 'meeting';
 };
 
 /**
  * Check if task is institution-based (for periodicity gap actions)
  */
 const isInstitutionTask = (task: Task): boolean => {
-  return task.taskable_type?.includes('Institution') ?? false;
+  return task.taskable_type === 'institution';
 };
 
 /**
@@ -339,15 +340,10 @@ const handleDelete = (task: Task) => {
  * Get taskable icon based on type
  */
 const getTaskableIcon = (taskableType: string) => {
-  // Handle both full class path and short class name
-  const typeName = taskableType.includes('\\')
-    ? taskableType.split('\\').pop()
-    : taskableType;
-
-  switch (typeName) {
-    case 'Meeting': return MeetingIconFilled;
-    case 'User': return UserIconFilled;
-    case 'Reservation': return ReservationIconFilled;
+  switch (taskableType) {
+    case 'meeting': return MeetingIconFilled;
+    case 'user': return UserIconFilled;
+    case 'reservation': return ReservationIconFilled;
     default: return HomeIconFilled;
   }
 };
@@ -355,12 +351,7 @@ const getTaskableIcon = (taskableType: string) => {
 /**
  * Get model route based on taskable type
  */
-const getModelRoute = (taskableType: string) => {
-  const typeName = taskableType.includes('\\')
-    ? taskableType.split('\\').pop()
-    : taskableType;
-  return (`${typeName}s`).toLowerCase();
-};
+const getModelRoute = (taskableType: string) => `${taskableType}s`;
 
 /**
  * Table column definitions

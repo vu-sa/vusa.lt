@@ -639,7 +639,6 @@ describe('Files Controller - Image Upload', function (): void {
             'news' => '/uploads/news/',
             'institutions' => '/uploads/institutions/',
             'contacts' => '/uploads/contacts/',
-            'trainings' => '/uploads/trainings/',
         ];
 
         foreach ($testCases as $folder => $expectedUrlPrefix) {
@@ -998,5 +997,49 @@ describe('Files Controller - File Usage Scanning', function (): void {
         $respPre->assertSessionHas('data');
         $dataPre = session('data');
         expect($dataPre)->toHaveKeys(['total_usages', 'is_safe_to_delete']);
+    });
+});
+
+describe('Files Controller - Image Upload Path Hardening', function (): void {
+    /**
+     * `uploadImage` used to skip validateAndNormalizePath() for any path that was neither a
+     * `content/` TipTap path nor a recognised FileManager path, and both normalisers stripped
+     * `../` with a single-pass str_replace that `....//` collapses straight back into. Together
+     * those let any authenticated user write outside storage/app.
+     */
+    test('traversal paths are rejected rather than escaping the storage root', function (string $path): void {
+        $image = UploadedFile::fake()->image('evil.jpg', 10, 10);
+
+        $response = asUser($this->fileManager)->postJson(route('files.uploadImage'), [
+            'file' => $image,
+            'path' => $path,
+        ]);
+
+        expect($response->status())->toBeIn([403, 422]);
+    })->with([
+        '....//....//evil',
+        '..././..././evil',
+        '../../evil',
+        'public/files/../../../evil',
+    ]);
+
+    test('an undeclared bare folder name falls through to the directory policy', function (): void {
+        $image = UploadedFile::fake()->image('stray.jpg', 10, 10);
+
+        // Not in SHARED_IMAGE_FOLDERS, so it is treated as a FileManager path
+        // (public/files/some-folder-nobody-declared) and denied by FilePolicy::viewDirectory.
+        asUser($this->fileManager)->postJson(route('files.uploadImage'), [
+            'file' => $image,
+            'path' => 'some-folder-nobody-declared',
+        ])->assertStatus(403);
+    });
+
+    test('a user without file permissions cannot upload to a shared image folder', function (): void {
+        $image = UploadedFile::fake()->image('banner.jpg', 10, 10);
+
+        asUser($this->regularUser)->postJson(route('files.uploadImage'), [
+            'file' => $image,
+            'path' => 'banners',
+        ])->assertStatus(403);
     });
 });

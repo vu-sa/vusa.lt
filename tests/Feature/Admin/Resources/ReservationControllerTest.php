@@ -338,3 +338,59 @@ describe('auth: reservation manager', function (): void {
         asUser($this->reservationManager)->delete(route('reservations.destroy', $this->reservation))->assertRedirectToRoute('dashboard');
     });
 });
+
+describe('reservationResources.store', function (): void {
+    /**
+     * ReservationPolicy::create() lets every user create reservations, so the Form Request's
+     * class-level `can('create', Reservation::class)` says yes to everyone. Without a check on
+     * the reservation_id coming in from the request, that let any user attach resources to
+     * somebody else's reservation.
+     */
+    test('a user attached to the reservation can add a resource to it', function (): void {
+        $resource = Resource::factory()->for($this->tenant)->create();
+
+        asUser($this->reservationManager)
+            ->post(route('reservationResources.store'), [
+                'reservation_id' => $this->reservation->id,
+                'resource_id' => $resource->id,
+                'quantity' => 1,
+                'start_time' => now()->addDay()->getTimestampMs(),
+                'end_time' => now()->addDay()->addHours(2)->getTimestampMs(),
+            ])
+            ->assertRedirect();
+
+        expect($this->reservation->resources()->where('resources.id', $resource->id)->exists())->toBeTrue();
+    });
+
+    test('an unrelated user cannot add a resource to someone else\'s reservation', function (): void {
+        $resource = Resource::factory()->for($this->tenant)->create();
+        $outsider = makeUser($this->tenant);
+
+        asUser($outsider)
+            ->post(route('reservationResources.store'), [
+                'reservation_id' => $this->reservation->id,
+                'resource_id' => $resource->id,
+                'quantity' => 1,
+                'start_time' => now()->addDay()->getTimestampMs(),
+                'end_time' => now()->addDay()->addHours(2)->getTimestampMs(),
+            ])
+            ->assertStatus(403);
+
+        expect($this->reservation->resources()->where('resources.id', $resource->id)->exists())->toBeFalse();
+    });
+
+    test('a nonexistent reservation_id is rejected by validation', function (): void {
+        $resource = Resource::factory()->for($this->tenant)->create();
+
+        asUser($this->reservationManager)
+            ->post(route('reservationResources.store'), [
+                'reservation_id' => '99999999',
+                'resource_id' => $resource->id,
+                'quantity' => 1,
+                'start_time' => now()->addDay()->getTimestampMs(),
+                'end_time' => now()->addDay()->addHours(2)->getTimestampMs(),
+            ])
+            ->assertStatus(302)
+            ->assertSessionHasErrors('reservation_id');
+    });
+});

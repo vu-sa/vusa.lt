@@ -1,6 +1,5 @@
 <?php
 
-use App\Console\Kernel;
 use App\Enums\NotificationCategory;
 use App\Models\NotificationDigestQueue;
 use App\Models\User;
@@ -12,7 +11,7 @@ use Illuminate\Support\Facades\Cache;
 pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
-    Cache::forget(Kernel::HEARTBEAT_CACHE_KEY);
+    Cache::forget(SystemMonitorService::HEARTBEAT_CACHE_KEY);
     NotificationDigestQueue::query()->delete();
 
     $this->monitor = app(SystemMonitorService::class);
@@ -28,7 +27,7 @@ describe('scheduler status', function (): void {
     });
 
     test('reports healthy on a fresh heartbeat', function (): void {
-        Cache::forever(Kernel::HEARTBEAT_CACHE_KEY, now()->toIso8601String());
+        Cache::forever(SystemMonitorService::HEARTBEAT_CACHE_KEY, now()->toIso8601String());
 
         $status = $this->monitor->getSchedulerStatus();
 
@@ -37,13 +36,13 @@ describe('scheduler status', function (): void {
     });
 
     test('warns when the heartbeat is stale', function (): void {
-        Cache::forever(Kernel::HEARTBEAT_CACHE_KEY, now()->subMinutes(30)->toIso8601String());
+        Cache::forever(SystemMonitorService::HEARTBEAT_CACHE_KEY, now()->subMinutes(30)->toIso8601String());
 
         expect($this->monitor->getSchedulerStatus()['status'])->toBe('warning');
     });
 
     test('errors when the heartbeat is long gone', function (): void {
-        Cache::forever(Kernel::HEARTBEAT_CACHE_KEY, now()->subDays(3)->toIso8601String());
+        Cache::forever(SystemMonitorService::HEARTBEAT_CACHE_KEY, now()->subDays(3)->toIso8601String());
 
         $status = $this->monitor->getSchedulerStatus();
 

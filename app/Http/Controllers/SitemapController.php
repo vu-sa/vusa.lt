@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Tenant;
+use App\Support\LocalizedRouteSlugs;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -100,12 +101,16 @@ class SitemapController extends Controller
             ->remember($cacheKey, 3600, function () use ($tenant) {
                 $sitemap = Sitemap::create();
 
-                // Add news archive page
-                $sitemap->add(Url::create('/naujienos')
-                    ->setLastModificationDate(now())
-                    ->setPriority(0.8)
-                    ->setChangeFrequency(Url::CHANGE_FREQUENCY_DAILY)
-                );
+                // Add the news archive in both languages — each is its own URL.
+                foreach (config('app.locales', ['lt', 'en']) as $locale) {
+                    $sitemap->add(Url::create(LocalizedRouteSlugs::route('newsArchive', [
+                        'subdomain' => $tenant->subdomain(),
+                    ], $locale))
+                        ->setLastModificationDate(now())
+                        ->setPriority(0.8)
+                        ->setChangeFrequency(Url::CHANGE_FREQUENCY_DAILY)
+                    );
+                }
 
                 // Add individual news articles using model-based approach
                 $news = News::where('tenant_id', $tenant->id)
@@ -150,9 +155,10 @@ class SitemapController extends Controller
                 $xml .= '        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">'."\n";
 
                 foreach ($recentNews as $article) {
-                    $url = $article->lang === 'lt' ? '/naujiena/' : '/news/';
-                    $url .= $article->permalink;
-                    $fullUrl = url($url);
+                    $fullUrl = LocalizedRouteSlugs::route('news', [
+                        'subdomain' => $tenant->subdomain(),
+                        'news' => $article->permalink,
+                    ], $article->lang);
 
                     $xml .= "  <url>\n";
                     $xml .= '    <loc>'.htmlspecialchars($fullUrl)."</loc>\n";

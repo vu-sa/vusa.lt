@@ -10,6 +10,7 @@ use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
+use App\Support\MorphMap;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -453,7 +454,7 @@ describe('relationship-based meeting access', function (): void {
         ]);
         Relationshipable::create([
             'relationship_id' => $relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $sourceInstitution->id,
             'related_model_id' => $targetInstitution->id,
             'scope' => 'within-tenant',
@@ -493,7 +494,7 @@ describe('relationship-based meeting access', function (): void {
         ]);
         Relationshipable::create([
             'relationship_id' => $relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $sourceInstitution->id,
             'related_model_id' => $targetInstitution->id,
             'scope' => 'within-tenant',
@@ -532,7 +533,7 @@ describe('relationship-based meeting access', function (): void {
         ]);
         Relationshipable::create([
             'relationship_id' => $relationship->id,
-            'relationshipable_type' => Institution::class,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $sourceInstitution->id,
             'related_model_id' => $targetInstitution->id,
             'scope' => 'within-tenant',
@@ -577,5 +578,40 @@ describe('meeting search indexing', function (): void {
 
         expect($searchable)->toHaveKey('user_names')
             ->and($searchable['user_names'])->toContain('Jonas Jonaitis');
+    });
+});
+
+describe('cross-tenant parent scoping', function (): void {
+    /**
+     * The meetings.create permission is tenant-agnostic (HasCommonChecks::create), so the
+     * institution the meeting is filed under has to be scoped separately — otherwise a
+     * coordinator for one padalinys can create meetings inside another one's institution.
+     */
+    test('cannot create a meeting for an institution outside the user\'s tenant scope', function (): void {
+        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->firstOrFail();
+        $foreignInstitution = Institution::factory()->for($otherTenant)->create();
+
+        asUser($this->admin)->post(route('meetings.store'), [
+            'title' => 'Svetimas posėdis',
+            'start_time' => Carbon::now()->addDay()->format('Y-m-d H:i'),
+            'institution_id' => $foreignInstitution->id,
+        ])->assertSessionHasErrors('institution_id');
+
+        expect(Meeting::count())->toEqual($this->initialMeetingCount);
+    });
+
+    test('cannot add agenda items to a meeting the user cannot update', function (): void {
+        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->firstOrFail();
+        $foreignInstitution = Institution::factory()->for($otherTenant)->create();
+
+        $foreignMeeting = Meeting::factory()->create(['start_time' => Carbon::now()->addDay()]);
+        $foreignMeeting->institutions()->attach($foreignInstitution->id);
+
+        asUser($this->admin)->post(route('agendaItems.store'), [
+            'meeting_id' => $foreignMeeting->id,
+            'agendaItemTitles' => ['Svetimas klausimas'],
+        ])->assertStatus(403);
+
+        expect($foreignMeeting->agendaItems()->count())->toEqual(0);
     });
 });

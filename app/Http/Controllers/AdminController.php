@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Traits\TranslatesEntityMessages;
 use App\Models\User;
 use App\Services\Permissions\AccessChangeAnalyzer;
 use App\Services\Permissions\AccessChangeReport;
@@ -22,6 +23,8 @@ use Inertia\Response as InertiaResponse;
  */
 abstract class AdminController extends Controller
 {
+    use TranslatesEntityMessages;
+
     /**
      * Return an Inertia response for admin pages
      */
@@ -103,21 +106,18 @@ abstract class AdminController extends Controller
     }
 
     /**
-     * Handle authorization with consistent error handling
-     * Supports both authorize($ability, $model) and authorize($model, $ability) patterns
+     * Handle authorization with consistent error handling.
+     *
+     * This used to accept the two arguments in either order and guess which was which. Every
+     * call site now passes the ability first, so the guessing is gone — an inverted call is a
+     * type error at the boundary instead of an authorization check against the wrong subject.
+     *
+     * @param  string  $ability  e.g. 'update'
+     * @param  mixed  $model  A model instance, or a class-string for class-level abilities
      */
-    protected function handleAuthorization(mixed $modelOrAbility, mixed $abilityOrModel = null): void
+    protected function handleAuthorization(string $ability, mixed $model = null): void
     {
-        if (is_string($modelOrAbility) && $abilityOrModel !== null) {
-            // Pattern: handleAuthorization($ability, $model)
-            $this->authorize($modelOrAbility, $abilityOrModel);
-        } elseif (is_string($abilityOrModel)) {
-            // Pattern: handleAuthorization($model, $ability)
-            $this->authorize($abilityOrModel, $modelOrAbility);
-        } else {
-            // Fallback to first parameter as ability
-            $this->authorize($modelOrAbility, $abilityOrModel);
-        }
+        $this->authorize($ability, $model);
     }
 
     /**

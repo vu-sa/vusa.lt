@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\FileableFile;
 use App\Models\Institution;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -27,7 +28,7 @@ class FileableFileFactory extends Factory
     public function definition(): array
     {
         return [
-            'fileable_type' => Institution::class,
+            'fileable_type' => MorphMap::alias(Institution::class),
             'fileable_id' => Institution::factory(),
             'sharepoint_id' => $this->faker->uuid(),
             'sharepoint_path' => '_fileables/Institution/'.Str::ulid().'/'.$this->faker->word().'.pdf',

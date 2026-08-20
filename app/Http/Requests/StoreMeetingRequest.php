@@ -3,7 +3,9 @@
 namespace App\Http\Requests;
 
 use App\Enums\MeetingType;
+use App\Models\Institution;
 use App\Models\Meeting;
+use App\Rules\WithinAuthorizedTenantScope;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
 
@@ -28,7 +30,14 @@ class StoreMeetingRequest extends FormRequest
     {
         return [
             'start_time' => 'required|date',
-            'institution_id' => 'required|ulid',
+            'institution_id' => [
+                'required',
+                'ulid',
+                'exists:institutions,id',
+                // Meeting::create() is gated by the tenant-agnostic meetings.create check, so
+                // the institution the meeting is filed under has to be scoped here.
+                new WithinAuthorizedTenantScope(Institution::class, 'meetings.create.padalinys'),
+            ],
             'type' => ['nullable', new Enum(MeetingType::class)],
             'description' => 'nullable|string|max:1000',
             'agendaItems' => 'nullable|array',

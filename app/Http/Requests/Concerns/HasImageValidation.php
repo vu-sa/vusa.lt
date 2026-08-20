@@ -87,20 +87,20 @@ trait HasImageValidation
     }
 
     /**
-     * Get all image validation messages in Lithuanian.
+     * Get all image validation messages.
      */
     protected function imageValidationMessages(): array
     {
         return [
-            'main_image.required' => 'Pagrindinė nuotrauka yra privaloma.',
-            'main_image.image' => 'Failas turi būti paveikslėlis.',
-            'main_image.max' => 'Paveikslėlis negali būti didesnis nei :max KB.',
-            'main_image.mimes' => 'Paveikslėlis turi būti JPEG, PNG arba WebP formato.',
+            'main_image.required' => trans('forms.validation.image.main_required'),
+            'main_image.image' => trans('forms.validation.image.must_be_image'),
+            'main_image.max' => trans('forms.validation.image.max'),
+            'main_image.mimes' => trans('forms.validation.image.mimes'),
 
-            'images.max' => 'Galima įkelti ne daugiau kaip :max nuotraukų.',
-            'images.*.image' => 'Visi failai turi būti paveikslėliai.',
-            'images.*.max' => 'Kiekvienas paveikslėlis negali būti didesnis nei :max KB.',
-            'images.*.mimes' => 'Paveikslėliai turi būti JPEG, PNG arba WebP formato.',
+            'images.max' => trans('forms.validation.image.count_max'),
+            'images.*.image' => trans('forms.validation.image.all_must_be_images'),
+            'images.*.max' => trans('forms.validation.image.each_max'),
+            'images.*.mimes' => trans('forms.validation.image.all_mimes'),
         ];
     }
 }

@@ -2,12 +2,15 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ValidatesTenantScope;
 use App\Models\Resource;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreResourceRequest extends FormRequest
 {
+    use ValidatesTenantScope;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -30,7 +33,7 @@ class StoreResourceRequest extends FormRequest
             'description.en' => 'nullable|string',
             'identifier' => 'nullable|string',
             'location' => 'required|string',
-            'tenant_id' => 'required|integer|exists:tenants,id',
+            'tenant_id' => ['required', 'integer', 'exists:tenants,id', $this->tenantIdInAuthorizedScope('resources.create.padalinys')],
             'capacity' => 'required|integer|min:1',
             'is_reservable' => 'required|boolean',
             'resource_category_id' => 'nullable|integer|exists:resource_categories,id',

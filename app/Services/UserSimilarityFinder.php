@@ -21,10 +21,10 @@ use Illuminate\Support\Str;
 class UserSimilarityFinder
 {
     /** How many matches to surface at most. */
-    private const MATCH_LIMIT = 5;
+    private const int MATCH_LIMIT = 5;
 
     /** Strongest first, so the most convincing match is never pushed off the list. */
-    private const REASON_ORDER = ['email', 'email_local_part', 'name', 'name_variant'];
+    private const array REASON_ORDER = ['email', 'email_local_part', 'name', 'name_variant'];
 
     /**
      * Whitespace or any Unicode dash (`\p{Pd}` covers hyphen-minus, non-breaking
@@ -35,7 +35,7 @@ class UserSimilarityFinder
      * next, or just "Pavardė". Splitting on the dash makes all three the same set
      * of parts, so the rules below see them as one person.
      */
-    private const NAME_SPLIT = '/[\s\p{Pd}]+/u';
+    private const string NAME_SPLIT = '/[\s\p{Pd}]+/u';
 
     /**
      * A match needs a whole identity in common, not one name part.

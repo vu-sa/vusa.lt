@@ -164,6 +164,8 @@ return [
         'all' => 'The :attribute field must have translations in all of: :locales.',
     ],
 
+    'outside_tenant_scope' => 'You are not allowed to act in the selected tenant.',
+
     'custom' => [
         'attribute-name' => [
             'rule-name' => 'custom-message',
@@ -181,6 +183,26 @@ return [
     |
     */
 
-    'attributes' => [],
+    'attributes' => [
+        'email' => 'Email address',
+        'first_name' => 'First name',
+        'last_name' => 'Last name',
+        'name' => 'Name',
+        'password' => 'Password',
+        'phone' => 'Phone number',
+        'short_name' => 'Short name',
+        'tenant_id' => 'Tenant',
+        'alias' => 'Alias',
+        'link' => 'Link',
+        'link_url' => 'Link',
+        'title' => 'Title',
+        'text' => 'Text',
+        'image' => 'Image',
+        'image_url' => 'Image URL',
+        'duties' => 'Duties field',
+        'date' => 'Date and time',
+        'description' => 'Description',
+        'course' => 'Course',
+    ],
 
 ];

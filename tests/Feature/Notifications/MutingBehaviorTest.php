@@ -11,6 +11,7 @@ use App\Notifications\BaseNotification;
 use App\Notifications\CommentPostedNotification;
 use App\Notifications\ReservationStatusChangedNotification;
 use App\Notifications\TaskAssignedNotification;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\Feature\Notifications\NotificationTestHelpers;
@@ -116,7 +117,7 @@ describe('thread muting', function (): void {
         $user->muteThread('ReservationResource', (string) $reservationResource->id);
 
         $comment = Comment::factory()->create([
-            'commentable_type' => ReservationResource::class,
+            'commentable_type' => MorphMap::alias(ReservationResource::class),
             'commentable_id' => $reservationResource->id,
             'user_id' => $commenter->id,
             'body' => 'Test',
@@ -145,7 +146,7 @@ describe('thread muting', function (): void {
 
         // Comment on the second (unmuted) thread
         $comment = Comment::factory()->create([
-            'commentable_type' => ReservationResource::class,
+            'commentable_type' => MorphMap::alias(ReservationResource::class),
             'commentable_id' => $reservationResource2->id,
             'user_id' => $commenter->id,
             'body' => 'Test on unmuted thread',

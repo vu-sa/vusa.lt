@@ -5,6 +5,7 @@ use App\Models\Pivots\Relationshipable;
 use App\Models\Relationship;
 use App\Models\Tenant;
 use App\Services\RelationshipService;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
@@ -52,7 +53,7 @@ test('preview exposes related institutions with edge metadata', function (): voi
 
     new Relationshipable([
         'relationship_id' => $relationship->id,
-        'relationshipable_type' => Institution::class,
+        'relationshipable_type' => MorphMap::alias(Institution::class),
         'relationshipable_id' => $this->institution->id,
         'related_model_id' => $target->id,
     ])->save();

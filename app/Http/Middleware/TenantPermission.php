@@ -6,10 +6,14 @@ use App\Facades\Permission;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
 
 /**
- * Middleware to enforce tenant-based permission checks on routes
+ * Middleware to enforce tenant-based permission checks on routes, registered as the
+ * `tenant.permission` alias (bootstrap/app.php). No route currently applies it — every
+ * existing admin/API route authorizes via `$this->authorize(...)` in the controller instead
+ * (see AGENTS.md's "Every mutating route authorizes" rule, which treats both as valid), so
+ * this is a ready-to-use option for routes that would rather declare the check at the route
+ * level than in the controller, not dead code left over from a removed feature.
  */
 class TenantPermission
 {
@@ -21,7 +25,6 @@ class TenantPermission
      */
     public function handle(Request $request, Closure $next, string $permission)
     {
-        // TODO: Review if this Middleware is properly implemented
         // Check if user is authenticated
         if (! Auth::check()) {
             if ($request->expectsJson()) {

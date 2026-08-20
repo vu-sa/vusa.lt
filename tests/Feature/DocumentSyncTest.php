@@ -170,7 +170,7 @@ describe('Document Sync Controller', function (): void {
 
         Queue::assertPushed(SyncDocumentFromSharePointJob::class, fn ($job) => $job->document->id === $document->id);
 
-        $response->assertSessionHas('success', 'Document refresh has been queued. It will be updated shortly.');
+        $response->assertSessionHas('success', __('messages.document.refresh_queued'));
     });
 
     test('refresh endpoint requires authorization', function (): void {

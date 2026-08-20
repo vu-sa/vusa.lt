@@ -289,6 +289,50 @@ describe('validation', function (): void {
     });
 });
 
+describe('tenant isolation', function (): void {
+    test('cannot store a calendar event for another tenant', function (): void {
+        $otherTenant = Tenant::query()->whereKeyNot($this->tenant->id)->first();
+
+        $response = asUser($this->calendarManager)->post(route('calendar.store'), [
+            'title' => ['lt' => 'Svetimas renginys', 'en' => 'Foreign event'],
+            'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
+            'date' => now()->addDays(1)->format('Y-m-d'),
+            'tenant_id' => $otherTenant->id,
+        ]);
+
+        $response->assertStatus(302)->assertSessionHasErrors('tenant_id');
+
+        expect(Calendar::query()->where('tenant_id', $otherTenant->id)->exists())->toBeFalse();
+    });
+
+    test('cannot move an existing calendar event to another tenant', function (): void {
+        $otherTenant = Tenant::query()->whereKeyNot($this->tenant->id)->first();
+        $calendar = Calendar::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        $response = asUser($this->calendarManager)->patch(route('calendar.update', $calendar->id), [
+            'title' => ['lt' => 'Renginys', 'en' => 'Event'],
+            'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
+            'date' => now()->addDays(1)->format('Y-m-d'),
+            'tenant_id' => $otherTenant->id,
+        ]);
+
+        $response->assertStatus(302)->assertSessionHasErrors('tenant_id');
+
+        expect($calendar->fresh()->tenant_id)->toBe($this->tenant->id);
+    });
+
+    test('can store a calendar event for its own tenant', function (): void {
+        $response = asUser($this->calendarManager)->post(route('calendar.store'), [
+            'title' => ['lt' => 'Savas renginys', 'en' => 'Own event'],
+            'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
+            'date' => now()->addDays(1)->format('Y-m-d'),
+            'tenant_id' => $this->tenant->id,
+        ]);
+
+        $response->assertSessionHasNoErrors();
+    });
+});
+
 describe('relationships', function (): void {
     test('calendar belongs to category', function (): void {
         $calendar = Calendar::factory()->create();

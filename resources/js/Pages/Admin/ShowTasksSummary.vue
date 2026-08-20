@@ -26,9 +26,9 @@
           </Badge>
         </Button>
         <Button
-          :variant="filters.taskable_type === 'App\\Models\\Reservation' ? 'default' : 'outline'"
+          :variant="filters.taskable_type === ModelEnum.RESERVATION ? 'default' : 'outline'"
           size="sm"
-          @click="updateFilter('taskable_type', 'App\\Models\\Reservation')"
+          @click="updateFilter('taskable_type', ModelEnum.RESERVATION)"
         >
           <PackageIcon class="mr-1.5 h-4 w-4" />
           {{ $t('Rezervacijos') }}
@@ -175,6 +175,7 @@
 </template>
 
 <script setup lang="ts">
+import { ModelEnum } from '@/Types/enums';
 import { router } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';

@@ -10,6 +10,7 @@ use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
+use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
 use App\Tasks\Handlers\PeriodicityGapTaskHandler;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -33,7 +34,7 @@ describe('PeriodicityGapTaskHandler', function (): void {
 
         // Create student rep type and duty
         $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
-            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => Duty::class]);
+            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => MorphMap::alias(Duty::class)]);
 
         $duty = Duty::factory()
             ->for($institution)
@@ -59,7 +60,7 @@ describe('PeriodicityGapTaskHandler', function (): void {
 
         expect($task)->not->toBeNull()
             ->and($task->action_type)->toBe(ActionType::PeriodicityGap)
-            ->and($task->taskable_type)->toBe(Institution::class)
+            ->and($task->taskable_type)->toBe(MorphMap::alias(Institution::class))
             ->and($task->taskable_id)->toBe($institution->id)
             ->and($task->users)->toHaveCount(1)
             ->and($task->users->first()->id)->toBe($user->id)
@@ -76,7 +77,7 @@ describe('PeriodicityGapTaskHandler', function (): void {
 
         // Create student rep type and duty
         $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
-            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => Duty::class]);
+            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => MorphMap::alias(Duty::class)]);
 
         $duty = Duty::factory()
             ->for($institution)
@@ -111,7 +112,7 @@ describe('PeriodicityGapTaskHandler', function (): void {
 
         // Should only have one task
         $taskCount = Task::query()
-            ->where('taskable_type', Institution::class)
+            ->where('taskable_type', MorphMap::alias(Institution::class))
             ->where('taskable_id', $institution->id)
             ->where('action_type', ActionType::PeriodicityGap)
             ->count();
@@ -129,7 +130,7 @@ describe('PeriodicityGapTaskHandler', function (): void {
 
         // Create student rep type and duty
         $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
-            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => Duty::class]);
+            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => MorphMap::alias(Duty::class)]);
 
         $duty = Duty::factory()
             ->for($institution)
@@ -177,7 +178,7 @@ describe('PeriodicityGapTaskHandler', function (): void {
 
         // Create student rep type and duty
         $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
-            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => Duty::class]);
+            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => MorphMap::alias(Duty::class)]);
 
         $duty = Duty::factory()
             ->for($institution)
@@ -229,7 +230,7 @@ describe('GetInstitutionRepresentatives', function (): void {
 
         // Create student rep type
         $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
-            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => Duty::class]);
+            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => MorphMap::alias(Duty::class)]);
 
         $duty = Duty::factory()
             ->for($institution)

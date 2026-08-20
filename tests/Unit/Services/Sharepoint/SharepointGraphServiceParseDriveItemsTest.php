@@ -6,6 +6,7 @@ use App\Models\Meeting;
 use App\Models\SharepointFile;
 use App\Models\Tenant;
 use App\Services\SharepointGraphService;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
@@ -80,7 +81,7 @@ describe('parseDriveItems', function (): void {
         $method = $reflection->getMethod('parseDriveItems');
 
         FileableFile::factory()->create([
-            'fileable_type' => Meeting::class,
+            'fileable_type' => MorphMap::alias(Meeting::class),
             'fileable_id' => $this->meeting->id,
             'sharepoint_id' => 'drive-item-1',
             'name' => 'Test File.pdf',

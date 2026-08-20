@@ -23,6 +23,19 @@ export const usePage = mockFn(() => ({
       name: 'VU SA',
       url: 'http://www.vusa.test',
     },
+  organization: {
+    contacts: { it: 'it@vusa.lt', accounting: 'saskaitos@vusa.lt', phone: '+37052687144' },
+    social: {
+      facebook: 'https://www.facebook.com/vieningai.vu.sa',
+      instagram: 'https://www.instagram.com/vu.studentu.atstovybe',
+      linkedin: 'https://www.linkedin.com/company/vusa-lt',
+    },
+    legal: {
+      company_code: '193077294',
+      vat_code: 'LT100015645710',
+      address: { street: 'Universiteto g. 3, Observatorijos kiemelis', city: '01513, Vilnius, Lietuva' },
+    },
+  },
     auth: {
       user: {
         id: 1,

@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Console\Kernel;
 use App\Enums\SearchableModelEnum;
 use App\Services\Typesense\TypesenseManager;
 use Illuminate\Support\Carbon;
@@ -39,6 +38,12 @@ class SystemMonitorService
     private const int SCHEDULER_WARNING_SECONDS = 3600;
 
     /**
+     * Cache key holding the timestamp of the scheduler's last run. Written by
+     * the scheduler-heartbeat entry in routes/console.php.
+     */
+    public const string HEARTBEAT_CACHE_KEY = 'scheduler.last_run';
+
+    /**
      * Get a complete snapshot of system health.
      *
      * @return array{redis: array, database: array, cache: array, typesense: array, scheduler: array, digest: array, mail: array, integrations: array, system: array}
@@ -70,7 +75,7 @@ class SystemMonitorService
      */
     public function getSchedulerStatus(): array
     {
-        $lastRun = Cache::get(Kernel::HEARTBEAT_CACHE_KEY);
+        $lastRun = Cache::get(self::HEARTBEAT_CACHE_KEY);
 
         if (! is_string($lastRun) || $lastRun === '') {
             return [

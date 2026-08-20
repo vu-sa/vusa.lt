@@ -8,6 +8,7 @@ use App\Notifications\CommentPostedNotification;
 use App\Notifications\ReservationStatusChangedNotification;
 use App\Notifications\TaskAssignedNotification;
 use App\States\ReservationResource\Reserved;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\Feature\Notifications\NotificationTestHelpers;
@@ -47,7 +48,7 @@ describe('reservation flow duplicate prevention', function (): void {
 
         // Regular comment
         $comment = Comment::factory()->create([
-            'commentable_type' => ReservationResource::class,
+            'commentable_type' => MorphMap::alias(ReservationResource::class),
             'commentable_id' => $reservationResource->id,
             'user_id' => $commenter->id,
             'body' => 'Just a regular question',
@@ -84,7 +85,7 @@ describe('notification count limits', function (): void {
 
         // First comment
         $comment1 = Comment::factory()->create([
-            'commentable_type' => ReservationResource::class,
+            'commentable_type' => MorphMap::alias(ReservationResource::class),
             'commentable_id' => $reservationResource->id,
             'user_id' => $commenter->id,
             'body' => 'First question',
@@ -93,7 +94,7 @@ describe('notification count limits', function (): void {
 
         // Second comment
         $comment2 = Comment::factory()->create([
-            'commentable_type' => ReservationResource::class,
+            'commentable_type' => MorphMap::alias(ReservationResource::class),
             'commentable_id' => $reservationResource->id,
             'user_id' => $commenter->id,
             'body' => 'Follow up question',
@@ -117,7 +118,7 @@ describe('notification deduplication edge cases', function (): void {
         $commenter = $this->createUserWithPreferences();
 
         $comment = Comment::factory()->create([
-            'commentable_type' => ReservationResource::class,
+            'commentable_type' => MorphMap::alias(ReservationResource::class),
             'commentable_id' => $reservationResource->id,
             'user_id' => $commenter->id,
             'body' => 'Test',
@@ -168,7 +169,7 @@ describe('reservation state change triggers both status and task notifications',
 
         // Verify task exists in database
         $this->assertDatabaseHas('tasks', [
-            'taskable_type' => Reservation::class,
+            'taskable_type' => MorphMap::alias(Reservation::class),
             'taskable_id' => $reservationResource->reservation_id,
         ]);
     });

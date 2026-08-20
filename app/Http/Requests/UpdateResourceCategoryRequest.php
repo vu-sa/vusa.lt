@@ -2,33 +2,21 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Resource;
-use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Foundation\Http\FormRequest;
+use App\Models\ResourceCategory;
 
-class UpdateResourceCategoryRequest extends FormRequest
+class UpdateResourceCategoryRequest extends ResourceCategoryRequest
 {
     /**
      * Determine if the user is authorized to make this request.
+     *
+     * The route-bound category is authorized here as well as in the controller, so the check
+     * holds whichever entry point is used. Previously this asked for the `create` ability.
      */
     public function authorize(): bool
     {
-        return $this->user()->can('create', Resource::class);
-    }
+        $resourceCategory = $this->route('resourceCategory');
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
-    public function rules(): array
-    {
-        return [
-            'name.lt' => 'required|string',
-            'description.lt' => 'nullable|string',
-            'name.en' => 'nullable|string',
-            'description.en' => 'nullable|string',
-            'icon' => 'nullable|string',
-        ];
+        return $resourceCategory instanceof ResourceCategory
+            && $this->user()->can('update', $resourceCategory);
     }
 }

@@ -14,7 +14,7 @@ import { contentTypeRegistry, getAllContentTypes, getContentType, getSkeletonFor
 const EXPECTED_TYPES = [
   'tiptap', 'shadcn-accordion', 'shadcn-card', 'image-grid', 'hero', 'news', 'calendar',
   'spotify-embed', 'social-embed', 'flow-graph', 'number-stat-section', 'text-box',
-  'content-grid', 'carousel-slide-deck', 'card-stack', 'photo-gallery',
+  'content-grid', 'carousel-slide-deck', 'hero-carousel', 'card-stack', 'photo-gallery',
   'link-list', 'event-list', 'person-quote', 'section', 'spacer',
 ];
 

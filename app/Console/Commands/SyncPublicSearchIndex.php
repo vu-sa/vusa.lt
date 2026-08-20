@@ -34,7 +34,7 @@ class SyncPublicSearchIndex extends Command
      * events. Wide enough to self-heal after a day of scheduler downtime,
      * narrow enough to keep each run to a handful of rows.
      */
-    private const WINDOW_HOURS = 24;
+    private const int WINDOW_HOURS = 24;
 
     public function handle(): int
     {

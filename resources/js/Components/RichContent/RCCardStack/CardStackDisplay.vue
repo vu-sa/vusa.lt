@@ -63,6 +63,7 @@ import { onMounted, onUnmounted, ref } from 'vue';
 import type { CardStack } from '@/Types/contentParts';
 import RCSection from '../RCSection.vue';
 import RCIcon from '../RCIcon.vue';
+import { asBoolean } from '../booleanish';
 
 const { element } = defineProps<{
   element: CardStack;
@@ -131,7 +132,7 @@ const setCurrentCard = (index: number) => {
 
 // Autoplay functionality
 const startAutoplay = () => {
-  if (!element.options?.autoplay || autoplayInterval) return;
+  if (!asBoolean(element.options?.autoplay) || autoplayInterval) return;
 
   autoplayInterval = setInterval(() => {
     if (!isRotating.value) {
@@ -149,7 +150,7 @@ const stopAutoplay = () => {
 
 const restartAutoplay = () => {
   stopAutoplay();
-  if (element.options?.autoplay) {
+  if (asBoolean(element.options?.autoplay)) {
     startAutoplay();
   }
 };
@@ -160,7 +161,7 @@ const handleUserInteraction = (callback: () => void) => {
   callback();
 
   // Restart autoplay after user interaction
-  if (element.options?.autoplay) {
+  if (asBoolean(element.options?.autoplay)) {
     setTimeout(startAutoplay, element.options?.autoplayDelay || 5000);
   }
 };
@@ -176,7 +177,7 @@ const handleIndicatorClick = (index: number) => {
 
 // Lifecycle
 onMounted(() => {
-  if (element.options?.autoplay) {
+  if (asBoolean(element.options?.autoplay)) {
     startAutoplay();
   }
 });

@@ -39,25 +39,25 @@ beforeEach(function (): void {
         'institution_id' => $this->institution->id,
     ]);
 
-    // Create permissions if they don't exist
-    $permissions = [
-        'news.read.padalinys',
-        'news.create.padalinys',
-        'news.update.padalinys',
-        'news.delete.padalinys',
-        'news.update.own',
-        'news.read.all',
-        'news.create.all',
-        'news.update.all',
-        'news.delete.all',
-        'unknown.permission.scope',
-    ];
-
-    foreach ($permissions as $permission) {
-        if (! App\Models\Permission::where('name', $permission)->exists()) {
-            App\Models\Permission::create(['name' => $permission, 'guard_name' => 'web']);
-        }
-    }
+    // ModelPermissionSeeder only seeds the padalinys/own scopes news actually allows;
+    // the .all variants and the deliberately-bogus scope below don't exist yet. One
+    // bulk upsert (matching ModelPermissionSeeder's own convention) instead of a
+    // per-permission exists()-then-create() loop.
+    App\Models\Permission::upsert(
+        collect([
+            'news.read.padalinys',
+            'news.create.padalinys',
+            'news.update.padalinys',
+            'news.delete.padalinys',
+            'news.update.own',
+            'news.read.all',
+            'news.create.all',
+            'news.update.all',
+            'news.delete.all',
+            'unknown.permission.scope',
+        ])->map(fn (string $name) => ['name' => $name, 'guard_name' => 'web'])->all(),
+        ['name', 'guard_name']
+    );
 
     $this->tenantAdminRole = Role::firstOrCreate(['name' => 'Tenant Admin', 'guard_name' => 'web']);
     $this->contentEditorRole = Role::firstOrCreate(['name' => 'Content Editor', 'guard_name' => 'web']);

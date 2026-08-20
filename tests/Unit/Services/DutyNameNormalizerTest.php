@@ -11,7 +11,7 @@ use App\Services\DutyNameNormalizer;
 test('gendered/variant pairs normalize to the same form', function (string $a, string $b): void {
     expect(DutyNameNormalizer::normalize($a))
         ->toBe(DutyNameNormalizer::normalize($b))
-        ->not->toBe('');
+        ->not->toBeEmpty();
 })->with([
     'koordinatorius / koordinatorė' => ['Komunikacijos koordinatorius', 'Komunikacijos koordinatorė'],
     'narys / narė' => ['Kolegialaus valdymo organo narys', 'Kolegialaus valdymo organo narė'],
@@ -72,8 +72,8 @@ test('unrelated or differently-scoped names do not collapse together', function 
 ]);
 
 test('handles empty and whitespace-only input without throwing', function (): void {
-    expect(DutyNameNormalizer::normalize(''))->toBe('');
-    expect(DutyNameNormalizer::normalize('   '))->toBe('');
+    expect(DutyNameNormalizer::normalize(''))->toBeEmpty()
+        ->and(DutyNameNormalizer::normalize('   '))->toBeEmpty();
 });
 
 test('is idempotent', function (): void {

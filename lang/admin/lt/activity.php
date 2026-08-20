@@ -61,6 +61,7 @@ return [
         'content-grid' => 'Turinio tinklelis',
         'text-box' => 'Teksto laukas',
         'carousel-slide-deck' => 'Skaidrių karuselė',
+        'hero-carousel' => 'Hero karuselė',
         'card-stack' => 'Kortelių rietuvė',
         'photo-gallery' => 'Nuotraukų galerija',
         'link-list' => 'Nuorodų sąrašas',

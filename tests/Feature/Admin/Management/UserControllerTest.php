@@ -8,6 +8,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
 use App\Services\ResourceServices\UserDutyService;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
@@ -311,7 +312,7 @@ describe('duty removal', function (): void {
         $target->duties()->attach($duty->id, ['start_date' => now()->subDay(), 'end_date' => null]);
 
         $activeCount = fn () => Dutiable::where('duty_id', $duty->id)
-            ->where('dutiable_type', User::class)
+            ->where('dutiable_type', MorphMap::alias(User::class))
             ->where('dutiable_id', $target->id)
             ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', now()))
             ->count();
@@ -356,7 +357,7 @@ describe('duty assignment', function (): void {
         );
 
         $activeCount = Dutiable::where('duty_id', $duty->id)
-            ->where('dutiable_type', User::class)
+            ->where('dutiable_type', MorphMap::alias(User::class))
             ->where('dutiable_id', $target->id)
             ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', now()))
             ->count();

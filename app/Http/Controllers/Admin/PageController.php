@@ -49,7 +49,7 @@ class PageController extends AdminController
 
         $deletedCount = $this->getTrashedCount($query);
 
-        $pages = $query->paginate($request->input('per_page', 20))
+        $pages = $query->paginate($request->getPerPage())
             ->withQueryString();
 
         return $this->inertiaResponse('Admin/Content/IndexPages', [
@@ -66,7 +66,7 @@ class PageController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $request->getSorting(),
-            'showDeleted' => $request->boolean('showDeleted', false),
+            'showDeleted' => $request->getShowDeleted(),
             'deletedCount' => $deletedCount,
         ]);
     }
@@ -96,7 +96,7 @@ class PageController extends AdminController
 
         // check if super admin, else set tenant_id
         if (request()->user()->isSuperAdmin()) {
-            $tenant_id = Tenant::where('type', 'pagrindinis')->first()?->id;
+            $tenant_id = Tenant::main()?->id;
         } else {
             $tenant_id = $this->authorizer->permissableDuties->first()?->tenants->first()?->id;
         }
@@ -128,7 +128,7 @@ class PageController extends AdminController
         // release whoever already holds the counterpart id, trashed rows included.
         PairTranslatedRecord::execute($page, $request->other_lang_id);
 
-        return redirect()->route('pages.index')->with('success', 'Puslapis sėkmingai sukurtas!');
+        return redirect()->route('pages.index')->with('success', $this->entityMessage('created', 'page'));
     }
 
     /**
@@ -163,7 +163,7 @@ class PageController extends AdminController
         $this->handleAuthorization('update', $page);
 
         $page->update([
-            ...$request->only('title', 'lang', 'category_id', 'is_active', 'layout', 'permalink'),
+            ...$request->safe()->only('title', 'lang', 'category_id', 'is_active', 'layout', 'permalink'),
             'show_table_of_contents' => $request->boolean('show_table_of_contents', true),
             'show_title' => $request->boolean('show_title', true),
             'show_breadcrumbs' => $request->boolean('show_breadcrumbs', true),
@@ -176,7 +176,7 @@ class PageController extends AdminController
 
         PairTranslatedRecord::execute($page, $request->other_lang_id);
 
-        return back()->with('success', 'Puslapis atnaujintas!')->with('data', $page->load('content'));
+        return back()->with('success', $this->entityMessage('updated', 'page'))->with('data', $page->load('content'));
     }
 
     /**
@@ -188,12 +188,12 @@ class PageController extends AdminController
 
         $page->delete();
 
-        return redirect()->route('pages.index')->with('info', 'Puslapis ištrintas');
+        return redirect()->route('pages.index')->with('info', $this->entityMessage('deleted', 'page'));
     }
 
     public function restore(Page $page): RedirectResponse
     {
-        return $this->restoreModel($page, 'Puslapis sėkmingai atkurtas!');
+        return $this->restoreModel($page, $this->entityMessage('restored', 'page'));
     }
 
     public function forceDelete(Page $page): RedirectResponse

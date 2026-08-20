@@ -11,6 +11,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Vote;
 use App\Services\InstitutionActivityStatusService;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
@@ -51,7 +52,7 @@ test('timeline returns direct institutions with summaries but no meetings or rel
 
     Relationshipable::query()->create([
         'relationship_id' => $relationship->id,
-        'relationshipable_type' => Institution::class,
+        'relationshipable_type' => MorphMap::alias(Institution::class),
         'relationshipable_id' => $this->institution->id,
         'related_model_id' => $relatedInstitution->id,
     ]);

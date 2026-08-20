@@ -4,20 +4,26 @@ namespace App\Enums;
 
 use App\Enums\Concerns\HasEnumHelpers;
 
+/**
+ * Layout variants for a static page, matching the `pages.layout` column.
+ *
+ * See NewsLayoutEnum for why the backing values are lowercase.
+ */
 enum PageLayoutEnum: string
 {
     use HasEnumHelpers;
 
-    case DEFAULT = 'DEFAULT';
-    case WIDE = 'WIDE';
-    case FOCUSED = 'FOCUSED';
+    case DEFAULT = 'default';
+    case WIDE = 'wide';
+    case FOCUSED = 'focused';
+
+    public static function default(): self
+    {
+        return self::DEFAULT;
+    }
 
     public function label(): string
     {
-        return match ($this) {
-            self::DEFAULT => 'default',
-            self::WIDE => 'wide',
-            self::FOCUSED => 'focused',
-        };
+        return ucfirst($this->value);
     }
 }

@@ -17,6 +17,7 @@ use App\States\ReservationResource\Created;
 use App\States\ReservationResource\Lent;
 use App\States\ReservationResource\Reserved;
 use App\States\ReservationResource\Returned;
+use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
 use App\Tasks\Subscribers\ReservationTaskSubscriber;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -63,7 +64,7 @@ describe('ReservationTaskSubscriber', function (): void {
             $reservationResource->state->transitionTo(Reserved::class);
 
             $pickupTask = Task::query()
-                ->where('taskable_type', Reservation::class)
+                ->where('taskable_type', MorphMap::alias(Reservation::class))
                 ->where('taskable_id', $reservation->id)
                 ->where('action_type', ActionType::Pickup)
                 ->first();
@@ -125,7 +126,7 @@ describe('ReservationTaskSubscriber', function (): void {
             $reservationResource2->state->transitionTo(Reserved::class);
 
             $pickupTaskCount = Task::query()
-                ->where('taskable_type', Reservation::class)
+                ->where('taskable_type', MorphMap::alias(Reservation::class))
                 ->where('taskable_id', $reservation->id)
                 ->where('action_type', ActionType::Pickup)
                 ->count();
@@ -168,7 +169,7 @@ describe('ReservationTaskSubscriber', function (): void {
             $reservationResource->state->transitionTo(Reserved::class);
 
             $pickupTask = Task::query()
-                ->where('taskable_type', Reservation::class)
+                ->where('taskable_type', MorphMap::alias(Reservation::class))
                 ->where('taskable_id', $reservation->id)
                 ->where('action_type', ActionType::Pickup)
                 ->first();
@@ -219,7 +220,7 @@ describe('ReservationTaskSubscriber', function (): void {
             $reservationResource->state->transitionTo(Lent::class);
 
             $returnTask = Task::query()
-                ->where('taskable_type', Reservation::class)
+                ->where('taskable_type', MorphMap::alias(Reservation::class))
                 ->where('taskable_id', $reservation->id)
                 ->where('action_type', ActionType::Return)
                 ->first();
@@ -265,7 +266,7 @@ describe('ReservationTaskSubscriber', function (): void {
             $reservationResource->state->transitionTo(Lent::class);
 
             $returnTask = Task::query()
-                ->where('taskable_type', Reservation::class)
+                ->where('taskable_type', MorphMap::alias(Reservation::class))
                 ->where('taskable_id', $reservation->id)
                 ->where('action_type', ActionType::Return)
                 ->first();

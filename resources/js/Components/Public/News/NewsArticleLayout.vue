@@ -379,7 +379,6 @@ function getTagName(tag: App.Entities.Tag): string {
 function navigateToTaggedNews(tagAlias: string) {
   router.visit(route('newsArchive', {
     lang: locale.value,
-    newsString: locale.value === 'lt' ? 'naujienos' : 'news',
     subdomain: usePage().props.tenant?.subdomain || 'www',
     tag: tagAlias, // This will be added as a query parameter
   }));

@@ -2,7 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\AgendaItemType;
+use App\Enums\VoteValue;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class UpdateAgendaItemRequest extends FormRequest
 {
@@ -28,7 +31,7 @@ class UpdateAgendaItemRequest extends FormRequest
             'description' => 'nullable|string',
             'order' => 'sometimes|integer|min:1',
             'brought_by_students' => 'nullable|boolean',
-            'type' => 'nullable|string|in:voting,informational,deferred',
+            'type' => ['nullable', new Enum(AgendaItemType::class)],
             'student_position' => 'nullable|string|max:5000',
             // Votes validation
             'votes' => 'nullable|array',
@@ -36,9 +39,9 @@ class UpdateAgendaItemRequest extends FormRequest
             'votes.*.is_main' => 'nullable|boolean',
             'votes.*.is_consensus' => 'nullable|boolean',
             'votes.*.title' => 'nullable|string|max:200',
-            'votes.*.student_vote' => 'nullable|string|in:positive,negative,neutral',
-            'votes.*.decision' => 'nullable|string|in:positive,negative,neutral',
-            'votes.*.student_benefit' => 'nullable|string|in:positive,negative,neutral',
+            'votes.*.student_vote' => ['nullable', new Enum(VoteValue::class)],
+            'votes.*.decision' => ['nullable', new Enum(VoteValue::class)],
+            'votes.*.student_benefit' => ['nullable', new Enum(VoteValue::class)],
             'votes.*.note' => 'nullable|string|max:2000',
             'votes.*.order' => 'nullable|integer|min:0',
         ];
@@ -53,13 +56,13 @@ class UpdateAgendaItemRequest extends FormRequest
     public function messages()
     {
         return [
-            'title.string' => 'Darbotvarkės klausimo pavadinimas turi būti tekstas.',
-            'title.max' => 'Darbotvarkės klausimo pavadinimas negali būti ilgesnis nei 255 simbolių.',
-            'description.string' => 'Darbotvarkės klausimo aprašymas turi būti tekstas.',
-            'order.integer' => 'Darbotvarkės klausimo tvarka turi būti skaičius.',
-            'order.min' => 'Darbotvarkės klausimo tvarka turi būti bent 1.',
-            'type.in' => 'Punkto tipas turi būti vienas iš: voting, informational, deferred.',
-            'student_position.max' => 'Studentų pozicija negali būti ilgesnė nei 5000 simbolių.',
+            'title.string' => trans('forms.validation.agenda_item.title_string'),
+            'title.max' => trans('forms.validation.agenda_item.title_max'),
+            'description.string' => trans('forms.validation.agenda_item.description_string'),
+            'order.integer' => trans('forms.validation.agenda_item.order_integer'),
+            'order.min' => trans('forms.validation.agenda_item.order_min'),
+            'type.in' => trans('forms.validation.agenda_item.type_in'),
+            'student_position.max' => trans('forms.validation.agenda_item.student_position_max'),
         ];
     }
 }

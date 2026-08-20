@@ -138,11 +138,11 @@
 </template>
 
 <script setup lang="ts">
+import { useDateLocale } from '@/Composables/useDateLocale';
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { usePage, Link } from '@inertiajs/vue3';
 import { formatDistanceToNow, parseISO, isToday, isTomorrow, differenceInDays } from 'date-fns';
-import { lt, enUS } from 'date-fns/locale';
 import {
   ClipboardCheck as ClipboardCheckIcon,
   ShieldCheck as ShieldCheckIcon,
@@ -183,7 +183,7 @@ defineEmits<{
 }>();
 
 // Locale for date formatting
-const dateLocale = computed(() => usePage().props.app.locale === 'lt' ? lt : enUS);
+const dateLocale = useDateLocale();
 
 // Parse action type
 const parsedActionType = computed(() => {

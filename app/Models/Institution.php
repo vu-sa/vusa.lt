@@ -8,7 +8,6 @@ use App\Contracts\GuardsForceDelete;
 use App\Contracts\SharepointFileableContract;
 use App\Events\FileableNameUpdated;
 use App\Models\Pivots\Relationshipable;
-use App\Models\Pivots\Trainable;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasContentRelationships;
@@ -55,13 +54,12 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, FileableFile> $availableFiles
- * @property-read Relationshipable|InstitutionFollow|Trainable|null $pivot
- * @property-read Collection<int, Training> $availableTrainings
  * @property-read Collection<int, InstitutionCheckIn> $checkIns
  * @property-read Collection<int, Comment> $comments
  * @property-read Collection<int, Document> $documents
  * @property-read Collection<int, Duty> $duties
  * @property-read Collection<int, FileableFile> $fileableFiles
+ * @property-read Relationshipable|InstitutionFollow|null $pivot
  * @property-read Collection<int, User> $followers
  * @property-read string|null $force_delete_blocked_reason
  * @property-read bool $has_protocol
@@ -78,6 +76,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Task> $tasksFromMeetings
  * @property-read Tenant|null $tenant
+ * @property-read Tenant|null $tenants
  * @property-read mixed $translations
  * @property-read Collection<int, Type> $types
  * @property-read Collection<int, User> $users
@@ -152,7 +151,13 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
         return $this->belongsTo(Tenant::class);
     }
 
-    public function tenants()
+    /**
+     * Alias of {@see self::tenant()} for the callers that ask every model for its "tenants"
+     * (ModelIndexer, eager loads shared with models that really do have many).
+     *
+     * @return BelongsTo<Tenant, $this>
+     */
+    public function tenants(): BelongsTo
     {
         return $this->tenant();
     }
@@ -412,11 +417,6 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
         return 30;
     }
 
-    public function availableTrainings()
-    {
-        return $this->morphToMany(Training::class, 'trainable')->using(Trainable::class);
-    }
-
     /**
      * Meetings, trainings, check-ins and the primary-institution link all restrict
      * deletes, and `duties.institution_id` carries no foreign key at all — permanently
@@ -427,7 +427,6 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
         return $this->forceDeleteReasonFor([
             'entities.meeting.model' => $this->countedRelation('meetings'),
             'entities.duty.model' => $this->countedRelation('duties'),
-            'entities.training.model' => $this->countedRelation('availableTrainings'),
             'trash.blockers.check_ins' => $this->countedRelation('checkIns'),
             'trash.blockers.primary_institution_of_tenant' => Tenant::query()->where('primary_institution_id', $this->id)->count(),
         ]);

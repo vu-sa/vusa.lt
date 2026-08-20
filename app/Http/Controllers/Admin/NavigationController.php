@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\ReorderNavigationRequest;
 use App\Http\Requests\StoreNavigationRequest;
 use App\Http\Requests\UpdateNavigationRequest;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Models\Category;
 use App\Models\Navigation;
-use App\Rules\SoftDeleteRules;
-use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\NavigationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,8 +17,6 @@ use Illuminate\Support\Collection;
 class NavigationController extends AdminController
 {
     use HandlesSoftDeletes;
-
-    public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.
@@ -103,7 +100,7 @@ class NavigationController extends AdminController
 
         $navigation->save();
 
-        return $this->redirectToIndexWithSuccess('navigation', 'Navigation created.');
+        return $this->redirectToIndexWithSuccess('navigation', $this->entityMessage('created', 'navigation'));
     }
 
     /**
@@ -129,7 +126,7 @@ class NavigationController extends AdminController
 
         $navigation->save();
 
-        return back()->with('success', 'Navigation updated.');
+        return back()->with('success', $this->entityMessage('updated', 'navigation'));
     }
 
     /**
@@ -141,7 +138,7 @@ class NavigationController extends AdminController
      * its column array*, not a flattened position, so a column move can never corrupt
      * another column's relative order the way the old `flatten(1)` did.
      */
-    public function updateOrder(Request $request)
+    public function updateOrder(ReorderNavigationRequest $request)
     {
         // Navigation is a globally-scoped model (see NavigationPolicy /
         // HasCommonChecks::commonChecker) — it has no tenant relation, so `update` is
@@ -149,13 +146,7 @@ class NavigationController extends AdminController
         // vary per row. One check up front is equivalent to the old per-row loop.
         $this->handleAuthorization('update', new Navigation);
 
-        $data = $request->validate([
-            'navigation' => ['required', 'array'],
-            'navigation.*.id' => ['required', 'integer', SoftDeleteRules::existsLive('navigation')],
-            'navigation.*.links' => ['sometimes', 'array', 'max:3'],
-            'navigation.*.links.*' => ['array'],
-            'navigation.*.links.*.*.id' => ['required', 'integer', SoftDeleteRules::existsLive('navigation')],
-        ]);
+        $data = $request->validated();
 
         foreach ($data['navigation'] as $rootOrder => $root) {
             // ->save() (not a query-builder update()) so the model's `saved` hook fires
@@ -179,7 +170,7 @@ class NavigationController extends AdminController
             }
         }
 
-        return back()->with('success', 'Navigation order updated.');
+        return back()->with('success', __('messages.navigation.order_updated'));
     }
 
     /**
@@ -191,7 +182,7 @@ class NavigationController extends AdminController
 
         $navigation->delete();
 
-        return redirect()->route('navigation.index')->with('info', 'Navigation deleted.');
+        return redirect()->route('navigation.index')->with('info', $this->entityMessage('deleted', 'navigation'));
     }
 
     public function restore(Navigation $navigation): RedirectResponse

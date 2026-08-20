@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Api\Admin\SimilarUsersRequest;
+use App\Http\Requests\Api\Admin\UserSearchRequest;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\UserSimilarityFinder;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 /**
  * Searching users from admin forms, without shipping the whole users table to the
@@ -45,14 +46,8 @@ class UserSearchApiController extends ApiController
      * to a user is decided by UserPolicy (identity changes and deletion require full
      * tenant containment) and by DutyPolicy::managePeople.
      */
-    public function search(Request $request): JsonResponse
+    public function search(UserSearchRequest $request): JsonResponse
     {
-        $request->validate([
-            'search' => 'required|string|min:2',
-            'permission' => 'nullable|string',
-            'scope' => 'nullable|in:tenant,all',
-        ]);
-
         $search = $request->input('search');
         $permission = $request->input('permission', 'problems.create.padalinys');
         $searchAllTenants = $request->input('scope') === 'all';
@@ -130,13 +125,8 @@ class UserSearchApiController extends ApiController
      * people holding users.create.padalinys, the payload is limited to what identifies
      * a person to somebody who knows them: name, units, duty count and a masked email.
      */
-    public function similar(Request $request, UserSimilarityFinder $finder): JsonResponse
+    public function similar(SimilarUsersRequest $request, UserSimilarityFinder $finder): JsonResponse
     {
-        $request->validate([
-            'name' => 'nullable|string|max:255',
-            'email' => 'nullable|string|max:255',
-        ]);
-
         $actor = $this->requireAuth($request);
 
         if (! $actor->can('create', User::class)) {

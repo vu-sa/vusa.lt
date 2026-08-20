@@ -13,11 +13,10 @@ export enum AgendaItemType {
   Deferred = "deferred",
 }
 export enum AllowedFileablesEnum {
-  DUTY = "DUTY",
-  INSTITUTION = "INSTITUTION",
-  MEETING = "MEETING",
-  TYPE = "TYPE",
-  USER = "USER",
+  DUTY = "Duty",
+  INSTITUTION = "Institution",
+  MEETING = "Meeting",
+  TYPE = "Type",
 }
 export enum AllowedRelationshipablesEnum {
   INSTITUTION = "INSTITUTION",
@@ -70,11 +69,6 @@ export enum DegreeEnum {
   PROFESSIONAL_PEDAGOGY = "PROFESSIONAL_PEDAGOGY",
   OTHER = "OTHER",
 }
-export enum DutySelectionMethod {
-  Elected = "elected",
-  Delegated = "delegated",
-  Appointed = "appointed",
-}
 export enum InstitutionActivityStatus {
   NoActivity = "no_activity",
   Healthy = "healthy",
@@ -105,7 +99,6 @@ export enum ModelEnum {
   FORM = "form",
   INSTITUTION = "institution",
   MEETING = "meeting",
-  MEMBERSHIP = "membership",
   NAVIGATION = "navigation",
   NEWS = "news",
   QUICK_LINK = "quick_link",
@@ -125,15 +118,14 @@ export enum ModelEnum {
   TAG = "tag",
   TASK = "task",
   TENANT = "tenant",
-  TRAINING = "training",
   TYPE = "type",
   USER = "user",
 }
 export enum NewsLayoutEnum {
-  MODERN = "MODERN",
-  CLASSIC = "CLASSIC",
-  IMMERSIVE = "IMMERSIVE",
-  HEADLINE = "HEADLINE",
+  MODERN = "modern",
+  CLASSIC = "classic",
+  IMMERSIVE = "immersive",
+  HEADLINE = "headline",
 }
 export enum NotificationCategory {
   Comment = "comment",
@@ -153,9 +145,9 @@ export enum NotificationChannel {
   EmailDigest = "email_digest",
 }
 export enum PageLayoutEnum {
-  DEFAULT = "DEFAULT",
-  WIDE = "WIDE",
-  FOCUSED = "FOCUSED",
+  DEFAULT = "default",
+  WIDE = "wide",
+  FOCUSED = "focused",
 }
 export enum PermissionScopeEnum {
   OWN = "OWN",
@@ -211,6 +203,11 @@ export enum SharepointScopeEnum {
   ANONYMOUS = "ANONYMOUS",
   ORGANIZATION = "ORGANIZATION",
   USERS = "USERS",
+}
+export enum TenantType {
+  Pagrindinis = "pagrindinis",
+  Padalinys = "padalinys",
+  Pkp = "pkp",
 }
 export enum VoteValue {
   Positive = "positive",

@@ -8,12 +8,12 @@
             {{ $t("Vilniaus universiteto Studentų atstovybė") }}
           </h2>
           <address class="space-y-1 text-sm text-zinc-600 dark:text-zinc-400 not-italic">
-            <p>{{ $t("Įmonės kodas") }}: 193077294</p>
-            <p>{{ $t("PVM mokėtojo kodas") }}: LT100015645710</p>
+            <p>{{ $t("Įmonės kodas") }}: {{ legal.company_code }}</p>
+            <p>{{ $t("PVM mokėtojo kodas") }}: {{ legal.vat_code }}</p>
             <p>
               {{ $t("Finansiniais klausimais kreipkitės el. paštu") }}:
-              <a href="mailto:saskaitos@vusa.lt" class="text-vusa-red hover:underline">
-                saskaitos@vusa.lt
+              <a :href="`mailto:${contacts.accounting}`" class="text-vusa-red hover:underline">
+                {{ contacts.accounting }}
               </a>
             </p>
           </address>
@@ -45,15 +45,15 @@
           <address class="space-y-2 not-italic">
             <div class="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
               <IFluentPhone20Regular class="flex-shrink-0 w-4 h-4 text-vusa-red" aria-hidden="true" />
-              <a href="tel:+37052687144" class="hover:text-vusa-red transition-colors">
+              <a :href="`tel:${contacts.phone}`" class="hover:text-vusa-red transition-colors">
                 +370 5 268 7144
               </a>
             </div>
             <div class="flex items-start gap-2 text-sm text-zinc-600 dark:text-zinc-400">
               <IFluentBuilding20Regular class="flex-shrink-0 w-4 h-4 text-vusa-red mt-0.5" aria-hidden="true" />
               <div>
-                <p>{{ $t("Universiteto g. 3, Observatorijos kiemelis") }}</p>
-                <p>{{ $t("01513, Vilnius, Lietuva") }}</p>
+                <p>{{ legal.address.street }}</p>
+                <p>{{ legal.address.city }}</p>
               </div>
             </div>
           </address>
@@ -75,6 +75,8 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
+import { computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 
 import FacebookButton from '../Nav/FacebookButton.vue';
 import InstagramButton from '../Nav/InstagramButton.vue';
@@ -83,4 +85,10 @@ import StartFM from '../Nav/StartFM.vue';
 import { useCookieConsent } from '@/Composables/useCookieConsent';
 
 const { reopen } = useCookieConsent();
+
+// Registry details and contact addresses come from config/vusa.php via shared props, so the
+// footer, the schema.org payload and the mail templates cannot disagree.
+const page = usePage();
+const contacts = computed(() => page.props.organization.contacts);
+const legal = computed(() => page.props.organization.legal);
 </script>

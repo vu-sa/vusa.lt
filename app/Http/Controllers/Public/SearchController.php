@@ -15,7 +15,7 @@ class SearchController extends PublicController
         $this->shareOtherLangURL('search');
 
         // Global content - use null for current tenant
-        $seo = $this->shareAndReturnSEOObject(
+        $this->applyPageHead(
             contentTenant: null,
             title: __('search.all_page_title'),
             description: __('search.all_page_description')
@@ -23,8 +23,6 @@ class SearchController extends PublicController
 
         return Inertia::render('Public/Search', [
             'initialQuery' => $request->string('q')->toString(),
-        ])->withViewData([
-            'SEOData' => $seo,
         ]);
     }
 }

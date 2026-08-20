@@ -5,6 +5,7 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 
@@ -49,7 +50,7 @@ describe('FileableFilePolicy', function (): void {
 
         test('returns false if fileable is null', function (): void {
             $orphanFile = FileableFile::factory()->create([
-                'fileable_type' => Institution::class,
+                'fileable_type' => MorphMap::alias(Institution::class),
                 'fileable_id' => 'nonexistent-id',
             ]);
 
@@ -92,7 +93,7 @@ describe('FileableFilePolicy', function (): void {
 
         test('returns false if fileable is null for regular user', function (): void {
             $orphanFile = FileableFile::factory()->create([
-                'fileable_type' => Institution::class,
+                'fileable_type' => MorphMap::alias(Institution::class),
                 'fileable_id' => 'nonexistent-id',
             ]);
 
@@ -126,7 +127,7 @@ describe('FileableFile with different fileable types', function (): void {
     test('policy works with Meeting as fileable', function (): void {
         $meeting = Meeting::factory()->create();
         $file = FileableFile::factory()->create([
-            'fileable_type' => Meeting::class,
+            'fileable_type' => MorphMap::alias(Meeting::class),
             'fileable_id' => $meeting->id,
         ]);
 

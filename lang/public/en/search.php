@@ -107,6 +107,10 @@ return [
     'listening' => 'Listening...',
 
     // Content type names (in case they need translation)
+    'news' => 'News',
+    'pages' => 'Pages',
+    'documents' => 'Documents',
+    'events' => 'Events',
     'News' => 'News',
     'Pages' => 'Pages',
     'Documents' => 'Documents',

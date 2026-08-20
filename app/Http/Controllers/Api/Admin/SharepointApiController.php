@@ -3,28 +3,18 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Contracts\SharepointFileableContract;
+use App\Enums\AllowedFileablesEnum;
 use App\Http\Controllers\Api\ApiController;
-use App\Models\Duty;
 use App\Models\FileableFile;
 use App\Models\Institution;
-use App\Models\Meeting;
 use App\Models\SharepointFile;
 use App\Models\Type;
 use App\Services\SharepointGraphService;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-
-/**
- * Allowed fileable model types for SharePoint file API operations.
- */
-const ALLOWED_FILEABLE_TYPES = [
-    'Duty' => Duty::class,
-    'Type' => Type::class,
-    'Meeting' => Meeting::class,
-    'Institution' => Institution::class,
-];
 
 class SharepointApiController extends ApiController
 {
@@ -36,11 +26,11 @@ class SharepointApiController extends ApiController
     {
         $this->requireAuth($request);
 
-        if (! isset(ALLOWED_FILEABLE_TYPES[$type])) {
+        if (AllowedFileablesEnum::classFor($type) === null) {
             return $this->jsonError('Invalid fileable type', 400, code: 'INVALID_TYPE');
         }
 
-        $fileable_class = ALLOWED_FILEABLE_TYPES[$type];
+        $fileable_class = AllowedFileablesEnum::classFor($type);
 
         /** @var Model|null $fileable */
         $fileable = $fileable_class::find($id);
@@ -71,11 +61,11 @@ class SharepointApiController extends ApiController
     {
         $this->requireAuth($request);
 
-        if (! isset(ALLOWED_FILEABLE_TYPES[$type])) {
+        if (AllowedFileablesEnum::classFor($type) === null) {
             return $this->jsonError('Invalid fileable type', 400, code: 'INVALID_TYPE');
         }
 
-        $fileable_class = ALLOWED_FILEABLE_TYPES[$type];
+        $fileable_class = AllowedFileablesEnum::classFor($type);
 
         $fileable = $fileable_class::find($id);
 
@@ -101,7 +91,7 @@ class SharepointApiController extends ApiController
 
         $typeIds = $types->pluck('id');
 
-        $files = FileableFile::where('fileable_type', Type::class)
+        $files = FileableFile::where('fileable_type', MorphMap::alias(Type::class))
             ->whereIn('fileable_id', $typeIds)
             ->available()
             ->orderBy('file_date', 'desc')
@@ -161,7 +151,7 @@ class SharepointApiController extends ApiController
      */
     protected function attachFileableFilesToDriveItems(\Illuminate\Support\Collection $driveItems, ?string $fileableType, ?string $fileableId): \Illuminate\Support\Collection
     {
-        if (! $fileableType || ! $fileableId || ! isset(ALLOWED_FILEABLE_TYPES[$fileableType])) {
+        if (! $fileableType || ! $fileableId || AllowedFileablesEnum::classFor($fileableType) === null) {
             return $driveItems;
         }
 
@@ -171,7 +161,7 @@ class SharepointApiController extends ApiController
             return $driveItems;
         }
 
-        $fileableFiles = FileableFile::where('fileable_type', ALLOWED_FILEABLE_TYPES[$fileableType])
+        $fileableFiles = FileableFile::where('fileable_type', MorphMap::alias(AllowedFileablesEnum::classFor($fileableType)))
             ->where('fileable_id', $fileableId)
             ->whereIn('sharepoint_id', $driveItemIds)
             ->whereNull('deleted_externally_at')

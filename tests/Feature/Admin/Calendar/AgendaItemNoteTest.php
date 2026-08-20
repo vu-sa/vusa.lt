@@ -9,6 +9,7 @@ use App\Models\Pivots\AgendaItem;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
+use App\Support\MorphMap;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
@@ -94,7 +95,7 @@ describe('agenda item notes API', function (): void {
 
     test('show returns the meeting active student representatives for @mentions', function (): void {
         $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
-            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => Duty::class]);
+            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => MorphMap::alias(Duty::class)]);
 
         $duty = Duty::factory()
             ->for($this->institution)

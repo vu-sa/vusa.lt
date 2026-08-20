@@ -81,8 +81,6 @@ Route::patch('studySets/{studySet}/restore', [StudySetController::class, 'restor
 Route::delete('studySets/{studySet}/force-delete', [StudySetController::class, 'forceDelete'])->name('studySets.forceDelete')->withTrashed();
 Route::patch('tags/{tag}/restore', [TagController::class, 'restore'])->name('tags.restore')->withTrashed();
 Route::delete('tags/{tag}/force-delete', [TagController::class, 'forceDelete'])->name('tags.forceDelete')->withTrashed();
-Route::patch('trainings/{training}/restore', [TrainingController::class, 'restore'])->name('trainings.restore')->withTrashed();
-Route::delete('trainings/{training}/force-delete', [TrainingController::class, 'forceDelete'])->name('trainings.forceDelete')->withTrashed();
 Route::patch('types/{type}/restore', [TypeController::class, 'restore'])->name('types.restore')->withTrashed();
 Route::delete('types/{type}/force-delete', [TypeController::class, 'forceDelete'])->name('types.forceDelete')->withTrashed();
 Route::patch('users/{user}/restore', [UserController::class, 'restore'])->name('users.restore')->withTrashed();
@@ -124,24 +122,6 @@ Route::post('push-subscription', [PushSubscriptionController::class, 'store'])->
 Route::delete('push-subscription', [PushSubscriptionController::class, 'destroy'])->name('push-subscription.destroy');
 Route::delete('push-subscription/{id}', [PushSubscriptionController::class, 'destroyById'])->name('push-subscription.destroyById');
 Route::post('push-subscription/test', [PushSubscriptionController::class, 'sendTest'])->name('push-subscription.test');
-
-Route::resource('memberships', MembershipController::class);
-Route::post('memberships/{membership}/users/import', [MembershipController::class, 'importUsers'])->name('membershipUsers.import');
-
-Route::resource('trainings', TrainingController::class);
-Route::get('trainings/{training}/registration', [TrainingController::class, 'showRegistration'])->name('trainings.showRegistration');
-
-Route::resource('programmes', ProgrammeController::class)->only(['update']);
-Route::resource('programmeDays', ProgrammeDayController::class)->only(['destroy']);
-Route::resource('programmeBlocks', ProgrammeBlockController::class)->only(['destroy']);
-
-Route::resource('programmeParts', ProgrammePartController::class)->only(['destroy']);
-Route::post('programmeParts/{programmePart}/attach', [ProgrammePartController::class, 'attach'])->name('programmeParts.attach');
-Route::post('programmeParts/{programmePart}/detach', [ProgrammePartController::class, 'detach'])->name('programmeParts.detach');
-
-Route::resource('programmeSections', ProgrammeSectionController::class)->only(['destroy']);
-Route::post('programmeSections/{programmeSection}/attach', [ProgrammeSectionController::class, 'attach'])->name('programmeSections.attach');
-Route::post('programmeSections/{programmeSection}/detach', [ProgrammeSectionController::class, 'detach'])->name('programmeSections.detach');
 
 Route::resource('calendar', CalendarController::class)
     ->middleware(HandlePrecognitiveRequests::class);
@@ -190,7 +170,9 @@ Route::post('files/upload-image', [FilesController::class, 'uploadImage'])->name
 Route::delete('files/delete', [FilesController::class, 'delete'])->name('files.delete');
 Route::delete('files/bulk-delete', [FilesController::class, 'bulkDelete'])->name('files.bulkDelete');
 Route::post('files/scan-usage', [FilesController::class, 'scanFileUsage'])->name('files.scanUsage');
-Route::resource('files', FilesController::class);
+// FilesController only implements index and store; the other resource verbs were
+// registered but had no method behind them.
+Route::resource('files', FilesController::class)->only(['index', 'store']);
 Route::post('files/compress', [FilesController::class, 'compressImage'])->name('files.compress');
 
 Route::resource('documents', DocumentController::class)->except('create', 'edit');
@@ -202,7 +184,9 @@ Route::post('duties/merge', [DutyController::class, 'mergeDuties'])->name('dutie
 Route::resource('duties', DutyController::class);
 Route::get('duties-update-users', [DutyController::class, 'updateUsersWizard'])->name('duties.updateUsersWizard');
 Route::post('duties/{duty}/batch-update-users', [DutyController::class, 'batchUpdateUsers'])->name('duties.batchUpdateUsers');
-Route::resource('dutiables', DutiableController::class)->except(['index', 'show']);
+// DutiableController has no create/store — dutiables are created through the duty and
+// user flows, not directly.
+Route::resource('dutiables', DutiableController::class)->only(['edit', 'update', 'destroy']);
 Route::get('studyPrograms/merge', [StudyProgramController::class, 'merge'])->name('studyPrograms.merge');
 Route::post('studyPrograms/merge', [StudyProgramController::class, 'mergeStudyPrograms'])->name('studyPrograms.mergeStudyPrograms');
 Route::resource('studyPrograms', StudyProgramController::class)->except(['show']);
@@ -261,6 +245,8 @@ Route::get('settings/documents', [SettingsController::class, 'editDocumentSettin
 Route::post('settings/documents', [SettingsController::class, 'updateDocumentSettings'])->name('settings.documents.update');
 Route::get('settings/atstovavimas', [SettingsController::class, 'editAtstovavimasSettings'])->name('settings.atstovavimas.edit');
 Route::post('settings/atstovavimas', [SettingsController::class, 'updateAtstovavimasSettings'])->name('settings.atstovavimas.update');
+Route::get('settings/site', [SettingsController::class, 'editSiteSettings'])->name('settings.site.edit');
+Route::post('settings/site', [SettingsController::class, 'updateSiteSettings'])->name('settings.site.update');
 Route::get('settings/authorization', [SettingsController::class, 'editAuthorization'])->name('settings.authorization.edit');
 Route::post('settings/authorization', [SettingsController::class, 'updateAuthorization'])->name('settings.authorization.update');
 

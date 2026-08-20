@@ -45,6 +45,12 @@ import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogShee
 import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
 import RelatedModelButton from '@/Components/Buttons/RelatedModelButton.vue';
 
+/**
+ * @deprecated Use `@/Components/Layouts/ShowPageLayout.vue` instead — it pairs
+ * `ShowPageHero` with real shadcn `Tabs` and the standard main/sidebar grid.
+ * This version predates both and survives only for `Pages/Admin/Forms/ShowForm.vue`,
+ * which still relies on its `RelatedModelButton` pill row. Do not add consumers.
+ */
 const emit = defineEmits<(e: 'change:tab', name: string) => void>();
 
 const props = defineProps<{

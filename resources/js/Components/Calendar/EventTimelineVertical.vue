@@ -211,10 +211,10 @@
 </template>
 
 <script setup lang="ts">
+import { dateLocaleFor } from '@/Composables/useDateLocale';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, ref } from 'vue';
 import { format, addDays, subDays, startOfDay, isAfter, isBefore, isSameDay, parseISO } from 'date-fns';
-import { lt, enUS } from 'date-fns/locale';
 import {
   ArrowUp,
   ArrowDown,
@@ -252,7 +252,7 @@ const daysFuture = ref(INITIAL_DAYS_FUTURE);
 const showPast = ref(false);
 
 // Computed values
-const dateLocale = computed(() => props.locale === 'lt' ? lt : enUS);
+const dateLocale = computed(() => dateLocaleFor(props.locale));
 const today = computed(() => startOfDay(new Date()));
 
 const dateRange = computed(() => {

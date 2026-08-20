@@ -451,7 +451,6 @@ declare global {
       tasks?: Task
       reservations?: Reservation
       resources?: Resource
-      available_trainings?: Training[]
       ex_officio_target_duties?: Duty[]
       ex_officio_source_duties?: Duty[]
       assignable_tenants?: Tenant[]
@@ -468,7 +467,6 @@ declare global {
       current_users_count: number
       previous_users_count: number
       types_count: number
-      available_trainings_count: number
       ex_officio_target_duties_count: number
       ex_officio_source_duties_count: number
       assignable_tenants_count: number
@@ -487,7 +485,6 @@ declare global {
       types_exists: boolean
       institution_exists: boolean
       institutions_exists: boolean
-      available_trainings_exists: boolean
       ex_officio_target_duties_exists: boolean
       ex_officio_source_duties_exists: boolean
       assignable_tenants_exists: boolean
@@ -641,6 +638,7 @@ declare global {
       duties?: Duty[]
       types?: Type[]
       tenant?: Tenant
+      tenants?: Tenant
       documents?: Document[]
       check_ins?: InstitutionCheckIn[]
       meetings?: Meeting[]
@@ -648,7 +646,6 @@ declare global {
       tasks_from_meetings?: Task
       users?: User
       followers?: User[]
-      available_trainings?: Training[]
       comments?: Comment[]
       root_comments?: Comment[]
       outgoing_relationships?: Relationship[]
@@ -665,7 +662,6 @@ declare global {
       meetings_count: number
       problems_count: number
       followers_count: number
-      available_trainings_count: number
       comments_count: number
       root_comments_count: number
       outgoing_relationships_count: number
@@ -678,12 +674,12 @@ declare global {
       duties_exists: boolean
       types_exists: boolean
       tenant_exists: boolean
+      tenants_exists: boolean
       documents_exists: boolean
       check_ins_exists: boolean
       meetings_exists: boolean
       problems_exists: boolean
       followers_exists: boolean
-      available_trainings_exists: boolean
       comments_exists: boolean
       root_comments_exists: boolean
       outgoing_relationships_exists: boolean
@@ -814,48 +810,6 @@ declare global {
       available_files_exists: boolean
       tasks_exists: boolean
       activities_as_subject_exists: boolean
-    }
-
-    export interface Membership {
-      // columns
-      id: string
-      name: Array<unknown>
-      tenant_id: number
-      created_at: string
-      updated_at: string
-      // mutators
-      translatable_columns_from: Array<unknown>
-      translations: unknown
-      // relations
-      tenant?: Tenant
-      users?: User[]
-      available_trainings?: Training[]
-      // counts
-      users_count: number
-      available_trainings_count: number
-      // exists
-      tenant_exists: boolean
-      users_exists: boolean
-      available_trainings_exists: boolean
-    }
-
-    export interface MembershipUser {
-      // columns
-      id: number
-      membership_id: string
-      user_id: string
-      start_date: string
-      end_date?: string | null
-      status: string
-      created_at: string
-      updated_at: string
-      // relations
-      membership?: Membership
-      user?: User
-      // counts
-      // exists
-      membership_exists: boolean
-      user_exists: boolean
     }
 
     export interface Model {
@@ -1066,144 +1020,6 @@ declare global {
       problems_exists: boolean
     }
 
-    export interface Programme {
-      // columns
-      id: number
-      title: Array<unknown>
-      description?: Array<unknown> | null
-      start_date: string
-      created_at: string
-      updated_at: string
-      // mutators
-      translatable_columns_from: Array<unknown>
-      translations: unknown
-      // relations
-      days?: ProgrammeDay[]
-      trainings?: Training[]
-      // counts
-      days_count: number
-      trainings_count: number
-      // exists
-      days_exists: boolean
-      trainings_exists: boolean
-    }
-
-    export interface ProgrammeBlock {
-      // columns
-      id: number
-      programme_section_id: number
-      title: Array<unknown>
-      description?: Array<unknown> | null
-      created_at: string
-      updated_at: string
-      // mutators
-      translatable_columns_from: Array<unknown>
-      translations: unknown
-      // relations
-      parts?: ProgrammePart[]
-      section?: ProgrammeSection
-      // counts
-      parts_count: number
-      // exists
-      parts_exists: boolean
-      section_exists: boolean
-    }
-
-    export interface ProgrammeDay {
-      // columns
-      id: number
-      programme_id: number
-      title: Array<unknown>
-      description?: Array<unknown> | null
-      order: number
-      start_time: string
-      created_at: string
-      updated_at: string
-      // mutators
-      translatable_columns_from: Array<unknown>
-      translations: unknown
-      // relations
-      programme?: Programme
-      elements?: ProgrammeElement[]
-      sections?: ProgrammeSection[]
-      parts?: ProgrammePart[]
-      // counts
-      elements_count: number
-      sections_count: number
-      parts_count: number
-      // exists
-      programme_exists: boolean
-      elements_exists: boolean
-      sections_exists: boolean
-      parts_exists: boolean
-    }
-
-    export interface ProgrammeElement {
-      // columns
-      id: number
-      programme_day_id: number
-      elementable_type: string
-      elementable_id: number
-      order: number
-      created_at: string
-      updated_at: string
-      // relations
-      elementable?: ProgrammeElement
-      day?: ProgrammeDay
-      blocks?: ProgrammeBlock[]
-      // counts
-      blocks_count: number
-      // exists
-      day_exists: boolean
-      blocks_exists: boolean
-    }
-
-    export interface ProgrammePart {
-      // columns
-      id: number
-      title: Array<unknown>
-      description?: Array<unknown> | null
-      instructor?: string | null
-      duration: number
-      start_time?: string | null
-      created_at: string
-      updated_at: string
-      // mutators
-      translatable_columns_from: Array<unknown>
-      translations: unknown
-      // relations
-      programme_days?: ProgrammeDay[]
-      programme_blocks?: ProgrammeBlock[]
-      // counts
-      programme_days_count: number
-      programme_blocks_count: number
-      // exists
-      programme_days_exists: boolean
-      programme_blocks_exists: boolean
-    }
-
-    export interface ProgrammeSection {
-      // columns
-      id: number
-      title: Array<unknown>
-      duration: number
-      start_time?: string | null
-      created_at: string
-      updated_at: string
-      // mutators
-      translatable_columns_from: Array<unknown>
-      translations: unknown
-      // relations
-      programme_days?: ProgrammeDay[]
-      blocks?: ProgrammeBlock[]
-      // counts
-      programme_days_count: number
-      blocks_count: number
-      // exists
-      programme_days_exists: boolean
-      blocks_exists: boolean
-    }
-
     export interface PublicInstitution {
       // columns
       id: string
@@ -1239,13 +1055,13 @@ declare global {
       duties?: Duty[]
       meetings?: Meeting[]
       tenant?: Tenant
+      tenants?: Tenant
       documents?: Document[]
       check_ins?: InstitutionCheckIn[]
       problems?: Problem[]
       tasks_from_meetings?: Task
       users?: User
       followers?: User[]
-      available_trainings?: Training[]
       comments?: Comment[]
       root_comments?: Comment[]
       outgoing_relationships?: Relationship[]
@@ -1262,7 +1078,6 @@ declare global {
       check_ins_count: number
       problems_count: number
       followers_count: number
-      available_trainings_count: number
       comments_count: number
       root_comments_count: number
       outgoing_relationships_count: number
@@ -1276,11 +1091,11 @@ declare global {
       duties_exists: boolean
       meetings_exists: boolean
       tenant_exists: boolean
+      tenants_exists: boolean
       documents_exists: boolean
       check_ins_exists: boolean
       problems_exists: boolean
       followers_exists: boolean
-      available_trainings_exists: boolean
       comments_exists: boolean
       root_comments_exists: boolean
       outgoing_relationships_exists: boolean
@@ -1339,6 +1154,89 @@ declare global {
       fileable_files_exists: boolean
       available_files_exists: boolean
       tasks_exists: boolean
+      activities_as_subject_exists: boolean
+    }
+
+    export interface PublicNews {
+      // columns
+      id: number
+      title: string
+      category_id?: number | null
+      permalink?: string | null
+      short: string
+      lang: string
+      other_lang_id?: number | null
+      content_id: number
+      image?: string | null
+      image_author?: string | null
+      important: boolean
+      tenant_id: number
+      publish_time?: string | null
+      main_points?: string | null
+      highlights?: Array<unknown> | null
+      layout: string
+      show_breadcrumbs: boolean
+      read_more?: string | null
+      draft?: boolean | null
+      created_at: string
+      updated_at: string
+      last_edited_at?: string | null
+      deleted_at?: string | null
+      // relations
+      user?: User
+      tenant?: Tenant
+      other_language_news?: News
+      tags?: Tag[]
+      content?: Content
+      activities_as_subject?: Activity[]
+      // counts
+      tags_count: number
+      activities_as_subject_count: number
+      // exists
+      user_exists: boolean
+      tenant_exists: boolean
+      other_language_news_exists: boolean
+      tags_exists: boolean
+      content_exists: boolean
+      activities_as_subject_exists: boolean
+    }
+
+    export interface PublicPage {
+      // columns
+      id: number
+      title: string
+      permalink?: string | null
+      lang: string
+      other_lang_id?: number | null
+      content_id: number
+      category_id?: number | null
+      is_active: boolean
+      highlights?: Array<unknown> | null
+      layout: string
+      show_table_of_contents: boolean
+      show_title: boolean
+      show_breadcrumbs: boolean
+      featured_image?: string | null
+      meta_description?: string | null
+      publish_time?: string | null
+      tenant_id: number
+      created_at: string
+      updated_at: string
+      last_edited_at?: string | null
+      deleted_at?: string | null
+      // relations
+      tenant?: Tenant
+      other_language_page?: Page
+      category?: Category
+      content?: Content
+      activities_as_subject?: Activity[]
+      // counts
+      activities_as_subject_count: number
+      // exists
+      tenant_exists: boolean
+      other_language_page_exists: boolean
+      category_exists: boolean
+      content_exists: boolean
       activities_as_subject_exists: boolean
     }
 
@@ -1763,7 +1661,7 @@ declare global {
     export interface Tenant {
       // columns
       id: number
-      type?: string | null
+      type?: TenantType | null
       fullname: string
       shortname: string
       alias: string
@@ -1827,99 +1725,6 @@ declare global {
       // exists
       content_part_exists: boolean
       user_exists: boolean
-    }
-
-    export interface Trainable {
-      // columns
-      id: number
-      training_id: string
-      trainable_type: string
-      trainable_id: string
-      tenant_id?: number | null
-      quota?: number | null
-      created_at: string
-      updated_at: string
-      // relations
-      trainable?: Trainable
-      user?: User
-      duty?: Duty
-      institution?: Institution
-      membership?: Membership
-      tenant?: Tenant
-      // counts
-      // exists
-      user_exists: boolean
-      duty_exists: boolean
-      institution_exists: boolean
-      membership_exists: boolean
-      tenant_exists: boolean
-    }
-
-    export interface Training {
-      // columns
-      id: string
-      name: Array<unknown>
-      description: Array<unknown>
-      address?: string | null
-      meeting_url?: string | null
-      image?: string | null
-      status: string
-      start_time: string
-      end_time?: string | null
-      organizer_id: string
-      institution_id: string
-      form_id?: string | null
-      max_participants?: number | null
-      created_at: string
-      updated_at: string
-      deleted_at?: string | null
-      // mutators
-      force_delete_blocked_reason: string
-      translatable_columns_from: Array<unknown>
-      translations: unknown
-      // relations
-      trainables?: Trainable[]
-      organizer?: User
-      users?: User[]
-      institution?: Institution
-      form?: Form
-      tasks?: TrainingTask[]
-      programmes?: Programme[]
-      activities_as_subject?: Activity[]
-      // counts
-      trainables_count: number
-      users_count: number
-      tasks_count: number
-      programmes_count: number
-      activities_as_subject_count: number
-      // exists
-      trainables_exists: boolean
-      organizer_exists: boolean
-      users_exists: boolean
-      institution_exists: boolean
-      form_exists: boolean
-      tasks_exists: boolean
-      programmes_exists: boolean
-      activities_as_subject_exists: boolean
-    }
-
-    export interface TrainingTask {
-      // columns
-      id: number
-      training_id: string
-      name: Array<unknown>
-      description?: Array<unknown> | null
-      due_date?: string | null
-      created_at: string
-      updated_at: string
-      // mutators
-      translatable_columns_from: Array<unknown>
-      translations: unknown
-      // relations
-      training?: Training
-      // counts
-      // exists
-      training_exists: boolean
     }
 
     export interface Type {
@@ -2023,13 +1828,11 @@ declare global {
       previous_duties?: Duty[]
       current_duties?: Duty[]
       dutiables?: Dutiable[]
+      tenants?: Tenant
       tasks?: Task[]
       followed_institutions?: Institution[]
       muted_institutions?: Institution[]
       reservations?: Reservation[]
-      memberships?: Membership[]
-      trainings?: Training[]
-      available_trainings_through_user?: Training[]
       push_subscriptions?: PushSubscription[]
       roles?: Role[]
       teams?: Permission[]
@@ -2045,9 +1848,6 @@ declare global {
       followed_institutions_count: number
       muted_institutions_count: number
       reservations_count: number
-      memberships_count: number
-      trainings_count: number
-      available_trainings_through_user_count: number
       push_subscriptions_count: number
       roles_count: number
       teams_count: number
@@ -2063,9 +1863,6 @@ declare global {
       followed_institutions_exists: boolean
       muted_institutions_exists: boolean
       reservations_exists: boolean
-      memberships_exists: boolean
-      trainings_exists: boolean
-      available_trainings_through_user_exists: boolean
       push_subscriptions_exists: boolean
       roles_exists: boolean
       teams_exists: boolean
@@ -2147,6 +1944,14 @@ declare global {
     } as const;
 
     export type ActionType = typeof ActionType[keyof typeof ActionType]
+
+    const TenantType = {
+      Pagrindinis: 'pagrindinis',
+      Padalinys: 'padalinys',
+      Pkp: 'pkp',
+    } as const;
+
+    export type TenantType = typeof TenantType[keyof typeof TenantType]
 
   }
 }

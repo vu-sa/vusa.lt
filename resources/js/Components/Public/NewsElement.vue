@@ -134,8 +134,7 @@
 
         <SmartLink :href="route('newsArchive', {
           subdomain: $page.props.tenant?.subdomain ?? 'www',
-          lang: $page.props.app.locale === 'lt' ? 'lt' : 'en',
-          newsString: $page.props.app.locale === 'lt' ? 'naujienos' : 'news',
+          lang: $page.props.app.locale,
         })" prefetch class="inline-flex items-center gap-1.5 font-bold mt-2 text-zinc-900 dark:text-zinc-100 hover:text-vusa-red transition-colors">
           <span>{{ $t("Žiūrėti visas") }}</span>
           <IFluentArrowRight16Regular />
@@ -152,6 +151,7 @@
 </template>
 
 <script setup lang="ts">
+import { localizedRoute } from '@/Utils/LocalizedRoutes';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ref, computed, onUnmounted } from 'vue';
 import { usePage } from '@inertiajs/vue3';
@@ -236,14 +236,10 @@ const carouselPlugins = [
 ];
 
 // Helper function to create news route
-const getNewsRoute = (item: any) => {
-  return route('news', {
-    lang: item.lang,
-    news: item.permalink ?? '',
-    newsString: 'naujiena',
-    subdomain: page.props.tenant?.subdomain ?? 'www',
-  });
-};
+const getNewsRoute = (item: any) => localizedRoute('news', {
+  news: item.permalink ?? '',
+  subdomain: page.props.tenant?.subdomain ?? 'www',
+}, item.lang);
 
 // Manually select a slide - improved for accessibility
 const selectSlide = (index: number) => {

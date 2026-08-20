@@ -66,6 +66,27 @@ class Task extends Model
         return $query->whereNull('completed_at');
     }
 
+    /**
+     * The models a task may be filed against.
+     *
+     * `taskable_type` arrives from request input, so it must be resolved through an allowlist
+     * rather than trusted — see StoreTaskRequest.
+     *
+     * @var list<class-string<Model>>
+     */
+    /**
+     * The morph aliases a task may hang off — what `taskable_type` stores and what
+     * StoreTaskRequest accepts from the frontend.
+     *
+     * @var list<string>
+     */
+    public const TASKABLE_TYPES = [
+        'institution',
+        'meeting',
+        'reservation',
+        'user',
+    ];
+
     public function taskable(): MorphTo
     {
         return $this->morphTo();

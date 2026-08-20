@@ -20,8 +20,8 @@
       </p>
       <p class="w-4/5">
         Sek naujienas mūsų
-        <a href="https://www.facebook.com/VUstudentuatstovybe">Facebook</a>
-        puslapyje 🔍 ir <a href="https://www.instagram.com/VUstudentuatstovybe/">Instagram</a> paskyroje 📸.
+        <a :href="page.props.organization.social.facebook">Facebook</a>
+        puslapyje 🔍 ir <a :href="page.props.organization.social.instagram">Instagram</a> paskyroje 📸.
       </p>
     </div>
     <div class="flex flex-wrap items-center gap-4 lg:justify-center">
@@ -59,10 +59,12 @@
 </template>
 
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, usePage } from '@inertiajs/vue3';
 
 import SmartLink from '../SmartLink.vue';
 
 import ShapeDivider1 from '@/Components/Public/ShapeDivider1.vue';
 import { Button } from '@/Components/ui/button';
+
+const page = usePage();
 </script>

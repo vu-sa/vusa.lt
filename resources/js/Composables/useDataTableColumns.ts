@@ -13,6 +13,7 @@ import {
 } from '@/Components/ui/data-table/cells';
 import type { BadgeVariants } from '@/Components/ui/badge';
 import { capitalize } from '@/Utils/String';
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 
 /**
  * Resolve a translatable value from toFullArray() format.
@@ -24,7 +25,7 @@ export function resolveTranslatable(value: unknown): string {
     const lang = getActiveLanguage();
     const obj = value as Record<string, string>;
 
-    return obj[lang] ?? obj['lt'] ?? Object.values(obj)[0] ?? '';
+    return getTranslatedValue(obj, lang);
   }
 
   return (value as string) ?? '';

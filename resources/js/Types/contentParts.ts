@@ -282,6 +282,42 @@ export interface CardStack {
   };
 }
 
+/**
+ * Full-bleed hero carousel: each slide is a big background photo with a gradient
+ * scrim and an overlaid text block (eyebrow/title/subtitle/Tiptap description) plus
+ * Hero-shaped buttons. The deck-style card carousel is `CarouselSlideDeck` above.
+ * No SectionOptions — the photo is the background, so section chrome has no surface.
+ */
+export interface HeroCarousel {
+  json_content: {
+    /** Small uppercase label above the title (Hero's `eyebrow`). Optional. */
+    eyebrow?: string;
+    title: string;
+    /** Short line under the title, rendered above the Tiptap description. Optional. */
+    subtitle?: string;
+    /** Authored as Tiptap JSON and rendered client-side via RichContentTiptapHTML (same as CarouselSlideDeck). */
+    description: Tiptap['json_content'];
+    imageSrc: string;
+    imageAlt: string;
+    /** `"x% y%"` CSS object-position, set via FocalPointPicker. Optional — old rows crop from center. */
+    objectPosition?: string;
+    /** Where the overlaid text block sits on the photo. Defaults to 'start' (bottom-left). */
+    align?: 'start' | 'center' | 'end';
+    /** Exact Hero button shape — rendered by the shared HeroButtons.vue. */
+    buttons?: Hero['json_content']['buttons'];
+  }[];
+  options: {
+    autoplay?: boolean;
+    autoplayDelay?: number;
+    showArrows?: boolean;
+    showIndicators?: boolean;
+    /** Gradient scrim strength over the photos — keeps overlaid text legible. */
+    scrim?: 'light' | 'medium' | 'dark';
+    /** Panel height preset — the photo panel is inset, so this is the panel's own height. */
+    height?: 'sm' | 'md' | 'lg';
+  };
+}
+
 export interface PhotoGalleryGrid {
   json_content: {
     src: string;

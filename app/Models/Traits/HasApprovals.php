@@ -166,7 +166,10 @@ trait HasApprovals
             return $this->getApproversForStep($step)->contains('id', $user->id);
         }
 
-        return true;
+        // Fail closed. The Approvable contract requires getApproversForStep(), so a model
+        // reaching this line has opted into approvals without declaring who may approve —
+        // that must never mean "anyone signed in".
+        return false;
     }
 
     /**
@@ -177,7 +180,7 @@ trait HasApprovals
     {
         // Try to find a flow attached to this specific model
         $flow = ApprovalFlow::query()
-            ->where('flowable_type', $this::class)
+            ->where('flowable_type', $this->getMorphClass())
             ->where('flowable_id', $this->id)
             ->first();
 
@@ -187,7 +190,7 @@ trait HasApprovals
 
         // Fall back to global flow for this model type
         return ApprovalFlow::query()
-            ->where('flowable_type', $this::class)
+            ->where('flowable_type', $this->getMorphClass())
             ->whereNull('flowable_id')
             ->first();
     }

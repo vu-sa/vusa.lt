@@ -97,6 +97,40 @@ describe('tenant isolation', function (): void {
                 ->where('data', fn ($data) => collect($data)->every(fn ($problem) => $problem['tenant_id'] === $this->tenant->id))
             );
     });
+
+    test('cannot store a problem for another tenant', function (): void {
+        asUser($this->coordinator)->post(route('problems.store'), [
+            'title' => ['lt' => 'Svetima problema', 'en' => 'Foreign problem'],
+            'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
+            'tenant_id' => $this->otherTenant->id,
+            'occurred_at' => now()->subDay()->toDateString(),
+            'status' => 'open',
+        ])->assertSessionHasErrors('tenant_id');
+
+        expect(Problem::query()->whereJsonContainsLocale('title', 'lt', 'Svetima problema')->exists())->toBeFalse();
+    });
+
+    test('cannot move an existing problem to another tenant', function (): void {
+        asUser($this->coordinator)->patch(route('problems.update', $this->problem->id), [
+            'title' => ['lt' => 'Problema', 'en' => 'Problem'],
+            'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
+            'tenant_id' => $this->otherTenant->id,
+            'occurred_at' => now()->subDay()->toDateString(),
+            'status' => 'open',
+        ])->assertSessionHasErrors('tenant_id');
+
+        expect($this->problem->fresh()->tenant_id)->toBe($this->tenant->id);
+    });
+
+    test('can store a problem for its own tenant', function (): void {
+        asUser($this->coordinator)->post(route('problems.store'), [
+            'title' => ['lt' => 'Sava problema', 'en' => 'Own problem'],
+            'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
+            'tenant_id' => $this->tenant->id,
+            'occurred_at' => now()->subDay()->toDateString(),
+            'status' => 'open',
+        ])->assertSessionHasNoErrors();
+    });
 });
 
 describe('html sanitization', function (): void {

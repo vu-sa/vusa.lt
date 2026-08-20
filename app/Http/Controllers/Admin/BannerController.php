@@ -5,13 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexBannerRequest;
+use App\Http\Requests\StoreBannerRequest;
+use App\Http\Requests\UpdateBannerRequest;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Banner;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Response as InertiaResponse;
 
@@ -46,7 +47,7 @@ class BannerController extends AdminController
 
         $deletedCount = $this->getTrashedCount($query);
 
-        $banners = $query->paginate($request->input('per_page', 20))
+        $banners = $query->paginate($request->getPerPage())
             ->withQueryString();
 
         return $this->inertiaResponse('Admin/Content/IndexBanner', [
@@ -63,7 +64,7 @@ class BannerController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $request->getSorting(),
-            'showDeleted' => $request->boolean('showDeleted', false),
+            'showDeleted' => $request->getShowDeleted(),
             'deletedCount' => $deletedCount,
         ]);
     }
@@ -81,14 +82,9 @@ class BannerController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreBannerRequest $request)
     {
         $this->handleAuthorization('create', Banner::class);
-
-        $request->validate([
-            'title' => 'required',
-            'image_url' => 'required',
-        ]);
 
         $tenants = GetTenantsForUpserts::execute('banners.create.padalinys', $this->authorizer);
 
@@ -105,7 +101,7 @@ class BannerController extends AdminController
 
         Cache::forget('banners-'.$banner->tenant_id);
 
-        return redirect()->route('banners.index')->with('success', 'Baneris sėkmingai sukurtas!');
+        return redirect()->route('banners.index')->with('success', $this->entityMessage('created', 'banner'));
     }
 
     /**
@@ -113,7 +109,7 @@ class BannerController extends AdminController
      */
     public function edit(Banner $banner): InertiaResponse
     {
-        $this->handleAuthorization($banner, 'update');
+        $this->handleAuthorization('update', $banner);
 
         return $this->inertiaResponse('Admin/Content/EditBanner', [
             'banner' => $banner,
@@ -123,14 +119,9 @@ class BannerController extends AdminController
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Banner $banner)
+    public function update(UpdateBannerRequest $request, Banner $banner)
     {
         $this->handleAuthorization('update', $banner);
-
-        $request->validate([
-            'title' => 'required',
-            'image_url' => 'required',
-        ]);
 
         $banner->title = $request->title;
         $banner->is_active = $request->is_active;
@@ -140,7 +131,7 @@ class BannerController extends AdminController
 
         Cache::forget('banners-'.$banner->tenant_id);
 
-        return $this->backResponse(['success' => 'Baneris atnaujintas!']);
+        return $this->backResponse(['success' => $this->entityMessage('updated', 'banner')]);
     }
 
     /**
@@ -148,11 +139,11 @@ class BannerController extends AdminController
      */
     public function destroy(Banner $banner): RedirectResponse
     {
-        $this->handleAuthorization($banner, 'delete');
+        $this->handleAuthorization('delete', $banner);
 
         $banner->delete();
 
-        return $this->redirectResponse('banners.index')->with('info', 'Baneris ištrintas!');
+        return $this->redirectResponse('banners.index')->with('info', $this->entityMessage('deleted', 'banner'));
     }
 
     public function restore(Banner $banner): RedirectResponse

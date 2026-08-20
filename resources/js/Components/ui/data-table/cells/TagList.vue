@@ -17,6 +17,7 @@
 </template>
 
 <script setup lang="ts">
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { computed } from 'vue';
 
 import TruncatedBadge from './TruncatedBadge.vue';
@@ -40,7 +41,7 @@ function itemKey(item: Record<string, any>): string | number {
 function itemLabel(item: Record<string, any>): string {
   const value = item[props.labelKey];
   if (value && typeof value === 'object') {
-    return value.lt || value.en || Object.values(value)[0] || '';
+    return getTranslatedValue(value);
   }
 
   return String(value ?? '');
