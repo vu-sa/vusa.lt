@@ -37,6 +37,11 @@
         <Clock class="h-4 w-4" />
         {{ $t('Pridėti pažymą') }}
       </Button>
+      <Button variant="outline" size="sm" class="gap-2" as="a"
+        :href="route('dutiables.timeline', { institution: institution.id })">
+        <CalendarRange class="h-4 w-4" />
+        {{ $t('dutiables.timeline.open') }}
+      </Button>
 
       <!-- Subscription buttons -->
       <TooltipProvider v-if="subscription">
@@ -189,6 +194,7 @@ import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
   Calendar as CalendarIcon,
+  CalendarRange,
   UserCheck,
   Globe,
   Clock,

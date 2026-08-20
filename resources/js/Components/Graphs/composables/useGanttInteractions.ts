@@ -48,7 +48,11 @@ export interface GanttInteractionCallbacks {
 }
 
 const MIN_DAY_WIDTH = 3;
-const MAX_DAY_WIDTH = 36;
+/**
+ * Halved from 36: past ~18px a day column is wider than anything drawn in it, and the
+ * chart stops showing a period you can take in at once.
+ */
+const MAX_DAY_WIDTH = 18;
 
 export function useGanttInteractions(
   options: GanttInteractionOptions,

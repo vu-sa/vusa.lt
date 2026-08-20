@@ -820,4 +820,32 @@ describe('show page', function (): void {
                 ->has('duty.other_duties', 1)
             );
     });
+
+    /**
+     * The page's action buttons used to read `auth.can['duties.update.padalinys']`, which
+     * that map never contains — so they rendered for nobody. The capability is per-record
+     * because the permission is tenant-scoped.
+     */
+    test('the capability prop reflects the policy for this duty', function (): void {
+        asUser($this->dutyManager)->get(route('duties.show', $this->dutyManagerDuty))
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('can.update', true)
+                ->where('can.managePeople', true)
+            );
+    });
+
+    test('a read-only user may open the page but gets no capabilities', function (): void {
+        $readerRole = Role::firstOrCreate(['name' => 'Duty Reader', 'guard_name' => 'web']);
+        $readerRole->givePermissionTo('duties.read.padalinys');
+
+        $reader = makeUser($this->tenant);
+        $reader->duties()->first()->assignRole($readerRole);
+
+        asUser($reader)->get(route('duties.show', $this->dutyManagerDuty))
+            ->assertStatus(200)
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('can.update', false)
+                ->where('can.managePeople', false)
+            );
+    });
 });

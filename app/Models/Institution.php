@@ -134,6 +134,17 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
     }
 
     /**
+     * Term-boundary overrides. An institution with at least one row here ignores the
+     * global ladder entirely — see ResolveCadenceForDuty::pick().
+     *
+     * @return HasMany<Cadence, $this>
+     */
+    public function cadences(): HasMany
+    {
+        return $this->hasMany(Cadence::class)->orderBy('start_date');
+    }
+
+    /**
      * Scope institutions that have at least one active duty with current users.
      */
     public function scopeHasActiveDuties($query)

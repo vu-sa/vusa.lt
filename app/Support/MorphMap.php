@@ -28,6 +28,7 @@ final class MorphMap
         'approval' => Models\Approval::class,
         'approval_flow' => Models\ApprovalFlow::class,
         'banner' => Models\Banner::class,
+        'cadence' => Models\Cadence::class,
         'calendar' => Models\Calendar::class,
         'category' => Models\Category::class,
         'comment' => Models\Comment::class,

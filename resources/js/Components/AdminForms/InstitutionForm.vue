@@ -229,8 +229,25 @@
       </div>
     </FormElement>
 
-    <!-- Section 4: Technical Settings -->
-    <FormElement :section-number="4">
+    <!-- Section 4: Cadences. Only on edit — an override needs a saved institution to hang off. -->
+    <FormElement v-if="!isCreate" :section-number="4" no-sider>
+      <template #title>
+        {{ $t('cadences.institution.title') }}
+      </template>
+      <template #subtitle>
+        {{ $t('cadences.institution.description') }}
+      </template>
+
+      <CadenceSection
+        :institution-id="institution.id!"
+        :own-cadences="cadences"
+        :global-cadences="globalCadences"
+        :defaults="cadenceDefaults"
+      />
+    </FormElement>
+
+    <!-- Section 5: Technical Settings -->
+    <FormElement :section-number="isCreate ? 4 : 5">
       <template #title>
         {{ $t('Techniniai nustatymai') }}
       </template>
@@ -279,6 +296,7 @@ import FormStatusHeader from './FormStatusHeader.vue';
 import ISimpleIconsInstagram from '~icons/simple-icons/instagram';
 import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
 import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
+import { CadenceSection, type CadenceRow } from '@/Components/Cadences';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { Button } from '@/Components/ui/button';
 import { Input, InputWithOverlappingLabel } from '@/Components/ui/input';
@@ -288,12 +306,21 @@ import { Separator } from '@/Components/ui/separator';
 import { Switch } from '@/Components/ui/switch';
 import { ImageUpload } from '@/Components/ui/upload';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   institution: App.Entities.Institution;
   institutionTypes: App.Entities.Type[];
   assignableTenants: Array<App.Entities.Tenant>;
+  /** This institution's own term overrides. Absent on create. */
+  cadences?: CadenceRow[];
+  /** The shared ladder, shown read-only beside them. */
+  globalCadences?: CadenceRow[];
+  cadenceDefaults?: { default_start_month_day: string; default_end_month_day: string };
   rememberKey?: string;
-}>();
+}>(), {
+  cadences: () => [],
+  globalCadences: () => [],
+  cadenceDefaults: () => ({ default_start_month_day: '07-01', default_end_month_day: '06-30' }),
+});
 
 defineEmits<{
   (event: 'submit:form', form: unknown): void;

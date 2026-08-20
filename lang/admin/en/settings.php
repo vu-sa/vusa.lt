@@ -29,6 +29,10 @@ return [
             'title' => 'Representation Settings',
             'description' => 'Configure which roles grant access to tenant-wide institutions in the representation dashboard.',
         ],
+        'cadences' => [
+            'title' => 'Cadences',
+            'description' => 'Set the term start and end dates, and any institution overrides.',
+        ],
         'site' => [
             'title' => 'Site settings',
             'description' => 'Point the system at the pages it links to, such as the privacy policy.',

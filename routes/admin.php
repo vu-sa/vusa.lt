@@ -186,6 +186,10 @@ Route::get('duties-update-users', [DutyController::class, 'updateUsersWizard'])-
 Route::post('duties/{duty}/batch-update-users', [DutyController::class, 'batchUpdateUsers'])->name('duties.batchUpdateUsers');
 // DutiableController has no create/store — dutiables are created through the duty and
 // user flows, not directly.
+// Declared before the resource so /dutiables/timeline can never be read as /dutiables/{dutiable}.
+Route::get('dutiables/timeline', [DutiableTimelineController::class, 'index'])->name('dutiables.timeline');
+Route::post('dutiables/timeline/apply', [DutiableTimelineController::class, 'apply'])->name('dutiables.timeline.apply');
+Route::post('dutiables/timeline/merge', [DutiableTimelineController::class, 'merge'])->name('dutiables.timeline.merge');
 Route::resource('dutiables', DutiableController::class)->only(['edit', 'update', 'destroy']);
 Route::get('studyPrograms/merge', [StudyProgramController::class, 'merge'])->name('studyPrograms.merge');
 Route::post('studyPrograms/merge', [StudyProgramController::class, 'mergeStudyPrograms'])->name('studyPrograms.mergeStudyPrograms');
@@ -247,6 +251,11 @@ Route::get('settings/atstovavimas', [SettingsController::class, 'editAtstovavima
 Route::post('settings/atstovavimas', [SettingsController::class, 'updateAtstovavimasSettings'])->name('settings.atstovavimas.update');
 Route::get('settings/site', [SettingsController::class, 'editSiteSettings'])->name('settings.site.edit');
 Route::post('settings/site', [SettingsController::class, 'updateSiteSettings'])->name('settings.site.update');
+Route::get('settings/cadences', [CadenceController::class, 'index'])->name('settings.cadences.index');
+Route::post('settings/cadences/defaults', [CadenceController::class, 'updateDefaults'])->name('settings.cadences.defaults');
+Route::post('settings/cadences', [CadenceController::class, 'store'])->name('settings.cadences.store');
+Route::patch('settings/cadences/{cadence}', [CadenceController::class, 'update'])->name('settings.cadences.update');
+Route::delete('settings/cadences/{cadence}', [CadenceController::class, 'destroy'])->name('settings.cadences.destroy');
 Route::get('settings/authorization', [SettingsController::class, 'editAuthorization'])->name('settings.authorization.edit');
 Route::post('settings/authorization', [SettingsController::class, 'updateAuthorization'])->name('settings.authorization.update');
 

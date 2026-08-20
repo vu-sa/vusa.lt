@@ -7,6 +7,17 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.26 — Duty period timeline (2026-08-20) {#v1-26}
+
+- ⭐ **Duty periods on one timeline** — every duty in an institution is drawn as a bar you can drag, with a dock underneath showing the selected row, the suggested fixes and any unsaved changes. Reachable from the People area and from duty, member and institution pages
+- ⭐ **Suggested fixes now say what they would change** — overlapping periods, open-ended rows whose cadence has ended, dates drifting off a cadence boundary and unfilled places are listed together with the dates they would be given. Several can be ticked and applied at once, after previewing the whole list
+- ⭐ **Cadences** — the shared term dates live in Settings, while an institution's own exceptions are managed on the institution itself. A cadence is named after its dates, so there is no name to type
+- ⭐ **Selecting and merging several periods** — a checkbox on every row and on each duty. With several ticked you can set a start or end date across all of them at once; with two stints of one person on one duty you can merge them into one
+- ✨ **Rows that carry more than dates now say so** — an overridden email, study programme, photo or description is marked with an icon and a tooltip, and merging warns first that some of it will be lost
+- ✨ **A more readable timeline** — current and ended periods are coloured differently, consecutive cadences alternate shade, names are links, and the zoom level is remembered. Rows can be filtered by cadence and by unit
+- ✨ **A period can be removed from the timeline itself** — this used to mean opening a separate page
+- 🔧 **Fixed the duty and member page buttons** — "Manage", "Assign a member" and "Edit" rendered for nobody, even with the right permissions
+
 ## v1.25 — Hero carousel, English URLs and authorization clean-up (2026-08-20) {#v1-25}
 
 - ⭐ **New hero carousel block** — page content can now open with rotating large photos, each carrying its own title, subtitle, description and buttons. The carousel is keyboard- and screen-reader-friendly, autoplay pauses on hover and turns off entirely when the device requests reduced motion

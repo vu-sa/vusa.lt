@@ -72,6 +72,21 @@
             </Card>
           </Link>
 
+          <!-- Cadences -->
+          <Link :href="route('settings.cadences.index')">
+            <Card class="h-full transition-colors duration-200 hover:border-primary/40 hover:bg-accent/40">
+              <CardHeader>
+                <CardTitle class="flex items-center gap-2">
+                  <CalendarRange class="size-5" />
+                  {{ $t('settings.pages.cadences.title') }}
+                </CardTitle>
+                <CardDescription>
+                  {{ $t('settings.pages.cadences.description') }}
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+
           <!-- Site Settings -->
           <Link :href="route('settings.site.edit')">
             <Card class="h-full transition-colors duration-200 hover:border-primary/40 hover:bg-accent/40">
@@ -117,6 +132,7 @@
 
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import { CalendarRange } from 'lucide-vue-next';
 
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/Components/ui/card';

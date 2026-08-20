@@ -17,6 +17,7 @@
 import { computed, type Component } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import {
+  CalendarRange,
   Home,
   Search,
   Settings,
@@ -137,6 +138,15 @@ export const ADMIN_PAGE_CATALOG: AdminPageEntry[] = [
     icon: DutyIcon,
     category: 'navigation',
     keywords: ['duties', 'pareigybes', 'pareigos'],
+    can: c => !!c.index?.duty,
+  },
+  {
+    id: 'nav-dutiable-timeline',
+    routeName: 'dutiables.timeline',
+    labelKey: 'dutiables.timeline.page.title',
+    icon: CalendarRange,
+    category: 'navigation',
+    keywords: ['timeline', 'laikotarpiai', 'kadencijos', 'pareigybiu laikotarpiai', 'terms'],
     can: c => !!c.index?.duty,
   },
   {

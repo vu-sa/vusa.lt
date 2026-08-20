@@ -7,6 +7,17 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.26 — Pareigybių laikotarpių laiko juosta (2026-08-20) {#v1-26}
+
+- ⭐ **Pareigybių laikotarpiai vienoje laiko juostoje** — visos institucijos pareigybės matomos kaip juostos; datas galima tempti pele, o apačioje esantis skydelis rodo pažymėtą įrašą, siūlomus taisymus ir neišsaugotus pakeitimus. Pasiekiama iš „Žmonės“ srities, pareigybės, nario ir institucijos puslapių
+- ⭐ **Siūlomi taisymai rodo, ką konkrečiai pakeis** — persidengiančios datos, neterminuoti laikotarpiai po kadencijos pabaigos, nuo kadencijos nutolusios datos ir neužimtos vietos surašomi kartu su naujomis datomis. Kelis taisymus galima pažymėti ir pritaikyti iš karto, prieš tai peržiūrėjus visą sąrašą
+- ⭐ **Kadencijos** — bendros kadencijų datos nustatomos „Nustatymuose“, o institucijos išimtys – pačios institucijos redagavimo lange. Kadencijos pavadinimas sudaromas iš datų, atskirai jo rašyti nereikia
+- ⭐ **Kelių laikotarpių žymėjimas ir sujungimas** — varnelės prie kiekvieno įrašo ir prie visos pareigybės. Pažymėjus kelis, galima vienu kartu nustatyti pradžios ar pabaigos datą; pažymėjus du to paties žmogaus tos pačios pareigybės laikotarpius – juos sujungti į vieną
+- ✨ **Matyti, kada įrašas turi papildomos informacijos** — atskiras el. paštas, studijų programa, nuotrauka ar aprašymas pažymimi piktograma su paaiškinimu, o prieš sujungiant įspėjama, kad dalis šios informacijos bus prarasta
+- ✨ **Aiškesnė laiko juosta** — dabartiniai ir pasibaigę laikotarpiai skiriasi spalva, gretimos kadencijos – atspalviu, vardai yra nuorodos, o mastelis įsimenamas kitam kartui. Įrašus galima filtruoti pagal kadenciją ir padalinį
+- ✨ **Laikotarpį galima pašalinti iš pačios laiko juostos** — anksčiau tam reikėdavo atskiro puslapio
+- 🔧 **Sutvarkyti pareigybės ir nario puslapių mygtukai** — „Valdyti“, „Priskirti narį“ ir „Redaguoti“ nebuvo rodomi niekam, nors teisių pakako
+
 ## v1.25 — Hero karuselė, angliškos nuorodos ir teisių sutvarkymas (2026-08-20) {#v1-25}
 
 - ⭐ **Naujas hero karuselės blokas** — puslapio turinį galima pradėti besikeičiančiomis didelėmis nuotraukomis su antrašte, paantrašte, aprašymu ir mygtukais. Karuselė pritaikyta klaviatūrai ir ekrano skaitytuvams, o automatinis slinkimas stoja užvedus pele ir neveikia, kai įrenginys prašo mažiau judesio

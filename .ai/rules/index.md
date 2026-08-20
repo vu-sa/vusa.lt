@@ -4,10 +4,12 @@ Before planning or editing, find the row whose globs match the file's path and r
 
 | Applies to | Rule file |
 | --- | --- |
+| app/Models/Cadence.php,app/Policies/CadencePolicy.php,app/Http/Requests/Cadences/**,resources/js/Components/Cadences/** | .ai/rules/cadences.md |
 | config/vusa.php | .ai/rules/config.md |
 | app/Http/Controllers/** | .ai/rules/controllers.md |
 | app/Enums/** | .ai/rules/enums.md |
 | lang/** | .ai/rules/lang.md |
+| resources/js/Pages/Admin/People/Show*.vue,app/Http/Middleware/HandleInertiaRequests.php | .ai/rules/middleware.md |
 | app/Models/**, app/Models/Tenant.php | .ai/rules/models.md |
 | app/Providers/** | .ai/rules/providers.md |
 | app/Http/Requests/** | .ai/rules/requests.md |

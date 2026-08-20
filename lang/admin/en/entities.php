@@ -17,6 +17,10 @@ return [
         'model' => '{1} duty period|[2,*] duty periods',
         'gender' => 'm',
     ],
+    'cadence' => [
+        'model' => '{1} cadence|[2,*] cadences',
+        'gender' => 'f',
+    ],
     'document' => [
         'model' => '{1} document|[2,*] documents',
         'gender' => 'm',

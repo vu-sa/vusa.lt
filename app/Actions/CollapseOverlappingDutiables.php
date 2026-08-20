@@ -79,7 +79,13 @@ class CollapseOverlappingDutiables
         return $survivor->end_date === null || $next->start_date->lte($survivor->end_date);
     }
 
-    private static function foldInto(Dutiable $survivor, Dutiable $loser): void
+    /**
+     * Widen `$survivor` to also cover `$loser`, then backfill anything it is missing.
+     *
+     * Public because the timeline editor's explicit merge folds rows the same way — the
+     * only difference there is that the user chose them rather than an overlap scan.
+     */
+    public static function foldInto(Dutiable $survivor, Dutiable $loser): void
     {
         if ($survivor->end_date !== null) {
             $survivor->end_date = $loser->end_date === null || $loser->end_date->gt($survivor->end_date)

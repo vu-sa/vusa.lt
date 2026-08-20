@@ -29,6 +29,10 @@ return [
             'title' => 'Atstovavimo nustatymai',
             'description' => 'Konfigūruokite, kurios rolės suteikia prieigą prie padalinio institucijų atstovavimo skydelyje.',
         ],
+        'cadences' => [
+            'title' => 'Kadencijos',
+            'description' => 'Nurodykite kadencijų pradžios ir pabaigos datas bei institucijų išimtis.',
+        ],
         'site' => [
             'title' => 'Svetainės nustatymai',
             'description' => 'Nurodykite svetainės puslapius, į kuriuos nukreipia sistema, pvz., privatumo politiką.',

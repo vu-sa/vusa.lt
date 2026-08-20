@@ -158,6 +158,7 @@ import {
   ListFilterIcon,
   ChevronDownIcon,
   AlertCircleIcon,
+  CalendarRange,
 } from 'lucide-vue-next';
 
 import IconFlowchart from '~icons/fluent/flowchart20-regular';
@@ -233,6 +234,12 @@ const menuItems = computed(() => [
         href: route('duties.index'),
         show: auth?.can.create.duty,
         searchTab: 'duties',
+      },
+      {
+        title: $t('dutiables.timeline.page.title'),
+        icon: CalendarRange,
+        href: route('dutiables.timeline'),
+        show: auth?.can.create.duty,
       },
       {
         title: $t('Studijų programos'),

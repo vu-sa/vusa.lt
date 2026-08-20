@@ -44,6 +44,10 @@
       </div>
     </template>
     <template #actions>
+      <Button v-if="canEdit" variant="outline" size="sm" class="gap-2" @click="timelineOpen = true">
+        <CalendarRange class="h-4 w-4" />
+        {{ $t('dutiables.timeline.open') }}
+      </Button>
       <Button v-if="canEdit" variant="outline" size="sm" class="gap-2" @click="handleEdit">
         <Pencil class="h-4 w-4" />
         {{ $t('Redaguoti') }}
@@ -192,12 +196,13 @@
         @open-task-detail="handleOpenTaskDetail"
       />
     </template>
+    <DutiableTimelineDialog v-model:open="timelineOpen" scope-type="user" :scope-id="user.id" />
   </ShowPageLayout>
 </template>
 
 <script setup lang="ts">
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
@@ -209,6 +214,7 @@ import {
   Phone,
   Facebook,
   Shield,
+  CalendarRange,
 } from 'lucide-vue-next';
 
 // Layout and Components
@@ -216,6 +222,7 @@ import ShowPageLayout from '@/Components/Layouts/ShowPageLayout.vue';
 import MoreOptionsButton from '@/Components/Buttons/MoreOptionsButton.vue';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 import { EmptyState, SectionCard, ShowPageGrid } from '@/Components/Patterns';
+import { DutiableTimelineDialog } from '@/Features/Admin/DutiableTimeline';
 import { DutySummaryCard } from '@/Components/Duties';
 
 // UI Components
@@ -260,9 +267,12 @@ const props = defineProps<{
     overdue: number;
     autoCompleting: number;
   };
+  can?: { update: boolean };
 }>();
 
 // Computed
+const timelineOpen = ref(false);
+
 const currentDuties = computed(() => props.user.current_duties ?? []);
 const previousDuties = computed(() => props.user.previous_duties ?? []);
 const allDuties = computed(() => [...currentDuties.value, ...previousDuties.value]);
@@ -328,8 +338,10 @@ const focalPointStyle = computed(() => {
 
 // Permissions
 const page = usePage();
-const canEdit = computed(() => page.props.auth?.can?.['users.update.padalinys'] || false);
-const canGeneratePassword = computed(() => page.props.auth?.can?.['users.update.padalinys'] && page.props.auth?.user?.is_super_admin);
+// From the controller, not `auth.can`: that map holds index/create/forceDelete only, so
+// the old lookup was always undefined and these buttons rendered for nobody.
+const canEdit = computed(() => props.can?.update ?? false);
+const canGeneratePassword = computed(() => canEdit.value && page.props.auth?.user?.is_super_admin);
 
 // Event handlers
 const handleEdit = () => {

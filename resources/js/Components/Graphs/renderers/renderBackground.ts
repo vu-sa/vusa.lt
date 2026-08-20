@@ -10,7 +10,12 @@ import type { GanttColors } from '../ganttColors';
 
 interface LayoutRow {
   key: string | number;
-  type: 'tenant' | 'institution';
+  /**
+   * Widened from the meetings chart's 'tenant' | 'institution' so other charts
+   * (the dutiable timeline) can reuse this renderer with their own row kinds.
+   * Only 'tenant' is special-cased below, as a header row that skips grid lines.
+   */
+  type: string;
   height: number;
   top: number;
 }
@@ -86,7 +91,7 @@ export function renderBackground(ctx: BackgroundRenderContext): void {
   // At high zoom (dayWidthPx >= 14): show all Sundays
   // At lower zoom: show only the last Sunday of each month for orientation
   const days = d3.timeDay.range(minTime, maxTime);
-  const institutionRows = layoutRows.filter(r => r.type === 'institution');
+  const institutionRows = layoutRows.filter(r => r.type !== 'tenant');
   const showAllSundays = typeof dayWidthPx === 'number' && dayWidthPx >= 14;
 
   const dayBands: Array<{ day: Date; row: LayoutRow }> = [];

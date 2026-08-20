@@ -232,6 +232,8 @@ class DutyController extends AdminController
             ->orderByDesc('start_time')
             ->first(['meetings.id', 'meetings.title', 'meetings.start_time']);
 
+        $user = request()->user();
+
         return $this->inertiaResponse('Admin/People/ShowDuty', [
             'duty' => array_merge($duty->toArray(), [
                 'sharepointPath' => $duty->institution?->tenant ? $duty->sharepoint_path() : null,
@@ -239,6 +241,12 @@ class DutyController extends AdminController
                 'next_meeting' => $nextMeeting?->toArray(),
                 'last_meeting' => $lastMeeting?->toArray(),
             ]),
+            // Per-record, not from `auth.can`: `duties.update.padalinys` is tenant-scoped,
+            // so a single global boolean would be wrong for every cross-tenant case.
+            'can' => [
+                'update' => $user->can('update', $duty),
+                'managePeople' => $user->can('managePeople', $duty),
+            ],
         ]);
     }
 
