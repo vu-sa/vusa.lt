@@ -23,6 +23,13 @@ coverage/*
 public/build
 public/hot
 
+# Deploy archives + the rotated-out vendor, all living at the repo root on the servers.
+/build.tar.gz
+/docs.tar.gz
+/vendor.tar.gz
+/vendor.old
+/vendor.new
+
 # === Public uploads & docs ===
 public/uploads
 public/docs

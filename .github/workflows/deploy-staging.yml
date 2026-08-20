@@ -79,8 +79,16 @@ jobs:
           tar -czf docs.tar.gz -C public/docs .
 
       # Upload build artifacts
+      #
+      # deployment/maintenance.php goes up first, straight to storage/framework/maintenance.php:
+      # public/index.php requires that file — when present — before vendor/autoload.php, so it
+      # takes staging down over plain scp with no PHP boot. That covers the window the next step
+      # opens, between the git reset and the vendor/ swap.
       - name: Upload build artifacts
         run: |
+          echo "Uploading maintenance fallback..."
+          scp deployment/maintenance.php ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/storage/framework/maintenance.php
+
           echo "Uploading build artifacts to staging..."
           scp build.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/build.tar.gz
           scp vendor.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/vendor.tar.gz
@@ -92,10 +100,26 @@ jobs:
           fi
 
       # Run deployment process
+      #
+      # This mirrors deploy.yml's ordering, and for the same reason: everything up to and
+      # including the vendor/ swap is plain shell. Every `php artisan ...` boots the whole
+      # framework before the command runs, so new app code paired with the still-old vendor/
+      # fatals on a missing class — staging previously never swapped vendor/ in at all, and
+      # ran on whatever it happened to have.
+      #
+      # `set -e` stops the script at the first failure instead of running the rest of the
+      # deploy against a half-updated checkout.
       - name: Deploy to staging
         run: |
           ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'DEPLOY_SCRIPT'
+            set -e
             cd ${{ vars.SITE_DIR }}
+
+            # Recovery net only: makes maintenanceMode()->active() true so a hand-run
+            # `artisan up` actually clears storage/framework/maintenance.php instead of
+            # short-circuiting on "Application is already up". deployment:run's own
+            # maintenance step overwrites both files moments later.
+            echo '{}' > storage/framework/down
 
             # Determine target branch
             TARGET_BRANCH="${{ github.event.inputs.branch || github.ref_name }}"
@@ -114,10 +138,27 @@ jobs:
             git checkout "$TARGET_BRANCH" 2>/dev/null || git checkout -b "$TARGET_BRANCH" "origin/$TARGET_BRANCH"
             git reset --hard "origin/$TARGET_BRANCH"
 
-            # Clean untracked files (except those in .gitignore like storage/, .env)
-            git clean -fd
+            # Clean untracked files (except those in .gitignore like storage/, .env).
+            # The archives scp'd in moments ago are excluded explicitly: they sit at the repo
+            # root and a plain `git clean -fd` deleted all three, so vendor/ was never swapped
+            # and deployment:deploy-assets found no build.tar.gz to unpack.
+            git clean -fd -e build.tar.gz -e docs.tar.gz -e vendor.tar.gz
 
             echo "✅ Branch switched and cleaned"
+
+            # Swap vendor/ into place — still plain shell, still no artisan.
+            rm -rf vendor.new
+            mkdir vendor.new
+            tar -xzf vendor.tar.gz -C vendor.new
+            rm -rf vendor.old
+            mv vendor vendor.old
+            mv vendor.new/vendor vendor
+            rm -rf vendor.new vendor.tar.gz
+
+            # Drop the cached bootstrap files before the first artisan boot. PackageManifest
+            # only rebuilds bootstrap/cache/packages.php when it is missing, so a removed
+            # Composer package stays listed there and fatals on boot — see deploy.yml.
+            rm -f bootstrap/cache/*.php
 
             # Run the deployment process
             /opt/php85/bin/php artisan deployment:run
@@ -128,4 +169,5 @@ jobs:
         if: failure()
         run: |
           ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && \
+          rm -f bootstrap/cache/*.php && \
           /opt/php85/bin/php artisan deployment:resume" || true
