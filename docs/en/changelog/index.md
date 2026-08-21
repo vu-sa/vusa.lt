@@ -7,6 +7,12 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.31 — Consistent admin cards (2026-08-21) {#v1-31}
+
+- ✨ **Settings cards now match the administration page style** — the settings index page now shows the same cards as the administration page: icon, title and description, with a subtle ring highlight on hover
+- ✨ **Removed the featured "Problem" card** — the "Latest tools" section with the "New"-badged problem card no longer appears on the administration page; problems remain available under the "Representation" section
+- 🔧 **Representation settings page is translated again** — a mismatch in the translation files caused raw translation keys to be shown; Lithuanian and English texts now display correctly
+
 ## v1.30 — Timetable content block (2026-08-21) {#v1-30}
 
 - ⭐ **New "Timetable" content block** — pages, news and the homepage can now embed a timetable card with times and titles. Rows can be entered manually or imported from a meeting's agenda

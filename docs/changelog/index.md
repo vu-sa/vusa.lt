@@ -7,6 +7,12 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.31 — Vienodės administravimo kortelės (2026-08-21) {#v1-31}
+
+- ✨ **Nustatymų kortelės vienodo stiliaus su administravimu** — nustatymų pradžios puslapis dabar rodo tokias pat korteles kaip administravimo puslapis: piktograma, pavadinimas ir aprašymas, su pele pažymint apsišviečiančiu rėmeliu
+- ✨ **Pašalinta išskirtinė „Problema“ kortelė** — administravimo puslapyje nebebus rodomas „Naujausi įrankiai“ skyrius su „Nauja“ žyme pažymėta problemos kortele; problemos lieka pasiekiamos „Atstovavimo“ skyriuje
+- 🔧 **Atstovavimo nustatymų puslapis vėl išverstas** — dėl klaidos vertimų rinkmenose buvo matomos neišverstos rakto eilutės; dabar rodomi lietuviški ir angliški tekstai
+
 ## v1.30 — Tvarkaraščio turinio blokas (2026-08-21) {#v1-30}
 
 - ⭐ **Naujas turinio blokas „Tvarkaraštis“** — puslapiuose, naujienose ir pagrindiniame puslapyje dabar galima įterpti tvarkaraščio kortelę su laikais ir pavadinimais. Eilutes galima įvesti rankiniu būdu arba importuoti iš posėdžio darbotvarkės

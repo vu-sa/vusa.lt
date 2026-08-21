@@ -6,6 +6,7 @@ use App\Models\Role;
 use App\Models\Tenant;
 use App\Settings\AtstovavimasSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -327,5 +328,25 @@ describe('manager cache management', function (): void {
         // Should not have created a cache entry since we returned early
         $cacheKey = AtstovavimasSettings::getManagerTenantsCacheKey($this->user->id);
         expect(Cache::has($cacheKey))->toBeFalse();
+    });
+});
+
+describe('translations', function (): void {
+    test('every translation key referenced by the page resolves in lt and en', function (): void {
+        $page = file_get_contents(resource_path('js/Pages/Admin/Settings/EditAtstovavimasSettings.vue'));
+        preg_match_all("/\\\$t\('([a-z0-9_.]+)'/", $page, $matches);
+
+        $keys = $matches[1];
+        expect($keys)->not->toBeEmpty();
+
+        foreach (['lt', 'en'] as $locale) {
+            $translations = require lang_path("admin/{$locale}/settings.php");
+
+            foreach ($keys as $key) {
+                // Keys are prefixed with the file name ("settings."), Arr::get expects the path inside it.
+                $path = substr($key, strlen('settings.'));
+                expect(Arr::get($translations, $path))->not->toBeNull("Key [{$key}] missing in {$locale}");
+            }
+        }
     });
 });
