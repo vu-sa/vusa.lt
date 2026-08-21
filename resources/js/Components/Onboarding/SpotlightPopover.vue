@@ -7,9 +7,13 @@
   >
     <slot />
 
-    <!-- Larger hover area around badge for easier interaction -->
+    <!--
+      Larger hover area around badge for easier interaction. Non-float only: its `-top-3 -right-3`
+      offset relies on the trigger's own box, and an ancestor with `overflow: hidden` (e.g.
+      ShowPageHero's rounded card) would otherwise clip it.
+    -->
     <div
-      v-if="showBadge && !isDismissed"
+      v-if="showBadge && !isDismissed && !float"
       class="absolute -top-3 -right-3 z-10 h-8 w-8 flex items-center justify-center"
     >
       <span class="relative flex h-3 w-3">
@@ -17,6 +21,20 @@
         <span class="relative inline-flex h-3 w-3 rounded-full bg-primary" />
       </span>
     </div>
+
+    <!-- float: teleport the badge alongside the panel so the same overflow-hidden ancestor can't clip it -->
+    <Teleport v-if="float" to="body">
+      <div
+        v-if="showBadge && !isDismissed"
+        class="fixed z-50 h-8 w-8 flex items-center justify-center"
+        :style="badgeStyle"
+      >
+        <span class="relative flex h-3 w-3">
+          <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/75 opacity-75" />
+          <span class="relative inline-flex h-3 w-3 rounded-full bg-primary" />
+        </span>
+      </div>
+    </Teleport>
 
     <!--
       When `float` is set the panel is teleported to the body and positioned from the trigger's
@@ -112,7 +130,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Sparkles } from 'lucide-vue-next';
 
@@ -132,7 +150,7 @@ interface Props {
   /**
    * Position of the tooltip
    */
-  position?: 'top' | 'bottom' | 'left' | 'right' | 'top-right';
+  position?: 'top' | 'bottom' | 'left' | 'right' | 'top-right' | 'bottom-right';
 
   /**
    * Whether to show the pulsing badge
@@ -183,11 +201,14 @@ const emit = defineEmits<{
 const isOpen = ref(false);
 const triggerRef = ref<HTMLElement | null>(null);
 const floatingStyle = ref<Record<string, string>>({});
+const badgeStyle = ref<Record<string, string>>({});
 let showTimeout: ReturnType<typeof setTimeout> | null = null;
 let hideTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const PANEL_WIDTH = 320;
 const GAP = 12;
+/** Half the badge's own box (`h-8 w-8`), so it centers on the trigger's corner. */
+const BADGE_HALF = 16;
 
 /** Anchor the teleported panel to the trigger, keeping it inside the viewport. */
 function positionFloatingPanel() {
@@ -210,6 +231,22 @@ function positionFloatingPanel() {
   };
 }
 
+/** Anchor the teleported badge to the trigger's top-right corner (mirrors `-top-3 -right-3`). */
+function positionBadge() {
+  const trigger = triggerRef.value;
+
+  if (!trigger) {
+    return;
+  }
+
+  const rect = trigger.getBoundingClientRect();
+
+  badgeStyle.value = {
+    left: `${rect.right - BADGE_HALF}px`,
+    top: `${rect.top - BADGE_HALF}px`,
+  };
+}
+
 const computedDismissText = computed(() => props.dismissText ?? $t('tutorials.done'));
 
 const positionClasses = computed(() => {
@@ -222,6 +259,11 @@ const positionClasses = computed(() => {
       return 'bottom-full left-0 mb-3 origin-bottom-left';
     case 'bottom':
       return 'top-full left-1/2 -translate-x-1/2 mt-3 origin-top';
+    case 'bottom-right':
+      // Anchored to the right edge, opening down and to the left — for a trigger pushed to the
+      // far right of its row (e.g. `class="ml-auto"`), where a centered panel would overflow the
+      // viewport's right edge.
+      return 'top-full right-0 mt-3 origin-top-right';
     case 'left':
       return 'right-full top-0 mr-3 origin-right';
     case 'right':
@@ -230,6 +272,21 @@ const positionClasses = computed(() => {
       return 'left-full top-0 ml-3 origin-left';
   }
 });
+
+// The badge (unlike the panel) is visible whenever not dismissed, not only on hover, so it
+// needs a position as soon as it can render — and to follow the trigger if the layout shifts.
+if (props.float) {
+  onMounted(() => {
+    positionBadge();
+    window.addEventListener('resize', positionBadge);
+  });
+
+  onUnmounted(() => {
+    window.removeEventListener('resize', positionBadge);
+  });
+
+  watch([() => props.showBadge, () => props.isDismissed], () => positionBadge());
+}
 
 function handleMouseEnter() {
   if (props.isDismissed) return;

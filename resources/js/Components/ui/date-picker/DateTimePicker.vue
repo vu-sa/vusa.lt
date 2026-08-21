@@ -154,7 +154,10 @@ const onCalendarChange = (value: any) => {
 };
 
 // Handle time change
-const onTimeChange = (value: TimeValue) => {
+const onTimeChange = (value: TimeValue | undefined) => {
+  // A date always has a time here, so a cleared value is not a state this picker can enter.
+  if (!value) return;
+
   timeValue.value = value;
   emitValue();
 };

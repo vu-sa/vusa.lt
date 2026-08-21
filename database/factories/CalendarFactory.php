@@ -43,6 +43,17 @@ class CalendarFactory extends Factory
             'is_all_day' => fake()->boolean,
             'hero_style' => fake()->randomElement(CalendarHeroStyleEnum::cases()),
             'tenant_id' => Tenant::factory(),
+            'is_remote' => false,
         ];
+    }
+
+    /**
+     * A remote event: no map, no address to geocode.
+     */
+    public function remote(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_remote' => true,
+        ]);
     }
 }

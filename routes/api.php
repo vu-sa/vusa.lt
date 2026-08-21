@@ -124,6 +124,7 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         // Meetings
         Route::get('meetings/recent', [MeetingApiController::class, 'recent'])->name('meetings.recent');
         Route::get('meetings/{meeting}/preview', [MeetingApiController::class, 'preview'])->name('meetings.preview');
+        Route::get('meetings/{meeting}/agenda-items', [MeetingApiController::class, 'agendaItems'])->name('meetings.agendaItems');
 
         // Institutions
         Route::get('institutions/{institution}/preview', [InstitutionApiController::class, 'preview'])->name('institutions.preview');

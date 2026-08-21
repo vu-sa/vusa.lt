@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\InstitutionScopeResolver;
 use App\Services\ModelAuthorizer;
 use App\Services\PermissionService;
 use App\Support\LocalizedRouteSlugs;
@@ -31,6 +32,9 @@ class AppServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->singleton(ModelAuthorizer::class, fn ($app) => new ModelAuthorizer);
+
+        // Singleton so the institution-type scope map is built at most once per request.
+        $this->app->singleton(InstitutionScopeResolver::class);
 
         // Register our new permission service
         $this->app->singleton('permission.service', fn ($app) => new PermissionService($app->make(ModelAuthorizer::class)));

@@ -71,6 +71,11 @@ Route::patch('quickLinks/{quickLink}/restore', [QuickLinkController::class, 'res
 Route::delete('quickLinks/{quickLink}/force-delete', [QuickLinkController::class, 'forceDelete'])->name('quickLinks.forceDelete')->withTrashed();
 Route::post('meetings/{meeting}/institutions', [MeetingController::class, 'attachInstitution'])->name('meetings.institutions.attach');
 Route::delete('meetings/{meeting}/institutions/{institution}', [MeetingController::class, 'detachInstitution'])->name('meetings.institutions.detach');
+Route::post('meetings/{meeting}/calendar-event', [MeetingCalendarController::class, 'store'])->name('meetings.calendarEvent.store');
+Route::delete('meetings/{meeting}/calendar-event', [MeetingCalendarController::class, 'destroy'])->name('meetings.calendarEvent.destroy');
+Route::post('meetings/{meeting}/documents', [MeetingDocumentController::class, 'store'])->name('meetings.documents.store');
+Route::post('meetings/{meeting}/documents/sharepoint', [MeetingDocumentController::class, 'storeFromSharepoint'])->name('meetings.documents.storeFromSharepoint');
+Route::delete('meetings/{meeting}/documents/{document}', [MeetingDocumentController::class, 'destroy'])->name('meetings.documents.destroy');
 Route::patch('reservations/{reservation}/restore', [ReservationController::class, 'restore'])->name('reservations.restore')->withTrashed();
 Route::delete('reservations/{reservation}/force-delete', [ReservationController::class, 'forceDelete'])->name('reservations.forceDelete')->withTrashed();
 Route::patch('resources/{resource}/restore', [ResourceController::class, 'restore'])->name('resources.restore')->withTrashed();

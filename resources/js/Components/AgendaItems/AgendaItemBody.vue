@@ -30,11 +30,41 @@
         <Switch v-model="form.brought_by_students" />
         <span class="text-sm text-zinc-700 dark:text-zinc-300">{{ $t('Atstovų iškeltas klausimas') }}</span>
       </label>
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-medium uppercase tracking-wide text-muted-foreground">{{ $t('Laikas') }}</span>
+        <!-- TimePicker rather than <input type="time">: the native control follows the browser's
+             locale and shows AM/PM for anyone whose machine is set to English. -->
+        <TimePicker
+          :model-value="startTimeValue"
+          :minute-step="5"
+          clearable
+          class="h-8 w-[6.5rem] text-sm"
+          :title="$t('Kada klausimas pradedamas svarstyti')"
+          @update:model-value="(value) => form.start_time = toTimeString(value)"
+        />
+        <span class="text-muted-foreground">–</span>
+        <TimePicker
+          :model-value="endTimeValue"
+          :minute-step="5"
+          clearable
+          class="h-8 w-[6.5rem] text-sm"
+          :title="$t('Kada klausimo svarstymas baigiamas')"
+          @update:model-value="(value) => form.end_time = toTimeString(value)"
+        />
+        <span v-if="form.errors.end_time" class="text-xs text-destructive">{{ form.errors.end_time }}</span>
+      </div>
     </div>
     <div v-else class="flex flex-wrap items-center gap-2">
       <span class="inline-flex items-center gap-1.5 rounded-md bg-muted px-2 py-1 text-xs font-medium text-zinc-700 dark:text-zinc-300">
         <component :is="typeIcon" class="h-3.5 w-3.5" />
         {{ typeLabel }}
+      </span>
+      <span
+        v-if="timeRangeLabel"
+        class="inline-flex items-center gap-1.5 rounded-md bg-muted px-2 py-1 text-xs font-medium tabular-nums text-zinc-700 dark:text-zinc-300"
+      >
+        <Clock class="h-3.5 w-3.5" />
+        {{ timeRangeLabel }}
       </span>
       <span
         v-if="form.brought_by_students"
@@ -94,9 +124,8 @@
             </label>
             <button
               type="button"
-              class="text-zinc-400 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-40"
-              :title="isLockedMainVote(vote) ? $t('Pagrindinio balsavimo šalinti negalima') : $t('Šalinti balsavimą')"
-              :disabled="isLockedMainVote(vote)"
+              class="text-zinc-400 hover:text-destructive"
+              :title="$t('Šalinti balsavimą')"
               @click="removeVote(index)"
             >
               <Trash2 class="h-4 w-4" />
@@ -150,6 +179,7 @@
       :editable="editing"
       :description="form.description"
       :student-position="form.student_position"
+      :show-student-position="requiresStudentPerspective"
       @update:description="(v) => form.description = v"
       @update:student-position="(v) => form.student_position = v"
     >
@@ -169,6 +199,7 @@ import { Clock, Handshake, HelpCircle, Info, Plus, Star, ThumbsDown, ThumbsUp, M
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Switch } from '@/Components/ui/switch';
+import { TimePicker, type TimeValue } from '@/Components/ui/time-picker';
 import AdminVotingHelpButton from '@/Components/AgendaItems/AdminVotingHelpButton.vue';
 import AgendaItemTextTabs from '@/Components/AgendaItems/AgendaItemTextTabs.vue';
 import VisibilityIndicator from '@/Components/AgendaItems/VisibilityIndicator.vue';
@@ -179,9 +210,15 @@ const props = withDefaults(defineProps<{
   form: InertiaForm<AgendaItemFormData>;
   editing?: boolean;
   meetingIsPublic?: boolean;
+  /**
+   * False for VU SA's own bodies: the representatives *are* the organisation, so there is no
+   * separate student position or student benefit to record — only the outcome.
+   */
+  requiresStudentPerspective?: boolean;
 }>(), {
   editing: false,
   meetingIsPublic: false,
+  requiresStudentPerspective: true,
 });
 
 type VoteField = 'decision' | 'student_vote' | 'student_benefit';
@@ -221,11 +258,44 @@ const benefitOptions: VoteOption[] = [
   { value: 'neutral', label: $t('Neutralu'), icon: Minus, activeClass: 'bg-zinc-500 text-white' },
 ];
 
-const voteRows: VoteRow[] = [
-  { key: 'decision', label: $t('Rezultatas'), options: decisionOptions },
-  { key: 'student_vote', label: $t('Studentai'), options: studentVoteOptions },
-  { key: 'student_benefit', label: $t('Nauda'), options: benefitOptions },
-];
+const voteRows = computed<VoteRow[]>(() => {
+  const rows: VoteRow[] = [
+    { key: 'decision', label: $t('Rezultatas'), options: decisionOptions },
+  ];
+
+  if (props.requiresStudentPerspective) {
+    rows.push(
+      { key: 'student_vote', label: $t('Studentai'), options: studentVoteOptions },
+      { key: 'student_benefit', label: $t('Nauda'), options: benefitOptions },
+    );
+  }
+
+  return rows;
+});
+
+/** The form holds `HH:MM` strings; TimePicker speaks {hour, minute}. */
+const toTimeValue = (value: string | null): TimeValue | undefined => {
+  if (!value) return undefined;
+  const [hour, minute] = value.split(':');
+
+  return { hour: Number(hour), minute: Number(minute) };
+};
+
+const toTimeString = (value: TimeValue | undefined): string | null =>
+  value
+    ? `${String(value.hour).padStart(2, '0')}:${String(value.minute).padStart(2, '0')}`
+    : null;
+
+const startTimeValue = computed(() => toTimeValue(props.form.start_time));
+const endTimeValue = computed(() => toTimeValue(props.form.end_time));
+
+/** `18:30 – 19:00`, or just the start when no end was set. */
+const timeRangeLabel = computed(() => {
+  if (!props.form.start_time) return null;
+  return props.form.end_time
+    ? `${props.form.start_time} – ${props.form.end_time}`
+    : props.form.start_time;
+});
 
 const typeLabel = computed(() => {
   switch (props.form.type) {
@@ -255,9 +325,6 @@ const setVoteValue = (vote: EditableVote, key: VoteField, value: VoteOption['val
   vote[key] = value;
 };
 
-const isLockedMainVote = (vote: EditableVote): boolean =>
-  Boolean(vote.is_main) && props.form.type === 'voting' && props.form.votes.length === 1;
-
 const addVote = () => {
   props.form.votes.push({
     id: null,
@@ -284,8 +351,10 @@ const removeVote = (index: number) => {
 const setConsensus = (index: number, value: boolean) => {
   const vote = props.form.votes[index];
   vote.is_consensus = value;
-  if (value) {
-    vote.decision = 'positive';
+  if (!value) return;
+
+  vote.decision = 'positive';
+  if (props.requiresStudentPerspective) {
     vote.student_vote = 'positive';
     vote.student_benefit = 'positive';
   }

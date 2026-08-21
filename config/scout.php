@@ -552,6 +552,7 @@ return [
                         // Institution type for faceting
                         ['name' => 'institution_type_id', 'type' => 'int32', 'facet' => true, 'optional' => true],
                         ['name' => 'institution_type_title', 'type' => 'string', 'facet' => true, 'optional' => true],
+                        ['name' => 'governance_scope', 'type' => 'string', 'facet' => true, 'optional' => true],
 
                         // Agenda and vote statistics
                         ['name' => 'agenda_items_count', 'type' => 'int32', 'sort' => true],

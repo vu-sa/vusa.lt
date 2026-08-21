@@ -9,6 +9,7 @@ declare global {
       | 'end_date'
       | 'description'
       | 'location'
+      | 'is_remote'
       | 'organizer'
       | 'cto_url'
       | 'facebook_url'

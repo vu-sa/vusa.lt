@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\EngineManager;
@@ -32,7 +33,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $description
  * @property MeetingType|null $type
  * @property Carbon $start_time
- * @property string|null $end_time
+ * @property Carbon|null $end_time
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
@@ -76,6 +77,10 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
     {
         return [
             'start_time' => 'datetime',
+            // The column has always been a datetime; leaving it uncast made `end_time` a
+            // string while `start_time` was a Carbon, which broke every caller that treated
+            // the pair alike (AnnounceMeetingInCalendar, syncCalendarEventTiming).
+            'end_time' => 'datetime',
             'type' => MeetingType::class,
         ];
     }
@@ -103,12 +108,22 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
      */
     public function getIsPublicAttribute(): bool
     {
-        // Load institutions if not already loaded
+        return $this->isPubliclyVisible();
+    }
+
+    /**
+     * The single answer to "may the public see this meeting" — the meeting page, institution
+     * meeting lists and the public search index all gate on this. Settings-only, deliberately:
+     * a published calendar announcement still shows the agenda inline on the event page (see
+     * PublicPageController::meetingBehind()), but does not by itself open the meeting page or
+     * search entry — those stay behind MeetingSettings::public_meeting_institution_type_ids.
+     */
+    public function isPubliclyVisible(): bool
+    {
         if (! $this->relationLoaded('institutions')) {
             $this->load('institutions.types');
         }
 
-        // Check if any institution supports public meetings
         foreach ($this->institutions as $institution) {
             if ($institution->has_public_meetings) {
                 return true;
@@ -126,7 +141,22 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
     {
         $allVotes = $this->agendaItems->flatMap(fn ($item) => $item->votes);
 
-        return app(VoteStatisticsCalculator::class)->calculate($allVotes);
+        return app(VoteStatisticsCalculator::class)->calculate($allVotes, $this->requiresStudentPerspective());
+    }
+
+    /**
+     * Whether this meeting records how the students voted and whether the outcome favoured them.
+     *
+     * False only for VU SA's own bodies — there the representatives *are* the organisation, so
+     * `student_vote` and `student_benefit` have no separate answer and demanding them left every
+     * such meeting permanently "incomplete".
+     */
+    public function requiresStudentPerspective(): bool
+    {
+        $this->loadMissing('institutions.types');
+
+        return app(MeetingCompletionService::class)
+            ->institutionsRequireStudentPerspective($this->institutions);
     }
 
     /**
@@ -233,6 +263,9 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
             // Completion status for filtering
             'completion_status' => $this->completion_status,
 
+            // Which governance world the meeting belongs to (facet + vote-field vocabulary)
+            'governance_scope' => $this->institutions->first()?->governance_scope->value,
+
             // Visibility status
             'is_public' => $this->is_public,
             'is_recent' => $this->start_time->isAfter(now()->subMonths(6)),
@@ -254,6 +287,26 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
     public function institutions(): BelongsToMany
     {
         return $this->belongsToMany(Institution::class);
+    }
+
+    /**
+     * The public announcement of this meeting, when someone has made one.
+     *
+     * @return HasOne<Calendar, $this>
+     */
+    public function calendarEvent(): HasOne
+    {
+        return $this->hasOne(Calendar::class, 'meeting_id');
+    }
+
+    /**
+     * Nutarimai, protokolai and other SharePoint documents produced by this meeting.
+     *
+     * @return HasMany<Document, $this>
+     */
+    public function documents(): HasMany
+    {
+        return $this->hasMany(Document::class, 'meeting_id');
     }
 
     public function users()
@@ -314,15 +367,8 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
         });
 
         static::saved(function (Meeting $meeting): void {
-            $publicMeeting = PublicMeeting::query()->find($meeting->getKey());
-
-            if ($publicMeeting?->shouldBeSearchable()) {
-                $publicMeeting->searchable();
-
-                return;
-            }
-
-            $meeting->publicSearchModel()->unsearchable();
+            $meeting->syncCalendarEventTiming();
+            $meeting->syncPublicSearchIndex();
         });
 
         static::deleted(function (Meeting $meeting): void {
@@ -359,6 +405,48 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
             // institution — which is essentially all of them.
             $meeting->institutions()->detach();
         });
+    }
+
+    /**
+     * Re-evaluate this meeting's place in the public search index.
+     *
+     * Public here, not private: publishing a linked Calendar event changes the answer without
+     * touching the meeting row, so Calendar's own hooks call this too.
+     */
+    public function syncPublicSearchIndex(): void
+    {
+        $publicMeeting = PublicMeeting::query()->find($this->getKey());
+
+        if ($publicMeeting?->shouldBeSearchable()) {
+            $publicMeeting->searchable();
+
+            return;
+        }
+
+        $this->publicSearchModel()->unsearchable();
+    }
+
+    /**
+     * The meeting owns its timing; the announcement follows it, never the other way round.
+     */
+    private function syncCalendarEventTiming(): void
+    {
+        if (! $this->wasChanged(['start_time', 'end_time'])) {
+            return;
+        }
+
+        $event = $this->calendarEvent()->first();
+
+        if ($event === null) {
+            return;
+        }
+
+        // Saved through the model, not `$relation->update()`: a query-builder update fires no
+        // model events, so Calendar's own `saved` hooks — the calendar/iCal cache flush and the
+        // public search resync — would never run and the feeds would serve the old date.
+        $event->date = $this->start_time;
+        $event->end_date = $this->end_time;
+        $event->save();
     }
 
     private function publicSearchModel(): PublicMeeting

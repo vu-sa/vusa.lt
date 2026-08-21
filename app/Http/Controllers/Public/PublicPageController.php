@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Public;
 
+use App\Actions\GetPublicMeetingDocuments;
 use App\Collections\NewsCollection;
 use App\Enums\TenantType;
 use App\Helpers\ContentHelper;
@@ -23,6 +24,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -83,6 +85,13 @@ class PublicPageController extends PublicController
 
         // Fetch news for homepage to enable LCP image preloading (eliminates API waterfall)
         $newsCacheKey = "homepage_news_{$this->tenant->id}_{$locale}";
+
+        // Only authenticated users pay for edit-link resolution. The target is whoever's
+        // content is actually shown — subdomains without their own content show main's.
+        if (Auth::check()) {
+            $this->sharePublicEditLink($content?->tenant ?? $this->tenant);
+        }
+
         $news = Cache::tags(['news', "tenant_{$this->tenant->id}", "locale_{$locale}"])
             ->remember($newsCacheKey, 1800, fn () => NewsCollection::getPublishedForTenant(
                 $this->tenant->id,
@@ -157,6 +166,9 @@ class PublicPageController extends PublicController
         $page = $pageData['page'];
         $navigation_item = $pageData['navigation_item'];
         $other_lang_page = $pageData['other_lang_page'];
+
+        // Outside the page cache above — depends on the current user.
+        $this->sharePublicEditLink($page);
 
         Inertia::share('otherLangURL', $other_lang_page ? route(
             'page',
@@ -704,6 +716,75 @@ class PublicPageController extends PublicController
         return ['title' => 'Event '.$calendar->id, 'locale' => $currentLocale];
     }
 
+    /**
+     * The meeting this event announces, shaped for the page: agenda, documents and a link back
+     * to the meeting record. Null for an ordinary event, or when the event is still a draft.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function meetingBehind(Calendar $calendar): ?array
+    {
+        if ($calendar->is_draft || $calendar->meeting_id === null) {
+            return null;
+        }
+
+        $meeting = $calendar->meeting;
+
+        if ($meeting === null || $meeting->trashed()) {
+            return null;
+        }
+
+        $meeting->load([
+            'agendaItems' => fn ($query) => $query->orderBy('order')->orderBy('start_time'),
+            'agendaItems.mainVote',
+            'institutions.types',
+        ]);
+
+        $institution = $meeting->institutions->first();
+
+        return [
+            'id' => $meeting->id,
+            'start_time' => $meeting->start_time,
+            'agenda_items' => $meeting->agendaItems,
+            'requires_student_perspective' => $meeting->requiresStudentPerspective(),
+            'documents' => GetPublicMeetingDocuments::execute($meeting),
+            'institution' => $institution?->only(['id', 'name', 'alias']),
+            // The event page shows the agenda regardless, but a link to the meeting page/search
+            // entry must not point somewhere that 404s — see Meeting::isPubliclyVisible().
+            'is_publicly_visible' => $meeting->isPubliclyVisible(),
+        ];
+    }
+
+    /**
+     * The nearest published announcements before/after this one, for the same institution —
+     * calendar event to calendar event, not meeting to meeting, so the links stay valid
+     * regardless of MeetingSettings.
+     *
+     * @param  array<string, mixed>  $meeting  The array shaped by meetingBehind().
+     * @return array{0: array<string, mixed>|null, 1: array<string, mixed>|null}
+     */
+    private function siblingMeetingEvents(Calendar $calendar, array $meeting): array
+    {
+        $institutionId = $meeting['institution']['id'] ?? null;
+
+        if ($institutionId === null) {
+            return [null, null];
+        }
+
+        $siblingsFor = fn (string $direction) => Calendar::query()
+            ->where('is_draft', false)
+            ->where('id', '!=', $calendar->id)
+            ->whereHas('meeting.institutions', fn ($q) => $q->where('institutions.id', $institutionId))
+            ->where('date', $direction === 'previous' ? '<' : '>', $calendar->date)
+            ->orderBy('date', $direction === 'previous' ? 'desc' : 'asc')
+            ->first(['id', 'title', 'date']);
+
+        return [
+            $siblingsFor('previous')?->only(['id', 'title', 'date']),
+            $siblingsFor('next')?->only(['id', 'title', 'date']),
+        ];
+    }
+
     public function calendarEventMain($lang, Calendar $calendar, LocationGeocoder $geocoder)
     {
         $this->getBanners();
@@ -711,6 +792,13 @@ class PublicPageController extends PublicController
         $this->shareOtherLangURL('calendar.event', calendarId: $calendar->id);
 
         $calendar->load(['tenant:id,alias,fullname,shortname', 'category']);
+
+        $this->sharePublicEditLink($calendar);
+
+        $meeting = $this->meetingBehind($calendar);
+        [$previousMeetingEvent, $nextMeetingEvent] = $meeting !== null
+            ? $this->siblingMeetingEvents($calendar, $meeting)
+            : [null, null];
 
         // Use the calendar event's tenant for proper canonical URL
         $this->applyPageHead(
@@ -757,7 +845,10 @@ class PublicPageController extends PublicController
             ],
             'calendar' => $relatedEvents,
             'googleLink' => $calendar->googleLink(),
-            'eventLocation' => $geocoder->coordinates($calendar->location),
+            'eventLocation' => $calendar->is_remote ? null : $geocoder->coordinates($calendar->location),
+            'meeting' => $meeting,
+            'previousMeetingEvent' => $previousMeetingEvent,
+            'nextMeetingEvent' => $nextMeetingEvent,
         ])
             ->withViewData(
                 [

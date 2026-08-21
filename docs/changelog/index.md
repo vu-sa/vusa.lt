@@ -7,6 +7,41 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.30 — Tvarkaraščio turinio blokas (2026-08-21) {#v1-30}
+
+- ⭐ **Naujas turinio blokas „Tvarkaraštis“** — puslapiuose, naujienose ir pagrindiniame puslapyje dabar galima įterpti tvarkaraščio kortelę su laikais ir pavadinimais. Eilutes galima įvesti rankiniu būdu arba importuoti iš posėdžio darbotvarkės
+- 🔧 **Renginio ir posėdžio puslapiuose beliko viena darbotvarkė** — anksčiau virš aprašymo buvo matyti ir atskira tvarkaraščio kortelė, ir žemiau esanti darbotvarkė su laikais; dabar rodoma tik pastaroji, o tvarkaraštis tapo atskiru turinio bloku, kurį galima naudoti bet kur
+
+## v1.29 — Nuotoliniai renginiai ir vertikalios kortelės (2026-08-21) {#v1-29}
+
+- ⭐ **Nuotolinio renginio žymėjimas** — renginio formoje galima pažymėti „Nuotolinis renginys“. Tada vietoj adreso ir žemėlapio rodoma nuoroda prisijungti, o vietos žemėlapyje ieškoti nebebandoma
+- ✨ **Vertikalios renginio kortelės** — renginių sąraše ir renginio puslapio skiltyje „Kiti renginiai“ dabar rodomos vertikalios kortelės su nuotrauka viršuje, o ne siauros eilutės
+- ✨ **„Kiti renginiai“ perkelti po aprašymu** — renginio puslapyje šis blokas dabar rodomas pagrindiniame stulpelyje po darbotvarke ir nuotraukomis, o ne šoninėje juostoje
+- ⭐ **Ankstesnio/kito to paties padalinio posėdžio nuorodos** — su posėdžiu susieto renginio puslapyje rodomos nuorodos į ankstesnį ir kitą to paties padalinio paskelbtą posėdžio renginį
+- ⭐ **Tvarkaraštis virš aprašymo** — kai darbotvarkės punktams nurodytas laikas, jis rodomas kompaktišku tvarkaraščiu virš posėdžio ar renginio aprašymo
+- ⭐ **Susitikimo kūrimo vedlyje galima iškart paskelbti kalendoriuje** — peržiūros žingsnyje pažymėjus varnelę, kartu su posėdžiu sukuriamas juodraštinis kalendoriaus įrašas
+- ⭐ **Darbotvarkės punkto laikas nurodomas jau kuriant posėdį** — vedlio darbotvarkės žingsnyje kiekvienam klausimui iškart galima nurodyti pradžios ir pabaigos laiką
+- ✨ **Naujo punkto pradžios laikas pasiūlomas automatiškai** — jei ankstesnis darbotvarkės punktas turi pabaigos laiką, o naujas punktas savo dar neturi, pradžios laikas užpildomas juo (tik vieną kartą, be nuolatinio sinchronizavimo)
+- 🔧 **Posėdžio puslapis lieka privatus, kol nepažymėtas nustatymuose** — paskelbtas kalendoriaus renginys pats savaime nebeatidaro posėdžio puslapio ar paieškos įrašo; tai priklauso tik nuo institucijos tipo administravimo nustatymuose. Renginio puslapis vis tiek rodo darbotvarkę ir dokumentus
+- 🔧 **Ištaisytas persidengiantis paaiškinimo ženkliukas** — posėdžio veiksmų mygtukuose rodomas pulsuojantis ženkliukas nebesikerta su lango kraštu
+
+## v1.28 — Posėdžiai kalendoriuje ir dokumentuose (2026-08-20) {#v1-28}
+
+- ⭐ **Posėdį galima paskelbti kalendoriuje** — posėdžio lange, veiksmų meniu, atsiranda „Paskelbti kalendoriuje“. Sukuriamas juodraštinis renginys su posėdžio data ir padaliniu arba susiejamas jau įvestas įrašas iš savaitės aplink posėdį. Paskelbus renginį, posėdžio darbotvarkė ir dokumentai tampa matomi viešai — įskaitant dar neįvykusį posėdį
+- ⭐ **Darbotvarkė ir dokumentai renginio puslapyje** — su posėdžiu susietas kalendoriaus įrašas rodo darbotvarkę, punktų laikus ir su posėdžiu susietus nutarimus bei protokolus, o iš jo galima pereiti į posėdžio puslapį
+- ✨ **Kompaktiška vieša darbotvarkė** — vietoj didelių kortelių darbotvarkė rodoma kaip vientisas sąrašas: būsenos taškas, pavadinimas, laikas ir sprendimas vienoje eilutėje, o aprašymas bei pilna balsavimo informacija išskleidžiami paspaudus
+- ✨ **Laiko laukeliai visada 24 val. formatu** — anksčiau naršyklė, nustatyta angliškai, rodydavo AM/PM. Laikas pasirenkamas iš valandų ir minučių sąrašo, o mygtukas su ✕ jį išvalo
+- ✨ **Renginio laiką valdo posėdis** — su posėdžiu susieto kalendoriaus įrašo datos laukai užrakinti ir su paaiškinimu nukreipia į posėdį, kad laikas nebūtų vedamas dviejose vietose
+- 🔧 **Pagrindinį balsavimą galima pašalinti** — anksčiau paskutinio balsavimo ištrinti neleisdavo be paaiškinimo. Pašalinus pagrindinį, kitas tampa pagrindiniu automatiškai
+- 🔧 **VU SA dariniams nerodoma „Išsakyta studentų pozicija“** — kaip ir studentų balsas bei nauda, ši skiltis neturi prasmės, kai atstovai ir yra pati organizacija
+- 🔧 **Nerodomos tarnybinės būsenos** — „Nepažymėtas“ viešai neberodomas niekada, o „Neaptartas“ nerodomas dar neįvykusio posėdžio darbotvarkėje, kur jis nieko nepasako
+- ⭐ **Dokumentai susiejami su posėdžiu** — VU SA darinių posėdžiuose atsiranda kortelė „Dokumentai“: nutarimus ar protokolus galima surasti paieška arba iš karto įkelti iš SharePoint, nereikia jų pirma registruoti dokumentų skiltyje
+- ✨ **Kalendoriaus įrašas pasako, kad skelbia posėdį** — redaguojant tokį renginį rodomas pranešimas su nuoroda į posėdį ir paaiškinimu, ką reiškia jo paskelbimas
+- ⭐ **Darbotvarkės punktui galima nurodyti pradžios ir pabaigos laiką** — laikas rodomas ir viešoje darbotvarkėje, tad ilgesnio posėdžio eigą galima paskelbti iš anksto ir žmonės gali ateiti į juos dominančią dalį
+- ⭐ **Institucijos tipui nustatoma valdysenos sritis** — VU SA darinys, VU organas, nacionalinis ar tarptautinis organas. Reikšmė paveldima iš tėvinio tipo, tad naujam poskyriui jos nurodyti nereikia
+- ✨ **VU SA dariniams nebeprašoma studentų balso ir naudos** — VU SA Parlamento, Tarybos ar Revizijos komisijos posėdyje pildomas tik sprendimas, nes atstovai ir yra pati organizacija. Anksčiau tokie posėdžiai visada likdavo „nebaigti“
+- 🔧 **Posėdžių sąrašo filtras pagal pildymo būseną vėl veikia** — filtras kreipdavosi į laukus, kurie prieš tai buvo perkelti į balsavimus, ir grąžindavo klaidą
+
 ## v1.27 — Renginio puslapio vaizdo stiliai (2026-08-20) {#v1-27}
 
 - ⭐ **Renkami renginio puslapio vaizdo stiliai** — kiekvienam renginiui galima pasirinkti vieną iš trijų stilių: didelę kortelę su nuotrauka fone, kortelę su nuotrauka šalia teksto arba minimalų vaizdą be nuotraukos. Stilius parenkamas renginio formoje

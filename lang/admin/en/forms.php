@@ -91,6 +91,7 @@ return [
         'meeting_periodicity_days' => 'Meeting periodicity (in days)',
         'enable_sibling_relationships' => 'Show related institutions by type',
         'enable_cross_tenant' => 'Show unit institutions from the main tenant',
+        'governance_scope' => 'Governance scope',
         'fileable_object' => 'Object',
         'institutions' => 'Institutions',
         'types' => 'Types',
@@ -143,6 +144,7 @@ return [
         'enable_sibling_hint' => 'When enabled, institutions with this type in the same tenant will be shown as related to each other (e.g. in the representation panel).',
         'enable_cross_tenant_hint' => 'When enabled, the main tenant\'s institution with this type will see all other tenants\' institutions with the same type. One-way: unit institutions will not see the main one.',
         'technical_slug_hint' => 'Change only in exceptional cases.',
+        'governance_scope_hint' => 'Whether this is an internal VU SA body or an external one VU SA delegates representatives into. It decides which voting fields a meeting shows. Left empty, it is inherited from the parent type.',
         'navigation_parent_info' => 'This navigation item is a parent, so other regular item settings are not available.',
         'no_options' => 'No options',
         'add_contact_email_hint' => 'Click to add an additional contact email. Usually the user\'s existing login email will be used.',
@@ -163,6 +165,11 @@ return [
         'tenant_type_pkp' => 'PKP',
         'tenant_type_padalinys' => 'Unit',
         'tenant_type_pagrindinis' => 'Main',
+        'governance_scope_inherit' => 'Inherit from parent type',
+        'governance_scope_vusa' => 'VU SA body',
+        'governance_scope_vu' => 'VU body',
+        'governance_scope_national' => 'National body',
+        'governance_scope_international' => 'International body',
     ],
     'placeholders' => [
         'enter_title' => 'Enter a title',
@@ -270,6 +277,7 @@ return [
     ],
     'validation' => [
         'agenda_item' => [
+            'end_time_after' => 'The end time must be later than the start time.',
             'titles_required' => 'At least one agenda item must be added.',
             'title_required' => 'An agenda item cannot be empty.',
             'title_string' => 'The agenda item title must be text.',

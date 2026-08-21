@@ -7,6 +7,41 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.30 — Timetable content block (2026-08-21) {#v1-30}
+
+- ⭐ **New "Timetable" content block** — pages, news and the homepage can now embed a timetable card with times and titles. Rows can be entered manually or imported from a meeting's agenda
+- 🔧 **A single agenda on event and meeting pages** — the page used to show both a standalone timetable card above the description and the agenda list with times below it; now only the agenda list remains, and the timetable lives on as a content block usable anywhere
+
+## v1.29 — Remote events and vertical cards (2026-08-21) {#v1-29}
+
+- ⭐ **Mark an event as remote** — the event form now has a "Remote event" toggle. When on, the page shows a join link instead of an address and a map, and no location lookup is attempted
+- ✨ **Vertical event cards** — the event list and an event page's "Other events" section now show vertical cards with the photo on top, instead of narrow rows
+- ✨ **"Other events" moved below the description** — on an event page this section now sits in the main column, after the agenda and images, instead of the sidebar
+- ⭐ **Previous/next meeting links for the same institution** — an event announcing a meeting now links to the nearest earlier and later published announcement for the same institution
+- ⭐ **A timetable above the description** — when agenda items carry a time, a compact timetable now shows above the meeting's or event's description
+- ⭐ **Announce in the calendar right from the meeting wizard** — a checkbox on the review step creates a draft calendar event alongside the meeting
+- ⭐ **Agenda item timing while creating a meeting** — the wizard's agenda step now lets you set a start and end time for each question as you add it
+- ✨ **A new item's start time is suggested automatically** — if the previous agenda item has an end time and the new one doesn't have its own yet, the start time is pre-filled from it (once, with no ongoing sync)
+- 🔧 **The meeting page stays private until settings say otherwise** — publishing a calendar event no longer opens the meeting page or its search entry by itself; that stays tied to the institution's type in admin settings. The event page still shows the agenda and documents either way
+- 🔧 **Fixed an overlapping feature-tip badge** — the pulsing badge on the meeting's action buttons no longer clips against the page edge
+
+## v1.28 — Meetings in the calendar and in documents (2026-08-20) {#v1-28}
+
+- ⭐ **A meeting can be announced in the calendar** — "Announce in calendar" now sits in the meeting's action menu. It creates a draft event carrying the meeting's date and tenant, or links one already entered within a week of the meeting. Publishing that event makes the agenda and the linked documents publicly visible — including for a meeting that has not happened yet
+- ⭐ **Agenda and documents on the event page** — a calendar event standing for a meeting shows the agenda, the per-item times and the linked nutarimai and protokolai, with a link through to the meeting page
+- ✨ **A compact public agenda** — instead of stacked cards the agenda reads as one list: status dot, title, time and decision on a single line, with the description and the full vote breakdown expanding on click
+- ✨ **Time fields are always 24-hour** — a browser set to English used to show AM/PM. The time is now picked from hour and minute lists, with an ✕ to clear it
+- ✨ **The meeting owns its event's timing** — the date fields on a calendar event that announces a meeting are locked and point at the meeting, so the time is never entered in two places
+- 🔧 **The main vote can be removed** — deleting the last vote used to be blocked with no explanation. Removing the main one promotes the next automatically
+- 🔧 **VU SA bodies are not asked for a "student position stated"** — like the student vote and benefit, it means nothing when the representatives *are* the organisation
+- 🔧 **Editor-facing statuses stay out of public view** — "Unclassified" is never shown publicly, and "Not discussed" is hidden on the agenda of a meeting that has not happened yet, where it says nothing
+- ⭐ **Documents link to a meeting** — VU SA bodies' meetings get a "Documents" tab: nutarimai and protokolai can be found by search or uploaded straight from SharePoint, without registering them in the documents area first
+- ✨ **The calendar event says it announces a meeting** — editing such an event shows a notice linking to the meeting and explaining what publishing it does
+- ⭐ **Agenda items can carry a start and end time** — the slot also shows on the public agenda, so the running order of a longer meeting can be published in advance and people can turn up for the part that concerns them
+- ⭐ **Institution types carry a governance scope** — VU SA body, VU body, national or international body. The value is inherited from the parent type, so a new sub-type needs no setting of its own
+- ✨ **VU SA bodies are no longer asked for the student vote and benefit** — a VU SA Parliament, Board or Audit Commission meeting records only the decision, because there the representatives *are* the organisation. Such meetings used to stay permanently "incomplete"
+- 🔧 **The meeting list's completion filter works again** — it queried fields that had since moved onto votes and returned an error
+
 ## v1.27 — Event page hero styles (2026-08-20) {#v1-27}
 
 - ⭐ **Pickable event page hero styles** — every event can now choose one of three hero layouts: a large card with the photo behind the text, a card with the photo beside the text, or a minimal layout with no photo at all. The style is picked on the event form

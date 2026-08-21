@@ -184,6 +184,69 @@ describe('NewMeetingDialog.vue', () => {
     });
   });
 
+  describe('wiring into useMeetingCreation', () => {
+    // A wizard stub that exposes a button per event this test drives, and forwards the
+    // (reactive) `meetingCreation` prop through a scoped slot so the test can read state
+    // back after the dialog's handlers run.
+    const WizardStub = {
+      name: 'MeetingCreationWizard',
+      props: ['meetingCreation'],
+      emits: ['agendaItemsSubmit', 'announceInCalendarChange'],
+      template: `
+        <div>
+          <button class="submit-agenda" type="button" @click="$emit('agendaItemsSubmit', {
+            agendaItemTitles: ['Dėl veiklos plano'],
+            broughtByStudentsFlags: [false],
+            startTimes: ['18:30'],
+            endTimes: ['19:00'],
+          })">submit agenda</button>
+          <button class="toggle-announce" type="button" @click="$emit('announceInCalendarChange', true)">toggle announce</button>
+        </div>
+      `,
+    };
+
+    // Dialog is real shadcn (Teleport to body) here — stub it flat, per this file's own
+    // convention above, so the wizard stub's buttons render inside `wrapper` and are findable.
+    const dialogStubs = {
+      Dialog: { template: '<div v-if="open" class="modal" role="dialog"><slot /></div>', props: ['open'] },
+      DialogContent: { template: '<div class="modal-content"><slot /></div>' },
+      DialogHeader: { template: '<div class="modal-header"><slot /></div>' },
+      DialogTitle: { template: '<h2 class="modal-title"><slot /></h2>' },
+      DialogDescription: { template: '<p class="modal-description"><slot /></p>' },
+    };
+
+    it('maps per-item start/end times onto the created agenda items', async () => {
+      wrapper = mount(NewMeetingDialog, {
+        props: defaultProps,
+        global: { stubs: { ...dialogStubs, MeetingCreationWizard: WizardStub } },
+      });
+      await nextTick();
+
+      await wrapper.find('.submit-agenda').trigger('click');
+      await nextTick();
+
+      const wizard = wrapper.findComponent(WizardStub);
+      const agendaItems = wizard.props('meetingCreation').state.agendaItems;
+      expect(agendaItems).toEqual([
+        expect.objectContaining({ title: 'Dėl veiklos plano', start_time: '18:30', end_time: '19:00' }),
+      ]);
+    });
+
+    it('sets announce_in_calendar on the meeting data when the wizard toggles it', async () => {
+      wrapper = mount(NewMeetingDialog, {
+        props: defaultProps,
+        global: { stubs: { ...dialogStubs, MeetingCreationWizard: WizardStub } },
+      });
+      await nextTick();
+
+      await wrapper.find('.toggle-announce').trigger('click');
+      await nextTick();
+
+      const wizard = wrapper.findComponent(WizardStub);
+      expect(wizard.props('meetingCreation').state.meeting.announce_in_calendar).toBe(true);
+    });
+  });
+
   describe('accessibility', () => {
     it('has proper modal accessibility attributes', async () => {
       wrapper = createWrapper();

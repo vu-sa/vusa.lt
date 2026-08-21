@@ -6,6 +6,7 @@ use App\Actions\GetInstitutionManagers;
 use App\Contracts\Commentable;
 use App\Contracts\GuardsForceDelete;
 use App\Contracts\SharepointFileableContract;
+use App\Enums\InstitutionScope;
 use App\Events\FileableNameUpdated;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
@@ -16,6 +17,7 @@ use App\Models\Traits\HasTasks;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use App\Models\Traits\LogsRelationshipChanges;
+use App\Services\InstitutionScopeResolver;
 use App\Services\RelationshipService;
 use App\Settings\MeetingSettings;
 use Illuminate\Database\Eloquent\Collection;
@@ -376,6 +378,16 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
     public function getMaybeShortNameAttribute()
     {
         return $this->short_name ?? $this->name;
+    }
+
+    /**
+     * Which governance world this institution belongs to, resolved from its types.
+     *
+     * Not auto-appended, for the same reason as has_public_meetings: it needs `types`.
+     */
+    public function getGovernanceScopeAttribute(): InstitutionScope
+    {
+        return app(InstitutionScopeResolver::class)->forInstitution($this);
     }
 
     /**

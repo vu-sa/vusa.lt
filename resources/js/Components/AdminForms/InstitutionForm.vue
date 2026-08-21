@@ -305,6 +305,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/Components/ui/separator';
 import { Switch } from '@/Components/ui/switch';
 import { ImageUpload } from '@/Components/ui/upload';
+import { InstitutionScope } from '@/Types/enums';
 
 const props = withDefaults(defineProps<{
   institution: App.Entities.Institution;
@@ -406,15 +407,33 @@ const selectedTypes = computed({
   },
 });
 
-const showMoreOptions = computed(() => {
-  // HACK: manually added types to check
-  const typesToCheck = ['pkp', 'padaliniai'];
-  const typeIds = props.institutionTypes
-    ?.filter(type => type.slug && typesToCheck.includes(type.slug))
-    .map(type => type.id);
+/**
+ * Mirrors InstitutionScopeResolver: the nearest type in the parent chain that declares a
+ * governance_scope wins. Resolved client-side because `institutionTypes` already carries the
+ * whole tree, and the answer has to update as the user ticks types on and off.
+ */
+const resolveGovernanceScope = (typeId: number): string | null => {
+  const seen = new Set<number>();
+  let current = props.institutionTypes?.find(type => type.id === typeId);
 
-  return form.types?.some((type: number) => typeIds.includes(type));
-});
+  while (current && !seen.has(current.id)) {
+    seen.add(current.id);
+    const scope = current.extra_attributes?.governance_scope;
+    if (scope) return String(scope);
+    if (current.parent_id == null) return null;
+    current = props.institutionTypes?.find(type => type.id === current!.parent_id);
+  }
+
+  return null;
+};
+
+/**
+ * Contact details, logos and addresses belong to bodies VU SA runs itself — they have their own
+ * public presence. VU/national/international bodies are contacted through their own institution.
+ */
+const showMoreOptions = computed(() =>
+  Boolean(form.types?.some((typeId: number) => resolveGovernanceScope(typeId) === InstitutionScope.Vusa)),
+);
 
 const saveReorderedDuties = () => {
   const newDuties = form.duties.map((duty: App.Entities.Duty, index: number) => {

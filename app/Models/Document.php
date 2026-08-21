@@ -25,6 +25,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $eTag
  * @property Carbon|null $document_date
  * @property string|null $institution_id
+ * @property string|null $meeting_id
  * @property string|null $content_type
  * @property string|null $language
  * @property string|null $summary
@@ -46,6 +47,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read bool|null $is_in_effect
  * @property-read Institution|null $institution
+ * @property-read Meeting|null $meeting
  * @property-read Collection<int, Tenant> $tenant
  *
  * @method static \Database\Factories\DocumentFactory factory($count = null, $state = [])
@@ -253,6 +255,18 @@ class Document extends Model
     public function searchableUsing()
     {
         return app(EngineManager::class)->engine('typesense');
+    }
+
+    /**
+     * The meeting that produced this document, when it is a nutarimas or protokolas.
+     *
+     * `withTrashed()`: meetings soft-delete and the FK only nulls on a hard delete.
+     *
+     * @return BelongsTo<Meeting, $this>
+     */
+    public function meeting(): BelongsTo
+    {
+        return $this->belongsTo(Meeting::class)->withTrashed();
     }
 
     public function institution(): BelongsTo

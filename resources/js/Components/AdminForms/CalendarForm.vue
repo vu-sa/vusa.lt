@@ -6,6 +6,31 @@
         :links="statusLinks" :is-create @update:is-published="form.is_draft = !$event" />
     </template>
 
+    <!-- This event stands for a meeting: publishing it opens that meeting's agenda to the public. -->
+    <Alert v-if="meeting" class="mb-6">
+      <CalendarClock class="size-4" />
+      <AlertTitle>{{ $t('meetings.announce.form_alert_title') }}</AlertTitle>
+      <AlertDescription>
+        <p>
+          {{ form.is_draft
+            ? $t('meetings.announce.form_alert_draft')
+            : $t('meetings.announce.form_alert_published') }}
+        </p>
+        <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+          <a :href="route('meetings.show', { meeting: meeting.id })" class="inline-flex items-center gap-1 font-medium underline underline-offset-2">
+            {{ meeting.institution_name ?? $t('Posėdis') }}
+            <ArrowUpRight class="size-3" />
+          </a>
+          <span class="text-muted-foreground">
+            {{ meeting.agenda_items_count }} {{ $t('darbotvarkės punktai') }}
+          </span>
+          <span v-if="meeting.trashed" class="font-medium text-destructive">
+            {{ $t('meetings.announce.form_alert_trashed') }}
+          </span>
+        </div>
+      </AlertDescription>
+    </Alert>
+
     <!-- Section 1: Main Info -->
     <FormElement :section-number="1" :is-complete="mainInfoComplete" required>
       <template #title>
@@ -37,8 +62,12 @@
           </FormFieldWrapper>
 
           <FormFieldWrapper id="location" :label="$t('Renginio vieta')"
-            :hint="$t('Kuo tikslesnis adresas, tuo tiksliau renginio puslapyje bus parodytas žemėlapis')">
-            <MultiLocaleInput v-model:input="form.location" />
+            :hint="form.is_remote ? $t('Nuotolinis renginys — nurodyta vieta nerodoma') : $t('Kuo tikslesnis adresas, tuo tiksliau renginio puslapyje bus parodytas žemėlapis')">
+            <MultiLocaleInput v-model:input="form.location" :disabled="form.is_remote" />
+            <label class="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+              <Switch id="is_remote" v-model="form.is_remote" />
+              {{ $t('Nuotolinis renginys') }}
+            </label>
           </FormFieldWrapper>
         </div>
 
@@ -114,12 +143,13 @@
       <div class="space-y-4">
         <div class="grid gap-4 lg:grid-cols-2">
           <FormFieldWrapper id="date" :label="$t('Renginio pradžia')" required :error="form.errors.date"
+            :hint="meeting ? $t('meetings.announce.timing_locked') : undefined"
             :valid="form.valid('date')" :invalid="form.invalid('date')">
-            <DateTimePicker v-model="startDate" @update:model-value="form.validate('date')" />
+            <DateTimePicker v-model="startDate" :disabled="Boolean(meeting)" @update:model-value="form.validate('date')" />
           </FormFieldWrapper>
 
           <FormFieldWrapper id="end_date" :label="$t('Renginio pabaiga')" :error="form.errors.end_date">
-            <DateTimePicker v-model="endDate" />
+            <DateTimePicker v-model="endDate" :disabled="Boolean(meeting)" />
           </FormFieldWrapper>
         </div>
 
@@ -244,10 +274,14 @@ import AdminForm from './AdminForm.vue';
 
 import { translitLithuanian } from '@/Utils/String';
 import { getCalendarEvent2Route } from '@/Utils/Route';
+import { ArrowUpRight, CalendarClock } from 'lucide-vue-next';
+
+import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Switch } from '@/Components/ui/switch';
 import { ImageUpload } from '@/Components/ui/upload';
 import DateTimePicker from '@/Components/ui/date-picker/DateTimePicker.vue';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
@@ -262,6 +296,15 @@ const props = defineProps<{
   calendar: CalendarEventForm;
   categories: App.Entities.Category[];
   assignableTenants: App.Entities.Tenant[];
+  /** Set when this event is the public announcement of a meeting. */
+  meeting?: {
+    id: string;
+    start_time: string;
+    title: string;
+    trashed: boolean;
+    agenda_items_count: number;
+    institution_name: string | null;
+  } | null;
   rememberKey?: string;
   submitUrl: string;
   submitMethod: 'post' | 'patch';
@@ -296,7 +339,7 @@ const hasMainImage = computed(() => !!form.main_image || !!existingMainImageUrl.
 
 // Section completion states
 const mainInfoComplete = computed(() =>
-  (form.title?.lt?.length || 0) >= 3 && form.tenant_id,
+  Boolean((form.title?.lt?.length || 0) >= 3 && form.tenant_id),
 );
 
 // Hero style icons as simple SVG representations

@@ -83,6 +83,12 @@ export enum InstitutionActivityStatus {
   CoveredByUpcomingMeeting = "covered_by_upcoming_meeting",
   CoveredByCheckIn = "covered_by_check_in",
 }
+export enum InstitutionScope {
+  Vusa = "vusa",
+  University = "vu",
+  National = "national",
+  International = "international",
+}
 export enum LocaleEnum {
   LT = "lt",
   EN = "en",

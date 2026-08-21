@@ -110,6 +110,19 @@
       <template #description>
         {{ $t('forms.helpers.institution_settings_desc') }}
       </template>
+      <FormFieldWrapper id="governance_scope" :label="$t('forms.fields.governance_scope')"
+        :hint="$t('forms.helpers.governance_scope_hint')">
+        <Select v-model="governanceScope">
+          <SelectTrigger>
+            <SelectValue :placeholder="$t('forms.options.governance_scope_inherit')" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem v-for="option in governanceScopeOptions" :key="option.value" :value="option.value">
+              {{ option.label }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </FormFieldWrapper>
       <FormFieldWrapper id="meeting_periodicity_days" :label="$t('forms.fields.meeting_periodicity_days')"
         :hint="$t('forms.helpers.meeting_periodicity_hint')">
         <NumberField v-model="extraAttributesPeriodicityDays" :min="1" :max="365" />
@@ -136,7 +149,7 @@
 </template>
 
 <script setup lang="ts">
-import { ModelEnum } from '@/Types/enums';
+import { InstitutionScope, ModelEnum } from '@/Types/enums';
 import { computed, ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -199,6 +212,27 @@ const modelTypeString = computed({
 const parentIdString = computed({
   get: () => form.parent_id != null ? String(form.parent_id) : 'none',
   set: (val: string) => { form.parent_id = val && val !== 'none' ? Number(val) : null; },
+});
+
+/** `__inherit__` stands in for a null scope: the type takes its parent's. */
+const INHERIT = '__inherit__';
+
+const governanceScopeOptions = [
+  { value: INHERIT, label: $t('forms.options.governance_scope_inherit') },
+  { value: InstitutionScope.Vusa, label: $t('forms.options.governance_scope_vusa') },
+  { value: InstitutionScope.University, label: $t('forms.options.governance_scope_vu') },
+  { value: InstitutionScope.National, label: $t('forms.options.governance_scope_national') },
+  { value: InstitutionScope.International, label: $t('forms.options.governance_scope_international') },
+];
+
+const governanceScope = computed({
+  get: () => form.extra_attributes?.governance_scope ?? INHERIT,
+  set: (value: string) => {
+    form.extra_attributes = {
+      ...(form.extra_attributes ?? {}),
+      governance_scope: value === INHERIT ? null : value,
+    };
+  },
 });
 
 // Computed property to handle extra_attributes.meeting_periodicity_days

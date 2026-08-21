@@ -24,6 +24,7 @@
         @meeting-form-submit="handleMeetingFormSubmit"
         @agenda-items-submit="handleAgendaItemsFormSubmit"
         @final-submit="handleFinalSubmit"
+        @announce-in-calendar-change="handleAnnounceInCalendarChange"
       />
     </DialogContent>
   </Dialog>
@@ -50,6 +51,7 @@
       @meeting-form-submit="handleMeetingFormSubmit"
       @agenda-items-submit="handleAgendaItemsFormSubmit"
       @final-submit="handleFinalSubmit"
+      @announce-in-calendar-change="handleAnnounceInCalendarChange"
     />
   </div>
 </template>
@@ -168,16 +170,24 @@ const handleMeetingFormSubmit = (meetingData: any) => {
 const handleAgendaItemsFormSubmit = (agendaData: any) => {
   const titles = agendaData.agendaItemTitles || [];
   const broughtByStudentsFlags = agendaData.broughtByStudentsFlags || [];
+  const startTimes = agendaData.startTimes || [];
+  const endTimes = agendaData.endTimes || [];
 
   const agendaItems = titles.map((title: string, index: number) => ({
     title,
     description: '',
     order: index + 1,
     brought_by_students: broughtByStudentsFlags[index] || false,
+    start_time: startTimes[index] || null,
+    end_time: endTimes[index] || null,
   }));
 
   meetingCreation.updateAgendaItems(agendaItems);
   meetingCreation.nextStep(); // Go to review step
+};
+
+const handleAnnounceInCalendarChange = (value: boolean) => {
+  meetingCreation.updateMeetingData({ announce_in_calendar: value });
 };
 
 const handleFinalSubmit = () => {

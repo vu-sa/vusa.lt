@@ -24,9 +24,9 @@ const stubs = {
     props: { images: Array, eventTitle: String },
     template: '<div class="event-image-gallery-stub" />',
   },
-  UpcomingEventsCompact: {
-    props: { events: Array, locale: String, excludeEventId: Number, maxVisible: Number },
-    template: '<div class="upcoming-events-stub" :data-max-visible="maxVisible" />',
+  EventCard: {
+    props: { event: Object },
+    template: '<div class="event-card-stub" />',
   },
 };
 
@@ -64,6 +64,88 @@ describe('Public/CalendarEvent.vue', () => {
     });
   }
 
+  function makeMeeting(overrides: Record<string, unknown> = {}) {
+    return {
+      id: '01hxyz',
+      start_time: '2030-01-01T18:00:00+00:00',
+      requires_student_perspective: false,
+      institution: { id: '01inst', name: 'VU SA Parlamentas', alias: 'parlamentas' },
+      agenda_items: [
+        { id: 'a1', title: 'Dėl veiklos plano', order: 1, type: 'informational', start_time: '18:30:00' },
+      ],
+      documents: [],
+      is_publicly_visible: true,
+      ...overrides,
+    };
+  }
+
+  describe('meeting behind the event', () => {
+    it('renders no agenda for an ordinary event', () => {
+      const wrapper = mountPage();
+
+      expect(wrapper.text()).not.toContain('Darbotvarkė');
+      expect(wrapper.text()).not.toContain('Posėdžio puslapis');
+    });
+
+    it('renders the agenda and a link to the meeting page', () => {
+      const wrapper = mountPage({ meeting: makeMeeting() });
+
+      expect(wrapper.text()).toContain('Darbotvarkė');
+      expect(wrapper.text()).toContain('Dėl veiklos plano');
+      // The agenda row's right-aligned time, trimmed from the TIME column's HH:MM:SS.
+      expect(wrapper.text()).toContain('18:30');
+      expect(wrapper.text()).toContain('Posėdžio puslapis');
+    });
+
+    it('hides the meeting-page link when the meeting is not publicly visible per settings', () => {
+      const wrapper = mountPage({ meeting: makeMeeting({ is_publicly_visible: false }) });
+
+      // The agenda still renders inline — only the link through to the meeting page is gated.
+      expect(wrapper.text()).toContain('Darbotvarkė');
+      expect(wrapper.text()).not.toContain('Posėdžio puslapis');
+    });
+
+    it('shows the sibling announcement dates next to the previous/next links', () => {
+      const wrapper = mountPage({
+        meeting: makeMeeting(),
+        previousMeetingEvent: { id: 2, title: 'Ankstesnis posėdis', date: '2029-12-01T18:00:00+00:00' },
+        nextMeetingEvent: { id: 3, title: 'Kitas posėdis', date: '2030-02-01T18:00:00+00:00' },
+      });
+
+      expect(wrapper.text()).toContain('Ankstesnis posėdis');
+      expect(wrapper.text()).toContain('Kitas posėdis');
+      // formatStaticTime with { year, month: 'long', day, hour, minute } on these dates.
+      expect(wrapper.text()).toContain('2029');
+      expect(wrapper.text()).toContain('2030');
+    });
+
+    it('renders no sibling nav when there is no previous or next announcement', () => {
+      const wrapper = mountPage({ meeting: makeMeeting() });
+
+      expect(wrapper.find('nav').exists()).toBe(false);
+    });
+
+    it('renders a documents section only when documents are linked', () => {
+      expect(mountPage({ meeting: makeMeeting() }).text()).not.toContain('Dokumentai');
+
+      const withDocs = mountPage({
+        meeting: makeMeeting({
+          documents: [{
+            id: 7,
+            title: 'VU SA Parlamento protokolas',
+            content_type: 'VU SA Parlamento protokolai',
+            document_date: '2030-01-01',
+            anonymous_url: 'https://sharepoint.example/doc.pdf',
+            language: 'lt',
+          }],
+        }),
+      });
+
+      expect(withDocs.text()).toContain('Dokumentai');
+      expect(withDocs.text()).toContain('VU SA Parlamento protokolas');
+    });
+  });
+
   it('renders the sidebar after the main content on mobile', () => {
     const wrapper = mountPage();
 
@@ -76,19 +158,18 @@ describe('Public/CalendarEvent.vue', () => {
     expect(aside.classes()).toContain('lg:order-none');
   });
 
-  it('passes maxVisible=3 to the upcoming events compact list', () => {
+  it('renders other events below the description, capped to 2 (an even number for the two-column grid), excluding the current one', () => {
     const wrapper = mountPage({
       calendar: [
+        { id: 1, title: 'Test Event', date: '2030-01-01T18:00:00+00:00' }, // current event, excluded
         { id: 2, title: 'Future 1', date: '2030-01-02T18:00:00+00:00' },
         { id: 3, title: 'Future 2', date: '2030-01-03T18:00:00+00:00' },
         { id: 4, title: 'Future 3', date: '2030-01-04T18:00:00+00:00' },
-        { id: 5, title: 'Future 4', date: '2030-01-05T18:00:00+00:00' },
       ],
     });
 
-    const upcoming = wrapper.find('.upcoming-events-stub');
-    expect(upcoming.exists()).toBe(true);
-    expect(upcoming.attributes('data-max-visible')).toBe('3');
+    expect(wrapper.text()).toContain('Kiti renginiai');
+    expect(wrapper.findAll('.event-card-stub')).toHaveLength(2);
   });
 
   it('does not render a sticky mobile action bar', () => {

@@ -10,10 +10,10 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Enums/** | .ai/rules/enums.md |
 | lang/** | .ai/rules/lang.md |
 | resources/js/Pages/Admin/People/Show*.vue,app/Http/Middleware/HandleInertiaRequests.php | .ai/rules/middleware.md |
-| app/Models/**, app/Models/Tenant.php | .ai/rules/models.md |
+| app/Models/**, app/Models/Tenant.php, app/Models/Calendar.php | .ai/rules/models.md |
 | app/Providers/** | .ai/rules/providers.md |
 | app/Http/Requests/** | .ai/rules/requests.md |
-| app/Services/ModelAuthorizer.php | .ai/rules/services.md |
+| app/Services/** | .ai/rules/services.md |
 | resources/js/Pages/Admin/Settings/**, app/Settings/** | .ai/rules/settings.md |
 | app/Support/MorphMap.php, app/Support/LocalizedRouteSlugs.php | .ai/rules/support.md |
 | tests/** | .ai/rules/tests.md |

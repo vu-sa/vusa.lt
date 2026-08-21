@@ -43,6 +43,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $student_position
  * @property string|null $description
  * @property string|null $start_time
+ * @property string|null $end_time
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, Vote> $additionalVotes
  * @property-read Collection<int, Comment> $comments

@@ -32,8 +32,36 @@
       </div>
     </div>
 
-    <!-- Where -->
-    <div v-if="location" class="mt-5 border-t border-zinc-200/60 pt-5 dark:border-zinc-700/60">
+    <!-- Where: remote events show no map/address, only a join link if one exists -->
+    <div v-if="event.is_remote" class="mt-5 border-t border-zinc-200/60 pt-5 dark:border-zinc-700/60">
+      <div class="flex gap-3">
+        <div
+          class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-vusa-red/10 dark:bg-vusa-red/20"
+        >
+          <IFluentGlobe20Regular class="size-5 text-vusa-red" />
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            {{ $t("Vieta") }}
+          </p>
+          <p class="mt-0.5 font-semibold text-zinc-900 dark:text-zinc-100">
+            {{ $t("Nuotolinis renginys") }}
+          </p>
+          <a
+            v-if="joinUrl"
+            :href="joinUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-vusa-red hover:underline"
+          >
+            <IFluentOpen20Regular class="size-3.5" />
+            {{ $t("Prisijungti") }}
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div v-else-if="location" class="mt-5 border-t border-zinc-200/60 pt-5 dark:border-zinc-700/60">
       <div class="flex gap-3">
         <div
           class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-vusa-red/10 dark:bg-vusa-red/20"
@@ -112,6 +140,8 @@ const locale = computed(() => (page.props.app.locale ?? LocaleEnum.LT) as Locale
 
 const location = computed(() => (props.event.location ? String(props.event.location) : ''));
 const organizer = computed(() => (props.event.organizer ? String(props.event.organizer) : ''));
+/** The call-to-action URL doubles as the join link for a remote event. */
+const joinUrl = computed(() => (props.event.cto_url ? String(props.event.cto_url) : ''));
 
 const dateSpan = computed(() =>
   formatEventDateSpan(props.event.date, props.event.end_date, {

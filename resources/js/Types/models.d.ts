@@ -40,6 +40,7 @@ declare global {
       student_position?: string | null
       description?: string | null
       start_time?: string | null
+      end_time?: string | null
       // relations
       meeting?: Meeting
       votes?: Vote[]
@@ -174,6 +175,7 @@ declare global {
       title?: Array<unknown> | null
       description?: Array<unknown> | null
       location?: Array<unknown> | null
+      is_remote: boolean
       organizer?: Array<unknown> | null
       cto_url?: Array<unknown> | null
       facebook_url?: string | null
@@ -187,6 +189,7 @@ declare global {
       end_date?: string | null
       category_id?: number | null
       tenant_id: number
+      meeting_id?: string | null
       created_at: string
       updated_at: string
       registration_form_id?: number | null
@@ -197,6 +200,7 @@ declare global {
       translations: unknown
       // relations
       tenant?: Tenant
+      meeting?: Meeting
       category?: Category
       media?: Media[]
       activities_as_subject?: Activity[]
@@ -205,6 +209,7 @@ declare global {
       activities_as_subject_count: number
       // exists
       tenant_exists: boolean
+      meeting_exists: boolean
       category_exists: boolean
       media_exists: boolean
       activities_as_subject_exists: boolean
@@ -366,6 +371,7 @@ declare global {
       e_tag?: string | null
       document_date?: string | null
       institution_id?: string | null
+      meeting_id?: string | null
       content_type?: string | null
       language?: string | null
       summary?: string | null
@@ -387,11 +393,13 @@ declare global {
       // mutators
       is_in_effect: boolean
       // relations
+      meeting?: Meeting
       institution?: Institution
       activities_as_subject?: Activity[]
       // counts
       activities_as_subject_count: number
       // exists
+      meeting_exists: boolean
       institution_exists: boolean
       activities_as_subject_exists: boolean
     }
@@ -646,6 +654,7 @@ declare global {
       // mutators
       related_institutions: unknown
       maybe_short_name: unknown
+      governance_scope: InstitutionScope
       has_public_meetings: boolean
       force_delete_blocked_reason: string
       has_protocol: boolean
@@ -807,6 +816,8 @@ declare global {
       // relations
       agenda_items?: AgendaItem[]
       institutions?: Institution[]
+      calendar_event?: Calendar
+      documents?: Document[]
       comments?: Comment[]
       root_comments?: Comment[]
       fileable_files?: FileableFile[]
@@ -816,6 +827,7 @@ declare global {
       // counts
       agenda_items_count: number
       institutions_count: number
+      documents_count: number
       comments_count: number
       root_comments_count: number
       fileable_files_count: number
@@ -825,6 +837,8 @@ declare global {
       // exists
       agenda_items_exists: boolean
       institutions_exists: boolean
+      calendar_event_exists: boolean
+      documents_exists: boolean
       comments_exists: boolean
       root_comments_exists: boolean
       fileable_files_exists: boolean
@@ -1065,6 +1079,7 @@ declare global {
       // mutators
       related_institutions: unknown
       maybe_short_name: unknown
+      governance_scope: InstitutionScope
       has_public_meetings: boolean
       force_delete_blocked_reason: string
       has_protocol: boolean
@@ -1153,6 +1168,8 @@ declare global {
       institutions?: Institution[]
       types?: Type[]
       agenda_items?: AgendaItem[]
+      calendar_event?: Calendar
+      documents?: Document[]
       comments?: Comment[]
       root_comments?: Comment[]
       fileable_files?: FileableFile[]
@@ -1163,6 +1180,7 @@ declare global {
       institutions_count: number
       types_count: number
       agenda_items_count: number
+      documents_count: number
       comments_count: number
       root_comments_count: number
       fileable_files_count: number
@@ -1173,6 +1191,8 @@ declare global {
       institutions_exists: boolean
       types_exists: boolean
       agenda_items_exists: boolean
+      calendar_event_exists: boolean
+      documents_exists: boolean
       comments_exists: boolean
       root_comments_exists: boolean
       fileable_files_exists: boolean
@@ -1956,6 +1976,15 @@ declare global {
     } as const;
 
     export type CommentKind = typeof CommentKind[keyof typeof CommentKind]
+
+    const InstitutionScope = {
+      Vusa: 'vusa',
+      University: 'vu',
+      National: 'national',
+      International: 'international',
+    } as const;
+
+    export type InstitutionScope = typeof InstitutionScope[keyof typeof InstitutionScope]
 
     const MeetingType = {
       InPerson: 'in-person',

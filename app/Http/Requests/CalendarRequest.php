@@ -34,6 +34,7 @@ class CalendarRequest extends FormRequest
             'description.en' => 'nullable|string',
             'location.lt' => 'nullable|string',
             'location.en' => 'nullable|string',
+            'is_remote' => 'boolean',
             'organizer.lt' => 'nullable|string',
             'organizer.en' => 'nullable|string',
             'cto_url.lt' => 'nullable|url',

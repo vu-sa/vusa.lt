@@ -91,6 +91,7 @@ return [
         'meeting_periodicity_days' => 'Susitikimų periodiškumas (dienomis)',
         'enable_sibling_relationships' => 'Rodyti susijusias institucijas pagal tipą',
         'enable_cross_tenant' => 'Rodyti padalinių institucijas iš pagrindinio',
+        'governance_scope' => 'Valdysenos sritis',
         'fileable_object' => 'Objektas',
         'institutions' => 'Institucijos',
         'types' => 'Tipai',
@@ -143,6 +144,7 @@ return [
         'enable_sibling_hint' => 'Įjungus, institucijos su šiuo tipu tame pačiame padalinyje bus matomos kaip susijusios viena kitai (pvz., atstovavimo skydelyje).',
         'enable_cross_tenant_hint' => 'Įjungus, pagrindinio padalinio institucija su šiuo tipu matys visas kitų padalinių institucijas su tuo pačiu tipu. Vienkryptis: padalinių institucijos nematys pagrindinės.',
         'technical_slug_hint' => 'Keičiama tik išskirtiniais atvejais.',
+        'governance_scope_hint' => 'Ar tai VU SA vidaus darinys, ar išorinis organas, į kurį VU SA deleguoja atstovus. Nuo to priklauso, kokie balsavimo laukai rodomi posėdyje. Nenurodžius — paveldima iš tėvinio tipo.',
         'navigation_parent_info' => 'Šis navigacijos elementas yra pagrindinis, todėl kiti įprastų elementų nustatymai nėra pasiekiami.',
         'no_options' => 'Nėra pasirinkimų',
         'add_contact_email_hint' => 'Spustelėkite, kad pridėtumėte papildomą kontaktinį el. paštą. Įprastai bus naudojamas jau esamas vartotojo prisijungimo el. paštas.',
@@ -163,6 +165,11 @@ return [
         'tenant_type_pkp' => 'PKP',
         'tenant_type_padalinys' => 'Padalinys',
         'tenant_type_pagrindinis' => 'Pagrindinis',
+        'governance_scope_inherit' => 'Paveldėti iš tėvinio tipo',
+        'governance_scope_vusa' => 'VU SA darinys',
+        'governance_scope_vu' => 'VU organas',
+        'governance_scope_national' => 'Nacionalinis organas',
+        'governance_scope_international' => 'Tarptautinis organas',
     ],
     'placeholders' => [
         'enter_title' => 'Įrašyti pavadinimą',
@@ -273,6 +280,7 @@ return [
     ],
     'validation' => [
         'agenda_item' => [
+            'end_time_after' => 'Pabaigos laikas turi būti vėlesnis už pradžios laiką.',
             'titles_required' => 'Bent vienas darbotvarkės klausimas turi būti pridėtas.',
             'title_required' => 'Darbotvarkės klausimas negali būti tuščias.',
             'title_string' => 'Darbotvarkės klausimo pavadinimas turi būti tekstas.',

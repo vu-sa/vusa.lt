@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Public;
 
+use App\Actions\GetPublicMeetingDocuments;
 use App\Enums\TenantType;
 use App\Http\Controllers\PublicController;
 use App\Models\Form;
@@ -12,7 +13,6 @@ use App\Models\Type;
 use App\Models\User;
 use App\Services\ContactPresentationService;
 use App\Settings\FormSettings;
-use App\Settings\MeetingSettings;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
@@ -59,6 +59,8 @@ class ContactController extends PublicController
 
         // Load types for breadcrumb navigation
         $institution->load('types');
+
+        $this->sharePublicEditLink($institution);
 
         $duties = $institution->load('duties.current_users.current_duties')->duties->sortBy(fn ($duty) => $duty->order);
 
@@ -310,39 +312,24 @@ class ContactController extends PublicController
     {
         $this->getTenantLinks();
 
-        // Verify meeting is public (belongs to allowed institution types)
-        $settings = app(MeetingSettings::class);
-        $allowedTypeIds = $settings->getPublicMeetingInstitutionTypeIds();
-
-        if ($allowedTypeIds->isEmpty()) {
-            abort(404);
-        }
-
-        // Load relationships
         $meeting->load([
             'agendaItems' => function ($query): void {
-                $query->orderBy('order');
+                $query->orderBy('order')->orderBy('start_time');
             },
             'agendaItems.mainVote',
             'institutions.types',
+            'calendarEvent',
         ]);
 
-        // Check if meeting's institution has allowed type
-        $hasAllowedType = false;
-        foreach ($meeting->institutions as $institution) {
-            $institutionTypeIds = $institution->types->pluck('id');
-            if ($institutionTypeIds->intersect($allowedTypeIds)->isNotEmpty()) {
-                $hasAllowedType = true;
-                break;
-            }
-        }
+        // Settings-only — see Meeting::isPubliclyVisible().
+        abort_unless($meeting->isPubliclyVisible(), 404);
 
-        if (! $hasAllowedType) {
-            abort(404);
-        }
+        $this->sharePublicEditLink($meeting);
 
         // Append completion status
         $meeting->append('completion_status');
+
+        $documents = GetPublicMeetingDocuments::execute($meeting);
 
         // Get primary institution for breadcrumbs
         $primaryInstitution = $meeting->institutions->first();
@@ -387,6 +374,11 @@ class ContactController extends PublicController
             'representatives' => $representatives,
             'previousMeeting' => $previousMeeting,
             'nextMeeting' => $nextMeeting,
+            'documents' => $documents,
+            'requiresStudentPerspective' => $meeting->requiresStudentPerspective(),
+            'calendarEvent' => $meeting->calendarEvent?->is_draft === false
+                ? $meeting->calendarEvent->only(['id', 'title', 'date'])
+                : null,
         ]);
     }
 
@@ -501,22 +493,10 @@ class ContactController extends PublicController
      */
     protected function getAllMeetingsForInstitution(Institution $institution): Collection
     {
-        $settings = app(MeetingSettings::class);
-        $allowedTypeIds = $settings->getPublicMeetingInstitutionTypeIds();
-
-        if ($allowedTypeIds->isEmpty()) {
+        if (! $institution->has_public_meetings) {
             return new Collection([]);
         }
 
-        // Check if institution has any allowed types
-        $institutionTypeIds = $institution->types->pluck('id');
-        $hasAllowedType = $institutionTypeIds->intersect($allowedTypeIds)->isNotEmpty();
-
-        if (! $hasAllowedType) {
-            return new Collection([]);
-        }
-
-        // Load all past meetings with necessary relationships
         return $institution->meetings()
             ->with([
                 'agendaItems' => function ($query): void {
