@@ -17,13 +17,32 @@
           v-if="isFolder"
           class="w-3/4 h-3/4 text-muted-foreground group-hover:text-vusa-red transition-colors"
         />
-        <!-- Image thumbnail -->
-        <img
-          v-else-if="isImage"
-          :src="`/uploads/${item.path?.replace('public/', '') || ''}`"
-          :alt="item.name"
-          class="w-full h-full object-cover"
-        >
+        <!-- Image thumbnail. The hover card is the only way to actually see what a
+             photo is at this tile size. -->
+        <HoverCard v-else-if="isImage" :open-delay="400" :close-delay="100">
+          <HoverCardTrigger as-child>
+            <img
+              :src="thumbnailSrc"
+              :alt="item.name"
+              loading="lazy"
+              decoding="async"
+              class="w-full h-full object-cover"
+              @error="handleThumbnailError"
+            >
+          </HoverCardTrigger>
+          <HoverCardContent side="right" class="w-auto max-w-sm p-2">
+            <img
+              :src="previewSrc"
+              :alt="item.name"
+              loading="lazy"
+              class="max-h-72 max-w-full rounded object-contain"
+              @error="handlePreviewError"
+            >
+            <p class="mt-1 max-w-72 truncate text-xs text-muted-foreground">
+              {{ item.name }}
+            </p>
+          </HoverCardContent>
+        </HoverCard>
         <!-- File type icons -->
         <span
           v-else
@@ -95,7 +114,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
+
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/hover-card';
 
 // Import all necessary icons
 import IFluentFolder24Filled from '~icons/fluent/folder-24-filled';
@@ -129,6 +150,30 @@ const isImage = computed(() => {
   if (isFolder.value) return false;
   return props.item?.name?.match(/\.(jpg|jpeg|png|webp)$/i);
 });
+
+/** Storage path → public URL, the shape the originals are served under. */
+const originalSrc = computed(() => `/uploads/${props.item?.path?.replace('public/', '') || ''}`);
+
+// Falls back to the original if the derivative can't be produced — a SharePoint item,
+// say, whose path the local thumbnail endpoint knows nothing about.
+const thumbnailFailed = ref(false);
+const previewFailed = ref(false);
+
+const thumbnailSrc = computed(() => (thumbnailFailed.value
+  ? originalSrc.value
+  : route('api.v1.admin.files.thumbnail', { path: props.item?.path, w: 320 })));
+
+const previewSrc = computed(() => (previewFailed.value
+  ? originalSrc.value
+  : route('api.v1.admin.files.thumbnail', { path: props.item?.path, w: 640 })));
+
+function handleThumbnailError() {
+  thumbnailFailed.value = true;
+}
+
+function handlePreviewError() {
+  previewFailed.value = true;
+}
 
 const buttonClasses = computed(() => {
   // Removed aspect-square to allow natural height: icon area (square) + text

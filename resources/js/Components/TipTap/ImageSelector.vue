@@ -17,7 +17,7 @@
                 <StepperIndicator>1</StepperIndicator>
                 <div>
                   <StepperTitle>{{ $t('common.select') }}</StepperTitle>
-                  <StepperDescription>{{ $t('accessibility.select_file_step') || 'Pasirink failą' }}</StepperDescription>
+                  <StepperDescription class="hidden sm:block">{{ $t('accessibility.select_file_step') || 'Pasirink failą' }}</StepperDescription>
                 </div>
               </StepperTrigger>
               <StepperSeparator />
@@ -27,7 +27,7 @@
                 <StepperIndicator>2</StepperIndicator>
                 <div>
                   <StepperTitle>{{ $t('accessibility.details') || 'Aprašas' }}</StepperTitle>
-                  <StepperDescription>{{ $t('accessibility.add_alt_title') || 'Pridėk alt ir pavadinimą' }}</StepperDescription>
+                  <StepperDescription class="hidden sm:block">{{ $t('accessibility.add_alt_title') || 'Pridėk alt ir pavadinimą' }}</StepperDescription>
                 </div>
               </StepperTrigger>
             </StepperItem>
@@ -79,31 +79,57 @@
             @submit="onSubmitDetails"
           >
             <div class="space-y-4">
-              <FormField v-slot="{ componentField }" name="alt">
+              <FormField v-slot="{ componentField, value }" name="alt">
                 <FormItem>
                   <FormLabel>
                     {{ $t('accessibility.alt_text') }}
                     <span class="text-destructive">*</span>
                   </FormLabel>
-                  <!-- Alt text explanation -->
-                  <div class="rounded-md bg-blue-50 border border-blue-200 p-3 dark:bg-blue-900/20 dark:border-blue-700 mb-2">
-                    <p class="text-sm text-blue-800 dark:text-blue-200 font-medium mb-2">
-                      {{ $t('accessibility.alt_text_required_explanation') }}
-                    </p>
-                    <p class="text-xs text-blue-700 dark:text-blue-300">
-                      {{ $t('accessibility.alt_text_example') }}
-                    </p>
-                  </div>
                   <FormControl>
                     <Input
                       v-bind="componentField"
                       :placeholder="$t('accessibility.alt_text_placeholder')"
+                      :disabled="isDecorative"
+                      maxlength="125"
                     />
                   </FormControl>
                   <FormMessage />
-                  <p class="text-xs text-muted-foreground">
-                    {{ $t('accessibility.alt_text_help') }}
-                  </p>
+
+                  <!-- The rationale costs one line until asked for: an author who
+                       already knows it inserts images all day and shouldn't scroll
+                       past a paragraph every time. -->
+                  <Collapsible v-model:open="altHelpOpen">
+                    <div class="flex items-center justify-between gap-2">
+                      <CollapsibleTrigger as-child>
+                        <!-- Explicit type: shadcn's Button sets none, so inside a form this
+                             toggle would submit it. -->
+                        <Button type="button" variant="ghost" size="sm"
+                          class="h-auto gap-2 p-0 text-xs font-normal has-[>svg]:p-0 text-muted-foreground hover:bg-transparent hover:text-foreground">
+                          <Info class="size-4" />
+                          {{ $t('accessibility.why_alt_required') }}
+                          <ChevronDown class="size-3 transition-transform duration-200"
+                            :class="{ 'rotate-180': altHelpOpen }" />
+                        </Button>
+                      </CollapsibleTrigger>
+                      <span class="text-xs tabular-nums text-muted-foreground">
+                        {{ (value as string | undefined)?.length ?? 0 }}/125
+                      </span>
+                    </div>
+                    <CollapsibleContent class="space-y-1 pt-2 text-xs leading-relaxed text-muted-foreground">
+                      <p>{{ $t('accessibility.alt_text_required_explanation') }}</p>
+                      <p>{{ $t('accessibility.alt_text_example') }}</p>
+                    </CollapsibleContent>
+                  </Collapsible>
+
+                  <!-- Matches ImageAccessibilityDialog: a purely decorative image is
+                       better served by an empty alt than by a description a screen
+                       reader has to read out for nothing. -->
+                  <div class="flex items-center gap-2">
+                    <Checkbox id="image-decorative" v-model="isDecorative" />
+                    <Label for="image-decorative" class="text-xs font-normal text-muted-foreground">
+                      {{ $t('accessibility.image_is_decorative') }}
+                    </Label>
+                  </div>
                 </FormItem>
               </FormField>
 
@@ -159,13 +185,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
+import { ChevronDown, Info } from 'lucide-vue-next';
 import { toTypedSchema } from '@vee-validate/zod';
 import { z } from 'zod';
 
 import { Button } from '@/Components/ui/button';
+import { Checkbox } from '@/Components/ui/checkbox';
 import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import {
   Stepper,
@@ -177,6 +206,7 @@ import {
   StepperDescription,
 } from '@/Components/ui/stepper';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/Components/ui/form';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
 import FileSelector from '@/Features/Admin/FileManager/FileSelector.vue';
 
 const props = defineProps<{
@@ -190,12 +220,17 @@ const emit = defineEmits<(e: 'submit', imageData: { src: string; alt: string; ti
 
 const selectedImageUrl = ref<string>('');
 const currentStep = ref<number>(1);
+const altHelpOpen = ref(false);
+const isDecorative = ref(false);
 
-// Validation schema for accessibility details
-const formSchema = toTypedSchema(z.object({
-  alt: z.string().trim().min(1, { message: $t('accessibility.alt_text_required') || 'Alt tekstas privalomas' }),
+// Validation schema for accessibility details. Recomputed so ticking "decorative"
+// lifts the alt requirement instead of leaving the form unsubmittable.
+const formSchema = computed(() => toTypedSchema(z.object({
+  alt: isDecorative.value
+    ? z.string().optional()
+    : z.string().trim().min(1, { message: $t('accessibility.alt_text_required') || 'Alt tekstas privalomas' }),
   title: z.string().max(200, { message: $t('validation.max') || 'Per ilgas pavadinimas' }).optional().or(z.literal('')),
-}));
+})));
 
 // Watch for modal close to reset form
 watch(showModal, (isOpen) => {
@@ -224,11 +259,11 @@ function goBackToSelection() {
   currentStep.value = 1;
 }
 
-function onSubmitDetails(values: { alt: string; title?: string }) {
+function onSubmitDetails(values: { alt?: string; title?: string }) {
   if (!selectedImageUrl.value) return;
   emit('submit', {
     src: selectedImageUrl.value,
-    alt: values.alt.trim(),
+    alt: isDecorative.value ? '' : (values.alt ?? '').trim(),
     title: (values.title ?? '').trim(),
   });
   showModal.value = false;
@@ -238,12 +273,9 @@ function resetForm() {
   selectedImageUrl.value = '';
   showModal.value = false;
   currentStep.value = 1;
+  isDecorative.value = false;
 }
 
-function resetImageSelection() {
-  selectedImageUrl.value = '';
-  currentStep.value = 1;
-}
 
 function getImageName(url: string): string {
   return url.split('/').pop() || 'Unknown image';

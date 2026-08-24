@@ -12,6 +12,8 @@ return [
     'alt_text_example' => 'Pavyzdys: "Studentai diskutuoja grupėje universiteto bibliotekoje"',
     'alt_text_placeholder' => 'Aprašykite, ką vaizduoja paveikslėlis...',
     'alt_text_help' => 'Aiškiai ir glaustai aprašykite paveikslėlio turinį ekrano skaitytuvams',
+    'why_alt_required' => 'Kodėl tai privaloma?',
+    'image_is_decorative' => 'Šis paveikslėlis yra dekoratyvinis (be alt teksto)',
     'title_text' => 'Pavadinimas (neprivalomas)',
     'title_text_placeholder' => 'Papildoma informacija...',
     'title_text_help' => 'Papildoma informacija, kuri atsiras užvedus pelę',

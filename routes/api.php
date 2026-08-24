@@ -159,6 +159,7 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         // Files
         Route::get('files', [FileApiController::class, 'index'])->name('files.index');
         Route::get('files/allowed-types', [FileApiController::class, 'allowedTypes'])->name('files.allowedTypes');
+        Route::get('files/thumbnail', [FileApiController::class, 'thumbnail'])->name('files.thumbnail');
 
         // Sharepoint / FileableFiles
         Route::get('fileables/{type}/{id}/files', [SharepointApiController::class, 'fileableFiles'])->name('fileables.files');

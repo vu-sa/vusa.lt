@@ -5,7 +5,8 @@ import { StarterKit } from '@tiptap/starter-kit';
 import { CustomHeading } from '../CustomHeading';
 import { TextAlign } from '../TextAlign';
 import { RCTag } from '../RCTag';
-import { createCompactExtensions } from '../extensions/presets';
+import { createCompactExtensions, createFullExtensions } from '../extensions/presets';
+import { toCssWidth } from '../imageResizeNodeView';
 
 /**
  * Headless extension tests, not component tests — TiptapEditor.vue itself is stubbed
@@ -204,5 +205,88 @@ describe('createCompactExtensions (content-grid cells, etc.)', () => {
 
     editor.chain().setNodeSelection(0).updateAttributes('paragraph', { align: 'center' }).run();
     expect(editor.getHTML()).toContain('rc-align-center');
+  });
+});
+
+describe('AccessibleImage (full preset)', () => {
+  function makeFullEditor() {
+    const editor = new Editor({ extensions: createFullExtensions() });
+    editors.push(editor);
+    return editor;
+  }
+
+  // Regression test for a real bug: AccessibleImage overrode `addCommands()` without
+  // spreading `this.parent?.()`, which dropped the base extension's `setImage`. The
+  // toolbar's image button calls exactly that, so picking an image in the `full`
+  // preset threw "setImage is not a function" and nothing was ever inserted.
+  it('keeps the base setImage command the toolbar inserts through', () => {
+    const editor = makeFullEditor();
+
+    expect(typeof editor.commands.setImage).toBe('function');
+
+    editor.chain().setImage({ src: '/uploads/test.png', alt: 'Alt', title: 'Title' }).run();
+
+    const html = editor.getHTML();
+    expect(html).toContain('src="/uploads/test.png"');
+    expect(html).toContain('alt="Alt"');
+  });
+
+  it('still exposes the alt-aware insert command', () => {
+    const editor = makeFullEditor();
+    editor.chain().setImageWithAlt({ src: '/uploads/a.png', alt: 'A', align: 'left' }).run();
+
+    expect(editor.getHTML()).toContain('data-align="left"');
+  });
+
+  it('renders a dragged/preset width so it survives a save and reload', () => {
+    const editor = makeFullEditor();
+    editor.chain().setImage({ src: '/uploads/test.png' }).run();
+    editor.chain().setNodeSelection(0).updateAttributes('image', { width: '480px' }).run();
+
+    expect(editor.getHTML()).toContain('width="480px"');
+
+    // Round-trips back through parseHTML, so reopening the editor keeps the size.
+    const reloaded = makeFullEditor();
+    reloaded.commands.setContent(editor.getHTML());
+    expect(reloaded.getHTML()).toContain('width="480px"');
+  });
+});
+
+describe('image resize node view', () => {
+  // The drag itself needs real layout (getBoundingClientRect is all zeroes in jsdom),
+  // so the pointer maths is deliberately not asserted here — only that the handle is
+  // mounted and that the width attribute it writes takes effect.
+  it('mounts a resize handle next to the image in the editing surface', () => {
+    const editor = new Editor({ extensions: createFullExtensions() });
+    editors.push(editor);
+    editor.chain().setImage({ src: '/uploads/test.png' }).run();
+
+    const wrapper = editor.view.dom.querySelector('.rc-image-wrapper');
+    expect(wrapper).not.toBeNull();
+    expect(wrapper?.querySelector('img')?.getAttribute('src')).toBe('/uploads/test.png');
+    expect(wrapper?.querySelector('.rc-image-handle')).not.toBeNull();
+  });
+
+  it('reflects the stored width on the wrapper so the handle hugs the image', () => {
+    const editor = new Editor({ extensions: createFullExtensions() });
+    editors.push(editor);
+    editor.chain().setImage({ src: '/uploads/test.png' }).run();
+    editor.chain().setNodeSelection(0).updateAttributes('image', { width: 320 }).run();
+
+    const wrapper = editor.view.dom.querySelector<HTMLElement>('.rc-image-wrapper');
+    expect(wrapper?.style.width).toBe('320px');
+  });
+});
+
+describe('toCssWidth', () => {
+  it.each([
+    [null, null],
+    ['', null],
+    [500, '500px'],
+    ['500', '500px'],
+    ['500px', '500px'],
+    ['100%', '100%'],
+  ])('maps %p to %p', (input, expected) => {
+    expect(toCssWidth(input)).toBe(expected);
   });
 });

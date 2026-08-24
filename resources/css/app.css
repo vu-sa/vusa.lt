@@ -290,6 +290,14 @@ html.dark-mode-init {
 */
 .rc-prose,
 .rc-prose-editing {
+  /* A left/right aligned image floats (App\Tiptap\Image), so without this the last
+     float in a block escapes past the end of the content it was aligned against. */
+  &::after {
+    content: '';
+    display: block;
+    clear: both;
+  }
+
   >* {
     margin-block: 0;
   }

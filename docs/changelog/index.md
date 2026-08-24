@@ -7,6 +7,22 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.26 — Paveikslėliai turinio redaktoriuje (2026-08-24) {#v1-26}
+
+- 🔧 **Paveikslėlį vėl galima įkelti į turinio redaktorių** — pasirinkus nuotrauką ji nebuvo įterpiama (redaktorius nutrūkdavo su klaida), tad turinį su paveikslėliais buvo galima kurti tik nutempus failą į redaktorių
+- ⭐ **Paveikslėlio dydį galima nusitempti pele** — pažymėjus paveikslėlį, jo dešiniajame krašte atsiranda rankenėlė; tempiant rodomas plotis pikseliais. Greitiems dydžiams lieka ir mygtukas su parinktimis (300 / 500 / 800 px, per visą plotį)
+- 🔧 **Pasirinktas plotis ir lygiuotė matomi ir viešame puslapyje** — anksčiau nepriklausomai nuo pasirinkimo paveikslėlis buvo ištempiamas per visą plotį, o lygiavimas į kairę ar dešinę dingdavo
+- ✨ **Trumpesnė paveikslėlio įkėlimo forma** — ilgas mėlynas paaiškinimas apie alternatyvų tekstą suskleistas po nuoroda „Kodėl tai privaloma?“, o šalia įvesties matomas simbolių skaitiklis (kaip ir redagavimo lange)
+- ⭐ **Failų tvarkyklėje – paveikslėlio peržiūra užvedus pelę** — tinklelyje užvedus ant nuotraukos parodoma didesnė jos versija, tad nebereikia spėlioti pagal mažą kvadratėlį
+- ✨ **Failų tinklelis kraunasi greičiau** — anksčiau kiekvienam langeliui buvo atsiunčiama viso dydžio nuotrauka (aplankas su 50 nuotraukų reiškė šimtus megabaitų); dabar serveris paruošia ir įsimena sumažintas kopijas, o už ekrano ribų esančios nuotraukos atsiunčiamos tik prislinkus
+- ✨ **Įterpiant paveikslėlį galima pažymėti „dekoratyvinis“** — tokiu atveju alternatyvaus teksto reikalauti nebereikia (kaip ir redagavimo lange)
+- 🔧 **Nuoroda „Kodėl tai privaloma?“ nebepateikia formos** — mygtukas formoje neturėjo tipo, tad jo paspaudimas bandė įterpti paveikslėlį
+- 🔧 **Žymimasis langelis „dekoratyvinis“ vėl reaguoja į paspaudimą** — jis buvo įdėtas į `<label>`, todėl paspaudimas suveikdavo du kartus ir varnelė likdavo neuždėta
+- ✨ **Paveikslėlio valdikliai atsiranda šalia paties paveikslėlio** — pažymėjus jį iškart virš jo pasirodo lygiuotės, dydžio, alt teksto ir pašalinimo mygtukai; anksčiau jie buvo toli viršuje, įrankių juostoje
+- 🔧 **Nebesidubliuoja lygiuotės mygtukai** — pažymėjus paveikslėlį įrankių juostoje matėsi dvi lygiuotės eilutės, o veikė tik viena
+- 🔧 **Pažymėjus paveikslėlį nebesiūloma paryškinti ar pabraukti** — vietoj teksto formatavimo burbulo dabar rodomas paveikslėlio meniu
+- 🔧 **Sutvarkyta „Pavyzdžiai“ eilutės lygiuotė** — ji buvo pastumta į dešinę, palyginti su žemiau esančiu žymimuoju langeliu
+
 ## v1.25 — Hero karuselė, angliškos nuorodos ir teisių sutvarkymas (2026-08-20) {#v1-25}
 
 - ⭐ **Naujas hero karuselės blokas** — puslapio turinį galima pradėti besikeičiančiomis didelėmis nuotraukomis su antrašte, paantrašte, aprašymu ir mygtukais. Karuselė pritaikyta klaviatūrai ir ekrano skaitytuvams, o automatinis slinkimas stoja užvedus pele ir neveikia, kai įrenginys prašo mažiau judesio

@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\HtmlSanitizerService;
 use App\Tiptap\TiptapEditor;
 
 describe('TiptapEditor', function (): void {
@@ -75,7 +76,7 @@ describe('TiptapEditor', function (): void {
 
         expect($html)->toContain('src="/images/test.jpg"')
             ->toContain('alt="Test image"')
-            ->toContain('class="w-full rounded-md"')
+            ->toContain('class="tiptap-image max-w-full h-auto rounded-md mx-auto block"')
             ->toContain('loading="lazy"');
     });
 
@@ -338,6 +339,71 @@ describe('Video node', function (): void {
         $html = $editor->setContent($content)->getHTML();
 
         expect($html)->toContain('<div class="video-error"></div>');
+    });
+});
+
+describe('Image node', function (): void {
+    function imageDoc(array $attrs): array
+    {
+        return [
+            'type' => 'doc',
+            'content' => [
+                ['type' => 'image', 'attrs' => $attrs],
+            ],
+        ];
+    }
+
+    it('renders the width an author picked in the editor', function (): void {
+        $html = (new TiptapEditor)->setContent(imageDoc([
+            'src' => '/uploads/test.png',
+            'width' => '480px',
+        ]))->getHTML();
+
+        expect($html)->toContain('width="480px"');
+    });
+
+    it('renders alignment as data-align plus float classes', function (): void {
+        $html = (new TiptapEditor)->setContent(imageDoc([
+            'src' => '/uploads/test.png',
+            'align' => 'left',
+        ]))->getHTML();
+
+        expect($html)->toContain('data-align="left"')
+            ->toContain('float-left');
+    });
+
+    it('never forces w-full, which would override the chosen width', function (): void {
+        $html = (new TiptapEditor)->setContent(imageDoc([
+            'src' => '/uploads/test.png',
+            'width' => '300px',
+        ]))->getHTML();
+
+        // `max-w-full` caps an oversized image without stretching a small one, which
+        // a bare `w-full` would do — overriding the width the author just chose.
+        expect($html)->not->toContain(' w-full')
+            ->and($html)->toContain('max-w-full');
+    });
+
+    it('defaults to centred when the node carries no alignment', function (): void {
+        $html = (new TiptapEditor)->setContent(imageDoc([
+            'src' => '/uploads/test.png',
+        ]))->getHTML();
+
+        expect($html)->toContain('data-align="center"')
+            ->toContain('mx-auto');
+    });
+
+    it('keeps width and alignment through the rich-content sanitizer', function (): void {
+        $html = (new TiptapEditor)->setContent(imageDoc([
+            'src' => '/uploads/test.png',
+            'width' => '480px',
+            'align' => 'right',
+        ]))->getHTML();
+
+        $sanitized = app(HtmlSanitizerService::class)->sanitizeRichContent($html);
+
+        expect($sanitized)->toContain('width="480px"')
+            ->toContain('data-align="right"');
     });
 });
 

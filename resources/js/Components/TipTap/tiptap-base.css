@@ -96,6 +96,61 @@
   outline-offset: 2px;
 }
 
+/* Image resize node view (see imageResizeNodeView.ts) */
+.tiptap .rc-image-wrapper {
+  position: relative;
+  display: block;
+  max-width: 100%;
+}
+
+.tiptap .rc-image-wrapper > img {
+  display: block;
+  width: 100%;
+}
+
+.tiptap .rc-image-selected > img {
+  outline: 2px solid #bd2835;
+  outline-offset: 2px;
+}
+
+.rc-image-handle {
+  position: absolute;
+  right: -0.4375rem;
+  bottom: 1rem;
+  width: 0.875rem;
+  height: 0.875rem;
+  border: 2px solid #fff;
+  border-radius: 9999px;
+  background-color: #bd2835;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  cursor: ew-resize;
+  opacity: 0;
+  transition: opacity 0.15s;
+  /* Without this the browser scrolls instead of firing pointermove on touch. */
+  touch-action: none;
+}
+
+.rc-image-wrapper:hover .rc-image-handle,
+.rc-image-selected .rc-image-handle,
+.rc-image-wrapper[data-resizing] .rc-image-handle {
+  opacity: 1;
+}
+
+/* Live pixel readout while dragging */
+.rc-image-wrapper[data-resizing]::after {
+  content: attr(data-resizing);
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  background-color: rgba(24, 24, 27, 0.8);
+  color: #fff;
+  font-size: 0.6875rem;
+  line-height: 1rem;
+  pointer-events: none;
+}
+
 /* Tables */
 .tiptap table {
   border-collapse: collapse;

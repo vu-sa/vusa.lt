@@ -1,6 +1,8 @@
 import { Image } from '@tiptap/extension-image';
 import type { CommandProps } from '@tiptap/core';
 
+import { createImageResizeNodeView } from './imageResizeNodeView';
+
 interface SetImageWithAltOptions {
   src: string;
   alt?: string;
@@ -48,6 +50,9 @@ export const AccessibleImage = Image.extend({
 
   addCommands() {
     return {
+      // `extend()` replaces addCommands wholesale, so without the parent spread the
+      // base extension's `setImage` disappears and the toolbar insert throws.
+      ...this.parent?.(),
       setImageWithAlt: (options: SetImageWithAltOptions) => ({ commands }: CommandProps) =>
         commands.insertContent({
           type: this.name,
@@ -69,6 +74,10 @@ export const AccessibleImage = Image.extend({
       updateImageAlignment: (align: string) => ({ commands }: CommandProps) =>
         commands.updateAttributes(this.name, { align }),
     };
+  },
+
+  addNodeView() {
+    return createImageResizeNodeView();
   },
 
   renderHTML({ HTMLAttributes }: { HTMLAttributes: Record<string, unknown> }) {

@@ -3,7 +3,7 @@
     <!-- Bubble Menu (for compact and full presets) -->
     <BubbleMenu v-if="editor && preset !== 'minimal'"
       class="flex items-center gap-1 rounded-lg border bg-white p-1 shadow-md dark:bg-zinc-900 dark:border-zinc-700"
-      :editor :tippy-options="{ duration: 50 }">
+      :editor plugin-key="textBubbleMenu" :should-show="shouldShowTextBubbleMenu" :options="{ placement: 'top', offset: 8 }">
       <TiptapFormattingButtons v-model:editor="editor" />
 
       <!-- Link controls in bubble menu -->
@@ -119,8 +119,10 @@
            of content (e.g. the MembershipPage-style mascot column), so an author needs
            to be able to apply them there, not just view them if they arrived seeded. -->
       <template v-if="preset !== 'minimal'">
-        <!-- Alignment — applies to whichever block type (heading or paragraph) has focus. -->
-        <ButtonGroup>
+        <!-- Alignment — applies to whichever block type (heading or paragraph) has
+             focus. Hidden while an image node is selected: it would sit next to the
+             image's own alignment control doing something else entirely. -->
+        <ButtonGroup v-if="!editor.isActive('image')">
           <Button size="sm" :variant="currentAlign === 'start' ? 'default' : 'outline'" @click="setAlign('start')">
             <IFluentTextAlignLeft24Regular />
           </Button>
@@ -256,49 +258,6 @@
         <IFluentTableAdd24Regular />
       </Button>
 
-      <!-- Image controls (full preset, when image is selected) -->
-      <template v-if="preset === 'full' && editor.isActive('image')">
-        <Separator orientation="vertical" class="h-5" />
-        <ButtonGroup>
-          <Button size="sm" :variant="isAlignmentActive('left') ? 'default' : 'outline'"
-            @click="setAlignment('left')">
-            <IFluentTextAlignLeft24Regular />
-          </Button>
-          <Button size="sm" :variant="isAlignmentActive('center') ? 'default' : 'outline'"
-            @click="setAlignment('center')">
-            <IFluentTextAlignCenter24Regular />
-          </Button>
-          <Button size="sm" :variant="isAlignmentActive('right') ? 'default' : 'outline'"
-            @click="setAlignment('right')">
-            <IFluentTextAlignRight24Regular />
-          </Button>
-        </ButtonGroup>
-        <DropdownMenu>
-          <DropdownMenuTrigger as-child>
-            <Button size="sm" variant="outline">
-              <IFluentResize20Regular />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuItem @click="setSizePreset('small')">
-              {{ $t('Small') }} (300px)
-            </DropdownMenuItem>
-            <DropdownMenuItem @click="setSizePreset('medium')">
-              {{ $t('Medium') }} (500px)
-            </DropdownMenuItem>
-            <DropdownMenuItem @click="setSizePreset('large')">
-              {{ $t('Large') }} (800px)
-            </DropdownMenuItem>
-            <DropdownMenuItem @click="setSizePreset('full')">
-              {{ $t('Full Width') }}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <Button size="sm" variant="outline" @click="openImageAccessibilityDialog">
-          <IFluentAccessibility24Regular />
-        </Button>
-      </template>
-
       <!-- Undo/Redo -->
       <ButtonGroup class="ml-auto">
         <Button size="sm" variant="outline" :disabled="!editor.can().chain().focus().undo().run()"
@@ -329,12 +288,8 @@
       <EditorContent :editor />
     </div>
 
-    <!-- Image Accessibility Dialog -->
-    <ImageAccessibilityDialog
-      v-model:open="showImageDialog"
-      :image-data="currentImageData"
-      @submit="handleImageAccessibilitySubmit"
-    />
+    <!-- Contextual image controls, rendered next to the selected image -->
+    <TiptapImageMenu v-if="preset === 'full'" :editor />
   </div>
 </template>
 
@@ -350,7 +305,6 @@ import './accessible-image-commands.d.ts';
 // Extensions
 import { type EditorPreset, getExtensionsForPreset } from './extensions/presets';
 import { useTiptapFileUpload } from './composables/useTiptapFileUpload';
-import { useTiptapImageControls } from './composables/useTiptapImageControls';
 import { normalizeContent } from './normalizeContent';
 
 // UI Components
@@ -359,7 +313,8 @@ import TiptapImageButton from './TiptapImageButton.vue';
 import TiptapLinkButton from './TiptapLinkButton.vue';
 import TiptapVideoButton from './TiptapVideoButton.vue';
 import TiptapYoutubeButton from './TiptapYoutubeButton.vue';
-import ImageAccessibilityDialog from './ImageAccessibilityDialog.vue';
+import TiptapImageMenu from './TiptapImageMenu.vue';
+import { shouldShowTextBubbleMenu } from './bubbleMenuVisibility';
 
 import { Button } from '@/Components/ui/button';
 import { ButtonGroup } from '@/Components/ui/button-group';
@@ -405,8 +360,6 @@ import IFluentSettings16Regular from '~icons/fluent/settings16-regular';
 import IFluentTextAlignLeft24Regular from '~icons/fluent/text-align-left24-regular';
 import IFluentTextAlignCenter24Regular from '~icons/fluent/text-align-center24-regular';
 import IFluentTextAlignRight24Regular from '~icons/fluent/text-align-right24-regular';
-import IFluentResize20Regular from '~icons/fluent/resize20-regular';
-import IFluentAccessibility24Regular from '~icons/fluent/accessibility24-regular';
 import IFluentImage24Regular from '~icons/fluent/image24-regular';
 import IFluentVideoClip24Regular from '~icons/fluent/video-clip24-regular';
 import IFluentVideo24Regular from '~icons/fluent/video24-regular';
@@ -685,17 +638,6 @@ function attachVideo(url: string) {
   editor.value?.chain().focus().setVideo(url).run();
   showVideoModal.value = false;
 }
-
-// Image controls composable (initialized after editor)
-const {
-  showImageDialog,
-  currentImageData,
-  isAlignmentActive,
-  setAlignment,
-  setSizePreset,
-  openAccessibilityDialog: openImageAccessibilityDialog,
-  submitAccessibilityChanges: handleImageAccessibilitySubmit,
-} = useTiptapImageControls(editor);
 
 // Cleanup
 onBeforeUnmount(() => {

@@ -9,6 +9,9 @@ use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Laravel\Facades\Image;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class FileApiController extends ApiController
 {
@@ -103,6 +106,83 @@ class FileApiController extends ApiController
             'directories' => $directories,
             'path' => $path,
         ]);
+    }
+
+    /**
+     * Widths the grid and its hover preview ask for. An allowlist keeps a crafted
+     * `w` from filling the cache disk with one derivative per pixel value.
+     *
+     * @var array<int, int>
+     */
+    private const array THUMBNAIL_WIDTHS = [160, 320, 640];
+
+    /**
+     * Extensions worth rasterising. SVG is left alone (already small, and the driver
+     * cannot rasterise it); the grid falls back to the original for anything else.
+     *
+     * @var array<int, string>
+     */
+    private const array THUMBNAILABLE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
+
+    /**
+     * Serve a cached, downscaled copy of a stored image.
+     *
+     * The file grid used to point every tile at the full-resolution original, so
+     * opening a folder of 50 photos downloaded and decoded hundreds of megabytes.
+     */
+    public function thumbnail(Request $request): Response
+    {
+        $user = $this->requireAuth($request);
+
+        try {
+            $path = $this->validateAndNormalizePath((string) $request->input('path', ''));
+        } catch (\InvalidArgumentException) {
+            abort(400, 'Invalid path format');
+        }
+
+        if (! $user->can('viewDirectory', [File::class, dirname($path)])) {
+            abort(403, __('files.errors.no_directory_access'));
+        }
+
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+
+        if (! in_array($extension, self::THUMBNAILABLE_EXTENSIONS, true) || ! Storage::exists($path)) {
+            abort(404);
+        }
+
+        $width = (int) $request->input('w', 320);
+
+        if (! in_array($width, self::THUMBNAIL_WIDTHS, true)) {
+            $width = 320;
+        }
+
+        return $this->respondWithThumbnail($path, $width);
+    }
+
+    /**
+     * Build the derivative once and serve it from disk on every later request.
+     *
+     * The source's modified time is part of the cache key, so re-uploading over a
+     * filename produces a new thumbnail instead of serving the stale one.
+     */
+    private function respondWithThumbnail(string $path, int $width): BinaryFileResponse
+    {
+        $cacheKey = hash('xxh128', $path.'|'.Storage::lastModified($path).'|'.$width);
+        $cachePath = Storage::path('thumbnails/'.$cacheKey.'.webp');
+
+        if (! is_file($cachePath)) {
+            Storage::makeDirectory('thumbnails');
+
+            Image::decodePath(Storage::path($path))
+                ->scaleDown(width: $width)
+                ->encodeUsingFileExtension('webp', quality: 75)
+                ->save($cachePath);
+        }
+
+        return response()
+            ->file($cachePath, ['Content-Type' => 'image/webp'])
+            ->setMaxAge(31536000)
+            ->setPrivate();
     }
 
     /**

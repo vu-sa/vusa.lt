@@ -52,6 +52,18 @@ return [
     'image_alt_placeholder' => 'Aprašykite, kas pavaizduota nuotraukoje',
     'image_title' => 'Pavadinimas (neprivalomas)',
     'image_title_placeholder' => 'Pavadinimas, rodomas užvedus pelę',
+    // Image bubble menu
+    'image_size' => 'Dydis',
+    'image_remove' => 'Pašalinti paveikslėlį',
+    'image_alt_missing' => 'Trūksta alt teksto',
+    'align_left' => 'Lygiuoti kairėje',
+    'align_center' => 'Centruoti',
+    'align_right' => 'Lygiuoti dešinėje',
+    'size_auto' => 'Originalus',
+    'size_small' => 'Mažas',
+    'size_medium' => 'Vidutinis',
+    'size_large' => 'Didelis',
+    'size_full' => 'Per visą plotį',
     // Form fields
     'title' => 'Pavadinimas',
     'subtitle' => 'Paantraštė',

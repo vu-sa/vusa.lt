@@ -7,6 +7,22 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.26 — Images in the content editor (2026-08-24) {#v1-26}
+
+- 🔧 **Images can be inserted from the content editor again** — picking an image did nothing (the editor threw an error), so images could only be added by dragging a file onto the editor
+- ⭐ **Image size can be dragged** — select an image and a handle appears on its right edge; the width in pixels is shown while dragging. The preset menu (300 / 500 / 800 px, full width) is still there for quick sizing
+- 🔧 **The chosen width and alignment now show on the public page** — images used to be stretched to the full width regardless of the size picked, and left/right alignment was lost
+- ✨ **A shorter image insert form** — the long blue block explaining alt text now sits behind a "Why is this required?" toggle, with a character counter next to the field (matching the edit dialog)
+- ⭐ **Hover preview in the file manager** — hovering a photo in the grid shows a larger version, so you no longer have to guess from a small square
+- ✨ **The file grid loads much faster** — each tile used to download the full-size original (a folder of 50 photos meant hundreds of megabytes); the server now builds and caches downscaled copies, and off-screen images are only fetched once scrolled into view
+- ✨ **Images can be marked decorative when inserting** — alt text is then no longer required, matching the edit dialog
+- 🔧 **The "Why is this required?" link no longer submits the form** — the button carried no type, so clicking it tried to insert the image
+- 🔧 **The "decorative" checkbox responds to clicks again** — it sat inside a `<label>`, so a click fired twice and the tick never stuck
+- ✨ **Image controls appear next to the image** — selecting one now raises alignment, size, alt text and remove buttons right above it, instead of far away in the toolbar
+- 🔧 **No more duplicate alignment buttons** — selecting an image used to show two alignment rows in the toolbar, only one of which worked
+- 🔧 **Selecting an image no longer offers bold and underline** — the text formatting bubble is replaced by the image menu
+- 🔧 **The "Examples" row lines up again** — it was indented to the right of the checkbox below it
+
 ## v1.25 — Hero carousel, English URLs and authorization clean-up (2026-08-20) {#v1-25}
 
 - ⭐ **New hero carousel block** — page content can now open with rotating large photos, each carrying its own title, subtitle, description and buttons. The carousel is keyboard- and screen-reader-friendly, autoplay pauses on hover and turns off entirely when the device requests reduced motion
