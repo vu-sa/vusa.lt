@@ -8,7 +8,6 @@ use Tiptap\Marks\Link;
 use Tiptap\Marks\Subscript;
 use Tiptap\Marks\Superscript;
 use Tiptap\Marks\Underline;
-use Tiptap\Nodes\Image;
 use Tiptap\Nodes\Table;
 use Tiptap\Nodes\TableCell;
 use Tiptap\Nodes\TableHeader;
@@ -49,10 +48,10 @@ class TiptapEditor extends Editor
                 // The MembershipPage-style dot-pill "tag" mark.
                 new RCTag,
 
-                // Image with responsive classes
+                // Image carrying the author's size and alignment (App\Tiptap\Image);
+                // the class itself is computed per alignment in its renderHTML().
                 new Image([
                     'HTMLAttributes' => [
-                        'class' => 'w-full rounded-md',
                         'loading' => 'lazy',
                     ],
                 ]),

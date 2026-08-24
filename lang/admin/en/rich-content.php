@@ -52,6 +52,18 @@ return [
     'image_alt_placeholder' => 'Describe what is shown in the image',
     'image_title' => 'Title (optional)',
     'image_title_placeholder' => 'Title shown on hover',
+    // Image bubble menu
+    'image_size' => 'Size',
+    'image_remove' => 'Remove image',
+    'image_alt_missing' => 'Alt text missing',
+    'align_left' => 'Align left',
+    'align_center' => 'Align centre',
+    'align_right' => 'Align right',
+    'size_auto' => 'Original',
+    'size_small' => 'Small',
+    'size_medium' => 'Medium',
+    'size_large' => 'Large',
+    'size_full' => 'Full width',
     // Form fields
     'title' => 'Title',
     'subtitle' => 'Subtitle',

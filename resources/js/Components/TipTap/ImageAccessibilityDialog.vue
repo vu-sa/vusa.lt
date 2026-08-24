@@ -30,14 +30,42 @@
             :placeholder="$t('rich-content.image_alt_placeholder')"
             maxlength="125"
           />
-          <p class="text-xs text-muted-foreground">
-            {{ $t('rich-content.image_alt_help') }}
-            {{ formData.alt?.length || 0 }}/125 {{ $t('rich-content.characters') }}.
-          </p>
-          <label class="flex items-center gap-2 text-xs text-muted-foreground">
-            <Checkbox v-model="isDecorative" />
-            {{ $t('rich-content.image_is_decorative') }}
-          </label>
+
+          <!-- Guidance folded away by default; this dialog is opened repeatedly while
+               tidying up one page's images, so it has to stay glanceable. -->
+          <Collapsible v-model:open="showGuidance">
+            <div class="flex items-center justify-between gap-2">
+              <CollapsibleTrigger as-child>
+                <!-- Explicit type: shadcn's Button sets none, so inside a form this
+                     toggle would submit it. -->
+                <Button type="button" variant="ghost" size="sm"
+                  class="h-auto gap-2 p-0 text-xs font-normal has-[>svg]:p-0 text-muted-foreground hover:bg-transparent hover:text-foreground">
+                  <Info class="size-4" />
+                  {{ $t('rich-content.examples') }}
+                  <ChevronDown class="size-3 transition-transform duration-200"
+                    :class="{ 'rotate-180': showGuidance }" />
+                </Button>
+              </CollapsibleTrigger>
+              <span class="text-xs tabular-nums text-muted-foreground">
+                {{ formData.alt?.length || 0 }}/125
+              </span>
+            </div>
+            <CollapsibleContent class="pt-2 text-xs leading-relaxed text-muted-foreground">
+              <p>{{ $t('rich-content.image_alt_help') }}</p>
+              <ul class="mt-1 list-inside list-disc space-y-1">
+                <li>{{ $t('rich-content.example_photo') }}</li>
+                <li>{{ $t('rich-content.example_chart') }}</li>
+                <li>{{ $t('rich-content.example_decorative') }}</li>
+              </ul>
+            </CollapsibleContent>
+          </Collapsible>
+
+          <div class="flex items-center gap-2">
+            <Checkbox id="alt-decorative" v-model="isDecorative" />
+            <Label for="alt-decorative" class="text-xs font-normal text-muted-foreground">
+              {{ $t('rich-content.image_is_decorative') }}
+            </Label>
+          </div>
         </div>
 
         <!-- Title field -->
@@ -53,16 +81,6 @@
           <p class="text-xs text-muted-foreground">
             {{ $t('rich-content.image_title_help') }}
           </p>
-        </div>
-
-        <!-- Quick examples -->
-        <div class="text-xs text-muted-foreground">
-          <strong>{{ $t('rich-content.examples') }}:</strong>
-          <ul class="mt-1 space-y-1 list-disc list-inside">
-            <li>{{ $t('rich-content.example_photo') }}</li>
-            <li>{{ $t('rich-content.example_chart') }}</li>
-            <li>{{ $t('rich-content.example_decorative') }}</li>
-          </ul>
         </div>
       </div>
 
@@ -81,11 +99,13 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
+import { ChevronDown, Info } from 'lucide-vue-next';
 
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
 import {
   Dialog,
   DialogContent,
@@ -116,6 +136,7 @@ const formData = ref({
   title: '',
 });
 const isDecorative = ref(false);
+const showGuidance = ref(false);
 
 // Reset form when dialog opens
 watch(() => props.open, (isOpen) => {

@@ -12,6 +12,8 @@ return [
     'alt_text_example' => 'Example: "Students discussing in a group at university library"',
     'alt_text_placeholder' => 'Describe what the image shows...',
     'alt_text_help' => 'Describe the image content clearly and concisely for screen readers',
+    'why_alt_required' => 'Why is this required?',
+    'image_is_decorative' => 'This image is decorative (no alt text)',
     'title_text' => 'Title (optional)',
     'title_text_placeholder' => 'Additional information...',
     'title_text_help' => 'Additional information shown on hover',

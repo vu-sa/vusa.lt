@@ -8,6 +8,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Laravel\Facades\Image;
 
 pest()->use(RefreshDatabase::class);
 
@@ -92,4 +93,79 @@ test('directories are never filtered out by an extensions filter', function (): 
 test('unauthenticated users cannot list files', function (): void {
     $this->getJson(route('api.v1.admin.files.index', ['path' => $this->allowedPath]))
         ->assertUnauthorized();
+});
+
+describe('thumbnails', function (): void {
+    beforeEach(function (): void {
+        // The listing fixtures are text pretending to be images; the thumbnailer needs
+        // something Intervention can actually decode.
+        Storage::put(
+            $this->allowedPath.'/real-photo.jpg',
+            Image::createImage(1200, 800)->encodeUsingFileExtension('jpg')->toString()
+        );
+    });
+
+    test('a stored image is served as a downscaled webp', function (): void {
+        $response = asUser($this->fileManager)
+            ->get(route('api.v1.admin.files.thumbnail', ['path' => $this->allowedPath.'/real-photo.jpg']));
+
+        $response->assertOk()->assertHeader('Content-Type', 'image/webp');
+
+        $thumbnail = Image::decodeBinary($response->streamedContent());
+        expect($thumbnail->width())->toBe(320);
+    });
+
+    test('the requested width is honoured, so the hover preview gets a bigger copy', function (): void {
+        $response = asUser($this->fileManager)
+            ->get(route('api.v1.admin.files.thumbnail', ['path' => $this->allowedPath.'/real-photo.jpg', 'w' => 640]));
+
+        $response->assertOk();
+        expect(Image::decodeBinary($response->streamedContent())->width())->toBe(640);
+    });
+
+    test('an unlisted width falls back to the default instead of filling the cache disk', function (): void {
+        $response = asUser($this->fileManager)
+            ->get(route('api.v1.admin.files.thumbnail', ['path' => $this->allowedPath.'/real-photo.jpg', 'w' => 1337]));
+
+        $response->assertOk();
+        expect(Image::decodeBinary($response->streamedContent())->width())->toBe(320);
+    });
+
+    test('the derivative is written once and reused', function (): void {
+        asUser($this->fileManager)
+            ->get(route('api.v1.admin.files.thumbnail', ['path' => $this->allowedPath.'/real-photo.jpg']))
+            ->assertOk();
+
+        expect(Storage::files('thumbnails'))->toHaveCount(1);
+
+        asUser($this->fileManager)
+            ->get(route('api.v1.admin.files.thumbnail', ['path' => $this->allowedPath.'/real-photo.jpg']))
+            ->assertOk();
+
+        expect(Storage::files('thumbnails'))->toHaveCount(1);
+    });
+
+    test('a non-image is not thumbnailed', function (): void {
+        asUser($this->fileManager)
+            ->get(route('api.v1.admin.files.thumbnail', ['path' => $this->allowedPath.'/document.pdf']))
+            ->assertNotFound();
+    });
+
+    test('a directory the user cannot view is refused', function (): void {
+        Storage::put('public/files/padaliniai/vusaother/secret.jpg', 'whatever');
+
+        asUser($this->fileManager)
+            ->get(route('api.v1.admin.files.thumbnail', ['path' => 'public/files/padaliniai/vusaother/secret.jpg']))
+            ->assertForbidden();
+    });
+
+    test('unauthenticated users get nothing', function (): void {
+        // An <img> request carries no Accept: application/json, so the auth middleware
+        // bounces it to login rather than answering 401 — either way, no image.
+        $this->get(route('api.v1.admin.files.thumbnail', ['path' => $this->allowedPath.'/real-photo.jpg']))
+            ->assertRedirect();
+
+        $this->getJson(route('api.v1.admin.files.thumbnail', ['path' => $this->allowedPath.'/real-photo.jpg']))
+            ->assertUnauthorized();
+    });
 });
