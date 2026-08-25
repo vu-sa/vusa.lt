@@ -19,7 +19,6 @@
 </template>
 
 <script setup lang="ts">
-import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { z } from 'zod';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
@@ -55,29 +54,43 @@ const hiddenFieldIds = computed(() => {
     .map(([fieldId]) => fieldId);
 });
 
-const checkIfFieldIsLocalized = (field: Record<string, any>) => {
-  return getTranslatedValue(field.options?.[0].label);
-};
-
-const getEnumLabel = (field: Record<string, any>, value: string | number | boolean) => {
-  if (field.type === 'enum' && field.options) {
-    const option = field.options.find((opt: { value: string | number | boolean }) => {
-      return String(opt.value) === String(value);
-    });
-
-    if (option) {
-      if (checkIfFieldIsLocalized(field)) {
-        const page = usePage();
-        const locale = (page.props as any).app?.locale ?? 'lt';
-
-        return option.label[locale] ?? option.label;
-      }
-
-      return option.label;
-    }
+/**
+ * Labels arrive either as a plain scalar (model-backed options, e.g. a tenant's `fullname`)
+ * or as a `{ lt, en }` object whose values may be numbers. Both shapes can appear in one form,
+ * so resolve per option — probing only `options[0]` mislabelled every option in the field.
+ */
+const resolveOptionLabel = (label: unknown): string => {
+  if (label === null || label === undefined) {
+    return '';
   }
 
-  return value;
+  if (typeof label === 'object') {
+    const translations = label as Record<string, unknown>;
+    const locale = (usePage().props as any).app?.locale ?? 'lt';
+    const translated = translations[locale] ?? translations.lt ?? Object.values(translations)[0];
+
+    return translated === null || translated === undefined ? '' : String(translated);
+  }
+
+  return String(label);
+};
+
+const getFieldOptions = (field: Record<string, any>): Record<string, any>[] => field.options ?? [];
+
+const findOptionByValue = (field: Record<string, any>, value: string | number | boolean) =>
+  getFieldOptions(field).find(option => String(option.value) === String(value));
+
+const findOptionByLabel = (field: Record<string, any>, label: unknown) =>
+  getFieldOptions(field).find(option => resolveOptionLabel(option.label) === label);
+
+const getEnumLabel = (field: Record<string, any>, value: string | number | boolean) => {
+  if (field.type !== 'enum') {
+    return value;
+  }
+
+  const option = findOptionByValue(field, value);
+
+  return option ? resolveOptionLabel(option.label) : value;
 };
 
 // Get default value for a field (checking prefilled values first)
@@ -104,15 +117,10 @@ props.form.form_fields.forEach((field: Record<string, any>) => {
       fieldSchema = z.number();
       break;
     case 'enum':
-      // check if options are really localized, contains lt or en
-      if (checkIfFieldIsLocalized(field)) {
-        options = field.options.map((option: Record<string, any>) => String(option.label[usePage().props.app.locale]));
-      }
-      else {
-        options = field.options?.map((option: Record<string, any>) => String(option.label));
-      }
+      options = getFieldOptions(field).map(option => resolveOptionLabel(option.label));
 
-      fieldSchema = z.enum(options);
+      // z.enum() rejects an empty list, and model-backed options can legitimately resolve to none.
+      fieldSchema = options.length > 0 ? z.enum(options as [string, ...string[]]) : z.string();
       break;
     case 'date':
       fieldSchema = z.coerce.date();
@@ -181,17 +189,11 @@ onMounted(() => {
         const formFieldKey = `form-field-${fieldId}`;
 
         // For enum fields, convert value to label
-        if (field.type === 'enum' && field.options) {
-          const option = field.options.find((opt: { value: string | number }) =>
-            String(opt.value) === String(config.value),
-          );
+        if (field.type === 'enum') {
+          const option = findOptionByValue(field, config.value);
+
           if (option) {
-            if (checkIfFieldIsLocalized(field)) {
-              initialValues[formFieldKey] = option.label[usePage().props.app.locale];
-            }
-            else {
-              initialValues[formFieldKey] = option.label;
-            }
+            initialValues[formFieldKey] = resolveOptionLabel(option.label);
           }
         }
         else {
@@ -248,21 +250,11 @@ const onSubmit = (data: Record<string, any>) => {
     const formField = props.form.form_fields.find((field: Record<string, any>) => String(field.id) === key.replace('form-field-', ''));
 
     if (formField?.type === 'enum') {
-      // get value, from selected label
+      // The select holds the rendered label; send the option's value back to the backend.
+      const selectedOption = findOptionByLabel(formField, fieldData);
 
-      if (checkIfFieldIsLocalized(formField)) {
-        const selectedOption = formField.options.find((option: Record<string, any>) => option.label[usePage().props.app.locale] === fieldData);
-
-        if (selectedOption) {
-          fieldData = selectedOption.value;
-        }
-      }
-      else {
-        const selectedOption = formField.options.find((option: Record<string, any>) => option.label === fieldData);
-
-        if (selectedOption) {
-          fieldData = selectedOption.value;
-        }
+      if (selectedOption) {
+        fieldData = selectedOption.value;
       }
     }
 
