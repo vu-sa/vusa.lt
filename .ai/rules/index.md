@@ -7,6 +7,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | config/vusa.php | .ai/rules/config.md |
 | app/Http/Controllers/** | .ai/rules/controllers.md |
 | app/Enums/** | .ai/rules/enums.md |
+| resources/js/**/*.test.ts | .ai/rules/js.md |
 | lang/** | .ai/rules/lang.md |
 | app/Models/**, app/Models/Tenant.php | .ai/rules/models.md |
 | app/Providers/** | .ai/rules/providers.md |

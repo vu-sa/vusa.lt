@@ -68,6 +68,9 @@ jobs:
           name: build-assets
           path: ./
 
+      - name: Unpack vendor
+        run: tar -xzf vendor.tar.gz
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -111,6 +114,9 @@ jobs:
           name: build-assets
           path: ./
 
+      - name: Unpack vendor
+        run: tar -xzf vendor.tar.gz
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -153,6 +159,9 @@ jobs:
       with:
         name: build-assets
         path: ./
+
+    - name: Unpack vendor
+      run: tar -xzf vendor.tar.gz
 
     - name: Start Typesense
       run: |
@@ -213,19 +222,20 @@ jobs:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   # JS Jobs - run in parallel with PHP jobs
+  #
+  # Deliberately does NOT depend on `setup`: the unit/component projects are pure jsdom and read
+  # nothing from that job's artifact — no `vendor/`, no `public/build`, no `.env`. Waiting on it
+  # was adding its full duration to the critical path for no benefit.
   js-tests:
-    needs: [changes, setup]
+    needs: changes
     if: ${{ needs.changes.outputs.js == 'true' || github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     name: Frontend Tests
     steps:
     - uses: actions/checkout@v7
-
-    - name: Download build artifacts
-      uses: actions/download-artifact@v8
       with:
-        name: build-assets
-        path: ./
+        # Vitest's --changed resolves the diff with git, so the base branch has to be reachable.
+        fetch-depth: 0
 
     - name: Setup Node.js
       uses: actions/setup-node@v6
@@ -236,28 +246,18 @@ jobs:
     - name: Install npm dependencies
       run: npm ci
 
-    - name: Cache Playwright browsers
-      uses: actions/cache@v6
-      with:
-        path: ~/.cache/ms-playwright
-        key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
-
-    - name: Install Playwright Browsers
-      run: npx playwright install chromium --with-deps
-
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: 8.5
-        extensions: dom, curl, libxml, mbstring, zip, fileinfo
-
-    - name: Set up environment
-      run: |
-        cp .env.example .env
-        php artisan key:generate --force
-
+    # Same contract as Pest TIA on php-tests: pull requests run only the specs whose dependency
+    # graph reaches a changed file, pushes to main run everything. `forceRerunTriggers` in
+    # vitest.config.ts escalates back to a full run when a shared file (tests/setup.ts,
+    # resources/js/mocks/**, package.json) changes.
     - name: Execute tests with coverage
-      run: LARAVEL_BYPASS_ENV_CHECK=1 npm run coverage:ci
+      run: |
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          git fetch --no-tags origin "${{ github.base_ref }}"
+          npm run coverage:ci -- --changed "origin/${{ github.base_ref }}" --passWithNoTests
+        else
+          npm run coverage:ci
+        fi
 
     - name: Upload test results to Codecov
       if: always()
@@ -296,6 +296,9 @@ jobs:
       with:
         name: build-assets
         path: ./
+
+    - name: Unpack vendor
+      run: tar -xzf vendor.tar.gz
 
     - name: Fix permissions
       run: chmod -R +x vendor/bin
@@ -367,6 +370,9 @@ jobs:
       with:
         name: build-assets
         path: ./
+
+    - name: Unpack vendor
+      run: tar -xzf vendor.tar.gz
 
     - name: Setup Node.js
       uses: actions/setup-node@v6
