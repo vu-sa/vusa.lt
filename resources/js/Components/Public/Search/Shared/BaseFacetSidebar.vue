@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-4">
-    <!-- Mobile Filter Button -->
-    <div class="lg:hidden mb-4">
+    <!-- Mobile Filter Button: xl matches BaseSearchInterface's grid breakpoint -->
+    <div class="xl:hidden mb-4">
       <Sheet v-model:open="isMobileFiltersOpen">
         <SheetTrigger as-child>
           <Button variant="outline" class="w-full">
@@ -51,7 +51,7 @@
     </div>
 
     <!-- Desktop Filters -->
-    <div class="hidden lg:block">
+    <div class="hidden xl:block">
       <div class="space-y-4">
         <!-- Filter Header -->
         <div class="flex items-start justify-between pt-3 pb-5">

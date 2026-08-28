@@ -1,7 +1,9 @@
 <template>
   <!-- Mobile variant (simple styling) -->
   <AccordionItem v-if="variant === 'mobile'" :value>
-    <AccordionTrigger class="text-sm font-medium">
+    <!-- items-center + no chevron nudge: the default items-start/translate-y-0.5 is tuned
+         for plain text and misaligns the arrow next to icons and badges -->
+    <AccordionTrigger class="text-sm font-medium items-center [&>svg]:translate-y-0">
       <div class="flex items-center gap-2">
         <component :is="icon" v-if="hasValidIcon" class="w-4 h-4 text-muted-foreground" />
         <span>{{ label }}</span>
@@ -21,7 +23,7 @@
     :value
     class="border border-border rounded-xl bg-card/50 backdrop-blur-sm transition-all duration-200"
   >
-    <AccordionTrigger class="px-5 py-4 hover:no-underline group">
+    <AccordionTrigger class="px-5 py-4 hover:no-underline group items-center [&>svg]:translate-y-0">
       <div class="flex items-center gap-3 flex-1">
         <div v-if="hasValidIcon" class="p-1.5 rounded-lg transition-colors" :class="iconContainerClass">
           <component :is="icon" class="w-4 h-4" />

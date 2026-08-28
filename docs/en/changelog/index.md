@@ -7,6 +7,11 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.28 — Search filters on narrower screens (2026-08-28) {#v1-28}
+
+- ✨ **Search filters are collapsible at every screen width** — on 1024–1280 px screens the documents, meetings, contacts and global search pages used to show the filters expanded above the results with no way to collapse them; they now hide behind a filters button, just like on phones
+- 🔧 **Fixed the filter chevron alignment** — the expand arrow on filter sections sat shifted toward the top instead of centered with the label, most visibly on sections with a description; it is now always vertically centered
+
 ## v1.27 — File manager (2026-08-28) {#v1-27}
 
 - 🔧 **The file manager no longer crashes on `/mano/files`** — the page failed with "allowedTypes.extensions is undefined" and the upload panel froze on "Loading...". This also restores the supported-formats list, the 50 MB browser-side check, and the file-type filter in the picker

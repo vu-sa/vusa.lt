@@ -7,6 +7,11 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.28 — Paieškos filtrai siauresniuose ekranuose (2026-08-28) {#v1-28}
+
+- ✨ **Paieškos filtrai suskleidžiami visuose ekrano pločiuose** — 1024–1280 px pločio ekranuose dokumentų, posėdžių, kontaktų ir bendrosios paieškos puslapiuose filtrai anksčiau būdavo išskleisti virš rezultatų ir jų nebuvo galima suskleisti; dabar jie slepiasi po filtrų mygtuku, kaip ir telefonuose
+- 🔧 **Sutvarkyta filtrų rodyklės lygiuotė** — filtro sekcijų atvėrimo rodyklė buvo pasislinkusi į viršų ir ne centre su etikete, ypač kai sekcija turi aprašymą; dabar rodyklė visuomet vertikaliai centruota
+
 ## v1.27 — Failų tvarkyklė (2026-08-28) {#v1-27}
 
 - 🔧 **Failų tvarkyklė nebenulūžta atidarius `/mano/files`** — puslapis nutrūkdavo su klaida („allowedTypes.extensions is undefined“), o įkėlimo laukas užstrigdavo ties „Kraunama...“. Kartu vėl veikia leidžiamų formatų sąrašas, 50 MB ribos tikrinimas naršyklėje ir failo tipo filtras pasirinkimo lange
