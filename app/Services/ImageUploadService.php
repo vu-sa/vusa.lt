@@ -100,12 +100,15 @@ class ImageUploadService
             $processedName = time().'_'.$processedName;
         }
 
-        // Save the processed image
-        $fullPath = storage_path('app/'.$fullDirectoryPath.'/'.$processedName);
-        $image->save($fullPath);
+        // Write through the Storage facade rather than storage_path(). save() reaches past the
+        // filesystem abstraction, so Storage::fake() never intercepted it and every image test
+        // wrote a real file into storage/app/public.
+        $encoded = $image instanceof EncodedImageInterface ? $image : $image->encode();
+        $contents = (string) $encoded;
 
-        // Get compressed file size
-        $compressedSize = filesize($fullPath);
+        Storage::put($fullDirectoryPath.'/'.$processedName, $contents);
+
+        $compressedSize = strlen($contents);
         $compressionRatio = $originalSize > 0
             ? round((1 - $compressedSize / $originalSize) * 100)
             : 0;

@@ -276,6 +276,23 @@ describe('Files Controller - File Upload', function (): void {
         $response->assertSessionHasErrors(['files.0.file']);
     });
 
+    test('a TipTap non-image upload lands where the editor /uploads URL points', function (): void {
+        // storeAs() writes to the default (local) disk, so the TipTap branch has to carry the
+        // `public/` prefix. Without it the file landed in storage/app/files/content/... and the
+        // /uploads/files/content/... link the editor inserts returned 404.
+        $response = asUser($this->fileManager)->post(route('files.store'), [
+            'files' => [['file' => UploadedFile::fake()->create('handout.pdf', 20, 'application/pdf')]],
+            'path' => 'content/'.date('Y/m'),
+        ]);
+
+        expect($response->status())->toBe(302);
+
+        $expected = 'public/files/padaliniai/vusa'.$this->tenant->alias.'/content/'.date('Y/m').'/handout.pdf';
+
+        Storage::assertExists($expected);
+        Storage::assertMissing('files/padaliniai/vusa'.$this->tenant->alias.'/content/'.date('Y/m').'/handout.pdf');
+    });
+
     test('multiple files can be uploaded simultaneously', function (): void {
         $files = [
             ['file' => UploadedFile::fake()->create('file1.txt', 100, 'text/plain')],

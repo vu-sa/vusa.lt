@@ -1,11 +1,5 @@
 <template>
   <div class="relative w-full">
-    <!-- Loading overlay -->
-    <div v-if="loading"
-      class="absolute inset-0 z-10 flex items-center justify-center bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm">
-      <Spinner class="h-6 w-6" />
-    </div>
-
     <FileManager
       small
       selection-mode
@@ -13,24 +7,26 @@
       :files
       :directories
       :path
+      :list-loading="loading"
+      :search-results="searchResults"
+      :searching
       :allow-upload-in-selection="true"
       :upload-accept="props.uploadAccept"
       :upload-extensions="props.uploadExtensions"
       @update="handleUpdate"
       @back="handleBack"
       @change-directory="handleChangeDirectory"
+      @search="handleSearch"
       @file-selected="(path) => $emit('submit', path)"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue';
+import { useDebounceFn } from '@vueuse/core';
 
 import { useFileListing } from './useFileListing';
 import FileManager from './FileManager.vue';
-
-import { Spinner } from '@/Components/ui/spinner';
 
 defineEmits<(e: 'submit', path: string) => void>();
 
@@ -39,30 +35,46 @@ const props = defineProps<{
   uploadExtensions?: string[];
 }>();
 
-const loading = ref(true);
+const {
+  filesRaw,
+  directoriesRaw,
+  currentPath,
+  loading,
+  searchResults,
+  searching,
+  fetch,
+  search,
+  clearSearch,
+  back,
+} = useFileListing('public/files', props.uploadExtensions);
 
-const { filesRaw, directoriesRaw, currentPath, loading: fetchLoading, fetch, back } = useFileListing('public/files', props.uploadExtensions);
 const files = filesRaw as any;
 const directories = directoriesRaw as any;
 const path = currentPath as any;
 
+// The overlay spinner is gone: FileGrid already renders a skeleton from `list-loading`, and
+// two competing spinners over the same region only ever disagreed.
+const debouncedSearch = useDebounceFn((query: string) => search(query), 350);
+
+function handleSearch(query: string, recursive: boolean) {
+  if (!recursive || query.length < 2) {
+    clearSearch();
+    return;
+  }
+  debouncedSearch(query);
+}
+
 async function handleBack() {
-  loading.value = true;
+  clearSearch();
   await back();
 }
 
 async function handleChangeDirectory(nextPath: string) {
-  loading.value = true;
+  clearSearch();
   await fetch(nextPath);
 }
 
 async function handleUpdate(nextPath: string) {
-  loading.value = true;
   await fetch(nextPath);
 }
-
-loading.value = fetchLoading.value;
-watchEffect(() => {
-  loading.value = fetchLoading.value;
-});
 </script>

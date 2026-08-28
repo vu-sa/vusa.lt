@@ -43,57 +43,12 @@
             </p>
           </HoverCardContent>
         </HoverCard>
-        <!-- File type icons -->
-        <span
+        <!-- File type icon -->
+        <component
+          :is="typeIcon"
           v-else
-          class="text-muted-foreground group-hover:text-vusa-red transition-colors flex items-center justify-center"
-        >
-          <!-- PDF files -->
-          <IFluentDocumentPdf24Regular
-            v-if="getFileExtension(item.path).toLowerCase() === 'pdf'"
-            class="w-12 h-12"
-          />
-          <!-- Document files -->
-          <IFluentDocumentText24Regular
-            v-else-if="isDocumentFile(getFileExtension(item.path).toLowerCase())"
-            class="w-12 h-12"
-          />
-          <!-- Spreadsheet files including CSV -->
-          <IFluentDocumentTable24Regular
-            v-else-if="isSpreadsheetFile(getFileExtension(item.path).toLowerCase())"
-            class="w-12 h-12"
-          />
-          <!-- Video files -->
-          <IFluentVideo24Regular
-            v-else-if="isVideoFile(getFileExtension(item.path).toLowerCase())"
-            class="w-12 h-12"
-          />
-          <!-- Audio files -->
-          <IFluentMusicNote24Regular
-            v-else-if="isAudioFile(getFileExtension(item.path).toLowerCase())"
-            class="w-12 h-12"
-          />
-          <!-- Archive files -->
-          <IFluentFolderZip24Regular
-            v-else-if="isArchiveFile(getFileExtension(item.path).toLowerCase())"
-            class="w-12 h-12"
-          />
-          <!-- Code files -->
-          <IFluentCode24Regular
-            v-else-if="isCodeFile(getFileExtension(item.path).toLowerCase())"
-            class="w-12 h-12"
-          />
-          <!-- Image files -->
-          <IFluentImage24Regular
-            v-else-if="isImageFile(getFileExtension(item.path).toLowerCase())"
-            class="w-12 h-12"
-          />
-          <!-- Default fallback for any other file type -->
-          <IFluentDocument24Regular
-            v-else
-            class="w-12 h-12"
-          />
-        </span>
+          class="h-12 w-12 text-muted-foreground group-hover:text-vusa-red transition-colors"
+        />
       </div>
       <div
         class="mt-1 text-[10px] sm:text-xs text-center leading-tight px-1 overflow-hidden break-words line-clamp-2 h-8"
@@ -118,17 +73,9 @@ import { computed, ref } from 'vue';
 
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/hover-card';
 
-// Import all necessary icons
+import { getFileIcon } from '@/Utils/fileIcons';
+
 import IFluentFolder24Filled from '~icons/fluent/folder-24-filled';
-import IFluentDocumentPdf24Regular from '~icons/fluent/document-pdf-24-regular';
-import IFluentDocumentText24Regular from '~icons/fluent/document-text-24-regular';
-import IFluentDocumentTable24Regular from '~icons/fluent/document-table-24-regular';
-import IFluentVideo24Regular from '~icons/fluent/video-24-regular';
-import IFluentMusicNote24Regular from '~icons/fluent/music-note-2-24-regular';
-import IFluentFolderZip24Regular from '~icons/fluent/folder-zip-24-regular';
-import IFluentCode24Regular from '~icons/fluent/code-24-regular';
-import IFluentImage24Regular from '~icons/fluent/image-24-regular';
-import IFluentDocument24Regular from '~icons/fluent/document-24-regular';
 
 const props = defineProps<{
   item: any;
@@ -148,8 +95,12 @@ const isFolder = computed(() => props.isFolder || false);
 
 const isImage = computed(() => {
   if (isFolder.value) return false;
-  return props.item?.name?.match(/\.(jpg|jpeg|png|webp)$/i);
+  // Only the rasterisable formats: the thumbnail endpoint cannot produce a derivative for
+  // SVG or GIF, so those fall through to their type icon.
+  return /\.(jpg|jpeg|png|webp)$/i.test(props.item?.name ?? '');
 });
+
+const typeIcon = computed(() => getFileIcon(props.item?.name ?? props.item?.path ?? ''));
 
 /** Storage path → public URL, the shape the originals are served under. */
 const originalSrc = computed(() => `/uploads/${props.item?.path?.replace('public/', '') || ''}`);
@@ -218,39 +169,6 @@ const selectionBadgeText = computed(() => {
     return 'i';
   }
 });
-
-function getFileExtension(filePath: string): string {
-  const fileName = filePath?.split('/').pop() || '';
-  return fileName.split('.').pop()?.toLowerCase() || '';
-}
-
-function isImageFile(extension: string): boolean {
-  return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'tiff', 'ico'].includes(extension);
-}
-
-function isDocumentFile(extension: string): boolean {
-  return ['doc', 'docx', 'odt', 'txt', 'rtf'].includes(extension);
-}
-
-function isSpreadsheetFile(extension: string): boolean {
-  return ['xls', 'xlsx', 'csv', 'ods'].includes(extension);
-}
-
-function isVideoFile(extension: string): boolean {
-  return ['mp4', 'avi', 'mkv', 'mov', 'webm', 'wmv', 'flv', 'm4v'].includes(extension);
-}
-
-function isAudioFile(extension: string): boolean {
-  return ['mp3', 'wav', 'flac', 'aac', 'ogg', 'm4a', 'wma'].includes(extension);
-}
-
-function isArchiveFile(extension: string): boolean {
-  return ['zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz'].includes(extension);
-}
-
-function isCodeFile(extension: string): boolean {
-  return ['js', 'ts', 'vue', 'html', 'css', 'php', 'py', 'java', 'cpp', 'c', 'h', 'json', 'xml', 'yml', 'yaml'].includes(extension);
-}
 
 function handleClick(event?: MouseEvent) {
   emit('click', props.item, event);

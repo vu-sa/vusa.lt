@@ -4,11 +4,14 @@
     <FileManagerHeader
       :path="props.path"
       :search
+      :search-everywhere
+      :searching="props.searching"
       :is-upload-mode
       :selection-mode="props.selectionMode"
       :small="props.small"
       :allow-upload-in-selection="props.allowUploadInSelection"
       @update:search="search = $event"
+      @update:search-everywhere="searchEverywhere = $event"
       @update:is-upload-mode="isUploadMode = $event"
       @navigate-to-path="navigateToPath"
       @show-create-folder="showFolderUploadModal = true"
@@ -17,15 +20,15 @@
     <!-- Inline create-folder form in selection mode (moved near top for visibility) -->
     <div v-if="props.selectionMode && showFolderUploadModal" class="mt-4 border rounded-md p-4 bg-muted/30">
       <div class="grid w-full max-w-sm items-center gap-1.5 mb-4">
-        <Label for="folderNameInline">Naujo aplanko pavadinimas</Label>
-        <Input id="folderNameInline" v-model="newFolderName" placeholder="Pavadinimas..." />
+        <Label for="folderNameInline">{{ $t('files.ui.new_folder_name') }}</Label>
+        <Input id="folderNameInline" v-model="newFolderName" :placeholder="$t('files.ui.name_placeholder')" />
       </div>
       <div class="flex gap-2">
         <Button :disabled="loading" :data-loading="loading" @click="createDirectory">
-          Sukurti
+          {{ $t('files.ui.create') }}
         </Button>
         <Button variant="outline" @click="showFolderUploadModal = false">
-          Atšaukti
+          {{ $t('files.ui.cancel') }}
         </Button>
       </div>
     </div>
@@ -44,10 +47,18 @@
     </div>
 
     <!-- Browse Mode -->
-    <div v-else class="mt-4">
+    <div v-else class="mt-4 space-y-4">
+      <!-- Folders live in their own collapsible section so a directory with dozens of them
+           cannot push the files it contains off the first page. -->
+      <FolderStrip
+        v-if="!isRecursiveSearch"
+        :directories="displayedDirectories"
+        :loading="props.listLoading"
+        @open="handleFolderClick"
+      />
+
       <!-- Main file browser - fixed width, no layout shifts -->
       <FileGrid
-        :paginated-directories
         :paginated-files
         :selected-file
         :selected-files
@@ -62,6 +73,9 @@
         :total-pages
         :visible-pages
         :view-mode
+        :loading="props.listLoading || props.searching"
+        :show-directory="isRecursiveSearch"
+        :has-folders="displayedDirectories.length > 0"
         @update:items-per-page="itemsPerPage = $event"
         @update:current-page="currentPage = $event"
         @update:view-mode="viewMode = $event"
@@ -69,8 +83,6 @@
         @select-all="selectAllFiles"
         @clear-selection="clearSelection"
         @delete-selected="deleteSelectedFiles"
-        @folder-click="handleFolderClick"
-        @folder-double-click="handleFolderDoubleClick"
         @file-click="handleFileClick"
         @file-double-click="handleFileDoubleClick"
         @show-upload-mode="isUploadMode = true"
@@ -84,7 +96,7 @@
       <FilePropertiesDrawer
         v-if="!props.selectionMode"
         :selected-file
-        :files="shownFiles"
+        :files="displayedFiles"
         @preview="previewFile(selectedFile!)"
         @delete="deleteFile(selectedFile!)"
         @close="selectedFile = null"
@@ -96,19 +108,19 @@
     <Dialog v-if="!props.selectionMode" :open="showFolderUploadModal" @update:open="handleFolderDialogClose">
       <DialogContent class="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Pridėti aplanką</DialogTitle>
+          <DialogTitle>{{ $t('files.ui.add_folder_title') }}</DialogTitle>
           <DialogDescription>
-            Sukurkite naują aplanką failų organizavimui
+            {{ $t('files.ui.add_folder_description') }}
           </DialogDescription>
         </DialogHeader>
 
         <div class="grid gap-4 py-4">
           <div class="grid gap-2">
-            <Label for="folderName">Naujo aplanko pavadinimas</Label>
+            <Label for="folderName">{{ $t('files.ui.new_folder_name') }}</Label>
             <Input
               id="folderName"
               v-model="newFolderName"
-              placeholder="Įveskite aplanko pavadinimą..."
+              :placeholder="$t('files.ui.folder_name_placeholder')"
               @keyup.enter="createDirectory"
             />
           </div>
@@ -116,13 +128,13 @@
 
         <DialogFooter>
           <Button variant="outline" @click="handleFolderDialogClose(false)">
-            Atšaukti
+            {{ $t('files.ui.cancel') }}
           </Button>
           <Button
             :disabled="loading || !newFolderName.trim()"
             @click="createDirectory"
           >
-            Sukurti
+            {{ $t('files.ui.create') }}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -144,15 +156,17 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 import { useFuse } from '@vueuse/integrations/useFuse';
 import { useStorage } from '@vueuse/core';
 
 import FileManagerHeader from './Components/FileManagerHeader.vue';
+import FolderStrip from './Components/FolderStrip.vue';
 import FileGrid from './Components/FileGrid.vue';
 import FilePropertiesDrawer from './Components/FilePropertiesDrawer.vue';
-import type { FileSource, FileableRef } from './types';
 
 import { useToasts } from '@/Composables/useToasts';
+import { uploadFiles } from '@/Composables/useFileUpload';
 
 // Components
 import DeleteConfirmationDialog from '@/Components/Dialogs/DeleteConfirmationDialog.vue';
@@ -186,12 +200,12 @@ const props = defineProps<{
   uploadAccept?: string;
   /** Optional limited extensions for uploads when in selection mode */
   uploadExtensions?: string[];
-  /** File source backend: 'local' (default) or 'sharepoint' */
-  source?: FileSource;
-  /** Starting path for SharePoint mode */
-  startingPath?: string;
-  /** Associated fileable entity for SharePoint uploads */
-  fileable?: FileableRef;
+  /** Whether the parent is still fetching the listing */
+  listLoading?: boolean;
+  /** Recursive search results, when the caller is searching every folder */
+  searchResults?: any[] | null;
+  /** Whether a recursive search is in flight */
+  searching?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -199,6 +213,7 @@ const emit = defineEmits<{
   changeDirectory: [directory: string];
   fileSelected: [file: string];
   update: [path: string];
+  search: [query: string, recursive: boolean];
 }>();
 
 const toasts = useToasts();
@@ -215,6 +230,7 @@ const isMultiSelectMode = ref(false);
 const isUploadMode = ref(false);
 const uploadAreaRef = ref();
 const search = ref('');
+const searchEverywhere = ref(false);
 const itemsPerPage = ref(50);
 const currentPage = ref(1);
 const viewMode = useStorage<'grid' | 'list'>('fileManager-viewMode', 'grid');
@@ -249,51 +265,28 @@ const shownDirectories = computed(() => {
   return directorySearchResults.value.map(result => result.item);
 });
 
-const totalItems = computed(() => {
-  return shownDirectories.value.length + shownFiles.value.length;
-});
+/**
+ * Recursive results replace the local listing entirely: they come from the server already
+ * filtered, and their parent folders are what the user is looking for.
+ */
+const isRecursiveSearch = computed(() => searchEverywhere.value && search.value.trim().length >= 2);
 
-const totalPages = computed(() => {
-  if (itemsPerPage.value >= totalItems.value) return 1;
-  return Math.ceil(totalItems.value / itemsPerPage.value);
-});
+const displayedFiles = computed(() => (isRecursiveSearch.value ? (props.searchResults ?? []) : shownFiles.value));
 
-const paginatedDirectories = computed(() => {
-  if (itemsPerPage.value >= totalItems.value) return shownDirectories.value;
+const displayedDirectories = computed(() => (isRecursiveSearch.value ? [] : shownDirectories.value));
 
-  const startIndex = (currentPage.value - 1) * itemsPerPage.value;
-  const endIndex = startIndex + itemsPerPage.value;
+const totalItems = computed(() => displayedFiles.value.length);
 
-  // Calculate how many directories to show on this page
-  const directoriesEnd = Math.min(endIndex, shownDirectories.value.length);
-  const directoriesStart = Math.min(startIndex, shownDirectories.value.length);
-
-  return shownDirectories.value.slice(directoriesStart, directoriesEnd);
-});
+// Folders and files are paginated separately. They used to share one stream with folders
+// first, so a root holding ~50 folders spent the whole first page on them and pushed every
+// file to page 2 and beyond.
+const totalPages = computed(() => Math.max(1, Math.ceil(displayedFiles.value.length / itemsPerPage.value)));
 
 const paginatedFiles = computed(() => {
-  if (itemsPerPage.value >= totalItems.value) return shownFiles.value;
+  if (itemsPerPage.value >= displayedFiles.value.length) return displayedFiles.value;
 
   const startIndex = (currentPage.value - 1) * itemsPerPage.value;
-  const endIndex = startIndex + itemsPerPage.value;
-
-  // Calculate file pagination after directories
-  const fileStartIndex = Math.max(0, startIndex - shownDirectories.value.length);
-  const fileEndIndex = Math.max(0, endIndex - shownDirectories.value.length);
-
-  // Only show files if we've gone past all directories or if directories don't fill the page
-  if (startIndex >= shownDirectories.value.length) {
-    return shownFiles.value.slice(fileStartIndex, fileEndIndex);
-  }
-  else if (endIndex > shownDirectories.value.length) {
-    // Partial page - some directories and some files
-    const remainingSpace = endIndex - shownDirectories.value.length;
-    return shownFiles.value.slice(0, remainingSpace);
-  }
-  else {
-    // Page is full of directories
-    return [];
-  }
+  return displayedFiles.value.slice(startIndex, startIndex + itemsPerPage.value);
 });
 
 const visiblePages = computed(() => {
@@ -337,8 +330,14 @@ const visiblePages = computed(() => {
 });
 
 // Watchers
-watch([search, itemsPerPage], () => {
+watch([search, itemsPerPage, searchEverywhere], () => {
   currentPage.value = 1;
+});
+
+// Emitted unconditionally, including when the toggle goes off, so the parent can drop stale
+// recursive results instead of holding them until the next search.
+watch([search, searchEverywhere], ([query, recursive]) => {
+  emit('search', query.trim(), recursive);
 });
 
 watch(isUploadMode, (newMode) => {
@@ -364,14 +363,10 @@ const createDirectory = () => {
       preserveScroll: true,
       preserveState: true,
       onSuccess: () => {
-        toasts.success('Aplankas sukurtas');
+        toasts.success($t('files.ui.directory_created'));
         showFolderUploadModal.value = false;
         newFolderName.value = ''; // Clear input after successful creation
-        loading.value = false;
         emit('update', props.path);
-      },
-      onError: () => {
-        loading.value = false;
       },
       onFinish: () => {
         loading.value = false;
@@ -403,20 +398,20 @@ const deleteFileConfirmed = () => {
       preserveScroll: true,
       preserveState: true,
       onSuccess: (page) => {
-        loading.value = false;
-        showDeleteModal.value = false;
         // Check if there's a flash error (e.g., from staging read-only mode)
         if (page.props.flash?.error) {
           toasts.error(page.props.flash.error);
         }
         else {
-          toasts.success(`${filesToDelete.length} failai ištrinti`);
+          toasts.success($t('files.ui.files_deleted', { count: String(filesToDelete.length) }));
           clearSelection();
           emit('update', props.path);
         }
       },
       onError: () => {
-        toasts.error('Klaida trinant failus');
+        toasts.error($t('files.ui.delete_files_error'));
+      },
+      onFinish: () => {
         loading.value = false;
         showDeleteModal.value = false;
       },
@@ -431,14 +426,12 @@ const deleteFileConfirmed = () => {
         preserveScroll: true,
         preserveState: true,
         onSuccess: (page) => {
-          loading.value = false;
-          showDeleteModal.value = false;
           // Check if there's a flash error (e.g., from staging read-only mode)
           if (page.props.flash?.error) {
             toasts.error(page.props.flash.error);
           }
           else {
-            toasts.success('Aplankas ištrintas');
+            toasts.success($t('files.ui.folder_deleted'));
             // Check if current path is inside the deleted folder
             if (props.path === folderPath || props.path.startsWith(`${folderPath}/`)) {
               // Navigate to parent directory of the deleted folder
@@ -452,7 +445,9 @@ const deleteFileConfirmed = () => {
           }
         },
         onError: () => {
-          toasts.error('Klaida trinant aplanką');
+          toasts.error($t('files.ui.delete_folder_error'));
+        },
+        onFinish: () => {
           loading.value = false;
           showDeleteModal.value = false;
         },
@@ -466,19 +461,19 @@ const deleteFileConfirmed = () => {
         preserveScroll: true,
         preserveState: true,
         onSuccess: (page) => {
-          loading.value = false;
-          showDeleteModal.value = false;
           // Check if there's a flash error (e.g., from staging read-only mode)
           if (page.props.flash?.error) {
             toasts.error(page.props.flash.error);
           }
           else {
-            toasts.success('Failas ištrintas');
+            toasts.success($t('files.ui.file_deleted_short'));
             emit('update', props.path);
           }
         },
         onError: () => {
-          toasts.error('Klaida trinant failą');
+          toasts.error($t('files.ui.delete_file_error'));
+        },
+        onFinish: () => {
           loading.value = false;
           showDeleteModal.value = false;
         },
@@ -487,14 +482,13 @@ const deleteFileConfirmed = () => {
   }
 };
 
+// Single click opens a folder. Requiring a double click was undiscoverable, and the single
+// click had no other job — it was bound to an empty handler.
 function handleFolderClick(folder: any) {
-  // Single click does nothing for folders
-}
-
-function handleFolderDoubleClick(folder: any) {
   selectedFile.value = null;
   clearSelection();
   currentPage.value = 1;
+  search.value = '';
   emit('changeDirectory', folder.path);
 }
 
@@ -515,7 +509,7 @@ function handleFileClick(file: any, event?: MouseEvent) {
       const name: string = file?.name || file?.path || '';
       const ext = name.includes('.') ? name.split('.').pop()?.toLowerCase() : undefined;
       if (!ext || !allowed.includes(ext)) {
-        toasts.error('Šio failo tipo pasirinkti negalima.');
+        toasts.error($t('files.ui.cannot_select_file_type'));
         return;
       }
     }
@@ -546,7 +540,7 @@ function handleFileDoubleClick(file: any) {
       const name: string = file?.name || file?.path || '';
       const ext = name.includes('.') ? name.split('.').pop()?.toLowerCase() : undefined;
       if (!ext || !allowed.includes(ext)) {
-        toasts.error('Šio failo tipo pasirinkti negalima.');
+        toasts.error($t('files.ui.cannot_select_file_type'));
         return;
       }
     }
@@ -561,30 +555,30 @@ function getFileName(filePath: string): string {
 // Delete dialog helpers
 function getDeleteTitle(): string {
   if (selectedFileForDeletion.value.startsWith('FOLDER:')) {
-    return 'Ištrinti aplanką?';
+    return $t('files.ui.confirm_delete_folder_title');
   }
   if (selectedFileForDeletion.value.includes('|||')) {
     const fileCount = selectedFileForDeletion.value.split('|||').length;
-    return `Ištrinti ${fileCount} failus?`;
+    return $t('files.ui.confirm_delete_files_title', { count: String(fileCount) });
   }
-  return 'Ištrinti failą?';
+  return $t('files.ui.confirm_delete_file_title');
 }
 
 function getDeleteMessage(): string {
   if (selectedFileForDeletion.value.startsWith('FOLDER:')) {
     const folderPath = selectedFileForDeletion.value.replace('FOLDER:', '');
     const folderName = folderPath.split('/').pop() || 'Unknown folder';
-    return `Ar tikrai norite ištrinti tuščią aplanką "${folderName}"? Šio veiksmo nebus galima atšaukti.\n\nDėmesio: Aplankas turi būti tuščias, kad būtų galima jį ištrinti.`;
+    return `${$t('files.ui.confirm_delete_folder_body', { name: folderName })}\n\n${$t('files.ui.confirm_delete_folder_note')}`;
   }
   if (selectedFileForDeletion.value.includes('|||')) {
     const fileCount = selectedFileForDeletion.value.split('|||').length;
     const fileList = selectedFileForDeletion.value.split('|||')
       .map(file => getFileName(file))
       .join(', ');
-    return `Ar tikrai norite ištrinti ${fileCount} failus? Failų bus neįmanoma atkurti!\n\nFailai: ${fileList}`;
+    return `${$t('files.ui.confirm_delete_files_body', { count: String(fileCount) })}\n\n${fileList}`;
   }
   const fileName = getFileName(selectedFileForDeletion.value);
-  return `Ar tikrai norite ištrinti failą "${fileName}"? Failo bus neįmanoma atkurti!\n\nPrieš ištrinant įsitikinkite, kad failas nėra naudojamas jokiame puslapyje.`;
+  return `${$t('files.ui.confirm_delete_file_body', { name: fileName })}\n\n${$t('files.ui.confirm_delete_file_note')}`;
 }
 
 function navigateToPath(targetPath: string) {
@@ -603,7 +597,7 @@ function toggleMultiSelectMode() {
 }
 
 function selectAllFiles() {
-  const allFilePaths = [...shownFiles.value.map((file: any) => file.path)];
+  const allFilePaths = [...displayedFiles.value.map((file: any) => file.path)];
   selectedFiles.value = new Set(allFilePaths);
 }
 
@@ -634,92 +628,31 @@ function handleDeleteFolder() {
   showDeleteModal.value = true;
 }
 
-function handleFileUpload(files: File[]) {
+async function handleFileUpload(files: File[]) {
   loading.value = true;
 
-  // Separate image files from other files
-  const imageFiles = files.filter(file => file.type.startsWith('image/'));
-  const otherFiles = files.filter(file => !file.type.startsWith('image/'));
+  try {
+    const result = await uploadFiles(files, props.path);
 
-  let completedUploads = 0;
-  const totalUploads = (imageFiles.length > 0 ? 1 : 0) + (otherFiles.length > 0 ? 1 : 0);
+    if (result.failed.length > 0) {
+      toasts.error($t('files.errors.upload_partial', { count: String(result.failed.length) }));
+    }
+    else if (result.message) {
+      toasts.success(result.message);
+    }
 
-  const checkCompletion = () => {
-    completedUploads++;
-    if (completedUploads >= totalUploads) {
-      loading.value = false;
+    if (result.uploaded.length > 0) {
       isUploadMode.value = false;
       uploadAreaRef.value?.clearFiles();
       emit('update', props.path);
     }
-  };
-
-  // Upload images using the optimization route (one by one for better UX)
-  if (imageFiles.length > 0) {
-    let processedImages = 0;
-
-    const uploadNextImage = () => {
-      if (processedImages >= imageFiles.length) {
-        checkCompletion();
-        return;
-      }
-
-      const file = imageFiles[processedImages];
-      if (!file) {
-        processedImages++;
-        uploadNextImage();
-        return;
-      }
-
-      processedImages++;
-
-      router.post(
-        route('files.uploadImage'),
-        {
-          image: file,
-          name: file.name,
-          path: props.path, // Use current path instead of content folder
-        },
-        {
-          preserveScroll: true,
-          preserveState: true,
-          onSuccess: () => {
-            // Success notification handled by server
-            uploadNextImage(); // Process next image
-          },
-          onError: () => {
-            toasts.error(`Failed to upload ${file.name}`);
-            uploadNextImage(); // Continue with next image even if one fails
-          },
-        },
-      );
-    }; uploadNextImage();
   }
-
-  // Upload non-image files using the regular route (all at once)
-  if (otherFiles.length > 0) {
-    const fileList = otherFiles.map(file => ({ file }));
-
-    router.post(
-      route('files.store'),
-      { files: fileList, path: props.path },
-      {
-        preserveScroll: true,
-        preserveState: true,
-        onSuccess: () => {
-          // Success notification handled by server
-          checkCompletion();
-        },
-        onError: () => {
-          toasts.error('Klaida įkeliant failus');
-          checkCompletion();
-        },
-      },
-    );
+  catch (error: unknown) {
+    toasts.error(error instanceof Error ? error.message : $t('files.errors.upload_all_failed'));
   }
-
-  // If no files to upload, reset loading state
-  if (totalUploads === 0) {
+  finally {
+    // finally, not a success/error pair: a cancelled or non-JSON response must still
+    // release the button, or it spins over an upload that already landed.
     loading.value = false;
   }
 }

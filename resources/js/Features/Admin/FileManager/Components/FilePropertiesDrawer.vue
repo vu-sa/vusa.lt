@@ -7,7 +7,7 @@
             {{ fileName }}
           </SheetTitle>
           <SheetDescription class="text-sm text-muted-foreground">
-            {{ source === 'sharepoint' ? 'SharePoint file properties' : 'File properties and actions' }}
+            {{ source === 'sharepoint' ? $t('files.ui.sharepoint_properties') : $t('files.ui.file_properties') }}
           </SheetDescription>
         </SheetHeader>
 
@@ -16,37 +16,7 @@
           <div class="flex-shrink-0 flex justify-center lg:justify-start">
             <div class="p-3 rounded-lg bg-muted/50 inline-flex">
               <span class="text-vusa-red">
-                <!-- PDF files -->
-                <IFluentDocumentPdf24Regular v-if="fileExtension.toLowerCase() === 'pdf'" class="h-12 w-12" />
-                <!-- Document files -->
-                <IFluentDocumentText24Regular
-                  v-else-if="['doc', 'docx', 'odt', 'txt', 'rtf'].includes(fileExtension.toLowerCase())"
-                  class="h-12 w-12" />
-                <!-- Spreadsheet files including CSV -->
-                <IFluentDocumentTable24Regular
-                  v-else-if="['xls', 'xlsx', 'csv', 'ods'].includes(fileExtension.toLowerCase())" class="h-12 w-12" />
-                <!-- Video files -->
-                <IFluentVideo24Regular
-                  v-else-if="['mp4', 'avi', 'mkv', 'mov', 'webm', 'wmv', 'flv', 'm4v'].includes(fileExtension.toLowerCase())"
-                  class="h-12 w-12" />
-                <!-- Audio files -->
-                <IFluentMusicNote24Regular
-                  v-else-if="['mp3', 'wav', 'flac', 'aac', 'ogg', 'm4a', 'wma'].includes(fileExtension.toLowerCase())"
-                  class="h-12 w-12" />
-                <!-- Archive files -->
-                <IFluentFolderZip24Regular
-                  v-else-if="['zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz'].includes(fileExtension.toLowerCase())"
-                  class="h-12 w-12" />
-                <!-- Code files -->
-                <IFluentCode24Regular
-                  v-else-if="['js', 'ts', 'vue', 'html', 'css', 'php', 'py', 'java', 'cpp', 'c', 'h', 'json', 'xml', 'yml', 'yaml'].includes(fileExtension.toLowerCase())"
-                  class="h-12 w-12" />
-                <!-- Image files -->
-                <IFluentImage24Regular
-                  v-else-if="['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'tiff', 'ico'].includes(fileExtension.toLowerCase())"
-                  class="h-12 w-12" />
-                <!-- Default fallback for any other file type -->
-                <IFluentDocument24Regular v-else class="h-12 w-12" />
+                <component :is="typeIcon" class="h-12 w-12" />
               </span>
             </div>
           </div>
@@ -58,7 +28,7 @@
                 <IFluentDocument24Regular class="h-5 w-5 text-muted-foreground flex-shrink-0" />
                 <div class="min-w-0">
                   <p class="text-xs text-muted-foreground mb-1">
-                    Type
+                    {{ $t('files.ui.type') }}
                   </p>
                   <p class="text-sm font-medium truncate">
                     {{ fileExtension }}
@@ -70,7 +40,7 @@
                 <IFluentStorage24Regular class="h-5 w-5 text-muted-foreground flex-shrink-0" />
                 <div class="min-w-0">
                   <p class="text-xs text-muted-foreground mb-1">
-                    Size
+                    {{ $t('files.ui.size') }}
                   </p>
                   <p class="text-sm font-medium">
                     {{ fileSize }}
@@ -325,6 +295,7 @@ import {
   SheetDescription,
 } from '@/Components/ui/sheet';
 import { useToasts } from '@/Composables/useToasts';
+import { getFileIcon } from '@/Utils/fileIcons';
 
 // Icons used inside script-added template changes
 import IFluentEdit16Regular from '~icons/fluent/edit-16-regular';
@@ -397,6 +368,8 @@ const fileName = computed(() => {
   if (!props.selectedFile) return '';
   return props.selectedFile.split('/').pop() || 'Unknown file';
 });
+
+const typeIcon = computed(() => getFileIcon(fileName.value));
 
 // Unified computed: file extension
 const fileExtension = computed(() => {

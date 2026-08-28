@@ -7,6 +7,7 @@ use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Laravel\Facades\Image;
 
@@ -168,4 +169,170 @@ describe('thumbnails', function (): void {
         $this->getJson(route('api.v1.admin.files.thumbnail', ['path' => $this->allowedPath.'/real-photo.jpg']))
             ->assertUnauthorized();
     });
+});
+
+describe('batch upload', function (): void {
+    test('a whole batch is stored in one request', function (): void {
+        $response = asUser($this->fileManager)->postJson(route('api.v1.admin.files.store'), [
+            'path' => $this->allowedPath,
+            'files' => [
+                ['file' => UploadedFile::fake()->create('report.pdf', 10, 'application/pdf')],
+                ['file' => UploadedFile::fake()->create('notes.csv', 5, 'text/csv')],
+            ],
+        ]);
+
+        $response->assertOk()->assertJsonPath('success', true);
+
+        expect($response->json('data.uploaded'))->toHaveCount(2)
+            ->and($response->json('data.failed'))->toBe([]);
+
+        Storage::assertExists($this->allowedPath.'/report.pdf');
+        Storage::assertExists($this->allowedPath.'/notes.csv');
+    });
+
+    test('images and other files travel together instead of racing as two visits', function (): void {
+        $response = asUser($this->fileManager)->postJson(route('api.v1.admin.files.store'), [
+            'path' => $this->allowedPath,
+            'files' => [
+                ['file' => UploadedFile::fake()->image('picture.png', 40, 40)],
+                ['file' => UploadedFile::fake()->create('handout.pdf', 4, 'application/pdf')],
+            ],
+        ]);
+
+        $response->assertOk();
+
+        expect($response->json('data.uploaded'))->toHaveCount(2);
+
+        // Rasterisable images are re-encoded to WebP; everything else keeps its name.
+        Storage::assertExists($this->allowedPath.'/picture.webp');
+        Storage::assertExists($this->allowedPath.'/handout.pdf');
+    });
+
+    test('a name collision is suffixed rather than overwritten', function (): void {
+        asUser($this->fileManager)->postJson(route('api.v1.admin.files.store'), [
+            'path' => $this->allowedPath,
+            'files' => [['file' => UploadedFile::fake()->create('document.pdf', 3, 'application/pdf')]],
+        ])->assertOk();
+
+        expect(Storage::get($this->allowedPath.'/document.pdf'))->toBe('pdf content')
+            ->and(collect(Storage::files($this->allowedPath))
+                ->filter(fn (string $p) => str_contains($p, 'document_'))
+            )->toHaveCount(1);
+    });
+
+    test('a directory the user cannot write is refused', function (): void {
+        asUser($this->fileManager)->postJson(route('api.v1.admin.files.store'), [
+            'path' => 'public/files/padaliniai/vusaother',
+            'files' => [['file' => UploadedFile::fake()->create('sneaky.pdf', 3, 'application/pdf')]],
+        ])->assertForbidden();
+
+        Storage::assertMissing('public/files/padaliniai/vusaother/sneaky.pdf');
+    });
+
+    test('a disallowed extension is rejected', function (): void {
+        asUser($this->fileManager)->postJson(route('api.v1.admin.files.store'), [
+            'path' => $this->allowedPath,
+            'files' => [['file' => UploadedFile::fake()->create('payload.exe', 3)]],
+        ])->assertStatus(422);
+
+        Storage::assertMissing($this->allowedPath.'/payload.exe');
+    });
+
+    test('an oversized file is rejected', function (): void {
+        asUser($this->fileManager)->postJson(route('api.v1.admin.files.store'), [
+            'path' => $this->allowedPath,
+            'files' => [['file' => UploadedFile::fake()->create('huge.pdf', 60 * 1024, 'application/pdf')]],
+        ])->assertStatus(422);
+    });
+
+    test('unauthenticated users cannot upload', function (): void {
+        $this->postJson(route('api.v1.admin.files.store'), [
+            'path' => $this->allowedPath,
+            'files' => [['file' => UploadedFile::fake()->create('anon.pdf', 3, 'application/pdf')]],
+        ])->assertUnauthorized();
+    });
+});
+
+describe('recursive search', function (): void {
+    beforeEach(function (): void {
+        Storage::put($this->allowedPath.'/nested/deep/summer-camp.pdf', 'nested');
+        Storage::put($this->allowedPath.'/nested/camp-notes.txt', 'nested');
+    });
+
+    test('files several folders down are found', function (): void {
+        $response = asUser($this->fileManager)
+            ->getJson(route('api.v1.admin.files.search', ['q' => 'camp', 'path' => $this->allowedPath]));
+
+        $response->assertOk();
+
+        $names = collect($response->json('data.files'))->pluck('name');
+        expect($names)->toContain('summer-camp.pdf', 'camp-notes.txt');
+    });
+
+    test('each hit carries the folder it lives in', function (): void {
+        $response = asUser($this->fileManager)
+            ->getJson(route('api.v1.admin.files.search', ['q' => 'summer', 'path' => $this->allowedPath]));
+
+        expect($response->json('data.files.0.directory'))->toBe($this->allowedPath.'/nested/deep');
+    });
+
+    test('the extensions filter applies to results', function (): void {
+        $response = asUser($this->fileManager)->getJson(route('api.v1.admin.files.search', [
+            'q' => 'camp',
+            'path' => $this->allowedPath,
+            'extensions' => 'pdf',
+        ]));
+
+        $names = collect($response->json('data.files'))->pluck('name');
+        expect($names)->toContain('summer-camp.pdf')->not->toContain('camp-notes.txt');
+    });
+
+    test('a directory the user cannot view is never walked', function (): void {
+        Storage::put('public/files/padaliniai/vusaother/camp-secret.pdf', 'other tenant');
+
+        $response = asUser($this->fileManager)
+            ->getJson(route('api.v1.admin.files.search', ['q' => 'camp', 'path' => 'public/files']));
+
+        // The root itself is off-limits to a tenant-scoped user, so the walk never starts.
+        $response->assertForbidden();
+    });
+
+    test('a sibling tenant folder is skipped when the walk does start', function (): void {
+        Storage::put('public/files/padaliniai/vusaother/camp-secret.pdf', 'other tenant');
+
+        $superAdmin = User::factory()->create();
+        $superAdmin->assignRole(config('permission.super_admin_role_name'));
+
+        $mine = asUser($this->fileManager)
+            ->getJson(route('api.v1.admin.files.search', ['q' => 'camp', 'path' => $this->allowedPath]));
+
+        expect(collect($mine->json('data.files'))->pluck('name'))
+            ->not->toContain('camp-secret.pdf');
+    });
+
+    test('a query shorter than two characters is rejected', function (): void {
+        asUser($this->fileManager)
+            ->getJson(route('api.v1.admin.files.search', ['q' => 'c', 'path' => $this->allowedPath]))
+            ->assertStatus(422);
+    });
+
+    test('unauthenticated users cannot search', function (): void {
+        $this->getJson(route('api.v1.admin.files.search', ['q' => 'camp']))
+            ->assertUnauthorized();
+    });
+});
+
+test('a TipTap content path resolves to the tenant folder instead of being authorized as one', function (): void {
+    // The editor posts `content/Y/m`, which has no `padaliniai/` segment — authorizing it as a
+    // literal directory would 403 every tenant-scoped user out of pasting an image.
+    $response = asUser($this->fileManager)->postJson(route('api.v1.admin.files.store'), [
+        'path' => 'content/'.date('Y/m'),
+        'files' => [['file' => UploadedFile::fake()->create('pasted.pdf', 4, 'application/pdf')]],
+    ]);
+
+    $response->assertOk();
+
+    Storage::assertExists('public/files/padaliniai/vusa'.$this->tenant->alias.'/content/'.date('Y/m').'/pasted.pdf');
+    expect($response->json('data.uploaded.0.url'))
+        ->toStartWith('/uploads/files/padaliniai/vusa'.$this->tenant->alias.'/content/');
 });

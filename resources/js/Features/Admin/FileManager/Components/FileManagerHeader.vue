@@ -10,7 +10,7 @@
           @click="$emit('update:isUploadMode', false)"
         >
           <IFluentFolder24Regular class="mr-2 h-4 w-4" />
-          Naršyti
+          {{ $t('files.ui.browse') }}
         </Button>
         <Button
           :variant="isUploadMode ? 'default' : 'outline'"
@@ -18,24 +18,36 @@
           @click="$emit('update:isUploadMode', true)"
         >
           <IFluentCloudArrowUp24Regular class="mr-2 h-4 w-4" />
-          Įkelti failus
+          {{ $t('files.ui.upload') }}
         </Button>
         <Button variant="outline" size="sm" @click="$emit('showCreateFolder')">
           <IFluentFolderAdd24Regular class="mr-2 h-4 w-4" />
-          Pridėti aplanką
+          {{ $t('files.ui.add_folder') }}
         </Button>
       </div>
       <div class="flex-1" />
       <!-- Fixed width and height container to prevent layout shifts -->
-      <div class="w-full sm:w-[300px] h-10 flex items-center">
-        <Input
-          v-if="!isUploadMode"
-          :model-value="search"
-          class="w-full"
-          placeholder="Ieškoti failų..."
-          @update:model-value="$emit('update:search', $event)"
-        />
+      <div v-if="!isUploadMode" class="flex w-full flex-col gap-1 sm:w-[320px]">
+        <div class="flex h-10 items-center gap-2">
+          <Input
+            :model-value="search"
+            class="w-full"
+            :placeholder="$t('files.ui.search_placeholder')"
+            @update:model-value="$emit('update:search', $event)"
+          />
+          <Spinner v-if="searching" class="h-4 w-4 flex-shrink-0" />
+        </div>
+        <!-- Local filtering only ever sees the folder you are standing in; the toggle is what
+             makes a file findable when you don't already know which of ~50 folders holds it. -->
+        <label class="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+          <Checkbox
+            :model-value="searchEverywhere"
+            @update:model-value="$emit('update:searchEverywhere', $event === true)"
+          />
+          {{ $t('files.ui.search_everywhere') }}
+        </label>
       </div>
+      <div v-else class="w-full sm:w-[320px]" />
     </div>
 
     <!-- Interactive breadcrumb navigation -->
@@ -44,7 +56,7 @@
       <nav class="flex items-center gap-1 text-foreground min-w-0 flex-1">
         <!-- Upload mode indicator -->
         <span v-if="isUploadMode && (!selectionMode || allowUploadInSelection)" class="text-xs text-muted-foreground mr-2">
-          Įkeliama į:
+          {{ $t('files.ui.uploading_into') }}
         </span>
         <button
           class="font-medium transition-colors truncate"
@@ -55,7 +67,7 @@
           }"
           @click="!isUploadMode ? $emit('navigateToPath', 'public/files') : undefined"
         >
-          Failai
+          {{ $t('files.ui.root') }}
         </button>
         <template v-if="breadcrumbParts.length > 0">
           <template v-for="(part, index) in breadcrumbParts" :key="index">
@@ -84,6 +96,8 @@ import { computed } from 'vue';
 
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
+import { Checkbox } from '@/Components/ui/checkbox';
+import { Spinner } from '@/Components/ui/spinner';
 
 // Import icons
 import IFluentFolder24Regular from '~icons/fluent/folder-24-regular';
@@ -94,6 +108,8 @@ import IFluentFolder24Filled from '~icons/fluent/folder-24-filled';
 const props = defineProps<{
   path: string;
   search: string;
+  searchEverywhere?: boolean;
+  searching?: boolean;
   isUploadMode: boolean;
   selectionMode?: boolean;
   small?: boolean;
@@ -103,6 +119,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:search': [value: string];
+  'update:searchEverywhere': [value: boolean];
   'update:isUploadMode': [value: boolean];
   'navigateToPath': [path: string];
   'showCreateFolder': [];

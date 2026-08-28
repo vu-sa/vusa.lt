@@ -9,6 +9,7 @@ use App\Http\Requests\Files\FilePathRequest;
 use App\Http\Requests\Files\UploadImageRequest;
 use App\Http\Requests\StoreFilesRequest;
 use App\Models\File;
+use App\Services\FileStorageService;
 use App\Services\FileUsageScanner;
 use App\Services\ImageUploadService;
 use App\Services\ModelAuthorizer as Authorizer;
@@ -232,24 +233,10 @@ class FilesController extends AdminController
         $isTipTapUpload = str_starts_with($path, 'content/');
 
         if ($isTipTapUpload) {
-            // TipTap uploads: use tenant-based content directory logic
-            if ($request->user()->isSuperAdmin()) {
-                // Super admins always upload to global content directory
-                $path = 'files/content/'.date('Y/m');
-            } elseif ($this->authorizer->getTenants()->count() > 0) {
-                $tenant = $this->authorizer->getTenants()->first();
-
-                if ($tenant->isMain()) {
-                    // Main tenant uploads to root content directory
-                    $path = 'files/content/'.date('Y/m');
-                } else {
-                    // Other tenants upload to their specific directory
-                    $path = "files/padaliniai/vusa{$tenant->alias}/content/".date('Y/m');
-                }
-            } else {
-                // Fallback for users with no tenant (shouldn't happen)
-                $path = 'files/content/'.date('Y/m');
-            }
+            // resolveTipTapDirectory() now returns a `public/`-prefixed path. storeAs() writes to
+            // the default (local) disk, so without that prefix the upload landed in
+            // storage/app/files/content/... and the /uploads/... URL the editor inserts 404'd.
+            $path = $this->resolveTipTapDirectory($request->user());
         } else {
             // FileManager uploads: validate path normally
             try {
@@ -514,23 +501,7 @@ class FilesController extends AdminController
      */
     protected function resolveTipTapDirectory($user): string
     {
-        if ($user->isSuperAdmin()) {
-            return 'files/content/'.date('Y/m');
-        }
-
-        if ($this->authorizer->getTenants()->count() > 0) {
-            $tenant = $this->authorizer->getTenants()->first();
-
-            // Main tenant uploads to root content directory
-            if ($tenant->isMain()) {
-                return 'files/content/'.date('Y/m');
-            }
-
-            // Other tenants upload to their specific directory
-            return "files/padaliniai/vusa{$tenant->alias}/content/".date('Y/m');
-        }
-
-        return 'files/content/'.date('Y/m');
+        return app(FileStorageService::class)->resolveTipTapDirectory($user, $this->authorizer);
     }
 
     /**
@@ -539,7 +510,7 @@ class FilesController extends AdminController
      */
     protected function isTipTapUpload(string $path): bool
     {
-        return str_starts_with($path, 'content/');
+        return FileStorageService::isTipTapPath($path);
     }
 
     /**
