@@ -1,24 +1,19 @@
 import { computed, type Ref } from 'vue';
 
 import { parseTimelineDate, toDateString } from './useDutiableTimelineData';
+import { applicableCadences as poolFor } from '../cadencePools';
 import type { ParsedCadence, ParsedRow, StagedDates, TimelineDiagnostic, TimelineOperation } from '../types';
 
 /** Mirrors AnalyzeDutiableTimeline::OFF_CADENCE_MAX_DAYS. */
 export const OFF_CADENCE_MAX_DAYS = 45;
 
-/**
- * The term a date belongs to: the one containing it, else the one whose start is nearest.
- *
- * An institution that defines its own cadences never falls back to the global ladder —
- * same rule as ResolveCadenceForDuty::pick() and AnalyzeDutiableTimeline::applicable().
- */
+/** The term a date belongs to: the one containing it, else the one whose start is nearest. */
 export function resolveCadenceFor(
   cadences: ParsedCadence[],
   row: Pick<ParsedRow, 'institution_id'>,
   date: string,
 ): ParsedCadence | null {
-  const scoped = cadences.filter(cadence => cadence.institution_id === row.institution_id);
-  const pool = scoped.length > 0 ? scoped : cadences.filter(cadence => cadence.institution_id === null);
+  const pool = poolFor(cadences, row.institution_id);
   const at = parseTimelineDate(date);
 
   return pool.find(cadence => at >= cadence.startDate && at <= cadence.endDate)
@@ -78,9 +73,7 @@ export function useDutiableDiagnostics(
   });
 
   function applicableCadences(row: ParsedRow): ParsedCadence[] {
-    const scoped = cadences.value.filter(cadence => cadence.institution_id === row.institution_id);
-
-    return scoped.length > 0 ? scoped : cadences.value.filter(cadence => cadence.institution_id === null);
+    return poolFor(cadences.value, row.institution_id);
   }
 
   function cadenceFor(row: ParsedRow, date: string): ParsedCadence | null {

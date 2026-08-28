@@ -11,7 +11,9 @@ use App\Http\Requests\Dutiables\IndexDutiableTimelineRequest;
 use App\Http\Requests\Dutiables\MergeDutiablesRequest;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Inertia\Response as InertiaResponse;
 
@@ -46,9 +48,49 @@ class DutiableTimelineController extends AdminController
             $this->authorize('view', $institution);
         }
 
+        $ownInstitutions = $this->ownInstitutions($request->user());
+
         return $this->inertiaResponse('Admin/People/DutiableTimeline', [
-            'initialInstitution' => $institution?->only(['id', 'name', 'alias']),
+            // Landing on an empty state is a dead end for someone who only ever looks at
+            // their own body, so the page opens on it. The client may still override this
+            // from the institution it remembers.
+            'initialInstitution' => ($institution ?? $ownInstitutions->first())?->only(['id', 'name', 'alias']),
+            'userInstitutions' => $ownInstitutions
+                ->map(fn (Institution $own) => $own->only(['id', 'name', 'alias']))
+                ->values()
+                ->all(),
         ]);
+    }
+
+    /**
+     * The institutions the actor themselves sits in, busiest first.
+     *
+     * Most people hold more than one duty, so "their" institution is a ranking rather than
+     * a lookup: the one they hold the most current duties in wins, ties go alphabetically so
+     * two visits never disagree. Anything they may not `view` is dropped — the page would
+     * only 403 on the first fetch otherwise.
+     *
+     * @return Collection<int, Institution>
+     */
+    private function ownInstitutions(User $user): Collection
+    {
+        return $user->current_duties()
+            ->with('institution')
+            ->get()
+            ->pluck('institution')
+            ->filter()
+            ->groupBy('id')
+            // One sort key rather than a comparison list: Collection::sortBy() treats a
+            // closure inside an array as a comparator, not as a key, which silently sorts
+            // by something else entirely.
+            ->sortBy(fn (Collection $held) => sprintf(
+                '%04d|%s',
+                9999 - $held->count(),
+                mb_strtolower((string) $held->first()->name),
+            ))
+            ->map(fn (Collection $held) => $held->first())
+            ->filter(fn (Institution $institution) => $user->can('view', $institution))
+            ->values();
     }
 
     public function apply(ApplyDutiableTimelineRequest $request): RedirectResponse

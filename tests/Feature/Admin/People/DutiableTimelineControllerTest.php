@@ -2,6 +2,8 @@
 
 use App\Events\DutiableChanged;
 use App\Models\Cadence;
+use App\Models\Duty;
+use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
 use App\Models\Role;
 use App\Models\Tenant;
@@ -97,6 +99,66 @@ describe('the standalone page', function (): void {
         asUser($this->manager)
             ->get(route('dutiables.timeline', ['institution' => '01jnotarealinstitution000']))
             ->assertSessionHasErrors('institution');
+    });
+
+    test('with no query string the page opens on the institution the actor sits in', function (): void {
+        asUser($this->manager)
+            ->get(route('dutiables.timeline'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('initialInstitution.id', $this->duty->institution_id)
+                ->where('userInstitutions.0.id', $this->duty->institution_id));
+    });
+
+    test('a second duty in the same institution ranks it above one held once', function (): void {
+        // Someone with several duties is the ordinary case, so the default is a ranking:
+        // the body they are busiest in wins, and the rest stay one click away in the menu.
+        $secondary = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
+        $this->manager->duties()->attach($secondary, ['start_date' => now()->subDay()]);
+        $this->manager->duties()->attach(
+            Duty::factory()->for($this->duty->institution)->create(),
+            ['start_date' => now()->subDay()],
+        );
+
+        asUser($this->manager)
+            ->get(route('dutiables.timeline'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('initialInstitution.id', $this->duty->institution_id)
+                ->where('userInstitutions.0.id', $this->duty->institution_id)
+                ->count('userInstitutions', 2));
+    });
+
+    test('an institution the actor may not view is left out of the shortcuts', function (): void {
+        // `institutions.read.padalinys` is tenant-scoped, so a seat in another tenant's body
+        // would otherwise be offered and then 403 on the first fetch.
+        $foreign = Tenant::query()->where('id', '!=', $this->tenant->id)->firstOrFail();
+        $this->manager->duties()->attach(
+            Duty::factory()->for(Institution::factory()->for($foreign))->create(),
+            ['start_date' => now()->subDay()],
+        );
+
+        asUser($this->manager)
+            ->get(route('dutiables.timeline'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('initialInstitution.id', $this->duty->institution_id)
+                ->count('userInstitutions', 1));
+    });
+
+    test('an ended duty does not decide the default scope', function (): void {
+        $ended = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
+        $this->manager->duties()->attach($ended, [
+            'start_date' => now()->subYears(2),
+            'end_date' => now()->subYear(),
+        ]);
+
+        asUser($this->manager)
+            ->get(route('dutiables.timeline'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('initialInstitution.id', $this->duty->institution_id)
+                ->count('userInstitutions', 1));
     });
 });
 

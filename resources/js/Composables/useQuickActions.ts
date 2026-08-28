@@ -16,6 +16,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import type { LucideIcon } from 'lucide-vue-next';
 import {
   CalendarPlus,
+  CalendarRange,
   FileText,
   Building2,
   MessageSquareWarning,
@@ -81,6 +82,16 @@ export const QUICK_ACTION_META: QuickActionMeta[] = [
     requiresPermission: can => !!can.duty,
     execute: () => router.visit(route('duties.updateUsersWizard')),
     gradient: 'from-violet-500/15 to-purple-500/15 hover:from-violet-500/25 hover:to-purple-500/25 dark:from-violet-400/10 dark:to-purple-400/10 dark:hover:from-violet-400/20 dark:hover:to-purple-400/20',
+  },
+  {
+    key: 'duty_periods',
+    title: $t('Pareigybių laikotarpiai'),
+    icon: CalendarRange,
+    // The page itself gates on viewAny(Duty), which has no entry in auth.can; `duty` is the
+    // closest proxy and is what the duties wizard above already uses.
+    requiresPermission: can => !!can.duty,
+    execute: () => router.visit(route('dutiables.timeline')),
+    gradient: 'from-sky-500/15 to-indigo-500/15 hover:from-sky-500/25 hover:to-indigo-500/25 dark:from-sky-400/10 dark:to-indigo-400/10 dark:hover:from-sky-400/20 dark:hover:to-indigo-400/20',
   },
 ];
 

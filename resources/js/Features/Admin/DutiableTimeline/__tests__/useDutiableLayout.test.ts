@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { ref } from 'vue';
 
-import { GROUP_HEADER_HEIGHT, ROW_HEIGHT, useDutiableLayout } from '../composables/useDutiableLayout';
+import {
+  GROUP_HEADER_HEIGHT, ROW_HEIGHT, useDutiableLayout, type RowSortMode,
+} from '../composables/useDutiableLayout';
 import type { ParsedRow, TimelineGroup } from '../types';
 
 function makeRow(id: string, groupKey: string, overrides: Partial<ParsedRow> = {}): ParsedRow {
@@ -20,6 +22,7 @@ function makeRow(id: string, groupKey: string, overrides: Partial<ParsedRow> = {
     start_date: '2025-07-01',
     end_date: '2026-06-30',
     via_dutiable_id: null,
+    extras: null,
     source: null,
     derived_ids: [],
     is_derived: false,
@@ -99,6 +102,72 @@ describe('useDutiableLayout', () => {
 
     setAllCollapsed(false);
     expect(collapsed.value.size).toBe(0);
+  });
+
+  describe('study-programme sort', () => {
+    const withProgramme = (id: string, programme: string | null) => makeRow(id, 'user:a', {
+      extras: programme === null ? null : { study_program: programme },
+    });
+
+    it('orders a group by programme, leaving rows without one last', () => {
+      const groups = ref([group('user:a')]);
+      const rows = ref([
+        withProgramme('none', null),
+        withProgramme('sociologija', 'Sociologija'),
+        withProgramme('programu', 'Programų sistemos'),
+      ]);
+      const sortMode = ref<RowSortMode>('study_program');
+
+      const { layoutRows } = useDutiableLayout(groups, rows, sortMode);
+
+      expect(layoutRows.value.filter(l => l.row).map(l => l.key))
+        .toEqual(['programu', 'sociologija', 'none']);
+    });
+
+    it('keeps the server ordering while the sort is off', () => {
+      const groups = ref([group('user:a')]);
+      const rows = ref([withProgramme('sociologija', 'Sociologija'), withProgramme('programu', 'Programų sistemos')]);
+
+      const { layoutRows } = useDutiableLayout(groups, rows);
+
+      expect(layoutRows.value.filter(l => l.row).map(l => l.key)).toEqual(['sociologija', 'programu']);
+    });
+  });
+
+  describe('group summaries', () => {
+    it('spans the earliest start to the latest end', () => {
+      const groups = ref([group('user:a')]);
+      const rows = ref([
+        makeRow('1', 'user:a', { startDate: new Date(2023, 6, 1, 12), endDate: new Date(2024, 5, 30, 12) }),
+        makeRow('2', 'user:a', { startDate: new Date(2024, 6, 1, 12), endDate: new Date(2025, 5, 30, 12) }),
+      ]);
+
+      const { groupSummaries } = useDutiableLayout(groups, rows);
+      const summary = groupSummaries.value.get('user:a')!;
+
+      expect(summary.count).toBe(2);
+      expect(summary.start).toEqual(new Date(2023, 6, 1, 12));
+      expect(summary.end).toEqual(new Date(2025, 5, 30, 12));
+    });
+
+    it('reports an open end when any row is still running', () => {
+      const groups = ref([group('user:a')]);
+      const rows = ref([makeRow('1', 'user:a', { endDate: null })]);
+
+      const { groupSummaries } = useDutiableLayout(groups, rows);
+
+      expect(groupSummaries.value.get('user:a')!.end).toBeNull();
+    });
+
+    it('summarises a collapsed group too — that is the only time it is read', () => {
+      const groups = ref([group('user:a')]);
+      const rows = ref([makeRow('1', 'user:a'), makeRow('2', 'user:a')]);
+
+      const { groupSummaries, toggleGroup } = useDutiableLayout(groups, rows);
+      toggleGroup('user:a');
+
+      expect(groupSummaries.value.get('user:a')!.count).toBe(2);
+    });
   });
 
   it('ignores rows whose group is not in the group list', () => {

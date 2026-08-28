@@ -5,7 +5,6 @@
       :visible-count="visibleRows.length"
       :include-ended="includeEnded"
       :month-width-px="monthWidthPx"
-      :all-collapsed="allCollapsed"
       :timeline-colors="timelineColors"
       :cadence-options="cadenceOptions"
       :tenant-options="tenantOptions"
@@ -15,7 +14,6 @@
       @update:month-width-px="monthWidthPx = $event"
       @update:cadence-ids="cadenceFilter = $event"
       @update:tenant-keys="tenantFilter = $event"
-      @toggle-all="setAllCollapsed(!allCollapsed)"
     />
 
     <Alert v-if="meta?.truncated" variant="destructive">
@@ -44,13 +42,19 @@
       <DutiableGantt
         v-else
         class="min-h-0 flex-auto"
+        data-tour="timeline-chart"
         :layout-rows="layoutRows"
         :rows="visibleRows"
         :cadences="cadences"
+        :band-cadences="bandCadences"
         :highlighted-cadence-ids="highlightedCadenceIds"
         :domain="domain"
         :total-height="totalHeight"
         :collapsed="collapsed"
+        :group-summaries="groupSummaries"
+        :all-collapsed="allCollapsed"
+        :sort-mode="sortMode"
+        :sortable="sortable"
         :month-width-px="monthWidthPx"
         :selected-ids="selectedIds"
         :staged="drawn"
@@ -59,19 +63,18 @@
         :row-height-for="rowHeightFor"
         :row-index="rowIndex"
         @toggle-group="toggleGroup"
+        @toggle-all="setAllCollapsed(!allCollapsed)"
+        @update:sort-mode="sortMode = $event"
         @toggle-selection="toggleSelection"
         @toggle-group-selection="toggleGroupSelection"
         @select="onSelect"
         @stage="stageMany"
       />
 
-      <p class="text-[11px] text-muted-foreground">
-        {{ $t('dutiables.timeline.drag.hint') }}
-      </p>
-
       <DutiableTimelineDock>
         <template #selection>
           <DutiableTimelineSelectionPanel
+            data-tour="timeline-selection"
             :row="activeRow"
             :cadences="cadences"
             :staged="staged"
@@ -88,6 +91,7 @@
 
         <template #suggestions>
           <DutiableTimelineSuggestions
+            data-tour="timeline-suggestions"
             :findings="findings"
             :counts="counts"
             :rows="visibleRows"
@@ -99,6 +103,7 @@
 
         <template #save>
           <DutiableTimelineDirtyBar
+            data-tour="timeline-save"
             :dirty-count="dirtyCount"
             :is-dirty="isDirty"
             :processing="processing"
@@ -143,6 +148,7 @@ import { Alert, AlertDescription } from '@/Components/ui/alert';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 
+import { bandLadder } from './cadencePools';
 import DutiableGantt from './DutiableGantt.vue';
 import DutiableTimelineDiffSheet from './DutiableTimelineDiffSheet.vue';
 import DutiableTimelineDirtyBar from './DutiableTimelineDirtyBar.vue';
@@ -153,7 +159,7 @@ import DutiableTimelineToolbar from './DutiableTimelineToolbar.vue';
 import { getTimelineColors } from './timelineColors';
 import type { FilterOption } from './DutiableTimelineFilterMenu.vue';
 import { useDutiableDiagnostics } from './composables/useDutiableDiagnostics';
-import { useDutiableLayout } from './composables/useDutiableLayout';
+import { useDutiableLayout, type RowSortMode } from './composables/useDutiableLayout';
 import { useDutiableStaging } from './composables/useDutiableStaging';
 import { useDutiableTimelineData } from './composables/useDutiableTimelineData';
 import { useDutiableTimelinePreview } from './composables/useDutiableTimelinePreview';
@@ -267,6 +273,13 @@ const visibleRows = computed(() => rows.value.filter((row) => {
     && (tenantFilter.value.length === 0 || tenantFilter.value.includes(tenantKey));
 }));
 
+/**
+ * The bands are one ladder, never two: the payload carries the global ladder *and* every
+ * override so per-row matching works, but stacking both over the same domain paints the
+ * whole chart flat green. Everything else here still gets the full list and narrows per row.
+ */
+const bandCadences = computed(() => bandLadder(cadences.value, scope.value, visibleRows.value));
+
 /** Terms drawn as selected, so the chart says what the filter did. */
 const highlightedCadenceIds = computed(() => new Set(cadenceFilter.value));
 
@@ -277,9 +290,20 @@ const visibleGroups = computed(() => {
   return groups.value.filter(group => present.has(group.key));
 });
 
+/** Offered only where a programme is actually recorded — see the chart's controls strip. */
+const sortMode = ref<RowSortMode>('default');
+const sortable = computed(() => visibleRows.value.some(row => Boolean(row.extras?.study_program)));
+
 const {
-  collapsed, layoutRows, totalHeight, rowTop, rowHeightFor, rowIndex, toggleGroup, setAllCollapsed,
-} = useDutiableLayout(visibleGroups, visibleRows);
+  collapsed, layoutRows, totalHeight, groupSummaries, rowTop, rowHeightFor, rowIndex,
+  toggleGroup, setAllCollapsed,
+} = useDutiableLayout(visibleGroups, visibleRows, sortMode);
+
+// A programme sort that nothing can be sorted by would silently persist across a filter
+// change and then reorder rows the moment one reappears.
+watch(sortable, (canSort) => {
+  if (!canSort) sortMode.value = 'default';
+});
 
 const {
   staged, drawn, pending, stage, stageMany, revertAll, settle, dirtyCount, isDirty, operations,

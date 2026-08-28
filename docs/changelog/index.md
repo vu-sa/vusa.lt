@@ -7,6 +7,19 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.33 — Laikotarpių tvarkyklė patogesnė (2026-08-28) {#v1-33}
+
+- 🔧 **Kadencijų juostos vėl matomos institucijose su savomis kadencijomis** — buvo piešiamos ir bendrosios, ir institucijos kadencijos vienos ant kitų, todėl visas fonas nusidažydavo vienodai žaliai ir kadencijos riba tapdavo nebematoma. Dabar rodoma tik ta kadencijų eilė, pagal kurią institucija ir matuojama; pagal ją traukiamas ir juostos kraštas tempiant
+- 🔧 **Diagramoje nebelieka nereikalingos vertikalios slinkties** — juostos aukštis buvo skaičiuojamas neįvertinus apatinės slinkties juostos, todėl paskutinė eilutė likdavo po ja, o vertikali slinktis atsirasdavo net esant dviem eilutėms. Tas pats sutvarkyta ir posėdžių juostoje
+- ⭐ **Laikotarpių tvarkyklė pasiekiama iš šoninės juostos** — atsirado tarp greitų veiksmų; atsidarius iš karto parenkama institucija, kurioje einate pareigas
+- ⭐ **Puslapio vadovas** — pirmą kartą apsilankius parodoma, kaip skaityti ir keisti juostas; vėliau vadovą galima paleisti pagalbos mygtuku
+- ✨ **Institucijos pasirinkimas aiškesnis** — mygtukas rodo dabartinės institucijos pavadinimą, o meniu pirmiausia siūlo jūsų institucijas. Institucijos pavadinimas virš diagramos dabar yra nuoroda
+- ✨ **Matomos studijų programos** — vietoj vien piktogramos programos pavadinimas rodomas tekstu, o įrašus galima surikiuoti pagal jas
+- ⭐ **Matoma laikotarpio trukmė** — prie kiekvieno įrašo rodoma, kiek jis truko (pvz. „2 m. 4 mėn.“); trumpiems laikotarpiams rodomi mėnesiai ar dienos
+- ✨ **„Apima daugiau nei vieną kadenciją“ nebeužgožia sąrašo** — perrinktam nariui tai normalu, o ne klaida, todėl visi tokie pranešimai suskleisti į vieną eilutę, kurią galima išskleisti
+- ✨ **Suskleista pareigybė nebetuščia** — rodoma, kiek įrašų ji slepia, ir bendra jų laiko juosta
+- ✨ **„Rodyti pasibaigusius“ perkelta į kadencijos filtrą** (paslėpus juos, prie filtro matoma žymė), o „Suskleisti visus“ – prie pačių pareigybių pavadinimų. Juostų tempimo paaiškinimas nebeužima vietos po diagrama – jį rasite prie „i“ ženklo
+
 ## v1.32 — Kadencijos, laikotarpiai ir posėdžių juosta (2026-08-21) {#v1-32}
 
 - 🔧 **Kadencijų filtras rodo visus tuo metu dirbusius žmones** — anksčiau įrašas buvo priskiriamas vienai kadencijai pagal pradžios datą, todėl birželį prasidėjusios pareigos atsidurdavo besibaigiančioje kadencijoje, o perrinktas žmogus matėsi tik po viena kadencija. Dabar įrašas priklauso visoms kadencijoms, kurias apima jo laikotarpis

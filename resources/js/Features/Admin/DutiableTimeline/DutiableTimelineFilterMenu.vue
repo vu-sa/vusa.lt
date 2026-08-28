@@ -1,11 +1,14 @@
 <template>
   <DropdownMenu>
     <DropdownMenuTrigger as-child>
-      <Button type="button" size="xs" variant="outline" :disabled="options.length === 0">
+      <Button type="button" size="xs" variant="outline" :disabled="options.length === 0 && !$slots.extra">
         {{ label }}
         <Badge v-if="modelValue.length > 0" variant="secondary" class="ml-1 text-[10px]">
           {{ modelValue.length }}
         </Badge>
+        <!-- Whatever the `extra` switches are set to. They persist between visits, so their
+             state has to be readable without opening the menu that holds them. -->
+        <slot name="indicator" />
         <ChevronDown class="size-3" />
       </Button>
     </DropdownMenuTrigger>
@@ -27,6 +30,13 @@
         <span class="truncate">{{ option.label }}</span>
         <span class="ml-auto pl-2 text-[10px] text-muted-foreground">{{ option.count }}</span>
       </DropdownMenuCheckboxItem>
+
+      <!-- View switches that belong to the same question the filter answers, e.g. whether
+           ended assignments are listed at all. -->
+      <template v-if="$slots.extra">
+        <DropdownMenuSeparator />
+        <slot name="extra" />
+      </template>
 
       <template v-if="modelValue.length > 0">
         <DropdownMenuSeparator />

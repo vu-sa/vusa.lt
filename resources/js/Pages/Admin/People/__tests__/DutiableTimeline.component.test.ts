@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
 
@@ -16,7 +16,7 @@ const stubs = {
   CollectionSelectDialog: {
     name: 'CollectionSelectDialog',
     props: ['open', 'collection', 'title'],
-    template: '<div class="picker-stub"><slot name="trigger" /></div>',
+    template: '<div class="picker-stub" />',
     emits: ['confirm', 'update:open'],
   },
   DutiableTimelineEditor: {
@@ -26,11 +26,27 @@ const stubs = {
   },
 };
 
-function mountPage(initialInstitution: { id: string; name: string } | null) {
-  return mount(DutiableTimeline, { props: { initialInstitution }, global: { stubs } });
+type Inst = { id: string; name: string };
+
+function mountPage(initialInstitution: Inst | null, userInstitutions: Inst[] = []) {
+  return mount(DutiableTimeline, {
+    props: { initialInstitution, userInstitutions },
+    global: { stubs },
+  });
 }
 
+const STORAGE_KEY = 'dutiable-timeline-institution';
+
 describe('Admin/People/DutiableTimeline', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    window.history.replaceState({}, '', '/mano/dutiables/timeline');
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('asks for an institution before drawing anything', () => {
     const wrapper = mountPage(null);
 
@@ -57,5 +73,32 @@ describe('Admin/People/DutiableTimeline', () => {
     // `recordId`, not `id`: the latter is the collection-prefixed search row key.
     expect(wrapper.findComponent({ name: 'DutiableTimelineEditor' }).props('scopeId')).toBe('inst-2');
     expect(visit).toHaveBeenCalled();
+  });
+
+  it('names the institution on the switcher rather than the action', () => {
+    const wrapper = mountPage({ id: 'inst-1', name: 'Parlamentas' });
+
+    expect(wrapper.text()).toContain('Parlamentas');
+  });
+
+  it('reopens on the last institution rather than the server guess', async () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ id: 'inst-9', name: 'MIF' }));
+    const visit = vi.spyOn(router, 'visit');
+
+    const wrapper = mountPage({ id: 'inst-1', name: 'Parlamentas' });
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.findComponent({ name: 'DutiableTimelineEditor' }).props('scopeId')).toBe('inst-9');
+    expect(visit).toHaveBeenCalled();
+  });
+
+  it('leaves an institution named in the URL alone', async () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ id: 'inst-9', name: 'MIF' }));
+    window.history.replaceState({}, '', '/mano/dutiables/timeline?institution=inst-1');
+
+    const wrapper = mountPage({ id: 'inst-1', name: 'Parlamentas' });
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.findComponent({ name: 'DutiableTimelineEditor' }).props('scopeId')).toBe('inst-1');
   });
 });

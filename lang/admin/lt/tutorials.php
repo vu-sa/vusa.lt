@@ -146,6 +146,42 @@ return [
         ],
     ],
 
+    // Dutiable timeline editor (/mano/dutiables/timeline)
+    'dutiable_timeline' => [
+        'welcome' => [
+            'title' => 'Pareigybių laikotarpiai',
+            'description' => 'Čia vienoje juostoje matote <strong>visus institucijos pareigybių laikotarpius</strong>. Vietoj to, kad kiekvieną narį redaguotumėte atskirai, viską galite sutvarkyti iš karto.',
+        ],
+        'institution' => [
+            'title' => 'Institucija',
+            'description' => 'Rodoma institucija. Spustelėję pasirinksite kitą – pirmiausia siūlomos tos, kuriose einate pareigas.',
+        ],
+        'chart' => [
+            'title' => 'Laiko juosta',
+            'description' => 'Kiekviena juostelė – vienas pareigybės laikotarpis. Žalias fonas rodo <strong>kadenciją</strong>: juostelė, kuri nesutampa su jos kraštu, ir yra tai, ką čia taisome. Juostelę galima tempti; kaip – parašyta prie „i“ ženklo dešinėje.',
+        ],
+        'controls' => [
+            'title' => 'Suskleidimas ir rikiavimas',
+            'description' => 'Suskleiskite visas pareigybes, kad matytumėte bendrą vaizdą. Kur nurodytos studijų programos, įrašus galima surikiuoti pagal jas.',
+        ],
+        'filters' => [
+            'title' => 'Filtrai',
+            'description' => 'Filtruokite pagal kadenciją ar padalinį. Ten pat pasirinksite, ar rodyti <strong>pasibaigusius</strong> laikotarpius.',
+        ],
+        'selection' => [
+            'title' => 'Pažymėtas įrašas',
+            'description' => 'Pažymėjus juostelę čia matysite tikslias datas ir veiksmus: sulygiuoti su kadencija, užbaigti, sujungti ar pašalinti.',
+        ],
+        'suggestions' => [
+            'title' => 'Siūlomi taisymai',
+            'description' => 'Sistema pati randa neatitikimus – persidengiančius laikotarpius, neterminuotas pareigas po pasibaigusios kadencijos. Galite pritaikyti juos vienu paspaudimu.',
+        ],
+        'save' => [
+            'title' => 'Peržiūra ir išsaugojimas',
+            'description' => 'Niekas neišsaugoma, kol nepaspaudžiate. Prieš tai galite <strong>peržiūrėti</strong>, kaip įrašai atrodys po pakeitimų.',
+        ],
+    ],
+
     // Help Button Spotlight
     'help_button_spotlight' => [
         'title' => 'Reikia pagalbos?',

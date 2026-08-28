@@ -51,9 +51,13 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/ui/tooltip
 
 import type { ParsedRow } from './types';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   extras: ParsedRow['extras'];
-}>();
+  /** Keys the caller already shows in full, so the icon does not repeat them. */
+  omit?: string[];
+}>(), {
+  omit: () => [],
+});
 
 /** Long prose would make the tooltip a wall; the point is "there is something here". */
 const DESCRIPTION_PREVIEW = 160;
@@ -85,6 +89,8 @@ const entries = computed<ExtraEntry[]>(() => {
         : undefined,
     },
   ] as Array<Omit<ExtraEntry, 'value'> & { value: string | undefined }>)
-    .filter((entry): entry is ExtraEntry => entry.value !== undefined && entry.value !== '');
+    .filter((entry): entry is ExtraEntry => entry.value !== undefined
+      && entry.value !== ''
+      && !props.omit.includes(entry.key));
 });
 </script>

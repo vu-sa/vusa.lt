@@ -64,6 +64,7 @@ function makePayload(overrides: Partial<TimelinePayload> = {}): TimelinePayload 
       start_date: '2025-05-18',
       end_date: '2026-06-30',
       via_dutiable_id: null,
+      extras: null,
       source: null,
       derived_ids: [],
       is_derived: false,
@@ -98,7 +99,7 @@ const stubs = {
   ...commonStubs,
   DutiableGantt: {
     name: 'DutiableGantt',
-    props: ['layoutRows', 'rows', 'cadences', 'highlightedCadenceIds', 'domain', 'totalHeight', 'collapsed', 'monthWidthPx', 'selectedIds', 'staged'],
+    props: ['layoutRows', 'rows', 'cadences', 'bandCadences', 'highlightedCadenceIds', 'domain', 'totalHeight', 'collapsed', 'groupSummaries', 'allCollapsed', 'sortMode', 'sortable', 'monthWidthPx', 'selectedIds', 'staged'],
     template: '<div class="gantt-stub" @click="$emit(\'select\', layoutRows.find(l => l.row)?.row, { ctrlKey: false, metaKey: false })" />',
     emits: ['select', 'toggle-group', 'stage'],
   },
@@ -133,6 +134,48 @@ describe('DutiableTimelineEditor', () => {
 
     expect(cadences[0].startDate).toBeInstanceOf(Date);
     expect(cadences[0].startDate.getDate()).toBe(1);
+  });
+
+  it('draws only the institution own ladder when it overrides the global one', () => {
+    payload.value = makePayload({
+      scope: { type: 'institution', id: 'inst-1', label: 'Parlamentas', institution_id: 'inst-1' },
+      cadences: [
+        {
+          id: 'global-1',
+          label: '2025–2026',
+          start_date: '2025-07-01',
+          end_date: '2026-06-30',
+          institution_id: null,
+          is_global: true,
+        },
+        {
+          id: 'parl-1',
+          label: '2025–2026',
+          start_date: '2025-05-18',
+          end_date: '2026-05-17',
+          institution_id: 'inst-1',
+          is_global: false,
+        },
+      ],
+    });
+
+    const gantt = mountEditor().findComponent({ name: 'DutiableGantt' });
+
+    // Matching still needs both ladders; only one of them is ever painted.
+    expect(gantt.props('cadences')).toHaveLength(2);
+    expect((gantt.props('bandCadences') as Array<{ id: string }>).map(c => c.id)).toEqual(['parl-1']);
+  });
+
+  it('offers the study-programme sort only where a programme is recorded', () => {
+    expect(mountEditor().findComponent({ name: 'DutiableGantt' }).props('sortable')).toBe(false);
+
+    const base = makePayload();
+    payload.value = {
+      ...base,
+      rows: [{ ...base.rows[0], extras: { study_program: 'Programų sistemos' } }],
+    };
+
+    expect(mountEditor().findComponent({ name: 'DutiableGantt' }).props('sortable')).toBe(true);
   });
 
   it('shows an empty state rather than an empty chart when nothing matches', () => {

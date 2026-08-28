@@ -53,6 +53,7 @@ trait HasUIPreferences
         'new_news',
         'new_reservation',
         'duty_update',
+        'duty_periods',
     ];
 
     /**

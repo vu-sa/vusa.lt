@@ -17,37 +17,69 @@
 
     <template v-else>
       <p class="text-[10px] text-muted-foreground">
-      Ne visi siūlomi taisymai yra privalomi ir teisingi </p>
+        {{ $t('dutiables.timeline.diagnostics.advisory') }}
+      </p>
       <ul class="min-h-0 flex-1 space-y-1 overflow-y-auto pr-1">
-        <li
-          v-for="entry in entries"
-          :key="entry.key"
-          class="flex items-start gap-2 rounded-md px-1.5 py-1 hover:bg-accent/50"
-        >
-          <Checkbox
-            v-if="entry.fixable"
-            :id="`suggestion-${entry.key}`"
-            :model-value="checked.has(entry.key)"
-            class="mt-0.5"
-            @update:model-value="toggle(entry.key)"
-          />
-          <!-- Keeps a non-fixable row's text aligned with the checkboxes above it. -->
-          <span v-else class="mt-0.5 size-4 shrink-0" />
+        <template v-for="section in sections" :key="section.key">
+          <!--
+            A whole class of finding folded into one line. `spans_cadences` fires on every
+            re-elected member, which is the ordinary shape of a long-serving seat rather
+            than a fault, and thirty of them buried the handful that matter.
+          -->
+          <li v-if="section.folded">
+            <button
+              type="button"
+              class="flex w-full items-center gap-2 rounded-md px-1.5 py-1 text-left hover:bg-accent/50"
+              @click="toggleSection(section.code)"
+            >
+              <ChevronRight
+                class="size-3 shrink-0 text-muted-foreground transition-transform"
+                :class="{ 'rotate-90': expanded.has(section.code) }"
+              />
+              <span class="min-w-0 flex-1 truncate text-[11px] font-medium" :class="severityClass(section.severity)">
+                {{ $t(`dutiables.timeline.diagnostics.codes.${section.code}`) }}
+              </span>
+              <span class="shrink-0 text-[10px] tabular-nums text-muted-foreground">
+                {{ section.entries.length }}
+              </span>
+            </button>
+          </li>
 
-          <button type="button" class="min-w-0 flex-1 text-left" @click="emit('focus', entry.finding.row_ids)">
-            <span class="flex flex-wrap items-baseline gap-x-1.5">
-              <span class="text-[11px] font-medium" :class="severityClass(entry.finding.severity)">
-                {{ $t(`dutiables.timeline.diagnostics.codes.${entry.finding.code}`) }}
+          <li
+            v-for="entry in section.folded && !expanded.has(section.code) ? [] : section.entries"
+            :key="entry.key"
+            class="flex items-start gap-2 rounded-md px-1.5 py-1 hover:bg-accent/50"
+            :class="{ 'pl-5': section.folded }"
+          >
+            <Checkbox
+              v-if="entry.fixable"
+              :id="`suggestion-${entry.key}`"
+              :model-value="checked.has(entry.key)"
+              class="mt-0.5"
+              @update:model-value="toggle(entry.key)"
+            />
+            <!-- Keeps a non-fixable row's text aligned with the checkboxes above it. -->
+            <span v-else class="mt-0.5 size-4 shrink-0" />
+
+            <button type="button" class="min-w-0 flex-1 text-left" @click="emit('focus', entry.finding.row_ids)">
+              <span class="flex flex-wrap items-baseline gap-x-1.5">
+                <span
+                  v-if="!section.folded"
+                  class="text-[11px] font-medium"
+                  :class="severityClass(entry.finding.severity)"
+                >
+                  {{ $t(`dutiables.timeline.diagnostics.codes.${entry.finding.code}`) }}
+                </span>
+                <span v-if="entry.subject" class="truncate text-[10px] text-muted-foreground">
+                  {{ entry.subject }}
+                </span>
               </span>
-              <span v-if="entry.subject" class="truncate text-[10px] text-muted-foreground">
-                {{ entry.subject }}
+              <span v-if="entry.detail" class="block font-mono text-[10px] text-muted-foreground">
+                {{ entry.detail }}
               </span>
-            </span>
-            <span v-if="entry.detail" class="block font-mono text-[10px] text-muted-foreground">
-              {{ entry.detail }}
-            </span>
-          </button>
-        </li>
+            </button>
+          </li>
+        </template>
       </ul>
 
       <Button size="xs" class="shrink-0" :disabled="checked.size === 0 || processing" @click="apply">
@@ -61,7 +93,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Wrench } from 'lucide-vue-next';
+import { ChevronRight, Wrench } from 'lucide-vue-next';
 
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
@@ -107,6 +139,66 @@ const entries = computed<SuggestionEntry[]>(() => [...props.findings]
     subject: subjectFor(finding),
     detail: detailFor(finding),
   })));
+
+/**
+ * Codes that are noise by default rather than findings: true of the whole set often enough
+ * that listing each one drowns the rest. They are still there, one click away.
+ */
+const FOLDED_CODES = new Set(['spans_cadences']);
+
+interface SuggestionSection {
+  /** Unique per rendered section; several findings can share one code. */
+  key: string;
+  code: string;
+  severity: TimelineDiagnostic['severity'];
+  folded: boolean;
+  entries: SuggestionEntry[];
+}
+
+/**
+ * Folded codes are gathered into one section each; everything else keeps its own line, in
+ * the severity order the planner needs.
+ */
+const sections = computed<SuggestionSection[]>(() => {
+  const result: SuggestionSection[] = [];
+  const foldedByCode = new Map<string, SuggestionSection>();
+
+  for (const entry of entries.value) {
+    const code = entry.finding.code;
+
+    if (!FOLDED_CODES.has(code)) {
+      result.push({
+        key: entry.key, code, severity: entry.finding.severity, folded: false, entries: [entry],
+      });
+
+      continue;
+    }
+
+    const section = foldedByCode.get(code);
+
+    if (section) {
+      section.entries.push(entry);
+
+      continue;
+    }
+
+    const created: SuggestionSection = {
+      key: code, code, severity: entry.finding.severity, folded: true, entries: [entry],
+    };
+    foldedByCode.set(code, created);
+    result.push(created);
+  }
+
+  return result;
+});
+
+const expanded = ref(new Set<string>());
+
+function toggleSection(code: string): void {
+  const next = new Set(expanded.value);
+  next.has(code) ? next.delete(code) : next.add(code);
+  expanded.value = next;
+}
 
 const checked = ref(new Set<string>());
 

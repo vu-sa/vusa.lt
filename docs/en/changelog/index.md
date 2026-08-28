@@ -7,6 +7,19 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.33 — A friendlier duty-period editor (2026-08-28) {#v1-33}
+
+- 🔧 **Cadence bands are readable again in institutions with their own cadences** — the global ladder and the institution's own were drawn on top of each other, washing the whole chart one flat green and hiding the very boundary the bands exist to show. Only the ladder the institution is actually measured against is drawn now, and edges snap to it while dragging
+- 🔧 **No more pointless vertical scrollbar on the chart** — its height was worked out without allowing for the horizontal scrollbar, so the last row sat underneath it and a vertical scrollbar appeared even with two rows. Fixed in the meetings chart too
+- ⭐ **The duty-period editor is reachable from the sidebar** — it joins the quick actions, and opens on an institution you hold duties in
+- ⭐ **A guided tour** — first-time visitors are shown how to read and edit the bars; the help button replays it afterwards
+- ✨ **A clearer institution switcher** — the button names the institution on screen, and the menu offers yours first. The institution name above the chart is now a link
+- ✨ **Study programmes are shown** — the programme name is written out rather than hinted at by an icon, and rows can be sorted by it
+- ⭐ **How long a period ran is visible** — each row shows its length ("2y 4mo"), falling back to months or days for short stints
+- ✨ **"Spans more than one cadence" no longer buries the list** — it is the ordinary shape of a re-elected member rather than a fault, so every such note is folded into one expandable line
+- ✨ **A collapsed duty says something** — how many periods it hides, and their combined span
+- ✨ **"Show ended" moved into the cadence filter** (with a mark on the filter while they are hidden), and "Collapse all" next to the duty names themselves. The drag instructions no longer take a line under the chart — they live behind the "i" button
+
 ## v1.32 — Cadences, terms and the meetings chart (2026-08-21) {#v1-32}
 
 - 🔧 **The cadence filter now shows everyone who served in that term** — an assignment used to be filed under a single cadence based on its start date, so a duty starting in June landed in the term that was ending, and a re-elected person showed up under only one term. An assignment now belongs to every cadence its period covers

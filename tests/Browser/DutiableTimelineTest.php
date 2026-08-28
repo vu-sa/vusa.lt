@@ -104,6 +104,96 @@ it('moves a bar by whole months and keeps the day of month', function (): void {
 });
 
 /**
+ * A collapsed group draws a merged bar in place of the rows it hides — d3 geometry again,
+ * and the whole point of collapsing is that the rows are gone, so nothing else can assert it.
+ */
+it('summarises a collapsed duty instead of leaving an empty lane', function (): void {
+    foreach (range(1, 3) as $index) {
+        Dutiable::factory()->create([
+            'duty_id' => $this->duty->id,
+            'dutiable_id' => User::factory()->create()->id,
+            'start_date' => '2024-07-01',
+            'end_date' => '2025-06-30',
+        ]);
+    }
+
+    $page = loginAsAdmin($this->admin);
+
+    $page->navigate(route('dutiables.timeline', ['institution' => $this->duty->institution_id], absolute: false));
+
+    // The collapse-all control lives above the label column, not out in the toolbar.
+    // By label, not by position: the strip also holds the sort menu.
+    $collapseAll = '[data-tour="timeline-controls"] button[aria-label="Suskleisti visus"]';
+    waitForInertiaRender($page, $collapseAll);
+    $page->click($collapseAll);
+
+    waitForInertiaRender($page, 'rect.collapsed-group-bar');
+
+    $summary = $page->script(<<<'JS'
+    (() => {
+      const bar = document.querySelector('rect.collapsed-group-bar');
+      const count = document.querySelector('[data-slot="group-row-count"]');
+
+      return {
+        width: bar ? Number(bar.getAttribute('width')) : null,
+        count: count ? count.textContent.trim() : null,
+        duration: count?.nextElementSibling?.textContent.trim() ?? null,
+      };
+    })()
+    JS);
+
+    expect($summary['width'])->toBeGreaterThan(2)
+        // Every row and every collapsed header says how long it ran, in at most two units.
+        ->and($summary['duration'])->toMatch('/^\d+ (m\.|mėn\.|d\.)/')
+        // Five rows on this duty: the three above, the drag subject, and the admin's own
+        // seat — makeUser() attaches them to the duty it creates.
+        ->and($summary['count'])->toBe('5');
+});
+
+/**
+ * The chart caps itself at `header + rows`, so whether that arithmetic is right is only
+ * observable once a real scrollbar has taken its strip out of the container. jsdom lays
+ * nothing out and reports every dimension as 0, which is precisely the case that hid the
+ * missing allowance for months.
+ */
+it('fits a short chart without a vertical scrollbar', function (): void {
+    // Three rows: nowhere near enough to need scrolling, which was true before the fix too.
+    foreach (range(1, 3) as $index) {
+        Dutiable::factory()->create([
+            'duty_id' => $this->duty->id,
+            'dutiable_id' => User::factory()->create()->id,
+            'start_date' => '2024-07-01',
+            'end_date' => '2025-06-30',
+        ]);
+    }
+
+    $page = loginAsAdmin($this->admin);
+
+    $page->navigate(route('dutiables.timeline', ['institution' => $this->duty->institution_id], absolute: false));
+    waitForInertiaRender($page, '[data-slot="dutiable-gantt"] svg');
+
+    $overflow = $page->script(<<<'JS'
+    (() => {
+      const chart = document.querySelector('[data-slot="dutiable-gantt"]');
+      // The scroller is the only element in the chart that scrolls on both axes.
+      const scroller = chart?.querySelector('.overflow-auto');
+      if (!scroller) return null;
+
+      return {
+        vertical: scroller.scrollHeight - scroller.clientHeight,
+        horizontal: scroller.scrollWidth > scroller.clientWidth,
+      };
+    })()
+    JS);
+
+    expect($overflow)->not->toBeNull()
+        // The horizontal scrollbar is the whole point of the chart and must still be there;
+        // it is what used to eat the last lane.
+        ->and($overflow['horizontal'])->toBeTrue()
+        ->and($overflow['vertical'])->toBe(0);
+});
+
+/**
  * The dock is `sticky bottom-0`, which only means anything once the page can scroll past
  * it — exactly the case jsdom cannot model, and exactly the case the old non-sticky bar
  * failed in.

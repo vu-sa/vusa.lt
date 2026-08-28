@@ -198,6 +198,11 @@
         </div>
       </dl>
 
+      <p class="text-[11px]">
+        <span class="text-muted-foreground">{{ $t('dutiables.timeline.duration.label') }}:</span>
+        <span class="ml-1 tabular-nums">{{ duration }}</span>
+      </p>
+
       <p v-if="cadence" class="text-[11px]">
         <span class="text-muted-foreground">{{ cadence.label }}</span>
         <span
@@ -306,7 +311,9 @@ import { Switch } from '@/Components/ui/switch';
 
 import DutiableExtrasBadge from './DutiableExtrasBadge.vue';
 import TimelineDateField from './TimelineDateField.vue';
+import { formatDuration } from './duration';
 import { resolveCadenceFor } from './composables/useDutiableDiagnostics';
+import { parseTimelineDate } from './composables/useDutiableTimelineData';
 import type { ParsedCadence, ParsedRow, StagedDates } from './types';
 
 const props = defineProps<{
@@ -411,6 +418,12 @@ const openEnded = computed(() => dates.value.end_date === null);
  * fallback matters: a row starting a month and a half before its term is exactly the
  * drift Align exists for, and "no cadence contains it" would hide the reading.
  */
+/** Reads off the staged dates, so a drag updates it before anything is saved. */
+const duration = computed(() => formatDuration(
+  parseTimelineDate(dates.value.start_date),
+  dates.value.end_date ? parseTimelineDate(dates.value.end_date) : null,
+));
+
 const cadence = computed<ParsedCadence | null>(
   () => (props.row ? resolveCadenceFor(props.cadences, props.row, dates.value.start_date) : null),
 );

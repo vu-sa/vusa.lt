@@ -23,6 +23,7 @@ function makeRow(overrides: Partial<ParsedRow> = {}): ParsedRow {
     start_date: '2024-06-01',
     end_date: '2025-06-30',
     via_dutiable_id: null,
+    extras: null,
     source: null,
     derived_ids: [],
     is_derived: false,
@@ -57,7 +58,52 @@ const overlap: TimelineDiagnostic = {
   detail: { suggested_end: '2025-05-17' },
 };
 
+function spans(rowId: string): TimelineDiagnostic {
+  return {
+    code: 'spans_cadences',
+    severity: 'info',
+    row_ids: [rowId],
+    duty_id: 'duty-1',
+    detail: { count: 2, suggested_start: '2023-07-01', suggested_end: '2025-06-30' },
+  };
+}
+
 describe('DutiableTimelineSuggestions', () => {
+  describe('folding the noisy codes', () => {
+    /**
+     * `spans_cadences` fires on every re-elected member, so on a real institution it is
+     * most of the list and none of the news.
+     */
+    it('folds every spans_cadences finding into one closed line', () => {
+      const rows = ['row-1', 'row-2', 'row-3'].map(id => makeRow({ id }));
+      const wrapper = mountPanel(rows.map(row => spans(row.id)), rows);
+
+      expect(wrapper.findAll('li')).toHaveLength(1);
+      expect(wrapper.text()).toContain('dutiables.timeline.diagnostics.codes.spans_cadences');
+      // The count is what tells you how much is behind the fold.
+      expect(wrapper.text()).toContain('3');
+    });
+
+    it('reveals them on click and hides them again', async () => {
+      const rows = ['row-1', 'row-2'].map(id => makeRow({ id }));
+      const wrapper = mountPanel(rows.map(row => spans(row.id)), rows);
+
+      await wrapper.find('li button').trigger('click');
+      expect(wrapper.findAll('li')).toHaveLength(3);
+
+      await wrapper.find('li button').trigger('click');
+      expect(wrapper.findAll('li')).toHaveLength(1);
+    });
+
+    it('leaves the codes that are actually worth reading unfolded', () => {
+      const wrapper = mountPanel([overlap, spans('row-1')]);
+
+      // The overlap keeps its own row; only the spans finding is behind a disclosure.
+      expect(wrapper.findAll('li')).toHaveLength(2);
+      expect(wrapper.text()).toContain('dutiables.timeline.diagnostics.codes.overlap');
+    });
+  });
+
   it('says nothing was found when there is nothing to fix', () => {
     expect(mountPanel([]).text()).toContain('dutiables.timeline.diagnostics.empty');
   });

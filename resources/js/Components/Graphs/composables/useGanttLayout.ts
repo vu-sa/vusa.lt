@@ -10,6 +10,8 @@
  */
 import { computed, type ComputedRef, type Ref } from 'vue';
 
+import { horizontalScrollbarSize } from '../scrollbarSize';
+
 /** Base row type - either a tenant header or an institution row */
 export type GanttRow
   = | { type: 'tenant'; key: string; tenantId: string | number }
@@ -232,8 +234,10 @@ export function useGanttLayout(
     // Otherwise calculate based on content
     const rowsH = layoutRows.value.reduce((acc, r) => acc + r.height, 0);
     const contentHeight = rowsH + 22; // header height
-    // Add extra padding to prevent overflow when horizontal scrollbar appears
-    const paddedHeight = contentHeight + 20;
+    // Container border top/bottom plus the axis header's border-b, and the strip the
+    // horizontal scrollbar takes; without the exact figure a vertical scrollbar appears
+    // on a chart that would otherwise fit.
+    const paddedHeight = contentHeight + 3 + horizontalScrollbarSize();
     return `${Math.max(200, paddedHeight)}px`; // Ensure minimum height
   });
 

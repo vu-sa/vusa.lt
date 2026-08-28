@@ -6,23 +6,41 @@
       </Button>
     </PopoverTrigger>
 
-    <PopoverContent align="end" class="w-56 space-y-2 p-3">
-      <p class="text-xs font-semibold">
-        {{ $t('dutiables.timeline.legend.title') }}
-      </p>
+    <PopoverContent align="end" class="w-72 space-y-3 p-3">
+      <div class="space-y-2">
+        <p class="text-xs font-semibold">
+          {{ $t('dutiables.timeline.legend.title') }}
+        </p>
 
-      <ul class="space-y-1.5">
-        <li v-for="entry in entries" :key="entry.key" class="flex items-center gap-2 text-[11px]">
-          <span
-            class="h-2.5 w-5 shrink-0 rounded-sm"
-            :style="{
-              backgroundColor: entry.fill,
-              border: entry.stroke ? `1.5px ${entry.dashed ? 'dashed' : 'solid'} ${entry.stroke}` : undefined,
-            }"
-          />
-          <span class="text-muted-foreground">{{ $t(`dutiables.timeline.legend.${entry.key}`) }}</span>
-        </li>
-      </ul>
+        <ul class="space-y-1.5">
+          <li v-for="entry in entries" :key="entry.key" class="flex items-center gap-2 text-[11px]">
+            <span
+              class="h-2.5 w-5 shrink-0 rounded-sm"
+              :style="{
+                backgroundColor: entry.fill,
+                border: entry.stroke ? `1.5px ${entry.dashed ? 'dashed' : 'solid'} ${entry.stroke}` : undefined,
+              }"
+            />
+            <span class="text-muted-foreground">{{ $t(`dutiables.timeline.legend.${entry.key}`) }}</span>
+          </li>
+        </ul>
+      </div>
+
+      <!--
+        The drag rules used to sit as a paragraph under the chart, where they cost a line of
+        height on every visit to say something you need exactly once. Same words, asked for.
+      -->
+      <div class="space-y-2 border-t border-border pt-3">
+        <p class="text-xs font-semibold">
+          {{ $t('dutiables.timeline.help.title') }}
+        </p>
+
+        <ul class="space-y-1 text-[11px] text-muted-foreground">
+          <li v-for="key in HELP_KEYS" :key="key">
+            {{ $t(`dutiables.timeline.help.${key}`) }}
+          </li>
+        </ul>
+      </div>
     </PopoverContent>
   </Popover>
 </template>
@@ -39,6 +57,8 @@ import type { TimelineColors } from './timelineColors';
 const props = defineProps<{
   colors: TimelineColors;
 }>();
+
+const HELP_KEYS = ['drag_body', 'drag_edges', 'precise', 'cancel'] as const;
 
 /**
  * `former` sits second because it outranks ex-officio: an ended seat is muted whether or

@@ -7,8 +7,11 @@ return [
         'open' => 'Manage periods',
         'row_count' => ':count rows',
         'show_ended' => 'Show ended',
+        'ended_hidden' => 'Ended periods are hidden',
         'collapse_all' => 'Collapse all',
         'expand_all' => 'Expand all',
+        'collapse_group' => 'Collapse this duty',
+        'expand_group' => 'Expand this duty',
         'truncated' => 'Only the first :max rows are shown. Narrow this down to specific duties.',
         'blocked_summary' => '{1} :count row was skipped|[2,*] :count rows were skipped',
         'select_group' => 'Select every row in this group',
@@ -40,8 +43,30 @@ return [
             'cross_tenant' => 'Representing another unit',
         ],
 
+        'duration' => [
+            'label' => 'Length',
+            'year' => ':value y',
+            'month' => ':value mo',
+            'day' => ':value d',
+        ],
+
+        'sort' => [
+            'label' => 'Sort',
+            'default' => 'Default order',
+            'study_program' => 'By study programme',
+        ],
+
+        'help' => [
+            'title' => 'How to edit',
+            'drag_body' => 'Drag a bar — it moves by whole months and keeps its day of month.',
+            'drag_edges' => 'Drag an edge to change the start or end; it snaps to a cadence boundary.',
+            'precise' => 'Alt — no snapping, exact day. Ctrl (⌘) — move every selected row together.',
+            'cancel' => 'Esc — cancel the drag.',
+        ],
+
         'filters' => [
             'cadence' => 'Cadence',
+            'view' => 'View',
             'tenant' => 'Unit',
             'clear' => 'Clear the filter',
             'no_cadence' => 'No cadence',
@@ -98,10 +123,6 @@ return [
             'remove_cancel' => 'Cancel',
         ],
 
-        'drag' => [
-            'hint' => 'Drag a bar to move it whole months, keeping the day. Drag an edge to change one date, Alt for exact days, Esc to cancel.',
-        ],
-
         'staging' => [
             'dirty_count' => '{1} :count unsaved change|[2,*] :count unsaved changes',
             'clean' => 'Everything is saved.',
@@ -132,6 +153,7 @@ return [
         ],
 
         'diagnostics' => [
+            'advisory' => 'Not every suggestion is required, or right.',
             'empty' => 'No issues found.',
             'apply_selected' => 'Apply selected (:count)',
             'codes' => [
@@ -163,6 +185,8 @@ return [
             'description' => 'Review and repair every duty period across one institution.',
             'pick_institution' => 'Pick an institution',
             'change_institution' => 'Change institution',
+            'your_institutions' => 'Your institutions',
+            'search_all' => 'Search all institutions…',
             'no_scope' => 'Pick an institution to see its periods.',
         ],
 

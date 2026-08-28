@@ -7,14 +7,61 @@
   <div
     data-slot="dutiable-gantt"
     class="flex min-h-0 flex-auto overflow-hidden rounded-md border border-border"
-    :style="{ maxHeight: `${HEADER_HEIGHT + totalHeight + 2}px` }"
+    :style="{ maxHeight: `${maxHeightPx}px` }"
   >
     <!-- Label column. Scrolls vertically in lockstep with the chart, never horizontally. -->
     <div
       class="relative flex shrink-0 flex-col border-r border-border bg-card"
       :style="{ width: `${labelWidth}px` }"
     >
-      <div class="shrink-0 border-b border-border bg-muted/40" :style="{ height: `${HEADER_HEIGHT}px` }" />
+      <!--
+        The controls that act on the label column live above it. Collapsing every group is
+        a gesture about these names, and it read as unrelated sitting out in the toolbar.
+      -->
+      <div
+        class="flex shrink-0 items-center gap-1 border-b border-border bg-muted/40 px-1.5"
+        :style="{ height: `${HEADER_HEIGHT}px` }"
+        data-tour="timeline-controls"
+      >
+        <Button
+          type="button"
+          size="icon-xs"
+          variant="ghost"
+          :title="allCollapsed ? $t('dutiables.timeline.expand_all') : $t('dutiables.timeline.collapse_all')"
+          :aria-label="allCollapsed ? $t('dutiables.timeline.expand_all') : $t('dutiables.timeline.collapse_all')"
+          @click="emit('toggle-all')"
+        >
+          <ChevronsDownUp v-if="!allCollapsed" class="size-3.5" />
+          <ChevronsUpDown v-else class="size-3.5" />
+        </Button>
+
+        <!-- Only where a programme is actually recorded: a sort nobody can use is noise. -->
+        <DropdownMenu v-if="sortable">
+          <DropdownMenuTrigger as-child>
+            <Button type="button" size="xs" variant="ghost" class="min-w-0 px-1.5 text-[11px] font-normal">
+              <ArrowDownNarrowWide class="size-3.5 shrink-0" />
+              <span class="truncate">{{ $t(`dutiables.timeline.sort.${sortMode}`) }}</span>
+            </Button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent align="start" class="w-52">
+            <DropdownMenuLabel class="text-xs">
+              {{ $t('dutiables.timeline.sort.label') }}
+            </DropdownMenuLabel>
+            <DropdownMenuRadioGroup
+              :model-value="sortMode"
+              @update:model-value="value => emit('update:sortMode', value as RowSortMode)"
+            >
+              <DropdownMenuRadioItem value="default" class="text-xs">
+                {{ $t('dutiables.timeline.sort.default') }}
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="study_program" class="text-xs">
+                {{ $t('dutiables.timeline.sort.study_program') }}
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
       <div ref="labelScroller" class="min-h-0 flex-1 overflow-hidden">
         <div :style="{ height: `${totalHeight}px`, transform: `translateY(${-scrollTop}px)` }">
           <template v-for="lane in layoutRows" :key="lane.key">
@@ -28,7 +75,9 @@
               <button
                 type="button"
                 class="shrink-0 rounded p-0.5 hover:bg-accent"
-                :aria-label="$t('dutiables.timeline.collapse_all')"
+                :aria-label="collapsed.has(lane.key)
+                  ? $t('dutiables.timeline.expand_group')
+                  : $t('dutiables.timeline.collapse_group')"
                 @click="emit('toggle-group', lane.key)"
               >
                 <ChevronRight class="size-3 transition-transform" :class="{ 'rotate-90': !collapsed.has(lane.key) }" />
@@ -55,6 +104,20 @@
               >
                 {{ lane.group.sublabel }}
               </span>
+              <!-- Collapsed, the header is all there is, so it carries the count the rows
+                   would otherwise have shown by simply existing. -->
+              <template v-if="collapsed.has(lane.key) && groupSummaries.get(lane.key)">
+                <Badge
+                  variant="secondary"
+                  data-slot="group-row-count"
+                  class="ml-auto shrink-0 px-1 py-0 text-[10px] font-normal"
+                >
+                  {{ groupSummaries.get(lane.key)!.count }}
+                </Badge>
+                <span class="shrink-0 whitespace-nowrap text-[10px] font-normal tabular-nums opacity-60">
+                  {{ formatDuration(groupSummaries.get(lane.key)!.start, groupSummaries.get(lane.key)!.end) }}
+                </span>
+              </template>
             </div>
             <div
               v-else
@@ -78,7 +141,35 @@
                 {{ laneLabel(lane) }}
               </Link>
               <span v-else class="truncate" :title="laneLabel(lane)">{{ laneLabel(lane) }}</span>
-              <DutiableExtrasBadge v-if="lane.row?.extras" :extras="lane.row.extras" />
+              <!--
+                Shown rather than hidden behind the extras icon: which programme someone
+                represents is the thing curators scan this column for, and a graduation cap
+                answers "there is one" when the question is "which".
+              -->
+              <span
+                v-if="lane.row?.extras?.study_program"
+                class="max-w-20 shrink truncate text-[10px] opacity-70"
+                :title="lane.row.extras.study_program"
+              >
+                {{ lane.row.extras.study_program }}
+              </span>
+              <DutiableExtrasBadge
+                v-if="lane.row?.extras"
+                :extras="lane.row.extras"
+                :omit="['study_program']"
+              />
+              <!--
+                How long the seat was held, right-aligned so the column reads as one number
+                down its edge rather than as text scattered after names of varying length.
+                Two units at most, so a fortnight and a decade take the same room.
+              -->
+              <span
+                v-if="lane.row"
+                class="ml-auto shrink-0 whitespace-nowrap text-[10px] tabular-nums opacity-60"
+                :title="$t('dutiables.timeline.duration.label')"
+              >
+                {{ formatDuration(lane.row.startDate, lane.row.endDate) }}
+              </span>
             </div>
           </template>
         </div>
@@ -112,34 +203,57 @@ import { computed, onMounted, onUnmounted, ref, shallowRef, watch, nextTick } fr
 import * as d3 from 'd3';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronRight, Link2 } from 'lucide-vue-next';
+import { ArrowDownNarrowWide, ChevronRight, ChevronsDownUp, ChevronsUpDown, Link2 } from 'lucide-vue-next';
 
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from '@/Components/ui/dropdown-menu';
 import { getGanttColors, isDarkModeActive } from '@/Components/Graphs/ganttColors';
+import { horizontalScrollbarSize } from '@/Components/Graphs/scrollbarSize';
 import { useColumnResize } from '@/Components/Graphs/composables/useColumnResize';
 import { renderBackground } from '@/Components/Graphs/renderers/renderBackground';
 import { renderTodayLine } from '@/Components/Graphs/renderers/renderTodayLine';
 
+import { formatDuration } from './duration';
 import { getTimelineColors } from './timelineColors';
 import DutiableExtrasBadge from './DutiableExtrasBadge.vue';
 import { renderCadenceBands, renderCadenceLabels } from './renderers/renderCadenceBands';
+import { renderCollapsedGroupBars } from './renderers/renderCollapsedGroupBars';
 import { renderDragGhost } from './renderers/renderDragGhost';
 import { renderDutiableBars } from './renderers/renderDutiableBars';
 import { renderMonthGrid, renderMonthHeader } from './renderers/renderMonthGrid';
 import { renderTimelineDiagnostics } from './renderers/renderTimelineDiagnostics';
 import { useBarDrag, type BarDragState, type DragEntry } from './composables/useBarDrag';
+import type { GroupSummary, RowSortMode } from './composables/useDutiableLayout';
 import { toDateString } from './composables/useDutiableTimelineData';
 import { TIMELINE_HEADER_HEIGHT as HEADER_HEIGHT, DEFAULT_MONTH_WIDTH } from './constants';
 import type { ParsedCadence, ParsedRow, StagedDates, TimelineLayoutRow } from './types';
 
 const props = withDefaults(defineProps<{
   layoutRows: TimelineLayoutRow[];
+  /** Every term in play. Drag snapping narrows this per row; the bands do not draw it. */
   cadences: ParsedCadence[];
+  /** The one ladder drawn behind the bars — see cadencePools.bandLadder(). */
+  bandCadences: ParsedCadence[];
   /** Terms the cadence filter selected; empty means unfiltered. */
   highlightedCadenceIds?: Set<string>;
   domain: [Date, Date];
   totalHeight: number;
   collapsed: Set<string>;
+  /** Per-group span and count — what a collapsed header shows in place of its rows. */
+  groupSummaries: Map<string, GroupSummary>;
+  allCollapsed: boolean;
+  sortMode: RowSortMode;
+  /** Whether any visible row records a study programme; hides the sort when none do. */
+  sortable: boolean;
   rows: ParsedRow[];
   monthWidthPx?: number;
   selectedIds?: Set<string>;
@@ -158,6 +272,8 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   'toggle-group': [key: string];
+  'toggle-all': [];
+  'update:sortMode': [value: RowSortMode];
   'toggle-selection': [rowId: string];
   'toggle-group-selection': [key: string];
   select: [row: ParsedRow, event: MouseEvent];
@@ -170,7 +286,7 @@ const labelScroller = ref<HTMLElement | null>(null);
 const chartSvg = ref<SVGSVGElement | null>(null);
 const headerSvg = ref<SVGSVGElement | null>(null);
 
-const labelWidth = ref(220);
+const labelWidth = ref(260);
 const scrollTop = ref(0);
 const colors = shallowRef(getGanttColors(isDarkModeActive()));
 const timelineColors = shallowRef(getTimelineColors(isDarkModeActive()));
@@ -179,6 +295,18 @@ const { startResize } = useColumnResize(
   width => { labelWidth.value = width; },
   () => labelWidth.value,
   { minWidth: 140, maxWidth: 420 },
+);
+
+/**
+ * Box-sizing is border-box, so the cap has to pay for the chrome as well as the content:
+ * the root's own top and bottom border, the header's `border-b`, and the strip the
+ * horizontal scrollbar takes out of the scroller. Leave any of it out and the last lane
+ * hides under the scrollbar while a vertical one appears to make up the difference.
+ */
+const CHART_BORDERS_PX = 3;
+
+const maxHeightPx = computed(
+  () => HEADER_HEIGHT + props.totalHeight + CHART_BORDERS_PX + horizontalScrollbarSize(),
 );
 
 const monthCount = computed(() => {
@@ -291,7 +419,7 @@ function render(): void {
     innerHeight,
     colors: colors.value,
     timelineColors: timelineColors.value,
-    cadences: props.cadences,
+    cadences: props.bandCadences,
     highlightedIds: props.highlightedCadenceIds,
   });
   renderMonthGrid({
@@ -326,6 +454,16 @@ function render(): void {
     onSelect: (row, event) => emit('select', row, event),
   });
 
+  renderCollapsedGroupBars({
+    g,
+    x,
+    timelineColors: timelineColors.value,
+    layoutRows: props.layoutRows,
+    collapsed: props.collapsed,
+    summaries: props.groupSummaries,
+    innerWidth,
+  });
+
   // Appended last so the ghost always sits above the bars, and re-created here because
   // render() clears the SVG — the drag redraws into it without a full render.
   ghostLayer = g.append('g').attr('class', 'drag-ghost').attr('pointer-events', 'none');
@@ -340,7 +478,7 @@ function render(): void {
     g: hg,
     x,
     colors: colors.value,
-    cadences: props.cadences,
+    cadences: props.bandCadences,
     highlightedIds: props.highlightedCadenceIds,
     y: 26,
   });
@@ -384,8 +522,8 @@ function requestRender(): void {
 
 watch(
   () => [
-    props.layoutRows, props.cadences, props.highlightedCadenceIds, props.domain, props.monthWidthPx,
-    props.selectedIds, props.staged, props.diagnosticSeverityByRow,
+    props.layoutRows, props.bandCadences, props.highlightedCadenceIds, props.domain, props.monthWidthPx,
+    props.selectedIds, props.staged, props.diagnosticSeverityByRow, props.collapsed, props.groupSummaries,
   ],
   requestRender,
   { deep: false },

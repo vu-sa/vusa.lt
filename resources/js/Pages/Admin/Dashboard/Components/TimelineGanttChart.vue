@@ -60,6 +60,7 @@ import type {
 
 import MeetingsGantt from '@/Components/Graphs/MeetingsGantt.vue';
 import GanttLegendModal from '@/Components/Graphs/GanttLegendModal.vue';
+import { horizontalScrollbarSize } from '@/Components/Graphs/scrollbarSize';
 import { Card, CardContent } from '@/Components/ui/card';
 
 interface Props {
@@ -158,7 +159,10 @@ const effectiveHeight = computed(() => {
   // Otherwise, calculate based on content with a reasonable cap
   const ROW_HEIGHT = 28; // keep in sync with MeetingsGantt default
   const AXIS_TOP = 22; // axis/header spacer in MeetingsGantt
-  const MARGIN_BOTTOM = 6;
+  // Container border top/bottom + the axis header's border-b, plus the strip the horizontal
+  // scrollbar takes out of the scroller. Six px was never enough, which is why this chart
+  // always showed a vertical scrollbar as well.
+  const MARGIN_BOTTOM = 3 + horizontalScrollbarSize();
   const EXPANDED_ROW_HEIGHT = 56; // keep in sync with MeetingsGantt default
 
   // Base institution ids = explicit institutions ∪ referenced by meetings/gaps

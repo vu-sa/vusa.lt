@@ -7,8 +7,11 @@ return [
         'open' => 'Tvarkyti laikotarpius',
         'row_count' => 'Įrašų: :count',
         'show_ended' => 'Rodyti pasibaigusius',
+        'ended_hidden' => 'Pasibaigę laikotarpiai paslėpti',
         'collapse_all' => 'Suskleisti visus',
         'expand_all' => 'Išskleisti visus',
+        'collapse_group' => 'Suskleisti pareigybę',
+        'expand_group' => 'Išskleisti pareigybę',
         'truncated' => 'Rodomi tik pirmi :max įrašai. Pasirinkite konkrečias pareigybes.',
         'blocked_summary' => '{1} :count įrašas praleistas|[2,9] :count įrašai praleisti|[10,*] :count įrašų praleista',
         'select_group' => 'Pažymėti visus grupėje',
@@ -40,8 +43,30 @@ return [
             'cross_tenant' => 'Atstovauja kitam padaliniui',
         ],
 
+        'duration' => [
+            'label' => 'Trukmė',
+            'year' => ':value m.',
+            'month' => ':value mėn.',
+            'day' => ':value d.',
+        ],
+
+        'sort' => [
+            'label' => 'Rikiuoti',
+            'default' => 'Numatytoji tvarka',
+            'study_program' => 'Pagal studijų programą',
+        ],
+
+        'help' => [
+            'title' => 'Kaip keisti',
+            'drag_body' => 'Tempkite juostą – ji slenka mėnesiais, mėnesio diena išlieka.',
+            'drag_edges' => 'Tempkite juostos kraštą, kad keistumėte pradžią ar pabaigą; kraštas pritraukiamas prie kadencijos ribos.',
+            'precise' => 'Alt – be pritraukimo, tiksliai dienai. Ctrl (⌘) – kartu visiems pažymėtiems.',
+            'cancel' => 'Esc – atšaukti tempimą.',
+        ],
+
         'filters' => [
             'cadence' => 'Kadencija',
+            'view' => 'Rodinys',
             'tenant' => 'Padalinys',
             'clear' => 'Išvalyti filtrą',
             'no_cadence' => 'Be kadencijos',
@@ -98,10 +123,6 @@ return [
             'remove_cancel' => 'Atšaukti',
         ],
 
-        'drag' => [
-            'hint' => 'Tempkite juostą – mėnuo į šoną, diena išlieka. Kraštus tempkite pabaigai keisti, Alt – tiksliai dienai, Esc – atšaukti.',
-        ],
-
         'staging' => [
             'dirty_count' => '{1} :count nesaugotas pakeitimas|[2,9] :count nesaugoti pakeitimai|[10,*] :count nesaugotų pakeitimų',
             'clean' => 'Viskas išsaugota.',
@@ -132,6 +153,7 @@ return [
         ],
 
         'diagnostics' => [
+            'advisory' => 'Ne visi siūlomi taisymai yra privalomi ar teisingi.',
             'empty' => 'Neatitikimų nerasta.',
             'apply_selected' => 'Taikyti pažymėtus (:count)',
             'codes' => [
@@ -163,6 +185,8 @@ return [
             'description' => 'Institucijos mastu peržiūrėkite ir sutvarkykite visų pareigybių laikotarpius.',
             'pick_institution' => 'Pasirinkti instituciją',
             'change_institution' => 'Keisti instituciją',
+            'your_institutions' => 'Jūsų institucijos',
+            'search_all' => 'Ieškoti tarp visų institucijų…',
             'no_scope' => 'Pasirinkite instituciją, kad matytumėte laikotarpius.',
         ],
 

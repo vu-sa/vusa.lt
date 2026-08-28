@@ -1,7 +1,12 @@
 <template>
   <div data-slot="dutiable-timeline-toolbar" class="flex flex-wrap items-center justify-between gap-3">
-    <div class="flex min-w-0 flex-wrap items-center gap-2">
-      <h2 class="truncate text-sm font-semibold">
+    <div class="flex min-w-0 flex-wrap items-center gap-2" data-tour="timeline-filters">
+      <!-- The heading names a record, so it opens it: reading a term off the chart and then
+           hunting for the institution in the sidebar was the commonest detour here. -->
+      <Link v-if="scopeHref" :href="scopeHref" class="truncate text-sm font-semibold hover:underline">
+        {{ scope?.label ?? '—' }}
+      </Link>
+      <h2 v-else class="truncate text-sm font-semibold">
         {{ scope?.label ?? '—' }}
       </h2>
       <Badge v-if="scope?.sublabel" variant="secondary" class="shrink-0 text-[10px]">
@@ -16,7 +21,34 @@
         :options="cadenceOptions"
         :model-value="cadenceIds"
         @update:model-value="emit('update:cadenceIds', $event)"
-      />
+      >
+        <!-- Marked while ended periods are *hidden*: that is the state where the chart is
+             quietly leaving rows out, and the one you need to know about from outside the
+             menu. Showing them is the default and hides nothing. -->
+        <template #indicator>
+          <EyeOff
+            v-if="!includeEnded"
+            class="size-3 text-amber-600 dark:text-amber-400"
+            :aria-label="$t('dutiables.timeline.ended_hidden')"
+          />
+        </template>
+
+        <!-- "Show ended" narrows the same set the term list does, so it lives in the same
+             menu rather than as a switch competing with it for the toolbar. -->
+        <template #extra>
+          <DropdownMenuLabel class="text-xs">
+            {{ $t('dutiables.timeline.filters.view') }}
+          </DropdownMenuLabel>
+          <DropdownMenuCheckboxItem
+            :model-value="includeEnded"
+            class="text-xs"
+            @select="(event: Event) => event.preventDefault()"
+            @update:model-value="emit('update:includeEnded', $event)"
+          >
+            {{ $t('dutiables.timeline.show_ended') }}
+          </DropdownMenuCheckboxItem>
+        </template>
+      </DutiableTimelineFilterMenu>
       <!-- Hidden outright where no assignment records a cross-tenant unit: the menu would
            otherwise offer a single bucket that narrows nothing. -->
       <DutiableTimelineFilterMenu
@@ -29,11 +61,6 @@
     </div>
 
     <div class="flex flex-wrap items-center gap-3">
-      <label class="flex items-center gap-2 text-xs text-muted-foreground">
-        <Switch :model-value="includeEnded" @update:model-value="emit('update:includeEnded', $event)" />
-        {{ $t('dutiables.timeline.show_ended') }}
-      </label>
-
       <div class="flex items-center gap-1">
         <Button
           type="button"
@@ -66,22 +93,20 @@
         </Button>
       </div>
 
-      <Button type="button" size="xs" variant="outline" @click="emit('toggle-all')">
-        {{ allCollapsed ? $t('dutiables.timeline.expand_all') : $t('dutiables.timeline.collapse_all') }}
-      </Button>
-
       <DutiableTimelineLegend :colors="timelineColors" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ZoomIn, ZoomOut } from 'lucide-vue-next';
+import { computed } from 'vue';
+import { Link } from '@inertiajs/vue3';
+import { EyeOff, ZoomIn, ZoomOut } from 'lucide-vue-next';
 
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
+import { DropdownMenuCheckboxItem, DropdownMenuLabel } from '@/Components/ui/dropdown-menu';
 import { Slider } from '@/Components/ui/slider';
-import { Switch } from '@/Components/ui/switch';
 
 import DutiableTimelineFilterMenu, { type FilterOption } from './DutiableTimelineFilterMenu.vue';
 import DutiableTimelineLegend from './DutiableTimelineLegend.vue';
@@ -97,7 +122,6 @@ const props = defineProps<{
   visibleCount: number;
   includeEnded: boolean;
   monthWidthPx: number;
-  allCollapsed: boolean;
   timelineColors: TimelineColors;
   cadenceOptions: FilterOption[];
   tenantOptions: FilterOption[];
@@ -110,8 +134,19 @@ const emit = defineEmits<{
   'update:monthWidthPx': [value: number];
   'update:cadenceIds': [value: string[]];
   'update:tenantKeys': [value: string[]];
-  'toggle-all': [];
 }>();
+
+/** Whatever the scope names — the heading and the link must not disagree. */
+const scopeHref = computed<string | null>(() => {
+  if (!props.scope?.id) return null;
+
+  switch (props.scope.type) {
+    case 'institution': return route('institutions.show', props.scope.id);
+    case 'duty': return route('duties.show', props.scope.id);
+    case 'user': return route('users.show', props.scope.id);
+    default: return null;
+  }
+});
 
 function step(delta: number): void {
   emit(

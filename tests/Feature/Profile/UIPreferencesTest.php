@@ -178,7 +178,8 @@ describe('quick action visibility', function (): void {
         $visibility = $this->user->getQuickActionVisibility();
         expect($visibility['new_meeting'])->toBeTrue()
             ->and($visibility['new_news'])->toBeTrue()
-            ->and($visibility['duty_update'])->toBeTrue();
+            ->and($visibility['duty_update'])->toBeTrue()
+            ->and($visibility['duty_periods'])->toBeTrue();
     });
 
     test('setQuickActionVisibility persists and ignores unknown keys', function (): void {
