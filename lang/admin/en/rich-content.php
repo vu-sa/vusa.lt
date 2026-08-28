@@ -26,6 +26,16 @@ return [
     'spacer_size_lg' => 'Large',
     'spacer_size_xl' => 'Extra large',
     'spacer_size_2xl' => 'Huge',
+    // Timetable
+    'timetable_heading_placeholder' => 'Timetable',
+    'import_from_meeting' => 'Import from meeting',
+    'loading_meetings' => 'Loading…',
+    'no_recent_meetings' => 'No recent meetings found.',
+    'no_timetable_rows' => 'No rows added',
+    'add_first_timetable_row' => 'Add first row',
+    'add_timetable_row' => 'Add row',
+    'start_time' => 'Start time',
+    'end_time' => 'End time',
     // Technical
     'add_content_block' => 'Add Content Block',
     'text_placeholder' => 'Type here...',

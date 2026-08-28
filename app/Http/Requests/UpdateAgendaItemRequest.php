@@ -33,6 +33,15 @@ class UpdateAgendaItemRequest extends FormRequest
             'brought_by_students' => 'nullable|boolean',
             'type' => ['nullable', new Enum(AgendaItemType::class)],
             'student_position' => 'nullable|string|max:5000',
+            // The timetable slot for this item. `start_time` has existed since the table was
+            // created but nothing ever wrote to it; `end_time` was added alongside the editor.
+            'start_time' => 'nullable|date_format:H:i',
+            'end_time' => [
+                'nullable',
+                'date_format:H:i',
+                // Only meaningful once a start is set, and `after:` on an unset field always fails.
+                ...($this->filled('start_time') ? ['after:start_time'] : []),
+            ],
             // Votes validation
             'votes' => 'nullable|array',
             'votes.*.id' => 'nullable|string',
@@ -63,6 +72,7 @@ class UpdateAgendaItemRequest extends FormRequest
             'order.min' => trans('forms.validation.agenda_item.order_min'),
             'type.in' => trans('forms.validation.agenda_item.type_in'),
             'student_position.max' => trans('forms.validation.agenda_item.student_position_max'),
+            'end_time.after' => trans('forms.validation.agenda_item.end_time_after'),
         ];
     }
 }

@@ -16,8 +16,13 @@ class MeetingSettings extends Settings
     public array $public_meeting_institution_type_ids = [];
 
     /**
-     * Array of institution type IDs that should be excluded from the Atstovavimas dashboard.
-     * Institutions of these types (e.g., padalinys, pkp) don't have formal meetings.
+     * Array of institution type IDs that don't hold formal meetings (e.g. padalinys, pkp), so
+     * their health statistics would be meaningless.
+     *
+     * Scope note: this governs the Atstovavimas dashboard's *summaries* only. It no longer
+     * removes anything from the Gantt — the chart draws every body and offers its own
+     * "hide internal" toggle, keyed off the inherited governance scope rather than this
+     * flat list, which misses child types.
      *
      * @var int[]
      */

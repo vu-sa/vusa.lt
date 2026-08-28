@@ -68,8 +68,9 @@ class TenantPolicy extends ModelPolicy
             return $duty->hasPermissionTo('pages.update.padalinys');
         })->load('institution.tenant')->pluck('institution.tenant');
 
-        // Check against tenant in the request
-        return $tenants->contains($tenant);
+        // Compare by key, not model identity: the caller's Tenant instance may carry
+        // loaded relations, which makes loose model comparison (==) fail.
+        return $tenants->contains('id', $tenant->id);
     }
 
     /**

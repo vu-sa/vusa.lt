@@ -9,6 +9,8 @@ export interface MeetingFormData {
   start_time: string;
   type: MeetingTypeValue;
   description?: string;
+  /** When true, a draft calendar announcement is created alongside the meeting. */
+  announce_in_calendar?: boolean;
 }
 
 export interface AgendaItemFormData {
@@ -16,6 +18,8 @@ export interface AgendaItemFormData {
   description?: string;
   order: number;
   brought_by_students?: boolean;
+  start_time?: string | null;
+  end_time?: string | null;
 }
 
 export interface MeetingCreationState {
@@ -60,6 +64,7 @@ export function useMeetingCreation(options: UseMeetingCreationOptions = {}) {
       start_time: '',
       type: undefined, // Don't preselect any meeting type
       description: '',
+      announce_in_calendar: false,
     },
     agendaItems: [],
     errors: {},
@@ -338,6 +343,7 @@ export function useMeetingCreation(options: UseMeetingCreationOptions = {}) {
       start_time: '',
       type_id: 0,
       description: '',
+      announce_in_calendar: false,
     };
     state.agendaItems = [];
     state.errors = {};

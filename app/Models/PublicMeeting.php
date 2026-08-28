@@ -29,7 +29,7 @@ use Laravel\Scout\Searchable;
  * @property string|null $description
  * @property MeetingType|null $type
  * @property Carbon $start_time
- * @property string|null $end_time
+ * @property Carbon|null $end_time
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
@@ -112,23 +112,7 @@ class PublicMeeting extends Meeting
     #[\Override]
     public function shouldBeSearchable(): bool
     {
-        if ($this->trashed()) {
-            return false;
-        }
-
-        // Load institutions if not already loaded
-        if (! $this->relationLoaded('institutions')) {
-            $this->load('institutions.types');
-        }
-
-        // Check if any institution supports public meetings
-        foreach ($this->institutions as $institution) {
-            if ($institution->has_public_meetings) {
-                return true;
-            }
-        }
-
-        return false;
+        return ! $this->trashed() && $this->isPubliclyVisible();
     }
 
     /**

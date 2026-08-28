@@ -25,6 +25,9 @@ interface ParsedMeeting {
   vote_alignment_status?: 'all_match' | 'mixed' | 'all_mismatch' | 'neutral';
   // Whether the user has authorization for this meeting's institution
   authorized?: boolean;
+  // Announced in the public calendar, and whether that announcement is still a draft
+  has_calendar_event?: boolean;
+  calendar_event_is_draft?: boolean;
   // Meeting type for icon differentiation (in-person, remote, email)
   type_slug?: string;
 }

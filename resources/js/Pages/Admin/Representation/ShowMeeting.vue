@@ -61,6 +61,18 @@
           <span class="hidden sm:inline">{{ $t('Rodomas viešai') }}</span>
           <span class="sm:hidden">{{ $t('Viešas') }}</span>
         </Badge>
+        <a
+          v-if="calendarEvent"
+          :href="route('calendar.edit', { calendar: calendarEvent.id })"
+          class="inline-flex items-center gap-1.5 text-xs transition-colors"
+          :class="calendarEvent.is_draft
+            ? 'text-amber-600 hover:text-amber-700 dark:text-amber-400'
+            : 'text-green-600 hover:text-green-700 dark:text-green-400'"
+          :title="calendarEvent.is_draft ? $t('meetings.announce.draft_hint') : $t('meetings.announce.published_hint')"
+        >
+          <CalendarDays class="h-3.5 w-3.5" />
+          {{ calendarEvent.is_draft ? $t('Kalendoriuje (juodraštis)') : $t('Kalendoriuje') }}
+        </a>
       </div>
       <div v-if="representatives && representatives.length > 0" class="flex items-center gap-2">
         <span class="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:inline">{{ $t('Atstovai') }}:</span>
@@ -94,24 +106,41 @@
       <Button variant="outline" size="icon" class="h-9 w-9" @click="showMeetingModal = true">
         <Edit class="h-4 w-4" />
       </Button>
-      <DropdownMenu>
-        <DropdownMenuTrigger as-child>
-          <Button variant="outline" size="icon" class="h-9 w-9">
-            <MoreHorizontal class="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem @click="showMeetingModal = true">
-            <Edit class="h-4 w-4 mr-2" />
-            {{ $t('Redaguoti posėdį') }}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem class="text-destructive focus:text-destructive" @click="showDeleteDialog = true">
-            <Trash2 class="h-4 w-4 mr-2" />
-            {{ $t('Šalinti posėdį') }}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <SpotlightPopover
+        :title="$t('meetings.announce.spotlight_title')"
+        :description="$t('meetings.announce.spotlight_description')"
+        :is-dismissed="announceSpotlight.isDismissed.value"
+        position="bottom"
+        float
+        @dismiss="announceSpotlight.dismiss"
+      >
+        <DropdownMenu @update:open="(isOpen: boolean) => { if (isOpen) { announceSpotlight.dismiss(); } }">
+          <DropdownMenuTrigger as-child>
+            <Button variant="outline" size="icon" class="h-9 w-9">
+              <MoreHorizontal class="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem @click="showMeetingModal = true">
+              <Edit class="h-4 w-4 mr-2" />
+              {{ $t('Redaguoti posėdį') }}
+            </DropdownMenuItem>
+            <DropdownMenuItem v-if="!calendarEvent" @click="openAnnounceDialog">
+              <CalendarPlus class="h-4 w-4 mr-2" />
+              {{ $t('Paskelbti kalendoriuje') }}
+            </DropdownMenuItem>
+            <DropdownMenuItem v-else @click="handleUnlinkCalendarEvent">
+              <CalendarX class="h-4 w-4 mr-2" />
+              {{ $t('Atsieti nuo kalendoriaus') }}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem class="text-destructive focus:text-destructive" @click="showDeleteDialog = true">
+              <Trash2 class="h-4 w-4 mr-2" />
+              {{ $t('Šalinti posėdį') }}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SpotlightPopover>
     </template>
 
     <template #agenda>
@@ -135,6 +164,15 @@
           <DiscussionPanel commentable-type="meeting" :commentable-id="meeting.id" />
         </section>
       </div>
+    </template>
+
+    <template #documents>
+      <MeetingDocumentsPanel
+        :meeting-id="meeting.id"
+        :documents="meeting.documents ?? []"
+        :institution-ids="institutionIds"
+        can-update
+      />
     </template>
 
     <template #files>
@@ -306,16 +344,21 @@
         </div>
       </DialogContent>
     </Dialog>
+    <AnnounceMeetingDialog
+      v-model:open="showAnnounceDialog"
+      :meeting-id="meeting.id"
+      :tenant-ids="tenantIds"
+    />
   </ShowPageLayout>
 </template>
 
 <script setup lang="tsx">
-import { ModelEnum } from '@/Types/enums';
+import { InstitutionScope, ModelEnum } from '@/Types/enums';
 import { ref, computed, watch, onMounted } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { AlertTriangle, Plus, Trash2, X, Clock, Globe, Edit, MoreHorizontal, Video, Link2, Check, FileText, FileBarChart } from 'lucide-vue-next';
+import { AlertTriangle, Plus, Trash2, X, Clock, Globe, Edit, MoreHorizontal, Video, Link2, Check, FileText, FileBarChart, CalendarDays, CalendarPlus, CalendarX } from 'lucide-vue-next';
 import { DialogDescription } from 'reka-ui';
 
 import { formatStaticTime, formatMonthShort, formatRelativeTime } from '@/Utils/IntlTime';
@@ -348,6 +391,10 @@ import MeetingNavigationCards from '@/Components/Meetings/MeetingNavigationCards
 import AddAgendaItemForm from '@/Components/AdminForms/AddAgendaItemForm.vue';
 import AgendaItemsForm from '@/Components/AdminForms/Special/AgendaItemsForm.vue';
 import MeetingForm from '@/Components/AdminForms/MeetingForm.vue';
+import AnnounceMeetingDialog from '@/Components/Meetings/AnnounceMeetingDialog.vue';
+import MeetingDocumentsPanel from '@/Components/Meetings/MeetingDocumentsPanel.vue';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import FileManager from '@/Features/Admin/SharepointFileManager/SharepointFileManager.vue';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 import { InstitutionIconFilled, MeetingIconFilled } from '@/Components/icons';
@@ -358,7 +405,40 @@ const props = defineProps<{
   previousMeeting?: { id: string; start_time: string; type?: string | null } | null;
   nextMeeting?: { id: string; start_time: string; type?: string | null } | null;
   availableInstitutionsForAttach?: { id: string; name: string; tenant_shortname?: string | null }[] | null;
+  governanceScope?: string;
 }>();
+
+const institutionIds = computed(() => props.meeting.institutions?.map(institution => institution.id) ?? []);
+const tenantIds = computed(() =>
+  (props.meeting.institutions ?? [])
+    .map(institution => institution.tenant_id)
+    .filter((id): id is number => typeof id === 'number'),
+);
+
+/**
+ * Nutarimai and protokolai are how VU SA's own bodies keep their record. VU/national bodies file
+ * their paperwork through SharePoint on the meeting itself, so the tab would only be noise there.
+ */
+const isInternalBody = computed(() => props.governanceScope === InstitutionScope.Vusa);
+
+/**
+ * The calendar event standing for this meeting. Publishing it is what opens the agenda to the
+ * public — see Meeting::isPubliclyVisible() on the backend.
+ */
+const calendarEvent = computed(() => props.meeting.calendar_event ?? null);
+
+const announceSpotlight = useFeatureSpotlight('meeting-calendar-announce-v1');
+const showAnnounceDialog = ref(false);
+
+const openAnnounceDialog = () => {
+  showAnnounceDialog.value = true;
+};
+
+const handleUnlinkCalendarEvent = () => {
+  router.delete(route('meetings.calendarEvent.destroy', { meeting: props.meeting.id }), {
+    preserveScroll: true,
+  });
+};
 
 // Urgency calculations for hero badge
 const { hasProtocol, hasReport, isPastMeeting } = useMeetingUrgency(() => props.meeting);
@@ -378,7 +458,10 @@ const loading = ref(false);
 const agendaEditing = ref(false);
 
 // Tab state with smart defaults (agenda is the landing tab)
-const TAB_NAMES = ['agenda', 'files', 'tasks'];
+// Kept in step with `tabs` below; guards the `?tab=` URL param.
+const TAB_NAMES = computed(() => (isInternalBody.value
+  ? ['agenda', 'documents', 'files', 'tasks']
+  : ['agenda', 'files', 'tasks']));
 const storedTab = useStorage('show-meeting-tab', 'agenda');
 
 // Check URL for tab parameter (priority over localStorage)
@@ -386,11 +469,11 @@ const getInitialTab = () => {
   if (typeof window !== 'undefined') {
     const params = new URLSearchParams(window.location.search);
     const urlTab = params.get('tab');
-    if (urlTab && TAB_NAMES.includes(urlTab)) {
+    if (urlTab && TAB_NAMES.value.includes(urlTab)) {
       return urlTab;
     }
   }
-  return TAB_NAMES.includes(storedTab.value) ? storedTab.value : 'agenda';
+  return TAB_NAMES.value.includes(storedTab.value) ? storedTab.value : 'agenda';
 };
 
 const currentTab = ref(getInitialTab());
@@ -412,9 +495,11 @@ watch(currentTab, (newTab) => {
   }
 });
 
-/** Values must stay in step with TAB_NAMES, which guards the `?tab=` URL param. */
 const tabs = computed(() => [
   { value: 'agenda', label: $t('Darbotvarkė'), count: props.meeting.agenda_items?.length },
+  ...(isInternalBody.value
+    ? [{ value: 'documents', label: $t('Dokumentai'), count: props.meeting.documents?.length }]
+    : []),
   { value: 'files', label: $t('Failai') },
   { value: 'tasks', label: $t('Užduotys'), count: props.meeting.tasks?.length },
 ]);

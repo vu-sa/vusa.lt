@@ -212,6 +212,8 @@ class UserController extends AdminController
             'user' => $user->toFullArray(),
             'tasks' => $transformedTasks,
             'taskStats' => $taskStats,
+            // Per-record, not from `auth.can`, which carries no flat permission names.
+            'can' => ['update' => request()->user()->can('update', $user)],
         ]);
     }
 

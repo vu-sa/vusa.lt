@@ -101,3 +101,17 @@ test('the registration URL reaches the page as cto_url', function (): void {
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('event.cto_url', 'https://vusa.lt/registracija'));
 });
+
+test('the hero style reaches the public event page', function (): void {
+    Http::fake(['nominatim.openstreetmap.org/*' => Http::response([])]);
+
+    $event = Calendar::factory()->create([
+        'tenant_id' => $this->tenant->id,
+        'is_draft' => false,
+        'hero_style' => 'split',
+    ]);
+
+    $this->get(calendarEventUrl($event))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('event.hero_style', 'split'));
+});

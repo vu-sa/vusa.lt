@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\CalendarHeroStyleEnum;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use App\Services\IcalendarService;
@@ -31,18 +32,21 @@ use Spatie\SchemaOrg\Place;
  * @property array|string|null $title
  * @property array|string|null $description
  * @property array|string|null $location
+ * @property bool $is_remote
  * @property array|string|null $organizer
  * @property array|string|null $cto_url URL for Call To Action
  * @property string|null $facebook_url
  * @property string|null $video_url
  * @property string|null $main_image
  * @property bool $is_draft
- * @property int $is_all_day
- * @property int $is_international
+ * @property bool $is_all_day
+ * @property bool $is_international
+ * @property CalendarHeroStyleEnum $hero_style
  * @property Carbon $date
  * @property Carbon|null $end_date
  * @property int|null $category_id
  * @property int $tenant_id
+ * @property string|null $meeting_id
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property int|null $registration_form_id
@@ -52,6 +56,7 @@ use Spatie\SchemaOrg\Place;
  * @property-read string|null $main_image_url
  * @property-read array $translatable_columns_from
  * @property-read MediaCollection<int, Media> $media
+ * @property-read Meeting|null $meeting
  * @property-read Tenant $tenant
  * @property-read mixed $translations
  *
@@ -95,6 +100,10 @@ class Calendar extends Model implements HasMedia
             'updated_at' => 'datetime:Y-m-d H:i:s',
             'created_at' => 'datetime:Y-m-d H:i:s',
             'is_draft' => 'boolean',
+            'is_all_day' => 'boolean',
+            'is_international' => 'boolean',
+            'is_remote' => 'boolean',
+            'hero_style' => CalendarHeroStyleEnum::class,
         ];
     }
 
@@ -169,6 +178,18 @@ class Calendar extends Model implements HasMedia
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
+    }
+
+    /**
+     * The meeting this event announces, if it is a posėdis rather than a plain event.
+     *
+     * `withTrashed()`: meetings soft-delete, and the FK only nulls on a hard delete.
+     *
+     * @return BelongsTo<Meeting, $this>
+     */
+    public function meeting(): BelongsTo
+    {
+        return $this->belongsTo(Meeting::class)->withTrashed();
     }
 
     public function category(): BelongsTo
@@ -300,8 +321,11 @@ class Calendar extends Model implements HasMedia
             );
         }
 
-        // Add event attendance mode
-        if ($location) {
+        // Add event attendance mode. The explicit flag wins; an empty location on an older
+        // row (from before is_remote existed) still falls back to the old inference.
+        if ($this->is_remote) {
+            $schema->setProperty('eventAttendanceMode', 'https://schema.org/OnlineEventAttendanceMode');
+        } elseif ($location) {
             $schema->setProperty('eventAttendanceMode', 'https://schema.org/OfflineEventAttendanceMode');
         } else {
             $schema->setProperty('eventAttendanceMode', 'https://schema.org/OnlineEventAttendanceMode');

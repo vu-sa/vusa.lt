@@ -124,6 +124,40 @@ describe('authorized access', function (): void {
         ]);
     });
 
+    test('calendar manager can store a calendar event with a hero style', function (): void {
+        $calendarData = [
+            'title' => ['lt' => 'Stilius renginys', 'en' => 'Style event'],
+            'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
+            'date' => now()->addDays(1)->format('Y-m-d'),
+            'tenant_id' => $this->tenant->id,
+            'hero_style' => 'split',
+            'is_draft' => false,
+        ];
+
+        $response = asUser($this->calendarManager)->post(route('calendar.store'), $calendarData);
+        $response->assertRedirect();
+
+        $this->assertDatabaseHas('calendar', [
+            'title->lt' => 'Stilius renginys',
+            'hero_style' => 'split',
+        ]);
+    });
+
+    test('hero style defaults to card when omitted on store', function (): void {
+        $calendarData = [
+            'title' => ['lt' => 'Numatyto stiliaus renginys', 'en' => 'Default style event'],
+            'date' => now()->addDays(1)->format('Y-m-d'),
+            'tenant_id' => $this->tenant->id,
+        ];
+
+        asUser($this->calendarManager)->post(route('calendar.store'), $calendarData)->assertRedirect();
+
+        $this->assertDatabaseHas('calendar', [
+            'title->lt' => 'Numatyto stiliaus renginys',
+            'hero_style' => 'card',
+        ]);
+    });
+
     test('calendar manager can access edit page', function (): void {
         $calendar = Calendar::factory()->create(['tenant_id' => $this->tenant->id]);
 
@@ -261,6 +295,19 @@ describe('validation', function (): void {
 
         $response->assertStatus(302)
             ->assertSessionHasErrors('date');
+    });
+
+    test('rejects an invalid hero style value on store', function (): void {
+        $response = asUser($this->calendarManager)->post(route('calendar.store'), [
+            'title' => ['lt' => 'Test renginys', 'en' => 'Test event'],
+            'description' => ['lt' => 'Test aprašymas', 'en' => 'Test description'],
+            'date' => now()->addDays(1)->format('Y-m-d'),
+            'tenant_id' => $this->tenant->id,
+            'hero_style' => 'bogus',
+        ]);
+
+        $response->assertStatus(302)
+            ->assertSessionHasErrors('hero_style');
     });
 
     test('saves images to calendar', function (): void {

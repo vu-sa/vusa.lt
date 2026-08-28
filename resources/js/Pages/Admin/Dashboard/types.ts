@@ -27,6 +27,8 @@ export interface AtstovavimasInstitution {
   upcoming_meetings_count?: number;
   last_meeting_date?: string | null;
   has_public_meetings?: boolean;
+  /** One of VU SA's own bodies rather than one it delegates representatives into. */
+  is_internal?: boolean;
   meeting_periodicity_days?: number;
   // Duty members (Gantt coverage periods); tenant timeline only
   duties?: AtstovavimasDuty[];
@@ -75,6 +77,8 @@ export interface AtstovavimasMeeting {
   completion_status?: 'complete' | 'incomplete' | 'no_items';
   has_report?: boolean;
   has_protocol?: boolean;
+  has_calendar_event?: boolean;
+  calendar_event_is_draft?: boolean;
   type?: string;
   type_slug?: string;
   agenda_items?: AtstovavimasAgendaItem[];
@@ -147,6 +151,9 @@ export interface GanttMeeting {
   // File status indicators for tooltip display
   has_report?: boolean;
   has_protocol?: boolean;
+  /** Announced in the public calendar. A drafted announcement counts, but is marked as one. */
+  has_calendar_event?: boolean;
+  calendar_event_is_draft?: boolean;
   // Meeting type slug for icon differentiation (in-person-meeting, remote-meeting, email-meeting)
   type_slug?: string;
 }
@@ -156,6 +163,8 @@ export interface GanttInstitution {
   name: string;
   tenant_id?: string;
   has_public_meetings?: boolean;
+  /** One of VU SA's own bodies rather than one it delegates representatives into. */
+  is_internal?: boolean;
   // Related institution metadata
   is_related?: boolean;
   relationship_direction?: 'outgoing' | 'incoming' | 'sibling';

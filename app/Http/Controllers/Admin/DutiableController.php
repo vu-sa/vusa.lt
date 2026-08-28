@@ -113,6 +113,12 @@ class DutiableController extends AdminController
             return $warning;
         }
 
-        return redirect()->route('users.edit', $user)->with('success', $this->entityMessage('deleted', 'dutiable'));
+        $message = $this->entityMessage('deleted', 'dutiable');
+
+        // The timeline deletes rows in place and must not be navigated away from; the
+        // dutiable edit page has to leave, because the record it was editing is gone.
+        return $request->boolean('stay')
+            ? back()->with('success', $message)
+            : redirect()->route('users.edit', $user)->with('success', $message);
     }
 }

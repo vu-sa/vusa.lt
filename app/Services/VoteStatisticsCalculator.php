@@ -11,9 +11,13 @@ class VoteStatisticsCalculator
      * Calculate vote statistics from a collection of votes.
      *
      * @param  Collection<int, Vote>  $votes
+     * @param  bool  $requiresStudentPerspective  False for VU SA's own bodies, where the
+     *                                            representatives *are* the organisation, so
+     *                                            "did the students agree with the decision" and
+     *                                            "was it favourable to students" have no answer.
      * @return array<string, mixed>
      */
-    public function calculate(Collection $votes): array
+    public function calculate(Collection $votes, bool $requiresStudentPerspective = true): array
     {
         $totalVotes = $votes->count();
 
@@ -35,6 +39,10 @@ class VoteStatisticsCalculator
                 'has_consensus_votes' => false,
                 'consensus_votes_count' => 0,
             ];
+        }
+
+        if (! $requiresStudentPerspective) {
+            return $this->decisionOnlyStatistics($votes);
         }
 
         $completedVotes = $votes->filter(fn ($vote) => ! empty($vote->student_vote)
@@ -84,14 +92,46 @@ class VoteStatisticsCalculator
     }
 
     /**
+     * An internal body's vote has only an outcome: there is no student position to compare it to.
+     *
+     * @param  Collection<int, Vote>  $votes
+     * @return array<string, mixed>
+     */
+    private function decisionOnlyStatistics(Collection $votes): array
+    {
+        $withDecision = $votes->filter(fn ($vote) => ! empty($vote->decision));
+        $consensusVotes = $votes->filter(fn ($vote) => $vote->is_consensus);
+
+        return [
+            'total_votes' => $votes->count(),
+            'completed_votes' => $withDecision->count(),
+            // Alignment is undefined without a student position; zero keeps the Typesense facet
+            // domain unchanged rather than inventing a fourth status.
+            'vote_matches' => 0,
+            'vote_mismatches' => 0,
+            'incomplete_vote_data' => $votes->count() - $withDecision->count(),
+            'student_success_rate' => 0,
+            'positive_outcomes' => $votes->where('decision', 'positive')->count(),
+            'negative_outcomes' => $votes->where('decision', 'negative')->count(),
+            'neutral_outcomes' => $votes->where('decision', 'neutral')->count(),
+            'has_any_student_vote' => false,
+            'has_any_decision' => $withDecision->isNotEmpty(),
+            'has_any_student_benefit' => false,
+            'all_votes_complete' => $withDecision->count() === $votes->count(),
+            'has_consensus_votes' => $consensusVotes->isNotEmpty(),
+            'consensus_votes_count' => $consensusVotes->count(),
+        ];
+    }
+
+    /**
      * Calculate vote alignment status from a collection of votes.
      *
      * @param  Collection<int, Vote>  $votes
      * @return string 'all_match'|'mixed'|'all_mismatch'|'neutral'|'match'|'mismatch'|'incomplete'
      */
-    public function alignmentStatus(Collection $votes): string
+    public function alignmentStatus(Collection $votes, bool $requiresStudentPerspective = true): string
     {
-        if ($votes->isEmpty()) {
+        if ($votes->isEmpty() || ! $requiresStudentPerspective) {
             return 'neutral';
         }
 

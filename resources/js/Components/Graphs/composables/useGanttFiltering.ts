@@ -16,6 +16,8 @@ export interface ParsedMeeting {
   institution_id: string | number;
   title?: string;
   institution?: string;
+  has_calendar_event?: boolean;
+  calendar_event_is_draft?: boolean;
   date: Date;
 }
 
@@ -55,6 +57,8 @@ export interface GanttFilteringOptions {
   showOnlyWithActivity: () => boolean;
   /** Whether to show only institutions with public meetings */
   showOnlyWithPublicMeetings: () => boolean;
+  /** Whether to hide VU SA's own bodies, leaving only the ones it delegates into */
+  hideInternalInstitutions?: () => boolean;
   /** Map of institution ID to public meetings flag (getter for reactivity) */
   institutionHasPublicMeetings: () => Record<string | number, boolean> | undefined;
   /**
@@ -79,7 +83,7 @@ export interface GanttFilteringData {
   /** Raw inactive periods from props (parsed with Date objects) */
   parsedInactivePeriods: ComputedRef<ParsedInactivePeriod[]>;
   /** Institutions from props (getter for reactivity) */
-  institutions: () => Array<{ id: string | number; name?: string }> | undefined;
+  institutions: () => Array<{ id: string | number; name?: string; is_internal?: boolean }> | undefined;
   /** Institution names lookup (getter for reactivity) */
   institutionNames: () => Record<string | number, string> | undefined;
 }
@@ -163,6 +167,14 @@ export function useGanttFiltering(
     if (showOnlyWithPublicMeetings && institutionHasPublicMeetings) {
       const pubMap = institutionHasPublicMeetings;
       arr = arr.filter(id => pubMap[id] || pubMap[String(id)]);
+    }
+
+    // VU SA's own bodies, off by default: the chart shows everything unless asked otherwise.
+    if (options.hideInternalInstitutions?.()) {
+      const internal = new Set(
+        (data.institutions() ?? []).filter(i => i.is_internal).map(i => String(i.id)),
+      );
+      arr = arr.filter(id => !internal.has(String(id)));
     }
 
     // Sort by custom order or alphabetically by name

@@ -186,6 +186,42 @@ function visitPublicSubdomain(string $subdomain, string $path): PendingAwaitable
 }
 
 /**
+ * Log in through the real form and land on an admin page.
+ *
+ * Admin routes are not domain-routed (bootstrap/app.php registers routes/admin.php under a
+ * plain `mano` prefix), so none of visitPublicSubdomain()'s host/asset-origin plumbing is
+ * needed here — but the Vite hot-file override is: without it a developer running
+ * `sail npm run dev` tests the dev server while CI tests `public/build`, which is exactly
+ * how a CORS bug once passed locally and failed in CI three times running.
+ *
+ * `actingAs()` is deliberately not used: it authenticates this PHP process's test client,
+ * not the Chromium session, which carries its own cookie jar. The login form is the only
+ * path that puts a session cookie in that jar. The email/password form itself sits behind
+ * a toggle — Microsoft SSO is the default — hence the extra click.
+ *
+ * The user must have been created with the default factory password ('password').
+ */
+function loginAsAdmin(User $user, string $password = 'password'): PendingAwaitablePage
+{
+    app(Vite::class)->useHotFile(storage_path('framework/testing/vite-hot-disabled'));
+
+    $page = visit('/login');
+    waitForInertiaRender($page);
+
+    $page->click('button:has-text("Prisijungti el. paštu")');
+    $page->page()->waitForSelector('#email', ['timeout' => 15_000]);
+
+    $page->fill('#email', $user->email);
+    $page->fill('#password', $password);
+    $page->click('button[type="submit"]');
+
+    // The dashboard is a different code-split chunk; without this the next visit() races it.
+    waitForInertiaRender($page, '[data-sidebar="sidebar"]');
+
+    return $page;
+}
+
+/**
  * Block until an Inertia page has actually rendered into `#app`.
  *
  * Every public page is client-rendered — public.ts code-splits

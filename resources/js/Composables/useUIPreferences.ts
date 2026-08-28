@@ -50,6 +50,7 @@ export const QUICK_ACTION_KEYS = [
   'new_news',
   'new_reservation',
   'duty_update',
+  'duty_periods',
 ] as const;
 
 export type QuickActionKey = typeof QUICK_ACTION_KEYS[number];

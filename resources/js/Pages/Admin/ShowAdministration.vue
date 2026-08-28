@@ -45,51 +45,6 @@
       </div>
     </div>
 
-    <!-- Quick Actions section -->
-    <section v-if="showQuickActions" class="mb-8">
-      <h2 class="mb-4 text-xl font-semibold">
-        {{ $t("Naujausi įrankiai") }}
-      </h2>
-      <div
-        class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-      >
-        <div
-          v-for="item in quickActions"
-          :key="item.title + item.href"
-          class="group relative rounded-lg transition-all duration-200 hover:scale-[1.02]"
-        >
-          <Link :href="item.href" class="block h-full w-full">
-            <div
-              class="flex w-full flex-col gap-3 rounded-md border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 p-4 text-left text-sm leading-4 text-zinc-700 transition-all duration-300 group-hover:border-primary/40 group-hover:ring-2 group-hover:ring-primary/20 dark:border-primary/30 dark:from-primary/10 dark:to-primary/20 dark:text-zinc-200 dark:group-hover:border-primary/50"
-            >
-              <div class="flex items-start justify-between">
-                <component
-                  :is="item.icon"
-                  width="28"
-                  height="28"
-                  class="shrink-0"
-                />
-                <Badge
-                  v-if="item.isNew"
-                  variant="default"
-                  class="ml-2 bg-primary text-xs"
-                >
-                  {{ $t("Nauja") }}
-                </Badge>
-              </div>
-              <span class="font-medium">{{ item.title }}</span>
-              <span
-                v-if="item.description"
-                class="text-xs text-muted-foreground"
-              >
-                {{ item.description }}
-              </span>
-            </div>
-          </Link>
-        </div>
-      </div>
-    </section>
-
     <!-- Main categories -->
     <template v-for="category in filteredMenuItems" :key="category.category">
       <section v-if="category.show" class="my-8">
@@ -158,6 +113,7 @@ import {
   ListFilterIcon,
   ChevronDownIcon,
   AlertCircleIcon,
+  CalendarRange,
 } from 'lucide-vue-next';
 
 import IconFlowchart from '~icons/fluent/flowchart20-regular';
@@ -233,6 +189,12 @@ const menuItems = computed(() => [
         href: route('duties.index'),
         show: auth?.can.create.duty,
         searchTab: 'duties',
+      },
+      {
+        title: $t('dutiables.timeline.page.title'),
+        icon: CalendarRange,
+        href: route('dutiables.timeline'),
+        show: auth?.can.create.duty,
       },
       {
         title: $t('Studijų programos'),
@@ -524,30 +486,5 @@ const hasVisibleItems = computed(() => {
   return filteredMenuItems.value.some(
     category => category.visibleItems.length > 0,
   );
-});
-
-// Quick Actions - Featured actions for common tasks
-const quickActions = computed(() => {
-  const actions = [];
-
-  // Add create problem action (marked as new)
-  if (auth?.can.create.problem) {
-    actions.push({
-      title: $t('Problema'),
-      icon: ProblemIcon,
-      href: route('problems.index'),
-      isNew: true,
-      description: $t(
-        'Užregistruokite problemą, su kuria susidūrėte savo veikloje, aprašykite kaip ją sprendėte bei padėkite kitiems išspręsti tą pačią problemą.',
-      ),
-    });
-  }
-
-  return actions;
-});
-
-// Show quick actions section if there are any actions available
-const showQuickActions = computed(() => {
-  return quickActions.value.length > 0;
 });
 </script>

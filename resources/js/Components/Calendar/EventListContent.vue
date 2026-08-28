@@ -10,7 +10,7 @@
 
     <!-- List view of events -->
     <div class="mb-8">
-      <div v-if="events.data.length > 0" class="space-y-3">
+      <div v-if="events.data.length > 0" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <EventCard v-for="event in events.data" :key="event.id" :event
           :variant="tab === 'upcoming' ? 'upcoming' : 'past'" :google-link="generateGoogleLink(event)" />
       </div>
@@ -146,7 +146,11 @@ const generateGoogleLink = (event: App.Entities.Calendar) => {
     : (description || '').replace(/<[^>]*>/g, ' ');
 
   const title = Array.isArray(event.title) ? event.title.join(' ') : (event.title || '');
-  const location = Array.isArray(event.location) ? event.location.join(' ') : (event.location || '');
+  // A remote event's "location" is a join link, not a place — Google Calendar's &location=
+  // param is for addresses, so leave it off entirely.
+  const location = event.is_remote
+    ? ''
+    : Array.isArray(event.location) ? event.location.join(' ') : (event.location || '');
 
   return `https://www.google.com/calendar/render?action=TEMPLATE`
     + `&text=${encodeURIComponent(title)}`

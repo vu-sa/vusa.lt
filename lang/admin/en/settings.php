@@ -29,6 +29,10 @@ return [
             'title' => 'Representation Settings',
             'description' => 'Configure which roles grant access to tenant-wide institutions in the representation dashboard.',
         ],
+        'cadences' => [
+            'title' => 'Cadences',
+            'description' => 'Set the term start and end dates, and any institution overrides.',
+        ],
         'site' => [
             'title' => 'Site settings',
             'description' => 'Point the system at the pages it links to, such as the privacy policy.',
@@ -80,17 +84,11 @@ return [
 
     // Atstovavimas settings page
     'atstovavimas_settings' => [
-        'global_roles_title' => 'Global Tenant Visibility Roles',
-        'global_roles_description' => 'Select roles that grant access to all tenants in the representation dashboard.',
-        'global_roles_label' => 'Global Visibility Roles',
-        'global_roles_placeholder' => 'Select roles',
-        'global_roles_note' => 'Note: Super Admins always see all tenants regardless of this setting.',
-        'tenant_roles_title' => 'Tenant Visibility Roles',
-        'tenant_roles_description' => 'Select roles that grant access to the tenant tab only for tenants where the user holds a current duty with one of these roles.',
-        'tenant_roles_label' => 'Tenant Visibility Roles',
-        'tenant_roles_placeholder' => 'Select roles',
-        'tenant_roles_note' => 'Users without these roles will only see institutions they are assigned to through duties.',
-        'no_roles_found' => 'No roles found.',
+        'manager_role_title' => 'Institution manager role',
+        'manager_role_description' => 'Select the role that identifies institution managers for the tenant. Users with current duties of this role in the same tenant are treated as institution managers and receive institution-related notifications, e.g. about student representative registrations.',
+        'manager_role_label' => 'Manager role',
+        'manager_role_placeholder' => 'Select a role',
+        'manager_role_note' => 'Note: institution managers are also used to determine meeting administrators.',
     ],
 
     // Document settings page

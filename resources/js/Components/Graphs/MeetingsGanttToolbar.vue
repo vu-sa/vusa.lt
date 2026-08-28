@@ -72,7 +72,7 @@
       <!-- Scale slider -->
       <div data-tour="gantt-scale" class="w-40 flex items-center gap-2 text-[11px] text-zinc-600 dark:text-zinc-400">
         <span class="shrink-0">{{ $t('Mastelis') }}</span>
-        <Slider :min="3" :max="36" :step="1" :model-value="[dayWidth]"
+        <Slider :min="3" :max="18" :step="1" :model-value="[dayWidth]"
           @update:model-value="(values: number[]) => emit('update:dayWidth', values[0])" />
       </div>
       <!-- Fullscreen button - icon with tooltip -->

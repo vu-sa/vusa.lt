@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\InstitutionScope;
 use App\Models\Type;
 use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -37,6 +38,8 @@ class UpdateTypeRequest extends FormRequest
             'roles' => 'nullable|array',
             'extra_attributes' => 'nullable|array',
             'extra_attributes.meeting_periodicity_days' => 'nullable|integer|min:1|max:365',
+            // Null means "inherit from the parent type" — see InstitutionScopeResolver.
+            'extra_attributes.governance_scope' => ['nullable', Rule::enum(InstitutionScope::class)],
         ];
     }
 }

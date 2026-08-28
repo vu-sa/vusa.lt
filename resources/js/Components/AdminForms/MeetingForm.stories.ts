@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { userEvent, within, fn } from 'storybook/test';
+import { expect, userEvent, within, fn } from 'storybook/test';
 
 import MeetingForm from './MeetingForm.vue';
 
@@ -181,27 +181,20 @@ export const WithInteraction: Story = {
       },
     },
   }),
+  // The meeting type is a radio group, not a dropdown — picking one is a single click, so
+  // this asserts the selection actually lands rather than only that a menu opened.
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    // Wait for component to render completely
-    await new Promise(resolve => setTimeout(resolve, 100));
+    const remote = await canvas.findByRole('radio', { name: /Nuotolinis/ });
+    await userEvent.click(remote);
 
-    // Find and interact with the type selector
-    const typeSelectTrigger = canvas.getByRole('combobox');
-    await userEvent.click(typeSelectTrigger);
-
-    // Wait for dropdown to open - the actual selection requires proper pointerEvents
-    // which may not work in test environments. Just verify dropdown opens.
-    await new Promise(resolve => setTimeout(resolve, 100));
-
-    // Close the dropdown by pressing Escape
-    await userEvent.keyboard('{Escape}');
+    await expect(remote).toBeChecked();
   },
   parameters: {
     docs: {
       description: {
-        story: 'Interactive form demonstration. Full dropdown selection may require manual testing due to component implementation details.',
+        story: 'Interactive form demonstration: picking a meeting type.',
       },
     },
   },

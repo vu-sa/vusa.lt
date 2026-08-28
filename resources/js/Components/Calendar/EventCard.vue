@@ -1,107 +1,87 @@
 <template>
   <article
-    class="group flex gap-2 sm:gap-4 p-3 sm:p-4 rounded-lg border border-zinc-200 bg-white transition-all duration-200 hover:bg-zinc-50/80 hover:border-zinc-300 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-800/80 dark:hover:border-zinc-600"
-    :class="{ 'opacity-80': variant === 'past' }">
-    <!-- Event Image or Date Badge -->
-    <div class="flex-shrink-0">
-      <div v-if="(event as any).main_image_url && variant !== 'compact'"
-        class="w-12 h-10 sm:w-16 sm:h-12 lg:w-20 lg:h-14 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-700 relative">
-        <img class="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
-          :class="{ 'opacity-0': imageLoadError }" :src="(event as any).main_image_url"
-          :alt="getEventTitle(event)" @error="handleImageError" @load="handleImageLoad">
-        <div v-if="imageLoadError"
-          class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-vusa-red/10 to-vusa-red/20 dark:from-vusa-red/20 dark:to-vusa-red/30">
-          <IFluentCalendarLtr20Regular class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-vusa-red dark:text-vusa-red" />
+    class="group flex h-full flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white transition-all duration-200 hover:border-zinc-300 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600"
+    :class="{ 'opacity-80': variant === 'past' }"
+  >
+    <!-- Image / fallback: a wide band, not a poster — the card's balance comes from the content below, not an oversized photo -->
+    <Link :href="route('calendar.event', { calendar: event.id, lang: $page.props.app.locale })" class="block aspect-video w-full shrink-0 overflow-hidden bg-zinc-100 dark:bg-zinc-700">
+      <div v-if="(event as any).main_image_url" class="relative h-full w-full">
+        <img
+          class="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+          :class="{ 'opacity-0': imageLoadError }"
+          :src="(event as any).main_image_url"
+          :alt="getEventTitle(event)"
+          @error="imageLoadError = true"
+          @load="imageLoadError = false"
+        >
+        <div
+          v-if="imageLoadError"
+          class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-vusa-red/10 to-vusa-red/20 dark:from-vusa-red/20 dark:to-vusa-red/30"
+        >
+          <IFluentCalendarLtr20Regular class="h-8 w-8 text-vusa-red" />
         </div>
       </div>
-      <div v-else-if="variant !== 'compact'"
-        class="w-12 h-10 sm:w-16 sm:h-12 lg:w-20 lg:h-14 rounded-lg bg-gradient-to-br from-vusa-red/10 to-vusa-red/20 dark:from-vusa-red/20 dark:to-vusa-red/30 flex items-center justify-center">
-        <IFluentCalendarLtr20Regular class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-vusa-red dark:text-vusa-red" />
+      <div v-else class="flex h-full w-full items-center justify-center bg-gradient-to-br from-vusa-red/10 to-vusa-red/20 dark:from-vusa-red/20 dark:to-vusa-red/30">
+        <IFluentCalendarLtr20Regular class="h-8 w-8 text-vusa-red" />
       </div>
-      <!-- For compact variant, show smaller image or icon -->
-      <div v-else-if="(event as any).main_image_url"
-        class="w-10 h-8 sm:w-12 sm:h-10 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-700 relative">
-        <img class="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
-          :class="{ 'opacity-0': imageLoadErrorCompact }" :src="(event as any).main_image_url"
-          :alt="getEventTitle(event)" @error="handleImageErrorCompact" @load="handleImageLoadCompact">
-        <div v-if="imageLoadErrorCompact"
-          class="absolute inset-0 flex items-center justify-center bg-vusa-red/10 dark:bg-vusa-red/20">
-          <IFluentCalendarLtr16Regular class="w-3 h-3 sm:w-4 sm:h-4 text-vusa-red dark:text-vusa-red" />
-        </div>
-      </div>
-      <div v-else
-        class="w-10 h-8 sm:w-12 sm:h-10 rounded-lg bg-vusa-red/10 dark:bg-vusa-red/20 flex items-center justify-center">
-        <IFluentCalendarLtr16Regular class="w-3 h-3 sm:w-4 sm:h-4 text-vusa-red dark:text-vusa-red" />
-      </div>
-    </div>
+    </Link>
 
-    <!-- Event Content -->
-    <div class="flex-1 min-w-0">
-      <!-- Header with badges -->
-      <div class="flex flex-wrap items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
-        <!-- Category badge -->
-        <span v-if="event.category && showBadges"
-          class="inline-flex items-center rounded-full px-1.5 sm:px-2 py-0.5 text-xs font-medium bg-zinc-100 text-zinc-700 dark:bg-zinc-700/70 dark:text-zinc-300">
+    <!-- Content -->
+    <div class="flex flex-1 flex-col gap-2.5 p-4">
+      <!-- Badges -->
+      <div v-if="showBadges && (event.category || event.tenant)" class="flex flex-wrap items-center gap-1.5">
+        <span v-if="event.category" class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-zinc-100 text-zinc-700 dark:bg-zinc-700/70 dark:text-zinc-300">
           {{ event.category.name }}
         </span>
-
-        <!-- Tenant badge -->
-        <span v-if="event.tenant && showBadges"
-          class="inline-flex items-center rounded-full px-1.5 sm:px-2 py-0.5 text-xs font-medium bg-blue-100/70 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300/90">
+        <span v-if="event.tenant" class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-blue-100/70 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300/90">
           {{ event.tenant.shortname }}
         </span>
       </div>
 
-      <!-- Event Title -->
-      <h3 class="font-semibold mb-1 sm:mb-2 transition-colors duration-200 hover:text-vusa-red dark:hover:text-vusa-red"
-        :class="[
-          variant === 'past'
-            ? 'text-zinc-700 dark:text-zinc-300'
-            : 'text-zinc-900 dark:text-zinc-100',
-          variant === 'compact' ? 'text-sm sm:text-base line-clamp-2' : 'text-base sm:text-lg line-clamp-2 sm:line-clamp-1'
-        ]">
+      <!-- Title -->
+      <h3
+        class="font-semibold leading-snug line-clamp-2 transition-colors duration-200 hover:text-vusa-red dark:hover:text-vusa-red"
+        :class="variant === 'past' ? 'text-zinc-700 dark:text-zinc-300' : 'text-zinc-900 dark:text-zinc-100'"
+      >
         <Link :href="route('calendar.event', { calendar: event.id, lang: $page.props.app.locale })">
           {{ getEventTitle(event) }}
         </Link>
       </h3>
 
-      <!-- Event Metadata -->
-      <div class="flex flex-col sm:flex-row sm:flex-wrap gap-x-3 sm:gap-x-4 gap-y-1 text-xs sm:text-sm mb-2 sm:mb-3"
-        :class="variant === 'past' ? 'text-zinc-500 dark:text-zinc-400' : 'text-zinc-600 dark:text-zinc-400'">
-        <!-- Date -->
-        <div class="flex items-center gap-1">
-          <IFluentCalendarLtr16Regular class="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+      <!-- Metadata -->
+      <div class="flex flex-col gap-1.5 text-xs" :class="variant === 'past' ? 'text-zinc-500 dark:text-zinc-400' : 'text-zinc-600 dark:text-zinc-400'">
+        <div class="flex items-center gap-1.5">
+          <IFluentCalendarLtr16Regular class="h-3.5 w-3.5 shrink-0" />
           <span class="break-words">{{ formatEventDateTime(event) }}</span>
         </div>
 
-        <!-- Location -->
-        <div v-if="event.location" class="flex items-center gap-1 min-w-0">
-          <IFluentLocation16Regular class="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+        <div v-if="event.is_remote" class="flex items-center gap-1.5">
+          <IFluentGlobe16Regular class="h-3.5 w-3.5 shrink-0" />
+          <span>{{ $t('Nuotolinis renginys') }}</span>
+        </div>
+        <div v-else-if="event.location" class="flex items-center gap-1.5 min-w-0">
+          <IFluentLocation16Regular class="h-3.5 w-3.5 shrink-0" />
           <span class="truncate">{{ getEventLocation(event) }}</span>
         </div>
       </div>
 
-      <!-- Action Buttons -->
-      <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+      <!-- Actions -->
+      <div class="mt-auto flex items-center gap-2 pt-1">
         <Button as="a" :href="route('calendar.event', { calendar: event.id, lang: $page.props.app.locale })"
-          :variant="variant === 'past' ? 'outline' : 'default'" :size="variant === 'compact' ? 'sm' : 'default'"
-          class="gap-1 w-full sm:w-auto">
-          <IFluentInfo16Regular class="w-3 h-3 sm:w-4 sm:h-4" />
+          :variant="variant === 'past' ? 'outline' : 'default'" size="sm" class="flex-1 gap-1.5">
+          <IFluentInfo16Regular class="h-3.5 w-3.5" />
           {{ variant === 'past' ? $t('Peržiūrėti') : $t('Daugiau') }}
         </Button>
 
-        <!-- Social/Calendar Actions for upcoming events - Hidden on mobile -->
-        <div v-if="variant !== 'past'" class="hidden sm:flex gap-1">
-          <Button v-if="googleLink" as="a" :href="googleLink" target="_blank" variant="ghost"
-            :size="variant === 'compact' ? 'sm' : 'default'" :title="$t('Pridėti į Google kalendorių')">
-            <ISimpleIconsGoogle class="w-4 h-4" />
+        <template v-if="variant !== 'past'">
+          <Button v-if="googleLink" as="a" :href="googleLink" target="_blank" variant="ghost" size="sm" :title="$t('Pridėti į Google kalendorių')">
+            <ISimpleIconsGoogle class="h-4 w-4" />
           </Button>
 
-          <Button v-if="event.facebook_url" as="a" :href="event.facebook_url" target="_blank" variant="ghost"
-            :size="variant === 'compact' ? 'sm' : 'default'" :title="$t('Facebook renginys')">
-            <ISimpleIconsFacebook class="w-4 h-4" />
+          <Button v-if="event.facebook_url" as="a" :href="event.facebook_url" target="_blank" variant="ghost" size="sm" :title="$t('Facebook renginys')">
+            <ISimpleIconsFacebook class="h-4 w-4" />
           </Button>
-        </div>
+        </template>
       </div>
     </div>
   </article>
@@ -110,10 +90,12 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 import { Link, usePage } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 
 import Button from '@/Components/ui/button/Button.vue';
 import { formatEventDateSpan } from '@/Utils/IntlTime';
+
+const page = usePage();
 
 const props = withDefaults(defineProps<{
   event: App.Entities.Calendar;
@@ -125,37 +107,13 @@ const props = withDefaults(defineProps<{
   showBadges: true,
 });
 
-const page = usePage();
-
-// Image loading state
 const imageLoadError = ref(false);
-const imageLoadErrorCompact = ref(false);
 
-// Image error handlers
-const handleImageError = () => {
-  imageLoadError.value = true;
-};
+const getEventTitle = (event: App.Entities.Calendar): string =>
+  Array.isArray(event.title) ? event.title.join(' ') : (event.title || '');
 
-const handleImageLoad = () => {
-  imageLoadError.value = false;
-};
-
-const handleImageErrorCompact = () => {
-  imageLoadErrorCompact.value = true;
-};
-
-const handleImageLoadCompact = () => {
-  imageLoadErrorCompact.value = false;
-};
-
-// Helper functions for handling event data types
-const getEventTitle = (event: App.Entities.Calendar): string => {
-  return Array.isArray(event.title) ? event.title.join(' ') : (event.title || '');
-};
-
-const getEventLocation = (event: App.Entities.Calendar): string => {
-  return Array.isArray(event.location) ? event.location.join(' ') : (event.location || '');
-};
+const getEventLocation = (event: App.Entities.Calendar): string =>
+  Array.isArray(event.location) ? event.location.join(' ') : (event.location || '');
 
 /** Multi-day events read as one collapsed span, e.g. "2026 m. rugpjūčio 25–27 d. · 10:00 → 18:00". */
 const formatEventDateTime = (event: App.Entities.Calendar): string => {

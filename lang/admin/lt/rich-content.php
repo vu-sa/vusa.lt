@@ -26,6 +26,16 @@ return [
     'spacer_size_lg' => 'Didelis',
     'spacer_size_xl' => 'Labai didelis',
     'spacer_size_2xl' => 'Didžiulis',
+    // Timetable
+    'timetable_heading_placeholder' => 'Tvarkaraštis',
+    'import_from_meeting' => 'Importuoti iš posėdžio',
+    'loading_meetings' => 'Kraunama…',
+    'no_recent_meetings' => 'Naujausi posėdžiai nerasti.',
+    'no_timetable_rows' => 'Nėra pridėtų eilučių',
+    'add_first_timetable_row' => 'Pridėti pirmą eilutę',
+    'add_timetable_row' => 'Pridėti eilutę',
+    'start_time' => 'Pradžios laikas',
+    'end_time' => 'Pabaigos laikas',
     // Technical
     'add_content_block' => 'Pridėti turinio bloką',
     'text_placeholder' => 'Įrašykite čia...',

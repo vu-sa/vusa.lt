@@ -110,6 +110,12 @@ trait ValidatesContentParts
             'content.parts.*.options.closedMessage.lt' => ['nullable', 'string', 'max:1000'],
             'content.parts.*.options.closedMessage.en' => ['nullable', 'string', 'max:1000'],
             'content.parts.*.options.isClosed' => ['nullable', 'boolean'],
+
+            // timetable — author-written time rows (an "import from meeting" helper
+            // pre-fills them, but they persist as a static snapshot afterwards).
+            'content.parts.*.json_content.*.startTime' => ['nullable', 'string', 'max:8'],
+            'content.parts.*.json_content.*.endTime' => ['nullable', 'string', 'max:8'],
+            'content.parts.*.json_content.*.title' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

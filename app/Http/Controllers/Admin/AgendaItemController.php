@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateAgendaItemRequest;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Vote;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
@@ -72,7 +73,7 @@ class AgendaItemController extends AdminController
 
         $canUpdate = Gate::allows('update', $agendaItem);
 
-        $agendaItem->load(['votes', 'note', 'meeting.institutions', 'meeting.agendaItems' => function ($query): void {
+        $agendaItem->load(['votes', 'note', 'meeting.institutions.types', 'meeting.agendaItems' => function ($query): void {
             $query->orderBy('order')->with('mainVote')->withCount('comments')->withExists('note as has_notes');
         }]);
 
@@ -91,6 +92,10 @@ class AgendaItemController extends AdminController
                 'main_vote' => $item->mainVote,
                 'comments_count' => $item->comments_count,
                 'has_notes' => (bool) $item->getAttribute('has_notes'),
+                // Lets the editor default this item's start time from the previous item's end
+                // time — see EditAgendaItem.vue.
+                'start_time' => $item->start_time,
+                'end_time' => $item->end_time,
             ])
             ->values();
 
@@ -98,6 +103,9 @@ class AgendaItemController extends AdminController
             'agendaItem' => $agendaItem,
             'siblingAgendaItems' => $siblingAgendaItems,
             'canUpdate' => $canUpdate,
+            // VU SA's own bodies have no separate student position to record — see
+            // Meeting::requiresStudentPerspective().
+            'requiresStudentPerspective' => $agendaItem->meeting->requiresStudentPerspective(),
         ]);
     }
 
@@ -113,7 +121,8 @@ class AgendaItemController extends AdminController
 
             // Handle votes if provided
             if ($request->has('votes')) {
-                $this->syncVotes($agendaItem, $request->input('votes'));
+                // validated(), not input(): raw input would carry through anything unvalidated.
+                $this->syncVotes($agendaItem, $request->validated('votes') ?? []);
             }
         });
 
@@ -166,6 +175,36 @@ class AgendaItemController extends AdminController
         $votesToDelete = array_diff($existingVoteIds, $updatedVoteIds);
         if (! empty($votesToDelete)) {
             Vote::whereIn('id', $votesToDelete)->delete();
+        }
+
+        $this->ensureSingleMainVote($agendaItem);
+    }
+
+    /**
+     * Keep "exactly one main vote, or none at all" true whatever the payload said.
+     *
+     * The editor may delete the main vote — an item is allowed to end up with no votes — but a
+     * payload that removes it without promoting a survivor would otherwise leave the remaining
+     * votes with no main one, and every reader (mainVote(), completion, the public page) treats
+     * that as missing data.
+     */
+    protected function ensureSingleMainVote(AgendaItem $agendaItem): void
+    {
+        /** @var Collection<int, Vote> $votes */
+        $votes = $agendaItem->votes()->orderBy('order')->get();
+
+        if ($votes->isEmpty() || $votes->where('is_main', true)->count() === 1) {
+            return;
+        }
+
+        $main = $votes->firstWhere('is_main', true) ?? $votes->first();
+
+        foreach ($votes as $vote) {
+            $shouldBeMain = $vote->getKey() === $main->getKey();
+
+            if ((bool) $vote->is_main !== $shouldBeMain) {
+                $vote->update(['is_main' => $shouldBeMain]);
+            }
         }
     }
 

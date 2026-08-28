@@ -138,7 +138,11 @@
             <IFluentAdd24Filled />
             Sukurti naują pareigybę?
           </Button>
-          <Button class="ml-auto" size="xs" variant="outline" @click="handleChangeDutyShowMode">
+          <Button v-if="user.id" class="ml-auto" size="xs" variant="outline" @click="timelineOpen = true">
+            <CalendarRange class="size-3.5" />
+            {{ $t('dutiables.timeline.open') }}
+          </Button>
+          <Button :class="{ 'ml-auto': !user.id }" size="xs" variant="outline" @click="handleChangeDutyShowMode">
             Pakeisti rodymo būdą
           </Button>
         </div>
@@ -318,6 +322,8 @@
     <AccessChangeWarningDialog :open="accessChangeOpen" :report="accessChangeReport"
       @update:open="accessChangeOpen = $event" @confirm="confirmAccessChange" @cancel="cancelAccessChange" />
   </AdminForm>
+
+  <DutiableTimelineDialog v-if="user.id" v-model:open="timelineOpen" scope-type="user" :scope-id="user.id" />
 </template>
 
 <script setup lang="tsx">
@@ -330,6 +336,7 @@ import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
 
 import AdminForm from './AdminForm.vue';
 import AccessChangeWarningDialog from './AccessChangeWarningDialog.vue';
+import { DutiableTimelineDialog } from '@/Features/Admin/DutiableTimeline';
 import DuplicateUserWarning from './DuplicateUserWarning.vue';
 import FormElement from './FormElement.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
@@ -342,7 +349,7 @@ import Eye16Regular from '~icons/fluent/eye16-regular';
 import DutyLabel from '@/Components/Duties/DutyLabel.vue';
 // Lucide is the icon set for admin surfaces (AGENTS.md); the Fluent imports here
 // are legacy and stay until this form is migrated wholesale.
-import { Lock, TriangleAlert } from 'lucide-vue-next';
+import { CalendarRange, Lock, TriangleAlert } from 'lucide-vue-next';
 import PersonEdit24Regular from '~icons/fluent/person-edit24-regular';
 import IFluentCopy16Regular from '~icons/fluent/copy16-regular';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/Components/ui/alert-dialog';
@@ -374,6 +381,8 @@ const props = withDefaults(defineProps<{
 }>(), {
   canUpdateIdentity: true,
 });
+
+const timelineOpen = ref(false);
 
 defineEmits<{
   (event: 'submit:form', form: unknown): void;

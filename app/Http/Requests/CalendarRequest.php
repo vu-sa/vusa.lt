@@ -2,10 +2,12 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\CalendarHeroStyleEnum;
 use App\Http\Requests\Concerns\HasImageValidation;
 use App\Http\Requests\Concerns\ValidatesTenantScope;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CalendarRequest extends FormRequest
 {
@@ -32,6 +34,7 @@ class CalendarRequest extends FormRequest
             'description.en' => 'nullable|string',
             'location.lt' => 'nullable|string',
             'location.en' => 'nullable|string',
+            'is_remote' => 'boolean',
             'organizer.lt' => 'nullable|string',
             'organizer.en' => 'nullable|string',
             'cto_url.lt' => 'nullable|url',
@@ -41,6 +44,7 @@ class CalendarRequest extends FormRequest
             'is_draft' => 'boolean',
             'is_all_day' => 'boolean',
             'is_international' => 'boolean',
+            'hero_style' => ['nullable', Rule::enum(CalendarHeroStyleEnum::class)],
             'date' => 'required|date',
             'end_date' => 'nullable|date|after:date',
             'tenant_id' => ['required', 'integer', 'exists:tenants,id', $this->tenantIdInAuthorizedScope($this->tenantScopePermission)],

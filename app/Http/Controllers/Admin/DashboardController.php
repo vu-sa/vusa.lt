@@ -26,6 +26,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Notifications\TestPushNotification;
 use App\Services\InstitutionActivityStatusService;
+use App\Services\InstitutionScopeResolver;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
 use App\Services\ResourceServices\DutyService;
@@ -211,18 +212,17 @@ class DashboardController extends AdminController
         // Get only user's directly assigned institutions (lightweight, always loaded)
         $userInstitutions = DutyService::getUserInstitutionsForDashboard();
 
-        // Filter out institutions with excluded types (e.g., padalinys, pkp - institutions that don't have formal meetings)
-        $excludedTypeIds = app(MeetingSettings::class)->getExcludedInstitutionTypeIds();
-        if ($excludedTypeIds->isNotEmpty()) {
-            $userInstitutions = $userInstitutions->filter(
-                // Exclude institution if any of its types are in the excluded list
-                fn ($institution) => $institution->types->pluck('id')->intersect($excludedTypeIds)->isEmpty())->values();
-        }
-
         // Helper function to append computed attributes to institutions
         $appendInstitutionAttributes = function ($institutions, $userInstitutionIds = null) use ($followedInstitutionIds, $mutedInstitutionIds) {
             $institutions->each(function ($institution) use ($userInstitutionIds, $followedInstitutionIds, $mutedInstitutionIds): void {
-                $institution->meetings?->each->append(['completion_status', 'has_report', 'has_protocol']);
+                $institution->meetings?->each->append(['completion_status', 'has_report', 'has_protocol', 'has_calendar_event']);
+                // VU SA's own bodies are drawn like any other and hidden behind the chart's
+                // own toggle; they used to be dropped here, which left the chart incomplete
+                // with no way to ask for the rest.
+                $institution->setAttribute(
+                    'is_internal',
+                    app(InstitutionScopeResolver::class)->forInstitution($institution)->isInternal()
+                );
                 // Add active_check_in from already-loaded checkIns
                 $institution->active_check_in = $institution->checkIns
                     ?->where('end_date', '>=', now())

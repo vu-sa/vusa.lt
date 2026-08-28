@@ -21,6 +21,9 @@ export interface AgendaItemFormData {
   brought_by_students: boolean;
   student_position: string;
   description: string;
+  /** Timetable slot as `HH:MM`; null when the body did not schedule per-item times. */
+  start_time: string | null;
+  end_time: string | null;
   votes: EditableVote[];
 }
 

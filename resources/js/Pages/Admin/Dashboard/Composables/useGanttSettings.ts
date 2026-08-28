@@ -55,9 +55,16 @@ interface StoredSettings {
 
 const GANTT_SETTINGS_KEY: InjectionKey<GanttSettings> = Symbol('gantt-settings');
 
-const DEFAULT_DAY_WIDTH = 24;
-const MIN_DAY_WIDTH = 4;
-const MAX_DAY_WIDTH = 96;
+// Matches useGanttInteractions and the toolbar slider. These three used to disagree
+// (4-96 here, 3-36 there), so a stored width could sit outside what the UI could express.
+const DEFAULT_DAY_WIDTH = 12;
+const MIN_DAY_WIDTH = 3;
+const MAX_DAY_WIDTH = 18;
+
+/** A width persisted before MAX_DAY_WIDTH came down would restore a zoom the UI cannot set. */
+function clampDayWidth(width: number | undefined): number {
+  return Math.max(MIN_DAY_WIDTH, Math.min(MAX_DAY_WIDTH, width ?? DEFAULT_DAY_WIDTH));
+}
 
 const DEFAULT_LABEL_WIDTH = 220;
 const MIN_LABEL_WIDTH = 100;
@@ -91,7 +98,7 @@ function saveStoredSettings(settings: StoredSettings) {
 export function provideGanttSettings(): GanttSettings {
   const stored = loadStoredSettings();
 
-  const dayWidthPx = ref<number>(stored.dayWidthPx ?? DEFAULT_DAY_WIDTH);
+  const dayWidthPx = ref<number>(clampDayWidth(stored.dayWidthPx));
   const labelWidth = ref<number>(stored.labelWidth ?? DEFAULT_LABEL_WIDTH);
   const detailsExpanded = ref<boolean>(stored.detailsExpanded ?? false);
   const showDutyMembers = ref<boolean>(stored.showDutyMembers ?? true);
@@ -186,7 +193,7 @@ export function useGanttSettings(): GanttSettings {
       console.warn('useGanttSettings: No provider found, creating local settings with persistence');
     }
     const stored = loadStoredSettings();
-    const dayWidthPx = ref<number>(stored.dayWidthPx ?? DEFAULT_DAY_WIDTH);
+    const dayWidthPx = ref<number>(clampDayWidth(stored.dayWidthPx));
     const labelWidth = ref<number>(stored.labelWidth ?? DEFAULT_LABEL_WIDTH);
     const detailsExpanded = ref<boolean>(stored.detailsExpanded ?? false);
     const showDutyMembers = ref<boolean>(stored.showDutyMembers ?? true);

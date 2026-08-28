@@ -5,12 +5,14 @@
         v-if="inputType !== 'textarea'"
         v-model="currentValue"
         :placeholder="currentPlaceholder"
+        :disabled="disabled"
         class="pr-12"
       />
       <Textarea
         v-else
         v-model="currentValue"
         :placeholder="currentPlaceholder"
+        :disabled="disabled"
         class="pr-12 min-h-20"
       />
       <div class="absolute right-1.5 top-1/2 -translate-y-1/2">
@@ -39,10 +41,13 @@ import { Input } from '@/Components/ui/input';
 import { Textarea } from '@/Components/ui/textarea';
 import { LocaleEnum } from '@/Types/enums';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   inputType?: 'text' | 'textarea';
   placeholder?: string | { lt: string; en: string };
-}>();
+  disabled?: boolean;
+}>(), {
+  disabled: false,
+});
 
 const inputLang = ref(usePage().props.app.locale);
 

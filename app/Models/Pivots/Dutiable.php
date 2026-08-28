@@ -30,6 +30,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $start_date
  * @property Carbon|null $end_date
  * @property string|null $study_program_id
+ * @property array|string|null $study_program_note
  * @property string|null $additional_email
  * @property string|null $additional_photo
  * @property string|null $additional_photo_focal_point
@@ -48,7 +49,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read User|null $user
  * @property-read Dutiable|null $viaDutiable
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable active(?string $date = null)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable current()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable activeOn(?string $date = null)
  * @method static \Database\Factories\Pivots\DutiableFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable newQuery()
@@ -89,7 +91,7 @@ class Dutiable extends MorphPivot
         ];
     }
 
-    public $translatable = ['description'];
+    public $translatable = ['description', 'study_program_note'];
 
     /**
      * `description` is Tiptap `full` preset HTML. It takes precedence over the
@@ -167,9 +169,21 @@ class Dutiable extends MorphPivot
     }
 
     /**
-     * Scope to dutiables active on the given date (default today).
+     * Rows that have not ended yet, matching what `Duty::current_users()` and every
+     * quota check mean by "current" — a future-dated start still counts, because the
+     * seat is already allocated.
      */
-    public function scopeActive($query, ?string $date = null)
+    public function scopeCurrent($query)
+    {
+        return $query->where(fn ($q) => $q->whereNull('end_date')->orWhereDate('end_date', '>=', now()->toDateString()));
+    }
+
+    /**
+     * Rows genuinely in force on the given date. Unlike {@see scopeCurrent()} this also
+     * requires the term to have begun, which is what point-in-time questions
+     * (who held this seat in March?) need.
+     */
+    public function scopeActiveOn($query, ?string $date = null)
     {
         $date ??= now()->toDateString();
 

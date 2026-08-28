@@ -173,8 +173,24 @@
           <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
             {{ $t('forms.fields.current_members') }} ({{ duty.current_users.length }})
           </span>
-          <Input v-if="duty.current_users.length > memberPreviewCount" v-model="memberSearch"
-            :placeholder="$t('forms.placeholders.search_members')" class="h-8 w-full sm:w-64" />
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- Sits beside the per-row "Redaguoti pareigybės laikotarpį" links it replaces,
+                 which is why the spotlight lives here rather than on the standalone page. -->
+            <SpotlightPopover
+              v-if="duty.id"
+              :title="$t('dutiables.timeline.spotlight.title')"
+              :description="$t('dutiables.timeline.spotlight.description')"
+              :is-dismissed="timelineSpotlight.isDismissed.value"
+              @dismiss="timelineSpotlight.dismiss"
+            >
+              <Button type="button" size="xs" variant="outline" @click="openTimeline">
+                <CalendarRange class="size-3.5" />
+                {{ $t('dutiables.timeline.open') }}
+              </Button>
+            </SpotlightPopover>
+            <Input v-if="duty.current_users.length > memberPreviewCount" v-model="memberSearch"
+              :placeholder="$t('forms.placeholders.search_members')" class="h-8 w-full sm:w-64" />
+          </div>
         </div>
         <div class="space-y-2">
           <div v-for="user in visibleCurrentUsers" :key="user.id"
@@ -388,6 +404,8 @@
       </div>
     </FormElement>
   </AdminForm>
+
+  <DutiableTimelineDialog v-if="duty.id" v-model:open="timelineOpen" scope-type="duty" :scope-id="duty.id" />
 </template>
 
 <script setup lang="ts">
@@ -395,7 +413,7 @@ import { computed, ref, watch } from 'vue';
 import { useForm, usePage } from '@inertiajs/vue3';
 import { TenantType } from '@/Types/enums';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronsUpDown, TriangleAlert } from 'lucide-vue-next';
+import { CalendarRange, ChevronsUpDown, TriangleAlert } from 'lucide-vue-next';
 
 import SimpleLocaleButton from '../Buttons/SimpleLocaleButton.vue';
 import UserAvatar from '../Avatars/UserAvatar.vue';
@@ -407,6 +425,9 @@ import AdminForm from './AdminForm.vue';
 import DuplicateDutyWarning from './DuplicateDutyWarning.vue';
 
 import { useDuplicateDutyCheck } from '@/Composables/useDuplicateDutyCheck';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import { DutiableTimelineDialog } from '@/Features/Admin/DutiableTimeline';
 import IconEdit from '~icons/fluent/edit16-filled';
 import IconEye from '~icons/fluent/eye16-regular';
 import { Alert, AlertDescription } from '@/Components/ui/alert';
@@ -807,6 +828,15 @@ function exOfficioSourceFor(user: App.Entities.User): string | null {
 const memberPreviewCount = 8;
 const memberSearch = ref('');
 const showAllMembers = ref(false);
+
+const timelineOpen = ref(false);
+const timelineSpotlight = useFeatureSpotlight('dutiable-timeline-v1');
+
+/** Dismissed on use, not only via the popover's own button. */
+function openTimeline(): void {
+  timelineOpen.value = true;
+  void timelineSpotlight.dismiss();
+}
 
 const filteredCurrentUsers = computed(() => {
   const users = (props.duty.current_users ?? []) as UserWithPivot[];

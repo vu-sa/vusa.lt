@@ -65,6 +65,26 @@
                               @input="autoResizeTextarea($event)" />
                           </FormControl>
                         </div>
+                        <!-- Optional time range (per-item toggle) -->
+                        <div v-if="itemTimesVisible[field.key]" class="flex items-center gap-2">
+                          <TimePicker
+                            :model-value="toTimeValue(agendaItemTimes[field.key]?.start)"
+                            :minute-step="5"
+                            clearable
+                            class="h-8 w-[6.5rem] text-sm"
+                            :title="$t('Kada klausimas pradedamas svarstyti')"
+                            @update:model-value="(value) => setItemTime(field.key, 'start', value)"
+                          />
+                          <span class="text-muted-foreground">–</span>
+                          <TimePicker
+                            :model-value="toTimeValue(agendaItemTimes[field.key]?.end)"
+                            :minute-step="5"
+                            clearable
+                            class="h-8 w-[6.5rem] text-sm"
+                            :title="$t('Kada klausimo svarstymas baigiamas')"
+                            @update:model-value="(value) => setItemTime(field.key, 'end', value)"
+                          />
+                        </div>
                       </div>
                       <div class="flex items-center gap-1 mt-1">
                         <!-- Per-item description toggle -->
@@ -83,6 +103,25 @@
                             </TooltipTrigger>
                             <TooltipContent>
                               {{ itemDescriptionsVisible[field.key] ? $t('Slėpti aprašymą') : $t('Pridėti aprašymą') }}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <!-- Per-item time range toggle -->
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger as-child>
+                              <Button
+                                type="button"
+                                :variant="itemTimesVisible[field.key] ? 'secondary' : 'ghost'"
+                                size="icon"
+                                class="h-6 w-6"
+                                :class="itemTimesVisible[field.key] ? '' : 'opacity-50 hover:opacity-100'"
+                                @click="toggleItemTimes(field.key)">
+                                <ClockIcon class="h-3 w-3" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {{ itemTimesVisible[field.key] ? $t('Slėpti laiką') : $t('Nurodyti laiką') }}
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -356,6 +395,7 @@ import {
   Loader2,
   Users as UsersIcon,
   Text as TextIcon,
+  Clock as ClockIcon,
 } from 'lucide-vue-next';
 
 import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
@@ -367,6 +407,7 @@ import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 // Import Shadcn components
 import { Button } from '@/Components/ui/button';
 import { Textarea } from '@/Components/ui/textarea';
+import { TimePicker, type TimeValue } from '@/Components/ui/time-picker';
 import {
   FormControl,
   FormField,
@@ -433,6 +474,10 @@ const broughtByStudentsFlags = ref<Record<string, boolean>>({});
 const itemDescriptionsVisible = ref<Record<string, boolean>>({});
 // Track per-item descriptions by field.key
 const itemDescriptions = ref<Record<string, string>>({});
+// Track per-item time-range visibility by field.key
+const itemTimesVisible = ref<Record<string, boolean>>({});
+// Track per-item start/end times (`HH:MM` strings, matching the backend) by field.key
+const agendaItemTimes = ref<Record<string, { start: string | null; end: string | null }>>({});
 // Track current field keys in order (updated during render via v-for)
 const currentFieldKeys = ref<string[]>([]);
 
@@ -510,7 +555,36 @@ const removeItem = (key: string, index: number, remove: Function) => {
   delete broughtByStudentsFlags.value[key];
   delete itemDescriptionsVisible.value[key];
   delete itemDescriptions.value[key];
+  delete itemTimesVisible.value[key];
+  delete agendaItemTimes.value[key];
   remove(index);
+};
+
+/** The form holds `HH:MM` strings; TimePicker speaks {hour, minute}. */
+const toTimeValue = (value: string | null | undefined): TimeValue | undefined => {
+  if (!value) return undefined;
+  const [hour, minute] = value.split(':');
+
+  return { hour: Number(hour), minute: Number(minute) };
+};
+
+const toTimeString = (value: TimeValue | undefined): string | null =>
+  value
+    ? `${String(value.hour).padStart(2, '0')}:${String(value.minute).padStart(2, '0')}`
+    : null;
+
+const toggleItemTimes = (key: string) => {
+  if (!agendaItemTimes.value[key]) {
+    agendaItemTimes.value[key] = { start: null, end: null };
+  }
+  itemTimesVisible.value[key] = !itemTimesVisible.value[key];
+};
+
+const setItemTime = (key: string, field: 'start' | 'end', value: TimeValue | undefined) => {
+  if (!agendaItemTimes.value[key]) {
+    agendaItemTimes.value[key] = { start: null, end: null };
+  }
+  agendaItemTimes.value[key][field] = toTimeString(value);
 };
 
 // Auto-resize textarea to fit content
@@ -536,6 +610,8 @@ const clearAllItems = () => {
     broughtByStudentsFlags.value = {};
     itemDescriptionsVisible.value = {};
     itemDescriptions.value = {};
+    itemTimesVisible.value = {};
+    agendaItemTimes.value = {};
   }
 };
 
@@ -608,6 +684,12 @@ const onSubmit = (values: any) => {
     ),
     descriptions: itemsWithKeys.map((item: { key: string }) =>
       itemDescriptions.value[item.key] || '',
+    ),
+    startTimes: itemsWithKeys.map((item: { key: string }) =>
+      agendaItemTimes.value[item.key]?.start || null,
+    ),
+    endTimes: itemsWithKeys.map((item: { key: string }) =>
+      agendaItemTimes.value[item.key]?.end || null,
     ),
   };
 

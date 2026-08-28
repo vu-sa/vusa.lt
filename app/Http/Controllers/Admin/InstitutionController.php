@@ -21,6 +21,7 @@ use App\Services\InstitutionActivityStatusService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
 use App\Services\TanstackTableService;
+use App\Settings\CadenceSettings;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
@@ -171,6 +172,9 @@ class InstitutionController extends AdminController
         // Append public visibility flags now that types are loaded (avoids N+1)
         $institution->append('has_public_meetings');
         $institution->append('meeting_periodicity_days');
+        // Whether this is one of VU SA's own bodies or one it delegates into decides half of
+        // what the page means; the types it is inherited from are already loaded above.
+        $institution->append('governance_scope');
         $institution->setAttribute(
             'activity_status',
             $this->activityStatusService->resolve($institution)->toArray()
@@ -315,6 +319,15 @@ class InstitutionController extends AdminController
             ],
             'institutionTypes' => Type::where('model_type', MorphMap::alias(Institution::class))->get(),
             'assignableTenants' => GetTenantsForUpserts::execute('institutions.update.padalinys', $this->authorizer),
+            // Term boundaries are edited here rather than in settings, because they belong
+            // to the body that uses them. The global ladder rides along read-only so the
+            // editor can see what they would be overriding.
+            'cadences' => CadenceController::payload($institution->id),
+            'globalCadences' => CadenceController::payload(globalOnly: true),
+            'cadenceDefaults' => [
+                'default_start_month_day' => app(CadenceSettings::class)->default_start_month_day,
+                'default_end_month_day' => app(CadenceSettings::class)->default_end_month_day,
+            ],
         ]);
     }
 

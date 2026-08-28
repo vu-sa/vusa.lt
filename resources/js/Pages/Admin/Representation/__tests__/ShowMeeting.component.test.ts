@@ -34,9 +34,9 @@ const baseMeeting = {
   sharepointPath: null,
 };
 
-const createWrapper = () =>
+const createWrapper = (props: Record<string, unknown> = {}) =>
   mount(ShowMeeting, {
-    props: { meeting: baseMeeting, representatives: [] },
+    props: { meeting: baseMeeting, representatives: [], ...props },
     global: { stubs },
   });
 
@@ -47,10 +47,19 @@ describe('ShowMeeting.vue', () => {
   });
 
   it('renders a trigger for each tab, with the agenda item count', () => {
+    // A VU body: agenda, files, tasks. Its paperwork lives in SharePoint, not in documents.
     const triggers = createWrapper().findAll('[role="tab"]');
 
     expect(triggers).toHaveLength(3);
     expect(triggers[0].text()).toContain('2');
+    expect(triggers.map(t => t.text()).join(' ')).not.toContain('Dokumentai');
+  });
+
+  it('adds the documents tab only for a VU SA body', () => {
+    const triggers = createWrapper({ governanceScope: 'vusa' }).findAll('[role="tab"]');
+
+    expect(triggers).toHaveLength(4);
+    expect(triggers.map(t => t.text()).join(' ')).toContain('Dokumentai');
   });
 
   it('lands on the agenda tab by default', () => {
