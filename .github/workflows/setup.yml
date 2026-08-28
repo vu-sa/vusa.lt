@@ -71,13 +71,19 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         run: npm run build
 
+      # vendor/ is ~600MB across tens of thousands of small files, and upload-artifact bills that
+      # per file: uploading it raw took 67s, on the critical path of every downstream job. One
+      # tarball uploads in a fraction of that; consumers untar it after downloading.
+      - name: Pack vendor directory
+        run: tar -czf vendor.tar.gz vendor
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7
         with:
           name: build-assets
           path: |
             public/build
-            vendor
+            vendor.tar.gz
           retention-days: 1
         # Note: public/build contains development build (no secrets)
         # Production build with secrets happens in deploy.yml

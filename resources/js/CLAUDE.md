@@ -109,6 +109,33 @@ vendor/bin/sail npx vitest run --project component resources/js/Components/Admin
 vendor/bin/sail npx vitest run --project unit
 ```
 
+## What CI actually runs
+
+Pull requests run `vitest --changed origin/<base>`: only specs whose dependency graph reaches a
+changed file. **A green PR is not a full run.** Pushes to `main` run everything — the same contract
+Pest TIA gives the PHP suite, and the same backstop.
+
+Escalation back to a full run is driven by `forceRerunTriggers` in `vitest.config.ts`
+(`package.json`, `vitest.config.*`, `tests/setup.ts`, `resources/js/mocks/**`). If you add another
+file that every spec depends on implicitly, add it there — the import graph cannot attribute a
+setup file to any individual test.
+
+## Never re-mock a shared module with a bespoke factory
+
+`vi.mock('@inertiajs/vue3', () => ({ ...actual, usePage: () => ({ props: myProps }) }))` bakes one
+file's page props into the module. It works today only because each test file gets a private module
+registry — which is exactly what stops the suite from running with `isolate: false` (measured at
+~9s instead of ~41s). 73 of 227 files currently mock a module that another file also mocks.
+
+Use the one shared factory plus per-test state instead:
+
+```typescript
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
+
+// then, per test:
+vi.mocked(usePage).mockReturnValue(createMockPage({ app: { locale: 'lt' } }));
+```
+
 ## Key Principles
 
 1. **Test inputs and outputs**, not implementation details — focus on props, user interactions, and rendered DOM
