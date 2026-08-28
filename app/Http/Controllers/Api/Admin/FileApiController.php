@@ -311,7 +311,7 @@ class FileApiController extends ApiController
         $visited = 0;
         $truncated = false;
 
-        while ($queue !== [] && ! $truncated) {
+        while ($queue !== []) {
             [$directory, $depth] = array_shift($queue);
 
             if (++$visited > self::SEARCH_MAX_DIRECTORIES) {

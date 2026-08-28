@@ -64,7 +64,7 @@ class ImageUploadService
     /**
      * Process and save an image to storage
      *
-     * @return array{url: string, name: string, originalSize: int, compressedSize: int, compressionRatio: int}
+     * @return array{url: string, name: string, path: string, originalSize: int, compressedSize: int, compressionRatio: int}
      */
     public function processAndSave(
         UploadedFile|string $source,
