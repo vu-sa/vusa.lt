@@ -3,7 +3,6 @@
 namespace App\Support\Docs;
 
 use App\Support\MorphMap;
-use Illuminate\Routing\Route as RoutingRoute;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
@@ -52,8 +51,7 @@ class FeatureSurfaceScanner
         /** @var array<string, array{routes: list<string>, admin: bool}> $grouped */
         $grouped = [];
 
-        /** @var RoutingRoute $route */
-        foreach (Route::getRoutes() as $route) {
+        foreach (Route::getRoutes()->getRoutes() as $route) {
             $name = $route->getName();
 
             if ($name === null || ! self::isReportable($name)) {
@@ -83,7 +81,7 @@ class FeatureSurfaceScanner
                 testedRoutes: $tested,
                 hasHelp: $alias !== null && in_array($alias, $helpDirs, true),
                 docPages: $this->pagesDocumenting($slug, $alias, $claims),
-                isAdmin: $data['admin'] ?? false,
+                isAdmin: $data['admin'],
             );
         }
 

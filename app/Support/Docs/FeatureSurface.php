@@ -38,7 +38,7 @@ class FeatureSurface
 
         usort($undocumented, fn (FeatureArea $a, FeatureArea $b) => $b->priority() <=> $a->priority() ?: strcmp($a->slug, $b->slug));
 
-        return array_values($undocumented);
+        return $undocumented;
     }
 
     public function documentedCount(): int
