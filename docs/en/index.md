@@ -7,8 +7,8 @@ hero:
   tagline: All the information you need about the mano.vusa.lt platform
   actions:
     - theme: brand
-      text: Functions
-      link: /en/main-functions
+      text: For Administrators
+      link: /en/roles/administrators/faq
     - theme: alt
       text: Updates
       link: /en/changelog/

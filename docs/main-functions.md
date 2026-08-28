@@ -1,3 +1,0 @@
-# Pagrindinės funkcijos
-
-Bus papildyta.

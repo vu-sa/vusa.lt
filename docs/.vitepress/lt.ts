@@ -13,7 +13,6 @@ export default {
       {
         text: 'Pagal vaidmenį',
         items: [
-          { text: 'Bendra informacija', link: '/main-functions' },
           { text: 'Studentų atstovams', link: '/roles/student-representatives/faq' },
           { text: 'Administratoriams', link: '/roles/administrators/faq' },
         ]
@@ -36,7 +35,6 @@ export default {
           text: 'Taip pat žiūrėkite',
           collapsed: false,
           items: [
-            { text: '← Bendra informacija', link: '/main-functions' },
             { text: '← Administratoriams', link: '/roles/administrators/faq' },
           ]
         },
@@ -54,7 +52,6 @@ export default {
           text: 'Taip pat žiūrėkite',
           collapsed: false,
           items: [
-            { text: '← Bendra informacija', link: '/main-functions' },
             { text: '← Studentų atstovams', link: '/roles/student-representatives/faq' },
           ]
         },
@@ -95,7 +92,6 @@ export default {
         {
           text: 'Bendra informacija',
           items: [
-            { text: 'Pagrindinės funkcijos', link: '/main-functions' },
             { text: 'Dokumentų nuasmeninimas', link: '/dng' },
             { text: 'Informacijos administravimas', link: '/informacijos-administravimas' },
             { text: 'D.U.K.', link: '/faq' },

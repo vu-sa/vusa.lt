@@ -189,7 +189,7 @@ lastUpdated: true
 - ⭐ **Peržiūros konkrečios naujienos ar puslapio redagavimo lange** — atidarius naujieną arba puslapį matosi, kiek kartų jis peržiūrėtas ir kiek turėjo lankytojų. Jei įrašas paskelbtas anksčiau, nei pradėti kaupti duomenys, apie tai įspėjama
 - ✨ **Kaupiami svetainės paieškos žodžiai** — įrašoma, ko lankytojai ieško vusa.lt paieškoje ir kiek rezultatų rado. Taip matysime, kokio turinio žmonės ieško, bet neranda. Įrašomas tik paieškos tekstas ir rezultatų skaičius, be jokių lankytojo duomenų
 
-## v1.15 — Atostogos neskaičiuojamos į susitikimų laikotarpius {#v1-15}
+## v1.15 — Atostogos neskaičiuojamos į susitikimų laikotarpius (2026-07-14) {#v1-15}
 
 - ✨ **Atostogos neįskaičiuojamos į posėdžių periodiškumą** — vasaros, žiemos, sausio pabaigos ir Velykų atostogų dienos nebeskaičiuojamos vertinant, kiek laiko institucija neposėdžiavo. Todėl per atostogas nebekuriamos užduotys ir nebesiunčiami priminimai, o užduočių terminai nebenukrenta į atostogų laikotarpį
 - 🔧 **Veikia „Institucijos, kurioms reikia dėmesio“** — pradiniame lange šis blokas dėl skaičiavimo klaidos niekada nerodydavo vėluojančių institucijų
