@@ -7,8 +7,8 @@ hero:
   tagline: Visa reikalinga informacija apie mano.vusa.lt platformą
   actions:
     - theme: brand
-      text: Funkcijos
-      link: /main-functions
+      text: Administratoriams
+      link: /roles/administrators/faq
     - theme: alt
       text: Atnaujinimai
       link: /changelog/

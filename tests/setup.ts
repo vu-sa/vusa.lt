@@ -4,6 +4,33 @@ import { config } from '@vue/test-utils';
 // Note: Icon auto-imports now handled by unplugin-icons in vitest.config.ts
 // No need to manually mock individual icons anymore
 
+// Node 26 defines `localStorage`/`sessionStorage` as native globals whose getter returns
+// undefined unless the process was started with --localstorage-file. Because that property
+// already exists on globalThis (which *is* the jsdom window), jsdom never installs its own —
+// leaving both undefined. Provide a fresh in-memory Storage per test file instead.
+const createStorage = (): Storage => {
+  const entries = new Map<string, string>();
+
+  return {
+    get length() {
+      return entries.size;
+    },
+    key: (index: number) => [...entries.keys()][index] ?? null,
+    getItem: (key: string) => entries.get(String(key)) ?? null,
+    setItem: (key: string, value: string) => void entries.set(String(key), String(value)),
+    removeItem: (key: string) => void entries.delete(String(key)),
+    clear: () => entries.clear(),
+  } as Storage;
+};
+
+for (const key of ['localStorage', 'sessionStorage'] as const) {
+  Object.defineProperty(globalThis, key, {
+    value: createStorage(),
+    configurable: true,
+    writable: true,
+  });
+}
+
 // Mock route function from Ziggy
 vi.mock('ziggy-js', () => ({
   default: (name: string, params: any) => {

@@ -206,38 +206,6 @@ class FileUsageScanner
     }
 
     /**
-     * Optimize variants for database queries (sort by efficiency)
-     */
-    private function optimizeVariantsForQuery(array $variants): array
-    {
-        // Sort variants by query efficiency:
-        // 1. Longer, more specific patterns first
-        // 2. Path-based patterns before filename-only
-        // 3. Non-escaped before escaped patterns
-
-        usort($variants, function ($a, $b) {
-            // Prefer non-escaped patterns (more efficient queries)
-            $aEscaped = str_contains($a, '\\');
-            $bEscaped = str_contains($b, '\\');
-            if ($aEscaped !== $bEscaped) {
-                return $aEscaped ? 1 : -1;
-            }
-
-            // Prefer path-based patterns
-            $aHasPath = str_contains($a, '/');
-            $bHasPath = str_contains($b, '/');
-            if ($aHasPath !== $bHasPath) {
-                return $bHasPath ? 1 : -1;
-            }
-
-            // Prefer longer patterns (more specific)
-            return strlen($b) - strlen($a);
-        });
-
-        return $variants;
-    }
-
-    /**
      * Try exact matches first (most efficient)
      */
     /**
@@ -276,30 +244,25 @@ class FileUsageScanner
     }
 
     /**
-     * Execute optimized LIKE queries with early termination
+     * Execute a single LIKE query covering every variant, in both plain and
+     * JSON-escaped form, with a result limit to prevent huge result sets.
      */
     private function executeLikeQuery(string $modelClass, string $field, array $variants): Collection
     {
-        $results = new Collection;
-        $maxVariantsToTry = 5; // Limit variants to avoid slow queries
+        $needles = $this->likeNeedles($variants);
 
-        foreach (array_slice($variants, 0, $maxVariantsToTry) as $variant) {
-            $query = self::queryIncludingTrashed($modelClass)->where($field, 'LIKE', '%'.$variant.'%');
-
-            // Add limit to prevent huge result sets
-            $partialResults = $query->limit(10)->get();
-
-            if ($partialResults->isNotEmpty()) {
-                $results = $results->merge($partialResults);
-
-                // Early termination if we found matches with specific patterns
-                if (! str_contains($variant, '\\') && strlen($variant) > 10) {
-                    break;
-                }
-            }
+        if ($needles === []) {
+            return new Collection;
         }
 
-        return $results->unique('id');
+        return self::queryIncludingTrashed($modelClass)
+            ->where(function (Builder $query) use ($field, $needles) {
+                foreach ($needles as $needle) {
+                    $query->orWhereRaw($field." LIKE ? ESCAPE '|'", ['%'.$needle.'%']);
+                }
+            })
+            ->limit(10)
+            ->get();
     }
 
     /**
@@ -350,6 +313,9 @@ class FileUsageScanner
 
         // Priority 1: Most common and likely patterns first
         $this->addStructuralVariants($push, $originalPath, $normalizedUrl);
+
+        // Priority 1b: fully-qualified vusa.lt URLs (https://static.vusa.lt/…)
+        $this->addVusaDomainVariants($push, $variants);
 
         // Early exit for ASCII-only files (huge performance gain)
         $hasNonAscii = (bool) preg_match('/[^\x00-\x7F]/', $normalizedUrl);
@@ -543,6 +509,24 @@ class FileUsageScanner
     }
 
     /**
+     * Add variants for fully-qualified vusa.lt URLs (https://static.vusa.lt/…),
+     * which content sometimes stores instead of site-relative paths.
+     *
+     * The bare "vusa.lt" + path substring matches any scheme (http/https///)
+     * and any vusa.lt subdomain — static, www, tenant — while never matching a
+     * foreign host. Only vusa.lt domains get this treatment: an absolute URL
+     * on another host points at a different copy of the file, not this one.
+     */
+    private function addVusaDomainVariants(callable $push, array $variants): void
+    {
+        foreach ($variants as $variant) {
+            if (str_starts_with($variant, '/')) {
+                $push('vusa.lt'.$variant);
+            }
+        }
+    }
+
+    /**
      * Add Unicode-specific variants (only for non-ASCII files)
      */
     private function addUnicodeVariants(callable $push, array $baseVariants, string $normalizedUrl): void
@@ -559,17 +543,8 @@ class FileUsageScanner
             }
         }
 
-        // 2. JSON slash escaping for all current variants
-        $currentVariants = $baseVariants; // Take snapshot to avoid infinite loop
-        foreach ($currentVariants as $v) {
-            $escaped = str_replace('/', '\\/', $v);
-            if ($escaped !== $v) {
-                $push($escaped);
-            }
-        }
-
-        // 3. Unicode codepoint escapes (only if needed for complex Unicode)
-        $this->addUnicodeCodepointEscapes($push, $currentVariants);
+        // JSON slash/codepoint escapes are derived at query time (see likeNeedles()).
+        $this->addUnicodeCodepointEscapes($push, $baseVariants);
     }
 
     /**
@@ -662,28 +637,32 @@ class FileUsageScanner
     }
 
     /**
-     * Scan ContentPart models for file references with optimized JSON queries
+     * Scan ContentPart models for file references inside TipTap JSON.
+     *
+     * A single LIKE query covers every variant: json_content is stored as
+     * serialized JSON text where '/' reads '\/', so each variant is matched in
+     * both plain and JSON-escaped form (see jsonNeedles()).
      */
     private function scanContentParts(string|array $urlOrVariants, array $fileMetadata = []): Collection
     {
         try {
             $variants = is_array($urlOrVariants) ? $urlOrVariants : [$urlOrVariants];
-            $optimizedVariants = $this->optimizeVariantsForQuery($variants);
+            $needles = $this->jsonNeedles($variants);
 
-            // Phase 1: Try efficient JSON path queries first (MySQL 5.7+)
-            $results = $this->tryJsonPathQueries($optimizedVariants);
-            if ($results->isNotEmpty()) {
-                return $results;
+            if ($needles === []) {
+                return new Collection;
             }
 
-            // Phase 2: Optimized LIKE queries with limits
-            $results = $this->tryOptimizedContentPartLike($optimizedVariants);
-            if ($results->isNotEmpty()) {
-                return $results;
-            }
-
-            // Phase 3: Selective fallback for complex Unicode (only if needed)
-            return $this->trySelectiveUnicodeFallback($variants, $optimizedVariants);
+            return ContentPart::query()
+                ->whereIn('type', ['tiptap', 'shadcn-card', 'shadcn-accordion', 'hero'])
+                ->where(function (Builder $query) use ($needles) {
+                    foreach ($needles as $needle) {
+                        $query->orWhereRaw("json_content LIKE ? ESCAPE '|'", ['%'.$needle.'%']);
+                    }
+                })
+                ->limit(10)
+                ->with('content')
+                ->get();
 
         } catch (\Exception $e) {
             Log::error('Error scanning ContentParts', [
@@ -696,117 +675,89 @@ class FileUsageScanner
     }
 
     /**
-     * Try JSON path queries for better performance on JSON columns
+     * Build LIKE patterns for a variant in both its plain and its JSON-encoded
+     * form — serialized JSON stores '/' as '\/', so a stored '/uploads/a.jpg'
+     * reference physically reads '\/uploads\/a.jpg'.
+     *
+     * @param  array<int, string>  $variants
+     * @return array<int, string>
      */
-    private function tryJsonPathQueries(array $variants): Collection
+    private function likeNeedles(array $variants): array
     {
-        $results = new Collection;
+        $needles = [];
 
-        // Try most specific variants first
-        $specificVariants = array_slice($variants, 0, 3);
-
-        foreach ($specificVariants as $variant) {
-            // Skip very short or complex patterns
-            if (strlen($variant) < 5 || str_contains($variant, '\\')) {
-                continue;
-            }
-
-            // Use JSON_SEARCH for better performance on JSON columns
-            $query = ContentPart::query()
-                ->whereIn('type', ['tiptap', 'shadcn-card', 'shadcn-accordion', 'hero'])
-                ->whereRaw("JSON_SEARCH(json_content, 'one', ?) IS NOT NULL", [$variant])
-                ->limit(10); // Prevent huge result sets
-
-            $partialResults = $query->with('content')->get();
-
-            if ($partialResults->isNotEmpty()) {
-                $results = $results->merge($partialResults);
-
-                // Early termination for specific patterns
-                if (str_contains($variant, '/') && strlen($variant) > 15) {
-                    break;
-                }
-            }
-        }
-
-        return $results->unique('id');
-    }
-
-    /**
-     * Try optimized LIKE queries with chunking
-     */
-    private function tryOptimizedContentPartLike(array $variants): Collection
-    {
-        $results = new Collection;
-        $maxVariants = 3; // Limit to most promising variants
-
-        foreach (array_slice($variants, 0, $maxVariants) as $variant) {
+        foreach ($variants as $variant) {
             if (strlen($variant) < 4) {
                 continue;
-            } // Skip very short patterns
+            }
 
-            $query = ContentPart::query()
-                ->whereIn('type', ['tiptap', 'shadcn-card', 'shadcn-accordion', 'hero'])
-                ->where('json_content', 'LIKE', '%'.$variant.'%')
-                ->limit(5); // Aggressive limit for LIKE queries
+            foreach ($this->slashForms($variant) as $form) {
+                $needle = $this->escapeLike($form);
 
-            $partialResults = $query->with('content')->get();
-
-            if ($partialResults->isNotEmpty()) {
-                $results = $results->merge($partialResults);
-
-                // Early termination if we found good matches
-                if (! str_contains($variant, '\\') && strlen($variant) > 10) {
-                    break;
+                if (! in_array($needle, $needles, true)) {
+                    $needles[] = $needle;
                 }
             }
         }
 
-        return $results->unique('id');
+        return $needles;
     }
 
     /**
-     * Selective fallback for complex Unicode patterns (most expensive)
+     * Build LIKE patterns for JSON text columns.
+     *
+     * Stored values live inside JSON strings, so path references are anchored
+     * at the opening quote — a foreign absolute URL that merely contains the
+     * same path ("https://cdn.example.com/uploads/a.jpg") must not count as
+     * usage of the local file. vusa.lt domain variants carry their own boundary
+     * (the host), so they are also matched unanchored, covering absolute URLs
+     * on any vusa.lt subdomain.
+     *
+     * @param  array<int, string>  $variants
+     * @return array<int, string>
      */
-    private function trySelectiveUnicodeFallback(array $originalVariants, array $optimizedVariants): Collection
+    private function jsonNeedles(array $variants): array
     {
-        // Only run expensive fallback if we have Unicode escape sequences
-        $needsEscapedCheck = collect($originalVariants)->contains(fn ($v) => str_contains($v, '\\u') || str_contains($v, '\\/'));
+        $needles = [];
 
-        if (! $needsEscapedCheck) {
-            return new Collection;
-        }
-
-        // Get a small sample of ContentParts to test
-        $sampleParts = ContentPart::query()
-            ->whereIn('type', ['tiptap', 'shadcn-card', 'shadcn-accordion', 'hero'])
-            ->limit(50) // Much smaller sample
-            ->get();
-
-        $matched = $sampleParts->filter(function ($part) use ($optimizedVariants) {
-            $content = json_encode($part->json_content);
-            if ($content === false) {
-                return false;
+        foreach ($variants as $variant) {
+            if (strlen($variant) < 4) {
+                continue;
             }
 
-            // Only check top 2 most promising variants
-            foreach (array_slice($optimizedVariants, 0, 2) as $v) {
-                $withEscapedSlashes = str_replace('/', '\\/', $v);
-                if (str_contains($content, $v) || str_contains($content, $withEscapedSlashes)) {
-                    return true;
+            foreach ($this->slashForms($variant) as $form) {
+                $needles[] = $this->escapeLike('"'.$form);
+            }
+
+            if (str_starts_with($variant, 'vusa.lt/')) {
+                foreach ($this->slashForms($variant) as $form) {
+                    $needles[] = $this->escapeLike($form);
                 }
             }
-
-            return false;
-        });
-
-        if ($matched->isNotEmpty()) {
-            $matched->load('content');
-
-            return $matched->values();
         }
 
-        return new Collection;
+        return array_values(array_unique($needles));
+    }
+
+    /**
+     * A variant and its JSON-serialized twin ('/' escaped as '\/').
+     *
+     * @return array<int, string>
+     */
+    private function slashForms(string $variant): array
+    {
+        $escaped = str_replace('/', '\\/', $variant);
+
+        return $escaped === $variant ? [$variant] : [$variant, $escaped];
+    }
+
+    /**
+     * Escape a LIKE pattern with '|' as the escape character, keeping '%', '_'
+     * and '\' literal on both MySQL (default escape '\') and SQLite (none).
+     */
+    private function escapeLike(string $needle): string
+    {
+        return str_replace(['|', '%', '_'], ['||', '|%', '|_'], $needle);
     }
 
     /**
@@ -817,17 +768,14 @@ class FileUsageScanner
         try {
             $variants = is_array($urlOrVariants) ? $urlOrVariants : [$urlOrVariants];
 
-            // Sort variants by likelihood of match (exact matches first)
-            $optimizedVariants = $this->optimizeVariantsForQuery($variants);
-
             // Try exact matches first (more efficient than LIKE)
-            $exactMatches = $this->tryExactMatches($modelClass, $field, $optimizedVariants);
+            $exactMatches = $this->tryExactMatches($modelClass, $field, $variants);
             if ($exactMatches->isNotEmpty()) {
                 return $exactMatches;
             }
 
             // Fall back to optimized LIKE queries
-            return $this->executeLikeQuery($modelClass, $field, $optimizedVariants);
+            return $this->executeLikeQuery($modelClass, $field, $variants);
 
         } catch (\Exception $e) {
             Log::error('Error scanning translatable field', [
@@ -849,17 +797,14 @@ class FileUsageScanner
         try {
             $variants = is_array($urlOrVariants) ? $urlOrVariants : [$urlOrVariants];
 
-            // Sort variants by likelihood of match (exact matches first)
-            $optimizedVariants = $this->optimizeVariantsForQuery($variants);
-
             // Try exact matches first (more efficient than LIKE)
-            $exactMatches = $this->tryExactMatches($modelClass, $field, $optimizedVariants);
+            $exactMatches = $this->tryExactMatches($modelClass, $field, $variants);
             if ($exactMatches->isNotEmpty()) {
                 return $exactMatches;
             }
 
             // Fall back to optimized LIKE queries
-            return $this->executeLikeQuery($modelClass, $field, $optimizedVariants);
+            return $this->executeLikeQuery($modelClass, $field, $variants);
 
         } catch (\Exception $e) {
             Log::error('Error scanning text field', [
@@ -977,21 +922,16 @@ class FileUsageScanner
     /**
      * Resolve primary owning model for given content_id.
      * Priority order: Page, News, Tenant (extendable later).
+     *
+     * No caching: callers iterate groups keyed by content_id, so every id is
+     * resolved exactly once per scan anyway, and a static cache would leak
+     * stale owners between tests (RefreshDatabase reuses auto-increment ids).
      */
     private function resolvePrimaryOwnerForContent(int $contentId): ?object
     {
-        static $cache = [];
-        if (array_key_exists($contentId, $cache)) {
-            return $cache[$contentId];
-        }
-
-        $owner = Page::where('content_id', $contentId)->first()
+        return Page::where('content_id', $contentId)->first()
             ?? News::where('content_id', $contentId)->first()
             ?? Tenant::where('content_id', $contentId)->first();
-
-        $cache[$contentId] = $owner;
-
-        return $owner;
     }
 
     /**

@@ -2,16 +2,10 @@ import { defineConfig } from 'vitepress'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import fs from 'node:fs'
-import tailwindcss from '@tailwindcss/vite'
-import Icons from 'unplugin-icons/vite'
-import IconsResolver from 'unplugin-icons/resolver'
-import Components from 'unplugin-vue-components/vite'
 import lt from './lt'
 import en from './en'
 
-// Resolve paths for aliases
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const rootDir = path.resolve(__dirname, '../..')
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -31,34 +25,11 @@ export default defineConfig({
   outDir: '../public/docs',
   cleanUrls: true,
 
-  // Vite configuration for component demos
-  vite: {
-    plugins: [
-      tailwindcss(),
-      Components({
-        resolvers: [IconsResolver()],
-        dts: false,
-      }),
-      Icons({
-        autoInstall: true,
-      }),
-    ],
-    resolve: {
-      alias: {
-        '@': path.resolve(rootDir, 'resources/js'),
-      }
-    },
-    // Exclude storybook/test from bundle - we use simple function mocks for docs
-    optimizeDeps: {
-      exclude: ['storybook/test'],
-      include: ['reka-ui', 'class-variance-authority', 'clsx', 'tailwind-merge']
-    },
-    ssr: {
-      // Don't externalize app components for SSR
-      noExternal: ['@inertiajs/vue3', 'reka-ui', 'class-variance-authority']
-    }
-  },
-  
+  // Fragments shared with the admin UI via MdGetter.vue — included, never standalone pages.
+  // `_parts/**` are admin-UI help fragments, not pages; `maintainers/**` is the
+  // generated internal coverage dashboard — both are read in-repo, never published.
+  srcExclude: ['_parts/**', 'maintainers/**'],
+
   // Global search configuration
   themeConfig: {
     search: {
@@ -107,10 +78,6 @@ export default defineConfig({
   // Markdown configuration
   markdown: {
     lineNumbers: true,
-    // Enable header anchors for deeper section linking
-    headers: {
-      level: [0, 3]
-    }
   },
   
   // Build optimization - generate changelog metadata for admin UI update indicator

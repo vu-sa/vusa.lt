@@ -1,3 +1,14 @@
+---
+title: Rezervacijų sistema
+area: reservations
+models: [Reservation, Resource, ResourceCategory]
+last_reviewed: 2026-08-26
+tests:
+  - tests/Feature/Admin/Resources/ReservationControllerTest.php
+  - tests/Feature/Admin/Resources/ResourceControllerTest.php
+  - tests/Feature/Admin/Resources/ResourceCategoryControllerTest.php
+---
+
 # Rezervacijų sistema
 
 Už rezervacijos sistemą bei jos išteklius yra atsakingi VU SA P bei studentų (-čių) iniciatyvių administratoriai (-ės). Jiems nesant, už šią sistemą yra atsakingi kiti asmenys, deleguoti VU SA P ar studentų (-čių) iniciatyvos vadovo (-ės).

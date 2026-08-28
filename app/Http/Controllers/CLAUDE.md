@@ -1,6 +1,10 @@
 # Controllers Documentation
 
-This document provides guidelines for working with controllers in the application.
+Reference for controller structure in this application. **The enforced rules** — validation
+in Form Requests, reading `validated()`/`safe()` over raw input, check ordering, index-listing
+helpers, route-segment allowlists — live in [.ai/rules/controllers.md](../../../.ai/rules/controllers.md)
+and are what you must follow before editing anything here. This file only documents the shapes
+those rules apply to.
 
 ## AdminControllerInterface
 
@@ -80,7 +84,7 @@ Route::get('/admin/news', [NewsController::class, 'index'])
 1. **Implement AdminControllerInterface** for all admin controllers
 2. **Use Permission facade** for authorization checks
 3. **Follow consistent return types** as defined in the interface
-4. **Use Form Request classes for all validation** — inline `$request->validate()` is not
-   allowed and is enforced by `tests/Feature/System/ValidationConventionTest.php`
-5. **Read `validated()` / `safe()`**, never raw `only()`/`except()`/`input()` on a Form Request
-6. **Return proper Inertia responses** for views and redirects for actions
+4. **Return proper Inertia responses** for views and redirects for actions
+
+Validation and input-reading rules (Form Requests, `validated()`/`safe()`, check ordering)
+are enforced — see [.ai/rules/controllers.md](../../../.ai/rules/controllers.md).
