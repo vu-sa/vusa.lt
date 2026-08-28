@@ -281,6 +281,75 @@ describe('row ordering', function (): void {
 });
 
 /**
+ * Terms are boundaries, not buckets: a seat is measured by the span it covers. Real
+ * assignments start weeks either side of 1 July and are routinely renewed, so both halves
+ * matter — where a row primarily sits, and everything it touches on the way.
+ */
+describe('cadence membership', function (): void {
+    beforeEach(function (): void {
+        $this->terms = collect([
+            ['2023-07-01', '2024-06-30'],
+            ['2024-07-01', '2025-06-30'],
+            ['2025-07-01', '2026-06-30'],
+        ])->mapWithKeys(fn (array $window, int $index) => [
+            $index => Cadence::factory()->create([
+                'institution_id' => null, 'start_date' => $window[0], 'end_date' => $window[1],
+            ]),
+        ]);
+    });
+
+    function timelineRow(string $startDate, ?string $endDate): array
+    {
+        $row = Dutiable::factory()->create([
+            'duty_id' => test()->dutyManagerDuty->id,
+            'dutiable_id' => makeUser(test()->tenant)->id,
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+        ]);
+
+        return collect(
+            asUser(test()->dutyManager)
+                ->getJson(timelineUrl('duty', test()->dutyManagerDuty->id))
+                ->assertOk()
+                ->json('data.rows')
+        )->firstWhere('id', $row->id);
+    }
+
+    test('a term starting before 1 July belongs to the term it runs through', function (): void {
+        // The whole reported symptom: elected in June 2024, so the seat is the 2024-2025
+        // one even though its first three weeks fall inside the term that was ending.
+        $row = timelineRow('2024-06-10', '2025-06-30');
+
+        expect($row['cadence_id'])->toBe($this->terms[1]->id)
+            ->and($row['cadence_ids'])->toBe([$this->terms[0]->id, $this->terms[1]->id]);
+    });
+
+    test('a re-elected seat lists every term it covers', function (): void {
+        $row = timelineRow('2023-09-01', '2026-06-30');
+
+        expect($row['cadence_ids'])->toBe($this->terms->pluck('id')->all());
+    });
+
+    test('an open-ended seat reaches the terms that have not started yet', function (): void {
+        $row = timelineRow('2023-09-01', null);
+
+        expect($row['cadence_ids'])->toBe($this->terms->pluck('id')->all())
+            // No "most" to measure once the end is open, so the term it began in is the answer;
+            // greatest-overlap would file every sitting member under the newest term instead.
+            ->and($row['cadence_id'])->toBe($this->terms[0]->id);
+    });
+
+    test('a period outside every term claims none of them', function (): void {
+        // The old nearest-start fallback swept these into whichever term began closest,
+        // which is what stacked years of history onto the earliest one.
+        $row = timelineRow('2019-09-01', '2020-06-30');
+
+        expect($row['cadence_ids'])->toBe([])
+            ->and($row['cadence_id'])->toBe($this->terms[0]->id);
+    });
+});
+
+/**
  * A bar shows a period and nothing else, so these per-assignment overrides have to be
  * flagged — they are precisely what a merge or a delete would take with it.
  */
@@ -334,5 +403,23 @@ describe('per-assignment extras', function (): void {
             ->and($payload['extras']['study_program'])->toBe('Programų sistemos')
             // Tags stripped: the chart shows a tooltip, not rendered rich text.
             ->and($payload['extras']['description'])->toBe('Atstovauja MIF studentams');
+    });
+
+    test('the study programme note rides along with the programme', function (): void {
+        $row = Dutiable::factory()->create([
+            'duty_id' => $this->dutyManagerDuty->id,
+            'dutiable_id' => makeUser($this->tenant)->id,
+            'start_date' => '2024-07-01',
+            'study_program_note' => ['lt' => '1 grupė', 'en' => 'Group 1'],
+        ]);
+
+        $payload = collect(
+            asUser($this->dutyManager)
+                ->getJson(timelineUrl('duty', $this->dutyManagerDuty->id))
+                ->assertOk()
+                ->json('data.rows')
+        )->firstWhere('id', $row->id);
+
+        expect($payload['extras']['study_program_note'])->toBe('1 grupė');
     });
 });

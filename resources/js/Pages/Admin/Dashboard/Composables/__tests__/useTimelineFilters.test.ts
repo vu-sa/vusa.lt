@@ -95,6 +95,36 @@ describe('provideTimelineFilters', () => {
     wrapper.unmount();
   });
 
+  /**
+   * The chart used to have internal bodies removed server-side with no way to ask for them.
+   * They are drawn by default now, so this flag has to start off and stay off.
+   */
+  it('leaves VU SA\'s own bodies visible until the user hides them', async () => {
+    let filters: TimelineFilters | undefined;
+    const Harness = defineComponent({
+      setup() {
+        filters = provideTimelineFilters([], tenants);
+        return () => null;
+      },
+    });
+
+    const wrapper = mount(Harness);
+
+    expect(filters?.hideInternalInstitutionsTenant.value).toBe(false);
+    expect(filters?.hideInternalInstitutionsUser.value).toBe(false);
+
+    filters!.hideInternalInstitutionsTenant.value = true;
+    await nextTick();
+
+    expect(JSON.parse(localStorage.getItem('atstovavimas-timeline-filters') ?? '{}'))
+      .toMatchObject({ hideInternalInstitutionsTenant: true });
+
+    filters?.resetTenantFilters();
+    expect(filters?.hideInternalInstitutionsTenant.value).toBe(false);
+
+    wrapper.unmount();
+  });
+
   it('makes personal tenant filtering available to non-admin users', async () => {
     let filters: TimelineFilters | undefined;
     const institutions = [

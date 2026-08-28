@@ -38,6 +38,8 @@ export function useDutiableTimelineData(
 
   const rows = computed<ParsedRow[]>(() => (data.value?.rows ?? []).map(row => ({
     ...row,
+    // Defaulted here rather than at every read: an older cached payload predates the field.
+    cadence_ids: row.cadence_ids ?? [],
     startDate: parseTimelineDate(row.start_date),
     endDate: row.end_date ? parseTimelineDate(row.end_date) : null,
   })));

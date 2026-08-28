@@ -164,12 +164,12 @@ const shownContactEmail = computed(() => {
 // The first email is shown as a visible mailto link; the rest are reachable via the "+N" popover.
 const primaryEmail = computed(() => shownContactEmail.value[0] ?? null);
 
+// The note qualifies the programme rather than replacing it — several curators share one
+// programme and are told apart only by their group.
 const showAdditionalInfo = (duty) => {
-  if (!duty.pivot?.study_program) {
-    return null;
-  }
+  const parts = [duty.pivot?.study_program?.name, duty.pivot?.study_program_note].filter(Boolean);
 
-  return `(${duty.pivot.study_program?.name})`;
+  return parts.length > 0 ? `(${parts.join(', ')})` : null;
 };
 
 // Uses the first duty assignment that has a per-assignment photo (dutiable.additional_photo),

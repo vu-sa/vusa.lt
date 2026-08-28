@@ -30,8 +30,13 @@ export interface TimelineRow {
   holder_photo: string | null;
   tenant_id: number | null;
   tenant_shortname: string | null;
-  /** The term this assignment's start falls in — drives sorting and the cadence filter. */
+  /** The term the assignment spends most of itself in. Sorting only — never the filter. */
   cadence_id: string | null;
+  /**
+   * Every term the assignment's period touches. A re-elected member spans several, so
+   * "did they serve in 2024–2025" is a membership test, not an equality one.
+   */
+  cadence_ids: string[];
   start_date: string;
   end_date: string | null;
   via_dutiable_id: string | null;
@@ -42,6 +47,7 @@ export interface TimelineRow {
   extras: {
     email?: string;
     study_program?: string;
+    study_program_note?: string;
     photo?: string;
     description?: string;
     original_duty_name?: boolean;

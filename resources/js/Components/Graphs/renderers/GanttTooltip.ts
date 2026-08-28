@@ -7,6 +7,7 @@
  * This prevents multiple tooltips from appearing simultaneously.
  */
 import * as d3 from 'd3';
+import { trans as $t } from 'laravel-vue-i18n';
 
 import type { GanttColors } from '../ganttColors';
 
@@ -131,6 +132,8 @@ export function buildMeetingTooltipContent(
     authorized?: boolean;
     has_report?: boolean;
     has_protocol?: boolean;
+    has_calendar_event?: boolean;
+    calendar_event_is_draft?: boolean;
     agenda_items?: Array<{
       id: string;
       title: string;
@@ -198,7 +201,12 @@ export function buildMeetingTooltipContent(
   }
 
   // Build file status section (protocol and report indicators)
-  const fileStatusHtml = buildFileStatusHtml(meeting.has_protocol, meeting.has_report);
+  const fileStatusHtml = buildFileStatusHtml(
+    meeting.has_protocol,
+    meeting.has_report,
+    meeting.has_calendar_event,
+    meeting.calendar_event_is_draft,
+  );
 
   // Email meetings store start_time as 23:59 (deadline marker) — show date only
   // and use the institution name as the heading instead of a stored title that
@@ -292,9 +300,14 @@ function escapeHtml(text: string): string {
  * Uses ScrollText for protocol and FileBarChart for report icons
  * Green = has file, Amber = missing file
  */
-function buildFileStatusHtml(hasProtocol?: boolean, hasReport?: boolean): string {
+function buildFileStatusHtml(
+  hasProtocol?: boolean,
+  hasReport?: boolean,
+  hasCalendarEvent?: boolean,
+  calendarEventIsDraft?: boolean,
+): string {
   // Only show if we have any file status info
-  if (hasProtocol === undefined && hasReport === undefined) {
+  if (hasProtocol === undefined && hasReport === undefined && hasCalendarEvent === undefined) {
     return '';
   }
 
@@ -308,6 +321,15 @@ function buildFileStatusHtml(hasProtocol?: boolean, hasReport?: boolean): string
     ? '<svg class="w-3.5 h-3.5 text-green-600 dark:text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M8 18v-2"/><path d="M12 18v-4"/><path d="M16 18v-6"/></svg>'
     : '<svg class="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>';
 
+  // Announced in the calendar. Same amber/green split as ShowMeeting.vue: amber is a draft
+  // announcement, which nobody outside the admin can see. Absent entirely when not announced —
+  // most meetings never are, so a permanent "missing" mark would be noise, unlike the files.
+  const calendarHtml = hasCalendarEvent
+    ? `<div class="flex items-center gap-1" title="${calendarEventIsDraft ? $t('meetings.announce.draft_hint') : $t('meetings.announce.published_hint')}">
+        <svg class="w-3.5 h-3.5 ${calendarEventIsDraft ? 'text-amber-500 dark:text-amber-400' : 'text-green-600 dark:text-green-400'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
+      </div>`
+    : '';
+
   return `
     <div class="flex items-center gap-2 mt-1.5 pt-1.5 border-t border-current/20">
       <div class="flex items-center gap-1" title="${hasProtocol ? 'Protokolas įkeltas' : 'Nėra protokolo'}">
@@ -316,6 +338,7 @@ function buildFileStatusHtml(hasProtocol?: boolean, hasReport?: boolean): string
       <div class="flex items-center gap-1" title="${hasReport ? 'Ataskaita įkelta' : 'Nėra ataskaitos'}">
         ${reportIcon}
       </div>
+      ${calendarHtml}
     </div>
   `;
 }

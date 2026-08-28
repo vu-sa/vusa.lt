@@ -56,8 +56,14 @@ export function prefillFrom(
 ): CadenceDraft {
   const latest = [...cadences].sort((a, b) => a.start_date.localeCompare(b.start_date)).at(-1);
 
+  // Anchors are never carried over: a new term's boundary sitting has not happened yet.
   if (latest) {
-    return { start_date: addYear(latest.start_date), end_date: addYear(latest.end_date) };
+    return {
+      start_date: addYear(latest.start_date),
+      end_date: addYear(latest.end_date),
+      start_meeting_id: null,
+      end_meeting_id: null,
+    };
   }
 
   const year = new Date().getFullYear();
@@ -69,6 +75,8 @@ export function prefillFrom(
   return {
     start_date: start,
     end_date: sameYearEnd <= start ? `${year + 1}-${defaults.default_end_month_day}` : sameYearEnd,
+    start_meeting_id: null,
+    end_meeting_id: null,
   };
 }
 

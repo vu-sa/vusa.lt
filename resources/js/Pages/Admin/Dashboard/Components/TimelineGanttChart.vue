@@ -22,6 +22,7 @@
         :interactive="true"
         :show-only-with-activity
         :show-only-with-public-meetings
+        :hide-internal-institutions
         :duty-members
         :inactive-periods
         :show-duty-members
@@ -68,6 +69,8 @@ interface Props {
   tenantFilter: string[];
   showOnlyWithActivity: boolean;
   showOnlyWithPublicMeetings?: boolean;
+  /** Hide VU SA's own bodies. Off by default; the chart draws everything unless asked. */
+  hideInternalInstitutions?: boolean;
   institutionNames: Record<string, string>;
   tenantNames: Record<string, string>;
   institutionTenant: Record<string, string>;
@@ -180,6 +183,12 @@ const effectiveHeight = computed(() => {
   if (props.showOnlyWithPublicMeetings && props.institutionHasPublicMeetings) {
     const pubMap = props.institutionHasPublicMeetings;
     idsArr = idsArr.filter(id => pubMap[id] || pubMap[String(id)]);
+  }
+
+  // Mirrors useGanttFiltering; this copy exists only to size the chart's own container.
+  if (props.hideInternalInstitutions) {
+    const internal = new Set(props.institutions.filter(i => i.is_internal).map(i => String(i.id)));
+    idsArr = idsArr.filter(id => !internal.has(String(id)));
   }
 
   // Tenant header rows (only if showTenantHeaders is enabled and grouping data available)

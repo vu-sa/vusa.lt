@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Actions\Cadences\SyncCadenceDatesFromAnchors;
 use App\Contracts\Commentable;
 use App\Contracts\SharepointFileableContract;
 use App\Enums\MeetingType;
@@ -44,6 +45,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, FileableFile> $fileableFiles
  * @property-read string $completion_status
  * @property-read bool $has_protocol
+ * @property-read bool $has_calendar_event
  * @property-read bool $has_report
  * @property-read bool $is_joint
  * @property-read bool $is_public
@@ -368,6 +370,7 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
 
         static::saved(function (Meeting $meeting): void {
             $meeting->syncCalendarEventTiming();
+            $meeting->syncAnchoredCadences();
             $meeting->syncPublicSearchIndex();
         });
 
@@ -424,6 +427,30 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
         }
 
         $this->publicSearchModel()->unsearchable();
+    }
+
+    /**
+     * Whether the meeting is announced in the public calendar at all.
+     *
+     * Appended rather than computed in the DTO because the dashboard's user section
+     * serialises the relation straight through — see DashboardController::atstovavimas().
+     */
+    public function getHasCalendarEventAttribute(): bool
+    {
+        return $this->calendarEvent !== null;
+    }
+
+    /**
+     * A term anchored to this sitting moves with it. Same direction of truth as the calendar
+     * announcement: the meeting owns the date, the thing pointing at it follows.
+     */
+    private function syncAnchoredCadences(): void
+    {
+        if (! $this->wasChanged('start_time')) {
+            return;
+        }
+
+        SyncCadenceDatesFromAnchors::forMeeting($this);
     }
 
     /**

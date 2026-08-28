@@ -40,19 +40,22 @@ describe('Public/Meetings/ShowMeeting.vue', () => {
     });
   }
 
-  it('shows the timetable above the description when agenda items carry a time', () => {
+  // The page used to repeat itself: a standalone timetable card above the description and
+  // the agenda list with the same times below it. Only the agenda list remains — the
+  // timetable is now a content block usable anywhere, not something this page assembles.
+  it('shows agenda times once, in the agenda list below the description', () => {
     const wrapper = mountPage({ meeting: makeMeeting({ description: 'Trumpas aprašymas' }) });
 
     const text = wrapper.text();
-    const timetableIndex = text.indexOf('18:30');
     const descriptionIndex = text.indexOf('Trumpas aprašymas');
+    const timeIndex = text.indexOf('18:30');
 
-    expect(timetableIndex).toBeGreaterThan(-1);
     expect(descriptionIndex).toBeGreaterThan(-1);
-    expect(timetableIndex).toBeLessThan(descriptionIndex);
+    expect(timeIndex).toBeGreaterThan(descriptionIndex);
+    expect(text.split('18:30')).toHaveLength(2);
   });
 
-  it('renders no timetable when no agenda item has a start time', () => {
+  it('never assembles a timetable card of its own', () => {
     const wrapper = mountPage({
       meeting: makeMeeting({ agenda_items: [{ id: 'a1', title: 'Klausimas', order: 1, type: 'informational' }] }),
     });

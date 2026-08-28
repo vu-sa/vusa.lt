@@ -93,7 +93,7 @@ class CollapseOverlappingDutiables
                 : $survivor->end_date;
         }
 
-        foreach (['study_program_id', 'additional_email', 'additional_photo', 'additional_photo_focal_point', 'description'] as $field) {
+        foreach (['study_program_id', 'study_program_note', 'additional_email', 'additional_photo', 'additional_photo_focal_point', 'description'] as $field) {
             if (blank($survivor->{$field}) && filled($loser->{$field})) {
                 $survivor->{$field} = $loser->{$field};
             }

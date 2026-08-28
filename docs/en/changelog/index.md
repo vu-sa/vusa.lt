@@ -7,6 +7,18 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.32 — Cadences, terms and the meetings chart (2026-08-21) {#v1-32}
+
+- 🔧 **The cadence filter now shows everyone who served in that term** — an assignment used to be filed under a single cadence based on its start date, so a duty starting in June landed in the term that was ending, and a re-elected person showed up under only one term. An assignment now belongs to every cadence its period covers
+- 🔧 **The unit filter is hidden when there is nothing to filter** — in institutions where no assignment records a separate unit, the filter offered only "No unit" and narrowed nothing. It stays where representatives do come from other units (e.g. Parliament)
+- ✨ **The filtered cadence stands out in the chart** — the selected term's band brightens and the rest recede
+- ✨ **The assignment photo is shown, not just announced** — the timeline editor's badge used to say a photo had been uploaded; now it shows it
+- ⭐ **A group or note field beside the study programme** — curators in large programmes can record e.g. "Group 1". It shows in the public contacts next to the study programme
+- ⭐ **A cadence boundary can be linked to a meeting** — on the institution form, a term's start or end can be taken from a meeting (e.g. the reporting-and-election conference). Any meeting you have access to can be picked, including another institution's (e.g. the unit conference) — the boundary then says whose sitting it is. The date comes from the meeting and moves with it
+- ✨ **Governance scope is visible on the institution page and form** — a badge says whether this is a VU SR body or an external one, and the form explains why some fields are hidden
+- ⭐ **The meetings chart shows every meeting** — VU SR's own bodies are no longer hidden. A new "Hide VU SR's own bodies" option in the display settings hides them (off by default)
+- ✨ **A meeting's badge says whether it is announced in the calendar** — a green icon means a published event, amber means a draft
+
 ## v1.31 — Consistent admin cards (2026-08-21) {#v1-31}
 
 - ✨ **Settings cards now match the administration page style** — the settings index page now shows the same cards as the administration page: icon, title and description, with a subtle ring highlight on hover

@@ -26,6 +26,7 @@ class AtstovavimasDashboardService
         private readonly AcademicCalendarService $academicCalendar,
         private readonly ModelAuthorizer $authorizer,
         private readonly MeetingSettings $meetingSettings,
+        private readonly InstitutionScopeResolver $scopeResolver,
     ) {}
 
     /**
@@ -44,15 +45,17 @@ class AtstovavimasDashboardService
     public function tenantTimeline(array $tenantIds): array
     {
         $institutions = DutyService::getTimelineInstitutionsForTenants($tenantIds, $this->authorizer);
-        $institutions = $this->withoutExcludedInstitutionTypes($institutions);
         $this->decorateInstitutions($institutions);
 
         return [
+            // Every row is drawn; the chart's own toggle decides which are shown. The summary
+            // tiles stay on the set the settings call formal, so the health numbers do not
+            // shift under a display filter.
             'institutions' => $institutions
                 ->map(fn (Institution $institution) => $this->mapInstitution($institution))
                 ->values()
                 ->all(),
-            'institution_summary' => $this->institutionSummary($institutions),
+            'institution_summary' => $this->institutionSummary($this->withoutExcludedInstitutionTypes($institutions)),
             'representative_activity' => $this->representativeActivitySummary($tenantIds),
         ];
     }
@@ -265,6 +268,8 @@ class AtstovavimasDashboardService
                         'agendaItems:id,meeting_id,title,type,brought_by_students',
                         'agendaItems.votes:id,agenda_item_id,decision,student_vote,student_benefit,is_main',
                         'fileableFiles:id,fileable_id,fileable_type,file_type,deleted_externally_at',
+                        // Eager: mapMeeting asks every meeting in the window whether it is announced.
+                        'calendarEvent:id,meeting_id,is_draft',
                     ]),
             ])
             ->get();
@@ -282,18 +287,13 @@ class AtstovavimasDashboardService
      */
     private function accessibleInstitutionIds(array $tenantIds): \Illuminate\Support\Collection
     {
-        $excludedTypeIds = $this->meetingSettings->getExcludedInstitutionTypeIds();
-
+        // Deliberately unfiltered by `excluded_institution_type_ids`: VU SA's own bodies do
+        // meet, and hiding them server-side left the chart quietly incomplete with no way to
+        // ask for the rest. The chart hides them behind a toggle instead — see `is_internal`
+        // on the timeline rows. The setting still governs the health statistics.
         return Institution::query()
             ->whereIn('tenant_id', $tenantIds)
             ->whereHas('tenant', fn (Builder $query) => $query->whereIn('type', TenantType::representationalValues()))
-            ->when(
-                $excludedTypeIds->isNotEmpty(),
-                fn (Builder $query) => $query->whereDoesntHave(
-                    'types',
-                    fn (Builder $typeQuery) => $typeQuery->whereIn('types.id', $excludedTypeIds)
-                )
-            )
             ->pluck('institutions.id');
     }
 
@@ -410,6 +410,9 @@ class AtstovavimasDashboardService
                 'type' => $institution->tenant->type,
             ] : null,
             'meeting_periodicity_days' => $institution->meeting_periodicity_days,
+            // One of VU SA's own bodies rather than one it delegates into. Inherited down the
+            // type tree, so it covers children the settings' flat exclusion list misses.
+            'is_internal' => $this->scopeResolver->forInstitution($institution)->isInternal(),
             'has_public_meetings' => $institution->has_public_meetings,
             'upcoming_meetings_count' => (int) ($institution->upcoming_meetings_count ?? 0),
             'last_meeting_date' => is_string($lastMeetingDate)
@@ -473,6 +476,10 @@ class AtstovavimasDashboardService
             'completion_status' => $meeting->completion_status,
             'has_report' => $meeting->has_report,
             'has_protocol' => $meeting->has_protocol,
+            // Announced in the public calendar, and whether that announcement is still a
+            // draft — a drafted event is invisible to everyone but the admins.
+            'has_calendar_event' => $meeting->calendarEvent !== null,
+            'calendar_event_is_draft' => $meeting->calendarEvent?->is_draft ?? false,
             'agenda_items' => $agendaItems
                 ->take(4)
                 ->map(fn (AgendaItem $item) => $this->mapAgendaItem($item))

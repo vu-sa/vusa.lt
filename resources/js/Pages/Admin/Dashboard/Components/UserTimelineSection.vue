@@ -8,6 +8,7 @@
         <GanttFilterDropdown
           :show-only-with-activity="filters.showOnlyWithActivityUser.value"
           :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsUser.value"
+          :hide-internal-institutions="filters.hideInternalInstitutionsUser.value"
           :show-duty-members="filters.showDutyMembersUser.value"
           :show-tenant-headers="ganttSettings.showTenantHeaders.value"
           :show-related-institutions="filters.showRelatedInstitutionsUser.value"
@@ -15,6 +16,7 @@
           :trigger-label-override="$t('Rodymo nustatymai')"
           @update:show-only-with-activity="(val: boolean) => filters.showOnlyWithActivityUser.value = val"
           @update:show-only-with-public-meetings="(val: boolean) => filters.showOnlyWithPublicMeetingsUser.value = val"
+          @update:hide-internal-institutions="(val: boolean) => filters.hideInternalInstitutionsUser.value = val"
           @update:show-duty-members="(val: boolean) => filters.showDutyMembersUser.value = val"
           @update:show-tenant-headers="(val: boolean) => ganttSettings.showTenantHeaders.value = val"
           @update:show-related-institutions="(val: boolean) => filters.showRelatedInstitutionsUser.value = val"
@@ -29,6 +31,7 @@
       :tenant-filter="[]"
       :show-only-with-activity="filters.showOnlyWithActivityUser.value"
       :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsUser.value"
+      :hide-internal-institutions="filters.hideInternalInstitutionsUser.value"
       :institution-names="allInstitutionNames" :tenant-names :institution-tenant="allInstitutionTenant" :institution-has-public-meetings="allInstitutionHasPublicMeetings"
       :institution-periodicity="allInstitutionPeriodicity"
       :duty-members="mergedDutyMembers" :inactive-periods="mergedInactivePeriods"

@@ -172,6 +172,9 @@ class InstitutionController extends AdminController
         // Append public visibility flags now that types are loaded (avoids N+1)
         $institution->append('has_public_meetings');
         $institution->append('meeting_periodicity_days');
+        // Whether this is one of VU SA's own bodies or one it delegates into decides half of
+        // what the page means; the types it is inherited from are already loaded above.
+        $institution->append('governance_scope');
         $institution->setAttribute(
             'activity_status',
             $this->activityStatusService->resolve($institution)->toArray()

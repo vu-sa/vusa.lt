@@ -150,9 +150,9 @@ import { useGanttSettings } from '@/Pages/Admin/Dashboard/Composables/useGanttSe
  */
 
 const props = withDefaults(defineProps<{
-  meetings: Array<{ id: string | number; start_time: string | Date; institution_id: string | number; title?: string; institution?: string; type_slug?: string }>;
+  meetings: Array<{ id: string | number; start_time: string | Date; institution_id: string | number; title?: string; institution?: string; has_calendar_event?: boolean; calendar_event_is_draft?: boolean; type_slug?: string }>;
   gaps: Array<{ institution_id: string | number; from: string | Date; until: string | Date; mode?: 'heads_up' | 'no_meetings'; note?: string }>;
-  institutions?: Array<{ id: string | number; name?: string; tenant_id?: string | number; is_related?: boolean; relationship_direction?: 'outgoing' | 'incoming' | 'sibling'; relationship_type?: 'direct' | 'type-based' | 'within-type'; source_institution_id?: string; authorized?: boolean }>;
+  institutions?: Array<{ id: string | number; name?: string; tenant_id?: string | number; is_internal?: boolean; is_related?: boolean; relationship_direction?: 'outgoing' | 'incoming' | 'sibling'; relationship_type?: 'direct' | 'type-based' | 'within-type'; source_institution_id?: string; authorized?: boolean }>;
   daysBefore?: number;
   daysAfter?: number;
   dayWidth?: number;
@@ -175,6 +175,8 @@ const props = withDefaults(defineProps<{
   interactive?: boolean;
   showOnlyWithActivity?: boolean;
   showOnlyWithPublicMeetings?: boolean;
+  /** Hide VU SA's own bodies. Off by default — everything is drawn unless asked otherwise. */
+  hideInternalInstitutions?: boolean;
   // Row details/expansion (global multi-expand)
   detailsExpanded?: boolean;
   expandedRowHeight?: number;
@@ -209,6 +211,7 @@ const props = withDefaults(defineProps<{
   interactive: true,
   showOnlyWithActivity: false,
   showOnlyWithPublicMeetings: false,
+  hideInternalInstitutions: false,
   detailsExpanded: false,
   expandedRowHeight: 56,
   infiniteScroll: true,
@@ -294,6 +297,7 @@ const filtering = useGanttFiltering(
     institutionTenant: () => props.institutionTenant,
     showOnlyWithActivity: () => props.showOnlyWithActivity,
     showOnlyWithPublicMeetings: () => props.showOnlyWithPublicMeetings,
+    hideInternalInstitutions: () => props.hideInternalInstitutions,
     institutionHasPublicMeetings: () => props.institutionHasPublicMeetings,
     institutionHasActivity: () => props.institutionHasActivity,
     institutionsOrder: () => props.institutionsOrder,
@@ -972,7 +976,7 @@ watch(() => dragSelection.state.value, (state) => {
 // NOTE: the viewport-culled computeds (visibleMeetings etc.) are intentionally NOT
 // watched here — they depend on curXRef, which render() itself reassigns, so watching
 // them causes recursive updates. Viewport changes re-render via onViewportChange.
-watch([parsedMeetings, parsedGaps, parsedDutyMembers, parsedInactivePeriods, institutions, layoutRows, vacationPeriods, () => props.daysBefore, () => props.daysAfter, () => props.startDate, () => props.tenantFilter, () => props.showOnlyWithActivity, () => props.showOnlyWithPublicMeetings, () => props.showDutyMembers, () => props.showActivityStatus, () => props.detailsExpanded, () => props.loadingRange, extraBefore, extraAfter, dayWidthPx], () => render());
+watch([parsedMeetings, parsedGaps, parsedDutyMembers, parsedInactivePeriods, institutions, layoutRows, vacationPeriods, () => props.daysBefore, () => props.daysAfter, () => props.startDate, () => props.tenantFilter, () => props.showOnlyWithActivity, () => props.showOnlyWithPublicMeetings, () => props.hideInternalInstitutions, () => props.showDutyMembers, () => props.showActivityStatus, () => props.detailsExpanded, () => props.loadingRange, extraBefore, extraAfter, dayWidthPx], () => render());
 </script>
 
 <style scoped>

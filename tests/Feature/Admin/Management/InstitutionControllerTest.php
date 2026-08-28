@@ -589,6 +589,33 @@ describe('meeting_periodicity_days', function (): void {
             );
     });
 
+    test('show endpoint states which governance world the body belongs to', function (): void {
+        $type = Type::factory()->create([
+            'model_type' => MorphMap::alias(Institution::class),
+            'extra_attributes' => ['governance_scope' => 'vusa'],
+        ]);
+
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+        $institution->types()->attach($type);
+
+        asUser($this->admin)->get(route('institutions.show', $institution))
+            ->assertStatus(200)
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/People/ShowInstitution')
+                ->where('institution.governance_scope', 'vusa')
+            );
+    });
+
+    test('an untyped body still states a scope, so the badge is never blank', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        asUser($this->admin)->get(route('institutions.show', $institution))
+            ->assertStatus(200)
+            ->assertInertia(fn ($page) => $page
+                ->where('institution.governance_scope', 'vu')
+            );
+    });
+
     test('validates meeting_periodicity_days is positive integer', function (): void {
         $response = asUser($this->admin)->post(route('institutions.store'), [
             'name' => ['lt' => 'Test Institution'],

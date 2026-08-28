@@ -11,12 +11,13 @@
         <Badge v-if="counts.info > 0" variant="outline" class="text-[10px]">{{ counts.info }}</Badge>
       </span>
     </div>
-
     <p v-if="findings.length === 0" class="py-4 text-center text-xs text-muted-foreground">
       {{ $t('dutiables.timeline.diagnostics.empty') }}
     </p>
 
     <template v-else>
+      <p class="text-[10px] text-muted-foreground">
+      Ne visi siūlomi taisymai yra privalomi ir teisingi </p>
       <ul class="min-h-0 flex-1 space-y-1 overflow-y-auto pr-1">
         <li
           v-for="entry in entries"

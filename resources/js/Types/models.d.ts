@@ -415,6 +415,7 @@ declare global {
       start_date: string
       end_date?: string | null
       study_program_id?: string | null
+      study_program_note?: Array<unknown> | null
       additional_email?: string | null
       additional_photo?: string | null
       additional_photo_focal_point?: string | null

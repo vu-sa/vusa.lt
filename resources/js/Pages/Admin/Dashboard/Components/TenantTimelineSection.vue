@@ -26,6 +26,7 @@
             :selected-tenants="filters.selectedTenantForGantt.value"
             :show-only-with-activity="filters.showOnlyWithActivityTenant.value"
             :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsTenant.value"
+            :hide-internal-institutions="filters.hideInternalInstitutionsTenant.value"
             :show-duty-members="filters.showDutyMembersTenant.value"
             :show-activity-status="filters.showActivityStatusTenant.value"
             :show-activity-status-option="!!representativeActivity"
@@ -34,6 +35,7 @@
             @update:selected-tenants="filters.setSelectedTenants"
             @update:show-only-with-activity="(val: boolean) => filters.showOnlyWithActivityTenant.value = val"
             @update:show-only-with-public-meetings="(val: boolean) => filters.showOnlyWithPublicMeetingsTenant.value = val"
+            @update:hide-internal-institutions="(val: boolean) => filters.hideInternalInstitutionsTenant.value = val"
             @update:show-duty-members="(val: boolean) => filters.showDutyMembersTenant.value = val"
             @update:show-activity-status="(val: boolean) => filters.showActivityStatusTenant.value = val"
             @update:show-tenant-headers="(val: boolean) => ganttSettings.showTenantHeaders.value = val"
@@ -54,6 +56,7 @@
           :tenant-filter="[]"
           :show-only-with-activity="filters.showOnlyWithActivityTenant.value"
           :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsTenant.value"
+          :hide-internal-institutions="filters.hideInternalInstitutionsTenant.value"
           :institution-names :tenant-names :institution-tenant :institution-has-public-meetings
           :institution-has-activity
           :institution-periodicity

@@ -4,6 +4,7 @@ namespace App\Actions\Dutiables;
 
 use App\Models\Cadence;
 use App\Models\Pivots\Dutiable;
+use App\Support\Dutiables\CadenceMatcher;
 use App\Support\Dutiables\DutiableTimelineChange;
 use App\Support\Dutiables\DutiableTimelinePlan;
 use Illuminate\Support\Carbon;
@@ -281,13 +282,7 @@ class PlanDutiableTimelineChanges
      */
     private static function applicable(Collection $cadences, ?Dutiable $row): Collection
     {
-        $institutionId = $row?->duty?->institution_id;
-
-        $scoped = $institutionId === null
-            ? collect()
-            : $cadences->where('institution_id', $institutionId);
-
-        return $scoped->isNotEmpty() ? $scoped->values() : $cadences->whereNull('institution_id')->values();
+        return CadenceMatcher::applicable($cadences, $row?->duty?->institution_id);
     }
 
     /**

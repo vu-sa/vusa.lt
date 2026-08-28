@@ -71,6 +71,17 @@
           :hint="$t('Tipas nustato papildomas funkcijas ir rodomą informaciją')">
           <MultiSelect v-model="selectedTypes" :options="institutionTypeOptions"
             :placeholder="$t('Pasirinkite tipus')" />
+
+          <!-- The scope is what decides whether the contact, logo and address fields below
+               appear at all; without it stated, they simply vanish for no visible reason. -->
+          <div v-if="resolvedScope" class="mt-2 flex flex-wrap items-center gap-2">
+            <InstitutionScopeBadge :scope="resolvedScope" />
+            <span class="text-xs text-muted-foreground">
+              {{ showMoreOptions
+                ? $t('forms.helpers.governance_scope_internal_fields')
+                : $t('forms.helpers.governance_scope_external_fields') }}
+            </span>
+          </div>
         </FormFieldWrapper>
 
         <template v-if="showMoreOptions">
@@ -296,6 +307,7 @@ import FormStatusHeader from './FormStatusHeader.vue';
 import ISimpleIconsInstagram from '~icons/simple-icons/instagram';
 import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
 import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
+import InstitutionScopeBadge from '@/Components/Institutions/InstitutionScopeBadge.vue';
 import { CadenceSection, type CadenceRow } from '@/Components/Cadences';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { Button } from '@/Components/ui/button';
@@ -434,6 +446,17 @@ const resolveGovernanceScope = (typeId: number): string | null => {
 const showMoreOptions = computed(() =>
   Boolean(form.types?.some((typeId: number) => resolveGovernanceScope(typeId) === InstitutionScope.Vusa)),
 );
+
+/** External wins when types disagree, exactly as InstitutionScopeResolver::forInstitution does. */
+const resolvedScope = computed<string | null>(() => {
+  const scopes = (form.types ?? [])
+    .map((typeId: number) => resolveGovernanceScope(typeId))
+    .filter((scope): scope is string => scope !== null);
+
+  if (scopes.length === 0) return null;
+
+  return scopes.find(scope => scope !== InstitutionScope.Vusa) ?? InstitutionScope.Vusa;
+});
 
 const saveReorderedDuties = () => {
   const newDuties = form.duties.map((duty: App.Entities.Duty, index: number) => {

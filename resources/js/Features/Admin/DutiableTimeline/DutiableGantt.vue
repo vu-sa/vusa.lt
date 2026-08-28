@@ -135,6 +135,8 @@ import type { ParsedCadence, ParsedRow, StagedDates, TimelineLayoutRow } from '.
 const props = withDefaults(defineProps<{
   layoutRows: TimelineLayoutRow[];
   cadences: ParsedCadence[];
+  /** Terms the cadence filter selected; empty means unfiltered. */
+  highlightedCadenceIds?: Set<string>;
   domain: [Date, Date];
   totalHeight: number;
   collapsed: Set<string>;
@@ -148,6 +150,7 @@ const props = withDefaults(defineProps<{
   rowIndex: (key: string | number) => number;
 }>(), {
   monthWidthPx: DEFAULT_MONTH_WIDTH,
+  highlightedCadenceIds: () => new Set<string>(),
   selectedIds: () => new Set<string>(),
   staged: () => new Map(),
   diagnosticSeverityByRow: () => new Map(),
@@ -283,7 +286,13 @@ function render(): void {
   });
 
   renderCadenceBands({
-    g, x, innerHeight, colors: colors.value, timelineColors: timelineColors.value, cadences: props.cadences,
+    g,
+    x,
+    innerHeight,
+    colors: colors.value,
+    timelineColors: timelineColors.value,
+    cadences: props.cadences,
+    highlightedIds: props.highlightedCadenceIds,
   });
   renderMonthGrid({
     g, x, innerHeight, colors: colors.value, timelineColors: timelineColors.value, monthWidthPx: props.monthWidthPx,
@@ -327,7 +336,14 @@ function render(): void {
   const hg = header.append('g');
 
   renderMonthHeader({ g: hg, x, colors: colors.value, monthWidthPx: props.monthWidthPx, headerHeight: HEADER_HEIGHT });
-  renderCadenceLabels({ g: hg, x, colors: colors.value, cadences: props.cadences, y: 26 });
+  renderCadenceLabels({
+    g: hg,
+    x,
+    colors: colors.value,
+    cadences: props.cadences,
+    highlightedIds: props.highlightedCadenceIds,
+    y: 26,
+  });
 }
 
 /**
@@ -368,7 +384,7 @@ function requestRender(): void {
 
 watch(
   () => [
-    props.layoutRows, props.cadences, props.domain, props.monthWidthPx,
+    props.layoutRows, props.cadences, props.highlightedCadenceIds, props.domain, props.monthWidthPx,
     props.selectedIds, props.staged, props.diagnosticSeverityByRow,
   ],
   requestRender,

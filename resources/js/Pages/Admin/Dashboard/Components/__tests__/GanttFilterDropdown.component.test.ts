@@ -77,6 +77,19 @@ describe('GanttFilterDropdown', () => {
     expect(wrapper.emitted('update:selectedTenants')?.[0]).toEqual([['1', '2']]);
   });
 
+  it('offers hiding VU SA\'s own bodies, unticked', async () => {
+    wrapper = createWrapper();
+
+    const items = wrapper.findAll('[role="menuitemcheckbox"]');
+    const hideItem = items.find(item => item.text() === 'Slėpti VU SA darinius');
+
+    expect(hideItem).toBeDefined();
+    expect(hideItem!.attributes('aria-checked')).not.toBe('true');
+
+    await hideItem!.trigger('click');
+    expect(wrapper.emitted('update:hideInternalInstitutions')?.[0]).toEqual([true]);
+  });
+
   it('clears the tenant selection via the "Joks" quick action', async () => {
     wrapper = createWrapper({ selectedTenants: ['1', '2'] });
 

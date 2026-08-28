@@ -24,7 +24,17 @@
             {{ $t(`dutiables.timeline.extras.${entry.key}`) }}:
           </dt>
           <dd class="min-w-0 break-words">
-            {{ entry.value }}
+            <!-- Shown rather than announced: whether the right person is on the contact
+                 page is a question only the picture answers. -->
+            <img
+              v-if="entry.kind === 'image'"
+              :src="entry.value"
+              class="size-20 rounded-sm object-cover"
+              alt=""
+            >
+            <template v-else>
+              {{ entry.value }}
+            </template>
           </dd>
         </div>
       </dl>
@@ -33,9 +43,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, type Component } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { AtSign, GraduationCap, Image, Tag, Text } from 'lucide-vue-next';
+import { AtSign, GraduationCap, Image, Tag, Text, Users } from 'lucide-vue-next';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/ui/tooltip';
 
@@ -48,23 +58,33 @@ const props = defineProps<{
 /** Long prose would make the tooltip a wall; the point is "there is something here". */
 const DESCRIPTION_PREVIEW = 160;
 
-const entries = computed(() => {
+interface ExtraEntry {
+  key: string;
+  icon: Component;
+  kind: 'text' | 'image';
+  value: string;
+}
+
+const entries = computed<ExtraEntry[]>(() => {
   const extras = props.extras;
 
   if (!extras) return [];
 
-  return [
-    { key: 'email', icon: AtSign, value: extras.email },
-    { key: 'study_program', icon: GraduationCap, value: extras.study_program },
-    { key: 'photo', icon: Image, value: extras.photo ? $t('dutiables.timeline.extras.photo_set') : undefined },
-    { key: 'original_duty_name', icon: Tag, value: extras.original_duty_name ? $t('dutiables.timeline.extras.original_duty_name_set') : undefined },
+  return ([
+    { key: 'email', icon: AtSign, kind: 'text', value: extras.email },
+    { key: 'study_program', icon: GraduationCap, kind: 'text', value: extras.study_program },
+    { key: 'study_program_note', icon: Users, kind: 'text', value: extras.study_program_note },
+    { key: 'photo', icon: Image, kind: 'image', value: extras.photo },
+    { key: 'original_duty_name', icon: Tag, kind: 'text', value: extras.original_duty_name ? $t('dutiables.timeline.extras.original_duty_name_set') : undefined },
     {
       key: 'description',
       icon: Text,
+      kind: 'text',
       value: extras.description
         ? extras.description.slice(0, DESCRIPTION_PREVIEW) + (extras.description.length > DESCRIPTION_PREVIEW ? '…' : '')
         : undefined,
     },
-  ].filter((entry): entry is { key: string; icon: typeof AtSign; value: string } => entry.value !== undefined);
+  ] as Array<Omit<ExtraEntry, 'value'> & { value: string | undefined }>)
+    .filter((entry): entry is ExtraEntry => entry.value !== undefined && entry.value !== '');
 });
 </script>

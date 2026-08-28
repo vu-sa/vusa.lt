@@ -11,7 +11,7 @@
   -->
   <div
     data-slot="dutiable-timeline-dock"
-    class="sticky bottom-0 z-10 grid h-56 shrink-0 grid-cols-1 divide-y divide-border rounded-md border border-border bg-card lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:divide-x lg:divide-y-0"
+    class="sticky bottom-0 z-10 grid h-64 shrink-0 grid-cols-1 divide-y divide-border rounded-md border border-border bg-card lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:divide-x lg:divide-y-0"
   >
     <slot name="selection" />
     <slot name="suggestions" />

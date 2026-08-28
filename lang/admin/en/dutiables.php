@@ -54,6 +54,7 @@ return [
             'title' => 'Extra details',
             'email' => 'Email',
             'study_program' => 'Study programme',
+            'study_program_note' => 'Group or note',
             'description' => 'Description',
             'photo' => 'Photo',
             'photo_set' => 'Has its own photo',

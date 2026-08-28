@@ -66,6 +66,7 @@ export enum ContentPartEnum {
   PERSON_QUOTE = "PERSON_QUOTE",
   SECTION = "SECTION",
   SPACER = "SPACER",
+  TIMETABLE = "TIMETABLE",
 }
 export enum DegreeEnum {
   BA = "BA",

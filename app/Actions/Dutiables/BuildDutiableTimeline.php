@@ -10,6 +10,7 @@ use App\Models\Pivots\Dutiable;
 use App\Models\User;
 use App\Policies\DutyPolicy;
 use App\Settings\CadenceSettings;
+use App\Support\Dutiables\CadenceMatcher;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
@@ -48,7 +49,7 @@ class BuildDutiableTimeline
 
         $editable = self::editabilityMap($rows, $actor);
         $cadences = self::cadences($duties);
-        $cadenceByRow = self::cadenceByRow($rows, $cadences);
+        ['primary' => $cadenceByRow, 'spanned' => $cadenceIdsByRow] = self::cadenceByRow($rows, $cadences);
 
         // Every derived row that points at a row in this payload, so a source bar can
         // show what will follow it before the queued sync runs.
@@ -60,7 +61,7 @@ class BuildDutiableTimeline
             'scope' => self::scopeDescriptor($scope, $scopeId),
             'groups' => self::groups($scope, $rows, $cadenceByDuty)->values()->all(),
             'rows' => self::sortRows($rows, $cadenceByRow)
-                ->map(fn (Dutiable $row) => self::row($row, $scope, $editable, $derivedBySource, $cadenceByRow))
+                ->map(fn (Dutiable $row) => self::row($row, $scope, $editable, $derivedBySource, $cadenceByRow, $cadenceIdsByRow))
                 ->values()
                 ->all(),
             'cadences' => $cadences->map(fn (Cadence $cadence) => self::cadencePayload($cadence))->all(),
@@ -194,6 +195,7 @@ class BuildDutiableTimeline
      * @param  array<string, bool>  $editable
      * @param  Collection<string, EloquentCollection<int, Dutiable>>  $derivedBySource
      * @param  array<string, Cadence|null>  $cadenceByRow
+     * @param  array<string, list<string>>  $cadenceIdsByRow
      * @return array<string, mixed>
      */
     private static function row(
@@ -202,6 +204,7 @@ class BuildDutiableTimeline
         array $editable,
         Collection $derivedBySource,
         array $cadenceByRow,
+        array $cadenceIdsByRow,
     ): array {
         $isDerived = $row->via_dutiable_id !== null;
 
@@ -218,6 +221,7 @@ class BuildDutiableTimeline
             'tenant_id' => $row->tenant_id,
             'tenant_shortname' => $row->tenant?->shortname,
             'cadence_id' => $cadenceByRow[$row->id]?->id,
+            'cadence_ids' => $cadenceIdsByRow[$row->id] ?? [],
             'start_date' => $row->start_date->toDateString(),
             'end_date' => $row->end_date?->toDateString(),
             'via_dutiable_id' => $row->via_dutiable_id,
@@ -248,6 +252,7 @@ class BuildDutiableTimeline
         $extras = array_filter([
             'email' => $row->additional_email,
             'study_program' => $row->study_program?->name,
+            'study_program_note' => $row->study_program_note,
             'photo' => $row->additional_photo,
             'description' => filled($row->description) ? strip_tags((string) $row->description) : null,
             'original_duty_name' => $row->use_original_duty_name ? true : null,
@@ -257,31 +262,30 @@ class BuildDutiableTimeline
     }
 
     /**
-     * The term each assignment belongs to, by its own start date rather than its duty's —
-     * two people can hold the same seat in different terms, and the chart sorts by term.
+     * Every term each assignment touches, and the one it belongs to most.
+     *
+     * A seat held across a re-election spans several terms, so membership is a list; the
+     * single term is only what the chart sorts by.
      *
      * @param  EloquentCollection<int, Dutiable>  $rows
      * @param  Collection<int, Cadence>  $cadences
-     * @return array<string, Cadence|null>
+     * @return array{primary: array<string, Cadence|null>, spanned: array<string, list<string>>}
      */
     private static function cadenceByRow(EloquentCollection $rows, Collection $cadences): array
     {
-        $resolved = [];
+        $primary = [];
+        $spanned = [];
 
         foreach ($rows as $row) {
-            $institutionId = $row->duty?->institution_id;
-            $scoped = $institutionId === null ? collect() : $cadences->where('institution_id', $institutionId);
-            // An institution with its own ladder never falls back to the global one.
-            $pool = $scoped->isNotEmpty() ? $scoped : $cadences->whereNull('institution_id');
-            $start = $row->start_date;
+            $pool = CadenceMatcher::applicable($cadences, $row->duty?->institution_id);
 
-            $resolved[$row->id] = $pool->first(fn (Cadence $cadence) => $cadence->contains($start))
-                ?? $pool->sortBy(
-                    fn (Cadence $cadence) => $cadence->start_date->diffInDays($start, absolute: true)
-                )->first();
+            $primary[$row->id] = CadenceMatcher::primary($pool, $row->start_date, $row->end_date);
+            $spanned[$row->id] = CadenceMatcher::overlapping($pool, $row->start_date, $row->end_date)
+                ->pluck('id')
+                ->all();
         }
 
-        return $resolved;
+        return ['primary' => $primary, 'spanned' => $spanned];
     }
 
     /**

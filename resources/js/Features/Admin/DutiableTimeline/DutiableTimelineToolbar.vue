@@ -17,7 +17,10 @@
         :model-value="cadenceIds"
         @update:model-value="emit('update:cadenceIds', $event)"
       />
+      <!-- Hidden outright where no assignment records a cross-tenant unit: the menu would
+           otherwise offer a single bucket that narrows nothing. -->
       <DutiableTimelineFilterMenu
+        v-if="tenantOptions.length > 0"
         :label="$t('dutiables.timeline.filters.tenant')"
         :options="tenantOptions"
         :model-value="tenantKeys"

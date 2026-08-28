@@ -22,6 +22,11 @@ export interface TimelineColors {
   /** Cadence bands alternate between these, the way table rows alternate. */
   cadenceBand: [string, string];
   cadenceBandStroke: string;
+  /** A term the cadence filter selected. Loud enough to read as the subject of the view. */
+  cadenceBandHighlight: string;
+  cadenceBandHighlightStroke: string;
+  /** Everything the filter left out, pushed back so the selection reads against it. */
+  cadenceBandDim: string;
   /** Month zebra. The meetings palette's `zebraOdd` is transparent in both themes. */
   monthBand: string;
   severity: { error: string; warning: string; info: string };
@@ -36,6 +41,9 @@ const LIGHT: TimelineColors = {
   crossTenantStroke: 'oklch(0.541 0.281 293.009)', // violet-600
   cadenceBand: ['oklch(0.696 0.17 162.48 / 10%)', 'oklch(0.696 0.17 162.48 / 4%)'],
   cadenceBandStroke: 'oklch(0.696 0.17 162.48 / 35%)',
+  cadenceBandHighlight: 'oklch(0.696 0.17 162.48 / 26%)',
+  cadenceBandHighlightStroke: 'oklch(0.596 0.145 163.225 / 80%)',
+  cadenceBandDim: 'oklch(0.552 0.016 285.938 / 3%)',
   monthBand: 'oklch(0.552 0.016 285.938 / 5%)',
   severity: {
     error: 'oklch(0.577 0.245 27.325)', // red-600
@@ -53,6 +61,9 @@ const DARK: TimelineColors = {
   crossTenantStroke: 'oklch(0.75 0.18 293.009)', // violet-400
   cadenceBand: ['oklch(0.65 0.12 163.223 / 9%)', 'oklch(0.65 0.12 163.223 / 3%)'],
   cadenceBandStroke: 'oklch(0.65 0.12 163.223 / 25%)',
+  cadenceBandHighlight: 'oklch(0.65 0.12 163.223 / 24%)',
+  cadenceBandHighlightStroke: 'oklch(0.765 0.177 163.223 / 75%)',
+  cadenceBandDim: 'oklch(0.985 0 0 / 2%)',
   monthBand: 'oklch(0.985 0 0 / 4%)',
   severity: {
     error: 'oklch(0.704 0.191 22.216)', // red-400

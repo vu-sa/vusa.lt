@@ -7,6 +7,18 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.32 — Kadencijos, laikotarpiai ir posėdžių juosta (2026-08-21) {#v1-32}
+
+- 🔧 **Kadencijų filtras rodo visus tuo metu dirbusius žmones** — anksčiau įrašas buvo priskiriamas vienai kadencijai pagal pradžios datą, todėl birželį prasidėjusios pareigos atsidurdavo besibaigiančioje kadencijoje, o perrinktas žmogus matėsi tik po viena kadencija. Dabar įrašas priklauso visoms kadencijoms, kurias apima jo laikotarpis
+- 🔧 **Padalinio filtras neberodomas, kai jo nėra** — institucijose, kuriose nė vienas priskyrimas neturi atskiro padalinio, filtras su vienintele „Be padalinio“ reikšme buvo beprasmis ir dingo. Ten, kur būna atstovų iš kitų padalinių (pvz. Parlamente), jis lieka
+- ✨ **Filtruojama kadencija aiškiai išskiriama diagramoje** — pasirinktos kadencijos fonas ryškėja, o likusios prigęsta
+- ✨ **Priskyrimo nuotrauka rodoma iš karto** — laikotarpių tvarkyklės žymėje anksčiau buvo parašyta tik tai, kad nuotrauka įkelta; dabar ji parodoma
+- ⭐ **Grupės ar pastabos laukas prie studijų programos** — kuratoriams didelėse programose galima nurodyti, pvz., „1 grupė“. Rodoma viešuose kontaktuose šalia studijų programos
+- ⭐ **Kadencijos ribą galima susieti su posėdžiu** — institucijos formoje kadencijos pradžią ar pabaigą galima nurodyti pasirenkant posėdį (pvz. ataskaitinę-rinkiminę konferenciją). Galima rinktis bet kurį prieinamą posėdį, taip pat ir kitos institucijos (pvz. padalinio konferenciją) — prie ribos tada parodoma, kurios institucijos tai posėdis. Data imama iš posėdžio ir pasikeičia kartu su juo
+- ✨ **Institucijos puslapyje ir formoje matyti valdysenos sritis** — žymė parodo, ar tai VU SA darinys, ar išorinis organas; formoje paaiškinama, kodėl dalis laukų nerodoma
+- ⭐ **Posėdžių juostoje rodomi visi posėdžiai** — VU SA vidaus dariniai nebeslepiami. Norint juos paslėpti, rodymo nustatymuose atsirado „Slėpti VU SA darinius“ (išjungta pagal nutylėjimą)
+- ✨ **Posėdžio žymėje matyti, ar jis paskelbtas kalendoriuje** — žalia piktograma reiškia paskelbtą įrašą, gintarinė — juodraštį
+
 ## v1.31 — Vienodės administravimo kortelės (2026-08-21) {#v1-31}
 
 - ✨ **Nustatymų kortelės vienodo stiliaus su administravimu** — nustatymų pradžios puslapis dabar rodo tokias pat korteles kaip administravimo puslapis: piktograma, pavadinimas ir aprašymas, su pele pažymint apsišviečiančiu rėmeliu

@@ -8,7 +8,14 @@
       <li v-for="cadence in cadences" :key="cadence.id" class="p-3">
         <CadenceRowForm
           v-if="editingId === cadence.id"
-          :model-value="{ start_date: cadence.start_date, end_date: cadence.end_date }"
+          :model-value="{
+            start_date: cadence.start_date,
+            end_date: cadence.end_date,
+            start_meeting_id: cadence.start_meeting?.id ?? null,
+            end_meeting_id: cadence.end_meeting?.id ?? null,
+          }"
+          :institution-id="cadence.institution_id"
+          :anchors="{ start: cadence.start_meeting ?? null, end: cadence.end_meeting ?? null }"
           :processing="processing"
           @save="value => emit('update', cadence, value)"
           @cancel="emit('cancel-edit')"
@@ -22,6 +29,23 @@
               <span class="truncate font-medium">{{ cadence.label }}</span>
               <p class="truncate text-xs text-muted-foreground">
                 {{ cadence.start_date }} — {{ cadence.end_date }}
+              </p>
+              <!-- Where the boundary came from, so a date nobody typed is not a mystery. -->
+              <p v-if="cadence.start_meeting || cadence.end_meeting"
+                class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground">
+                <Link
+                  v-for="anchor in [cadence.start_meeting, cadence.end_meeting].filter(Boolean)"
+                  :key="anchor!.id"
+                  :href="route('meetings.show', anchor!.id)"
+                  class="inline-flex min-w-0 items-center gap-1 hover:underline"
+                >
+                  <CalendarClock class="size-3 shrink-0" />
+                  <span class="truncate">{{ anchor!.title ?? $t('cadences.fields.anchor_untitled') }}</span>
+                  <!-- Named only when the sitting is another body's; its own would be noise. -->
+                  <span v-if="foreignInstitution(cadence, anchor!)" class="shrink-0 opacity-70">
+                    ({{ foreignInstitution(cadence, anchor!) }})
+                  </span>
+                </Link>
               </p>
             </div>
           </div>
@@ -65,6 +89,7 @@
     <div v-if="adding" class="rounded-md border border-dashed border-border p-3">
       <CadenceRowForm
         :model-value="prefill"
+        :institution-id="institutionId"
         :processing="processing"
         @save="value => emit('create', value)"
         @cancel="emit('cancel-add')"
@@ -74,7 +99,9 @@
 </template>
 
 <script setup lang="ts">
-import { Pencil, Trash2 } from 'lucide-vue-next';
+import { CalendarClock, Pencil, Trash2 } from 'lucide-vue-next';
+import { Link } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 
 import {
   AlertDialog,
@@ -90,7 +117,7 @@ import {
 import { Button } from '@/Components/ui/button';
 import { DateBadge } from '@/Components/Patterns';
 
-import CadenceRowForm, { type CadenceDraft } from './CadenceRowForm.vue';
+import CadenceRowForm, { type CadenceAnchor, type CadenceDraft } from './CadenceRowForm.vue';
 
 export interface CadenceRow {
   id: string;
@@ -98,6 +125,9 @@ export interface CadenceRow {
   institution_name?: string | null;
   start_date: string;
   end_date: string;
+  /** The sittings the boundaries were taken from, when they were not typed by hand. */
+  start_meeting?: CadenceAnchor | null;
+  end_meeting?: CadenceAnchor | null;
   /** Derived server-side from the dates — see Cadence::getLabelAttribute(). */
   label: string;
 }
@@ -105,6 +135,8 @@ export interface CadenceRow {
 withDefaults(defineProps<{
   cadences: CadenceRow[];
   emptyMessage: string;
+  /** Scope a new row belongs to; null is the global ladder, which anchors to nothing. */
+  institutionId?: string | null;
   editingId?: string | null;
   adding?: boolean;
   processing?: boolean;
@@ -112,12 +144,20 @@ withDefaults(defineProps<{
   readonly?: boolean;
   prefill?: CadenceDraft | null;
 }>(), {
+  institutionId: null,
   editingId: null,
   adding: false,
   processing: false,
   readonly: false,
   prefill: null,
 });
+
+/** A boundary may be taken from another institution's sitting — say whose when it is. */
+function foreignInstitution(cadence: CadenceRow, anchor: CadenceAnchor): string | null {
+  return anchor.institution_id && anchor.institution_id !== cadence.institution_id
+    ? (anchor.institution_name ?? null)
+    : null;
+}
 
 const emit = defineEmits<{
   edit: [id: string];

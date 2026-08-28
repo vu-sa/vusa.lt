@@ -15,6 +15,7 @@
       <Badge v-if="primaryType" variant="secondary" class="text-xs">
         {{ primaryType }}
       </Badge>
+      <InstitutionScopeBadge v-if="institution.governance_scope" :scope="institution.governance_scope" class="text-xs" />
       <Badge v-if="institution.has_public_meetings" variant="outline" class="text-xs gap-1 text-green-600 border-green-300 dark:text-green-400 dark:border-green-700">
         <Globe class="h-3 w-3" />
         {{ $t('Vieši posėdžiai') }}
@@ -213,6 +214,7 @@ import NewMeetingDialog from '@/Components/Dialogs/NewMeetingDialog.vue';
 import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue';
 import InstitutionMeetingsList from '@/Components/Institutions/InstitutionMeetingsList.vue';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
+import InstitutionScopeBadge from '@/Components/Institutions/InstitutionScopeBadge.vue';
 import InstitutionOverviewSection from '@/Components/Institutions/InstitutionOverviewSection.vue';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 import { DutySummaryCard } from '@/Components/Duties';

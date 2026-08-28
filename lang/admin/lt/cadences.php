@@ -41,6 +41,8 @@ return [
         'start_date' => 'Pradžia',
         'end_date' => 'Pabaiga',
         'institution' => 'Institucija',
+        'anchor_untitled' => 'Posėdis be pavadinimo',
+        'anchor_hint' => 'Galima pasirinkti bet kurį prieinamą posėdį, taip pat ir kitos institucijos. Kadencijos riba imama iš jo datos ir keičiasi kartu su juo.',
     ],
 
     'actions' => [
@@ -49,6 +51,12 @@ return [
         'delete' => 'Ištrinti',
         'save' => 'Išsaugoti',
         'cancel' => 'Atšaukti',
+        'link_meeting' => 'Susieti su posėdžiu',
+        'unlink_meeting' => 'Atsieti nuo posėdžio',
+    ],
+
+    'validation' => [
+        'anchor_not_allowed' => 'Šio posėdžio negalima naudoti kaip kadencijos ribos.',
     ],
 
     'delete' => [

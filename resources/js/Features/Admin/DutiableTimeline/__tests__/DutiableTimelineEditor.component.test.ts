@@ -60,6 +60,7 @@ function makePayload(overrides: Partial<TimelinePayload> = {}): TimelinePayload 
       tenant_id: null,
       tenant_shortname: null,
       cadence_id: 'cad-1',
+      cadence_ids: ['cad-1'],
       start_date: '2025-05-18',
       end_date: '2026-06-30',
       via_dutiable_id: null,
@@ -97,7 +98,7 @@ const stubs = {
   ...commonStubs,
   DutiableGantt: {
     name: 'DutiableGantt',
-    props: ['layoutRows', 'rows', 'cadences', 'domain', 'totalHeight', 'collapsed', 'monthWidthPx', 'selectedIds', 'staged'],
+    props: ['layoutRows', 'rows', 'cadences', 'highlightedCadenceIds', 'domain', 'totalHeight', 'collapsed', 'monthWidthPx', 'selectedIds', 'staged'],
     template: '<div class="gantt-stub" @click="$emit(\'select\', layoutRows.find(l => l.row)?.row, { ctrlKey: false, metaKey: false })" />',
     emits: ['select', 'toggle-group', 'stage'],
   },
@@ -214,31 +215,73 @@ describe('DutiableTimelineEditor', () => {
     expect(previewExecute).not.toHaveBeenCalled();
   });
 
-  it('narrows the chart to the filtered cadence', async () => {
-    payload.value = makePayload({
+  /**
+   * Three seats: one in each term, and one re-elected across both. Filtering to either term
+   * has to keep the spanning row — that is what the single-cadence equality test got wrong.
+   */
+  function multiCadencePayload() {
+    const base = makePayload().rows[0];
+
+    return makePayload({
       groups: [
         { key: 'user:u1', kind: 'user', label: 'Vardas Pavardė' },
         { key: 'user:u2', kind: 'user', label: 'Kitas Žmogus' },
+        { key: 'user:u3', kind: 'user', label: 'Perrinktas Žmogus' },
       ],
       rows: [
-        { ...makePayload().rows[0] },
+        { ...base },
+        { ...base, id: 'row-2', group_key: 'user:u2', holder_id: 'u2', cadence_id: 'cad-2', cadence_ids: ['cad-2'] },
         {
-          ...makePayload().rows[0],
-          id: 'row-2',
-          group_key: 'user:u2',
-          holder_id: 'u2',
+          ...base,
+          id: 'row-3',
+          group_key: 'user:u3',
+          holder_id: 'u3',
           cadence_id: 'cad-2',
+          cadence_ids: ['cad-1', 'cad-2'],
         },
       ],
     });
+  }
+
+  it('narrows the chart to the filtered cadence, keeping rows that span it', async () => {
+    payload.value = multiCadencePayload();
 
     const wrapper = mountEditor();
-    expect(wrapper.findComponent({ name: 'DutiableGantt' }).props('rows')).toHaveLength(2);
+    expect(wrapper.findComponent({ name: 'DutiableGantt' }).props('rows')).toHaveLength(3);
 
     await wrapper.findComponent({ name: 'DutiableTimelineToolbar' }).vm.$emit('update:cadenceIds', ['cad-1']);
 
     const rows = wrapper.findComponent({ name: 'DutiableGantt' }).props('rows') as Array<{ id: string }>;
-    expect(rows.map(row => row.id)).toEqual(['row-1']);
+    expect(rows.map(row => row.id)).toEqual(['row-1', 'row-3']);
+  });
+
+  it('counts a spanning row under every term it covers', () => {
+    payload.value = multiCadencePayload();
+
+    const options = mountEditor()
+      .findComponent({ name: 'DutiableTimelineToolbar' })
+      .props('cadenceOptions') as Array<{ value: string; count: number }>;
+
+    expect(options.find(option => option.value === 'cad-1')?.count).toBe(2);
+    expect(options.find(option => option.value === 'cad-2')?.count).toBe(2);
+  });
+
+  it('marks the filtered terms for the chart to highlight', async () => {
+    payload.value = multiCadencePayload();
+
+    const wrapper = mountEditor();
+    expect(wrapper.findComponent({ name: 'DutiableGantt' }).props('highlightedCadenceIds')).toEqual(new Set());
+
+    await wrapper.findComponent({ name: 'DutiableTimelineToolbar' }).vm.$emit('update:cadenceIds', ['cad-2']);
+
+    expect(wrapper.findComponent({ name: 'DutiableGantt' }).props('highlightedCadenceIds'))
+      .toEqual(new Set(['cad-2']));
+  });
+
+  it('offers no unit filter when nothing records a cross-tenant unit', () => {
+    payload.value = makePayload();
+
+    expect(mountEditor().findComponent({ name: 'DutiableTimelineToolbar' }).props('tenantOptions')).toEqual([]);
   });
 
   it('warns when the payload was truncated', () => {

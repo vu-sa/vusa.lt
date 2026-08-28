@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Admin\CadenceController;
 use App\Models\Cadence;
 use App\Models\Institution;
+use App\Models\Meeting;
 use App\Models\Tenant;
 use App\Settings\CadenceSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -216,5 +218,121 @@ describe('institution overrides', function (): void {
             'start_date' => '2025-05-18',
             'end_date' => '2026-05-17',
         ])->assertForbidden();
+    });
+});
+
+/**
+ * Several bodies open and close a term at a named sitting rather than on a date somebody
+ * types in. The anchor stores where the boundary came from; the date stays the stored,
+ * authoritative value so nothing that reads a cadence has to know about anchors.
+ */
+describe('meeting anchors', function (): void {
+    beforeEach(function (): void {
+        $this->institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        $this->conference = Meeting::factory()->create(['start_time' => '2025-05-18 10:00:00']);
+        $this->conference->institutions()->attach($this->institution->id);
+    });
+
+    test('anchoring a boundary takes its date from the sitting', function (): void {
+        asUser($this->admin)->post(route('settings.cadences.store'), [
+            'institution_id' => $this->institution->id,
+            'start_meeting_id' => $this->conference->id,
+            // Deliberately wrong: the anchor is the source, not the posted value.
+            'start_date' => '2001-01-01',
+            'end_date' => '2026-05-17',
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        $cadence = Cadence::query()->firstOrFail();
+
+        expect($cadence->start_meeting_id)->toBe($this->conference->id)
+            ->and($cadence->start_date->toDateString())->toBe('2025-05-18');
+    });
+
+    test('moving the sitting moves the term with it', function (): void {
+        $cadence = Cadence::factory()->create([
+            'institution_id' => $this->institution->id,
+            'start_meeting_id' => $this->conference->id,
+            'start_date' => '2025-05-18',
+            'end_date' => '2026-05-17',
+        ]);
+
+        $this->conference->update(['start_time' => '2025-06-02 10:00:00']);
+
+        expect($cadence->refresh()->start_date->toDateString())->toBe('2025-06-02');
+    });
+
+    test('a term with no anchor is left alone when any meeting moves', function (): void {
+        $cadence = Cadence::factory()->create([
+            'institution_id' => $this->institution->id,
+            'start_date' => '2025-05-18',
+            'end_date' => '2026-05-17',
+        ]);
+
+        $this->conference->update(['start_time' => '2025-06-02 10:00:00']);
+
+        expect($cadence->refresh()->start_date->toDateString())->toBe('2025-05-18');
+    });
+
+    // A faculty term routinely opens at the tenant conference, which is another body's sitting.
+    test('a sitting of another institution may open a term', function (): void {
+        $foreign = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+        $foreignMeeting = Meeting::factory()->create(['start_time' => '2025-05-18 10:00:00']);
+        $foreignMeeting->institutions()->attach($foreign->id);
+
+        asUser($this->admin)->post(route('settings.cadences.store'), [
+            'institution_id' => $this->institution->id,
+            'start_meeting_id' => $foreignMeeting->id,
+            'start_date' => '2001-01-01',
+            'end_date' => '2026-05-17',
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        $cadence = Cadence::query()->firstOrFail();
+
+        expect($cadence->start_meeting_id)->toBe($foreignMeeting->id)
+            ->and($cadence->start_date->toDateString())->toBe('2025-05-18');
+    });
+
+    // The picker only ever offers what the user's scoped search key returns; the rule is what
+    // stops a crafted id reaching a sitting they were never shown.
+    test('a sitting the editor cannot see is refused', function (): void {
+        $editor = makeTenantUser('Communication Coordinator', $this->tenant);
+
+        $otherTenant = Tenant::factory()->create();
+        $hidden = Institution::factory()->create(['tenant_id' => $otherTenant->id]);
+        $hiddenMeeting = Meeting::factory()->create(['start_time' => '2025-05-18 10:00:00']);
+        $hiddenMeeting->institutions()->attach($hidden->id);
+
+        asUser($editor)->post(route('settings.cadences.store'), [
+            'institution_id' => $this->institution->id,
+            'start_meeting_id' => $hiddenMeeting->id,
+            'start_date' => '2025-05-18',
+            'end_date' => '2026-05-17',
+        ])->assertSessionHasErrors('start_meeting_id');
+
+        expect(Cadence::count())->toBe(0);
+    });
+
+    test('the global ladder anchors to nothing — it belongs to no institution', function (): void {
+        asUser($this->admin)->post(route('settings.cadences.store'), [
+            'start_meeting_id' => $this->conference->id,
+            'start_date' => '2025-07-01',
+            'end_date' => '2026-06-30',
+        ])->assertSessionHasErrors('start_meeting_id');
+    });
+
+    test('the institution form is told which sitting a boundary came from', function (): void {
+        Cadence::factory()->create([
+            'institution_id' => $this->institution->id,
+            'start_meeting_id' => $this->conference->id,
+            'start_date' => '2025-05-18',
+            'end_date' => '2026-05-17',
+        ]);
+
+        $payload = CadenceController::payload($this->institution->id);
+
+        expect($payload[0]['start_meeting']['id'])->toBe($this->conference->id)
+            ->and($payload[0]['start_meeting']['institution_id'])->toBe($this->institution->id)
+            ->and($payload[0]['end_meeting'])->toBeNull();
     });
 });

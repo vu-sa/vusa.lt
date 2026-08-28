@@ -17,12 +17,16 @@ use Illuminate\Support\Carbon;
  *
  * @property string $id
  * @property string|null $institution_id
+ * @property string|null $start_meeting_id
+ * @property string|null $end_meeting_id
  * @property Carbon $start_date
  * @property Carbon $end_date
  * @property-read string $label
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read Institution|null $institution
+ * @property-read Meeting|null $startMeeting
+ * @property-read Meeting|null $endMeeting
  *
  * @method static Builder<static>|Cadence forInstitution(?string $institutionId)
  * @method static Builder<static>|Cadence globalLadder()
@@ -67,6 +71,25 @@ class Cadence extends Model
     public function institution(): BelongsTo
     {
         return $this->belongsTo(Institution::class);
+    }
+
+    /**
+     * The sitting a term opens at, when it has one. `withTrashed()` so a soft-deleted meeting
+     * still names the boundary it set rather than leaving the row looking hand-typed.
+     *
+     * @return BelongsTo<Meeting, $this>
+     */
+    public function startMeeting(): BelongsTo
+    {
+        return $this->belongsTo(Meeting::class, 'start_meeting_id')->withTrashed();
+    }
+
+    /**
+     * @return BelongsTo<Meeting, $this>
+     */
+    public function endMeeting(): BelongsTo
+    {
+        return $this->belongsTo(Meeting::class, 'end_meeting_id')->withTrashed();
     }
 
     /**

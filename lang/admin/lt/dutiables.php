@@ -54,6 +54,7 @@ return [
             'title' => 'Papildoma informacija',
             'email' => 'El. paštas',
             'study_program' => 'Studijų programa',
+            'study_program_note' => 'Grupė ar pastaba',
             'description' => 'Aprašymas',
             'photo' => 'Nuotrauka',
             'photo_set' => 'Įkelta atskira nuotrauka',

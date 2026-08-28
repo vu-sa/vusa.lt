@@ -23,6 +23,8 @@ export interface TimelineFilters {
   userTenantFilter: Ref<string[]>;
   showOnlyWithActivityUser: Ref<boolean>;
   showOnlyWithPublicMeetingsUser: Ref<boolean>;
+  /** Hide VU SA's own bodies. Off by default — the chart shows everything unless asked. */
+  hideInternalInstitutionsUser: Ref<boolean>;
   showDutyMembersUser: Ref<boolean>;
   showRelatedInstitutionsUser: Ref<boolean>;
   relatedInstitutionsLoaded: Ref<boolean>;
@@ -31,6 +33,7 @@ export interface TimelineFilters {
   selectedTenantForGantt: Ref<string[]>;
   showOnlyWithActivityTenant: Ref<boolean>;
   showOnlyWithPublicMeetingsTenant: Ref<boolean>;
+  hideInternalInstitutionsTenant: Ref<boolean>;
   showDutyMembersTenant: Ref<boolean>;
   showActivityStatusTenant: Ref<boolean>;
   tenantInstitutionsLoaded: Ref<boolean>;
@@ -56,10 +59,12 @@ interface StoredFilters {
   userTenantFilter: string[];
   showOnlyWithActivityTenant: boolean;
   showOnlyWithPublicMeetingsTenant: boolean;
+  hideInternalInstitutionsTenant: boolean;
   showDutyMembersTenant: boolean;
   showActivityStatusTenant: boolean;
   showOnlyWithActivityUser: boolean;
   showOnlyWithPublicMeetingsUser: boolean;
+  hideInternalInstitutionsUser: boolean;
   showDutyMembersUser: boolean;
   showRelatedInstitutionsUser: boolean;
   scrollPosition?: number;
@@ -153,6 +158,7 @@ export function provideTimelineFilters(
   );
   const showOnlyWithActivityUser = ref(stored.showOnlyWithActivityUser ?? false);
   const showOnlyWithPublicMeetingsUser = ref(stored.showOnlyWithPublicMeetingsUser ?? false);
+  const hideInternalInstitutionsUser = ref(stored.hideInternalInstitutionsUser ?? false);
   const showDutyMembersUser = ref(stored.showDutyMembersUser ?? true);
   // Default to false - related institutions are lazy loaded when filter is enabled
   const showRelatedInstitutionsUser = ref(stored.showRelatedInstitutionsUser ?? false);
@@ -165,6 +171,7 @@ export function provideTimelineFilters(
   );
   const showOnlyWithActivityTenant = ref(stored.showOnlyWithActivityTenant ?? false);
   const showOnlyWithPublicMeetingsTenant = ref(stored.showOnlyWithPublicMeetingsTenant ?? false);
+  const hideInternalInstitutionsTenant = ref(stored.hideInternalInstitutionsTenant ?? false);
   const showDutyMembersTenant = ref(stored.showDutyMembersTenant ?? true);
   // Default to false - activity status rings are off by default to keep Gantt clean
   const showActivityStatusTenant = ref(stored.showActivityStatusTenant ?? false);
@@ -189,10 +196,12 @@ export function provideTimelineFilters(
       userTenantFilter: userTenantFilter.value,
       showOnlyWithActivityTenant: showOnlyWithActivityTenant.value,
       showOnlyWithPublicMeetingsTenant: showOnlyWithPublicMeetingsTenant.value,
+      hideInternalInstitutionsTenant: hideInternalInstitutionsTenant.value,
       showDutyMembersTenant: showDutyMembersTenant.value,
       showActivityStatusTenant: showActivityStatusTenant.value,
       showOnlyWithActivityUser: showOnlyWithActivityUser.value,
       showOnlyWithPublicMeetingsUser: showOnlyWithPublicMeetingsUser.value,
+      hideInternalInstitutionsUser: hideInternalInstitutionsUser.value,
       showDutyMembersUser: showDutyMembersUser.value,
       showRelatedInstitutionsUser: showRelatedInstitutionsUser.value,
       scrollPosition: scrollPosition.value,
@@ -204,10 +213,12 @@ export function provideTimelineFilters(
     userTenantFilter,
     showOnlyWithActivityTenant,
     showOnlyWithPublicMeetingsTenant,
+    hideInternalInstitutionsTenant,
     showDutyMembersTenant,
     showActivityStatusTenant,
     showOnlyWithActivityUser,
     showOnlyWithPublicMeetingsUser,
+    hideInternalInstitutionsUser,
     showDutyMembersUser,
     showRelatedInstitutionsUser,
     scrollPosition,
@@ -230,6 +241,7 @@ export function provideTimelineFilters(
   function resetTenantFilters() {
     showOnlyWithActivityTenant.value = false;
     showOnlyWithPublicMeetingsTenant.value = false;
+    hideInternalInstitutionsTenant.value = false;
     showDutyMembersTenant.value = true;
     showActivityStatusTenant.value = false;
     scrollPosition.value = 0;
@@ -238,6 +250,7 @@ export function provideTimelineFilters(
   function resetUserFilters() {
     showOnlyWithActivityUser.value = false;
     showOnlyWithPublicMeetingsUser.value = false;
+    hideInternalInstitutionsUser.value = false;
     showDutyMembersUser.value = true;
     showRelatedInstitutionsUser.value = false;
   }
@@ -267,6 +280,7 @@ export function provideTimelineFilters(
     userTenantFilter,
     showOnlyWithActivityUser,
     showOnlyWithPublicMeetingsUser,
+    hideInternalInstitutionsUser,
     showDutyMembersUser,
     showRelatedInstitutionsUser,
     relatedInstitutionsLoaded,
@@ -274,6 +288,7 @@ export function provideTimelineFilters(
     selectedTenantForGantt,
     showOnlyWithActivityTenant,
     showOnlyWithPublicMeetingsTenant,
+    hideInternalInstitutionsTenant,
     showDutyMembersTenant,
     showActivityStatusTenant,
     tenantInstitutionsLoaded,

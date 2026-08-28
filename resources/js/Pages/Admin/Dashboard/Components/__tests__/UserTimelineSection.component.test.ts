@@ -8,6 +8,7 @@ const timelineFilters = {
   userTenantFilter: ref(['1']),
   showOnlyWithActivityUser: ref(false),
   showOnlyWithPublicMeetingsUser: ref(false),
+  hideInternalInstitutionsUser: ref(false),
   showDutyMembersUser: ref(true),
   showRelatedInstitutionsUser: ref(false),
   relatedInstitutionsLoaded: ref(false),

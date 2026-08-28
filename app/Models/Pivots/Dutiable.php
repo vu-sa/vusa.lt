@@ -30,6 +30,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $start_date
  * @property Carbon|null $end_date
  * @property string|null $study_program_id
+ * @property array|string|null $study_program_note
  * @property string|null $additional_email
  * @property string|null $additional_photo
  * @property string|null $additional_photo_focal_point
@@ -90,7 +91,7 @@ class Dutiable extends MorphPivot
         ];
     }
 
-    public $translatable = ['description'];
+    public $translatable = ['description', 'study_program_note'];
 
     /**
      * `description` is Tiptap `full` preset HTML. It takes precedence over the

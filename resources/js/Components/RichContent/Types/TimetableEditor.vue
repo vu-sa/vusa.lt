@@ -163,3 +163,4 @@ async function selectMeeting(meetingId: string) {
   selectedMeetingId.value = meetingId;
   await executeAgenda();
 }
+</script>

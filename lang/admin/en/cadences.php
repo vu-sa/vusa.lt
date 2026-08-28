@@ -41,6 +41,8 @@ return [
         'start_date' => 'Start',
         'end_date' => 'End',
         'institution' => 'Institution',
+        'anchor_untitled' => 'Untitled meeting',
+        'anchor_hint' => 'Pick any meeting you have access to — including another institution’s. The boundary is taken from its date and keeps in step with it.',
     ],
 
     'actions' => [
@@ -49,6 +51,12 @@ return [
         'delete' => 'Delete',
         'save' => 'Save',
         'cancel' => 'Cancel',
+        'link_meeting' => 'Link to a meeting',
+        'unlink_meeting' => 'Unlink from the meeting',
+    ],
+
+    'validation' => [
+        'anchor_not_allowed' => 'That meeting cannot be used as a boundary.',
     ],
 
     'delete' => [

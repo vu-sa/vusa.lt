@@ -12,6 +12,8 @@ export interface CadenceBandContext {
   colors: GanttColors;
   timelineColors: TimelineColors;
   cadences: ParsedCadence[];
+  /** Terms the cadence filter selected. Empty means "no filter", not "nothing selected". */
+  highlightedIds?: Set<string>;
   headerHeight?: number;
 }
 
@@ -24,6 +26,8 @@ export interface CadenceBandContext {
  */
 export function renderCadenceBands(ctx: CadenceBandContext): void {
   const { g, x, innerHeight, colors, timelineColors, cadences } = ctx;
+  const highlighted = ctx.highlightedIds ?? new Set<string>();
+  const filtering = highlighted.size > 0;
 
   // Parity follows chronological order, not payload order, or a global and an override
   // band starting in the same year would land on the same tint side by side.
@@ -43,9 +47,17 @@ export function renderCadenceBands(ctx: CadenceBandContext): void {
     .attr('y', 0)
     .attr('width', d => Math.max(0, x(d.endDate) - x(d.startDate)))
     .attr('height', innerHeight)
-    .attr('fill', d => timelineColors.cadenceBand[parity.get(d.id) ?? 0])
-    .attr('stroke', timelineColors.cadenceBandStroke)
-    .attr('stroke-width', 1);
+    // Under a filter the alternating tints stop carrying meaning: what matters is which
+    // term the chart is about, so the selection takes the ink and the rest gives it up.
+    .attr('fill', (d) => {
+      if (!filtering) return timelineColors.cadenceBand[parity.get(d.id) ?? 0];
+
+      return highlighted.has(d.id) ? timelineColors.cadenceBandHighlight : timelineColors.cadenceBandDim;
+    })
+    .attr('stroke', d => (filtering && highlighted.has(d.id)
+      ? timelineColors.cadenceBandHighlightStroke
+      : timelineColors.cadenceBandStroke))
+    .attr('stroke-width', d => (filtering && highlighted.has(d.id) ? 2 : 1));
 
   // Dashed guides on both edges: these are the snap targets, so they must be
   // visible before the drag rather than only during it.
@@ -62,9 +74,11 @@ export function renderCadenceBands(ctx: CadenceBandContext): void {
     .attr('x2', d => x(d.date))
     .attr('y1', 0)
     .attr('y2', innerHeight)
-    .attr('stroke', timelineColors.cadenceBandStroke)
+    .attr('stroke', d => (filtering && highlighted.has(d.cadence.id)
+      ? timelineColors.cadenceBandHighlightStroke
+      : timelineColors.cadenceBandStroke))
     .attr('stroke-width', 1)
-    .attr('stroke-dasharray', '3,3');
+    .attr('stroke-dasharray', d => (filtering && highlighted.has(d.cadence.id) ? null : '3,3'));
 }
 
 export interface CadenceHeaderContext {
@@ -72,12 +86,15 @@ export interface CadenceHeaderContext {
   x: d3.ScaleTime<number, number>;
   colors: GanttColors;
   cadences: ParsedCadence[];
+  highlightedIds?: Set<string>;
   y: number;
 }
 
 /** Term name chips, drawn into the sticky header so they survive vertical scroll. */
 export function renderCadenceLabels(ctx: CadenceHeaderContext): void {
   const { g, x, colors, cadences, y } = ctx;
+  const highlighted = ctx.highlightedIds ?? new Set<string>();
+  const filtering = highlighted.size > 0;
 
   const labels = g.append('g').attr('class', 'cadence-labels').attr('pointer-events', 'none');
 
@@ -90,6 +107,11 @@ export function renderCadenceLabels(ctx: CadenceHeaderContext): void {
     .attr('text-anchor', 'middle')
     .attr('fill', colors.axisText)
     .attr('font-size', 9)
-    .attr('opacity', 0.8)
+    .attr('font-weight', d => (filtering && highlighted.has(d.id) ? 700 : 400))
+    .attr('opacity', (d) => {
+      if (!filtering) return 0.8;
+
+      return highlighted.has(d.id) ? 1 : 0.35;
+    })
     .text(d => d.label);
 }

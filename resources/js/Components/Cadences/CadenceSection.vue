@@ -44,6 +44,7 @@
 
       <CadenceList
         :cadences="ownCadences"
+        :institution-id="institutionId"
         :empty-message="$t('cadences.overrides.empty')"
         :editing-id="crud.editingId.value"
         :adding="crud.adding.value"

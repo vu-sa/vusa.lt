@@ -4,6 +4,7 @@ namespace App\Actions\Dutiables;
 
 use App\Models\Cadence;
 use App\Models\Pivots\Dutiable;
+use App\Support\Dutiables\CadenceMatcher;
 use App\Support\Dutiables\DutiableDiagnostic;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -301,10 +302,7 @@ class AnalyzeDutiableTimeline
             $start = Carbon::parse($period['start']);
             $end = Carbon::parse($period['end']);
 
-            $covered = self::applicable($cadences, $row)
-                ->filter(fn (Cadence $cadence) => $cadence->start_date->lessThanOrEqualTo($end)
-                    && $cadence->end_date->greaterThanOrEqualTo($start))
-                ->values();
+            $covered = CadenceMatcher::overlapping(self::applicable($cadences, $row), $start, $end);
 
             if ($covered->count() < 2) {
                 continue;
@@ -402,11 +400,7 @@ class AnalyzeDutiableTimeline
      */
     private static function applicable(Collection $cadences, Dutiable $row): Collection
     {
-        $institutionId = $row->duty?->institution_id;
-
-        $scoped = $cadences->where('institution_id', $institutionId);
-
-        return $scoped->isNotEmpty() ? $scoped : $cadences->whereNull('institution_id');
+        return CadenceMatcher::applicable($cadences, $row->duty?->institution_id);
     }
 
     /**

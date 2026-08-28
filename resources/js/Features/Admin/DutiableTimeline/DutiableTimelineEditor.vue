@@ -47,6 +47,7 @@
         :layout-rows="layoutRows"
         :rows="visibleRows"
         :cadences="cadences"
+        :highlighted-cadence-ids="highlightedCadenceIds"
         :domain="domain"
         :total-height="totalHeight"
         :collapsed="collapsed"
@@ -205,32 +206,45 @@ const { rows, groups, cadences, scope, meta, domain, diagnostics, isFetching, ex
 /** Rows with no tenant share this key, so "no tenant" is a filterable value like any other. */
 const NO_TENANT = '__none__';
 
+/** Same trick for a row whose period touches no term at all. */
+const NO_CADENCE = '__none__';
+
 const cadenceLabelById = computed(() => new Map(cadences.value.map(cadence => [cadence.id, cadence.label])));
+
+/** A re-elected member belongs to every term they served in, so one row feeds several keys. */
+function cadenceKeysOf(row: ParsedRow): string[] {
+  return row.cadence_ids.length > 0 ? row.cadence_ids : [NO_CADENCE];
+}
 
 const cadenceOptions = computed<FilterOption[]>(() => buildOptions(
   rows.value,
-  row => row.cadence_id ?? NO_TENANT,
+  cadenceKeysOf,
   value => cadenceLabelById.value.get(value) ?? $t('dutiables.timeline.filters.no_cadence'),
 ));
 
+/**
+ * Only assignments carrying an explicit cross-tenant tenant. Everywhere else the column is
+ * null for every row, and a filter whose only value is "no unit" narrows nothing.
+ */
 const tenantOptions = computed<FilterOption[]>(() => buildOptions(
-  rows.value,
-  row => (row.tenant_id === null ? NO_TENANT : String(row.tenant_id)),
-  value => (value === NO_TENANT
-    ? $t('dutiables.timeline.filters.no_tenant')
-    : rows.value.find(row => String(row.tenant_id) === value)?.tenant_shortname ?? value),
+  rows.value.filter(row => row.tenant_id !== null),
+  row => String(row.tenant_id),
+  value => rows.value.find(row => String(row.tenant_id) === value)?.tenant_shortname ?? value,
 ));
 
 function buildOptions(
   source: ParsedRow[],
-  keyOf: (row: ParsedRow) => string,
+  keysOf: (row: ParsedRow) => string | string[],
   labelOf: (key: string) => string,
 ): FilterOption[] {
   const counts = new Map<string, number>();
 
   for (const row of source) {
-    const key = keyOf(row);
-    counts.set(key, (counts.get(key) ?? 0) + 1);
+    const keys = keysOf(row);
+
+    for (const key of Array.isArray(keys) ? keys : [keys]) {
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
   }
 
   return [...counts.entries()]
@@ -241,14 +255,20 @@ function buildOptions(
 /**
  * Filtering is client-side: the payload already carries the whole scope, so narrowing it
  * server-side would cost a round trip and lose the staged edits on the way.
+ *
+ * A cadence matches on membership, not equality — filtering to 2024–2025 must keep a seat
+ * held from 2023 through 2026, which is the ordinary shape of a re-election.
  */
 const visibleRows = computed(() => rows.value.filter((row) => {
-  const cadenceKey = row.cadence_id ?? NO_TENANT;
   const tenantKey = row.tenant_id === null ? NO_TENANT : String(row.tenant_id);
 
-  return (cadenceFilter.value.length === 0 || cadenceFilter.value.includes(cadenceKey))
+  return (cadenceFilter.value.length === 0
+    || cadenceKeysOf(row).some(key => cadenceFilter.value.includes(key)))
     && (tenantFilter.value.length === 0 || tenantFilter.value.includes(tenantKey));
 }));
+
+/** Terms drawn as selected, so the chart says what the filter did. */
+const highlightedCadenceIds = computed(() => new Set(cadenceFilter.value));
 
 /** A group with nothing left to show is a header over empty space. */
 const visibleGroups = computed(() => {
