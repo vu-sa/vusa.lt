@@ -95,6 +95,7 @@ jobs:
     permissions:
       contents: read
       actions: read
+      pull-requests: write
     steps:
     - uses: actions/checkout@v7
       with:
@@ -149,6 +150,31 @@ jobs:
         TYPESENSE_PROTOCOL: http
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: php artisan test --ci ${{ github.event_name == 'pull_request' && '--tia' || '' }} --parallel --coverage --coverage-clover ./coverage.xml --log-junit ./test-results.xml
+
+    # Advisory report (feature areas documented, routes tested, the writing
+    # backlog, pages that may have drifted) lands in the job summary so nobody
+    # has to remember to run it. --strict is the only gate, and only for the one
+    # unambiguous breakage: a doc page citing a test file that no longer exists.
+    - name: Report and gate documentation coverage
+      if: always()
+      run: php artisan docs:coverage --strict --summary
+
+    # A judgement call is never a gate, so the reviewer gets it where they will
+    # actually read it — one sticky comment on the PR, rewritten each push. The
+    # report and the "docs to re-check" list are rebuilt into a temp file
+    # ($GITHUB_STEP_SUMMARY is per-step, so a later step cannot read the gate
+    # step's summary) and posted as the current author.
+    - name: Comment documentation coverage on the PR
+      if: always() && github.event_name == 'pull_request'
+      continue-on-error: true
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        tmp="$(mktemp)"
+        GITHUB_STEP_SUMMARY="$tmp" php artisan docs:coverage --summary
+        GITHUB_STEP_SUMMARY="$tmp" php artisan docs:coverage --changed=origin/${{ github.base_ref }} --summary
+        { echo "<!-- docs-coverage -->"; cat "$tmp"; } > pr-comment.md
+        gh pr comment "${{ github.event.number }}" --edit-last --create-if-none --body-file pr-comment.md
 
     - name: Upload test results to Codecov
       if: always()

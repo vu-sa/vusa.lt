@@ -14,7 +14,6 @@ export default {
       {
         text: 'By Role',
         items: [
-          { text: 'General Information', link: '/en/main-functions' },
           { text: 'For Student Representatives', link: '/en/roles/student-representatives/faq' },
           { text: 'For Administrators', link: '/en/roles/administrators/faq' },
         ]
@@ -36,7 +35,6 @@ export default {
           text: 'See Also',
           collapsed: false,
           items: [
-            { text: '← General Information', link: '/en/main-functions' },
             { text: '← For Administrators', link: '/en/roles/administrators/faq' },
           ]
         },
@@ -54,7 +52,6 @@ export default {
           text: 'See Also',
           collapsed: false,
           items: [
-            { text: '← General Information', link: '/en/main-functions' },
             { text: '← For Student Representatives', link: '/en/roles/student-representatives/faq' },
           ]
         },
