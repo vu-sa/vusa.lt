@@ -31,6 +31,24 @@ final class StoragePath
     }
 
     /**
+     * Whether a path is safe to hand to the storage layer.
+     *
+     * This is defence in depth, not the traversal guard — normalizeRelative() already makes a
+     * `..` structurally impossible. So it rejects only what can never belong in a name:
+     * control, format and unassigned characters (\p{C}, which covers NUL and the bidi
+     * overrides that let one name render as another), plus invalid UTF-8, on which preg_match
+     * returns false rather than 0.
+     *
+     * Everything a real filename uses is deliberately allowed. The hand-listed allowlist this
+     * replaces omitted commas, brackets, quotes, en dashes and ©, so folders that exist on
+     * disk — "Tyrimai, ataskaitos" among them — were unreachable behind "Invalid path format".
+     */
+    public static function isSafeRelative(string $path): bool
+    {
+        return $path !== '' && preg_match('/^[^\p{C}]+$/u', $path) === 1;
+    }
+
+    /**
      * Whether the path contains a traversal segment in any spelling.
      */
     public static function hasTraversal(string $path): bool

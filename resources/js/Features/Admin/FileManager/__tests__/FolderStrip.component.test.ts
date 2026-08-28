@@ -73,6 +73,29 @@ describe('FolderStrip', () => {
     expect(wrapper.emitted('open')?.[0]?.[0]).toMatchObject({ name: 'folder-2' });
   });
 
+  it('keeps a short list visible even after a long one was collapsed', async () => {
+    // The reported bug: collapsing the ~50-folder root also hid the two subfolders of every
+    // directory opened afterwards, so "delete folder" failed with nothing on screen to explain
+    // why. The stored preference now governs long lists only.
+    const long = mountStrip(49);
+    const trigger = long.findAll('button').find(b => b.text().includes('files.ui.folders'));
+    await trigger!.trigger('click');
+    expect(localStorage.getItem('fileManager-foldersCollapsed')).toContain('false');
+    await trigger!.trigger('click');
+
+    const short = mountStrip(2);
+    expect(short.findAll('button[type="button"]').some(b => b.text().includes('folder-0'))).toBe(true);
+  });
+
+  it('remembers an expanded long list across directories', async () => {
+    const first = mountStrip(49);
+    const trigger = first.findAll('button').find(b => b.text().includes('files.ui.folders'));
+    await trigger!.trigger('click');
+
+    const second = mountStrip(30);
+    expect(second.findAll('button[type="button"]').some(b => b.text().includes('folder-0'))).toBe(true);
+  });
+
   it('renders nothing at all when the directory holds no folders', () => {
     const wrapper = mountStrip(0);
 

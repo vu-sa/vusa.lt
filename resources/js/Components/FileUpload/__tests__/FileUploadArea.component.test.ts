@@ -7,6 +7,11 @@ import { commonStubs } from '@/tests/stubs';
 
 const wrappers: ReturnType<typeof mount>[] = [];
 
+function lastEmitted(wrapper: ReturnType<typeof mount>, event: string) {
+  const emitted = wrapper.emitted(event) ?? [];
+  return emitted[emitted.length - 1]?.[0];
+}
+
 afterEach(() => {
   wrappers.splice(0).forEach(wrapper => wrapper.unmount());
   vi.clearAllMocks();
@@ -23,9 +28,10 @@ function mountArea(props: Record<string, unknown> = {}) {
 
 /** The mock's `get` records the call; the component's callbacks are driven from here. */
 function respondWith(payload: unknown) {
-  const http = vi.mocked(useHttp).mock.results.at(-1)?.value;
-  const options = vi.mocked(http.get).mock.calls.at(-1)?.[1];
-  options.onSuccess(payload);
+  const results = vi.mocked(useHttp).mock.results;
+  const http = results[results.length - 1]?.value;
+  const calls = vi.mocked(http.get).mock.calls;
+  calls[calls.length - 1][1].onSuccess(payload);
 }
 
 const ALLOWED = { extensions: ['jpg', 'pdf'], accept: '.jpg,.pdf', maxSizeMB: 50 };
@@ -64,8 +70,8 @@ describe('FileUploadArea allowed types', () => {
   it('skips the request entirely when the caller forces its own extensions', () => {
     const wrapper = mountArea({ forceAccept: true, extensions: ['png'], accept: '.png' });
 
-    const http = vi.mocked(useHttp).mock.results.at(-1)?.value;
-    expect(http.get).not.toHaveBeenCalled();
+    const results = vi.mocked(useHttp).mock.results;
+    expect(results[results.length - 1]?.value.get).not.toHaveBeenCalled();
     expect(wrapper.text()).toContain('PNG');
   });
 });
@@ -78,7 +84,7 @@ describe('FileUploadArea selection', () => {
     Object.defineProperty(wrapper.find('input[type="file"]').element, 'files', { value: [file] });
     await wrapper.find('input[type="file"]').trigger('change');
 
-    expect(wrapper.emitted('files-selected')?.at(-1)?.[0]).toEqual([file]);
+    expect(lastEmitted(wrapper, 'files-selected')).toEqual([file]);
 
     const uploadButton = wrapper.findAll('button').find(b => b.text().includes('Įkelti'));
     await uploadButton!.trigger('click');
@@ -93,6 +99,6 @@ describe('FileUploadArea selection', () => {
     Object.defineProperty(wrapper.find('input[type="file"]').element, 'files', { value: [file] });
     await wrapper.find('input[type="file"]').trigger('change');
 
-    expect(wrapper.emitted('files-selected')?.at(-1)?.[0]).toEqual([]);
+    expect(lastEmitted(wrapper, 'files-selected')).toEqual([]);
   });
 });

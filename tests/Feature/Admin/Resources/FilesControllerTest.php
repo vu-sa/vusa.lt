@@ -845,14 +845,26 @@ describe('Files Controller - File Usage Scanning', function (): void {
         expect($flashData)->toHaveKeys(['total_usages', 'is_safe_to_delete', 'scanned_models', 'usage_details', 'scanned_at']);
     });
 
-    test('file usage scan validates file path format', function (): void {
+    test('file usage scan rejects a path carrying a control character', function (): void {
         $response = asUser($this->fileManager)->post(route('files.scanUsage'), [
-            'path' => 'public/files/invalid@#$%characters',  // Invalid characters that would fail the regex
+            'path' => "public/files/pad\x01ding",
         ]);
 
         expect($response->status())->toBe(302);
         $response->assertSessionHasErrors('error');
         expect(session('errors')->first('error'))->toContain('Neteisingas failo kelias');
+    });
+
+    test('file usage scan accepts the punctuation real folder names use', function (): void {
+        // Rewritten from a test that asserted the old hand-listed allowlist. `@`, commas and
+        // brackets all occur in folders on disk, so rejecting them as "invalid path" was the
+        // bug, not the feature. Such a path must now fail on not-found, never on its spelling.
+        $response = asUser($this->fileManager)->post(route('files.scanUsage'), [
+            'path' => 'public/files/padaliniai/vusa'.$this->tenant->alias.'/Tyrimai, ataskaitos [2024] @ v1.pdf',
+        ]);
+
+        expect($response->status())->toBe(302);
+        expect(session('errors')->first('error'))->not->toContain('Neteisingas failo kelias');
     });
 
     test('file usage scan requires existing file', function (): void {

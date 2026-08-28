@@ -77,21 +77,27 @@ defineEmits<{
 const COLLAPSE_THRESHOLD = 12;
 
 const filter = ref('');
-const userPreference = useStorage<boolean | null>('fileManager-foldersOpen', null);
 
-// A stored preference wins; otherwise fall back to "open only if the list is short enough
-// to be worth showing", recomputed as the user moves between directories.
-const isOpen = ref(userPreference.value ?? props.directories.length <= COLLAPSE_THRESHOLD);
+/**
+ * Only long lists remember being collapsed. A single global flag meant that collapsing the
+ * ~50-folder root also hid the two subfolders of every directory you opened afterwards — and
+ * an invisible subfolder is exactly what makes "delete folder" fail for no visible reason.
+ */
+const collapsePreference = useStorage<boolean>('fileManager-foldersCollapsed', true);
+
+const isLongList = computed(() => props.directories.length > COLLAPSE_THRESHOLD);
+
+const isOpen = ref(!isLongList.value || !collapsePreference.value);
 
 watch(isOpen, (open) => {
-  userPreference.value = open;
+  if (isLongList.value) {
+    collapsePreference.value = !open;
+  }
 });
 
-watch(() => props.directories, (directories) => {
+watch(() => props.directories, () => {
   filter.value = '';
-  if (userPreference.value === null) {
-    isOpen.value = directories.length <= COLLAPSE_THRESHOLD;
-  }
+  isOpen.value = !isLongList.value || !collapsePreference.value;
 });
 
 const filteredDirectories = computed(() => {

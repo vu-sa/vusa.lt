@@ -1,10 +1,10 @@
 <template>
   <PageContent :title="$t('files.ui.root')">
     <FileManager
-      :files
-      :directories
-      :path
-      :list-loading="loading"
+      :files="props.files"
+      :directories="props.directories"
+      :path="props.path"
+      :list-loading="navigating"
       :search-results="searchResults"
       :searching
       @file-selected="openFile"
@@ -17,40 +17,69 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
+import { router } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 
 import FileManager from '@/Features/Admin/FileManager/FileManager.vue';
-import { useFileListing } from '@/Features/Admin/FileManager/useFileListing';
+import { useFileSearch } from '@/Features/Admin/FileManager/useFileSearch';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 
-// The page still receives the first listing as Inertia props, but navigation runs through the
-// same JSON composable the Tiptap picker uses. It used to issue a full `router.reload` per
-// folder click, so the two entry points drifted apart and only one of them ever showed a
-// loading state.
 const props = defineProps<{
   directories: Array<{ path: string; name: string; type: string }>;
   files: Array<{ path: string; name: string; type: string; size: number; modified: number; mimeType: string }>;
   path: string;
 }>();
 
-const {
-  filesRaw,
-  directoriesRaw,
-  currentPath,
-  loading,
-  searchResults,
-  searching,
-  fetch,
-  search,
-  clearSearch,
-  back,
-} = useFileListing(props.path);
+const navigating = ref(false);
+const { results: searchResults, searching, search, clear: clearSearch } = useFileSearch();
 
-const files = filesRaw as any;
-const directories = directoriesRaw as any;
-const path = currentPath as any;
+/**
+ * Folder navigation is a real Inertia visit, so the open folder lives in `?path=` and the
+ * browser's Back button walks back up the tree. Fetching the listing over JSON instead left
+ * the URL on `/mano/files` the whole time, so Back exited the file manager entirely.
+ */
+function visitPath(nextPath: string) {
+  navigating.value = true;
+  clearSearch();
 
-const debouncedSearch = useDebounceFn((query: string) => search(query), 350);
+  router.get(
+    route('files.index'),
+    { path: nextPath },
+    {
+      preserveState: true,
+      preserveScroll: true,
+      only: ['files', 'directories', 'path'],
+      onFinish: () => {
+        navigating.value = false;
+      },
+    },
+  );
+}
+
+function handleChangeDirectory(nextPath: string) {
+  visitPath(nextPath);
+}
+
+function handleBack() {
+  const segments = props.path.split('/');
+  if (segments.length > 2) segments.pop();
+  visitPath(segments.join('/'));
+}
+
+/** Refresh in place after an upload or delete — not a navigation, so it must not push history. */
+function handleUpdate() {
+  navigating.value = true;
+
+  router.reload({
+    only: ['files', 'directories', 'path'],
+    onFinish: () => {
+      navigating.value = false;
+    },
+  });
+}
+
+const debouncedSearch = useDebounceFn((query: string) => search(query, props.path), 350);
 
 function handleSearch(query: string, recursive: boolean) {
   if (!recursive || query.length < 2) {
@@ -58,20 +87,6 @@ function handleSearch(query: string, recursive: boolean) {
     return;
   }
   debouncedSearch(query);
-}
-
-async function handleBack() {
-  clearSearch();
-  await back();
-}
-
-async function handleChangeDirectory(nextPath: string) {
-  clearSearch();
-  await fetch(nextPath);
-}
-
-async function handleUpdate(nextPath: string) {
-  await fetch(nextPath);
 }
 
 function openFile(filePath: string) {

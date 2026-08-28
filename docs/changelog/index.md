@@ -16,6 +16,7 @@ lastUpdated: true
 - ✨ **Aplankai ir failai rikiuojami pagal pavadinimą** — anksčiau eilė priklausė nuo failų sistemos ir atrodė atsitiktinė
 - ✨ **Aplankas atidaromas vienu paspaudimu** — anksčiau reikėjo dvigubo paspaudimo, o vienas paspaudimas nedarė nieko
 - 🔧 **Į redaktorių nutempti ne paveikslėlių failai vėl atsisiunčiami** — jie buvo įrašomi ne į tą vietą, tad įterpta nuoroda grąžindavo klaidą 404
+- 🔧 **Failų tvarkyklė nebeblokuojama pasiekus užklausų ribą** — kiekvienas matomas paveikslėlis atsiunčia po atskirą mažą kopiją, tad aplanke su daugiau nuotraukų užimdavote bendrą visų administratoriaus užklausų limitą ir tvarkyklė imdavo rodyti klaidą „429“. Failų tvarkyklės užklausos dabar turi atskirą, gerokai didesnį limitą
 - ✨ **Failų tvarkyklė kalba angliškai, kai svetainė angliška** — mygtukai ir pranešimai buvo įrašyti tiesiai į kodą lietuviškai (vietomis angliškai)
 
 ## v1.26 — Paveikslėliai turinio redaktoriuje (2026-08-24) {#v1-26}

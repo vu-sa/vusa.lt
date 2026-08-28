@@ -13,7 +13,12 @@ class CreateDirectoryRequest extends FilePathRequest
     public function rules(): array
     {
         return array_merge(parent::rules(), [
-            'name' => 'required|string|max:255|regex:/^[\p{L}\p{N}_\- ]+$/u',
+            // A single segment, matching what the browser already shows on disk: commas,
+            // brackets, quotes and dashes are all in use in existing folder names, so the old
+            // letters/digits/underscore/hyphen allowlist could not even reproduce them. What
+            // stays banned is what cannot be a name — separators, traversal, and the control
+            // and format characters \p{C} covers.
+            'name' => ['required', 'string', 'max:255', 'regex:/^[^\p{C}\/\\\\]+$/u', 'not_in:.,..'],
         ]);
     }
 

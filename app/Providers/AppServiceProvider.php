@@ -96,7 +96,17 @@ class AppServiceProvider extends ServiceProvider
      */
     private function configureRateLimiting(): void
     {
-        RateLimiter::for('api', fn (Request $request) => Limit::perMinute(60)->by(optional($request->user())->id ?: $request->ip()));
+        // Authenticated admin traffic is bursty (dashboards polling several widgets at once),
+        // while anonymous consumers stay tightly capped per IP.
+        RateLimiter::for('api', fn (Request $request) => $request->user()
+            ? Limit::perMinute(300)->by($request->user()->id)
+            : Limit::perMinute(60)->by($request->ip()));
+
+        // The file manager fires one thumbnail request per visible image, so its routes
+        // exclude throttle:api and carry this cap instead (see routes/api.php).
+        RateLimiter::for('fileManager', fn (Request $request) => $request->user()
+            ? Limit::perMinute(1000)->by($request->user()->id)
+            : Limit::perMinute(60)->by($request->ip()));
 
         RateLimiter::for('summerCamps', fn (Request $request) => $request->user()
             ? Limit::perMinute(100)->by($request->user()->id)

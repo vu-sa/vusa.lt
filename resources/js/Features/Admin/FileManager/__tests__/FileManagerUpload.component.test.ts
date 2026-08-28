@@ -64,7 +64,8 @@ describe('FileManager upload', () => {
     // One request, not one visit per file group — the two-visit split is what let Inertia
     // cancel the first upload and strand the spinner.
     expect(mockFetch).toHaveBeenCalledTimes(1);
-    expect(wrapper.emitted('update')?.at(-1)?.[0]).toBe('public/files');
+    const updates = wrapper.emitted('update') ?? [];
+    expect(updates[updates.length - 1]?.[0]).toBe('public/files');
   });
 
   it('clears the spinner when the server rejects the upload', async () => {

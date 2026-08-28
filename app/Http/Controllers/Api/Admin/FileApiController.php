@@ -41,8 +41,7 @@ class FileApiController extends ApiController
         $path = preg_replace('#/+#', '/', $path);
         $path = rtrim($path, '/');
 
-        // Security: allow Unicode letters, marks, numbers, underscores, hyphens, dots, spaces, parentheses, and forward slashes
-        if (! preg_match('/^[\p{L}\p{M}\p{N}\/_. ()-]+$/u', $path)) {
+        if (! StoragePath::isSafeRelative($path)) {
             throw new \InvalidArgumentException('Invalid path format');
         }
 

@@ -1,49 +1,22 @@
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 
+import type { DirectoryEntry, FileEntry, ListingPayload } from './types';
+import { getFilesJson } from './fileApi';
+import { useFileSearch } from './useFileSearch';
+
 import { useToasts } from '@/Composables/useToasts';
-import type { ApiResponse } from '@/Types/api.d';
 
-export interface FileEntry {
-  path: string;
-  name: string;
-  type: 'file';
-  size: number;
-  modified: number;
-  mimeType: string;
-  /** Parent directory — only set on recursive search results. */
-  directory?: string;
-}
-
-export interface DirectoryEntry {
-  path: string;
-  name: string;
-  type: 'directory';
-}
-
-interface ListingPayload {
-  files: FileEntry[];
-  directories: DirectoryEntry[];
-  path: string;
-  redirected?: boolean;
-}
-
-async function getJson<T>(url: string): Promise<{ data: T | null; meta: Record<string, unknown> }> {
-  const response = await fetch(url, {
-    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-    credentials: 'same-origin',
-  });
-
-  const body = await response.json().catch(() => null) as ApiResponse<T> | null;
-
-  if (!response.ok || !body?.success) {
-    throw new Error((body && 'message' in body && body.message) || `Request failed (${response.status})`);
-  }
-
-  return { data: body.data, meta: body.meta ?? {} };
-}
+export type { DirectoryEntry, FileEntry } from './types';
 
 /**
+ * Self-fetching listing for callers with no Inertia props of their own — i.e. the file picker
+ * inside a dialog, where a real page visit would be wrong (it would push browser history and
+ * navigate the page behind the modal).
+ *
+ * The admin page does not use this: it keeps its listing in Inertia props so the URL tracks
+ * the open folder and the browser's Back button walks back up the tree.
+ *
  * @param extensions Restricts the listing to files with these extensions (e.g. an image
  *                    picker asking for only jpg/png/webp/...). Filtering happens server-side
  *                    so unrelated files (PDFs, docs, ...) never reach the browser in the
@@ -51,17 +24,21 @@ async function getJson<T>(url: string): Promise<{ data: T | null; meta: Record<s
  *                    stays as a backstop for callers that don't pass this through.
  */
 export function useFileListing(initialPath = 'public/files', extensions?: string[]) {
+  const toasts = useToasts();
+
   const filesRaw = ref<FileEntry[]>([]);
   const directoriesRaw = ref<DirectoryEntry[]>([]);
   const currentPath = ref<string>(initialPath);
   const loading = ref<boolean>(false);
   const error = ref<string | null>(null);
 
-  const toasts = useToasts();
-
-  const searchResults = ref<FileEntry[] | null>(null);
-  const searching = ref<boolean>(false);
-  const searchTruncated = ref<boolean>(false);
+  const {
+    results: searchResults,
+    searching,
+    truncated: searchTruncated,
+    search: runSearch,
+    clear: clearSearch,
+  } = useFileSearch(extensions);
 
   async function fetchListing(path: string) {
     loading.value = true;
@@ -73,7 +50,7 @@ export function useFileListing(initialPath = 'public/files', extensions?: string
         query.extensions = extensions.join(',');
       }
 
-      const { data } = await getJson<ListingPayload>(route('api.v1.admin.files.index', query));
+      const { data } = await getFilesJson<ListingPayload>(route('api.v1.admin.files.index', query));
 
       filesRaw.value = data?.files ?? [];
       directoriesRaw.value = data?.directories ?? [];
@@ -98,48 +75,14 @@ export function useFileListing(initialPath = 'public/files', extensions?: string
     }
   }
 
-  async function search(query: string) {
-    if (query.trim().length < 2) {
-      searchResults.value = null;
-      searchTruncated.value = false;
-      return;
-    }
-
-    searching.value = true;
-
-    try {
-      const params: Record<string, string> = { q: query.trim(), path: currentPath.value };
-      if (extensions?.length) {
-        params.extensions = extensions.join(',');
-      }
-
-      const { data, meta } = await getJson<{ files: FileEntry[] }>(
-        route('api.v1.admin.files.search', params),
-      );
-
-      searchResults.value = data?.files ?? [];
-      searchTruncated.value = meta.truncated === true;
-    }
-    catch (e: unknown) {
-      toasts.error(e instanceof Error ? e.message : 'Search failed');
-      searchResults.value = [];
-      searchTruncated.value = false;
-    }
-    finally {
-      searching.value = false;
-    }
-  }
-
-  function clearSearch() {
-    searchResults.value = null;
-    searchTruncated.value = false;
+  function search(query: string) {
+    return runSearch(query, currentPath.value);
   }
 
   async function back() {
     const segments = currentPath.value.split('/');
     if (segments.length > 2) segments.pop();
-    const parent = segments.join('/');
-    await fetchListing(parent);
+    await fetchListing(segments.join('/'));
   }
 
   // Initial fetch

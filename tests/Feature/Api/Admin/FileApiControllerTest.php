@@ -6,8 +6,11 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Laravel\Facades\Image;
 
@@ -322,6 +325,41 @@ describe('recursive search', function (): void {
     });
 });
 
+describe('rate limiting', function (): void {
+    afterEach(function (): void {
+        // A listing fires one thumbnail request per visible image, so these routes need a
+        // higher cap than the shared `api` limiter; the tests below shrink the limiters to
+        // prove the wiring cheaply, then restore harmless values for tests sharing this process.
+        $restore = fn (Request $request) => Limit::perMinute(100000)->by($request->user()?->id ?: $request->ip());
+        RateLimiter::for('api', $restore);
+        RateLimiter::for('fileManager', $restore);
+    });
+
+    test('file routes are exempt from the shared api limiter', function (): void {
+        RateLimiter::for('api', fn () => Limit::perMinute(2));
+
+        for ($i = 0; $i < 5; $i++) {
+            asUser($this->fileManager)
+                ->getJson(route('api.v1.admin.files.index', ['path' => $this->allowedPath]))
+                ->assertOk();
+        }
+    });
+
+    test('file routes keep their own cap', function (): void {
+        RateLimiter::for('fileManager', fn () => Limit::perMinute(2));
+
+        for ($i = 0; $i < 2; $i++) {
+            asUser($this->fileManager)
+                ->getJson(route('api.v1.admin.files.index', ['path' => $this->allowedPath]))
+                ->assertOk();
+        }
+
+        asUser($this->fileManager)
+            ->getJson(route('api.v1.admin.files.index', ['path' => $this->allowedPath]))
+            ->assertStatus(429);
+    });
+});
+
 test('a TipTap content path resolves to the tenant folder instead of being authorized as one', function (): void {
     // The editor posts `content/Y/m`, which has no `padaliniai/` segment — authorizing it as a
     // literal directory would 403 every tenant-scoped user out of pasting an image.
@@ -335,4 +373,42 @@ test('a TipTap content path resolves to the tenant folder instead of being autho
     Storage::assertExists('public/files/padaliniai/vusa'.$this->tenant->alias.'/content/'.date('Y/m').'/pasted.pdf');
     expect($response->json('data.uploaded.0.url'))
         ->toStartWith('/uploads/files/padaliniai/vusa'.$this->tenant->alias.'/content/');
+});
+
+describe('path spelling', function (): void {
+    test('a folder whose name contains a comma is browsable', function (): void {
+        // "Tyrimai, ataskaitos" exists on disk but the old character allowlist had no comma,
+        // so opening it answered "Invalid path format".
+        $folder = $this->allowedPath.'/Tyrimai, ataskaitos';
+        Storage::put($folder.'/study.pdf', 'pdf content');
+
+        $response = asUser($this->fileManager)
+            ->getJson(route('api.v1.admin.files.index', ['path' => $folder]));
+
+        $response->assertOk();
+        expect(collect($response->json('data.files'))->pluck('name'))->toContain('study.pdf');
+    });
+
+    test('brackets, quotes, dashes and symbols are all accepted', function (): void {
+        $folder = $this->allowedPath.'/Ataskaitos [2024] – „vasara“ & co. © +1';
+        Storage::put($folder.'/report.pdf', 'pdf content');
+
+        asUser($this->fileManager)
+            ->getJson(route('api.v1.admin.files.index', ['path' => $folder]))
+            ->assertOk();
+    });
+
+    test('traversal is still refused however it is spelled', function (): void {
+        foreach (['public/files/../../../evil', 'public/files/....//evil', 'public/files/..././evil'] as $path) {
+            asUser($this->fileManager)
+                ->getJson(route('api.v1.admin.files.index', ['path' => $path]))
+                ->assertStatus(400);
+        }
+    });
+
+    test('a control character in the path is refused', function (): void {
+        asUser($this->fileManager)
+            ->getJson(route('api.v1.admin.files.index', ['path' => "public/files/ev\x01il"]))
+            ->assertStatus(400);
+    });
 });

@@ -226,7 +226,7 @@
         {{ search
           ? $t('files.ui.no_files_for_search', { search })
           : hasFolders
-            ? $t('files.ui.no_files_here_help')
+            ? $t('files.ui.no_files_here_help', { count: String(folderCount) })
             : selectionMode
               ? $t('files.ui.empty_folder_selection_help')
               : $t('files.ui.empty_folder_help')
@@ -245,11 +245,24 @@
           <IFluentArrowLeft24Regular class="mr-2 h-4 w-4" />
           {{ $t('files.ui.go_back') }}
         </Button>
-        <Button v-if="path !== 'public/files'" variant="destructive" size="sm" @click="$emit('deleteFolder')">
+        <Button
+          v-if="path !== 'public/files'"
+          variant="destructive"
+          size="sm"
+          :disabled="hasFolders"
+          :title="hasFolders ? $t('files.ui.delete_folder_blocked', { count: String(folderCount) }) : undefined"
+          @click="$emit('deleteFolder')"
+        >
           <IFluentDelete24Filled class="mr-2 h-4 w-4" />
           {{ $t('files.ui.delete_folder') }}
         </Button>
       </div>
+      <!-- The server refuses to delete a non-empty folder, and with the folder strip collapsed
+           there was nothing on screen explaining why the button did nothing. -->
+      <p v-if="hasFolders && path !== 'public/files' && !selectionMode && !search"
+        class="mt-3 text-xs text-muted-foreground">
+        {{ $t('files.ui.delete_folder_blocked', { count: String(folderCount) }) }}
+      </p>
       <div v-else class="flex flex-wrap gap-2 justify-center">
         <Button v-if="search" variant="outline" size="sm" @click="$emit('clearSearch')">
           {{ $t('files.ui.clear_search') }}
@@ -303,8 +316,8 @@ const props = defineProps<{
   hideViewToggle?: boolean;
   /** Render each file's parent folder — recursive search spans directories. */
   showDirectory?: boolean;
-  /** Whether the folder strip above is showing anything, so "empty" is not a lie. */
-  hasFolders?: boolean;
+  /** How many subfolders the strip above is showing, so "empty" is not a lie. */
+  folderCount?: number;
 }>();
 
 const emit = defineEmits<{
@@ -325,6 +338,10 @@ const emit = defineEmits<{
 }>();
 
 const viewMode = computed(() => props.viewMode ?? 'grid');
+
+const folderCount = computed(() => props.folderCount ?? 0);
+
+const hasFolders = computed(() => folderCount.value > 0);
 
 const hasContent = computed(() => {
   return props.paginatedFiles.length > 0;

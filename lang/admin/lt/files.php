@@ -2,8 +2,9 @@
 
 return [
     'ui' => [
+        'delete_folder_blocked' => 'Aplanko ištrinti negalima: jame dar yra :count aplankų. Pirmiausia ištrinkite juos.',
         'no_files_here' => 'Šiame aplanke failų nėra',
-        'no_files_here_help' => 'Atidarykite vieną iš aukščiau esančių aplankų arba įkelkite failą čia.',
+        'no_files_here_help' => 'Šiame aplanke yra :count aplankų. Atidarykite vieną iš jų viršuje arba įkelkite failą čia.',
         'directory_created' => 'Aplankas sukurtas.',
         'folder_deleted' => 'Aplankas ištrintas.',
         'file_deleted_short' => 'Failas ištrintas.',

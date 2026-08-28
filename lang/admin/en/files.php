@@ -2,8 +2,9 @@
 
 return [
     'ui' => [
+        'delete_folder_blocked' => 'This folder cannot be deleted: it still contains :count subfolders. Delete those first.',
         'no_files_here' => 'No files in this folder',
-        'no_files_here_help' => 'Open one of the folders above, or upload a file here.',
+        'no_files_here_help' => 'This folder contains :count subfolders. Open one above, or upload a file here.',
         'directory_created' => 'Folder created.',
         'folder_deleted' => 'Folder deleted.',
         'file_deleted_short' => 'File deleted.',

@@ -16,6 +16,7 @@ Here you'll find all changes and improvements to the mano.vusa.lt platform.
 - ✨ **Folders and files are sorted by name** — the order used to come straight from the filesystem and looked random
 - ✨ **A single click opens a folder** — it previously took a double click, and a single click did nothing
 - 🔧 **Non-image files dropped into the editor download again** — they were written to the wrong location, so the inserted link returned a 404
+- 🔧 **The file manager no longer hits the request limit** — every visible image fetches its own thumbnail, so a folder with many photos exhausted the shared limit for all admin requests and the manager started returning "429". File manager requests now have their own much higher limit
 - ✨ **The file manager speaks English on the English site** — its buttons and messages were hardcoded in Lithuanian (and in places English)
 
 ## v1.26 — Images in the content editor (2026-08-24) {#v1-26}

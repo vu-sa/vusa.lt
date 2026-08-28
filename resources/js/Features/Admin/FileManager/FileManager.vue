@@ -75,7 +75,7 @@
         :view-mode
         :loading="props.listLoading || props.searching"
         :show-directory="isRecursiveSearch"
-        :has-folders="displayedDirectories.length > 0"
+        :folder-count="displayedDirectories.length"
         @update:items-per-page="itemsPerPage = $event"
         @update:current-page="currentPage = $event"
         @update:view-mode="viewMode = $event"
