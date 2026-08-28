@@ -156,10 +156,15 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
             ->middleware('throttle:60,1')
             ->name('contentParts.preview');
 
-        // Files
-        Route::get('files', [FileApiController::class, 'index'])->name('files.index');
-        Route::get('files/allowed-types', [FileApiController::class, 'allowedTypes'])->name('files.allowedTypes');
-        Route::get('files/thumbnail', [FileApiController::class, 'thumbnail'])->name('files.thumbnail');
+        // Files. A listing fires one thumbnail request per visible image, so these routes
+        // carry their own generous limiter instead of the shared `api` cap.
+        Route::middleware('throttle:fileManager')->withoutMiddleware('throttle:api')->group(function (): void {
+            Route::get('files', [FileApiController::class, 'index'])->name('files.index');
+            Route::post('files', [FileApiController::class, 'store'])->name('files.store');
+            Route::get('files/search', [FileApiController::class, 'search'])->name('files.search');
+            Route::get('files/allowed-types', [FileApiController::class, 'allowedTypes'])->name('files.allowedTypes');
+            Route::get('files/thumbnail', [FileApiController::class, 'thumbnail'])->name('files.thumbnail');
+        });
 
         // Sharepoint / FileableFiles
         Route::get('fileables/{type}/{id}/files', [SharepointApiController::class, 'fileableFiles'])->name('fileables.files');

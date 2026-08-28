@@ -4,10 +4,10 @@
  * Handles file drag-and-drop and paste uploads with placeholder management.
  */
 import { ref } from 'vue';
-import { router } from '@inertiajs/vue3';
 import type { Editor } from '@tiptap/vue-3';
 
 import { useToasts } from '@/Composables/useToasts';
+import { uploadFiles } from '@/Composables/useFileUpload';
 
 interface UploadState {
   fileName: string;
@@ -15,15 +15,6 @@ interface UploadState {
     uploadId: string;
     text: string;
   };
-}
-
-interface UploadResult {
-  url: string;
-  name: string;
-  originalSize?: number;
-  compressedSize?: number;
-  compressionRatio?: number;
-  message?: string;
 }
 
 /**
@@ -49,12 +40,7 @@ export function useTiptapFileUpload() {
    */
   async function handleFileDrop(currentEditor: Editor, files: File[], pos?: number) {
     for (const file of files) {
-      if (file.type.startsWith('image/')) {
-        await processImageUpload(currentEditor, file, pos);
-      }
-      else {
-        await processFileUpload(currentEditor, file, pos);
-      }
+      await processUpload(currentEditor, file, pos);
     }
   }
 
@@ -63,104 +49,47 @@ export function useTiptapFileUpload() {
    */
   async function handleFilePaste(currentEditor: Editor, files: File[]) {
     for (const file of files) {
-      if (file.type.startsWith('image/')) {
-        await processImageUpload(currentEditor, file);
-      }
-      else {
-        await processFileUpload(currentEditor, file);
-      }
+      await processUpload(currentEditor, file);
     }
   }
 
   /**
-   * Process image upload with compression
+   * Upload one file and swap its placeholder for the result.
+   *
+   * Both kinds go through the same JSON endpoint. They used to be Inertia visits whose promise
+   * settled only from onSuccess/onError — and Inertia cancels an in-flight sync visit as soon
+   * as another starts, so a cancelled upload left the promise pending forever, the placeholder
+   * in the document, and the `finally` cleanup unreached.
    */
-  async function processImageUpload(currentEditor: Editor, file: File, pos?: number) {
+  async function processUpload(currentEditor: Editor, file: File, pos?: number) {
     const uploadId = generateUploadId();
+    const isImage = file.type.startsWith('image/');
 
     try {
       const placeholder = insertUploadPlaceholder(currentEditor, file.name, uploadId, pos);
       uploadingFiles.value.set(uploadId, { fileName: file.name, placeholder });
 
-      const uploadData = {
-        image: file,
-        name: file.name,
-        path: getUploadPath(),
-      };
+      const result = await uploadFiles([file], getUploadPath());
+      const stored = result.uploaded[0];
 
-      await new Promise<UploadResult>((resolve, reject) => {
-        router.post(route('files.uploadImage'), uploadData, {
-          preserveState: true,
-          preserveScroll: true,
-          onSuccess: (page) => {
-            const result = page.props.flash?.data as UploadResult;
+      if (!stored) {
+        throw new Error(result.failed[0]?.reason ?? 'Upload succeeded but no data received');
+      }
 
-            if (result) {
-              replacePlaceholderWithImage(currentEditor, uploadId, {
-                src: result.url,
-                alt: file.name,
-                title: `Uploaded: ${file.name}`,
-              });
-              resolve(result);
-            }
-            else {
-              reject(new Error('Upload succeeded but no data received'));
-            }
-          },
-          onError: (errors) => {
-            const errorMessage = Object.values(errors).flat().join(', ') || 'Upload failed';
-            reject(new Error(errorMessage));
-          },
+      if (isImage) {
+        replacePlaceholderWithImage(currentEditor, uploadId, {
+          src: stored.url,
+          alt: file.name,
+          title: `Uploaded: ${file.name}`,
         });
-      });
+      }
+      else {
+        replacePlaceholderWithFileLink(currentEditor, uploadId, stored.name, stored.url);
+      }
     }
     catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Upload failed:', error);
-      replacePlaceholderWithError(currentEditor, uploadId, errorMessage);
-      toasts.error(`Failed to upload ${file.name}`, {
-        description: errorMessage,
-      });
-    }
-    finally {
-      uploadingFiles.value.delete(uploadId);
-    }
-  }
-
-  /**
-   * Process non-image file upload
-   */
-  async function processFileUpload(currentEditor: Editor, file: File, pos?: number) {
-    const uploadId = generateUploadId();
-
-    try {
-      const placeholder = insertUploadPlaceholder(currentEditor, file.name, uploadId, pos);
-      uploadingFiles.value.set(uploadId, { fileName: file.name, placeholder });
-
-      const formData = new FormData();
-      formData.append('files[0][file]', file);
-      formData.append('path', getUploadPath());
-
-      await new Promise<unknown>((resolve, reject) => {
-        router.post(route('files.store'), formData, {
-          preserveState: true,
-          preserveScroll: true,
-          onSuccess: (page) => {
-            const fileName = file.name;
-            const fileUrl = `/uploads/files/${getUploadPath()}/${fileName}`;
-            replacePlaceholderWithFileLink(currentEditor, uploadId, fileName, fileUrl);
-            resolve(page);
-          },
-          onError: (errors) => {
-            const errorMessage = Object.values(errors).flat().join(', ') || 'Upload failed';
-            reject(new Error(errorMessage));
-          },
-        });
-      });
-    }
-    catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('File upload failed:', error);
       replacePlaceholderWithError(currentEditor, uploadId, errorMessage);
       toasts.error(`Failed to upload ${file.name}`, {
         description: errorMessage,

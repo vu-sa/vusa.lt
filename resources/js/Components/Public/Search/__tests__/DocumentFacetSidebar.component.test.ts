@@ -208,14 +208,16 @@ describe('DocumentFacetSidebar', () => {
     it('shows mobile filter button on mobile view', () => {
       const wrapper = createWrapper();
 
-      expect(wrapper.find('.lg\\:hidden').exists()).toBe(true);
+      // jsdom can't apply responsive CSS, so the xl breakpoint (aligned with
+      // BaseSearchInterface's grid) is asserted via class wiring instead.
+      expect(wrapper.find('.xl\\:hidden').exists()).toBe(true);
       expect(wrapper.text()).toContain('Filters');
     });
 
     it('shows desktop filters on desktop view', () => {
       const wrapper = createWrapper();
 
-      expect(wrapper.find('.hidden.lg\\:block').exists()).toBe(true);
+      expect(wrapper.find('.hidden.xl\\:block').exists()).toBe(true);
     });
 
     it('displays active filter count when filters are active', () => {
@@ -346,6 +348,21 @@ describe('DocumentFacetSidebar', () => {
     });
   });
 
+  describe('accordion trigger alignment', () => {
+    // jsdom can't verify visual alignment of the chevron; assert the class wiring that
+    // centers it instead (items-center overrides ui/accordion's items-start).
+    it('centers the chevron on all accordion triggers', () => {
+      const wrapper = createWrapper();
+
+      const triggers = wrapper.findAll('.accordion-trigger');
+      expect(triggers.length).toBeGreaterThan(0);
+      triggers.forEach((trigger) => {
+        expect(trigger.classes()).toContain('items-center');
+        expect(trigger.classes()).toContain('[&>svg]:translate-y-0');
+      });
+    });
+  });
+
   describe('facet processing', () => {
     it('processes tenant facets correctly', () => {
       const wrapper = createWrapper();
@@ -385,7 +402,7 @@ describe('DocumentFacetSidebar', () => {
     it('toggles mobile filters sheet', async () => {
       const wrapper = createWrapper();
 
-      const mobileButton = wrapper.find('.lg\\:hidden button');
+      const mobileButton = wrapper.find('.xl\\:hidden button');
       await mobileButton.trigger('click');
 
       // The sheet should be accessible (though we can't test the actual visibility with jsdom)

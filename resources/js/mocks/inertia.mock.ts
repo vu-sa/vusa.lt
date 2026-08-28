@@ -1,6 +1,6 @@
 import { fn } from 'storybook/test';
 import { vi } from 'vitest';
-import { defineComponent, h } from 'vue';
+import { defineComponent, h, reactive } from 'vue';
 
 /**
  * Centralized Inertia.js mock for Storybook and Vitest
@@ -160,6 +160,25 @@ export const useForm = mockFn((data: any = {}) => ({
   cancel: mockFn(),
 }));
 
+// Mock useHttp, Inertia v3's standalone XHR hook. Reactive so components that read
+// `http.processing` in a computed re-render; callers drive the callbacks themselves via
+// the spy, e.g. vi.mocked(http.get).mock.calls[0][1].onSuccess(payload).
+export const useHttp = mockFn((data: any = {}) => reactive({
+  ...data,
+  processing: false,
+  errors: {},
+  hasErrors: false,
+  response: null,
+  get: mockFn(),
+  post: mockFn(),
+  put: mockFn(),
+  patch: mockFn(),
+  delete: mockFn(),
+  cancel: mockFn(),
+  reset: mockFn(),
+  clearErrors: mockFn(),
+}));
+
 // Mock Head component for document meta
 export const Head = defineComponent({
   name: 'InertiaHead',
@@ -199,6 +218,7 @@ export default {
   usePage,
   router,
   useForm,
+  useHttp,
   Head,
   Link,
 };

@@ -7,6 +7,23 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.28 — Paieškos filtrai siauresniuose ekranuose (2026-08-28) {#v1-28}
+
+- ✨ **Paieškos filtrai suskleidžiami visuose ekrano pločiuose** — 1024–1280 px pločio ekranuose dokumentų, posėdžių, kontaktų ir bendrosios paieškos puslapiuose filtrai anksčiau būdavo išskleisti virš rezultatų ir jų nebuvo galima suskleisti; dabar jie slepiasi po filtrų mygtuku, kaip ir telefonuose
+- 🔧 **Sutvarkyta filtrų rodyklės lygiuotė** — filtro sekcijų atvėrimo rodyklė buvo pasislinkusi į viršų ir ne centre su etikete, ypač kai sekcija turi aprašymą; dabar rodyklė visuomet vertikaliai centruota
+
+## v1.27 — Failų tvarkyklė (2026-08-28) {#v1-27}
+
+- 🔧 **Failų tvarkyklė nebenulūžta atidarius `/mano/files`** — puslapis nutrūkdavo su klaida („allowedTypes.extensions is undefined“), o įkėlimo laukas užstrigdavo ties „Kraunama...“. Kartu vėl veikia leidžiamų formatų sąrašas, 50 MB ribos tikrinimas naršyklėje ir failo tipo filtras pasirinkimo lange
+- 🔧 **Įkėlimo mygtukas nebesisuka be galo** — įkeliant failą per turinio redaktoriaus paveikslėlių langą failas patekdavo į serverį, bet mygtukas suktųsi amžinai, nes įkėlimą nutraukdavo kitas puslapio veiksmas (pvz. formos automatinis išsaugojimas). Dabar įkėlimas nepriklauso nuo puslapio navigacijos ir visada pasibaigia
+- ✨ **Aplankai nebeužstoja failų** — anksčiau šakniniame kataloge esantys ~50 aplankų užimdavo visą pirmą puslapį, o failai prasidėdavo tik nuo antro. Dabar aplankai turi atskirą, suskleidžiamą juostą su savo filtru, o failų tinklelis prasideda iš karto
+- ⭐ **Paieška visuose aplankuose** — pažymėjus „Visuose aplankuose“ ieškoma ir poaplankiuose, o prie kiekvieno rezultato rodoma, kuriame aplanke failas guli. Anksčiau rasti failą buvo įmanoma tik žinant, kuriame iš ~50 aplankų jis yra
+- ✨ **Aplankai ir failai rikiuojami pagal pavadinimą** — anksčiau eilė priklausė nuo failų sistemos ir atrodė atsitiktinė
+- ✨ **Aplankas atidaromas vienu paspaudimu** — anksčiau reikėjo dvigubo paspaudimo, o vienas paspaudimas nedarė nieko
+- 🔧 **Į redaktorių nutempti ne paveikslėlių failai vėl atsisiunčiami** — jie buvo įrašomi ne į tą vietą, tad įterpta nuoroda grąžindavo klaidą 404
+- 🔧 **Failų tvarkyklė nebeblokuojama pasiekus užklausų ribą** — kiekvienas matomas paveikslėlis atsiunčia po atskirą mažą kopiją, tad aplanke su daugiau nuotraukų užimdavote bendrą visų administratoriaus užklausų limitą ir tvarkyklė imdavo rodyti klaidą „429“. Failų tvarkyklės užklausos dabar turi atskirą, gerokai didesnį limitą
+- ✨ **Failų tvarkyklė kalba angliškai, kai svetainė angliška** — mygtukai ir pranešimai buvo įrašyti tiesiai į kodą lietuviškai (vietomis angliškai)
+
 ## v1.26 — Paveikslėliai turinio redaktoriuje (2026-08-24) {#v1-26}
 
 - 🔧 **Paveikslėlį vėl galima įkelti į turinio redaktorių** — pasirinkus nuotrauką ji nebuvo įterpiama (redaktorius nutrūkdavo su klaida), tad turinį su paveikslėliais buvo galima kurti tik nutempus failą į redaktorių

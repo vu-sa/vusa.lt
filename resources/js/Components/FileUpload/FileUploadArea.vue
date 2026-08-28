@@ -109,6 +109,14 @@ import { ref, onMounted, computed } from 'vue';
 import { useHttp } from '@inertiajs/vue3';
 
 import { Button } from '@/Components/ui/button';
+import { formatFileSize, getFileIcon } from '@/Utils/fileIcons';
+import type { ApiSuccessResponse } from '@/Types/api.d';
+
+interface AllowedFileTypes {
+  extensions: string[];
+  accept: string;
+  maxSizeMB: number;
+}
 
 interface FileUploadProps {
   accept?: string;
@@ -135,7 +143,7 @@ const emit = defineEmits<{
 const fileInput = ref<HTMLInputElement | null>(null);
 const selectedFiles = ref<File[]>([]);
 const isDragOver = ref(false);
-const allowedTypes = ref<{ extensions: string[]; accept: string; maxSizeMB: number } | null>(null);
+const allowedTypes = ref<AllowedFileTypes | null>(null);
 const http = useHttp({});
 
 // Computed accept string for file input
@@ -159,7 +167,7 @@ const formattedExtensions = computed(() => {
     return 'Kraunama...';
   }
   if (allowedTypes.value) {
-    return allowedTypes.value.extensions.join(', ').toUpperCase();
+    return (allowedTypes.value.extensions ?? []).join(', ').toUpperCase();
   }
   return 'Visi formatai';
 });
@@ -173,7 +181,15 @@ onMounted(() => {
     route('api.v1.admin.files.allowedTypes'),
     {
       onSuccess: (data) => {
-        allowedTypes.value = data as { extensions: string[]; accept: string; maxSizeMB: number };
+        // useHttp hands back the raw body, and every API controller wraps its payload in
+        // `{success, data}` (ApiResponses). Reading it unwrapped left `extensions`
+        // undefined and threw out of formattedExtensions mid-render.
+        const envelope = data as ApiSuccessResponse<AllowedFileTypes> | AllowedFileTypes | null;
+        const payload = (envelope as ApiSuccessResponse<AllowedFileTypes>)?.data ?? envelope;
+
+        if (Array.isArray((payload as AllowedFileTypes)?.extensions)) {
+          allowedTypes.value = payload as AllowedFileTypes;
+        }
       },
       onHttpException: (response) => {
         console.warn('Could not fetch allowed file types:', response);
@@ -245,62 +261,6 @@ function uploadFiles() {
   if (selectedFiles.value.length > 0) {
     emit('upload', selectedFiles.value);
   }
-}
-
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 B';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
-}
-
-function getFileIcon(fileName: string) {
-  const extension = fileName.split('.').pop()?.toLowerCase();
-
-  if (!extension) return 'IFluentDocument24Regular';
-
-  // Document files
-  if (['doc', 'docx', 'odt'].includes(extension)) {
-    return 'IFluentDocumentText24Regular';
-  }
-
-  // Spreadsheet files
-  if (['xls', 'xlsx', 'csv'].includes(extension)) {
-    return 'IFluentDocumentTable24Regular';
-  }
-
-  // PDF files
-  if (extension === 'pdf') {
-    return 'IFluentDocumentPdf24Regular';
-  }
-
-  // Image files
-  if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension)) {
-    return 'IFluentImage24Regular';
-  }
-
-  // Video files
-  if (['mp4', 'avi', 'mkv', 'mov', 'webm'].includes(extension)) {
-    return 'IFluentVideo24Regular';
-  }
-
-  // Audio files
-  if (['mp3', 'wav', 'flac', 'aac'].includes(extension)) {
-    return 'IFluentMusicNote24Regular';
-  }
-
-  // Archive files
-  if (['zip', 'rar', '7z', 'tar', 'gz'].includes(extension)) {
-    return 'IFluentFolderZip24Regular';
-  }
-
-  // Code files
-  if (['js', 'ts', 'vue', 'html', 'css', 'php', 'py', 'java'].includes(extension)) {
-    return 'IFluentCode24Regular';
-  }
-
-  return 'IFluentDocument24Regular';
 }
 
 // Expose method to clear files externally

@@ -276,6 +276,23 @@ describe('Files Controller - File Upload', function (): void {
         $response->assertSessionHasErrors(['files.0.file']);
     });
 
+    test('a TipTap non-image upload lands where the editor /uploads URL points', function (): void {
+        // storeAs() writes to the default (local) disk, so the TipTap branch has to carry the
+        // `public/` prefix. Without it the file landed in storage/app/files/content/... and the
+        // /uploads/files/content/... link the editor inserts returned 404.
+        $response = asUser($this->fileManager)->post(route('files.store'), [
+            'files' => [['file' => UploadedFile::fake()->create('handout.pdf', 20, 'application/pdf')]],
+            'path' => 'content/'.date('Y/m'),
+        ]);
+
+        expect($response->status())->toBe(302);
+
+        $expected = 'public/files/padaliniai/vusa'.$this->tenant->alias.'/content/'.date('Y/m').'/handout.pdf';
+
+        Storage::assertExists($expected);
+        Storage::assertMissing('files/padaliniai/vusa'.$this->tenant->alias.'/content/'.date('Y/m').'/handout.pdf');
+    });
+
     test('multiple files can be uploaded simultaneously', function (): void {
         $files = [
             ['file' => UploadedFile::fake()->create('file1.txt', 100, 'text/plain')],
@@ -828,14 +845,26 @@ describe('Files Controller - File Usage Scanning', function (): void {
         expect($flashData)->toHaveKeys(['total_usages', 'is_safe_to_delete', 'scanned_models', 'usage_details', 'scanned_at']);
     });
 
-    test('file usage scan validates file path format', function (): void {
+    test('file usage scan rejects a path carrying a control character', function (): void {
         $response = asUser($this->fileManager)->post(route('files.scanUsage'), [
-            'path' => 'public/files/invalid@#$%characters',  // Invalid characters that would fail the regex
+            'path' => "public/files/pad\x01ding",
         ]);
 
         expect($response->status())->toBe(302);
         $response->assertSessionHasErrors('error');
         expect(session('errors')->first('error'))->toContain('Neteisingas failo kelias');
+    });
+
+    test('file usage scan accepts the punctuation real folder names use', function (): void {
+        // Rewritten from a test that asserted the old hand-listed allowlist. `@`, commas and
+        // brackets all occur in folders on disk, so rejecting them as "invalid path" was the
+        // bug, not the feature. Such a path must now fail on not-found, never on its spelling.
+        $response = asUser($this->fileManager)->post(route('files.scanUsage'), [
+            'path' => 'public/files/padaliniai/vusa'.$this->tenant->alias.'/Tyrimai, ataskaitos [2024] @ v1.pdf',
+        ]);
+
+        expect($response->status())->toBe(302);
+        expect(session('errors')->first('error'))->not->toContain('Neteisingas failo kelias');
     });
 
     test('file usage scan requires existing file', function (): void {

@@ -7,6 +7,23 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.28 — Search filters on narrower screens (2026-08-28) {#v1-28}
+
+- ✨ **Search filters are collapsible at every screen width** — on 1024–1280 px screens the documents, meetings, contacts and global search pages used to show the filters expanded above the results with no way to collapse them; they now hide behind a filters button, just like on phones
+- 🔧 **Fixed the filter chevron alignment** — the expand arrow on filter sections sat shifted toward the top instead of centered with the label, most visibly on sections with a description; it is now always vertically centered
+
+## v1.27 — File manager (2026-08-28) {#v1-27}
+
+- 🔧 **The file manager no longer crashes on `/mano/files`** — the page failed with "allowedTypes.extensions is undefined" and the upload panel froze on "Loading...". This also restores the supported-formats list, the 50 MB browser-side check, and the file-type filter in the picker
+- 🔧 **The upload button no longer spins forever** — uploading through the editor's image dialog stored the file but left the button spinning, because another action on the page (an autosaving form, for instance) cancelled the upload mid-flight. Uploads no longer depend on page navigation and always finish
+- ✨ **Folders no longer bury the files** — the ~50 folders in the root filled the entire first page, so files only started on page two. Folders now sit in their own collapsible strip with a filter, and the file grid starts immediately
+- ⭐ **Search across all folders** — tick "In all folders" to search subfolders too, with each result showing which folder it lives in. Previously a file was only findable if you already knew which of ~50 folders held it
+- ✨ **Folders and files are sorted by name** — the order used to come straight from the filesystem and looked random
+- ✨ **A single click opens a folder** — it previously took a double click, and a single click did nothing
+- 🔧 **Non-image files dropped into the editor download again** — they were written to the wrong location, so the inserted link returned a 404
+- 🔧 **The file manager no longer hits the request limit** — every visible image fetches its own thumbnail, so a folder with many photos exhausted the shared limit for all admin requests and the manager started returning "429". File manager requests now have their own much higher limit
+- ✨ **The file manager speaks English on the English site** — its buttons and messages were hardcoded in Lithuanian (and in places English)
+
 ## v1.26 — Images in the content editor (2026-08-24) {#v1-26}
 
 - 🔧 **Images can be inserted from the content editor again** — picking an image did nothing (the editor threw an error), so images could only be added by dragging a file onto the editor
