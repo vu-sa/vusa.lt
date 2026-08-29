@@ -56,6 +56,11 @@ abstract class CadenceRequest extends FormRequest
             if ($meeting !== null) {
                 $derived[$dateKey] = $meeting->start_time->toDateString();
             }
+
+            // For the end date, make it minus one day
+            if ($side === 'end' && $meeting !== null) {
+                $derived[$dateKey] = $meeting->start_time->subDay()->toDateString();
+            }
         }
 
         if ($derived !== []) {
