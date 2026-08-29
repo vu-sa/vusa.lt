@@ -11,11 +11,13 @@ use Illuminate\Support\Collection;
 /**
  * Get all administrators who should be notified about a meeting.
  *
- * Collects users from three sources (de-duplicated):
+ * Collects users from four sources (de-duplicated):
  * 1. Institution managers - users with institution management permissions for meeting's institutions
  * 2. Tenant-level coordinators - users with tenant visibility roles (from AtstovavimasSettings)
  *    for the meeting's institution tenants
  * 3. Global administrators - users with global visibility roles (from AtstovavimasSettings)
+ * 4. Institution administrators - people nominated to look after the institution for the
+ *    term the meeting fell in ({@see GetInstitutionAdministrators})
  */
 class GetMeetingAdministrators
 {
@@ -46,6 +48,9 @@ class GetMeetingAdministrators
         // 3. Get users with global visibility roles
         $globalAdmins = self::getGlobalAdministrators($settings);
         $administrators = $administrators->merge($globalAdmins);
+
+        // 4. People nominated for the term this meeting fell in
+        $administrators = $administrators->merge(GetInstitutionAdministrators::forMeeting($meeting));
 
         // Return unique users by ID
         return $administrators->unique('id')->values();

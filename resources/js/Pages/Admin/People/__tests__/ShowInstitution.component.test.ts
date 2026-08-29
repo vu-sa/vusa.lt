@@ -47,6 +47,7 @@ const baseInstitution = {
   duties: [],
   meetings: [],
   managers: [],
+  administrators: [],
   allTasks: [],
   relatedInstitutionsFlat: [],
   relatedInstitutions: {},
@@ -69,6 +70,19 @@ describe('ShowInstitution.vue', () => {
       ...createMockPage(),
       url: '/mano/institutions/inst1',
     });
+  });
+
+  it('shows the current term administrators apart from the managers', () => {
+    // An administrator need not hold a duty here, so they must never read as a member.
+    const wrapper = createWrapper({
+      administrators: [{ id: 'u1', name: 'Rūta Petraitė', email: null, profile_photo_path: null }],
+    });
+
+    expect(wrapper.text()).toContain('administrators.label');
+  });
+
+  it('hides the administrator group when nobody is nominated', () => {
+    expect(createWrapper().text()).not.toContain('administrators.label');
   });
 
   it('omits the related tab when the institution has no related institutions', () => {

@@ -1,3 +1,5 @@
+import type { AdministratorUser } from '@/Components/Institutions';
+
 import type { InstitutionActivityStatus } from '@/Types/InstitutionActivity';
 
 export interface InstitutionPageComment {
@@ -76,6 +78,8 @@ export type InstitutionPageData = Omit<
   types: InstitutionPageType[];
   current_users: App.Entities.User[];
   managers: App.Entities.User[];
+  /** Nominated for the current term. Not members — see InstitutionAdministrator. */
+  administrators: AdministratorUser[];
   allTasks: InstitutionPageTask[];
   recentComments: InstitutionPageComment[];
   relatedInstitutions: Record<string, InstitutionPageRelatedInstitution[]>;

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\GetInstitutionAdministrators;
+use App\Actions\GetInstitutionMembers;
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexInstitutionRequest;
@@ -275,6 +277,11 @@ class InstitutionController extends AdminController
                 ...$institution->toArray(),
                 'current_users' => $institution->duties->load('current_users')->pluck('current_users')->flatten()->unique('id')->values(),
                 'managers' => $institution->managers(),
+                // Nominated for the current term. Kept separate from current_users on
+                // purpose — an administrator is not a member of the body.
+                'administrators' => InstitutionAdministratorController::usersPayload(
+                    GetInstitutionAdministrators::execute($institution)
+                ),
                 // Provide both formats for backwards compatibility during transition
                 'relatedInstitutions' => $institution->related_institution_relationshipables(),
                 'relatedInstitutionsFlat' => $relatedInstitutionsFlat->map(fn ($item) => [
@@ -328,6 +335,12 @@ class InstitutionController extends AdminController
                 'default_start_month_day' => app(CadenceSettings::class)->default_start_month_day,
                 'default_end_month_day' => app(CadenceSettings::class)->default_end_month_day,
             ],
+            // One roster per applicable term, edited beside the terms themselves.
+            'administratorRosters' => InstitutionAdministratorController::payload($institution),
+            // Suggested first in the picker: the people already in the body.
+            'suggestedAdministrators' => InstitutionAdministratorController::usersPayload(
+                GetInstitutionMembers::execute($institution)
+            ),
         ]);
     }
 

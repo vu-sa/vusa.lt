@@ -61,7 +61,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Document> $documents
  * @property-read Collection<int, Duty> $duties
  * @property-read Collection<int, FileableFile> $fileableFiles
- * @property-read Relationshipable|InstitutionFollow|null $pivot
+ * @property-read Relationshipable|InstitutionFollow|InstitutionAdministrator|null $pivot
+ * @property-read Collection<int, User> $administrators
+ * @property-read Collection<int, InstitutionAdministrator> $administratorAssignments
  * @property-read Collection<int, User> $followers
  * @property-read string|null $force_delete_blocked_reason
  * @property-read bool $has_protocol
@@ -248,6 +250,33 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
         return $this->belongsToMany(User::class, 'institution_follows')
             ->using(InstitutionFollow::class)
             ->withTimestamps();
+    }
+
+    /**
+     * People nominated to look after this body for a term.
+     *
+     * Deliberately kept out of users()/duties(): an administrator carries the
+     * institution's tasks and notifications without being a member of it, so
+     * nothing here may leak into contacts, duty listings or the search index.
+     *
+     * @return BelongsToMany<User, $this, InstitutionAdministrator, 'pivot'>
+     */
+    public function administrators(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'institution_administrators')
+            ->using(InstitutionAdministrator::class)
+            ->withPivot('cadence_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * The nomination rows themselves, for the roster editor.
+     *
+     * @return HasMany<InstitutionAdministrator, $this>
+     */
+    public function administratorAssignments(): HasMany
+    {
+        return $this->hasMany(InstitutionAdministrator::class);
     }
 
     public function managers()

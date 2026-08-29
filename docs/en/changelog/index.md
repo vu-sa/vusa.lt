@@ -7,6 +7,16 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.29 — Institution administrators (2026-08-29) {#v1-29}
+
+- ⭐ **An institution can name its administrators** — the institution edit page now lets you assign specific people to each cadence, right beside the cadences themselves. They are named person by person rather than through a duty, and people already in the body are offered as one-tap suggestions
+- ⭐ **With administrators named, the meeting tasks go to them alone** — every other member stops receiving them. With no administrators the tasks go, as before, to the representatives active at the time
+- 🔧 **Tasks and reminders no longer reach former members** — meeting reminders used to go to everyone who had ever held a duty in the institution, with no regard for dates. Now only the people actually serving at the time are notified
+- 🔧 **Comment and mention audiences are date-scoped too** — mentioning an institution or a meeting in a comment no longer notifies people who left years earlier
+- ✨ **Administrators are shown on the meeting and institution pages** — separately from members and leaders, since an administrator need not hold a duty in the body at all
+- ✨ **Administered institutions appear on your dashboard** — listed among your own with a distinct marker, so it stays clear that this is not membership
+- ✨ **Changing the administrators reassigns the open tasks immediately** — no waiting for anything to be re-run
+
 ## v1.28 — The action window (2026-08-29) {#v1-28}
 
 - ⭐ **One window for the most common actions** — a "Quick actions" button in the sidebar and on the home page opens a guided window. It asks which hat you are wearing today (student representative, VU SR member or coordinator), then what you want to do. Only the actions you are actually allowed to take are listed

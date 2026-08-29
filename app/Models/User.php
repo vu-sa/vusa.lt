@@ -59,10 +59,11 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon|null $deleted_at
  * @property bool $name_was_changed
  * @property-read Collection<int, Activity> $activitiesAsSubject
- * @property-read InstitutionNotificationMute|InstitutionFollow|Dutiable|null $pivot
+ * @property-read InstitutionNotificationMute|InstitutionFollow|InstitutionAdministrator|Dutiable|null $pivot
  * @property-read Collection<int, Duty> $current_duties
  * @property-read Collection<int, Dutiable> $dutiables
  * @property-read Collection<int, Duty> $duties
+ * @property-read Collection<int, Institution> $administeredInstitutions
  * @property-read Collection<int, Institution> $followedInstitutions
  * @property-read string|null $force_delete_blocked_reason
  * @property-read mixed $has_password
@@ -271,6 +272,22 @@ class User extends Authenticatable implements GuardsForceDelete
     public function institutions()
     {
         return $this->hasManyDeepFromRelations($this->duties(), (new Duty)->institution());
+    }
+
+    /**
+     * Institutions this user has been nominated to look after for a term.
+     *
+     * Grants the tasks, the notifications and `.own` visibility — never membership,
+     * so this must not be merged into institutions()/duties() anywhere.
+     *
+     * @return BelongsToMany<Institution, $this, InstitutionAdministrator, 'pivot'>
+     */
+    public function administeredInstitutions(): BelongsToMany
+    {
+        return $this->belongsToMany(Institution::class, 'institution_administrators')
+            ->using(InstitutionAdministrator::class)
+            ->withPivot('cadence_id')
+            ->withTimestamps();
     }
 
     /**

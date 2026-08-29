@@ -40,7 +40,7 @@ const baseMeeting = {
 
 const createWrapper = (props: Record<string, unknown> = {}) =>
   mount(ShowMeeting, {
-    props: { meeting: baseMeeting, representatives: [], ...props },
+    props: { meeting: baseMeeting, representatives: [], administrators: [], ...props },
     global: { stubs },
   });
 
@@ -48,6 +48,21 @@ describe('ShowMeeting.vue', () => {
   beforeEach(() => {
     localStorage.clear();
     window.history.replaceState({}, '', '/');
+  });
+
+  it('shows the term administrators apart from the representatives', () => {
+    // They are who the agenda tasks actually went to, so they must be legible as a
+    // separate group rather than merged into the representatives.
+    const wrapper = createWrapper({
+      representatives: [{ id: 'u1', name: 'Jonas Jonaitis' }],
+      administrators: [{ id: 'u2', name: 'Rūta Petraitė', email: null, profile_photo_path: null }],
+    });
+
+    expect(wrapper.text()).toContain('administrators.label');
+  });
+
+  it('hides the administrator group when nobody is nominated', () => {
+    expect(createWrapper().text()).not.toContain('administrators.label');
   });
 
   it('renders a trigger for each tab, with the agenda item count', () => {

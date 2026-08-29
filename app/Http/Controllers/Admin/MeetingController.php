@@ -312,6 +312,9 @@ class MeetingController extends AdminController
                 'sharepointPath' => $meeting->institutions->isNotEmpty() ? SharepointFileService::pathForFileableDriveItem($meeting) : null,
             ],
             'representatives' => $representatives,
+            // Nominated for the term the meeting fell in. When present, these are the
+            // people the agenda tasks went to instead of the whole membership.
+            'administrators' => InstitutionAdministratorController::forMeetingPayload($meeting),
             'previousMeeting' => $previousMeeting,
             'nextMeeting' => $nextMeeting,
             'taskableInstitutions' => Inertia::optional(fn () => $meeting->institutions->load('users')),

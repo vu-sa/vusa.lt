@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Actions\GetInstitutionAdministrators;
+use App\Actions\GetInstitutionMembers;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
@@ -47,7 +49,7 @@ class CommentableMentionResolver
             $commentable instanceof AgendaItem => $commentable->meeting
                 ? $this->meetingUsers($commentable->meeting)
                 : collect(),
-            $commentable instanceof Institution => $commentable->users()->get(),
+            $commentable instanceof Institution => $this->institutionUsers($commentable),
             $commentable instanceof Reservation => $commentable->users()->get(),
             default => collect(),
         };
@@ -56,12 +58,30 @@ class CommentableMentionResolver
     }
 
     /**
-     * Active student representatives plus any meeting participants.
+     * Everyone holding a duty in the meeting's institutions on its own date, plus the
+     * nominated administrators.
+     *
+     * `$meeting->users` used to be concatenated here, but that deep relation reaches
+     * every person who ever held a duty in the institution — mentioning a meeting
+     * notified holders who left years before it was scheduled.
      */
     private function meetingUsers(Meeting $meeting): Collection
     {
-        return $meeting->getRepresentativesActiveAt()
-            ->concat($meeting->users)
+        return GetInstitutionMembers::forMeeting($meeting)
+            ->concat(GetInstitutionAdministrators::forMeeting($meeting))
+            ->values();
+    }
+
+    /**
+     * Current duty holders plus administrators. Institution::users() is the all-time
+     * deep relation and must not be used for an audience.
+     *
+     * @return Collection<int, User>
+     */
+    private function institutionUsers(Institution $institution): Collection
+    {
+        return GetInstitutionMembers::execute($institution)
+            ->concat(GetInstitutionAdministrators::execute($institution))
             ->values();
     }
 }

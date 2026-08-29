@@ -27,6 +27,12 @@
         <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('Vadovai') }}:</span>
         <UsersAvatarGroup :users="institution.managers ?? []" :max="3" :size="24" />
       </div>
+      <!-- Nominated for the current term. Distinct from the body's members, and
+           labelled as such — an administrator need not hold a duty here at all. -->
+      <div v-if="administrators.length > 0" class="flex items-center gap-2">
+        <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('administrators.label') }}:</span>
+        <UsersAvatarGroup :users="(administrators as unknown as App.Entities.User[])" :max="3" :size="24" />
+      </div>
     </template>
 
     <template #actions>
@@ -349,6 +355,8 @@ const relatedInstitutionCount = computed(() => {
 
 // Note: totalPositions, lastMeeting, daysSinceLastMeeting, isOverdue, and periodicityStatusColor
 // are now calculated in useInstitutionUrgency composable and InstitutionOverviewSection
+
+const administrators = computed(() => props.institution.administrators ?? []);
 
 const primaryType = computed(() => {
   const type = props.institution.types?.[0];

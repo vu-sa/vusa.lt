@@ -7,6 +7,16 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.29 — Institucijų administratoriai (2026-08-29) {#v1-29}
+
+- ⭐ **Institucijai galima nurodyti administratorius** — institucijos redagavimo lange, prie kadencijų, dabar galima kiekvienai kadencijai priskirti konkrečius žmones. Jie nurodomi asmeniškai, ne per pareigybę, o žmonės, jau esantys institucijoje, siūlomi vienu paspaudimu
+- ⭐ **Kai administratoriai nurodyti, posėdžių užduotys tenka tik jiems** — visi kiti nariai tų užduočių nebegauna. Jei administratorių nėra, užduotys, kaip ir anksčiau, tenka tuo metu aktyviems atstovams
+- 🔧 **Užduotys ir priminimai nebekliūva buvusiems nariams** — anksčiau posėdžių priminimai keliaudavo visiems, kada nors turėjusiems pareigų institucijoje, neatsižvelgiant į datas. Dabar gauna tik tie, kurie tuo metu iš tikrųjų ėjo pareigas
+- 🔧 **Komentarų ir paminėjimų adresatai taip pat pagal datą** — paminėjus instituciją ar posėdį komentare, pranešimas nebekeliauja prieš kelerius metus iš pareigų pasitraukusiems žmonėms
+- ✨ **Administratoriai matomi posėdžio ir institucijos puslapiuose** — rodomi atskirai nuo narių ir vadovų, nes administratorius nebūtinai turi pareigų toje institucijoje
+- ✨ **Administruojamos institucijos matomos skydelyje** — jos rodomos tarp savų institucijų su atskiru ženkleliu, kad būtų aišku, jog tai ne narystė
+- ✨ **Pakeitus administratorius, atviros užduotys perskirstomos iš karto** — nereikia laukti, kol kas nors bus paleista iš naujo
+
 ## v1.28 — Veiksmų langas (2026-08-29) {#v1-28}
 
 - ⭐ **Vienas langas dažniausiems veiksmams** — šoninėje juostoje ir pradiniame puslapyje atsirado „Greiti veiksmai“ mygtukas. Jis paklausia, kaip šiandien veiki (studentų atstovas, VU SA narys ar koordinatorius), o tada — ką nori padaryti. Rodomi tik tie veiksmai, kuriuos iš tikrųjų gali atlikti

@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Actions\GetInstitutionRepresentatives;
+use App\Actions\ResolveTaskAssignees;
 use App\Enums\InstitutionActivityStatus;
 use App\Listeners\QueueNotificationForDigest;
 use App\Models\Institution;
@@ -175,8 +175,8 @@ class RepopulateTasks extends Command
 
             $daysUntilThreshold = $periodicityDays - ($activityStatus->effectiveDaysSinceActivity ?? $periodicityDays);
 
-            // Get current representatives
-            $representatives = GetInstitutionRepresentatives::execute($institution);
+            // Administrators for the current term, else today's representatives.
+            $representatives = ResolveTaskAssignees::forInstitution($institution);
 
             if ($representatives->isEmpty()) {
                 continue;
@@ -373,9 +373,9 @@ class RepopulateTasks extends Command
         }
 
         foreach ($meetings as $meeting) {
-            // getRepresentativesActiveAt() uses the meeting's start_time
-            // to find users who were representatives at that date
-            $representatives = $meeting->getRepresentativesActiveAt();
+            // Administrators nominated for the term the meeting fell in, else the
+            // representatives who were active at its start_time.
+            $representatives = ResolveTaskAssignees::forMeeting($meeting);
 
             if ($representatives->isEmpty()) {
                 continue;

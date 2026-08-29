@@ -4,6 +4,7 @@ namespace App\Tasks\Subscribers;
 
 use App\Actions\GetInstitutionFollowersToNotify;
 use App\Actions\GetMeetingAdministrators;
+use App\Actions\ResolveTaskAssignees;
 use App\Events\MeetingFullyCreated;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
@@ -76,8 +77,9 @@ class MeetingTaskSubscriber
         // Load required relationships
         $meeting->load(['institutions.tenant', 'agendaItems']);
 
-        // Get student representatives active at the meeting time for task assignment
-        $representatives = $meeting->getRepresentativesActiveAt();
+        // Nominated administrators when the term has any, else the representatives who
+        // were actually active at the meeting date. See ResolveTaskAssignees.
+        $representatives = ResolveTaskAssignees::forMeeting($meeting);
 
         // If meeting was created WITHOUT agenda items, create an "agenda creation" task
         if ($representatives->isNotEmpty() && $meeting->agendaItems->isEmpty()) {
@@ -177,7 +179,7 @@ class MeetingTaskSubscriber
             $this->completionHandler->updateProgressForMeeting($meeting, $actor);
         } else {
             // Create completion task for filling agenda item details
-            $representatives = $meeting->getRepresentativesActiveAt();
+            $representatives = ResolveTaskAssignees::forMeeting($meeting);
 
             if ($representatives->isNotEmpty()) {
                 $this->completionHandler->findOrCreate(
@@ -267,7 +269,7 @@ class MeetingTaskSubscriber
         }
 
         // No task exists, create one
-        $representatives = $meeting->getRepresentativesActiveAt();
+        $representatives = ResolveTaskAssignees::forMeeting($meeting);
 
         if ($representatives->isNotEmpty()) {
             $this->completionHandler->findOrCreate(

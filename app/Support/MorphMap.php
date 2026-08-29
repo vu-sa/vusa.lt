@@ -45,6 +45,7 @@ final class MorphMap
         'form' => Models\Form::class,
         'form_field' => Models\FormField::class,
         'institution' => Models\Institution::class,
+        'institution_administrator' => Models\InstitutionAdministrator::class,
         'institution_check_in' => Models\InstitutionCheckIn::class,
         'institution_follow' => Models\InstitutionFollow::class,
         'institution_notification_mute' => Models\InstitutionNotificationMute::class,
