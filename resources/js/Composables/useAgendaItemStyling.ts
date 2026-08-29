@@ -37,7 +37,7 @@ export interface AgendaItem {
 }
 
 /**
- * Agenda item status types - 7 distinct statuses for display
+ * Agenda item status types - 9 distinct statuses for display
  *
  * Used for both admin and public views to consistently represent
  * the state of an agenda item based on its type and main vote.
@@ -46,6 +46,8 @@ export type AgendaItemStatus
   = 'consensus' // Voting: approved by consensus (teal/cyan)
     | 'student_aligned' // Voting: student_vote === decision (green)
     | 'student_misaligned' // Voting: student_vote !== decision (red/amber)
+    | 'decision_positive' // Internal body: decision is positive, no student perspective exists (green)
+    | 'decision_negative' // Internal body: decision is negative, no student perspective exists (red)
     | 'neutral_decided' // Voting: decision is neutral (gray)
     | 'no_vote' // Voting type but no vote recorded yet (amber/warning)
     | 'deferred' // Type is deferred (gray muted)
@@ -70,9 +72,11 @@ export interface AgendaItemStatusMeta {
  * This is the primary function for determining agenda item display state.
  *
  * @param item - The agenda item (can include votes array or main_vote directly)
+ * @param requiresStudentPerspective - False for VU SA's own bodies: there is no
+ *   student position to compare against, so a recorded decision alone means decided.
  * @returns The calculated status
  */
-export function getAgendaItemStatus(item: AgendaItem): AgendaItemStatus {
+export function getAgendaItemStatus(item: AgendaItem, requiresStudentPerspective = true): AgendaItemStatus {
   // No type set - needs attention
   if (item.type === null || item.type === undefined) {
     return 'unset';
@@ -100,6 +104,17 @@ export function getAgendaItemStatus(item: AgendaItem): AgendaItemStatus {
     return 'consensus';
   }
 
+  // An internal body's vote has only an outcome: the decision is the whole story
+  if (!requiresStudentPerspective) {
+    if (mainVote.decision === 'positive') {
+      return 'decision_positive';
+    }
+    if (mainVote.decision === 'negative') {
+      return 'decision_negative';
+    }
+    return 'neutral_decided';
+  }
+
   // Neutral decision
   if (mainVote.decision === 'neutral') {
     return 'neutral_decided';
@@ -121,8 +136,8 @@ export function getAgendaItemStatus(item: AgendaItem): AgendaItemStatus {
  * Get full status metadata for an agenda item
  * Returns icon, label, and styling classes for the status
  */
-export function getAgendaItemStatusMeta(item: AgendaItem): AgendaItemStatusMeta {
-  const status = getAgendaItemStatus(item);
+export function getAgendaItemStatusMeta(item: AgendaItem, requiresStudentPerspective = true): AgendaItemStatusMeta {
+  const status = getAgendaItemStatus(item, requiresStudentPerspective);
 
   const statusMap: Record<AgendaItemStatus, AgendaItemStatusMeta> = {
     consensus: {
@@ -147,6 +162,24 @@ export function getAgendaItemStatusMeta(item: AgendaItem): AgendaItemStatusMeta 
       status: 'student_misaligned',
       icon: XCircle,
       label: $t('Studentų pozicija nesutampa su sprendimu'),
+      colorClass: 'text-red-600 dark:text-red-400',
+      bgClass: 'bg-red-100 dark:bg-red-900/30',
+      borderClass: 'border-red-200 dark:border-red-800',
+      dotClass: 'bg-red-500',
+    },
+    decision_positive: {
+      status: 'decision_positive',
+      icon: CheckCircle,
+      label: $t('Priimtas'),
+      colorClass: 'text-emerald-600 dark:text-emerald-400',
+      bgClass: 'bg-emerald-100 dark:bg-emerald-900/30',
+      borderClass: 'border-emerald-200 dark:border-emerald-800',
+      dotClass: 'bg-emerald-500',
+    },
+    decision_negative: {
+      status: 'decision_negative',
+      icon: XCircle,
+      label: $t('Atmestas'),
       colorClass: 'text-red-600 dark:text-red-400',
       bgClass: 'bg-red-100 dark:bg-red-900/30',
       borderClass: 'border-red-200 dark:border-red-800',
@@ -211,6 +244,8 @@ export interface MeetingStatusSummary {
   consensus: number;
   aligned: number;
   misaligned: number;
+  decisionPositive: number;
+  decisionNegative: number;
   neutralDecided: number;
   noVote: number;
   deferred: number;
@@ -229,13 +264,16 @@ export interface MeetingStatusSummary {
 /**
  * Calculate meeting status summary from agenda items
  * @param items - Array of agenda items (with votes or main_vote loaded)
+ * @param requiresStudentPerspective - False for VU SA's own bodies — see getAgendaItemStatus()
  */
-export function getMeetingStatusSummary(items: AgendaItem[]): MeetingStatusSummary {
+export function getMeetingStatusSummary(items: AgendaItem[], requiresStudentPerspective = true): MeetingStatusSummary {
   const summary: MeetingStatusSummary = {
     totalItems: items.length,
     consensus: 0,
     aligned: 0,
     misaligned: 0,
+    decisionPositive: 0,
+    decisionNegative: 0,
     neutralDecided: 0,
     noVote: 0,
     deferred: 0,
@@ -252,7 +290,7 @@ export function getMeetingStatusSummary(items: AgendaItem[]): MeetingStatusSumma
   }
 
   for (const item of items) {
-    const status = getAgendaItemStatus(item);
+    const status = getAgendaItemStatus(item, requiresStudentPerspective);
     switch (status) {
       case 'consensus':
         summary.consensus++;
@@ -262,6 +300,12 @@ export function getMeetingStatusSummary(items: AgendaItem[]): MeetingStatusSumma
         break;
       case 'student_misaligned':
         summary.misaligned++;
+        break;
+      case 'decision_positive':
+        summary.decisionPositive++;
+        break;
+      case 'decision_negative':
+        summary.decisionNegative++;
         break;
       case 'neutral_decided':
         summary.neutralDecided++;
@@ -282,8 +326,9 @@ export function getMeetingStatusSummary(items: AgendaItem[]): MeetingStatusSumma
   }
 
   // Calculate completion rate (for voting items only)
-  const votingItems = summary.consensus + summary.aligned + summary.misaligned + summary.neutralDecided + summary.noVote;
-  const completedVotingItems = summary.consensus + summary.aligned + summary.misaligned + summary.neutralDecided;
+  const votingItems = summary.consensus + summary.aligned + summary.misaligned
+    + summary.decisionPositive + summary.decisionNegative + summary.neutralDecided + summary.noVote;
+  const completedVotingItems = votingItems - summary.noVote;
 
   if (votingItems > 0) {
     summary.completionRate = Math.round((completedVotingItems / votingItems) * 100);
@@ -306,8 +351,9 @@ export function getMeetingStatusSummary(items: AgendaItem[]): MeetingStatusSumma
 
   // Determine vote alignment status (reuse alignableItems from above)
   if (alignableItems === 0) {
-    // No voting items with decisions - check if neutral
-    if (summary.neutralDecided > 0) {
+    // Alignment is undefined without a student position — decided items read as neutral,
+    // mirroring VoteStatisticsCalculator::alignmentStatus() on the backend.
+    if (summary.neutralDecided > 0 || summary.decisionPositive > 0 || summary.decisionNegative > 0) {
       summary.voteAlignmentStatus = 'neutral';
     }
     // else stays 'unknown'

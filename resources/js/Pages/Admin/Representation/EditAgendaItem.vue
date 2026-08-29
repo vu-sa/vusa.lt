@@ -7,6 +7,7 @@
       :meeting-title="agendaItem.meeting?.title"
       :current-id="agendaItem.id"
       :sibling-agenda-items
+      :requires-student-perspective
       @navigate="navigateTo"
     />
 
@@ -240,7 +241,7 @@ const statusMeta = computed(() => getAgendaItemStatusMeta({
   id: props.agendaItem.id,
   type: form.type,
   votes: form.votes as any,
-}));
+}, props.requiresStudentPerspective));
 
 const mainInstitution = computed(() => props.agendaItem.meeting?.institutions?.[0] ?? null);
 

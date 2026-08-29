@@ -25,11 +25,15 @@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { getAgendaItemStatusMeta } from '@/Composables/useAgendaItemStyling';
 
-defineProps<{
+const props = withDefaults(defineProps<{
   agendaItems?: App.Entities.AgendaItem[];
-}>();
+  /** False for VU SA's own bodies — a recorded decision alone means decided. */
+  requiresStudentPerspective?: boolean;
+}>(), {
+  requiresStudentPerspective: true,
+});
 
 const getStatusMeta = (item: App.Entities.AgendaItem) => {
-  return getAgendaItemStatusMeta(item);
+  return getAgendaItemStatusMeta(item, props.requiresStudentPerspective);
 };
 </script>

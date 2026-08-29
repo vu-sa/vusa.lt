@@ -76,7 +76,7 @@
                     >S</span>
                   </div>
                 </div>
-                <span :class="['mt-1.5 h-2 w-2 shrink-0 rounded-full', getAgendaItemStatusMeta(item as any).dotClass]" />
+                <span :class="['mt-1.5 h-2 w-2 shrink-0 rounded-full', getAgendaItemStatusMeta(item as any, props.requiresStudentPerspective).dotClass]" />
               </Link>
             </div>
           </PopoverContent>
@@ -120,12 +120,16 @@ interface SiblingItem {
   main_vote?: unknown;
 }
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   meetingId: string;
   meetingTitle?: string | null;
   currentId: string;
   siblingAgendaItems: SiblingItem[];
-}>();
+  /** False for VU SA's own bodies — a recorded decision alone means decided. */
+  requiresStudentPerspective?: boolean;
+}>(), {
+  requiresStudentPerspective: true,
+});
 
 const emit = defineEmits<{
   navigate: [id: string];
@@ -149,8 +153,8 @@ const nextItem = computed(() =>
 
 const acceptedCount = computed(() =>
   props.siblingAgendaItems.filter((item) => {
-    const status = getAgendaItemStatus(item as any);
-    return status === 'student_aligned' || status === 'consensus';
+    const status = getAgendaItemStatus(item as any, props.requiresStudentPerspective);
+    return status === 'student_aligned' || status === 'consensus' || status === 'decision_positive';
   }).length,
 );
 

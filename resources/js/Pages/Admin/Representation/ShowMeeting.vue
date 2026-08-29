@@ -149,6 +149,7 @@
           v-model:editing="agendaEditing"
           :agenda-items="meeting.agenda_items ?? []"
           :meeting-id="meeting.id"
+          :requires-student-perspective="!isInternalBody"
           @add="showSingleAgendaItemModal = true"
           @add-bulk="showAgendaItemStoreModal = true"
           @delete="requestAgendaItemDelete"

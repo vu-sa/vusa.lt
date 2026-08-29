@@ -358,6 +358,15 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
         return app(MeetingCompletionService::class)->calculate($this);
     }
 
+    /**
+     * Whether this meeting records the student-perspective vote fields — surfaced so public
+     * listings can scope agenda item statuses the same way the meeting pages do.
+     */
+    public function getRequiresStudentPerspectiveAttribute(): bool
+    {
+        return $this->requiresStudentPerspective();
+    }
+
     #[\Override]
     protected static function booted()
     {

@@ -41,6 +41,7 @@ lastUpdated: true
 - ✨ **Renginio laiką valdo posėdis** — su posėdžiu susieto kalendoriaus įrašo datos laukai užrakinti ir su paaiškinimu nukreipia į posėdį, kad laikas nebūtų vedamas dviejose vietose
 - 🔧 **Pagrindinį balsavimą galima pašalinti** — anksčiau paskutinio balsavimo ištrinti neleisdavo be paaiškinimo. Pašalinus pagrindinį, kitas tampa pagrindiniu automatiškai
 - ✨ **VU SA darinių posėdžiuose nebereikalaujama studentų balso, naudos ir išsakytos pozicijos** — VU SA Parlamento, Tarybos ar Revizijos komisijos posėdyje pildomas tik sprendimas, nes atstovai ir yra pati organizacija; šios skiltys viešai nerodomos. Anksčiau tokie posėdžiai visada likdavo „nebaigti“
+- 🔧 **VU SA darinių balsavimo būsena nebeįstringa „Neaptartas“** — darbotvarkės punkto, kai sprendimas įrašytas ne bendru sutarimu (pvz. „Priimta“), būseną dabar rodo punkto redagavimo puslapyje, punktų naršyklėje ir kalendoriaus renginio darbotvarkėje, o posėdžio lange — „aptartų balsavimų“ skaičius įskaito tokius sprendimus
 - 🔧 **Nerodomos tarnybinės būsenos** — „Nepažymėtas“ viešai neberodomas niekada, o „Neaptartas“ nerodomas dar neįvykusio posėdžio darbotvarkėje, kur jis nieko nepasako
 - ⭐ **Dokumentai susiejami su posėdžiu** — VU SA darinių posėdžiuose atsiranda kortelė „Dokumentai“: nutarimus ar protokolus galima surasti paieška arba iš karto įkelti iš SharePoint, nereikia jų pirma registruoti dokumentų skiltyje
 - ✨ **Kalendoriaus įrašas pasako, kad skelbia posėdį** — redaguojant tokį renginį rodomas pranešimas su nuoroda į posėdį ir paaiškinimu, ką reiškia jo paskelbimas

@@ -98,4 +98,24 @@ describe('MeetingAgendaList', () => {
     });
     expect(multiple.text()).toContain('balsavimai');
   });
+
+  it('counts a decision-only vote as discussed for an internal body', () => {
+    const items = [
+      makeItem({ votes: [{ id: 'v1', is_main: true, decision: 'positive' }] }),
+      makeItem({ id: 'item-2', order: 2, votes: [] }),
+    ];
+
+    const internal = mount(MeetingAgendaList, {
+      props: { agendaItems: items as any, meetingId: 'm1', requiresStudentPerspective: false },
+      global: { stubs: baseStubs },
+    });
+    expect(internal.text()).toContain('1 iš 2');
+
+    // External bodies still wait for the student perspective before calling a vote discussed
+    const external = mount(MeetingAgendaList, {
+      props: { agendaItems: items as any, meetingId: 'm1' },
+      global: { stubs: baseStubs },
+    });
+    expect(external.text()).toContain('0 iš 2');
+  });
 });

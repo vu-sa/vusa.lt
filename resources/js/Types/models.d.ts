@@ -812,6 +812,7 @@ declare global {
       type_label: string
       type_slug: string
       completion_status: string
+      requires_student_perspective: boolean
       has_protocol: boolean
       has_report: boolean
       // relations
@@ -1163,6 +1164,7 @@ declare global {
       type_label: string
       type_slug: string
       completion_status: string
+      requires_student_perspective: boolean
       has_protocol: boolean
       has_report: boolean
       // relations

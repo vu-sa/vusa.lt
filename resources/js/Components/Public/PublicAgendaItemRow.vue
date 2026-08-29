@@ -156,7 +156,7 @@ const props = withDefaults(defineProps<{
   disclosureGroup: undefined,
 });
 
-const status = computed(() => getAgendaItemStatusMeta(props.item));
+const status = computed(() => getAgendaItemStatusMeta(props.item, props.requiresStudentPerspective));
 const mainVote = computed(() => getMainVote(props.item));
 
 /**

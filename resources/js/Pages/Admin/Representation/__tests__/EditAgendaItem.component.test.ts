@@ -45,6 +45,30 @@ const createWrapper = (props: Record<string, unknown> = {}) =>
   });
 
 describe('EditAgendaItem.vue', () => {
+  it('labels a decision-only vote as decided for an internal body, not "Neaptartas"', () => {
+    const wrapper = createWrapper({
+      agendaItem: {
+        ...baseAgendaItem,
+        votes: [{ id: 'v1', is_main: true, is_consensus: false, decision: 'positive', student_vote: null, student_benefit: null, order: 0 }],
+      },
+      requiresStudentPerspective: false,
+    });
+
+    expect(wrapper.text()).toContain('Priimtas');
+    expect(wrapper.text()).not.toContain('Neaptartas');
+  });
+
+  it('still shows "Neaptartas" for an external body decision without a student vote', () => {
+    const wrapper = createWrapper({
+      agendaItem: {
+        ...baseAgendaItem,
+        votes: [{ id: 'v1', is_main: true, is_consensus: false, decision: 'positive', student_vote: null, student_benefit: null, order: 0 }],
+      },
+    });
+
+    expect(wrapper.text()).toContain('Neaptartas');
+  });
+
   it('leaves start_time empty when there is no previous item with an end time', () => {
     const wrapper = createWrapper();
 

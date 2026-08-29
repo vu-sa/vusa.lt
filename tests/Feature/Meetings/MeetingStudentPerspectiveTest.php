@@ -9,7 +9,9 @@ use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\Vote;
 use App\Services\VoteStatisticsCalculator;
+use App\Settings\MeetingSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
 
@@ -101,4 +103,24 @@ test('the completion filter finds VU SA meetings that only recorded an outcome',
 
     expect($ids)->toContain($complete->id)
         ->and($ids)->not->toContain($incomplete->id);
+});
+
+test('the public institution page carries the meeting scope for agenda statuses', function (): void {
+    $meeting = meetingWithDecisionOnlyVote(InstitutionScope::Vusa);
+    $meeting->update(['start_time' => now()->subDay()]);
+    $institution = $meeting->institutions()->first();
+
+    app(MeetingSettings::class)->fill([
+        'public_meeting_institution_type_ids' => $institution->types()->pluck('types.id')->all(),
+    ])->save();
+
+    $this->get(route('contacts.institution', [
+        'subdomain' => 'www',
+        'lang' => 'lt',
+        'institution' => $institution->id,
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('currentYearMeetings.meetings.0.requires_student_perspective', false)
+            ->where('currentYearMeetings.meetings.0.completion_status', 'complete'));
 });

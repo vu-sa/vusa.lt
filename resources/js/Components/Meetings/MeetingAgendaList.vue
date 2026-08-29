@@ -196,8 +196,11 @@ const props = withDefaults(defineProps<{
   agendaItems: App.Entities.AgendaItem[];
   meetingId: string;
   editing?: boolean;
+  /** False for VU SA's own bodies — a recorded decision alone means discussed. */
+  requiresStudentPerspective?: boolean;
 }>(), {
   editing: false,
+  requiresStudentPerspective: true,
 });
 
 const emit = defineEmits<{
@@ -242,8 +245,9 @@ const agendaSummary = computed(() => {
     return `${items.length} ${items.length === 1 ? $t('punktas') : $t('punktai')}`;
   }
 
-  const summary = getMeetingStatusSummary(items as any);
-  const completed = summary.consensus + summary.aligned + summary.misaligned + summary.neutralDecided;
+  const summary = getMeetingStatusSummary(items as any, props.requiresStudentPerspective);
+  const completed = summary.consensus + summary.aligned + summary.misaligned + summary.neutralDecided
+    + summary.decisionPositive + summary.decisionNegative;
   return `${completed} ${$t('iš')} ${votingItems.length} ${$t('balsavimų aptarta')}`;
 });
 

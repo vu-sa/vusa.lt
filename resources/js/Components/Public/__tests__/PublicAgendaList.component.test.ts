@@ -95,6 +95,18 @@ describe('PublicAgendaList', () => {
     expect(wrapper.text()).not.toContain('Nauda studentams');
   });
 
+  it('shows a decision-only vote as decided for a VU SA body, not "Neaptartas"', () => {
+    const wrapper = factory({
+      items: [makeItem({
+        main_vote: { id: 'v1', is_main: true, decision: 'positive', student_vote: null, student_benefit: null },
+      })],
+      requiresStudentPerspective: false,
+    });
+
+    expect(wrapper.text()).toContain('Priimtas');
+    expect(wrapper.text()).not.toContain('Neaptartas');
+  });
+
   it('renders an empty state that reads differently before the meeting happens', () => {
     expect(factory({ items: [] }).text()).toContain('Darbotvarkė dar neįvesta');
     expect(factory({ items: [], isUpcoming: true }).text()).toContain('Darbotvarkė dar nepaskelbta');

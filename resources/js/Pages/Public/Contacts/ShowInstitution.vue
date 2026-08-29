@@ -445,7 +445,7 @@ const extractDomain = (url: string): string => {
 
 // Calculate vote alignment for meetings using composable
 const getVoteAlignment = (meeting: App.Entities.Meeting): 'aligned' | 'mixed' | 'misaligned' | 'no_data' => {
-  const summary = getMeetingStatusSummary(meeting.agenda_items || []);
+  const summary = getMeetingStatusSummary(meeting.agenda_items || [], meeting.requires_student_perspective ?? true);
 
   // Map composable's voteAlignmentStatus to component's format
   switch (summary.voteAlignmentStatus) {

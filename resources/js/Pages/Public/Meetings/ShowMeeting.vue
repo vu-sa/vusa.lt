@@ -195,7 +195,7 @@ import { InfoIcon, CheckCircleIcon, AlertCircleIcon, ChevronLeft, ChevronRight, 
 
 import { formatMeetingDateTime } from '@/Utils/MeetingDisplay';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
-import { getMainVote, getAgendaItemStatusMeta, getMeetingStatusSummary, hasDecisionData, getVoteAlignmentLabel, canCompareVotes, isVoteAligned, getVoteComparisonText, getVoteComparisonColorClass, type AgendaItemStatus } from '@/Composables/useAgendaItemStyling';
+import { getMainVote, getMeetingStatusSummary, hasDecisionData, getVoteAlignmentLabel, canCompareVotes, isVoteAligned, getVoteComparisonText, getVoteComparisonColorClass, type AgendaItemStatus } from '@/Composables/useAgendaItemStyling';
 import PublicVotingExplainerModal from '@/Components/Public/PublicVotingExplainerModal.vue';
 import VoteStatusIndicator from '@/Components/Public/VoteStatusIndicator.vue';
 import AgendaOutcomeIndicators from '@/Components/Public/AgendaOutcomeIndicators.vue';
@@ -244,7 +244,7 @@ const allAgendaItems = computed(() => {
 
 // Outcome summary for the summary card - use composable's getMeetingStatusSummary
 const outcomeSummary = computed(() => {
-  const summary = getMeetingStatusSummary(allAgendaItems.value);
+  const summary = getMeetingStatusSummary(allAgendaItems.value, requiresStudentPerspective.value);
   const items = allAgendaItems.value;
 
   // Count decision types for display

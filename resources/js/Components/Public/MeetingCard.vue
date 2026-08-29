@@ -26,7 +26,7 @@
               {{ allAgendaItems.length }}
               {{ allAgendaItems.length === 1 ? $t('klausimas') : $t('klausimai') }}
             </span>
-            <AgendaOutcomeIndicators :agenda-items="itemsWithDecisions" />
+            <AgendaOutcomeIndicators :agenda-items="itemsWithDecisions" :requires-student-perspective="meeting.requires_student_perspective ?? true" />
             <!-- Vote alignment summary badge -->
             <span
               v-if="meetingSummary.voteAlignmentStatus !== 'unknown' && meetingSummary.totalItems > 0"
@@ -133,7 +133,7 @@ const allAgendaItems = computed(() => {
 
 // Meeting summary for alignment status
 const meetingSummary = computed(() => {
-  return getMeetingStatusSummary(allAgendaItems.value);
+  return getMeetingStatusSummary(allAgendaItems.value, props.meeting.requires_student_perspective ?? true);
 });
 
 // Items with at least one decision field filled (for outcome indicators)

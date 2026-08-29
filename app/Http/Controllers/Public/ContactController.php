@@ -503,11 +503,13 @@ class ContactController extends PublicController
                     $query->orderBy('order');
                 },
                 'agendaItems.mainVote',
+                // Keeps requires_student_perspective appendable without a query per meeting
+                'institutions.types',
             ])
             ->where('start_time', '<=', now())
             ->orderBy('start_time', 'desc')
             ->get()
-            ->each->append('completion_status');
+            ->each(fn (Meeting $meeting) => $meeting->append('completion_status', 'requires_student_perspective'));
     }
 
     /**
