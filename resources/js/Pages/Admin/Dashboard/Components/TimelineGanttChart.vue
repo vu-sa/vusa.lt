@@ -22,6 +22,7 @@
         :interactive="true"
         :show-only-with-activity
         :show-only-with-public-meetings
+        :hide-internal-institutions
         :duty-members
         :inactive-periods
         :show-duty-members
@@ -59,6 +60,7 @@ import type {
 
 import MeetingsGantt from '@/Components/Graphs/MeetingsGantt.vue';
 import GanttLegendModal from '@/Components/Graphs/GanttLegendModal.vue';
+import { horizontalScrollbarSize } from '@/Components/Graphs/scrollbarSize';
 import { Card, CardContent } from '@/Components/ui/card';
 
 interface Props {
@@ -68,6 +70,8 @@ interface Props {
   tenantFilter: string[];
   showOnlyWithActivity: boolean;
   showOnlyWithPublicMeetings?: boolean;
+  /** Hide VU SA's own bodies. Off by default; the chart draws everything unless asked. */
+  hideInternalInstitutions?: boolean;
   institutionNames: Record<string, string>;
   tenantNames: Record<string, string>;
   institutionTenant: Record<string, string>;
@@ -155,7 +159,10 @@ const effectiveHeight = computed(() => {
   // Otherwise, calculate based on content with a reasonable cap
   const ROW_HEIGHT = 28; // keep in sync with MeetingsGantt default
   const AXIS_TOP = 22; // axis/header spacer in MeetingsGantt
-  const MARGIN_BOTTOM = 6;
+  // Container border top/bottom + the axis header's border-b, plus the strip the horizontal
+  // scrollbar takes out of the scroller. Six px was never enough, which is why this chart
+  // always showed a vertical scrollbar as well.
+  const MARGIN_BOTTOM = 3 + horizontalScrollbarSize();
   const EXPANDED_ROW_HEIGHT = 56; // keep in sync with MeetingsGantt default
 
   // Base institution ids = explicit institutions ∪ referenced by meetings/gaps
@@ -180,6 +187,12 @@ const effectiveHeight = computed(() => {
   if (props.showOnlyWithPublicMeetings && props.institutionHasPublicMeetings) {
     const pubMap = props.institutionHasPublicMeetings;
     idsArr = idsArr.filter(id => pubMap[id] || pubMap[String(id)]);
+  }
+
+  // Mirrors useGanttFiltering; this copy exists only to size the chart's own container.
+  if (props.hideInternalInstitutions) {
+    const internal = new Set(props.institutions.filter(i => i.is_internal).map(i => String(i.id)));
+    idsArr = idsArr.filter(id => !internal.has(String(id)));
   }
 
   // Tenant header rows (only if showTenantHeaders is enabled and grouping data available)

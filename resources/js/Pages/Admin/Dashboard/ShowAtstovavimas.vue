@@ -46,7 +46,7 @@
           :title="$t('visak.user_tenant_scope.spotlight_title')"
           :description="$t('visak.user_tenant_scope.spotlight_description')"
           :is-dismissed="userTenantScopeSpotlight.isDismissed.value"
-          position="bottom"
+          position="bottom-right"
           @dismiss="userTenantScopeSpotlight.dismiss"
         >
           <TenantScopeSelector
@@ -66,7 +66,7 @@
           :title="$t('visak.institution_summary.spotlight_title')"
           :description="$t('visak.institution_summary.spotlight_description')"
           :is-dismissed="institutionSummarySpotlight.isDismissed.value"
-          position="bottom"
+          position="bottom-right"
           @dismiss="institutionSummarySpotlight.dismiss"
         >
           <TenantScopeSelector

@@ -2,9 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Enums\InstitutionScope;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Type;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -25,5 +27,16 @@ class TypeFactory extends Factory
             'description' => ['lt' => $this->faker->paragraph, 'en' => $this->faker->paragraph],
             'slug' => $this->faker->slug,
         ];
+    }
+
+    /**
+     * @param  InstitutionScope|null  $scope  null leaves the scope to be inherited.
+     */
+    public function forInstitutions(?InstitutionScope $scope = null): static
+    {
+        return $this->state(fn () => [
+            'model_type' => MorphMap::alias(Institution::class),
+            'extra_attributes' => $scope === null ? null : ['governance_scope' => $scope->value],
+        ]);
     }
 }

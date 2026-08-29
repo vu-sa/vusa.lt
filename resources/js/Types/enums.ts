@@ -34,6 +34,11 @@ export enum CRUDEnum {
   DELETE = "delete",
   FORCE_DELETE = "forceDelete",
 }
+export enum CalendarHeroStyleEnum {
+  CARD = "card",
+  SPLIT = "split",
+  MINIMAL = "minimal",
+}
 export enum CommentKind {
   Comment = "comment",
   Poll = "poll",
@@ -53,6 +58,7 @@ export enum ContentPartEnum {
   CONTENT_GRID = "CONTENT_GRID",
   TEXT_BOX = "TEXT_BOX",
   CAROUSEL_SLIDE_DECK = "CAROUSEL_SLIDE_DECK",
+  HERO_CAROUSEL = "HERO_CAROUSEL",
   CARD_STACK = "CARD_STACK",
   PHOTO_GALLERY = "PHOTO_GALLERY",
   LINK_LIST = "LINK_LIST",
@@ -60,6 +66,7 @@ export enum ContentPartEnum {
   PERSON_QUOTE = "PERSON_QUOTE",
   SECTION = "SECTION",
   SPACER = "SPACER",
+  TIMETABLE = "TIMETABLE",
 }
 export enum DegreeEnum {
   BA = "BA",
@@ -76,6 +83,12 @@ export enum InstitutionActivityStatus {
   Overdue = "overdue",
   CoveredByUpcomingMeeting = "covered_by_upcoming_meeting",
   CoveredByCheckIn = "covered_by_check_in",
+}
+export enum InstitutionScope {
+  Vusa = "vusa",
+  University = "vu",
+  National = "national",
+  International = "international",
 }
 export enum LocaleEnum {
   LT = "lt",

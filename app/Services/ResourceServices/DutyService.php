@@ -131,6 +131,7 @@ class DutyService
                 'meetings:id,title,start_time,type',
                 'meetings.agendaItems:id,meeting_id,title,type,brought_by_students',
                 'meetings.agendaItems.votes:id,agenda_item_id,title,decision,student_vote,student_benefit,is_main',
+                'meetings.calendarEvent:id,meeting_id,is_draft',
                 // Historical assignments are required for Gantt coverage periods.
                 'duties.users:id,name,profile_photo_path,last_action',
                 'duties.types:id,title,slug',
@@ -289,6 +290,8 @@ class DutyService
                 'meetings.agendaItems.votes:id,agenda_item_id,title,decision,student_vote,student_benefit,is_main',
                 // Load fileableFiles for has_report and has_protocol accessors (prevents N+1)
                 'meetings.fileableFiles:id,fileable_id,fileable_type,file_type,deleted_externally_at',
+                // Same reason for has_calendar_event, which the Gantt tooltip reads.
+                'meetings.calendarEvent:id,meeting_id,is_draft',
                 // Historical assignments are required for Gantt coverage periods.
                 'duties.users:id,name,profile_photo_path,last_action',
                 'duties.types:id,title,slug',

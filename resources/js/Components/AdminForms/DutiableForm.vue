@@ -95,6 +95,18 @@
         </p>
       </FormFieldWrapper>
 
+      <FormFieldWrapper id="study_program_note" :label="$t('forms.fields.study_program_note')" :hint="$t('forms.helpers.study_program_note_hint')" :error="form.errors.study_program_note">
+        <div class="flex items-center gap-2">
+          <Input
+            id="study_program_note"
+            v-model="form.study_program_note[locale]"
+            :placeholder="$t('forms.placeholders.study_program_note')"
+            maxlength="100"
+          />
+          <SimpleLocaleButton v-model:locale="locale" />
+        </div>
+      </FormFieldWrapper>
+
       <div class="space-y-2">
         <div class="inline-flex items-center gap-2">
           <Label for="description">{{ $t('forms.fields.description') }}</Label>
@@ -171,6 +183,12 @@ if (Array.isArray(form.description)) {
   form.description = { lt: '', en: '' };
 }
 
+// A never-set translatable arrives as null (or `[]` from an empty JSON object), and
+// v-model needs an object to write into before the user has typed anything.
+if (!form.study_program_note || Array.isArray(form.study_program_note)) {
+  form.study_program_note = { lt: '', en: '' };
+}
+
 const locale = ref('lt');
 
 const isExOfficio = computed(() => !!props.dutiable.via_dutiable_id);
@@ -201,8 +219,10 @@ const shownDutyName = computed(() => {
 // brackets after the duty name (ContactWithPhoto.vue), regardless of the duty's
 // own `contacts_grouping` setting — the field is not "grouping-only".
 const previewStudyProgramSuffix = computed(() => {
-  if (!selectedStudyProgram.value) return '';
-  return `(${selectedStudyProgram.value.name})`;
+  const note = (form.study_program_note as { lt?: string; en?: string })?.[usePage().props.app.locale as 'lt' | 'en']?.trim();
+  const parts = [selectedStudyProgram.value?.name, note].filter(Boolean);
+
+  return parts.length > 0 ? `(${parts.join(', ')})` : '';
 });
 
 // A duty that groups its public contacts by study program has nothing to group

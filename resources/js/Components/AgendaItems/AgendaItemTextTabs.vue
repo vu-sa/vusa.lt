@@ -7,7 +7,7 @@
             {{ $t('Aprašymas') }}
             <span v-if="hasDescription" class="h-1.5 w-1.5 rounded-full bg-primary" :title="$t('Užpildyta')" />
           </TabsTrigger>
-          <TabsTrigger value="position" class="gap-1.5 text-xs">
+          <TabsTrigger v-if="showStudentPosition" value="position" class="gap-1.5 text-xs">
             {{ $t('Išsakyta studentų pozicija') }}
             <span v-if="hasPosition" class="h-1.5 w-1.5 rounded-full bg-primary" :title="$t('Užpildyta')" />
           </TabsTrigger>
@@ -31,7 +31,7 @@
         </p>
       </TabsContent>
 
-      <TabsContent value="position" class="mt-3">
+      <TabsContent v-if="showStudentPosition" value="position" class="mt-3">
         <Textarea
           v-if="editable"
           :model-value="studentPosition ?? ''"
@@ -61,10 +61,16 @@ const props = withDefaults(defineProps<{
   editable?: boolean;
   description?: string | null;
   studentPosition?: string | null;
+  /**
+   * False for VU SA's own bodies: the representatives *are* the organisation, so there is no
+   * separate student position to state.
+   */
+  showStudentPosition?: boolean;
 }>(), {
   editable: false,
   description: '',
   studentPosition: '',
+  showStudentPosition: true,
 });
 
 const emit = defineEmits<{

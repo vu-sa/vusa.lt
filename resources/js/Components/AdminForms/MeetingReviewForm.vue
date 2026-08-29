@@ -11,6 +11,9 @@
       <p class="text-sm text-muted-foreground max-w-md mx-auto">
         {{ $t('Patikrinkite duomenis ir spauskite "Sukurti", jei viskas gerai') }}
       </p>
+      <p class="text-sm text-muted-foreground max-w-md mx-auto">
+        {{ $t('meetings.announce.review_intro') }}
+      </p>
     </div>
 
     <!-- Meeting Summary Card -->
@@ -109,6 +112,22 @@
               </div>
             </div>
           </div>
+
+          <Separator />
+
+          <!-- Announce in calendar -->
+          <label class="flex items-start gap-3 cursor-pointer select-none">
+            <Checkbox :model-value="announceInCalendar" @update:model-value="(v) => $emit('update:announceInCalendar', Boolean(v))" />
+            <span class="flex-1">
+              <span class="flex items-center gap-2 text-sm font-medium">
+                <CalendarPlus class="h-4 w-4 text-muted-foreground" />
+                {{ $t('meetings.announce.review_checkbox_label') }}
+              </span>
+              <span class="block text-xs text-muted-foreground mt-0.5">
+                {{ $t('meetings.announce.review_checkbox_hint') }}
+              </span>
+            </span>
+          </label>
         </div>
       </CardContent>
     </Card>
@@ -193,6 +212,7 @@ import {
   CheckCircle,
   Edit,
   Calendar,
+  CalendarPlus,
   FileText,
   MapPin,
   ChevronDown,
@@ -205,6 +225,7 @@ import { getMeetingTypeOptions } from '@/Types/MeetingType';
 import { Card, CardHeader, CardTitle, CardContent } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
+import { Checkbox } from '@/Components/ui/checkbox';
 import { Separator } from '@/Components/ui/separator';
 import { AgendaItemIconFilled, InstitutionIconFilled, TypeIconFilled } from '@/Components/icons';
 
@@ -214,12 +235,15 @@ const emit = defineEmits<{
   editStep: [step: number];
   back: [];
   submit: [];
+  'update:announceInCalendar': [value: boolean];
 }>();
 
 const props = defineProps<{
   loading?: boolean;
   meetingState?: any;
 }>();
+
+const announceInCalendar = computed(() => Boolean(props.meetingState?.meeting?.announce_in_calendar));
 
 // Local state
 const showAllAgendaItems = ref(false);

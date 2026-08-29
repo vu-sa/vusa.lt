@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Actions\GetAliasSubdomainForPublic;
+use App\Actions\GetPublicEditLink;
 use App\Http\Traits\ResolvesPublicContent;
 use App\Models\Navigation;
 use App\Models\QuickLink;
 use App\Models\Tenant;
 use App\Support\LocalizedRouteSlugs;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
@@ -49,6 +51,9 @@ class PublicController extends Controller
 
         // Initialize otherLangURL as null by default - controllers can override this
         Inertia::share('otherLangURL', null);
+
+        // Same for the admin edit link — only controllers that show an editable record set it
+        Inertia::share('publicEditLink', null);
     }
 
     protected function getBanners()
@@ -141,6 +146,19 @@ class PublicController extends Controller
     protected function getOtherLang()
     {
         return app()->getLocale() === 'lt' ? 'en' : 'lt';
+    }
+
+    /**
+     * Share the admin edit link for the record this public page displays. Null for
+     * guests and unauthorized users — GetPublicEditLink short-circuits both, so
+     * anonymous traffic never reaches policy resolution.
+     *
+     * Call this outside any Cache::remember() closure: the result depends on the
+     * current user and must never be cached.
+     */
+    protected function sharePublicEditLink(Model $model): void
+    {
+        Inertia::share('publicEditLink', GetPublicEditLink::execute($model));
     }
 
     /**

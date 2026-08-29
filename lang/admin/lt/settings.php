@@ -29,6 +29,10 @@ return [
             'title' => 'Atstovavimo nustatymai',
             'description' => 'Konfigūruokite, kurios rolės suteikia prieigą prie padalinio institucijų atstovavimo skydelyje.',
         ],
+        'cadences' => [
+            'title' => 'Kadencijos',
+            'description' => 'Nurodykite kadencijų pradžios ir pabaigos datas bei institucijų išimtis.',
+        ],
         'site' => [
             'title' => 'Svetainės nustatymai',
             'description' => 'Nurodykite svetainės puslapius, į kuriuos nukreipia sistema, pvz., privatumo politiką.',
@@ -80,17 +84,11 @@ return [
 
     // Atstovavimas settings page
     'atstovavimas_settings' => [
-        'global_roles_title' => 'Globalios padalinių matomumo rolės',
-        'global_roles_description' => 'Pasirinkite roles, kurios suteikia prieigą prie visų padalinių atstovavimo skydelyje.',
-        'global_roles_label' => 'Globalios matomumo rolės',
-        'global_roles_placeholder' => 'Pasirinkti roles',
-        'global_roles_note' => 'Pastaba: Super Administratoriai visada mato visus padalinius, nepaisant šio nustatymo.',
-        'tenant_roles_title' => 'Padalinio matomumo rolės',
-        'tenant_roles_description' => 'Pasirinkite roles, kurios suteikia prieigą prie padalinio kortelės tik tiems padaliniams, kur naudotojas turi aktyvias pareigas su šiomis rolėmis.',
-        'tenant_roles_label' => 'Padalinio matomumo rolės',
-        'tenant_roles_placeholder' => 'Pasirinkti roles',
-        'tenant_roles_note' => 'Naudotojai be šių rolių matys tik tas institucijas, kurioms jie priskirti per pareigas.',
-        'no_roles_found' => 'Rolių nerasta.',
+        'manager_role_title' => 'Institucijų atstovų rolė',
+        'manager_role_description' => 'Pasirinkite, kuri rolė nurodo padalinio institucijų atstovus. Naudotojai su aktyviomis šios rolės pareigomis tame pačiame padalinyje laikomi institucijų atstovais ir gauna su institucijomis susijusius pranešimus, pvz., apie studentų atstovų registracijas.',
+        'manager_role_label' => 'Atstovų rolė',
+        'manager_role_placeholder' => 'Pasirinkti rolę',
+        'manager_role_note' => 'Pastaba: institucijų atstovai naudojami ir posėdžių administratoriams nustatyti.',
     ],
 
     // Document settings page

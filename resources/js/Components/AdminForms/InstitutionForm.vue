@@ -71,6 +71,17 @@
           :hint="$t('Tipas nustato papildomas funkcijas ir rodomą informaciją')">
           <MultiSelect v-model="selectedTypes" :options="institutionTypeOptions"
             :placeholder="$t('Pasirinkite tipus')" />
+
+          <!-- The scope is what decides whether the contact, logo and address fields below
+               appear at all; without it stated, they simply vanish for no visible reason. -->
+          <div v-if="resolvedScope" class="mt-2 flex flex-wrap items-center gap-2">
+            <InstitutionScopeBadge :scope="resolvedScope" />
+            <span class="text-xs text-muted-foreground">
+              {{ showMoreOptions
+                ? $t('forms.helpers.governance_scope_internal_fields')
+                : $t('forms.helpers.governance_scope_external_fields') }}
+            </span>
+          </div>
         </FormFieldWrapper>
 
         <template v-if="showMoreOptions">
@@ -229,8 +240,25 @@
       </div>
     </FormElement>
 
-    <!-- Section 4: Technical Settings -->
-    <FormElement :section-number="4">
+    <!-- Section 4: Cadences. Only on edit — an override needs a saved institution to hang off. -->
+    <FormElement v-if="!isCreate" :section-number="4" no-sider>
+      <template #title>
+        {{ $t('cadences.institution.title') }}
+      </template>
+      <template #subtitle>
+        {{ $t('cadences.institution.description') }}
+      </template>
+
+      <CadenceSection
+        :institution-id="institution.id!"
+        :own-cadences="cadences"
+        :global-cadences="globalCadences"
+        :defaults="cadenceDefaults"
+      />
+    </FormElement>
+
+    <!-- Section 5: Technical Settings -->
+    <FormElement :section-number="isCreate ? 4 : 5">
       <template #title>
         {{ $t('Techniniai nustatymai') }}
       </template>
@@ -279,6 +307,8 @@ import FormStatusHeader from './FormStatusHeader.vue';
 import ISimpleIconsInstagram from '~icons/simple-icons/instagram';
 import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
 import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
+import InstitutionScopeBadge from '@/Components/Institutions/InstitutionScopeBadge.vue';
+import { CadenceSection, type CadenceRow } from '@/Components/Cadences';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { Button } from '@/Components/ui/button';
 import { Input, InputWithOverlappingLabel } from '@/Components/ui/input';
@@ -287,13 +317,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/Components/ui/separator';
 import { Switch } from '@/Components/ui/switch';
 import { ImageUpload } from '@/Components/ui/upload';
+import { InstitutionScope } from '@/Types/enums';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   institution: App.Entities.Institution;
   institutionTypes: App.Entities.Type[];
   assignableTenants: Array<App.Entities.Tenant>;
+  /** This institution's own term overrides. Absent on create. */
+  cadences?: CadenceRow[];
+  /** The shared ladder, shown read-only beside them. */
+  globalCadences?: CadenceRow[];
+  cadenceDefaults?: { default_start_month_day: string; default_end_month_day: string };
   rememberKey?: string;
-}>();
+}>(), {
+  cadences: () => [],
+  globalCadences: () => [],
+  cadenceDefaults: () => ({ default_start_month_day: '07-01', default_end_month_day: '06-30' }),
+});
 
 defineEmits<{
   (event: 'submit:form', form: unknown): void;
@@ -379,14 +419,43 @@ const selectedTypes = computed({
   },
 });
 
-const showMoreOptions = computed(() => {
-  // HACK: manually added types to check
-  const typesToCheck = ['pkp', 'padaliniai'];
-  const typeIds = props.institutionTypes
-    ?.filter(type => type.slug && typesToCheck.includes(type.slug))
-    .map(type => type.id);
+/**
+ * Mirrors InstitutionScopeResolver: the nearest type in the parent chain that declares a
+ * governance_scope wins. Resolved client-side because `institutionTypes` already carries the
+ * whole tree, and the answer has to update as the user ticks types on and off.
+ */
+const resolveGovernanceScope = (typeId: number): string | null => {
+  const seen = new Set<number>();
+  let current = props.institutionTypes?.find(type => type.id === typeId);
 
-  return form.types?.some((type: number) => typeIds.includes(type));
+  while (current && !seen.has(current.id)) {
+    seen.add(current.id);
+    const scope = current.extra_attributes?.governance_scope;
+    if (scope) return String(scope);
+    if (current.parent_id == null) return null;
+    current = props.institutionTypes?.find(type => type.id === current!.parent_id);
+  }
+
+  return null;
+};
+
+/**
+ * Contact details, logos and addresses belong to bodies VU SA runs itself — they have their own
+ * public presence. VU/national/international bodies are contacted through their own institution.
+ */
+const showMoreOptions = computed(() =>
+  Boolean(form.types?.some((typeId: number) => resolveGovernanceScope(typeId) === InstitutionScope.Vusa)),
+);
+
+/** External wins when types disagree, exactly as InstitutionScopeResolver::forInstitution does. */
+const resolvedScope = computed<string | null>(() => {
+  const scopes = (form.types ?? [])
+    .map((typeId: number) => resolveGovernanceScope(typeId))
+    .filter((scope): scope is string => scope !== null);
+
+  if (scopes.length === 0) return null;
+
+  return scopes.find(scope => scope !== InstitutionScope.Vusa) ?? InstitutionScope.Vusa;
 });
 
 const saveReorderedDuties = () => {

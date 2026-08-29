@@ -69,6 +69,14 @@
       >
         {{ $t('Rodyti tik viešas institucijas') }}
       </DropdownMenuCheckboxItem>
+      <!-- Off by default: everything VU SA sits in is drawn unless the user narrows it. -->
+      <DropdownMenuCheckboxItem
+        :model-value="hideInternalInstitutions"
+        @update:model-value="(val: boolean) => $emit('update:hideInternalInstitutions', val)"
+        @select.prevent
+      >
+        {{ $t('Slėpti VU SA darinius') }}
+      </DropdownMenuCheckboxItem>
 
       <DropdownMenuSeparator />
 
@@ -154,6 +162,7 @@ interface Props {
   // Filter states
   showOnlyWithActivity: boolean;
   showOnlyWithPublicMeetings: boolean;
+  hideInternalInstitutions?: boolean;
   showDutyMembers: boolean;
   showActivityStatus?: boolean;
   showActivityStatusOption?: boolean;
@@ -174,6 +183,7 @@ const props = withDefaults(defineProps<Props>(), {
   hasRelatedInstitutions: false,
   showActivityStatus: false,
   showActivityStatusOption: false,
+  hideInternalInstitutions: false,
   requireTenantSelection: false,
 });
 
@@ -181,6 +191,7 @@ const emit = defineEmits<{
   'update:selectedTenants': [value: string[]];
   'update:showOnlyWithActivity': [value: boolean];
   'update:showOnlyWithPublicMeetings': [value: boolean];
+  'update:hideInternalInstitutions': [value: boolean];
   'update:showDutyMembers': [value: boolean];
   'update:showActivityStatus': [value: boolean];
   'update:showTenantHeaders': [value: boolean];

@@ -2,13 +2,12 @@
 
 namespace App\Console\Commands;
 
+use App\Actions\Dutiables\FindSuspectExOfficioDutiables;
 use App\Models\User;
-use App\Support\MorphMap;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Report duties a user still holds ex officio although they no longer hold the
@@ -101,30 +100,9 @@ class AuditExOfficioDutiables extends Command
     private function findSuspectRows(): Collection
     {
         $tenantId = $this->option('tenant');
-        $today = now()->toDateString();
 
-        $query = DB::table('ex_officio_duties as eo')
-            ->join('dutiables as t', function ($join): void {
-                $join->on('t.duty_id', '=', 'eo.target_duty_id')
-                    ->where('t.dutiable_type', '=', MorphMap::alias(User::class))
-                    ->whereNull('t.via_dutiable_id');
-            })
-            ->join('users as u', 'u.id', '=', 't.dutiable_id')
-            ->join('duties as target', 'target.id', '=', 'eo.target_duty_id')
-            ->join('duties as source', 'source.id', '=', 'eo.source_duty_id')
-            ->leftJoin('institutions as inst', 'inst.id', '=', 'target.institution_id')
-            ->leftJoin('tenants as tn', 'tn.id', '=', 'inst.tenant_id')
-            ->whereNull('u.deleted_at')
-            ->where(fn ($q) => $q->whereNull('t.end_date')->orWhere('t.end_date', '>=', $today))
-            // The holder does not currently hold the source duty that grants this one.
-            ->whereNotExists(function ($sub) use ($today): void {
-                $sub->select(DB::raw('1'))
-                    ->from('dutiables as s')
-                    ->whereColumn('s.duty_id', 'eo.source_duty_id')
-                    ->whereColumn('s.dutiable_id', 't.dutiable_id')
-                    ->where('s.dutiable_type', '=', MorphMap::alias(User::class))
-                    ->where(fn ($q) => $q->whereNull('s.end_date')->orWhere('s.end_date', '>=', $today));
-            })
+        // Shared with the dutiable timeline's diagnostics, so both report the same rows.
+        $query = FindSuspectExOfficioDutiables::query($tenantId === null ? null : (int) $tenantId)
             ->select([
                 't.id as dutiable_id',
                 't.dutiable_id as user_id',
@@ -136,10 +114,6 @@ class AuditExOfficioDutiables extends Command
                 't.start_date',
             ])
             ->orderBy('u.name');
-
-        if ($tenantId) {
-            $query->where('inst.tenant_id', $tenantId);
-        }
 
         return collect($query->get());
     }

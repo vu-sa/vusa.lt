@@ -23,6 +23,8 @@ class NewsController extends PublicController
 
         $other_lang_page = $news->other_language_news;
 
+        $this->sharePublicEditLink($news);
+
         Inertia::share('otherLangURL', $other_lang_page ? LocalizedRouteSlugs::route(
             'news',
             [

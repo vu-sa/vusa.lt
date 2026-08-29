@@ -12,7 +12,19 @@
       >
         <Clock class="mr-2 h-4 w-4" />
         {{ formattedTime }}
-        <ChevronDown class="ml-auto h-4 w-4 opacity-50" />
+        <span
+          v-if="clearable && selectedTime"
+          class="ml-auto rounded p-0.5 opacity-50 transition-opacity hover:opacity-100"
+          role="button"
+          tabindex="0"
+          :title="$t('Išvalyti')"
+          @click.stop.prevent="clear"
+          @keydown.enter.stop.prevent="clear"
+          @keydown.space.stop.prevent="clear"
+        >
+          <X class="h-3.5 w-3.5" />
+        </span>
+        <ChevronDown v-else class="ml-auto h-4 w-4 opacity-50" />
       </Button>
     </PopoverTrigger>
     <PopoverContent class="w-auto p-0" align="start">
@@ -27,7 +39,7 @@
                 v-for="hour in hours"
                 :key="hour"
                 variant="ghost"
-                :class="selectedTime.hour === hour ? 'bg-zinc-100 dark:bg-zinc-800' : ''"
+                :class="selectedTime?.hour === hour ? 'bg-zinc-100 dark:bg-zinc-800' : ''"
                 @click="updateHour(hour)"
               >
                 {{ hour.toString().padStart(2, '0') }}
@@ -45,7 +57,7 @@
                 v-for="minute in minutes"
                 :key="minute"
                 variant="ghost"
-                :class="selectedTime.minute === minute ? 'bg-zinc-100 dark:bg-zinc-800' : ''"
+                :class="selectedTime?.minute === minute ? 'bg-zinc-100 dark:bg-zinc-800' : ''"
                 @click="updateMinute(minute)"
               >
                 {{ minute.toString().padStart(2, '0') }}
@@ -59,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { Clock, ChevronDown } from 'lucide-vue-next';
+import { Clock, ChevronDown, X } from 'lucide-vue-next';
 import { ref, computed, watch, nextTick, useTemplateRef, type HTMLAttributes } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
@@ -79,36 +91,43 @@ const props = withDefaults(defineProps<{
   minuteStep?: number;
   hourRange?: [number, number]; // [min, max]
   disabled?: boolean;
+  /** Shown when no time is set. */
+  placeholder?: string;
+  /** Adds an inline clear affordance that emits `undefined`. */
+  clearable?: boolean;
 }>(), {
   minuteStep: 5,
   hourRange: () => [0, 23] as [number, number],
   disabled: false,
+  placeholder: '--:--',
+  clearable: false,
 });
 
-const emit = defineEmits<(e: 'update:modelValue', value: TimeValue) => void>();
+const emit = defineEmits<(e: 'update:modelValue', value: TimeValue | undefined) => void>();
 
 // Ref for scroll area to scroll to hour 12
 const hourScrollArea = useTemplateRef<InstanceType<typeof ScrollArea>>('hourScrollArea');
 const isOpen = ref(false);
 
-// Initialize with either provided value or defaults
-const selectedTime = ref<TimeValue>(props.modelValue || { hour: 12, minute: 0 });
+// Undefined means "no time set" — the trigger then shows the placeholder rather than
+// pretending 12:00 was chosen.
+const selectedTime = ref<TimeValue | undefined>(props.modelValue);
 
 // Use a flag to prevent recursive updates
 const isInternalUpdate = ref(false);
 
 // Watch for props modelValue changes
 watch(() => props.modelValue, (newValue) => {
-  if (newValue && !isInternalUpdate.value) {
-    // Only update if this wasn't triggered by our own emit
-    selectedTime.value = { ...newValue };
+  // Only update if this wasn't triggered by our own emit
+  if (!isInternalUpdate.value) {
+    selectedTime.value = newValue ? { ...newValue } : undefined;
   }
 }, { deep: true });
 
 // Watch for internal selected time changes - only emit when direct user changes occur
-const updateAndEmit = (newTime: TimeValue) => {
+const updateAndEmit = (newTime: TimeValue | undefined) => {
   isInternalUpdate.value = true;
-  emit('update:modelValue', { ...newTime });
+  emit('update:modelValue', newTime ? { ...newTime } : undefined);
   // Reset flag after the current call stack completes
   setTimeout(() => {
     isInternalUpdate.value = false;
@@ -129,21 +148,29 @@ const minutes = computed(() => {
 // Format the time for display
 const formattedTime = computed(() => {
   if (!selectedTime.value) {
-    return '--:--';
+    return props.placeholder;
   }
   return `${selectedTime.value.hour.toString().padStart(2, '0')}:${selectedTime.value.minute.toString().padStart(2, '0')}`;
 });
 
+/** Picking one half of an unset time fills the other half with the top of the hour. */
+const currentOrDefault = (): TimeValue => selectedTime.value ?? { hour: 12, minute: 0 };
+
+const clear = () => {
+  selectedTime.value = undefined;
+  updateAndEmit(undefined);
+};
+
 // Handler to update hour
 const updateHour = (hour: number) => {
-  const newTime = { ...selectedTime.value, hour };
+  const newTime = { ...currentOrDefault(), hour };
   selectedTime.value = newTime;
   updateAndEmit(newTime);
 };
 
 // Handler to update minute
 const updateMinute = (minute: number) => {
-  const newTime = { ...selectedTime.value, minute };
+  const newTime = { ...currentOrDefault(), minute };
   selectedTime.value = newTime;
   updateAndEmit(newTime);
 };

@@ -148,6 +148,21 @@ describe('study program', function (): void {
         ])->assertSessionHasErrors('study_program_id');
     });
 
+    test('duty manager can note which group inside the programme the seat covers', function (): void {
+        asUser($this->dutyManager)->patch(route('dutiables.update', $this->dutiable), [
+            'study_program_note' => ['lt' => '1 grupė', 'en' => 'Group 1'],
+        ])->assertRedirect();
+
+        expect($this->dutiable->refresh()->getTranslation('study_program_note', 'lt'))->toBe('1 grupė')
+            ->and($this->dutiable->getTranslation('study_program_note', 'en'))->toBe('Group 1');
+    });
+
+    test('the group note is a label, not a paragraph', function (): void {
+        asUser($this->dutyManager)->patch(route('dutiables.update', $this->dutiable), [
+            'study_program_note' => ['lt' => str_repeat('a', 101)],
+        ])->assertSessionHasErrors('study_program_note.lt');
+    });
+
     test('edit page scopes the study program list to the duty tenant but keeps an already-selected cross-tenant value', function (): void {
         $ownTenantProgram = StudyProgram::factory()->forTenant($this->tenant)->create();
         $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);

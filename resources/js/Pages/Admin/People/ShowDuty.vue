@@ -32,6 +32,10 @@
         <UserPlus class="h-4 w-4" />
         {{ $t('Priskirti narį') }}
       </Button>
+      <Button v-if="canManageDuty" variant="outline" size="sm" class="gap-2" @click="timelineOpen = true">
+        <CalendarRange class="h-4 w-4" />
+        {{ $t('dutiables.timeline.open') }}
+      </Button>
       <Button v-if="canManageDuty" variant="outline" size="sm" class="gap-2" @click="handleEdit">
         <Settings class="h-4 w-4" />
         {{ $t('Valdyti') }}
@@ -152,14 +156,15 @@
         </div>
       </DialogContent>
     </Dialog>
+    <DutiableTimelineDialog v-model:open="timelineOpen" scope-type="duty" :scope-id="duty.id" />
   </ShowPageLayout>
 </template>
 
 <script setup lang="tsx">
 import { computed, ref } from 'vue';
-import { router, usePage } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { UserPlus, Settings, Mail, UserX, FolderOpen } from 'lucide-vue-next';
+import { UserPlus, Settings, Mail, UserX, FolderOpen, CalendarRange } from 'lucide-vue-next';
 
 // Layout and Components
 import ShowPageLayout from '@/Components/Layouts/ShowPageLayout.vue';
@@ -168,6 +173,7 @@ import PriorityAlert from '@/Components/Alerts/PriorityAlert.vue';
 import FileManager from '@/Features/Admin/SharepointFileManager/SharepointFileManager.vue';
 import SimpleFileViewer from '@/Features/Admin/SharepointFileManager/Viewer/SimpleFileViewer.vue';
 import { EmptyState, ShowPageGrid } from '@/Components/Patterns';
+import { DutiableTimelineDialog } from '@/Features/Admin/DutiableTimeline';
 import { FileablePreviewCard } from '@/Components/Files';
 import {
   DutyCurrentHoldersCard,
@@ -197,6 +203,7 @@ const props = defineProps<{
     next_meeting?: MiniMeeting | null;
     last_meeting?: MiniMeeting | null;
   };
+  can?: { update: boolean; managePeople: boolean };
 }>();
 
 const tabs = computed(() => [
@@ -205,6 +212,7 @@ const tabs = computed(() => [
 ]);
 
 const showAssignMemberModal = ref(false);
+const timelineOpen = ref(false);
 const showVacancyAlert = ref(true);
 
 // Members split into current / historical via the dutiable pivot dates.
@@ -244,9 +252,10 @@ const hasAbout = computed(() => !!description.value);
 const otherDuties = computed<OtherDuty[]>(() => props.duty.other_duties ?? []);
 
 // Permissions
-const page = usePage();
-const canAssignMembers = computed(() => page.props.auth?.can?.['duties.update.padalinys'] || false);
-const canManageDuty = computed(() => page.props.auth?.can?.['duties.update.padalinys'] || false);
+// From the controller, not `auth.can`: that map holds index/create/forceDelete only, so
+// the old lookup was always undefined and these buttons rendered for nobody.
+const canAssignMembers = computed(() => props.can?.managePeople ?? false);
+const canManageDuty = computed(() => props.can?.update ?? false);
 
 // Event handlers
 const handleEdit = () => {

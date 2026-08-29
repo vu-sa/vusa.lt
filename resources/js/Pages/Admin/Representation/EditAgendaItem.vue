@@ -70,6 +70,7 @@
           :form
           :editing
           :meeting-is-public
+          :requires-student-perspective
         />
 
         <!-- Discussion: the attributed, threaded conversation (distinct from the
@@ -158,11 +159,30 @@ const props = withDefaults(defineProps<{
     main_vote?: unknown;
     comments_count?: number;
     has_notes?: boolean;
+    start_time?: string | null;
+    end_time?: string | null;
   }>;
   canUpdate?: boolean;
+  requiresStudentPerspective?: boolean;
 }>(), {
   canUpdate: true,
+  requiresStudentPerspective: true,
 });
+
+/**
+ * A one-time default, not a live sync: the previous item's end time (at the moment this page
+ * loaded) seeds this item's start time only while it is still empty. Editing the previous item's
+ * end time later never reaches back into this one.
+ */
+const defaultStartTimeFromPreviousItem = (): string | null => {
+  const currentOrder = props.agendaItem.order;
+
+  const previous = props.siblingAgendaItems
+    .filter(item => item.order < currentOrder && item.end_time)
+    .sort((a, b) => b.order - a.order)[0];
+
+  return previous?.end_time ? String(previous.end_time).slice(0, 5) : null;
+};
 
 const form = useForm<AgendaItemFormData>({
   title: props.agendaItem.title,
@@ -170,6 +190,11 @@ const form = useForm<AgendaItemFormData>({
   brought_by_students: props.agendaItem.brought_by_students ?? false,
   student_position: props.agendaItem.student_position ?? '',
   description: props.agendaItem.description ?? '',
+  // The columns are TIME (`HH:MM:SS`); the inputs and the validator both speak `HH:MM`.
+  start_time: props.agendaItem.start_time
+    ? String(props.agendaItem.start_time).slice(0, 5)
+    : defaultStartTimeFromPreviousItem(),
+  end_time: props.agendaItem.end_time ? String(props.agendaItem.end_time).slice(0, 5) : null,
   votes: (props.agendaItem.votes ?? []).map((vote): EditableVote => ({
     id: vote.id,
     is_main: vote.is_main ?? false,

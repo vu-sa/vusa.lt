@@ -49,7 +49,7 @@ class UserSearchApiController extends ApiController
     public function search(UserSearchRequest $request): JsonResponse
     {
         $search = $request->input('search');
-        $permission = $request->input('permission', 'problems.create.padalinys');
+        $permission = $request->input('permission');
         $searchAllTenants = $request->input('scope') === 'all';
 
         $user = $this->requireAuth($request);

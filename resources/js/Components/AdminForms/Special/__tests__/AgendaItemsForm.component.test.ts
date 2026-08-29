@@ -3,6 +3,15 @@ import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 
 import AgendaItemsForm from '../AgendaItemsForm.vue';
+import { commonStubs } from '@/tests/stubs';
+
+/** Real TimePicker drives a Popover + ScrollArea, unreliable in jsdom — stub it and drive its model directly. */
+const TimePickerStub = {
+  name: 'TimePicker',
+  props: ['modelValue', 'minuteStep', 'clearable', 'class', 'title'],
+  emits: ['update:modelValue'],
+  template: '<button type="button" class="time-picker-stub" @click="$emit(\'update:modelValue\', { hour: 18, minute: 30 })">pick</button>',
+};
 
 describe('AgendaItemsForm.vue', () => {
   let wrapper: ReturnType<typeof mount>;
@@ -235,6 +244,54 @@ describe('AgendaItemsForm.vue', () => {
 
       // Test validation behavior
       expect(wrapper.exists()).toBe(true);
+    });
+  });
+
+  describe('per-item time range', () => {
+    const createWrapperWithTimePicker = (props = {}) =>
+      mount(AgendaItemsForm, {
+        props: { ...defaultProps, agendaItems: [{ title: 'Dėl veiklos plano', order: 1 }], ...props },
+        global: { stubs: { ...commonStubs, TimePicker: TimePickerStub } },
+      });
+
+    it('hides the time pickers until the clock toggle is clicked', async () => {
+      wrapper = createWrapperWithTimePicker();
+      await nextTick();
+
+      expect(wrapper.findAll('.time-picker-stub')).toHaveLength(0);
+
+      const clockButton = wrapper.find('svg.lucide-clock').element.closest('button')!;
+      await clockButton.dispatchEvent(new Event('click', { bubbles: true }));
+      await nextTick();
+
+      expect(wrapper.findAll('.time-picker-stub')).toHaveLength(2);
+    });
+
+    it('keeps the picked start/end times when the picker is hidden and shown again', async () => {
+      // The submission path itself goes through vee-validate's async Form, which does not
+      // resolve reliably under jsdom — so this asserts the underlying state directly: picking a
+      // time updates `agendaItemTimes`, and that state survives re-toggling visibility.
+      wrapper = createWrapperWithTimePicker();
+      await nextTick();
+
+      const clockButton = wrapper.find('svg.lucide-clock').element.closest('button')!;
+      await clockButton.dispatchEvent(new Event('click', { bubbles: true }));
+      await nextTick();
+
+      const [startPicker, endPicker] = wrapper.findAll('.time-picker-stub');
+      await startPicker.trigger('click');
+      await endPicker.trigger('click');
+      await nextTick();
+
+      // Hide, then reveal again — a fresh toggle must not reset the stored value.
+      await clockButton.dispatchEvent(new Event('click', { bubbles: true }));
+      await nextTick();
+      await clockButton.dispatchEvent(new Event('click', { bubbles: true }));
+      await nextTick();
+
+      const pickersAfterRetoggle = wrapper.findAllComponents(TimePickerStub);
+      expect(pickersAfterRetoggle[0].props('modelValue')).toEqual({ hour: 18, minute: 30 });
+      expect(pickersAfterRetoggle[1].props('modelValue')).toEqual({ hour: 18, minute: 30 });
     });
   });
 

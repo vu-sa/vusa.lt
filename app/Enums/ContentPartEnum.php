@@ -30,6 +30,7 @@ enum ContentPartEnum: string
     case PERSON_QUOTE = 'PERSON_QUOTE';
     case SECTION = 'SECTION';
     case SPACER = 'SPACER';
+    case TIMETABLE = 'TIMETABLE';
 
     public function label(): string
     {
@@ -56,6 +57,7 @@ enum ContentPartEnum: string
             self::PERSON_QUOTE => 'person-quote',
             self::SECTION => 'section',
             self::SPACER => 'spacer',
+            self::TIMETABLE => 'timetable',
         };
     }
 }

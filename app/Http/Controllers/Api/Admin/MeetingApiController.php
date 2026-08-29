@@ -53,6 +53,36 @@ class MeetingApiController extends ApiController
     }
 
     /**
+     * Timed agenda items for a meeting — feeds the timetable content part's
+     * "import from meeting" helper. Only items that carry a start time are returned;
+     * the timetable shows nothing for untimed questions.
+     *
+     * @route GET /api/v1/admin/meetings/{meeting}/agenda-items
+     *
+     * @routeName api.v1.admin.meetings.agendaItems
+     */
+    public function agendaItems(Meeting $meeting): JsonResponse
+    {
+        $this->authorizeApi('view', $meeting);
+
+        $meeting->load([
+            'agendaItems' => fn ($query) => $query->orderBy('order'),
+        ]);
+
+        return $this->jsonSuccess(
+            $meeting->agendaItems
+                ->filter(fn ($item) => filled($item->start_time))
+                ->map(fn ($item) => [
+                    'title' => $item->title,
+                    'startTime' => $item->start_time,
+                    'endTime' => $item->end_time,
+                ])
+                ->values()
+                ->all(),
+        );
+    }
+
+    /**
      * Get recent meetings for the current user's institutions.
      * Used by NewMeetingModal for quick meeting selection.
      *

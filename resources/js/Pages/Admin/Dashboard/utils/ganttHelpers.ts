@@ -133,6 +133,8 @@ export function extractMeetingsFromInstitutions(
         authorized: isAuthorized,
         has_report: m.has_report,
         has_protocol: m.has_protocol,
+        has_calendar_event: m.has_calendar_event,
+        calendar_event_is_draft: m.calendar_event_is_draft,
         // Extract meeting type for icon differentiation (in-person, remote, email)
         type_slug: m.type ?? m.type_slug,
       };
@@ -151,6 +153,7 @@ export function formatInstitutionsForGantt(
     id: i.id,
     name: getInstitutionDisplayName(i),
     tenant_id: i.tenant?.id,
+    is_internal: i.is_internal,
     is_related: isRelated || i.is_related,
     relationship_direction: i.relationship_direction,
     source_institution_id: i.source_institution_id,

@@ -38,6 +38,10 @@ return [
         'model' => '{1} pareigybės laikotarpis|[2,9] pareigybės laikotarpiai|[10,*] pareigybės laikotarpių',
         'gender' => 'm',
     ],
+    'cadence' => [
+        'model' => '{1} kadencija|[2,9] kadencijos|[10,*] kadencijų',
+        'gender' => 'f',
+    ],
     'user' => [
         'model' => '{1} narys|[2,9] nariai|[10,*] narių',
         'gender' => 'm',

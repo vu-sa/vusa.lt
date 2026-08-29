@@ -7,12 +7,86 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
-## v1.28 — Paieškos filtrai siauresniuose ekranuose (2026-08-28) {#v1-28}
+## v1.27 — Kadencijos, laikotarpių tvarkyklė ir posėdžių skelbimas (2026-08-28) {#v1-27}
 
-- ✨ **Paieškos filtrai suskleidžiami visuose ekrano pločiuose** — 1024–1280 px pločio ekranuose dokumentų, posėdžių, kontaktų ir bendrosios paieškos puslapiuose filtrai anksčiau būdavo išskleisti virš rezultatų ir jų nebuvo galima suskleisti; dabar jie slepiasi po filtrų mygtuku, kaip ir telefonuose
-- 🔧 **Sutvarkyta filtrų rodyklės lygiuotė** — filtro sekcijų atvėrimo rodyklė buvo pasislinkusi į viršų ir ne centre su etikete, ypač kai sekcija turi aprašymą; dabar rodyklė visuomet vertikaliai centruota
+### Pareigybių laikotarpių laiko juosta
 
-## v1.27 — Failų tvarkyklė (2026-08-28) {#v1-27}
+- ⭐ **Pareigybių laikotarpiai vienoje laiko juostoje** — visos institucijos pareigybės matomos kaip juostos; datas galima tempti pele, o apačioje esantis skydelis rodo pažymėtą įrašą, siūlomus taisymus ir neišsaugotus pakeitimus. Pasiekiama iš „Žmonės“ srities, pareigybės, nario ir institucijos puslapių
+- ⭐ **Laikotarpių tvarkyklė pasiekiama ir iš šoninės juostos** — atsirado tarp greitų veiksmų; atsidarius iš karto parenkama institucija, kurioje einate pareigas
+- ⭐ **Siūlomi taisymai rodo, ką konkrečiai pakeis** — persidengiančios datos, neterminuoti laikotarpiai po kadencijos pabaigos, nuo kadencijos nutolusios datos ir neužimtos vietos surašomi kartu su naujomis datomis. Kelis taisymus galima pažymėti ir pritaikyti iš karto, prieš tai peržiūrėjus visą sąrašą
+- ⭐ **Kadencijos** — bendros kadencijų datos nustatomos „Nustatymuose“, o institucijos išimtys – pačios institucijos redagavimo lange. Kadencijos pavadinimas sudaromas iš datų, atskirai jo rašyti nereikia
+- ⭐ **Kelių laikotarpių žymėjimas ir sujungimas** — varnelės prie kiekvieno įrašo ir prie visos pareigybės. Pažymėjus kelis, galima vienu kartu nustatyti pradžios ar pabaigos datą; pažymėjus du to paties žmogaus tos pačios pareigybės laikotarpius – juos sujungti į vieną
+- ✨ **Matyti, kada įrašas turi papildomos informacijos** — atskiras el. paštas, studijų programa, nuotrauka ar aprašymas pažymiami piktograma su paaiškinimu (įkelta nuotrauka ir parodoma), o prieš sujungiant įspėjama, kad dalis šios informacijos bus prarasta
+- ✨ **Aiškesnė laiko juosta** — dabartiniai ir pasibaigę laikotarpiai skiriasi spalva, gretimos kadencijos – atspalviu, vardai yra nuorodos, o mastelis įsimenamas kitam kartui. Įrašus galima filtruoti pagal kadenciją — įrašas priskiriamas kiekvienai kadencijai, kurią apima, o pasirinktoji diagramoje paryškėja — ir pagal padalinį; pasibaigusius galima paslėpti, o pareigybes suskleisti, ir suskleista pareigybė rodo, kiek įrašų slepia bei bendrą jų laiko juostą
+- ✨ **Matomos studijų programos** — vietoj vien piktogramos programos pavadinimas rodomas tekstu, o įrašus galima surikiuoti pagal jas
+- ⭐ **Matoma laikotarpio trukmė** — prie kiekvieno įrašo rodoma, kiek jis truko (pvz. „2 m. 4 mėn.“); trumpiems laikotarpiams rodomi mėnesiai ar dienos
+- ✨ **Institucijos pasirinkimas aiškesnis** — mygtukas rodo dabartinės institucijos pavadinimą, o meniu pirmiausia siūlo jūsų institucijas. Institucijos pavadinimas virš diagramos dabar yra nuoroda
+- ⭐ **Puslapio vadovas** — pirmą kartą apsilankius parodoma, kaip skaityti ir keisti juostas; vėliau vadovą galima paleisti pagalbos mygtuku
+- ✨ **Laikotarpį galima pašalinti iš pačios laiko juostos** — anksčiau tam reikėdavo atskiro puslapio
+- 🔧 **Sutvarkyti pareigybės ir nario puslapių mygtukai** — „Valdyti“, „Priskirti narį“ ir „Redaguoti“ nebuvo rodomi niekam, nors teisių pakako
+
+### Kadencijos, valdysena ir posėdžių juosta
+
+- ⭐ **Kadencijos ribą galima susieti su posėdžiu** — institucijos formoje kadencijos pradžią ar pabaigą galima nurodyti pasirenkant posėdį (pvz. ataskaitinę-rinkiminę konferenciją). Galima rinktis bet kurį prieinamą posėdį, taip pat ir kitos institucijos (pvz. padalinio konferenciją) — prie ribos tada parodoma, kurios institucijos tai posėdis. Data imama iš posėdžio ir pasikeičia kartu su juo
+- ⭐ **Grupės ar pastabos laukas prie studijų programos** — kuratoriams didelėse programose galima nurodyti, pvz., „1 grupė“. Rodoma viešuose kontaktuose šalia studijų programos
+- ✨ **Institucijos puslapyje ir formoje matyti valdysenos sritis** — žymė parodo, ar tai VU SA darinys, ar išorinis organas; formoje paaiškinama, kodėl dalis laukų nerodoma
+- ⭐ **Posėdžių juostoje rodomi visi posėdžiai** — VU SA vidaus dariniai nebeslepiami. Norint juos paslėpti, rodymo nustatymuose atsirado „Slėpti VU SA darinius“ (išjungta pagal nutylėjimą); žalia piktograma prie posėdžio reiškia paskelbtą kalendoriuje įrašą, gintarinė — juodraštį
+
+### Posėdžiai kalendoriuje ir dokumentuose
+
+- ⭐ **Posėdį galima paskelbti kalendoriuje** — posėdžio lange, veiksmų meniu, atsiranda „Paskelbti kalendoriuje“. Sukuriamas juodraštinis renginys su posėdžio data ir padaliniu arba susiejamas jau įvestas įrašas iš savaitės aplink posėdį. Paskelbus renginį, posėdžio darbotvarkė ir dokumentai tampa matomi viešai — įskaitant dar neįvykusį posėdį; pats posėdžio puslapis ir jo paieškos įrašas lieka privatūs, juos atveria tik institucijos tipo nustatymas
+- ⭐ **Darbotvarkė ir dokumentai renginio puslapyje** — su posėdžiu susietas kalendoriaus įrašas rodo darbotvarkę, punktų laikus ir su posėdžiu susietus nutarimus bei protokolus, o iš jo galima pereiti į posėdžio puslapį
+- ✨ **Kompaktiška vieša darbotvarkė** — vietoj didelių kortelių darbotvarkė rodoma kaip vientisas sąrašas: būsenos taškas, pavadinimas, laikas ir sprendimas vienoje eilutėje, o aprašymas bei pilna balsavimo informacija išskleidžiami paspaudus
+- ✨ **Laiko laukeliai visada 24 val. formatu** — anksčiau naršyklė, nustatyta angliškai, rodydavo AM/PM. Laikas pasirenkamas iš valandų ir minučių sąrašo, o mygtukas su ✕ jį išvalo
+- ✨ **Renginio laiką valdo posėdis** — su posėdžiu susieto kalendoriaus įrašo datos laukai užrakinti ir su paaiškinimu nukreipia į posėdį, kad laikas nebūtų vedamas dviejose vietose
+- 🔧 **Pagrindinį balsavimą galima pašalinti** — anksčiau paskutinio balsavimo ištrinti neleisdavo be paaiškinimo. Pašalinus pagrindinį, kitas tampa pagrindiniu automatiškai
+- ✨ **VU SA darinių posėdžiuose nebereikalaujama studentų balso, naudos ir išsakytos pozicijos** — VU SA Parlamento, Tarybos ar Revizijos komisijos posėdyje pildomas tik sprendimas, nes atstovai ir yra pati organizacija; šios skiltys viešai nerodomos. Anksčiau tokie posėdžiai visada likdavo „nebaigti“
+- 🔧 **Nerodomos tarnybinės būsenos** — „Nepažymėtas“ viešai neberodomas niekada, o „Neaptartas“ nerodomas dar neįvykusio posėdžio darbotvarkėje, kur jis nieko nepasako
+- ⭐ **Dokumentai susiejami su posėdžiu** — VU SA darinių posėdžiuose atsiranda kortelė „Dokumentai“: nutarimus ar protokolus galima surasti paieška arba iš karto įkelti iš SharePoint, nereikia jų pirma registruoti dokumentų skiltyje
+- ✨ **Kalendoriaus įrašas pasako, kad skelbia posėdį** — redaguojant tokį renginį rodomas pranešimas su nuoroda į posėdį ir paaiškinimu, ką reiškia jo paskelbimas
+- ⭐ **Darbotvarkės punkto laikas nurodomas jau kuriant posėdį** — vedlio darbotvarkės žingsnyje kiekvienam klausimui iškart galima nurodyti pradžios ir pabaigos laiką. Laikas rodomas ir viešoje darbotvarkėje, tad ilgesnio posėdžio eigą galima paskelbti iš anksto ir žmonės gali ateiti į juos dominančią dalį
+- ⭐ **Institucijos tipui nustatoma valdysenos sritis** — VU SA darinys, VU organas, nacionalinis ar tarptautinis organas. Reikšmė paveldima iš tėvinio tipo, tad naujam poskyriui jos nurodyti nereikia
+- 🔧 **Posėdžių sąrašo filtras pagal pildymo būseną vėl veikia** — filtras kreipdavosi į laukus, kurie buvo perkelti į balsavimus, ir grąžindavo klaidą
+
+### Nuotoliniai renginiai ir vertikalios kortelės
+
+- ⭐ **Nuotolinio renginio žymėjimas** — renginio formoje galima pažymėti „Nuotolinis renginys“. Tada vietoj adreso ir žemėlapio rodoma nuoroda prisijungti, o vietos žemėlapyje ieškoti nebebandoma
+- ✨ **Vertikalios renginio kortelės** — renginių sąraše ir renginio puslapio skiltyje „Kiti renginiai“ dabar rodomos vertikalios kortelės su nuotrauka viršuje, o ne siauros eilutės
+- ✨ **„Kiti renginiai“ perkelti po aprašymu** — renginio puslapyje šis blokas dabar rodomas pagrindiniame stulpelyje po darbotvarke ir nuotraukomis, o ne šoninėje juostoje
+- ⭐ **Ankstesnio/kito to paties padalinio posėdžio nuorodos** — su posėdžiu susieto renginio puslapyje rodomos nuorodos į ankstesnį ir kitą to paties padalinio paskelbtą posėdžio renginį
+- ⭐ **Susitikimo kūrimo vedlyje galima iškart paskelbti kalendoriuje** — peržiūros žingsnyje pažymėjus varnelę, kartu su posėdžiu sukuriamas juodraštinis kalendoriaus įrašas
+- ✨ **Naujo punkto pradžios laikas pasiūlomas automatiškai** — jei ankstesnis darbotvarkės punktas turi pabaigos laiką, o naujas punktas savo dar neturi, pradžios laikas užpildomas juo (tik vieną kartą, be nuolatinio sinchronizavimo)
+
+### Tvarkaraščio turinio blokas
+
+- ⭐ **Naujas turinio blokas „Tvarkaraštis“** — puslapiuose, naujienose ir pagrindiniame puslapyje dabar galima įterpti tvarkaraščio kortelę su laikais ir pavadinimais. Eilutes galima įvesti rankiniu būdu arba importuoti iš posėdžio darbotvarkės
+
+### Renginio puslapio vaizdo stiliai
+
+- ⭐ **Renkami renginio puslapio vaizdo stiliai** — kiekvienam renginiui galima pasirinkti vieną iš trijų stilių: didelę kortelę su nuotrauka fone, kortelę su nuotrauka šalia teksto arba minimalų vaizdą be nuotraukos. Stilius parenkamas renginio formoje
+- ✨ **Ramesnis numatytasis renginio vaizdas** — herojus tapo kompaktiškas, antraštė gerokai mažesnė, o veiksmai (registracija, dalinimasis) išlaiko tą patį tinkamą išdėstymą visuose ekranuose. Pašalintas „išsiplėtęs“ pilno ekrano vaizdas, trukdęs puslapio eigai
+- 🔧 **Sutvarkyti renginio datos tekstai** — ilgos lietuviškos datos nebe „nusikerta“ datos parinkimo lauke, o „Visos dienos renginys“ perjungimas turi nuolat matomą eilutę
+
+### Vienodės administravimo kortelės
+
+- ✨ **Nustatymų kortelės vienodo stiliaus su administravimu** — nustatymų pradžios puslapis dabar rodo tokias pat korteles kaip administravimo puslapis: piktograma, pavadinimas ir aprašymas, su pele pažymint apsišviečiančiu rėmeliu
+- ✨ **Pašalinta išskirtinė „Problema“ kortelė** — administravimo puslapyje nebebus rodomas „Naujausi įrankiai“ skyrius su „Nauja“ žyme pažymėta problemos kortele; problemos lieka pasiekiamos „Atstovavimo“ skyriuje
+- 🔧 **Atstovavimo nustatymų puslapis vėl išverstas** — dėl klaidos vertimų rinkmenose buvo matomos neišverstos rakto eilutės; dabar rodomi lietuviški ir angliški tekstai
+
+## v1.26 — Paveikslėliai turinio redaktoriuje, failų tvarkyklė ir paieškos filtrai (2026-08-28) {#v1-26}
+
+### Paveikslėliai turinio redaktoriuje
+
+- 🔧 **Paveikslėlį vėl galima įkelti į turinio redaktorių** — pasirinkus nuotrauką ji nebuvo įterpiama (redaktorius nutrūkdavo su klaida), tad turinį su paveikslėliais buvo galima kurti tik nutempus failą į redaktorių
+- ⭐ **Paveikslėlio dydį galima nusitempti pele** — pažymėjus paveikslėlį, jo dešiniajame krašte atsiranda rankenėlė; tempiant rodomas plotis pikseliais. Greitiems dydžiams lieka ir mygtukas su parinktimis (300 / 500 / 800 px, per visą plotį)
+- 🔧 **Pasirinktas plotis ir lygiuotė matomi ir viešame puslapyje** — anksčiau nepriklausomai nuo pasirinkimo paveikslėlis buvo ištempiamas per visą plotį, o lygiavimas į kairę ar dešinę dingdavo
+- ✨ **Trumpesnė paveikslėlio įkėlimo forma** — ilgas mėlynas paaiškinimas apie alternatyvų tekstą suskleistas po nuoroda „Kodėl tai privaloma?“, o šalia įvesties matomas simbolių skaitiklis (kaip ir redagavimo lange)
+- ✨ **Įterpiant paveikslėlį galima pažymėti „dekoratyvinis“** — tokiu atveju alternatyvaus teksto reikalauti nebereikia (kaip ir redagavimo lange)
+- ✨ **Paveikslėlio valdikliai atsiranda šalia paties paveikslėlio** — pažymėjus jį iškart virš jo pasirodo lygiuotės, dydžio, alt teksto ir pašalinimo mygtukai; anksčiau jie buvo toli viršuje, įrankių juostoje
+- 🔧 **Pažymėjus paveikslėlį nebesiūloma paryškinti ar pabraukti** — vietoj teksto formatavimo burbulo dabar rodomas paveikslėlio meniu
+- 🔧 **Nebesidubliuoja lygiuotės mygtukai** — pažymėjus paveikslėlį įrankių juostoje matėsi dvi lygiuotės eilutės, o veikė tik viena
+
+### Failų tvarkyklė
 
 - 🔧 **Failų tvarkyklė nebenulūžta atidarius `/mano/files`** — puslapis nutrūkdavo su klaida („allowedTypes.extensions is undefined“), o įkėlimo laukas užstrigdavo ties „Kraunama...“. Kartu vėl veikia leidžiamų formatų sąrašas, 50 MB ribos tikrinimas naršyklėje ir failo tipo filtras pasirinkimo lange
 - 🔧 **Įkėlimo mygtukas nebesisuka be galo** — įkeliant failą per turinio redaktoriaus paveikslėlių langą failas patekdavo į serverį, bet mygtukas suktųsi amžinai, nes įkėlimą nutraukdavo kitas puslapio veiksmas (pvz. formos automatinis išsaugojimas). Dabar įkėlimas nepriklauso nuo puslapio navigacijos ir visada pasibaigia
@@ -21,24 +95,14 @@ lastUpdated: true
 - ✨ **Aplankai ir failai rikiuojami pagal pavadinimą** — anksčiau eilė priklausė nuo failų sistemos ir atrodė atsitiktinė
 - ✨ **Aplankas atidaromas vienu paspaudimu** — anksčiau reikėjo dvigubo paspaudimo, o vienas paspaudimas nedarė nieko
 - 🔧 **Į redaktorių nutempti ne paveikslėlių failai vėl atsisiunčiami** — jie buvo įrašomi ne į tą vietą, tad įterpta nuoroda grąžindavo klaidą 404
-- 🔧 **Failų tvarkyklė nebeblokuojama pasiekus užklausų ribą** — kiekvienas matomas paveikslėlis atsiunčia po atskirą mažą kopiją, tad aplanke su daugiau nuotraukų užimdavote bendrą visų administratoriaus užklausų limitą ir tvarkyklė imdavo rodyti klaidą „429“. Failų tvarkyklės užklausos dabar turi atskirą, gerokai didesnį limitą
-- ✨ **Failų tvarkyklė kalba angliškai, kai svetainė angliška** — mygtukai ir pranešimai buvo įrašyti tiesiai į kodą lietuviškai (vietomis angliškai)
-
-## v1.26 — Paveikslėliai turinio redaktoriuje (2026-08-24) {#v1-26}
-
-- 🔧 **Paveikslėlį vėl galima įkelti į turinio redaktorių** — pasirinkus nuotrauką ji nebuvo įterpiama (redaktorius nutrūkdavo su klaida), tad turinį su paveikslėliais buvo galima kurti tik nutempus failą į redaktorių
-- ⭐ **Paveikslėlio dydį galima nusitempti pele** — pažymėjus paveikslėlį, jo dešiniajame krašte atsiranda rankenėlė; tempiant rodomas plotis pikseliais. Greitiems dydžiams lieka ir mygtukas su parinktimis (300 / 500 / 800 px, per visą plotį)
-- 🔧 **Pasirinktas plotis ir lygiuotė matomi ir viešame puslapyje** — anksčiau nepriklausomai nuo pasirinkimo paveikslėlis buvo ištempiamas per visą plotį, o lygiavimas į kairę ar dešinę dingdavo
-- ✨ **Trumpesnė paveikslėlio įkėlimo forma** — ilgas mėlynas paaiškinimas apie alternatyvų tekstą suskleistas po nuoroda „Kodėl tai privaloma?“, o šalia įvesties matomas simbolių skaitiklis (kaip ir redagavimo lange)
 - ⭐ **Failų tvarkyklėje – paveikslėlio peržiūra užvedus pelę** — tinklelyje užvedus ant nuotraukos parodoma didesnė jos versija, tad nebereikia spėlioti pagal mažą kvadratėlį
 - ✨ **Failų tinklelis kraunasi greičiau** — anksčiau kiekvienam langeliui buvo atsiunčiama viso dydžio nuotrauka (aplankas su 50 nuotraukų reiškė šimtus megabaitų); dabar serveris paruošia ir įsimena sumažintas kopijas, o už ekrano ribų esančios nuotraukos atsiunčiamos tik prislinkus
-- ✨ **Įterpiant paveikslėlį galima pažymėti „dekoratyvinis“** — tokiu atveju alternatyvaus teksto reikalauti nebereikia (kaip ir redagavimo lange)
-- 🔧 **Nuoroda „Kodėl tai privaloma?“ nebepateikia formos** — mygtukas formoje neturėjo tipo, tad jo paspaudimas bandė įterpti paveikslėlį
-- 🔧 **Žymimasis langelis „dekoratyvinis“ vėl reaguoja į paspaudimą** — jis buvo įdėtas į `<label>`, todėl paspaudimas suveikdavo du kartus ir varnelė likdavo neuždėta
-- ✨ **Paveikslėlio valdikliai atsiranda šalia paties paveikslėlio** — pažymėjus jį iškart virš jo pasirodo lygiuotės, dydžio, alt teksto ir pašalinimo mygtukai; anksčiau jie buvo toli viršuje, įrankių juostoje
-- 🔧 **Nebesidubliuoja lygiuotės mygtukai** — pažymėjus paveikslėlį įrankių juostoje matėsi dvi lygiuotės eilutės, o veikė tik viena
-- 🔧 **Pažymėjus paveikslėlį nebesiūloma paryškinti ar pabraukti** — vietoj teksto formatavimo burbulo dabar rodomas paveikslėlio meniu
-- 🔧 **Sutvarkyta „Pavyzdžiai“ eilutės lygiuotė** — ji buvo pastumta į dešinę, palyginti su žemiau esančiu žymimuoju langeliu
+- ✨ **Failų tvarkyklė kalba angliškai, kai svetainė angliška** — mygtukai ir pranešimai buvo įrašyti tiesiai į kodą lietuviškai (vietomis angliškai)
+
+### Paieškos filtrai siauresniuose ekranuose
+
+- ✨ **Paieškos filtrai suskleidžiami visuose ekrano pločiuose** — 1024–1280 px pločio ekranuose dokumentų, posėdžių, kontaktų ir bendrosios paieškos puslapiuose filtrai anksčiau būdavo išskleisti virš rezultatų ir jų nebuvo galima suskleisti; dabar jie slepiasi po filtrų mygtuku, kaip ir telefonuose
+- 🔧 **Sutvarkyta filtrų rodyklės lygiuotė** — filtro sekcijų atvėrimo rodyklė buvo pasislinkusi į viršų ir ne centre su etikete, ypač kai sekcija turi aprašymą; dabar rodyklė visuomet vertikaliai centruota
 
 ## v1.25 — Hero karuselė, angliškos nuorodos ir teisių sutvarkymas (2026-08-20) {#v1-25}
 

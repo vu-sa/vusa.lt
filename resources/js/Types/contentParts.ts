@@ -454,6 +454,23 @@ export interface Spacer {
 }
 
 /**
+ * A static schedule of time rows — start/end time + a label each. The optional
+ * "import from meeting" helper in the editor pre-fills rows from a meeting's
+ * agenda, but they persist as a snapshot (never re-fetch on read), so a page
+ * keeps the timetable the author approved even after the meeting's agenda moves.
+ */
+export interface Timetable {
+  json_content: {
+    startTime?: string;
+    endTime?: string;
+    title: string;
+  }[];
+  options: {
+    title?: string;
+  } | null;
+}
+
+/**
  * Static — no resolver. Stores an author-approved snapshot of a picked user rather
  * than a live reference, so the quote never re-renders a departed person's current
  * photo/duty (see `ContentPartResolver`'s docblock for why this type is excluded).

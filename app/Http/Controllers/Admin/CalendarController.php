@@ -147,7 +147,33 @@ class CalendarController extends AdminController
             ],
             'categories' => Category::all(),
             'assignableTenants' => GetTenantsForUpserts::execute('calendars.update.padalinys', $this->authorizer),
+            // An event standing for a meeting is not an ordinary event: publishing it is what
+            // opens that meeting's agenda to the public, so the form has to say so.
+            'meeting' => $this->announcedMeeting($calendar),
         ]);
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function announcedMeeting(Calendar $calendar): ?array
+    {
+        $meeting = $calendar->meeting;
+
+        if ($meeting === null) {
+            return null;
+        }
+
+        $meeting->loadMissing('institutions');
+
+        return [
+            'id' => $meeting->id,
+            'start_time' => $meeting->start_time,
+            'title' => $meeting->title,
+            'trashed' => $meeting->trashed(),
+            'agenda_items_count' => $meeting->agendaItems()->count(),
+            'institution_name' => $meeting->institutions->first()?->name,
+        ];
     }
 
     /**
@@ -156,8 +182,18 @@ class CalendarController extends AdminController
     public function update(UpdateCalendarRequest $request, Calendar $calendar)
     {
         DB::transaction(function () use ($request, $calendar): void {
-            // Exclude file fields from fill
-            $calendar->fill($request->safe()->except(['images', 'main_image']));
+            // Exclude file fields from fill. An event announcing a meeting also gives up its
+            // timing: the meeting owns it and pushes changes down (Meeting::syncCalendarEventTiming),
+            // so accepting a date here would only let the two drift. The form disables the
+            // fields; this is what actually enforces it.
+            $protected = ['images', 'main_image'];
+
+            if ($calendar->meeting_id !== null) {
+                $protected[] = 'date';
+                $protected[] = 'end_date';
+            }
+
+            $calendar->fill($request->safe()->except($protected));
             $calendar->category_id = $request->validated('category_id');
 
             $calendar->save();

@@ -8,6 +8,7 @@ use App\Models\StudyProgram;
 use App\Models\Tenant;
 use App\Models\Traits\HasTranslations;
 use App\Models\User;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -30,6 +31,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $start_date
  * @property Carbon|null $end_date
  * @property string|null $study_program_id
+ * @property array|string|null $study_program_note
  * @property string|null $additional_email
  * @property string|null $additional_photo
  * @property string|null $additional_photo_focal_point
@@ -48,7 +50,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read User|null $user
  * @property-read Dutiable|null $viaDutiable
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable active(?string $date = null)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable current()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable activeOn(?string $date = null)
  * @method static \Database\Factories\Pivots\DutiableFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable newQuery()
@@ -67,8 +70,26 @@ class Dutiable extends MorphPivot
     // in the update route. But only if the queue driver is set to sync.
     use HasFactory, HasRelationships, HasTranslations, HasUlids;
 
+    // Explicit allowlist rather than $guarded = []: this pivot grants
+    // permissions, so mass assignment must not reach columns by accident.
     #[\Override]
-    protected $guarded = [];
+    protected $fillable = [
+        'id',
+        'duty_id',
+        'dutiable_id',
+        'dutiable_type',
+        'tenant_id',
+        'via_dutiable_id',
+        'start_date',
+        'end_date',
+        'study_program_id',
+        'study_program_note',
+        'additional_email',
+        'additional_photo',
+        'additional_photo_focal_point',
+        'description',
+        'use_original_duty_name',
+    ];
 
     #[\Override]
     protected $with = ['study_program'];
@@ -89,7 +110,7 @@ class Dutiable extends MorphPivot
         ];
     }
 
-    public $translatable = ['description'];
+    public $translatable = ['description', 'study_program_note'];
 
     /**
      * `description` is Tiptap `full` preset HTML. It takes precedence over the
@@ -150,9 +171,30 @@ class Dutiable extends MorphPivot
         return $this->belongsTo(StudyProgram::class);
     }
 
+    /**
+     * Only a User-typed row may resolve a user: without the guard, any model
+     * whose id collides with `dutiable_id` would leak through the relation the
+     * moment a second morph type exists on this pivot.
+     *
+     * Eager loading instantiates the relation on an attribute-less model, where
+     * there is no morph type to check — the guard then stays off and eager
+     * batches keep matching by key alone, exactly as before.
+     *
+     * @return BelongsTo<User, $this>
+     */
     public function user()
     {
-        return $this->belongsTo(User::class, 'dutiable_id');
+        $relation = $this->belongsTo(User::class, 'dutiable_id');
+
+        // Raw attribute: the declared `@property string` does not hold on the
+        // attribute-less instances eager loading builds the relation on.
+        $dutiableType = $this->attributes['dutiable_type'] ?? null;
+
+        if ($dutiableType !== null && $dutiableType !== MorphMap::alias(User::class)) {
+            $relation->whereRaw('1 = 0');
+        }
+
+        return $relation;
     }
 
     /**
@@ -167,9 +209,21 @@ class Dutiable extends MorphPivot
     }
 
     /**
-     * Scope to dutiables active on the given date (default today).
+     * Rows that have not ended yet, matching what `Duty::current_users()` and every
+     * quota check mean by "current" — a future-dated start still counts, because the
+     * seat is already allocated.
      */
-    public function scopeActive($query, ?string $date = null)
+    public function scopeCurrent($query)
+    {
+        return $query->where(fn ($q) => $q->whereNull('end_date')->orWhereDate('end_date', '>=', now()->toDateString()));
+    }
+
+    /**
+     * Rows genuinely in force on the given date. Unlike {@see scopeCurrent()} this also
+     * requires the term to have begun, which is what point-in-time questions
+     * (who held this seat in March?) need.
+     */
+    public function scopeActiveOn($query, ?string $date = null)
     {
         $date ??= now()->toDateString();
 

@@ -7,12 +7,86 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
-## v1.28 — Search filters on narrower screens (2026-08-28) {#v1-28}
+## v1.27 — Cadences, the duty-period timeline and meeting announcements (2026-08-28) {#v1-27}
 
-- ✨ **Search filters are collapsible at every screen width** — on 1024–1280 px screens the documents, meetings, contacts and global search pages used to show the filters expanded above the results with no way to collapse them; they now hide behind a filters button, just like on phones
-- 🔧 **Fixed the filter chevron alignment** — the expand arrow on filter sections sat shifted toward the top instead of centered with the label, most visibly on sections with a description; it is now always vertically centered
+### Duty period timeline
 
-## v1.27 — File manager (2026-08-28) {#v1-27}
+- ⭐ **Duty periods on one timeline** — every duty in an institution is drawn as a bar you can drag, with a dock underneath showing the selected row, the suggested fixes and any unsaved changes. Reachable from the People area and from duty, member and institution pages
+- ⭐ **The timeline editor is also reachable from the sidebar** — it joins the quick actions, and opens on an institution you hold duties in
+- ⭐ **Suggested fixes now say what they would change** — overlapping periods, open-ended rows whose cadence has ended, dates drifting off a cadence boundary and unfilled places are listed together with the dates they would be given. Several can be ticked and applied at once, after previewing the whole list
+- ⭐ **Cadences** — the shared term dates live in Settings, while an institution's own exceptions are managed on the institution itself. A cadence is named after its dates, so there is no name to type
+- ⭐ **Selecting and merging several periods** — a checkbox on every row and on each duty. With several ticked you can set a start or end date across all of them at once; with two stints of one person on one duty you can merge them into one
+- ✨ **Rows that carry more than dates now say so** — an overridden email, study programme, photo or description is marked with an icon and a tooltip (an uploaded photo is shown), and merging warns first that some of it will be lost
+- ✨ **A more readable timeline** — current and ended periods are coloured differently, consecutive cadences alternate shade, names are links, and the zoom level is remembered. Rows can be filtered by cadence — an assignment belongs to every cadence its period covers, and the selected one stands out in the chart — and by unit; ended ones can be hidden and duties collapsed, with a collapsed duty saying how many periods it hides and their combined span
+- ✨ **Study programmes are shown** — the programme name is written out rather than hinted at by an icon, and rows can be sorted by it
+- ⭐ **How long a period ran is visible** — each row shows its length ("2y 4mo"), falling back to months or days for short stints
+- ✨ **A clearer institution switcher** — the button names the institution on screen, and the menu offers yours first. The institution name above the chart is now a link
+- ⭐ **A guided tour** — first-time visitors are shown how to read and edit the bars; the help button replays it afterwards
+- ✨ **A period can be removed from the timeline itself** — this used to mean opening a separate page
+- 🔧 **Fixed the duty and member page buttons** — "Manage", "Assign a member" and "Edit" rendered for nobody, even with the right permissions
+
+### Cadences, governance and the meetings chart
+
+- ⭐ **A cadence boundary can be linked to a meeting** — on the institution form, a term's start or end can be taken from a meeting (e.g. the reporting-and-election conference). Any meeting you have access to can be picked, including another institution's (e.g. the unit conference) — the boundary then says whose sitting it is. The date comes from the meeting and moves with it
+- ⭐ **A group or note field beside the study programme** — curators in large programmes can record e.g. "Group 1". It shows in the public contacts next to the study programme
+- ✨ **Governance scope is visible on the institution page and form** — a badge says whether this is a VU SR body or an external one, and the form explains why some fields are hidden
+- ⭐ **The meetings chart shows every meeting** — VU SR's own bodies are no longer hidden. A new "Hide VU SR's own bodies" option in the display settings hides them (off by default); a green icon by a meeting means it is announced in the calendar, amber means a draft
+
+### Meetings in the calendar and in documents
+
+- ⭐ **A meeting can be announced in the calendar** — "Announce in calendar" now sits in the meeting's action menu. It creates a draft event carrying the meeting's date and tenant, or links one already entered within a week of the meeting. Publishing that event makes the agenda and the linked documents publicly visible — including for a meeting that has not happened yet; the meeting page and its search entry stay private, opened only by the institution type setting
+- ⭐ **Agenda and documents on the event page** — a calendar event standing for a meeting shows the agenda, the per-item times and the linked nutarimai and protokolai, with a link through to the meeting page
+- ✨ **A compact public agenda** — instead of stacked cards the agenda reads as one list: status dot, title, time and decision on a single line, with the description and the full vote breakdown expanding on click
+- ✨ **Time fields are always 24-hour** — a browser set to English used to show AM/PM. The time is now picked from hour and minute lists, with an ✕ to clear it
+- ✨ **The meeting owns its event's timing** — the date fields on a calendar event that announces a meeting are locked and point at the meeting, so the time is never entered in two places
+- 🔧 **The main vote can be removed** — deleting the last vote used to be blocked with no explanation. Removing the main one promotes the next automatically
+- ✨ **VU SR bodies are no longer asked for the student vote, benefit or stated position** — a VU SR Parliament, Board or Audit Commission meeting records only the decision, because there the representatives *are* the organisation; these sections are not shown publicly either. Such meetings used to stay permanently "incomplete"
+- 🔧 **Editor-facing statuses stay out of public view** — "Unclassified" is never shown publicly, and "Not discussed" is hidden on the agenda of a meeting that has not happened yet, where it says nothing
+- ⭐ **Documents link to a meeting** — VU SR bodies' meetings get a "Documents" tab: nutarimai and protokolai can be found by search or uploaded straight from SharePoint, without registering them in the documents area first
+- ✨ **The calendar event says it announces a meeting** — editing such an event shows a notice linking to the meeting and explaining what publishing it does
+- ⭐ **Agenda items can carry a start and end time** — each question gets its slot already in the creation wizard's agenda step, and the times also show on the public agenda, so the running order of a longer meeting can be published in advance and people can turn up for the part that concerns them
+- ⭐ **Institution types carry a governance scope** — VU SR body, VU body, national or international body. The value is inherited from the parent type, so a new sub-type needs no setting of its own
+- 🔧 **The meeting list's completion filter works again** — it queried fields that had since moved onto votes and returned an error
+
+### Remote events and vertical cards
+
+- ⭐ **Mark an event as remote** — the event form now has a "Remote event" toggle. When on, the page shows a join link instead of an address and a map, and no location lookup is attempted
+- ✨ **Vertical event cards** — the event list and an event page's "Other events" section now show vertical cards with the photo on top, instead of narrow rows
+- ✨ **"Other events" moved below the description** — on an event page this section now sits in the main column, after the agenda and images, instead of the sidebar
+- ⭐ **Previous/next meeting links for the same institution** — an event announcing a meeting now links to the nearest earlier and later published announcement for the same institution
+- ⭐ **Announce in the calendar right from the meeting wizard** — a checkbox on the review step creates a draft calendar event alongside the meeting
+- ✨ **A new item's start time is suggested automatically** — if the previous agenda item has an end time and the new one doesn't have its own yet, the start time is pre-filled from it (once, with no ongoing sync)
+
+### Timetable content block
+
+- ⭐ **New "Timetable" content block** — pages, news and the homepage can now embed a timetable card with times and titles. Rows can be entered manually or imported from a meeting's agenda
+
+### Event page hero styles
+
+- ⭐ **Pickable event page hero styles** — every event can now choose one of three hero layouts: a large card with the photo behind the text, a card with the photo beside the text, or a minimal layout with no photo at all. The style is picked on the event form
+- ✨ **Calmer default event hero** — the hero is now compact, the title much smaller, and the actions (registration, sharing) keep a sensible layout on every screen. The full-bleed hero that broke the page's flow is gone
+- 🔧 **Fixed event date texts** — long Lithuanian dates no longer clip in the date picker, and the "All-day event" switch has a consistently visible row
+
+### Consistent admin cards
+
+- ✨ **Settings cards now match the administration page style** — the settings index page now shows the same cards as the administration page: icon, title and description, with a subtle ring highlight on hover
+- ✨ **Removed the featured "Problem" card** — the "Latest tools" section with the "New"-badged problem card no longer appears on the administration page; problems remain available under the "Representation" section
+- 🔧 **Representation settings page is translated again** — a mismatch in the translation files caused raw translation keys to be shown; Lithuanian and English texts now display correctly
+
+## v1.26 — Content editor images, the file manager and search filters (2026-08-28) {#v1-26}
+
+### Images in the content editor
+
+- 🔧 **Images can be inserted from the content editor again** — picking an image did nothing (the editor threw an error), so images could only be added by dragging a file onto the editor
+- ⭐ **Image size can be dragged** — select an image and a handle appears on its right edge; the width in pixels is shown while dragging. The preset menu (300 / 500 / 800 px, full width) is still there for quick sizing
+- 🔧 **The chosen width and alignment now show on the public page** — images used to be stretched to the full width regardless of the size picked, and left/right alignment was lost
+- ✨ **A shorter image insert form** — the long blue block explaining alt text now sits behind a "Why is this required?" toggle, with a character counter next to the field (matching the edit dialog)
+- ✨ **Images can be marked decorative when inserting** — alt text is then no longer required, matching the edit dialog
+- ✨ **Image controls appear next to the image** — selecting one now raises alignment, size, alt text and remove buttons right above it, instead of far away in the toolbar
+- 🔧 **Selecting an image no longer offers bold and underline** — the text formatting bubble is replaced by the image menu
+- 🔧 **No more duplicate alignment buttons** — selecting an image used to show two alignment rows in the toolbar, only one of which worked
+
+### File manager
 
 - 🔧 **The file manager no longer crashes on `/mano/files`** — the page failed with "allowedTypes.extensions is undefined" and the upload panel froze on "Loading...". This also restores the supported-formats list, the 50 MB browser-side check, and the file-type filter in the picker
 - 🔧 **The upload button no longer spins forever** — uploading through the editor's image dialog stored the file but left the button spinning, because another action on the page (an autosaving form, for instance) cancelled the upload mid-flight. Uploads no longer depend on page navigation and always finish
@@ -21,24 +95,14 @@ Here you'll find all changes and improvements to the mano.vusa.lt platform.
 - ✨ **Folders and files are sorted by name** — the order used to come straight from the filesystem and looked random
 - ✨ **A single click opens a folder** — it previously took a double click, and a single click did nothing
 - 🔧 **Non-image files dropped into the editor download again** — they were written to the wrong location, so the inserted link returned a 404
-- 🔧 **The file manager no longer hits the request limit** — every visible image fetches its own thumbnail, so a folder with many photos exhausted the shared limit for all admin requests and the manager started returning "429". File manager requests now have their own much higher limit
-- ✨ **The file manager speaks English on the English site** — its buttons and messages were hardcoded in Lithuanian (and in places English)
-
-## v1.26 — Images in the content editor (2026-08-24) {#v1-26}
-
-- 🔧 **Images can be inserted from the content editor again** — picking an image did nothing (the editor threw an error), so images could only be added by dragging a file onto the editor
-- ⭐ **Image size can be dragged** — select an image and a handle appears on its right edge; the width in pixels is shown while dragging. The preset menu (300 / 500 / 800 px, full width) is still there for quick sizing
-- 🔧 **The chosen width and alignment now show on the public page** — images used to be stretched to the full width regardless of the size picked, and left/right alignment was lost
-- ✨ **A shorter image insert form** — the long blue block explaining alt text now sits behind a "Why is this required?" toggle, with a character counter next to the field (matching the edit dialog)
 - ⭐ **Hover preview in the file manager** — hovering a photo in the grid shows a larger version, so you no longer have to guess from a small square
 - ✨ **The file grid loads much faster** — each tile used to download the full-size original (a folder of 50 photos meant hundreds of megabytes); the server now builds and caches downscaled copies, and off-screen images are only fetched once scrolled into view
-- ✨ **Images can be marked decorative when inserting** — alt text is then no longer required, matching the edit dialog
-- 🔧 **The "Why is this required?" link no longer submits the form** — the button carried no type, so clicking it tried to insert the image
-- 🔧 **The "decorative" checkbox responds to clicks again** — it sat inside a `<label>`, so a click fired twice and the tick never stuck
-- ✨ **Image controls appear next to the image** — selecting one now raises alignment, size, alt text and remove buttons right above it, instead of far away in the toolbar
-- 🔧 **No more duplicate alignment buttons** — selecting an image used to show two alignment rows in the toolbar, only one of which worked
-- 🔧 **Selecting an image no longer offers bold and underline** — the text formatting bubble is replaced by the image menu
-- 🔧 **The "Examples" row lines up again** — it was indented to the right of the checkbox below it
+- ✨ **The file manager speaks English on the English site** — its buttons and messages were hardcoded in Lithuanian (and in places English)
+
+### Search filters on narrower screens
+
+- ✨ **Search filters are collapsible at every screen width** — on 1024–1280 px screens the documents, meetings, contacts and global search pages used to show the filters expanded above the results with no way to collapse them; they now hide behind a filters button, just like on phones
+- 🔧 **Fixed the filter chevron alignment** — the expand arrow on filter sections sat shifted toward the top instead of centered with the label, most visibly on sections with a description; it is now always vertically centered
 
 ## v1.25 — Hero carousel, English URLs and authorization clean-up (2026-08-20) {#v1-25}
 

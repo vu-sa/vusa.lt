@@ -46,7 +46,7 @@
     <SiteFooter class="mt-auto" />
   </div>
 
-  <!-- Toast notifications -->
+  <!-- Toast notifications (flash messages + the persistent public edit-link toast) -->
   <Toaster rich-colors />
 </template>
 
@@ -66,6 +66,7 @@ import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
 import { Toaster } from '@/Components/ui/sonner';
 import { useToasts } from '@/Composables/useToasts';
 import { useCookieConsent } from '@/Composables/useCookieConsent';
+import { usePublicEditLinkToast } from '@/Composables/usePublicEditLinkToast';
 import { useSecondMenu } from '@/Composables/useSecondMenu';
 import 'vue-sonner/style.css';
 
@@ -164,6 +165,10 @@ const { decided: cookieConsentDecided } = useCookieConsent();
 // Initialize toast system for flash messages
 const toasts = useToasts();
 
+// Persistent "edit this page" toast for signed-in editors (no-op for guests —
+// the backend never shares the link for them)
+usePublicEditLinkToast(() => usePage().props.publicEditLink);
+
 // Handle validation errors (show only first error for public pages)
 watch(() => usePage().props.errors, (errors) => {
   if (errors && typeof errors === 'object' && Object.keys(errors).length > 0) {
@@ -203,8 +208,9 @@ onMounted(() => {
   userWayScript.async = true;
   document.head.appendChild(userWayScript);
 
-  // Defer Tawk.to loading - not critical for initial experience
-  const loadTawkTo = () => {
+  // Tawk.to live chat disabled — its bottom-right widget kept colliding with other
+  // floating UI. Re-enable by restoring this block.
+  /* const loadTawkTo = () => {
     const lang = usePage().props.app.locale;
     const Tawk_SRC = lang === 'lt' ? 'default' : '1foc6rga3';
 
@@ -235,6 +241,6 @@ onMounted(() => {
   document.addEventListener('touchstart', loadTawkOnce, { once: true, passive: true });
 
   // Fallback: load after 5 seconds if no interaction
-  setTimeout(loadTawkOnce, 5000);
+  setTimeout(loadTawkOnce, 5000); */
 });
 </script>

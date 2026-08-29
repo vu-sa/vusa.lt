@@ -8,9 +8,11 @@ use App\Models\Pivots\AgendaItem;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Relationship;
 use App\Models\Tenant;
+use App\Models\Type;
 use App\Models\User;
 use App\Models\Vote;
 use App\Services\InstitutionActivityStatusService;
+use App\Settings\MeetingSettings;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -372,7 +374,7 @@ test('meetings returns only in-window meetings of the requested tenants, trimmed
 
     $meeting = $response->json('data.0');
     expect($meeting)->toMatchArray(['id' => (string) $inWindow->id, 'institution_id' => (string) $this->institution->id, 'title' => 'In window'])
-        ->toHaveKeys(['start_time', 'type_slug', 'completion_status', 'has_report', 'has_protocol', 'agenda_items', 'agenda_items_count'])
+        ->toHaveKeys(['start_time', 'type_slug', 'completion_status', 'has_report', 'has_protocol', 'has_calendar_event', 'calendar_event_is_draft', 'agenda_items', 'agenda_items_count'])
         ->and($meeting['agenda_items_count'])->toBe(5)
         ->and($meeting['agenda_items'])->toHaveCount(4);
 
@@ -442,4 +444,50 @@ test('representatives are searched and paginated without loading the full list',
         ->assertSuccessful()
         ->assertJsonCount(1, 'data.users')
         ->assertJsonPath('data.users.0.email', 'second-representative@example.test');
+});
+
+/**
+ * VU SA's own bodies do meet, and dropping them server-side left the chart quietly
+ * incomplete. They are marked instead, so the chart can offer to hide them.
+ */
+describe('internal bodies', function (): void {
+    beforeEach(function (): void {
+        $this->internalType = Type::factory()->create([
+            'model_type' => MorphMap::alias(Institution::class),
+            'extra_attributes' => ['governance_scope' => 'vusa'],
+        ]);
+
+        $settings = app(MeetingSettings::class);
+        $settings->excluded_institution_type_ids = [$this->internalType->id];
+        $settings->save();
+
+        $this->internalInstitution = Institution::factory()->for($this->tenant)->create();
+        $this->internalInstitution->types()->attach($this->internalType);
+    });
+
+    test('an excluded type no longer hides its meetings from the chart', function (): void {
+        $meeting = Meeting::factory()->create(['title' => 'Valdybos posėdis', 'start_time' => now()->subDays(5)]);
+        $meeting->institutions()->attach($this->internalInstitution->id);
+
+        $titles = collect(
+            asUser($this->admin)->getJson(route('api.v1.admin.visak.meetings', [
+                'tenant_ids' => [$this->tenant->id],
+                'from' => now()->subMonth()->toDateString(),
+                'until' => now()->addMonth()->toDateString(),
+            ]))->assertSuccessful()->json('data')
+        )->pluck('title');
+
+        expect($titles)->toContain('Valdybos posėdis');
+    });
+
+    test('the timeline marks which rows are internal so the chart can hide them', function (): void {
+        $rows = collect(
+            asUser($this->admin)->getJson(route('api.v1.admin.visak.timeline', [
+                'tenant_ids' => [$this->tenant->id],
+            ]))->assertSuccessful()->json('data.institutions')
+        )->keyBy('id');
+
+        expect($rows->get((string) $this->internalInstitution->id)['is_internal'])->toBeTrue()
+            ->and($rows->get((string) $this->institution->id)['is_internal'])->toBeFalse();
+    });
 });

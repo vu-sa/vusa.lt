@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Admin\CommentApiController;
 use App\Http\Controllers\Api\Admin\CommentPollVoteApiController;
 use App\Http\Controllers\Api\Admin\CommentReactionApiController;
 use App\Http\Controllers\Api\Admin\ContentPartPreviewApiController;
+use App\Http\Controllers\Api\Admin\DutiableTimelineApiController;
 use App\Http\Controllers\Api\Admin\DutySearchApiController;
 use App\Http\Controllers\Api\Admin\FileApiController;
 use App\Http\Controllers\Api\Admin\ImpersonateApiController;
@@ -123,6 +124,7 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         // Meetings
         Route::get('meetings/recent', [MeetingApiController::class, 'recent'])->name('meetings.recent');
         Route::get('meetings/{meeting}/preview', [MeetingApiController::class, 'preview'])->name('meetings.preview');
+        Route::get('meetings/{meeting}/agenda-items', [MeetingApiController::class, 'agendaItems'])->name('meetings.agendaItems');
 
         // Institutions
         Route::get('institutions/{institution}/preview', [InstitutionApiController::class, 'preview'])->name('institutions.preview');
@@ -222,6 +224,13 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         Route::get('duties/similar', [DutySearchApiController::class, 'similar'])
             ->middleware('throttle:30,1')
             ->name('duties.similar');
+
+        // Feeds the dutiable timeline editor (read-only; mutations go through
+        // routes/admin.php so guardSelfLockout's Inertia flash still works).
+        Route::get('dutiable-timeline', [DutiableTimelineApiController::class, 'index'])
+            ->name('dutiableTimeline.index');
+        Route::post('dutiable-timeline/preview', [DutiableTimelineApiController::class, 'preview'])
+            ->name('dutiableTimeline.preview');
 
         // Date-range resource availability for the reservation resource picker
         Route::post('resources/availability', [ResourceAvailabilityApiController::class, 'index'])->name('resources.availability');

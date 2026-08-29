@@ -270,7 +270,8 @@
           <MeetingReviewForm v-else-if="meetingCreation.state.currentStep === 4"
             :loading="meetingCreation.state.loading.submission" :meeting-state="meetingCreation.state"
             @edit-step="meetingCreation.goToStep" @back="meetingCreation.previousStep"
-            @submit="() => emit('finalSubmit')" />
+            @submit="() => emit('finalSubmit')"
+            @update:announce-in-calendar="(value) => emit('announceInCalendarChange', value)" />
         </FadeTransition>
         <template #fallback>
           <div class="flex items-center justify-center h-64">
@@ -325,6 +326,7 @@ const emit = defineEmits<{
   (e: 'meetingFormSubmit', data: any): void;
   (e: 'agendaItemsSubmit', data: any): void;
   (e: 'finalSubmit'): void;
+  (e: 'announceInCalendarChange', value: boolean): void;
 }>();
 
 // Template ref for agenda form (used to trigger submit from outside the ScrollArea)

@@ -8,6 +8,7 @@ const timelineFilters = {
   selectedTenantForGantt: ref(['1']),
   showOnlyWithActivityTenant: ref(false),
   showOnlyWithPublicMeetingsTenant: ref(false),
+  hideInternalInstitutionsTenant: ref(false),
   showDutyMembersTenant: ref(true),
   showActivityStatusTenant: ref(false),
   tenantInstitutionsLoaded: ref(true),

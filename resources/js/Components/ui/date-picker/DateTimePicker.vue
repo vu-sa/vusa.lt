@@ -9,8 +9,8 @@
         )"
         :disabled
       >
-        <CalendarIcon class="mr-2 h-4 w-4" />
-        {{ displayText }}
+        <CalendarIcon class="mr-2 h-4 w-4 shrink-0" />
+        <span class="truncate min-w-0">{{ displayText }}</span>
       </Button>
     </PopoverTrigger>
     <PopoverContent class="w-auto p-0" align="start">
@@ -154,7 +154,10 @@ const onCalendarChange = (value: any) => {
 };
 
 // Handle time change
-const onTimeChange = (value: TimeValue) => {
+const onTimeChange = (value: TimeValue | undefined) => {
+  // A date always has a time here, so a cleared value is not a state this picker can enter.
+  if (!value) return;
+
   timeValue.value = value;
   emitValue();
 };

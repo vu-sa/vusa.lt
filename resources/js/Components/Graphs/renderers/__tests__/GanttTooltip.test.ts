@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { JSDOM } from 'jsdom';
 
-import { createGanttTooltip } from '../GanttTooltip';
+import { buildMeetingTooltipContent, createGanttTooltip } from '../GanttTooltip';
 import { getGanttColors } from '../../ganttColors';
 
 function makeManager() {
@@ -59,5 +59,49 @@ describe('GanttTooltipManager priority', () => {
     manager.show({ type: 'date', html: 'plain date', priority: 1 }, 0, 0);
 
     expect(manager.getCurrentType()).toBe('date');
+  });
+});
+
+/**
+ * A meeting announced in the public calendar is a fact the chart could not previously show,
+ * and a drafted announcement is invisible to everyone but the admins — so the two states
+ * must read differently, matching ShowMeeting.vue's amber/green split.
+ */
+describe('buildMeetingTooltipContent calendar indicator', () => {
+  const fmt = new Intl.DateTimeFormat('lt-LT');
+
+  function build(overrides: Record<string, unknown>) {
+    return buildMeetingTooltipContent(
+      {
+        id: 'm1',
+        date: new Date('2026-03-04T10:00:00Z'),
+        institution_id: 'i1',
+        has_protocol: true,
+        has_report: true,
+        ...overrides,
+      },
+      () => 'VU Senatas',
+      fmt,
+    ).html;
+  }
+
+  it('marks a published announcement in green', () => {
+    const html = build({ has_calendar_event: true, calendar_event_is_draft: false });
+
+    expect(html).toContain('meetings.announce.published_hint');
+    expect(html).toContain('text-green-600');
+  });
+
+  it('marks a drafted announcement in amber', () => {
+    const html = build({ has_calendar_event: true, calendar_event_is_draft: true });
+
+    expect(html).toContain('meetings.announce.draft_hint');
+    expect(html).toContain('text-amber-500');
+  });
+
+  it('says nothing at all when the meeting was never announced', () => {
+    const html = build({ has_calendar_event: false });
+
+    expect(html).not.toContain('meetings.announce');
   });
 });

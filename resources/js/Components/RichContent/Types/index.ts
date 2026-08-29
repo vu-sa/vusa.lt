@@ -26,6 +26,7 @@ import EventListIcon from '~icons/fluent/calendar-multiple24-regular';
 import PersonQuoteIcon from '~icons/fluent/text-quote24-regular';
 import SectionIcon from '~icons/fluent/text-header-1-24-regular';
 import SpacerIcon from '~icons/fluent/align-space-evenly-vertical-24-regular';
+import TimetableIcon from '~icons/fluent/calendar-clock20-regular';
 
 /**
  * Canvas column a block resolves to (see `.rc-canvas` in app.css). `prose` is the
@@ -743,6 +744,35 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     display: defineAsyncComponent(() => import('./SpacerDisplay.vue')),
     // No skeleton — the block renders instantly (a single <div> with a height class),
     // and the empty fallback would flash more than the real thing.
+  },
+  'timetable': {
+    value: 'timetable',
+    label: 'Tvarkaraštis',
+    icon: TimetableIcon,
+    isNew: true,
+    description: 'Laikų ir pavadinimų tvarkaraščio kortelė',
+    category: 'section',
+    defaultWidth: 'prose',
+    allowedWidths: ['prose', 'content', 'wide'],
+    // Owns its own card chrome (gradient + heading), so the canvas rhythm should not
+    // add a top-margin flow on top of it.
+    selfSpaced: true,
+    defaultContent: () => ([]),
+    defaultOptions: () => ({}),
+    editor: defineAsyncComponent(() => import('./TimetableEditor.vue')),
+    display: defineAsyncComponent(() => import('../RCTimetable/TimetableDisplay.vue')),
+    skeleton: {
+      height: 'min-h-[120px]',
+      template: `
+        <div class="w-full rounded-2xl bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+          <div class="h-9 bg-zinc-200/60 dark:bg-zinc-700/60" />
+          <div v-for="i in 3" :key="i" class="flex items-center gap-4 px-5 py-3">
+            <Skeleton class="h-4 w-16" />
+            <Skeleton class="h-4 flex-1" />
+          </div>
+        </div>
+      `,
+    },
   },
 };
 

@@ -15,6 +15,7 @@ export const calendarTemplate: Omit<App.Entities.Calendar, 'created_at' | 'updat
   is_draft: false,
   is_all_day: false,
   is_international: false,
+  hero_style: 'card',
 };
 
 export const formTemplate: Pick<

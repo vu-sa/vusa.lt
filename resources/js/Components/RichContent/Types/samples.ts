@@ -204,6 +204,14 @@ export const contentSamples: Record<string, () => ContentSample> = {
     },
     options: { align: 'center', showAvatar: true },
   }),
+  'timetable': () => ({
+    json_content: [
+      { startTime: '10:00', endTime: '10:30', title: 'Registracija ir kava' },
+      { startTime: '10:30', endTime: '11:15', title: 'Įvadinė pristatymas' },
+      { startTime: '11:30', endTime: '12:30', title: 'Diskusijų panelė' },
+    ],
+    options: {},
+  }),
 };
 
 export function getContentSample(type: string): ContentSample | null {

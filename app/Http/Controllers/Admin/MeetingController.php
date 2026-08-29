@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\AnnounceMeetingInCalendar;
+use App\Enums\AgendaItemType;
+use App\Enums\InstitutionScope;
 use App\Enums\MeetingType;
 use App\Events\MeetingFullyCreated;
 use App\Http\Controllers\AdminController;
@@ -17,10 +20,12 @@ use App\Models\Pivots\AgendaItem;
 use App\Models\Task;
 use App\Models\User;
 use App\Services\CheckInService;
+use App\Services\InstitutionScopeResolver;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Services\TanstackTableService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
@@ -77,33 +82,19 @@ class MeetingController extends AdminController
                 ? $filters['completion_status']
                 : [$filters['completion_status']];
 
-            // Filter by completion status (calculated from agenda items)
-            $query->where(function ($q) use ($completionStatuses): void {
+            $externalTypeIds = app(InstitutionScopeResolver::class)->typeIdsResolvingExternal();
+            $incomplete = fn ($itemQuery) => $this->incompleteAgendaItem($itemQuery, $externalTypeIds);
+
+            $query->where(function ($q) use ($completionStatuses, $incomplete): void {
                 foreach ($completionStatuses as $status) {
-                    if ($status === 'complete') {
-                        // All agenda items have all three fields filled
-                        $q->orWhereHas('agendaItems', function ($subQ): void {
-                            $subQ->whereNotNull('student_vote')
-                                ->whereNotNull('decision')
-                                ->whereNotNull('student_benefit');
-                        }, '=', DB::raw('(SELECT COUNT(*) FROM agenda_items WHERE agenda_items.meeting_id = meetings.id)'))
-                            ->whereHas('agendaItems'); // Must have at least one
-                    } elseif ($status === 'incomplete') {
-                        // Has agenda items but not all are complete
-                        $q->orWhere(function ($innerQ): void {
-                            $innerQ->whereHas('agendaItems')
-                                ->whereHas('agendaItems', function ($subQ): void {
-                                    $subQ->where(function ($itemQ): void {
-                                        $itemQ->whereNull('student_vote')
-                                            ->orWhereNull('decision')
-                                            ->orWhereNull('student_benefit');
-                                    });
-                                });
-                        });
-                    } elseif ($status === 'no_items') {
-                        // No agenda items
-                        $q->orWhereDoesntHave('agendaItems');
-                    }
+                    match ($status) {
+                        'complete' => $q->orWhere(fn ($inner) => $inner
+                            ->whereHas('agendaItems')
+                            ->whereDoesntHave('agendaItems', $incomplete)),
+                        'incomplete' => $q->orWhereHas('agendaItems', $incomplete),
+                        'no_items' => $q->orWhereDoesntHave('agendaItems'),
+                        default => null,
+                    };
                 }
             });
         }
@@ -194,9 +185,15 @@ class MeetingController extends AdminController
                         'description' => $agendaItemData['description'] ?? null,
                         'order' => $agendaItemData['order'],
                         'brought_by_students' => $agendaItemData['brought_by_students'] ?? false,
+                        'start_time' => $agendaItemData['start_time'] ?? null,
+                        'end_time' => $agendaItemData['end_time'] ?? null,
                         'meeting_id' => $meeting->id,
                     ]);
                 }
+            }
+
+            if ($validatedData['announce_in_calendar'] ?? false) {
+                AnnounceMeetingInCalendar::execute($meeting);
             }
 
             DB::commit();
@@ -224,12 +221,15 @@ class MeetingController extends AdminController
     {
         $this->handleAuthorization('view', $meeting);
 
-        $meeting->load('institutions.types', 'fileableFiles', 'comments')->load([
+        $meeting->load('institutions.types', 'fileableFiles', 'comments', 'calendarEvent')->load([
             'tasks' => function ($query): void {
                 $query->with('users:id,name,email,profile_photo_path', 'taskable');
             },
             'agendaItems' => function ($query): void {
                 $query->with('votes')->withCount('comments')->withExists('note as has_notes')->orderBy('order');
+            },
+            'documents' => function ($query): void {
+                $query->orderBy('document_date')->orderBy('title');
             },
         ])->loadCount('comments');
 
@@ -308,7 +308,57 @@ class MeetingController extends AdminController
             'nextMeeting' => $nextMeeting,
             'taskableInstitutions' => Inertia::optional(fn () => $meeting->institutions->load('users')),
             'availableInstitutionsForAttach' => $this->getAvailableInstitutionsForAttach($meeting),
+            'governanceScope' => $this->governanceScopeFor($meeting),
         ]);
+    }
+
+    /**
+     * An agenda item that still needs data entered.
+     *
+     * The vote fields live on `votes`, not on `agenda_items` — they moved there in
+     * 2026_01_23_221740 and this filter went on querying the dropped columns, so any request
+     * using it threw. `student_vote` / `student_benefit` are only demanded of external bodies,
+     * matching MeetingCompletionService.
+     *
+     * @param  Builder<AgendaItem>  $query
+     * @param  array<int, int>  $externalTypeIds
+     */
+    private function incompleteAgendaItem($query, array $externalTypeIds): void
+    {
+        // `type` is nullable and a NULL type is not informational, but SQL's `!=` drops NULLs.
+        $query->where(fn ($typeQuery) => $typeQuery
+            ->whereNull('type')
+            ->orWhere('type', '!=', AgendaItemType::Informational->value))
+            ->where(function ($itemQuery) use ($externalTypeIds): void {
+                $itemQuery
+                    // Covers both "no votes at all" and "no vote carrying an outcome".
+                    ->whereDoesntHave('votes', fn ($voteQuery) => $voteQuery
+                        ->whereNotNull('decision')->where('decision', '!=', ''))
+                    ->orWhere(function ($external) use ($externalTypeIds): void {
+                        $external
+                            ->where(fn ($scopeQuery) => $scopeQuery
+                                ->whereHas('meeting.institutions.types', fn ($typeQuery) => $typeQuery
+                                    ->whereIn('types.id', $externalTypeIds))
+                                ->orWhereDoesntHave('meeting.institutions.types'))
+                            ->whereDoesntHave('votes', fn ($voteQuery) => $voteQuery
+                                ->whereNotNull('student_vote')->where('student_vote', '!=', '')
+                                ->whereNotNull('student_benefit')->where('student_benefit', '!=', ''));
+                    });
+            });
+    }
+
+    /**
+     * The scope that decides which vote fields this meeting asks for.
+     *
+     * A joint VU/VU SA meeting keeps the student perspective, so an external institution wins.
+     */
+    private function governanceScopeFor(Meeting $meeting): string
+    {
+        $scopes = $meeting->institutions->map(fn (Institution $institution) => $institution->governance_scope);
+
+        $external = $scopes->first(fn (InstitutionScope $scope) => $scope->isExternal());
+
+        return ($external ?? $scopes->first() ?? InstitutionScopeResolver::DEFAULT)->value;
     }
 
     /**

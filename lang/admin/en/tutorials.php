@@ -146,6 +146,42 @@ return [
         ],
     ],
 
+    // Dutiable timeline editor (/mano/dutiables/timeline)
+    'dutiable_timeline' => [
+        'welcome' => [
+            'title' => 'Duty periods',
+            'description' => 'This is <strong>every duty period in one institution</strong> on a single timeline. Instead of editing each member on their own page, you can fix them all at once.',
+        ],
+        'institution' => [
+            'title' => 'Institution',
+            'description' => 'The institution on screen. Click to switch — the ones you hold duties in are offered first.',
+        ],
+        'chart' => [
+            'title' => 'The timeline',
+            'description' => 'Each bar is one duty period. The green bands are <strong>cadences</strong>: a bar that does not line up with a band edge is exactly what this page exists to fix. Bars can be dragged; the "i" button on the right says how.',
+        ],
+        'controls' => [
+            'title' => 'Collapsing and sorting',
+            'description' => 'Collapse every duty for an overview. Where study programmes are recorded, rows can be sorted by them.',
+        ],
+        'filters' => [
+            'title' => 'Filters',
+            'description' => 'Filter by cadence or unit. The same menu is where you choose whether <strong>ended</strong> periods are listed at all.',
+        ],
+        'selection' => [
+            'title' => 'The selected row',
+            'description' => 'Select a bar to see its exact dates and what you can do with it: align to the cadence, close it, merge or remove it.',
+        ],
+        'suggestions' => [
+            'title' => 'Suggested fixes',
+            'description' => 'Inconsistencies are found for you — overlapping periods, open-ended duties left running past a finished cadence — and can be applied in one click.',
+        ],
+        'save' => [
+            'title' => 'Preview and save',
+            'description' => 'Nothing is written until you save, and you can <strong>preview</strong> exactly how the records will look first.',
+        ],
+    ],
+
     // Help Button Spotlight
     'help_button_spotlight' => [
         'title' => 'Need help?',

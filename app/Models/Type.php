@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Contracts\GuardsForceDelete;
 use App\Contracts\SharepointFileableContract;
+use App\Enums\InstitutionScope;
 use App\Events\FileableNameUpdated;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
@@ -11,6 +12,7 @@ use App\Models\Traits\HasContentRelationships;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
+use App\Services\InstitutionScopeResolver;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -95,6 +97,14 @@ class Type extends Model implements GuardsForceDelete, SharepointFileableContrac
                 FileableNameUpdated::dispatch($type);
             }
         });
+
+        // The scope map is keyed on the whole type tree, so any structural change invalidates it.
+        $flushScopes = fn () => app(InstitutionScopeResolver::class)->flush();
+
+        static::saved($flushScopes);
+        static::deleted($flushScopes);
+        static::restored($flushScopes);
+        static::forceDeleted($flushScopes);
     }
 
     /**
@@ -233,6 +243,24 @@ class Type extends Model implements GuardsForceDelete, SharepointFileableContrac
     public function scopeForDuties($query)
     {
         return $query->where('model_type', MorphMap::alias(Duty::class));
+    }
+
+    /**
+     * The scope this type declares itself, ignoring the parent tree.
+     */
+    public function ownGovernanceScope(): ?InstitutionScope
+    {
+        $value = $this->extra_attributes['governance_scope'] ?? null;
+
+        return is_string($value) ? InstitutionScope::tryFrom($value) : null;
+    }
+
+    /**
+     * The scope in force for this type, inherited from the nearest ancestor that declares one.
+     */
+    public function governanceScope(): ?InstitutionScope
+    {
+        return app(InstitutionScopeResolver::class)->forType($this->id);
     }
 
     /**

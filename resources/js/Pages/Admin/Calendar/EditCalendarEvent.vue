@@ -1,7 +1,7 @@
 <template>
   <PageContent :title="calendar.title.lt" :back-url="route('calendar.index')" :heading-icon="CalendarIcon">
     <template #aside-header>
-      <ActivityLogSheet subject-type="calendar" :subject-id="calendar.id" />
+      <ActivityLogSheet subject-type="calendar" :subject-id="String(calendar.id)" />
     </template>
     <UpsertModelLayout>
       <CalendarForm
@@ -9,6 +9,7 @@
         :calendar
         :categories
         :assignable-tenants
+        :meeting
         :submit-url="route('calendar.update', calendar.id)"
         submit-method="patch"
         @submit:form="handleUpdateCalendar"
@@ -31,6 +32,15 @@ const { calendar } = defineProps<{
   calendar: App.Entities.Calendar;
   categories: App.Entities.Category[];
   assignableTenants: App.Entities.Tenant[];
+  /** Set when this event announces a meeting. */
+  meeting?: {
+    id: string;
+    start_time: string;
+    title: string;
+    trashed: boolean;
+    agenda_items_count: number;
+    institution_name: string | null;
+  } | null;
 }>();
 
 function handleUpdateCalendar(form: InertiaForm<CalendarEventForm>) {

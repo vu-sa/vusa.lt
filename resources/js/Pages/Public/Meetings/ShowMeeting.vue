@@ -31,7 +31,7 @@
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger as-child>
-                  <Button variant="ghost" size="icon" class="h-8 w-8 text-zinc-400 hover:text-zinc-600" @click="showInfoModal = true">
+                  <Button v-if="requiresStudentPerspective" variant="ghost" size="icon" class="h-8 w-8 text-zinc-400 hover:text-zinc-600" @click="showInfoModal = true">
                     <InfoIcon class="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
@@ -46,7 +46,7 @@
               {{ allAgendaItems.length }}
               {{ allAgendaItems.length === 1 ? $t('klausimas') : $t('klausimai') }}
             </span>
-            <AgendaOutcomeIndicators :agenda-items="itemsWithDecisions" />
+            <AgendaOutcomeIndicators v-if="requiresStudentPerspective" :agenda-items="itemsWithDecisions" />
           </div>
 
           <!-- Student Representatives Section - cleaner -->
@@ -73,7 +73,7 @@
 
       <!-- Outcome Summary Card (when there are decisions) -->
       <div
-        v-if="outcomeSummary.total > 0"
+        v-if="requiresStudentPerspective && outcomeSummary.total > 0"
         class="mb-8 overflow-hidden rounded-xl bg-white dark:bg-zinc-900 p-5 ring-1 ring-zinc-200 dark:ring-zinc-800 shadow-sm"
       >
         <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-50 mb-4">
@@ -131,108 +131,19 @@
         </div>
       </div>
 
-      <!-- Agenda items section -->
-      <div class="space-y-8">
+      <PublicAgendaList
+        :items="allAgendaItems"
+        :requires-student-perspective="requiresStudentPerspective"
+        :is-upcoming="isUpcoming"
+      />
+
+      <!-- Documents produced by the meeting: nutarimai, protokolai. -->
+      <section v-if="documents.length" class="mt-10">
         <h2 class="text-lg font-semibold text-zinc-900 dark:text-zinc-50 mb-4">
-          {{ $t('Darbotvarkė') }}
+          {{ $t('Dokumentai') }}
         </h2>
-
-        <!-- Deferred rendering for long agendas -->
-        <template v-if="deferredContentReady || allAgendaItems.length <= 5">
-          <div
-            v-for="item in allAgendaItems"
-            :key="item.id"
-            class="overflow-hidden rounded-xl bg-white dark:bg-zinc-900 p-5 ring-1 ring-zinc-200 dark:ring-zinc-800 shadow-sm"
-          >
-            <!-- Item title -->
-            <div class="flex items-center gap-2">
-              <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-50 flex-1">
-                <span class="text-zinc-400 dark:text-zinc-500 font-normal">{{ item.order }}.</span> {{ item.title }}
-              </h3>
-              <span
-                v-if="item.brought_by_students"
-                class="shrink-0 inline-flex items-center gap-1 rounded-full bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 ring-1 ring-zinc-200 dark:ring-zinc-700"
-              >
-                <UsersIcon class="h-3 w-3" />
-                {{ $t('Įtraukta studentų') }}
-              </span>
-            </div>
-
-            <!-- Item description (ShowMeeting-specific) -->
-            <p v-if="item.description" class="text-zinc-600 dark:text-zinc-400 mt-2 text-sm leading-relaxed">
-              {{ item.description }}
-            </p>
-
-            <!-- Status display based on item type -->
-            <div class="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800">
-              <!-- Voting type with decision data: show full vote details -->
-              <template v-if="item.type === 'voting' && hasDecisionData(item)">
-                <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-                  <span class="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
-                    {{ $t('Studentų balsas') }}:
-                    <VoteStatusIndicator :vote="getMainVote(item)?.student_vote" type="vote" compact />
-                  </span>
-                  <span class="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
-                    {{ $t('Sprendimas') }}:
-                    <VoteStatusIndicator :vote="getMainVote(item)?.decision" type="vote" compact />
-                  </span>
-                  <span class="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
-                    {{ $t('Nauda') }}:
-                    <VoteStatusIndicator :vote="getMainVote(item)?.student_benefit" type="benefit" compact />
-                  </span>
-                  <!-- Vote comparison inline indicator -->
-                  <span
-                    v-if="canCompareVotes(item)"
-                    class="flex items-center gap-1.5 text-xs"
-                    :class="getVoteComparisonColorClass(item)"
-                  >
-                    <component :is="getVoteOutcomeIcon(item)" class="h-3.5 w-3.5" />
-                    {{ getVoteComparisonText(item) }}
-                  </span>
-                </div>
-              </template>
-
-              <!-- Voting type without data: show "not yet entered" -->
-              <template v-else-if="item.type === 'voting'">
-                <p class="text-xs text-zinc-400 dark:text-zinc-500 italic">
-                  {{ $t('Balsavimo duomenys dar neįvesti') }}
-                </p>
-              </template>
-
-              <!-- Non-voting types: show status badge -->
-              <template v-else>
-                <div class="flex items-center gap-2">
-                  <component
-                    :is="getAgendaItemStatusMeta(item).icon"
-                    class="h-4 w-4"
-                    :class="getAgendaItemStatusMeta(item).colorClass"
-                  />
-                  <span
-                    class="text-sm"
-                    :class="getAgendaItemStatusMeta(item).colorClass"
-                  >
-                    {{ getAgendaItemStatusMeta(item).label }}
-                  </span>
-                </div>
-              </template>
-            </div>
-          </div>
-        </template>
-
-        <!-- Loading skeleton for deferred content -->
-        <template v-else>
-          <div v-for="i in Math.min(allAgendaItems.length, 5)" :key="i" class="overflow-hidden rounded-xl bg-white dark:bg-zinc-900 p-5 ring-1 ring-zinc-200 dark:ring-zinc-800 shadow-sm animate-pulse">
-            <div class="h-5 bg-zinc-200 dark:bg-zinc-700 rounded w-3/4 mb-3" />
-            <div class="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-1/2 mb-2" />
-            <div class="h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-2/3" />
-          </div>
-        </template>
-
-        <!-- No agenda items message -->
-        <p v-if="allAgendaItems.length === 0" class="text-zinc-500 dark:text-zinc-400 italic text-center py-8">
-          {{ $t('Darbotvarkė dar neįvesta') }}
-        </p>
-      </div>
+        <PublicMeetingDocuments :documents />
+      </section>
 
       <!-- Previous/Next Meeting Navigation -->
       <nav v-if="previousMeeting || nextMeeting" class="mt-12 pt-8 border-t border-zinc-200 dark:border-zinc-800">
@@ -288,6 +199,8 @@ import { getMainVote, getAgendaItemStatusMeta, getMeetingStatusSummary, hasDecis
 import PublicVotingExplainerModal from '@/Components/Public/PublicVotingExplainerModal.vue';
 import VoteStatusIndicator from '@/Components/Public/VoteStatusIndicator.vue';
 import AgendaOutcomeIndicators from '@/Components/Public/AgendaOutcomeIndicators.vue';
+import PublicAgendaList from '@/Components/Public/PublicAgendaList.vue';
+import PublicMeetingDocuments, { type PublicMeetingDocument } from '@/Components/Public/PublicMeetingDocuments.vue';
 import FeedbackPopover from '@/Components/Public/FeedbackPopover.vue';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import { Badge } from '@/Components/ui/badge';
@@ -301,10 +214,18 @@ const props = defineProps<{
   representatives: App.Entities.User[];
   previousMeeting?: { id: string; start_time: string; type?: string | null } | null;
   nextMeeting?: { id: string; start_time: string; type?: string | null } | null;
+  documents?: PublicMeetingDocument[];
+  /** False for VU SA's own bodies — see Meeting::requiresStudentPerspective(). */
+  requiresStudentPerspective?: boolean;
+  calendarEvent?: { id: number; title: string; date: string } | null;
 }>();
 
 const page = usePage();
 const showInfoModal = ref(false);
+
+const documents = computed(() => props.documents ?? []);
+const requiresStudentPerspective = computed(() => props.requiresStudentPerspective ?? true);
+const isUpcoming = computed(() => new Date(props.meeting.start_time) > new Date());
 
 // Deferred rendering for long agendas
 const deferredContentReady = ref(false);

@@ -19,7 +19,10 @@ class UserSearchRequest extends FormRequest
     {
         return [
             'search' => 'required|string|min:2',
-            'permission' => 'nullable|string',
+            // Required on purpose: the tenant scoping is derived from it, so a
+            // forgotten parameter must fail loudly rather than silently scope
+            // by some unrelated permission.
+            'permission' => 'required|string',
             'scope' => 'nullable|in:tenant,all',
         ];
     }

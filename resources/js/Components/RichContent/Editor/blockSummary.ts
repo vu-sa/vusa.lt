@@ -107,6 +107,12 @@ export function deriveBlockSummary(part: ContentPart): string {
       return options?.title ? truncate(options.title) : noTitle();
     case 'spacer':
       return $t('rich-content.summary_spacer', { size: $t(`rich-content.spacer_size_${options?.size ?? DEFAULT_SPACER_SIZE}`) });
+    case 'timetable': {
+      const timedRows = Array.isArray(json) ? json : [];
+      if (timedRows.length === 0) return '—';
+      const first = timedRows[0]?.title ?? noTitle();
+      return truncate(first) + (timedRows.length > 1 ? ` (+${timedRows.length - 1})` : '');
+    }
     default:
       return '—';
   }

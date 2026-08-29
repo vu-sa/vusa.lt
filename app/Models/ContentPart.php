@@ -433,6 +433,12 @@ class ContentPart extends Model
                 // blocks it wraps are indexed independently as their own parts.
                 $content = ($this->options['title'] ?? '').' '.($this->options['subtitle'] ?? '');
                 break;
+            case 'timetable':
+                $content = ($this->options['title'] ?? '').' ';
+                foreach ($this->json_content ?? [] as $row) {
+                    $content .= ($row['title'] ?? '').' ';
+                }
+                break;
         }
 
         return $content;
