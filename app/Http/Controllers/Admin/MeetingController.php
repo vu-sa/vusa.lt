@@ -201,8 +201,16 @@ class MeetingController extends AdminController
             // Dispatch event after meeting is fully set up with all relationships
             event(new MeetingFullyCreated($meeting));
 
-            // For Inertia requests (from modal), redirect to meeting show page
-            return redirect()->route('meetings.show', $meeting)->with(['success' => __('messages.meeting.created')]);
+            // For Inertia requests (from modal), redirect to meeting show page. The action
+            // window can ask to land straight in the bulk agenda dialog, which the show
+            // page opens from `?action=add-bulk`.
+            $parameters = ['meeting' => $meeting];
+
+            if ($validatedData['open_bulk_agenda'] ?? false) {
+                $parameters['action'] = 'add-bulk';
+            }
+
+            return redirect()->route('meetings.show', $parameters)->with(['success' => __('messages.meeting.created')]);
 
         } catch (\Throwable $e) {
             // \Throwable, not \Exception: a \TypeError (or any other \Error) between

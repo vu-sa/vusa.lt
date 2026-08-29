@@ -48,8 +48,8 @@ return [
             'description' => 'Assign people to duties for the new cadence.',
         ],
         'cadences' => [
-            'title' => 'Manage cadences',
-            'description' => 'Set when cadences start and end.',
+            'title' => 'Manage duty periods',
+            'description' => 'Set when people hold their duties, on a timeline.',
         ],
     ],
     'institution' => [
@@ -60,6 +60,8 @@ return [
         'no_meetings_yet' => 'No meetings yet',
         'last_meeting' => 'Last meeting :days days ago',
         'check_in_until' => 'Marked as having no meeting until :date',
+        'check_in_until_short' => 'no meetings until :date',
+        'next_meeting' => 'Meeting on :date',
     ],
     'meeting' => [
         'type' => [
@@ -92,6 +94,8 @@ return [
             'placeholder' => 'Question title',
             'add_another' => 'Add a question',
             'remove' => 'Remove question',
+            'bulk' => 'Paste the whole agenda',
+            'bulk_description' => 'Once the meeting is created, the bulk agenda dialog opens straight away.',
             'skip' => 'Skip',
             'skip_description' => 'I will add the questions later.',
             'back_to_choice' => 'Back to the choice',
@@ -104,6 +108,7 @@ return [
             'when' => 'Time',
             'agenda' => 'Agenda',
             'agenda_count' => '{0} No questions|{1} :count question|[2,*] :count questions',
+            'agenda_bulk' => 'Adding them right after creating',
             'submit' => 'Create meeting',
             'submitting' => 'Creating…',
         ],

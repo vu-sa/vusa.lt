@@ -26,6 +26,15 @@ Here you'll find all changes and improvements to the mano.vusa.lt platform.
 - 🔧 **Dates render in Lithuanian** — the action window formatted dates using the browser's language rather than the app's
 - 🔧 **The meeting time is saved correctly** — creating a meeting through the action window sent the time in UTC, so the saved meeting drifted by a few hours
 - 🔧 **The "+" button in the phone bottom bar works** — it previously led to a page that does not exist
+- ⭐ **You can paste the whole agenda at once** — a third choice in the action window: once the meeting is created, the meeting page opens the bulk dialog straight away, where the entire list of questions can be pasted in one go
+- ✨ **The institution list leads with the upcoming meeting** — when a body has both a scheduled meeting and a no-meetings notice, both are shown
+- ✨ **The bulk agenda dialog is reachable from an empty agenda** — it previously opened only once at least one item existed
+- ✨ **A wider agenda questions dialog** — a pasted list of meeting questions is no longer squeezed into a narrow column
+- ✨ **Clearer meeting page actions** — the "Edit meeting" button now carries its label, and "Add institution" moved into the actions menu
+- 🔧 **The first agenda line's focus outline is visible** — writing questions in the action window sheared the outline off the top row
+- 🔧 **No time is offered for an email meeting** — voting by email now suggests days without an hour and stores the date as a 23:59 deadline, including when the type is changed after a time was already picked; changing the type away from email on the review asks for a real hour instead of keeping the marker
+- 🔧 **Agenda questions can be pasted on the meeting page too** — "Load from text" used to work only while creating a meeting; it is now available when adding questions, and pasted questions are appended to what is listed rather than replacing it
+- 🔧 **"Manage duty periods" opens the timeline** — this action window entry led to the cadence settings and was shown only to settings managers; it now opens the duty-period timeline and is offered to everyone who may read duties
 
 ## v1.27 — Cadences, the duty-period timeline and meeting announcements (2026-08-28) {#v1-27}
 

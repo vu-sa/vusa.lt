@@ -29,9 +29,9 @@ import ActionChoiceList from '../ActionChoiceList.vue';
 import ActionWindowScreen from '../ActionWindowScreen.vue';
 
 import { useActionWindow } from '@/Composables/useActionWindow';
-import { getMeetingTypeOptions, MeetingType, type MeetingTypeValue } from '@/Types/MeetingType';
+import { getMeetingTypeOptions, isDateOnlyMeetingType, MeetingType, type MeetingTypeValue } from '@/Types/MeetingType';
 
-const { draft, advance, updateMeeting } = useActionWindow();
+const { current, draft, advance, goTo, updateMeeting } = useActionWindow();
 
 /**
  * "Gyvas susitikimas" and "Nuotolinis susitikimas" say everything already; only the
@@ -61,7 +61,17 @@ const options = computed(() =>
 );
 
 const pick = (type: MeetingTypeValue) => {
+  const wasDateOnly = isDateOnlyMeetingType(draft.meeting.type ?? null);
   updateMeeting({ type });
+
+  // Leaving email behind on the review would otherwise keep its 23:59 deadline marker as
+  // if it were a real meeting hour, so ask for one — and carry the return frame so the
+  // amendment still lands back on the review rather than walking the rest of the flow.
+  if (wasDateOnly && !isDateOnlyMeetingType(type) && draft.meeting.start_time) {
+    goTo('meeting.time', { returnTo: current.value.params?.returnTo });
+    return;
+  }
+
   advance('meeting.when');
 };
 </script>

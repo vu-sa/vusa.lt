@@ -33,6 +33,7 @@ import { useWindowDates } from '../useWindowDates';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useActionWindowData } from '@/Composables/useActionWindowData';
 import { toLocalDateTime } from '@/Composables/useMeetingCreation';
+import { isDateOnlyMeetingType } from '@/Types/MeetingType';
 
 const SUGGESTION_TINT = 'from-amber-500/15 to-orange-500/15 dark:from-amber-400/12 dark:to-orange-400/12';
 
@@ -49,6 +50,13 @@ onMounted(load);
 const pattern = computed(() =>
   institutions.value.find(institution => institution.id === draft.institution?.id)?.meeting_pattern ?? null,
 );
+
+/**
+ * An email meeting is a deadline, so the day is the whole answer. The suggested weekday
+ * still helps — it comes from when this body actually acts — but the hour behind it is
+ * an in-person one and would be a promise the meeting does not make.
+ */
+const isDateOnly = computed(() => isDateOnlyMeetingType(draft.meeting.type ?? null));
 
 /** The next `weekday` on or after tomorrow, at `HH:mm`. */
 const nextOccurrence = (weekday: number, time: string, weeksAhead: number): Date => {
@@ -77,7 +85,9 @@ const suggestions = computed(() => {
     return {
       key: `week-${weeksAhead}`,
       // The time is part of the answer, so it belongs in the label, not hidden in it.
-      label: `${dates.dayWithWeekday(date)}, ${time}`,
+      label: isDateOnly.value
+        ? dates.dayWithWeekday(date)
+        : `${dates.dayWithWeekday(date)}, ${time}`,
       detail: weeksAhead === 0
         ? $t('action_window.meeting.when.usual_hint')
         : $t('action_window.meeting.when.week_after_hint'),

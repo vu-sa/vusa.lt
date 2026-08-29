@@ -35,7 +35,8 @@ import type { ScreenId } from '@/Composables/useActionWindow';
 /** The subset of `auth.can` the catalogue reads. */
 export interface ActionWindowPermissions {
   create: Record<string, boolean | undefined>;
-  manageSettings: boolean;
+  /** `viewAny` per model, for actions that open a page rather than create a record. */
+  index: Record<string, boolean | undefined>;
 }
 
 export interface ActionWindowAction {
@@ -173,9 +174,11 @@ export function buildPersonas(): ActionWindowPersona[] {
           description: $t('action_window.actions.cadences.description'),
           icon: CalendarRange,
           gradient: GRADIENTS.cadences,
-          // Mirrors CadenceController::index, which aborts 403 on canUserManageSettings().
-          requiresPermission: can => can.manageSettings,
-          target: { kind: 'route', route: 'settings.cadences.index' },
+          // Mirrors DutiableTimelineController::index, which authorizes viewAny(Duty) —
+          // gating on `dutiables.read` instead would lock out the coordinators the page
+          // exists for, and gating on manage-settings would offer it to nobody else.
+          requiresPermission: can => !!can.index.duty,
+          target: { kind: 'route', route: 'dutiables.timeline' },
         },
       ],
     },
@@ -188,10 +191,10 @@ export function useActionWindowCatalog() {
 
   const permissions = computed<ActionWindowPermissions>(() => {
     const can = (page.props.auth as {
-      can?: { create?: Record<string, boolean | undefined>; manageSettings?: boolean };
+      can?: { create?: Record<string, boolean | undefined>; index?: Record<string, boolean | undefined> };
     } | null)?.can;
 
-    return { create: can?.create ?? {}, manageSettings: !!can?.manageSettings };
+    return { create: can?.create ?? {}, index: can?.index ?? {} };
   });
 
   const personas = computed<ActionWindowPersona[]>(() =>

@@ -83,4 +83,16 @@ describe('MeetingReviewScreen.vue', () => {
 
     expect(announceCheckbox(wrapper).exists()).toBe(false);
   });
+
+  /**
+   * "0 questions" would read as a mistake next to a choice the user just made
+   * deliberately, so the bulk intent gets its own line on the agenda row.
+   */
+  it('names the bulk intent on the agenda row instead of counting zero questions', async () => {
+    const { wrapper, window } = mountReview({ id: '1', name: 'VU SA Parlamentas', isInternal: true });
+    window.updateMeeting({ open_bulk_agenda: true });
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('action_window.meeting.review.agenda_bulk');
+  });
 });

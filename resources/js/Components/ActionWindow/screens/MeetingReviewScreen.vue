@@ -114,11 +114,15 @@ const whenLabel = computed(() => {
     : dates.dayWithTime(draft.meeting.start_time);
 });
 
-const agendaLabel = computed(() =>
-  $tChoice('action_window.meeting.review.agenda_count', draft.agendaItems.length, {
+const agendaLabel = computed(() => {
+  if (draft.meeting.open_bulk_agenda) {
+    return $t('action_window.meeting.review.agenda_bulk');
+  }
+
+  return $tChoice('action_window.meeting.review.agenda_count', draft.agendaItems.length, {
     count: String(draft.agendaItems.length),
-  }),
-);
+  });
+});
 
 const submit = () => {
   submitMeeting({ meeting: draft.meeting, agendaItems: draft.agendaItems }, {

@@ -74,6 +74,36 @@ describe('MeetingAgendaList', () => {
     expect(wrapper.emitted('delete')?.[0]?.[0]).toMatchObject({ id: 'item-1' });
   });
 
+  /**
+   * A pasted timetable is the usual way an empty agenda gets filled, and the bulk
+   * editor used to be reachable only from the add menu, which needs an item first.
+   */
+  it('offers both the single and the bulk editor from the empty state', async () => {
+    const wrapper = mount(MeetingAgendaList, {
+      props: { agendaItems: [] as any, meetingId: 'm1', editing: true },
+      global: { stubs: baseStubs },
+    });
+
+    const buttons = wrapper.findAll('button');
+    const bulk = buttons.find(button => button.text().includes('Pridėti kelis punktus'));
+
+    expect(buttons.some(button => button.text().includes('Pridėti pirmą klausimą'))).toBe(true);
+    expect(bulk).toBeDefined();
+
+    await bulk!.trigger('click');
+    expect(wrapper.emitted('add-bulk')).toHaveLength(1);
+  });
+
+  it('hides both add affordances on an empty agenda in read-only mode', () => {
+    const wrapper = mount(MeetingAgendaList, {
+      props: { agendaItems: [] as any, meetingId: 'm1', editing: false },
+      global: { stubs: baseStubs },
+    });
+
+    expect(wrapper.text()).not.toContain('Pridėti kelis punktus');
+    expect(wrapper.text()).not.toContain('Pridėti pirmą klausimą');
+  });
+
   it('shows the vote count label only when there is more than one vote', () => {
     const single = mount(MeetingAgendaList, {
       props: {

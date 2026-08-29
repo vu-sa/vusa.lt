@@ -48,8 +48,8 @@ return [
             'description' => 'Priskirti žmones prie pareigybių naujai kadencijai.',
         ],
         'cadences' => [
-            'title' => 'Tvarkyti kadencijas',
-            'description' => 'Nustatyti, kada prasideda ir baigiasi kadencijos.',
+            'title' => 'Tvarkyti pareigybių laikotarpius',
+            'description' => 'Laiko juostoje nustatyti, nuo kada iki kada žmonės eina pareigas.',
         ],
     ],
     'institution' => [
@@ -60,6 +60,8 @@ return [
         'no_meetings_yet' => 'Posėdžių dar nebuvo',
         'last_meeting' => 'Paskutinis posėdis prieš :days d.',
         'check_in_until' => 'Pažymėta, kad posėdžio nebus iki :date',
+        'check_in_until_short' => 'posėdžių nebus iki :date',
+        'next_meeting' => 'Posėdis :date',
     ],
     'meeting' => [
         'type' => [
@@ -92,6 +94,8 @@ return [
             'placeholder' => 'Klausimo pavadinimas',
             'add_another' => 'Pridėti klausimą',
             'remove' => 'Šalinti klausimą',
+            'bulk' => 'Įkopijuoti visą darbotvarkę',
+            'bulk_description' => 'Sukūrus posėdį iš karto atsidarys langas, kur gali įklijuoti visą klausimų sąrašą.',
             'skip' => 'Praleisti',
             'skip_description' => 'Pridėsiu klausimus vėliau.',
             'back_to_choice' => 'Grįžti prie pasirinkimo',
@@ -104,6 +108,7 @@ return [
             'when' => 'Laikas',
             'agenda' => 'Darbotvarkė',
             'agenda_count' => '{0} Nėra klausimų|{1} :count klausimas|[2,9] :count klausimai|[10,*] :count klausimų',
+            'agenda_bulk' => 'Surašysiu sukūrus posėdį',
             'submit' => 'Sukurti posėdį',
             'submitting' => 'Kuriama…',
         ],

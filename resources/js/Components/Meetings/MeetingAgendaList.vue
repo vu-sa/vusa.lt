@@ -43,10 +43,18 @@
       <p class="text-sm text-zinc-500 dark:text-zinc-400 mb-5 max-w-sm">
         {{ editing ? $t('Sukurkite darbotvarkės punktus, kad galėtumėte pradėti posėdžio valdymą.') : $t('Įjunkite redagavimą, kad pridėtumėte darbotvarkės punktų.') }}
       </p>
-      <Button v-if="editing" @click="$emit('add')">
-        <Plus class="h-4 w-4 mr-2" />
-        {{ $t('Pridėti pirmą klausimą') }}
-      </Button>
+      <!-- Both routes in from an empty agenda: the bulk editor is how a copied
+           timetable gets in, and it was previously unreachable until one item existed. -->
+      <div v-if="editing" class="flex flex-wrap items-center justify-center gap-2">
+        <Button @click="$emit('add')">
+          <Plus class="h-4 w-4 mr-2" />
+          {{ $t('Pridėti pirmą klausimą') }}
+        </Button>
+        <Button variant="outline" @click="$emit('add-bulk')">
+          <ListPlus class="h-4 w-4 mr-2" />
+          {{ $t('Pridėti kelis punktus') }}
+        </Button>
+      </div>
     </div>
 
     <!-- Agenda list -->

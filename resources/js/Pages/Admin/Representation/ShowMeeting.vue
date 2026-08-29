@@ -35,15 +35,6 @@
             <X class="h-2.5 w-2.5" />
           </button>
         </div>
-        <button
-          type="button"
-          class="flex items-center gap-1 text-xs text-zinc-400 hover:text-primary transition-colors"
-          :title="$t('Pridėti instituciją')"
-          @click="showAddInstitutionDialog = true"
-        >
-          <Plus class="h-3 w-3" />
-          <span class="hidden sm:inline">{{ $t('Pridėti instituciją') }}</span>
-        </button>
       </div>
     </template>
     <template #info>
@@ -103,8 +94,9 @@
       </div>
     </template>
     <template #actions>
-      <Button variant="outline" size="icon" class="h-9 w-9" @click="showMeetingModal = true">
-        <Edit class="h-4 w-4" />
+      <Button variant="outline" size="sm" class="h-9" @click="showMeetingModal = true">
+        <Edit class="h-4 w-4 sm:mr-2" />
+        <span class="hidden sm:inline">{{ $t('Redaguoti posėdį') }}</span>
       </Button>
       <SpotlightPopover
         :title="$t('meetings.announce.spotlight_title')"
@@ -121,9 +113,9 @@
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem @click="showMeetingModal = true">
-              <Edit class="h-4 w-4 mr-2" />
-              {{ $t('Redaguoti posėdį') }}
+            <DropdownMenuItem @click="showAddInstitutionDialog = true">
+              <Link2 class="h-4 w-4 mr-2" />
+              {{ $t('Pridėti instituciją') }}
             </DropdownMenuItem>
             <DropdownMenuItem v-if="isInternalBody && !calendarEvent" @click="openAnnounceDialog">
               <CalendarPlus class="h-4 w-4 mr-2" />
@@ -151,7 +143,7 @@
           :meeting-id="meeting.id"
           :requires-student-perspective="!isInternalBody"
           @add="showSingleAgendaItemModal = true"
-          @add-bulk="showAgendaItemStoreModal = true"
+          @add-bulk="openBulkAgendaModal"
           @delete="requestAgendaItemDelete"
         />
         <MeetingNavigationCards
@@ -207,7 +199,7 @@
         </DialogHeader>
         <AddAgendaItemForm :meeting-id="meeting.id" :loading @submit="handleSingleAgendaItemSubmit" />
         <div class="mt-4 pt-4 border-t">
-          <Button variant="outline" size="sm" class="w-full" @click="showSingleAgendaItemModal = false; showAgendaItemStoreModal = true;">
+          <Button variant="outline" size="sm" class="w-full" @click="showSingleAgendaItemModal = false; openBulkAgendaModal();">
             {{ $t("Pridėti kelis punktus iš karto") }}...
           </Button>
         </div>
@@ -215,15 +207,17 @@
     </Dialog>
 
     <Dialog v-model:open="showAgendaItemStoreModal">
-      <DialogContent class="max-h-[85vh] flex flex-col">
+      <DialogContent class="max-h-[85vh] sm:max-w-3xl flex flex-col">
         <DialogHeader class="flex-none">
           <DialogTitle>{{ $t("Pridėti darbotvarkės punktus") }}</DialogTitle>
         </DialogHeader>
         <div class="flex-1 overflow-y-auto -mx-6 px-6">
           <AgendaItemsForm
+            :key="bulkAgendaInitialInput"
             class="w-full"
             :loading
             mode="add"
+            :initial-input="bulkAgendaInitialInput"
             :submit-label="$t('Pridėti punktus')"
             :show-skip-button="false"
             @submit="handleAgendaItemsFormSubmit"
@@ -465,6 +459,10 @@ const meetingRelativeTime = computed(() => formatRelativeTime(new Date(props.mee
 // Component state
 const showMeetingModal = ref(false);
 const showAgendaItemStoreModal = ref(false);
+
+// The action window's "paste the whole agenda" choice promises the paste box, not the
+// one-by-one editor the menu's own bulk entry opens on.
+const bulkAgendaInitialInput = ref<'one-by-one' | 'text'>('one-by-one');
 const showSingleAgendaItemModal = ref(false);
 const showDeleteDialog = ref(false);
 const loading = ref(false);
@@ -531,12 +529,19 @@ onMounted(() => {
   }
   lastVisitedMeetingId.value = props.meeting.id;
 
-  // Auto-open the add dialog in edit mode if action=add
-  if (urlAction === 'add') {
+  // Auto-open an agenda dialog when the caller asked for one (`?action=add`, or
+  // `?action=add-bulk` from the action window's "paste the whole agenda" choice).
+  if (urlAction === 'add' || urlAction === 'add-bulk') {
     currentTab.value = 'agenda';
     setTimeout(() => {
       agendaEditing.value = true;
-      showSingleAgendaItemModal.value = true;
+      if (urlAction === 'add-bulk') {
+        bulkAgendaInitialInput.value = 'text';
+        showAgendaItemStoreModal.value = true;
+      }
+      else {
+        showSingleAgendaItemModal.value = true;
+      }
       if (typeof window !== 'undefined') {
         const url = new URL(window.location.href);
         url.searchParams.delete('action');
@@ -696,6 +701,11 @@ const handleSingleAgendaItemSubmit = (data: { meeting_id: string; title: string;
       loading.value = false;
     },
   });
+};
+
+const openBulkAgendaModal = () => {
+  bulkAgendaInitialInput.value = 'one-by-one';
+  showAgendaItemStoreModal.value = true;
 };
 
 const handleAgendaItemsFormSubmit = (agendaItems: Record<string, any>) => {

@@ -12,8 +12,10 @@
       </p>
     </div>
 
-    <!-- The only scrolling region: the header and footer must stay reachable on a phone. -->
-    <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-5 sm:px-7">
+    <!-- The only scrolling region: the header and footer must stay reachable on a phone.
+         The pt/-mt pair leaves room inside the clip for the first row's focus ring
+         without moving anything: `overflow-y-auto` would otherwise shear it off. -->
+    <div class="-mt-1 min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-5 pt-1 sm:px-7">
       <slot />
     </div>
 

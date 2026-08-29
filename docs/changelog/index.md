@@ -26,6 +26,15 @@ lastUpdated: true
 - 🔧 **Datos rodomos lietuviškai** — veiksmų lange datos buvo formuojamos pagal naršyklės, o ne programos kalbą
 - 🔧 **Posėdžio laikas išsaugomas teisingai** — kuriant posėdį per veiksmų langą laikas buvo siunčiamas pasaulio (UTC) laiku, tad išsaugotas posėdis nukrypdavo keliomis valandomis
 - 🔧 **Telefono apatinio meniu „+“ mygtukas veikia** — anksčiau jis vedė į neegzistuojantį puslapį
+- ⭐ **Darbotvarkę galima įklijuoti iš karto** — veiksmų lange atsirado trečias pasirinkimas: sukūrus posėdį iš karto atsidaro posėdžio puslapio langas, kuriame visą klausimų sąrašą galima įklijuoti vienu kartu
+- ✨ **Institucijų sąraše pirmiausia rodomas artimiausias posėdis** — jei institucija turi ir suplanuotą posėdį, ir pranešimą apie posėdžių nebuvimą, rodomi abu
+- ✨ **Kelių darbotvarkės punktų langas pasiekiamas ir tuščioje darbotvarkėje** — anksčiau jį buvo galima atidaryti tik tada, kai jau buvo bent vienas punktas
+- ✨ **Platesnis darbotvarkės klausimų langas** — įklijuotas posėdžio klausimų sąrašas nebespaudžiamas į siaurą stulpelį
+- ✨ **Aiškesni posėdžio puslapio veiksmai** — „Redaguoti posėdį“ mygtukas dabar su užrašu, o „Pridėti instituciją“ perkelta į veiksmų meniu
+- 🔧 **Matomas pirmos darbotvarkės eilutės pažymėjimas** — rašant klausimus veiksmų lange pirmos eilutės rėmelis buvo nukerpamas
+- 🔧 **Elektroniniam posėdžiui nebesiūlomas laikas** — pasirinkus balsavimą el. paštu siūlomos tik dienos, be valandos, o data išsaugoma kaip 23:59 terminas; laikas sutvarkomas ir tuomet, kai tipas pakeičiamas jau pasirinkus valandą, o peržiūroje pakeitus tipą iš elektroninio į kitą paklausiama tikrosios valandos
+- 🔧 **Darbotvarkės klausimus galima įklijuoti ir posėdžio puslapyje** — „Įkelti iš teksto“ anksčiau veikė tik kuriant posėdį; dabar pasiekiama ir pridedant klausimus, o įklijuoti klausimai pridedami prie jau surašytų, o ne juos pakeičia
+- 🔧 **„Tvarkyti pareigybių laikotarpius“ veda į laiko juostą** — veiksmų lange ši parinktis vedė į kadencijų nustatymus ir buvo rodoma tik nustatymų valdytojams; dabar atveria pareigybių laikotarpių tvarkyklę ir rodoma visiems, kurie gali matyti pareigybes
 
 ## v1.27 — Kadencijos, laikotarpių tvarkyklė ir posėdžių skelbimas (2026-08-28) {#v1-27}
 

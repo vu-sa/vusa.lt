@@ -20,6 +20,7 @@
 import { computed, inject, provide, reactive, readonly, ref, type InjectionKey, type Ref } from 'vue';
 
 import { toLocalDateTime, type AgendaItemFormData, type MeetingFormData } from '@/Composables/useMeetingCreation';
+import { isDateOnlyMeetingType } from '@/Types/MeetingType';
 
 export type ScreenId
   = | 'persona'
@@ -198,8 +199,25 @@ export function createActionWindowProvider(): ActionWindowContext {
     draft.meeting.institution_id = institution.id;
   };
 
+  /**
+   * An email meeting is a deadline rather than an appointment, and the app stores that
+   * as a 23:59 marker. Normalising here rather than in each screen keeps the invariant
+   * true however the type and the date were reached — including changing the type on
+   * the review after an hour had already been picked.
+   */
   const updateMeeting = (data: Partial<MeetingFormData>) => {
     Object.assign(draft.meeting, data);
+
+    if (!isDateOnlyMeetingType(draft.meeting.type ?? null) || !draft.meeting.start_time) {
+      return;
+    }
+
+    const deadline = new Date(draft.meeting.start_time);
+
+    if (!Number.isNaN(deadline.getTime())) {
+      deadline.setHours(23, 59, 59, 0);
+      draft.meeting.start_time = toLocalDateTime(deadline);
+    }
   };
 
   const setAgendaItems = (items: AgendaItemFormData[]) => {

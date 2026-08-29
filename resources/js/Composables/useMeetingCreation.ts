@@ -20,6 +20,11 @@ export interface MeetingFormData {
   description?: string;
   /** When true, a draft calendar announcement is created alongside the meeting. */
   announce_in_calendar?: boolean;
+  /**
+   * Not stored on the meeting: it asks the server to redirect into the meeting page's
+   * bulk agenda dialog, where a whole timetable can be pasted at once.
+   */
+  open_bulk_agenda?: boolean;
 }
 
 export interface AgendaItemFormData {

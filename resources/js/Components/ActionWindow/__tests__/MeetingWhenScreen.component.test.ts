@@ -29,7 +29,7 @@ vi.mock('@/Composables/useActionWindowData', () => ({
  * default is worse than none — which is why the no-history case has to skip the screen
  * rather than fall back to guesses.
  */
-const mountScreen = () => {
+const mountScreen = (type?: string) => {
   vi.mocked(usePage).mockReturnValue(createMockPage());
 
   let window!: ActionWindowContext;
@@ -38,6 +38,9 @@ const mountScreen = () => {
     setup() {
       window = createActionWindowProvider();
       window.open({ flow: 'meeting.create', institution: { id: '1', name: 'MIF SPK' } });
+      if (type) {
+        window.updateMeeting({ type: type as never });
+      }
       window.goTo('meeting.when');
       return () => h(MeetingWhenScreen);
     },
@@ -102,6 +105,50 @@ describe('MeetingWhenScreen.vue', () => {
     const sooner = new Date(window.draft.meeting.start_time!);
 
     expect(later.getTime() - sooner.getTime()).toBe(7 * 24 * 60 * 60 * 1000);
+  });
+
+  /**
+   * An email meeting is a deadline, not an appointment. The weekday still comes from
+   * this body's history, but the hour behind it is an in-person one — showing it would
+   * promise a time the meeting does not have.
+   */
+  describe('an email meeting', () => {
+    it('suggests the day without an hour', async () => {
+      state.pattern = { weekday: 2, time: '18:30' };
+      const { wrapper } = mountScreen('email');
+      await flushPromises();
+
+      const suggestions = choices(wrapper);
+      expect(suggestions[0]).not.toContain('18:30');
+      expect(suggestions[1]).not.toContain('18:30');
+    });
+
+    it('stores the picked day as a 23:59 deadline rather than the usual hour', async () => {
+      state.pattern = { weekday: 2, time: '18:30' };
+      const { wrapper, window } = mountScreen('email');
+      await flushPromises();
+
+      await wrapper.findAll('[data-slot="action-choice-button"]')[0]!.trigger('click');
+
+      const chosen = new Date(window.draft.meeting.start_time!);
+      expect(chosen.getHours()).toBe(23);
+      expect(chosen.getMinutes()).toBe(59);
+    });
+
+    it('normalises an hour that was already picked before the type changed', async () => {
+      state.pattern = { weekday: 2, time: '18:30' };
+      const { wrapper, window } = mountScreen();
+      await flushPromises();
+
+      await wrapper.findAll('[data-slot="action-choice-button"]')[0]!.trigger('click');
+      expect(new Date(window.draft.meeting.start_time!).getHours()).toBe(18);
+
+      window.updateMeeting({ type: 'email' });
+
+      const chosen = new Date(window.draft.meeting.start_time!);
+      expect(chosen.getHours()).toBe(23);
+      expect(chosen.getMinutes()).toBe(59);
+    });
   });
 
   it('skips itself entirely when the body has never met', async () => {

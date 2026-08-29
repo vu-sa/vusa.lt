@@ -42,6 +42,8 @@ class StoreMeetingRequest extends FormRequest
             'type' => ['nullable', new Enum(MeetingType::class)],
             'description' => 'nullable|string|max:1000',
             'announce_in_calendar' => 'nullable|boolean',
+            // Not stored: it only tells the redirect to land on the bulk agenda dialog.
+            'open_bulk_agenda' => 'nullable|boolean',
             'agendaItems' => 'nullable|array',
             'agendaItems.*.title' => 'required|string|max:255',
             'agendaItems.*.description' => 'nullable|string|max:1000',

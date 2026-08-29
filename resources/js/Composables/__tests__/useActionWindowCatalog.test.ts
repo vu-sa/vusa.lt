@@ -17,7 +17,7 @@ vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 /** createMockPage deep-merges, so every flag has to be stated explicitly. */
 const ALL_DENIED = {
   create: { meeting: false, problem: false, reservation: false, duty: false },
-  manageSettings: false,
+  index: { duty: false },
 };
 
 const withPermissions = (can: Record<string, unknown>) => {
@@ -70,18 +70,29 @@ describe('useActionWindowCatalog', () => {
     expect(catalog.findPersona('coordinator')).toBeUndefined();
   });
 
-  it('gates cadences on manageSettings, not on a create permission', () => {
-    const withoutSettings = withPermissions({ create: { ...ALL_DENIED.create, duty: true } });
-    expect(actionKeys(withoutSettings, 'coordinator')).toEqual(['duty_update']);
+  /**
+   * The duty-period timeline authorizes viewAny(Duty), which is `can.index.duty` —
+   * not creating a duty, and not manage-settings, which almost nobody who needs the
+   * page actually holds.
+   */
+  it('gates the duty-period timeline on viewAny(Duty), not on creating one', () => {
+    const createOnly = withPermissions({ create: { ...ALL_DENIED.create, duty: true } });
+    expect(actionKeys(createOnly, 'coordinator')).toEqual(['duty_update']);
 
-    const withSettings = withPermissions({ create: { ...ALL_DENIED.create, duty: true }, manageSettings: true });
-    expect(actionKeys(withSettings, 'coordinator')).toEqual(['duty_update', 'cadences']);
+    const canView = withPermissions({ create: { ...ALL_DENIED.create, duty: true }, index: { duty: true } });
+    expect(actionKeys(canView, 'coordinator')).toEqual(['duty_update', 'cadences']);
+  });
+
+  it('offers the timeline on its own to someone who may read duties but not create them', () => {
+    const catalog = withPermissions({ index: { duty: true } });
+
+    expect(actionKeys(catalog, 'coordinator')).toEqual(['cadences']);
   });
 
   it('shows every persona to a user who can do everything', () => {
     const catalog = withPermissions({
       create: { meeting: true, problem: true, reservation: true, duty: true },
-      manageSettings: true,
+      index: { duty: true },
     });
 
     expect(catalog.personas.value.map(p => p.key)).toEqual(['representative', 'member', 'coordinator']);
@@ -91,7 +102,7 @@ describe('useActionWindowCatalog', () => {
   it('routes link-out actions to real admin pages', () => {
     const catalog = withPermissions({
       create: { ...ALL_DENIED.create, problem: true, reservation: true, duty: true },
-      manageSettings: true,
+      index: { duty: true },
     });
 
     const targets = catalog.personas.value
@@ -103,7 +114,7 @@ describe('useActionWindowCatalog', () => {
       'problems.create',
       'reservations.create',
       'duties.updateUsersWizard',
-      'settings.cadences.index',
+      'dutiables.timeline',
     ]));
   });
 });
