@@ -15,6 +15,7 @@ use Tiptap\Utils\HTML;
  */
 class Image extends Node
 {
+    #[\Override]
     public static $name = 'image';
 
     private const array ALIGNMENT_CLASS = [

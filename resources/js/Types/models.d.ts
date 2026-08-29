@@ -156,6 +156,8 @@ declare global {
       // columns
       id: string
       institution_id?: string | null
+      start_meeting_id?: string | null
+      end_meeting_id?: string | null
       start_date: string
       end_date: string
       created_at?: string | null
@@ -164,9 +166,13 @@ declare global {
       label: string
       // relations
       institution?: Institution
+      start_meeting?: Meeting
+      end_meeting?: Meeting
       // counts
       // exists
       institution_exists: boolean
+      start_meeting_exists: boolean
+      end_meeting_exists: boolean
     }
 
     export interface Calendar {
@@ -675,6 +681,8 @@ declare global {
       tasks_from_meetings?: Task
       users?: User
       followers?: User[]
+      administrators?: User[]
+      administrator_assignments?: InstitutionAdministrator[]
       comments?: Comment[]
       root_comments?: Comment[]
       outgoing_relationships?: Relationship[]
@@ -692,6 +700,8 @@ declare global {
       meetings_count: number
       problems_count: number
       followers_count: number
+      administrators_count: number
+      administrator_assignments_count: number
       comments_count: number
       root_comments_count: number
       outgoing_relationships_count: number
@@ -711,6 +721,8 @@ declare global {
       meetings_exists: boolean
       problems_exists: boolean
       followers_exists: boolean
+      administrators_exists: boolean
+      administrator_assignments_exists: boolean
       comments_exists: boolean
       root_comments_exists: boolean
       outgoing_relationships_exists: boolean
@@ -719,6 +731,25 @@ declare global {
       available_files_exists: boolean
       tasks_exists: boolean
       activities_as_subject_exists: boolean
+    }
+
+    export interface InstitutionAdministrator {
+      // columns
+      id: string
+      institution_id: string
+      cadence_id: string
+      user_id: string
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      institution?: Institution
+      cadence?: Cadence
+      user?: User
+      // counts
+      // exists
+      institution_exists: boolean
+      cadence_exists: boolean
+      user_exists: boolean
     }
 
     export interface InstitutionCheckIn {
@@ -812,7 +843,11 @@ declare global {
       type_label: string
       type_slug: string
       completion_status: string
+<<<<<<< Updated upstream
       requires_student_perspective: boolean
+=======
+      has_calendar_event: boolean
+>>>>>>> Stashed changes
       has_protocol: boolean
       has_report: boolean
       // relations
@@ -1101,6 +1136,8 @@ declare global {
       tasks_from_meetings?: Task
       users?: User
       followers?: User[]
+      administrators?: User[]
+      administrator_assignments?: InstitutionAdministrator[]
       comments?: Comment[]
       root_comments?: Comment[]
       outgoing_relationships?: Relationship[]
@@ -1118,6 +1155,8 @@ declare global {
       check_ins_count: number
       problems_count: number
       followers_count: number
+      administrators_count: number
+      administrator_assignments_count: number
       comments_count: number
       root_comments_count: number
       outgoing_relationships_count: number
@@ -1137,6 +1176,8 @@ declare global {
       check_ins_exists: boolean
       problems_exists: boolean
       followers_exists: boolean
+      administrators_exists: boolean
+      administrator_assignments_exists: boolean
       comments_exists: boolean
       root_comments_exists: boolean
       outgoing_relationships_exists: boolean
@@ -1164,7 +1205,11 @@ declare global {
       type_label: string
       type_slug: string
       completion_status: string
+<<<<<<< Updated upstream
       requires_student_perspective: boolean
+=======
+      has_calendar_event: boolean
+>>>>>>> Stashed changes
       has_protocol: boolean
       has_report: boolean
       // relations
@@ -1877,6 +1922,7 @@ declare global {
       dutiables?: Dutiable[]
       tenants?: Tenant
       tasks?: Task[]
+      administered_institutions?: Institution[]
       followed_institutions?: Institution[]
       muted_institutions?: Institution[]
       reservations?: Reservation[]
@@ -1892,6 +1938,7 @@ declare global {
       current_duties_count: number
       dutiables_count: number
       tasks_count: number
+      administered_institutions_count: number
       followed_institutions_count: number
       muted_institutions_count: number
       reservations_count: number
@@ -1907,6 +1954,7 @@ declare global {
       current_duties_exists: boolean
       dutiables_exists: boolean
       tasks_exists: boolean
+      administered_institutions_exists: boolean
       followed_institutions_exists: boolean
       muted_institutions_exists: boolean
       reservations_exists: boolean

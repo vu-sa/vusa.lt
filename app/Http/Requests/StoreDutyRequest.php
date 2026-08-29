@@ -7,8 +7,8 @@ use App\Models\Institution;
 use App\Rules\SoftDeleteRules;
 use App\Services\ModelAuthorizer;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Validator;
 
 class StoreDutyRequest extends FormRequest
 {

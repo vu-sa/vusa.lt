@@ -10,6 +10,7 @@ use App\Models\Traits\LogsModelActivity;
 use App\Services\HtmlSanitizerService;
 use App\Support\LocalizedRouteSlugs;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -43,7 +44,7 @@ use Spatie\Sitemap\Tags\Url;
  * @property int $tenant_id
  * @property Carbon|null $publish_time
  * @property string|null $main_points
- * @property array $highlights
+ * @property array<array-key, mixed>|null $highlights
  * @property string $layout
  * @property bool $show_breadcrumbs
  * @property string|null $read_more
@@ -70,12 +71,10 @@ use Spatie\Sitemap\Tags\Url;
  * @mixin \Eloquent
  */
 #[Table(name: 'news')]
+#[Unguarded]
 class News extends Model implements Feedable, Sitemapable
 {
     use HasFactory, LogsModelActivity, Searchable, SoftDeletes;
-
-    #[\Override]
-    protected $guarded = [];
 
     public $fallback_image = '/images/icons/naujienu_foto.png';
 
@@ -189,15 +188,16 @@ class News extends Model implements Feedable, Sitemapable
     /**
      * Get the highlights, ensuring max 3 items.
      */
-    public function getHighlightsAttribute($value): array
+    protected function highlights(): Attribute
     {
-        $highlights = is_string($value) ? json_decode($value, true) : $value;
+        return Attribute::make(get: function ($value) {
+            $highlights = is_string($value) ? json_decode($value, true) : $value;
+            if (! is_array($highlights)) {
+                return [];
+            }
 
-        if (! is_array($highlights)) {
-            return [];
-        }
-
-        return array_slice(array_filter($highlights), 0, 3);
+            return array_slice(array_filter($highlights), 0, 3);
+        });
     }
 
     /**

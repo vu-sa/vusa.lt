@@ -23,6 +23,8 @@ use App\States\ReservationResource\Returned;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Pivot;
@@ -44,10 +46,10 @@ use Illuminate\Support\Collection;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Approval> $approvals
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Comment> $comments
  * @property-read bool $approvable
- * @property-read mixed $state_properties
  * @property-read Reservation|null $reservation
  * @property-read resource|null $resource
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Comment> $rootComments
+ * @property-read mixed $state_properties
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReservationResource newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReservationResource newQuery()
@@ -57,6 +59,7 @@ use Illuminate\Support\Collection;
  */
 #[Appends(['state_properties'])]
 #[Table(name: 'reservation_resource', key: 'id')]
+#[Unguarded]
 class ReservationResource extends Pivot implements Approvable
 {
     use HasApprovals, HasComments;
@@ -67,9 +70,6 @@ class ReservationResource extends Pivot implements Approvable
      */
     #[\Override]
     public $incrementing = true;
-
-    #[\Override]
-    protected $guarded = [];
 
     #[\Override]
     protected $with = ['comments', 'approvals'];
@@ -123,12 +123,12 @@ class ReservationResource extends Pivot implements Approvable
         return $this->approvable();
     }
 
-    public function getStatePropertiesAttribute()
+    protected function stateProperties(): Attribute
     {
-        return [
+        return Attribute::make(get: fn () => [
             'tagType' => $this->state->tagType(),
             'description' => $this->state->description(),
-        ];
+        ]);
     }
 
     // =========================================================================

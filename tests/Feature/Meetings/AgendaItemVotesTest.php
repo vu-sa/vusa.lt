@@ -36,7 +36,7 @@ test('the main vote can be removed, leaving the item with none', function (): vo
 
     submitVotes($this->agendaItem, [])->assertSessionHasNoErrors();
 
-    expect($this->agendaItem->fresh()->votes)->toHaveCount(0);
+    expect($this->agendaItem->fresh()->votes)->toBeEmpty();
 });
 
 test('removing the main vote leaves a remaining one as main', function (): void {

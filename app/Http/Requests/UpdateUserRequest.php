@@ -60,9 +60,9 @@ class UpdateUserRequest extends FormRequest
      * change. A blanket `prohibited` rule would 422 every save a tenant admin makes
      * on a user who also holds duties elsewhere.
      */
-    public function withValidator(Validator $validator): void
+    public function withValidator(\Illuminate\Contracts\Validation\Validator $validator): void
     {
-        $validator->after(function (Validator $validator): void {
+        $validator->after(function (\Illuminate\Contracts\Validation\Validator $validator): void {
             /** @var User $target */
             $target = $this->route('user');
 

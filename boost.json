@@ -21,9 +21,9 @@
     "skills": [
         "infer-conventions",
         "laravel-best-practices",
+        "testing-best-practices",
         "scout-development",
         "socialite-development",
-        "pest-testing",
         "inertia-vue-development",
         "tailwindcss-development",
         "echo-development",

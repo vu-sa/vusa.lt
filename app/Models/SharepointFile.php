@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Contracts\Commentable;
 use App\Models\Pivots\SharepointFileable;
 use App\Models\Traits\HasComments;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -30,12 +31,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @mixin \Eloquent
  */
 #[WithoutTimestamps]
+#[Unguarded]
 class SharepointFile extends Model implements Commentable
 {
     use HasComments, HasFactory, HasUuids;
-
-    #[\Override]
-    protected $guarded = [];
 
     public function fileables(): HasMany
     {

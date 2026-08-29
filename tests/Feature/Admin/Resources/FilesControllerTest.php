@@ -863,8 +863,8 @@ describe('Files Controller - File Usage Scanning', function (): void {
             'path' => 'public/files/padaliniai/vusa'.$this->tenant->alias.'/Tyrimai, ataskaitos [2024] @ v1.pdf',
         ]);
 
-        expect($response->status())->toBe(302);
-        expect(session('errors')->first('error'))->not->toContain('Neteisingas failo kelias');
+        expect($response->status())->toBe(302)
+            ->and(session('errors')->first('error'))->not->toContain('Neteisingas failo kelias');
     });
 
     test('file usage scan requires existing file', function (): void {

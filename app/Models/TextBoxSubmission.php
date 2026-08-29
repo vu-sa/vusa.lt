@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -26,12 +27,10 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
+#[Unguarded]
 class TextBoxSubmission extends Model
 {
     use HasFactory, HasUlids;
-
-    #[\Override]
-    protected $guarded = [];
 
     public function contentPart(): BelongsTo
     {

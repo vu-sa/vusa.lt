@@ -568,7 +568,7 @@ class FilesController extends AdminController
             $newSize = filesize($fullLocalPath) ?: $originalSize;
             $saved = $originalSize > 0 ? round((1 - $newSize / $originalSize) * 100) : 0;
 
-            \Log::info('Image compressed', [
+            Log::info('Image compressed', [
                 'path' => $path,
                 'converted_to_webp' => false,
                 'original_size' => $originalSize,

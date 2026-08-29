@@ -8,7 +8,7 @@ namespace App\Support\Dutiables;
  * Deliberately data only: the label, the severity wording and the fix button all live in
  * the frontend, keyed by `code`, so a new check needs no backend copy.
  */
-final class DutiableDiagnostic
+final readonly class DutiableDiagnostic
 {
     public const string SEVERITY_ERROR = 'error';
 
@@ -21,11 +21,11 @@ final class DutiableDiagnostic
      * @param  array<string, mixed>  $detail  everything the suggested fix needs
      */
     public function __construct(
-        public readonly string $code,
-        public readonly string $severity,
-        public readonly array $rowIds,
-        public readonly ?string $dutyId = null,
-        public readonly array $detail = [],
+        public string $code,
+        public string $severity,
+        public array $rowIds,
+        public ?string $dutyId = null,
+        public array $detail = [],
     ) {}
 
     /**

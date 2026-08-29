@@ -126,7 +126,7 @@ class SharepointApiController extends ApiController
 
         $sharepointService = new SharepointGraphService(driveId: config('filesystems.sharepoint.vusa_drive_id'));
 
-        $path = $request->get('path');
+        $path = $request->input('path');
         $path = rtrim($path, '/');
 
         // Require authorization for SharePoint browsing
@@ -135,8 +135,8 @@ class SharepointApiController extends ApiController
         $driveItems = $sharepointService->getDriveItemByPath($path, true);
 
         // If fileable context is provided, attach FileableFile records
-        $fileableType = $request->get('fileable_type');
-        $fileableId = $request->get('fileable_id');
+        $fileableType = $request->input('fileable_type');
+        $fileableId = $request->input('fileable_id');
 
         $driveItems = $this->attachFileableFilesToDriveItems($driveItems, $fileableType, $fileableId);
 

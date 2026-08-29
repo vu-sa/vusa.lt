@@ -11,8 +11,8 @@ use Illuminate\Support\Carbon;
 
 pest()->use(RefreshDatabase::class);
 
-describe('cadence resolution', function () {
-    it('prefers an institution override over the global ladder', function () {
+describe('cadence resolution', function (): void {
+    it('prefers an institution override over the global ladder', function (): void {
         $institution = Institution::factory()->create();
         $duty = Duty::factory()->for($institution)->create();
 
@@ -28,7 +28,7 @@ describe('cadence resolution', function () {
         expect($resolved?->id)->toBe($override->id);
     });
 
-    it('falls back to the global ladder when the institution has no cadences', function () {
+    it('falls back to the global ladder when the institution has no cadences', function (): void {
         $duty = Duty::factory()->for(Institution::factory())->create();
         $global = Cadence::factory()->forYear(2025)->create();
 
@@ -37,13 +37,13 @@ describe('cadence resolution', function () {
         expect($resolved?->id)->toBe($global->id);
     });
 
-    it('returns null when no cadence exists at all', function () {
+    it('returns null when no cadence exists at all', function (): void {
         $duty = Duty::factory()->for(Institution::factory())->create();
 
         expect(ResolveCadenceForDuty::execute($duty))->toBeNull();
     });
 
-    it('picks the term containing the reference date', function () {
+    it('picks the term containing the reference date', function (): void {
         $duty = Duty::factory()->for(Institution::factory())->create();
         Cadence::factory()->forYear(2024)->create();
         $current = Cadence::factory()->forYear(2025)->create();
@@ -54,7 +54,7 @@ describe('cadence resolution', function () {
         expect($resolved?->id)->toBe($current->id);
     });
 
-    it('falls forward to the next upcoming term when the date precedes every cadence', function () {
+    it('falls forward to the next upcoming term when the date precedes every cadence', function (): void {
         $duty = Duty::factory()->for(Institution::factory())->create();
         $first = Cadence::factory()->forYear(2025)->create();
         Cadence::factory()->forYear(2026)->create();
@@ -64,7 +64,7 @@ describe('cadence resolution', function () {
         expect($resolved?->id)->toBe($first->id);
     });
 
-    it('falls back to the latest past term when the date follows every cadence', function () {
+    it('falls back to the latest past term when the date follows every cadence', function (): void {
         $duty = Duty::factory()->for(Institution::factory())->create();
         Cadence::factory()->forYear(2024)->create();
         $latest = Cadence::factory()->forYear(2025)->create();
@@ -74,7 +74,7 @@ describe('cadence resolution', function () {
         expect($resolved?->id)->toBe($latest->id);
     });
 
-    it('resolves a batch of duties in a single cadence query', function () {
+    it('resolves a batch of duties in a single cadence query', function (): void {
         $institution = Institution::factory()->create();
         $duties = Duty::factory()->count(3)->for($institution)->create();
         Cadence::factory()->forYear(2025)->create();
@@ -89,8 +89,8 @@ describe('cadence resolution', function () {
     });
 });
 
-describe('dutiable scopes', function () {
-    it('counts a row ending today as current but a future start as not yet active', function () {
+describe('dutiable scopes', function (): void {
+    it('counts a row ending today as current but a future start as not yet active', function (): void {
         $duty = Duty::factory()->for(Institution::factory())->create();
         $user = User::factory()->create();
 

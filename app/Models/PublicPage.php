@@ -25,7 +25,7 @@ use Laravel\Scout\Searchable;
  * @property int $content_id
  * @property int|null $category_id
  * @property bool $is_active
- * @property array $highlights
+ * @property array<array-key, mixed>|null $highlights
  * @property string $layout
  * @property bool $show_table_of_contents
  * @property bool $show_title

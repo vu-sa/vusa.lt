@@ -4,9 +4,9 @@ namespace App\Http\Requests\Comments;
 
 use App\Enums\CommentKind;
 use App\Rules\SoftDeleteRules;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Validator;
 
 /**
  * Authorization is handled in the controller against the parent commentable

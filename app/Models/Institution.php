@@ -6,7 +6,6 @@ use App\Actions\GetInstitutionManagers;
 use App\Contracts\Commentable;
 use App\Contracts\GuardsForceDelete;
 use App\Contracts\SharepointFileableContract;
-use App\Enums\InstitutionScope;
 use App\Events\FileableNameUpdated;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
@@ -20,6 +19,8 @@ use App\Models\Traits\LogsRelationshipChanges;
 use App\Services\InstitutionScopeResolver;
 use App\Services\RelationshipService;
 use App\Settings\MeetingSettings;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -50,32 +51,34 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $instagram_url
  * @property int|null $tenant_id
  * @property int $is_active
- * @property int $meeting_periodicity_days
+ * @property int|null $meeting_periodicity_days
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
+ * @property-read Collection<int, InstitutionAdministrator> $administratorAssignments
+ * @property-read Relationshipable|InstitutionFollow|InstitutionAdministrator|null $pivot
+ * @property-read Collection<int, User> $administrators
  * @property-read Collection<int, FileableFile> $availableFiles
+ * @property-read Collection<int, Cadence> $cadences
  * @property-read Collection<int, InstitutionCheckIn> $checkIns
  * @property-read Collection<int, Comment> $comments
  * @property-read Collection<int, Document> $documents
  * @property-read Collection<int, Duty> $duties
  * @property-read Collection<int, FileableFile> $fileableFiles
- * @property-read Relationshipable|InstitutionFollow|InstitutionAdministrator|null $pivot
- * @property-read Collection<int, User> $administrators
- * @property-read Collection<int, InstitutionAdministrator> $administratorAssignments
  * @property-read Collection<int, User> $followers
  * @property-read string|null $force_delete_blocked_reason
  * @property-read bool $has_protocol
- * @property-read bool $has_public_meetings
  * @property-read bool $has_report
- * @property-read mixed $maybe_short_name
- * @property-read mixed $related_institutions
  * @property-read array $translatable_columns_from
+ * @property-read mixed $governance_scope
+ * @property-read mixed $has_public_meetings
  * @property-read Collection<int, Relationship> $incomingRelationships
+ * @property-read mixed $maybe_short_name
  * @property-read Collection<int, Meeting> $meetings
  * @property-read Collection<int, Relationship> $outgoingRelationships
  * @property-read Collection<int, Problem> $problems
+ * @property-read mixed $related_institutions
  * @property-read Collection<int, Comment> $rootComments
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Task> $tasksFromMeetings
@@ -102,12 +105,10 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
+#[Unguarded]
 class Institution extends Model implements Commentable, GuardsForceDelete, SharepointFileableContract
 {
     use GuardsForceDeleteWhenReferenced, HasComments, HasContentRelationships, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable, SoftDeletes;
-
-    #[\Override]
-    protected $guarded = [];
 
     // Note: types are NOT auto-loaded to prevent N+1 in collections.
     // Load explicitly where needed: ->with('types') or ->load('types').
@@ -289,9 +290,9 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
         return RelationshipService::getRelatedInstitutionRelations($this);
     }
 
-    public function getRelatedInstitutionsAttribute()
+    protected function relatedInstitutions(): Attribute
     {
-        return RelationshipService::getRelatedInstitutions($this);
+        return Attribute::make(get: fn () => RelationshipService::getRelatedInstitutions($this));
     }
 
     /**
@@ -404,9 +405,9 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
         return $publicInstitution;
     }
 
-    public function getMaybeShortNameAttribute()
+    protected function maybeShortName(): Attribute
     {
-        return $this->short_name ?? $this->name;
+        return Attribute::make(get: fn () => $this->short_name ?? $this->name);
     }
 
     /**
@@ -414,59 +415,58 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
      *
      * Not auto-appended, for the same reason as has_public_meetings: it needs `types`.
      */
-    public function getGovernanceScopeAttribute(): InstitutionScope
+    protected function governanceScope(): Attribute
     {
-        return app(InstitutionScopeResolver::class)->forInstitution($this);
+        return Attribute::make(get: fn () => app(InstitutionScopeResolver::class)->forInstitution($this));
     }
 
     /**
      * Check if this institution type allows public meetings.
      * Based on MeetingSettings::getPublicMeetingInstitutionTypeIds().
      */
-    public function getHasPublicMeetingsAttribute(): bool
+    protected function hasPublicMeetings(): Attribute
     {
-        $settings = app(MeetingSettings::class);
-        $allowedTypeIds = $settings->getPublicMeetingInstitutionTypeIds();
+        return Attribute::make(get: function () {
+            $settings = app(MeetingSettings::class);
+            $allowedTypeIds = $settings->getPublicMeetingInstitutionTypeIds();
+            if ($allowedTypeIds->isEmpty()) {
+                return false;
+            }
+            // Load types if not already loaded
+            if (! $this->relationLoaded('types')) {
+                $this->load('types');
+            }
 
-        if ($allowedTypeIds->isEmpty()) {
-            return false;
-        }
-
-        // Load types if not already loaded
-        if (! $this->relationLoaded('types')) {
-            $this->load('types');
-        }
-
-        return $this->types->pluck('id')->intersect($allowedTypeIds)->isNotEmpty();
+            return $this->types->pluck('id')->intersect($allowedTypeIds)->isNotEmpty();
+        });
     }
 
     /**
      * Get meeting periodicity in days.
      * Priority: 1) Institution override, 2) Minimum from assigned types, 3) Default 30 days.
      */
-    public function getMeetingPeriodicityDaysAttribute(): int
+    protected function meetingPeriodicityDays(): Attribute
     {
-        // 1) Use institution-level override if set
-        if ($this->attributes['meeting_periodicity_days'] ?? null) {
-            return (int) $this->attributes['meeting_periodicity_days'];
-        }
+        return Attribute::make(get: function () {
+            // 1) Use institution-level override if set
+            if ($this->attributes['meeting_periodicity_days'] ?? null) {
+                return (int) $this->attributes['meeting_periodicity_days'];
+            }
+            // 2) Inherit from types - use minimum periodicity if multiple types have it set
+            if (! $this->relationLoaded('types')) {
+                $this->load('types');
+            }
+            $periodicities = $this->types
+                ->map(fn ($type) => $type->extra_attributes['meeting_periodicity_days'] ?? null)
+                ->filter()
+                ->values();
+            if ($periodicities->isNotEmpty()) {
+                return (int) $periodicities->min();
+            }
 
-        // 2) Inherit from types - use minimum periodicity if multiple types have it set
-        if (! $this->relationLoaded('types')) {
-            $this->load('types');
-        }
-
-        $periodicities = $this->types
-            ->map(fn ($type) => $type->extra_attributes['meeting_periodicity_days'] ?? null)
-            ->filter()
-            ->values();
-
-        if ($periodicities->isNotEmpty()) {
-            return (int) $periodicities->min();
-        }
-
-        // 3) Default to 30 days
-        return 30;
+            // 3) Default to 30 days
+            return 30;
+        });
     }
 
     /**

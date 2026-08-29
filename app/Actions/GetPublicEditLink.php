@@ -20,7 +20,7 @@ class GetPublicEditLink
     /**
      * Calendar's admin resource is registered singular ('calendar'), unlike the rest.
      */
-    private const EDIT_ROUTES = [
+    private const array EDIT_ROUTES = [
         Page::class => 'pages.edit',
         News::class => 'news.edit',
         Calendar::class => 'calendar.edit',

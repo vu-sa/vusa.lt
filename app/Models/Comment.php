@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\CommentKind;
 use App\Services\HtmlSanitizerService;
 use Illuminate\Database\Eloquent\Attributes\Touches;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
@@ -58,6 +59,7 @@ use Illuminate\Support\Carbon;
  * @mixin \Eloquent
  */
 #[Touches(['commentable'])]
+#[Unguarded]
 class Comment extends Model
 {
     use HasFactory, HasUlids, SoftDeletes;
@@ -66,9 +68,6 @@ class Comment extends Model
      * The emoji a user may react to a comment with.
      */
     public const ALLOWED_REACTIONS = ['👍', '❤️', '✅', '🎉', '👀', '🙏'];
-
-    #[\Override]
-    protected $guarded = [];
 
     /**
      * Mirror the DB default so freshly-created in-memory models carry a kind

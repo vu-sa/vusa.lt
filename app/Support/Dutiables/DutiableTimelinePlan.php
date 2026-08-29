@@ -11,7 +11,7 @@ use Illuminate\Support\Collection;
  * One planner, two consumers: the preview endpoint serialises this, the apply endpoint
  * executes it. The client's own diff is advisory and never trusted.
  */
-final class DutiableTimelinePlan
+final readonly class DutiableTimelinePlan
 {
     /**
      * @param  list<DutiableTimelineChange>  $changes
@@ -21,11 +21,11 @@ final class DutiableTimelinePlan
      * @param  list<array<string, mixed>>  $diagnosticsAfter
      */
     public function __construct(
-        public readonly array $changes,
-        public readonly array $unchangedRowIds,
-        public readonly Collection $rows,
-        public readonly array $diagnosticsBefore = [],
-        public readonly array $diagnosticsAfter = [],
+        public array $changes,
+        public array $unchangedRowIds,
+        public Collection $rows,
+        public array $diagnosticsBefore = [],
+        public array $diagnosticsAfter = [],
     ) {}
 
     /**
@@ -50,13 +50,7 @@ final class DutiableTimelinePlan
      */
     public function touchesUser(string $userId): bool
     {
-        foreach ($this->writableChanges() as $change) {
-            if ($change->holderId === $userId) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($this->writableChanges(), fn ($change) => $change->holderId === $userId);
     }
 
     /**

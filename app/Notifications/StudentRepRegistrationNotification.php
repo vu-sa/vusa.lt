@@ -33,7 +33,7 @@ class StudentRepRegistrationNotification extends BaseNotification
     {
         return __('notifications.student_rep_registered_body', [
             'name' => $this->repName,
-            'institution' => $this->institution->getMaybeShortNameAttribute(),
+            'institution' => $this->institution->maybe_short_name,
         ]);
     }
 

@@ -10,8 +10,8 @@ use App\Rules\UniqueAmongTrashed;
 use App\Services\ModelAuthorizer;
 use App\Support\MorphMap;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Validator;
 
 class BatchUpdateDutyUsersRequest extends FormRequest
 {

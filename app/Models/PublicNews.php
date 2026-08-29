@@ -31,7 +31,7 @@ use Laravel\Scout\Searchable;
  * @property int $tenant_id
  * @property Carbon|null $publish_time
  * @property string|null $main_points
- * @property array $highlights
+ * @property array<array-key, mixed>|null $highlights
  * @property string $layout
  * @property bool $show_breadcrumbs
  * @property string|null $read_more

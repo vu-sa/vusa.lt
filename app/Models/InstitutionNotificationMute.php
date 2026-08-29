@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -34,12 +35,10 @@ use Illuminate\Support\Carbon;
  */
 #[Table(name: 'institution_notification_mutes', keyType: 'string')]
 #[WithoutIncrementing]
+#[Unguarded]
 class InstitutionNotificationMute extends Pivot
 {
     use HasFactory, HasUlids;
-
-    #[\Override]
-    protected $guarded = [];
 
     #[\Override]
     protected function casts(): array

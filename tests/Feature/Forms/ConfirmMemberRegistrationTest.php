@@ -71,7 +71,7 @@ describe('ConfirmMemberRegistration Mail', function (): void {
         $builtMail = $mail->build();
 
         expect($builtMail->subject)->toContain('📝')
-            ->toContain($this->institution->getMaybeShortNameAttribute())
+            ->toContain($this->institution->maybe_short_name)
             ->and($builtMail->replyTo[0]['address'])->toBe($this->duty->email)
             ->and($builtMail->markdown)->toBe('emails.memberRegistration.confirm');
     });

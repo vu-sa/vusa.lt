@@ -6,9 +6,9 @@ use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Validator;
 
 class DutiableTimelineRequest extends FormRequest
 {

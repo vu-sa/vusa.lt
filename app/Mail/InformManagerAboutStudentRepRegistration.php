@@ -30,7 +30,7 @@ class InformManagerAboutStudentRepRegistration extends Mailable
     {
         return $this->subject(__('mail.student_rep.inform.subject', [
             'name' => $this->name,
-            'institution' => $this->institution->getMaybeShortNameAttribute(),
+            'institution' => $this->institution->maybe_short_name,
         ]))->markdown('emails.studentRepRegistration.inform');
     }
 }

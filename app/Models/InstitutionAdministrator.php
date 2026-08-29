@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Services\InstitutionAccessService;
 use App\Services\Typesense\TypesenseScopedKeyService;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -25,7 +26,7 @@ use Illuminate\Support\Carbon;
  * @property string $user_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read Cadence|null $cadence
+ * @property-read Cadence $cadence
  * @property-read Institution|null $institution
  * @property-read User|null $user
  *
@@ -37,12 +38,10 @@ use Illuminate\Support\Carbon;
  */
 #[Table(name: 'institution_administrators', keyType: 'string')]
 #[WithoutIncrementing]
+#[Fillable(['id', 'institution_id', 'cadence_id', 'user_id'])]
 class InstitutionAdministrator extends Pivot
 {
     use HasFactory, HasUlids;
-
-    /** @var list<string> */
-    protected $fillable = ['id', 'institution_id', 'cadence_id', 'user_id'];
 
     /**
      * A nomination widens what its user may see (InstitutionAccessService feeds the

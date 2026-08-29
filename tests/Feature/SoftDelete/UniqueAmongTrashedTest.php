@@ -15,7 +15,7 @@ pest()->use(RefreshDatabase::class);
  * and turn the rejection into an "Integrity constraint violation" 500, so the rule keeps
  * rejecting and fixes the message instead.
  */
-function validateWith(UniqueAmongTrashed $rule, mixed $value, string $attribute = 'email'): Illuminate\Validation\Validator
+function validateWith(UniqueAmongTrashed $rule, mixed $value, string $attribute = 'email'): Illuminate\Contracts\Validation\Validator
 {
     return Validator::make([$attribute => $value], [$attribute => $rule]);
 }

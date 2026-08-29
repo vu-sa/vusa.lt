@@ -10,6 +10,7 @@ use Datetime;
 use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Guarded;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -53,8 +54,8 @@ use Spatie\SchemaOrg\Place;
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Category|null $category
- * @property-read string|null $main_image_url
  * @property-read array $translatable_columns_from
+ * @property-read mixed $main_image_url
  * @property-read MediaCollection<int, Media> $media
  * @property-read Meeting|null $meeting
  * @property-read Tenant $tenant
@@ -138,23 +139,23 @@ class Calendar extends Model implements HasMedia
     /**
      * Get the main image URL from Spatie Media collection with fallback to legacy URL field.
      */
-    public function getMainImageUrlAttribute(): ?string
+    protected function mainImageUrl(): Attribute
     {
-        // First try Spatie Media collection
-        $mainImageMedia = $this->getFirstMedia('main_image');
-        if ($mainImageMedia) {
-            return $mainImageMedia->getUrl();
-        }
+        return Attribute::make(get: function () {
+            // First try Spatie Media collection
+            $mainImageMedia = $this->getFirstMedia('main_image');
+            if ($mainImageMedia) {
+                return $mainImageMedia->getUrl();
+            }
+            // Fallback to legacy main_image URL field (for backwards compatibility)
+            if ($this->main_image) {
+                return $this->main_image;
+            }
+            // Final fallback to first gallery image
+            $firstMedia = $this->getFirstMedia('images');
 
-        // Fallback to legacy main_image URL field (for backwards compatibility)
-        if ($this->main_image) {
-            return $this->main_image;
-        }
-
-        // Final fallback to first gallery image
-        $firstMedia = $this->getFirstMedia('images');
-
-        return $firstMedia?->getUrl();
+            return $firstMedia?->getUrl();
+        });
     }
 
     #[\Override]

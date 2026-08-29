@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Traits\HasTranslations;
 use Database\Factories\StudySetFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -25,10 +26,10 @@ use Illuminate\Support\Carbon;
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, StudySetCourse> $courses
- * @property-read int $total_credits
  * @property-read array $translatable_columns_from
  * @property-read Collection<int, LecturerReview> $reviews
  * @property-read Tenant $tenant
+ * @property-read mixed $total_credits
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\StudySetFactory factory($count = null, $state = [])
@@ -82,8 +83,8 @@ class StudySet extends Model
         return $this->hasManyThrough(LecturerReview::class, StudySetCourse::class);
     }
 
-    public function getTotalCreditsAttribute(): int
+    protected function totalCredits(): Attribute
     {
-        return $this->courses->sum('credits');
+        return Attribute::make(get: fn () => $this->courses->sum('credits'));
     }
 }

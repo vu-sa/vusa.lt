@@ -36,30 +36,34 @@ use Laravel\Scout\Searchable;
  * @property string|null $instagram_url
  * @property int|null $tenant_id
  * @property int $is_active
- * @property int $meeting_periodicity_days
+ * @property int|null $meeting_periodicity_days
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
+ * @property-read Collection<int, InstitutionAdministrator> $administratorAssignments
+ * @property-read Relationshipable|InstitutionFollow|InstitutionAdministrator|null $pivot
+ * @property-read Collection<int, User> $administrators
  * @property-read Collection<int, FileableFile> $availableFiles
+ * @property-read Collection<int, Cadence> $cadences
  * @property-read Collection<int, InstitutionCheckIn> $checkIns
  * @property-read Collection<int, Comment> $comments
  * @property-read Collection<int, Document> $documents
  * @property-read Collection<int, Duty> $duties
  * @property-read Collection<int, FileableFile> $fileableFiles
- * @property-read Relationshipable|InstitutionFollow|null $pivot
  * @property-read Collection<int, User> $followers
  * @property-read string|null $force_delete_blocked_reason
  * @property-read bool $has_protocol
- * @property-read bool $has_public_meetings
  * @property-read bool $has_report
- * @property-read mixed $maybe_short_name
- * @property-read mixed $related_institutions
  * @property-read array $translatable_columns_from
+ * @property-read mixed $governance_scope
+ * @property-read mixed $has_public_meetings
  * @property-read Collection<int, Relationship> $incomingRelationships
+ * @property-read mixed $maybe_short_name
  * @property-read Collection<int, Meeting> $meetings
  * @property-read Collection<int, Relationship> $outgoingRelationships
  * @property-read Collection<int, Problem> $problems
+ * @property-read mixed $related_institutions
  * @property-read Collection<int, Comment> $rootComments
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Task> $tasksFromMeetings

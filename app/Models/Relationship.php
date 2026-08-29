@@ -5,6 +5,7 @@ namespace App\Models;
 use AjCastro\EagerLoadPivotRelations\EagerLoadPivotTrait;
 use App\Models\Pivots\Relationshipable;
 use App\Support\MorphMap;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -28,14 +29,10 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
+#[Unguarded]
 class Relationship extends Model
 {
     use EagerLoadPivotTrait, HasFactory;
-
-    // Basically they are relationship types, not relationships. But oh well...
-
-    #[\Override]
-    protected $guarded = [];
 
     #[\Override]
     protected function casts(): array

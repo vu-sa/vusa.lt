@@ -36,19 +36,22 @@ use Laravel\Scout\Searchable;
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, AgendaItem> $agendaItems
  * @property-read Collection<int, FileableFile> $availableFiles
+ * @property-read Calendar|null $calendarEvent
  * @property-read Collection<int, Comment> $comments
+ * @property-read mixed $completion_status
+ * @property-read Collection<int, Document> $documents
  * @property-read Collection<int, FileableFile> $fileableFiles
- * @property-read string $completion_status
  * @property-read bool $has_protocol
  * @property-read bool $has_report
- * @property-read bool $is_joint
- * @property-read bool $is_public
- * @property-read string|null $type_label
- * @property-read string|null $type_slug
+ * @property-read mixed $has_calendar_event
  * @property-read Collection<int, Institution> $institutions
+ * @property-read mixed $is_joint
+ * @property-read mixed $is_public
  * @property-read Collection<int, Comment> $rootComments
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Tenant> $tenants
+ * @property-read mixed $type_label
+ * @property-read mixed $type_slug
  * @property-read Collection<int, Type> $types
  * @property-read Collection<int, User> $users
  *

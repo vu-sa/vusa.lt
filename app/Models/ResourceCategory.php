@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Traits\HasTranslations;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
@@ -33,12 +34,10 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
+#[Unguarded]
 class ResourceCategory extends Model
 {
     use HasFactory, HasRelationships, HasTranslations, Searchable;
-
-    #[\Override]
-    protected $guarded = [];
 
     public $translatable = ['name', 'description'];
 

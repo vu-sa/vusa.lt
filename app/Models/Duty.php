@@ -13,6 +13,7 @@ use App\Models\Traits\LogsModelActivity;
 use App\Models\Traits\LogsRelationshipChanges;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -103,12 +104,10 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 #[Fillable([
     'name', 'description', 'email', 'phone', 'order', 'is_active', 'institution_id', 'contacts_grouping', 'places_to_occupy',
 ])]
+#[Unguarded]
 class Duty extends Model implements AuthorizableContract, GuardsForceDelete, SharepointFileableContract
 {
     use Authorizable, HasFactory, HasRelationships, HasRoles, HasSharepointFiles, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Notifiable, Searchable, SoftDeletes;
-
-    #[\Override]
-    protected $guarded = [];
 
     // Note: types are NOT auto-loaded to prevent N+1 in collections.
     // Load explicitly where needed: ->with('duties.types') or ->load('types').

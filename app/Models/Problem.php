@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use App\Policies\ProblemPolicy;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -53,20 +54,12 @@ use Spatie\Activitylog\Support\LogOptions;
  *
  * @mixin \Eloquent
  */
+#[Unguarded]
 class Problem extends Model
 {
     use HasFactory, HasTranslations, HasUlids, LogsModelActivity, Searchable, SoftDeletes;
 
-    #[\Override]
-    protected $guarded = [];
-
     public $translatable = ['title', 'description', 'solution', 'steps_taken'];
-
-    #[\Override]
-    protected $casts = [
-        'occurred_at' => 'date',
-        'resolved_at' => 'date',
-    ];
 
     /**
      * The Tiptap-authored fields rendered with `v-html` on ShowProblem. Problems
@@ -142,5 +135,13 @@ class Problem extends Model
             'status' => 'resolved',
             'resolved_at' => now(),
         ]);
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'occurred_at' => 'date',
+            'resolved_at' => 'date',
+        ];
     }
 }

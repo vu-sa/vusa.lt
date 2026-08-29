@@ -479,8 +479,13 @@ class AtstovavimasDashboardService
             'has_protocol' => $meeting->has_protocol,
             // Announced in the public calendar, and whether that announcement is still a
             // draft — a drafted event is invisible to everyone but the admins.
+<<<<<<< Updated upstream
             'has_calendar_event' => $calendarEvent !== null,
             'calendar_event_is_draft' => $calendarEvent !== null && $calendarEvent->is_draft,
+=======
+            'has_calendar_event' => $meeting->calendarEvent !== null,
+            'calendar_event_is_draft' => $meeting->calendarEvent->is_draft ?? false,
+>>>>>>> Stashed changes
             'agenda_items' => $agendaItems
                 ->take(4)
                 ->map(fn (AgendaItem $item) => $this->mapAgendaItem($item))

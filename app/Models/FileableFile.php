@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -33,9 +35,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $deleted_externally_at Set when file deleted in SharePoint
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property-read mixed $file_type_label
  * @property-read Model|\Eloquent $fileable
- * @property-read string|null $file_type_label
- * @property-read string|null $formatted_size
+ * @property-read mixed $formatted_size
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FileableFile available()
  * @method static \Database\Factories\FileableFileFactory factory($count = null, $state = [])
@@ -47,12 +49,10 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
+#[Unguarded]
 class FileableFile extends Model
 {
     use HasFactory, HasUlids;
-
-    #[\Override]
-    protected $guarded = [];
 
     #[\Override]
     protected function casts(): array
@@ -165,33 +165,35 @@ class FileableFile extends Model
     /**
      * Get human-readable file size.
      */
-    public function getFormattedSizeAttribute(): ?string
+    protected function formattedSize(): Attribute
     {
-        if ($this->size_bytes === null) {
-            return null;
-        }
+        return Attribute::make(get: function () {
+            if ($this->size_bytes === null) {
+                return null;
+            }
+            $units = ['B', 'KB', 'MB', 'GB'];
+            $bytes = $this->size_bytes;
+            $i = 0;
+            while ($bytes >= 1024 && $i < count($units) - 1) {
+                $bytes /= 1024;
+                $i++;
+            }
 
-        $units = ['B', 'KB', 'MB', 'GB'];
-        $bytes = $this->size_bytes;
-        $i = 0;
-
-        while ($bytes >= 1024 && $i < count($units) - 1) {
-            $bytes /= 1024;
-            $i++;
-        }
-
-        return round($bytes, 2).' '.$units[$i];
+            return round($bytes, 2).' '.$units[$i];
+        });
     }
 
     /**
      * Get the file type label for display.
      */
-    public function getFileTypeLabelAttribute(): ?string
+    protected function fileTypeLabel(): Attribute
     {
-        if ($this->file_type === null) {
-            return null;
-        }
+        return Attribute::make(get: function () {
+            if ($this->file_type === null) {
+                return null;
+            }
 
-        return self::fileTypes()[$this->file_type] ?? $this->file_type;
+            return self::fileTypes()[$this->file_type] ?? $this->file_type;
+        });
     }
 }

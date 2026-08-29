@@ -32,7 +32,5 @@ test('the tracker is omitted when no website id is configured', function (): voi
 
 test('admin pages are never tracked', function (): void {
     asUser(makeAdminUser())
-        ->get(route('dashboard'))
-        ->assertOk()
-        ->assertDontSee('https://analytics.example.test/script.js', false);
+        ->get(route('dashboard'))->assertOk()->assertDontSeeHtml('https://analytics.example.test/script.js');
 });

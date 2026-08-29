@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use Pest\Rector\Set\PestSetList;
 use Rector\Config\RectorConfig;
-use RectorLaravel\Set\LaravelSetProvider;
 
 return RectorConfig::configure()
     ->withPaths([
@@ -20,7 +19,6 @@ return RectorConfig::configure()
     // uncomment to reach your current PHP version
     ->withPhpSets()
     ->withSets([PestSetList::CODING_STYLE])
-    ->withSetProviders(LaravelSetProvider::class)
     ->withComposerBased(laravel: true)
     ->withTypeCoverageLevel(0)
     ->withDeadCodeLevel(0)

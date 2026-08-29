@@ -7,6 +7,7 @@ use App\Models\Meeting;
 use App\Models\SharepointFile;
 use App\Models\Type;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
@@ -32,12 +33,10 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @mixin \Eloquent
  */
 #[Table(name: 'sharepoint_fileables')]
+#[Unguarded]
 class SharepointFileable extends MorphPivot
 {
     use HasRelationships;
-
-    #[\Override]
-    protected $guarded = [];
 
     // dutiable
     public function fileable()

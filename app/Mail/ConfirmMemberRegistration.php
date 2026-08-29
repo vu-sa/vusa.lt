@@ -36,7 +36,7 @@ class ConfirmMemberRegistration extends Mailable
      */
     public function build()
     {
-        return $this->subject('📝 '.__('mail.confirm.title', ['institution' => $this->institution->getMaybeShortNameAttribute()]))
+        return $this->subject('📝 '.__('mail.confirm.title', ['institution' => $this->institution->maybe_short_name]))
             ->replyTo($this->dutyContact->email)
             ->markdown('emails.memberRegistration.confirm');
     }

@@ -17,6 +17,7 @@ use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Microsoft\Graph\Generated\Models\ODataErrors\ODataError;
 
 class SharepointFileController extends AdminController
@@ -30,7 +31,7 @@ class SharepointFileController extends AdminController
 
         $graph = new SharepointGraphService(driveId: config('filesystems.sharepoint.vusa_drive_id'));
 
-        $path = $request->get('path');
+        $path = $request->input('path');
 
         $path ??= 'General';
 
@@ -233,7 +234,7 @@ class SharepointFileController extends AdminController
     {
         $sharepointService = new SharepointGraphService(driveId: config('filesystems.sharepoint.vusa_drive_id'));
 
-        $path = $request->get('path');
+        $path = $request->input('path');
 
         // remove trailing slash
         $path = rtrim($path, '/');
@@ -351,7 +352,7 @@ class SharepointFileController extends AdminController
                 'url' => $permission->getLink()->getWebUrl(),
             ]);
         } catch (\InvalidArgumentException $e) {
-            \Log::warning('Public permission creation rejected', [
+            Log::warning('Public permission creation rejected', [
                 'drive_item_id' => $driveItemId,
                 'reason' => $e->getMessage(),
                 'user_id' => auth()->id(),
@@ -372,7 +373,7 @@ class SharepointFileController extends AdminController
                 }
             }
 
-            \Log::error('Public permission creation failed', [
+            Log::error('Public permission creation failed', [
                 'drive_item_id' => $driveItemId,
                 'error' => $e->getMessage(),
                 'odata_error' => $errorMessage,

@@ -9,6 +9,7 @@ use App\Models\Tenant;
 use App\Models\Traits\HasTranslations;
 use App\Models\User;
 use App\Support\MorphMap;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -50,8 +51,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read User|null $user
  * @property-read Dutiable|null $viaDutiable
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable current()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable activeOn(?string $date = null)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable current()
  * @method static \Database\Factories\Pivots\DutiableFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable newQuery()
@@ -64,32 +65,28 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @mixin \Eloquent
  */
 #[Table(name: 'dutiables')]
+#[Fillable([
+    'id',
+    'duty_id',
+    'dutiable_id',
+    'dutiable_type',
+    'tenant_id',
+    'via_dutiable_id',
+    'start_date',
+    'end_date',
+    'study_program_id',
+    'study_program_note',
+    'additional_email',
+    'additional_photo',
+    'additional_photo_focal_point',
+    'description',
+    'use_original_duty_name',
+])]
 class Dutiable extends MorphPivot
 {
     // NOTE: for some reason, if Searchable trait is used on this model, it will cause an error
     // in the update route. But only if the queue driver is set to sync.
     use HasFactory, HasRelationships, HasTranslations, HasUlids;
-
-    // Explicit allowlist rather than $guarded = []: this pivot grants
-    // permissions, so mass assignment must not reach columns by accident.
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'duty_id',
-        'dutiable_id',
-        'dutiable_type',
-        'tenant_id',
-        'via_dutiable_id',
-        'start_date',
-        'end_date',
-        'study_program_id',
-        'study_program_note',
-        'additional_email',
-        'additional_photo',
-        'additional_photo_focal_point',
-        'description',
-        'use_original_duty_name',
-    ];
 
     #[\Override]
     protected $with = ['study_program'];
@@ -186,9 +183,15 @@ class Dutiable extends MorphPivot
     {
         $relation = $this->belongsTo(User::class, 'dutiable_id');
 
+<<<<<<< Updated upstream
         // Raw attribute: the declared `@property string` does not hold on the
         // attribute-less instances eager loading builds the relation on.
         $dutiableType = $this->attributes['dutiable_type'] ?? null;
+=======
+        // getAttribute() over ->dutiable_type: eager loading instantiates the relation
+        // on an attribute-less model, where the morph type genuinely is null.
+        $dutiableType = $this->getAttribute('dutiable_type');
+>>>>>>> Stashed changes
 
         if ($dutiableType !== null && $dutiableType !== MorphMap::alias(User::class)) {
             $relation->whereRaw('1 = 0');

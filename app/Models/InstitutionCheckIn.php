@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,12 +30,10 @@ use Laravel\Scout\Searchable;
  *
  * @mixin \Eloquent
  */
+#[Unguarded]
 class InstitutionCheckIn extends Model
 {
     use HasFactory, HasUlids, Searchable;
-
-    #[\Override]
-    protected $guarded = [];
 
     #[\Override]
     protected function casts(): array

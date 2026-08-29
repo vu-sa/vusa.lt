@@ -154,9 +154,7 @@ class FileUsageScanner
         // Fill in empty collections for models that weren't scanned
         $allModelTypes = ['contentParts', 'calendar', 'news', 'banners', 'duties', 'institutions', 'types', 'forms', 'users', 'dutiables'];
         foreach ($allModelTypes as $modelType) {
-            if (! isset($usage[$modelType])) {
-                $usage[$modelType] = new Collection;
-            }
+            $usage[$modelType] ??= new Collection;
         }
 
         $result = $this->processUsageResults($usage, $normalizedUrl, $fileMetadata);
@@ -256,7 +254,7 @@ class FileUsageScanner
         }
 
         return self::queryIncludingTrashed($modelClass)
-            ->where(function (Builder $query) use ($field, $needles) {
+            ->where(function (Builder $query) use ($field, $needles): void {
                 foreach ($needles as $needle) {
                     $query->orWhereRaw($field." LIKE ? ESCAPE '|'", ['%'.$needle.'%']);
                 }
@@ -655,7 +653,7 @@ class FileUsageScanner
 
             return ContentPart::query()
                 ->whereIn('type', ['tiptap', 'shadcn-card', 'shadcn-accordion', 'hero'])
-                ->where(function (Builder $query) use ($needles) {
+                ->where(function (Builder $query) use ($needles): void {
                     foreach ($needles as $needle) {
                         $query->orWhereRaw("json_content LIKE ? ESCAPE '|'", ['%'.$needle.'%']);
                     }

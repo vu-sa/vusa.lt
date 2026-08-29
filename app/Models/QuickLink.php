@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -34,18 +35,10 @@ use Laravel\Scout\Searchable;
  *
  * @mixin \Eloquent
  */
+#[Unguarded]
 class QuickLink extends Model
 {
     use HasFactory, Searchable, SoftDeletes;
-
-    #[\Override]
-    protected $guarded = [];
-
-    #[\Override]
-    protected $casts = [
-        'is_active' => 'boolean',
-        'is_important' => 'boolean',
-    ];
 
     #[\Override]
     protected static function booted()
@@ -70,5 +63,13 @@ class QuickLink extends Model
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+            'is_important' => 'boolean',
+        ];
     }
 }
