@@ -843,11 +843,8 @@ declare global {
       type_label: string
       type_slug: string
       completion_status: string
-<<<<<<< Updated upstream
       requires_student_perspective: boolean
-=======
       has_calendar_event: boolean
->>>>>>> Stashed changes
       has_protocol: boolean
       has_report: boolean
       // relations
@@ -1205,11 +1202,8 @@ declare global {
       type_label: string
       type_slug: string
       completion_status: string
-<<<<<<< Updated upstream
       requires_student_perspective: boolean
-=======
       has_calendar_event: boolean
->>>>>>> Stashed changes
       has_protocol: boolean
       has_report: boolean
       // relations
