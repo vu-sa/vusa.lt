@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\InstitutionScope;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Meeting;
@@ -598,6 +599,36 @@ describe('cross-tenant parent scoping', function (): void {
         ])->assertSessionHasErrors('institution_id');
 
         expect(Meeting::count())->toEqual($this->initialMeetingCount);
+    });
+
+    /**
+     * The window hides the checkbox for an external body; this is the half of that rule the
+     * client cannot enforce.
+     */
+    test('cannot announce a meeting of a body VU SA only delegates into', function (): void {
+        $external = Institution::factory()->for($this->tenant)->create();
+        $external->types()->attach(Type::factory()->forInstitutions(InstitutionScope::University)->create());
+
+        asUser($this->admin)->post(route('meetings.store'), [
+            'start_time' => Carbon::now()->addDay()->format('Y-m-d H:i'),
+            'institution_id' => $external->id,
+            'announce_in_calendar' => true,
+        ])->assertSessionHasErrors('announce_in_calendar');
+
+        expect(Meeting::count())->toEqual($this->initialMeetingCount);
+    });
+
+    test('announces a VU SA body\'s meeting as a draft event', function (): void {
+        $internal = Institution::factory()->for($this->tenant)->create();
+        $internal->types()->attach(Type::factory()->forInstitutions(InstitutionScope::Vusa)->create());
+
+        asUser($this->admin)->post(route('meetings.store'), [
+            'start_time' => Carbon::now()->addDay()->format('Y-m-d H:i'),
+            'institution_id' => $internal->id,
+            'announce_in_calendar' => true,
+        ])->assertRedirect();
+
+        expect(Meeting::latest('id')->first()->calendarEvent?->is_draft)->toBeTrue();
     });
 
     test('cannot add agenda items to a meeting the user cannot update', function (): void {

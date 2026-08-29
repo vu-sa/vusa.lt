@@ -31,7 +31,6 @@ import type { RecentItem } from '@/Composables/useCommandPalette';
 /** Toggleable section keys — must match HasUIPreferences::$toggleableSidebarSections */
 export const TOGGLEABLE_SECTIONS = [
   'pinned',
-  'quick_actions',
   'recently_visited',
   'followed_institutions',
   'spacer',
@@ -42,18 +41,6 @@ export const TOGGLEABLE_SECTIONS = [
 export type ToggleableSection = typeof TOGGLEABLE_SECTIONS[number];
 
 export type SidebarDensity = 'comfortable' | 'compact';
-
-/** Toggleable quick-action keys — must match HasUIPreferences::$toggleableQuickActions */
-export const QUICK_ACTION_KEYS = [
-  'new_problem',
-  'new_meeting',
-  'new_news',
-  'new_reservation',
-  'duty_update',
-  'duty_periods',
-] as const;
-
-export type QuickActionKey = typeof QUICK_ACTION_KEYS[number];
 
 interface StoredRecentPage {
   route: string;
@@ -78,9 +65,6 @@ interface UIPreferencesContext {
   orderedSections: ComputedRef<ToggleableSection[]>;
   setSectionOrder: (keys: ToggleableSection[]) => void;
   resetSections: () => void;
-  quickActionVisibility: Record<QuickActionKey, boolean>;
-  isQuickActionVisible: (key: QuickActionKey) => boolean;
-  setQuickActionVisibility: (key: QuickActionKey, value: boolean) => void;
   recentPages: ComputedRef<RecentItem[]>;
   trackVisit: (routeName: string, params?: Record<string, unknown>, title?: string, url?: string) => void;
   clearRecent: () => void;
@@ -105,7 +89,6 @@ interface ServerPrefs {
   sections: Record<string, boolean>;
   order: string[];
   collapsed: boolean;
-  quickActions: Record<string, boolean>;
   density: SidebarDensity;
   pinned: StoredPinnedPage[];
   recent: StoredRecentPage[];
@@ -116,7 +99,6 @@ function readServerPrefs(): ServerPrefs {
   const prefs = (page.props.auth as { user?: { ui_preferences?: unknown } })?.user?.ui_preferences as
     | {
       sidebar?: { sections?: Record<string, boolean>; order?: string[]; collapsed?: boolean };
-      quick_actions?: Record<string, boolean>;
       appearance?: { density?: string };
       pinned_pages?: StoredPinnedPage[];
       recent_pages?: StoredRecentPage[];
@@ -127,7 +109,6 @@ function readServerPrefs(): ServerPrefs {
     sections: prefs?.sidebar?.sections ?? {},
     order: prefs?.sidebar?.order ?? [],
     collapsed: prefs?.sidebar?.collapsed ?? false,
-    quickActions: prefs?.quick_actions ?? {},
     density: prefs?.appearance?.density === 'compact' ? 'compact' : 'comfortable',
     pinned: prefs?.pinned_pages ?? [],
     recent: prefs?.recent_pages ?? [],
@@ -269,13 +250,6 @@ export function createUIPreferencesProvider(): UIPreferencesContext {
   // Section order — sanitized, always contains every toggleable section.
   const sectionOrder = ref<ToggleableSection[]>(sanitizeOrder(server.order));
 
-  // Quick-action visibility — default missing keys to visible.
-  const quickActionVisibility = reactive(
-    Object.fromEntries(
-      QUICK_ACTION_KEYS.map(key => [key, server.quickActions[key] !== false]),
-    ) as Record<QuickActionKey, boolean>,
-  );
-
   // Recently visited — local mirror, seeded from server, kept in sync optimistically.
   const recentRaw = ref<StoredRecentPage[]>([...server.recent]);
 
@@ -294,7 +268,6 @@ export function createUIPreferencesProvider(): UIPreferencesContext {
         sections: { ...sectionVisibility },
         order: [...sectionOrder.value],
       },
-      quick_actions: { ...quickActionVisibility },
     });
   };
 
@@ -318,19 +291,6 @@ export function createUIPreferencesProvider(): UIPreferencesContext {
       sectionVisibility[key] = true;
     });
     sectionOrder.value = [...TOGGLEABLE_SECTIONS];
-    QUICK_ACTION_KEYS.forEach((key) => {
-      quickActionVisibility[key] = true;
-    });
-    persistSections();
-  };
-
-  const isQuickActionVisible = (key: QuickActionKey) => quickActionVisibility[key] !== false;
-
-  const setQuickActionVisibility = (key: QuickActionKey, value: boolean) => {
-    if (!QUICK_ACTION_KEYS.includes(key)) {
-      return;
-    }
-    quickActionVisibility[key] = value;
     persistSections();
   };
 
@@ -431,9 +391,6 @@ export function createUIPreferencesProvider(): UIPreferencesContext {
     orderedSections,
     setSectionOrder,
     resetSections,
-    quickActionVisibility,
-    isQuickActionVisible,
-    setQuickActionVisibility,
     recentPages,
     trackVisit,
     clearRecent,
@@ -467,9 +424,6 @@ export function useUIPreferences(): UIPreferencesContext {
     const sectionVisibility = reactive(
       Object.fromEntries(TOGGLEABLE_SECTIONS.map(key => [key, true])) as Record<ToggleableSection, boolean>,
     );
-    const quickActionVisibility = reactive(
-      Object.fromEntries(QUICK_ACTION_KEYS.map(key => [key, true])) as Record<QuickActionKey, boolean>,
-    );
 
     return {
       sectionVisibility,
@@ -478,9 +432,6 @@ export function useUIPreferences(): UIPreferencesContext {
       orderedSections: computed(() => [...TOGGLEABLE_SECTIONS]) as ComputedRef<ToggleableSection[]>,
       setSectionOrder: noop,
       resetSections: noop,
-      quickActionVisibility,
-      isQuickActionVisible: () => true,
-      setQuickActionVisibility: noop,
       recentPages: computed(() => []) as ComputedRef<RecentItem[]>,
       trackVisit: noop,
       clearRecent: noop,

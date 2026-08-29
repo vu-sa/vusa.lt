@@ -1,0 +1,150 @@
+<?php
+
+return [
+    'trigger' => 'Quick actions',
+    'trigger_short' => 'Actions',
+    'spotlight' => [
+        'title' => 'Not sure where to start?',
+        'description' => 'Click here for the most common actions — report a meeting, note that there will be no meetings, or fill in a meeting that already happened.',
+    ],
+    'personas' => [
+        'title' => 'What would you like to do?',
+        'representative' => [
+            'title' => 'As a student representative',
+            'description' => 'Meetings, agendas, problems',
+        ],
+        'member' => [
+            'title' => 'As a VU SR member',
+            'description' => 'Reservations and problems',
+        ],
+        'coordinator' => [
+            'title' => 'As a coordinator',
+            'description' => 'Duties and cadences',
+        ],
+    ],
+    'actions' => [
+        'new_meeting' => [
+            'title' => 'Report a meeting',
+            'description' => 'A meeting is coming up or already happened — let us record it.',
+        ],
+        'no_meeting' => [
+            'title' => 'There will be no meetings for a while',
+            'description' => 'Exams or holidays, for example — so you stop getting reminders.',
+        ],
+        'complete_meeting' => [
+            'title' => 'Fill in a meeting',
+            'description' => 'Add an agenda or decisions to a meeting that already happened.',
+        ],
+        'new_problem' => [
+            'title' => 'Report a problem',
+            'description' => 'You noticed something that does not work for students — tell us.',
+        ],
+        'new_reservation' => [
+            'title' => 'Reserve equipment',
+            'description' => 'Borrow a VU SR item or room.',
+        ],
+        'duty_update' => [
+            'title' => 'Update duties',
+            'description' => 'Assign people to duties for the new cadence.',
+        ],
+        'cadences' => [
+            'title' => 'Manage cadences',
+            'description' => 'Set when cadences start and end.',
+        ],
+    ],
+    'institution' => [
+        'title' => 'Which institution?',
+        'subtitle' => 'Showing the institutions you hold a duty in.',
+        'search' => 'Search institutions',
+        'empty' => 'You have no institutions you could do this for.',
+        'no_meetings_yet' => 'No meetings yet',
+        'last_meeting' => 'Last meeting :days days ago',
+        'check_in_until' => 'Marked as having no meeting until :date',
+    ],
+    'meeting' => [
+        'type' => [
+            'title' => 'How will the meeting happen?',
+            'subtitle' => 'This decides whether an exact time is needed.',
+            'email' => 'Voting by email — a date is enough.',
+            'other' => 'None of these fit.',
+        ],
+        'when' => [
+            'title' => 'When will the meeting happen?',
+            'subtitle' => 'Suggested from when this institution has met so far.',
+            'usual_hint' => 'The next usual slot',
+            'week_after_hint' => 'A week later',
+            'custom' => 'Pick another date…',
+        ],
+        'date' => [
+            'title' => 'Which day?',
+            'subtitle' => 'You can pick a past day too, if the meeting already happened.',
+        ],
+        'time' => [
+            'title' => 'At what time?',
+            'usual' => 'This institution\'s usual time',
+            'custom' => 'Set an exact time…',
+        ],
+        'agenda' => [
+            'title' => 'What will you discuss?',
+            'subtitle' => 'You can add to the agenda later as well.',
+            'add' => 'List the questions',
+            'add_description' => 'Write down what will be discussed.',
+            'placeholder' => 'Question title',
+            'add_another' => 'Add a question',
+            'remove' => 'Remove question',
+            'skip' => 'Skip',
+            'skip_description' => 'I will add the questions later.',
+            'back_to_choice' => 'Back to the choice',
+        ],
+        'review' => [
+            'title' => 'Does this look right?',
+            'subtitle' => 'Tap a row to change it.',
+            'institution' => 'Institution',
+            'type' => 'Type',
+            'when' => 'Time',
+            'agenda' => 'Agenda',
+            'agenda_count' => '{0} No questions|{1} :count question|[2,*] :count questions',
+            'submit' => 'Create meeting',
+            'submitting' => 'Creating…',
+        ],
+    ],
+    'check_in' => [
+        'explainer_title' => 'What does this mean?',
+        'explainer' => 'If you know there will be no meetings during a period (holidays, exam session), telling us helps avoid unnecessary reminders.',
+        'until' => [
+            'title' => 'Until when will there be no meetings?',
+            'subtitle' => 'Starting from today.',
+            'two_weeks' => 'Two weeks',
+            'month_end' => 'Until the end of the month',
+            'three_months' => 'Three months',
+            'custom' => 'Pick dates…',
+            'max_hint' => 'You can report at most three months ahead.',
+            'from' => 'From',
+            'to' => 'Until',
+        ],
+        'review' => [
+            'title' => 'Report that there will be no meetings',
+            'subtitle' => 'Tap a row to change it.',
+            'period' => 'Period',
+            'note' => 'Note (optional)',
+            'note_placeholder' => 'For example: holiday period, quiet part of the semester…',
+            'submit' => 'Report',
+            'submitting' => 'Sending…',
+        ],
+    ],
+    'meeting_picker' => [
+        'title' => 'Which meeting should we fill in?',
+        'subtitle' => 'The ones missing the most are at the top.',
+        'empty' => 'All of your meetings are filled in. Nice!',
+        'missing_agenda' => 'No agenda',
+        'missing_decisions' => 'Decisions missing',
+    ],
+    'common' => [
+        'back' => 'Back',
+        'close' => 'Close',
+        'change' => 'Change',
+        'continue' => 'Continue',
+        'loading' => 'Loading…',
+        'error' => 'Could not load the data. Please try again.',
+    ],
+];

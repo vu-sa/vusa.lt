@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\AcademicCalendarApiController;
+use App\Http\Controllers\Api\Admin\ActionWindowApiController;
 use App\Http\Controllers\Api\Admin\ActivityLogApiController;
 use App\Http\Controllers\Api\Admin\AgendaItemNoteApiController;
 use App\Http\Controllers\Api\Admin\AnalyticsApiController;
@@ -120,6 +121,9 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         Route::get('visak/timeline/history', [AtstovavimasApiController::class, 'statusHistory'])->name('visak.timeline.history');
         Route::get('visak/meetings', [AtstovavimasApiController::class, 'meetings'])->name('visak.meetings');
         Route::get('visak/representatives', [AtstovavimasApiController::class, 'representatives'])->name('visak.representatives');
+
+        // Guided action window ("Veiksmų langas") personalised choices
+        Route::get('action-window/context', [ActionWindowApiController::class, 'context'])->name('actionWindow.context');
 
         // Meetings
         Route::get('meetings/recent', [MeetingApiController::class, 'recent'])->name('meetings.recent');

@@ -2,6 +2,7 @@
 
 return [
     'announce' => [
+        'external_not_allowed' => 'Only VU SR bodies\' meetings are announced in the calendar.',
         'explainer' => 'The calendar event is the public announcement of a meeting. While it stays a draft the meeting remains internal; publishing it makes the agenda and the linked documents visible to everyone.',
         'create_hint' => 'Creates a draft carrying the meeting date and tenant. You still have to publish it.',
         'link_hint' => 'Pick an event already entered within a week of the meeting.',

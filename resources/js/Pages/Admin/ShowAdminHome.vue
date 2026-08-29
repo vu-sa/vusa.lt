@@ -16,6 +16,8 @@
               {{ greeting }}, <span class="text-primary dark:text-primary/85">{{ userNameAddress }}</span>!
             </h1>
           </div>
+
+          <ActionWindowTrigger variant="standalone" spotlight-position="bottom-right" class="shrink-0" />
         </div>
 
         <!-- Hero search: opens the command palette with the typed text -->
@@ -34,7 +36,7 @@
           :institutions-insights="{ attention: institutionsNeedingAttention }"
           data-tour="meetings-card"
           @show-all-meetings="() => router.visit(route('dashboard.atstovavimas'))"
-          @create-meeting="showMeetingModal = true" />
+          @create-meeting="actionWindow.open({ flow: 'meeting.create' })" />
 
         <!-- Tasks Card -->
         <TasksCard :task-stats :upcoming-tasks :class="{ 'lg:max-w-2xl': !hasAtstovavimas }" data-tour="tasks-card" />
@@ -48,27 +50,26 @@
     </div>
 
     <!-- New Meeting Modal -->
-    <NewMeetingDialog :show-modal="showMeetingModal" @close="showMeetingModal = false" />
   </PageContent>
 </template>
 
 <script setup lang="ts">
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { computed, ref, onMounted, defineAsyncComponent } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import HomeSearchBar from '@/Pages/Admin/Dashboard/Components/HomeSearchBar.vue';
 import TasksCard from '@/Pages/Admin/Dashboard/Components/TasksCard.vue';
 import UpcomingMeetingsCard from '@/Pages/Admin/Dashboard/Components/UpcomingMeetingsCard.vue';
-// Lazy load modal - only needed when user clicks "Create meeting"
-const NewMeetingDialog = defineAsyncComponent(() => import('@/Components/Dialogs/NewMeetingDialog.vue'));
 import CalendarEventsCard from '@/Pages/Admin/Dashboard/Components/CalendarEventsCard.vue';
 import NewsListCard from '@/Pages/Admin/Dashboard/Components/NewsListCard.vue';
 import { addressivize } from '@/Utils/String';
 import { useProductTour } from '@/Composables/useProductTour';
 import { provideTour } from '@/Composables/useTourProvider';
 import { useSidebar } from '@/Components/ui/sidebar/utils';
+import { useActionWindow } from '@/Composables/useActionWindow';
+import ActionWindowTrigger from '@/Components/ActionWindow/ActionWindowTrigger.vue';
 import type { TaskProgress, TaskActionType } from '@/Types/TaskTypes';
 import type { InstitutionActivityInsight } from '@/Types/InstitutionActivity';
 
@@ -111,7 +112,6 @@ const props = defineProps<{
 }>();
 
 // Meeting modal state
-const showMeetingModal = ref(false);
 
 // Check if user has atstovavimas permissions (can create meetings)
 const hasAtstovavimas = computed(() => usePage().props.auth?.can?.create?.meeting);
@@ -121,6 +121,7 @@ const canAccessAdministration = computed(() => usePage().props.auth?.can?.access
 
 // Get sidebar controls for expanding during tour
 const { setOpen, setOpenMobile, isMobile } = useSidebar();
+const actionWindow = useActionWindow();
 
 // Expand sidebar when highlighting sidebar elements
 const expandSidebar = () => {
@@ -188,12 +189,12 @@ const tourSteps = computed(() => {
     });
   }
 
-  // 5. Quick actions section
+  // 5. The action window, which replaced the old quick-actions list
   steps.push({
-    element: '[data-tour="quick-actions"]',
+    element: '[data-tour="action-window"]',
     popover: {
-      title: $t('tutorials.admin_home.quick_actions.title'),
-      description: $t('tutorials.admin_home.quick_actions.description'),
+      title: $t('tutorials.admin_home.action_window.title'),
+      description: $t('tutorials.admin_home.action_window.description'),
     },
     onHighlightStarted: expandSidebar,
   });
@@ -281,6 +282,12 @@ provideTour(startTour);
 onMounted(() => {
   // Wait 1.5 seconds to ensure DOM is ready
   setTimeout(() => {
+    // A first-time user who reaches for the action window inside that window gets a
+    // tour popup over an open modal, and the two fight for the same click.
+    if (actionWindow.isOpen.value) {
+      return;
+    }
+
     startTourIfNew();
   }, 1500);
 });

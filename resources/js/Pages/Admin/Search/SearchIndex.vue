@@ -4,7 +4,7 @@
       <!-- Reserved-height wrapper: keeps the action area stable across tabs
            (empty on "all"/"agenda-items", widest on "duties") so it never jumps. -->
       <div class="flex min-h-9 items-center justify-end gap-2">
-        <Button v-if="activeTab === 'meetings' && can.create.meetings" @click="showMeetingModal = true">
+        <Button v-if="activeTab === 'meetings' && can.create.meetings" @click="actionWindow.open({ flow: 'meeting.create' })">
           <Plus class="mr-2 size-4" />
           {{ $t('Naujas posėdis') }}
         </Button>
@@ -115,13 +115,11 @@
         />
       </div>
     </div>
-
-    <NewMeetingDialog v-if="showMeetingModal" :show-modal="showMeetingModal" @close="showMeetingModal = false" />
   </AdminContentPage>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, defineAsyncComponent } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { useDebounceFn } from '@vueuse/core';
@@ -135,11 +133,10 @@ import SearchCollectionPanel from '@/Features/Admin/AdminSearch/Components/Searc
 import type { AdminCollection } from '@/Features/Admin/AdminSearch/Types/AdminSearchTypes';
 import type { MapperContext } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { useAdminSearch } from '@/Composables/useAdminSearch';
+import { useActionWindow } from '@/Composables/useActionWindow';
 import { usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import type { MultiSearchResults } from '@/Shared/Search/types';
 import { createEmptyMultiSearchResults } from '@/Shared/Search/utils/createEmptyMultiSearchResults';
-
-const NewMeetingDialog = defineAsyncComponent(() => import('@/Components/Dialogs/NewMeetingDialog.vue'));
 
 defineProps<{
   can: {
@@ -258,6 +255,8 @@ const visibleCollectionTabs = computed(() =>
   collectionTabs.value.filter(tab => adminSearch.hasCollectionAccess(tab.collection)),
 );
 
+const actionWindow = useActionWindow();
+
 // URL-backed state (?q= and ?tab=)
 const initialParams = typeof window === 'undefined'
   ? new URLSearchParams()
@@ -266,7 +265,6 @@ const initialParams = typeof window === 'undefined'
 const q = ref(initialParams.get('q') || '');
 const activeTab = ref(initialParams.get('tab') || 'all');
 const searchInputRef = ref<HTMLInputElement | null>(null);
-const showMeetingModal = ref(false);
 
 const activeCollectionTab = computed(() =>
   collectionTabs.value.find(tab => tab.value === activeTab.value),

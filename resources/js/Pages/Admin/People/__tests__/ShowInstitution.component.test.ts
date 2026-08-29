@@ -36,7 +36,6 @@ const stubs = {
   SimpleFileViewer: { template: '<div />' },
   FileManager: { template: '<div />' },
   RelatedInstitutions: { template: '<div />' },
-  NewMeetingDialog: { template: '<div />' },
   AddCheckInDialog: { template: '<div />' },
 };
 

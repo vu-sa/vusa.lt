@@ -140,7 +140,6 @@ const stubs = {
   FullscreenGanttModal: { name: 'FullscreenGanttModal', template: '<div />' },
   InstitutionDataTable: { name: 'InstitutionDataTable', template: '<div />' },
   MeetingDataTable: { name: 'MeetingDataTable', template: '<div />' },
-  NewMeetingDialog: { name: 'NewMeetingDialog', template: '<div />' },
   AddCheckInDialog: { name: 'AddCheckInDialog', template: '<div />' },
   VisakInfoModal: { name: 'VisakInfoModal', template: '<div />' },
 };

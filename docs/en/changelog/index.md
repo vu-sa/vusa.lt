@@ -7,6 +7,26 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.28 — The action window (2026-08-29) {#v1-28}
+
+- ⭐ **One window for the most common actions** — a "Quick actions" button in the sidebar and on the home page opens a guided window. It asks which hat you are wearing today (student representative, VU SR member or coordinator), then what you want to do. Only the actions you are actually allowed to take are listed
+- ⭐ **Report a meeting in a few taps** — the institution, the meeting format, the date and the time are each asked on their own screen, as large buttons. The agenda can be filled in right away or skipped. On a phone the window fills the screen; on a computer it opens as a normal dialog
+- ⭐ **Report that there will be no meetings for a while** — previously only reachable from the ViSAK timeline; now available from any page
+- ⭐ **Fill in a meeting that already happened** — the list puts the meetings missing the most first and says what is missing: the agenda or the decisions
+- ✨ **The institution list shows which one needs attention** — each one says how long ago its last meeting was, or how long the no-meetings notice is valid
+- ✨ **Creating a meeting looks the same everywhere** — the old creation dialog was replaced by the new window in every place it appeared: the sidebar, the home page, tasks, ViSAK, institution and search pages
+- ⭐ **Only VU SR bodies are announced in the calendar** — announcing a meeting is offered only for VU SR's own bodies; for bodies VU SR merely delegates representatives into the option is gone from both meeting creation and the meeting page
+- ✨ **The sidebar's "Quick actions" list is now one button** — a single always-visible button opens the action window instead. The setting for which quick actions to show went with it: the command palette (Ctrl+K) now lists every one you are allowed to use
+- ✨ **"Change" on the review returns to the review** — amending one answer no longer walks you through every remaining step again
+- ⭐ **The meeting time is suggested from this institution's own history** — the next two dates on the weekday this body has been meeting on, at the same time. If it has never met, nothing is guessed and the calendar opens straight away
+- ⭐ **You can now pick the time** — choosing another date asks for the hour on its own screen: this institution's usual time first, then the common hours, or an exact time
+- ✨ **Agenda questions are a plain list** — one line each, Enter opens the next, blank lines are dropped. This used to be the full meeting-page editor, which did not fit on a phone
+- ✨ **You can see which action you are in** — the window header shows that action's icon next to the steps
+- ✨ **A clearer institution list** — each status (overdue, approaching, marked as having no meeting, meeting scheduled) has its own icon and colour
+- 🔧 **Dates render in Lithuanian** — the action window formatted dates using the browser's language rather than the app's
+- 🔧 **The meeting time is saved correctly** — creating a meeting through the action window sent the time in UTC, so the saved meeting drifted by a few hours
+- 🔧 **The "+" button in the phone bottom bar works** — it previously led to a page that does not exist
+
 ## v1.27 — Cadences, the duty-period timeline and meeting announcements (2026-08-28) {#v1-27}
 
 ### Duty period timeline

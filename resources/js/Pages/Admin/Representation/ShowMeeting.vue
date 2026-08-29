@@ -109,7 +109,7 @@
       <SpotlightPopover
         :title="$t('meetings.announce.spotlight_title')"
         :description="$t('meetings.announce.spotlight_description')"
-        :is-dismissed="announceSpotlight.isDismissed.value"
+        :is-dismissed="!announceSpotlight.isVisible.value"
         position="bottom"
         float
         @dismiss="announceSpotlight.dismiss"
@@ -125,7 +125,7 @@
               <Edit class="h-4 w-4 mr-2" />
               {{ $t('Redaguoti posėdį') }}
             </DropdownMenuItem>
-            <DropdownMenuItem v-if="!calendarEvent" @click="openAnnounceDialog">
+            <DropdownMenuItem v-if="isInternalBody && !calendarEvent" @click="openAnnounceDialog">
               <CalendarPlus class="h-4 w-4 mr-2" />
               {{ $t('Paskelbti kalendoriuje') }}
             </DropdownMenuItem>
@@ -347,6 +347,7 @@
       </DialogContent>
     </Dialog>
     <AnnounceMeetingDialog
+      v-if="isInternalBody"
       v-model:open="showAnnounceDialog"
       :meeting-id="meeting.id"
       :tenant-ids="tenantIds"
@@ -437,7 +438,11 @@ const isInternalBody = computed(() => props.governanceScope === InstitutionScope
  */
 const calendarEvent = computed(() => props.meeting.calendar_event ?? null);
 
-const announceSpotlight = useFeatureSpotlight('meeting-calendar-announce-v1');
+// Nothing to point at on a body VU SA only delegates into: its meetings are not VU SA's
+// to announce, so the menu item is absent too.
+const announceSpotlight = useFeatureSpotlight('meeting-calendar-announce-v1', {
+  enabled: props.governanceScope === InstitutionScope.Vusa,
+});
 const showAnnounceDialog = ref(false);
 
 const openAnnounceDialog = () => {

@@ -2,6 +2,7 @@
 
 return [
     'announce' => [
+        'external_not_allowed' => 'Kalendoriuje skelbiami tik VU SA darinių posėdžiai.',
         'explainer' => 'Kalendoriaus įrašas yra viešas posėdžio skelbimas. Kol jis yra juodraštis, posėdis lieka matomas tik viduje; paskelbus – darbotvarkė ir susieti dokumentai tampa matomi visiems.',
         'create_hint' => 'Sukuriamas juodraštis su posėdžio data ir padaliniu. Jį dar reikės paskelbti.',
         'link_hint' => 'Pasirinkite jau įvestą įrašą iš savaitės aplink posėdį.',

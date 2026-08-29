@@ -72,6 +72,8 @@ vi.mock('laravel-vue-i18n', () => ({
   transChoice: vi.fn((key: string, count: number, params?: any) => key),
   createI18nInstance: vi.fn(),
   loadLanguageAsync: vi.fn(),
+  // Components that pick between lt/en label maps read this at render time.
+  getActiveLanguage: vi.fn(() => 'lt'),
 }));
 
 // Add global properties to Vue component instances for testing

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Actions\AnnounceMeetingInCalendar;
 use App\Actions\Cadences\SyncCadenceDatesFromAnchors;
 use App\Contracts\Commentable;
 use App\Contracts\SharepointFileableContract;
@@ -346,6 +347,22 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
     public function getTypeSlugAttribute(): ?string
     {
         return $this->type?->value;
+    }
+
+    /**
+     * Whether this meeting may be announced in the public calendar.
+     *
+     * Only VU SA's own bodies are: an external body's meeting is not VU SA's to publish.
+     * A joint meeting qualifies on its VU SA side, which is also the side the announcement
+     * is titled after ({@see AnnounceMeetingInCalendar}).
+     */
+    public function isAnnounceableInCalendar(): bool
+    {
+        $this->loadMissing('institutions.types');
+
+        return $this->institutions->contains(
+            fn (Institution $institution): bool => $institution->governance_scope->isInternal()
+        );
     }
 
     /**

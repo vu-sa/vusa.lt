@@ -7,6 +7,26 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.28 — Veiksmų langas (2026-08-29) {#v1-28}
+
+- ⭐ **Vienas langas dažniausiems veiksmams** — šoninėje juostoje ir pradiniame puslapyje atsirado „Greiti veiksmai“ mygtukas. Jis paklausia, kaip šiandien veiki (studentų atstovas, VU SA narys ar koordinatorius), o tada — ką nori padaryti. Rodomi tik tie veiksmai, kuriuos iš tikrųjų gali atlikti
+- ⭐ **Pranešti apie posėdį per kelis paspaudimus** — institucija, posėdžio būdas, data ir laikas klausiami po vieną, dideliais mygtukais. Darbotvarkę galima surašyti iš karto arba praleisti. Telefone langas užima visą ekraną, kompiuteryje — atsidaro kaip įprastas langas
+- ⭐ **Pranešti, kad posėdžių kurį laiką nebus** — anksčiau tai buvo pasiekiama tik iš ViSAK laiko juostos; dabar tą patį galima padaryti iš bet kurio puslapio
+- ⭐ **Papildyti jau įvykusį posėdį** — sąraše pirmiausia rodomi posėdžiai, kuriems labiausiai trūksta informacijos, ir parašoma, ko trūksta: darbotvarkės ar sprendimų
+- ✨ **Institucijų sąraše matyti, kuriai labiausiai reikia dėmesio** — prie kiekvienos parašoma, prieš kiek laiko vyko paskutinis posėdis arba iki kada galioja pranešimas apie posėdžių nebuvimą
+- ✨ **Susitikimo kūrimas visur atrodo vienodai** — senasis kūrimo langas pakeistas nauju visose vietose: šoninėje juostoje, pradiniame puslapyje, užduotyse, ViSAK, institucijos ir paieškos puslapiuose
+- ⭐ **Kalendoriuje skelbiami tik VU SA dariniai** — posėdį paskelbti kalendoriuje siūloma tik VU SA dariniams; organuose, į kuriuos VU SA tik deleguoja atstovus, tokios parinkties nebėra nei posėdžio kūrime, nei posėdžio puslapyje
+- ✨ **Šoninės juostos „Greiti veiksmai“ pakeisti vienu mygtuku** — vietoj sąrašo dabar visada matomas vienas mygtukas, atidarantis veiksmų langą. Kartu dingo ir nustatymas, kuriuos greitus veiksmus rodyti — komandų paletėje (Ctrl+K) matomi visi, kuriuos gali atlikti
+- ✨ **Peržiūroje paspaudus „Keisti“ grįžtama atgal į peržiūrą** — pakeitus vieną atsakymą nebereikia iš naujo pereiti visų likusių žingsnių
+- ⭐ **Posėdžio laikas siūlomas pagal šios institucijos istoriją** — siūlomos dvi artimiausios datos tos pačios savaitės dienos, kuria ši institucija posėdžiaudavo, ir tuo pačiu laiku. Jei posėdžių dar nebuvo, nieko nespėliojama — iškart atveriamas kalendorius
+- ⭐ **Atsirado laiko pasirinkimas** — pasirinkus kitą datą, atskirame lange klausiama valandos: pirmiausia siūlomas įprastas šios institucijos laikas, tada dažniausios valandos arba tikslus laikas
+- ✨ **Darbotvarkės klausimai rašomi paprastu sąrašu** — po vieną eilutę, „Enter“ atidaro kitą, tuščios eilutės neįrašomos. Anksčiau čia buvo pilnas posėdžio puslapio redaktorius, kuris telefone netilpo
+- ✨ **Matyti, kurį veiksmą atlieki** — lango viršuje rodoma to veiksmo piktograma šalia žingsnių
+- ✨ **Aiškesnis institucijų sąrašas** — kiekviena būsena (vėluoja, artėja, pažymėta, kad posėdžio nebus, suplanuotas posėdis) turi savo piktogramą ir spalvą
+- 🔧 **Datos rodomos lietuviškai** — veiksmų lange datos buvo formuojamos pagal naršyklės, o ne programos kalbą
+- 🔧 **Posėdžio laikas išsaugomas teisingai** — kuriant posėdį per veiksmų langą laikas buvo siunčiamas pasaulio (UTC) laiku, tad išsaugotas posėdis nukrypdavo keliomis valandomis
+- 🔧 **Telefono apatinio meniu „+“ mygtukas veikia** — anksčiau jis vedė į neegzistuojantį puslapį
+
 ## v1.27 — Kadencijos, laikotarpių tvarkyklė ir posėdžių skelbimas (2026-08-28) {#v1-27}
 
 ### Pareigybių laikotarpių laiko juosta

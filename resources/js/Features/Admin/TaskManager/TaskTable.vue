@@ -66,7 +66,6 @@ import { TaskActionType, type TaskProgress } from '@/Types/TaskTypes';
 import { HomeIconFilled, MeetingIconFilled, ReservationIconFilled, UserIconFilled } from '@/Components/icons';
 
 // Lazy load modals
-const NewMeetingDialog = defineAsyncComponent(() => import('@/Components/Dialogs/NewMeetingDialog.vue'));
 const AddCheckInDialog = defineAsyncComponent(() => import('@/Components/Institutions/AddCheckInDialog.vue'));
 
 // Enhanced Task interface with new backend fields

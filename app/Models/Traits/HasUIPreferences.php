@@ -21,7 +21,6 @@ trait HasUIPreferences
      */
     public static array $toggleableSidebarSections = [
         'pinned',
-        'quick_actions',
         'recently_visited',
         'followed_institutions',
         'spacer',
@@ -42,21 +41,6 @@ trait HasUIPreferences
     public static array $densityValues = ['comfortable', 'compact'];
 
     /**
-     * Toggleable quick-action keys. Mirrors the actions defined in
-     * NavQuickActions.vue / useCommandActions.ts.
-     *
-     * @var list<string>
-     */
-    public static array $toggleableQuickActions = [
-        'new_problem',
-        'new_meeting',
-        'new_news',
-        'new_reservation',
-        'duty_update',
-        'duty_periods',
-    ];
-
-    /**
      * Default UI preferences structure.
      *
      * Note: `recent_pages` is intentionally kept empty here. `array_replace_recursive`
@@ -72,17 +56,11 @@ trait HasUIPreferences
         // Followed institutions is disabled by default.
         $sections['followed_institutions'] = false;
 
-        $quickActions = [];
-        foreach (self::$toggleableQuickActions as $action) {
-            $quickActions[$action] = true;
-        }
-
         return [
             'sidebar' => [
                 'sections' => $sections,
                 'order' => [
                     'pinned',
-                    'quick_actions',
                     'recently_visited',
                     'followed_institutions',
                     'spacer',
@@ -91,7 +69,6 @@ trait HasUIPreferences
                 ],
                 'collapsed' => false,
             ],
-            'quick_actions' => $quickActions,
             'appearance' => [
                 'density' => 'comfortable',
             ],
@@ -201,43 +178,6 @@ trait HasUIPreferences
 
         $preferences = $this->ui_preferences;
         $preferences['sidebar']['order'] = $sanitized;
-        $this->update(['ui_preferences' => $preferences]);
-    }
-
-    /**
-     * Get the quick-action visibility map.
-     *
-     * @return array<string, bool>
-     */
-    public function getQuickActionVisibility(): array
-    {
-        $stored = $this->ui_preferences['quick_actions'] ?? [];
-
-        $visibility = [];
-        foreach (self::$toggleableQuickActions as $action) {
-            $visibility[$action] = (bool) ($stored[$action] ?? true);
-        }
-
-        return $visibility;
-    }
-
-    /**
-     * Replace the quick-action visibility map. Unknown keys are discarded.
-     *
-     * @param  array<string, mixed>  $actions
-     */
-    public function setQuickActionVisibility(array $actions): void
-    {
-        $preferences = $this->ui_preferences;
-
-        $visibility = $preferences['quick_actions'] ?? [];
-        foreach ($actions as $key => $value) {
-            if (in_array($key, self::$toggleableQuickActions, true)) {
-                $visibility[$key] = (bool) $value;
-            }
-        }
-
-        $preferences['quick_actions'] = $visibility;
         $this->update(['ui_preferences' => $preferences]);
     }
 

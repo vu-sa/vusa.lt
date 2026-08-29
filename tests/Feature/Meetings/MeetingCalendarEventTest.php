@@ -16,10 +16,46 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->admin = makeAdminUser($this->tenant);
+    // A VU SA body: only those are announced in the calendar, so anything exercising the
+    // announcement path has to be one. An institution with no types resolves to external.
     $this->institution = Institution::factory()->for($this->tenant)->create();
+    $this->institution->types()->attach(Type::factory()->forInstitutions(InstitutionScope::Vusa)->create());
 
     $this->meeting = Meeting::factory()->create(['start_time' => now()->addWeek()]);
     $this->meeting->institutions()->attach($this->institution);
+});
+
+/** A meeting of a body VU SA only delegates into, which it has no standing to announce. */
+function externalMeeting(Tenant $tenant): Meeting
+{
+    $institution = Institution::factory()->for($tenant)->create();
+    $institution->types()->attach(Type::factory()->forInstitutions(InstitutionScope::University)->create());
+
+    $meeting = Meeting::factory()->create(['start_time' => now()->addWeek()]);
+    $meeting->institutions()->attach($institution);
+
+    return $meeting;
+}
+
+test('an external body\'s meeting cannot be announced', function (): void {
+    $meeting = externalMeeting($this->tenant);
+
+    asUser($this->admin)
+        ->post(route('meetings.calendarEvent.store', $meeting))
+        ->assertStatus(403);
+
+    expect($meeting->fresh()->calendarEvent)->toBeNull();
+});
+
+test('an external body\'s meeting cannot adopt an existing event either', function (): void {
+    $meeting = externalMeeting($this->tenant);
+    $event = Calendar::factory()->for($this->tenant)->create();
+
+    asUser($this->admin)
+        ->post(route('meetings.calendarEvent.store', $meeting), ['calendar_id' => $event->id])
+        ->assertStatus(403);
+
+    expect($event->fresh()->meeting_id)->toBeNull();
 });
 
 test('announcing a meeting creates a draft event in the institution tenant', function (): void {
@@ -185,9 +221,6 @@ test('publishing an event does not, by itself, make a VU SA meeting publicly vis
     // Settings-only — see Meeting::isPubliclyVisible(). Publishing the event still shows the
     // agenda inline on the event page (PublicPageController::meetingBehind()), but does not open
     // the meeting page/search entry unless the institution's type is on MeetingSettings.
-    $vusaType = Type::factory()->forInstitutions(InstitutionScope::Vusa)->create();
-    $this->institution->types()->attach($vusaType);
-
     expect($this->meeting->fresh()->isPubliclyVisible())->toBeFalse();
 
     $event = Calendar::factory()->for($this->tenant)->create([
@@ -213,7 +246,7 @@ test('the admin meeting page renders the linked event and the documents tab', fu
             ->component('Admin/Representation/ShowMeeting')
             ->has('meeting.calendar_event')
             ->has('meeting.documents', 1)
-            ->where('governanceScope', InstitutionScope::University->value));
+            ->where('governanceScope', InstitutionScope::Vusa->value));
 });
 
 test('meeting_id cannot be set through the ordinary calendar form', function (): void {
