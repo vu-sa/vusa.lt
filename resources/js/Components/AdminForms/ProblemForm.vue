@@ -286,6 +286,7 @@ const debouncedSearch = useDebounceFn(() => {
   if (userSearchTerm.value.length >= 2) {
     const params = new URLSearchParams({
       search: userSearchTerm.value,
+      permission: 'problems.create.padalinys',
     });
     userSearchUrl.value = `${route('api.v1.admin.users.search')}?${params.toString()}`;
     executeUserSearch();

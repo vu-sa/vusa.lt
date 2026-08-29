@@ -8,6 +8,7 @@ use App\Models\StudyProgram;
 use App\Models\Tenant;
 use App\Models\Traits\HasTranslations;
 use App\Models\User;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -69,8 +70,26 @@ class Dutiable extends MorphPivot
     // in the update route. But only if the queue driver is set to sync.
     use HasFactory, HasRelationships, HasTranslations, HasUlids;
 
+    // Explicit allowlist rather than $guarded = []: this pivot grants
+    // permissions, so mass assignment must not reach columns by accident.
     #[\Override]
-    protected $guarded = [];
+    protected $fillable = [
+        'id',
+        'duty_id',
+        'dutiable_id',
+        'dutiable_type',
+        'tenant_id',
+        'via_dutiable_id',
+        'start_date',
+        'end_date',
+        'study_program_id',
+        'study_program_note',
+        'additional_email',
+        'additional_photo',
+        'additional_photo_focal_point',
+        'description',
+        'use_original_duty_name',
+    ];
 
     #[\Override]
     protected $with = ['study_program'];
@@ -152,9 +171,26 @@ class Dutiable extends MorphPivot
         return $this->belongsTo(StudyProgram::class);
     }
 
+    /**
+     * Only a User-typed row may resolve a user: without the guard, any model
+     * whose id collides with `dutiable_id` would leak through the relation the
+     * moment a second morph type exists on this pivot.
+     *
+     * Eager loading instantiates the relation on an attribute-less model, where
+     * there is no morph type to check — the guard then stays off and eager
+     * batches keep matching by key alone, exactly as before.
+     *
+     * @return BelongsTo<User, $this>
+     */
     public function user()
     {
-        return $this->belongsTo(User::class, 'dutiable_id');
+        $relation = $this->belongsTo(User::class, 'dutiable_id');
+
+        if ($this->dutiable_type !== null && $this->dutiable_type !== MorphMap::alias(User::class)) {
+            $relation->whereRaw('1 = 0');
+        }
+
+        return $relation;
     }
 
     /**

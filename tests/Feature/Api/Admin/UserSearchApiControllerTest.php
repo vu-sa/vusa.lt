@@ -114,6 +114,15 @@ describe('search', function (): void {
             ->assertStatus(422);
     });
 
+    test('requires an explicit permission rather than defaulting the tenant scope', function (): void {
+        // The permission decides which tenants the caller may pick from, so a
+        // forgotten parameter must be a validation error, not a silent fallback.
+        asUser($this->coordinator)
+            ->getJson(route('api.v1.admin.users.search', ['search' => 'Jonas']))
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('permission');
+    });
+
     test('still requires at least two characters', function (): void {
         asUser($this->coordinator)
             ->getJson(route('api.v1.admin.users.search', ['search' => 'a']))

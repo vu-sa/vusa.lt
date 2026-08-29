@@ -359,15 +359,20 @@ class UserController extends AdminController
 
         abort_if($user->is(Auth::user()), 403, __('users.cannot_delete_self'));
 
-        // The detach is handed to the trait rather than run here: it must not happen
+        // The cleanup is handed to the trait rather than run here: it must not happen
         // until after the force-delete blockers have passed, or a refused delete
         // leaves the user stripped of every duty — and therefore of every tenant,
         // making them unreachable.
+        //
+        // Deleted row by row, never via duties()->detach(): a raw pivot delete fires
+        // no model events, so DutiableChanged (permission cache reset) and the
+        // ex-officio cascade both silently skip, orphaning rows derived from this
+        // user's sources.
         return $this->forceDeleteModel(
             $user,
             $this->entityMessage('deleted', 'user'),
             function () use ($user): void {
-                $user->duties()->detach();
+                $user->dutiables()->get()->each->delete();
             },
         );
     }
