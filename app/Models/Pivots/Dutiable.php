@@ -186,7 +186,11 @@ class Dutiable extends MorphPivot
     {
         $relation = $this->belongsTo(User::class, 'dutiable_id');
 
-        if ($this->dutiable_type !== null && $this->dutiable_type !== MorphMap::alias(User::class)) {
+        // Raw attribute: the declared `@property string` does not hold on the
+        // attribute-less instances eager loading builds the relation on.
+        $dutiableType = $this->attributes['dutiable_type'] ?? null;
+
+        if ($dutiableType !== null && $dutiableType !== MorphMap::alias(User::class)) {
             $relation->whereRaw('1 = 0');
         }
 

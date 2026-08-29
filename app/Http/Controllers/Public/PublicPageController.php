@@ -89,7 +89,8 @@ class PublicPageController extends PublicController
         // Only authenticated users pay for edit-link resolution. The target is whoever's
         // content is actually shown — subdomains without their own content show main's.
         if (Auth::check()) {
-            $this->sharePublicEditLink($content?->tenant ?? $this->tenant);
+            $contentTenant = $content?->tenant;
+            $this->sharePublicEditLink($contentTenant ?? $this->tenant);
         }
 
         $news = Cache::tags(['news', "tenant_{$this->tenant->id}", "locale_{$locale}"])

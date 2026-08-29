@@ -4,6 +4,7 @@ namespace App\Actions\Cadences;
 
 use App\Models\Cadence;
 use App\Models\Meeting;
+use Illuminate\Support\Carbon;
 
 /**
  * Pulls an anchored term's boundaries back onto the meetings that set them.
@@ -54,8 +55,8 @@ class SyncCadenceDatesFromAnchors
             });
     }
 
-    private static function dateOf(?Meeting $meeting): ?string
+    private static function dateOf(?Meeting $meeting): ?Carbon
     {
-        return $meeting?->start_time?->toDateString();
+        return $meeting?->start_time?->startOfDay();
     }
 }
