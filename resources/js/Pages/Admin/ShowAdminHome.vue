@@ -17,7 +17,7 @@
             </h1>
           </div>
 
-          <ActionWindowTrigger variant="standalone" spotlight-position="bottom-right" class="shrink-0" />
+          <!-- <ActionWindowTrigger variant="standalone" spotlight-position="bottom-right" class="shrink-0" /> -->
         </div>
 
         <!-- Hero search: opens the command palette with the typed text -->
@@ -69,7 +69,7 @@ import { useProductTour } from '@/Composables/useProductTour';
 import { provideTour } from '@/Composables/useTourProvider';
 import { useSidebar } from '@/Components/ui/sidebar/utils';
 import { useActionWindow } from '@/Composables/useActionWindow';
-import ActionWindowTrigger from '@/Components/ActionWindow/ActionWindowTrigger.vue';
+// import ActionWindowTrigger from '@/Components/ActionWindow/ActionWindowTrigger.vue';
 import type { TaskProgress, TaskActionType } from '@/Types/TaskTypes';
 import type { InstitutionActivityInsight } from '@/Types/InstitutionActivity';
 
