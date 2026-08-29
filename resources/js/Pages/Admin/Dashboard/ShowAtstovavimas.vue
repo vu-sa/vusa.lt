@@ -86,7 +86,7 @@
           :institutions-insights="userScopedInsights"
           :current-user-id="Number(props.user.id)" @show-all-institutions="actions.showAllInstitutionModal.value = true"
           @show-all-meetings="actions.showAllMeetingModal.value = true"
-          @create-meeting="actions.showMeetingModal.value = true" @schedule-meeting="actions.handleScheduleMeeting"
+          @create-meeting="actions.openMeetingWindow" @schedule-meeting="actions.handleScheduleMeeting"
           @show-institution-details="actions.handleShowInstitutionDetails" />
 
         <!-- User timeline section - deferred to prevent view transition lag -->
@@ -168,10 +168,6 @@
       @range-changed="onTenantRangeChanged" />
 
     <!-- These modals can be opened from FullscreenGanttModal, so they must come after it in DOM order -->
-    <NewMeetingDialog :show-modal="actions.showMeetingModal.value" :institution="actions.selectedInstitution.value"
-      :suggested-at="actions.selectedSuggestedAt.value"
-      @close="handleMeetingDialogClose" />
-
     <AddCheckInDialog v-if="actions.showCreateCheckIn.value" :open="!!actions.showCreateCheckIn.value"
       :institution-id="actions.showCreateCheckIn.value.institutionId!"
       :institution-name="checkInInstitutionName"
@@ -258,7 +254,6 @@ import Tabs from '@/Components/ui/tabs/Tabs.vue';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { Button } from '@/Components/ui/button';
 import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue';
-import NewMeetingDialog from '@/Components/Dialogs/NewMeetingDialog.vue';
 import PageHero from '@/Components/Hero/PageHero.vue';
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import { MeetingIconFilled } from '@/Components/icons';
@@ -747,11 +742,6 @@ function refreshTenantData(): void {
     tenantTimelineData.load(timelineFilters.selectedTenantForGantt.value, true);
     void tenantMeetings.refresh();
   }
-}
-
-function handleMeetingDialogClose(): void {
-  actions.onCloseMeetingModal();
-  refreshTenantData();
 }
 
 function handleCheckInDialogClose(): void {

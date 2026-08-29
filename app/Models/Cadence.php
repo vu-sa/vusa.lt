@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
-use Database\Factories\CadenceFactory;
+use Illuminate\Database\Eloquent\Attributes\Appends;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -21,31 +23,28 @@ use Illuminate\Support\Carbon;
  * @property string|null $end_meeting_id
  * @property Carbon $start_date
  * @property Carbon $end_date
- * @property-read string $label
- * @property Carbon $created_at
- * @property Carbon $updated_at
- * @property-read Institution|null $institution
- * @property-read Meeting|null $startMeeting
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read Meeting|null $endMeeting
+ * @property-read Institution|null $institution
+ * @property-read mixed $label
+ * @property-read Meeting|null $startMeeting
  *
+ * @method static Builder<static>|Cadence containing(string $date)
+ * @method static \Database\Factories\CadenceFactory factory($count = null, $state = [])
  * @method static Builder<static>|Cadence forInstitution(?string $institutionId)
  * @method static Builder<static>|Cadence globalLadder()
- * @method static Builder<static>|Cadence containing(string $date)
- * @method static CadenceFactory factory($count = null, $state = [])
  * @method static Builder<static>|Cadence newModelQuery()
  * @method static Builder<static>|Cadence newQuery()
  * @method static Builder<static>|Cadence query()
  *
  * @mixin \Eloquent
  */
+#[Appends(['label'])]
+#[Unguarded]
 class Cadence extends Model
 {
     use HasFactory, HasUlids;
-
-    protected $guarded = [];
-
-    /** @var list<string> */
-    protected $appends = ['label'];
 
     #[\Override]
     protected function casts(): array
@@ -60,9 +59,9 @@ class Cadence extends Model
      * Derived, never stored: a term is identified by the years it spans, and a
      * hand-typed name only ever drifted from the dates beside it.
      */
-    public function getLabelAttribute(): string
+    protected function label(): Attribute
     {
-        return implode('–', array_unique([$this->start_date->year, $this->end_date->year]));
+        return Attribute::make(get: fn () => implode('–', array_unique([$this->start_date->year, $this->end_date->year])));
     }
 
     /**

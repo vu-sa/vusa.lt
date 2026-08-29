@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Tasks\Enums\ActionType;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -25,8 +27,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon|null $completed_at
  * @property Carbon $created_at
  * @property Carbon $updated_at
- * @property-read string $color
- * @property-read string $icon
+ * @property-read mixed $color
+ * @property-read mixed $icon
  * @property-read Model|\Eloquent $taskable
  * @property-read Collection<int, Tenant> $tenants
  * @property-read Collection<int, User> $users
@@ -40,12 +42,10 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
+#[Unguarded]
 class Task extends Model
 {
     use HasFactory, HasRelationships, HasUlids;
-
-    #[\Override]
-    protected $guarded = [];
 
     #[\Override]
     protected function casts(): array
@@ -197,16 +197,16 @@ class Task extends Model
     /**
      * Get the action type icon name for frontend display.
      */
-    public function getIconAttribute(): string
+    protected function icon(): Attribute
     {
-        return $this->action_type?->icon() ?? 'clipboard-check';
+        return Attribute::make(get: fn () => $this->action_type?->icon() ?? 'clipboard-check');
     }
 
     /**
      * Get the action type color for frontend display.
      */
-    public function getColorAttribute(): string
+    protected function color(): Attribute
     {
-        return $this->action_type?->color() ?? 'zinc';
+        return Attribute::make(get: fn () => $this->action_type?->color() ?? 'zinc');
     }
 }

@@ -1,18 +1,26 @@
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 
+import { useActionWindow, type ActionWindowInstitutionRef } from '@/Composables/useActionWindow';
+
 export function useAtstovavimasActions(
   accessibleInstitutions: App.Entities.Institution[],
 ) {
+  const actionWindow = useActionWindow();
+
+  /** `is_internal` decides whether the window may offer to announce the meeting. */
+  const institutionRef = (
+    institution?: { id: string | number; name: string; is_internal?: boolean },
+  ): ActionWindowInstitutionRef | null => institution
+    ? { id: String(institution.id), name: institution.name, isInternal: institution.is_internal }
+    : null;
+
   // Modal state
-  const showMeetingModal = ref(false);
   const showAllMeetingModal = ref(false);
   const showAllInstitutionModal = ref(false);
   const showCreateCheckIn = ref<{ open: boolean; institutionId?: string; startDate?: Date; endDate?: Date } | null>(null);
   const showFullscreenGantt = ref(false);
   const fullscreenGanttType = ref<'user' | 'tenant'>('user');
-  const selectedInstitution = ref<any | undefined>(undefined);
-  const selectedSuggestedAt = ref<Date | undefined>(undefined);
 
   // Check-in actions
   const handleAddCheckIn = (institutionId: string) => {
@@ -32,9 +40,10 @@ export function useAtstovavimasActions(
   // Meeting actions
   const handleScheduleMeeting = (institutionId: string) => {
     const inst = accessibleInstitutions.find(i => i.id === institutionId);
-    selectedInstitution.value = inst;
-    showMeetingModal.value = true;
+    actionWindow.open({ flow: 'meeting.create', institution: institutionRef(inst) });
   };
+
+  const openMeetingWindow = () => actionWindow.open({ flow: 'meeting.create' });
 
   // Gantt and meeting creation
   // payload.institutionName is optional - provided when institution is external (not in user's accessible list)
@@ -51,15 +60,11 @@ export function useAtstovavimasActions(
       } as any;
     }
 
-    selectedInstitution.value = inst;
-    selectedSuggestedAt.value = payload.suggestedAt;
-    showMeetingModal.value = true;
-  };
-
-  const onCloseMeetingModal = () => {
-    showMeetingModal.value = false;
-    selectedInstitution.value = undefined;
-    selectedSuggestedAt.value = undefined;
+    actionWindow.open({
+      flow: 'meeting.create',
+      institution: institutionRef(inst),
+      suggestedAt: payload.suggestedAt,
+    });
   };
 
   const onGanttFullscreen = (type: 'user' | 'tenant') => {
@@ -81,14 +86,12 @@ export function useAtstovavimasActions(
 
   return {
     // Modal state
-    showMeetingModal,
+    openMeetingWindow,
     showAllMeetingModal,
     showAllInstitutionModal,
     showCreateCheckIn,
     showFullscreenGantt,
     fullscreenGanttType,
-    selectedInstitution,
-    selectedSuggestedAt,
 
     // Check-in actions
     handleAddCheckIn,
@@ -99,7 +102,6 @@ export function useAtstovavimasActions(
 
     // Gantt actions
     onGapCreateMeeting,
-    onCloseMeetingModal,
     onGanttFullscreen,
 
     // General actions

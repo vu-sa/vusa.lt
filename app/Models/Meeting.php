@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Actions\AnnounceMeetingInCalendar;
 use App\Actions\Cadences\SyncCadenceDatesFromAnchors;
 use App\Contracts\Commentable;
 use App\Contracts\SharepointFileableContract;
@@ -16,6 +17,8 @@ use App\Models\Traits\LogsRelationshipChanges;
 use App\Services\MeetingCompletionService;
 use App\Services\MeetingRepresentativeResolver;
 use App\Services\VoteStatisticsCalculator;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -41,20 +44,22 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, AgendaItem> $agendaItems
  * @property-read Collection<int, FileableFile> $availableFiles
+ * @property-read Calendar|null $calendarEvent
  * @property-read Collection<int, Comment> $comments
+ * @property-read mixed $completion_status
+ * @property-read Collection<int, Document> $documents
  * @property-read Collection<int, FileableFile> $fileableFiles
- * @property-read string $completion_status
  * @property-read bool $has_protocol
- * @property-read bool $has_calendar_event
  * @property-read bool $has_report
- * @property-read bool $is_joint
- * @property-read bool $is_public
- * @property-read string|null $type_label
- * @property-read string|null $type_slug
+ * @property-read mixed $has_calendar_event
  * @property-read Collection<int, Institution> $institutions
+ * @property-read mixed $is_joint
+ * @property-read mixed $is_public
  * @property-read Collection<int, Comment> $rootComments
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Tenant> $tenants
+ * @property-read mixed $type_label
+ * @property-read mixed $type_slug
  * @property-read Collection<int, User> $users
  *
  * @method static \Database\Factories\MeetingFactory factory($count = null, $state = [])
@@ -67,12 +72,10 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
+#[Unguarded]
 class Meeting extends Model implements Commentable, SharepointFileableContract
 {
     use HasComments, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable, SoftDeletes;
-
-    #[\Override]
-    protected $guarded = [];
 
     #[\Override]
     protected function casts(): array
@@ -87,30 +90,29 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
         ];
     }
 
-    // Note: is_public is NOT auto-appended due to performance (triggers N+1 queries).
-    // Append it explicitly where needed: $meeting->append('is_public')
-
     /**
      * Check if meeting involves multiple institutions (joint meeting / jungtinis posėdis).
      * Note: is_joint is NOT auto-appended due to performance (triggers N+1 queries).
      * Append it explicitly where needed: $meeting->append('is_joint')
      */
-    public function getIsJointAttribute(): bool
+    protected function isJoint(): Attribute
     {
-        if (! $this->relationLoaded('institutions')) {
-            $this->load('institutions');
-        }
+        return Attribute::make(get: function () {
+            if (! $this->relationLoaded('institutions')) {
+                $this->load('institutions');
+            }
 
-        return $this->institutions->count() > 1;
+            return $this->institutions->count() > 1;
+        });
     }
 
     /**
      * Check if meeting is publicly visible based on institution types.
      * Uses Institution::has_public_meetings which checks MeetingSettings.
      */
-    public function getIsPublicAttribute(): bool
+    protected function isPublic(): Attribute
     {
-        return $this->isPubliclyVisible();
+        return Attribute::make(get: fn () => $this->isPubliclyVisible());
     }
 
     /**
@@ -335,27 +337,43 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
     /**
      * Get the localized type label.
      */
-    public function getTypeLabelAttribute(): ?string
+    protected function typeLabel(): Attribute
     {
-        return $this->type?->label(app()->getLocale());
+        return Attribute::make(get: fn () => $this->type?->label(app()->getLocale()));
     }
 
     /**
      * Get the type value (used for icon mapping etc).
      */
-    public function getTypeSlugAttribute(): ?string
+    protected function typeSlug(): Attribute
     {
-        return $this->type?->value;
+        return Attribute::make(get: fn () => $this->type?->value);
+    }
+
+    /**
+     * Whether this meeting may be announced in the public calendar.
+     *
+     * Only VU SA's own bodies are: an external body's meeting is not VU SA's to publish.
+     * A joint meeting qualifies on its VU SA side, which is also the side the announcement
+     * is titled after ({@see AnnounceMeetingInCalendar}).
+     */
+    public function isAnnounceableInCalendar(): bool
+    {
+        $this->loadMissing('institutions.types');
+
+        return $this->institutions->contains(
+            fn (Institution $institution): bool => $institution->governance_scope->isInternal()
+        );
     }
 
     /**
      * Check if all agenda items have votes with completion fields filled.
      *
-     * @return string 'complete'|'incomplete'|'no_items'
+     * @return Attribute<'complete'|'incomplete'|'no_items', never>
      */
-    public function getCompletionStatusAttribute(): string
+    protected function completionStatus(): Attribute
     {
-        return app(MeetingCompletionService::class)->calculate($this);
+        return Attribute::make(get: fn () => app(MeetingCompletionService::class)->calculate($this));
     }
 
     /**
@@ -444,9 +462,9 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
      * Appended rather than computed in the DTO because the dashboard's user section
      * serialises the relation straight through — see DashboardController::atstovavimas().
      */
-    public function getHasCalendarEventAttribute(): bool
+    protected function hasCalendarEvent(): Attribute
     {
-        return $this->calendarEvent !== null;
+        return Attribute::make(get: fn () => $this->calendarEvent !== null);
     }
 
     /**

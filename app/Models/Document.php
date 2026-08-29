@@ -6,6 +6,8 @@ use App\Helpers\ShortUrlHelper;
 use App\Models\Traits\LogsModelActivity;
 use App\Services\DocumentSharepointSyncService;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -45,8 +47,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon|null $effective_date
  * @property Carbon|null $expiration_date
  * @property-read Collection<int, Activity> $activitiesAsSubject
- * @property-read bool|null $is_in_effect
  * @property-read Institution|null $institution
+ * @property-read mixed $is_in_effect
  * @property-read Meeting|null $meeting
  * @property-read Collection<int, Tenant> $tenant
  *
@@ -58,12 +60,10 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @mixin \Eloquent
  */
 #[Hidden(['sharepoint_id', 'eTag', 'public_url_created_at', 'sharepoint_site_id', 'sharepoint_list_id', 'sharepoint_permission_id', 'created_at', 'updated_at'])]
+#[Unguarded]
 class Document extends Model
 {
     use HasFactory, HasRelationships, LogsModelActivity, Searchable;
-
-    #[\Override]
-    protected $guarded = [];
 
     #[\Override]
     protected function casts(): array
@@ -301,10 +301,9 @@ class Document extends Model
         return $effectiveCheck && $expirationCheck;
     }
 
-    // Accessor attribute that uses the method above
-    protected function getIsInEffectAttribute(): ?bool
+    protected function isInEffect(): Attribute
     {
-        return $this->calculateIsInEffect();
+        return Attribute::make(get: fn () => $this->calculateIsInEffect());
     }
 
     // Also used in SharepointGraphService::batchProcessDocuments

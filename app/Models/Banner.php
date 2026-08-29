@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Traits\LogsModelActivity;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -36,12 +37,10 @@ use Laravel\Scout\Searchable;
  *
  * @mixin \Eloquent
  */
+#[Unguarded]
 class Banner extends Model
 {
     use HasFactory, LogsModelActivity, Searchable, SoftDeletes;
-
-    #[\Override]
-    protected $guarded = [];
 
     #[\Override]
     protected static function booted()

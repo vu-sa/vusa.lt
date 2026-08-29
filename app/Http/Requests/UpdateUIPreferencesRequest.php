@@ -31,8 +31,6 @@ class UpdateUIPreferencesRequest extends FormRequest
             'sidebar.order' => ['nullable', 'array'],
             'sidebar.order.*' => ['string'],
             'sidebar.collapsed' => ['nullable', 'boolean'],
-            'quick_actions' => ['nullable', 'array'],
-            'quick_actions.*' => ['boolean'],
             'appearance' => ['nullable', 'array'],
             'appearance.density' => ['nullable', Rule::in(['comfortable', 'compact'])],
             'pinned_pages' => ['nullable', 'array'],

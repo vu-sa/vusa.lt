@@ -6,7 +6,7 @@ use App\Models\Type;
 use App\Services\InstitutionScopeResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 function scopeResolver(): InstitutionScopeResolver
 {

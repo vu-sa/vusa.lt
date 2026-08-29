@@ -47,9 +47,9 @@ class StoreRegistrationRequest extends FormRequest
     /**
      * Configure the validator instance.
      */
-    public function withValidator(Validator $validator): void
+    public function withValidator(\Illuminate\Contracts\Validation\Validator $validator): void
     {
-        $validator->after(function (Validator $validator): void {
+        $validator->after(function (\Illuminate\Contracts\Validation\Validator $validator): void {
             $form = $this->route('form');
             if (! $form instanceof Form) {
                 return;
@@ -80,7 +80,7 @@ class StoreRegistrationRequest extends FormRequest
     /**
      * Validate field based on its type
      */
-    private function validateFieldByType(Validator $validator, FormField $field, $value, string $fieldId): void
+    private function validateFieldByType(\Illuminate\Contracts\Validation\Validator $validator, FormField $field, $value, string $fieldId): void
     {
         // Handle email validation - check both type and subtype
         if ($field->type === 'email' || ($field->type === 'string' && $field->subtype === 'email')) {

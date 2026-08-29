@@ -79,8 +79,8 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
         Route::get('kalendorius/ics', [Public\MainController::class, 'publicAllEventCalendar'])->name('calendar.ics');
 
-        Route::redirect('nariu-registracija', config('app.url').'/registracija/nariu-registracija', 301)->name('member-registration');
-        Route::redirect('member-registration', config('app.url').'/registration/member-registration', 301)->name('member-registration.en');
+        Route::permanentRedirect('nariu-registracija', config('app.url').'/registracija/nariu-registracija')->name('member-registration');
+        Route::permanentRedirect('member-registration', config('app.url').'/registration/member-registration')->name('member-registration.en');
 
         // Note: API routes should be defined in api.php, not here
 
@@ -93,15 +93,15 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('ind-komplektai', [Public\StudySetController::class, 'index'])->name('studySets');
 
         // Redirect reports to external subdomains
-        Route::redirect('ataskaita-2022', 'https://ataskaita2022.vusa.lt', 301);
-        Route::redirect('ataskaita-2023', 'https://ataskaita2023.vusa.lt', 301);
+        Route::permanentRedirect('ataskaita-2022', 'https://ataskaita2022.vusa.lt');
+        Route::permanentRedirect('ataskaita-2023', 'https://ataskaita2023.vusa.lt');
     });
 
     Route::domain('{subdomain}.'.explode('.', config('app.url'), 2)[1])->group(function (): void {
         Route::get('/', [Public\PublicPageController::class, 'home'])->name('home');
         Route::get('{newsArchiveString}', [Public\NewsController::class, 'newsArchive'])->name('newsArchive')
             ->whereIn('newsArchiveString', LocalizedRouteSlugs::accepted('newsArchiveString'));
-        Route::redirect('/admin', '/mano', 301);
+        Route::permanentRedirect('/admin', '/mano');
 
         /* Route::get('tapk-nariu', [Public\PublicPageController::class, 'membership'])->name('joinUs'); */
 

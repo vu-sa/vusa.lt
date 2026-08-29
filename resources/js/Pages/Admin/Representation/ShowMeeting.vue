@@ -35,15 +35,6 @@
             <X class="h-2.5 w-2.5" />
           </button>
         </div>
-        <button
-          type="button"
-          class="flex items-center gap-1 text-xs text-zinc-400 hover:text-primary transition-colors"
-          :title="$t('Pridėti instituciją')"
-          @click="showAddInstitutionDialog = true"
-        >
-          <Plus class="h-3 w-3" />
-          <span class="hidden sm:inline">{{ $t('Pridėti instituciją') }}</span>
-        </button>
       </div>
     </template>
     <template #info>
@@ -78,6 +69,12 @@
         <span class="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:inline">{{ $t('Atstovai') }}:</span>
         <UsersAvatarGroup :users="representatives" :max="4" :size="24" expandable />
       </div>
+      <!-- Nominated for the term this sitting fell in. Shown apart from the
+           representatives because they are who the agenda tasks actually went to. -->
+      <div v-if="administrators && administrators.length > 0" class="flex items-center gap-2">
+        <span class="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:inline">{{ $t('administrators.label') }}:</span>
+        <UsersAvatarGroup :users="(administrators as unknown as App.Entities.User[])" :max="4" :size="24" expandable />
+      </div>
 
       <!-- Protocol / report status (past meetings only). This is meeting metadata,
            so it belongs with the rest of the hero info rather than beside the tabs. -->
@@ -103,13 +100,14 @@
       </div>
     </template>
     <template #actions>
-      <Button variant="outline" size="icon" class="h-9 w-9" @click="showMeetingModal = true">
-        <Edit class="h-4 w-4" />
+      <Button variant="outline" size="sm" class="h-9" @click="showMeetingModal = true">
+        <Edit class="h-4 w-4 sm:mr-2" />
+        <span class="hidden sm:inline">{{ $t('Redaguoti posėdį') }}</span>
       </Button>
       <SpotlightPopover
         :title="$t('meetings.announce.spotlight_title')"
         :description="$t('meetings.announce.spotlight_description')"
-        :is-dismissed="announceSpotlight.isDismissed.value"
+        :is-dismissed="!announceSpotlight.isVisible.value"
         position="bottom"
         float
         @dismiss="announceSpotlight.dismiss"
@@ -121,11 +119,11 @@
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem @click="showMeetingModal = true">
-              <Edit class="h-4 w-4 mr-2" />
-              {{ $t('Redaguoti posėdį') }}
+            <DropdownMenuItem @click="showAddInstitutionDialog = true">
+              <Link2 class="h-4 w-4 mr-2" />
+              {{ $t('Pridėti instituciją') }}
             </DropdownMenuItem>
-            <DropdownMenuItem v-if="!calendarEvent" @click="openAnnounceDialog">
+            <DropdownMenuItem v-if="isInternalBody && !calendarEvent" @click="openAnnounceDialog">
               <CalendarPlus class="h-4 w-4 mr-2" />
               {{ $t('Paskelbti kalendoriuje') }}
             </DropdownMenuItem>
@@ -151,7 +149,7 @@
           :meeting-id="meeting.id"
           :requires-student-perspective="!isInternalBody"
           @add="showSingleAgendaItemModal = true"
-          @add-bulk="showAgendaItemStoreModal = true"
+          @add-bulk="openBulkAgendaModal"
           @delete="requestAgendaItemDelete"
         />
         <MeetingNavigationCards
@@ -207,7 +205,7 @@
         </DialogHeader>
         <AddAgendaItemForm :meeting-id="meeting.id" :loading @submit="handleSingleAgendaItemSubmit" />
         <div class="mt-4 pt-4 border-t">
-          <Button variant="outline" size="sm" class="w-full" @click="showSingleAgendaItemModal = false; showAgendaItemStoreModal = true;">
+          <Button variant="outline" size="sm" class="w-full" @click="showSingleAgendaItemModal = false; openBulkAgendaModal();">
             {{ $t("Pridėti kelis punktus iš karto") }}...
           </Button>
         </div>
@@ -215,15 +213,17 @@
     </Dialog>
 
     <Dialog v-model:open="showAgendaItemStoreModal">
-      <DialogContent class="max-h-[85vh] flex flex-col">
+      <DialogContent class="max-h-[85vh] sm:max-w-3xl flex flex-col">
         <DialogHeader class="flex-none">
           <DialogTitle>{{ $t("Pridėti darbotvarkės punktus") }}</DialogTitle>
         </DialogHeader>
         <div class="flex-1 overflow-y-auto -mx-6 px-6">
           <AgendaItemsForm
+            :key="bulkAgendaInitialInput"
             class="w-full"
             :loading
             mode="add"
+            :initial-input="bulkAgendaInitialInput"
             :submit-label="$t('Pridėti punktus')"
             :show-skip-button="false"
             @submit="handleAgendaItemsFormSubmit"
@@ -347,6 +347,7 @@
       </DialogContent>
     </Dialog>
     <AnnounceMeetingDialog
+      v-if="isInternalBody"
       v-model:open="showAnnounceDialog"
       :meeting-id="meeting.id"
       :tenant-ids="tenantIds"
@@ -396,6 +397,7 @@ import MeetingForm from '@/Components/AdminForms/MeetingForm.vue';
 import AnnounceMeetingDialog from '@/Components/Meetings/AnnounceMeetingDialog.vue';
 import MeetingDocumentsPanel from '@/Components/Meetings/MeetingDocumentsPanel.vue';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import type { AdministratorUser } from '@/Components/Institutions';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import FileManager from '@/Features/Admin/SharepointFileManager/SharepointFileManager.vue';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
@@ -404,6 +406,8 @@ import { InstitutionIconFilled, MeetingIconFilled } from '@/Components/icons';
 const props = defineProps<{
   meeting: App.Entities.Meeting;
   representatives: App.Entities.User[];
+  /** Institution administrators resolved at the meeting's own date. */
+  administrators: AdministratorUser[];
   previousMeeting?: { id: string; start_time: string; type?: string | null } | null;
   nextMeeting?: { id: string; start_time: string; type?: string | null } | null;
   availableInstitutionsForAttach?: { id: string; name: string; tenant_shortname?: string | null }[] | null;
@@ -437,7 +441,11 @@ const isInternalBody = computed(() => props.governanceScope === InstitutionScope
  */
 const calendarEvent = computed(() => props.meeting.calendar_event ?? null);
 
-const announceSpotlight = useFeatureSpotlight('meeting-calendar-announce-v1');
+// Nothing to point at on a body VU SA only delegates into: its meetings are not VU SA's
+// to announce, so the menu item is absent too.
+const announceSpotlight = useFeatureSpotlight('meeting-calendar-announce-v1', {
+  enabled: props.governanceScope === InstitutionScope.Vusa,
+});
 const showAnnounceDialog = ref(false);
 
 const openAnnounceDialog = () => {
@@ -460,6 +468,10 @@ const meetingRelativeTime = computed(() => formatRelativeTime(new Date(props.mee
 // Component state
 const showMeetingModal = ref(false);
 const showAgendaItemStoreModal = ref(false);
+
+// The action window's "paste the whole agenda" choice promises the paste box, not the
+// one-by-one editor the menu's own bulk entry opens on.
+const bulkAgendaInitialInput = ref<'one-by-one' | 'text'>('one-by-one');
 const showSingleAgendaItemModal = ref(false);
 const showDeleteDialog = ref(false);
 const loading = ref(false);
@@ -526,12 +538,19 @@ onMounted(() => {
   }
   lastVisitedMeetingId.value = props.meeting.id;
 
-  // Auto-open the add dialog in edit mode if action=add
-  if (urlAction === 'add') {
+  // Auto-open an agenda dialog when the caller asked for one (`?action=add`, or
+  // `?action=add-bulk` from the action window's "paste the whole agenda" choice).
+  if (urlAction === 'add' || urlAction === 'add-bulk') {
     currentTab.value = 'agenda';
     setTimeout(() => {
       agendaEditing.value = true;
-      showSingleAgendaItemModal.value = true;
+      if (urlAction === 'add-bulk') {
+        bulkAgendaInitialInput.value = 'text';
+        showAgendaItemStoreModal.value = true;
+      }
+      else {
+        showSingleAgendaItemModal.value = true;
+      }
       if (typeof window !== 'undefined') {
         const url = new URL(window.location.href);
         url.searchParams.delete('action');
@@ -691,6 +710,11 @@ const handleSingleAgendaItemSubmit = (data: { meeting_id: string; title: string;
       loading.value = false;
     },
   });
+};
+
+const openBulkAgendaModal = () => {
+  bulkAgendaInitialInput.value = 'one-by-one';
+  showAgendaItemStoreModal.value = true;
 };
 
 const handleAgendaItemsFormSubmit = (agendaItems: Record<string, any>) => {

@@ -89,8 +89,8 @@ class PublicPageController extends PublicController
         // Only authenticated users pay for edit-link resolution. The target is whoever's
         // content is actually shown — subdomains without their own content show main's.
         if (Auth::check()) {
-            $contentTenant = $content?->tenant;
-            $this->sharePublicEditLink($contentTenant ?? $this->tenant);
+            // @phpstan-ignore nullsafe.neverNull (main tenant / its content can be null at runtime)
+            $this->sharePublicEditLink($content?->tenant ?? $this->tenant);
         }
 
         $news = Cache::tags(['news', "tenant_{$this->tenant->id}", "locale_{$locale}"])
@@ -490,7 +490,7 @@ class PublicPageController extends PublicController
 
         $now = Carbon::now();
         $perPage = 20; // Number of events per page
-        $tab = request()->get('tab', 'upcoming'); // Default tab is upcoming
+        $tab = request()->input('tab', 'upcoming'); // Default tab is upcoming
 
         // Create base query with common filters
         $query = Calendar::query()

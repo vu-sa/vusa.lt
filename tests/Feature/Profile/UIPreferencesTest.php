@@ -17,7 +17,7 @@ describe('HasUIPreferences trait', function (): void {
         expect($this->user->ui_preferences)->toBeArray();
 
         $visibility = $this->user->getSidebarSectionVisibility();
-        expect($visibility['quick_actions'])->toBeTrue()
+        expect($visibility['pinned'])->toBeTrue()
             ->and($visibility['recently_visited'])->toBeTrue()
             ->and($visibility['followed_institutions'])->toBeFalse()
             ->and($visibility['spacer'])->toBeTrue()
@@ -26,32 +26,32 @@ describe('HasUIPreferences trait', function (): void {
 
     test('default section order contains every toggleable section once', function (): void {
         $order = $this->user->getSidebarSectionOrder();
-        expect($order)->toContain('quick_actions')
+        expect($order)->toContain('pinned')
             ->toContain('recently_visited')
             ->toContain('spacer')
             ->and($order)->toHaveSameSize(array_unique($order));
     });
 
     test('setSidebarSectionOrder sanitizes and appends missing sections', function (): void {
-        $this->user->setSidebarSectionOrder(['start_fm', 'quick_actions', 'unknown']);
+        $this->user->setSidebarSectionOrder(['start_fm', 'pinned', 'unknown']);
         $this->user->refresh();
 
         $order = $this->user->getSidebarSectionOrder();
-        expect($order)->toMatchArray([0 => 'start_fm', 1 => 'quick_actions'])->not->toContain('unknown')
+        expect($order)->toMatchArray([0 => 'start_fm', 1 => 'pinned'])->not->toContain('unknown')
             ->toContain('secondary')
             ->toContain('spacer');
     });
 
     test('setSidebarSectionVisibility persists and ignores unknown keys', function (): void {
         $this->user->setSidebarSectionVisibility([
-            'quick_actions' => false,
+            'pinned' => false,
             'bogus_section' => false,
         ]);
 
         $this->user->refresh();
 
         $visibility = $this->user->getSidebarSectionVisibility();
-        expect($visibility['quick_actions'])->toBeFalse()
+        expect($visibility['pinned'])->toBeFalse()
             ->and($visibility)->not->toHaveKey('bogus_section');
     });
 
@@ -173,73 +173,20 @@ describe('sidebar collapsed', function (): void {
     });
 });
 
-describe('quick action visibility', function (): void {
-    test('applies defaults when column is null', function (): void {
-        $visibility = $this->user->getQuickActionVisibility();
-        expect($visibility['new_meeting'])->toBeTrue()
-            ->and($visibility['new_news'])->toBeTrue()
-            ->and($visibility['duty_update'])->toBeTrue()
-            ->and($visibility['duty_periods'])->toBeTrue();
-    });
-
-    test('setQuickActionVisibility persists and ignores unknown keys', function (): void {
-        $this->user->setQuickActionVisibility([
-            'new_meeting' => false,
-            'bogus_action' => false,
-        ]);
-        $this->user->refresh();
-
-        $visibility = $this->user->getQuickActionVisibility();
-        expect($visibility['new_meeting'])->toBeFalse()
-            ->and($visibility)->not->toHaveKey('bogus_action');
-    });
-
-    test('reset does not wipe quick action visibility', function (): void {
-        $this->user->setQuickActionVisibility(['new_meeting' => false]);
-        $this->user->setSidebarSectionVisibility(['start_fm' => false]);
-
-        // Simulate a full reset via the endpoint
-        asUser($this->user)->patch(route('api.v1.admin.user-preferences.update'), [
-            'sidebar' => [
-                'sections' => [
-                    'quick_actions' => true,
-                    'recently_visited' => true,
-                    'followed_institutions' => true,
-                    'spacer' => true,
-                    'start_fm' => true,
-                    'secondary' => true,
-                ],
-                'order' => ['quick_actions', 'recently_visited', 'followed_institutions', 'spacer', 'start_fm', 'secondary'],
-            ],
-            'quick_actions' => [
-                'new_problem' => true,
-                'new_meeting' => true,
-                'new_news' => true,
-                'new_reservation' => true,
-                'duty_update' => true,
-            ],
-        ])->assertNoContent();
-
-        $this->user->refresh();
-        expect($this->user->getQuickActionVisibility()['new_meeting'])->toBeTrue()
-            ->and($this->user->getSidebarSectionVisibility()['start_fm'])->toBeTrue();
-    });
-});
-
 describe('api.v1.admin.user-preferences.update endpoint', function (): void {
     test('guests are not authorized', function (): void {
         $this->patch(route('api.v1.admin.user-preferences.update'), [
-            'sidebar' => ['sections' => ['quick_actions' => false]],
+            'sidebar' => ['sections' => ['pinned' => false]],
         ])->assertStatus(302); // redirected to login
     });
 
     test('an authenticated user can toggle a section and gets 204', function (): void {
         asUser($this->user)->patch(route('api.v1.admin.user-preferences.update'), [
-            'sidebar' => ['sections' => ['quick_actions' => false]],
+            'sidebar' => ['sections' => ['pinned' => false]],
         ])->assertNoContent();
 
         $this->user->refresh();
-        expect($this->user->getSidebarSectionVisibility()['quick_actions'])->toBeFalse();
+        expect($this->user->getSidebarSectionVisibility()['pinned'])->toBeFalse();
     });
 
     test('an authenticated user can reorder sections', function (): void {
@@ -251,7 +198,7 @@ describe('api.v1.admin.user-preferences.update endpoint', function (): void {
         $order = $this->user->getSidebarSectionOrder();
         expect($order)->toMatchArray([0 => 'recently_visited', 1 => 'secondary'])->not->toContain('bogus');
         // Missing toggleable sections are appended.
-        expect($order)->toContain('quick_actions');
+        expect($order)->toContain('pinned');
         expect($order)->toContain('start_fm');
     });
 });

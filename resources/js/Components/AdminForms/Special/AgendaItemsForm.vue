@@ -189,8 +189,8 @@
                       {{ $t("Pridėti klausimą") }}
                     </Button>
 
-                    <Button v-if="props.mode === 'create' && fields.length === 0" type="button" variant="outline" size="sm"
-                      @click="showQuestionInputInTextArea = true; agendaInputMode = 'text'">
+                    <Button type="button" variant="outline" size="sm"
+                      @click="openTextAreaInput">
                       <DocumentIcon class="mr-2 h-4 w-4" />
                       {{ $t('Įkelti iš teksto') }}
                     </Button>
@@ -209,7 +209,7 @@
                     <h4 class="font-medium">
                       {{ $t('Masinis klausimų įvedimas') }}
                     </h4>
-                    <Button type="button" size="sm" variant="outline" @click="showQuestionInputInTextArea = false; agendaInputMode = null">
+                    <Button type="button" size="sm" variant="outline" @click="closeTextAreaInput">
                       <ArrowLeft class="mr-2 h-3 w-3" />
                       {{ $t('Grįžti') }}
                     </Button>
@@ -285,7 +285,7 @@
                     <!-- Option 3: From text -->
                     <button type="button"
                       class="flex flex-col items-center gap-3 p-6 rounded-lg border-2 border-dashed hover:border-primary hover:bg-muted/50 transition-all group"
-                      @click="showQuestionInputInTextArea = true; agendaInputMode = 'text'">
+                      @click="openTextAreaInput">
                       <DocumentIcon class="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
                       <div class="text-center">
                         <p class="font-medium">
@@ -427,6 +427,8 @@ const props = withDefaults(defineProps<{
   recentMeetings?: Array<{ id: string; title: string; start_time: string; institution_id: string; institution_name: string; agenda_items: { title: string }[] }>;
   /** 'create' shows template selection, 'add' starts directly in one-by-one mode */
   mode?: 'create' | 'add';
+  /** Which input the form opens on in 'add' mode; 'text' lands straight on the paste box. */
+  initialInput?: 'one-by-one' | 'text';
   /** Custom label for submit button */
   submitLabel?: string;
   /** Whether to show skip button */
@@ -437,6 +439,7 @@ const props = withDefaults(defineProps<{
   hideActions?: boolean;
 }>(), {
   mode: 'create',
+  initialInput: 'one-by-one',
   submitLabel: undefined,
   showSkipButton: true,
   showHint: true,
@@ -620,17 +623,50 @@ const getLineCount = (text: string): number => {
   return text.split('\n').filter(line => line.trim() !== '').length;
 };
 
+const openTextAreaInput = () => {
+  showQuestionInputInTextArea.value = true;
+  agendaInputMode.value = 'text';
+};
+
+/**
+ * The three-button chooser only exists in create mode, so 'add' returns to its list —
+ * seeding a row when the form opened straight on the paste box and nothing was pasted,
+ * which would otherwise leave the dialog blank.
+ */
+const closeTextAreaInput = () => {
+  showQuestionInputInTextArea.value = false;
+
+  if (props.mode !== 'add') {
+    agendaInputMode.value = null;
+    return;
+  }
+
+  agendaInputMode.value = 'one-by-one';
+
+  if ((agendaItemField.value?.value ?? []).length === 0) {
+    startOneByOne();
+  }
+};
+
 const handleQuestionsFromTextArea = () => {
   const questions = questionInputInTextArea.value
     .split('\n')
     .map(q => q.trim().replace(/^\d+\.\s*/, '')) // Remove numbering like "1. "
     .filter(q => q !== '');
 
-  if (questions.length > 0) {
-    agendaItemField.value?.setValue(questions);
-    showQuestionInputInTextArea.value = false;
-    agendaInputMode.value = 'one-by-one'; // Switch to one-by-one view after parsing
+  if (questions.length === 0) {
+    return;
   }
+
+  // Appended, not replaced: pasting is now reachable with items already on the list,
+  // and the blank row the editor starts on is not one of them.
+  const existing = (agendaItemField.value?.value ?? [])
+    .filter((title: string) => title?.trim() !== '');
+
+  agendaItemField.value?.setValue([...existing, ...questions]);
+  questionInputInTextArea.value = '';
+  showQuestionInputInTextArea.value = false;
+  agendaInputMode.value = 'one-by-one'; // Switch to one-by-one view after parsing
 };
 
 // Utility methods
@@ -725,10 +761,16 @@ watch(() => currentAgendaItems.value, (newItems) => {
 
 // Lifecycle
 onMounted(() => {
-  // In 'add' mode, start directly in one-by-one mode with an empty item
-  if (props.mode === 'add' && currentAgendaItems.value.length === 0) {
-    startOneByOne();
+  if (props.mode !== 'add' || currentAgendaItems.value.length > 0) {
+    return;
   }
+
+  if (props.initialInput === 'text') {
+    openTextAreaInput();
+    return;
+  }
+
+  startOneByOne();
 });
 
 // Initialize sortable when container is available

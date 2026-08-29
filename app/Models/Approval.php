@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ApprovalDecision;
 use App\Models\Traits\LogsModelActivity;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -36,12 +37,10 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
+#[Unguarded]
 class Approval extends Model
 {
     use HasFactory, HasUlids, LogsModelActivity;
-
-    #[\Override]
-    protected $guarded = [];
 
     #[\Override]
     protected function casts(): array

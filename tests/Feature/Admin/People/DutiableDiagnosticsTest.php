@@ -63,7 +63,7 @@ test('a clean, cadence-aligned, currently-filled row reports nothing', function 
     // look like drift; deleting it keeps the fixture about one term only.
     $this->cadence->delete();
 
-    expect(codes(analyze()))->toBe([]);
+    expect(codes(analyze()))->toBeEmpty();
 });
 
 test('an end before the start is an error', function (): void {

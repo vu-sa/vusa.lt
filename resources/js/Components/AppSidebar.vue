@@ -26,6 +26,24 @@
     <SidebarContent
       :data-density="density"
       :class="['flex flex-col group/density', density === 'compact' ? 'gap-2' : 'gap-4']">
+      <!-- Replaces the old "Greiti veiksmai" list. A SidebarGroup so its padding is
+           the same above and below as every other section; deliberately outside
+           `orderedSections`, because this is the front door for someone who does not
+           know where to look and must not be reorderable or hideable. -->
+      <SidebarGroup data-tour="action-window">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <ActionWindowTrigger
+              full-width
+              float
+              spotlight-position="right"
+              label-class="group-data-[collapsible=icon]:hidden"
+              class="group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+            />
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarGroup>
+
       <!-- Main navigation -->
       <NavMain :items="navMainItems" />
 
@@ -33,13 +51,8 @@
 
       <!-- Customizable sections (user-defined order, toggled via the customize dialog) -->
       <template v-for="key in orderedSections" :key>
-        <NavQuickActions
-          v-if="key === 'quick_actions' && isSectionVisible(key)"
-          @new-meeting="handleNewMeeting" @new-news="handleNewNews"
-          @new-reservation="handleNewReservation"
-          @open-customize="showCustomizeDialog = true" />
         <PinnedPagesSection
-          v-else-if="key === 'pinned' && isSectionVisible(key)" />
+          v-if="key === 'pinned' && isSectionVisible(key)" />
         <RecentlyVisitedSection
           v-else-if="key === 'recently_visited' && isSectionVisible(key)" />
         <FollowedInstitutionsHotbar
@@ -225,7 +238,6 @@
   </Dialog>
 
   <!-- New Meeting Modal -->
-  <NewMeetingDialog :show-modal="showMeetingModal" @close="showMeetingModal = false" />
 
   <!-- Sidebar customization -->
   <SidebarCustomizeDialog v-model:open="showCustomizeDialog" />
@@ -264,7 +276,6 @@ import { useDark, useEventListener } from '@vueuse/core';
 
 import NavMain from './NavMain.vue';
 import NavSecondary from './NavSecondary.vue';
-import NavQuickActions from './NavQuickActions.vue';
 import FollowedInstitutionsHotbar from './Sidebar/FollowedInstitutionsHotbar.vue';
 import PinnedPagesSection from './Sidebar/PinnedPagesSection.vue';
 import RecentlyVisitedSection from './Sidebar/RecentlyVisitedSection.vue';
@@ -277,7 +288,7 @@ import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { useDocsUpdateIndicator } from '@/Composables/useDocsUpdateIndicator';
 import { useUIPreferences } from '@/Composables/useUIPreferences';
-import NewMeetingDialog from '@/Components/Dialogs/NewMeetingDialog.vue';
+import ActionWindowTrigger from '@/Components/ActionWindow/ActionWindowTrigger.vue';
 import {
   Sidebar,
   SidebarContent,
@@ -286,6 +297,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarGroup,
   SidebarGroupLabel,
   SidebarSeparator,
   SidebarRail,
@@ -540,22 +552,6 @@ const handleSecondaryNavClick = (url: string) => {
     }
     window.open(url, '_blank');
   }
-};
-
-// Meeting modal state
-const showMeetingModal = ref(false);
-
-// Handle quick actions
-const handleNewMeeting = () => {
-  showMeetingModal.value = true;
-};
-
-const handleNewNews = () => {
-  router.visit(route('news.create'));
-};
-
-const handleNewReservation = () => {
-  router.visit(route('reservations.create'));
 };
 
 // Notification count

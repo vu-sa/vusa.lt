@@ -130,14 +130,6 @@
       </div>
     </div>
 
-    <!-- Meeting modal for periodicity gap tasks -->
-    <NewMeetingDialog
-      v-if="selectedInstitution"
-      :show-modal="showMeetingModal"
-      :institution="selectedInstitution"
-      @close="closeMeetingModal"
-    />
-
     <!-- Check-in dialog for periodicity gap tasks -->
     <AddCheckInDialog
       v-if="selectedCheckInTask"
@@ -176,13 +168,13 @@ import {
 
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import { usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
+import { useActionWindow } from '@/Composables/useActionWindow';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 import { Button } from '@/Components/ui/button';
 import type { TaskProgress, TaskActionType } from '@/Types/TaskTypes';
 import { TaskIcon } from '@/Components/icons';
 
 // Lazy load modals
-const NewMeetingDialog = defineAsyncComponent(() => import('@/Components/Dialogs/NewMeetingDialog.vue'));
 const AddCheckInDialog = defineAsyncComponent(() => import('@/Components/Institutions/AddCheckInDialog.vue'));
 const TaskDetailDialog = defineAsyncComponent(() => import('@/Features/Admin/TaskManager/TaskDetailDialog.vue'));
 
@@ -258,8 +250,9 @@ const handleFilterChange = (status: 'all' | 'completed' | 'incomplete') => {
   });
 };
 
+const actionWindow = useActionWindow();
+
 // Modal state
-const showMeetingModal = ref(false);
 const showCheckInDialog = ref(false);
 const showTaskDetail = ref(false);
 const selectedMeetingTask = ref<TaskWithDetails | null>(null);
@@ -288,17 +281,15 @@ const checkInEndDate = computed(() => {
 // Event handlers
 const handleOpenMeetingModal = (task: TaskWithDetails) => {
   selectedMeetingTask.value = task;
-  showMeetingModal.value = true;
+
+  if (selectedInstitution.value) {
+    actionWindow.open({ flow: 'meeting.create', institution: selectedInstitution.value });
+  }
 };
 
 const handleOpenCheckInDialog = (task: TaskWithDetails) => {
   selectedCheckInTask.value = task;
   showCheckInDialog.value = true;
-};
-
-const closeMeetingModal = () => {
-  showMeetingModal.value = false;
-  selectedMeetingTask.value = null;
 };
 
 const closeCheckInDialog = () => {

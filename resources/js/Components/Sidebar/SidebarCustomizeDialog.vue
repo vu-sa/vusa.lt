@@ -60,7 +60,6 @@ import { ref, watch, nextTick, type Component } from 'vue';
 import { useSortable } from '@vueuse/integrations/useSortable';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
-  Zap,
   Star,
   Radio,
   LifeBuoy,
@@ -98,7 +97,6 @@ const {
 } = useUIPreferences();
 
 const sectionMeta: Record<ToggleableSection, { label: string; icon: Component }> = {
-  quick_actions: { label: 'Greiti veiksmai', icon: Zap },
   pinned: { label: 'Prisegti', icon: Pin },
   recently_visited: { label: 'Neseniai aplankyta', icon: History },
   followed_institutions: { label: 'Sekamos institucijos', icon: Star },

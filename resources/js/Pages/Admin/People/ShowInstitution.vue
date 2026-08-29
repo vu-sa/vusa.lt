@@ -27,10 +27,16 @@
         <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('Vadovai') }}:</span>
         <UsersAvatarGroup :users="institution.managers ?? []" :max="3" :size="24" />
       </div>
+      <!-- Nominated for the current term. Distinct from the body's members, and
+           labelled as such — an administrator need not hold a duty here at all. -->
+      <div v-if="administrators.length > 0" class="flex items-center gap-2">
+        <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('administrators.label') }}:</span>
+        <UsersAvatarGroup :users="(administrators as unknown as App.Entities.User[])" :max="3" :size="24" />
+      </div>
     </template>
 
     <template #actions>
-      <Button v-if="canScheduleMeeting" variant="default" size="sm" class="gap-2" @click="showMeetingModal = true">
+      <Button v-if="canScheduleMeeting" variant="default" size="sm" class="gap-2" @click="openMeetingWindow">
         <CalendarIcon class="h-4 w-4" />
         {{ $t('Suplanuoti susitikimą') }}
       </Button>
@@ -95,7 +101,7 @@
         :institution
         :can-edit-members="canManageMembers"
         @navigate-tab="navigateToTab"
-        @schedule-meeting="showMeetingModal = true"
+        @schedule-meeting="openMeetingWindow"
         @report-activity="showCheckInModal = true"
         @add-member="showAddMemberModal = true"
         @view-profile="handleViewProfile"
@@ -143,7 +149,7 @@
         <template #icon>
           <CalendarIcon class="h-10 w-10 text-muted-foreground" />
         </template>
-        <Button class="gap-2" @click="showMeetingModal = true">
+        <Button class="gap-2" @click="openMeetingWindow">
           <CalendarIcon class="h-4 w-4" />
           {{ $t('Suplanuoti susitikimą') }}
         </Button>
@@ -180,17 +186,14 @@
     </template>
 
     <!-- Modals -->
-    <NewMeetingDialog v-if="showMeetingModal" :show-modal="showMeetingModal" :institution="legacyInstitution"
-      @close="showMeetingModal = false" />
-
     <AddCheckInDialog v-if="showCheckInModal" :open="showCheckInModal" :institution-id="institution.id"
       @close="showCheckInModal = false" />
   </ShowPageLayout>
 </template>
 
 <script setup lang="tsx">
-import { ModelEnum } from '@/Types/enums';
-import { computed, defineAsyncComponent, ref } from 'vue';
+import { InstitutionScope, ModelEnum } from '@/Types/enums';
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
@@ -210,8 +213,8 @@ import ShowPageLayout from '@/Components/Layouts/ShowPageLayout.vue';
 import { EmptyState } from '@/Components/Patterns';
 import MoreOptionsButton from '@/Components/Buttons/MoreOptionsButton.vue';
 import SimpleFileViewer from '@/Features/Admin/SharepointFileManager/Viewer/SimpleFileViewer.vue';
-import NewMeetingDialog from '@/Components/Dialogs/NewMeetingDialog.vue';
 import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue';
+import { useActionWindow } from '@/Composables/useActionWindow';
 import InstitutionMeetingsList from '@/Components/Institutions/InstitutionMeetingsList.vue';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import InstitutionScopeBadge from '@/Components/Institutions/InstitutionScopeBadge.vue';
@@ -259,8 +262,26 @@ const { currentTab, navigateToTab } = useShowPageData({
 });
 
 const activityAction = new URLSearchParams(page.url.split('?')[1] ?? '').get('activityAction');
-const showMeetingModal = ref(activityAction === 'register-meeting');
 const showCheckInModal = ref(activityAction === 'report-activity');
+
+const actionWindow = useActionWindow();
+
+const openMeetingWindow = () => actionWindow.open({
+  flow: 'meeting.create',
+  institution: {
+    id: props.institution.id,
+    name: props.institution.name,
+    isInternal: props.institution.governance_scope === InstitutionScope.Vusa,
+  },
+});
+
+// ?activityAction=register-meeting is how the ViSAK dashboard hands a user here
+// already intending to create a meeting.
+onMounted(() => {
+  if (activityAction === 'register-meeting') {
+    openMeetingWindow();
+  }
+});
 const showAddMemberModal = ref(false);
 
 // Subscription state
@@ -334,6 +355,8 @@ const relatedInstitutionCount = computed(() => {
 
 // Note: totalPositions, lastMeeting, daysSinceLastMeeting, isOverdue, and periodicityStatusColor
 // are now calculated in useInstitutionUrgency composable and InstitutionOverviewSection
+
+const administrators = computed(() => props.institution.administrators ?? []);
 
 const primaryType = computed(() => {
   const type = props.institution.types?.[0];

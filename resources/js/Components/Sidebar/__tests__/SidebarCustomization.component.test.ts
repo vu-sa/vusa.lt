@@ -7,7 +7,6 @@ import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
 import { createUIPreferencesProvider } from '@/Composables/useUIPreferences';
 import SidebarCustomizeDialog from '@/Components/Sidebar/SidebarCustomizeDialog.vue';
-import QuickActionSettingsPopover from '@/Components/Sidebar/QuickActionSettingsPopover.vue';
 import RecentlyVisitedSection from '@/Components/Sidebar/RecentlyVisitedSection.vue';
 import PinnedPagesSection from '@/Components/Sidebar/PinnedPagesSection.vue';
 
@@ -24,27 +23,6 @@ const sidebarStubs = {
   SidebarMenuButton: { template: '<div><slot /></div>' },
   SidebarMenuAction: { template: '<button class="menu-action"><slot /></button>' },
   Link: { template: '<a :href="href"><slot /></a>', props: ['href'] },
-};
-
-// Passthrough stubs for the reka-ui DropdownMenu primitives so the popover's
-// content renders inline (reka Menu relies on teleport + pointer events that
-// jsdom doesn't model). The checkbox item stub deliberately mirrors reka-ui's
-// REAL public contract — `modelValue` in, `update:modelValue` out — so the
-// test fails if the component reverts to the `:checked` / `@update:checked`
-// binding (which reka-ui doesn't speak).
-const dropdownStubs = {
-  DropdownMenu: { template: '<div><slot /></div>' },
-  DropdownMenuTrigger: { template: '<div><slot /></div>' },
-  DropdownMenuContent: { template: '<div><slot /></div>' },
-  DropdownMenuLabel: { template: '<div><slot /></div>' },
-  DropdownMenuSeparator: { template: '<hr />' },
-  DropdownMenuCheckboxItem: {
-    props: ['id', 'modelValue'],
-    emits: ['update:modelValue'],
-    template: `<div :id="id" :data-checked="String(modelValue)"
-        role="menuitemcheckbox"
-        @click="$emit('update:modelValue', !modelValue)"><slot /></div>`,
-  },
 };
 
 function harness(child: ReturnType<typeof defineComponent>) {
@@ -74,7 +52,7 @@ describe('SidebarCustomizeDialog', () => {
       global: { stubs: { ...commonStubs } },
     });
 
-    const toggle = wrapper.find('#section-quick_actions');
+    const toggle = wrapper.find('#section-followed_institutions');
     expect(toggle.exists()).toBe(true);
 
     await toggle.trigger('click');
@@ -83,7 +61,7 @@ describe('SidebarCustomizeDialog', () => {
     const [url, options] = fetchMock.mock.calls[0];
     expect(url as string).toContain('api.v1.admin.user-preferences.update');
     const body = JSON.parse((options as RequestInit).body as string);
-    expect(body.sidebar.sections.quick_actions).toBe(false);
+    expect(body.sidebar.sections.followed_institutions).toBe(false);
   });
 
   it('renders a draggable row with a toggle for every toggleable section', () => {
@@ -94,8 +72,9 @@ describe('SidebarCustomizeDialog', () => {
       global: { stubs: { ...commonStubs } },
     });
 
-    // Six toggleable sections, each with its own Switch.
-    const sections = ['quick_actions', 'recently_visited', 'followed_institutions', 'spacer', 'start_fm', 'secondary'];
+    // Every toggleable section gets its own Switch. "Greiti veiksmai" is no longer one
+    // of them — the action window replaced that sidebar list.
+    const sections = ['pinned', 'recently_visited', 'followed_institutions', 'spacer', 'start_fm', 'secondary'];
     for (const key of sections) {
       expect(wrapper.find(`#section-${key}`).exists()).toBe(true);
     }
@@ -108,7 +87,7 @@ describe('SidebarCustomizeDialog', () => {
         auth: {
           user: {
             ui_preferences: {
-              sidebar: { sections: { quick_actions: false }, order: ['secondary', 'quick_actions'] },
+              sidebar: { sections: { followed_institutions: false }, order: ['secondary', 'followed_institutions'] },
             },
           },
         },
@@ -129,58 +108,8 @@ describe('SidebarCustomizeDialog', () => {
 
     const lastCall = fetchMock.mock.calls[fetchMock.mock.calls.length - 1];
     const body = JSON.parse((lastCall[1] as RequestInit).body as string);
-    expect(body.sidebar.sections.quick_actions).toBe(true);
+    expect(body.sidebar.sections.followed_institutions).toBe(true);
     expect(body.sidebar.order[0]).toBe('pinned');
-  });
-});
-
-describe('QuickActionSettingsPopover', () => {
-  beforeEach(() => {
-    // Enable several quick actions and pre-hide one so we can assert the
-    // checkbox reflects visibility through `model-value`.
-    vi.mocked(usePage).mockReturnValue(
-      createMockPage({
-        auth: {
-          can: { create: { meeting: true, news: true, reservation: true } },
-          user: { ui_preferences: { quick_actions: { new_news: false } } },
-        },
-      }) as any,
-    );
-  });
-
-  it('binds each item to its visibility via model-value', () => {
-    const wrapper = mount(harness(defineComponent({
-      components: { QuickActionSettingsPopover },
-      template: '<QuickActionSettingsPopover />',
-    })), {
-      global: { stubs: { ...commonStubs, ...dropdownStubs } },
-    });
-
-    // new_meeting is visible (default true), new_news was hidden.
-    expect(wrapper.find('#popover-qa-new_meeting').attributes('data-checked')).toBe('true');
-    expect(wrapper.find('#popover-qa-new_news').attributes('data-checked')).toBe('false');
-  });
-
-  it('toggling an item persists via fetch with the new value', async () => {
-    const fetchMock = vi.mocked(globalThis.fetch);
-    const wrapper = mount(harness(defineComponent({
-      components: { QuickActionSettingsPopover },
-      template: '<QuickActionSettingsPopover />',
-    })), {
-      global: { stubs: { ...commonStubs, ...dropdownStubs } },
-    });
-
-    const item = wrapper.find('#popover-qa-new_meeting');
-    expect(item.exists()).toBe(true);
-
-    await item.trigger('click');
-
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    const [url, options] = fetchMock.mock.calls[0];
-    expect(url as string).toContain('api.v1.admin.user-preferences.update');
-    const body = JSON.parse((options as RequestInit).body as string);
-    // new_meeting started visible (true) → toggled to false.
-    expect(body.quick_actions.new_meeting).toBe(false);
   });
 });
 

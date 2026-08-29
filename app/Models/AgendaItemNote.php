@@ -7,6 +7,7 @@ use App\Models\Traits\LogsModelActivity;
 use App\Services\HtmlSanitizerService;
 use Database\Factories\AgendaItemNoteFactory;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -38,13 +39,11 @@ use Spatie\Activitylog\Support\LogOptions;
  * @mixin \Eloquent
  */
 #[Hidden(['yjs_state'])]
+#[Unguarded]
 class AgendaItemNote extends Model
 {
     /** @use HasFactory<AgendaItemNoteFactory> */
     use HasFactory, HasUlids, LogsModelActivity;
-
-    #[\Override]
-    protected $guarded = [];
 
     /**
      * The rendered snapshot is authored by any representative on the meeting and

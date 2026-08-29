@@ -27,11 +27,6 @@ class UserPreferencesApiController extends ApiController
             $user->setSidebarSectionOrder($order);
         }
 
-        $quickActions = $request->input('quick_actions');
-        if (is_array($quickActions)) {
-            $user->setQuickActionVisibility($quickActions);
-        }
-
         if ($request->has('sidebar.collapsed')) {
             $user->setSidebarCollapsed($request->boolean('sidebar.collapsed'));
         }

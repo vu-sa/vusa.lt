@@ -112,9 +112,9 @@ return [
             'title' => 'Administravimas',
             'description' => 'Šis mygtukas atidaro <strong>administravimo skyrių</strong>, kuriame galite valdyti vartotojus, padalinius, institucijas ir kitus nustatymus.',
         ],
-        'quick_actions' => [
+        'action_window' => [
             'title' => 'Greiti veiksmai',
-            'description' => 'Šioje sekcijoje rasite <strong>greitai prieinamus veiksmus</strong> – sukurti susitikimą, naujieną ar rezervaciją vienu paspaudimu.',
+            'description' => 'Nežinai, nuo ko pradėti? Paspaudęs čia rasi <strong>dažniausius veiksmus</strong> – pranešti apie posėdį, pažymėti, kad posėdžių nebus, ar papildyti jau įvykusį. Klausiama po vieną dalyką, tad nereikia nieko atsiminti iš anksto.',
         ],
         'tasks_card' => [
             'title' => 'Užduotys',

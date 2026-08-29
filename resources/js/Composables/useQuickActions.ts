@@ -5,9 +5,8 @@
  * what permissions they require, and what their labels/icons are.
  *
  * Consumed by:
- *  - NavQuickActions.vue (renders the sidebar items)
- *  - SidebarCustomizeDialog.vue (renders the toggles)
  *  - AdminCommandPalette.vue (renders the palette actions)
+ *  - useActionWindowCatalog.ts (shares the icon tints, via quickActionGradient)
  */
 
 import { computed, type Component } from 'vue';
@@ -94,6 +93,14 @@ export const QUICK_ACTION_META: QuickActionMeta[] = [
     gradient: 'from-sky-500/15 to-indigo-500/15 hover:from-sky-500/25 hover:to-indigo-500/25 dark:from-sky-400/10 dark:to-indigo-400/10 dark:hover:from-sky-400/20 dark:hover:to-indigo-400/20',
   },
 ];
+
+/**
+ * The gradient a quick action's icon tile uses, so other surfaces showing the same
+ * action (the action window) colour it identically instead of drifting.
+ */
+export function quickActionGradient(key: string): string | undefined {
+  return QUICK_ACTION_META.find(meta => meta.key === key)?.gradient;
+}
 
 /** Returns the quick actions available to the current user. */
 export function useAvailableQuickActions() {

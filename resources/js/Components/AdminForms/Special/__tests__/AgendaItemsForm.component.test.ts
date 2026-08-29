@@ -175,6 +175,66 @@ describe('AgendaItemsForm.vue', () => {
     });
   });
 
+  /**
+   * The meeting page opens this form in 'add' mode, where pasting a copied timetable
+   * used to be unreachable: the paste button was gated to 'create'.
+   */
+  describe('add mode', () => {
+    const itemRows = (w: ReturnType<typeof mount>) =>
+      w.findAll('textarea[placeholder^="Darbotvarkės klausimas"]');
+
+    const pasteBox = (w: ReturnType<typeof mount>) =>
+      w.findAll('textarea').find(textarea => !textarea.attributes('placeholder')?.startsWith('Darbotvarkės klausimas'));
+
+    const buttonWith = (w: ReturnType<typeof mount>, text: string) =>
+      w.findAll('button').find(button => button.text().includes(text));
+
+    it('offers the paste box alongside the one-by-one editor', async () => {
+      wrapper = createWrapper({ mode: 'add' });
+      await nextTick();
+
+      expect(itemRows(wrapper)).toHaveLength(1);
+      expect(buttonWith(wrapper, 'Įkelti iš teksto')).toBeDefined();
+    });
+
+    it('opens straight on the paste box when the caller asked for it', async () => {
+      wrapper = createWrapper({ mode: 'add', initialInput: 'text' });
+      await nextTick();
+
+      expect(pasteBox(wrapper)?.exists()).toBe(true);
+      expect(itemRows(wrapper)).toHaveLength(0);
+    });
+
+    it('appends pasted questions to what is already listed', async () => {
+      wrapper = createWrapper({ mode: 'add' });
+      await nextTick();
+
+      await itemRows(wrapper)[0]!.setValue('Jau įrašytas klausimas');
+      await buttonWith(wrapper, 'Įkelti iš teksto')!.trigger('click');
+      await nextTick();
+
+      await pasteBox(wrapper)!.setValue('1. Pirmas\n2. Antras');
+      await buttonWith(wrapper, 'Įkelti klausimus')!.trigger('click');
+      await nextTick();
+
+      const titles = itemRows(wrapper).map(row => (row.element as HTMLTextAreaElement).value);
+
+      // Numbering the user copied along with the lines is stripped.
+      expect(titles).toEqual(['Jau įrašytas klausimas', 'Pirmas', 'Antras']);
+    });
+
+    it('leaves an editable row when the paste box is dismissed empty', async () => {
+      wrapper = createWrapper({ mode: 'add', initialInput: 'text' });
+      await nextTick();
+
+      await buttonWith(wrapper, 'Grįžti')!.trigger('click');
+      await nextTick();
+
+      expect(pasteBox(wrapper)).toBeUndefined();
+      expect(itemRows(wrapper)).toHaveLength(1);
+    });
+  });
+
   describe('form submission', () => {
     it('emits submit event with agenda items data', async () => {
       const meetingFormState = {

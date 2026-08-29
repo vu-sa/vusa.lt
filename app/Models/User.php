@@ -14,6 +14,7 @@ use App\Models\Traits\LogsRelationshipChanges;
 use App\Services\NotificationRouter;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -59,14 +60,15 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon|null $deleted_at
  * @property bool $name_was_changed
  * @property-read Collection<int, Activity> $activitiesAsSubject
- * @property-read InstitutionNotificationMute|InstitutionFollow|Dutiable|null $pivot
+ * @property-read InstitutionNotificationMute|InstitutionFollow|Dutiable|InstitutionAdministrator|null $pivot
+ * @property-read Collection<int, Institution> $administeredInstitutions
  * @property-read Collection<int, Duty> $current_duties
  * @property-read Collection<int, Dutiable> $dutiables
  * @property-read Collection<int, Duty> $duties
  * @property-read Collection<int, Institution> $followedInstitutions
  * @property-read string|null $force_delete_blocked_reason
- * @property-read mixed $has_password
  * @property-read array $translatable_columns_from
+ * @property-read mixed $has_password
  * @property-read Collection<int, Institution> $institutions
  * @property-read Collection<int, Institution> $mutedInstitutions
  * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $notifications
@@ -203,9 +205,9 @@ class User extends Authenticatable implements GuardsForceDelete
     /**
      * Check if user has a password set
      */
-    public function getHasPasswordAttribute()
+    protected function hasPassword(): Attribute
     {
-        return ! empty($this->getAttributeValue('password'));
+        return Attribute::make(get: fn () => ! empty($this->getAttributeValue('password')));
     }
 
     /**
@@ -271,6 +273,22 @@ class User extends Authenticatable implements GuardsForceDelete
     public function institutions()
     {
         return $this->hasManyDeepFromRelations($this->duties(), (new Duty)->institution());
+    }
+
+    /**
+     * Institutions this user has been nominated to look after for a term.
+     *
+     * Grants the tasks, the notifications and `.own` visibility — never membership,
+     * so this must not be merged into institutions()/duties() anywhere.
+     *
+     * @return BelongsToMany<Institution, $this, InstitutionAdministrator, 'pivot'>
+     */
+    public function administeredInstitutions(): BelongsToMany
+    {
+        return $this->belongsToMany(Institution::class, 'institution_administrators')
+            ->using(InstitutionAdministrator::class)
+            ->withPivot('cadence_id')
+            ->withTimestamps();
     }
 
     /**

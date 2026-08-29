@@ -6,6 +6,7 @@ use App\Enums\MeetingType;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Rules\WithinAuthorizedTenantScope;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
 
@@ -41,6 +42,8 @@ class StoreMeetingRequest extends FormRequest
             'type' => ['nullable', new Enum(MeetingType::class)],
             'description' => 'nullable|string|max:1000',
             'announce_in_calendar' => 'nullable|boolean',
+            // Not stored: it only tells the redirect to land on the bulk agenda dialog.
+            'open_bulk_agenda' => 'nullable|boolean',
             'agendaItems' => 'nullable|array',
             'agendaItems.*.title' => 'required|string|max:255',
             'agendaItems.*.description' => 'nullable|string|max:1000',
@@ -51,6 +54,33 @@ class StoreMeetingRequest extends FormRequest
             // start time — leave ordering a client-side concern here.
             'agendaItems.*.start_time' => 'nullable|date_format:H:i',
             'agendaItems.*.end_time' => 'nullable|date_format:H:i',
+        ];
+    }
+
+    /**
+     * Only VU SA's own bodies are announced in the public calendar, so the checkbox the
+     * client hides for an external body is refused here too.
+     *
+     * @return array<int, callable>
+     */
+    public function after(): array
+    {
+        return [
+            function (Validator $validator): void {
+                if (! $this->boolean('announce_in_calendar')) {
+                    return;
+                }
+
+                $institution = Institution::query()->find($this->input('institution_id'));
+
+                // A missing institution is already reported by the `exists` rule above;
+                // adding a second error for it would only be noise.
+                if ($institution === null || $institution->governance_scope->isInternal()) {
+                    return;
+                }
+
+                $validator->errors()->add('announce_in_calendar', __('meetings.announce.external_not_allowed'));
+            },
         ];
     }
 }

@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Actions\PairTranslatedRecord;
 use App\Enums\PageLayoutEnum;
 use App\Models\Traits\LogsModelActivity;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -28,7 +30,7 @@ use Spatie\Sitemap\Tags\Url;
  * @property int $content_id
  * @property int|null $category_id
  * @property bool $is_active
- * @property array $highlights
+ * @property array<array-key, mixed>|null $highlights
  * @property string $layout
  * @property bool $show_table_of_contents
  * @property bool $show_title
@@ -57,12 +59,10 @@ use Spatie\Sitemap\Tags\Url;
  *
  * @mixin \Eloquent
  */
+#[Unguarded]
 class Page extends Model implements Feedable, Sitemapable
 {
     use HasFactory, LogsModelActivity, Searchable, SoftDeletes;
-
-    #[\Override]
-    protected $guarded = [];
 
     #[\Override]
     protected function casts(): array
@@ -150,15 +150,16 @@ class Page extends Model implements Feedable, Sitemapable
     /**
      * Get the highlights, ensuring max 3 items.
      */
-    public function getHighlightsAttribute($value): array
+    protected function highlights(): Attribute
     {
-        $highlights = is_string($value) ? json_decode($value, true) : $value;
+        return Attribute::make(get: function ($value) {
+            $highlights = is_string($value) ? json_decode($value, true) : $value;
+            if (! is_array($highlights)) {
+                return [];
+            }
 
-        if (! is_array($highlights)) {
-            return [];
-        }
-
-        return array_slice(array_filter($highlights), 0, 3);
+            return array_slice(array_filter($highlights), 0, 3);
+        });
     }
 
     /**

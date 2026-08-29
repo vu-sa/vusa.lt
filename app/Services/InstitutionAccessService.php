@@ -72,6 +72,11 @@ class InstitutionAccessService
                 $institutionIds = $institutionIds->merge($relatedInstitutionIds);
             }
 
+            // 3. Institutions the user administers. Deliberately not folded into the
+            // duty ids above: an administrator is not a member, so this must not seed
+            // relationship-based access the way a real duty does.
+            $institutionIds = $institutionIds->merge($this->getAdministeredInstitutionIds($user));
+
             return $institutionIds->unique()->values();
         });
     }
@@ -87,6 +92,19 @@ class InstitutionAccessService
             ->whereNotNull('institution_id')
             ->pluck('institution_id')
             ->filter()
+            ->unique()
+            ->values();
+    }
+
+    /**
+     * Institutions the user has been nominated to administer, across every term.
+     *
+     * @return Collection<int, string>
+     */
+    public function getAdministeredInstitutionIds(User $user): Collection
+    {
+        return $user->administeredInstitutions()
+            ->pluck('institutions.id')
             ->unique()
             ->values();
     }

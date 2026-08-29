@@ -14,6 +14,7 @@ use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use App\Services\InstitutionScopeResolver;
 use App\Support\MorphMap;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -69,12 +70,10 @@ use Illuminate\Support\Facades\DB;
  *
  * @mixin \Eloquent
  */
+#[Unguarded]
 class Type extends Model implements GuardsForceDelete, SharepointFileableContract
 {
     use GuardsForceDeleteWhenReferenced, HasContentRelationships, HasFactory, HasSharepointFiles, HasTranslations, LogsModelActivity, SoftDeletes;
-
-    #[\Override]
-    protected $guarded = [];
 
     protected $translatable = ['title', 'description'];
 
@@ -170,9 +169,7 @@ class Type extends Model implements GuardsForceDelete, SharepointFileableContrac
 
     public function pushAndRecursiveDescendants($type, $flattened = null): Collection
     {
-        if (is_null($flattened)) {
-            $flattened = new Collection;
-        }
+        $flattened ??= new Collection;
 
         foreach ($type->recursiveDescendants as $descendant) {
             $this->pushAndRecursiveDescendants($descendant, $flattened);
@@ -192,9 +189,7 @@ class Type extends Model implements GuardsForceDelete, SharepointFileableContrac
 
     public function pushAndRecursiveParents($type, $flattened = null): Collection
     {
-        if (is_null($flattened)) {
-            $flattened = new Collection;
-        }
+        $flattened ??= new Collection;
 
         if ($parent = $type->recursiveParent) {
             $this->pushAndRecursiveParents($parent, $flattened);

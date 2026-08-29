@@ -25,6 +25,11 @@ class StoreMeetingCalendarEventRequest extends FormRequest
             return false;
         }
 
+        // An external body's meeting is not VU SA's to publish.
+        if (! $this->meeting()->isAnnounceableInCalendar()) {
+            return false;
+        }
+
         // Adopting an existing event edits it; making a new one creates in the meeting's tenant.
         return $this->filled('calendar_id')
             ? $user->can('update', $this->existingEvent())

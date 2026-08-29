@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\TenantType;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -52,12 +53,10 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @mixin \Eloquent
  */
 #[WithoutTimestamps]
+#[Unguarded]
 class Tenant extends Model
 {
     use HasFactory, HasRelationships, Searchable;
-
-    #[\Override]
-    protected $guarded = [];
 
     #[\Override]
     protected function casts(): array

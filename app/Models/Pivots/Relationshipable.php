@@ -4,6 +4,7 @@ namespace App\Models\Pivots;
 
 use App\Models\Relationship;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
@@ -31,6 +32,7 @@ use Illuminate\Support\Carbon;
  * @mixin \Eloquent
  */
 #[Table(name: 'relationshipables', key: 'id')]
+#[Unguarded]
 class Relationshipable extends MorphPivot
 {
     // Scope constants for relationship resolution
@@ -42,9 +44,6 @@ class Relationshipable extends MorphPivot
 
     #[\Override]
     public $incrementing = true;
-
-    #[\Override]
-    protected $guarded = [];
 
     #[\Override]
     protected $attributes = [

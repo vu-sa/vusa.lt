@@ -256,7 +256,7 @@ class BuildDutiableTimeline
             'photo' => $row->additional_photo,
             'description' => filled($row->description) ? strip_tags((string) $row->description) : null,
             'original_duty_name' => $row->use_original_duty_name ? true : null,
-        ], fn ($value) => filled($value));
+        ], filled(...));
 
         return $extras === [] ? null : $extras;
     }

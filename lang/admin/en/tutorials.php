@@ -112,9 +112,9 @@ return [
             'title' => 'Administration',
             'description' => 'This button opens the <strong>administration section</strong> where you can manage users, units, institutions, and other settings.',
         ],
-        'quick_actions' => [
-            'title' => 'Quick Actions',
-            'description' => 'In this section you\'ll find <strong>quick actions</strong> – create a meeting, news, or reservation with a single click.',
+        'action_window' => [
+            'title' => 'Quick actions',
+            'description' => 'Not sure where to start? This opens the <strong>most common actions</strong> – report a meeting, note that there will be no meetings, or fill in one that already happened. It asks one thing at a time, so there is nothing to remember in advance.',
         ],
         'tasks_card' => [
             'title' => 'Tasks',

@@ -219,7 +219,7 @@ import {
 const { isOpen, query, recentItems, close } = useCommandPalette();
 
 // UI preferences (for quick-action visibility in the palette)
-const { isQuickActionVisible, isPinned, togglePin } = useUIPreferences();
+const { isPinned, togglePin } = useUIPreferences();
 const { available: availableQuickActions } = useAvailableQuickActions();
 
 // Admin search
@@ -276,7 +276,9 @@ const filteredActions = computed(() => {
     if (!qaKey) {
       return true;
     }
-    return permittedKeys.has(qaKey) && isQuickActionVisible(qaKey as any);
+    // Permission is the only filter left: the per-action visibility preference went
+    // with the sidebar list the action window replaced.
+    return permittedKeys.has(qaKey);
   });
 
   return result.slice(0, 6); // Limit to 6 actions

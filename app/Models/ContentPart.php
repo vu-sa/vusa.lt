@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\ArrayObject;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\Support\LogOptions;
 
@@ -33,8 +35,8 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property Carbon $updated_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Content $content
- * @property-read string $content_summary
- * @property-read string|null $html
+ * @property-read mixed $content_summary
+ * @property-read mixed $html
  * @property-read Collection<int, TextBoxSubmission> $textBoxSubmissions
  *
  * @method static \Database\Factories\ContentPartFactory factory($count = null, $state = [])
@@ -88,9 +90,9 @@ class ContentPart extends Model
      * second text extractor. Deliberately NOT in #[Appends]: that would ship
      * this on every public content payload, not just the activity log.
      */
-    public function getContentSummaryAttribute(): string
+    protected function contentSummary(): Attribute
     {
-        return Str::limit(Str::squish($this->getSearchableContent()), 500);
+        return Attribute::make(get: fn () => Str::limit(Str::squish($this->getSearchableContent()), 500));
     }
 
     /**
@@ -149,14 +151,14 @@ class ContentPart extends Model
      * and flips the switch semantics, so normalize by key name on every write path.
      * Unlisted keys and unrecognizable values are left untouched.
      */
-    private const FORMDATA_BOOLEAN_KEYS = [
+    private const array FORMDATA_BOOLEAN_KEYS = [
         'autoplay', 'showNavigation', 'showThumbnails', 'showArrows', 'showIndicators',
         'showAvatar', 'showCaption', 'showLightbox', 'showIcon', 'showPlus', 'isClosed',
         'isTitleColored', 'is_active', 'allTenants', 'mobileStacking', 'equalHeight',
         'textLeft', 'imageLeft', 'rotation', 'overlayOverhang',
     ];
 
-    private const FORMDATA_INTEGER_KEYS = ['autoplayDelay', 'limit', 'year', 'endNumber'];
+    private const array FORMDATA_INTEGER_KEYS = ['autoplayDelay', 'limit', 'year', 'endNumber'];
 
     /**
      * @param  array<array-key, mixed>  $node
@@ -235,17 +237,18 @@ class ContentPart extends Model
      * Get pre-rendered HTML for TipTap content types.
      * Uses caching based on updated_at timestamp for automatic invalidation.
      */
-    public function getHtmlAttribute(): ?string
+    protected function html(): Attribute
     {
-        // Only render HTML for tiptap-based content types
-        if (! in_array($this->type, ['tiptap', 'shadcn-card'])) {
-            return null;
-        }
+        return Attribute::make(get: function () {
+            // Only render HTML for tiptap-based content types
+            if (! in_array($this->type, ['tiptap', 'shadcn-card'])) {
+                return null;
+            }
+            // Use updated_at timestamp in cache key for automatic invalidation on edit
+            $cacheKey = "content_part_html_{$this->id}_{$this->updated_at->timestamp}";
 
-        // Use updated_at timestamp in cache key for automatic invalidation on edit
-        $cacheKey = "content_part_html_{$this->id}_{$this->updated_at->timestamp}";
-
-        return Cache::remember($cacheKey, 86400, fn () => $this->renderTiptapHtml());
+            return Cache::remember($cacheKey, 86400, fn () => $this->renderTiptapHtml());
+        });
     }
 
     /**
@@ -266,7 +269,7 @@ class ContentPart extends Model
                 ->sanitizeRichContent($editor->setContent($content)->getHTML());
         } catch (\Throwable $e) {
             // Log error but don't break the page - frontend will fallback to JS rendering
-            \Log::warning("TipTap rendering failed for ContentPart {$this->id}: {$e->getMessage()}");
+            Log::warning("TipTap rendering failed for ContentPart {$this->id}: {$e->getMessage()}");
 
             return '';
         }
@@ -294,37 +297,6 @@ class ContentPart extends Model
         } catch (\Throwable) {
             return false;
         }
-    }
-
-    /**
-     * Parse Tiptap elements to HTML
-     */
-    public function parseTiptapElements(): ContentPart
-    {
-        $editor = new TiptapEditor;
-        $sanitizer = app(HtmlSanitizerService::class);
-
-        if ($this->type === 'tiptap' || $this->type === 'shadcn-card') {
-            $this->html = $sanitizer->sanitizeRichContent($editor->setContent($this->json_content)->getHTML());
-
-            return $this;
-        }
-
-        if ($this->type === 'shadcn-accordion') {
-            $json_content = $this->json_content;
-
-            foreach ($json_content as $key => $value) {
-                $json_content[$key]['html'] = $sanitizer->sanitizeRichContent(
-                    $editor->setContent($value['content'])->getHTML()
-                );
-            }
-
-            $this->json_content = $json_content;
-
-            return $this;
-        }
-
-        return $this;
     }
 
     /**

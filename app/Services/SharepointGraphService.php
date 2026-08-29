@@ -187,7 +187,7 @@ class SharepointGraphService
 
             return $driveItem;
         } catch (\Exception $e) {
-            \Log::warning('Failed to get drive item by ID', [
+            Log::warning('Failed to get drive item by ID', [
                 'driveItemId' => $driveItemId,
                 'error' => $e->getMessage(),
             ]);

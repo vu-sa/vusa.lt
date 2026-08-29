@@ -152,6 +152,9 @@ Route::prefix('search')->name('search.')->group(function (): void {
 Route::post('institutions/{institution}/check-ins', [InstitutionCheckInController::class, 'store'])->name('institutions.check-ins.store');
 Route::delete('institutions/{institution}/check-ins/active', [InstitutionCheckInController::class, 'destroyActive'])->name('institutions.check-ins.destroyActive');
 
+// One idempotent roster replacement per term; authorized by InstitutionPolicy::update.
+Route::put('institutions/{institution}/administrators', [InstitutionAdministratorController::class, 'update'])->name('institutions.administrators.update');
+
 Route::resource('resources', ResourceController::class);
 Route::resource('resourceCategories', ResourceCategoryController::class);
 

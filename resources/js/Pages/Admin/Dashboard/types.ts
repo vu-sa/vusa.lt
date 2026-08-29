@@ -29,6 +29,8 @@ export interface AtstovavimasInstitution {
   has_public_meetings?: boolean;
   /** One of VU SA's own bodies rather than one it delegates representatives into. */
   is_internal?: boolean;
+  /** Reached through an administrator nomination, not a duty — the user is not a member. */
+  is_administered?: boolean;
   meeting_periodicity_days?: number;
   // Duty members (Gantt coverage periods); tenant timeline only
   duties?: AtstovavimasDuty[];

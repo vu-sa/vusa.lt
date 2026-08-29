@@ -108,6 +108,10 @@
           </slot>
         </div>
       </SidebarInset>
+
+      <!-- Guided action window. Inside SidebarProvider so it can reuse the app's
+           single mobile media query; its content portals to <body> anyway. -->
+      <ActionWindow />
     </SidebarProvider>
 
     <!-- Toast notifications -->
@@ -147,7 +151,7 @@
         <button
           type="button"
           class="flex flex-col items-center justify-center flex-1 h-full gap-1 active:scale-90 transition-transform"
-          @click="showQuickCreate = true"
+          @click="actionWindow.open()"
         >
           <div class="flex items-center justify-center w-12 h-12 -mt-4 rounded-full bg-primary text-primary-foreground shadow-lg">
             <PlusIcon class="h-6 w-6" />
@@ -184,49 +188,11 @@
 
     <!-- Command Palette (global Cmd+K / Ctrl+K search) -->
     <AdminCommandPalette />
-
-    <!-- Quick Create Sheet (for PWA bottom nav) -->
-    <Sheet v-model:open="showQuickCreate">
-      <SheetContent side="bottom" class="rounded-t-xl">
-        <SheetHeader>
-          <SheetTitle>{{ $t('Sukurti naują') }}</SheetTitle>
-        </SheetHeader>
-        <div class="grid gap-2 py-4">
-          <Button
-            v-if="can?.create?.meeting"
-            variant="ghost"
-            class="justify-start h-12"
-            @click="navigateAndClose(route('meetings.create'))"
-          >
-            <CalendarPlusIcon class="h-5 w-5 mr-3" />
-            {{ $t('forms.meeting') }}
-          </Button>
-          <Button
-            v-if="can?.create?.news"
-            variant="ghost"
-            class="justify-start h-12"
-            @click="navigateAndClose(route('news.create'))"
-          >
-            <FileTextIcon class="h-5 w-5 mr-3" />
-            {{ $t('forms.news') }}
-          </Button>
-          <Button
-            v-if="can?.create?.reservation"
-            variant="ghost"
-            class="justify-start h-12"
-            @click="navigateAndClose(route('reservations.create'))"
-          >
-            <Building2Icon class="h-5 w-5 mr-3" />
-            {{ $t('forms.reservation') }}
-          </Button>
-        </div>
-      </SheetContent>
-    </Sheet>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import { breakpointsTailwind, useBreakpoints, useOnline, useTimeoutFn, useDebounceFn } from '@vueuse/core';
 import { computed, onMounted, watch, onBeforeUnmount, ref, nextTick } from 'vue';
 import {
@@ -237,14 +203,10 @@ import {
   HelpCircle,
   BellIcon,
   GraduationCapIcon,
-  CalendarPlusIcon,
-  FileTextIcon,
-  Building2Icon,
 } from 'lucide-vue-next';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { usePWA } from '@/Composables/usePWA';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/Components/ui/sheet';
 import { useToasts } from '@/Composables/useToasts';
 import 'vue-sonner/style.css';
 
@@ -271,9 +233,11 @@ import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { Toaster } from '@/Components/ui/sonner';
+import { createActionWindowProvider } from '@/Composables/useActionWindow';
 import { createCommandPaletteProvider } from '@/Composables/useCommandPalette';
 import { createUIPreferencesProvider } from '@/Composables/useUIPreferences';
 import AdminCommandPalette from '@/Components/CommandPalette/AdminCommandPalette.vue';
+import ActionWindow from '@/Components/ActionWindow/ActionWindow.vue';
 import CommandPaletteTrigger from '@/Components/CommandPalette/CommandPaletteTrigger.vue';
 
 const props = withDefaults(defineProps<{
@@ -290,10 +254,8 @@ const systemMessage = computed(() => usePage().props.app?.systemMessage || null)
 
 // PWA state
 const { isPWA, setAppBadge } = usePWA();
-const showQuickCreate = ref(false);
 
 // Permissions for quick create
-const can = computed(() => usePage().props.auth?.can);
 
 // Unread notifications count
 const unreadNotificationsCount = computed(() => {
@@ -314,12 +276,6 @@ function isCurrentRoute(routeName: string): boolean {
   catch {
     return false;
   }
-}
-
-// Navigate and close quick create sheet
-function navigateAndClose(url: string) {
-  showQuickCreate.value = false;
-  router.visit(url);
 }
 
 // Initialize breadcrumb state for the entire admin application
@@ -345,6 +301,10 @@ const isMac = computed(() => {
   }
   return navigator.platform.toUpperCase().indexOf('MAC') >= 0;
 });
+
+// The action window is openable from any admin page, so its state is provided
+// here rather than owned by whichever page holds a trigger.
+const actionWindow = createActionWindowProvider();
 
 // Initialize command palette provider for global Cmd+K / Ctrl+K search.
 // Share the recently-visited source so the palette and sidebar stay in sync.

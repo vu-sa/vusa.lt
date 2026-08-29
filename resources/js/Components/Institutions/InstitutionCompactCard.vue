@@ -22,6 +22,16 @@
             <TooltipContent>{{ $t('Vieši posėdžiai') }}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
+        <!-- Administered, not held. Saying so keeps the dashboard from implying a duty
+             the user does not have. -->
+        <TooltipProvider v-if="institution.is_administered">
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <ShieldCheck class="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+            </TooltipTrigger>
+            <TooltipContent>{{ $t('administrators.dashboard.administered_hint') }}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <!-- Muted indicator -->
         <TooltipProvider v-if="isMuted">
           <Tooltip>
@@ -160,7 +170,7 @@
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Link as InertiaLink } from '@inertiajs/vue3';
-import { AlertTriangle, Bell, BellOff, CalendarCheck, CalendarClock, CalendarOff, CalendarX, CheckCircle2, Clock, Eye, EyeOff, Globe, Loader2, X } from 'lucide-vue-next';
+import { AlertTriangle, Bell, BellOff, CalendarCheck, CalendarClock, CalendarOff, CalendarX, CheckCircle2, Clock, Eye, EyeOff, Globe, Loader2, ShieldCheck, X } from 'lucide-vue-next';
 
 import InstitutionSubscriptionActions from './InstitutionSubscriptionActions.vue';
 

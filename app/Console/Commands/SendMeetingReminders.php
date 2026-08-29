@@ -2,7 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Duty;
+use App\Actions\GetInstitutionAdministrators;
+use App\Actions\GetInstitutionMembers;
 use App\Models\Meeting;
 use App\Models\User;
 use App\Notifications\MeetingReminderNotification;
@@ -88,28 +89,21 @@ class SendMeetingReminders extends Command
     }
 
     /**
-     * Get users who should receive reminders for a meeting.
+     * Get users who should receive reminders for a meeting: everyone holding a duty in
+     * its institutions on the meeting's own date, plus the nominated administrators.
+     *
+     * This used to flatMap `$duty->users`, i.e. every person who had ever held a duty
+     * in the institution, with no date filter at all — a body with a decade of
+     * turnover reminded all of them. The breadth (every duty, not just student-rep
+     * ones) is deliberate: the chair should still be reminded of their own sitting.
      *
      * @return Collection<int, User>
      */
     protected function getMeetingParticipants(Meeting $meeting): Collection
     {
-        // Get users attached to the meeting's institutions
-        /** @var Collection<int, User> $users */
-        $users = collect();
-
-        foreach ($meeting->institutions as $institution) {
-            /** @var \Illuminate\Database\Eloquent\Collection<int, Duty> $duties */
-            $duties = $institution->duties()
-                ->with('users')
-                ->get();
-
-            /** @var Collection<int, User> $institutionUsers */
-            $institutionUsers = $duties->flatMap(fn ($duty) => $duty->users);
-
-            $users = $users->merge($institutionUsers);
-        }
-
-        return $users->unique('id');
+        return GetInstitutionMembers::forMeeting($meeting)
+            ->merge(GetInstitutionAdministrators::forMeeting($meeting))
+            ->unique('id')
+            ->values();
     }
 }

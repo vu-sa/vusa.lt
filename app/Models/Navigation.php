@@ -6,6 +6,7 @@ use App\Models\Traits\LogsModelActivity;
 use App\Services\NavigationService;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -41,12 +42,10 @@ use Spatie\Activitylog\Support\LogOptions;
  */
 #[Hidden(['created_at', 'updated_at'])]
 #[Table(name: 'navigation')]
+#[Unguarded]
 class Navigation extends Model
 {
     use HasFactory, LogsModelActivity, SoftDeletes;
-
-    #[\Override]
-    protected $guarded = [];
 
     #[\Override]
     protected function casts(): array

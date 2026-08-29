@@ -25,7 +25,7 @@ class DocumentController extends ApiController
         }
 
         // Limit results to prevent memory issues
-        $limit = min($request->get('limit', 20), 50); // Max 50 results
+        $limit = min($request->input('limit', 20), 50); // Max 50 results
         $documents = $query->limit($limit)->get();
 
         return $this->jsonSuccess($documents);

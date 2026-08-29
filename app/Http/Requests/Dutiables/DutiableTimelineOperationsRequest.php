@@ -4,10 +4,10 @@ namespace App\Http\Requests\Dutiables;
 
 use App\Models\Pivots\Dutiable;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Validator;
 
 /**
  * Shared shape for the two consumers of the timeline planner: the dry-run preview and

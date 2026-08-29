@@ -39,10 +39,9 @@ beforeEach(() => {
         user: {
           ui_preferences: {
             sidebar: {
-              sections: { quick_actions: false },
-              order: ['secondary', 'quick_actions'],
+              sections: { followed_institutions: false },
+              order: ['secondary', 'followed_institutions'],
             },
-            quick_actions: { new_meeting: false },
             recent_pages: [
               { route: 'meetings.index', params: {}, visited_at: '2026-05-19T10:00:00Z' },
               { route: 'gone.route', params: {}, visited_at: '2026-05-19T09:00:00Z' },
@@ -57,7 +56,7 @@ beforeEach(() => {
 describe('section visibility', () => {
   it('seeds from server prefs, defaulting missing keys to visible', () => {
     const ctx = mountProvider();
-    expect(ctx.isSectionVisible('quick_actions')).toBe(false);
+    expect(ctx.isSectionVisible('followed_institutions')).toBe(false);
     expect(ctx.isSectionVisible('secondary')).toBe(true);
   });
 
@@ -82,10 +81,10 @@ describe('section order', () => {
 
     // `pinned` (canonical first) is inserted at the front even though the stored
     // order didn't include it; the user's relative order of present sections
-    // (secondary before quick_actions) is preserved.
+    // (secondary before followed_institutions) is preserved.
     expect(order[0]).toBe('pinned');
-    expect(order.indexOf('secondary')).toBeLessThan(order.indexOf('quick_actions'));
-    expect(order).toHaveLength(7);
+    expect(order.indexOf('secondary')).toBeLessThan(order.indexOf('followed_institutions'));
+    expect(order).toHaveLength(6);
     expect(new Set(order).size).toBe(order.length);
     expect(order).toContain('recently_visited');
     expect(order).toContain('spacer');
@@ -94,7 +93,7 @@ describe('section order', () => {
   it('setSectionOrder reorders and persists', () => {
     const ctx = mountProvider();
     ctx.setSectionOrder([
-      'recently_visited', 'pinned', 'quick_actions', 'followed_institutions', 'spacer', 'start_fm', 'secondary',
+      'recently_visited', 'pinned', 'followed_institutions', 'spacer', 'start_fm', 'secondary',
     ] as any);
 
     expect(ctx.orderedSections.value[0]).toBe('recently_visited');
@@ -105,7 +104,7 @@ describe('section order', () => {
   it('resetSections restores default order and visibility', () => {
     const ctx = mountProvider();
     ctx.resetSections();
-    expect(ctx.isSectionVisible('quick_actions')).toBe(true);
+    expect(ctx.isSectionVisible('followed_institutions')).toBe(true);
     expect(ctx.orderedSections.value[0]).toBe('pinned');
   });
 });
@@ -247,31 +246,3 @@ describe('sidebar collapsed', () => {
   });
 });
 
-describe('quick action visibility', () => {
-  it('seeds from server prefs, defaulting missing keys to visible', () => {
-    const ctx = mountProvider();
-    expect(ctx.isQuickActionVisible('new_meeting')).toBe(false);
-    expect(ctx.isQuickActionVisible('new_news')).toBe(true);
-  });
-
-  it('setQuickActionVisibility updates locally and persists via fetch', () => {
-    const ctx = mountProvider();
-    ctx.setQuickActionVisibility('new_news', false);
-
-    expect(ctx.isQuickActionVisible('new_news')).toBe(false);
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-
-    const { url, body } = lastFetch();
-    expect(url).toContain('api.v1.admin.user-preferences.update');
-    expect(body.quick_actions.new_news).toBe(false);
-  });
-
-  it('resetSections restores quick action defaults too', () => {
-    const ctx = mountProvider();
-    ctx.setQuickActionVisibility('new_meeting', false);
-    expect(ctx.isQuickActionVisible('new_meeting')).toBe(false);
-
-    ctx.resetSections();
-    expect(ctx.isQuickActionVisible('new_meeting')).toBe(true);
-  });
-});

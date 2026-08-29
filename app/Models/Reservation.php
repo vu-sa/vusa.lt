@@ -9,6 +9,8 @@ use App\Models\Traits\HasTasks;
 use App\Models\Traits\LogsModelActivity;
 use App\Models\Traits\LogsRelationshipChanges;
 use App\States\ReservationResource\Returned;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -48,12 +50,10 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  *
  * @mixin \Eloquent
  */
+#[Unguarded]
 class Reservation extends Model implements Commentable
 {
     use HasComments, HasFactory, HasRelationships, HasTasks, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable, SoftDeletes;
-
-    #[\Override]
-    protected $guarded = [];
 
     #[\Override]
     protected function casts(): array
@@ -91,9 +91,9 @@ class Reservation extends Model implements Commentable
         return $this->hasManyDeepFromRelations($this->users(), (new User)->tenants());
     }
 
-    public function getIsCompletedAttribute()
+    protected function isCompleted(): Attribute
     {
-        return $this->resources->every(fn ($resource) => $resource->pivot->state::class === Returned::class);
+        return Attribute::make(get: fn () => $this->resources->every(fn ($resource) => $resource->pivot->state::class === Returned::class));
     }
 
     #[\Override]

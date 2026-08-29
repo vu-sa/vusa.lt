@@ -72,7 +72,31 @@ const hasSearched = ref(false);
 const errorMessage = ref<string | null>(null);
 const results = ref<MultiSearchResults>(createEmptyMultiSearchResults());
 
+/** multiSearch's per-collection limit option, keyed by the collection it caps. */
+const LIMIT_OPTION: Record<AdminCollection, string> = {
+  meetings: 'meetingsLimit',
+  agenda_items: 'agendaItemsLimit',
+  news: 'newsLimit',
+  pages: 'pagesLimit',
+  calendar: 'calendarLimit',
+  institutions: 'institutionsLimit',
+  documents: 'documentsLimit',
+  resources: 'resourcesLimit',
+  duties: 'dutiesLimit',
+  users: 'usersLimit',
+};
+
 const allowedCollections = new Set(props.collections);
+
+/**
+ * Ask only for what this picker offers — everything else is filtered out anyway.
+ * These limits used to be hardcoded for the link-target picker, so a picker over any
+ * other collection (users, duties, …) searched and came back empty.
+ */
+const searchLimits = Object.fromEntries(
+  (Object.entries(LIMIT_OPTION) as Array<[AdminCollection, string]>)
+    .map(([collection, option]) => [option, allowedCollections.has(collection) ? 15 : 0]),
+);
 
 const resultHits = computed<NormalizedSearchHit[]>(() =>
   collectAllTabHits(results.value, { query: query.value })
@@ -104,19 +128,7 @@ const runSearch = useDebounceFn(async () => {
   errorMessage.value = null;
 
   try {
-    results.value = await adminSearch.multiSearch(query.value, {
-      pagesLimit: 15,
-      newsLimit: 15,
-      calendarLimit: 15,
-      institutionsLimit: 15,
-      documentsLimit: 15,
-      // Not offered as link targets — keep the request light.
-      meetingsLimit: 0,
-      agendaItemsLimit: 0,
-      resourcesLimit: 0,
-      dutiesLimit: 0,
-      usersLimit: 0,
-    });
+    results.value = await adminSearch.multiSearch(query.value, searchLimits);
     hasSearched.value = true;
   }
   catch (err) {

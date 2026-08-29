@@ -7,6 +7,45 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.29 — Institucijų administratoriai (2026-08-29) {#v1-29}
+
+- ⭐ **Institucijai galima nurodyti administratorius** — institucijos redagavimo lange, prie kadencijų, dabar galima kiekvienai kadencijai priskirti konkrečius žmones. Jie nurodomi asmeniškai, ne per pareigybę, o žmonės, jau esantys institucijoje, siūlomi vienu paspaudimu
+- ⭐ **Kai administratoriai nurodyti, posėdžių užduotys tenka tik jiems** — visi kiti nariai tų užduočių nebegauna. Jei administratorių nėra, užduotys, kaip ir anksčiau, tenka tuo metu aktyviems atstovams
+- 🔧 **Užduotys ir priminimai nebekliūva buvusiems nariams** — anksčiau posėdžių priminimai keliaudavo visiems, kada nors turėjusiems pareigų institucijoje, neatsižvelgiant į datas. Dabar gauna tik tie, kurie tuo metu iš tikrųjų ėjo pareigas
+- 🔧 **Komentarų ir paminėjimų adresatai taip pat pagal datą** — paminėjus instituciją ar posėdį komentare, pranešimas nebekeliauja prieš kelerius metus iš pareigų pasitraukusiems žmonėms
+- ✨ **Administratoriai matomi posėdžio ir institucijos puslapiuose** — rodomi atskirai nuo narių ir vadovų, nes administratorius nebūtinai turi pareigų toje institucijoje
+- ✨ **Administruojamos institucijos matomos skydelyje** — jos rodomos tarp savų institucijų su atskiru ženkleliu, kad būtų aišku, jog tai ne narystė
+- ✨ **Pakeitus administratorius, atviros užduotys perskirstomos iš karto** — nereikia laukti, kol kas nors bus paleista iš naujo
+
+## v1.28 — Veiksmų langas (2026-08-29) {#v1-28}
+
+- ⭐ **Vienas langas dažniausiems veiksmams** — šoninėje juostoje ir pradiniame puslapyje atsirado „Greiti veiksmai“ mygtukas. Jis paklausia, kaip šiandien veiki (studentų atstovas, VU SA narys ar koordinatorius), o tada — ką nori padaryti. Rodomi tik tie veiksmai, kuriuos iš tikrųjų gali atlikti
+- ⭐ **Pranešti apie posėdį per kelis paspaudimus** — institucija, posėdžio būdas, data ir laikas klausiami po vieną, dideliais mygtukais. Darbotvarkę galima surašyti iš karto arba praleisti. Telefone langas užima visą ekraną, kompiuteryje — atsidaro kaip įprastas langas
+- ⭐ **Pranešti, kad posėdžių kurį laiką nebus** — anksčiau tai buvo pasiekiama tik iš ViSAK laiko juostos; dabar tą patį galima padaryti iš bet kurio puslapio
+- ⭐ **Papildyti jau įvykusį posėdį** — sąraše pirmiausia rodomi posėdžiai, kuriems labiausiai trūksta informacijos, ir parašoma, ko trūksta: darbotvarkės ar sprendimų
+- ✨ **Institucijų sąraše matyti, kuriai labiausiai reikia dėmesio** — prie kiekvienos parašoma, prieš kiek laiko vyko paskutinis posėdis arba iki kada galioja pranešimas apie posėdžių nebuvimą
+- ✨ **Susitikimo kūrimas visur atrodo vienodai** — senasis kūrimo langas pakeistas nauju visose vietose: šoninėje juostoje, pradiniame puslapyje, užduotyse, ViSAK, institucijos ir paieškos puslapiuose
+- ⭐ **Kalendoriuje skelbiami tik VU SA dariniai** — posėdį paskelbti kalendoriuje siūloma tik VU SA dariniams; organuose, į kuriuos VU SA tik deleguoja atstovus, tokios parinkties nebėra nei posėdžio kūrime, nei posėdžio puslapyje
+- ✨ **Šoninės juostos „Greiti veiksmai“ pakeisti vienu mygtuku** — vietoj sąrašo dabar visada matomas vienas mygtukas, atidarantis veiksmų langą. Kartu dingo ir nustatymas, kuriuos greitus veiksmus rodyti — komandų paletėje (Ctrl+K) matomi visi, kuriuos gali atlikti
+- ✨ **Peržiūroje paspaudus „Keisti“ grįžtama atgal į peržiūrą** — pakeitus vieną atsakymą nebereikia iš naujo pereiti visų likusių žingsnių
+- ⭐ **Posėdžio laikas siūlomas pagal šios institucijos istoriją** — siūlomos dvi artimiausios datos tos pačios savaitės dienos, kuria ši institucija posėdžiaudavo, ir tuo pačiu laiku. Jei posėdžių dar nebuvo, nieko nespėliojama — iškart atveriamas kalendorius
+- ⭐ **Atsirado laiko pasirinkimas** — pasirinkus kitą datą, atskirame lange klausiama valandos: pirmiausia siūlomas įprastas šios institucijos laikas, tada dažniausios valandos arba tikslus laikas
+- ✨ **Darbotvarkės klausimai rašomi paprastu sąrašu** — po vieną eilutę, „Enter“ atidaro kitą, tuščios eilutės neįrašomos. Anksčiau čia buvo pilnas posėdžio puslapio redaktorius, kuris telefone netilpo
+- ✨ **Matyti, kurį veiksmą atlieki** — lango viršuje rodoma to veiksmo piktograma šalia žingsnių
+- ✨ **Aiškesnis institucijų sąrašas** — kiekviena būsena (vėluoja, artėja, pažymėta, kad posėdžio nebus, suplanuotas posėdis) turi savo piktogramą ir spalvą
+- 🔧 **Datos rodomos lietuviškai** — veiksmų lange datos buvo formuojamos pagal naršyklės, o ne programos kalbą
+- 🔧 **Posėdžio laikas išsaugomas teisingai** — kuriant posėdį per veiksmų langą laikas buvo siunčiamas pasaulio (UTC) laiku, tad išsaugotas posėdis nukrypdavo keliomis valandomis
+- 🔧 **Telefono apatinio meniu „+“ mygtukas veikia** — anksčiau jis vedė į neegzistuojantį puslapį
+- ⭐ **Darbotvarkę galima įklijuoti iš karto** — veiksmų lange atsirado trečias pasirinkimas: sukūrus posėdį iš karto atsidaro posėdžio puslapio langas, kuriame visą klausimų sąrašą galima įklijuoti vienu kartu
+- ✨ **Institucijų sąraše pirmiausia rodomas artimiausias posėdis** — jei institucija turi ir suplanuotą posėdį, ir pranešimą apie posėdžių nebuvimą, rodomi abu
+- ✨ **Kelių darbotvarkės punktų langas pasiekiamas ir tuščioje darbotvarkėje** — anksčiau jį buvo galima atidaryti tik tada, kai jau buvo bent vienas punktas
+- ✨ **Platesnis darbotvarkės klausimų langas** — įklijuotas posėdžio klausimų sąrašas nebespaudžiamas į siaurą stulpelį
+- ✨ **Aiškesni posėdžio puslapio veiksmai** — „Redaguoti posėdį“ mygtukas dabar su užrašu, o „Pridėti instituciją“ perkelta į veiksmų meniu
+- 🔧 **Matomas pirmos darbotvarkės eilutės pažymėjimas** — rašant klausimus veiksmų lange pirmos eilutės rėmelis buvo nukerpamas
+- 🔧 **Elektroniniam posėdžiui nebesiūlomas laikas** — pasirinkus balsavimą el. paštu siūlomos tik dienos, be valandos, o data išsaugoma kaip 23:59 terminas; laikas sutvarkomas ir tuomet, kai tipas pakeičiamas jau pasirinkus valandą, o peržiūroje pakeitus tipą iš elektroninio į kitą paklausiama tikrosios valandos
+- 🔧 **Darbotvarkės klausimus galima įklijuoti ir posėdžio puslapyje** — „Įkelti iš teksto“ anksčiau veikė tik kuriant posėdį; dabar pasiekiama ir pridedant klausimus, o įklijuoti klausimai pridedami prie jau surašytų, o ne juos pakeičia
+- 🔧 **„Tvarkyti pareigybių laikotarpius“ veda į laiko juostą** — veiksmų lange ši parinktis vedė į kadencijų nustatymus ir buvo rodoma tik nustatymų valdytojams; dabar atveria pareigybių laikotarpių tvarkyklę ir rodoma visiems, kurie gali matyti pareigybes
+
 ## v1.27 — Kadencijos, laikotarpių tvarkyklė ir posėdžių skelbimas (2026-08-28) {#v1-27}
 
 ### Pareigybių laikotarpių laiko juosta

@@ -70,36 +70,6 @@ export const usePage = fn(() => ({
         delete: { meeting: true, document: true },
       },
     },
-    // Accessible institutions for admin users (InstitutionSelectorForm uses this)
-    accessibleInstitutions: [
-      {
-        id: 'inst1',
-        name: 'VU SA Fakulteto taryba',
-        shortname: 'VU SA FT',
-        tenant: { id: 'vusa', shortname: 'VU SA' },
-        last_meeting_date: '2024-01-15',
-        active_check_in: false,
-        meetings: [{ id: 1 }, { id: 2 }],
-      },
-      {
-        id: 'inst2',
-        name: 'VU SA Parlamentas',
-        shortname: 'VU SA P',
-        tenant: { id: 'vusa', shortname: 'VU SA' },
-        last_meeting_date: '2024-01-10',
-        active_check_in: false,
-        meetings: [{ id: 3 }],
-      },
-      {
-        id: 'inst3',
-        name: 'VU Senatas',
-        shortname: 'Senatas',
-        tenant: { id: 'vusa', shortname: 'VU SA' },
-        last_meeting_date: null,
-        active_check_in: false,
-        meetings: [],
-      },
-    ],
     tenants: [
       { id: 'vusa', name: 'VU SA', shortname: 'VU SA' },
       { id: 'vuif', name: 'VU IF', shortname: 'VU IF' },

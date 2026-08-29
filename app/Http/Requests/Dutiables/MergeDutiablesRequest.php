@@ -5,10 +5,10 @@ namespace App\Http\Requests\Dutiables;
 use App\Actions\Dutiables\MergeDutiables;
 use App\Models\Pivots\Dutiable;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Validator;
 
 class MergeDutiablesRequest extends FormRequest
 {
@@ -59,7 +59,7 @@ class MergeDutiablesRequest extends FormRequest
      */
     public function rows(): Collection
     {
-        $ids = array_values(array_filter((array) $this->input('row_ids', []), 'is_string'));
+        $ids = array_values(array_filter((array) $this->input('row_ids', []), is_string(...)));
 
         if ($ids === []) {
             return new Collection;

@@ -8,6 +8,8 @@ use App\Models\Traits\LogsModelActivity;
 use Database\Factories\VoteFactory;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Attributes\Touches;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -36,12 +38,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read AgendaItem $agendaItem
- * @property-read string|null $decision_label
- * @property-read bool $is_complete
- * @property-read string|null $student_benefit_label
- * @property-read string|null $student_vote_label
- * @property-read string $vote_alignment_status
- * @property-read bool $vote_matches
+ * @property-read mixed $decision_label
+ * @property-read mixed $is_complete
+ * @property-read mixed $student_benefit_label
+ * @property-read mixed $student_vote_label
+ * @property-read mixed $vote_alignment_status
+ * @property-read mixed $vote_matches
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Vote additional()
  * @method static \Database\Factories\VoteFactory factory($count = null, $state = [])
@@ -54,12 +56,10 @@ use Illuminate\Support\Carbon;
  */
 #[Table(name: 'votes')]
 #[Touches(['agendaItem'])]
+#[Unguarded]
 class Vote extends Model
 {
     use HasFactory, HasUlids, LogsModelActivity;
-
-    #[\Override]
-    protected $guarded = [];
 
     #[\Override]
     protected function casts(): array
@@ -87,87 +87,90 @@ class Vote extends Model
     /**
      * Check if this vote is complete (all three fields filled).
      */
-    public function getIsCompleteAttribute(): bool
+    protected function isComplete(): Attribute
     {
-        return ! empty($this->student_vote)
+        return Attribute::make(get: fn () => ! empty($this->student_vote)
             && ! empty($this->decision)
-            && ! empty($this->student_benefit);
+            && ! empty($this->student_benefit));
     }
 
     /**
      * Check if student vote matches decision (vote alignment).
      */
-    public function getVoteMatchesAttribute(): bool
+    protected function voteMatches(): Attribute
     {
-        return ! empty($this->student_vote)
+        return Attribute::make(get: fn () => ! empty($this->student_vote)
             && ! empty($this->decision)
-            && $this->student_vote === $this->decision;
+            && $this->student_vote === $this->decision);
     }
 
     /**
      * Calculate vote alignment status for this vote.
      *
-     * @return string 'match', 'mismatch', 'incomplete', 'neutral'
+     * @return Attribute<'match'|'mismatch'|'incomplete'|'neutral', never>
      */
-    public function getVoteAlignmentStatusAttribute(): string
+    protected function voteAlignmentStatus(): Attribute
     {
-        $hasStudentVote = ! empty($this->student_vote);
-        $hasDecision = ! empty($this->decision);
+        return Attribute::make(get: function () {
+            $hasStudentVote = ! empty($this->student_vote);
+            $hasDecision = ! empty($this->decision);
+            // Neither vote nor decision recorded
+            if (! $hasStudentVote && ! $hasDecision) {
+                return 'neutral';
+            }
+            // Only one is filled - incomplete data
+            if ($hasStudentVote xor $hasDecision) {
+                return 'incomplete';
+            }
 
-        // Neither vote nor decision recorded
-        if (! $hasStudentVote && ! $hasDecision) {
-            return 'neutral';
-        }
-
-        // Only one is filled - incomplete data
-        if ($hasStudentVote xor $hasDecision) {
-            return 'incomplete';
-        }
-
-        // Both filled - check if they match
-        return $this->student_vote === $this->decision ? 'match' : 'mismatch';
+            // Both filled - check if they match
+            return $this->student_vote === $this->decision ? 'match' : 'mismatch';
+        });
     }
 
     /**
      * Get localized decision label.
      */
-    public function getDecisionLabelAttribute(): ?string
+    protected function decisionLabel(): Attribute
     {
-        if (empty($this->decision)) {
-            return null;
-        }
+        return Attribute::make(get: function () {
+            if (empty($this->decision)) {
+                return null;
+            }
+            $value = VoteValue::tryFrom($this->decision);
 
-        $value = VoteValue::tryFrom($this->decision);
-
-        return $value?->decisionLabel(app()->getLocale());
+            return $value?->decisionLabel(app()->getLocale());
+        });
     }
 
     /**
      * Get localized student vote label.
      */
-    public function getStudentVoteLabelAttribute(): ?string
+    protected function studentVoteLabel(): Attribute
     {
-        if (empty($this->student_vote)) {
-            return null;
-        }
+        return Attribute::make(get: function () {
+            if (empty($this->student_vote)) {
+                return null;
+            }
+            $value = VoteValue::tryFrom($this->student_vote);
 
-        $value = VoteValue::tryFrom($this->student_vote);
-
-        return $value?->studentVoteLabel(app()->getLocale());
+            return $value?->studentVoteLabel(app()->getLocale());
+        });
     }
 
     /**
      * Get localized student benefit label.
      */
-    public function getStudentBenefitLabelAttribute(): ?string
+    protected function studentBenefitLabel(): Attribute
     {
-        if (empty($this->student_benefit)) {
-            return null;
-        }
+        return Attribute::make(get: function () {
+            if (empty($this->student_benefit)) {
+                return null;
+            }
+            $value = VoteValue::tryFrom($this->student_benefit);
 
-        $value = VoteValue::tryFrom($this->student_benefit);
-
-        return $value?->studentBenefitLabel(app()->getLocale());
+            return $value?->studentBenefitLabel(app()->getLocale());
+        });
     }
 
     /**

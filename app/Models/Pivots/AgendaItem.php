@@ -17,6 +17,7 @@ use App\Services\VoteStatisticsCalculator;
 use Database\Factories\AgendaItemFactory;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Attributes\Touches;
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -64,6 +65,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  */
 #[Table(name: 'agenda_items')]
 #[Touches(['meeting'])]
+#[Unguarded]
 class AgendaItem extends Pivot implements Commentable
 {
     use HasComments, HasFactory, HasRelationships, HasUlids, LogsModelActivity, Searchable;
@@ -75,9 +77,6 @@ class AgendaItem extends Pivot implements Commentable
     {
         return AgendaItemFactory::new();
     }
-
-    #[\Override]
-    protected $guarded = [];
 
     #[\Override]
     protected function casts(): array

@@ -44,9 +44,17 @@
           {{ $t('Paieška') }}
         </SearchButton>
         <a href="/login"
-          class="inline-flex items-center justify-center h-6 px-2 text-xs tracking-wide hover:bg-nav-hover-bg-light dark:hover:bg-nav-hover-bg-dark gap-1 rounded-md transition-colors"
+          class="inline-flex items-center justify-center h-6 px-2 text-xs tracking-wide hover:bg-nav-hover-bg-light dark:hover:bg-nav-hover-bg-dark gap-1.5 rounded-md transition-colors"
           :title="$page.props.auth?.user ? $page.props.auth.user?.name : $t('auth.login')">
-          <IFluentPerson24Filled v-if="$page.props.auth?.user" class="h-4 w-4" aria-hidden="true" />
+          <template v-if="$page.props.auth?.user">
+            <Avatar class="h-4 w-4 rounded-lg ring-1 ring-black/5 dark:ring-white/10">
+              <AvatarImage v-if="$page.props.auth.user.profile_photo_path"
+                :src="$page.props.auth.user.profile_photo_path" :alt="$page.props.auth.user.name" />
+              <AvatarFallback class="rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold text-[7px]">
+                {{ $page.props.auth.user.name.substring(0, 2).toUpperCase() }}
+              </AvatarFallback>
+            </Avatar>
+          </template>
           <IFluentPerson24Regular v-else class="h-4 w-4" aria-hidden="true" />
           <span class="hidden sm:inline">
             {{ $page.props.auth?.user ? $page.props.auth.user?.name : $t('Mano VU SA') }}
@@ -70,6 +78,7 @@ import QuickLink from './QuickLink.vue';
 import SearchButton from './SearchButton.vue';
 
 import { Button } from '@/Components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,

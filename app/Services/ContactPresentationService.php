@@ -104,9 +104,7 @@ class ContactPresentationService
 
             $groupKey = $this->getGroupKey($dutiable, $groupingType, $duty);
 
-            if (! isset($groups[$groupKey])) {
-                $groups[$groupKey] = [];
-            }
+            $groups[$groupKey] ??= [];
 
             $groups[$groupKey][] = [
                 'user' => $user,

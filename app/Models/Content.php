@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -25,15 +26,13 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
+#[Unguarded]
 class Content extends Model
 {
     use HasFactory;
 
     #[\Override]
     protected $with = ['parts'];
-
-    #[\Override]
-    protected $guarded = [];
 
     public function parts(): HasMany
     {

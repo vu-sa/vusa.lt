@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Unguarded;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -30,7 +32,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent|null $flowable
- * @property-read int $total_steps
+ * @property-read mixed $total_steps
  *
  * @method static \Database\Factories\ApprovalFlowFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApprovalFlow global()
@@ -40,12 +42,10 @@ use Illuminate\Support\Carbon;
  *
  * @mixin \Eloquent
  */
+#[Unguarded]
 class ApprovalFlow extends Model
 {
     use HasFactory, HasUlids;
-
-    #[\Override]
-    protected $guarded = [];
 
     #[\Override]
     protected function casts(): array
@@ -76,9 +76,9 @@ class ApprovalFlow extends Model
     /**
      * Get the total number of steps in this flow.
      */
-    public function getTotalStepsAttribute(): int
+    protected function totalSteps(): Attribute
     {
-        return count($this->steps ?? []);
+        return Attribute::make(get: fn () => count($this->steps ?? []));
     }
 
     /**

@@ -7,6 +7,45 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.29 — Institution administrators (2026-08-29) {#v1-29}
+
+- ⭐ **An institution can name its administrators** — the institution edit page now lets you assign specific people to each cadence, right beside the cadences themselves. They are named person by person rather than through a duty, and people already in the body are offered as one-tap suggestions
+- ⭐ **With administrators named, the meeting tasks go to them alone** — every other member stops receiving them. With no administrators the tasks go, as before, to the representatives active at the time
+- 🔧 **Tasks and reminders no longer reach former members** — meeting reminders used to go to everyone who had ever held a duty in the institution, with no regard for dates. Now only the people actually serving at the time are notified
+- 🔧 **Comment and mention audiences are date-scoped too** — mentioning an institution or a meeting in a comment no longer notifies people who left years earlier
+- ✨ **Administrators are shown on the meeting and institution pages** — separately from members and leaders, since an administrator need not hold a duty in the body at all
+- ✨ **Administered institutions appear on your dashboard** — listed among your own with a distinct marker, so it stays clear that this is not membership
+- ✨ **Changing the administrators reassigns the open tasks immediately** — no waiting for anything to be re-run
+
+## v1.28 — The action window (2026-08-29) {#v1-28}
+
+- ⭐ **One window for the most common actions** — a "Quick actions" button in the sidebar and on the home page opens a guided window. It asks which hat you are wearing today (student representative, VU SR member or coordinator), then what you want to do. Only the actions you are actually allowed to take are listed
+- ⭐ **Report a meeting in a few taps** — the institution, the meeting format, the date and the time are each asked on their own screen, as large buttons. The agenda can be filled in right away or skipped. On a phone the window fills the screen; on a computer it opens as a normal dialog
+- ⭐ **Report that there will be no meetings for a while** — previously only reachable from the ViSAK timeline; now available from any page
+- ⭐ **Fill in a meeting that already happened** — the list puts the meetings missing the most first and says what is missing: the agenda or the decisions
+- ✨ **The institution list shows which one needs attention** — each one says how long ago its last meeting was, or how long the no-meetings notice is valid
+- ✨ **Creating a meeting looks the same everywhere** — the old creation dialog was replaced by the new window in every place it appeared: the sidebar, the home page, tasks, ViSAK, institution and search pages
+- ⭐ **Only VU SR bodies are announced in the calendar** — announcing a meeting is offered only for VU SR's own bodies; for bodies VU SR merely delegates representatives into the option is gone from both meeting creation and the meeting page
+- ✨ **The sidebar's "Quick actions" list is now one button** — a single always-visible button opens the action window instead. The setting for which quick actions to show went with it: the command palette (Ctrl+K) now lists every one you are allowed to use
+- ✨ **"Change" on the review returns to the review** — amending one answer no longer walks you through every remaining step again
+- ⭐ **The meeting time is suggested from this institution's own history** — the next two dates on the weekday this body has been meeting on, at the same time. If it has never met, nothing is guessed and the calendar opens straight away
+- ⭐ **You can now pick the time** — choosing another date asks for the hour on its own screen: this institution's usual time first, then the common hours, or an exact time
+- ✨ **Agenda questions are a plain list** — one line each, Enter opens the next, blank lines are dropped. This used to be the full meeting-page editor, which did not fit on a phone
+- ✨ **You can see which action you are in** — the window header shows that action's icon next to the steps
+- ✨ **A clearer institution list** — each status (overdue, approaching, marked as having no meeting, meeting scheduled) has its own icon and colour
+- 🔧 **Dates render in Lithuanian** — the action window formatted dates using the browser's language rather than the app's
+- 🔧 **The meeting time is saved correctly** — creating a meeting through the action window sent the time in UTC, so the saved meeting drifted by a few hours
+- 🔧 **The "+" button in the phone bottom bar works** — it previously led to a page that does not exist
+- ⭐ **You can paste the whole agenda at once** — a third choice in the action window: once the meeting is created, the meeting page opens the bulk dialog straight away, where the entire list of questions can be pasted in one go
+- ✨ **The institution list leads with the upcoming meeting** — when a body has both a scheduled meeting and a no-meetings notice, both are shown
+- ✨ **The bulk agenda dialog is reachable from an empty agenda** — it previously opened only once at least one item existed
+- ✨ **A wider agenda questions dialog** — a pasted list of meeting questions is no longer squeezed into a narrow column
+- ✨ **Clearer meeting page actions** — the "Edit meeting" button now carries its label, and "Add institution" moved into the actions menu
+- 🔧 **The first agenda line's focus outline is visible** — writing questions in the action window sheared the outline off the top row
+- 🔧 **No time is offered for an email meeting** — voting by email now suggests days without an hour and stores the date as a 23:59 deadline, including when the type is changed after a time was already picked; changing the type away from email on the review asks for a real hour instead of keeping the marker
+- 🔧 **Agenda questions can be pasted on the meeting page too** — "Load from text" used to work only while creating a meeting; it is now available when adding questions, and pasted questions are appended to what is listed rather than replacing it
+- 🔧 **"Manage duty periods" opens the timeline** — this action window entry led to the cadence settings and was shown only to settings managers; it now opens the duty-period timeline and is offered to everyone who may read duties
+
 ## v1.27 — Cadences, the duty-period timeline and meeting announcements (2026-08-28) {#v1-27}
 
 ### Duty period timeline

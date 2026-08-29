@@ -9,6 +9,7 @@ use App\Models\User;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\InvalidStateException;
 
@@ -24,13 +25,13 @@ class AuthController extends Controller
 
         // Handle OAuth errors (e.g., user cancelled login)
         if ($request->has('error')) {
-            $error = $request->get('error');
-            $errorSubcode = $request->get('error_subcode');
+            $error = $request->input('error');
+            $errorSubcode = $request->input('error_subcode');
 
-            \Log::info('Microsoft OAuth flow cancelled or denied', [
+            Log::info('Microsoft OAuth flow cancelled or denied', [
                 'error' => $error,
                 'error_subcode' => $errorSubcode,
-                'error_description' => $request->get('error_description'),
+                'error_description' => $request->input('error_description'),
                 'user_ip' => $request->ip(),
             ]);
 
@@ -59,7 +60,7 @@ class AuthController extends Controller
             $microsoftUser = Socialite::driver('microsoft')->user();
         } catch (InvalidStateException) {
             // Log the error for debugging
-            \Log::warning('Microsoft OAuth InvalidStateException, retrying with stateless', [
+            Log::warning('Microsoft OAuth InvalidStateException, retrying with stateless', [
                 'user_ip' => $request->ip(),
                 'user_agent' => $request->userAgent(),
                 'session_id' => $request->session()->getId(),
@@ -71,7 +72,7 @@ class AuthController extends Controller
             $microsoftUser = Socialite::driver('microsoft')->stateless()->user();
         } catch (ClientException $e) {
             // Handle Guzzle HTTP errors (e.g., 400 Bad Request from token exchange)
-            \Log::error('Microsoft OAuth ClientException', [
+            Log::error('Microsoft OAuth ClientException', [
                 'message' => $e->getMessage(),
                 'user_ip' => $request->ip(),
             ]);
@@ -85,7 +86,7 @@ class AuthController extends Controller
             return redirect()->route('login')->with('error', $message);
         } catch (\Exception $e) {
             // Catch any other unexpected exceptions
-            \Log::error('Microsoft OAuth unexpected error', [
+            Log::error('Microsoft OAuth unexpected error', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'user_ip' => $request->ip(),

@@ -13,6 +13,7 @@ use App\Services\SharepointGraphService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class SharepointFileService
@@ -140,7 +141,7 @@ class SharepointFileService
                 $sharepointService->updateListItem(config('filesystems.sharepoint.list_id'), $listItem->getId(), $listItemProperties);
             } catch (\Exception $e) {
                 // Log warning but don't fail - file is uploaded and local record has the metadata
-                \Log::warning('Failed to update SharePoint list item metadata, but file was uploaded successfully', [
+                Log::warning('Failed to update SharePoint list item metadata, but file was uploaded successfully', [
                     'fileableFile' => $fileableFile->id,
                     'sharepoint_id' => $driveItem->getId(),
                     'error' => $e->getMessage(),

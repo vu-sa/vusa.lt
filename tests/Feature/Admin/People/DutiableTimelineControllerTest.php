@@ -82,6 +82,15 @@ describe('the standalone page', function (): void {
         asUser($this->manager)->get(route('dutiables.timeline'))->assertOk();
     });
 
+    /**
+     * The page gates on viewAny(Duty), and the action window's coordinator entry mirrors
+     * that with `auth.can.index.duty` — a button offered on any other basis would send
+     * people straight into this 403.
+     */
+    test('someone who may not read duties is refused', function (): void {
+        asUser($this->holder)->get(route('dutiables.timeline'))->assertStatus(403);
+    });
+
     test('an institution in the query string preloads the scope', function (): void {
         $institution = $this->duty->institution;
 
@@ -424,6 +433,9 @@ describe('merging stints', function (): void {
     });
 
     test('the survivor inherits details the earlier row was missing', function (): void {
+        // Stated, not assumed: the factory fills additional_email 20% of the time, and
+        // merge only fills gaps — so the premise has to be set rather than rolled for.
+        $this->earlier->update(['additional_email' => null]);
         $this->later->update(['additional_email' => 'pirmininkas@vusa.lt']);
 
         asUserWithInertia($this->manager)->post(route('dutiables.timeline.merge'), [

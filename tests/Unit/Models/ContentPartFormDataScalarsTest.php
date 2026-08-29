@@ -4,7 +4,7 @@ use App\Models\Content;
 use App\Models\ContentPart;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 /**
  * Editor forms submitted as FormData (see EditHomePage.vue's `forceFormData`)
@@ -46,8 +46,9 @@ test('integer option keys saved as FormData strings are cast back to integers', 
     ]);
 
     $options = $part->fresh()->options->toArray();
-    expect($options['autoplay'])->toBeTrue();
-    expect($options['autoplayDelay'])->toBeInt()->toBe(8000);
+    expect($options['autoplay'])->toBeTrue()
+        ->and($options['autoplayDelay'])->toBeInt()
+        ->toBe(8000);
 });
 
 test('boolean json_content keys are cast too (deck slide imageLeft)', function (): void {
