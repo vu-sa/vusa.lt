@@ -4,6 +4,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 
 | Applies to | Rule file |
 | --- | --- |
+| app/Models/Task.php,app/Models/Traits/HasTasks.php,app/Http/Controllers/Admin/TaskController.php | .ai/rules/admin.md |
 | app/** | .ai/rules/app.md |
 | app/Models/Cadence.php,app/Policies/CadencePolicy.php,app/Actions/Cadences/**,app/Http/Requests/Cadences/**,resources/js/Components/Cadences/** | .ai/rules/cadences.md |
 | app/Services/Typesense/**, app/Console/Commands/GenerateTypesenseSearchKey.php', app/Console/Commands/DocsCoverageCommand.php, app/Support/Docs/** | .ai/rules/commands.md |
@@ -17,6 +18,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | lang/** | .ai/rules/lang.md |
 | resources/js/Pages/Admin/People/Show*.vue,app/Http/Middleware/HandleInertiaRequests.php | .ai/rules/middleware.md |
 | app/Models/**, app/Models/Tenant.php, app/Models/Calendar.php | .ai/rules/models.md |
+| app/Http/Controllers/Admin/MailQueueController.php,app/Console/Commands/PruneNotificationDigests.php,resources/js/Pages/Admin/MailQueue.vue | .ai/rules/pages-admin.md |
 | app/Providers/** | .ai/rules/providers.md |
 | app/Http/Requests/** | .ai/rules/requests.md |
 | routes/api.php | .ai/rules/routes.md |

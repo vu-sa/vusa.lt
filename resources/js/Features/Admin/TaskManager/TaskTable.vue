@@ -30,7 +30,7 @@
 import { useDateLocale } from '@/Composables/useDateLocale';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ref, defineAsyncComponent } from 'vue';
+import { computed, ref, defineAsyncComponent } from 'vue';
 import {
   CheckIcon,
   CalendarIcon,
@@ -108,6 +108,10 @@ const emit = defineEmits<{
 
 // Track loading state per task
 const loadingTaskId = ref<string | null>(null);
+
+// An automatic task is the system's to close; only a super admin may force one away when it
+// has become unclosable. The backend enforces the same rule.
+const isSuperAdmin = computed(() => usePage().props.auth?.user?.isSuperAdmin ?? false);
 
 // Get locale for date formatting
 const dateLocale = useDateLocale();
@@ -678,6 +682,7 @@ const columns = [
       const canManuallyComplete = task.can_be_manually_completed !== false;
       const isCompleted = task.completed_at !== null;
       const hasDescription = !!task.description;
+      const canDelete = canManuallyComplete || isSuperAdmin.value;
 
       return (
         <DropdownMenu>
@@ -698,10 +703,12 @@ const columns = [
                 <span>{$t('Mark Complete')}</span>
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem onClick={() => handleDelete(task)} class="text-destructive focus:text-destructive">
-              <TrashIcon class="mr-2 h-4 w-4" />
-              <span>{$t('Delete')}</span>
-            </DropdownMenuItem>
+            {canDelete && (
+              <DropdownMenuItem onClick={() => handleDelete(task)} class="text-destructive focus:text-destructive">
+                <TrashIcon class="mr-2 h-4 w-4" />
+                <span>{canManuallyComplete ? $t('Delete') : $t('tasks.delete_automatic')}</span>
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       );

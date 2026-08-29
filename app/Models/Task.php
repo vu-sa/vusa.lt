@@ -50,6 +50,16 @@ class Task extends Model
     use HasFactory, HasRelationships, HasUlids;
 
     #[\Override]
+    protected static function booted(): void
+    {
+        // task_user.task_id is a RESTRICT foreign key, so a task with assignees cannot be
+        // deleted until its pivot rows go — without this, deleting a real task throws.
+        static::deleting(function (Task $task): void {
+            $task->users()->detach();
+        });
+    }
+
+    #[\Override]
     protected function casts(): array
     {
         return [

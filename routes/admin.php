@@ -43,6 +43,12 @@ Route::get('institutionGraph', [DashboardController::class, 'institutionGraph'])
 // System Status
 Route::get('system-status', [SystemStatusController::class, 'index'])->name('systemStatus');
 
+// Mail queue — the pending notification digests behind the system status card
+Route::get('mail-queue', [MailQueueController::class, 'index'])->name('mailQueue');
+Route::delete('mail-queue', [MailQueueController::class, 'destroyAll'])->name('mailQueue.destroyAll');
+Route::delete('mail-queue/users/{user}', [MailQueueController::class, 'destroyForUser'])->name('mailQueue.destroyForUser');
+Route::delete('mail-queue/{mailQueueItem}', [MailQueueController::class, 'destroy'])->name('mailQueue.destroy');
+
 // Restore and permanent-delete routes
 Route::patch('banners/{banner}/restore', [BannerController::class, 'restore'])->name('banners.restore')->withTrashed();
 Route::delete('banners/{banner}/force-delete', [BannerController::class, 'forceDelete'])->name('banners.forceDelete')->withTrashed();

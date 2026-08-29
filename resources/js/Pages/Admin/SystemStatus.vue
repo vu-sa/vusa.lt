@@ -122,31 +122,37 @@
         </CardContent>
       </Card>
 
-      <Card class="h-fit transition-colors duration-300 hover:border-primary/40 hover:bg-accent/40">
-        <CardHeader size="compact">
-          <div class="flex items-center justify-between">
-            <CardTitle class="text-sm font-medium">
-              {{ $t('Laiškų eilė') }}
-            </CardTitle>
-            <component
-              :is="getStatusIcon(status.digest?.status)"
-              :class="getStatusColor(status.digest?.status)"
-              class="h-4 w-4"
-            />
-          </div>
-        </CardHeader>
-        <CardContent size="compact">
-          <div class="text-2xl font-bold">
-            {{ status.digest?.pending_items ?? 0 }}
-          </div>
-          <p class="text-xs text-muted-foreground">
-            {{ status.digest?.users_waiting ?? 0 }} {{ $t('naudotojų laukia') }}
-            <span v-if="status.digest?.oldest_age_hours" class="block">
-              {{ $t('Seniausias') }}: {{ formatRelativeSeconds(status.digest.oldest_age_hours * 3600) }}
-            </span>
-          </p>
-        </CardContent>
-      </Card>
+      <Link :href="route('mailQueue')" class="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <Card class="h-fit transition-colors duration-300 hover:border-primary/40 hover:bg-accent/40">
+          <CardHeader size="compact">
+            <div class="flex items-center justify-between">
+              <CardTitle class="text-sm font-medium">
+                {{ $t('Laiškų eilė') }}
+              </CardTitle>
+              <component
+                :is="getStatusIcon(status.digest?.status)"
+                :class="getStatusColor(status.digest?.status)"
+                class="h-4 w-4"
+              />
+            </div>
+          </CardHeader>
+          <CardContent size="compact">
+            <div class="text-2xl font-bold">
+              {{ status.digest?.pending_items ?? 0 }}
+            </div>
+            <p class="text-xs text-muted-foreground">
+              {{ status.digest?.users_waiting ?? 0 }} {{ $t('naudotojų laukia') }}
+              <span v-if="status.digest?.oldest_age_hours" class="block">
+                {{ $t('Seniausias') }}: {{ formatRelativeSeconds(status.digest.oldest_age_hours * 3600) }}
+              </span>
+            </p>
+            <p class="mt-2 flex items-center gap-1 text-xs font-medium text-primary">
+              {{ $t('Peržiūrėti eilę') }}
+              <ChevronRightIcon class="h-3 w-3" />
+            </p>
+          </CardContent>
+        </Card>
+      </Link>
 
       <Card class="h-fit transition-colors duration-300 hover:border-primary/40 hover:bg-accent/40">
         <CardHeader size="compact">
@@ -695,7 +701,7 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
-import { router, usePoll } from '@inertiajs/vue3';
+import { Link, router, usePoll } from '@inertiajs/vue3';
 import { useTransition, TransitionPresets } from '@vueuse/core';
 
 // UI components
@@ -703,6 +709,7 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   AlertTriangleIcon,
+  ChevronRightIcon,
   DatabaseIcon,
   HardDriveIcon,
   LinkIcon,

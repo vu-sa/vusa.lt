@@ -7,6 +7,13 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.31 — Task deletion and the mail queue (2026-08-30) {#v1-31}
+
+- 🔧 **A task can finally be deleted** — deletion failed at the database level for any task with someone assigned to it, which is to say almost all of them
+- 🔧 **Deleting a meeting now deletes its tasks** — they used to linger without a meeting, still nagging people about something they could no longer open. The same goes for institutions and reservations. Restoring a meeting from the trash does not bring them back; `tasks:repopulate` recreates the automatic ones
+- ⭐ **Super admins can delete automatic tasks** — the button now appears in the task table. Some automatic tasks can no longer be completed, and there has to be a way out
+- ⭐ **A mail queue page** — the "Mail queue" card on the system status page now opens a page showing what has not been sent: every recipient and the lines their digest will contain. Super admins can drop a single line, a recipient's whole email, or empty the queue
+
 ## v1.30 — Task notifications and progress (2026-08-29) {#v1-30}
 
 - 🔧 **A VU SR body's meeting task now counts its progress correctly** — Parlamentas, Taryba and the other VU SR bodies never record a student position or student benefit, yet the task still demanded them, so the percentage sat at 0 %. A decision alone is now enough for such an item

@@ -38,6 +38,7 @@ return [
         'assignee_context' => 'Jūs ir dar :count asmuo(-ų) turi šią užduotį.',
         'all_items_completed' => 'Visi darbotvarkės klausimai užpildyti',
     ],
+    'delete_automatic' => 'Ištrinti (administratoriaus teisėmis)',
     'agenda' => [
         'action_add_items' => 'Pridėti darbotvarkės klausimą',
         'action_view_agenda' => 'Peržiūrėti darbotvarkę',

@@ -32,6 +32,9 @@ const DETACH_EXEMPTIONS = [
     // Reservation::users() is a plain belongsToMany over reservation_user, not
     // the dutiables pivot.
     'app/Models/Reservation.php',
+    // Task::users() is a plain belongsToMany over task_user, not the dutiables
+    // pivot. The detach is required: task_user.task_id is a RESTRICT foreign key.
+    'app/Models/Task.php',
 ];
 
 test('app code never detaches through a relation backed by the dutiables pivot', function (): void {

@@ -7,6 +7,13 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.31 — Užduočių trynimas ir laiškų eilė (2026-08-30) {#v1-31}
+
+- 🔧 **Užduotis pagaliau įmanoma ištrinti** — trynimas nutrūkdavo duomenų bazės lygiu kiekvienai užduočiai, kuriai buvo priskirtas bent vienas žmogus, t. y. beveik visoms
+- 🔧 **Ištrynus posėdį, dingsta ir jo užduotys** — anksčiau jos likdavo kaboti be posėdžio ir toliau primindavo apie tai, ko nebeįmanoma atidaryti. Tas pats galioja institucijoms ir rezervacijoms. Grąžinus posėdį iš šiukšlinės, automatinės užduotys atkuriamos su `tasks:repopulate`
+- ⭐ **Administratoriai gali ištrinti automatines užduotis** — užduočių lentelėje atsirado mygtukas. Kai kurių automatinių užduočių nebeįmanoma užbaigti, ir turi būti kaip jų atsikratyti
+- ⭐ **Laiškų eilės puslapis** — sistemos būsenos kortelė „Laiškų eilė“ dabar veda į puslapį, kuriame matyti, kas dar neišsiųsta: kiekvienas gavėjas ir eilutės, kurias gaus jo santrauka. Administratoriai gali pašalinti atskirą eilutę, visą gavėjo laišką arba išvalyti eilę
+
 ## v1.30 — Užduočių pranešimai ir eiga (2026-08-29) {#v1-30}
 
 - 🔧 **VU SA darinių posėdžių užduočių eiga skaičiuojama teisingai** — Parlamento, Tarybos ir kitų VU SA darinių posėdžiuose studentų pozicija ir nauda studentams nepildoma, tačiau užduotis vis tiek jų reikalavo, tad procentas įstrigdavo ties 0 %. Dabar tokiam klausimui pakanka sprendimo

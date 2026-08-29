@@ -126,6 +126,12 @@ return [
         'status_updated' => 'Užduoties būsena sėkmingai atnaujinta.',
     ],
 
+    'mail_queue' => [
+        'item_deleted' => 'Laiško eilutė pašalinta iš eilės.',
+        'recipient_cleared' => 'Pašalinta :count gavėjo laukiančių eilučių.',
+        'cleared' => 'Laiškų eilė išvalyta – pašalinta :count eilutė (-ės).',
+    ],
+
     'user' => [
         'merged' => 'Kontaktai sėkmingai sujungti!',
         'password_created' => 'Slaptažodis sėkmingai sukurtas!',

@@ -124,6 +124,12 @@ return [
         'status_updated' => 'Task status updated successfully.',
     ],
 
+    'mail_queue' => [
+        'item_deleted' => 'The line was removed from the queued email.',
+        'recipient_cleared' => 'Removed :count pending line(s) for this recipient.',
+        'cleared' => 'The mail queue was emptied — :count item(s) removed.',
+    ],
+
     'user' => [
         'merged' => 'Contacts merged successfully!',
         'password_created' => 'Password created successfully!',

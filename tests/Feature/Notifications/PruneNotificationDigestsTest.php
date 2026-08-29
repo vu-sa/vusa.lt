@@ -33,6 +33,19 @@ function makeDigestItem(User $user, int $daysOld): NotificationDigestQueue
 }
 
 describe('notifications:prune-digests', function (): void {
+    test('--all empties the queue regardless of age', function (): void {
+        $user = $this->createUserWithDigestEnabled();
+
+        $stale = makeDigestItem($user, 30);
+        $fresh = makeDigestItem($user, 0);
+
+        Artisan::call('notifications:prune-digests', ['--all' => true, '--force' => true]);
+
+        expect(NotificationDigestQueue::query()->count())->toBe(0)
+            ->and(NotificationDigestQueue::find($stale->id))->toBeNull()
+            ->and(NotificationDigestQueue::find($fresh->id))->toBeNull();
+    });
+
     test('prunes items older than the cutoff and keeps newer ones', function (): void {
         $user = $this->createUserWithDigestEnabled();
 

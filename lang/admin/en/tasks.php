@@ -38,6 +38,7 @@ return [
         'assignee_context' => 'You and :count other(s) have this task.',
         'all_items_completed' => 'All agenda items completed',
     ],
+    'delete_automatic' => 'Delete (as super admin)',
     'agenda' => [
         'action_add_items' => 'Add agenda item',
         'action_view_agenda' => 'View agenda',
