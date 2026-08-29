@@ -3,7 +3,7 @@
     @sorting-changed="handleSortingChange" @page-changed="handlePageChange" @filter-changed="handleFilterChange">
     <template #headerActions>
       <div class="flex items-center gap-2">
-        <FilePicker v-if="$page.props.app.url.startsWith('https')" :loading round size="sm" @pick="handleDocumentPick">
+        <FilePicker v-if="sharepointPickerAvailable" :loading round size="sm" @pick="handleDocumentPick">
           <div class="flex items-center gap-2">
             <ExternalLinkIcon class="h-4 w-4" />
             {{ $t("Upload from SharePoint") }}
@@ -102,6 +102,12 @@ const loading = ref(false);
 const bulkSyncLoading = ref(false);
 const indexTablePageRef = ref<InstanceType<typeof IndexTablePage> | null>(null);
 const page = usePage();
+
+// Same guard as the meetings documents panel: MSAL needs a secure context, and app.url can
+// claim https while the page is actually opened over http (local dev).
+const sharepointPickerAvailable = computed(() =>
+  typeof window !== 'undefined' && window.isSecureContext && String(page.props.app.url).startsWith('https'),
+);
 
 const appEnvironment = computed(() => String(page.props.app?.env ?? 'unknown').toLowerCase());
 const appEnvironmentLabel = computed(() => {

@@ -23,7 +23,7 @@
           v-model:open="pickerOpen"
           collection="documents"
           multiple
-          :base-filter-by="institutionFilter"
+          :base-filter-by="documentFilter"
           :disabled-ids="linkedIds"
           :title="$t('Susieti dokumentą')"
           :description="$t('meetings.documents.picker_explainer')"
@@ -105,8 +105,11 @@ export interface MeetingDocument {
 const props = defineProps<{
   meetingId: string;
   documents: MeetingDocument[];
-  /** Institutions of the meeting; a document may only be linked from one of them. */
+  /** Institutions of the meeting; a document may only be linked from one of them… */
   institutionIds?: string[];
+  /** …or from any institution of these tenants — internal bodies' paperwork is filed under
+   *  the central institution of the same tenant, not under the body itself. */
+  tenantShortnames?: string[];
   canUpdate?: boolean;
 }>();
 
@@ -114,14 +117,24 @@ const page = usePage();
 const pickerOpen = ref(false);
 const uploading = ref(false);
 
-// The SharePoint picker only works over https — same guard as the documents index.
-const sharepointPickerAvailable = computed(() => String(page.props.app.url).startsWith('https'));
-
-const institutionFilter = computed(() =>
-  props.institutionIds?.length
-    ? `institution_id:=[${props.institutionIds.map(id => `\`${id}\``).join(',')}]`
-    : undefined,
+// The SharePoint picker needs a secure context (MSAL uses crypto.subtle) — app.url can claim
+// https while the page is actually opened over http (local dev), so trust the browser.
+const sharepointPickerAvailable = computed(() =>
+  typeof window !== 'undefined' && window.isSecureContext && String(page.props.app.url).startsWith('https'),
 );
+
+const documentFilter = computed(() => {
+  const clauses: string[] = [];
+
+  if (props.institutionIds?.length) {
+    clauses.push(`institution_id:=[${props.institutionIds.map(id => `\`${id}\``).join(',')}]`);
+  }
+  if (props.tenantShortnames?.length) {
+    clauses.push(`tenant_shortname:=[${props.tenantShortnames.map(name => `\`${name}\``).join(',')}]`);
+  }
+
+  return clauses.length ? clauses.join(' || ') : undefined;
+});
 
 /** Already-linked rows are shown as unselectable rather than silently failing on confirm. */
 const linkedIds = computed(() => new Set(props.documents.map(document => String(document.id))));

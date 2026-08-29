@@ -103,14 +103,28 @@ const msalParams = {
   },
 };
 
-const app = new PublicClientApplication(msalParams);
-const msalReady = app.initialize().then(() => app.handleRedirectPromise().catch(() => null));
+/**
+ * MSAL needs `crypto.subtle`, which only exists in secure contexts — constructing it during
+ * setup crashes the whole panel on plain http. Initialized on first dialog open instead.
+ */
+let msalApp: PublicClientApplication | null = null;
+let msalReady: Promise<unknown> | null = null;
+
+function ensureMsal(): Promise<unknown> {
+  if (!msalReady) {
+    msalApp = new PublicClientApplication(msalParams);
+    msalReady = msalApp.initialize().then(() => msalApp!.handleRedirectPromise().catch(() => null));
+  }
+
+  return msalReady;
+}
 
 async function getToken(command): Promise<string> {
   let accessToken = '';
   const authParams = { scopes: [`${combine(command.resource, '.default')}`] };
 
-  await msalReady;
+  await ensureMsal();
+  const app = msalApp!;
 
   try {
     const resp = await app.acquireTokenSilent(authParams!);

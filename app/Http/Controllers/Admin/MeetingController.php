@@ -221,7 +221,7 @@ class MeetingController extends AdminController
     {
         $this->handleAuthorization('view', $meeting);
 
-        $meeting->load('institutions.types', 'fileableFiles', 'comments', 'calendarEvent')->load([
+        $meeting->load('institutions.types', 'institutions.tenant', 'fileableFiles', 'comments', 'calendarEvent')->load([
             'tasks' => function ($query): void {
                 $query->with('users:id,name,email,profile_photo_path', 'taskable');
             },

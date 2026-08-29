@@ -28,8 +28,22 @@ test('a document of the meeting institution can be linked', function (): void {
         ->and($this->meeting->fresh()->documents)->toHaveCount(1);
 });
 
-test('a document belonging to another institution cannot be linked', function (): void {
-    $otherInstitution = Institution::factory()->for($this->tenant)->create();
+test('a document of a sibling institution in the same tenant can be linked', function (): void {
+    // Internal bodies (Parlamentas, Taryba) have their paperwork filed under the central
+    // institution of the same tenant, not under the body itself.
+    $centralInstitution = Institution::factory()->for($this->tenant)->create();
+    $document = Document::factory()->for($centralInstitution)->create();
+
+    asUser($this->admin)
+        ->post(route('meetings.documents.store', $this->meeting), ['document_id' => $document->id])
+        ->assertRedirect();
+
+    expect($document->fresh()->meeting_id)->toBe($this->meeting->id);
+});
+
+test('a document belonging to another tenant cannot be linked', function (): void {
+    $otherTenant = Tenant::factory()->create();
+    $otherInstitution = Institution::factory()->for($otherTenant)->create();
     $document = Document::factory()->for($otherInstitution)->create();
 
     asUser($this->admin)

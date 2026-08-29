@@ -172,6 +172,7 @@
         :meeting-id="meeting.id"
         :documents="meeting.documents ?? []"
         :institution-ids="institutionIds"
+        :tenant-shortnames="tenantShortnames"
         can-update
       />
     </template>
@@ -414,6 +415,14 @@ const tenantIds = computed(() =>
   (props.meeting.institutions ?? [])
     .map(institution => institution.tenant_id)
     .filter((id): id is number => typeof id === 'number'),
+);
+/** Names the documents picker also accepts, next to the meeting's own institutions. */
+const tenantShortnames = computed(() =>
+  [...new Set(
+    (props.meeting.institutions ?? [])
+      .map(institution => institution.tenant?.shortname)
+      .filter((name): name is string => typeof name === 'string'),
+  )],
 );
 
 /**
