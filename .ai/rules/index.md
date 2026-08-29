@@ -20,8 +20,10 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Providers/** | .ai/rules/providers.md |
 | app/Http/Requests/** | .ai/rules/requests.md |
 | routes/api.php | .ai/rules/routes.md |
+| app/Actions/ResolveTaskAudience.php,app/Listeners/HandleTaskCreated.php,app/Actions/Schedulable/TaskNotifier.php,app/Console/Commands/SendTaskOverdueReminders.php | .ai/rules/schedulable-console-commands.md |
 | app/Services/** | .ai/rules/services.md |
 | resources/js/Pages/Admin/Settings/**, app/Settings/** | .ai/rules/settings.md |
 | app/Support/MorphMap.php, app/Support/LocalizedRouteSlugs.php | .ai/rules/support.md |
 | app/**, tests/Feature/System/** | .ai/rules/system.md |
+| app/Tasks/**,app/Services/MeetingCompletionService.php | .ai/rules/tasks-services.md |
 | tests/** | .ai/rules/tests.md |

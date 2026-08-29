@@ -7,6 +7,11 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.30 — Užduočių pranešimai ir eiga (2026-08-29) {#v1-30}
+
+- 🔧 **VU SA darinių posėdžių užduočių eiga skaičiuojama teisingai** — Parlamento, Tarybos ir kitų VU SA darinių posėdžiuose studentų pozicija ir nauda studentams nepildoma, tačiau užduotis vis tiek jų reikalavo, tad procentas įstrigdavo ties 0 %. Dabar tokiam klausimui pakanka sprendimo
+- 🔧 **Automatinės užduotys nebesiunčiamos ne savo laikotarpio nariams** — įvedus seniai įvykusį posėdį, pranešimai nebekeliauja nei iš institucijos pasitraukusiems žmonėms, nei šiandieniniams nariams, kurių tuo metu institucijoje dar nebuvo. Rankiniu būdu priskirtos užduotys ir rezervacijų užduotys nekeičiamos
+
 ## v1.29 — Institucijų administratoriai (2026-08-29) {#v1-29}
 
 - ⭐ **Institucijai galima nurodyti administratorius** — institucijos redagavimo lange, prie kadencijų, dabar galima kiekvienai kadencijai priskirti konkrečius žmones. Jie nurodomi asmeniškai, ne per pareigybę, o žmonės, jau esantys institucijoje, siūlomi vienu paspaudimu

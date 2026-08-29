@@ -24,7 +24,7 @@ class SendTaskOverdueReminders extends Command
     {
         // Get all overdue tasks grouped by user
         $overdueTasks = Task::query()
-            ->with('users')
+            ->with('users', 'taskable')
             ->where('due_date', '<', Carbon::now())
             ->whereNull('completed_at')
             ->get();
@@ -32,7 +32,7 @@ class SendTaskOverdueReminders extends Command
         // Group tasks by user
         $tasksByUser = [];
         foreach ($overdueTasks as $task) {
-            foreach ($task->users as $user) {
+            foreach ($task->notifiableUsers() as $user) {
                 $tasksByUser[$user->id][] = $task;
             }
         }

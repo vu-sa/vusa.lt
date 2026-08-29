@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Actions\ResolveTaskAudience;
 use App\Tasks\Enums\ActionType;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection as SupportCollection;
 use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
@@ -95,6 +97,17 @@ class Task extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class);
+    }
+
+    /**
+     * Assignees who should still hear about this task — see {@see ResolveTaskAudience}.
+     * Assignment itself is left alone; only the notification audience narrows.
+     *
+     * @return SupportCollection<int, User>
+     */
+    public function notifiableUsers(): SupportCollection
+    {
+        return ResolveTaskAudience::execute($this);
     }
 
     public function tenants(): HasManyDeep

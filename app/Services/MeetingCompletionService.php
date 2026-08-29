@@ -6,6 +6,7 @@ use App\Enums\AgendaItemType;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Vote;
+use App\Tasks\Handlers\AgendaCompletionTaskHandler;
 use Illuminate\Support\Collection;
 
 class MeetingCompletionService
@@ -57,8 +58,11 @@ class MeetingCompletionService
     /**
      * A VU SA body's vote is complete once it has an outcome: there is no separate student
      * position to record when the representatives *are* the organisation.
+     *
+     * Public so the agenda completion task counts progress by the same rule the meeting's
+     * own completion status uses ({@see AgendaCompletionTaskHandler}).
      */
-    private function voteIsComplete(Vote $vote, bool $requiresStudentPerspective): bool
+    public function voteIsComplete(Vote $vote, bool $requiresStudentPerspective): bool
     {
         if (empty($vote->decision)) {
             return false;

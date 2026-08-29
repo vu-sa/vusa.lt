@@ -66,7 +66,7 @@ abstract class BaseTaskHandler implements TaskHandler
      */
     protected function notifyUsersOfCompletion(Task $task, string $reason, ?User $completedBy = null): void
     {
-        foreach ($task->users as $user) {
+        foreach ($task->notifiableUsers() as $user) {
             $user->notify(new TaskAutoCompletedNotification($task, $reason, $completedBy));
         }
     }

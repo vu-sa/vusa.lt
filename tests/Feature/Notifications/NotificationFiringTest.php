@@ -85,6 +85,14 @@ describe('task notifications', function (): void {
     test('periodicity tasks send one specialized activity notification', function (): void {
         $user = $this->createUserWithPreferences();
         $institution = Institution::factory()->create();
+
+        // Periodicity tasks are only ever assigned to the body's current holders, and the
+        // notification audience checks that (see ResolveTaskAudience).
+        $user->duties()->attach(
+            Duty::factory()->for($institution)->create(),
+            ['start_date' => now()->subYear(), 'end_date' => null],
+        );
+
         $task = Task::factory()->create([
             'taskable_type' => MorphMap::alias(Institution::class),
             'taskable_id' => $institution->id,

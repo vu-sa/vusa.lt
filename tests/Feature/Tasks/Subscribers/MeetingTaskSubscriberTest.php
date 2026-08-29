@@ -3,6 +3,7 @@
 use App\Actions\GetInstitutionFollowersToNotify;
 use App\Actions\GetMeetingAdministrators;
 use App\Enums\AgendaItemType;
+use App\Enums\InstitutionScope;
 use App\Events\MeetingFullyCreated;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -204,6 +205,75 @@ describe('MeetingTaskSubscriber', function (): void {
             $completionTask->refresh();
 
             expect($completionTask->metadata['items_total'])->toBe(3);
+        });
+
+        test('a VU SA body counts a decision-only vote as complete', function (): void {
+            // Parlamentas and friends never fill student_vote/student_benefit — demanding them
+            // pinned every internal meeting's task at 0%.
+            [$meeting, $completionTask] = $this->createMeetingWithCompletionTask(
+                agendaItemCount: 2,
+                scope: InstitutionScope::Vusa,
+            );
+
+            $agendaItem = $meeting->agendaItems->first();
+            $agendaItem->update(['type' => AgendaItemType::Voting]);
+            Vote::create([
+                'agenda_item_id' => $agendaItem->id,
+                'is_main' => true,
+                'decision' => 'positive',
+            ]);
+
+            app(AgendaCompletionTaskHandler::class)->updateProgressForMeeting($meeting);
+
+            $completionTask->refresh();
+
+            expect($completionTask->metadata['items_completed'])->toBe(1)
+                ->and($completionTask->completed_at)->toBeNull();
+        });
+
+        test('a VU SA body auto-completes once every item has a decision', function (): void {
+            [$meeting, $completionTask] = $this->createMeetingWithCompletionTask(
+                agendaItemCount: 2,
+                scope: InstitutionScope::Vusa,
+            );
+
+            foreach ($meeting->agendaItems as $agendaItem) {
+                $agendaItem->update(['type' => AgendaItemType::Voting]);
+                Vote::create([
+                    'agenda_item_id' => $agendaItem->id,
+                    'is_main' => true,
+                    'decision' => 'positive',
+                ]);
+            }
+
+            app(AgendaCompletionTaskHandler::class)->updateProgressForMeeting($meeting);
+
+            $completionTask->refresh();
+
+            expect($completionTask->metadata['items_completed'])->toBe(2)
+                ->and($completionTask->completed_at)->not->toBeNull();
+        });
+
+        test('an external body still needs the student perspective fields', function (): void {
+            [$meeting, $completionTask] = $this->createMeetingWithCompletionTask(
+                agendaItemCount: 1,
+                scope: InstitutionScope::University,
+            );
+
+            $agendaItem = $meeting->agendaItems->first();
+            $agendaItem->update(['type' => AgendaItemType::Voting]);
+            Vote::create([
+                'agenda_item_id' => $agendaItem->id,
+                'is_main' => true,
+                'decision' => 'positive',
+            ]);
+
+            app(AgendaCompletionTaskHandler::class)->updateProgressForMeeting($meeting);
+
+            $completionTask->refresh();
+
+            expect($completionTask->metadata['items_completed'])->toBe(0)
+                ->and($completionTask->completed_at)->toBeNull();
         });
 
         test('updates total items when agenda item is deleted', function (): void {

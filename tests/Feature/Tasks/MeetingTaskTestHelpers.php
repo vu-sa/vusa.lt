@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Tasks;
 
+use App\Enums\InstitutionScope;
 use App\Events\MeetingFullyCreated;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -66,14 +67,20 @@ trait MeetingTaskTestHelpers
     /**
      * Create a meeting with student reps and agenda items (completion task).
      *
+     * @param  InstitutionScope|null  $scope  Governance scope of the institution, which decides
+     *                                        whether agenda items need the student-perspective fields.
      * @return array{0: Meeting, 1: Task|null}
      */
-    protected function createMeetingWithCompletionTask(int $agendaItemCount = 3): array
+    protected function createMeetingWithCompletionTask(int $agendaItemCount = 3, ?InstitutionScope $scope = null): array
     {
         $tenant = Tenant::query()->first()
             ?? Tenant::factory()->create();
 
         $institution = Institution::factory()->for($tenant)->create();
+
+        if ($scope !== null) {
+            $institution->types()->attach(Type::factory()->forInstitutions($scope)->create());
+        }
 
         // Create student rep type and duty
         $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()

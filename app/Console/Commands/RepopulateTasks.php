@@ -412,6 +412,11 @@ class RepopulateTasks extends Command
                 $existingTask = $this->agendaCompletionHandler->findExistingTask($meeting);
 
                 if ($existingTask) {
+                    // Resync so tasks written under older completion rules stop showing a stale percentage.
+                    if (! $dryRun) {
+                        $this->agendaCompletionHandler->updateProgressForMeeting($meeting);
+                    }
+
                     $skipped++;
 
                     continue;

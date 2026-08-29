@@ -10,10 +10,10 @@ class TaskNotifier
 {
     public static function notifyDaysLeft(int $daysLeft)
     {
-        $tasks = Task::with('users')->whereDate('due_date', '=', now()->addDays($daysLeft))->where('completed_at', null)->get();
+        $tasks = Task::with('users', 'taskable')->whereDate('due_date', '=', now()->addDays($daysLeft))->where('completed_at', null)->get();
 
         foreach ($tasks as $task) {
-            Notification::send($task->users, new TaskReminderNotification($task, $daysLeft));
+            Notification::send($task->notifiableUsers(), new TaskReminderNotification($task, $daysLeft));
         }
     }
 }

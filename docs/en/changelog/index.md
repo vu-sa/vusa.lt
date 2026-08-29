@@ -7,6 +7,11 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.30 — Task notifications and progress (2026-08-29) {#v1-30}
+
+- 🔧 **A VU SR body's meeting task now counts its progress correctly** — Parlamentas, Taryba and the other VU SR bodies never record a student position or student benefit, yet the task still demanded them, so the percentage sat at 0 %. A decision alone is now enough for such an item
+- 🔧 **Automatic tasks stop mailing people outside the term** — entering a meeting that happened long ago no longer notifies people who have left the institution, nor today's members who were not yet serving back then. Manually assigned tasks and reservation tasks are untouched
+
 ## v1.29 — Institution administrators (2026-08-29) {#v1-29}
 
 - ⭐ **An institution can name its administrators** — the institution edit page now lets you assign specific people to each cadence, right beside the cadences themselves. They are named person by person rather than through a duty, and people already in the body are offered as one-tap suggestions

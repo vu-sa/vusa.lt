@@ -30,6 +30,6 @@ class HandleTaskCreated implements ShouldQueue
             ? new InstitutionActivityNotification($task, $task->taskable)
             : new TaskAssignedNotification($task, $assigner);
 
-        Notification::send($task->users, $notification);
+        Notification::send($task->notifiableUsers(), $notification);
     }
 }

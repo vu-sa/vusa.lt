@@ -6,6 +6,7 @@ use App\Enums\AgendaItemType;
 use App\Models\Meeting;
 use App\Models\Task;
 use App\Models\User;
+use App\Services\MeetingCompletionService;
 use App\Support\MorphMap;
 use App\Tasks\DTOs\CreateTaskData;
 use App\Tasks\Enums\ActionType;
@@ -14,12 +15,15 @@ use Illuminate\Support\Collection;
 /**
  * Handles Agenda Completion tasks with progress tracking for meeting agenda items.
  *
- * Agenda completion tasks are created when agenda items exist but need their
- * details filled (student_vote, decision, student_benefit). They auto-complete
- * when all agenda items have all required fields filled.
+ * Agenda completion tasks are created when agenda items exist but need their vote details
+ * filled. Which details count is the meeting's scope question, so progress is measured with
+ * MeetingCompletionService: a VU SA body's item needs only a decision, an external body's
+ * also needs student_vote and student_benefit. They auto-complete once every item qualifies.
  */
 class AgendaCompletionTaskHandler extends BaseTaskHandler
 {
+    public function __construct(protected MeetingCompletionService $completionService) {}
+
     /**
      * Find or create an agenda completion task with progress tracking.
      *
@@ -159,15 +163,17 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
      *
      * An item is complete when:
      * - Type is 'informational' or 'deferred' (no vote required), OR
-     * - Type is 'voting' AND has a main vote with all required fields (student_vote, decision, student_benefit)
+     * - Type is 'voting' AND has a main vote the meeting's scope considers filled — a decision
+     *   alone for a VU SA body, decision plus student_vote and student_benefit for an external one.
      *
      * Items with null type are NOT counted as complete (user must select type first).
      */
     protected function countCompletedItems(Meeting $meeting): int
     {
         $agendaItems = $meeting->agendaItems()->with('votes')->get();
+        $requiresStudentPerspective = $meeting->requiresStudentPerspective();
 
-        return $agendaItems->filter(function ($item) {
+        return $agendaItems->filter(function ($item) use ($requiresStudentPerspective) {
             // Items without type selected are incomplete
             if ($item->type === null) {
                 return false;
@@ -178,16 +184,13 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
                 return true;
             }
 
-            // For voting items, check if main vote has all required fields
             $mainVote = $item->votes->firstWhere('is_main', true);
 
             if (! $mainVote) {
                 return false;
             }
 
-            return ! empty($mainVote->student_vote)
-                && ! empty($mainVote->decision)
-                && ! empty($mainVote->student_benefit);
+            return $this->completionService->voteIsComplete($mainVote, $requiresStudentPerspective);
         })->count();
     }
 
@@ -217,6 +220,7 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
     public function shouldReopenTask(Meeting $meeting): bool
     {
         $agendaItems = $meeting->agendaItems()->with('votes')->get();
+        $requiresStudentPerspective = $meeting->requiresStudentPerspective();
 
         foreach ($agendaItems as $item) {
             // Check if any voting item is incomplete
@@ -227,7 +231,7 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
                     return true;
                 }
 
-                if (empty($mainVote->student_vote) || empty($mainVote->decision) || empty($mainVote->student_benefit)) {
+                if (! $this->completionService->voteIsComplete($mainVote, $requiresStudentPerspective)) {
                     return true;
                 }
             }
