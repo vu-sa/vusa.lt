@@ -25,16 +25,6 @@
         <Pencil class="h-4 w-4" />
         {{ $t('Redaguoti') }}
       </Button>
-      <Button
-        v-if="canGeneratePassword && !user.has_password"
-        variant="outline"
-        size="sm"
-        class="gap-2"
-        @click="handleGeneratePassword"
-      >
-        <KeyRound class="h-4 w-4" />
-        {{ $t('Sugeneruoti slaptažodį') }}
-      </Button>
       <!-- Rendered only for someone who may actually act: an empty menu is noise. -->
       <MoreOptionsButton
         v-if="canEdit || canDelete"
