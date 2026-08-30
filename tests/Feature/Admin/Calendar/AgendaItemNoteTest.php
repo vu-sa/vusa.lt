@@ -36,7 +36,7 @@ beforeEach(function (): void {
 });
 
 describe('agenda item notes API', function (): void {
-    test('authorized user gets a note, auto-creating an empty one', function (): void {
+    test('reading notes never creates a row', function (): void {
         expect($this->agendaItem->note()->exists())->toBeFalse();
 
         $response = asUser($this->admin)
@@ -46,7 +46,7 @@ describe('agenda item notes API', function (): void {
             ->assertJsonPath('success', true)
             ->assertJsonPath('data.yjs_state', null);
 
-        expect($this->agendaItem->note()->exists())->toBeTrue();
+        expect($this->agendaItem->note()->exists())->toBeFalse();
     });
 
     test('authorized user can persist the Y.js snapshot and HTML', function (): void {
@@ -177,6 +177,49 @@ describe('html sanitization', function (): void {
         expect($note->notes_html)
             ->toContain('<h2 id="a">Tema</h2>')
             ->toContain('<strong>Punktas</strong>');
+    });
+
+    /**
+     * The editor autosaves its empty document as soon as it mounts. Storing that as
+     * content made the agenda list mark every visited item as annotated.
+     */
+    test('an empty editor document is stored as no note at all', function (): void {
+        asUser($this->admin)
+            ->putJson(route('api.v1.admin.agendaItems.note.update', $this->agendaItem->id), [
+                'yjs_state' => base64_encode('state'),
+                'notes_html' => '<p></p>',
+            ])
+            ->assertOk();
+
+        $note = AgendaItemNote::query()->where('agenda_item_id', $this->agendaItem->id)->sole();
+
+        expect($note->notes_html)->toBeNull();
+    });
+
+    test('whitespace-only markup is stored as no note at all', function (): void {
+        asUser($this->admin)
+            ->putJson(route('api.v1.admin.agendaItems.note.update', $this->agendaItem->id), [
+                'yjs_state' => base64_encode('state'),
+                'notes_html' => '<p>&nbsp;</p><p><br></p>',
+            ])
+            ->assertOk();
+
+        $note = AgendaItemNote::query()->where('agenda_item_id', $this->agendaItem->id)->sole();
+
+        expect($note->notes_html)->toBeNull();
+    });
+
+    test('an image-only note keeps its content', function (): void {
+        asUser($this->admin)
+            ->putJson(route('api.v1.admin.agendaItems.note.update', $this->agendaItem->id), [
+                'yjs_state' => base64_encode('state'),
+                'notes_html' => '<p><img src="https://vusa.lt/a.png" alt=""></p>',
+            ])
+            ->assertOk();
+
+        $note = AgendaItemNote::query()->where('agenda_item_id', $this->agendaItem->id)->sole();
+
+        expect($note->notes_html)->toContain('<img');
     });
 
     test('a null snapshot stays null', function (): void {

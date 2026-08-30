@@ -195,6 +195,13 @@ class InstitutionController extends AdminController
                 fn ($v) => ! empty($v->student_vote) xor ! empty($v->decision)
             )->count());
 
+            // The overview previews a meeting's first items, but the loaded relation carries
+            // every vote with it — send the titles alone and drop the rest.
+            $meeting->setAttribute(
+                'agenda_item_titles',
+                $meeting->agendaItems->sortBy('order')->take(3)->pluck('title')->values()
+            );
+
             // Hide heavy relations not needed by frontend
             $meeting->makeHidden('agendaItems');
         });

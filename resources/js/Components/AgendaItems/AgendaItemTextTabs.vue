@@ -2,7 +2,8 @@
   <div>
     <Tabs v-model="activeTab">
       <div class="flex items-center justify-between gap-2">
-        <TabsList class="h-9 gap-1 rounded-lg bg-zinc-100/80 p-1 dark:bg-zinc-800/60">
+        <!-- h-auto + wrapping: the two labels are long enough to overflow a phone. -->
+        <TabsList class="h-auto flex-wrap gap-1 rounded-lg bg-zinc-100/80 p-1 dark:bg-zinc-800/60">
           <TabsTrigger value="description" class="gap-1.5 text-xs">
             {{ $t('Aprašymas') }}
             <span v-if="hasDescription" class="h-1.5 w-1.5 rounded-full bg-primary" :title="$t('Užpildyta')" />
@@ -15,36 +16,28 @@
         <slot name="trailing" />
       </div>
 
-      <TabsContent value="description" class="mt-3">
+      <!-- The same textarea in both modes, merely locked: swapping it for a paragraph
+           made the page jump every time the edit toggle flipped. -->
+      <TabsContent value="description" class="mt-4">
         <Textarea
-          v-if="editable"
           :model-value="description ?? ''"
-          rows="4"
-          :placeholder="$t('Aprašymas')"
+          rows="5"
+          :class="FIELD_CLASS"
+          :readonly="!editable"
+          :placeholder="editable ? $t('Aprašymas') : $t('Nenurodyta')"
           @update:model-value="(v) => emit('update:description', String(v))"
         />
-        <p v-else-if="hasDescription" class="whitespace-pre-line text-sm text-zinc-700 dark:text-zinc-300">
-          {{ description }}
-        </p>
-        <p v-else class="text-sm italic text-muted-foreground">
-          {{ $t('Nenurodyta') }}
-        </p>
       </TabsContent>
 
-      <TabsContent v-if="showStudentPosition" value="position" class="mt-3">
+      <TabsContent v-if="showStudentPosition" value="position" class="mt-4">
         <Textarea
-          v-if="editable"
           :model-value="studentPosition ?? ''"
-          rows="4"
-          :placeholder="$t('Išsakyta studentų pozicija')"
+          rows="5"
+          :class="FIELD_CLASS"
+          :readonly="!editable"
+          :placeholder="editable ? $t('Išsakyta studentų pozicija') : $t('Nenurodyta')"
           @update:model-value="(v) => emit('update:studentPosition', String(v))"
         />
-        <p v-else-if="hasPosition" class="whitespace-pre-line text-sm text-zinc-700 dark:text-zinc-300">
-          {{ studentPosition }}
-        </p>
-        <p v-else class="text-sm italic text-muted-foreground">
-          {{ $t('Nenurodyta') }}
-        </p>
       </TabsContent>
     </Tabs>
   </div>
@@ -77,6 +70,9 @@ const emit = defineEmits<{
   'update:description': [value: string];
   'update:studentPosition': [value: string];
 }>();
+
+/** These sit on a tinted card, so the writing surface needs its own ground. */
+const FIELD_CLASS = 'bg-white dark:bg-zinc-950/40';
 
 const activeTab = ref('description');
 

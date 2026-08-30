@@ -7,7 +7,6 @@ use App\Http\Requests\Api\Admin\UpdateAgendaItemNoteRequest;
 use App\Models\AgendaItemNote;
 use App\Models\Pivots\AgendaItem;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 /**
  * Persistence endpoints for the private collaborative agenda-item notes.
@@ -21,18 +20,16 @@ class AgendaItemNoteApiController extends ApiController
     /**
      * Return the persisted Y.js snapshot + HTML for an agenda item's notes.
      */
-    public function show(Request $request, AgendaItem $agendaItem): JsonResponse
+    public function show(AgendaItem $agendaItem): JsonResponse
     {
         // Read is allowed for the broad `view` audience (coordinators / related
         // viewers) so they can see the persisted snapshot read-only. Editing
         // (update) and realtime presence remain gated on `update`.
         $this->authorize('view', $agendaItem);
 
-        // Editors get an auto-created row (so the collaborative editor always has
-        // a target); the broader view-only audience reads side-effect-free.
-        $note = $request->user()?->can('update', $agendaItem)
-            ? $agendaItem->note()->firstOrCreate([])
-            : $agendaItem->note;
+        // Reading never creates the row: an empty row made the agenda list mark the
+        // item as annotated. update() creates it on the first actual save instead.
+        $note = $agendaItem->note;
 
         $agendaItem->loadMissing('meeting.institutions');
 

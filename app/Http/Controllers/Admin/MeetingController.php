@@ -234,7 +234,9 @@ class MeetingController extends AdminController
                 $query->with('users:id,name,email,profile_photo_path', 'taskable');
             },
             'agendaItems' => function ($query): void {
-                $query->with('votes')->withCount('comments')->withExists('note as has_notes')->orderBy('order');
+                $query->with('votes')->withCount('comments')
+                    ->withExists(['note as has_notes' => fn ($note) => $note->whereNotNull('notes_html')])
+                    ->orderBy('order');
             },
             'documents' => function ($query): void {
                 $query->orderBy('document_date')->orderBy('title');

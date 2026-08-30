@@ -67,7 +67,9 @@
 
         <!-- Single scroll container -->
         <main class="flex-1 min-w-0 overflow-auto" style="scroll-behavior: smooth;">
-          <div class="min-h-full p-6" :class="{ 'pb-24': isPWA && isMobile }">
+          <!-- Centred, capped measure: on a wide monitor a full-bleed page stretches
+               prose and table rows past the point they are comfortable to scan. -->
+          <div class="mx-auto min-h-full w-full max-w-[100rem] p-6" :class="{ 'pb-24': isPWA && isMobile }">
             <!-- System announcements banner -->
             <div v-if="systemMessage"
               class="mb-6 rounded-lg border p-4 bg-amber-50 text-amber-900 dark:bg-amber-950 dark:text-amber-50">

@@ -11,73 +11,82 @@
       @navigate="navigateTo"
     />
 
-    <!-- Plain header -->
-    <header class="mt-3 space-y-2">
-      <div class="flex items-start justify-between gap-4">
-        <div class="min-w-0 flex-1 pt-1">
-          <textarea
-            v-if="editing"
-            ref="titleTextarea"
-            v-model="form.title"
-            rows="1"
-            class="w-full resize-none overflow-hidden border-0 bg-transparent p-0 text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0"
-            :placeholder="$t('Darbotvarkės punkto pavadinimas')"
-          />
-          <h1 v-else class="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-            {{ agendaItem.title }}
-          </h1>
-          <p v-if="form.errors.title" class="mt-1 text-sm text-destructive">
-            {{ form.errors.title }}
-          </p>
-        </div>
-
-        <div class="mt-2 flex shrink-0 items-center gap-3">
-          <span
-            :class="[
-              'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium',
-              statusMeta.bgClass,
-              statusMeta.colorClass,
-            ]"
-          >
-            <component :is="statusMeta.icon" class="h-3 w-3" />
-            {{ statusMeta.label }}
-          </span>
-          <label v-if="canUpdate" class="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground select-none">
-            <Switch :model-value="editing" @update:model-value="setEditing" />
-            {{ $t('Redaguoti') }}
-          </label>
-        </div>
-      </div>
-      <div class="flex min-w-0 items-center gap-2 text-sm text-muted-foreground font-medium">
-        <Link
-          v-if="meetingLabel && agendaItem.meeting_id"
-          :href="route('meetings.show', agendaItem.meeting_id)"
-          class="inline-flex shrink-0 items-center gap-1.5 hover:text-primary transition-colors"
-        >
-          <CalendarDays class="h-4 w-4" />
-          {{ meetingLabel }}
-        </Link>
-        <span v-if="mainInstitution" class="flex min-w-0 items-center gap-1.5">
-          <span class="text-muted-foreground/50">·</span>
-          <Building2 class="h-4 w-4 shrink-0" />
-          <span class="truncate" :title="mainInstitution.name">{{ mainInstitution.name }}</span>
-        </span>
-      </div>
-    </header>
-
-    <div class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+    <div class="mx-auto mt-6 grid w-full max-w-[80rem] gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
       <div class="min-w-0 space-y-8">
+        <!-- Header: the status the item ended up in reads before its title. -->
+        <header class="space-y-3 border-b pb-6 dark:border-zinc-800">
+          <div class="flex items-start justify-between gap-4">
+            <span
+              :class="[
+                'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium',
+                statusMeta.bgClass,
+                statusMeta.colorClass,
+              ]"
+            >
+              <component :is="statusMeta.icon" class="h-3.5 w-3.5" />
+              {{ statusMeta.label }}
+            </span>
+            <label
+              v-if="canUpdate"
+              class="flex shrink-0 cursor-pointer items-center gap-2 text-sm font-medium text-muted-foreground select-none"
+            >
+              <Switch :model-value="editing" @update:model-value="setEditing" />
+              {{ $t('Redaguoti') }}
+            </label>
+          </div>
+
+          <div class="min-w-0">
+            <!-- The textarea and the heading share a type scale and line height, and the
+                 textarea is `block`, so switching modes does not nudge the page. -->
+            <textarea
+              v-if="editing"
+              ref="titleTextarea"
+              v-model="form.title"
+              rows="1"
+              :class="[TITLE_CLASSES, 'block w-full resize-none overflow-hidden border-0 bg-transparent p-0 placeholder:text-muted-foreground focus:outline-none focus:ring-0']"
+              :placeholder="$t('Darbotvarkės punkto pavadinimas')"
+            />
+            <h1 v-else :class="TITLE_CLASSES">
+              {{ agendaItem.title }}
+            </h1>
+            <p v-if="form.errors.title" class="mt-1 text-sm text-destructive">
+              {{ form.errors.title }}
+            </p>
+          </div>
+
+          <div class="flex min-w-0 items-center gap-2 text-sm font-medium text-muted-foreground">
+            <Link
+              v-if="meetingLabel && agendaItem.meeting_id"
+              :href="route('meetings.show', agendaItem.meeting_id)"
+              class="inline-flex shrink-0 items-center gap-1.5 hover:text-primary transition-colors"
+            >
+              <CalendarDays class="h-4 w-4" />
+              {{ meetingLabel }}
+            </Link>
+            <span v-if="mainInstitution" class="flex min-w-0 items-center gap-1.5">
+              <span class="text-muted-foreground/50">·</span>
+              <Building2 class="h-4 w-4 shrink-0" />
+              <span class="truncate" :title="mainInstitution.name">{{ mainInstitution.name }}</span>
+            </span>
+            <!-- Public visibility covers the whole item (votes and prose alike), so it is
+                 stated once here rather than repeated over every section. -->
+            <span class="flex shrink-0 items-center gap-1.5">
+              <span class="text-muted-foreground/50">·</span>
+              <VisibilityIndicator :public="meetingIsPublic" />
+            </span>
+          </div>
+        </header>
+
         <AgendaItemBody
           :form
           :editing
-          :meeting-is-public
           :requires-student-perspective
         />
 
         <!-- Discussion: the attributed, threaded conversation (distinct from the
              co-authored notes document). Available to anyone who can view the item. -->
-        <section class="border-t pt-6 dark:border-zinc-800" :class="editing ? 'pb-24' : 'pb-6'">
-          <DiscussionPanel commentable-type="agendaItem" :commentable-id="agendaItem.id" />
+        <section :class="editing ? 'pb-24' : 'pb-6'">
+          <DiscussionPanel framed commentable-type="agendaItem" :commentable-id="agendaItem.id" />
         </section>
       </div>
 
@@ -139,6 +148,7 @@ import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import AgendaItemBody from '@/Components/AgendaItems/AgendaItemBody.vue';
 import AgendaItemNavigator from '@/Components/AgendaItems/AgendaItemNavigator.vue';
 import AgendaItemNotesSidebar from '@/Components/AgendaItems/AgendaItemNotesSidebar.vue';
+import VisibilityIndicator from '@/Components/AgendaItems/VisibilityIndicator.vue';
 import DiscussionPanel from '@/Components/Discussions/DiscussionPanel.vue';
 import { Button } from '@/Components/ui/button';
 import { Switch } from '@/Components/ui/switch';
@@ -169,6 +179,9 @@ const props = withDefaults(defineProps<{
   canUpdate: true,
   requiresStudentPerspective: true,
 });
+
+/** Shared by the heading and the edit textarea so the two render at identical height. */
+const TITLE_CLASSES = 'text-xl sm:text-2xl md:text-3xl font-bold leading-tight tracking-tight text-foreground';
 
 /**
  * A one-time default, not a live sync: the previous item's end time (at the moment this page

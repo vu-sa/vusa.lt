@@ -287,6 +287,26 @@ describe('agenda items controller', function (): void {
         );
     });
 
+    /**
+     * A note row exists as soon as the collaborative editor saves, so the sibling list
+     * must report content, not existence — otherwise every visited item is flagged.
+     */
+    test('has_notes only reports siblings whose notes hold content', function (): void {
+        $blank = AgendaItem::factory()->create(['meeting_id' => $this->meeting->id, 'order' => 1]);
+        $written = AgendaItem::factory()->create(['meeting_id' => $this->meeting->id, 'order' => 2]);
+
+        $blank->note()->create(['yjs_state' => base64_encode('state'), 'notes_html' => '<p></p>']);
+        $written->note()->create(['yjs_state' => base64_encode('state'), 'notes_html' => '<p>Pastaba</p>']);
+
+        asUser($this->admin)
+            ->get(route('agendaItems.edit', $blank->id))
+            ->assertStatus(200)
+            ->assertInertia(fn ($page) => $page
+                ->where('siblingAgendaItems.0.has_notes', false)
+                ->where('siblingAgendaItems.1.has_notes', true)
+            );
+    });
+
     test('unauthorized user cannot open the agenda item edit page', function (): void {
         $agendaItem = AgendaItem::factory()->create([
             'meeting_id' => $this->meeting->id,

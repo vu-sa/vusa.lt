@@ -11,8 +11,9 @@
       <AvatarImage
         v-if="user?.profile_photo_path"
         :src="user.profile_photo_path"
-        alt="Profile photo"
+        :alt="user.name ?? 'Profile photo'"
         class="object-cover"
+        :style="focalPointStyle"
       />
       <AvatarFallback
         v-if="user"
@@ -58,6 +59,13 @@ const props = defineProps<{
 }>();
 
 const containerClass = computed(() => props.class || '');
+
+/** Keeps the subject in frame on portraits cropped to a circle. */
+const focalPointStyle = computed(() =>
+  props.user?.profile_photo_focal_point
+    ? { objectPosition: props.user.profile_photo_focal_point }
+    : undefined,
+);
 
 // Support both pixel values (backward compat) and size variant names
 const avatarSize = computed<AvatarSize>(() => {

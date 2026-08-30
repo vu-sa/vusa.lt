@@ -1323,5 +1323,14 @@
     "Susieti": "Link",
     "Ieškoti renginio pagal pavadinimą...": "Search events by title...",
     "Renginių nerasta": "No events found",
-    "Ieškoti dokumento pagal pavadinimą...": "Search documents by title..."
+    "Ieškoti dokumento pagal pavadinimą...": "Search documents by title...",
+    "Kontaktinė informacija": "Contact information",
+    "Kontaktų nenurodyta": "No contacts provided",
+    "Dabartinės pareigos": "Current duties",
+    "Buvusios pareigos": "Previous duties",
+    "Pareigų nėra": "No duties",
+    "Nėra priskirtų pareigų": "No duties assigned",
+    "Facebook": "Facebook",
+    "Sugeneruoti slaptažodį": "Generate password",
+    "Telefonas": "Phone"
 }

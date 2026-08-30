@@ -213,7 +213,10 @@ class UserController extends AdminController
             'tasks' => $transformedTasks,
             'taskStats' => $taskStats,
             // Per-record, not from `auth.can`, which carries no flat permission names.
-            'can' => ['update' => request()->user()->can('update', $user)],
+            'can' => [
+                'update' => request()->user()->can('update', $user),
+                'delete' => request()->user()->can('delete', $user),
+            ],
         ]);
     }
 

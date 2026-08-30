@@ -17,15 +17,21 @@ describe('AgendaItemTextTabs', () => {
     expect(wrapper.find('textarea').exists()).toBe(true);
   });
 
-  it('renders read-only text when not editable', () => {
+  /**
+   * The textarea stays in place and is locked instead of being swapped for a
+   * paragraph — the swap shifted the whole page whenever the edit toggle flipped.
+   */
+  it('locks the textarea when not editable', () => {
     const wrapper = factory({ editable: false, description: 'Some description', studentPosition: '' });
-    expect(wrapper.find('textarea').exists()).toBe(false);
-    expect(wrapper.text()).toContain('Some description');
+    const textarea = wrapper.find('textarea');
+
+    expect(textarea.attributes('readonly')).toBeDefined();
+    expect((textarea.element as HTMLTextAreaElement).value).toBe('Some description');
   });
 
-  it('shows an empty state when read-only with no content', () => {
+  it('shows an empty-state placeholder when read-only with no content', () => {
     const wrapper = factory({ editable: false, description: '', studentPosition: '' });
-    expect(wrapper.text()).toContain('Nenurodyta');
+    expect(wrapper.find('textarea').attributes('placeholder')).toBe('Nenurodyta');
   });
 
   it('emits an update when the description textarea changes', async () => {

@@ -11,7 +11,7 @@ const stubs = {
   AgendaItemNavigator: { template: '<div />' },
   AgendaItemBody: {
     name: 'AgendaItemBody',
-    props: ['form', 'editing', 'meetingIsPublic', 'requiresStudentPerspective'],
+    props: ['form', 'editing', 'requiresStudentPerspective'],
     template: '<div />',
   },
   AgendaItemNotesSidebar: { template: '<div />' },

@@ -129,6 +129,24 @@ describe('MeetingAgendaList', () => {
     expect(multiple.text()).toContain('balsavimai');
   });
 
+  /**
+   * The marker used to be a coloured dot, which read as a warning on every item the
+   * collaborative editor had ever been opened on. `has_notes` now means real content.
+   */
+  it('marks notes with a neutral icon, only when the item has them', () => {
+    const without = mount(MeetingAgendaList, {
+      props: { agendaItems: [makeItem()] as any, meetingId: 'm1' },
+      global: { stubs: baseStubs },
+    });
+    expect(without.find('[aria-label="Yra pastabų"]').exists()).toBe(false);
+
+    const withNotes = mount(MeetingAgendaList, {
+      props: { agendaItems: [makeItem({ has_notes: true })] as any, meetingId: 'm1' },
+      global: { stubs: baseStubs },
+    });
+    expect(withNotes.find('[aria-label="Yra pastabų"]').exists()).toBe(true);
+  });
+
   it('counts a decision-only vote as discussed for an internal body', () => {
     const items = [
       makeItem({ votes: [{ id: 'v1', is_main: true, decision: 'positive' }] }),

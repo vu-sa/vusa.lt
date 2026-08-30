@@ -9,9 +9,7 @@ const stubs = {
   UserPopover: true,
   PriorityAlert: true,
   InstitutionMeetingsPreview: true,
-  InstitutionTasksPreview: true,
   InstitutionDiscussionPreview: true,
-  InstitutionRelatedPreview: true,
 };
 
 type InstitutionProp = InstanceType<typeof InstitutionOverviewSection>['$props']['institution'];
@@ -65,7 +63,7 @@ describe('InstitutionOverviewSection', () => {
     expect(wrapper.text()).not.toContain('Apie');
   });
 
-  it('renders members with their duty role badge', () => {
+  it('renders members with the duty they hold', () => {
     const wrapper = mount(InstitutionOverviewSection, {
       props: { institution: makeInstitution() },
       global: { stubs },
@@ -73,6 +71,45 @@ describe('InstitutionOverviewSection', () => {
 
     expect(wrapper.text()).toContain('Alice');
     expect(wrapper.text()).toContain('Chair');
+  });
+
+  it('keeps tasks out of the overview — they live in their own tab', () => {
+    const wrapper = mount(InstitutionOverviewSection, {
+      props: {
+        institution: makeInstitution({
+          allTasks: [{ id: 't1', name: 'Overdue task', completed_at: null }],
+        }),
+      },
+      global: { stubs },
+    });
+
+    expect(wrapper.text()).not.toContain('Overdue task');
+  });
+
+  it('keeps related institutions out of the overview — they have their own tab', () => {
+    const wrapper = mount(InstitutionOverviewSection, {
+      props: {
+        institution: makeInstitution({
+          relatedInstitutionsFlat: [{ id: 'other', name: 'VU MIF Taryba' }],
+        }),
+      },
+      global: { stubs },
+    });
+
+    expect(wrapper.text()).not.toContain('VU MIF Taryba');
+  });
+
+  it('folds the last meeting date into the activity highlight', () => {
+    const wrapper = mount(InstitutionOverviewSection, {
+      props: {
+        institution: makeInstitution({
+          meetings: [{ id: 'm1', start_time: '2025-11-01T10:00:00.000Z', title: 'Posėdis' }],
+        }),
+      },
+      global: { stubs },
+    });
+
+    expect(wrapper.text()).toContain('Paskutinis susitikimas');
   });
 
   it('renders the shared backend activity status', () => {
@@ -94,6 +131,23 @@ describe('InstitutionOverviewSection', () => {
 
     expect(wrapper.text()).toContain('visak.activity.activity_status.overdue');
     expect(wrapper.text()).toContain('35 d. / 30 d.');
+  });
+
+  it('links the overflow member count to the duties tab', async () => {
+    const wrapper = mount(InstitutionOverviewSection, {
+      props: {
+        institution: makeInstitution({
+          current_users: Array.from({ length: 9 }, (_, i) => ({ id: i + 1, name: `Member ${i + 1}` })),
+        }),
+      },
+      global: { stubs },
+    });
+
+    const more = wrapper.findAll('button').find(b => b.text().includes('ir dar :count'));
+    expect(more).toBeDefined();
+    await more!.trigger('click');
+
+    expect(wrapper.emitted('navigate-tab')?.[0]).toEqual(['duties']);
   });
 
   it('emits navigate-tab when the members action is used', async () => {

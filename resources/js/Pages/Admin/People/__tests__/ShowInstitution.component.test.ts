@@ -81,6 +81,10 @@ describe('ShowInstitution.vue', () => {
     expect(wrapper.text()).toContain('administrators.label');
   });
 
+  it('keeps the short name out of the hero — it only echoes the full name', () => {
+    expect(createWrapper().find('[data-slot="show-page-hero-subtitle"]').exists()).toBe(false);
+  });
+
   it('hides the administrator group when nobody is nominated', () => {
     expect(createWrapper().text()).not.toContain('administrators.label');
   });

@@ -7,6 +7,26 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.34 — Nario profilis (2026-08-30) {#v1-34}
+
+- ✨ **Nario puslapio apžvalga perdėliota** — vietoj skaitiklių kortelės „Aktyvumas“, kuri kartojo tai, ką jau sako pareigų sąrašai, apžvalgoje rodomos dabartinės ir buvusios pareigos, o kontaktai perkelti į šoninį sąrašą. Buvusios pareigos pritemdytos, kad dabartinės liktų svarbiausios
+- ✨ **Pareigų kortelės nebeneša institucijos statistikos** — nario profilyje nebeliko ženklelio „Pilnai užimta“ ir eilutės „1 / 1 užimta“: jos aprašo pareigas, o ne žmogų. Vietoj to rodomas laikotarpis ir tų pareigų el. paštas. Kas dar eina tas pačias pareigas, matyti skirtuke „Pareigos“
+- ✨ **Antraštėje — nuotrauka ir pagrindinės pareigos** — vietoj bendrinės ikonos rodoma nario nuotrauka (arba inicialai), o po vardu — pagrindinės dabartinės pareigos. Datos formatuojamos pagal pasirinktą kalbą
+- 🔧 **Trynimo mygtukas rodomas tik tam, kas gali trinti** — meniu „…“ anksčiau siūlė trynimą visiems, kas apskritai matė puslapį
+
+## v1.33 — Institucijos apžvalga (2026-08-30) {#v1-33}
+
+- ✨ **Institucijos apžvalga perdėliota** — pirmasis skirtukas nebekartoja to, kas jau turi savo skirtuką: iš jo pašalintos užduotys ir susijusios institucijos, o būsimo susitikimo juosta ir atskira paskutinio susitikimo eilutė sulietos į vieną kortelę šone. Kairėje — aprašymas ir susitikimai, dešinėje — būsena, nariai ir diskusija
+- ✨ **Susitikimų sąrašas rodo darbotvarkę** — vietoj laiko kiekviena eilutė vardija pirmus tris darbotvarkės klausimus ir kiek jų liko, o būsena pažymėta „Būsimas“ arba „Įvykęs“. Nario pareigos rodomos po jo vardu
+- ✨ **Antraštėje nebeliko trumpojo pavadinimo** — jis kartojo tą patį, ką ir institucijos pavadinimas
+
+## v1.32 — Darbotvarkės punkto langas (2026-08-30) {#v1-32}
+
+- ✨ **Darbotvarkės punkto puslapis pertvarkytas** — būsenos ženklelis dabar rodomas prieš pavadinimą, klausimo tipas, laikas ir žyma „atstovų iškeltas klausimas“ sutraukti į atskirą kortelę, o aprašymas ir diskusija įrėminti, kad būtų aišku, kur baigiasi vienas blokas ir prasideda kitas
+- ⭐ **Balsavimo klausimus galima sutraukti ir pertvarkyti** — užpildytas balsavimas rodomas viena eilute su rezultatais, o nebaigtas atsidaro pats. Tvarką galima keisti tempiant, o pagrindinį balsavimą — pasirinkti ranka spustelėjus žvaigždutę
+- ✨ **Administravimo puslapiai nebeišsitempia per visą ekraną** — plačiuose monitoriuose turinys dabar centruotas ir apribotas iki patogaus pločio
+- 🔧 **Geltonas taškelis nebežymi tuščių atstovų pastabų** — vien atsivertus punktą būdavo išsaugomas tuščias pastabų dokumentas, todėl darbotvarkėje pažymėti atrodydavo beveik visi klausimai. Dabar žymima tik tada, kai pastabose iš tikrųjų kažkas parašyta, ir vietoje spalvoto taškelio rodoma neutrali ikona
+
 ## v1.31 — Užduočių trynimas ir laiškų eilė (2026-08-30) {#v1-31}
 
 - 🔧 **Užduotis pagaliau įmanoma ištrinti** — trynimas nutrūkdavo duomenų bazės lygiu kiekvienai užduočiai, kuriai buvo priskirtas bent vienas žmogus, t. y. beveik visoms
