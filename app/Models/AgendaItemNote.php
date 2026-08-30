@@ -54,10 +54,35 @@ class AgendaItemNote extends Model
     protected function notesHtml(): Attribute
     {
         return Attribute::make(
-            set: fn (?string $value): ?string => $value === null
-                ? null
-                : app(HtmlSanitizerService::class)->sanitizeRichContent($value),
+            set: function (?string $value): ?string {
+                if ($value === null) {
+                    return null;
+                }
+
+                $sanitized = app(HtmlSanitizerService::class)->sanitizeRichContent($value);
+
+                return static::isBlankHtml($sanitized) ? null : $sanitized;
+            },
         );
+    }
+
+    /**
+     * Whether the markup carries nothing a reader would call a note.
+     *
+     * Opening an agenda item mounts the collaborative editor, which autosaves its
+     * empty document (`<p></p>`) before anyone types. Storing that as content made
+     * every item look annotated, so blank markup is normalised to null instead.
+     */
+    protected static function isBlankHtml(string $html): bool
+    {
+        if (preg_match('/<(?:img|iframe|table|hr|video|audio|embed)\b/i', $html) === 1) {
+            return false;
+        }
+
+        $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5);
+
+        // The byte pair \xC2\xA0 is a UTF-8 non-breaking space, which trim() keeps by default.
+        return trim($text, " \t\n\r\0\x0B\xC2\xA0") === '';
     }
 
     /**

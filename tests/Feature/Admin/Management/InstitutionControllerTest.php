@@ -187,6 +187,28 @@ describe('authorized access', function (): void {
             );
     });
 
+    // The overview previews a meeting's agenda, so the titles must ship with the meeting
+    // while the relation itself (which drags every vote along) stays hidden.
+    test('exposes the first agenda item titles of a meeting', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        $meeting = Meeting::factory()->create(['start_time' => now()->addDay()]);
+        $meeting->institutions()->attach($institution);
+
+        foreach (['Ketvirtas', 'Pirmas', 'Antras', 'Trecias'] as $order => $title) {
+            $meeting->agendaItems()->create(['title' => $title, 'order' => $order === 0 ? 4 : $order]);
+        }
+
+        $response = asUser($this->admin)->get(route('institutions.show', $institution));
+
+        $response->assertStatus(200)
+            ->assertInertia(fn ($page) => $page
+                ->where('institution.meetings.0.agenda_item_titles', ['Pirmas', 'Antras', 'Trecias'])
+                ->where('institution.meetings.0.agenda_items_count', 4)
+                ->missing('institution.meetings.0.agenda_items')
+            );
+    });
+
     test('can index institutions', function (): void {
         $response = asUser($this->admin)->get(route('institutions.index'));
 

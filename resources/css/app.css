@@ -146,6 +146,27 @@
   }
 }
 
+/* Icons set beside body text.
+
+   Sized in `em` so the icon tracks the text at any root font size (a reader with
+   browser text scaling at 90% gets 10.8px `text-xs`, where a fixed 16px icon
+   dwarfs the type). The nudge is the part that matters: `items-center` centres
+   the icon on the *line box*, which includes the descender space below the
+   baseline, so an icon beside digits or an ascender-only string visibly hangs
+   below the text and the text reads as sitting high. Shifting up re-centres it
+   on the cap band. -0.06em was measured — rendered ink, not geometry — at DPR
+   1.5, 1.65 and 2: it takes the icon/text ink-centre delta from +1.0…+1.5
+   device px to 0…+0.5 and makes the overhang symmetric. Pair with
+   `items-center`. */
+@layer utilities {
+  .icon-inline {
+    width: 0.875em;
+    height: 0.875em;
+    /* `translate`, not `transform`, so a Tailwind rotate/scale utility still composes. */
+    translate: 0 -0.06em;
+  }
+}
+
 /* Letter spacing utilities for Inter font optimization */
 @layer utilities {
   .tracking-inter-tight {

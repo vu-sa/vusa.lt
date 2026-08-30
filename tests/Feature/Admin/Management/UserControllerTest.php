@@ -158,6 +158,21 @@ describe('authorized access', function (): void {
             );
     });
 
+    test('show page passes per-record update and delete capabilities', function (): void {
+        // The page gates its edit and delete controls on these, since `auth.can`
+        // carries no flat permission names to gate them with.
+        $user = makeUser($this->tenant);
+
+        $response = asUser($this->admin)->get(route('users.show', $user));
+
+        $response->assertStatus(200)
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/People/ShowUser')
+                ->where('can.update', true)
+                ->has('can.delete')
+            );
+    });
+
     test('can update user', function (): void {
         $user = makeUser($this->tenant);
 

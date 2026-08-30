@@ -12,6 +12,7 @@
       :subtitle
       :icon
       :badge
+      :icon-frame
     >
       <template v-if="$slots.icon" #icon>
         <slot name="icon" />
@@ -101,6 +102,8 @@ const props = withDefaults(defineProps<{
   subtitle?: string;
   icon?: Component;
   badge?: BadgeConfig;
+  /** Draw the square frame around the icon slot. Off for round avatars. */
+  iconFrame?: boolean;
   /** The record being shown. Only `id` is used — for the activity log subject. */
   model?: { id: string | number };
   /**
@@ -124,6 +127,7 @@ const props = withDefaults(defineProps<{
   subtitle: undefined,
   icon: undefined,
   badge: undefined,
+  iconFrame: true,
   model: undefined,
   auditSubjectType: undefined,
   tabs: undefined,

@@ -16,7 +16,10 @@
         <!-- Icon -->
         <div
           v-if="icon || $slots.icon"
-          class="shrink-0 h-12 w-12 sm:h-14 sm:w-14 bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-700 dark:to-zinc-800 rounded-lg flex items-center justify-center border border-zinc-200 dark:border-zinc-600"
+          :class="[
+            'shrink-0 h-12 w-12 sm:h-14 sm:w-14 flex items-center justify-center',
+            iconFrame && 'bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-700 dark:to-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-600',
+          ]"
         >
           <slot name="icon">
             <component
@@ -45,7 +48,7 @@
           </h1>
 
           <!-- Subtitle -->
-          <div v-if="subtitle || $slots.subtitle" class="flex items-center gap-2 text-sm text-muted-foreground font-semibold">
+          <div v-if="subtitle || $slots.subtitle" data-slot="show-page-hero-subtitle" class="flex items-center gap-2 text-sm text-muted-foreground font-semibold">
             <slot name="subtitle">
               <span class="truncate">{{ subtitle }}</span>
             </slot>
@@ -91,6 +94,11 @@ const props = withDefaults(defineProps<{
   badge?: BadgeConfig;
   /** Use a flat card surface (subtle border) instead of the primary gradient. */
   flat?: boolean;
+  /**
+   * Draw the square frame around the icon slot. Turn it off when the slot
+   * already carries its own shape, e.g. a round avatar.
+   */
+  iconFrame?: boolean;
   viewTransitionName?: string;
   class?: HTMLAttributes['class'];
 }>(), {
@@ -99,6 +107,7 @@ const props = withDefaults(defineProps<{
   icon: undefined,
   badge: undefined,
   flat: false,
+  iconFrame: true,
   viewTransitionName: undefined,
 });
 

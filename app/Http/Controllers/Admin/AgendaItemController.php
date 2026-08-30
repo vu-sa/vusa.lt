@@ -74,7 +74,8 @@ class AgendaItemController extends AdminController
         $canUpdate = Gate::allows('update', $agendaItem);
 
         $agendaItem->load(['votes', 'note', 'meeting.institutions.types', 'meeting.agendaItems' => function ($query): void {
-            $query->orderBy('order')->with('mainVote')->withCount('comments')->withExists('note as has_notes');
+            $query->orderBy('order')->with('mainVote')->withCount('comments')
+                ->withExists(['note as has_notes' => fn ($note) => $note->whereNotNull('notes_html')]);
         }]);
 
         // Whether votes/description are publicly visible follows the meeting's

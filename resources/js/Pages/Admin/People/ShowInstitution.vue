@@ -2,7 +2,6 @@
   <ShowPageLayout
     v-model:tab="currentTab"
     :title="institution.name"
-    :subtitle="institution.short_name ?? undefined"
     :model="institution"
     audit-subject-type="institution"
     :tabs

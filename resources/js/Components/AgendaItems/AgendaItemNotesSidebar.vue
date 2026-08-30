@@ -1,13 +1,13 @@
 <template>
   <aside class="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-900/40">
     <div class="flex items-center justify-between gap-2 border-b border-zinc-200 dark:border-zinc-800 px-4 py-3">
-      <div class="flex items-center gap-2">
-        <Users class="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
-        <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+      <div class="flex min-w-0 items-center gap-2">
+        <Users class="h-4 w-4 shrink-0 text-zinc-500 dark:text-zinc-400" />
+        <h3 class="truncate whitespace-nowrap text-sm font-semibold text-zinc-900 dark:text-zinc-100">
           {{ $t('Atstovų pastabos') }}
         </h3>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex shrink-0 items-center gap-1.5">
         <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 text-[11px] font-semibold text-amber-600 dark:text-amber-400 ring-1 ring-amber-200/70 dark:ring-amber-900/50">
           <Lock class="h-3 w-3" />
           {{ $t('PRIVATU') }}

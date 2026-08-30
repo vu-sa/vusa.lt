@@ -28,6 +28,9 @@ export interface InstitutionPageMeeting extends App.Entities.Meeting {
   vote_matches?: number;
   vote_mismatches?: number;
   incomplete_vote_data?: number;
+  /** First few agenda item titles; the full relation is too heavy to send. */
+  agenda_item_titles?: string[];
+  agenda_items_count?: number;
 }
 
 export interface InstitutionPageTask {

@@ -7,6 +7,26 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.34 — The member profile (2026-08-30) {#v1-34}
+
+- ✨ **The member page overview has been rearranged** — instead of an "Activity" card of counters that repeated what the duty lists already said, the overview now shows current and previous duties, with contacts moved into a sidebar list. Previous duties are dimmed so the current ones stay dominant
+- ✨ **Duty cards no longer carry institution statistics** — the "Fully occupied" badge and the "1 / 1 occupied" line are gone from a member profile: they describe the duty, not the person. The tenure period and the duty's email address are shown instead. Who else holds the same duty is still in the "Duties" tab
+- ✨ **The header shows the photo and the primary duty** — the member's photo (or their initials) replaces the generic icon, and their primary current duty reads under their name. Dates are formatted in the chosen language
+- 🔧 **The delete button only shows for someone who may delete** — the "…" menu used to offer deletion to anyone who could see the page at all
+
+## v1.33 — The institution overview (2026-08-30) {#v1-33}
+
+- ✨ **The institution overview has been rearranged** — the first tab no longer repeats what already has a tab of its own: tasks and related institutions are gone from it, and the upcoming-meeting banner and the separate last-meeting line are merged into a single card in the sidebar. The description and meetings sit on the left, status, members and the discussion on the right
+- ✨ **The meeting list shows the agenda** — instead of the time, each row lists the first three agenda items and how many remain, with the meeting marked "Upcoming" or "Past". A member's duty now reads under their name
+- ✨ **The short name is gone from the header** — it repeated what the institution's name already said
+
+## v1.32 — The agenda item page (2026-08-30) {#v1-32}
+
+- ✨ **The agenda item page has been reworked** — the status badge now reads before the title, the item type, its time slot and the "raised by representatives" flag moved into a card of their own, and the description and discussion are framed so it is clear where one block ends and the next begins
+- ⭐ **Voting questions collapse and reorder** — a fully recorded vote reads as a single line with its outcome, while an unfinished one opens by itself. Drag to reorder them, and pick the main vote by hand with the star
+- ✨ **Admin pages no longer stretch across the whole screen** — on a wide monitor the content is now centred and capped at a comfortable width
+- 🔧 **The amber dot no longer marks empty representative notes** — merely opening an item used to save an empty notes document, so nearly every agenda item looked annotated. It is now marked only when the notes actually contain something, and with a neutral icon instead of a coloured dot
+
 ## v1.31 — Task deletion and the mail queue (2026-08-30) {#v1-31}
 
 - 🔧 **A task can finally be deleted** — deletion failed at the database level for any task with someone assigned to it, which is to say almost all of them

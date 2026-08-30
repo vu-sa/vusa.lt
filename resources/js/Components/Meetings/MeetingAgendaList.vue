@@ -119,7 +119,7 @@
               <span v-if="commentsCount(item)" class="inline-flex items-center gap-0.5" :title="$t('Komentarai')">
                 <MessageSquare class="h-3.5 w-3.5" />{{ commentsCount(item) }}
               </span>
-              <span v-if="hasNotes(item)" class="h-1.5 w-1.5 rounded-full bg-amber-400" :title="$t('Yra pastabų')" />
+              <NotebookPen v-if="hasNotes(item)" class="h-3.5 w-3.5" :aria-label="$t('Yra pastabų')" />
             </span>
             <span v-if="voteCount(item) > 1" class="text-xs text-zinc-400 dark:text-zinc-500">
               {{ voteCount(item) }} {{ $t('balsavimai') }}
@@ -178,7 +178,7 @@ import { ref, computed, watch, nextTick } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import { useSortable } from '@vueuse/integrations/useSortable';
 import { trans as $t } from 'laravel-vue-i18n';
-import { FileText, GripVertical, ListPlus, MessageSquare, Plus, Trash2, Users } from 'lucide-vue-next';
+import { FileText, GripVertical, ListPlus, MessageSquare, NotebookPen, Plus, Trash2, Users } from 'lucide-vue-next';
 
 import AdminVotingHelpButton from '@/Components/AgendaItems/AdminVotingHelpButton.vue';
 import VoteStatusIndicator from '@/Components/Public/VoteStatusIndicator.vue';
