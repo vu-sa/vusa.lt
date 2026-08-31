@@ -63,9 +63,7 @@ export interface SummaryDuty {
   id: string | number;
   name: string;
   email?: string | null;
-  places_to_occupy?: number | null;
   institution?: { id: string | number; name: string; tenant?: { shortname?: string | null } | null } | null;
-  current_users?: App.Entities.User[];
   /** The viewing user's own tenure on this duty (present on ShowUser). */
   pivot?: { start_date?: string; end_date?: string | null; additional_email?: string; use_original_duty_name?: boolean } | null;
 }
@@ -80,16 +78,8 @@ const props = withDefaults(defineProps<{
   duty: SummaryDuty;
   /** Show the institution line under the duty name. */
   showInstitution?: boolean;
-  /**
-   * Show the occupancy badge and the holders row. Both describe how the *duty*
-   * is staffed, which says nothing on a member profile — turn them off there.
-   */
-  showStatus?: boolean;
-  showHolders?: boolean;
   /** Dim the card (e.g. previous duties). */
   muted?: boolean;
-  /** Exclude this user from the holders avatar group (e.g. the profile being viewed). */
-  excludeUserId?: string | number;
   /**
    * The person whose duty this is. When provided, the duty name's ending is
    * inflected to match their pronouns/name (e.g. "Koordinatorius" →
@@ -100,10 +90,7 @@ const props = withDefaults(defineProps<{
   useOriginalDutyName?: boolean;
 }>(), {
   showInstitution: true,
-  showStatus: true,
-  showHolders: true,
   muted: false,
-  excludeUserId: undefined,
   holder: null,
   useOriginalDutyName: false,
 });

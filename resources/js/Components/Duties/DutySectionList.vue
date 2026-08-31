@@ -8,9 +8,6 @@
         :key="duty.id"
         :duty
         :muted
-        :show-status
-        :show-holders
-        :exclude-user-id="excludeUserId"
         :holder
       />
     </div>
@@ -35,16 +32,10 @@ withDefaults(defineProps<{
   icon?: Component;
   /** Dim the cards — previous duties shouldn't outweigh active ones. */
   muted?: boolean;
-  showStatus?: boolean;
-  showHolders?: boolean;
-  excludeUserId?: string | number;
   holder?: DutySummaryHolder | null;
 }>(), {
   icon: undefined,
   muted: false,
-  showStatus: false,
-  showHolders: false,
-  excludeUserId: undefined,
   holder: null,
 });
 </script>

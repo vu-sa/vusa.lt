@@ -76,6 +76,8 @@ describe('ActionWindow.vue', () => {
     await Promise.all([
       import('@/Components/ActionWindow/screens/PersonaScreen.vue'),
       import('@/Components/ActionWindow/screens/PersonaActionsScreen.vue'),
+      // The meeting.create flow starts here when no institution was seeded.
+      import('@/Components/ActionWindow/screens/InstitutionPickerScreen.vue'),
       import('@/Components/ActionWindow/screens/MeetingTypeScreen.vue'),
     ]);
   });
