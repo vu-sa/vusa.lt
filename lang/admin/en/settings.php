@@ -88,7 +88,7 @@ return [
         'manager_role_description' => 'Select the role that identifies institution managers for the tenant. Users with current duties of this role in the same tenant are treated as institution managers and receive institution-related notifications, e.g. about student representative registrations.',
         'manager_role_label' => 'Manager role',
         'manager_role_placeholder' => 'Select a role',
-        'manager_role_note' => 'Note: institution managers are also used to determine meeting administrators.',
+        'manager_role_note' => 'Note: institution managers are also notified about their institutions\' meetings. That is separate from institution administrators, who are nominated per cadence on the institution itself and carry its tasks.',
     ],
 
     // Document settings page

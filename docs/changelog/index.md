@@ -7,6 +7,11 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.35 — Administratoriai ir laiškai (2026-08-31) {#v1-35}
+
+- 🔧 **Atnaujinta užduotis nebegrįžta seniems atsakingiesiems** — jei posėdžio darbotvarkės užduotis jau buvo atlikta, o vėliau kadencijai nurodytas administratorius, užduotį atvėrus iš naujo (pvz., pakeitus klausimo tipą) ji vėl atitekdavo visiems tuometiniams nariams — ir jiems visiems išeidavo laiškas. Dabar atveriant užduotį atsakingieji nustatomi iš naujo
+- 🔧 **Pakeitus kadencijos datas persiskirstomos ir užduotys** — pratęsus ar patrumpinus kadenciją posėdžiai pereina į ją arba iš jos, tačiau jų užduotys likdavo ankstesniems atsakingiesiems
+
 ## v1.34 — Nario profilis (2026-08-30) {#v1-34}
 
 - ✨ **Nario puslapio apžvalga perdėliota** — vietoj skaitiklių kortelės „Aktyvumas“, kuri kartojo tai, ką jau sako pareigų sąrašai, apžvalgoje rodomos dabartinės ir buvusios pareigos, o kontaktai perkelti į šoninį sąrašą. Buvusios pareigos pritemdytos, kad dabartinės liktų svarbiausios

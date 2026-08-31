@@ -7,6 +7,11 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.35 — Administrators and mail (2026-08-31) {#v1-35}
+
+- 🔧 **A reopened task no longer falls back to the old holders** — when a meeting's agenda task had already completed and an administrator was nominated for the term afterwards, reopening it (by changing an item's type, say) handed it back to everyone who held a seat at the time — and mailed all of them. The holders are now resolved again on the way back
+- 🔧 **Moving a cadence's dates re-staffs its tasks** — extending or shortening a term moves meetings in and out of it, but their tasks stayed with whoever held them before
+
 ## v1.34 — The member profile (2026-08-30) {#v1-34}
 
 - ✨ **The member page overview has been rearranged** — instead of an "Activity" card of counters that repeated what the duty lists already said, the overview now shows current and previous duties, with contacts moved into a sidebar list. Previous duties are dimmed so the current ones stay dominant

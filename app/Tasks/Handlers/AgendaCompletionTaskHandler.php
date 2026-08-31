@@ -2,6 +2,8 @@
 
 namespace App\Tasks\Handlers;
 
+use App\Actions\ResolveTaskAssignees;
+use App\Actions\ResyncTaskAssigneesForCadence;
 use App\Enums\AgendaItemType;
 use App\Models\Meeting;
 use App\Models\Task;
@@ -247,6 +249,12 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
 
     /**
      * Reopen a completed task if conditions require it.
+     *
+     * Reopening revives a roster that was snapshotted whenever the task was last open, so
+     * the assignees are resolved again on the way back: a term staffed with administrators
+     * after the task completed would otherwise mail its whole membership on the next
+     * auto-completion. Silent, like {@see ResyncTaskAssigneesForCadence} — the
+     * task is the same one, only its holders changed.
      */
     public function reopenIfNeeded(Meeting $meeting): void
     {
@@ -265,6 +273,14 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
         if ($this->shouldReopenTask($meeting)) {
             $completedTask->completed_at = null;
             $completedTask->save();
+
+            $assignees = ResolveTaskAssignees::forMeeting($meeting);
+
+            // An empty resolution means the body has nobody to hand it to; leaving the
+            // stale list beats leaving the task unassigned.
+            if ($assignees->isNotEmpty()) {
+                $completedTask->users()->sync($assignees->pluck('id'));
+            }
 
             // Update progress
             $this->syncTotalItems($completedTask, $meeting);

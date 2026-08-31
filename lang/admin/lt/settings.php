@@ -88,7 +88,7 @@ return [
         'manager_role_description' => 'Pasirinkite, kuri rolė nurodo padalinio institucijų atstovus. Naudotojai su aktyviomis šios rolės pareigomis tame pačiame padalinyje laikomi institucijų atstovais ir gauna su institucijomis susijusius pranešimus, pvz., apie studentų atstovų registracijas.',
         'manager_role_label' => 'Atstovų rolė',
         'manager_role_placeholder' => 'Pasirinkti rolę',
-        'manager_role_note' => 'Pastaba: institucijų atstovai naudojami ir posėdžių administratoriams nustatyti.',
+        'manager_role_note' => 'Pastaba: institucijų atstovai taip pat gauna pranešimus apie savo institucijų posėdžius. Tai nėra tas pats, kas institucijos administratoriai — jie nurodomi kadencijai pačios institucijos nustatymuose ir jiems tenka jos užduotys.',
     ],
 
     // Document settings page
