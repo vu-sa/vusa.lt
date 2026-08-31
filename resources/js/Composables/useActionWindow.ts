@@ -26,6 +26,7 @@ export type ScreenId
   = | 'persona'
     | 'persona.actions'
     | 'meeting.institution'
+    | 'meeting.institution.search'
     | 'meeting.type'
     | 'meeting.when'
     | 'meeting.date'
@@ -50,8 +51,17 @@ export interface ActionWindowInstitutionRef {
   isInternal?: boolean;
 }
 
+/** The calendar announcement a meeting is being created from, when there is one. */
+export interface ActionWindowCalendarEventRef {
+  id: number;
+  title: string;
+  date: string;
+}
+
 export interface ActionWindowDraft {
   institution?: ActionWindowInstitutionRef;
+  /** Set only by the "create a meeting from this event" entry point. */
+  calendarEvent?: ActionWindowCalendarEventRef;
   meeting: Partial<MeetingFormData>;
   agendaItems: AgendaItemFormData[];
   checkIn: { startDate?: string; endDate?: string; note: string };
@@ -62,6 +72,11 @@ export interface OpenOptions {
   flow?: 'meeting.create' | 'check-in' | 'meeting.complete';
   institution?: ActionWindowInstitutionRef | null;
   suggestedAt?: Date | string | null;
+  /**
+   * Create the meeting from an existing announcement. The event's date becomes the
+   * meeting's, so the flow never asks for one, and the two are linked on submit.
+   */
+  calendarEvent?: ActionWindowCalendarEventRef | null;
 }
 
 export interface ActionWindowContext {
@@ -70,6 +85,10 @@ export interface ActionWindowContext {
   draft: ActionWindowDraft;
   current: Readonly<Ref<ScreenFrame>>;
   canGoBack: Readonly<Ref<boolean>>;
+  /** Screens this run will never reach, so the progress dots don't count them. */
+  skippedScreens: Readonly<Ref<ScreenId[]>>;
+  /** The date came from elsewhere (an announcement), so no screen may ask for it. */
+  isDateLocked: Readonly<Ref<boolean>>;
   open: (options?: OpenOptions) => void;
   close: () => void;
   goTo: (id: ScreenId, params?: Record<string, unknown>) => void;
@@ -97,6 +116,7 @@ const ACTION_WINDOW_INJECTION_KEY: InjectionKey<ActionWindowContext> = Symbol('a
 
 const emptyDraft = (): ActionWindowDraft => ({
   institution: undefined,
+  calendarEvent: undefined,
   meeting: { start_time: '', type: undefined, description: '', announce_in_calendar: false },
   agendaItems: [],
   checkIn: { startDate: undefined, endDate: undefined, note: '' },
@@ -129,6 +149,10 @@ export function createActionWindowProvider(): ActionWindowContext {
 
   const current = computed<ScreenFrame>(() => stack[stack.length - 1] ?? { ...ROOT_FRAME });
   const canGoBack = computed(() => stack.length > 1);
+  const isDateLocked = computed(() => draft.calendarEvent !== undefined);
+  const skippedScreens = computed<ScreenId[]>(() =>
+    isDateLocked.value ? ['meeting.when', 'meeting.date', 'meeting.time'] : [],
+  );
 
   const reset = () => {
     stack.splice(0, stack.length, { ...ROOT_FRAME });
@@ -141,6 +165,12 @@ export function createActionWindowProvider(): ActionWindowContext {
     if (options?.institution) {
       draft.institution = options.institution;
       draft.meeting.institution_id = options.institution.id;
+    }
+
+    if (options?.calendarEvent) {
+      draft.calendarEvent = options.calendarEvent;
+      draft.meeting.calendar_id = options.calendarEvent.id;
+      draft.meeting.start_time = toLocalDateTime(new Date(options.calendarEvent.date));
     }
 
     if (options?.suggestedAt) {
@@ -234,6 +264,8 @@ export function createActionWindowProvider(): ActionWindowContext {
     draft,
     current: readonly(current) as Readonly<Ref<ScreenFrame>>,
     canGoBack: readonly(canGoBack) as Readonly<Ref<boolean>>,
+    skippedScreens: readonly(skippedScreens) as Readonly<Ref<ScreenId[]>>,
+    isDateLocked: readonly(isDateLocked) as Readonly<Ref<boolean>>,
     open,
     close,
     goTo,
@@ -276,6 +308,8 @@ export function useActionWindow(): ActionWindowContext {
     draft: reactive<ActionWindowDraft>(emptyDraft()),
     current: computed(() => ({ ...ROOT_FRAME })),
     canGoBack: computed(() => false),
+    skippedScreens: computed(() => []),
+    isDateLocked: computed(() => false),
     open: noop,
     close: noop,
     goTo: noop,

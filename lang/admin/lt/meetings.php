@@ -19,6 +19,7 @@ return [
         'review_intro' => 'Susitikimą galėsite paskelbti ir viešame kalendoriuje.',
         'review_checkbox_label' => 'Taip pat paskelbti kalendoriuje',
         'review_checkbox_hint' => 'Sukuriamas juodraštinis kalendoriaus įrašas su posėdžio data ir padaliniu. Jį dar reikės paskelbti, kad darbotvarkė taptų vieša.',
+        'create_from_event' => 'Sukurti posėdį iš renginio',
     ],
     'documents' => [
         'empty_title' => 'Dokumentų dar nėra',

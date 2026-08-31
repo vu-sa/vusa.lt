@@ -157,13 +157,15 @@ import { LocaleEnum } from '@/Types/enums';
 
 interface Props {
   event: App.Entities.Calendar;
+  /** The event announces a meeting; the status badge then says so. */
+  isMeeting?: boolean;
 }
 
 const props = defineProps<Props>();
 const page = usePage();
 const locale = computed(() => (page.props.app.locale ?? LocaleEnum.LT) as LocaleEnum);
 
-const { isLive, statusLabel, relativeLabel } = useEventStatus(() => props.event);
+const { isLive, statusLabel, relativeLabel } = useEventStatus(() => props.event, () => !!props.isMeeting);
 
 type HeroVariant = 'card' | 'split' | 'minimal';
 

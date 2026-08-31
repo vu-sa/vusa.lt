@@ -22,7 +22,16 @@
       <ReviewRow
         :label="$t('action_window.meeting.review.when')"
         :value="whenLabel"
+        :editable="!isDateLocked"
         @edit="editFromHere('meeting.when')"
+      />
+      <!-- The announcement this meeting is being created from: it fixed the date, and
+           the two are linked on submit, so it is stated rather than offered for change. -->
+      <ReviewRow
+        v-if="draft.calendarEvent"
+        :label="$t('action_window.meeting.review.calendar_event')"
+        :value="draft.calendarEvent.title"
+        :editable="false"
       />
       <ReviewRow
         :label="$t('action_window.meeting.review.agenda')"
@@ -78,7 +87,7 @@ import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { getMeetingTypeOptions, isDateOnlyMeetingType } from '@/Types/MeetingType';
 
-const { draft, stack, editFromHere, close, updateMeeting } = useActionWindow();
+const { draft, stack, editFromHere, close, isDateLocked, updateMeeting } = useActionWindow();
 
 // A screen the flow skipped (a caller-supplied institution) is not on the stack,
 // so offering "change" on it would be a dead button.
@@ -94,9 +103,16 @@ onMounted(load);
  * The seeded value when a caller knew it; otherwise resolved from the window's own
  * institution list. Unknown stays false — the server refuses it either way.
  */
-const canAnnounce = computed(() => draft.institution?.isInternal
-  ?? institutions.value.find(institution => institution.id === draft.institution?.id)?.is_internal
-  ?? false);
+const canAnnounce = computed(() => {
+  // Already created from an announcement — a second one would double-list the meeting.
+  if (draft.calendarEvent) {
+    return false;
+  }
+
+  return draft.institution?.isInternal
+    ?? institutions.value.find(institution => institution.id === draft.institution?.id)?.is_internal
+    ?? false;
+});
 
 const typeLabel = computed(() => {
   const options = getMeetingTypeOptions(getActiveLanguage() === 'en' ? 'en' : 'lt');

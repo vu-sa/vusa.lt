@@ -157,3 +157,44 @@ test('a user with no duties gets empty lists rather than an error', function ():
     expect($response->json('data.institutions'))->toBe([])
         ->and($response->json('data.meetingsNeedingAttention'))->toBe([]);
 });
+
+describe('wider institution search', function (): void {
+    /**
+     * The window offers "another institution" only to someone who could actually file a
+     * meeting there; for a plain representative the option would lead to a refusal.
+     */
+    test('it stays closed for a caller holding only their own duties', function (): void {
+        $response = asUser($this->user)
+            ->getJson(route('api.v1.admin.actionWindow.context'))
+            ->assertOk();
+
+        expect($response->json('data.institutionSearch.enabled'))->toBeFalse()
+            ->and($response->json('data.institutionSearch.tenant_ids'))->toBe([]);
+    });
+
+    test('it opens, scoped to their tenants, for a tenant-wide coordinator', function (): void {
+        $coordinator = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+
+        $response = asUser($coordinator)
+            ->getJson(route('api.v1.admin.actionWindow.context'))
+            ->assertOk();
+
+        expect($response->json('data.institutionSearch.enabled'))->toBeTrue()
+            ->and($response->json('data.institutionSearch.tenant_ids'))->toContain($this->tenant->id);
+    });
+
+    /**
+     * A super admin may create anywhere, so an explicit tenant list would only be a
+     * filter to fall out of date — an empty list means no filter.
+     */
+    test('it sends no tenant filter for an all-scope caller', function (): void {
+        $superAdmin = makeAdminUser($this->tenant);
+
+        $response = asUser($superAdmin)
+            ->getJson(route('api.v1.admin.actionWindow.context'))
+            ->assertOk();
+
+        expect($response->json('data.institutionSearch.enabled'))->toBeTrue()
+            ->and($response->json('data.institutionSearch.tenant_ids'))->toBe([]);
+    });
+});

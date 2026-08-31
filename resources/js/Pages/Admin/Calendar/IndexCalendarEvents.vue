@@ -14,6 +14,7 @@ import { h, ref, computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
+import { CalendarPlus } from 'lucide-vue-next';
 
 import type { IndexTablePageInstance,
   IndexTablePageProps } from '@/Types/TableConfigTypes';
@@ -21,6 +22,7 @@ import { DateCell, TruncatedLink, TruncatedText } from '@/Components/ui/data-tab
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import { createTenantColumn } from '@/Composables/useDataTableColumns';
+import { useActionWindow } from '@/Composables/useActionWindow';
 import { CalendarIcon } from '@/Components/icons';
 
 const props = defineProps<{
@@ -48,6 +50,27 @@ const entityName = 'calendar';
 const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
 
 const canForceDelete = computed(() => usePage().props.auth?.can?.forceDelete?.calendar ?? false);
+const canCreateMeeting = computed(() => !!usePage().props.auth?.can?.create?.meeting);
+
+const { open: openActionWindow } = useActionWindow();
+
+const eventTitle = (event: App.Entities.Calendar): string => {
+  const { title } = event;
+  return typeof title === 'object' && title !== null
+    ? ((title as any).lt || (title as any).en || '')
+    : String(title ?? '');
+};
+
+/**
+ * An event that stands for a meeting but has none yet — the announcement already fixed
+ * when it happens, so the window only has to ask which body and what is on the agenda.
+ */
+const startMeetingFromEvent = (event: App.Entities.Calendar) => {
+  openActionWindow({
+    flow: 'meeting.create',
+    calendarEvent: { id: Number(event.id), title: eventTitle(event), date: String(event.date) },
+  });
+};
 
 const getRowId = (row: App.Entities.Calendar) => {
   return `calendar-${row.id}`;
@@ -111,6 +134,15 @@ const columns = computed<Array<ColumnDef<App.Entities.Calendar, any>>>(() => [
     canDuplicate: true,
     canRestore: true,
     canForceDelete: canForceDelete.value,
+    customActions: [
+      {
+        key: 'create-meeting',
+        label: $t('meetings.announce.create_from_event'),
+        icon: CalendarPlus,
+        isAvailable: event => canCreateMeeting.value && !event.meeting_id && !event.deleted_at,
+        onSelect: startMeetingFromEvent,
+      },
+    ],
   }),
 ]);
 

@@ -22,6 +22,7 @@ export const ACTION_WINDOW_SCREENS: Record<ScreenId, Component> = {
   'persona': screen(() => import('./screens/PersonaScreen.vue')),
   'persona.actions': screen(() => import('./screens/PersonaActionsScreen.vue')),
   'meeting.institution': screen(() => import('./screens/InstitutionPickerScreen.vue')),
+  'meeting.institution.search': screen(() => import('./screens/InstitutionSearchScreen.vue')),
   'meeting.type': screen(() => import('./screens/MeetingTypeScreen.vue')),
   'meeting.when': screen(() => import('./screens/MeetingWhenScreen.vue')),
   'meeting.date': screen(() => import('./screens/MeetingDateScreen.vue')),
@@ -39,11 +40,13 @@ export const ACTION_WINDOW_SCREENS: Record<ScreenId, Component> = {
  * custom date splits "when" across a calendar and a clock, but the user is still on the
  * same step and the dots must not jump.
  *
- * The institution step is the only one ever skipped (when the caller already knows the
- * institution), so it counts only when the stack actually visited it.
+ * The institution step is skipped when the caller already knows the institution, so it
+ * counts only when the stack actually visited it. Every other skip is declared by the
+ * window itself (`skippedScreens`) rather than inferred from history — a step the user
+ * simply has not reached yet must still be counted.
  */
 const MEETING_FLOW: ScreenId[][] = [
-  ['meeting.institution'],
+  ['meeting.institution', 'meeting.institution.search'],
   ['meeting.type'],
   ['meeting.when', 'meeting.date', 'meeting.time'],
   ['meeting.agenda'],
@@ -63,14 +66,19 @@ export interface FlowProgress {
   total: number;
 }
 
-export function flowProgress(current: ScreenId, visited: ScreenId[]): FlowProgress | null {
+export function flowProgress(
+  current: ScreenId,
+  visited: ScreenId[],
+  skipped: ScreenId[] = [],
+): FlowProgress | null {
   const flow = FLOWS.find(steps => steps.some(screens => screens.includes(current)));
 
   if (!flow) {
     return null;
   }
 
-  const steps = visited.includes(flow[0]![0]!) ? flow : flow.slice(1);
+  const withoutInstitution = flow[0]!.some(id => visited.includes(id)) ? flow : flow.slice(1);
+  const steps = withoutInstitution.filter(screens => !screens.every(id => skipped.includes(id)));
   const index = steps.findIndex(screens => screens.includes(current));
 
   return index < 0 ? null : { step: index + 1, total: steps.length };

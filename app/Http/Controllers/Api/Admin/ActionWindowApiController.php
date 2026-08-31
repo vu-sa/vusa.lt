@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Actions\GetTenantsForUpserts;
 use App\Enums\MeetingType;
 use App\Http\Controllers\Api\ApiController;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Services\InstitutionActivityStatusService;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ResourceServices\DutyService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
@@ -16,8 +18,9 @@ use Illuminate\Support\Collection;
  * choice screens read: which of the caller's institutions need a meeting, and
  * which of their meetings are missing something.
  *
- * Scope comes entirely from the caller's own duties, so there is nothing to
- * authorize beyond being logged in — a user can only ever see their own bodies.
+ * Scope comes entirely from the caller's own duties and permissions, so there is
+ * nothing to authorize beyond being logged in — a user can only ever see their own
+ * bodies, and what they may create for.
  */
 class ActionWindowApiController extends ApiController
 {
@@ -35,14 +38,38 @@ class ActionWindowApiController extends ApiController
      *
      * @routeName api.v1.admin.actionWindow.context
      */
-    public function context(InstitutionActivityStatusService $activityStatus): JsonResponse
+    public function context(InstitutionActivityStatusService $activityStatus, Authorizer $authorizer): JsonResponse
     {
         $institutions = DutyService::getUserInstitutionsForDashboard();
 
         return $this->jsonSuccess([
             'institutions' => $this->institutionPayload($institutions, $activityStatus),
             'meetingsNeedingAttention' => $this->meetingPayload($institutions),
+            'institutionSearch' => $this->institutionSearchScope($authorizer),
         ]);
+    }
+
+    /**
+     * Whether the window may offer bodies beyond the caller's own duties, and which
+     * tenants that search is then scoped to.
+     *
+     * A caller with only `.own` scope holds no `meetings.create.padalinys`, so
+     * GetTenantsForUpserts hands back nothing and the option stays hidden — offering it
+     * would only lead to a rejection from StoreMeetingRequest's tenant-scope rule.
+     * All-scope callers get an empty list, meaning no tenant filter at all.
+     *
+     * @return array{enabled: bool, tenant_ids: array<int, int>}
+     */
+    private function institutionSearchScope(Authorizer $authorizer): array
+    {
+        $tenants = GetTenantsForUpserts::execute('meetings.create.padalinys', $authorizer);
+
+        return [
+            'enabled' => $authorizer->isAllScope || $tenants->isNotEmpty(),
+            'tenant_ids' => $authorizer->isAllScope
+                ? []
+                : $tenants->pluck('id')->map(fn ($id): int => (int) $id)->values()->all(),
+        ];
     }
 
     /**

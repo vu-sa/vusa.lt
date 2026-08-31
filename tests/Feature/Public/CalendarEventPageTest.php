@@ -115,3 +115,77 @@ test('the hero style reaches the public event page', function (): void {
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('event.hero_style', 'split'));
 });
+
+/**
+ * The related list used to read from the whole calendar sorted newest-first, so it
+ * surfaced whatever was furthest in the future rather than what is about to happen.
+ */
+test('the other events are the soonest upcoming ones', function (): void {
+    Http::fake(['nominatim.openstreetmap.org/*' => Http::response([])]);
+
+    $event = Calendar::factory()->create([
+        'tenant_id' => $this->tenant->id,
+        'is_draft' => false,
+        'date' => now()->addDay(),
+    ]);
+
+    $soon = Calendar::factory()->create([
+        'tenant_id' => $this->tenant->id,
+        'is_draft' => false,
+        'date' => now()->addDays(3),
+    ]);
+
+    $farOff = Calendar::factory()->create([
+        'tenant_id' => $this->tenant->id,
+        'is_draft' => false,
+        'date' => now()->addYear(),
+    ]);
+
+    $this->get(calendarEventUrl($event))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('calendar.0.id', $soon->id)
+            ->where('calendar.1.id', $farOff->id)
+        );
+});
+
+test('past events fill the list only when little is coming up', function (): void {
+    Http::fake(['nominatim.openstreetmap.org/*' => Http::response([])]);
+
+    $event = Calendar::factory()->create([
+        'tenant_id' => $this->tenant->id,
+        'is_draft' => false,
+        'date' => now()->addDay(),
+    ]);
+
+    $recentlyPast = Calendar::factory()->create([
+        'tenant_id' => $this->tenant->id,
+        'is_draft' => false,
+        'date' => now()->subWeek(),
+        'end_date' => null,
+    ]);
+
+    $this->get(calendarEventUrl($event))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('calendar.0.id', $recentlyPast->id));
+});
+
+test('a draft event is never offered alongside another', function (): void {
+    Http::fake(['nominatim.openstreetmap.org/*' => Http::response([])]);
+
+    $event = Calendar::factory()->create([
+        'tenant_id' => $this->tenant->id,
+        'is_draft' => false,
+        'date' => now()->addDay(),
+    ]);
+
+    Calendar::factory()->create([
+        'tenant_id' => $this->tenant->id,
+        'is_draft' => true,
+        'date' => now()->addDays(2),
+    ]);
+
+    $this->get(calendarEventUrl($event))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('calendar', []));
+});

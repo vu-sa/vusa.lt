@@ -15,7 +15,11 @@ export type EventTone = 'live' | 'past' | 'upcoming';
  * ("rytoj", "po 2 dienų") from `Intl.RelativeTimeFormat` instead of a badge, so
  * the page states a fact rather than manufacturing urgency.
  */
-export function useEventStatus(event: MaybeRefOrGetter<{ date: string; end_date?: string | null }>) {
+export function useEventStatus(
+  event: MaybeRefOrGetter<{ date: string; end_date?: string | null }>,
+  /** The event stands for a meeting, so the past-tense label names one. */
+  isMeeting: MaybeRefOrGetter<boolean> = false,
+) {
   const page = usePage();
   const locale = computed(() => (page.props.app?.locale ?? LocaleEnum.LT) as LocaleEnum);
 
@@ -40,7 +44,7 @@ export function useEventStatus(event: MaybeRefOrGetter<{ date: string; end_date?
 
   const statusLabel = computed(() => {
     if (isLive.value) return $t('Vyksta dabar');
-    if (isPast.value) return $t('Renginys įvyko');
+    if (isPast.value) return toValue(isMeeting) ? $t('Posėdis įvyko') : $t('Renginys įvyko');
     return null;
   });
 

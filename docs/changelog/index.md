@@ -7,6 +7,15 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.36 — Renginiai ir posėdžiai (2026-08-31) {#v1-36}
+
+- ⭐ **Posėdį galima sukurti tiesiai iš renginio** — renginių sąraše prie kalendoriaus įrašo, kuris dar nesusietas su posėdžiu, atsirado veiksmas „Sukurti posėdį iš renginio“. Data paimama iš renginio, todėl veiksmų lange belieka pasirinkti instituciją ir surašyti darbotvarkę, o sukurtas posėdis susiejamas su tuo pačiu renginiu
+- ⭐ **Veiksmų lange galima pasirinkti ir kitą instituciją** — kas gali kurti posėdžius visame padalinyje ar visoje organizacijoje, institucijų sąraše ras paiešką tarp visų institucijų, kurioms turi teisę, o ne tik tų, kuriose eina pareigas
+- ✨ **Renginio puslapyje mobiliajame — data ir vieta pirmiausia** — anksčiau jos likdavo po visu aprašymu ir darbotvarke, todėl jų dažnai nebuvo matyti
+- ✨ **„Kiti renginiai“ rodo artimiausius** — sąrašas ėmė renginius iš viso kalendoriaus naujausius pirma, todėl siūlydavo tuos, kurie dar už metų. Dabar rodomi artimiausi būsimieji, o kortelės pakeistos kompaktiškomis eilutėmis
+- 🔧 **Įvykusiam posėdžiui rašoma „Posėdis įvyko“** — renginio puslapyje, kai jis skelbia posėdį, nebeliko „Renginys įvyko“
+- 🔧 **Veiksmų lange teisingai rodoma, kada institucija paskutinį kartą posėdžiavo** — vietoj datos buvo rodomas dienų skaičius, skaičiuojamas be atostogų laikotarpių, todėl jis nesutapdavo su jokiu kalendoriumi
+
 ## v1.35 — Administratoriai ir laiškai (2026-08-31) {#v1-35}
 
 - 🔧 **Atnaujinta užduotis nebegrįžta seniems atsakingiesiems** — jei posėdžio darbotvarkės užduotis jau buvo atlikta, o vėliau kadencijai nurodytas administratorius, užduotį atvėrus iš naujo (pvz., pakeitus klausimo tipą) ji vėl atitekdavo visiems tuometiniams nariams — ir jiems visiems išeidavo laiškas. Dabar atveriant užduotį atsakingieji nustatomi iš naujo

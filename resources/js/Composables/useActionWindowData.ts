@@ -36,9 +36,20 @@ export interface ActionWindowMeeting {
   completion_status: 'no_items' | 'incomplete';
 }
 
+/**
+ * Whether the caller may file a meeting under a body they hold no duty in, and the
+ * tenants that wider search is scoped to. An empty `tenant_ids` with `enabled` means
+ * all-scope: no tenant filter at all.
+ */
+export interface ActionWindowInstitutionSearch {
+  enabled: boolean;
+  tenant_ids: number[];
+}
+
 export interface ActionWindowContextData {
   institutions: ActionWindowInstitution[];
   meetingsNeedingAttention: ActionWindowMeeting[];
+  institutionSearch: ActionWindowInstitutionSearch;
 }
 
 const cached = ref<ActionWindowContextData | null>(null);
@@ -68,10 +79,14 @@ export function useActionWindowData() {
 
   const institutions = computed(() => cached.value?.institutions ?? []);
   const meetings = computed(() => cached.value?.meetingsNeedingAttention ?? []);
+  const institutionSearch = computed<ActionWindowInstitutionSearch>(
+    () => cached.value?.institutionSearch ?? { enabled: false, tenant_ids: [] },
+  );
 
   return {
     institutions,
     meetings,
+    institutionSearch,
     isLoading: computed(() => !cached.value && isFetching.value),
     error,
     load,

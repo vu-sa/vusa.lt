@@ -31,7 +31,7 @@ import ActionWindowScreen from '../ActionWindowScreen.vue';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { getMeetingTypeOptions, isDateOnlyMeetingType, MeetingType, type MeetingTypeValue } from '@/Types/MeetingType';
 
-const { current, draft, advance, goTo, updateMeeting } = useActionWindow();
+const { current, draft, advance, goTo, isDateLocked, updateMeeting } = useActionWindow();
 
 /**
  * "Gyvas susitikimas" and "Nuotolinis susitikimas" say everything already; only the
@@ -63,6 +63,12 @@ const options = computed(() =>
 const pick = (type: MeetingTypeValue) => {
   const wasDateOnly = isDateOnlyMeetingType(draft.meeting.type ?? null);
   updateMeeting({ type });
+
+  // The announcement already fixed when this happens, so there is nothing to ask.
+  if (isDateLocked.value) {
+    advance('meeting.agenda');
+    return;
+  }
 
   // Leaving email behind on the review would otherwise keep its 23:59 deadline marker as
   // if it were a real meeting hour, so ask for one — and carry the return frame so the

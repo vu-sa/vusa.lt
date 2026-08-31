@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils';
 import { defineComponent, h } from 'vue';
 
 import MeetingTypeScreen from '@/Components/ActionWindow/screens/MeetingTypeScreen.vue';
-import { createActionWindowProvider, type ActionWindowContext } from '@/Composables/useActionWindow';
+import { createActionWindowProvider, type ActionWindowContext, type OpenOptions } from '@/Composables/useActionWindow';
 import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
@@ -12,13 +12,16 @@ vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 const IN_PERSON = 0;
 const EMAIL = 2;
 
-const mountScreen = (seed?: (window: ActionWindowContext) => void) => {
+const mountScreen = (
+  seed?: (window: ActionWindowContext) => void,
+  open: OpenOptions = { flow: 'meeting.create', institution: { id: '1', name: 'VU SA MIF' } },
+) => {
   let window!: ActionWindowContext;
 
   const wrapper = mount(defineComponent({
     setup() {
       window = createActionWindowProvider();
-      window.open({ flow: 'meeting.create', institution: { id: '1', name: 'VU SA MIF' } });
+      window.open(open);
       seed?.(window);
       return () => h(MeetingTypeScreen);
     },
@@ -70,6 +73,22 @@ describe('MeetingTypeScreen.vue', () => {
     expect(window.current.value.id).toBe('meeting.review');
     // Picking email normalises whatever hour was already chosen.
     expect(new Date(window.draft.meeting.start_time!).getHours()).toBe(23);
+  });
+
+  /**
+   * Started from an announcement, the date is already settled — asking for it again
+   * would let the meeting drift away from the event it stands for.
+   */
+  it('goes straight to the agenda when an announcement fixed the date', async () => {
+    const { wrapper, window } = mountScreen(undefined, {
+      flow: 'meeting.create',
+      institution: { id: '1', name: 'VU SA MIF' },
+      calendarEvent: { id: 42, title: 'VU SA MIF posėdis', date: '2026-09-15T18:00:00.000Z' },
+    });
+
+    await choices(wrapper)[IN_PERSON]!.trigger('click');
+
+    expect(window.current.value.id).toBe('meeting.agenda');
   });
 
   it('does not divert when no date has been chosen yet', async () => {

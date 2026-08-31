@@ -4,6 +4,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 
 | Applies to | Rule file |
 | --- | --- |
+| resources/js/Components/ActionWindow/** | .ai/rules/action-window.md |
 | app/Tasks/**,app/Actions/ResyncTaskAssigneesForCadence.php,app/Models/Cadence.php | .ai/rules/actions-models.md |
 | app/Models/Task.php,app/Models/Traits/HasTasks.php,app/Http/Controllers/Admin/TaskController.php | .ai/rules/admin.md |
 | app/** | .ai/rules/app.md |

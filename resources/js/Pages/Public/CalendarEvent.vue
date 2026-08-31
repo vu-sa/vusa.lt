@@ -1,7 +1,7 @@
 <template>
   <div class="calendar-event-page">
     <!-- Hero: inset card inside the layout's wrapper — no full-bleed -->
-    <EventHero :event>
+    <EventHero :event :is-meeting="!!meeting">
       <template #actions="{ onImage }">
         <EventActions
           :registration-url="registrationUrl"
@@ -19,7 +19,7 @@
       <!-- Two Column Layout -->
       <div class="grid lg:grid-cols-12 gap-8 lg:gap-12">
         <!-- Main Content -->
-        <main class="lg:col-span-8 space-y-10">
+        <main class="order-last space-y-10 lg:order-none lg:col-span-8">
           <!-- Description: no heading needed -->
           <div
             v-if="event.description"
@@ -126,14 +126,15 @@
               </h2>
               <div class="h-px flex-1 bg-gradient-to-r from-zinc-200 to-transparent dark:from-zinc-700" />
             </div>
-            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <EventCard v-for="otherEvent in otherEvents" :key="otherEvent.id" :event="otherEvent" />
+            <div class="flex flex-col gap-2">
+              <EventListRow v-for="otherEvent in otherEvents" :key="otherEvent.id" :event="otherEvent" />
             </div>
           </section>
         </main>
 
-        <!-- Sidebar -->
-        <aside class="lg:col-span-4 order-2 lg:order-none">
+        <!-- Sidebar. Ordered first on a phone: when the event is (and where) is what a
+             visitor came for, and below a long description it was never seen. -->
+        <aside class="order-first lg:order-none lg:col-span-4">
           <!-- top-28 clears the fixed main navigation (see MainNavigation.vue) -->
           <div class="lg:sticky lg:top-28">
             <EventDetailsCard
@@ -154,10 +155,10 @@ import { computed } from 'vue';
 import { usePage, Link as InertiaLink } from '@inertiajs/vue3';
 
 import EventActions from '@/Components/Calendar/EventActions.vue';
-import EventCard from '@/Components/Calendar/EventCard.vue';
 import EventDetailsCard from '@/Components/Calendar/EventDetailsCard.vue';
 import EventHero from '@/Components/Calendar/EventHero.vue';
 import EventImageGallery from '@/Components/Calendar/EventImageGallery.vue';
+import EventListRow from '@/Components/Calendar/EventListRow.vue';
 import PublicAgendaList from '@/Components/Public/PublicAgendaList.vue';
 import PublicMeetingDocuments, { type PublicMeetingDocument } from '@/Components/Public/PublicMeetingDocuments.vue';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
@@ -208,7 +209,7 @@ usePageBreadcrumbs(() =>
   ]),
 );
 
-const { isPast, isLive } = useEventStatus(() => props.event);
+const { isPast, isLive } = useEventStatus(() => props.event, () => !!props.meeting);
 
 const meeting = computed(() => props.meeting ?? null);
 
@@ -221,10 +222,10 @@ const meetingUrl = computed(() => route('publicMeetings.show', {
 /** The call-to-action URL is stored as `cto_url`, not `url`. */
 const registrationUrl = computed(() => (props.event.cto_url ? String(props.event.cto_url) : null));
 
-/** A couple of other events, replacing the sidebar's compact "upcoming" list. Capped to an even
- *  number so the two-column grid never leaves a lone card orphaned on its own row. */
+/** The server already hands these over soonest-first; the filter only guards against this
+ *  event slipping into its own list. */
 const otherEvents = computed(() =>
-  props.calendar.filter(other => other.id !== props.event.id).slice(0, 2),
+  props.calendar.filter(other => other.id !== props.event.id).slice(0, 4),
 );
 
 /** Full date + time for a sibling announcement, so the prev/next links say when, not just which. */

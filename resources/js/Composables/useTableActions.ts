@@ -1,8 +1,9 @@
-import { h } from 'vue';
+import { h, type Component } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 
 import DataTableActionsColumn from '@/Components/ui/data-table/DataTableActionsColumn.vue';
+import { DropdownMenuItem } from '@/Components/ui/dropdown-menu';
 
 type RowPermission<TData> = boolean | ((row: TData) => boolean);
 
@@ -12,6 +13,20 @@ type ActionableRow = {
   /** Server-supplied explanation of why permanent deletion is refused for this row. */
   force_delete_blocked_reason?: string | null;
 };
+
+/**
+ * A page-defined row action, rendered in the overflow menu above the destructive ones.
+ * For anything the conventional routes cannot express — opening a dialog, starting a
+ * guided flow — so pages don't hand-roll a column of their own.
+ */
+export interface CustomRowAction<TData> {
+  key: string;
+  label: string;
+  icon: Component;
+  /** Omit the action for rows it makes no sense on. */
+  isAvailable?: (row: TData) => boolean;
+  onSelect: (row: TData) => void;
+}
 
 export interface ActionColumnOptions<TData> {
   // Model information
@@ -32,6 +47,9 @@ export interface ActionColumnOptions<TData> {
   canDelete?: RowPermission<TData>;
   canRestore?: RowPermission<TData>;
   canForceDelete?: RowPermission<TData>;
+
+  // Page-defined actions
+  customActions?: CustomRowAction<TData>[];
 
   // Confirmation settings
   confirmDelete?: boolean;
@@ -65,6 +83,9 @@ export function createActionsColumn<TData extends ActionableRow>(
         return typeof permission === 'function' ? permission(row.original) : permission;
       };
 
+      const customActions = (options.customActions ?? [])
+        .filter(action => action.isAvailable?.(row.original) ?? true);
+
       return h(DataTableActionsColumn, {
         row: row.original,
         modelName: options.modelName,
@@ -83,7 +104,21 @@ export function createActionsColumn<TData extends ActionableRow>(
         confirmDelete: options.confirmDelete,
         deleteConfirmMessage: options.deleteConfirmMessage,
         deleteConfirmTitle: options.deleteConfirmTitle,
-      });
+      }, customActions.length > 0
+        ? {
+            'custom-actions': () => customActions.map(action =>
+              h(
+                DropdownMenuItem,
+                {
+                  key: action.key,
+                  'data-testid': `row-action-${action.key}`,
+                  onSelect: () => action.onSelect(row.original),
+                },
+                () => [h(action.icon), action.label],
+              ),
+            ),
+          }
+        : undefined);
     },
   };
 }
@@ -104,6 +139,7 @@ export function createStandardActionsColumn<TData extends ActionableRow>(
     canDelete?: RowPermission<TData>;
     canRestore?: RowPermission<TData>;
     canForceDelete?: RowPermission<TData>;
+    customActions?: CustomRowAction<TData>[];
     confirmDelete?: boolean;
     deleteConfirmMessage?: string;
     deleteConfirmTitle?: string;

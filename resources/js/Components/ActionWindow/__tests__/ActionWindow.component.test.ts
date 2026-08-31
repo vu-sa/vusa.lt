@@ -170,5 +170,22 @@ describe('ActionWindow.vue', () => {
       await settle(wrapper);
       expect(wrapper.findAll('header span.rounded-full')).toHaveLength(5);
     });
+
+    /**
+     * Started from an announcement there is no date to ask for, so counting the step
+     * would promise a screen the run never shows.
+     */
+    it('drops the date step when an announcement already fixed it', async () => {
+      const { wrapper, window } = mountWindow();
+      window.open({
+        flow: 'meeting.create',
+        institution: { id: '1', name: 'MIF SPK' },
+        calendarEvent: { id: 42, title: 'MIF SPK posėdis', date: '2026-09-15T18:00:00.000Z' },
+      });
+      await settle(wrapper);
+
+      // Type, agenda, review — the institution came from the caller, the date from the event.
+      expect(wrapper.findAll('header span.rounded-full')).toHaveLength(3);
+    });
   });
 });

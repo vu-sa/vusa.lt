@@ -14,6 +14,7 @@ use App\Http\Requests\StoreMeetingRequest;
 use App\Http\Requests\UpdateMeetingRequest;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
+use App\Models\Calendar;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
@@ -161,12 +162,30 @@ class MeetingController extends AdminController
             $meetingType = $validatedData['type'] ?? null;
             $title = $this->buildMeetingTitle($validatedData['start_time'], $meetingType);
 
+            // Created from an existing announcement: the meeting takes over the event's
+            // timing rather than leaving the pair to drift (Meeting::syncCalendarEventTiming
+            // then pushes it back, so both ends have to agree from the start).
+            $announcement = isset($validatedData['calendar_id'])
+                ? Calendar::query()->whereNull('meeting_id')->find($validatedData['calendar_id'])
+                : null;
+
             $meeting = Meeting::create([
                 'start_time' => $validatedData['start_time'],
                 'title' => $title,
                 'description' => $validatedData['description'] ?? null,
                 'type' => $meetingType,
+                'end_time' => $announcement?->end_date,
             ]);
+
+            if ($announcement !== null) {
+                $announcement->meeting_id = $meeting->id;
+                // From here on the meeting owns the timing (Meeting::syncCalendarEventTiming),
+                // so the announcement adopts it now rather than drifting until the next edit —
+                // an email meeting, for instance, moves its start to a 23:59 deadline.
+                $announcement->date = $meeting->start_time;
+                $announcement->end_date = $meeting->end_time;
+                $announcement->save();
+            }
 
             $meeting->attachAudited('institutions', $validatedData['institution_id']);
 

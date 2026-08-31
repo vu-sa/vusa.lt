@@ -194,6 +194,33 @@ describe('useActionWindow', () => {
       expect(window.draft.meeting.start_time).toBe('');
     });
 
+    /**
+     * Started from an announcement: the event already fixed when the meeting happens,
+     * so the flow must not ask again — and the two are linked on submit.
+     */
+    it('takes its date from a calendar event and locks it', () => {
+      const window = openedOn({
+        flow: 'meeting.create',
+        calendarEvent: { id: 42, title: 'VU SA Parlamento posėdis', date: '2026-09-15T18:00:00.000Z' },
+      });
+
+      expect(window.draft.meeting.calendar_id).toBe(42);
+      expect(window.draft.meeting.start_time).not.toBe('');
+      expect(window.draft.meeting.start_time).not.toContain('Z');
+      expect(window.isDateLocked.value).toBe(true);
+      expect(window.skippedScreens.value).toContain('meeting.when');
+      expect(window.skippedScreens.value).toContain('meeting.date');
+      expect(window.skippedScreens.value).toContain('meeting.time');
+    });
+
+    it('asks for a date like any other run when no event seeded one', () => {
+      const window = openedOn({ flow: 'meeting.create' });
+
+      expect(window.isDateLocked.value).toBe(false);
+      expect(window.skippedScreens.value).toEqual([]);
+      expect(window.draft.meeting.calendar_id).toBeUndefined();
+    });
+
     it('clears a previous draft so a second run does not inherit the first', () => {
       const window = openedOn({ flow: 'meeting.create', institution: { id: '1', name: 'MIF SPK' } });
       window.updateMeeting({ type: 'remote' });
@@ -203,6 +230,7 @@ describe('useActionWindow', () => {
 
       expect(window.current.value.id).toBe('persona');
       expect(window.draft.institution).toBeUndefined();
+      expect(window.draft.calendarEvent).toBeUndefined();
       expect(window.draft.meeting.type).toBeUndefined();
       expect(window.draft.agendaItems).toEqual([]);
     });
