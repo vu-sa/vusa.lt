@@ -21,6 +21,11 @@ export interface MeetingFormData {
   /** When true, a draft calendar announcement is created alongside the meeting. */
   announce_in_calendar?: boolean;
   /**
+   * An existing, unlinked calendar announcement this meeting is created from: the
+   * server attaches the event to the meeting instead of making a second one.
+   */
+  calendar_id?: number;
+  /**
    * Not stored on the meeting: it asks the server to redirect into the meeting page's
    * bulk agenda dialog, where a whole timetable can be pasted at once.
    */

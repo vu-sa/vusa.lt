@@ -70,7 +70,7 @@ import { useActionWindow } from '@/Composables/useActionWindow';
 import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
 import { Button } from '@/Components/ui/button';
 
-const { stack, current, canGoBack, back, close } = useActionWindow();
+const { stack, current, canGoBack, back, close, skippedScreens } = useActionWindow();
 
 const screen = computed(() => ACTION_WINDOW_SCREENS[current.value.id]);
 
@@ -78,7 +78,7 @@ const screen = computed(() => ACTION_WINDOW_SCREENS[current.value.id]);
 // showing "2 of 5" there would claim the user had gone backwards.
 const progress = computed(() => current.value.params?.returnTo
   ? null
-  : flowProgress(current.value.id, stack.map(frame => frame.id)));
+  : flowProgress(current.value.id, stack.map(frame => frame.id), skippedScreens.value));
 
 const identity = computed(() => flowIdentity(current.value.id));
 </script>

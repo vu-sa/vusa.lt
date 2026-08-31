@@ -2,8 +2,7 @@
 
 namespace App\Tasks\Subscribers;
 
-use App\Actions\GetInstitutionFollowersToNotify;
-use App\Actions\GetMeetingAdministrators;
+use App\Actions\ResolveMeetingNotificationAudience;
 use App\Actions\ResolveTaskAssignees;
 use App\Events\MeetingFullyCreated;
 use App\Models\Meeting;
@@ -28,7 +27,7 @@ use Illuminate\Support\Facades\Notification;
  * - Creates Agenda Creation tasks when meetings are created (no agenda items yet)
  * - Creates Agenda Completion tasks when agenda items exist but need filling
  * - Completes Periodicity Gap tasks when meetings are created for institutions
- * - Sends notifications to administrators on meeting creation and completion
+ * - Sends notifications to the meeting's audience on creation and completion
  */
 class MeetingTaskSubscriber
 {
@@ -67,7 +66,7 @@ class MeetingTaskSubscriber
 
     /**
      * Handle meeting fully created event.
-     * Creates an agenda creation task and notifies administrators.
+     * Creates an agenda creation task and notifies the meeting's audience.
      * Also completes any pending periodicity gap tasks for the meeting's institutions.
      */
     public function handleMeetingCreated(MeetingFullyCreated $event): void
@@ -109,14 +108,7 @@ class MeetingTaskSubscriber
             );
         }
 
-        // Notify administrators about the new meeting
-        $administrators = GetMeetingAdministrators::execute($meeting);
-
-        // Also notify followers of the meeting's institutions (excluding muted users)
-        $followers = GetInstitutionFollowersToNotify::execute($meeting);
-
-        // Merge and deduplicate recipients
-        $recipients = $administrators->merge($followers)->unique('id')->values();
+        $recipients = ResolveMeetingNotificationAudience::execute($meeting);
 
         if ($recipients->isNotEmpty()) {
             Notification::send($recipients, new MeetingCreatedNotification($meeting));
@@ -150,7 +142,7 @@ class MeetingTaskSubscriber
         $wasCompleted = $this->completionHandler->updateProgressForMeeting($meeting, $actor);
 
         if ($wasCompleted) {
-            $this->notifyAdministratorsOfCompletion($meeting, $actor);
+            $this->notifyAudienceOfCompletion($meeting, $actor);
         }
     }
 
@@ -216,27 +208,21 @@ class MeetingTaskSubscriber
         $wasCompleted = $this->completionHandler->updateProgressForMeeting($meeting, $actor);
 
         if ($wasCompleted) {
-            $this->notifyAdministratorsOfCompletion($meeting, $actor);
+            $this->notifyAudienceOfCompletion($meeting, $actor);
         }
     }
 
     /**
-     * Notify administrators when all agenda items are completed.
+     * Tell the meeting's audience that every agenda item is filled.
      * The completedBy user is included to show who triggered the completion.
      *
      * @param  User|null  $completedBy  The user who completed the agenda (shown in notification)
      */
-    protected function notifyAdministratorsOfCompletion(Meeting $meeting, ?User $completedBy = null): void
+    protected function notifyAudienceOfCompletion(Meeting $meeting, ?User $completedBy = null): void
     {
         $meeting->load(['institutions.tenant']);
 
-        $administrators = GetMeetingAdministrators::execute($meeting);
-
-        // Also notify followers of the meeting's institutions (excluding muted users)
-        $followers = GetInstitutionFollowersToNotify::execute($meeting);
-
-        // Merge and deduplicate recipients
-        $recipients = $administrators->merge($followers)->unique('id')->values();
+        $recipients = ResolveMeetingNotificationAudience::execute($meeting);
 
         if ($recipients->isNotEmpty()) {
             Notification::send($recipients, new MeetingAgendaCompletedNotification($meeting, $completedBy));

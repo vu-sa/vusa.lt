@@ -55,6 +55,23 @@ describe('useEventStatus', () => {
       .toBeNull();
   });
 
+  /**
+   * The same page announces meetings, and "Renginys įvyko" reads as the wrong kind of
+   * thing for one — the caller says which it is.
+   */
+  it('names a past meeting a meeting rather than an event', () => {
+    const past = { date: hoursFromNow(-48), end_date: hoursFromNow(-24) };
+
+    expect(useEventStatus(past, true).statusLabel.value).toBe('Posėdis įvyko');
+    expect(useEventStatus(past).statusLabel.value).toBe('Renginys įvyko');
+  });
+
+  it('leaves a running meeting on the shared live label', () => {
+    const live = { date: hoursFromNow(-1), end_date: hoursFromNow(1) };
+
+    expect(useEventStatus(live, true).statusLabel.value).toBe('Vyksta dabar');
+  });
+
   it('treats an event without an end date as ending when it starts', () => {
     const { isPast } = useEventStatus({ date: hoursFromNow(-2), end_date: null });
 

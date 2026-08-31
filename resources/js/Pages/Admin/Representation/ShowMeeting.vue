@@ -127,7 +127,10 @@
               <CalendarPlus class="h-4 w-4 mr-2" />
               {{ $t('Paskelbti kalendoriuje') }}
             </DropdownMenuItem>
-            <DropdownMenuItem v-else @click="handleUnlinkCalendarEvent">
+            <!-- Gated on the event itself, not on "not announceable": a body VU SA only
+                 delegates into has nothing to announce *and* nothing to unlink. Any body
+                 can end up with an event, though, so scope is not part of this test. -->
+            <DropdownMenuItem v-else-if="calendarEvent" @click="handleUnlinkCalendarEvent">
               <CalendarX class="h-4 w-4 mr-2" />
               {{ $t('Atsieti nuo kalendoriaus') }}
             </DropdownMenuItem>

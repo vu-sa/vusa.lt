@@ -19,6 +19,7 @@ return [
         'review_intro' => 'You will be able to add this meeting to the public calendar too.',
         'review_checkbox_label' => 'Also announce in the calendar',
         'review_checkbox_hint' => 'Creates a draft calendar event carrying the meeting date and tenant. You still have to publish it before the agenda becomes public.',
+        'create_from_event' => 'Create a meeting from this event',
     ],
     'documents' => [
         'empty_title' => 'No documents yet',

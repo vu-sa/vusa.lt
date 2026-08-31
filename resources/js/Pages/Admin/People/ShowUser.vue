@@ -25,16 +25,6 @@
         <Pencil class="h-4 w-4" />
         {{ $t('Redaguoti') }}
       </Button>
-      <Button
-        v-if="canGeneratePassword && !user.has_password"
-        variant="outline"
-        size="sm"
-        class="gap-2"
-        @click="handleGeneratePassword"
-      >
-        <KeyRound class="h-4 w-4" />
-        {{ $t('Sugeneruoti slaptažodį') }}
-      </Button>
       <!-- Rendered only for someone who may actually act: an empty menu is noise. -->
       <MoreOptionsButton
         v-if="canEdit || canDelete"
@@ -54,7 +44,6 @@
             :title="$t('Dabartinės pareigos')"
             :icon="Briefcase"
             :duties="currentDuties"
-            :exclude-user-id="user.id"
             :holder="dutyHolder"
           />
 
@@ -63,7 +52,6 @@
             :title="$t('Buvusios pareigos')"
             :icon="History"
             :duties="previousDuties"
-            :exclude-user-id="user.id"
             :holder="dutyHolder"
             muted
           />
@@ -131,7 +119,7 @@
       </ShowPageGrid>
     </template>
 
-    <!-- Duties Tab: the same lists, plus who else holds each duty and how it is staffed. -->
+    <!-- Duties Tab -->
     <template #duties>
       <div class="space-y-6">
         <DutySectionList
@@ -139,10 +127,7 @@
           :title="$t('Dabartinės pareigos')"
           :icon="Briefcase"
           :duties="currentDuties"
-          :exclude-user-id="user.id"
           :holder="dutyHolder"
-          show-status
-          show-holders
         />
 
         <DutySectionList
@@ -150,10 +135,7 @@
           :title="$t('Buvusios pareigos')"
           :icon="History"
           :duties="previousDuties"
-          :exclude-user-id="user.id"
           :holder="dutyHolder"
-          show-status
-          show-holders
           muted
         />
 
@@ -220,8 +202,8 @@ import { changeDutyNameEndings } from '@/Utils/String';
 
 const props = defineProps<{
   user: App.Entities.User & {
-    current_duties: Array<App.Entities.Duty & { current_users?: App.Entities.User[]; pivot?: { start_date?: string; end_date?: string | null; additional_email?: string } }>;
-    previous_duties: Array<App.Entities.Duty & { current_users?: App.Entities.User[]; pivot?: { start_date?: string; end_date?: string | null; additional_email?: string } }>;
+    current_duties: Array<App.Entities.Duty & { pivot?: { start_date?: string; end_date?: string | null; additional_email?: string } }>;
+    previous_duties: Array<App.Entities.Duty & { pivot?: { start_date?: string; end_date?: string | null; additional_email?: string } }>;
     roles: Array<{ id: string; name: string }>;
     has_password: boolean;
   };

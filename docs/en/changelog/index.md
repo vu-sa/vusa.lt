@@ -7,6 +7,20 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.36 — Events and meetings (2026-08-31) {#v1-36}
+
+- ⭐ **A meeting can be created straight from an event** — the events list now offers "Create a meeting from this event" on any calendar entry not already standing for one. The date comes from the event, so the action window only asks which institution and what is on the agenda, and the new meeting is linked to that same event
+- ⭐ **The action window can reach other institutions** — anyone who may create meetings across their tenant, or across the whole organisation, now gets a search over every institution they are entitled to, not only the ones they hold a duty in
+- ✨ **On a phone, the event page leads with the date and place** — they used to sit below the whole description and agenda, where they were rarely seen
+- ✨ **"Other events" shows what is coming up** — the list read the whole calendar newest-first, so it offered events a year out. It now shows the soonest upcoming ones, as compact rows instead of full cards
+- 🔧 **A past meeting says "the meeting has taken place"** — an event page announcing a meeting no longer calls it an event that has passed
+- 🔧 **The action window states when an institution last met** — it showed a day count that skips vacation periods, so it matched no calendar; it now shows the date
+
+## v1.35 — Administrators and mail (2026-08-31) {#v1-35}
+
+- 🔧 **A reopened task no longer falls back to the old holders** — when a meeting's agenda task had already completed and an administrator was nominated for the term afterwards, reopening it (by changing an item's type, say) handed it back to everyone who held a seat at the time — and mailed all of them. The holders are now resolved again on the way back
+- 🔧 **Moving a cadence's dates re-staffs its tasks** — extending or shortening a term moves meetings in and out of it, but their tasks stayed with whoever held them before
+
 ## v1.34 — The member profile (2026-08-30) {#v1-34}
 
 - ✨ **The member page overview has been rearranged** — instead of an "Activity" card of counters that repeated what the duty lists already said, the overview now shows current and previous duties, with contacts moved into a sidebar list. Previous duties are dimmed so the current ones stay dominant

@@ -3,11 +3,13 @@
 namespace App\Http\Requests;
 
 use App\Enums\MeetingType;
+use App\Models\Calendar;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Rules\WithinAuthorizedTenantScope;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 
 class StoreMeetingRequest extends FormRequest
@@ -19,7 +21,17 @@ class StoreMeetingRequest extends FormRequest
      */
     public function authorize()
     {
-        return $this->user()->can('create', Meeting::class);
+        if (! $this->user()->can('create', Meeting::class)) {
+            return false;
+        }
+
+        // Linking an existing announcement rewrites that event, so it needs the event's
+        // own permission too. A missing id is left to the `exists` rule to report.
+        $calendar = $this->input('calendar_id') !== null
+            ? Calendar::query()->find($this->input('calendar_id'))
+            : null;
+
+        return $calendar === null || $this->user()->can('update', $calendar);
     }
 
     /**
@@ -42,6 +54,13 @@ class StoreMeetingRequest extends FormRequest
             'type' => ['nullable', new Enum(MeetingType::class)],
             'description' => 'nullable|string|max:1000',
             'announce_in_calendar' => 'nullable|boolean',
+            // An existing announcement this meeting is being created from. Only an
+            // unlinked event qualifies: a calendar event stands for at most one meeting.
+            'calendar_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('calendar', 'id')->whereNull('meeting_id')->whereNull('deleted_at'),
+            ],
             // Not stored: it only tells the redirect to land on the bulk agenda dialog.
             'open_bulk_agenda' => 'nullable|boolean',
             'agendaItems' => 'nullable|array',

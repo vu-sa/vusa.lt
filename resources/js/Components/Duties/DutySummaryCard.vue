@@ -18,9 +18,6 @@
       >
         {{ displayName }}
       </Link>
-      <Badge v-if="showStatus" :variant="statusVariant" class="relative z-10 mt-0.5 shrink-0 text-xs font-normal">
-        {{ statusText }}
-      </Badge>
     </div>
 
     <p v-if="showInstitution && duty.institution?.name" class="flex items-center mt-1 gap-2 text-xs leading-4 text-muted-foreground">
@@ -32,15 +29,6 @@
         </span>
       </span>
     </p>
-
-    <!-- Above the stretched link, so an avatar still opens its own popover. -->
-    <div v-if="showHolders" class="relative z-10 mt-3 flex items-center gap-2">
-      <UsersAvatarGroup v-if="visibleHolders.length" :users="visibleHolders" :max="4" :size="24" clickable />
-      <span class="text-xs text-muted-foreground">
-        {{ holderCount }}<template v-if="duty.places_to_occupy"> / {{ duty.places_to_occupy }}</template>
-        {{ $t('užimta') }}
-      </span>
-    </div>
 
     <!-- Pushed to the bottom so the meta line sits level across a row of cards
          whose titles wrap to different heights. -->
@@ -66,8 +54,6 @@ import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Building2, Calendar, Mail } from 'lucide-vue-next';
 
-import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
-import { Badge } from '@/Components/ui/badge';
 import { interactiveCardClass } from '@/Utils/interactiveCard';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { LocaleEnum } from '@/Types/enums';
@@ -77,9 +63,7 @@ export interface SummaryDuty {
   id: string | number;
   name: string;
   email?: string | null;
-  places_to_occupy?: number | null;
   institution?: { id: string | number; name: string; tenant?: { shortname?: string | null } | null } | null;
-  current_users?: App.Entities.User[];
   /** The viewing user's own tenure on this duty (present on ShowUser). */
   pivot?: { start_date?: string; end_date?: string | null; additional_email?: string; use_original_duty_name?: boolean } | null;
 }
@@ -94,16 +78,8 @@ const props = withDefaults(defineProps<{
   duty: SummaryDuty;
   /** Show the institution line under the duty name. */
   showInstitution?: boolean;
-  /**
-   * Show the occupancy badge and the holders row. Both describe how the *duty*
-   * is staffed, which says nothing on a member profile — turn them off there.
-   */
-  showStatus?: boolean;
-  showHolders?: boolean;
   /** Dim the card (e.g. previous duties). */
   muted?: boolean;
-  /** Exclude this user from the holders avatar group (e.g. the profile being viewed). */
-  excludeUserId?: string | number;
   /**
    * The person whose duty this is. When provided, the duty name's ending is
    * inflected to match their pronouns/name (e.g. "Koordinatorius" →
@@ -114,10 +90,7 @@ const props = withDefaults(defineProps<{
   useOriginalDutyName?: boolean;
 }>(), {
   showInstitution: true,
-  showStatus: true,
-  showHolders: true,
   muted: false,
-  excludeUserId: undefined,
   holder: null,
   useOriginalDutyName: false,
 });
@@ -143,36 +116,8 @@ const displayName = computed(() => {
   );
 });
 
-const holders = computed<App.Entities.User[]>(() => props.duty.current_users ?? []);
-
-const visibleHolders = computed(() =>
-  props.excludeUserId != null
-    ? holders.value.filter(user => String(user.id) !== String(props.excludeUserId))
-    : holders.value,
-);
-
-const holderCount = computed(() => holders.value.length);
-
 /** The assignment's own contact address wins over the duty's shared one. */
 const contactEmail = computed(() => props.duty.pivot?.additional_email || props.duty.email || '');
-
-const statusVariant = computed(() => {
-  const current = holderCount.value;
-  const max = props.duty.places_to_occupy || 0;
-  if (current === 0) { return 'outline'; }
-  if (max && current < max) { return 'secondary'; }
-  if (max && current > max) { return 'destructive'; }
-  return 'default';
-});
-
-const statusText = computed(() => {
-  const current = holderCount.value;
-  const max = props.duty.places_to_occupy || 0;
-  if (current === 0) { return $t('Neužimta'); }
-  if (max && current < max) { return $t('Dalinai užimta'); }
-  if (max && current > max) { return $t('Viršija limitą'); }
-  return $t('Pilnai užimta');
-});
 
 const tenureLabel = computed(() => {
   const start = props.duty.pivot?.start_date;

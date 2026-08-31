@@ -81,6 +81,38 @@ describe('ShowMeeting.vue', () => {
     expect(triggers.map(t => t.text()).join(' ')).toContain('Dokumentai');
   });
 
+  /**
+   * "Paskelbti" and "Atsieti" are not two halves of one condition: a body VU SA only
+   * delegates into has nothing to announce, and with no event nothing to unlink either.
+   * The v-else offered unlinking on every such meeting.
+   */
+  describe('the calendar menu item', () => {
+    const menuText = (props: Record<string, unknown> = {}) =>
+      createWrapper(props).find('[data-testid="dropdown-menu-content"]').text();
+
+    it('offers neither option for an external body with no announcement', () => {
+      const text = menuText();
+
+      expect(text).not.toContain('Atsieti nuo kalendoriaus');
+      expect(text).not.toContain('Paskelbti kalendoriuje');
+    });
+
+    it('offers announcing for a VU SA body with no announcement', () => {
+      const text = menuText({ governanceScope: 'vusa' });
+
+      expect(text).toContain('Paskelbti kalendoriuje');
+      expect(text).not.toContain('Atsieti nuo kalendoriaus');
+    });
+
+    it('offers unlinking once an announcement exists, whatever the body', () => {
+      const announced = { ...baseMeeting, calendar_event: { id: 7, is_draft: true } };
+
+      expect(menuText({ meeting: announced })).toContain('Atsieti nuo kalendoriaus');
+      expect(menuText({ meeting: announced, governanceScope: 'vusa' }))
+        .toContain('Atsieti nuo kalendoriaus');
+    });
+  });
+
   it('lands on the agenda tab by default', () => {
     const wrapper = createWrapper();
 

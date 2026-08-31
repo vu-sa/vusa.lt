@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Actions\Cadences\SyncCadenceDatesFromAnchors;
+use App\Actions\ResyncTaskAssigneesForCadence;
 use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Builder;
@@ -11,6 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 /**
  * A term boundary. `institution_id` NULL is the global ladder every institution
@@ -45,6 +48,55 @@ use Illuminate\Support\Carbon;
 class Cadence extends Model
 {
     use HasFactory, HasUlids;
+
+    /**
+     * The institutions this term staffs, read while it still stands.
+     *
+     * `institution_administrators.cadence_id` cascades in the database, so by `deleted`
+     * the roster is gone and there is nothing left to ask.
+     *
+     * @var Collection<int, Institution>|null
+     */
+    public ?Collection $staffedInstitutions = null;
+
+    /**
+     * Moving or dropping a term moves meetings in and out of it, and with them the tasks
+     * its administrators carry — task assignment is stored, not derived, so nothing else
+     * re-staffs them. On the model rather than in CadenceController because dates also move
+     * from the meeting side, through {@see SyncCadenceDatesFromAnchors}.
+     */
+    #[\Override]
+    protected static function booted(): void
+    {
+        static::updated(function (Cadence $cadence): void {
+            if (! $cadence->wasChanged(['start_date', 'end_date'])) {
+                return;
+            }
+
+            $previousStart = Carbon::parse($cadence->getOriginal('start_date'));
+            $previousEnd = Carbon::parse($cadence->getOriginal('end_date'));
+
+            ResyncTaskAssigneesForCadence::forTerm(
+                $cadence,
+                ResyncTaskAssigneesForCadence::institutionsStaffedOn($cadence),
+                $previousStart->min($cadence->start_date),
+                $previousEnd->max($cadence->end_date),
+            );
+        });
+
+        static::deleting(function (Cadence $cadence): void {
+            $cadence->staffedInstitutions = ResyncTaskAssigneesForCadence::institutionsStaffedOn($cadence);
+        });
+
+        static::deleted(function (Cadence $cadence): void {
+            ResyncTaskAssigneesForCadence::forTerm(
+                $cadence,
+                $cadence->staffedInstitutions ?? collect(),
+                $cadence->start_date,
+                $cadence->end_date,
+            );
+        });
+    }
 
     #[\Override]
     protected function casts(): array

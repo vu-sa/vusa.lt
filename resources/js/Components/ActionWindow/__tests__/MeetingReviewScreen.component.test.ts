@@ -4,7 +4,7 @@ import { defineComponent, h } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
 import MeetingReviewScreen from '@/Components/ActionWindow/screens/MeetingReviewScreen.vue';
-import { createActionWindowProvider, type ActionWindowContext, type ActionWindowInstitutionRef } from '@/Composables/useActionWindow';
+import { createActionWindowProvider, type ActionWindowCalendarEventRef, type ActionWindowContext, type ActionWindowInstitutionRef } from '@/Composables/useActionWindow';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
 
@@ -28,7 +28,10 @@ vi.mock('@/Composables/useActionWindowData', () => ({
  * rest, but a checkbox that always fails is worse than no checkbox — so the review must
  * not offer it, whether the scope came from the caller or from the window's own fetch.
  */
-const mountReview = (institution: ActionWindowInstitutionRef) => {
+const mountReview = (
+  institution: ActionWindowInstitutionRef,
+  calendarEvent?: ActionWindowCalendarEventRef,
+) => {
   vi.mocked(usePage).mockReturnValue(createMockPage());
 
   let window!: ActionWindowContext;
@@ -36,7 +39,7 @@ const mountReview = (institution: ActionWindowInstitutionRef) => {
   const wrapper = mount(defineComponent({
     setup() {
       window = createActionWindowProvider();
-      window.open({ flow: 'meeting.create', institution });
+      window.open({ flow: 'meeting.create', institution, calendarEvent });
       return () => h(MeetingReviewScreen);
     },
   }), { global: { stubs: { ...commonStubs } } });
@@ -82,6 +85,34 @@ describe('MeetingReviewScreen.vue', () => {
     await flushPromises();
 
     expect(announceCheckbox(wrapper).exists()).toBe(false);
+  });
+
+  /**
+   * Created from an announcement, the meeting already has one — a second draft event
+   * would list it twice in the public calendar.
+   */
+  it('names the announcement it came from and does not offer another', async () => {
+    const { wrapper } = mountReview(
+      { id: '1', name: 'VU SA Parlamentas', isInternal: true },
+      { id: 42, title: 'VU SA Parlamento posėdis', date: '2026-09-15T18:00:00.000Z' },
+    );
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('VU SA Parlamento posėdis');
+    expect(announceCheckbox(wrapper).exists()).toBe(false);
+  });
+
+  it('leaves the date unchangeable when an announcement fixed it', async () => {
+    const { wrapper } = mountReview(
+      { id: '1', name: 'VU SA Parlamentas', isInternal: true },
+      { id: 42, title: 'VU SA Parlamento posėdis', date: '2026-09-15T18:00:00.000Z' },
+    );
+    await flushPromises();
+
+    // One "change" button per editable row: type and agenda, never the locked date.
+    const changeButtons = wrapper.findAll('button').filter(button =>
+      button.text().includes('action_window.common.change'));
+    expect(changeButtons).toHaveLength(2);
   });
 
   /**

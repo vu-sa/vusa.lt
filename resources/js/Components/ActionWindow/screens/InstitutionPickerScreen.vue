@@ -11,7 +11,11 @@
       <Skeleton v-for="n in 3" :key="n" class="h-16 w-full rounded-xl" />
     </div>
 
-    <EmptyState v-else-if="visible.length === 0" :title="emptyTitle" :description="emptyDescription">
+    <EmptyState
+      v-else-if="visible.length === 0 && !canSearchAll"
+      :title="emptyTitle"
+      :description="emptyDescription"
+    >
       <template #icon>
         <Landmark class="size-10 text-muted-foreground" />
       </template>
@@ -30,6 +34,17 @@
           {{ contextLine(institution) }}
         </template>
       </ActionChoiceButton>
+
+      <!-- Coordinators file meetings for bodies they hold no duty in, and those never
+           appear in the list above. Offered only when they may actually create one. -->
+      <ActionChoiceButton
+        v-if="canSearchAll"
+        :title="$t('action_window.institution.other')"
+        :description="$t('action_window.institution.other_description')"
+        :icon="SearchIcon"
+        gradient="from-indigo-500/15 to-violet-500/15 dark:from-indigo-400/12 dark:to-violet-400/12"
+        @click="openSearch"
+      />
     </ActionChoiceList>
   </ActionWindowScreen>
 </template>
@@ -44,6 +59,7 @@ import {
   CircleAlert,
   CircleHelp,
   Landmark,
+  Search as SearchIcon,
   type LucideIcon,
 } from 'lucide-vue-next';
 
@@ -62,8 +78,8 @@ import { Skeleton } from '@/Components/ui/skeleton';
 /** Above this many institutions, scanning beats scrolling. */
 const SEARCH_THRESHOLD = 8;
 
-const { current, advance, setInstitution } = useActionWindow();
-const { institutions, isLoading, error, load } = useActionWindowData();
+const { current, advance, goTo, setInstitution } = useActionWindow();
+const { institutions, institutionSearch, isLoading, error, load } = useActionWindowData();
 const dates = useWindowDates();
 
 const query = ref('');
@@ -71,6 +87,12 @@ const query = ref('');
 onMounted(load);
 
 const showSearch = computed(() => institutions.value.length > SEARCH_THRESHOLD);
+
+// Check-ins are always about a body the caller serves in, so the wider search belongs
+// to the meeting flow alone.
+const canSearchAll = computed(() =>
+  current.value.id === 'meeting.institution' && institutionSearch.value.enabled,
+);
 
 const visible = computed(() => {
   const needle = query.value.trim().toLowerCase();
@@ -129,11 +151,21 @@ const contextLine = (institution: ActionWindowInstitution): string => {
     return parts.join(' · ');
   }
 
-  if (status.last_meeting_at && status.effective_days_since_activity !== null) {
-    return $t('action_window.institution.last_meeting', { days: String(status.effective_days_since_activity) });
+  // The date, not `effective_days_since_activity`: that counter skips vacation periods,
+  // so rendering it as "N days ago" told the reader something no calendar agrees with.
+  if (status.last_meeting_at) {
+    return $t('action_window.institution.last_meeting', { date: dates.fullDay(status.last_meeting_at) });
   }
 
   return $t('action_window.institution.no_meetings_yet');
+};
+
+/**
+ * Carries the return frame, so changing the institution from the review still lands
+ * back on the review rather than walking the rest of the flow again.
+ */
+const openSearch = () => {
+  goTo('meeting.institution.search', { returnTo: current.value.params?.returnTo });
 };
 
 /**

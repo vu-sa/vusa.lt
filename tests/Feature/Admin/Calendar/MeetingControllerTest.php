@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\InstitutionScope;
+use App\Models\Calendar;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Meeting;
@@ -652,6 +653,65 @@ describe('cross-tenant parent scoping', function (): void {
         ])->assertRedirect();
 
         expect(Meeting::latest('id')->first()->calendarEvent?->is_draft)->toBeTrue();
+    });
+
+    /**
+     * "Sukurti posėdį iš renginio" on the calendar index: the announcement already
+     * exists, so the meeting adopts it rather than creating a second one.
+     */
+    test('links an existing announcement to the meeting it is created from', function (): void {
+        $event = Calendar::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'date' => Carbon::now()->addDay()->setTime(18, 0),
+            'end_date' => Carbon::now()->addDay()->setTime(20, 0),
+        ]);
+
+        asUser($this->admin)->post(route('meetings.store'), [
+            'start_time' => $event->date->format('Y-m-d H:i'),
+            'institution_id' => $this->institution->id,
+            'calendar_id' => $event->id,
+        ])->assertRedirect();
+
+        $meeting = Meeting::latest('id')->first();
+
+        expect($event->fresh()->meeting_id)->toEqual($meeting->id);
+        // The meeting takes over the timing it was handed, rather than dropping the end.
+        expect($meeting->end_time?->format('Y-m-d H:i'))->toEqual($event->end_date->format('Y-m-d H:i'));
+        expect(Calendar::query()->count())->toEqual(1);
+    });
+
+    test('refuses an announcement that already stands for another meeting', function (): void {
+        $taken = Meeting::factory()->create(['start_time' => Carbon::now()->addDay()]);
+        $event = Calendar::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'date' => Carbon::now()->addDay(),
+            'meeting_id' => $taken->id,
+        ]);
+
+        asUser($this->admin)->post(route('meetings.store'), [
+            'start_time' => Carbon::now()->addDay()->format('Y-m-d H:i'),
+            'institution_id' => $this->institution->id,
+            'calendar_id' => $event->id,
+        ])->assertSessionHasErrors('calendar_id');
+
+        expect(Meeting::count())->toEqual($this->initialMeetingCount + 1);
+        expect($event->fresh()->meeting_id)->toEqual($taken->id);
+    });
+
+    test('refuses to link an announcement the user may not edit', function (): void {
+        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->firstOrFail();
+        $event = Calendar::factory()->create([
+            'tenant_id' => $otherTenant->id,
+            'date' => Carbon::now()->addDay(),
+        ]);
+
+        asUser($this->admin)->post(route('meetings.store'), [
+            'start_time' => Carbon::now()->addDay()->format('Y-m-d H:i'),
+            'institution_id' => $this->institution->id,
+            'calendar_id' => $event->id,
+        ])->assertStatus(403);
+
+        expect($event->fresh()->meeting_id)->toBeNull();
     });
 
     test('cannot add agenda items to a meeting the user cannot update', function (): void {

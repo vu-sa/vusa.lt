@@ -4,6 +4,8 @@ Before planning or editing, find the row whose globs match the file's path and r
 
 | Applies to | Rule file |
 | --- | --- |
+| resources/js/Components/ActionWindow/** | .ai/rules/action-window.md |
+| app/Tasks/**,app/Actions/ResyncTaskAssigneesForCadence.php,app/Models/Cadence.php | .ai/rules/actions-models.md |
 | app/Models/Task.php,app/Models/Traits/HasTasks.php,app/Http/Controllers/Admin/TaskController.php | .ai/rules/admin.md |
 | app/** | .ai/rules/app.md |
 | app/Models/Cadence.php,app/Policies/CadencePolicy.php,app/Actions/Cadences/**,app/Http/Requests/Cadences/**,resources/js/Components/Cadences/** | .ai/rules/cadences.md |
@@ -25,6 +27,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Actions/ResolveTaskAudience.php,app/Listeners/HandleTaskCreated.php,app/Actions/Schedulable/TaskNotifier.php,app/Console/Commands/SendTaskOverdueReminders.php | .ai/rules/schedulable-console-commands.md |
 | app/Services/** | .ai/rules/services.md |
 | resources/js/Pages/Admin/Settings/**, app/Settings/** | .ai/rules/settings.md |
+| app/Actions/Get*.php,app/Actions/Resolve*.php,app/Tasks/Subscribers/** | .ai/rules/subscribers.md |
 | app/Support/MorphMap.php, app/Support/LocalizedRouteSlugs.php | .ai/rules/support.md |
 | app/**, tests/Feature/System/** | .ai/rules/system.md |
 | app/Tasks/**,app/Services/MeetingCompletionService.php | .ai/rules/tasks-services.md |

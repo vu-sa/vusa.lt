@@ -786,6 +786,52 @@ class PublicPageController extends PublicController
         ];
     }
 
+    /**
+     * The events offered alongside this one: the soonest still to come first, topped up
+     * with the most recent past ones when little is coming.
+     *
+     * Not `getEventsForCalendar()` — that sorts the whole calendar newest-first, so
+     * reading from its top surfaced whatever is furthest in the future rather than what
+     * is about to happen.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function otherEventsAround(Calendar $calendar, int $limit = 4): array
+    {
+        $now = Carbon::now();
+
+        $base = fn () => Calendar::query()
+            ->with(['category', 'media', 'tenant:id,alias,shortname,fullname'])
+            ->forLocale(app()->getLocale())
+            ->where('is_draft', false)
+            ->whereKeyNot($calendar->id);
+
+        // An event that has started but not ended is still ahead of the reader, so it
+        // ranks with the upcoming ones rather than the archive.
+        $upcoming = $base()
+            ->where(fn (Builder $query) => $query->where('date', '>=', $now)->orWhere('end_date', '>=', $now))
+            ->orderBy('date')
+            ->take($limit)
+            ->get();
+
+        $events = $upcoming->count() >= $limit
+            ? $upcoming
+            : $upcoming->concat(
+                $base()
+                    ->where('date', '<', $now)
+                    ->where(fn (Builder $query) => $query->whereNull('end_date')->orWhere('end_date', '<', $now))
+                    ->orderByDesc('date')
+                    ->take($limit - $upcoming->count())
+                    ->get()
+            );
+
+        return $events->map(fn (Calendar $event) => [
+            ...$event->toArray(),
+            'images' => $event->getMedia('images'),
+            'googleLink' => $event->googleLink(),
+        ])->all();
+    }
+
     public function calendarEventMain($lang, Calendar $calendar, LocationGeocoder $geocoder)
     {
         $this->getBanners();
@@ -812,8 +858,7 @@ class PublicPageController extends PublicController
             modifiedTime: $calendar->updated_at,
         );
 
-        // Get related events without caching
-        $relatedEvents = $this->getEventsForCalendar();
+        $relatedEvents = $this->otherEventsAround($calendar);
 
         // Generate breadcrumb schema
         $locale = app()->getLocale();

@@ -1,7 +1,7 @@
 <?php
 
 use App\Actions\GetInstitutionFollowersToNotify;
-use App\Actions\GetMeetingAdministrators;
+use App\Actions\GetMeetingOverseers;
 use App\Enums\AgendaItemType;
 use App\Enums\InstitutionScope;
 use App\Events\MeetingFullyCreated;
@@ -582,8 +582,8 @@ describe('MeetingTaskSubscriber', function (): void {
         });
     });
 
-    describe('GetMeetingAdministrators', function (): void {
-        test('returns unique administrators from institution managers', function (): void {
+    describe('GetMeetingOverseers', function (): void {
+        test('returns unique overseers from institution managers', function (): void {
             $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
                 ?? Tenant::factory()->create(['type' => 'padalinys']);
 
@@ -619,10 +619,10 @@ describe('MeetingTaskSubscriber', function (): void {
                 ->hasAttached([$institution1, $institution2])
                 ->create(['start_time' => now()]);
 
-            $administrators = GetMeetingAdministrators::execute($meeting);
+            $overseers = GetMeetingOverseers::execute($meeting);
 
-            expect($administrators)->toHaveCount(2)
-                ->and($administrators->pluck('id'))->toContain($manager1->id, $manager2->id);
+            expect($overseers)->toHaveCount(2)
+                ->and($overseers->pluck('id'))->toContain($manager1->id, $manager2->id);
         });
     });
 
