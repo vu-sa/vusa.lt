@@ -37,7 +37,7 @@
         "spatie/laravel-settings": "^3.4",
         "spatie/laravel-sitemap": "^8.0",
         "spatie/laravel-translatable": "^6.11.4",
-        "spatie/schema-org": "^4.0",
+        "spatie/schema-org": "^5.0",
         "staudenmeir/eloquent-has-many-deep": "^v1.18",
         "symfony/html-sanitizer": "^8.1",
         "symfony/psr-http-message-bridge": "^8.0",
