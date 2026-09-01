@@ -38,7 +38,7 @@
           <DropdownMenuTrigger as-child>
             <Button variant="outline" size="sm" class="gap-1.5">
               <IFluentMoreHorizontal20Regular class="size-4" />
-              {{ $t('Veiksmai') }}
+              {{ $t('notifications.index.actions') }}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" class="w-56">
@@ -48,7 +48,7 @@
               @click="handleMarkAllAsRead"
             >
               <IFluentCheckmarkCircle24Regular class="size-4" />
-              {{ $t('Pažymėti visus kaip skaitytus') }}
+              {{ $t('notifications.index.mark_all_read') }}
             </DropdownMenuItem>
             <DropdownMenuItem
               v-if="readCount > 0"
@@ -56,7 +56,7 @@
               @click="handleDeleteRead"
             >
               <IFluentDelete24Regular class="size-4" />
-              {{ $t('Ištrinti perskaitytus') }}
+              {{ $t('notifications.index.delete_read') }}
             </DropdownMenuItem>
             <DropdownMenuSeparator v-if="unreadCount > 0 || readCount > 0" />
             <DropdownMenuItem
@@ -64,7 +64,7 @@
               @click="handleDeleteAll"
             >
               <IFluentDeleteDismiss24Regular class="size-4" />
-              {{ $t('Ištrinti visus') }}
+              {{ $t('notifications.index.delete_all') }}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -87,12 +87,12 @@
           </div>
         </div>
         <h3 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mt-2">
-          {{ activeFilter === 'unread' ? $t('Naujų pranešimų nėra') : $t('Pranešimų nėra') }}
+          {{ activeFilter === 'unread' ? $t('notifications.index.empty_unread_title') : $t('notifications.index.empty_all_title') }}
         </h3>
         <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-1 text-center max-w-sm">
           {{ activeFilter === 'unread'
-            ? $t('Visus pranešimus perskaitėte! Nauji pranešimai bus rodomi čia.')
-            : $t('Kol kas pranešimų nėra. Jie bus rodomi čia, kai gausite naujų.')
+            ? $t('notifications.index.empty_unread_body')
+            : $t('notifications.index.empty_all_body')
           }}
         </p>
         <Button
@@ -102,7 +102,7 @@
           class="mt-4"
           @click="activeFilter = 'all'"
         >
-          {{ $t('Rodyti visus pranešimus') }}
+          {{ $t('notifications.view_all') }}
         </Button>
       </div>
 
@@ -197,7 +197,7 @@ const readCount = computed(() =>
 );
 
 const filters = computed(() => [
-  { value: 'unread' as FilterValue, label: $t('Neskaityti'), count: unreadCount.value },
+  { value: 'unread' as FilterValue, label: $t('notifications.index.filter_unread'), count: unreadCount.value },
   { value: 'all' as FilterValue, label: $t('Visi'), count: props.notifications.length },
 ]);
 
@@ -225,7 +225,7 @@ const handleDelete = (id: string) => {
     preserveScroll: true,
     only: ['notifications'],
     onSuccess: () => {
-      toasts.success($t('Pranešimas ištrintas.'));
+      toasts.success($t('notifications.index.deleted'));
     },
   });
 };
@@ -235,7 +235,7 @@ const handleMarkAllAsRead = () => {
     preserveScroll: true,
     only: ['notifications'],
     onSuccess: () => {
-      toasts.success($t('Visi pranešimai pažymėti kaip perskaityti.'));
+      toasts.success($t('notifications.index.all_marked_read'));
     },
   });
 };
@@ -246,7 +246,7 @@ const handleDeleteRead = () => {
     only: ['notifications'],
     data: { read_only: true },
     onSuccess: () => {
-      toasts.success($t('Perskaityti pranešimai ištrinti.'));
+      toasts.success($t('notifications.index.read_deleted'));
     },
   });
 };
@@ -256,7 +256,7 @@ const handleDeleteAll = () => {
     preserveScroll: true,
     only: ['notifications'],
     onSuccess: () => {
-      toasts.success($t('Visi pranešimai ištrinti.'));
+      toasts.success($t('notifications.index.all_deleted'));
     },
   });
 };

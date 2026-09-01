@@ -1,10 +1,10 @@
 <template>
   <FormElement>
     <template #title>
-      {{ $t('Push pranešimų įrenginiai') }}
+      {{ $t('notifications.push_devices.title') }}
     </template>
     <template #description>
-      {{ $t('Valdykite įrenginius, kuriuose įjungti push pranešimai.') }}
+      {{ $t('notifications.push_devices.description') }}
     </template>
 
     <div class="space-y-4">
@@ -14,7 +14,7 @@
           <component :is="currentDeviceIcon" class="size-5 text-zinc-500" />
           <div>
             <p class="font-medium">
-              {{ $t('Šis įrenginys') }}
+              {{ $t('notifications.push_devices.this_device') }}
             </p>
             <p class="text-sm text-muted-foreground">
               {{ currentDeviceStatus }}
@@ -31,7 +31,7 @@
           >
             <BellPlus v-if="!isSubscribingToPush" class="size-4" />
             <Loader2 v-else class="size-4 animate-spin" />
-            {{ $t('Įjungti') }}
+            {{ $t('notifications.channels.push_enable') }}
           </Button>
           <Button
             v-else-if="hasPushSubscription"
@@ -42,13 +42,13 @@
           >
             <BellOff v-if="!isUnsubscribingFromPush" class="size-4" />
             <Loader2 v-else class="size-4 animate-spin" />
-            {{ $t('Išjungti') }}
+            {{ $t('notifications.channels.push_disable') }}
           </Button>
           <span v-else-if="pushPermission === 'denied'" class="text-sm text-destructive">
-            {{ $t('Užblokuota naršyklėje') }}
+            {{ $t('notifications.push_devices.blocked_in_browser') }}
           </span>
           <span v-else-if="!pushSupported" class="text-sm text-muted-foreground">
-            {{ $t('Nepalaikoma') }}
+            {{ $t('notifications.push_devices.not_supported') }}
           </span>
         </div>
       </div>
@@ -56,7 +56,7 @@
       <!-- Device list header with refresh button -->
       <div class="flex items-center justify-between">
         <h4 class="font-medium text-sm">
-          {{ $t('Visi įrenginiai') }} ({{ devices.length }})
+          {{ $t('notifications.push_devices.all_devices') }} ({{ devices.length }})
         </h4>
         <Button
           variant="ghost"
@@ -77,7 +77,7 @@
       <div v-else-if="devices.length === 0" class="text-center py-8 text-muted-foreground">
         <PhoneOff class="size-8 mx-auto mb-2 opacity-50" />
         <p class="text-sm">
-          {{ $t('Nėra įrenginių su įjungtais push pranešimais') }}
+          {{ $t('notifications.push_devices.no_devices') }}
         </p>
       </div>
 
@@ -94,17 +94,17 @@
               <div>
                 <div class="flex items-center gap-2">
                   <p class="font-medium text-sm">
-                    {{ device.device_name || $t('Nežinomas įrenginys') }}
+                    {{ device.device_name || $t('notifications.push_devices.unknown_device') }}
                   </p>
                   <span
                     v-if="device.isCurrentDevice"
                     class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
                   >
-                    {{ $t('Šis') }}
+                    {{ $t('notifications.push_devices.current_badge') }}
                   </span>
                 </div>
                 <p class="text-xs text-muted-foreground">
-                  {{ device.created_at ? $t('Pridėta') + ': ' + formatDate(device.created_at) : '' }}
+                  {{ device.created_at ? $t('notifications.push_devices.added_at') + ': ' + formatDate(device.created_at) : '' }}
                 </p>
               </div>
             </div>
@@ -133,10 +133,10 @@
         >
           <BellRing v-if="!testHttp.processing" class="size-4" />
           <Loader2 v-else class="size-4 animate-spin" />
-          {{ $t('Siųsti bandomąjį pranešimą') }}
+          {{ $t('notifications.push_devices.send_test') }}
         </Button>
         <p v-if="testHttp.recentlySuccessful" class="text-sm text-green-600 dark:text-green-400 mt-2">
-          {{ $t('Bandomasis pranešimas išsiųstas!') }}
+          {{ $t('notifications.push_devices.test_sent') }}
         </p>
       </div>
     </div>
@@ -186,15 +186,15 @@ const currentDeviceIcon = computed(() => {
 // Get current device status text
 const currentDeviceStatus = computed(() => {
   if (!pushSupported.value) {
-    return $t('Push pranešimai nepalaikomi šioje naršyklėje');
+    return $t('notifications.push_devices.status_not_supported');
   }
   if (pushPermission.value === 'denied') {
-    return $t('Push pranešimai užblokuoti naršyklės nustatymuose');
+    return $t('notifications.push_devices.status_blocked');
   }
   if (hasPushSubscription.value) {
-    return $t('Push pranešimai įjungti');
+    return $t('notifications.push_devices.status_enabled');
   }
-  return $t('Push pranešimai išjungti');
+  return $t('notifications.push_devices.status_disabled');
 });
 
 // Get appropriate icon for device

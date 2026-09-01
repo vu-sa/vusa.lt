@@ -35,6 +35,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 
 import {
   getNotificationIcon,
@@ -74,7 +75,7 @@ const IconComponent = computed(() => {
 
 const title = computed(() => {
   if (!hasValidNotification.value) {
-    return $t('Naujas pranešimas');
+    return $t('notifications.toast_fallback_title');
   }
   return getNotificationTitle(props.notification!);
 });
