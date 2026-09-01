@@ -13,10 +13,27 @@ use Illuminate\Support\Facades\Storage;
                            {--from= : Start from specific step}')]
 class DeploymentRun extends Command
 {
-    private array $deploymentSteps = [
+    /**
+     * The ordered deployment pipeline.
+     *
+     * Order is the contract: everything between `maintenance` and `online` is visible downtime, so a
+     * step earns its place there only if it cannot run against a live site. `backup` and `search` sit
+     * outside that span deliberately — see their own notes.
+     *
+     * `DeploymentResume` reads this to work out what comes next, so the two cannot drift.
+     *
+     * @var array<string, array{name: string, command: string, args?: array<string, mixed>, critical: bool}>
+     */
+    public const array STEPS = [
+        // Outside the maintenance window on purpose. deployment:backup dumps with
+        // --single-transaction, which is consistent and non-blocking on InnoDB, so it is safe to run
+        // against a live site — and the deploy workflow already does exactly that in its pre-flight
+        // phase, before the maintenance page goes up. This step then no-ops via --skip-if-recent.
+        // It stays in the pipeline so a hand-run `deployment:run` still takes a backup.
         'backup' => [
             'name' => 'Create database backup',
             'command' => 'deployment:backup',
+            'args' => ['--skip-if-recent' => 30],
             'critical' => true,
         ],
         'maintenance' => [
@@ -53,21 +70,44 @@ class DeploymentRun extends Command
             'command' => 'optimize',
             'critical' => true,
         ],
-        'search' => [
-            'name' => 'Reindex search',
-            'command' => 'search:reindex',
-            'critical' => false, // Non-critical - can continue if fails
+        // Must come after `optimize`: optimize:clear runs cache:clear, and both restart signals are
+        // cache keys — restarting before it would wipe the signal and leave the workers running the
+        // old code. queue:work processes and reverb:start only pick up new code when told to; nothing
+        // else in this pipeline tells them, and the deploy has already moved vendor/ out from under
+        // them. Supervisor does the actual restart once they exit.
+        'workers' => [
+            'name' => 'Restart queue workers',
+            'command' => 'queue:restart',
+            'critical' => true,
         ],
         'online' => [
             'name' => 'Exit maintenance mode',
             'command' => 'up',
             'critical' => true,
-            'always_run' => true, // Always attempt to bring site back online
         ],
+        // After `online`, unlike the queue workers: broadcasting is not needed for the site to serve
+        // pages, so a Reverb hiccup should never hold the outage open or fail the deploy.
+        'reverb' => [
+            'name' => 'Restart Reverb server',
+            'command' => 'reverb:restart',
+            'critical' => false,
+        ],
+        // After `online` on purpose. This drops and recreates all 14 Typesense collections and was
+        // measured at 53-63s on every deploy — the single largest avoidable chunk of downtime, paid
+        // even for a CSS-only change. Running it with the site up trades a full outage for degraded
+        // search, and only for the collection currently being rebuilt (1-16s each).
+        'search' => [
+            'name' => 'Reindex search',
+            'command' => 'search:reindex',
+            'critical' => false,
+        ],
+        // Critical so a failure actually reddens the deploy. It is the last step, so failing here
+        // cannot strand the site in maintenance mode — and the check itself no longer takes the site
+        // down, see DeploymentHealthCheck::handleHealthCheckFailure().
         'health' => [
             'name' => 'Perform health check',
             'command' => 'deployment:health-check',
-            'critical' => false, // Changed to non-critical to avoid breaking deployment
+            'critical' => true,
         ],
     ];
 
@@ -90,7 +130,7 @@ class DeploymentRun extends Command
         $startFound = ! $fromStep; // If no from step, start from beginning
         $overallSuccess = true;
 
-        foreach ($this->deploymentSteps as $stepKey => $step) {
+        foreach (self::STEPS as $stepKey => $step) {
             // Skip steps until we reach the starting point
             if (! $startFound) {
                 if ($stepKey === $fromStep) {
@@ -119,7 +159,7 @@ class DeploymentRun extends Command
                 $this->error("❌ {$step['name']} failed: ".$e->getMessage());
                 $this->updateDeploymentState($stepKey, 'failed', $e->getMessage());
 
-                if ($step['critical'] ?? true) {
+                if ($step['critical']) {
                     $overallSuccess = false;
 
                     // If this isn't the maintenance exit step, try to bring site back online
@@ -155,7 +195,7 @@ class DeploymentRun extends Command
 
         $startFound = ! $fromStep;
 
-        foreach ($this->deploymentSteps as $stepKey => $step) {
+        foreach (self::STEPS as $stepKey => $step) {
             if (! $startFound) {
                 if ($stepKey === $fromStep) {
                     $startFound = true;
@@ -166,7 +206,7 @@ class DeploymentRun extends Command
                 }
             }
 
-            $critical = $step['critical'] ?? true;
+            $critical = $step['critical'];
             $icon = $critical ? '🔴' : '🟡';
             $type = $critical ? 'critical' : 'non-critical';
 

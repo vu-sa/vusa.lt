@@ -15,162 +15,17 @@ jobs:
   deploy:
     # Only deploy if tests were successful or this is a manual trigger
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
-    runs-on: ubuntu-24.04
-    environment: Production
-    steps:
-      # Pin to the exact commit that triggered this run. Without an explicit ref, a
-      # workflow_run trigger checks out main's HEAD *at the time this job starts* — which
-      # can drift from the commit the server later `git`s to, if another push landed in
-      # between. That reintroduces the same app-code/vendor mismatch this workflow exists
-      # to prevent. The "Deploy to production" step resets the server to this same SHA.
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.5'
-          extensions: dom, curl, libxml, mbstring, zip, fileinfo
-
-      # Only the package download cache is cached — never `vendor` itself.
-      # `restore-keys` falls back to a cache built from a *different* composer.lock, and a
-      # restored `vendor` keeps files from package versions that are no longer installed.
-      # That shipped a stale intervention/image-laravel and broke `artisan optimize` in
-      # production. Composer rebuilds vendor quickly from the warm download cache.
-      - name: Cache Composer downloads
-        uses: actions/cache@v6
-        with:
-          path: ~/.composer/cache
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-composer-
-
-      - name: Install Composer dependencies
-        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist --optimize-autoloader
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install npm dependencies
-        run: npm ci
-
-      - name: Build production frontend assets
-        run: |
-          VITE_ARCHYVAS_PASSWORD=${{ secrets.ARCHYVAS_PASSWORD }} \
-          VITE_ATSTOVAI_PASSWORD=${{ secrets.ATSTOVAI_PASSWORD }} \
-          VITE_SHAREPOINT_CLIENT_ID=${{ secrets.SHAREPOINT_CLIENT_ID }} \
-          VITE_SHAREPOINT_TENANT_ID=${{ secrets.SHAREPOINT_TENANT_ID }} \
-          VITE_REVERB_APP_KEY=${{ secrets.REVERB_APP_KEY }} \
-          VITE_REVERB_HOST=${{ vars.REVERB_HOST }} \
-          VITE_REVERB_PORT=${{ vars.REVERB_PORT }} \
-          VITE_REVERB_SCHEME=${{ vars.REVERB_SCHEME }} \
-          npm run build
-
-      - name: Install SSH keys
-        run: |
-          install -m 600 -D /dev/null ~/.ssh/id_rsa
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
-
-      - name: Package build artifacts
-        run: |
-          tar -czf build.tar.gz public/build
-          tar -czf vendor.tar.gz vendor
-
-      # Build docs if needed
-      - name: Build docs
-        run: |
-          npm run docs:build
-          tar -czf docs.tar.gz -C public/docs .
-
-      # Upload build artifacts
-      #
-      # deployment/maintenance.php goes up FIRST, straight to storage/framework/maintenance.php.
-      # public/index.php requires that file — if present — before vendor/autoload.php, so this
-      # takes the site down via plain scp, with no PHP boot involved. That closes the window
-      # this workflow exists to close: once "Deploy to production" resets the checked-out code
-      # and swaps vendor/, nothing has booted yet to crash on the still-mismatched pair.
-      - name: Upload build artifacts
-        run: |
-          echo "Uploading maintenance fallback..."
-          scp deployment/maintenance.php ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/storage/framework/maintenance.php
-
-          echo "Uploading build artifacts..."
-          scp build.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/build.tar.gz
-          scp vendor.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/vendor.tar.gz
-
-          # Upload docs changes
-          echo "Uploading documentation..."
-          if [ -f docs.tar.gz ]; then
-            scp docs.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/docs.tar.gz
-          fi
-
-      # Run deployment process
-      #
-      # By this point storage/framework/maintenance.php (uploaded above) already has the site
-      # showing the static fallback page, so nothing here needs to boot Laravel to go "down".
-      #
-      # Everything up to and including the vendor/ swap is plain shell — no artisan call:
-      # every `php artisan ...` invocation boots the full framework, including service
-      # providers that reference app classes, before the command itself runs. If a deploy
-      # adds/changes a Composer dependency, booting against checked-out new app code paired
-      # with the still-old vendor/ fatals with a missing-class error — which is exactly what
-      # broke this workflow before: `git pull` landed the new code, then `artisan
-      # deployment:run` was the very first artisan call and crashed on boot, before its own
-      # `deployment:deploy-assets` step ever got a chance to swap vendor/ in.
-      #
-      # `rm -f bootstrap/cache/*.php` clears the cached package manifest for the same reason.
-      # PackageManifest only rebuilds bootstrap/cache/packages.php when the file is *missing* —
-      # a changed vendor/ never invalidates it. So a deploy that drops a Composer package (e.g.
-      # ralphjsmit/laravel-seo) leaves the removed provider listed there, and the first artisan
-      # boot dies with "Class ... not found" before `optimize:clear` can run `clear-compiled`.
-      # Plain shell, so it happens with no PHP boot; `deployment:run`'s optimize step rebuilds
-      # every cache it removes.
-      #
-      # The `echo … > storage/framework/down` line exists purely as a recovery safety net: it
-      # makes `maintenanceMode()->active()` true so a manual `artisan up` (run by hand over SSH
-      # to recover a stuck deploy) actually deletes storage/framework/maintenance.php instead of
-      # short-circuiting with "Application is already up" and leaving the site stuck down.
-      # `deployment:run`'s own `maintenance` step overwrites both files with real content moments
-      # later, so this placeholder is never seen by a successful run.
-      - name: Deploy to production
-        run: |
-          ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && \
-          echo '{}' > storage/framework/down && \
-          rm -rf vendor.new && \
-          mkdir vendor.new && \
-          tar -xzf vendor.tar.gz -C vendor.new && \
-          git fetch origin && \
-          git reset --hard ${{ github.event.workflow_run.head_sha || github.sha }} && \
-          rm -rf vendor.old && \
-          mv vendor vendor.old && \
-          mv vendor.new/vendor vendor && \
-          rm -rf vendor.new vendor.tar.gz && \
-          rm -f bootstrap/cache/*.php && \
-          /opt/php85/bin/php artisan deployment:run"
-
-      # Resume deployment if failed (optional recovery step)
-      - name: Resume deployment
-        if: failure()
-        run: |
-          echo "⚠️ Deployment failed, attempting to resume..."
-          ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && \
-          rm -f bootstrap/cache/*.php && \
-          /opt/php85/bin/php artisan deployment:resume"
-
-      # Clean up SSH keys
-      - name: Cleanup
-        run: |
-          rm -rf ~/.ssh
-
-
-      # Notify about deployment completion
-      - name: Deployment notification
-        if: success()
-        run: |
-          echo "::notice::Deployment to production completed successfully at $(date)"
+    uses: ./.github/workflows/deploy-common.yml
+    secrets: inherit
+    with:
+      environment: Production
+      # Pin to the exact commit that triggered this run, on the runner and on the server alike.
+      # Without an explicit ref, a workflow_run trigger checks out main's HEAD *at the time this job
+      # starts* — which can drift from the commit the server later `git`s to, if another push landed
+      # in between. That reintroduces the app-code/vendor mismatch this workflow exists to prevent.
+      ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      remote-sha: ${{ github.event.workflow_run.head_sha || github.sha }}
+      run-backup: true
+      # Never on production: its repo root holds ~1 GB of untracked directories (two copies of the
+      # old LimeSurvey install) that `git clean -fd` would silently delete.
+      clean-untracked: false

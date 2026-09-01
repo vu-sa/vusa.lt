@@ -9,6 +9,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Models/Task.php,app/Models/Traits/HasTasks.php,app/Http/Controllers/Admin/TaskController.php | .ai/rules/admin.md |
 | app/** | .ai/rules/app.md |
 | app/Models/Cadence.php,app/Policies/CadencePolicy.php,app/Actions/Cadences/**,app/Http/Requests/Cadences/**,resources/js/Components/Cadences/** | .ai/rules/cadences.md |
+| .github/workflows/deploy*.yml,app/Console/Commands/Deployment*.php,app/Console/Commands/StagingRefreshDatabase.php,deployment/** | .ai/rules/commands-console-commands.md |
 | app/Services/Typesense/**, app/Console/Commands/GenerateTypesenseSearchKey.php', app/Console/Commands/DocsCoverageCommand.php, app/Support/Docs/** | .ai/rules/commands.md |
 | resources/js/Composables/useAgendaItemStyling.ts | .ai/rules/composables.md |
 | config/vusa.php | .ai/rules/config.md |

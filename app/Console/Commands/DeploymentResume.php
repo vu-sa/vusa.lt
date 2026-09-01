@@ -73,20 +73,21 @@ class DeploymentResume extends Command
         return null;
     }
 
+    /**
+     * Derived from DeploymentRun::STEPS rather than restated. A hand-maintained copy of this map had
+     * already drifted: it omitted `clear-caches` entirely and ordered `search` before `online`, so a
+     * resume after `migrate` silently skipped optimize:clear.
+     */
     private function getNextStep(string $currentStep): ?string
     {
-        $steps = [
-            'backup' => 'maintenance',
-            'maintenance' => 'assets',
-            'assets' => 'migrate',
-            'migrate' => 'optimize',
-            'optimize' => 'search',
-            'search' => 'health',
-            'health' => 'online',
-            'online' => null, // Last step
-        ];
+        $keys = array_keys(DeploymentRun::STEPS);
+        $position = array_search($currentStep, $keys, strict: true);
 
-        return $steps[$currentStep] ?? null;
+        if ($position === false) {
+            return null;
+        }
+
+        return $keys[$position + 1] ?? null;
     }
 
     private function showDeploymentState(): int

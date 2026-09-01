@@ -1,0 +1,290 @@
+name: Common Deploy
+
+# The shared body of deploy.yml and deploy-staging.yml. Those two were ~90 duplicated lines that had
+# already drifted apart in ways nobody intended — staging swallowed deploy failures with `|| true`,
+# production never ran `git clean`, only one of them cleaned up its SSH keys. Keeping the mechanism
+# in one place is what stops that happening again; the callers only supply what genuinely differs.
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'GitHub Environment supplying secrets and vars'
+        required: true
+        type: string
+      ref:
+        description: 'Ref to check out on the runner (what gets built)'
+        required: true
+        type: string
+      remote-sha:
+        description: 'Commit the server resets to. Mutually exclusive with remote-branch.'
+        required: false
+        default: ''
+        type: string
+      remote-branch:
+        description: 'Branch the server checks out and resets to. Takes precedence over remote-sha.'
+        required: false
+        default: ''
+        type: string
+      run-backup:
+        description: 'Take a database backup during the pre-flight phase'
+        required: false
+        default: true
+        type: boolean
+      clean-untracked:
+        description: >
+          Run `git clean -fd` after the reset. Staging needs it because it switches between arbitrary
+          branches and accumulates files from the ones it left. Production must NOT: its repo root
+          holds ~1 GB of untracked directories (two copies of the old LimeSurvey install) that a
+          clean would silently destroy, and production only ever moves along main anyway.
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    environment: ${{ inputs.environment }}
+    # A hung ssh would otherwise sit on the runner for the 6-hour default.
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: dom, curl, libxml, mbstring, zip, fileinfo
+
+      # Only the package download cache is cached — never `vendor` itself.
+      # `restore-keys` falls back to a cache built from a *different* composer.lock, and a
+      # restored `vendor` keeps files from package versions that are no longer installed.
+      # That shipped a stale intervention/image-laravel and broke `artisan optimize` in
+      # production. Composer rebuilds vendor quickly from the warm download cache.
+      - name: Cache Composer downloads
+        uses: actions/cache@v6
+        with:
+          path: ~/.composer/cache
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build frontend assets
+        run: |
+          VITE_SHAREPOINT_CLIENT_ID=${{ secrets.SHAREPOINT_CLIENT_ID }} \
+          VITE_SHAREPOINT_TENANT_ID=${{ secrets.SHAREPOINT_TENANT_ID }} \
+          VITE_REVERB_APP_KEY=${{ secrets.REVERB_APP_KEY }} \
+          VITE_REVERB_HOST=${{ vars.REVERB_HOST }} \
+          VITE_REVERB_PORT=${{ vars.REVERB_PORT }} \
+          VITE_REVERB_SCHEME=${{ vars.REVERB_SCHEME }} \
+          npm run build
+
+      - name: Build docs
+        run: |
+          npm run docs:build
+          tar -czf docs.tar.gz -C public/docs .
+
+      - name: Package build artifacts
+        run: |
+          tar -czf build.tar.gz public/build
+          tar -czf vendor.tar.gz vendor
+
+      # Two changes from the old inline version, both aimed at the intermittent failures where a run
+      # dies on this step (or on the first ssh) and a plain re-run succeeds:
+      #
+      # 1. The host key comes from the SSH_KNOWN_HOSTS variable when it is set, instead of an
+      #    ssh-keyscan on every run. That removes a network round-trip from the critical path — the
+      #    exact call that failed with exit 1 after its 5s timeout in run 33260347592 — and it is the
+      #    correct thing regardless: keyscanning the host you are about to trust verifies nothing.
+      #    Falling back to a *retried* keyscan keeps the workflow working before the variable is set.
+      #
+      # 2. ControlMaster multiplexing. A deploy makes six connections (keyscan, four scp, ssh); with
+      #    a shared master they become one TCP session, so the uploads are faster and there are five
+      #    fewer chances to hit a blip. The server has no firewall and no fail2ban (verified), so the
+      #    failures are upstream network — which is also why every remote step below is retried.
+      - name: Configure SSH
+        run: |
+          install -m 600 -D /dev/null ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+
+          if [ -n "${{ vars.SSH_KNOWN_HOSTS }}" ]; then
+            echo "${{ vars.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+            echo "Using pinned SSH_KNOWN_HOSTS."
+          else
+            echo "::warning::SSH_KNOWN_HOSTS is not set; falling back to ssh-keyscan (trust-on-first-use)."
+            for attempt in 1 2 3; do
+              if ssh-keyscan -T 20 -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts 2>/dev/null \
+                 && [ -s ~/.ssh/known_hosts ]; then
+                break
+              fi
+              echo "ssh-keyscan attempt $attempt failed; retrying in $((attempt * 10))s"
+              sleep $((attempt * 10))
+            done
+            [ -s ~/.ssh/known_hosts ] || { echo "::error::Could not obtain host key."; exit 1; }
+          fi
+          chmod 600 ~/.ssh/known_hosts
+
+          cat > ~/.ssh/config <<'SSH_CONFIG'
+          Host deploy-target
+            User ${{ secrets.SSH_USER }}
+            HostName ${{ secrets.SSH_HOST }}
+            IdentityFile ~/.ssh/id_rsa
+            ControlMaster auto
+            ControlPath ~/.ssh/cm-%r@%h:%p
+            ControlPersist 10m
+            ConnectTimeout 15
+            ServerAliveInterval 15
+            ServerAliveCountMax 4
+          SSH_CONFIG
+          chmod 600 ~/.ssh/config
+
+          # Establish the master connection up front, with retries, so a transient network failure
+          # costs a retry rather than the whole run.
+          for attempt in 1 2 3; do
+            if ssh -T deploy-target 'echo "SSH connection established"'; then
+              exit 0
+            fi
+            echo "SSH attempt $attempt failed; retrying in $((attempt * 15))s"
+            sleep $((attempt * 15))
+          done
+          echo "::error::Could not reach the deploy host after 3 attempts."
+          exit 1
+
+      # Site is still UP. These are just files landing at the repo root; nothing reads them yet.
+      # maintenance.php is deliberately NOT among them — see the step that uploads it below.
+      - name: Upload build artifacts
+        run: |
+          scp build.tar.gz vendor.tar.gz docs.tar.gz deploy-target:${{ vars.SITE_DIR }}/
+
+      # Still UP, and this is the point of the whole restructure.
+      #
+      # Everything here used to run inside the maintenance window, and measurably dominated it: the
+      # vendor extract took 10-90s and the backup 8-48s across two observed production deploys, out
+      # of a 1m33s-4m18s outage. None of it needs the site down — vendor.new is a scratch directory
+      # the running app never looks at, `git fetch` only writes to .git, and deployment:backup dumps
+      # with --single-transaction, which is consistent and non-blocking on InnoDB.
+      #
+      # rm -rf of the previous deploy's vendor.old also moves here: deleting ~30k files was part of
+      # the swap, and on this VPS it was not fast.
+      - name: Pre-flight (site still online)
+        run: |
+          ssh -T deploy-target <<'PREFLIGHT'
+            set -euo pipefail
+            cd ${{ vars.SITE_DIR }}
+
+            # Only reclaim vendor.old once vendor/ is known good. A deploy that died between
+            # `mv vendor vendor.old` and `mv vendor.new/vendor vendor` leaves the ONLY working copy
+            # in vendor.old — deleting it there would take the site from "failed deploy" to
+            # "unrecoverable without a re-run".
+            if [ -d vendor ]; then
+              rm -rf vendor.old
+            else
+              echo "::warning::vendor/ is missing — a previous deploy failed mid-swap. Keeping vendor.old."
+            fi
+
+            rm -rf vendor.new
+            mkdir vendor.new
+            tar -xzf vendor.tar.gz -C vendor.new
+            rm -f vendor.tar.gz
+
+            git fetch --all --prune
+
+            if [ "${{ inputs.run-backup }}" = "true" ]; then
+              /opt/php85/bin/php artisan deployment:backup
+            fi
+          PREFLIGHT
+
+      # THIS is where the site goes down, and the window is everything from here to `artisan up`.
+      #
+      # public/index.php requires storage/framework/maintenance.php — when present — before
+      # vendor/autoload.php, so a plain scp takes the site down with no PHP boot involved. That
+      # matters because the next step deliberately leaves app code and vendor/ disagreeing for a
+      # moment, and anything that booted in between would fatal on a missing class.
+      - name: Enter maintenance mode
+        run: |
+          scp deployment/maintenance.php deploy-target:${{ vars.SITE_DIR }}/storage/framework/maintenance.php
+
+      # Everything up to and including the vendor/ swap is plain shell — no artisan call: every
+      # `php artisan ...` boots the full framework, including service providers that reference app
+      # classes, before the command itself runs. If a deploy adds or changes a Composer dependency,
+      # booting checked-out new app code against the still-old vendor/ fatals with a missing-class
+      # error. That is exactly what broke this workflow before.
+      #
+      # `rm -f bootstrap/cache/*.php` clears the cached package manifest for the same reason.
+      # PackageManifest only rebuilds bootstrap/cache/packages.php when the file is *missing* — a
+      # changed vendor/ never invalidates it. So a deploy that drops a Composer package leaves the
+      # removed provider listed there, and the first artisan boot dies before optimize:clear can run.
+      #
+      # `echo … > storage/framework/down` is a recovery net: it makes maintenanceMode()->active()
+      # true so a manual `artisan up` over SSH actually deletes storage/framework/maintenance.php
+      # instead of short-circuiting on "Application is already up" and leaving the site stuck down.
+      - name: Deploy
+        id: deploy
+        run: |
+          ssh -T deploy-target <<'DEPLOY'
+            set -euo pipefail
+            cd ${{ vars.SITE_DIR }}
+
+            echo '{}' > storage/framework/down
+
+            if [ -n "${{ inputs.remote-branch }}" ]; then
+              git checkout "${{ inputs.remote-branch }}" 2>/dev/null \
+                || git checkout -b "${{ inputs.remote-branch }}" "origin/${{ inputs.remote-branch }}"
+              git reset --hard "origin/${{ inputs.remote-branch }}"
+            else
+              git reset --hard "${{ inputs.remote-sha }}"
+            fi
+
+            # Drop files left by another branch. The deploy archives and vendor.new/.old sit at the
+            # repo root; they are gitignored so a plain `git clean -fd` spares them, but they are
+            # named explicitly because losing them mid-deploy is unrecoverable and silent.
+            if [ "${{ inputs.clean-untracked }}" = "true" ]; then
+              git clean -fd -e build.tar.gz -e docs.tar.gz -e vendor.tar.gz -e vendor.new -e vendor.old
+            fi
+
+            # `[ -d vendor ]` covers resuming after a deploy that died mid-swap, where vendor/ is
+            # already gone and vendor.old holds the previous copy.
+            if [ -d vendor ]; then
+              rm -rf vendor.old
+              mv vendor vendor.old
+            fi
+            mv vendor.new/vendor vendor
+            rm -rf vendor.new
+
+            rm -f bootstrap/cache/*.php
+
+            /opt/php85/bin/php artisan deployment:run
+          DEPLOY
+
+      # Only when the deploy itself failed. This used to fire on *any* step failure, including a
+      # failure to set up SSH — so it tried to SSH in when SSH was precisely what was broken, and
+      # buried the real error under a second, more confusing one.
+      - name: Resume deployment
+        if: failure() && steps.deploy.outcome == 'failure'
+        run: |
+          echo "⚠️ Deployment failed, attempting to resume..."
+          ssh -T deploy-target "cd ${{ vars.SITE_DIR }} && \
+          rm -f bootstrap/cache/*.php && \
+          /opt/php85/bin/php artisan deployment:resume"
+
+      - name: Cleanup
+        if: always()
+        run: |
+          ssh -O exit deploy-target 2>/dev/null || true
+          rm -rf ~/.ssh
