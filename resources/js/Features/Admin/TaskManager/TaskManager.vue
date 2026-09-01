@@ -9,8 +9,8 @@
           :disabled
           :options="filterOptions"
         />
-        <Badge v-if="filteredTasks.length > 0" variant="secondary" class="tabular-nums">
-          {{ filteredTasks.length }}
+        <Badge v-if="visibleCount > 0" variant="secondary" class="tabular-nums">
+          {{ visibleCount }}
         </Badge>
       </div>
 
@@ -48,9 +48,14 @@
       v-if="!isMobile"
       :key="taskFilterKey"
       :tasks="filteredTasks"
+      :loading-task-id
+      :enable-pagination="!serverPaginated"
+      :enable-filtering="!serverPaginated"
       @open-meeting-modal="(task) => emit('openMeetingModal', task)"
       @open-check-in-dialog="(task) => emit('openCheckInDialog', task)"
       @open-task-detail="(task) => emit('openTaskDetail', task)"
+      @update:completed="handleTaskCompletion"
+      @delete="confirmDelete"
     />
 
     <!-- Task cards (mobile) -->
@@ -77,22 +82,43 @@
         @open-check-in-dialog="(t) => emit('openCheckInDialog', t)"
         @open-task-detail="(t) => emit('openTaskDetail', t)"
         @update:completed="handleTaskCompletion"
+        @delete="confirmDelete"
       />
     </div>
 
-    <!-- Create task dialog (async loaded) -->
+    <!-- Deleting a task is permanent, and for automatic tasks it is a super-admin escape
+         hatch rather than an everyday action — always ask first. -->
+    <AlertDialog v-model:open="deleteDialogOpen">
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{{ $t('tasks.delete_confirm_title') }}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {{ $t('tasks.delete_confirm_description', { name: taskPendingDeletion?.name ?? '' }) }}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{{ $t('forms.cancel') }}</AlertDialogCancel>
+          <AlertDialogAction :class="buttonVariants({ variant: 'destructive' })" @click="handleDelete">
+            {{ $t('forms.delete') }}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    <!-- Create task dialog (async loaded only once opened) -->
     <CreateTaskDialog
-      :open="false"
+      v-if="showCreateTaskDialog"
+      :open="showCreateTaskDialog"
       :taskable
       @close="showCreateTaskDialog = false"
-      @task-created="handleTaskCreated"
+      @task-created="showCreateTaskDialog = false"
     />
   </div>
 </template>
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { computed, ref, watch, defineAsyncComponent } from 'vue';
+import { computed, defineAsyncComponent, ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { useBreakpoints, breakpointsTailwind } from '@vueuse/core';
 import { AlertCircleIcon, RotateCwIcon, CheckCircleIcon } from 'lucide-vue-next';
@@ -101,14 +127,23 @@ import { toast } from 'vue-sonner';
 import TaskTable from './TaskTable.vue';
 import TaskCard from './TaskCard.vue';
 
+import type { TaskDisplayData } from '@/Composables/useTaskPresentation';
 import TaskFilter from '@/Components/Tasks/TaskFilter.vue';
 import { Badge } from '@/Components/ui/badge';
-import type { TaskProgress, TaskActionType } from '@/Types/TaskTypes';
+import { buttonVariants } from '@/Components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/Components/ui/alert-dialog';
 
 // Use async component for the dialog to improve initial load performance
-const CreateTaskDialog = defineAsyncComponent(() =>
-  import('./CreateTaskDialog.vue'),
-);
+const CreateTaskDialog = defineAsyncComponent(() => import('./CreateTaskDialog.vue'));
 
 // Mobile detection
 const breakpoints = useBreakpoints(breakpointsTailwind);
@@ -121,31 +156,6 @@ enum FilterType {
   INCOMPLETE = 'incomplete',
 }
 
-// Enhanced task interface matching backend response
-interface TaskWithDetails {
-  id: string;
-  name: string;
-  description?: string | null;
-  due_date?: string | null;
-  completed_at?: string | null;
-  action_type?: TaskActionType | string | null;
-  progress?: TaskProgress | null;
-  is_overdue?: boolean;
-  can_be_manually_completed?: boolean;
-  taskable?: {
-    id: string;
-    name?: string;
-    type?: string;
-  } | null;
-  taskable_type: string;
-  taskable_id: string;
-  users?: Array<{
-    id: string;
-    name: string;
-    profile_photo_path?: string;
-  }>;
-}
-
 interface TaskStats {
   total: number;
   completed: number;
@@ -155,21 +165,28 @@ interface TaskStats {
 
 const props = defineProps<{
   disabled?: boolean;
-  tasks?: TaskWithDetails[];
+  tasks?: TaskDisplayData[];
   taskStats?: TaskStats;
   taskable?: {
     id: string | number;
     type: string;
   };
-  // Server-side filtering support
+  /** The page filters through the backend; the local filter only mirrors what it chose. */
   serverSideFilter?: boolean;
+  /**
+   * The page paginates server-side, so the table must not paginate (or search) the single
+   * page it was handed — that produced a second set of page controls inside the first.
+   */
+  serverPaginated?: boolean;
   currentFilter?: 'all' | 'completed' | 'incomplete';
+  /** Total across all pages; the local count is only the current page when paginating. */
+  totalCount?: number;
 }>();
 
 const emit = defineEmits<{
-  (e: 'openMeetingModal', task: TaskWithDetails): void;
-  (e: 'openCheckInDialog', task: TaskWithDetails): void;
-  (e: 'openTaskDetail', task: TaskWithDetails): void;
+  (e: 'openMeetingModal', task: TaskDisplayData): void;
+  (e: 'openCheckInDialog', task: TaskDisplayData): void;
+  (e: 'openTaskDetail', task: TaskDisplayData): void;
   (e: 'filterChange', status: 'all' | 'completed' | 'incomplete'): void;
 }>();
 
@@ -177,8 +194,15 @@ const emit = defineEmits<{
 const showCreateTaskDialog = ref(false);
 const taskFilterKey = ref(0);
 const loadingTaskId = ref<string | null>(null);
+/**
+ * The dialog's own open flag is deliberately separate from the task it is about. Deriving
+ * `open` from the task meant reka-ui's AlertDialogAction — which closes the dialog on click,
+ * before any handler of ours runs — cleared the task first, so the confirm handler always
+ * found nothing to delete.
+ */
+const deleteDialogOpen = ref(false);
+const taskPendingDeletion = ref<TaskDisplayData | null>(null);
 
-// Filter options
 const filterOptions = [
   { label: $t('tasks.filters.all'), value: FilterType.ALL },
   { label: $t('tasks.filters.completed'), value: FilterType.COMPLETED },
@@ -186,15 +210,19 @@ const filterOptions = [
 ];
 
 // Task filtering - default to incomplete tasks
-// Use props.currentFilter if server-side filtering is enabled
 const currentFilter = ref<FilterType>(
   props.serverSideFilter && props.currentFilter
     ? props.currentFilter as FilterType
     : FilterType.INCOMPLETE,
 );
 
-// When server-side filtering is enabled, use tasks directly (already filtered by backend)
-// Otherwise, filter client-side
+// Keep the control in step when the backend answers a filter change with new props.
+watch(() => props.currentFilter, (filter) => {
+  if (props.serverSideFilter && filter) {
+    currentFilter.value = filter as FilterType;
+  }
+});
+
 const filteredTasks = computed(() => {
   if (!props.tasks?.length) {
     return [];
@@ -205,7 +233,6 @@ const filteredTasks = computed(() => {
     return props.tasks;
   }
 
-  // Client-side filtering
   switch (currentFilter.value) {
     case FilterType.COMPLETED:
       return props.tasks.filter(task => task.completed_at !== null);
@@ -216,26 +243,29 @@ const filteredTasks = computed(() => {
   }
 });
 
+const visibleCount = computed(() => props.totalCount ?? filteredTasks.value.length);
+
 // Force re-render of TaskTable when filter changes
 watch(currentFilter, (newFilter) => {
   taskFilterKey.value++;
 
-  // Emit filter change for server-side filtering
   if (props.serverSideFilter) {
     emit('filterChange', newFilter as 'all' | 'completed' | 'incomplete');
   }
 });
 
-/**
- * Handle task completion from card component
- */
-const handleTaskCompletion = (task: TaskWithDetails) => {
+const handleTaskCompletion = (task: TaskDisplayData) => {
   if (task.can_be_manually_completed === false) {
-    toast.info($t('This task completes automatically'));
+    toast.info($t('This task completes automatically'), {
+      description: $t('You cannot manually complete this task'),
+    });
+
     return;
   }
 
-  if (loadingTaskId.value) return;
+  if (loadingTaskId.value) {
+    return;
+  }
   loadingTaskId.value = task.id;
 
   const newCompletionState = task.completed_at === null;
@@ -246,27 +276,44 @@ const handleTaskCompletion = (task: TaskWithDetails) => {
     {
       preserveScroll: true,
       preserveState: true,
-      onSuccess: () => {
+      onFinish: () => {
         loadingTaskId.value = null;
-        if (newCompletionState) {
-          toast.success($t('Task marked as completed'), { description: task.name });
-        }
-        else {
-          toast.info($t('Task marked as incomplete'), { description: task.name });
-        }
       },
+      // No success toast here: the controller flashes one and useToasts shows it globally.
+      // Toasting again produced two for every action.
       onError: () => {
-        loadingTaskId.value = null;
-        toast.error($t('Failed to update task status'));
+        toast.error($t('Failed to update task status'), {
+          description: $t('Please try again'),
+        });
       },
     },
   );
 };
 
-/**
- * Handle successful task creation
- */
-const handleTaskCreated = () => {
-  // Additional logic after task creation can be added here
+const confirmDelete = (task: TaskDisplayData) => {
+  taskPendingDeletion.value = task;
+  deleteDialogOpen.value = true;
+};
+
+const handleDelete = () => {
+  const task = taskPendingDeletion.value;
+  if (!task || loadingTaskId.value) {
+    return;
+  }
+
+  deleteDialogOpen.value = false;
+  loadingTaskId.value = task.id;
+
+  router.delete(route('tasks.destroy', task.id), {
+    preserveScroll: true,
+    onFinish: () => {
+      loadingTaskId.value = null;
+    },
+    onError: (errors: Record<string, string>) => {
+      toast.error($t('Failed to delete task'), {
+        description: errors.message || $t('Please try again'),
+      });
+    },
+  });
 };
 </script>

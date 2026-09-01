@@ -25,7 +25,7 @@ class IndexTaskSummaryRequest extends BaseIndexRequest
             'tenant_ids.*' => 'integer|exists:tenants,id',
             // 'institutions' is a UI group covering both Institution and Meeting taskables.
             'taskable_type' => ['nullable', 'string', Rule::in([...Task::TASKABLE_TYPES, 'institutions'])],
-            'completion' => ['nullable', 'string', Rule::in(['pending', 'completed'])],
+            'completion' => ['nullable', 'string', Rule::in(['pending', 'completed', 'all'])],
         ]);
     }
 }

@@ -7,6 +7,19 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.37 — Tasks summary (2026-09-01) {#v1-37}
+
+- 🔧 **The task actions button is finally visible** — the three-dot trigger in the table was fully transparent, leaving "Delete" and "Mark complete" with no way in
+- ⭐ **A task left behind by a deleted record can be cleared** — when a meeting or institution is permanently deleted, its task sometimes survives. Those now show in the summary marked "Subject deleted", and a super administrator can delete them
+- ✨ **"Delete" is offered only to people who can actually delete** — it used to be shown to everyone and returned an error on click
+- ✨ **Deleting a task now asks for confirmation** — and is available on a phone, where the action was missing entirely
+- 🔧 **The summary no longer paginates inside its own pagination** — the table split the very page the server had already sent into further pages of 15
+- 🔧 **The summary's completed/incomplete filter works across all pages** — it used to filter only the rows on screen, so the counts disagreed with the paginator
+- ✨ **The tasks summary cards match the reservations dashboard** — both now draw the same tile, so the two pages read as one product
+- 🔧 **Deleting a task no longer shows two notifications**
+- 🔧 **Confirmation dialogs no longer fly in from the corner** — every confirmation dialog, not just the task one, now opens from the centre like the rest
+- ✨ **A task's detail dialog no longer stretches off-screen** — a task assigned to a whole institution listed every name at full width; it now shows avatars, with the names on hover
+
 ## v1.36 — Events and meetings (2026-08-31) {#v1-36}
 
 - ⭐ **A meeting can be created straight from an event** — the events list now offers "Create a meeting from this event" on any calendar entry not already standing for one. The date comes from the event, so the action window only asks which institution and what is on the agenda, and the new meeting is linked to that same event

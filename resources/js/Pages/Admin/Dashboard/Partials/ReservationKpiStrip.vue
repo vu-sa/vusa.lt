@@ -1,32 +1,18 @@
 <template>
   <div class="grid grid-cols-2 gap-x-6 gap-y-5 lg:grid-cols-4">
-    <button
+    <StatCard
       v-for="tile in tiles"
       :key="tile.status"
-      type="button"
-      :aria-pressed="modelValue === tile.status"
-      :class="[
-        'group flex flex-col items-start rounded-lg border px-3 py-2 text-left transition-colors',
-        // Without a border these read as floating text against the dark background.
-        'border-zinc-200 dark:border-zinc-800',
-        'hover:bg-zinc-50 dark:hover:bg-zinc-800/50',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 dark:focus-visible:ring-zinc-300',
-        // A selected tile is a live filter, so it has to be unmistakable.
-        modelValue === tile.status
-          ? 'border-zinc-900 bg-zinc-100 dark:border-zinc-100 dark:bg-zinc-800'
-          : '',
-        tile.count === 0 ? 'opacity-60' : '',
-      ]"
+      interactive
+      :label="tile.label"
+      :value="tile.count"
+      :caption="tile.caption"
+      :dot="tile.dot"
+      :active="modelValue === tile.status"
+      :muted="tile.count === 0"
       @click="toggle(tile.status)"
     >
-      <span
-        :class="[
-          'flex items-center gap-2 text-sm',
-          modelValue === tile.status ? 'font-medium text-foreground' : 'text-muted-foreground',
-        ]"
-      >
-        <span :class="['size-2 shrink-0 rounded-full', tile.dot]" />
-        {{ tile.label }}
+      <template #badge>
         <span
           v-if="tile.unresolvedCount > 0"
           :title="$t('reservations.dashboard.kpi.unresolved_badge_title', { count: tile.unresolvedCount })"
@@ -35,14 +21,8 @@
           <TriangleAlert class="size-3" />
           {{ tile.unresolvedCount }}
         </span>
-      </span>
-      <span :class="['mt-1 text-4xl font-bold tabular-nums', tile.emphasis]">
-        {{ tile.count }}
-      </span>
-      <span class="mt-0.5 text-xs text-muted-foreground">
-        {{ tile.caption }}
-      </span>
-    </button>
+      </template>
+    </StatCard>
   </div>
 </template>
 
@@ -51,6 +31,7 @@ import { computed } from 'vue';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { TriangleAlert } from 'lucide-vue-next';
 
+import { StatCard } from '@/Components/Patterns';
 import { getStatusDotClass, type KpiStatus, type ReservationStats, type StatusFilter } from '@/Utils/ReservationStatus';
 
 const props = defineProps<{
@@ -77,7 +58,6 @@ const tiles = computed(() => [
       count: props.stats.awaitingDueSoon,
     }),
     dot: getStatusDotClass('created'),
-    emphasis: '',
   },
   {
     status: 'lent' as const,
@@ -88,7 +68,6 @@ const tiles = computed(() => [
       count: props.stats.lentQuantity,
     }),
     dot: getStatusDotClass('lent'),
-    emphasis: '',
   },
   {
     status: 'returned' as const,
@@ -97,7 +76,6 @@ const tiles = computed(() => [
     unresolvedCount: 0,
     caption: $t('reservations.dashboard.kpi.returned_caption'),
     dot: getStatusDotClass('returned'),
-    emphasis: '',
   },
 ]);
 </script>

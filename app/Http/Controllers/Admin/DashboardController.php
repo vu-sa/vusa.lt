@@ -636,7 +636,7 @@ class DashboardController extends AdminController
     {
         $user = User::find(Auth::id());
 
-        $tasksQuery = $user->tasks()->with('taskable', 'users:id,name,email,profile_photo_path');
+        $tasksQuery = $user->tasks()->with('taskable', 'users:id,name,email,profile_photo_path', 'tenants');
 
         // Get task statistics (before any filtering for accurate counts)
         $taskStats = [
@@ -686,6 +686,7 @@ class DashboardController extends AdminController
             'progress' => $task->getProgress(),
             'is_overdue' => $task->isOverdue(),
             'can_be_manually_completed' => $task->canBeManuallyCompleted(),
+            'can_delete' => $task->isDeletableBy($user),
             'icon' => $task->icon,
             'color' => $task->color,
             // Subject model - lightweight taskable info

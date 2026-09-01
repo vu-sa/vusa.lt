@@ -1,90 +1,6 @@
 <template>
   <AdminContentPage :title="$t('Užduotys')">
-    <!-- Stats overview cards (hidden on mobile) -->
-    <div v-if="taskStats" class="mb-6 hidden gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-4">
-      <!-- Total pending -->
-      <div class="relative overflow-hidden rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-        <div class="flex items-center gap-3">
-          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
-            <ClipboardListIcon class="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
-          </div>
-          <div>
-            <p class="text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
-              {{ taskStats.total }}
-            </p>
-            <p class="text-sm text-zinc-500 dark:text-zinc-400">
-              {{ $t('tasks.stats.pending') }}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Overdue -->
-      <div :class="[
-        'relative overflow-hidden rounded-xl border p-4',
-        taskStats.overdue > 0
-          ? 'border-red-200/60 bg-red-50/30 dark:border-red-900/30 dark:bg-red-950/10'
-          : 'border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900'
-      ]">
-        <div class="flex items-center gap-3">
-          <div :class="[
-            'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
-            taskStats.overdue > 0
-              ? 'bg-red-100 dark:bg-red-900/30'
-              : 'bg-zinc-100 dark:bg-zinc-800'
-          ]">
-            <AlertCircleIcon :class="[
-              'h-5 w-5',
-              taskStats.overdue > 0
-                ? 'text-red-600 dark:text-red-400'
-                : 'text-zinc-400'
-            ]" />
-          </div>
-          <div>
-            <p class="text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
-              {{ taskStats.overdue }}
-            </p>
-            <p class="text-sm text-zinc-500 dark:text-zinc-400">
-              {{ $t('overdue') }}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Auto-completing -->
-      <div class="relative overflow-hidden rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-        <div class="flex items-center gap-3">
-          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
-            <RotateCwIcon class="h-5 w-5 text-blue-600 dark:text-blue-400" />
-          </div>
-          <div>
-            <p class="text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
-              {{ taskStats.autoCompleting }}
-            </p>
-            <p class="text-sm text-zinc-500 dark:text-zinc-400">
-              {{ $t('tasks.stats.auto_completing') }}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Completed -->
-      <div class="relative overflow-hidden rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-        <div class="flex items-center gap-3">
-          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
-            <CheckCircleIcon class="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-          </div>
-          <div>
-            <p class="text-2xl font-bold tabular-nums text-zinc-900 dark:text-zinc-100">
-              {{ taskStats.completed }}
-            </p>
-            <p class="text-sm text-zinc-500 dark:text-zinc-400">
-              {{ $t('completed') }}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+    <TaskStatsCards v-if="taskStats" :task-stats />
 
     <!-- Task manager with table -->
     <div class="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
@@ -93,7 +9,9 @@
           :tasks="tasks.data"
           :task-stats
           :current-filter="currentStatus"
+          :total-count="tasks.total"
           server-side-filter
+          server-paginated
           @filter-change="handleFilterChange"
           @open-meeting-modal="handleOpenMeetingModal"
           @open-check-in-dialog="handleOpenCheckInDialog"
@@ -101,33 +19,14 @@
         />
       </div>
 
-      <!-- Pagination -->
-      <div v-if="tasks.last_page > 1" class="flex items-center justify-between border-t border-zinc-200 px-4 py-3 dark:border-zinc-800 sm:px-6">
-        <div class="text-sm text-zinc-500 dark:text-zinc-400">
-          {{ tasks.from }} - {{ tasks.to }} / {{ tasks.total }}
-        </div>
-        <div class="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            :disabled="tasks.current_page === 1"
-            @click="goToPage(tasks.current_page - 1)"
-          >
-            <ChevronLeftIcon class="h-4 w-4" />
-          </Button>
-          <span class="text-sm tabular-nums text-zinc-600 dark:text-zinc-400">
-            {{ tasks.current_page }} / {{ tasks.last_page }}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            :disabled="tasks.current_page === tasks.last_page"
-            @click="goToPage(tasks.current_page + 1)"
-          >
-            <ChevronRightIcon class="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+      <TaskPagination
+        :current-page="tasks.current_page"
+        :last-page="tasks.last_page"
+        :total="tasks.total"
+        :from="tasks.from"
+        :to="tasks.to"
+        @change="goToPage"
+      />
     </div>
 
     <!-- Check-in dialog for periodicity gap tasks -->
@@ -157,60 +56,22 @@
 import { ref, computed, defineAsyncComponent } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import {
-  ClipboardList as ClipboardListIcon,
-  AlertCircle as AlertCircleIcon,
-  RotateCw as RotateCwIcon,
-  CheckCircle as CheckCircleIcon,
-  ChevronLeft as ChevronLeftIcon,
-  ChevronRight as ChevronRightIcon,
-} from 'lucide-vue-next';
 
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import { usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { useActionWindow } from '@/Composables/useActionWindow';
+import type { TaskDisplayData, TaskStats } from '@/Composables/useTaskPresentation';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
-import { Button } from '@/Components/ui/button';
-import type { TaskProgress, TaskActionType } from '@/Types/TaskTypes';
+import TaskStatsCards from '@/Features/Admin/TaskManager/TaskStatsCards.vue';
+import TaskPagination from '@/Features/Admin/TaskManager/TaskPagination.vue';
 import { TaskIcon } from '@/Components/icons';
 
 // Lazy load modals
 const AddCheckInDialog = defineAsyncComponent(() => import('@/Components/Institutions/AddCheckInDialog.vue'));
 const TaskDetailDialog = defineAsyncComponent(() => import('@/Features/Admin/TaskManager/TaskDetailDialog.vue'));
 
-interface TaskWithDetails {
-  id: string;
-  name: string;
-  description?: string | null;
-  due_date?: string | null;
-  completed_at?: string | null;
-  action_type?: TaskActionType | string | null;
-  progress?: TaskProgress | null;
-  is_overdue?: boolean;
-  can_be_manually_completed?: boolean;
-  taskable?: {
-    id: string;
-    name?: string;
-    type?: string;
-  } | null;
-  taskable_type: string;
-  taskable_id: string;
-  users?: Array<{
-    id: string;
-    name: string;
-    profile_photo_path?: string;
-  }>;
-}
-
-interface TaskStats {
-  total: number;
-  completed: number;
-  overdue: number;
-  autoCompleting: number;
-}
-
 interface PaginatedTasks {
-  data: TaskWithDetails[];
+  data: TaskDisplayData[];
   current_page: number;
   last_page: number;
   per_page: number;
@@ -255,9 +116,9 @@ const actionWindow = useActionWindow();
 // Modal state
 const showCheckInDialog = ref(false);
 const showTaskDetail = ref(false);
-const selectedMeetingTask = ref<TaskWithDetails | null>(null);
-const selectedCheckInTask = ref<TaskWithDetails | null>(null);
-const selectedDetailTask = ref<TaskWithDetails | null>(null);
+const selectedMeetingTask = ref<TaskDisplayData | null>(null);
+const selectedCheckInTask = ref<TaskDisplayData | null>(null);
+const selectedDetailTask = ref<TaskDisplayData | null>(null);
 
 // Computed institution for meeting modal
 const selectedInstitution = computed(() => {
@@ -279,7 +140,7 @@ const checkInEndDate = computed(() => {
 });
 
 // Event handlers
-const handleOpenMeetingModal = (task: TaskWithDetails) => {
+const handleOpenMeetingModal = (task: TaskDisplayData) => {
   selectedMeetingTask.value = task;
 
   if (selectedInstitution.value) {
@@ -287,7 +148,7 @@ const handleOpenMeetingModal = (task: TaskWithDetails) => {
   }
 };
 
-const handleOpenCheckInDialog = (task: TaskWithDetails) => {
+const handleOpenCheckInDialog = (task: TaskDisplayData) => {
   selectedCheckInTask.value = task;
   showCheckInDialog.value = true;
 };
@@ -298,7 +159,7 @@ const closeCheckInDialog = () => {
 };
 
 // Task detail dialog handlers
-const handleOpenTaskDetail = (task: TaskWithDetails) => {
+const handleOpenTaskDetail = (task: TaskDisplayData) => {
   selectedDetailTask.value = task;
   showTaskDetail.value = true;
 };

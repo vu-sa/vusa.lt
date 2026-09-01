@@ -7,6 +7,19 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.37 — Užduočių suvestinė (2026-09-01) {#v1-37}
+
+- 🔧 **Užduoties veiksmų mygtukas pagaliau matomas** — trijų taškų mygtukas lentelėje buvo visiškai permatomas, todėl „Ištrinti“ ir „Pažymėti atlikta“ nebuvo kaip pasiekti
+- ⭐ **Užduotis, likusią po ištrinto įrašo, galima pašalinti** — kai posėdis ar institucija ištrinami visam laikui, užduotis kartais lieka. Tokios užduotys dabar matomos suvestinėje su žyma „Objektas ištrintas“, o vyriausiasis administratorius gali jas ištrinti
+- ✨ **„Ištrinti“ rodoma tik tiems, kurie tikrai gali ištrinti** — anksčiau mygtukas būdavo siūlomas visiems ir paspaudus grąžindavo klaidą
+- ✨ **Užduotį ištrinti dabar prašoma patvirtinti** — ir tą patį galima padaryti telefone, kur veiksmo išvis nebuvo
+- 🔧 **Suvestinėje nebeliko puslapiavimo puslapiavime** — lentelė papildomai skaidydavo po 15 įrašų tą patį puslapį, kurį serveris jau buvo atidavęs po 20
+- 🔧 **Suvestinės filtras „Atliktos / Neatliktos“ veikia per visus puslapius** — anksčiau jis atrinkdavo tik tame puslapyje matomas užduotis, todėl skaičiai nesutapdavo su puslapiuotoju
+- ✨ **Užduočių suvestinės kortelės atrodo kaip rezervacijų skydelyje** — tas pats kortelės stilius dabar naudojamas abiejose vietose
+- 🔧 **Ištrynus užduotį neberodomi du pranešimai**
+- 🔧 **Patvirtinimo langas nebeatskrenda iš kampo** — visi patvirtinimo langai (ne tik užduočių) atsidaro centre, kaip ir kiti langai
+- ✨ **Užduoties lange nebeišsitęsia atsakingųjų sąrašas** — kai užduotis priskirta visai institucijai, vardų sąrašas išaugdavo per visą ekrano aukštį; dabar rodomos nuotraukos, o vardai — užvedus pele
+
 ## v1.36 — Renginiai ir posėdžiai (2026-08-31) {#v1-36}
 
 - ⭐ **Posėdį galima sukurti tiesiai iš renginio** — renginių sąraše prie kalendoriaus įrašo, kuris dar nesusietas su posėdžiu, atsirado veiksmas „Sukurti posėdį iš renginio“. Data paimama iš renginio, todėl veiksmų lange belieka pasirinkti instituciją ir surašyti darbotvarkę, o sukurtas posėdis susiejamas su tuo pačiu renginiu

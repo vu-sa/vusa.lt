@@ -16,7 +16,11 @@ return [
     'assigned_to' => 'Assigned to',
     'stats' => [
         'pending' => 'Pending tasks',
+        'pending_caption' => 'Not yet completed',
         'auto_completing' => 'Auto-completing',
+        'auto_completing_caption' => 'Closed by the system',
+        'overdue_caption' => 'Past their due date',
+        'completed_caption' => 'Done',
     ],
     'periodicity_gap' => [
         'name' => 'Report institution activity for :institution',
@@ -39,6 +43,10 @@ return [
         'all_items_completed' => 'All agenda items completed',
     ],
     'delete_automatic' => 'Delete (as super admin)',
+    'delete_confirm_title' => 'Delete this task?',
+    'delete_confirm_description' => '":name" will be removed permanently. This cannot be undone.',
+    'orphaned' => 'Subject deleted',
+    'orphaned_description' => 'The record this task was filed against no longer exists, so the task can never complete on its own.',
     'agenda' => [
         'action_add_items' => 'Add agenda item',
         'action_view_agenda' => 'View agenda',

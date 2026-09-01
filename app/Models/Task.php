@@ -138,6 +138,24 @@ class Task extends Model
     }
 
     /**
+     * Whether the user may remove this task outright.
+     *
+     * The policy answers the ordinary case; an automatic task is additionally reserved for
+     * super admins, who need the escape hatch when it can no longer complete itself (its
+     * subject is gone, its agenda can never be filled). {@see TaskController::destroy()}
+     * enforces the same two rules — this exists so the UI can offer the action only where it
+     * would actually succeed.
+     */
+    public function isDeletableBy(User $user): bool
+    {
+        if (! $user->can('delete', $this)) {
+            return false;
+        }
+
+        return $this->canBeManuallyCompleted() || $user->isSuperAdmin();
+    }
+
+    /**
      * Check if this task auto-completes based on system events.
      */
     public function isAutoCompletable(): bool

@@ -15,6 +15,8 @@ Before planning or editing, find the row whose globs match the file's path and r
 | config/vusa.php | .ai/rules/config.md |
 | app/Actions/**,app/Models/InstitutionAdministrator.php,app/Services/CommentableMentionResolver.php,app/Console/Commands/SendMeetingReminders.php | .ai/rules/console-commands.md |
 | app/Http/Controllers/** | .ai/rules/controllers.md |
+| resources/js/Components/Tables/**,resources/js/Components/ui/data-table/** | .ai/rules/data-table.md |
+| resources/js/Components/ui/alert-dialog/**,resources/js/Components/ui/dialog/** | .ai/rules/dialog.md |
 | app/Enums/** | .ai/rules/enums.md |
 | app/Actions/Cadences/**,app/Http/Requests/UpdateInstitutionAdministratorsRequest.php | .ai/rules/http-requests.md |
 | resources/js/**/*.test.ts | .ai/rules/js.md |

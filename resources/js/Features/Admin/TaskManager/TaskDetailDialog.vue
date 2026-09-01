@@ -1,6 +1,6 @@
 <template>
   <Dialog :open @update:open="handleOpenChange">
-    <DialogContent class="sm:max-w-lg">
+    <DialogContent class="max-h-[85vh] overflow-y-auto sm:max-w-lg">
       <DialogHeader>
         <DialogTitle class="flex items-center gap-2">
           <component :is="taskIcon" class="h-5 w-5 text-zinc-500" />
@@ -67,21 +67,19 @@
           </div>
         </div>
 
-        <!-- Assigned users -->
-        <div v-if="task.users && task.users.length > 0" class="border-t border-zinc-200 pt-4 dark:border-zinc-700">
-          <h4 class="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            {{ $t('tasks.assigned_to') }}
-          </h4>
-          <div class="flex flex-wrap gap-2">
-            <div
-              v-for="user in task.users"
-              :key="user.id"
-              class="flex items-center gap-2 rounded-full bg-zinc-100 px-3 py-1 text-sm dark:bg-zinc-800"
-            >
-              <div class="h-5 w-5 rounded-full bg-zinc-300 dark:bg-zinc-600" />
-              <span>{{ user.name }}</span>
-            </div>
+        <!-- Assigned users. A meeting task can carry the whole institution, so these are
+             avatars with the names behind a hover card rather than a pill per person — a
+             20-name list used to push the dialog past the height of the screen. -->
+        <div v-if="task.users?.length" class="border-t border-zinc-200 pt-4 dark:border-zinc-700">
+          <div class="mb-2 flex items-center gap-2">
+            <h4 class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              {{ $t('tasks.assigned_to') }}
+            </h4>
+            <Badge variant="secondary" class="tabular-nums">
+              {{ task.users.length }}
+            </Badge>
           </div>
+          <UsersAvatarGroup :users="task.users" :size="28" :max="8" />
         </div>
       </div>
 
@@ -116,35 +114,15 @@ import {
 } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
-import type { TaskProgress, TaskActionType } from '@/Types/TaskTypes';
-
-interface TaskWithDetails {
-  id: string;
-  name: string;
-  description?: string | null;
-  due_date?: string | null;
-  completed_at?: string | null;
-  action_type?: TaskActionType | string | null;
-  progress?: TaskProgress | null;
-  is_overdue?: boolean;
-  can_be_manually_completed?: boolean;
-  taskable?: {
-    id: string;
-    name?: string;
-    type?: string;
-  } | null;
-  taskable_type: string;
-  taskable_id: string;
-  users?: Array<{
-    id: string;
-    name: string;
-    profile_photo_path?: string;
-  }>;
-}
+import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
+import {
+  isPeriodicityGapTask as isPeriodicityGap,
+  type TaskDisplayData,
+} from '@/Composables/useTaskPresentation';
 
 const props = defineProps<{
   open: boolean;
-  task: TaskWithDetails;
+  task: TaskDisplayData;
 }>();
 
 const emit = defineEmits<{
@@ -159,9 +137,9 @@ const handleOpenChange = (value: boolean) => {
   }
 };
 
-const isPeriodicityGapTask = computed(() => {
-  return props.task.action_type === 'PeriodicityGap';
-});
+// This compared against 'PeriodicityGap', a value the ActionType enum never emits, so the
+// dialog's action buttons were unreachable.
+const isPeriodicityGapTask = computed(() => isPeriodicityGap(props.task));
 
 const taskIcon = computed(() => {
   if (isPeriodicityGapTask.value) {
