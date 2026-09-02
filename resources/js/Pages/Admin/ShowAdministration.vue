@@ -1,9 +1,7 @@
 <template>
   <AdminContentPage :title="$t('Administravimas')">
-    <!-- Search and filter bar -->
-    <div
-      class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
-    >
+    <!-- Search bar -->
+    <div class="mb-6">
       <div class="relative w-full max-w-md">
         <Input
           v-model="searchQuery"
@@ -20,41 +18,13 @@
           </template>
         </Input>
       </div>
-      <div class="flex items-center gap-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger as-child>
-            <Button variant="outline" size="sm">
-              <ListFilterIcon class="mr-2 h-4 w-4" />
-              {{ $t("Filtrai") }}
-              <ChevronDownIcon class="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" class="w-56">
-            <DropdownMenuLabel>{{ $t("Kategorijos") }}</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuCheckboxItem
-              v-for="category in uniqueCategories"
-              :key="category"
-              v-model="selectedCategories[category]"
-              @select.prevent
-            >
-              {{ category }}
-            </DropdownMenuCheckboxItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
     </div>
 
-    <!-- Main categories -->
+    <!-- Categories (tools first) -->
     <template v-for="category in filteredMenuItems" :key="category.category">
       <section v-if="category.show" class="my-8">
-        <h2 class="mb-4 text-xl font-semibold flex items-center">
+        <h2 class="mb-4 text-xl font-semibold">
           {{ category.category }}
-          <Badge variant="outline" class="ml-2">
-            {{
-              category.visibleItems.length
-            }}
-          </Badge>
         </h2>
         <div
           class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
@@ -68,7 +38,16 @@
               <div
                 class="relative flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-linear-to-br from-white to-white p-4 text-left text-sm leading-4 text-zinc-700 transition-all duration-300 group-hover:ring-1 group-hover:ring-primary/20 dark:border-0 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300"
               >
-                <component :is="item.icon" width="28" height="28" />
+                <span
+                  v-if="category.isTools"
+                  :class="cn(
+                    'inline-flex self-start shrink-0 items-center justify-center rounded-md bg-gradient-to-br p-1.5',
+                    item.gradient ?? 'from-muted to-muted',
+                  )"
+                >
+                  <component :is="item.icon" width="20" height="20" />
+                </span>
+                <component :is="item.icon" v-else width="28" height="28" />
                 {{ item.title }}
               </div>
             </Link>
@@ -110,30 +89,22 @@ import {
   SearchIcon,
   Search,
   XIcon,
-  ListFilterIcon,
-  ChevronDownIcon,
   AlertCircleIcon,
   CalendarRange,
+  UserCog,
 } from 'lucide-vue-next';
 
 import IconFlowchart from '~icons/fluent/flowchart20-regular';
 import { capitalize } from '@/Utils/String';
+import { cn } from '@/Utils/Shadcn/utils';
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 
 // UI components
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
-import { Badge } from '@/Components/ui/badge';
 import { Alert, AlertTitle, AlertDescription } from '@/Components/ui/alert';
 import { BannerIcon, CalendarIcon, CategoryIcon, DocumentIcon, DutyIcon, FormIcon, InstitutionIcon, MeetingIcon, NavigationIcon, NewsIcon, NotificationIcon, PageIcon, PermissionIcon, ProblemIcon, QuickLinkIcon, RelationshipIcon, ReservationIcon, ResourceIcon, RoleIcon, SettingIcon, SharepointFileIcon, StudyProgramIcon, TagIcon, TenantIcon, TypeIcon, UserIcon } from '@/Components/icons';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuCheckboxItem,
-} from '@/Components/ui/dropdown-menu';
+import { quickActionGradient } from '@/Composables/useQuickActions';
 import {
   usePageBreadcrumbs,
   BreadcrumbHelpers,
@@ -151,6 +122,8 @@ interface MenuItemType {
   show: boolean | undefined;
   /** Unified search tab name (e.g. 'institutions') for the dedicated search button */
   searchTab?: string;
+  /** Icon-tile gradient — only rendered for the tools category. */
+  gradient?: string;
 }
 
 interface MenuItemsType {
@@ -158,11 +131,12 @@ interface MenuItemsType {
   items: MenuItemType[];
   visibleItems: MenuItemType[];
   show: boolean | undefined;
+  /** Renders icons in colored gradient tiles, matching the action window's coordinator tools. */
+  isTools?: boolean;
 }
 
-// Search and filter states
+// Search state
 const searchQuery = ref('');
-const selectedCategories = ref<Record<string, boolean>>({});
 
 // Filter items that match search query
 const matchesSearch = (item: MenuItemType): boolean => {
@@ -173,6 +147,28 @@ const matchesSearch = (item: MenuItemType): boolean => {
 
 // Menu items definition - Reorganized to avoid duplications
 const menuItems = computed(() => [
+  {
+    category: $t('Įrankiai'),
+    isTools: true,
+    items: [
+      {
+        title: $t('Pareigybių atnaujinimas'),
+        icon: UserCog,
+        href: route('duties.updateUsersWizard'),
+        show: auth?.can.create.duty,
+        gradient: quickActionGradient('duty_update'),
+      },
+      {
+        title: $t('dutiables.timeline.page.title'),
+        icon: CalendarRange,
+        href: route('dutiables.timeline'),
+        show: auth?.can.create.duty,
+        gradient: quickActionGradient('duty_periods'),
+      },
+    ],
+    show: auth?.can.create.duty,
+    visibleItems: [] as MenuItemType[],
+  },
   {
     category: $t('Žmonės'),
     items: [
@@ -189,12 +185,6 @@ const menuItems = computed(() => [
         href: route('duties.index'),
         show: auth?.can.create.duty,
         searchTab: 'duties',
-      },
-      {
-        title: $t('dutiables.timeline.page.title'),
-        icon: CalendarRange,
-        href: route('dutiables.timeline'),
-        show: auth?.can.create.duty,
       },
       {
         title: $t('Studijų programos'),
@@ -440,21 +430,7 @@ const menuItems = computed(() => [
   },
 ]);
 
-// Get unique categories for filter dropdown
-const uniqueCategories = computed(() => {
-  return menuItems.value
-    .filter(category => category.show === true)
-    .map(category => category.category);
-});
-
-// Initialize category filters if not already set
-uniqueCategories.value.forEach((category) => {
-  if (selectedCategories.value[category] === undefined) {
-    selectedCategories.value[category] = true;
-  }
-});
-
-// Filter menu items based on search and selected categories
+// Filter menu items based on search
 const filteredMenuItems = computed(() => {
   return menuItems.value
     .map((category) => {
@@ -472,12 +448,8 @@ const filteredMenuItems = computed(() => {
       return filteredCategory;
     })
     .filter((category) => {
-      // Keep category if it's enabled in filters and has visible items
-      return (
-        category.show === true
-        && category.visibleItems.length > 0
-        && selectedCategories.value[category.category]
-      );
+      // Keep category if it's visible and has visible items
+      return category.show === true && category.visibleItems.length > 0;
     });
 });
 
