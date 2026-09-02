@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\VoteValue;
 use App\Models\Pivots\AgendaItem;
+use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use Database\Factories\VoteFactory;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -59,7 +60,18 @@ use Illuminate\Support\Carbon;
 #[Unguarded]
 class Vote extends Model
 {
-    use HasFactory, HasUlids, LogsModelActivity;
+    use HasFactory, HasTranslations, HasUlids, LogsModelActivity;
+
+    /** @var list<string> */
+    public $translatable = ['title', 'note'];
+
+    /**
+     * English vote labels are the exception, not the rule — see AgendaItem::getFallbackLocale().
+     */
+    public function getFallbackLocale(): string
+    {
+        return 'lt';
+    }
 
     #[\Override]
     protected function casts(): array

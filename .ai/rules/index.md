@@ -14,11 +14,13 @@ Before planning or editing, find the row whose globs match the file's path and r
 | resources/js/Composables/useAgendaItemStyling.ts | .ai/rules/composables.md |
 | config/vusa.php | .ai/rules/config.md |
 | app/Actions/**,app/Models/InstitutionAdministrator.php,app/Services/CommentableMentionResolver.php,app/Console/Commands/SendMeetingReminders.php | .ai/rules/console-commands.md |
+| app/Models/Meeting.php,app/Models/Vote.php,app/Models/Pivots/AgendaItem.php,app/Http/Requests/UpdateAgendaItemRequest.php,app/Http/Controllers/Admin/AgendaItemController.php | .ai/rules/controllers-admin.md |
 | app/Http/Controllers/** | .ai/rules/controllers.md |
 | resources/js/Components/Tables/**,resources/js/Components/ui/data-table/** | .ai/rules/data-table.md |
 | resources/js/Components/ui/alert-dialog/**,resources/js/Components/ui/dialog/** | .ai/rules/dialog.md |
 | app/Enums/** | .ai/rules/enums.md |
 | app/Actions/Cadences/**,app/Http/Requests/UpdateInstitutionAdministratorsRequest.php | .ai/rules/http-requests.md |
+| app/Enums/AgendaItemType.php,app/Services/MeetingCompletionService.php,app/Tasks/Handlers/AgendaCompletionTaskHandler.php,resources/js/Composables/useAgendaItemStyling.ts | .ai/rules/js-composables.md |
 | resources/js/**/*.test.ts | .ai/rules/js.md |
 | lang/** | .ai/rules/lang.md |
 | resources/js/Pages/Admin/People/Show*.vue,app/Http/Middleware/HandleInertiaRequests.php | .ai/rules/middleware.md |

@@ -242,6 +242,7 @@ import InstitutionOverviewSection from '@/Components/Institutions/InstitutionOve
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 import { DutySummaryCard } from '@/Components/Duties';
 import { getSuggestedCheckInRange, type TaskDisplayData } from '@/Composables/useTaskPresentation';
+import { countIncompleteTasks } from '@/Composables/useTaskUrgency';
 import type { InstitutionPageData, InstitutionPageMeeting } from '@/Types/InstitutionPage';
 // UI Components
 import DiscussionPanel from '@/Components/Discussions/DiscussionPanel.vue';
@@ -479,7 +480,8 @@ const tabs = computed(() => [
   { value: 'duties', label: $t('Pareigos'), count: props.institution.duties?.length },
   { value: 'meetings', label: $t('Susitikimai'), count: props.institution.meetings?.length },
   { value: 'files', label: $t('Failai') },
-  { value: 'tasks', label: $t('Užduotys'), count: props.institution.allTasks?.length },
+  // Outstanding only: a finished task is not something the reader still has to act on.
+  { value: 'tasks', label: $t('Užduotys'), count: countIncompleteTasks(props.institution.allTasks) },
   ...(relatedInstitutionCount.value > 0
     ? [{ value: 'related', label: $t('Susijusios institucijos'), count: relatedInstitutionCount.value }]
     : []),

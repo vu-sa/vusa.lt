@@ -56,14 +56,13 @@ describe('AgendaItemsForm.vue', () => {
       expect(wrapper.find('button[type="submit"]').exists()).toBe(true);
     });
 
-    it('shows suggestion alert for guidance', async () => {
+    it('renders no standing suggestion alert above the form', async () => {
       wrapper = createWrapper();
       await nextTick();
 
-      // Should contain guidance or suggestion component
-      expect(wrapper.findComponent({ name: 'SuggestionAlert' }).exists()
-        || wrapper.find('.suggestion').exists()
-        || wrapper.text().includes('agenda')).toBeTruthy();
+      // The "Įsidėmėk! Kiekvienas posėdis turi darbotvarkės klausimų" banner was removed —
+      // it restated what the form itself already makes obvious.
+      expect(wrapper.findComponent({ name: 'SuggestionAlert' }).exists()).toBe(false);
     });
 
     it('shows submit button with loading state', () => {

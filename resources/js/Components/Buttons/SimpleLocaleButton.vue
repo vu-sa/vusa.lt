@@ -2,7 +2,10 @@
   <TooltipProvider>
     <Tooltip>
       <TooltipTrigger as-child>
+        <!-- `type="button"`: this lives inside admin <form>s, where a bare <button>
+             defaults to submit — flipping the language used to save the form. -->
         <Button
+          type="button"
           variant="ghost"
           size="sm"
           @click="$emit('update:locale', locale === 'lt' ? 'en' : 'lt')"

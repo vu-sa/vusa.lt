@@ -114,6 +114,7 @@ return [
     'meeting_agenda_type_voting' => ':count voting',
     'meeting_agenda_type_informational' => ':count informational',
     'meeting_agenda_type_deferred' => ':count deferred',
+    'meeting_agenda_type_break' => ':count break',
     'meeting_agenda_additional_votes_note' => 'If there were additional votes, don\'t forget to add them.',
 
     // News notifications

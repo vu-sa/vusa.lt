@@ -433,6 +433,7 @@ import FileManager from '@/Features/Admin/SharepointFileManager/SharepointFileMa
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 import { InstitutionIconFilled, MeetingIconFilled } from '@/Components/icons';
 import { useTaskActionDialogs } from '@/Composables/useTaskActionDialogs';
+import { countIncompleteTasks } from '@/Composables/useTaskUrgency';
 
 const props = defineProps<{
   meeting: App.Entities.Meeting;
@@ -573,7 +574,8 @@ const tabs = computed(() => [
     ? [{ value: 'documents', label: $t('Dokumentai'), count: props.meeting.documents?.length }]
     : []),
   { value: 'files', label: $t('Failai') },
-  { value: 'tasks', label: $t('Užduotys'), count: props.meeting.tasks?.length },
+  // Outstanding only: a finished task is not something the reader still has to act on.
+  { value: 'tasks', label: $t('Užduotys'), count: countIncompleteTasks(props.meeting.tasks) },
 ]);
 
 onMounted(() => {

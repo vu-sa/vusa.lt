@@ -94,3 +94,28 @@ describe('getMeetingStatusSummary - governance scope', () => {
     expect(summary.voteAlignmentStatus).toBe('unknown');
   });
 });
+
+describe('break agenda items', () => {
+  const breakItem = () => ({ id: 'b1', type: 'break' as const, votes: [] });
+
+  it('has its own status rather than falling through to no_vote', () => {
+    // A pause records no outcome; treating it as a voting item left it flagged amber.
+    expect(getAgendaItemStatus(breakItem() as never)).toBe('break');
+  });
+
+  it('is labelled as a break', () => {
+    expect(getAgendaItemStatusMeta(breakItem() as never).label).toBe('Pertrauka');
+  });
+
+  it('is counted separately in a meeting summary', () => {
+    const summary = getMeetingStatusSummary([breakItem()] as never);
+
+    expect(summary.break).toBe(1);
+    expect(summary.unset).toBe(0);
+    expect(summary.noVote).toBe(0);
+  });
+
+  it('does not drag the overall meeting status to incomplete', () => {
+    expect(getMeetingStatusSummary([breakItem()] as never).overallStatus).not.toBe('incomplete');
+  });
+});

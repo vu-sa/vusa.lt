@@ -164,7 +164,7 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
      * Count how many agenda items are complete.
      *
      * An item is complete when:
-     * - Type is 'informational' or 'deferred' (no vote required), OR
+     * - Type needs no vote (informational, deferred, break), OR
      * - Type is 'voting' AND has a main vote the meeting's scope considers filled — a decision
      *   alone for a VU SA body, decision plus student_vote and student_benefit for an external one.
      *
@@ -181,8 +181,7 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
                 return false;
             }
 
-            // Informational and deferred items are complete without votes
-            if ($item->type === AgendaItemType::Informational || $item->type === AgendaItemType::Deferred) {
+            if (! $item->type->requiresVote()) {
                 return true;
             }
 
@@ -199,7 +198,7 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
     /**
      * Get agenda item counts by type for use in notifications.
      *
-     * @return array{voting: int, informational: int, deferred: int, unset: int}
+     * @return array{voting: int, informational: int, deferred: int, break: int, unset: int}
      */
     public function getAgendaItemTypeCounts(Meeting $meeting): array
     {
@@ -209,6 +208,7 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
             'voting' => $agendaItems->where('type', AgendaItemType::Voting)->count(),
             'informational' => $agendaItems->where('type', AgendaItemType::Informational)->count(),
             'deferred' => $agendaItems->where('type', AgendaItemType::Deferred)->count(),
+            'break' => $agendaItems->where('type', AgendaItemType::Break)->count(),
             'unset' => $agendaItems->whereNull('type')->count(),
         ];
     }
@@ -216,8 +216,8 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
     /**
      * Check if a previously complete task should be reopened due to type change.
      *
-     * This is called when an agenda item's type changes from informational/deferred
-     * to voting, and the voting item doesn't have a complete main vote.
+     * This is called when an agenda item's type changes from a vote-free type to voting,
+     * and the voting item doesn't have a complete main vote.
      */
     public function shouldReopenTask(Meeting $meeting): bool
     {

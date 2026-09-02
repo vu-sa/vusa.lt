@@ -11,6 +11,7 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Tenant;
 use App\Models\Traits\HasComments;
+use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use App\Models\Vote;
 use App\Services\VoteStatisticsCalculator;
@@ -37,7 +38,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $matter_id
  * @property Carbon $created_at
  * @property Carbon $updated_at
- * @property string $title
+ * @property string|null $title
  * @property int $order
  * @property bool $brought_by_students
  * @property AgendaItemType|null $type
@@ -68,10 +69,23 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 #[Unguarded]
 class AgendaItem extends Pivot implements Commentable
 {
-    use HasComments, HasFactory, HasRelationships, HasUlids, LogsModelActivity, Searchable;
+    use HasComments, HasFactory, HasRelationships, HasTranslations, HasUlids, LogsModelActivity, Searchable;
 
     #[\Override]
     public $incrementing = true;
+
+    /** @var list<string> */
+    public $translatable = ['title', 'description', 'student_position'];
+
+    /**
+     * English agenda items are the exception, not the rule. Falling back to Lithuanian keeps
+     * the English page readable instead of blank; `config('app.fallback_locale')` is `en`,
+     * which would resolve to nothing here.
+     */
+    public function getFallbackLocale(): string
+    {
+        return 'lt';
+    }
 
     protected static function newFactory(): Factory
     {
@@ -173,13 +187,13 @@ class AgendaItem extends Pivot implements Commentable
         // mismatches when the model is validated without a loaded meeting)
         $searchableArray = [
             'id' => $this->id,
-            'title' => $this->title,
-            'description' => $this->description,
+            'title' => $this->getTranslation('title', 'lt'),
+            'description' => $this->getTranslation('description', 'lt'),
             'order' => $this->order,
 
             // New fields
             'type' => $typeValue,
-            'student_position' => $this->student_position,
+            'student_position' => $this->getTranslation('student_position', 'lt'),
             'brought_by_students' => (bool) $this->brought_by_students,
 
             // Main vote fields (for backward compatibility in search)

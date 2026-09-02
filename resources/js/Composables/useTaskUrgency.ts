@@ -29,6 +29,24 @@ export interface UseTaskUrgencyOptions {
 /**
  * Sort tasks by urgency: overdue first, then by due date (soonest first)
  */
+/**
+ * Whether a task is still outstanding.
+ *
+ * `completed_at` arrives as `null` from the server and can be `undefined` on payloads that
+ * omit it, so both count as incomplete.
+ */
+export function isTaskIncomplete(task: { completed_at?: string | null }): boolean {
+  return task.completed_at === null || task.completed_at === undefined;
+}
+
+/**
+ * How many tasks still need doing — what a tab badge should report, since a finished task
+ * is not something the reader has to act on.
+ */
+export function countIncompleteTasks(tasks: Array<{ completed_at?: string | null }> = []): number {
+  return tasks.filter(isTaskIncomplete).length;
+}
+
 export function sortTasksByUrgency<T extends TaskWithUrgencyInfo>(tasks: T[]): T[] {
   return [...tasks].sort((a, b) => {
     // Overdue tasks come first
@@ -64,7 +82,7 @@ export function getMostUrgentTasks<T extends TaskWithUrgencyInfo>(
 
   // Filter to incomplete only if requested
   if (incompleteOnly) {
-    filtered = filtered.filter(task => task.completed_at === null || task.completed_at === undefined);
+    filtered = filtered.filter(isTaskIncomplete);
   }
 
   // Sort by urgency
@@ -84,9 +102,7 @@ export function calculateTaskStats<T extends TaskWithUrgencyInfo>(
   const now = new Date();
   const dueSoonThreshold = addDays(now, dueSoonDays);
 
-  const incompleteTasks = tasks.filter(
-    task => task.completed_at === null || task.completed_at === undefined,
-  );
+  const incompleteTasks = tasks.filter(isTaskIncomplete);
 
   const overdue = incompleteTasks.filter(task => task.is_overdue).length;
 
@@ -120,7 +136,7 @@ export function useTaskUrgency<T extends TaskWithUrgencyInfo>(
   const stats = computed(() => {
     const taskList = toValue(tasks);
     const incompleteTasks = incompleteOnly
-      ? taskList.filter(t => t.completed_at === null || t.completed_at === undefined)
+      ? taskList.filter(isTaskIncomplete)
       : taskList;
     return calculateTaskStats(incompleteTasks, dueSoonDays);
   });

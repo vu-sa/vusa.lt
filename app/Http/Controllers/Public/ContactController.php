@@ -13,6 +13,7 @@ use App\Models\Type;
 use App\Models\User;
 use App\Services\ContactPresentationService;
 use App\Settings\FormSettings;
+use App\Support\MeetingTitle;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
@@ -362,7 +363,7 @@ class ContactController extends PublicController
         // the institution's name rather than the (possibly different) tenant's shortname.
         $this->applyPageHead(
             contentTenant: $primaryInstitution->tenant,
-            title: $meeting->title,
+            title: MeetingTitle::for($meeting, app()->getLocale()),
             titleSuffix: ' - '.$primaryInstitution->name,
             description: Str::limit(strip_tags($meeting->description), 160),
             robots: 'noindex, nofollow',

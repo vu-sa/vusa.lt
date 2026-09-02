@@ -9,7 +9,15 @@
       >
         <IFluentDocument20Regular class="mt-0.5 h-4 w-4 shrink-0 text-zinc-400" />
         <span class="min-w-0 flex-1">
-          <span class="block text-sm font-medium text-zinc-900 dark:text-zinc-50">{{ document.title }}</span>
+          <span class="block text-sm font-medium text-zinc-900 dark:text-zinc-50">
+            {{ document.title }}
+            <!-- Only when the file is not in the page's language: the list falls back to the
+                 other locale rather than showing nothing, so say which one this is. -->
+            <span
+              v-if="isOtherLanguage(document)"
+              class="ml-1.5 align-middle rounded border border-zinc-300 px-1 py-px text-[10px] font-semibold uppercase tracking-wide text-zinc-500 dark:border-zinc-700 dark:text-zinc-400"
+            >{{ document.language_code }}</span>
+          </span>
           <span class="block text-xs text-zinc-500 dark:text-zinc-400">
             {{ document.content_type }}
             <template v-if="document.document_date"> · {{ document.document_date }}</template>
@@ -22,6 +30,8 @@
 </template>
 
 <script setup lang="ts">
+import { usePage } from '@inertiajs/vue3';
+
 import IFluentDocument20Regular from '~icons/fluent/document20-regular';
 import IFluentOpen20Regular from '~icons/fluent/open-20-regular';
 
@@ -32,11 +42,20 @@ export interface PublicMeetingDocument {
   document_date: string | null;
   anonymous_url: string;
   language: string | null;
+  /** Normalized `lt` / `en` / `unknown` — see Document::getLanguageCode(). */
+  language_code?: string | null;
 }
 
 defineProps<{
   documents: PublicMeetingDocument[];
 }>();
+
+const page = usePage();
+
+const isOtherLanguage = (document: PublicMeetingDocument): boolean =>
+  !!document.language_code
+  && document.language_code !== 'unknown'
+  && document.language_code !== page.props.app.locale;
 
 /**
  * `web=1` makes SharePoint open the file in the browser viewer rather than downloading it —

@@ -1,6 +1,11 @@
 <?php
 
 return [
+    'agenda' => [
+        'english_added_later' => 'An English translation is added later — open the item and turn on editing.',
+        'editing_english' => 'You are editing the English version',
+        'title_placeholder_en' => 'Agenda item title',
+    ],
     'announce' => [
         'external_not_allowed' => 'Only VU SR bodies\' meetings are announced in the calendar.',
         'explainer' => 'The calendar event is the public announcement of a meeting. While it stays a draft the meeting remains internal; publishing it makes the agenda and the linked documents visible to everyone.',

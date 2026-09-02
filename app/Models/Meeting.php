@@ -12,11 +12,13 @@ use App\Models\Pivots\AgendaItem;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTasks;
+use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use App\Models\Traits\LogsRelationshipChanges;
 use App\Services\MeetingCompletionService;
 use App\Services\MeetingRepresentativeResolver;
 use App\Services\VoteStatisticsCalculator;
+use App\Support\MeetingTitle;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
@@ -75,7 +77,24 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 #[Unguarded]
 class Meeting extends Model implements Commentable, SharepointFileableContract
 {
-    use HasComments, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable, SoftDeletes;
+    use HasComments, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable, SoftDeletes;
+
+    /**
+     * `title` stays a plain column: it is regenerated from `start_time` on every save
+     * ({@see MeetingTitle}) rather than authored, and both the admin and public
+     * headings recompute it from the date anyway.
+     *
+     * @var list<string>
+     */
+    public $translatable = ['description'];
+
+    /**
+     * English meeting blurbs are the exception, not the rule — see AgendaItem::getFallbackLocale().
+     */
+    public function getFallbackLocale(): string
+    {
+        return 'lt';
+    }
 
     #[\Override]
     protected function casts(): array
@@ -222,7 +241,7 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
         return [
             'id' => $this->id,
             'title' => $this->title,
-            'description' => $this->description,
+            'description' => $this->getTranslation('description', 'lt'),
             'start_time' => $this->start_time->timestamp,
             'start_time_formatted' => $this->start_time->format('Y-m-d H:i'),
             'year' => $this->start_time->year,

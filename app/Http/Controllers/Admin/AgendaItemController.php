@@ -33,7 +33,9 @@ class AgendaItemController extends AdminController
             foreach ($validatedData['agendaItemTitles'] as $index => $agendaItemTitle) {
                 AgendaItem::create([
                     'meeting_id' => $validatedData['meeting_id'],
-                    'title' => $agendaItemTitle,
+                    // Pinned to `lt`, not the request locale: the paste box is always fed
+                    // Lithuanian, including by an admin whose interface is in English.
+                    'title' => ['lt' => $agendaItemTitle],
                     'order' => $maxOrder + $index + 1,
                     'brought_by_students' => $broughtByStudentsFlags[$index] ?? false,
                 ]);
@@ -101,7 +103,12 @@ class AgendaItemController extends AdminController
             ->values();
 
         return $this->inertiaResponse('Admin/Representation/EditAgendaItem', [
-            'agendaItem' => $agendaItem,
+            // toFullArray(), not the model: the editor writes translations, so it needs the
+            // whole `{lt, en}` map rather than the current locale's string.
+            'agendaItem' => [
+                ...$agendaItem->toFullArray(),
+                'votes' => $agendaItem->votes->map->toFullArray()->all(),
+            ],
             'siblingAgendaItems' => $siblingAgendaItems,
             'canUpdate' => $canUpdate,
             // VU SA's own bodies have no separate student position to record — see

@@ -5,6 +5,7 @@ import {
   MinusCircle,
   CircleDashed,
   Clock,
+  Coffee,
   Info,
   HelpCircle,
   Handshake,
@@ -52,6 +53,7 @@ export type AgendaItemStatus
     | 'no_vote' // Voting type but no vote recorded yet (amber/warning)
     | 'deferred' // Type is deferred (gray muted)
     | 'informational' // Type is informational (gray)
+    | 'break' // Type is break (amber muted) — a pause is still part of the agenda
     | 'unset'; // Type is null/undefined - needs attention (amber/warning)
 
 /**
@@ -89,6 +91,10 @@ export function getAgendaItemStatus(item: AgendaItem, requiresStudentPerspective
 
   if (item.type === 'informational') {
     return 'informational';
+  }
+
+  if (item.type === 'break') {
+    return 'break';
   }
 
   // Voting type - check main vote
@@ -221,6 +227,15 @@ export function getAgendaItemStatusMeta(item: AgendaItem, requiresStudentPerspec
       borderClass: 'border-zinc-200 dark:border-zinc-700',
       dotClass: 'bg-zinc-400',
     },
+    break: {
+      status: 'break',
+      icon: Coffee,
+      label: $t('Pertrauka'),
+      colorClass: 'text-amber-700 dark:text-amber-400',
+      bgClass: 'bg-amber-50 dark:bg-amber-900/20',
+      borderClass: 'border-amber-200 dark:border-amber-800',
+      dotClass: 'bg-amber-300 dark:bg-amber-700',
+    },
     unset: {
       status: 'unset',
       icon: HelpCircle,
@@ -250,6 +265,7 @@ export interface MeetingStatusSummary {
   noVote: number;
   deferred: number;
   informational: number;
+  break: number;
   unset: number;
   /** Overall status for coloring: 'complete' | 'incomplete' | 'empty' */
   overallStatus: 'complete' | 'incomplete' | 'empty';
@@ -278,6 +294,7 @@ export function getMeetingStatusSummary(items: AgendaItem[], requiresStudentPers
     noVote: 0,
     deferred: 0,
     informational: 0,
+    break: 0,
     unset: 0,
     overallStatus: 'empty',
     voteAlignmentStatus: 'unknown',
@@ -318,6 +335,9 @@ export function getMeetingStatusSummary(items: AgendaItem[], requiresStudentPers
         break;
       case 'informational':
         summary.informational++;
+        break;
+      case 'break':
+        summary.break++;
         break;
       case 'unset':
         summary.unset++;
@@ -404,6 +424,11 @@ export function getNumberBadgeClass(item: AgendaItem): string {
     return 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400';
   }
 
+  // Breaks - muted amber, so they read as a pause rather than an unanswered item
+  if (item.type === 'break') {
+    return 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400';
+  }
+
   // Voting items - check vote status
   const mainVote = getMainVote(item);
 
@@ -438,6 +463,7 @@ export function getStatusText(item: AgendaItem): string {
 
   if (item.type === 'informational') return $t('Informacinis');
   if (item.type === 'deferred') return $t('Atidėtas');
+  if (item.type === 'break') return $t('Pertrauka');
 
   const mainVote = getMainVote(item);
 
@@ -453,7 +479,7 @@ export function getStatusText(item: AgendaItem): string {
  * Get status icon (checkmark, X, or empty)
  */
 export function getStatusIcon(item: AgendaItem): string {
-  if (item.type === 'informational' || item.type === 'deferred') return '';
+  if (item.type === 'informational' || item.type === 'deferred' || item.type === 'break') return '';
 
   const mainVote = getMainVote(item);
 

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\MeetingType;
+use App\Http\Requests\Concerns\NormalizesTranslatableInput;
 use App\Models\Calendar;
 use App\Models\Institution;
 use App\Models\Meeting;
@@ -14,6 +15,14 @@ use Illuminate\Validation\Rules\Enum;
 
 class StoreMeetingRequest extends FormRequest
 {
+    use NormalizesTranslatableInput;
+
+    #[\Override]
+    protected function prepareForValidation(): void
+    {
+        $this->normalizeTranslatable('description');
+    }
+
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -52,7 +61,9 @@ class StoreMeetingRequest extends FormRequest
                 new WithinAuthorizedTenantScope(Institution::class, 'meetings.create.padalinys'),
             ],
             'type' => ['nullable', new Enum(MeetingType::class)],
-            'description' => 'nullable|string|max:1000',
+            'description' => 'nullable|array',
+            'description.lt' => 'nullable|string|max:1000',
+            'description.en' => 'nullable|string|max:1000',
             'announce_in_calendar' => 'nullable|boolean',
             // An existing announcement this meeting is being created from. Only an
             // unlinked event qualifies: a calendar event stands for at most one meeting.

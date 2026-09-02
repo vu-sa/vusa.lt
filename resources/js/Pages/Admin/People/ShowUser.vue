@@ -274,7 +274,8 @@ const roles = computed(() => props.user.roles ?? []);
 const tabs = computed(() => [
   { value: 'overview', label: $t('Apžvalga') },
   { value: 'duties', label: $t('Pareigos'), count: allDuties.value.length },
-  { value: 'tasks', label: $t('Užduotys'), count: props.taskStats.total },
+  // `pending`, not `total`: a finished task is not something the reader still has to act on.
+  { value: 'tasks', label: $t('Užduotys'), count: props.taskStats.pending },
 ]);
 
 /**

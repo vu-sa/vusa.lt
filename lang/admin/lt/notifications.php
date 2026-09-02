@@ -114,6 +114,7 @@ return [
     'meeting_agenda_type_voting' => ':count balsavimu',
     'meeting_agenda_type_informational' => ':count informaciniu',
     'meeting_agenda_type_deferred' => ':count atidėtu',
+    'meeting_agenda_type_break' => ':count pertrauka',
     'meeting_agenda_additional_votes_note' => 'Jei buvo papildomų balsavimų, nepamirškite juos įtraukti.',
 
     // News notifications

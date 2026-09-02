@@ -57,4 +57,45 @@ describe('MeetingDocumentsPanel', () => {
   it('leaves the picker unscoped when neither is given', () => {
     expect(dialog(factory()).props('baseFilterBy')).toBeUndefined();
   });
+
+  describe('language labelling', () => {
+    const doc = (overrides: Record<string, unknown> = {}) => ({
+      id: 1,
+      title: 'VU SA Tarybos protokolas',
+      name: null,
+      content_type: 'Protokolas',
+      document_date: '2026-07-23',
+      anonymous_url: null,
+      language_code: 'lt',
+      ...overrides,
+    });
+
+    it('labels a document with its language', () => {
+      const wrapper = factory({ documents: [doc()] });
+
+      expect(wrapper.text()).toContain('LT');
+    });
+
+    it('labels an English document as EN', () => {
+      const wrapper = factory({ documents: [doc({ language_code: 'en' })] });
+
+      expect(wrapper.text()).toContain('EN');
+    });
+
+    it('claims no language for a document SharePoint never labelled', () => {
+      const wrapper = factory({ documents: [doc({ language_code: 'unknown' })] });
+
+      expect(wrapper.text()).not.toContain('UNKNOWN');
+      // The chip is absent entirely rather than rendered empty.
+      expect(wrapper.findAll('span').some(s => s.text() === 'LT' || s.text() === 'EN')).toBe(false);
+    });
+
+    it('renders the document date as a plain day', () => {
+      const wrapper = factory({ documents: [doc()] });
+
+      expect(wrapper.text()).toContain('2026-07-23');
+      expect(wrapper.text()).not.toContain('00:00:00');
+      expect(wrapper.text()).not.toContain('T00:00');
+    });
+  });
 });

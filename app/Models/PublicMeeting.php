@@ -138,7 +138,7 @@ class PublicMeeting extends Meeting
         return [
             'id' => $this->id,
             'title' => $this->title,
-            'description' => $this->description,
+            'description' => $this->getTranslation('description', 'lt'),
             'start_time' => $this->start_time->timestamp,
             'start_time_formatted' => $this->start_time->format('Y-m-d H:i'),
             'year' => $this->start_time->year,

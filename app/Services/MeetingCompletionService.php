@@ -32,7 +32,7 @@ class MeetingCompletionService
 
         $allComplete = $agendaItems->every(function ($item) use ($requiresStudentPerspective) {
             $type = $item->getAttribute('type');
-            if ($type instanceof AgendaItemType && $type->value === 'informational') {
+            if ($type instanceof AgendaItemType && ! $type->requiresVote()) {
                 return true;
             }
 

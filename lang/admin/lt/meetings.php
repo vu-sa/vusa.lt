@@ -1,6 +1,11 @@
 <?php
 
 return [
+    'agenda' => [
+        'english_added_later' => 'Angliškas vertimas pridedamas vėliau — atidarykite punktą ir įjunkite redagavimą.',
+        'editing_english' => 'Redaguojate angliškąją versiją',
+        'title_placeholder_en' => 'Agenda item title',
+    ],
     'announce' => [
         'external_not_allowed' => 'Kalendoriuje skelbiami tik VU SA darinių posėdžiai.',
         'explainer' => 'Kalendoriaus įrašas yra viešas posėdžio skelbimas. Kol jis yra juodraštis, posėdis lieka matomas tik viduje; paskelbus – darbotvarkė ir susieti dokumentai tampa matomi visiems.',

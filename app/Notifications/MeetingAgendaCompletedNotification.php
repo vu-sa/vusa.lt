@@ -6,6 +6,7 @@ use App\Enums\NotificationCategory;
 use App\Models\Meeting;
 use App\Models\User;
 use App\Tasks\Handlers\AgendaCompletionTaskHandler;
+use Illuminate\Support\Arr;
 
 /**
  * Notification sent to administrators when all meeting agenda items are completed.
@@ -37,7 +38,8 @@ class MeetingAgendaCompletedNotification extends BaseNotification
         $handler = app(AgendaCompletionTaskHandler::class);
         $typeCounts = $handler->getAgendaItemTypeCounts($this->meeting);
 
-        $totalCount = $typeCounts['voting'] + $typeCounts['informational'] + $typeCounts['deferred'];
+        // Every typed item, so adding a type never silently shrinks the reported total.
+        $totalCount = array_sum(Arr::except($typeCounts, 'unset'));
 
         // Build the body message
         if ($this->completedBy) {
@@ -82,6 +84,9 @@ class MeetingAgendaCompletedNotification extends BaseNotification
         }
         if ($typeCounts['deferred'] > 0) {
             $parts[] = __('notifications.meeting_agenda_type_deferred', ['count' => $typeCounts['deferred']]);
+        }
+        if ($typeCounts['break'] > 0) {
+            $parts[] = __('notifications.meeting_agenda_type_break', ['count' => $typeCounts['break']]);
         }
 
         if (empty($parts)) {
