@@ -26,8 +26,12 @@
           :enable-row-selection-column :initial-row-selection :get-row-id @data-loaded="handleDataLoaded"
           @update:row-selection="handleRowSelectionChange" @sorting-changed="handleSortingChanged"
           @page-changed="handlePageChanged" @filter-changed="handleFilterChanged">
-          <!-- Pass through the slots -->
-          <template #filters>
+          <!--
+            Forwarded only when the page defines it — ServerDataTable shows
+            the filters button based on whether this slot was passed at all,
+            so an unconditional pass-through would show it even when empty.
+          -->
+          <template v-if="$slots.filters" #filters>
             <slot name="filters" />
           </template>
           <template #actions>
