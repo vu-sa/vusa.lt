@@ -54,6 +54,16 @@ test('can open the home page', function (): void {
         );
 });
 
+test('catch-all fallback route 404s for an unrecognized host instead of crashing', function (): void {
+    // The trailing {permalink} catch-all in routes/web.php carries no domain constraint, so a
+    // request whose Host never maps to a tenant alias (e.g. a raw IP, as pest-plugin-browser's
+    // ephemeral test server uses) must 404 cleanly rather than crash assigning null into
+    // PublicController's non-nullable $tenant property. SetLocale 301s locale-less paths to
+    // their /lt/… form first, so request the localized URL the redirect produces.
+    $this->get('/lt/some-unmatched-path', ['HTTP_HOST' => '127.0.0.1:12345'])
+        ->assertNotFound();
+});
+
 test('can open news archive', function (): void {
     $this->get(route('newsArchive', ['subdomain' => 'www', 'lang' => 'lt', 'newsString' => 'naujienos']))
         ->assertInertia(fn (Assert $page) => $page
