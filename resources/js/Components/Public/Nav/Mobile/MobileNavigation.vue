@@ -15,7 +15,7 @@
         {{ $t('navigation.menu') }}
       </DrawerDescription>
 
-      <header class="flex shrink-0 items-center gap-1 border-b border-zinc-200 p-2 dark:border-zinc-700">
+      <header class="flex shrink-0 items-center gap-1 border-b border-border p-2">
         <Button
           variant="ghost"
           size="icon"
@@ -61,10 +61,10 @@
         </Transition>
       </div>
 
-      <footer class="flex shrink-0 items-center justify-between gap-2 border-t border-zinc-200 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] dark:border-zinc-700">
+      <footer class="flex shrink-0 items-center justify-between gap-2 border-t border-border p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         <a
           href="/login"
-          class="flex min-h-11 items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+          class="flex min-h-11 items-center gap-2 px-3 py-2 text-sm font-medium transition-colors hover:bg-secondary"
           :title="page.props.auth?.user ? page.props.auth.user?.name : $t('auth.login')"
         >
           <IFluentPerson24Filled v-if="page.props.auth?.user" class="size-5" aria-hidden="true" />
@@ -73,6 +73,7 @@
         </a>
         <div class="flex items-center gap-1">
           <LocaleButton :locale="page.props.app.locale" size="sm" />
+          <AccessibilityMenu />
           <DarkModeButton size="icon" />
         </div>
       </footer>
@@ -91,6 +92,7 @@ import MobileNavSectionPanel from './MobileNavSectionPanel.vue';
 import MobileTenantPanel from './MobileTenantPanel.vue';
 
 import LocaleButton from '@/Components/Public/Nav/LocaleButton.vue';
+import { AccessibilityMenu } from '@/Components/Public/Base';
 import DarkModeButton from '@/Components/Buttons/DarkModeButton.vue';
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerTitle, DrawerTrigger } from '@/Components/ui/drawer';
 import { Button } from '@/Components/ui/button';

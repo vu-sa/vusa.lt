@@ -3,7 +3,6 @@ import { mount } from '@vue/test-utils';
 import { Icon } from '@iconify/vue';
 
 import MobileNavLinkRow from '../MobileNavLinkRow.vue';
-
 import type { NavLink } from '../../types';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));

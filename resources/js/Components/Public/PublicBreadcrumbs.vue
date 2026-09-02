@@ -3,7 +3,7 @@
   <div
     v-if="isDevelopment && isInFallbackMode"
     data-testid="fallback-warning"
-    class="inline-flex items-center gap-2 !px-3 !py-1.5 text-xs bg-yellow-100 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-600 rounded-lg text-yellow-800 dark:text-yellow-200"
+    class="inline-flex items-center gap-2 !px-3 !py-1.5 text-xs border border-brand bg-brand/10 text-brand"
   >
     ⚠️ Breadcrumbs in fallback mode - check console
   </div>
@@ -12,25 +12,24 @@
     v-else-if="visibleItems.length > 0"
     aria-label="Breadcrumb"
     class="inline-flex items-center gap-1.5 !px-4 !py-2 text-sm font-medium
-           text-zinc-600 dark:text-zinc-400
-           bg-zinc-100/80 dark:bg-zinc-800/50
-           rounded-lg border border-zinc-200/60 dark:border-zinc-700/50
+           text-muted-foreground
+           border-y border-border
            backdrop-blur-sm max-w-full overflow-hidden"
   >
     <template v-for="(item, index) in visibleItems" :key="index">
       <!-- Separator before item (except first) -->
       <IFluentChevronRight16Regular
         v-if="index > 0"
-        class="size-3.5 text-zinc-400 dark:text-zinc-600 flex-shrink-0"
+        class="size-3.5 shrink-0 text-muted-foreground/60"
         :class="{ 'hidden sm:block': index === visibleItems.length - 1 && !hasOverflow }"
         aria-hidden="true"
       />
 
       <!-- Ellipsis indicator for overflow (after first item) -->
       <template v-if="hasOverflow && index === 1">
-        <span class="text-zinc-400 dark:text-zinc-500 px-0.5 flex-shrink-0">…</span>
+        <span class="shrink-0 px-0.5 text-muted-foreground/60">…</span>
         <IFluentChevronRight16Regular
-          class="size-3.5 text-zinc-400 dark:text-zinc-600 flex-shrink-0"
+          class="size-3.5 shrink-0 text-muted-foreground/60"
           aria-hidden="true"
         />
       </template>
@@ -54,7 +53,7 @@
       <!-- Current page (last item, no link) -->
       <template v-else>
         <span
-          class="inline-flex items-center gap-1.5 text-zinc-900 dark:text-zinc-200 min-w-0"
+          class="inline-flex min-w-0 items-center gap-1.5 text-foreground"
           :class="{ 'hidden sm:inline-flex': index === visibleItems.length - 1 && visibleItems.length > 1 }"
           aria-current="page"
         >

@@ -3,7 +3,7 @@
     <li v-for="option in options" :key="option.key">
       <button
         type="button"
-        class="flex min-h-11 w-full items-center gap-3 rounded-md px-3 py-2 text-left transition-colors hover:bg-zinc-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 dark:hover:bg-zinc-800 dark:focus-visible:ring-zinc-400"
+        class="flex min-h-11 w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-secondary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
         :class="{ 'bg-accent text-accent-foreground': isActive(option.key) }"
         @click="switchTenant(option.key)"
       >

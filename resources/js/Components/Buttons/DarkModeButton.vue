@@ -5,8 +5,8 @@
     :title="$t('Tamsaus režimo perjungimas')"
     @click="isDark = !isDark"
   >
-    <IFluentWeatherMoon24Filled v-if="isDark" class="h-4 w-4" />
-    <IFluentWeatherSunny24Filled v-else class="h-4 w-4" />
+    <IFluentWeatherMoon24Regular v-if="isDark" class="h-4 w-4" />
+    <IFluentWeatherSunny24Regular v-else class="h-4 w-4" />
     <span class="sr-only">
       {{ $t('Tamsaus režimo perjungimas') }} - {{ isDark ? $t('Dabar tamsus režimas') : $t('Dabar šviesus režimas') }}
     </span>

@@ -1,18 +1,18 @@
 <template>
-  <footer class="w-full border-t border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900" role="contentinfo">
-    <div class="mx-auto max-w-7xl px-4 py-6 md:py-8 md:px-8">
-      <div class="grid gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-3">
+  <footer class="w-full border-t border-border bg-background" role="contentinfo">
+    <div class="mx-auto max-w-7xl px-5 py-12 sm:px-6 lg:px-8 lg:py-16">
+      <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
         <!-- Organization info -->
         <section class="space-y-3" aria-labelledby="organization-info">
-          <h2 id="organization-info" class="text-base font-bold text-zinc-900 dark:text-zinc-100">
+          <h2 id="organization-info" class="u-eyebrow">
             {{ $t("Vilniaus universiteto Studentų atstovybė") }}
           </h2>
-          <address class="space-y-1 text-sm text-zinc-600 dark:text-zinc-400 not-italic">
+          <address class="space-y-1 text-sm not-italic text-muted-foreground">
             <p>{{ $t("Įmonės kodas") }}: {{ legal.company_code }}</p>
             <p>{{ $t("PVM mokėtojo kodas") }}: {{ legal.vat_code }}</p>
             <p>
               {{ $t("Finansiniais klausimais kreipkitės el. paštu") }}:
-              <a :href="`mailto:${contacts.accounting}`" class="text-vusa-red hover:underline">
+              <a :href="`mailto:${contacts.accounting}`" class="text-brand hover:underline">
                 {{ contacts.accounting }}
               </a>
             </p>
@@ -39,18 +39,18 @@
 
         <!-- Contact info -->
         <section class="space-y-3" aria-labelledby="contact-info">
-          <h2 id="contact-info" class="text-base font-bold text-zinc-900 dark:text-zinc-100">
+          <h2 id="contact-info" class="u-eyebrow">
             {{ $t("Kontaktai") }}
           </h2>
           <address class="space-y-2 not-italic">
-            <div class="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-              <IFluentPhone20Regular class="flex-shrink-0 w-4 h-4 text-vusa-red" aria-hidden="true" />
-              <a :href="`tel:${contacts.phone}`" class="hover:text-vusa-red transition-colors">
+            <div class="flex items-center gap-2 text-sm text-muted-foreground">
+              <IFluentPhone20Regular class="size-4 shrink-0 text-brand" aria-hidden="true" />
+              <a :href="`tel:${contacts.phone}`" class="transition-colors hover:text-brand">
                 +370 5 268 7144
               </a>
             </div>
-            <div class="flex items-start gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-              <IFluentBuilding20Regular class="flex-shrink-0 w-4 h-4 text-vusa-red mt-0.5" aria-hidden="true" />
+            <div class="flex items-start gap-2 text-sm text-muted-foreground">
+              <IFluentBuilding20Regular class="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
               <div>
                 <p>{{ legal.address.street }}</p>
                 <p>{{ legal.address.city }}</p>
@@ -60,10 +60,10 @@
         </section>
       </div>
 
-      <div class="mt-6 flex justify-end border-t border-zinc-200 pt-4 dark:border-zinc-800">
+      <div class="mt-10 flex justify-end border-t border-border pt-5">
         <button
           type="button"
-          class="text-xs text-zinc-500 hover:text-vusa-red hover:underline dark:text-zinc-400"
+          class="text-xs text-muted-foreground transition-colors hover:text-brand hover:underline"
           @click="reopen"
         >
           {{ $t("Slapukų nustatymai") }}

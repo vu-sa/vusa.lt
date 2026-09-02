@@ -39,4 +39,16 @@ return [
     'documents' => 'Dokumentai',
     'pages' => 'Puslapiai',
     'news' => 'Naujienos',
+
+    // Reader preferences menu (Components/Public/Base/AccessibilityMenu.vue)
+    'menu_title' => 'Prieinamumas',
+    'menu_open' => 'Atidaryti prieinamumo nustatymus',
+    'text_size' => 'Teksto dydis',
+    'text_size_option' => 'Teksto dydis: :size',
+    'text_size_decrease' => 'Sumažinti teksto dydį',
+    'text_size_increase' => 'Padidinti teksto dydį',
+    'high_contrast' => 'Didelis kontrastas',
+    'underline_links' => 'Pabraukti nuorodas',
+    'reset' => 'Atstatyti',
+    'preferences_active' => 'Pakeisti prieinamumo nustatymai',
 ];

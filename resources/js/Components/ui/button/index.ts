@@ -23,6 +23,12 @@ export const buttonVariants = cva(
           'bg-green-600 text-white shadow-xs hover:bg-green-600/90 focus-visible:ring-green-500/20 dark:bg-green-700 dark:hover:bg-green-700/90',
         warning:
           'bg-amber-500 text-white shadow-xs hover:bg-amber-500/90 focus-visible:ring-amber-500/20 dark:bg-amber-600 dark:hover:bg-amber-600/90',
+        // The public site's primary call to action. Token-driven rather than a fixed colour, so
+        // it is VU SA red on the light canvas and amber on near-black — see `--brand-fill` in
+        // app.css. Added as a variant rather than a new component because public code already
+        // imports this Button in ~38 places.
+        brand:
+          'bg-brand-fill text-brand-foreground hover:bg-brand-fill/90 focus-visible:ring-brand/30',
       },
       size: {
         'default': 'h-9 px-4 py-2 has-[>svg]:px-3',

@@ -2,28 +2,31 @@
   <Popover @update:open="handlePopoverOpenChange">
     <PopoverTrigger as-child>
       <Button
-        variant="outline"
+        variant="ghost"
         :size="size === 'tiny' ? 'sm' : 'default'"
-        class="flex items-center gap-2 w-auto justify-between tracking-normal"
+        class="flex w-auto items-center justify-between gap-2 border border-border tracking-normal
+          text-foreground/70 transition-colors duration-200
+          hover:border-brand hover:bg-transparent hover:text-brand
+          dark:hover:bg-transparent dark:hover:text-brand"
         :disabled="isDisabled"
         :title="$t('Pasirinkti padalinį')"
       >
         <div class="flex items-center">
-          <MapPin class="mr-2 h-4 w-4" />
+          <IFluentLocation24Regular class="mr-2 h-4 w-4" />
           <span class="tracking-normal">{{ padalinys }}</span>
         </div>
-        <ChevronDown class="h-4 w-4 opacity-50 transition-transform duration-200" :class="{ 'rotate-180': isPopoverOpen }" />
+        <IFluentChevronDown24Regular class="h-4 w-4 opacity-50 transition-transform duration-200" :class="{ 'rotate-180': isPopoverOpen }" />
       </Button>
     </PopoverTrigger>
     <PopoverContent class="p-0" :class="{ 'w-[300px]': viewMode === 'list', 'w-[520px]': viewMode === 'map' }" align="start">
-      <div class="flex items-center gap-2 p-2 border-b border-zinc-200 dark:border-zinc-800">
+      <div class="flex items-center gap-2 border-b border-border p-2">
         <Button
           variant="ghost"
           size="sm"
           :class="{ 'bg-muted': viewMode === 'list' }"
           @click="setViewMode('list')"
         >
-          <List class="h-4 w-4" />
+          <IFluentList24Regular class="h-4 w-4" />
           <span class="ml-2">{{ $t('List') }}</span>
         </Button>
         <Button
@@ -32,7 +35,7 @@
           :class="{ 'bg-muted': viewMode === 'map' }"
           @click="setViewMode('map')"
         >
-          <Map class="h-4 w-4" />
+          <IFluentMap24Regular class="h-4 w-4" />
           <span class="ml-2">{{ $t('Map') }}</span>
         </Button>
 
@@ -54,13 +57,14 @@
               <Button
                 variant="ghost"
                 :class="[
-                  'flex w-full cursor-pointer items-center justify-start gap-2 rounded-md px-2 py-1.5 text-sm',
-                  isActivePadalinys(option.key) && 'bg-accent text-accent-foreground',
+                  'flex w-full cursor-pointer items-center justify-start gap-2 px-2 py-1.5 text-sm',
+                  // A brand left rule marks the current unit, echoing the ruled headline device.
+                  isActivePadalinys(option.key) && 'border-l-2 border-brand bg-secondary',
                   option.isMainOffice && 'font-bold'
                 ]"
                 @click="handleSelectPadalinys(option.key)"
               >
-                <Avatar class="h-6 w-6">
+                <Avatar class="h-6 w-6 rounded-none">
                   <AvatarImage v-if="option.primary_institution?.image_url" :src="option.primary_institution.image_url" />
                   <AvatarFallback>{{ option.key.substring(0, 2).toUpperCase() }}</AvatarFallback>
                 </Avatar>
@@ -70,7 +74,7 @@
                   <span class="text-xs text-muted-foreground">{{ $t(option.primary_institution?.short_name ?? '') }}</span>
                 </div>
 
-                <Check
+                <IFluentCheckmark24Regular
                   class="ml-auto h-4 w-4 opacity-0 transition-opacity"
                   :class="{ 'opacity-100': isActivePadalinys(option.key) }"
                 />
@@ -114,11 +118,15 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, onMounted, nextTick } from 'vue';
-import { Check, ChevronDown, MapPin, Map, List } from 'lucide-vue-next';
 import { useStorage } from '@vueuse/core';
 
 import PadalinysMap from './PadalinysMap.vue';
 
+import IFluentCheckmark24Regular from '~icons/fluent/checkmark-24-regular';
+import IFluentChevronDown24Regular from '~icons/fluent/chevron-down-24-regular';
+import IFluentLocation24Regular from '~icons/fluent/location-24-regular';
+import IFluentMap24Regular from '~icons/fluent/map-24-regular';
+import IFluentList24Regular from '~icons/fluent/list-24-regular';
 import type { TenantOption } from '@/Composables/useTenantOptions';
 import { useTenantOptions } from '@/Composables/useTenantOptions';
 import { Button } from '@/Components/ui/button';

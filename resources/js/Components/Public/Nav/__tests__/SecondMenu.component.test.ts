@@ -31,7 +31,9 @@ describe('SecondMenu.vue', () => {
       user: { id: 1, name: 'Testas Testaitis', profile_photo_path: '/storage/profile.jpg' },
     });
 
-    const img = wrapper.find('img');
+    // Scoped to the avatar rather than `find('img')`: the bar also renders the language
+    // switcher's flag, which comes first in the DOM.
+    const img = wrapper.find('[data-slot="avatar"] img');
     expect(img.exists()).toBe(true);
     expect(img.attributes('src')).toBe('/storage/profile.jpg');
 
@@ -48,7 +50,7 @@ describe('SecondMenu.vue', () => {
       user: { id: 1, name: 'Testas Testaitis', profile_photo_path: null },
     });
 
-    expect(wrapper.find('img').exists()).toBe(false);
+    expect(wrapper.find('[data-slot="avatar"] img').exists()).toBe(false);
     expect(wrapper.find('[data-slot="avatar-fallback"]').text()).toBe('TE');
   });
 

@@ -36,6 +36,9 @@ usePage.mockImplementation(() => ({
 
 // Component metadata and default props
 const meta: Meta<typeof AgendaItemsForm> = {
+  // Admin component: pin the toolbar's Surface to admin so it renders against the palette
+  // it actually ships with, not the public one the toolbar defaults to.
+  globals: { surface: 'admin' },
   title: 'Forms/AdminForms/Special/AgendaItemsForm',
   component: AgendaItemsForm,
   tags: ['autodocs'],

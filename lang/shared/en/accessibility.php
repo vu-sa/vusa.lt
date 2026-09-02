@@ -39,4 +39,16 @@ return [
     'documents' => 'Documents',
     'pages' => 'Pages',
     'news' => 'News',
+
+    // Reader preferences menu (Components/Public/Base/AccessibilityMenu.vue)
+    'menu_title' => 'Accessibility',
+    'menu_open' => 'Open accessibility settings',
+    'text_size' => 'Text size',
+    'text_size_option' => 'Text size: :size',
+    'text_size_decrease' => 'Decrease text size',
+    'text_size_increase' => 'Increase text size',
+    'high_contrast' => 'High contrast',
+    'underline_links' => 'Underline links',
+    'reset' => 'Reset',
+    'preferences_active' => 'Accessibility settings changed',
 ];

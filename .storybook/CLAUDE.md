@@ -2,6 +2,48 @@
 
 For full configuration, story-writing, and Playwright setup, see [README.md](README.md). This file covers what to do (and what to avoid) when writing stories.
 
+## What Storybook is for here
+
+It is the **catalogue** for the design system: the place you check before building a new
+component, and the only place the rendered result can be verified in both themes. The public
+design revamp (see `REDESIGN.md` and `~/.claude/plans/`) rebuilt it around that job — the old
+design-surface stories were deleted so the catalogue shows one design language, not two.
+
+## Surface and theme — read this before writing a story
+
+Every story renders under a **Surface** (`public` / `admin`) and a **Theme** (`light` / `dark`)
+selected from the toolbar. The decorator in `preview.ts` stamps `data-surface` and `.dark` on the
+preview iframe's `<html>`, mirroring `app.blade.php` and the FOUC script in production, so a story
+resolves the same design tokens the real page does.
+
+Surface defaults to `public`. An admin component must pin it, or it renders against the wrong
+palette:
+
+```typescript
+const meta: Meta<typeof AdminThing> = {
+  component: AdminThing,
+  globals: { surface: 'admin' },
+};
+```
+
+Colours must come from tokens (`bg-card`, `text-muted-foreground`, `border-border`, `text-brand`)
+for the toolbar to mean anything — a hardcoded `bg-white dark:bg-zinc-900` looks identical on both
+surfaces and defeats the check.
+
+**`--brand`, not `--accent`.** `--accent` is shadcn's hover/muted surface (`hover:bg-accent` on
+ghost buttons, `focus:bg-accent` on dropdown items). The VU SA brand colour — red on light, amber
+on dark — is `--brand` / `--brand-fill` / `--brand-foreground`, i.e. `text-brand`, `bg-brand-fill`.
+
+## Accessibility
+
+`preview.ts` sets `a11y.test: 'todo'` globally — violations are reported, not failed, because
+legacy components have pre-existing ones. New primitives under `Components/Public/Base/**` opt up
+in their own meta, since they carry no such debt:
+
+```typescript
+parameters: { a11y: { test: 'error' } },
+```
+
 ## When to use Storybook
 
 - Visual components (buttons, modals, cards) and component documentation.
@@ -41,7 +83,7 @@ Stories render in **Lithuanian** — the mock only bundles the `lt` catalogue.
 Override per-story via mock methods:
 
 ```typescript
-import { usePage } from '@/mocks/inertia.mock';
+import { usePage } from '@/mocks/inertia.storybook';
 
 usePage.mockImplementation(() => ({
   props: {
@@ -51,7 +93,7 @@ usePage.mockImplementation(() => ({
 }));
 ```
 
-**Always import the full filename** — `@/mocks/inertia.mock`, never `@/mocks/inertia`.
+**Always import the full filename** — `@/mocks/inertia.storybook`, never `@/mocks/inertia`.
 
 ## Story patterns
 
@@ -106,7 +148,14 @@ Clear mocks between stories: `beforeEach(() => vi.clearAllMocks())`.
 
 ```bash
 npm run test            # daily (skips browser tests)
-npm run test:storybook  # Storybook tests only
+npm run test:storybook  # Storybook tests only — needs Playwright chromium
 npm run test:all        # includes browser tests
 npm run storybook       # interactive UI
 ```
+
+Playwright's chromium must be installed **inside the sail container** (the host cache is not
+visible to it): run `./dev/storybook-setup.sh` once.
+
+CI runs these in the `storybook-tests` job, currently `continue-on-error: true` while the public
+design system is built out. `coverage:ci` — what `js-tests` runs — deliberately excludes the
+storybook project, so this job is the only thing exercising stories.

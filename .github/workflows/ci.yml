@@ -263,6 +263,46 @@ jobs:
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
+  # Storybook stories, run as tests in a real Chromium (@storybook/addon-vitest + @vitest/browser).
+  #
+  # Separate from js-tests because `coverage:ci` deliberately runs only the unit and component
+  # projects — the storybook project needs Playwright browser binaries, which those don't. It is
+  # also the only place the design system can actually be checked: jsdom cannot resolve
+  # Tailwind's `dark:` variant, so a component test can assert a class is bound but never that
+  # it renders. See .storybook/CLAUDE.md.
+  storybook-tests:
+    needs: changes
+    if: ${{ needs.changes.outputs.js == 'true' || github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    # Non-blocking while the public design system is being built out, matching how browser-tests
+    # was introduced. Drop `continue-on-error` once the Public/Base primitives have stories and
+    # 2-3 consecutive runs are green.
+    continue-on-error: true
+    name: Storybook Tests
+    steps:
+    - uses: actions/checkout@v7
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: lts/*
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Cache Playwright browsers
+      uses: actions/cache@v6
+      with:
+        path: ~/.cache/ms-playwright
+        key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps chromium
+
+    - name: Run Storybook stories as tests
+      run: npm run test:storybook -- --run
+
   # Real-browser tests (Playwright via pestphp/pest-plugin-browser). Separate from php-tests
   # because it needs Node + Playwright browser binaries, which that job doesn't otherwise use.
   browser-tests:
@@ -393,7 +433,7 @@ jobs:
 
   status-check:
     name: CI Status
-    needs: [changes, php-static-analysis, php-tests, js-tests, js-quality, browser-tests]
+    needs: [changes, php-static-analysis, php-tests, js-tests, js-quality, browser-tests, storybook-tests]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -404,10 +444,11 @@ jobs:
           JS_TESTS_RESULT="${{ needs.js-tests.result }}"
           JS_QUALITY_RESULT="${{ needs.js-quality.result }}"
           BROWSER_TESTS_RESULT="${{ needs.browser-tests.result }}"
+          STORYBOOK_TESTS_RESULT="${{ needs.storybook-tests.result }}"
 
-          echo "Results: Static Analysis=$STATIC_ANALYSIS_RESULT, PHP Tests=$PHP_TESTS_RESULT, JS Tests=$JS_TESTS_RESULT, JS Quality=$JS_QUALITY_RESULT, Browser Tests=$BROWSER_TESTS_RESULT"
+          echo "Results: Static Analysis=$STATIC_ANALYSIS_RESULT, PHP Tests=$PHP_TESTS_RESULT, JS Tests=$JS_TESTS_RESULT, JS Quality=$JS_QUALITY_RESULT, Browser Tests=$BROWSER_TESTS_RESULT, Storybook Tests=$STORYBOOK_TESTS_RESULT"
 
-          # Check if any required job failed (js-quality and browser-tests are non-blocking)
+          # Check if any required job failed (js-quality, browser-tests and storybook-tests are non-blocking)
           if [[ "$STATIC_ANALYSIS_RESULT" == "failure" ]] || [[ "$PHP_TESTS_RESULT" == "failure" ]] || [[ "$JS_TESTS_RESULT" == "failure" ]]; then
             echo "❌ Some checks failed"
             exit 1
@@ -420,6 +461,10 @@ jobs:
 
           if [[ "$BROWSER_TESTS_RESULT" == "failure" ]]; then
             echo "⚠️ Browser tests have issues (non-blocking)"
+          fi
+
+          if [[ "$STORYBOOK_TESTS_RESULT" == "failure" ]]; then
+            echo "⚠️ Storybook tests have issues (non-blocking)"
           fi
 
           # All required jobs either succeeded or were skipped
