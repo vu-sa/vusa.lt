@@ -26,13 +26,13 @@ use Laravel\Scout\Searchable;
  *
  * @property string $id
  * @property string $title
- * @property string|null $description
  * @property MeetingType|null $type
  * @property Carbon $start_time
  * @property Carbon|null $end_time
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
+ * @property array|string|null $description
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, AgendaItem> $agendaItems
  * @property-read Collection<int, FileableFile> $availableFiles
@@ -43,13 +43,15 @@ use Laravel\Scout\Searchable;
  * @property-read Collection<int, FileableFile> $fileableFiles
  * @property-read bool $has_protocol
  * @property-read bool $has_report
+ * @property-read bool $requires_student_perspective
+ * @property-read array $translatable_columns_from
  * @property-read mixed $has_calendar_event
  * @property-read Collection<int, Institution> $institutions
  * @property-read mixed $is_joint
  * @property-read mixed $is_public
  * @property-read Collection<int, Comment> $rootComments
  * @property-read Collection<int, Task> $tasks
- * @property-read Collection<int, Tenant> $tenants
+ * @property-read mixed $translations
  * @property-read mixed $type_label
  * @property-read mixed $type_slug
  * @property-read Collection<int, Type> $types
@@ -59,6 +61,10 @@ use Laravel\Scout\Searchable;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting whereLocale(string $column, string $locale)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting whereLocales(string $column, array $locales)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting withoutTrashed()
  *

@@ -38,29 +38,35 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $matter_id
  * @property Carbon $created_at
  * @property Carbon $updated_at
- * @property string|null $title
  * @property int $order
  * @property bool $brought_by_students
  * @property AgendaItemType|null $type
- * @property string|null $student_position
- * @property string|null $description
  * @property string|null $start_time
  * @property string|null $end_time
+ * @property array|string|null $title
+ * @property array|string|null $description
+ * @property array|string|null $student_position
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, Vote> $additionalVotes
  * @property-read Collection<int, Comment> $comments
+ * @property-read array $translatable_columns_from
  * @property-read Collection<int, Institution> $institutions
  * @property-read Vote|null $mainVote
  * @property-read Meeting|null $meeting
  * @property-read AgendaItemNote|null $note
  * @property-read Collection<int, Comment> $rootComments
  * @property-read Collection<int, Tenant> $tenants
+ * @property-read mixed $translations
  * @property-read Collection<int, Vote> $votes
  *
  * @method static \Database\Factories\AgendaItemFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem whereLocale(string $column, string $locale)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem whereLocales(string $column, array $locales)
  *
  * @mixin \Eloquent
  */

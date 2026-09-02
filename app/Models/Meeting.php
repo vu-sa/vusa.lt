@@ -36,13 +36,13 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 /**
  * @property string $id
  * @property string $title
- * @property string|null $description
  * @property MeetingType|null $type
  * @property Carbon $start_time
  * @property Carbon|null $end_time
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
+ * @property array|string|null $description
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, AgendaItem> $agendaItems
  * @property-read Collection<int, FileableFile> $availableFiles
@@ -53,6 +53,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, FileableFile> $fileableFiles
  * @property-read bool $has_protocol
  * @property-read bool $has_report
+ * @property-read bool $requires_student_perspective
+ * @property-read array $translatable_columns_from
  * @property-read mixed $has_calendar_event
  * @property-read Collection<int, Institution> $institutions
  * @property-read mixed $is_joint
@@ -60,6 +62,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Comment> $rootComments
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Tenant> $tenants
+ * @property-read mixed $translations
  * @property-read mixed $type_label
  * @property-read mixed $type_slug
  * @property-read Collection<int, User> $users
@@ -69,6 +72,10 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting whereLocale(string $column, string $locale)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting whereLocales(string $column, array $locales)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting withoutTrashed()
  *
