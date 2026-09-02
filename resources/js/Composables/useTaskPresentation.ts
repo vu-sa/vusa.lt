@@ -26,7 +26,10 @@ export interface TaskDisplayData {
   description?: string | null;
   due_date?: string | null;
   completed_at?: string | null;
+  created_at?: string | null;
   action_type?: TaskActionType | string | null;
+  /** `effective_days_since_activity` (periodicity-gap tasks) drives the check-in date suggestion. */
+  metadata?: Record<string, unknown> | null;
   progress?: TaskProgress | null;
   is_overdue?: boolean;
   can_be_manually_completed?: boolean;
@@ -264,4 +267,40 @@ export function getDueDateUrgencyClasses(task: Pick<TaskDisplayData, 'due_date' 
   return daysUntil >= 0 && daysUntil <= 3
     ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
     : '';
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Default period to suggest in the "no meeting happened" check-in dialog opened from a
+ * periodicity-gap task.
+ *
+ * A periodicity-gap task's `due_date` is a deadline — created as roughly "today + N days" — not
+ * the start of the gap being reported. Using it as the check-in's end date put the end before
+ * the start as soon as the task went overdue (the ordinary case: these tasks are usually opened
+ * *because* they are overdue). The end is always today; the start is reconstructed from how long
+ * the institution had already gone without activity when the task was created
+ * (`metadata.effective_days_since_activity`, set once by PeriodicityGapTaskHandler), carried
+ * forward by the time elapsed since. Never returns a start after the end.
+ */
+export function getSuggestedCheckInRange(
+  task: Pick<TaskDisplayData, 'created_at' | 'metadata'> | null | undefined,
+): { start: Date; end: Date } {
+  const end = new Date();
+  const createdAt = task?.created_at ? new Date(task.created_at) : null;
+  const rawDaysSinceActivity = task?.metadata?.effective_days_since_activity;
+  const daysSinceActivityAtCreation = typeof rawDaysSinceActivity === 'number' ? rawDaysSinceActivity : null;
+
+  let start: Date;
+  if (createdAt && daysSinceActivityAtCreation !== null) {
+    start = new Date(createdAt.getTime() - daysSinceActivityAtCreation * DAY_MS);
+  }
+  else if (createdAt) {
+    start = createdAt;
+  }
+  else {
+    start = new Date(end.getTime() - 14 * DAY_MS);
+  }
+
+  return start > end ? { start: end, end } : { start, end };
 }

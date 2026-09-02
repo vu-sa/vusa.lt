@@ -13,9 +13,9 @@
           server-side-filter
           server-paginated
           @filter-change="handleFilterChange"
-          @open-meeting-modal="handleOpenMeetingModal"
-          @open-check-in-dialog="handleOpenCheckInDialog"
-          @open-task-detail="handleOpenTaskDetail"
+          @open-meeting-modal="openMeetingModal"
+          @open-check-in-dialog="openCheckInDialog"
+          @open-task-detail="openTaskDetail"
         />
       </div>
 
@@ -46,20 +46,20 @@
       :open="showTaskDetail"
       :task="selectedDetailTask"
       @close="closeTaskDetail"
-      @schedule-meeting="handleScheduleMeetingFromDetail"
-      @report-no-meeting="handleReportNoMeetingFromDetail"
+      @schedule-meeting="scheduleMeetingFromDetail"
+      @report-no-meeting="reportNoMeetingFromDetail"
     />
   </AdminContentPage>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineAsyncComponent } from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import { usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
-import { useActionWindow } from '@/Composables/useActionWindow';
+import { useTaskActionDialogs } from '@/Composables/useTaskActionDialogs';
 import type { TaskDisplayData, TaskStats } from '@/Composables/useTaskPresentation';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 import TaskStatsCards from '@/Features/Admin/TaskManager/TaskStatsCards.vue';
@@ -111,77 +111,21 @@ const handleFilterChange = (status: 'all' | 'completed' | 'incomplete') => {
   });
 };
 
-const actionWindow = useActionWindow();
-
-// Modal state
-const showCheckInDialog = ref(false);
-const showTaskDetail = ref(false);
-const selectedMeetingTask = ref<TaskDisplayData | null>(null);
-const selectedCheckInTask = ref<TaskDisplayData | null>(null);
-const selectedDetailTask = ref<TaskDisplayData | null>(null);
-
-// Computed institution for meeting modal
-const selectedInstitution = computed(() => {
-  if (!selectedMeetingTask.value?.taskable) return null;
-  return {
-    id: selectedMeetingTask.value.taskable_id,
-    name: selectedMeetingTask.value.taskable.name,
-  } as App.Entities.Institution;
-});
-
-// Computed dates for check-in dialog (autofill from today to task due date)
-const checkInStartDate = computed(() => new Date());
-const checkInEndDate = computed(() => {
-  if (selectedCheckInTask.value?.due_date) {
-    return new Date(selectedCheckInTask.value.due_date);
-  }
-  // Default to 2 weeks from now
-  return new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
-});
-
-// Event handlers
-const handleOpenMeetingModal = (task: TaskDisplayData) => {
-  selectedMeetingTask.value = task;
-
-  if (selectedInstitution.value) {
-    actionWindow.open({ flow: 'meeting.create', institution: selectedInstitution.value });
-  }
-};
-
-const handleOpenCheckInDialog = (task: TaskDisplayData) => {
-  selectedCheckInTask.value = task;
-  showCheckInDialog.value = true;
-};
-
-const closeCheckInDialog = () => {
-  showCheckInDialog.value = false;
-  selectedCheckInTask.value = null;
-};
-
-// Task detail dialog handlers
-const handleOpenTaskDetail = (task: TaskDisplayData) => {
-  selectedDetailTask.value = task;
-  showTaskDetail.value = true;
-};
-
-const closeTaskDetail = () => {
-  showTaskDetail.value = false;
-  selectedDetailTask.value = null;
-};
-
-const handleScheduleMeetingFromDetail = () => {
-  if (selectedDetailTask.value) {
-    closeTaskDetail();
-    handleOpenMeetingModal(selectedDetailTask.value);
-  }
-};
-
-const handleReportNoMeetingFromDetail = () => {
-  if (selectedDetailTask.value) {
-    closeTaskDetail();
-    handleOpenCheckInDialog(selectedDetailTask.value);
-  }
-};
+const {
+  showCheckInDialog,
+  showTaskDetail,
+  selectedCheckInTask,
+  selectedDetailTask,
+  checkInStartDate,
+  checkInEndDate,
+  openMeetingModal,
+  openCheckInDialog,
+  closeCheckInDialog,
+  openTaskDetail,
+  closeTaskDetail,
+  scheduleMeetingFromDetail,
+  reportNoMeetingFromDetail,
+} = useTaskActionDialogs();
 
 // Generate breadcrumbs
 usePageBreadcrumbs([

@@ -252,17 +252,13 @@ class TaskController extends AdminController
             ->whereIn('action_type', ['approval', 'pickup', 'return'])
             ->count();
 
-        // Type counts using direct database queries
-        $institutionsCount = (clone $statsQuery)
-            ->whereIn('taskable_type', [
-                MorphMap::alias(Institution::class),
-                MorphMap::alias(Meeting::class),
-            ])
-            ->count();
-
-        $reservationsCount = (clone $statsQuery)
-            ->where('taskable_type', MorphMap::alias(Reservation::class))
-            ->count();
+        // Type counts using direct database queries, one per real taskable type — the frontend's
+        // filter chips toggle these independently rather than through a merged "institutions"
+        // group, so a periodicity-gap task (taskable=institution) and an agenda task
+        // (taskable=meeting) can be selected together or apart.
+        $institutionCount = (clone $statsQuery)->where('taskable_type', MorphMap::alias(Institution::class))->count();
+        $meetingCount = (clone $statsQuery)->where('taskable_type', MorphMap::alias(Meeting::class))->count();
+        $reservationCount = (clone $statsQuery)->where('taskable_type', MorphMap::alias(Reservation::class))->count();
 
         $taskStats = [
             'total' => $total,
@@ -270,21 +266,19 @@ class TaskController extends AdminController
             'overdue' => $overdue,
             'autoCompleting' => $autoCompletable,
             'byType' => [
-                'institutions' => $institutionsCount,
-                'reservations' => $reservationsCount,
+                'institution' => $institutionCount,
+                'meeting' => $meetingCount,
+                'reservation' => $reservationCount,
             ],
         ];
 
-        // Now apply type filter for the paginated results
-        // Support 'institutions' group filter that includes both Institution and Meeting
-        $taskableType = $request->input('taskable_type');
-        if ($taskableType === 'institutions') {
-            $baseQuery->whereIn('taskable_type', [
-                MorphMap::alias(Institution::class),
-                MorphMap::alias(Meeting::class),
-            ]);
-        } elseif ($taskableType) {
-            $baseQuery->where('taskable_type', $taskableType);
+        // Now apply the type filter for the paginated results. `taskable_type` is normalized to
+        // an array by IndexTaskSummaryRequest::prepareForValidation(), and its values are already
+        // the raw `taskable_type` column aliases (Task::TASKABLE_TYPES), so no MorphMap lookup
+        // is needed here.
+        $taskableTypes = $request->validated('taskable_type') ?? [];
+        if (! empty($taskableTypes)) {
+            $baseQuery->whereIn('taskable_type', $taskableTypes);
         }
 
         // Apply completion filter. Pending by default: the summary is an action list, and the
@@ -355,7 +349,7 @@ class TaskController extends AdminController
             ],
             'taskStats' => $taskStats,
             'filters' => [
-                'taskable_type' => $taskableType,
+                'taskable_type' => $taskableTypes,
                 'completion' => $completionFilter,
                 'tenant_ids' => $tenantIds,
             ],

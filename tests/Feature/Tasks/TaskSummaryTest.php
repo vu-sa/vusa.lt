@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Institution;
+use App\Models\Meeting;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
@@ -32,6 +33,18 @@ function orphanTaskFor(User $assignee, ActionType $actionType = ActionType::Peri
     return summaryTaskFor($assignee, [
         'taskable_type' => MorphMap::alias(Institution::class),
         'taskable_id' => 'deleted-institution-id',
+        'action_type' => $actionType,
+    ]);
+}
+
+/** A meeting-taskable task (agenda creation/completion), the counterpart to an institution one. */
+function summaryMeetingTaskFor(User $assignee, Institution $institution, ActionType $actionType = ActionType::AgendaCompletion): Task
+{
+    $meeting = Meeting::factory()->hasAttached($institution)->create();
+
+    return summaryTaskFor($assignee, [
+        'taskable_type' => MorphMap::alias(Meeting::class),
+        'taskable_id' => $meeting->id,
         'action_type' => $actionType,
     ]);
 }
@@ -94,6 +107,62 @@ describe('tasks.summary completion filter', function (): void {
         $response = asUser($superAdmin)->get(route('tasks.summary', ['completion' => 'all']));
 
         expect($response->viewData('page')['props']['tasks']['data'])->toHaveCount(2);
+    });
+});
+
+describe('tasks.summary taskable_type filter', function (): void {
+    test('narrows to institution tasks without hiding a meeting task from the same list', function (): void {
+        $superAdmin = makeAdminUser($this->tenant);
+        $institutionTask = orphanTaskFor($superAdmin);
+        $meetingTask = summaryMeetingTaskFor($superAdmin, $this->institution);
+
+        $response = asUser($superAdmin)->get(route('tasks.summary', ['taskable_type' => ['institution']]));
+
+        $ids = collect($response->viewData('page')['props']['tasks']['data'])->pluck('id');
+        expect($ids)->toContain($institutionTask->id)
+            ->and($ids)->not->toContain($meetingTask->id);
+    });
+
+    test('a caller wanting both institution and meeting tasks gets both at once', function (): void {
+        // This is the "view meeting tasks" link from ShowAtstovavimas: a periodicity-gap task
+        // (taskable=institution) is exactly as much "about a meeting" as an agenda task
+        // (taskable=meeting), so asking for meeting-related work should surface both.
+        $superAdmin = makeAdminUser($this->tenant);
+        $institutionTask = orphanTaskFor($superAdmin);
+        $meetingTask = summaryMeetingTaskFor($superAdmin, $this->institution);
+
+        $response = asUser($superAdmin)->get(route('tasks.summary', ['taskable_type' => ['institution', 'meeting']]));
+
+        $ids = collect($response->viewData('page')['props']['tasks']['data'])->pluck('id');
+        expect($ids)->toContain($institutionTask->id)
+            ->and($ids)->toContain($meetingTask->id);
+    });
+
+    test('accepts a single hand-typed value the same as an array', function (): void {
+        // A bookmarked or hand-typed URL carries `?taskable_type=meeting`, not
+        // `taskable_type[]=meeting` — IndexTaskSummaryRequest::prepareForValidation() normalizes it.
+        $superAdmin = makeAdminUser($this->tenant);
+        $meetingTask = summaryMeetingTaskFor($superAdmin, $this->institution);
+        orphanTaskFor($superAdmin);
+
+        $response = asUser($superAdmin)->get(route('tasks.summary').'?taskable_type=meeting');
+
+        $tasks = $response->viewData('page')['props']['tasks']['data'];
+        expect(collect($tasks)->pluck('id'))->toContain($meetingTask->id)
+            ->and($tasks)->toHaveCount(1);
+    });
+
+    test('reports separate counts per taskable type', function (): void {
+        $superAdmin = makeAdminUser($this->tenant);
+        orphanTaskFor($superAdmin);
+        summaryMeetingTaskFor($superAdmin, $this->institution);
+
+        $response = asUser($superAdmin)->get(route('tasks.summary'));
+
+        $byType = $response->viewData('page')['props']['taskStats']['byType'];
+        expect($byType['institution'])->toBe(1)
+            ->and($byType['meeting'])->toBe(1)
+            ->and($byType['reservation'])->toBe(0);
     });
 });
 

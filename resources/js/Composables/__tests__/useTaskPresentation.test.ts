@@ -5,6 +5,7 @@ import {
   formatTaskDueDate,
   getDueDateUrgencyClasses,
   getMeetingAgendaUrl,
+  getSuggestedCheckInRange,
   getTaskActionBadgeClasses,
   getTaskActionIcon,
   getTaskActionLabel,
@@ -110,5 +111,53 @@ describe('due dates', () => {
     expect(getDueDateUrgencyClasses({ due_date: inTwoDays, is_overdue: false })).toContain('amber');
     expect(getDueDateUrgencyClasses({ due_date: inTenDays, is_overdue: false })).toBe('');
     expect(getDueDateUrgencyClasses({ due_date: inTwoDays, is_overdue: true })).toBe('');
+  });
+});
+
+describe('check-in date suggestion', () => {
+  it('never suggests an end before the start, even for a long-overdue task', () => {
+    // The bug this guards: a periodicity-gap task's due_date is a deadline (created as
+    // "today + N days"), not the start of the reporting gap. Using it as the suggested end
+    // date put the end before "today" (the start) as soon as the task went overdue — which is
+    // the ordinary case, since these tasks are usually opened *because* they are overdue.
+    const longOverdueCreatedAt = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+    const { start, end } = getSuggestedCheckInRange({
+      created_at: longOverdueCreatedAt,
+      metadata: { effective_days_since_activity: 120 },
+    });
+
+    expect(start.getTime()).toBeLessThanOrEqual(end.getTime());
+  });
+
+  it('reconstructs the gap start from how long the institution had already gone without activity', () => {
+    const createdAt = new Date('2026-01-15T00:00:00.000Z');
+    const { start } = getSuggestedCheckInRange({
+      created_at: createdAt.toISOString(),
+      metadata: { effective_days_since_activity: 10 },
+    });
+
+    expect(start.toISOString()).toBe(new Date('2026-01-05T00:00:00.000Z').toISOString());
+  });
+
+  it('ends today regardless of how the start was derived', () => {
+    const { end } = getSuggestedCheckInRange({
+      created_at: new Date().toISOString(),
+      metadata: { effective_days_since_activity: 5 },
+    });
+
+    expect(Math.abs(end.getTime() - Date.now())).toBeLessThan(1000);
+  });
+
+  it('falls back to a 14-day window when the task carries neither field', () => {
+    const { start, end } = getSuggestedCheckInRange(null);
+
+    expect(end.getTime() - start.getTime()).toBeCloseTo(14 * 24 * 60 * 60 * 1000, -3);
+  });
+
+  it('falls back to created_at alone when metadata has no usable count', () => {
+    const createdAt = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString();
+    const { start } = getSuggestedCheckInRange({ created_at: createdAt, metadata: {} });
+
+    expect(start.toISOString()).toBe(new Date(createdAt).toISOString());
   });
 });

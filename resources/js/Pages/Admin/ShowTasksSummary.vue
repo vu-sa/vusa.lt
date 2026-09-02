@@ -2,38 +2,28 @@
   <AdminContentPage :title="$t('tasks.summary.title')">
     <!-- Filters row -->
     <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
-      <!-- Type filter tabs -->
+      <!-- Type filter: independently toggleable, not mutually exclusive — a periodicity-gap
+           task (taskable=institution) and an agenda task (taskable=meeting) are both "about a
+           meeting", so a caller wanting one often wants both. -->
       <div class="flex flex-wrap items-center gap-2">
         <Button
-          :variant="!filters.taskable_type ? 'default' : 'outline'"
+          :variant="selectedTaskableTypes.length === 0 ? 'default' : 'outline'"
           size="sm"
-          @click="updateFilter('taskable_type', null)"
+          @click="clearTaskableTypes"
         >
           {{ $t('Visi') }}
-          <Badge v-if="taskStats" variant="secondary" class="ml-1.5 tabular-nums">
-            {{ taskStats.byType.institutions + taskStats.byType.reservations }}
-          </Badge>
         </Button>
         <Button
-          :variant="filters.taskable_type === 'institutions' ? 'default' : 'outline'"
+          v-for="option in taskableTypeOptions"
+          :key="option.value"
+          :variant="selectedTaskableTypes.includes(option.value) ? 'default' : 'outline'"
           size="sm"
-          @click="updateFilter('taskable_type', 'institutions')"
+          @click="toggleTaskableType(option.value)"
         >
-          <BuildingIcon class="mr-1.5 h-4 w-4" />
-          {{ $t('Institucijos') }}
+          <component :is="option.icon" class="mr-1.5 h-4 w-4" />
+          {{ option.label }}
           <Badge v-if="taskStats?.byType" variant="secondary" class="ml-1.5 tabular-nums">
-            {{ taskStats.byType.institutions }}
-          </Badge>
-        </Button>
-        <Button
-          :variant="filters.taskable_type === ModelEnum.RESERVATION ? 'default' : 'outline'"
-          size="sm"
-          @click="updateFilter('taskable_type', ModelEnum.RESERVATION)"
-        >
-          <PackageIcon class="mr-1.5 h-4 w-4" />
-          {{ $t('Rezervacijos') }}
-          <Badge v-if="taskStats?.byType" variant="secondary" class="ml-1.5 tabular-nums">
-            {{ taskStats.byType.reservations }}
+            {{ taskStats.byType[option.value] }}
           </Badge>
         </Button>
       </div>
@@ -64,9 +54,9 @@
           server-side-filter
           server-paginated
           @filter-change="handleCompletionFilterChange"
-          @open-meeting-modal="handleOpenMeetingModal"
-          @open-check-in-dialog="handleOpenCheckInDialog"
-          @open-task-detail="handleOpenTaskDetail"
+          @open-meeting-modal="openMeetingModal"
+          @open-check-in-dialog="openCheckInDialog"
+          @open-task-detail="openTaskDetail"
         />
       </div>
 
@@ -97,8 +87,8 @@
       :open="showTaskDetail"
       :task="selectedDetailTask"
       @close="closeTaskDetail"
-      @schedule-meeting="handleScheduleMeetingFromDetail"
-      @report-no-meeting="handleReportNoMeetingFromDetail"
+      @schedule-meeting="scheduleMeetingFromDetail"
+      @report-no-meeting="reportNoMeetingFromDetail"
     />
   </AdminContentPage>
 </template>
@@ -108,11 +98,11 @@ import { ModelEnum } from '@/Types/enums';
 import { router } from '@inertiajs/vue3';
 import { ref, computed, defineAsyncComponent } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Building as BuildingIcon, Package as PackageIcon } from 'lucide-vue-next';
+import { Building as BuildingIcon, Calendar as CalendarIcon, Package as PackageIcon } from 'lucide-vue-next';
 
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import { usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
-import { useActionWindow } from '@/Composables/useActionWindow';
+import { useTaskActionDialogs } from '@/Composables/useTaskActionDialogs';
 import type { TaskDisplayData, TaskStats } from '@/Composables/useTaskPresentation';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 import TaskStatsCards from '@/Features/Admin/TaskManager/TaskStatsCards.vue';
@@ -129,8 +119,9 @@ const TaskDetailDialog = defineAsyncComponent(() => import('@/Features/Admin/Tas
 /** The summary page's own stats add a per-taskable-type breakdown to the shared counts. */
 interface SummaryTaskStats extends TaskStats {
   byType: {
-    institutions: number;
-    reservations: number;
+    institution: number;
+    meeting: number;
+    reservation: number;
   };
 }
 
@@ -144,7 +135,7 @@ interface PaginationMeta {
 }
 
 interface Filters {
-  taskable_type?: string | null;
+  taskable_type?: string[] | null;
   completion?: string | null;
   tenant_ids?: number[];
 }
@@ -163,6 +154,14 @@ const props = defineProps<{
   filters: Filters;
   permissibleTenants: PermissibleTenant[];
 }>();
+
+const taskableTypeOptions = [
+  { value: ModelEnum.INSTITUTION, label: $t('Institucijos'), icon: BuildingIcon },
+  { value: ModelEnum.MEETING, label: $t('Posėdžiai'), icon: CalendarIcon },
+  { value: ModelEnum.RESERVATION, label: $t('Rezervacijos'), icon: PackageIcon },
+] as const;
+
+const selectedTaskableTypes = computed<string[]>(() => props.filters.taskable_type ?? []);
 
 // Local state
 const selectedTenantIds = ref<number[]>(props.filters.tenant_ids || []);
@@ -191,7 +190,7 @@ const currentFilter = computed<'all' | 'completed' | 'incomplete'>(() => {
   }
 });
 
-type FilterValue = string | number | number[] | null | undefined;
+type FilterValue = string | number | string[] | number[] | null | undefined;
 
 const visitWithFilters = (overrides: Record<string, FilterValue>) => {
   const query: Record<string, FilterValue> = { ...props.filters, page: 1, ...overrides };
@@ -209,8 +208,14 @@ const visitWithFilters = (overrides: Record<string, FilterValue>) => {
   });
 };
 
-const updateFilter = (key: keyof Filters, value: string | null) => {
-  visitWithFilters({ [key]: value });
+const toggleTaskableType = (type: string) => {
+  const current = selectedTaskableTypes.value;
+  const next = current.includes(type) ? current.filter(t => t !== type) : [...current, type];
+  visitWithFilters({ taskable_type: next });
+};
+
+const clearTaskableTypes = () => {
+  visitWithFilters({ taskable_type: null });
 };
 
 const COMPLETION_QUERY_VALUE = {
@@ -234,67 +239,21 @@ const goToPage = (page: number) => {
   });
 };
 
-const actionWindow = useActionWindow();
-
-// Modal state
-const showCheckInDialog = ref(false);
-const showTaskDetail = ref(false);
-const selectedCheckInTask = ref<TaskDisplayData | null>(null);
-const selectedDetailTask = ref<TaskDisplayData | null>(null);
-
-const checkInStartDate = computed(() => new Date());
-const checkInEndDate = computed(() =>
-  selectedCheckInTask.value?.due_date
-    ? new Date(selectedCheckInTask.value.due_date)
-    : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
-);
-
-const handleOpenMeetingModal = (task: TaskDisplayData) => {
-  if (!task.taskable) {
-    return;
-  }
-
-  actionWindow.open({
-    flow: 'meeting.create',
-    institution: { id: task.taskable_id, name: task.taskable.name } as App.Entities.Institution,
-  });
-};
-
-const handleOpenCheckInDialog = (task: TaskDisplayData) => {
-  selectedCheckInTask.value = task;
-  showCheckInDialog.value = true;
-};
-
-const closeCheckInDialog = () => {
-  showCheckInDialog.value = false;
-  selectedCheckInTask.value = null;
-};
-
-const handleOpenTaskDetail = (task: TaskDisplayData) => {
-  selectedDetailTask.value = task;
-  showTaskDetail.value = true;
-};
-
-const closeTaskDetail = () => {
-  showTaskDetail.value = false;
-  selectedDetailTask.value = null;
-};
-
-const handleScheduleMeetingFromDetail = () => {
-  if (selectedDetailTask.value) {
-    const task = selectedDetailTask.value;
-    closeTaskDetail();
-    handleOpenMeetingModal(task);
-  }
-};
-
-const handleReportNoMeetingFromDetail = () => {
-  if (selectedDetailTask.value) {
-    const task = selectedDetailTask.value;
-    closeTaskDetail();
-    handleOpenCheckInDialog(task);
-  }
-};
+const {
+  showCheckInDialog,
+  showTaskDetail,
+  selectedCheckInTask,
+  selectedDetailTask,
+  checkInStartDate,
+  checkInEndDate,
+  openMeetingModal,
+  openCheckInDialog,
+  closeCheckInDialog,
+  openTaskDetail,
+  closeTaskDetail,
+  scheduleMeetingFromDetail,
+  reportNoMeetingFromDetail,
+} = useTaskActionDialogs();
 
 // Generate breadcrumbs
 usePageBreadcrumbs([

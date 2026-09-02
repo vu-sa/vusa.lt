@@ -157,16 +157,39 @@
         :tasks
         :task-stats
         :disabled="false"
-        @open-task-detail="handleOpenTaskDetail"
+        @open-meeting-modal="openMeetingModal"
+        @open-check-in-dialog="openCheckInDialog"
+        @open-task-detail="openTaskDetail"
       />
     </template>
     <DutiableTimelineDialog v-model:open="timelineOpen" scope-type="user" :scope-id="user.id" />
+
+    <!-- Check-in dialog for periodicity gap tasks assigned to this user -->
+    <AddCheckInDialog
+      v-if="selectedCheckInTask"
+      :open="showCheckInDialog"
+      :institution-id="selectedCheckInTask.taskable_id"
+      :institution-name="selectedCheckInTask.taskable?.name"
+      :initial-start-date="checkInStartDate"
+      :initial-end-date="checkInEndDate"
+      @close="closeCheckInDialog"
+    />
+
+    <!-- Task detail dialog -->
+    <TaskDetailDialog
+      v-if="selectedDetailTask"
+      :open="showTaskDetail"
+      :task="selectedDetailTask"
+      @close="closeTaskDetail"
+      @schedule-meeting="scheduleMeetingFromDetail"
+      @report-no-meeting="reportNoMeetingFromDetail"
+    />
   </ShowPageLayout>
 </template>
 
 <script setup lang="ts">
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
-import { computed, ref } from 'vue';
+import { computed, defineAsyncComponent, ref } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
@@ -190,6 +213,10 @@ import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import { EmptyState, SectionHeading, ShowPageGrid } from '@/Components/Patterns';
 import { DutiableTimelineDialog } from '@/Features/Admin/DutiableTimeline';
 import { DutySectionList } from '@/Components/Duties';
+import { useTaskActionDialogs } from '@/Composables/useTaskActionDialogs';
+
+const AddCheckInDialog = defineAsyncComponent(() => import('@/Components/Institutions/AddCheckInDialog.vue'));
+const TaskDetailDialog = defineAsyncComponent(() => import('@/Features/Admin/TaskManager/TaskDetailDialog.vue'));
 
 // UI Components
 import { Badge } from '@/Components/ui/badge';
@@ -320,10 +347,21 @@ const handleGeneratePassword = () => {
   router.post(route('users.generatePassword', props.user.id));
 };
 
-const handleOpenTaskDetail = (task: unknown) => {
-  // Task detail modal could be opened here
-  // For now, we just acknowledge the event
-};
+const {
+  showCheckInDialog,
+  showTaskDetail,
+  selectedCheckInTask,
+  selectedDetailTask,
+  checkInStartDate,
+  checkInEndDate,
+  openMeetingModal,
+  openCheckInDialog,
+  closeCheckInDialog,
+  openTaskDetail,
+  closeTaskDetail,
+  scheduleMeetingFromDetail,
+  reportNoMeetingFromDetail,
+} = useTaskActionDialogs();
 
 // Breadcrumbs
 usePageBreadcrumbs(() =>

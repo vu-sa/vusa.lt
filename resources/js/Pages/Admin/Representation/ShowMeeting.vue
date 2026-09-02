@@ -183,7 +183,13 @@
     </template>
 
     <template #tasks>
-      <TaskManager :taskable="{ id: meeting.id, type: ModelEnum.MEETING }" :tasks="meeting.tasks" />
+      <TaskManager
+        :taskable="{ id: meeting.id, type: ModelEnum.MEETING }"
+        :tasks="meeting.tasks"
+        @open-meeting-modal="openMeetingModal"
+        @open-check-in-dialog="openCheckInDialog"
+        @open-task-detail="openTaskDetail"
+      />
     </template>
 
     <!-- Modals -->
@@ -355,12 +361,33 @@
       :meeting-id="meeting.id"
       :tenant-ids="tenantIds"
     />
+
+    <!-- Task detail dialog: the meeting's own tasks are always meeting-taskable (agenda
+         creation/completion), so the check-in flow below is unreachable in practice — wired
+         anyway so "View details" never silently does nothing. -->
+    <TaskDetailDialog
+      v-if="selectedDetailTask"
+      :open="showTaskDetail"
+      :task="selectedDetailTask"
+      @close="closeTaskDetail"
+      @schedule-meeting="scheduleMeetingFromDetail"
+      @report-no-meeting="reportNoMeetingFromDetail"
+    />
+    <AddCheckInDialog
+      v-if="selectedCheckInTask"
+      :open="showCheckInDialog"
+      :institution-id="selectedCheckInTask.taskable_id"
+      :institution-name="selectedCheckInTask.taskable?.name"
+      :initial-start-date="checkInStartDate"
+      :initial-end-date="checkInEndDate"
+      @close="closeCheckInDialog"
+    />
   </ShowPageLayout>
 </template>
 
 <script setup lang="tsx">
 import { InstitutionScope, ModelEnum } from '@/Types/enums';
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, defineAsyncComponent } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -405,6 +432,7 @@ import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import FileManager from '@/Features/Admin/SharepointFileManager/SharepointFileManager.vue';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 import { InstitutionIconFilled, MeetingIconFilled } from '@/Components/icons';
+import { useTaskActionDialogs } from '@/Composables/useTaskActionDialogs';
 
 const props = defineProps<{
   meeting: App.Entities.Meeting;
@@ -449,6 +477,25 @@ const calendarEvent = computed(() => props.meeting.calendar_event ?? null);
 const announceSpotlight = useFeatureSpotlight('meeting-calendar-announce-v1', {
   enabled: props.governanceScope === InstitutionScope.Vusa,
 });
+const AddCheckInDialog = defineAsyncComponent(() => import('@/Components/Institutions/AddCheckInDialog.vue'));
+const TaskDetailDialog = defineAsyncComponent(() => import('@/Features/Admin/TaskManager/TaskDetailDialog.vue'));
+
+const {
+  showCheckInDialog,
+  showTaskDetail,
+  selectedCheckInTask,
+  selectedDetailTask,
+  checkInStartDate,
+  checkInEndDate,
+  openMeetingModal,
+  openCheckInDialog,
+  closeCheckInDialog,
+  openTaskDetail,
+  closeTaskDetail,
+  scheduleMeetingFromDetail,
+  reportNoMeetingFromDetail,
+} = useTaskActionDialogs();
+
 const showAnnounceDialog = ref(false);
 
 const openAnnounceDialog = () => {
