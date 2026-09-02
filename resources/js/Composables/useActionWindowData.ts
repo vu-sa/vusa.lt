@@ -93,7 +93,11 @@ export function useActionWindowData() {
   };
 }
 
-/** Drop the cache so the next open re-reads the server (after a create). */
+/**
+ * Drop the cache so the next fetch re-reads the server. Called both after a create
+ * (meeting/check-in) and on every `useActionWindow().open()`, since meetings can be
+ * completed from pages the window never touches.
+ */
 export function invalidateActionWindowData() {
   cached.value = null;
 }
