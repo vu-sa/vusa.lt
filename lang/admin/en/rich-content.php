@@ -482,4 +482,6 @@ return [
     'tag_variant_filled' => 'Filled',
     'tag_variant_plain' => 'Plain',
     'tag_remove' => 'Remove tag',
+    'toolbar_more' => 'More options',
+    'toolbar_less' => 'Fewer options',
 ];

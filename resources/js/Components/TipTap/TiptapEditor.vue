@@ -27,170 +27,182 @@
       <!-- Formatting buttons -->
       <TiptapFormattingButtons v-model:editor="editor" />
 
-      <!-- Link buttons -->
-      <ButtonGroup>
-        <TiptapLinkButton :editor @submit="handleLinkSubmit" @document:submit="handleDocumentLinkSubmit">
-          <Button size="sm" :variant="editor.isActive('link') ? 'default' : 'outline'">
-            <IFluentLink24Regular />
-          </Button>
-        </TiptapLinkButton>
-        <Button size="sm" variant="outline" :disabled="!editor.isActive('link')"
-          @click="editor?.chain().focus().unsetLink().run()">
-          <IFluentLinkDismiss20Filled />
-        </Button>
-      </ButtonGroup>
-
-      <!-- Clear formatting -->
-      <Button size="sm" variant="outline" @click="editor?.chain().focus().unsetAllMarks().run()">
-        <IFluentClearFormatting20Filled />
+      <!-- Mobile-only toggle for the rest of the toolbar — on small screens the full
+           control set doesn't fit above the keyboard, so only bold/italic/underline
+           show by default and everything else is one tap away. `sm:hidden` means
+           desktop always sees the full toolbar regardless of this state. -->
+      <Button size="sm" variant="ghost" class="sm:hidden" data-testid="tiptap-toolbar-mobile-toggle"
+        :title="mobileToolbarExpanded ? $t('rich-content.toolbar_less') : $t('rich-content.toolbar_more')"
+        @click="mobileToolbarExpanded = !mobileToolbarExpanded">
+        <IFluentChevronUp20Regular v-if="mobileToolbarExpanded" />
+        <IFluentChevronDown20Regular v-else />
       </Button>
 
-      <Separator orientation="vertical" class="h-5" />
-
-      <!-- Headings (compact and full). `full` gets a level dropdown (up to h4) instead
-           of the plain paragraph/h2 toggle pair, since it also needs room for size/
-           accent below — a level Select scales to more options than a ButtonGroup. -->
-      <ButtonGroup v-if="preset === 'compact'">
-        <Button size="sm" :variant="editor.isActive('paragraph') ? 'default' : 'outline'"
-          @click="editor?.chain().focus().setParagraph().run()">
-          <IFluentTextT24Regular />
-        </Button>
-        <Button size="sm" :variant="editor.isActive('heading', { level: 2 }) ? 'default' : 'outline'"
-          @click="editor?.chain().focus().toggleHeading({ level: 2 }).run()">
-          <TextHeader220Filled />
-        </Button>
-      </ButtonGroup>
-
-      <template v-if="preset === 'full'">
-        <Select :model-value="currentHeadingLevel" @update:model-value="setHeadingLevel($event as string)">
-          <SelectTrigger size="sm" class="w-[104px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="paragraph">{{ $t('rich-content.heading_paragraph') }}</SelectItem>
-            <SelectItem value="2">{{ $t('rich-content.heading_level_2') }}</SelectItem>
-            <SelectItem value="3">{{ $t('rich-content.heading_level_3') }}</SelectItem>
-            <SelectItem value="4">{{ $t('rich-content.heading_level_4') }}</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <!-- Heading style: size + color accent. Only meaningful on a heading — the
-             trigger stays enabled either way so an author can set a style *then*
-             turn the current block into a heading, but the attributes only render
-             visually once a heading is actually active. -->
-        <DropdownMenu>
-          <DropdownMenuTrigger as-child>
-            <Button size="sm" variant="outline" :title="$t('rich-content.heading_style')">
-              <IFluentTextEffects20Regular />
+      <div data-testid="tiptap-toolbar-extra" :class="mobileToolbarExpanded ? 'contents' : 'hidden sm:contents'">
+        <!-- Link buttons -->
+        <ButtonGroup>
+          <TiptapLinkButton :editor @submit="handleLinkSubmit" @document:submit="handleDocumentLinkSubmit">
+            <Button size="sm" :variant="editor.isActive('link') ? 'default' : 'outline'">
+              <IFluentLink24Regular />
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuLabel class="text-xs font-normal text-zinc-400">
-              {{ $t('rich-content.heading_size') }}
-            </DropdownMenuLabel>
-            <DropdownMenuItem v-for="size in headingSizes" :key="size.value" @click="setHeadingAttr('size', size.value)">
-              <IFluentCheckmark12Regular class="mr-2 h-3.5 w-3.5" :class="currentHeadingSize === size.value ? 'opacity-100' : 'opacity-0'" />
-              {{ size.label }}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel class="text-xs font-normal text-zinc-400">
-              {{ $t('rich-content.heading_accent') }}
-            </DropdownMenuLabel>
-            <DropdownMenuItem v-for="accent in headingAccents" :key="accent.value" @click="setHeadingAttr('accent', accent.value)">
-              <IFluentCheckmark12Regular class="mr-2 h-3.5 w-3.5" :class="currentHeadingAccent === accent.value ? 'opacity-100' : 'opacity-0'" />
-              <span v-if="accent.value !== 'none'" class="mr-2 inline-block size-2.5 rounded-full" :class="accent.swatch" />
-              {{ accent.label }}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel class="text-xs font-normal text-zinc-400">
-              {{ $t('rich-content.heading_spacing') }}
-            </DropdownMenuLabel>
-            <DropdownMenuItem v-for="spacing in headingSpacings" :key="spacing.value" @click="setHeadingAttr('spacing', spacing.value)">
-              <IFluentCheckmark12Regular class="mr-2 h-3.5 w-3.5" :class="currentHeadingSpacing === spacing.value ? 'opacity-100' : 'opacity-0'" />
-              {{ spacing.label }}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-      </template>
-
-      <!-- Alignment + dot-tag mark: available in `compact` too (not just `full`) —
-           content-grid cells and other compact-preset surfaces edit exactly this kind
-           of content (e.g. the MembershipPage-style mascot column), so an author needs
-           to be able to apply them there, not just view them if they arrived seeded. -->
-      <template v-if="preset !== 'minimal'">
-        <!-- Alignment — applies to whichever block type (heading or paragraph) has
-             focus. Hidden while an image node is selected: it would sit next to the
-             image's own alignment control doing something else entirely. -->
-        <ButtonGroup v-if="!editor.isActive('image')">
-          <Button size="sm" :variant="currentAlign === 'start' ? 'default' : 'outline'" @click="setAlign('start')">
-            <IFluentTextAlignLeft24Regular />
-          </Button>
-          <Button size="sm" :variant="currentAlign === 'center' ? 'default' : 'outline'" @click="setAlign('center')">
-            <IFluentTextAlignCenter24Regular />
-          </Button>
-          <Button size="sm" :variant="currentAlign === 'end' ? 'default' : 'outline'" @click="setAlign('end')">
-            <IFluentTextAlignRight24Regular />
+          </TiptapLinkButton>
+          <Button size="sm" variant="outline" :disabled="!editor.isActive('link')"
+            @click="editor?.chain().focus().unsetLink().run()">
+            <IFluentLinkDismiss20Filled />
           </Button>
         </ButtonGroup>
 
-        <!-- Dot-tag mark (see App/Tiptap/RCTag.php, RCTag.ts) — the MembershipPage-style pill. -->
-        <DropdownMenu>
-          <DropdownMenuTrigger as-child>
-            <Button size="sm" :variant="editor.isActive('rcTag') ? 'default' : 'outline'" :title="$t('rich-content.tag')">
-              <IFluentTag24Regular />
+        <!-- Clear formatting -->
+        <Button size="sm" variant="outline" @click="editor?.chain().focus().unsetAllMarks().run()">
+          <IFluentClearFormatting20Filled />
+        </Button>
+
+        <Separator orientation="vertical" class="h-5" />
+
+        <!-- Headings (compact and full). `full` gets a level dropdown (up to h4) instead
+             of the plain paragraph/h2 toggle pair, since it also needs room for size/
+             accent below — a level Select scales to more options than a ButtonGroup. -->
+        <ButtonGroup v-if="preset === 'compact'">
+          <Button size="sm" :variant="editor.isActive('paragraph') ? 'default' : 'outline'"
+            @click="editor?.chain().focus().setParagraph().run()">
+            <IFluentTextT24Regular />
+          </Button>
+          <Button size="sm" :variant="editor.isActive('heading', { level: 2 }) ? 'default' : 'outline'"
+            @click="editor?.chain().focus().toggleHeading({ level: 2 }).run()">
+            <TextHeader220Filled />
+          </Button>
+        </ButtonGroup>
+
+        <template v-if="preset === 'full'">
+          <Select :model-value="currentHeadingLevel" @update:model-value="setHeadingLevel($event as string)">
+            <SelectTrigger size="sm" class="w-[104px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="paragraph">{{ $t('rich-content.heading_paragraph') }}</SelectItem>
+              <SelectItem value="2">{{ $t('rich-content.heading_level_2') }}</SelectItem>
+              <SelectItem value="3">{{ $t('rich-content.heading_level_3') }}</SelectItem>
+              <SelectItem value="4">{{ $t('rich-content.heading_level_4') }}</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <!-- Heading style: size + color accent. Only meaningful on a heading — the
+               trigger stays enabled either way so an author can set a style *then*
+               turn the current block into a heading, but the attributes only render
+               visually once a heading is actually active. -->
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <Button size="sm" variant="outline" :title="$t('rich-content.heading_style')">
+                <IFluentTextEffects20Regular />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuLabel class="text-xs font-normal text-zinc-400">
+                {{ $t('rich-content.heading_size') }}
+              </DropdownMenuLabel>
+              <DropdownMenuItem v-for="size in headingSizes" :key="size.value" @click="setHeadingAttr('size', size.value)">
+                <IFluentCheckmark12Regular class="mr-2 h-3.5 w-3.5" :class="currentHeadingSize === size.value ? 'opacity-100' : 'opacity-0'" />
+                {{ size.label }}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel class="text-xs font-normal text-zinc-400">
+                {{ $t('rich-content.heading_accent') }}
+              </DropdownMenuLabel>
+              <DropdownMenuItem v-for="accent in headingAccents" :key="accent.value" @click="setHeadingAttr('accent', accent.value)">
+                <IFluentCheckmark12Regular class="mr-2 h-3.5 w-3.5" :class="currentHeadingAccent === accent.value ? 'opacity-100' : 'opacity-0'" />
+                <span v-if="accent.value !== 'none'" class="mr-2 inline-block size-2.5 rounded-full" :class="accent.swatch" />
+                {{ accent.label }}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel class="text-xs font-normal text-zinc-400">
+                {{ $t('rich-content.heading_spacing') }}
+              </DropdownMenuLabel>
+              <DropdownMenuItem v-for="spacing in headingSpacings" :key="spacing.value" @click="setHeadingAttr('spacing', spacing.value)">
+                <IFluentCheckmark12Regular class="mr-2 h-3.5 w-3.5" :class="currentHeadingSpacing === spacing.value ? 'opacity-100' : 'opacity-0'" />
+                {{ spacing.label }}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+        </template>
+
+        <!-- Alignment + dot-tag mark: available in `compact` too (not just `full`) —
+             content-grid cells and other compact-preset surfaces edit exactly this kind
+             of content (e.g. the MembershipPage-style mascot column), so an author needs
+             to be able to apply them there, not just view them if they arrived seeded. -->
+        <template v-if="preset !== 'minimal'">
+          <!-- Alignment — applies to whichever block type (heading or paragraph) has
+               focus. Hidden while an image node is selected: it would sit next to the
+               image's own alignment control doing something else entirely. -->
+          <ButtonGroup v-if="!editor.isActive('image')">
+            <Button size="sm" :variant="currentAlign === 'start' ? 'default' : 'outline'" @click="setAlign('start')">
+              <IFluentTextAlignLeft24Regular />
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuLabel class="text-xs font-normal text-zinc-400">
-              {{ $t('rich-content.tag_variant') }}
-            </DropdownMenuLabel>
-            <div class="flex gap-1 px-2 pb-2">
-              <Button size="sm" :variant="tagVariant === 'filled' ? 'default' : 'outline'" @click="tagVariant = 'filled'">
-                {{ $t('rich-content.tag_variant_filled') }}
+            <Button size="sm" :variant="currentAlign === 'center' ? 'default' : 'outline'" @click="setAlign('center')">
+              <IFluentTextAlignCenter24Regular />
+            </Button>
+            <Button size="sm" :variant="currentAlign === 'end' ? 'default' : 'outline'" @click="setAlign('end')">
+              <IFluentTextAlignRight24Regular />
+            </Button>
+          </ButtonGroup>
+
+          <!-- Dot-tag mark (see App/Tiptap/RCTag.php, RCTag.ts) — the MembershipPage-style pill. -->
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <Button size="sm" :variant="editor.isActive('rcTag') ? 'default' : 'outline'" :title="$t('rich-content.tag')">
+                <IFluentTag24Regular />
               </Button>
-              <Button size="sm" :variant="tagVariant === 'plain' ? 'default' : 'outline'" @click="tagVariant = 'plain'">
-                {{ $t('rich-content.tag_variant_plain') }}
-              </Button>
-            </div>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem v-for="color in tagColors" :key="color.value" @click="applyTag(color.value)">
-              <span class="mr-2 inline-block size-2.5 rounded-full" :class="color.swatch" />
-              {{ color.label }}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem :disabled="!editor.isActive('rcTag')" @click="editor?.chain().focus().unsetRCTag().run()">
-              {{ $t('rich-content.tag_remove') }}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </template>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuLabel class="text-xs font-normal text-zinc-400">
+                {{ $t('rich-content.tag_variant') }}
+              </DropdownMenuLabel>
+              <div class="flex gap-1 px-2 pb-2">
+                <Button size="sm" :variant="tagVariant === 'filled' ? 'default' : 'outline'" @click="tagVariant = 'filled'">
+                  {{ $t('rich-content.tag_variant_filled') }}
+                </Button>
+                <Button size="sm" :variant="tagVariant === 'plain' ? 'default' : 'outline'" @click="tagVariant = 'plain'">
+                  {{ $t('rich-content.tag_variant_plain') }}
+                </Button>
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem v-for="color in tagColors" :key="color.value" @click="applyTag(color.value)">
+                <span class="mr-2 inline-block size-2.5 rounded-full" :class="color.swatch" />
+                {{ color.label }}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem :disabled="!editor.isActive('rcTag')" @click="editor?.chain().focus().unsetRCTag().run()">
+                {{ $t('rich-content.tag_remove') }}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </template>
 
-      <!-- Lists -->
-      <ButtonGroup>
-        <Button size="sm" :variant="editor.isActive('bulletList') ? 'default' : 'outline'"
-          @click="editor?.chain().focus().toggleBulletList().run()">
-          <IFluentTextBulletListLtr24Filled />
-        </Button>
-        <Button size="sm" :variant="editor.isActive('orderedList') ? 'default' : 'outline'"
-          @click="editor?.chain().focus().toggleOrderedList().run()">
-          <IFluentTextNumberListLtr24Filled />
-        </Button>
-      </ButtonGroup>
+        <!-- Lists -->
+        <ButtonGroup>
+          <Button size="sm" :variant="editor.isActive('bulletList') ? 'default' : 'outline'"
+            @click="editor?.chain().focus().toggleBulletList().run()">
+            <IFluentTextBulletListLtr24Filled />
+          </Button>
+          <Button size="sm" :variant="editor.isActive('orderedList') ? 'default' : 'outline'"
+            @click="editor?.chain().focus().toggleOrderedList().run()">
+            <IFluentTextNumberListLtr24Filled />
+          </Button>
+        </ButtonGroup>
 
-      <!-- Quote and horizontal rule (full preset) -->
-      <template v-if="preset === 'full'">
-        <Button size="sm" :variant="editor.isActive('blockquote') ? 'default' : 'outline'"
-          @click="editor?.chain().focus().toggleBlockquote().run()">
-          <IFluentTextQuote24Filled />
-        </Button>
-        <Button size="sm" variant="outline" @click="editor?.chain().focus().setHorizontalRule().run()">
-          <LineHorizontal120Regular />
-        </Button>
-      </template>
+        <!-- Quote and horizontal rule (full preset) -->
+        <template v-if="preset === 'full'">
+          <Button size="sm" :variant="editor.isActive('blockquote') ? 'default' : 'outline'"
+            @click="editor?.chain().focus().toggleBlockquote().run()">
+            <IFluentTextQuote24Filled />
+          </Button>
+          <Button size="sm" variant="outline" @click="editor?.chain().focus().setHorizontalRule().run()">
+            <LineHorizontal120Regular />
+          </Button>
+        </template>
 
-      <!-- Media buttons (compact and full) -->
-      <template v-if="preset !== 'minimal'">
+        <!-- Media buttons (compact and full) -->
+        <template v-if="preset !== 'minimal'">
           <Suspense>
             <TiptapImageButton as-child @submit:object="attachImage">
               <Button size="sm" variant="outline">
@@ -203,72 +215,73 @@
               <IFluentVideoClip24Regular />
             </Button>
           </TiptapYoutubeButton>
-      </template>
+        </template>
 
-      <!-- Video button (full preset) -->
-      <template v-if="preset === 'full'">
-        <TiptapVideoButton :show-modal="showVideoModal" @update:show-modal="showVideoModal = $event"
-          @submit="attachVideo">
-          <Button size="sm" variant="outline">
-            <IFluentVideo24Regular />
-          </Button>
-        </TiptapVideoButton>
-      </template>
+        <!-- Video button (full preset) -->
+        <template v-if="preset === 'full'">
+          <TiptapVideoButton :show-modal="showVideoModal" @update:show-modal="showVideoModal = $event"
+            @submit="attachVideo">
+            <Button size="sm" variant="outline">
+              <IFluentVideo24Regular />
+            </Button>
+          </TiptapVideoButton>
+        </template>
 
-      <!-- Table controls (full preset, when in table) -->
-      <template v-if="preset === 'full' && !disableTables && editor.isActive('table')">
-        <Separator orientation="vertical" class="h-5" />
-        <ButtonGroup>
-          <Button size="sm" variant="outline" @click="editor?.chain().focus().toggleHeaderRow().run()">
-            <IFluentTableFreezeRow24Regular />
+        <!-- Table controls (full preset, when in table) -->
+        <template v-if="preset === 'full' && !disableTables && editor.isActive('table')">
+          <Separator orientation="vertical" class="h-5" />
+          <ButtonGroup>
+            <Button size="sm" variant="outline" @click="editor?.chain().focus().toggleHeaderRow().run()">
+              <IFluentTableFreezeRow24Regular />
+            </Button>
+            <Button size="sm" variant="outline" @click="editor?.chain().focus().addColumnAfter().run()">
+              <IFluentTableInsertColumn24Regular />
+            </Button>
+            <Button size="sm" variant="outline" @click="editor?.chain().focus().addRowAfter().run()">
+              <IFluentTableInsertRow24Regular />
+            </Button>
+          </ButtonGroup>
+          <ButtonGroup>
+            <Button size="sm" variant="outline" :disabled="!editor.can().mergeCells()"
+              @click="editor?.chain().focus().mergeCells().run()">
+              <IFluentTableCellsMerge24Regular />
+            </Button>
+            <Button size="sm" variant="outline" :disabled="!editor.can().splitCell()"
+              @click="editor?.chain().focus().splitCell().run()">
+              <IFluentTableCellsSplit24Regular />
+            </Button>
+          </ButtonGroup>
+          <ButtonGroup>
+            <Button size="sm" variant="outline" @click="editor?.chain().focus().deleteColumn().run()">
+              <IFluentTableDeleteColumn24Regular />
+            </Button>
+            <Button size="sm" variant="outline" @click="editor?.chain().focus().deleteRow().run()">
+              <IFluentTableDeleteRow24Regular />
+            </Button>
+          </ButtonGroup>
+          <Button size="sm" variant="outline" @click="editor?.chain().focus().fixTables().run()">
+            <IFluentTableSettings24Regular />
           </Button>
-          <Button size="sm" variant="outline" @click="editor?.chain().focus().addColumnAfter().run()">
-            <IFluentTableInsertColumn24Regular />
+        </template>
+
+        <!-- Insert table button (full preset, when not in table) -->
+        <Button v-if="preset === 'full' && !disableTables && !editor.isActive('table')" size="sm" variant="outline"
+          @click="editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()">
+          <IFluentTableAdd24Regular />
+        </Button>
+
+        <!-- Undo/Redo -->
+        <ButtonGroup class="ml-auto">
+          <Button size="sm" variant="outline" :disabled="!editor.can().chain().focus().undo().run()"
+            @click="editor?.chain().focus().undo().run()">
+            <IFluentArrowUndo20Regular />
           </Button>
-          <Button size="sm" variant="outline" @click="editor?.chain().focus().addRowAfter().run()">
-            <IFluentTableInsertRow24Regular />
+          <Button size="sm" variant="outline" :disabled="!editor.can().chain().focus().redo().run()"
+            @click="editor?.chain().focus().redo().run()">
+            <IFluentArrowRedo20Regular />
           </Button>
         </ButtonGroup>
-        <ButtonGroup>
-          <Button size="sm" variant="outline" :disabled="!editor.can().mergeCells()"
-            @click="editor?.chain().focus().mergeCells().run()">
-            <IFluentTableCellsMerge24Regular />
-          </Button>
-          <Button size="sm" variant="outline" :disabled="!editor.can().splitCell()"
-            @click="editor?.chain().focus().splitCell().run()">
-            <IFluentTableCellsSplit24Regular />
-          </Button>
-        </ButtonGroup>
-        <ButtonGroup>
-          <Button size="sm" variant="outline" @click="editor?.chain().focus().deleteColumn().run()">
-            <IFluentTableDeleteColumn24Regular />
-          </Button>
-          <Button size="sm" variant="outline" @click="editor?.chain().focus().deleteRow().run()">
-            <IFluentTableDeleteRow24Regular />
-          </Button>
-        </ButtonGroup>
-        <Button size="sm" variant="outline" @click="editor?.chain().focus().fixTables().run()">
-          <IFluentTableSettings24Regular />
-        </Button>
-      </template>
-
-      <!-- Insert table button (full preset, when not in table) -->
-      <Button v-if="preset === 'full' && !disableTables && !editor.isActive('table')" size="sm" variant="outline"
-        @click="editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()">
-        <IFluentTableAdd24Regular />
-      </Button>
-
-      <!-- Undo/Redo -->
-      <ButtonGroup class="ml-auto">
-        <Button size="sm" variant="outline" :disabled="!editor.can().chain().focus().undo().run()"
-          @click="editor?.chain().focus().undo().run()">
-          <IFluentArrowUndo20Regular />
-        </Button>
-        <Button size="sm" variant="outline" :disabled="!editor.can().chain().focus().redo().run()"
-          @click="editor?.chain().focus().redo().run()">
-          <IFluentArrowRedo20Regular />
-        </Button>
-      </ButtonGroup>
+      </div>
     </div>
 
     <!-- Toolbar toggle (optional) -->
@@ -366,6 +379,8 @@ import IFluentVideo24Regular from '~icons/fluent/video24-regular';
 import IFluentTextEffects20Regular from '~icons/fluent/text-effects20-regular';
 import IFluentTag24Regular from '~icons/fluent/tag24-regular';
 import IFluentCheckmark12Regular from '~icons/fluent/checkmark12-regular';
+import IFluentChevronDown20Regular from '~icons/fluent/chevron-down-20-regular';
+import IFluentChevronUp20Regular from '~icons/fluent/chevron-up-20-regular';
 
 // Styles
 import './tiptap-base.css';
@@ -410,6 +425,7 @@ const emit = defineEmits<{
 // Internal state
 const internalShowToolbar = ref(props.toolbarVisible);
 const showVideoModal = ref(false);
+const mobileToolbarExpanded = ref(false);
 
 // Computed toolbar visibility
 const showToolbar = computed(() => {

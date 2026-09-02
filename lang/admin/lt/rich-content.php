@@ -482,4 +482,6 @@ return [
     'tag_variant_filled' => 'Su fonu',
     'tag_variant_plain' => 'Be fono',
     'tag_remove' => 'Pašalinti žymę',
+    'toolbar_more' => 'Daugiau parinkčių',
+    'toolbar_less' => 'Mažiau parinkčių',
 ];
